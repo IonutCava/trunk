@@ -53,6 +53,11 @@ public:
         _elapsedTime += deltaTime;
     }
 
+    virtual void reset() {
+        _deltaTime = 0UL;
+        _elapsedTime = 0UL;
+    }
+
     inline ComponentType         getType() const { return _type; }
     inline SceneGraphNode* const getSGN()  const { return _parentSGN; }
 

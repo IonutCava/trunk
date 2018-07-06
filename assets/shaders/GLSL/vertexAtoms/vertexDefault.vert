@@ -1,5 +1,3 @@
-in vec3  inVertexData;
-in vec2  inTexCoordData;
 
 uniform mat4 dvd_WorldViewProjectionMatrix;
 

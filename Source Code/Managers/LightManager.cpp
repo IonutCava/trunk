@@ -6,15 +6,14 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
-#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
+#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
-                               _dominantLight(nullptr),
-                               _worldHalfExtent(0.0f)
+                               _dominantLight(nullptr)
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
 }
@@ -84,6 +83,9 @@ U32 LightManager::generateNewID(){
 }
 
 bool LightManager::checkId(U32 value){
+    if (_lights.empty())
+        return true;
+
     FOR_EACH(LightMap::value_type& it, _lights)
         if(it.second->getId() == value)
             return false;
@@ -93,10 +95,7 @@ bool LightManager::checkId(U32 value){
 
 void LightManager::idle(){
     _shadowMapsEnabled = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
-    F32 worldWidth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBoxConst().getWidth();
-    F32 worldDepth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBoxConst().getDepth();
-    _worldHalfExtent = std::max(worldWidth, worldDepth) * 0.5f;
-    CLAMP<F32>(_worldHalfExtent, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
+
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
 
@@ -115,7 +114,7 @@ void LightManager::update(const bool force){
     }
 }
 
-///When pre-rendering is done, the Light Manager will generate the shadow maps
+/// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire application!
 bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     if(!_shadowMapsEnabled)
@@ -123,19 +122,19 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
 
     START_TIMER(s_shadowPassTimer);
 
-    //Stop if we have shadows disabled
-    _lightProjectionMatricesCache.resize(Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
     //Tell the engine that we are drawing to depth maps
     RenderStage previousRS = GFX_DEVICE.getRenderStage();
     //set the current render stage to SHADOW_STAGE
     GFX_DEVICE.setRenderStage(SHADOW_STAGE);
     // if we have a dominant light, generate only it's shadows
     if(_dominantLight){
+        setCurrentLight(_dominantLight);
          // When the entire scene is ready for rendering, generate the shadowmaps
         _dominantLight->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
     }else{
         //generate shadowmaps for each light
         FOR_EACH(LightMap::value_type& light, _lights){
+            setCurrentLight(light.second);
             light.second->generateShadowMaps(GET_ACTIVE_SCENE()->renderState());
         }
     }
@@ -147,9 +146,19 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     return true;
 }
 
+void LightManager::togglePreviewShadowMaps() { 
+    _previewShadowMaps = !_previewShadowMaps; 
+    //Stop if we have shadows disabled
+    if (!_shadowMapsEnabled || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
+        return;
+
+    FOR_EACH(LightMap::value_type& it, _lights)
+        it.second->getShadowMapInfo()->getShadowMap()->togglePreviewShadowMaps(_previewShadowMaps);
+}
+
 void LightManager::previewShadowMaps(Light* light) {
     //Stop if we have shadows disabled
-    if(!_shadowMapsEnabled || !_previewShadowMaps ||  !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
+    if (!_shadowMapsEnabled || !_previewShadowMaps || !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
         return;
 
     Light* localLight = light;
@@ -171,7 +180,7 @@ void LightManager::previewShadowMaps(Light* light) {
 //Always bind shadowmaps to slots Config::MAX_TEXTURE_STORAGE, Config::MAX_TEXTURE_STORAGE+1, Config::MAX_TEXTURE_STORAGE+2 ...
 void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool overrideDominant){
     //Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-    if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty())
+    if(!_shadowMapsEnabled)
         return;
 
     Light* lightLocal = light;
@@ -188,14 +197,12 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 
     if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
         offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
-
-    _lightProjectionMatricesCache[lightIndex] = lightLocal->getLightProjectionMatrix();
-
+    
     lightLocal->getShadowMapInfo()->getShadowMap()->Bind(offset);
 }
 
 void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
-    if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty())
+    if(!_shadowMapsEnabled)
         return;
 
     Light* lightLocal = light;
@@ -269,7 +276,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         LightType lType = light->getLightType();
         if(lType != LIGHT_TYPE_DIRECTIONAL )  {
             // get the luminosity.
-            luminace = light->getVProperty(LIGHT_PROPERTY_DIFFUSE).dot(lumDot);
+            luminace  = light->getVProperty(LIGHT_PROPERTY_DIFFUSE).dot(lumDot);
             luminace *= light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS);
 
             F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) + node->getBoundingSphere().getRadius());
@@ -285,9 +292,8 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
         }else{// directional
             light->setScore( weight );
         }
-
         // use type filter
-        if((typeFilter != LIGHT_TYPE_PLACEHOLDER && lType == typeFilter) || //< wether we have the correct light type
+        if((typeFilter != LIGHT_TYPE_PLACEHOLDER && lType == typeFilter) || //< whether we have the correct light type
             typeFilter == LIGHT_TYPE_PLACEHOLDER){ //< or we did not specify a type filter
             _tempLightsPerNode[i++] = light;
         }

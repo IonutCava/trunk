@@ -44,7 +44,7 @@ public:
         setState(RES_LOADED);
     }
 
-    void onDraw(const RenderStage& currentStage)       {return;}
+    bool onDraw(const RenderStage& currentStage)       {return true;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -65,7 +65,7 @@ public:
     
     void render(SceneGraphNode* const sgn)             {return;}
     void postLoad(SceneGraphNode* const sgn)           {return;}
-    void onDraw(const RenderStage& currentStage)       {return;}
+    bool onDraw(const RenderStage& currentStage)       {return true;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
@@ -93,7 +93,9 @@ public:
     /// Apply current transform to the node's BB
     void updateBoundingBoxTransform(const mat4<F32>& transform);
     /// Called if the current node is in view and is about to be rendered
-    void onDraw(RenderStage renderStage); 
+    bool onDraw(RenderStage renderStage); 
+    /// Called after the current node was rendered
+    void postDraw(RenderStage renderStage);
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /*Node Management*/
@@ -165,6 +167,8 @@ public:
     inline bool getCastsShadows()    const {return _castsShadows;}
     inline bool getReceivesShadows() const {return _receiveShadows;}
 
+    void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const;
+
     inline U32  getChildQueue() const {return _childQueue;}
     inline void incChildQueue()       {_childQueue++;}
     inline void decChildQueue()       {_childQueue--;}
@@ -188,8 +192,12 @@ public:
     template<>
     inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
 
+protected:
+    friend class RenderPassCuller;
+    inline void inView(const bool isInView) { _inView = isInView; }
 private:
     inline void setName(const std::string& name){_name = name;}
+    inline void scheduleDrawReset(RenderStage currentStage) { _drawReset[currentStage] = true; }
 
 private:
     SceneNode* _node;
@@ -198,6 +206,7 @@ private:
     SceneGraph     *_sceneGraph;
     boost::atomic<bool> _active;
     boost::atomic<bool> _loaded;
+    boost::atomic<bool> _inView;
     //Used to skip certain BB's (sky, ligts, etc);
     U32 _bbAddExclusionList;
     bool _selected;
@@ -229,6 +238,8 @@ private:
 
     UsageContext _usageContext;
     NodeComponents _components;
+
+    Unordered_map<RenderStage, bool> _drawReset;
 };
 
 #endif

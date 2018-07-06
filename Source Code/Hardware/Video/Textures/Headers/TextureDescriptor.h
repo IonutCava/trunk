@@ -48,6 +48,7 @@ public:
         //The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = CMP_FUNC_LEQUAL;
         _useRefCompare  = false;
+        _borderColor.set(DefaultColors::BLACK());
     }
 
     SamplerDescriptor* clone() const {return New SamplerDescriptor(*this);}
@@ -59,6 +60,10 @@ public:
 
     inline void setLOD(F32 minLOD = -1000.f, F32 maxLOD = 1000.f, F32 biasLOD = 0.f){
         _minLOD = minLOD; _maxLOD = maxLOD; _biasLOD = biasLOD;
+    }
+    
+    inline void setBorderColor(const vec4<F32>& color) {
+        _borderColor.set(color);
     }
 
     inline void setWrapMode(TextureWrap wrapUVW = TEXTURE_REPEAT){
@@ -118,6 +123,7 @@ public:
     inline F32           biasLOD()          const {return _biasLOD;}
     inline U8            anisotropyLevel()  const {return _anisotropyLevel;}
     inline bool          generateMipMaps()  const {return _generateMipMaps;}
+    inline vec4<F32>     borderColor()      const {return _borderColor;}
 protected:
     //Sampler states
     TextureFilter  _minFilter, _magFilter; ///Texture filtering mode
@@ -126,6 +132,7 @@ protected:
     U8             _anisotropyLevel;       ///<The value must be in the range [0...255] and is automatically clamped by the max HW supported level
     F32            _minLOD,_maxLOD;        ///<OpenGL eg: used by TEXTURE_MIN_LOD and TEXTURE_MAX_LOD
     F32            _biasLOD;               ///<OpenGL eg: used by TEXTURE_LOD_BIAS
+    vec4<F32>      _borderColor;           ///<Used with CLAMP_TO_BORDER as the background color outside of the texture border
 };
 
 ///Use to define a texture with details such as type, image formats, etc

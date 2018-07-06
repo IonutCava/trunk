@@ -33,9 +33,9 @@
 class Quad3D;
 class Quadtree;
 class Transform;
+class VertexBuffer;
 class ShaderProgram;
 class TerrainDescriptor;
-class VertexBufferObject;
 
 class Terrain : public SceneNode {
    enum TerrainTextureUsage{
@@ -57,7 +57,7 @@ public:
 
     bool unload();
 
-    void onDraw(const RenderStage& currentStage);
+    bool onDraw(const RenderStage& currentStage);
     void drawBoundingBox(SceneGraphNode* const sgn);
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
@@ -70,8 +70,8 @@ public:
            void  terrainSmooth(F32 k);
            void  initializeVegetation(TerrainDescriptor* const terrain,SceneGraphNode* const terrainSGN);
 
-    inline VertexBufferObject* const getGeometryVBO() {return _groundVBO;}
-    inline Quadtree&         getQuadtree()   const {return *_terrainQuadtree;}
+    inline VertexBuffer* const getGeometryVB() {return _groundVB;}
+    inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
     inline void toggleReflection(bool state){ _drawReflected = state;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
     inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
@@ -90,10 +90,10 @@ protected:
     void drawGround() const;
     void drawInfinitePlain();
     void render(SceneGraphNode* const sgn);
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
-    void prepareDepthMaterial(SceneGraphNode* const sgn);
-    void releaseDepthMaterial();
+    bool prepareMaterial(SceneGraphNode* const sgn);
+    bool releaseMaterial();
+    bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool releaseDepthMaterial();
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
@@ -106,10 +106,10 @@ protected:
 
 private:
 
-    U8                      _lightCount;
-    U16						_terrainWidth, _terrainHeight;
-    Quadtree*				_terrainQuadtree;
-    VertexBufferObject*		_groundVBO;
+    U8            _lightCount;
+    U16			  _terrainWidth, _terrainHeight;
+    Quadtree*	  _terrainQuadtree;
+    VertexBuffer* _groundVB;
 
     F32  _diffuseUVScale;
     F32  _normalMapUVScale;

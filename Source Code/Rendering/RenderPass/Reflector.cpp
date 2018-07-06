@@ -9,7 +9,7 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
                                                                      _updateTimer(0),
                                                                      _updateInterval(45), /// 45 milliseconds?
                                                                      _reflectedTexture(nullptr),
-                                                                     _createdFBO(false),
+                                                                     _createdFB(false),
                                                                      _updateSelf(false),
                                                                      _planeDirty(true),
                                                                      _excludeSelfReflection(true),
@@ -19,7 +19,8 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
     ResourceDescriptor mrt("reflectorPreviewQuad");
     mrt.setFlag(true); //No default Material;
     _renderQuad = CreateResource<Quad3D>(mrt);
-    ResourceDescriptor reflectionPreviewShader("fboPreview");
+    ResourceDescriptor reflectionPreviewShader("fbPreview");
+    reflectionPreviewShader.setThreadedLoading(false);
     _previewReflectionShader = CreateResource<ShaderProgram>(reflectionPreviewShader);
     _renderQuad->setCustomShader(_previewReflectionShader);
     _renderQuad->renderInstance()->preDraw(true);
@@ -38,14 +39,14 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
       return true;
     }
     _updateTimer += _updateInterval;
-    if(!_createdFBO){
+    if(!_createdFB){
         if(!build()){
             /// Something wrong. Exit application!
-            ERROR_FN(Locale::get("ERROR_REFLECTOR_INIT_FBO"));
+            ERROR_FN(Locale::get("ERROR_REFLECTOR_INIT_FB"));
             return false;
         }
     }
-    ///We should never have an invalid FBO
+    ///We should never have an invalid FB
     assert(_reflectedTexture != nullptr);
     /// mark ourselves as reflection target only if we do not wish to reflect ourself back
     _updateSelf = !_excludeSelfReflection;
@@ -62,7 +63,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt){
 }
 
 bool Reflector::build(){
-    PRINT_FN(Locale::get("REFLECTOR_INIT_FBO"),_resolution.x,_resolution.y );
+    PRINT_FN(Locale::get("REFLECTOR_INIT_FB"),_resolution.x,_resolution.y );
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
@@ -74,14 +75,14 @@ bool Reflector::build(){
 
     reflectionDescriptor.setSampler(reflectionSampler);
 
-    _reflectedTexture = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+    _reflectedTexture = GFX_DEVICE.newFB(FB_2D_COLOR);
     _reflectedTexture->AddAttachment(reflectionDescriptor,TextureDescriptor::Color0);
     _reflectedTexture->toggleDepthBuffer(true);
     if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
         return false;
     }
     _renderQuad->setDimensions(vec4<F32>(0,0,_resolution.x, _resolution.y));
-    _createdFBO = true;
+    _createdFB = true;
     return true;
 }
 

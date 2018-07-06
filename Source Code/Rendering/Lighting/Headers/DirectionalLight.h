@@ -26,22 +26,11 @@
 #include "Light.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-struct frustum;
 class DirectionalLight : public Light {
 public:
 	DirectionalLight(U8 slot);
 	~DirectionalLight();
-	void setCameraToLightView(const vec3<F32>& eyePos);
-	void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1);
-
-private:
-	void updateFrustumPoints(frustum &f, vec3<F32> &center, vec3<F32> &viewDir);
-	void updateSplitDist(frustum f[3], F32 nearPlane, F32 farPlane);
-
-private:
-	F32 _splitWeight;
-	I8  _splitCount;
-	D32 _lightOrtho[3];
+    const mat4<F32>& getLightViewMatrix(U8 index = 0);
 };
 
 #endif

@@ -47,9 +47,9 @@ namespace Config
     /// AI update frequency
     const int AI_THREAD_UPDATE_FREQUENCY = TICKS_PER_SECOND;
     /// Minimum triangle count for a mesh to apply depth rendering optimisations
-    const int DEPTH_VBO_MIN_TRIANGLES = 1000;
-    /// Minimum vbo size in bytes for a mesh to apply depth rendering optimisations (4MB default)
-    const int DEPTH_VBO_MIN_BYTES = 4 * 1024 * 1024;
+    const int DEPTH_VB_MIN_TRIANGLES = 1000;
+    /// Minimum vb size in bytes for a mesh to apply depth rendering optimisations (4MB default)
+    const int DEPTH_VB_MIN_BYTES = 4 * 1024 * 1024;
     /// Maximum number of instances of a single mesh with a single draw call
     const int MAX_INSTANCE_COUNT = 512;
     /// How many clip planes should the shaders us
@@ -60,6 +60,8 @@ namespace Config
     const int MAX_LIGHTS_PER_SCENE = 16;
     /// How many lights (in order as passed to the shader for the node) should cast shadows
     const int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
+    /// Used for CSM or PSSM to determine the maximum number of frustum splits
+    const int MAX_SPLITS_PER_LIGHT = 4;
     /// How many "units" away should a directional light source be from the camera's position
     const int DIRECTIONAL_LIGHT_DISTANCE = 500;
     /// Terrain LOD configuration
@@ -95,21 +97,31 @@ namespace Config
     #define HIDE_DEBUG_CONSOLE
 #endif //HIDE_DEBUG_CONSOLE
 
-///Current platform
-#ifndef _WIN32
-    #define _WIN32
+/// Comment this to use regular multi-pass rendering for CSM instead of the geometry shader approach
+#ifndef CSM_USE_LAYERED_RENDERING
+//#define CSM_USE_LAYERED_RENDERING
 #endif
-#ifndef __APPLE_CC__
-    //#define __APPLE_CC__
-#endif
-#ifndef LINUX
-    //#define LINUX
-#endif
-
 ///OS specific stuff
-#if defined( __WIN32__ ) || defined( _WIN32 )
+#if defined( _WIN32 )
     #define OS_WINDOWS
-    #define WIN32 //for Physx
+
+    #if defined (_WIN64)
+        #define WIN64
+    #else
+        #define WIN32
+    #endif
+    
+    ///Reduce Build time on Windows Platform
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN 1
+        #ifndef VC_EXTRALEAN
+            #define VC_EXTRALEAN
+        #endif //VC_EXTRALEAN
+    #endif //WIN32_LEAN_AND_MEAN
+    ///If the target machine uses the nVidia Optimus layout (IntelHD + nVidia discreet GPU) this will force the engine to use the nVidia GPU always
+    #ifndef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+        #define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+    #endif
 #elif defined( __APPLE_CC__ ) // Apple OS X could be supported in the future
     #define OS_APPLE
 #else //Linux is the only other OS supported
@@ -130,20 +142,6 @@ namespace Config
 #ifndef ERROR_LOG_FILE
     #define ERROR_LOG_FILE "errors.log"
 #endif //ERROR_LOG_FILE
-
-///Reduce Build time on Windows Platform
-#ifndef WIN32_LEAN_AND_MEAN
-    #define WIN32_LEAN_AND_MEAN 1
-    #ifndef VC_EXTRALEAN
-        #define VC_EXTRALEAN
-    #endif //VC_EXTRALEAN
-#endif //WIN32_LEAN_AND_MEAN
-
-///Use SSE functions for math calculations: usefull for release
-#ifndef USE_MATH_SIMD
-    //#define USE_MATH_SIMD
-    #define ALIGNED_BYTES 16
-#endif //USE_MATH_SIMD
 
 ///Use boost or std unordered_map
 ///0 = BOOST
@@ -167,11 +165,6 @@ namespace Config
 ///Maximum number of joysticks to use. Remeber to update the "Joystics" enum from InputInterface.h
 #ifndef MAX_ALLOWED_JOYSTICKS
     #define MAX_ALLOWED_JOYSTICKS 4
-#endif
-
-///If the target machine uses the nVidia Optimus layout (IntelHD + nVidia discreet GPU) this will force the engine to use the nVidia GPU always
-#ifdef WINDOWS_OS
-    #define FORCE_NV_OPTIMUS_HIGHPERFORMANCE
 #endif
 
 #endif //_CONFIG_HEADER

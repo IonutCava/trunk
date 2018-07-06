@@ -38,7 +38,7 @@ public:
     ~Trigger();
 
     /// Dummy function from SceneNode;
-    void onDraw(const RenderStage& currentStage) {};
+    bool onDraw(const RenderStage& currentStage) {return true;};
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
     bool check(Unit* const unit,const vec3<F32>& camEyePos = VECTOR3_ZERO);

@@ -17,19 +17,21 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
                                                     _debugView(false),
                                                     _cachedLightCount(0)
 {
-    _lightTexture = GFX_DEVICE.newPBO();
+    _lightTexture = GFX_DEVICE.newPB();
     ResourceDescriptor deferred("DeferredShadingPass2");
+    deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = GFX_DEVICE.newFBO(FBO_2D_DEFERRED);
+    _deferredBuffer = GFX_DEVICE.newFB(FB_2D_DEFERRED);
 
     ResourceDescriptor deferredPreview("deferredPreview");
+    deferredPreview.setThreadedLoading(false);
     _previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
     SamplerDescriptor gBufferSampler;
     gBufferSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     gBufferSampler.setFilters(TEXTURE_FILTER_NEAREST);
     gBufferSampler.toggleMipMaps(false);
 
-    TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBufferObjects)
+    TextureDescriptor gBuffer[4]; /// 4 Gbuffer elements (mipmaps are ignored for deferredBuffers)
     //Albedo
     gBuffer[0] = TextureDescriptor(TEXTURE_2D,
                                    RGBA,
@@ -84,7 +86,7 @@ DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_
     _renderQuads[4]->setCustomShader(_deferredShader);
 
     ParamHandler& par = ParamHandler::getInstance();
-    #pragma message("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
+    STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     par.setParam("rendering.enableShadows",false);
     F32 width  = (F32)par.getParam<U16>("runtime.resolutionWidth");
     F32 height = (F32)par.getParam<U16>("runtime.resolutionHeight");
@@ -174,7 +176,7 @@ void DeferredShadingRenderer::render(const DELEGATE_CBK& renderCallback, const S
 void DeferredShadingRenderer::firstPass(const DELEGATE_CBK& renderCallback, const SceneRenderState& sceneRenderState){
     //Pass 1
     //Draw the geometry, saving parameters into the buffer
-    _deferredBuffer->Begin(FrameBufferObject::defaultPolicy());
+    _deferredBuffer->Begin(FrameBuffer::defaultPolicy());
         renderCallback();
     _deferredBuffer->End();
 }

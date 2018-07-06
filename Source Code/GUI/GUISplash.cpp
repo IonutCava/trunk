@@ -25,7 +25,7 @@ GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensi
     splashImage.setResourceLocation(splashImageLocation);
 
     _splashImage = CreateResource<Texture>(splashImage);
-    ResourceDescriptor splashShader("fboPreview");
+    ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
     _splashShader = CreateResource<ShaderProgram>(splashShader);
     _renderQuad->setCustomShader(_splashShader);

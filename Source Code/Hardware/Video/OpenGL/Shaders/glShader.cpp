@@ -3,24 +3,27 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include <glsl/glsl_optimizer.h>
 #include "Managers/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 
 glShader::glShader(const std::string& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
 {
-  switch (type) {
-    default:      ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);     break;
-    case VERTEX_SHADER   : GLCheck(_shader = glCreateShader(GL_VERTEX_SHADER));    break;
-    case FRAGMENT_SHADER : GLCheck(_shader = glCreateShader(GL_FRAGMENT_SHADER));  break;
-    case GEOMETRY_SHADER : GLCheck(_shader = glCreateShader(GL_GEOMETRY_SHADER));  break;
-    case TESSELATION_SHADER : ERROR_FN(Locale::get("WARN_GLSL_NO_TESSELATION"));   break;
-  };
+    switch (type) {
+        default:      ERROR_FN(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),type);     break;
+        case VERTEX_SHADER   : _shader = glCreateShader(GL_VERTEX_SHADER);    break;
+        case FRAGMENT_SHADER : _shader = glCreateShader(GL_FRAGMENT_SHADER);  break;
+        case GEOMETRY_SHADER : _shader = glCreateShader(GL_GEOMETRY_SHADER);  break;
+        case TESSELATION_CTRL_SHADER: _shader = glCreateShader(GL_TESS_CONTROL_SHADER); break;
+        case TESSELATION_EVAL_SHADER: _shader = glCreateShader(GL_TESS_EVALUATION_SHADER); break;
+        case COMPUTE_SHADER: _shader = glCreateShader(GL_COMPUTE_SHADER); break;
+    };
 }
 
 glShader::~glShader()
 {
-    GLCheck(glDeleteShader(_shader));
+    glDeleteShader(_shader);
 }
 
 bool glShader::load(const std::string& source){
@@ -29,8 +32,9 @@ bool glShader::load(const std::string& source){
         return false;
     }
     std::string parsedSource = preprocessIncludes(source,getName(),0);
-
-#ifndef _DEBUG
+    boost::trim(parsedSource);
+    
+#ifdef NDEBUG
 
     if((_type == FRAGMENT_SHADER || _type == VERTEX_SHADER) && _optimise){
         glslopt_ctx* ctx = GL_API::getGLSLOptContext();
@@ -48,16 +52,18 @@ bool glShader::load(const std::string& source){
 
 #endif
     const char* src = parsedSource.c_str();
-    GLCheck(glShaderSource(_shader, 1, &src, nullptr));
+    GLsizei sourceLength = (GLsizei)parsedSource.length();
+    glShaderSource(_shader, 1, &src, &sourceLength);
+#ifndef NDEBUG
     ShaderManager::getInstance().shaderFileWrite((char*)(std::string("shaderCache/Text/"+getName()).c_str()), src);
-
+#endif
     return true;
 }
 
 bool glShader::compile(){
     if(_compiled) return true;
 
-    GLCheck(glCompileShader(_shader));
+    glCompileShader(_shader);
 
     validate();
 
@@ -70,11 +76,11 @@ void glShader::validate() {
 #if defined(_DEBUG) || defined(_PROFILE)
     GLint length = 0, status = 0;
 
-    GLCheck(glGetShaderiv(_shader, GL_COMPILE_STATUS, &status));
-    GLCheck(glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length));
+    glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
+    glGetShaderiv(_shader, GL_INFO_LOG_LENGTH, &length);
     if(length <= 1) return;
     vectorImpl<char> shaderLog(length);
-    GLCheck(glGetShaderInfoLog(_shader, length, nullptr, &shaderLog[0]));
+    glGetShaderInfoLog(_shader, length, nullptr, &shaderLog[0]);
     shaderLog.push_back('\n');
     if(status == GL_FALSE){
         ERROR_FN(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),&shaderLog[0]);
@@ -111,8 +117,12 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
                 loc =  "vertexAtoms";
             }else if(include_file.find("geom") != std::string::npos){
                 loc =  "geometryAtoms";
-            }else if(include_file.find("tess") != std::string::npos){
-                loc =  "tessellationAtoms";
+            }else if(include_file.find("tesc") != std::string::npos){
+                loc =  "tessellationCAtoms";
+            }else if (include_file.find("tese") != std::string::npos){
+                loc = "tessellationEAtoms";
+            }else if (include_file.find("cpt") != std::string::npos){
+                loc = "computeAtoms";
             }else if(include_file.find("cmn") != std::string::npos){
                 loc = "common";
             }

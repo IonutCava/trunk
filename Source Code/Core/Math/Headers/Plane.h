@@ -34,7 +34,7 @@
 #include "Utility/Headers/Vector.h"
 ///This class defines a 3D plane defined as Ax + By + Cz + D = 0
 ///This class is equivalent to a vector, the plane's normal,
-///whose x, y and z components equate to the coefficients A, B and Crespectively
+///whose x, y and z components equate to the coefficients A, B and C respectively
 ///and a constant (D) which is the distance along the normal you have to go to move the plane back to the origin.
 template<class T>
 class Plane {
@@ -46,16 +46,16 @@ public:
     enum Side {
         NO_SIDE,
         POSITIVE_SIDE,
-        NEGATIVE_SIDE,
-        BOTH_SIDE
+        NEGATIVE_SIDE
     };
 
     Plane() : _distance(0), _active(true) {}
     Plane(const Plane& rhs) : _normal(rhs._normal), _distance(rhs._distance), _active(true) {}
     ///distance is stored as the negative of the specified value
-    Plane(const vec3<T>& normal, T distance) : _normal(normal), _distance(-distance), _active(true) {}
+    Plane(const vec3<T>& normal, T distance) : _normal(normal), _distance(distance), _active(true) {}
     ///distance is stored as the negative of the specified value
-    Plane(T a, T b, T c, T distance) : _normal(a, b, c), _distance(distance), _active(true){}
+    Plane(T a, T b, T c, T distance) : Plane(vec3<T>(a,b,c), distance) {}
+    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w) {}
     Plane(const vec3<T>& normal, const vec3<T>& point) : _active(true)
     {
         redefine(normal, point);
@@ -65,24 +65,31 @@ public:
         redefine(point0, point1, point2);
     }
 
-    inline T getDistance(const vec3<T>& point) const{	return _normal.dot(point) + _distance; }
+    inline Side classifyPoint(const vec3<F32>& point) const {
+        F32 result = getDistance(point);
+        return (result > 0 ? POSITIVE_SIDE : (result < 0 ? NEGATIVE_SIDE : NO_SIDE));
+    }
 
-    inline void set(const vec3<T>& normal, T distance) {_normal = normal; _distance = -distance;}
+    inline T getDistance(const vec3<T>& point) const { return _normal.dot(point) + _distance; }
+    inline T getDistance()                     const { return _distance; }
+
+    inline void set(const vec3<T>& normal, T distance) {_normal = normal; _distance = distance;}
+    inline void set(T a, T b, T c, T distance)         { set(vec3<T>(a,b,c), distance); }
 
     inline void redefine(const vec3<T>& point0, const vec3<T>& point1, const vec3<T>& point2) {
         vec3<T> edge1 = point1 - point0;
         vec3<T> edge2 = point2 - point0;
         _normal = edge1.cross(edge2);
         _normal.normalize();
-        _distance = -_normal.dot(point0);
+        _distance = _normal.dot(point0);
     }
 
     inline void redefine(const vec3<T>& normal, const vec3<T>& point) {
         _normal = normal;
-        _distance = -_normal.dot(point);
+        _distance = _normal.dot(point);
     }
     inline vec4<T> getEquation() const {return vec4<T>(_normal,_distance);}
-
+    inline const vec3<T>& getNormal() const {return _normal;}
     /// active plane state. used by rendering API's when the plane is considered a clipplane
     inline bool active()           const {return _active;}
     inline void active(bool state)       {_active = state;}

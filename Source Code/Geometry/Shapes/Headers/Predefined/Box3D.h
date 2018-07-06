@@ -24,7 +24,7 @@
 #define _BOX_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class Box3D : public Object3D
 {
@@ -65,7 +65,7 @@ public:
             _geometry->addIndex(indices[i]);
         }
 
-        _geometry->queueRefresh();
+        _geometry->Create();
     }
 
     inline F32 getSize()    {return _size;}

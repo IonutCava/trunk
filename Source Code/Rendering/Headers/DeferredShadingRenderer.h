@@ -28,9 +28,9 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 class Quad3D;
+class FrameBuffer;
+class PixelBuffer;
 class ShaderProgram;
-class FrameBufferObject;
-class PixelBufferObject;
 
 ///This class implements a full  deferred renderer based on the 2 pass, huge G-buffer model
 class DeferredShadingRenderer : public Renderer {
@@ -47,10 +47,10 @@ private:
 	U16 _cachedLightCount;
 	bool _debugView;
 	vectorImpl<Quad3D* >  _renderQuads;
-	FrameBufferObject*    _deferredBuffer;
-	ShaderProgram*	      _deferredShader;
-	ShaderProgram*        _previewDeferredShader;
-	PixelBufferObject*    _lightTexture;
+	FrameBuffer*    _deferredBuffer;
+	ShaderProgram*  _deferredShader;
+	ShaderProgram*  _previewDeferredShader;
+	PixelBuffer*    _lightTexture;
 };
 
 #endif

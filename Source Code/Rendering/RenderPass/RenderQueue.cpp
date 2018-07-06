@@ -173,6 +173,8 @@ void RenderQueue::lock(){
     _renderQueueLocked = true;
 }
 
-void RenderQueue::unlock(){
+void RenderQueue::unlock(bool resetNodes){
     _renderQueueLocked = false;
+
+    if (resetNodes) refresh();
 }

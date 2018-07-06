@@ -34,8 +34,8 @@ enum ReflectorType{
 };
 
 class Quad3D;
+class FrameBuffer;
 class ShaderProgram;
-class FrameBufferObject;
 /// Virtual interface for reflective surfaces
 class Reflector : public FrameListener{
 public:
@@ -47,7 +47,7 @@ public:
     ///Each reflector has a certain plane equation. Update this after each transform to obtain proper reflections
     virtual void updatePlaneEquation() = 0;
     ///Retrieves the reflection texture
-    inline FrameBufferObject* getReflectionFBO()   {return _reflectedTexture;}
+    inline FrameBuffer*       getReflectionFB()    {return _reflectedTexture;}
     inline const Plane<F32>&  getReflectionPlane() {return _reflectionPlane;}
     ///Rendering callback is that function in the scene used to render the reflection
     ///The SceneGraph is not the default rendering class for reflections as some elements (i.e. Sky) are not part of it
@@ -60,7 +60,7 @@ public:
     void previewReflection();
 
 private:
-    /// Create FBO
+    /// Create FB
     bool  build();
 
 protected:
@@ -81,14 +81,14 @@ protected:
     bool _previewReflection;
 
     DELEGATE_CBK _renderCallback;
-    FrameBufferObject* _reflectedTexture;
+    FrameBuffer* _reflectedTexture;
     Quad3D*    _renderQuad;
     Plane<F32> _reflectionPlane;
     ShaderProgram* _previewReflectionShader;
     /// used for render exclusion. Do not render self in own reflection
     bool _updateSelf;
-    /// Have we initialized our FBO?
-    bool _createdFBO;
+    /// Have we initialized our FB?
+    bool _createdFB;
     /// does the reflector plane need updating?
     bool _planeDirty;
 };

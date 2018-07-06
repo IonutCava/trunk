@@ -51,7 +51,7 @@ protected:
     friend class RenderPassManager;
     ///See lock/unlock functions in RenderPassManager for more details
     void lock();
-    void unlock();
+    void unlock(bool resetNodes = false);
 
 private:
     RenderQueue();

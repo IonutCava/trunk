@@ -22,15 +22,18 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+#ifdef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
+extern "C" {
+    _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
+#endif
+
 GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to OpenGL if no api has been defined
 {
    _prevShaderId = 0;
    _prevTextureId = 0;
    _interpolationFactor = 1.0;
    _currentStateBlock = nullptr;
-   _depthBuffer = nullptr;
-   _screenBuffer[0] = nullptr;
-   _screenBuffer[1] = nullptr;
    _newStateBlock = nullptr;
    _previousStateBlock = nullptr;
    _previewDepthMapShader = nullptr;
@@ -51,6 +54,9 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to Op
    _WVCachedMatrix.identity();
    _WVPCachedMatrix.identity();
 
+   for (FrameBuffer*& renderTarget : _renderTarget)
+       renderTarget = nullptr;
+
    Frustum::createInstance();
    RenderPass* diffusePass = New RenderPass("diffusePass");
    RenderPassManager::getOrCreateInstance().addRenderPass(diffusePass,1);
@@ -69,9 +75,9 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     I8 hardwareState = _api.initHardware(resolution,argc,argv);
 
     if(hardwareState == NO_ERR){
-        //Screen FBO should use MSAA if available, else fallback to normal color FBO (no AA or FXAA)
-        _screenBuffer[0] = newFBO(FBO_2D_COLOR_MS);
-        _depthBuffer = newFBO(FBO_2D_DEPTH);
+        //Screen FB should use MSAA if available, else fallback to normal color FB (no AA or FXAA)
+        _renderTarget[RENDER_TARGET_SCREEN] = newFB(FB_2D_COLOR_MS);
+        _renderTarget[RENDER_TARGET_DEPTH]  = newFB(FB_2D_DEPTH);
 
         SamplerDescriptor screenSampler;
         TextureDescriptor screenDescriptor(TEXTURE_2D,
@@ -91,27 +97,24 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
         depthSampler._useRefCompare = true; //< Use compare function
         depthSampler._cmpFunc = CMP_FUNC_LEQUAL; //< Use less or equal
 
-        TextureDescriptor depthDescriptor(TEXTURE_2D,
-                                          DEPTH_COMPONENT,
-                                          DEPTH_COMPONENT,
-                                          UNSIGNED_INT);
+        TextureDescriptor depthDescriptor(TEXTURE_2D, DEPTH_COMPONENT, DEPTH_COMPONENT, UNSIGNED_INT);
         depthDescriptor.setSampler(depthSampler);
 
-        _depthBuffer->AddAttachment(depthDescriptor, TextureDescriptor::Depth);
-        _depthBuffer->toggleColorWrites(false);
+        _renderTarget[RENDER_TARGET_DEPTH]->AddAttachment(depthDescriptor, TextureDescriptor::Depth);
+        _renderTarget[RENDER_TARGET_DEPTH]->toggleColorWrites(false);
 
-        _screenBuffer[0]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
-        _screenBuffer[0]->toggleDepthBuffer(true);
+        _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
+        _renderTarget[RENDER_TARGET_SCREEN]->toggleDepthBuffer(true);
         if(_enableAnaglyph){
-            _screenBuffer[1] = newFBO(FBO_2D_COLOR_MS);
-            _screenBuffer[1]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
-            _screenBuffer[1]->toggleDepthBuffer(true);
+            _renderTarget[RENDER_TARGET_ANAGLYPH] = newFB(FB_2D_COLOR_MS);
+            _renderTarget[RENDER_TARGET_ANAGLYPH]->AddAttachment(screenDescriptor, TextureDescriptor::Color0);
+            _renderTarget[RENDER_TARGET_ANAGLYPH]->toggleDepthBuffer(true);
         }
 
-        _depthBuffer->Create(resolution.width, resolution.height);
-        _screenBuffer[0]->Create(resolution.width, resolution.height);
-         if(_enableAnaglyph)
-            _screenBuffer[1]->Create(resolution.width, resolution.height);
+        for (FrameBuffer* renderTarget : _renderTarget){
+            if (renderTarget)
+                renderTarget->Create(resolution.width, resolution.height);
+        }
     }
 
     return hardwareState;
@@ -124,7 +127,6 @@ void GFXDevice::setApi(const RenderAPI& api){
         case Direct3D:	_api = DX_API::getOrCreateInstance();	break;
 
         case GFX_RENDER_API_PLACEHOLDER: ///< Placeholder - OpenGL 4.0 and DX 11 in another life maybe :) - Ionut
-        case Software:
         case None:		{ ERROR_FN(Locale::get("ERROR_GFX_DEVICE_API")); setApi(OpenGL); return; }
     };
 
@@ -141,9 +143,9 @@ void GFXDevice::closeRenderingApi(){
     Frustum::destroyInstance();
     //Destroy all rendering Passes
     RenderPassManager::getInstance().destroyInstance();
-    SAFE_DELETE(_depthBuffer);
-    SAFE_DELETE(_screenBuffer[0]);
-    SAFE_DELETE(_screenBuffer[1]);
+
+    for (FrameBuffer* renderTarget : _renderTarget)
+        SAFE_DELETE(renderTarget);
 }
 
 void GFXDevice::closeRenderer(){
@@ -161,12 +163,14 @@ void GFXDevice::idle() {
 }
 
 void GFXDevice::renderInstance(RenderInstance* const instance){
-    //All geometry is stored in VBO format
+    //All geometry is stored in VB format
     assert(instance->object3D() != nullptr);
     Object3D* model = instance->object3D();
  
-    if(instance->preDraw())
-        model->onDraw(getRenderStage());
+    if (instance->preDraw()){
+        if(!model->onDraw(getRenderStage()))
+            return;
+    }
 
     if(instance->draw2D()){
         //toggle2D(true);
@@ -197,31 +201,31 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
         }
     }
 
-    VertexBufferObject* VBO = model->getGeometryVBO();
-    assert(VBO != nullptr);
-    //Send our transformation matrixes (projection, world, view, inv model view, etc)
-    VBO->currentShader()->uploadNodeMatrices();
+    VertexBuffer* VB = model->getGeometryVB();
+    assert(VB != nullptr);
+    //Send our transformation matrices (projection, world, view, inv model view, etc)
+    VB->currentShader()->uploadNodeMatrices();
     //Render our current vertex array object
-    VBO->Draw(model->getCurrentLOD());
+    VB->Draw(model->getCurrentLOD());
 
     if(transform) popWorldMatrix();
 }
 
-void GFXDevice::renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform){
-    assert(vbo != nullptr);
+void GFXDevice::renderBuffer(VertexBuffer* const vb, Transform* const vbTransform){
+    assert(vb != nullptr);
 
     if(_stateBlockDirty)
         updateStates();
      
-    if(vboTransform){
-        pushWorldMatrix(vboTransform->getGlobalMatrix(), vboTransform->isUniformScaled());
+    if(vbTransform){
+        pushWorldMatrix(vbTransform->getGlobalMatrix(), vbTransform->isUniformScaled());
     }
          
-    vbo->currentShader()->uploadNodeMatrices();
-    //Render our current vertex array object
-    vbo->DrawRange();
+    vb->currentShader()->uploadNodeMatrices();
+    //Render our current vertex array
+    vb->DrawRange();
 
-    if(vboTransform){
+    if(vbTransform){
         popWorldMatrix();
     }
 }
@@ -262,16 +266,16 @@ void GFXDevice::setRenderer(Renderer* const renderer) {
     SAFE_UPDATE(_renderer,renderer);
 }
 
-void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
+void  GFXDevice::generateCubeMap(FrameBuffer& cubeMap,
                                  const vec3<F32>& pos,
                                  const DELEGATE_CBK& callback,
                                  const RenderStage& renderStage){
-    //Only use cube map FBO's
-    if(cubeMap.getType() != FBO_CUBE_COLOR && cubeMap.getType() != FBO_CUBE_DEPTH){
-        if(cubeMap.getType() != FBO_CUBE_COLOR) {
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP"));
+    //Only use cube map FB's
+    if(cubeMap.getType() != FB_CUBE_COLOR && cubeMap.getType() != FB_CUBE_DEPTH){
+        if(cubeMap.getType() != FB_CUBE_COLOR) {
+            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
         }else{
-            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FBO_CUBEMAP_SHADOW"));
+            ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP_SHADOW"));
         }
         return;
     }
@@ -301,8 +305,8 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     setPerspectiveProjection(90.0f,1.0f,Frustum::getInstance().getZPlanes());
     //And set the current render stage to
     setRenderStage(renderStage);
-    //Bind our FBO
-    cubeMap.Begin(FrameBufferObject::defaultPolicy());
+    //Bind our FB
+    cubeMap.Begin(FrameBuffer::defaultPolicy());
 
     assert(!callback.empty());
 
@@ -318,11 +322,11 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
             //draw our scene
             render(callback, GET_ACTIVE_SCENE()->renderState());
     }
-    //Unbind this fbo
+    //Unbind this fb
     cubeMap.End();
     //Return to our previous rendering stage
     setPreviousRenderStage();
-    //Restore transfom matrices
+    //Restore transform matrices
     releaseMatrices();
 }
 
@@ -383,13 +387,14 @@ bool GFXDevice::excludeFromStateChange(const SceneNodeType& currentType){
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
-    if(_screenBuffer[0] != nullptr) {
-        if(w == _screenBuffer[0]->getWidth() && h == _screenBuffer[0]->getHeight()) return;
-
-        _depthBuffer->Create(w, h);
-        _screenBuffer[0]->Create(w, h);
-        if(_enableAnaglyph) 
-            _screenBuffer[1]->Create(w, h);
+    if(_renderTarget[RENDER_TARGET_SCREEN] != nullptr) {
+        if (vec2<U16>(w,h) == _renderTarget[RENDER_TARGET_SCREEN]->getResolution() || !(w > 1 && h > 1)) 
+            return;
+        
+        for (FrameBuffer* renderTarget : _renderTarget){
+            if (renderTarget)
+                renderTarget->Create(w, h);
+        }
     }
 
     _api.changeResolution(w,h);
@@ -483,7 +488,7 @@ void GFXDevice::previewDepthBufferInternal(){
         return;
 
     if(!_previewDepthMapShader){
-        ResourceDescriptor shadowPreviewShader("fboPreview.LinearDepth");
+        ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
         _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
         assert(_previewDepthMapShader != nullptr);
         ResourceDescriptor mrt("DepthBufferPreviewQuad");
@@ -499,7 +504,7 @@ void GFXDevice::previewDepthBufferInternal(){
         return;
 
     const I32 viewportSide = 256;
-    getDepthBuffer()->Bind(0, TextureDescriptor::Depth);
+    _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     _previewDepthMapShader->bind();
     _previewDepthMapShader->UniformTexture("tex",0);
     toggle2D(true);
@@ -508,7 +513,7 @@ void GFXDevice::previewDepthBufferInternal(){
                                             DELEGATE_REF(GFX_DEVICE),
                                             _renderQuad->renderInstance()));
     toggle2D(false);
-    getDepthBuffer()->Unbind(0);
+    _renderTarget[RENDER_TARGET_DEPTH]->Unbind(0);
 
     _previewDepthBuffer = false;
 }

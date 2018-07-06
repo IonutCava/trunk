@@ -1,12 +1,12 @@
-in vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
-
 uniform sampler2DArray       texDepthMapFromLightArray;
 uniform samplerCubeShadow    texDepthMapFromLightCube;
 uniform sampler2DShadow      texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
 uniform sampler2D            texDiffuseProjected;
 
 uniform float mixWeight;
-uniform bool  dvd_enableShadowMapping = false;
+
+// set this to whatever (current cascade, current depth comparison result, anything)
+int dvd_shadowMappingTempInt = -1;
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 tex){
 	vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));

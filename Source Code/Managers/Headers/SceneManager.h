@@ -46,9 +46,11 @@ public:
     void preRender();
     void render(const RenderStage& stage, const Kernel& kernel);
     void postRender();
-    // updates and culls the scene graph and renders the visible nodes
+    // renders the visible nodes
     void renderVisibleNodes();
-
+    // updates and culls the scene graph to generate visible nodes
+    void updateVisibleNodes();
+    inline void onLostFocus()                          { _activeScene->onLostFocus(); }
     inline void idle()                                 { _activeScene->idle(); }
     bool unloadCurrentScene();
     bool load(const std::string& name, const vec2<U16>& resolution,  CameraManager* const cameraMgr);
@@ -66,7 +68,7 @@ public:
     ///Gather input events and process them in the current scene
     inline void processInput(const U64 deltaTime)   { _activeScene->processInput(deltaTime); }
     inline void processTasks(const U64 deltaTime)   { _activeScene->processTasks(deltaTime); }
-
+    inline void processGUI(const U64 deltaTime)     { _activeScene->processGUI(deltaTime); }
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
     ///Get the number of frames render since the application started
     inline U32  getFrameCount() const {return _frameCount;}
@@ -77,7 +79,7 @@ public:
         return true;
     }
     inline void togglePreviewDepthBuffer() {_previewDepthBuffer = !_previewDepthBuffer;}
-
+   
 public: ///Input
     ///Key pressed
     bool onKeyDown(const OIS::KeyEvent& key);
@@ -135,7 +137,7 @@ inline Scene* GET_ACTIVE_SCENE() {
     return SceneManager::getInstance().getActiveScene();
 }
 
-///Return a pointer to the curently active scene's scenegraph
+///Return a pointer to the currently active scene's scenegraph
 inline SceneGraph* GET_ACTIVE_SCENEGRAPH() {
     return GET_ACTIVE_SCENE()->getSceneGraph();
 }

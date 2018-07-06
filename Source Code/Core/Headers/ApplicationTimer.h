@@ -26,23 +26,14 @@
 #include "config.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/Singleton.h"
-#include "Utility/Headers/Vector.h"
 #include <boost/atomic.hpp>
-
-#if defined( OS_WINDOWS )
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#elif defined( OS_APPLE ) // Apple OS X
-///??
-#else //Linux
-#include <sys/time.h>
+#if defined ( OS_WINDOWS )
+    #include <windows.h>
 #endif
 
+#if defined(_DEBUG) || defined(_PROFILE)
+    #include "Utility/Headers/Vector.h"
+#endif
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
@@ -50,9 +41,7 @@ DEFINE_SINGLETON(ApplicationTimer)
 
 #if defined( OS_WINDOWS )
   typedef LARGE_INTEGER LI;
-//#elif defined( OS_APPLE ) // Apple OS X
-    //??
-#else //Linux
+#else
   typedef timeval LI;
 #endif
 

@@ -18,7 +18,7 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
                                     _exclusionMask(0)
 {
     //The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    addToDrawExclusionMask(SHADOW_STAGE);
+    _renderState.addToDrawExclusionMask(SHADOW_STAGE);
 
     //Generate a render state
     RenderStateBlockDescriptor skyboxDesc;
@@ -87,7 +87,7 @@ void Sky::postLoad(SceneGraphNode* const sgn){
     SceneNode::postLoad(sgn);
 }
 
-void Sky::prepareMaterial(SceneGraphNode* const sgn) {
+bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
     if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
         SET_STATE_BLOCK(_skyboxRenderStateReflected);
         _skyShader->Uniform("dvd_isReflection", true);
@@ -96,14 +96,16 @@ void Sky::prepareMaterial(SceneGraphNode* const sgn) {
         _skyShader->Uniform("dvd_isReflection", true);
     }
     _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
+    return true;
 }
 
-void Sky::releaseMaterial(){
+bool Sky::releaseMaterial(){
+    return true;
 }
 
-void Sky::onDraw(const RenderStage& currentStage){
-    _sky->onDraw(currentStage);
+bool Sky::onDraw(const RenderStage& currentStage){
     _sun->onDraw(currentStage);
+    return _sky->onDraw(currentStage);
 }
 
 void Sky::render(SceneGraphNode* const sgn){
@@ -142,19 +144,4 @@ void Sky::setRenderingOptions(bool drawSun, bool drawSky) {
 void Sky::setSunVector(const vec3<F32>& sunVect) {
     _sunVect = sunVect;
     _skyShader->Uniform("sun_vector", _sunVect);
-}
-
-void Sky::removeFromDrawExclusionMask(I32 stageMask) {
-    assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-    _exclusionMask &= ~stageMask;
-}
-
-void Sky::addToDrawExclusionMask(I32 stageMask) {
-    assert((stageMask & ~(INVALID_STAGE-1)) == 0);
-    _exclusionMask |= static_cast<RenderStage>(stageMask);
-}
-
-bool Sky::getDrawState(const RenderStage& currentStage)  const{
-    if(!_init) return false;
-    return !bitCompare(_exclusionMask,currentStage);
 }

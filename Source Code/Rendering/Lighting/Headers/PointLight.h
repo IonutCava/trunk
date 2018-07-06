@@ -29,10 +29,10 @@ class SceneGraphNode;
 class PointLight : public Light{
 public:
 	PointLight(U8 slot,F32 range = 2);
+    const mat4<F32>& getLightViewMatrix(U8 index = 0);
 
-	///These 2 functions are not needed as we generate a cubemap based only on position.
-	void setCameraToLightView(const vec3<F32>& eyePos) {}
-	void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1) {}
+private:
+    vec3<F32> _direction[6];
 };
 
 #endif

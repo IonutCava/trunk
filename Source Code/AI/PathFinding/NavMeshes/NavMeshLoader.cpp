@@ -303,7 +303,7 @@ namespace Navigation {
             }
 
             MeshDetailLevel level = DETAIL_ABSOLUTE;
-            VertexBufferObject* geometry = nullptr;
+            VertexBuffer* geometry = nullptr;
             SamplePolyAreas areType = SAMPLE_AREA_OBSTACLE;
 
             switch(nodeType){
@@ -331,9 +331,9 @@ namespace Navigation {
             U32 currentTriangleIndexOffset = outData.getVertCount();
             
             if(level == DETAIL_ABSOLUTE){
-                if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
-                else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
-                else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
+                if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVB();
+                else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVB();
+                else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVB();
                 assert(geometry != nullptr);
 
                 const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();

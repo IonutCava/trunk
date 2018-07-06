@@ -24,7 +24,7 @@
 #define _TERRAIN_CHUNK_H
 
 #include "core.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class Mesh;
 class Terrain;
@@ -37,17 +37,17 @@ struct ChunkGrassData{
     vectorImpl<vectorImpl<U32 > > _grassIndices;
     vectorImpl<U32 >              _grassIndexOffset;
     vectorImpl<U32 >              _grassIndexSize;
-    VertexBufferObject*           _grassVBO;
+    VertexBuffer*                 _grassVB;
     F32                           _grassVisibility;
     inline bool empty() {return _grassIndices.empty();}
 
-    ChunkGrassData() : _grassVBO(nullptr)
+    ChunkGrassData() : _grassVB(nullptr)
     {
     }
 
     ~ChunkGrassData()
     {
-		SAFE_DELETE(_grassVBO);
+		SAFE_DELETE(_grassVB);
         _grassIndexOffset.clear();
         _grassIndexSize.clear();
     }
@@ -57,10 +57,10 @@ class TerrainChunk{
 public:
     TerrainChunk() {}
     ~TerrainChunk() {Destroy();}
-    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBufferObject* const vbo);
+    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBuffer* const vb);
     void Destroy();
 
-    I32  DrawGround(I8 lod,ShaderProgram* const program, VertexBufferObject* const vbo);
+    I32  DrawGround(I8 lod,ShaderProgram* const program, VertexBuffer* const vb);
     void DrawGrass(I8 lod, F32 distance, U32 index, Transform* const parentTransform);
     
     void addObject(Mesh* obj);
@@ -73,7 +73,7 @@ public:
     inline ChunkGrassData&  getGrassData()       {return _grassData;}
 
 private:
-    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize, VertexBufferObject* const vbo);
+    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize, VertexBuffer* const vb);
 
 private:
     vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];

@@ -34,7 +34,7 @@ public:
 	bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
 	bool loadResources(bool continueOnErrors);
 
-	void processTasks(const U64 deltaTime);
+    void processGUI(const U64 deltaTime);
 	void processInput(const U64 deltaTime);
 
 private:

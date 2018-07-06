@@ -26,26 +26,25 @@ void NetworkScene::processInput(const U64 deltaTime){
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-void NetworkScene::processTasks(const U64 deltaTime){
+void NetworkScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
     D32 TimeDisplay = getSecToMs(0.01);
     D32 ServerPing = getSecToMs(1.0);
-    if (_taskTimers[0] >= FpsDisplay){
+    if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %5.2f", ApplicationTimer::getInstance().getFps());
-        _taskTimers[0] = 0.0;
+        _guiTimers[0] = 0.0;
     }
 
-    if (_taskTimers[1] >= TimeDisplay){
+    if (_guiTimers[1] >= TimeDisplay){
         _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", time);
-        _taskTimers[1] = 0.0;
+        _guiTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= ServerPing){
         _GUI->modifyText("statusText", (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
-        _GUI->modifyText("serverMessage",(char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
-        _taskTimers[2] = 0.0;
+        _GUI->modifyText("serverMessage", (char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
+        _guiTimers[2] = 0.0;
     }
-    Scene::processTasks(deltaTime);
 }
 
 void NetworkScene::checkPatches(){
@@ -146,8 +145,8 @@ bool NetworkScene::loadResources(bool continueOnErrors)
                     vec2<U32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
                     DELEGATE_BIND(&NetworkScene::checkPatches,this));
 
-    _taskTimers.push_back(0.0f); //Fps
-    _taskTimers.push_back(0.0f); //Time
-    _taskTimers.push_back(0.0f); //Server Ping
+    _guiTimers.push_back(0.0f); //Fps
+    _guiTimers.push_back(0.0f); //Time
+    _guiTimers.push_back(0.0f); //Server Ping
     return true;
 }

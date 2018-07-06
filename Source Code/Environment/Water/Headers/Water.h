@@ -24,10 +24,11 @@
 #define _WATER_PLANE_H_
 
 #include "core.h"
-#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
+
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/RenderPass/Headers/Reflector.h"
+#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 class ShaderProgram;
 
@@ -42,7 +43,7 @@ public:
     /// Resource inherited "unload"
     bool unload();
     /// General SceneNode stuff
-    void onDraw(const RenderStage& currentStage);
+    bool onDraw(const RenderStage& currentStage);
     bool getDrawState(const RenderStage& currentStage)  const;
     bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
     void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
@@ -60,10 +61,10 @@ protected:
     void postDraw(const RenderStage& currentStage);
     void render(SceneGraphNode* const sgn);
     void postLoad(SceneGraphNode* const sgn);
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
-    void prepareDepthMaterial(SceneGraphNode* const sgn){}
-    void releaseDepthMaterial(){}
+    bool prepareMaterial(SceneGraphNode* const sgn);
+    bool releaseMaterial();
+    bool prepareDepthMaterial(SceneGraphNode* const sgn){ return true;}
+    bool releaseDepthMaterial(){return true;}
 
     template<typename T>
     friend class ImplResourceLoader;

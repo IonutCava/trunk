@@ -94,18 +94,48 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _elapsedTime += deltaTime;
     
     FOR_EACH(NodeComponents::value_type& it, _components){
-        if(it.second)
+        if (it.second){
             it.second->update(deltaTime);
+        }
     }
 
     if(_transform)    _transform->update(deltaTime);
-    if (_node)        _node->sceneUpdate(deltaTime, this, sceneState);
+    if (_node)         {
+        _node->sceneUpdate(deltaTime, this, sceneState);
+        Material* mat = _node->getMaterial();
+        if (mat) mat->update(deltaTime);
+    }
     if(_shouldDelete) GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
 }
 
-void SceneGraphNode::onDraw(RenderStage renderStage){
+bool SceneGraphNode::onDraw(RenderStage renderStage){
+    if (_drawReset[renderStage]){
+        _drawReset[renderStage] = false;
+        if (_node && !bitCompare(DEPTH_STAGE, renderStage))
+            _node->drawReset(this);
+    }
     FOR_EACH(NodeComponents::value_type& it, _components){
         if (it.second)
             it.second->onDraw(renderStage);
     }
+    //Call any pre-draw operations on the SceneNode (refresh VB, update materials, etc)
+    if (_node){
+        Material* mat = _node->getMaterial();
+        if (mat){
+            if (mat->computeShader(false, renderStage)){
+                scheduleDrawReset(renderStage); //reset animation on next draw call
+                return false;
+            }
+        }
+        if(!_node->onDraw(renderStage))
+            return false;
+    }
+
+    return true;
 }
+
+void SceneGraphNode::postDraw(RenderStage renderStage){
+    // Perform any post draw operations regardless of the draw state
+    if (_node) _node->postDraw(renderStage);
+}
+

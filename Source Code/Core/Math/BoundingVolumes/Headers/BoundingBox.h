@@ -326,9 +326,9 @@ public:
     inline F32 nearestDistanceFromPointSquared( const vec3<F32> &pos ) const {
         const vec3<F32>& center = getCenter();
         const vec3<F32>& hextent = getHalfExtent();
-        _cacheVector.set(Util::max( 0.0f, fabsf( pos.x - center.x ) - hextent.x ),
-                         Util::max( 0.0f, fabsf( pos.y - center.y ) - hextent.y ),
-                         Util::max( 0.0f, fabsf( pos.z - center.z ) - hextent.z ));
+        _cacheVector.set(std::max( 0.0f, fabsf( pos.x - center.x ) - hextent.x ),
+                         std::max(0.0f, fabsf(pos.y - center.y) - hextent.y),
+                         std::max(0.0f, fabsf(pos.z - center.z) - hextent.z));
         return _cacheVector.lengthSquared();
     }
 

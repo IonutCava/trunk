@@ -70,8 +70,9 @@ private:
     void      setWindowPos(GLushort w, GLushort h) const;
     void      setMousePosition(GLushort x, GLushort y) const;
     vec3<GLfloat> unproject(const vec3<GLfloat>& windowCoord) const;
-    void lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
-    void lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection);
+    GLfloat* lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
+    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection);
+    const GLfloat* getLookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
 
     void beginFrame();
     void endFrame();
@@ -81,9 +82,9 @@ private:
 
     void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
-    FrameBufferObject*  newFBO(const FBOType& type);
-    VertexBufferObject* newVBO(const PrimitiveType& type);
-    PixelBufferObject*  newPBO(const PBOType& type);
+    FrameBuffer*        newFB(const FBType& type);
+    VertexBuffer*       newVB(const PrimitiveType& type);
+    PixelBuffer*        newPB(const PBType& type);
     GenericVertexData*  newGVD();
 
     inline Texture2D*          newTexture2D(const bool flipped = false)                   {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
@@ -97,8 +98,9 @@ private:
     void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true);
     void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true);
 
-    void setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
-    void setPerspectiveProjection(GLfloat FoV,GLfloat aspectRatio, const vec2<GLfloat>& planes);
+    GLfloat* setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
+    const GLfloat* getOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
+    GLfloat* setPerspectiveProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes);
     void setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum = false);
     void updateClipPlanes();
 
@@ -137,14 +139,12 @@ private:
 #endif
     }
 protected:
-    friend class glVertexArrayObject;
+    friend class glVertexArray;
     inline static glShaderProgram* getActiveProgram()  {return _activeShaderProgram;}
     inline static GLuint getActiveVAOId()              {return _activeVAOId;}
 
 protected:
-    friend class glFrameBufferObject;
-    friend class glDeferredBufferObject;
-    friend class glTextureArrayBufferObject;
+    friend class glFrameBuffer;
     inline static bool useMSAA() {return _useMSAA; }
            static void restoreViewport();
            static vec4<GLint> setViewport(const vec4<GLint>& viewport, bool force = false);
@@ -166,7 +166,7 @@ public:
 
     static bool setActiveTextureUnit(GLuint unit,const bool force = false);
     static bool setActiveVAO(GLuint id,const bool force = false);
-    static bool setActiveVBO(GLuint id,const bool force = false);
+    static bool setActiveVB(GLuint id,const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
@@ -215,8 +215,8 @@ private: //OpenGL specific:
     vectorImpl<vec4<GLubyte> > _colors, _axisColors;
     vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     //Immediate mode emulation
-    ShaderProgram*               _imShader;       //<The shader used to render VBO data
-    vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VBO data
+    ShaderProgram*               _imShader;       //<The shader used to render VB data
+    vectorImpl<glIMPrimitive* >  _glimInterfaces; //<The interface that coverts IM calls to VB data
 
     ///A cache of all fonts used 
     typedef Unordered_map<std::string , I32 > FontCache;
@@ -227,15 +227,12 @@ private: //OpenGL specific:
     static glslopt_ctx* _GLSLOptContex;
     static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
-    static GLuint _activeVBOId;
+    static GLuint _activeVBId;
     static GLuint _activeTextureUnit;
     static vec4<GLfloat> _prevClearColor;
     static bool _viewportForced;
     static bool _viewportUpdateGL;
     static bool _useMSAA;
-    static bool _anisotropySupported;
-    static bool _texCompressionSupported;
-    static bool _shaderBinarySupported;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters

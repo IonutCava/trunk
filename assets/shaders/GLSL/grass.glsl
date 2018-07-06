@@ -1,15 +1,10 @@
 -- Vertex
 
-#include "vboInputData.vert"
+#include "vbInputData.vert"
 #include "foliage.vert"
 #include "lightInput.cmn"
 
-uniform bool dvd_enableShadowMapping = false;
-uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
-
 in  vec3 dvd_cameraPosition;
-out vec3 _lightDirection[MAX_LIGHT_COUNT];
-out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
 out vec3 _normalWV;
 out vec4 _grassColor;
 
@@ -21,7 +16,7 @@ void computeLightVectorsPhong(){
     vec4 tmpVec; 
 
     int i = 0; ///Only the first light for now
-    //for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+    //for(int i = 0; i < MAX_LIGHTS_PER_NODE; i++){
     //	if(dvd_lightCount == i) break;
     vec4 vLightPosMV = dvd_ViewMatrix * dvd_LightSource[dvd_lightIndex[i]]._position;	
     if(vLightPosMV.w == 0.0){ ///<Directional Light
@@ -30,6 +25,7 @@ void computeLightVectorsPhong(){
         tmpVec = vLightPosMV - dvd_Vertex;	
     }
     _lightDirection[0] = tmpVec.xyz;
+
 }
 
 void main(void){
@@ -45,12 +41,6 @@ void main(void){
 
     _grassColor.rgb = vec3(intensity);
           
-    if(dvd_enableShadowMapping) {
-        // position multiplied by the light matrix. 
-        //The vertex's position from the light's perspective
-        _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
-    }
-
     gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
@@ -60,7 +50,6 @@ in vec2 _texCoord;
 in vec3 _normalWV;
 in vec4 _grassColor;
 in vec4 _vertexW;
-in vec3 _lightDirection[MAX_LIGHT_COUNT];
 
 out vec4 _colorOut;
 

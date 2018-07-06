@@ -78,9 +78,11 @@ public:
     /**Begin scene logic loop*/
     virtual void processInput(const U64 deltaTime) = 0;  //<Get all input commands from the user
     virtual void processTasks(const U64 deltaTime); //<Update the scene based on the inputs
+    virtual void processGUI(const U64 deltaTime);
     virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
     virtual void postRender();                      //<Perform any post rendering operations
     bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
+    void onLostFocus();                             //<The application has lost focus
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
@@ -133,8 +135,9 @@ protected:
     CameraManager* _cameraMgr;
     
     PhysicsSceneInterface*         _physicsInterface;
-    ///Datablocks for models,vegetation,terrains,tasks etc
     vectorImpl<D32>                _taskTimers;
+    vectorImpl<D32>                _guiTimers;
+    ///Datablocks for models,vegetation,terrains,tasks etc
     FileDataStack                  _modelDataArray;
     vectorImpl<FileData>           _vegetationDataArray;
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;

@@ -25,7 +25,6 @@ namespace Divide {
         /*-----------Context Management----*/
         bool _applicationClosing = false;
         bool _contextAvailable = false;
-        bool _useDebugOutputCallback = false;
         GLFWwindow* _mainWindow     = nullptr;
         GLFWwindow* _loaderWindow   = nullptr;
 
@@ -56,23 +55,26 @@ namespace Divide {
             objCoords.set(objcoord.x, objcoord.y, objcoord.z);
         }
 
-        void _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection){
+        GLfloat* _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection){
            _matrixMode(VIEW_MATRIX);
            _currentViewDirection.top() = viewDirection;
            _viewMatrix.top() = glm::make_mat4(viewMatrix);
            GL_API::getInstance().updateViewMatrix();
+           return glm::value_ptr(_viewMatrix.top());
         }
 
-        void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
+        GLfloat* _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar){
             _matrixMode(PROJECTION_MATRIX);
             _projectionMatrix.top() = glm::ortho(left,right,bottom,top,zNear,zFar);
             GL_API::getInstance().updateProjectionMatrix();
+            return glm::value_ptr(_projectionMatrix.top());
         }
 
-        void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
+        GLfloat* _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear, GLfloat zFar){
             _matrixMode(PROJECTION_MATRIX);
             _projectionMatrix.top() = glm::perspective(fovy,aspect,zNear,zFar);
             GL_API::getInstance().updateProjectionMatrix();
+            return glm::value_ptr(_projectionMatrix.top());
         }
 
         void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum){

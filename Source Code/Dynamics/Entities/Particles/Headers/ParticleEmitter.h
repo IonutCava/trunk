@@ -55,7 +55,7 @@ public:
    ~ParticleEmitter();
 
     /// Dummy function from SceneNode;
-    void onDraw(const RenderStage& currentStage);
+    bool onDraw(const RenderStage& currentStage);
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) {_enabled = state;}
@@ -86,13 +86,13 @@ protected:
 
     /// preprocess particles here
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-
+    
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn);
-    void prepareDepthMaterial(SceneGraphNode* const sgn);
-    void releaseDepthMaterial();
-    void prepareMaterial(SceneGraphNode* const sgn);
-    void releaseMaterial();
+    bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool releaseDepthMaterial();
+    bool prepareMaterial(SceneGraphNode* const sgn);
+    bool releaseMaterial();
 
 private:
     I32 findUnusedParticle();
@@ -127,8 +127,6 @@ private:
     Texture* _particleTexture;
 
     ParticleEmitterDescriptor _descriptor;
-
-    static mat4<F32> _viewMatrixCache;
 };
 
 #endif

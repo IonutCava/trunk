@@ -27,10 +27,12 @@
 #include "Utility/Headers/XMLParser.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
+#include "Core/Resources/Headers/ResourceDescriptor.h"
 
 class Texture;
 class ShaderProgram;
 class RenderStateBlock;
+class ResourceDescriptor;
 class RenderStateBlockDescriptor;
 typedef Texture Texture2D;
 enum RenderStage;
@@ -137,6 +139,7 @@ public:
     ~Material();
 
     bool unload();
+    void update(const U64 deltaTime);
 
     inline void setAmbient(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._ambient = value;  _materialMatrix[index].setCol(0, value); }
     inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1, value); }
@@ -183,7 +186,7 @@ public:
 
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-    ShaderProgram*    setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
+    void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
     RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
 
     inline P32 getMaterialId(const RenderStage& renderStage = FINAL_STAGE) { return _shaderInfo[renderStage]._matId; }
@@ -213,10 +216,14 @@ public:
     inline bool useAlphaTest()  const {return _useAlphaTest;}
     inline TranslucencySource   getTranslucencySource() const {return _translucencySource;}
 
-    void computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
+    // Checks if the shader needed for the current stage is already constructed. Returns false if the shader was already ready.
+    bool computeShader(bool force = false,const RenderStage& renderStage = FINAL_STAGE); //Set shaders;
 
 private:
+    void computeShaderInternal();
 
+private:
+    std::queue<std::pair<RenderStage, ResourceDescriptor> > _shaderComputeQueue;
     vectorImpl<mat4<F32> > _materialMatrix; /* all properties bundled togheter */
     ShadingMode _shadingMode;
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"

@@ -1,8 +1,6 @@
 -- Vertex
 
-in vec2 inTexCoordData;
-in vec4 inColorData;
-in vec3 inVertexData;
+in int  inSkipMVP;
 
 out vec2 _texCoord;
 out vec4 _color;
@@ -12,14 +10,13 @@ uniform mat4 dvd_WorldViewProjectionMatrix;
 void main(){
   _texCoord = inTexCoordData;
   _color = inColorData;
-  gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
+  if (inSkipMVP < 1)
+      gl_Position = dvd_WorldViewProjectionMatrix * vec4(inVertexData,1.0);
+  else
+      gl_Position = vec4(inVertexData, 1.0);
 } 
 
 -- Vertex.GUI
-
-in vec2 inTexCoordData;
-in vec4 inColorData;
-in vec3 inVertexData;
 
 out vec2 _texCoord;
 out vec3 _color;

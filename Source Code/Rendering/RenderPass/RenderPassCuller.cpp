@@ -19,8 +19,9 @@ RenderPassCuller::~RenderPassCuller()
 /// This method performs the visibility check on the given node and all of it's children and adds them to the RenderQueue
 void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneState& sceneState) {
     bool renderingLocked = RenderPassManager::getInstance().isLocked();
+    bool refreshQueued = RenderPassManager::getInstance().isResetQueued();
     if(!_visibleNodes.empty()){
-        if(renderingLocked) return;
+        if(renderingLocked && !refreshQueued) return;
         else refreshNodeList();
     }
 
@@ -30,7 +31,7 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
         RenderQueue::getInstance().addNodeToQueue(node);
     }
     cullSceneGraphGPU(sceneState);
-
+    currentNode->getRoot()->inView(true);
     if(!renderingLocked) refreshNodeList();
 }
 
@@ -39,26 +40,26 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
     //or rendering of their bounding boxes
     if(!sceneRenderState.drawObjects() && !sceneRenderState.drawBBox())
         return;
-
+    currentNode->inView(false);
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
+
     //Skip all of this for inactive nodes.
     if(currentNode->isActive() && currentNode->getParent()) {
         SceneNode* node = currentNode->getNode();
-
+        RenderStage currentStage = GFX_DEVICE.getRenderStage();
         //If this node isn't render-disabled, check if it is visible
         //Skip expensive frustum culling if we shouldn't draw the node in the first place
-        if(!node->getSceneNodeRenderState().getDrawState()){
+        if (!node->getSceneNodeRenderState().getDrawState(currentStage)){
              //If the current SceneGraphNode isn't visible, it's children aren't visible as well
             skipChildren = true;
         }else{
-            RenderStage currentStage = GFX_DEVICE.getRenderStage();
-
             if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->getCastsShadows())){
                 //Perform visibility test on current node
-                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphere())){
+                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphere(), currentStage == SHADOW_STAGE ? false : true)){
                     //If the current node is visible, add it to the render queue
                     _visibleNodes.push_back(currentNode);
+                    currentNode->inView(true);
                 }
             }
         }
@@ -129,6 +130,7 @@ void RenderPassCuller::cullSceneGraphGPU(SceneState& sceneState) {
 void RenderPassCuller::refreshNodeList() {
     _visibleNodes.resize(0);
     _visibleNodes.reserve(250);
+    RenderPassManager::getInstance().isResetQueued(false);
 }
 
 void RenderPassCuller::refresh() {

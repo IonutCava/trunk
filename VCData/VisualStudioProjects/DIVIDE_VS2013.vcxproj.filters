@@ -719,9 +719,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ParallelSplitShadowMaps.cpp">
-      <Filter>Rendering\Lighting\ShadowMapping</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ShadowMap.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
@@ -883,6 +880,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\ActionInterface\AITeam.cpp">
       <Filter>AI\ActionInterface</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp">
+      <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1211,9 +1211,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ParallelSplitShadowMaps.h">
-      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
@@ -1264,12 +1261,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathFPU.h">
-      <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathSIMD.h">
-      <Filter>Core\Math\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\Vector.h">
       <Filter>Utility\Headers</Filter>
@@ -1426,6 +1417,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\AITeam.h">
       <Filter>AI\ActionInterface\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h">
+      <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

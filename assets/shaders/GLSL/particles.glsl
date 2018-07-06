@@ -1,10 +1,6 @@
 -- Vertex
 
-// Input vertex data, different for all executions of this shader.
-in vec3 inVertexData;
-in vec4 inColorData;
-in vec4 inNormalData;
-
+layout(location = 16) in vec4 particleNormalData;
 // Output data ; will be interpolated for each fragment.
 out vec2 texCoord;
 out vec4 particleColor;
@@ -23,9 +19,9 @@ layout(std140) uniform dvd_MatrixBlock
 
 void main()
 {
-    float particleSize = inNormalData.w; // because we encoded it this way.
-    vec3 vertexPosition_worldspace = inNormalData.xyz + CameraRight_worldspace * inVertexData.x * particleSize
-                                                      + CameraUp_worldspace * inVertexData.y * particleSize;
+    float particleSize = particleNormalData.w; // because we encoded it this way.
+    vec3 vertexPosition_worldspace = particleNormalData.xyz + CameraRight_worldspace * inVertexData.x * particleSize
+                                                            + CameraUp_worldspace * inVertexData.y * particleSize;
     // Output position of the vertex
     vertexVP = dvd_ViewProjectionMatrix * vec4(vertexPosition_worldspace, 1.0f);
     gl_Position = vertexVP;

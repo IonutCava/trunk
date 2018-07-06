@@ -250,8 +250,8 @@ Light* Scene::addDefaultLight(){
     return l;
 }
 ///Add skies
-#pragma message("ToDo: load skyboxes from XML")
 Sky* Scene::addDefaultSky(){
+    STUBBED("ToDo: load skyboxes from XML")
     Sky* tempSky = New Sky("Default Sky");
     _skiesSGN.push_back(_sceneGraph->getRoot()->addNode(tempSky));
     return tempSky;
@@ -454,6 +454,11 @@ void Scene::removeTask(U32 guid){
             return;
         }
     }
+}
+
+void Scene::processGUI(const U64 deltaTime){
+    for (U16 i = 0; i < _guiTimers.size(); ++i)
+        _guiTimers[i] += getUsToMs(deltaTime);
 }
 
 void Scene::processTasks(const U64 deltaTime){

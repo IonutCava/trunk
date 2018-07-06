@@ -63,6 +63,8 @@ public:
     inline bool isFullScreen()                 const {return _isFullscreen;}
     inline void isFullScreen(const bool state)       {_isFullscreen = state;}
 
+    inline bool mainLoopActive()           const { return _mainLoopActive; }
+    inline void mainLoopActive(bool state)       { _mainLoopActive = state; }
 protected:
     friend class InputInterface;
     void setMousePosition(U16 x, U16 y) const;
@@ -73,6 +75,8 @@ private:
 
 private:
     I8        _mainWindowId;
+    /// this is true when we are inside the main app loop
+    bool      _mainLoopActive;
     bool      _requestShutdown;
     /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
     bool      _hasFocus; 

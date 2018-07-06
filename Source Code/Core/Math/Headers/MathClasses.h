@@ -95,8 +95,6 @@
 #define _MATH_CLASSES_H_
 
 #include "config.h"
-#define USE_SIMD_HEADER
-#define EPSILON				0.000001f
 #ifndef M_PI
 #define M_PI				3.141592653589793238462643383279f		//  PI
 #endif
@@ -110,28 +108,29 @@
 template<class T>
 class mat3 {
 public:
-    mat3() {
-        mat[0] = 1.0; mat[3] = 0.0; mat[6] = 0.0;
-        mat[1] = 0.0; mat[4] = 1.0; mat[7] = 0.0;
-        mat[2] = 0.0; mat[5] = 0.0; mat[8] = 1.0;
+    mat3() 
+    {
+        identity();
     }
+
     mat3(T m0, T m1, T m2,
          T m3, T m4, T m5,
-         T m6, T m7, T m8) {
+         T m6, T m7, T m8) 
+    {
         mat[0] = m0; mat[3] = m3; mat[6] = m6;
         mat[1] = m1; mat[4] = m4; mat[7] = m7;
         mat[2] = m2; mat[5] = m5; mat[8] = m8;
     }
-    mat3(const T *m) {
-        mat[0] = m[0]; mat[3] = m[3]; mat[6] = m[6];
-        mat[1] = m[1]; mat[4] = m[4]; mat[7] = m[7];
-        mat[2] = m[2]; mat[5] = m[5]; mat[8] = m[8];
+
+    mat3(const T *m) 
+    {
+        set(m);
     }
-    mat3(const mat3 &m) {
-        mat[0] = m[0]; mat[3] = m[3]; mat[6] = m[6];
-        mat[1] = m[1]; mat[4] = m[4]; mat[7] = m[7];
-        mat[2] = m[2]; mat[5] = m[5]; mat[8] = m[8];
+
+    mat3(const mat3 &m) : mat3(m.mat)
+    {
     }
+
     mat3(const mat4<T> &m);
 
     vec3<T> operator*(const vec3<T> &v) const {
@@ -180,7 +179,7 @@ public:
 
     bool operator == (mat3& B){
         for (I32 i = 0; i < 9; i++){
-            if (!FLOAT_COMPARE(this->m[i],B[i])) return false;
+            if (!FLOAT_COMPARE(this->m[i] + EPSILON , B[i] + EPSILON)) return false;
         }
         return true;
     }
@@ -203,15 +202,10 @@ public:
 
     inline void set(const T *m) {
         memcpy(this->mat, m, sizeof(T) * 9);
-        /*
-        this->mat[0] = m[0]; this->mat[3] = m[3]; this->mat[6] = m[6];
-        this->mat[1] = m[1]; this->mat[4] = m[4]; this->mat[7] = m[7];
-        this->mat[2] = m[2]; this->mat[5] = m[5]; this->mat[8] = m[8];
-        */
     }
 
     inline void set(const mat4<T> &matrix) {
-        this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
+		this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
         this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
         this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
     }
@@ -245,15 +239,14 @@ public:
     }
 
     inline void zero() {
-        mat[0] = 0.0; mat[3] = 0.0; mat[6] = 0.0;
-        mat[1] = 0.0; mat[4] = 0.0; mat[7] = 0.0;
-        mat[2] = 0.0; mat[5] = 0.0; mat[8] = 0.0;
+        memset(this->mat, 0.0, 9 * sizeof(T));
     }
 
     inline void identity() {
-        mat[0] = 1.0; mat[3] = 0.0; mat[6] = 0.0;
-        mat[1] = 0.0; mat[4] = 1.0; mat[7] = 0.0;
-        mat[2] = 0.0; mat[5] = 0.0; mat[8] = 1.0;
+        zero();
+        mat[0] = 1.0;
+        mat[4] = 1.0;
+        mat[8] = 1.0;
     }
 
     inline bool isIdentity() const{
@@ -273,7 +266,7 @@ public:
         T c = (T)cos(angle);
         T s = (T)sin(angle);
         T l = square_root_tpl(x * x + y * y + z * z);
-        if(l < EPSILON) l = 1;
+        if (l < EPSILON) l = 1;
         else l = 1 / l;
         x *= l;
         y *= l;
@@ -320,13 +313,13 @@ public:
         mat[2] = 0; mat[5] = 0;  mat[8] = 1;
     }
 
-    inline void scale(T x,T y,T z) {
-        mat[0] = x; mat[3] = 0; mat[6] = 0;
-        mat[1] = 0; mat[4] = y; mat[7] = 0;
-        mat[2] = 0; mat[5] = 0; mat[8] = z;
+    inline void setScale(T x,T y,T z) {
+        mat[0] = x;
+        mat[4] = y;
+        mat[8] = z;
     }
 
-    inline void scale(const vec3<T> &v) {
+    inline void setScale(const vec3<T> &v) {
         scale(v.x,v.y,v.z);
     }
 
@@ -353,97 +346,92 @@ public:
     }
 
     union{
+        struct {
+            T _11, _12, _13;   // standard names for components
+            T _21, _22, _23;   // standard names for components
+            T _31, _32, _33;   // standard names for components
+        };
         T mat[9];
         T m[3][3];
     };
 };
 
-/*************//**
+/***************
 /* mat4
 /***************/
 template<class T>
 class mat4 {
 public:
-    mat4()/* : mat(nullptr)*/{
-        allocateMem();
-        mat[0] = 1.0; mat[4] = 0.0; mat[8]  = 0.0; mat[12] = 0.0;
-        mat[1] = 0.0; mat[5] = 1.0; mat[9]  = 0.0; mat[13] = 0.0;
-        mat[2] = 0.0; mat[6] = 0.0; mat[10] = 1.0; mat[14] = 0.0;
-        mat[3] = 0.0; mat[7] = 0.0; mat[11] = 0.0; mat[15] = 1.0;
+    mat4() 
+    {
+        identity();
     }
 
     mat4(T m0, T m1, T m2, T m3,
          T m4, T m5, T m6, T m7,
          T m8, T m9, T m10,T m11,
-         T m12,T m13,T m14,T m15)/* : mat(nullptr)*/{
-        allocateMem();
+         T m12,T m13,T m14,T m15) 
+    {
         mat[0] = m0; mat[4] = m4; mat[8]  = m8;  mat[12] = m12;
         mat[1] = m1; mat[5] = m5; mat[9]  = m9;  mat[13] = m13;
         mat[2] = m2; mat[6] = m6; mat[10] = m10; mat[14] = m14;
         mat[3] = m3; mat[7] = m7; mat[11] = m11; mat[15] = m15;
     }
 
-    mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)/* : mat(nullptr)*/{
-        allocateMem();
-        mat[0] = col1.x; mat[4] = col2.x; mat[8]  = col3.x; mat[12] = col4.x;
-        mat[1] = col1.y; mat[5] = col2.y; mat[9]  = col3.y; mat[13] = col4.y;
-        mat[2] = col1.z; mat[6] = col2.z; mat[10] = col3.z; mat[14] = col4.z;
-        mat[3] = col1.w; mat[7] = col2.w; mat[11] = col3.w; mat[15] = col4.w;
+    mat4(const T *m)
+    {
+        set(m);
     }
 
-    mat4(const vec3<T> &v)/* : mat(nullptr)*/{
-        allocateMem();
-        setTranslation(v);
+    mat4(const mat4 &m) : mat4(m.mat)
+    {
     }
 
-    mat4(T x,T y,T z)/* : mat(nullptr)*/{
-        allocateMem();
-        setTranslation(x,y,z);
+    mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4)
+    {
+        setCol(0, col1); setCol(1, col2); setCol(2, col3); setCol(3, col4);
     }
 
-    mat4(const vec3<T> &axis,T angle, bool inDegrees = true)/* : mat(nullptr)*/{
-        allocateMem();
-        rotate(axis,angle,inDegrees);
+    mat4(const vec3<T> &translation, const vec3<T> &scale) : mat4(translation)
+    {
+        setScale(scale);
     }
 
-    mat4(T x,T y,T z,T angle, bool inDegrees = true)/* : mat(nullptr)*/{
-        allocateMem();
+    mat4(const vec3<T> &translation) : mat4(translation.x, translation.y, translation.z)
+    {
+    }
+
+    mat4(T translationX, T translationY, T translationZ)
+    {
+        setTranslation(translationX, translationY, translationZ);
+    }
+
+    mat4(const vec3<T> &axis, T angle, bool inDegrees = true) : mat4(axis.x, axis.y, axis.z, angle, inDegrees)
+    {
+    }
+
+    mat4(T x,T y,T z,T angle, bool inDegrees = true)
+    {
         rotate(x,y,z,angle,inDegrees);
     }
 
-    mat4(const mat3<T> &m)/* : mat(nullptr)*/{
-        allocateMem();
+    mat4(const mat3<T> &m) 
+    {
         mat[0] = m[0]; mat[4] = m[3]; mat[8]  = m[6]; mat[12] = 0.0;
         mat[1] = m[1]; mat[5] = m[4]; mat[9]  = m[7]; mat[13] = 0.0;
         mat[2] = m[2]; mat[6] = m[5]; mat[10] = m[8]; mat[14] = 0.0;
         mat[3] = 0.0;  mat[7] = 0.0;  mat[11] = 0.0;  mat[15] = 1.0;
     }
 
-    mat4(const T *m)/* : mat(nullptr)*/{
-        allocateMem();
-        mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
-        mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
-        mat[2] = m[2]; mat[6] = m[6]; mat[10] = m[10]; mat[14] = m[14];
-        mat[3] = m[3]; mat[7] = m[7]; mat[11] = m[11]; mat[15] = m[15];
-    }
-
-    mat4(const mat4 &m)/* : mat(nullptr)*/{
-        allocateMem();
-        mat[0] = m[0]; mat[4] = m[4]; mat[8]  = m[8];  mat[12] = m[12];
-        mat[1] = m[1]; mat[5] = m[5]; mat[9]  = m[9];  mat[13] = m[13];
-        mat[2] = m[2]; mat[6] = m[6]; mat[10] = m[10]; mat[14] = m[14];
-        mat[3] = m[3]; mat[7] = m[7]; mat[11] = m[11]; mat[15] = m[15];
-    }
-
     /*Transforms the given 3-D vector by the matrix, projecting the result back into <i>w</i> = 1. (OGRE reference)*/
     inline vec3<T> transform( const vec3<T> &v ) const {
         vec3<T> r;
 
-        T fInvW = 1.0f / ( m[3][0] * v.x + m[3][1] * v.y + m[3][2] * v.z + m[3][3] );
+        T fInvW = 1.0f / ( m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] );
 
-        r.x = ( m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] ) * fInvW;
-        r.y = ( m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] ) * fInvW;
-        r.z = ( m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] ) * fInvW;
+        r.x = ( m[0][0] * v.x + m[1][1] * v.y + m[2][0] * v.z + m[3][0] ) * fInvW;
+        r.y = ( m[0][1] * v.x + m[1][1] * v.y + m[2][1] * v.z + m[3][1] ) * fInvW;
+        r.z = ( m[0][2] * v.x + m[1][2] * v.y + m[2][2] * v.z + m[3][2] ) * fInvW;
 
         return r;
     }
@@ -469,12 +457,12 @@ public:
     }
 
     mat4<T> operator*(const mat4<T> &m) const {
-        return mat4<T>(Mat4::Multiply(this->mat, m.mat));
+        return mat4<T>(Util::Mat4::Multiply(this->mat, m.mat));
     }
 
     inline bool operator == (mat4& B) const {
         for (U8 i = 0; i < 16; i++)
-            if (!FLOAT_COMPARE(this->mat[i],B.mat[i]))
+            if (!FLOAT_COMPARE(this->mat[i] + EPSILON, B.mat[i] + EPSILON)) //< add a small epsilon value to avoid 0.0 != 0.0
                 return false;
 
         return true;
@@ -494,14 +482,8 @@ public:
         this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
     }
 
-    inline void set(const T *m) {
+    inline void set(T const *m) {
         memcpy(this->mat, m, sizeof(T) * 16);
-        /*
-        this->mat[0] = m[0]; this->mat[3] = m[3]; this->mat[6]  = m[6];  this->mat[12] = m[12];
-        this->mat[1] = m[1]; this->mat[4] = m[4]; this->mat[7]  = m[7];  this->mat[13] = m[13];
-        this->mat[2] = m[2]; this->mat[5] = m[5]; this->mat[8]  = m[8];  this->mat[14] = m[14];
-        this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
-        */
     }
 
     inline void set(const mat4& matrix) {
@@ -513,10 +495,6 @@ public:
                        this->mat[1 + (index*4)],
                        this->mat[2 + (index*4)],
                        this->mat[3 + (index*4)]);
-        /*return vec4<T>(this->m[0][index],
-                         this->m[1][index],
-                         this->m[2][index],
-                         this->m[3][index]);*/
     }
 
     inline void setCol(I32 index, const vec4<T>& value){
@@ -524,10 +502,6 @@ public:
         this->mat[1 + (index*4)] = value.y;
         this->mat[2 + (index*4)] = value.z;
         this->mat[3 + (index*4)] = value.w;
-        /*this->m[0][index] = value.x;
-        this->m[1][index] = value.y;
-        this->m[2][index] = value.z;
-        this->m[3][index] = value.w;*/
     }
 
     /// premultiply the matrix by the given matrix
@@ -587,16 +561,7 @@ public:
     }
    
     inline void transpose(mat4& out) const {
-        out.set(this->mat[0],  this->mat[1],  this->mat[2],  this->mat[3],
-                this->mat[4],  this->mat[5],  this->mat[6],  this->mat[7],
-                this->mat[8],  this->mat[9],  this->mat[10], this->mat[11],
-                this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
-        /*
-        out = mat4(this->mat[0], this->mat[4], this->mat[8],  this->mat[12],
-                   this->mat[1], this->mat[5], this->mat[9],  this->mat[13],
-                   this->mat[2], this->mat[6], this->mat[10], this->mat[14],
-                   this->mat[3], this->mat[7], this->mat[11], this->mat[15]);
-        */
+        out.set(this->transpose());
     }
 
     inline mat4 transpose() const {
@@ -613,29 +578,24 @@ public:
                     this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
     }
 
-    inline T det(void)             const { return Mat4::det(this->mat); }
-    inline void inverse(mat4& ret) const { Mat4::Inverse(this->mat,ret.mat); }
+    inline T det(void)             const { return Util::Mat4::det(this->mat); }
+    inline void inverse(mat4& ret) const { Util::Mat4::Inverse(this->mat, ret.mat); }
     inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat);}
-
-    inline void zero() {
-        this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-        this->mat[1] = 0.0; this->mat[5] = 0.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-        this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 0.0; this->mat[14] = 0.0;
-        this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 0.0;
-    }
+    inline void zero()                   { memset(this->mat, 0.0, sizeof(T) * 16); }
 
     inline void identity() {
-        this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-        this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-        this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
-        this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+        zero();
+        this->mat[0]  = 1.0;
+        this->mat[5]  = 1.0;
+        this->mat[10] = 1.0;
+        this->mat[15] = 1.0;
     }
     
     inline void bias() {
-        this->mat[0] = 0.5; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-        this->mat[1] = 0.0; this->mat[5] = 0.5; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-        this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 0.5; this->mat[14] = 0.0;
-        this->mat[3] = 0.5; this->mat[7] = 0.5; this->mat[11] = 0.5; this->mat[15] = 1.0;
+        set(0.5, 0.0, 0.0, 0.0,
+            0.0, 0.5, 0.0, 0.0,
+            0.0, 0.0, 0.5, 0.0,
+            0.5, 0.5, 0.5, 1.0);
     }
 
     void rotate(const vec3<T> &axis,T angle, bool inDegrees = true) {
@@ -696,21 +656,15 @@ public:
         this->mat[10] = v.z;
     }
 
+    inline void setScale(T x, T y, T z) {
+        setScale(vec3<T>(x,y,z));
+    }
+
     inline void scale(const vec3<T> &v) {
-        this->mat[0] *= v.x;
-        this->mat[1] *= v.x;
-        this->mat[2] *= v.x;
-        this->mat[3] *= v.x;
-
-        this->mat[4] *= v.y;
-        this->mat[5] *= v.y;
-        this->mat[6] *= v.y;
-        this->mat[7] *= v.y;
-
-        this->mat[8] *= v.z;
-        this->mat[9] *= v.z;
-        this->mat[10] *= v.z;
-        this->mat[11] *= v.z;
+        this->mat[0] *= v.x; this->mat[4] *= v.y; this->mat[ 8] *= v.z;
+        this->mat[1] *= v.x; this->mat[5] *= v.y; this->mat[ 9] *= v.z;
+        this->mat[2] *= v.x; this->mat[6] *= v.y; this->mat[10] *= v.z;
+        this->mat[3] *= v.x; this->mat[7] *= v.y; this->mat[11] *= v.z;
     }
 
     inline void scale(T x,T y,T z) {
@@ -755,36 +709,6 @@ public:
         reflect(vec4<T>(x,y,z,w));
     }
 
-    inline void perspective(T fov,T aspect,T znear,T zfar) {
-        T y = (T)tan(fov * M_PI / 360.0f);
-        T x = y * aspect;
-        this->mat[0] = 1 / x; this->mat[4] = 0;     this->mat[8]  = 0;                                this->mat[12] = 0;
-        this->mat[1] = 0;     this->mat[5] = 1 / y; this->mat[9]  = 0;                                this->mat[13] = 0;
-        this->mat[2] = 0;     this->mat[6] = 0;     this->mat[10] = -(zfar + znear) / (zfar - znear); this->mat[14] = -(2 * zfar * znear) / (zfar - znear);
-        this->mat[3] = 0;     this->mat[7] = 0;     this->mat[11] = -1;                               this->mat[15] = 0;
-    }
-
-    inline void look_at(const vec3<T> &eye,const vec3<T> &dir,const vec3<T> &up) {
-        vec3<T> x,y,z;
-        mat4<T> m0,m1;
-        z = eye - dir;
-        z.normalize();
-        x.cross(up,z);
-        x.normalize();
-        y.cross(z,x);
-        y.normalize();
-        m0[0] = x.x; m0[4] = x.y; m0[8] = x.z; m0[12] = 0.0;
-        m0[1] = y.x; m0[5] = y.y; m0[9] = y.z; m0[13] = 0.0;
-        m0[2] = z.x; m0[6] = z.y; m0[10] = z.z; m0[14] = 0.0;
-        m0[3] = 0.0; m0[7] = 0.0; m0[11] = 0.0; m0[15] = 1.0;
-        m1.setTranslation(-eye);
-        *this = m0 * m1;
-    }
-
-    inline void look_at(const T *eye,const T *dir,const T *up) {
-        look_at(vec3<T>(eye),vec3<T>(dir),vec3<T>(up));
-    }
-
     inline void extractMat3(mat3<T>& matrix3) const {
         matrix3.m[0][0] = this->m[0][0];
         matrix3.m[0][1] = this->m[0][1];
@@ -806,28 +730,16 @@ public:
         }
     }
 
-///It's hard to allow 16-bytes alignment here to use with SIMD instructions when all the values can
-///be changed from anywhere in the code by reference / pointer. Use the slower unaligned loader instead for SSE
-#ifdef USE_MATH_SIMD
-#define DECL_ALIGN __declspec(align(ALIGNED_BYTES))
-#define NEW_ALIGN(X,Y) (X*)malloc_simd(Y * sizeof(X))
-#define DEL_ALIGN(X) free_simd(X)
-#else
-#define DECL_ALIGN
-#define NEW_ALIGN(X,Y) New X[Y]
-#define DEL_ALIGN(X) SAFE_DELETE_ARRAY(X)
-#endif
-
-     union {
-        DECL_ALIGN  T mat[16];/*T* mat;*/
-        DECL_ALIGN  T m[4][4];/*T* mat;*/
+    union {
+        struct {
+             T _11, _12, _13, _14;   // standard names for components
+             T _21, _22, _23, _24;   // standard names for components
+             T _31, _32, _33, _34;   // standard names for components
+             T _41, _42, _43, _44;   // standard names for components
+         };
+         T mat[16];
+         T m[4][4];
      };
-/*	~mat4()
-    {
-        DEL_ALIGN(mat);
-    }
-*/
-    inline void allocateMem() { /*if(mat != nullptr) DEL_ALIGN(mat); mat = NEW_ALIGN(T,16);*/}
 };
 
 template<class T>
@@ -848,6 +760,10 @@ inline void projectPoint(const vec3<T>& position,vec3<T>& output){
 
 
 namespace Util{
+    inline F32 Lerp(const F32 v1, const F32 v2, const F32 t)
+    {
+        return v1 + (v2 - v1*t);
+    }
     namespace Mat4 {
                 // ----------------------------------------------------------------------------------------
             template <typename T>

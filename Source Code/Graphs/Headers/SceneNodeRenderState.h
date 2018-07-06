@@ -21,8 +21,8 @@ public:
     inline  void setDrawState(bool state) {_drawState = state;}
             bool getDrawState()  const {return _drawState;}
             bool getDrawState(const RenderStage& currentStage)  const;
-            void addToDrawExclusionMask(I32 stageMask);
-            void removeFromDrawExclusionMask(I32 stageMask);
+            void addToDrawExclusionMask(U32 stageMask);
+            void removeFromDrawExclusionMask(U32 stageMask);
             RenderStateBlock* getDepthStateBlock();
             RenderStateBlock* getShadowStateBlock();
 protected:
@@ -31,7 +31,7 @@ protected:
     bool _isVisible;
     bool _drawState;
     bool _noDefaultMaterial;
-    U16  _exclusionMask;
+    U32  _exclusionMask;
 
     RenderStateBlock* _depthStateBlock;
     RenderStateBlock* _shadowStateBlock;

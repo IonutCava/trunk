@@ -1,9 +1,17 @@
 struct Light{
-    vec4 _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
-    vec4 _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
-    vec4 _direction;   ///< xyz = Used by spot lights, w = spotExponent
-    vec4 _diffuse;     ///< rgb = diffuse,  w = ambientFactor;
-    vec4 _specular;    ///< rgb = specular color, w = brightness
+    vec4  _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
+    vec4  _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4  _direction;   ///< xyz = Used by spot lights, w = spotExponent
+    vec4  _diffuse;     ///< rgb = diffuse,  w = ambientFactor;
+    vec4  _specular;    ///< rgb = specular color, w = brightness
+    mat4  _lightVP0;
+    mat4  _lightVP1;
+    mat4  _lightVP2;
+    mat4  _lightVP3;
+    float  _floatValue0;
+    float  _floatValue1;
+    float  _floatValue2;
+    float  _floatValue3;
 };
 
 layout(std140) uniform dvd_LightBlock
@@ -11,4 +19,28 @@ layout(std140) uniform dvd_LightBlock
 	Light dvd_LightSource[MAX_LIGHTS_PER_SCENE];
 };
 
-uniform int dvd_lightIndex[MAX_LIGHT_COUNT]; //<What lights to use from the light UBO for the current geometry
+uniform int  dvd_lightIndex[MAX_LIGHTS_PER_SCENE]; //<What lights to use from the light UBO for the current geometry
+uniform int  dvd_lightType[MAX_LIGHTS_PER_SCENE];
+uniform bool dvd_lightCastsShadows[MAX_LIGHTS_PER_SCENE];
+uniform int  dvd_lightCount;
+uniform vec4 dvd_lightAmbient;
+uniform bool dvd_enableShadowMapping = false;
+
+#if defined(VERT_SHADER)
+#define VARYING out
+#elif defined(FRAG_SHADER)
+#define VARYING in
+#endif
+
+flat VARYING vec3 _lightDirection[MAX_LIGHTS_PER_NODE];
+smooth VARYING float _attenuation[MAX_LIGHTS_PER_NODE];
+
+#if defined(FRAG_SHADER)
+vec4 getCoord(in Light currentLight, in int index){
+    if (index == 0) return currentLight._lightVP0 * _vertexW;
+    if (index == 1) return currentLight._lightVP1 * _vertexW;
+    if (index == 2) return currentLight._lightVP2 * _vertexW;
+    
+    return currentLight._lightVP3 * _vertexW;
+}
+#endif

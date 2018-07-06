@@ -5,10 +5,10 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 DoFPreRenderOperator::DoFPreRenderOperator(Quad3D* target,
-                                           FrameBufferObject* result,
+                                           FrameBuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,target,resolution,sampler),
-                                                                               _outputFBO(result)
+                                                                               _outputFB(result)
 {
     TextureDescriptor dofDescriptor(TEXTURE_2D,
                                     RGBA,
@@ -19,8 +19,9 @@ DoFPreRenderOperator::DoFPreRenderOperator(Quad3D* target,
     _samplerCopy->AddAttachment(dofDescriptor,TextureDescriptor::Color0);
     _samplerCopy->toggleDepthBuffer(false);
     _samplerCopy->Create(resolution.width,resolution.height);
-
-    _dofShader = CreateResource<ShaderProgram>(ResourceDescriptor("DepthOfField"));
+    ResourceDescriptor dof("DepthOfField");
+    dof.setThreadedLoading(false);
+    _dofShader = CreateResource<ShaderProgram>(dof);
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator() {
@@ -35,29 +36,29 @@ void DoFPreRenderOperator::reshape(I32 width, I32 height){
 void DoFPreRenderOperator::operation(){
     if(!_enabled || !_renderQuad) return;
 
-    if(_inputFBO.empty()){
-        ERROR_FN(Locale::get("ERROR_DOF_INPUT_FBO"));
+    if(_inputFB.empty()){
+        ERROR_FN(Locale::get("ERROR_DOF_INPUT_FB"));
     }
 
     //Copy current screen
-    _samplerCopy->BlitFrom(_inputFBO[0]);
+    _samplerCopy->BlitFrom(_inputFB[0]);
 
     GFXDevice& gfx = GFX_DEVICE;
 
     gfx.toggle2D(true);
-    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
+    _outputFB->Begin(FrameBuffer::defaultPolicy());
         _dofShader->bind();
-            _samplerCopy->Bind(0); //screenFBO
-            _inputFBO[1]->Bind(1, TextureDescriptor::Depth); //depthFBO
+            _samplerCopy->Bind(0); //screenFB
+            _inputFB[1]->Bind(1, TextureDescriptor::Depth); //depthFB
             _dofShader->UniformTexture("texScreen", 0);
             _dofShader->UniformTexture("texDepth",1);
             _renderQuad->setCustomShader(_dofShader);
             gfx.renderInstance(_renderQuad->renderInstance());
 
-            _inputFBO[1]->Unbind(1);
+            _inputFB[1]->Unbind(1);
             _samplerCopy->Unbind(0);
 
-    _outputFBO->End();
+    _outputFB->End();
 
     gfx.toggle2D(false);
 }

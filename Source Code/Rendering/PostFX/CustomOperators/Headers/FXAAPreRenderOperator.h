@@ -27,14 +27,9 @@
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
-class ShaderProgram;
-class Quad3D;
-class Texture;
-typedef Texture Texture2D;
-class FrameBufferObject;
 class FXAAPreRenderOperator : public PreRenderOperator {
 public:
-	FXAAPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	FXAAPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~FXAAPreRenderOperator();
 
 	void operation();
@@ -42,8 +37,8 @@ public:
 
 private:
 	ShaderProgram* _fxaa;
-	FrameBufferObject* _outputFBO;
-	FrameBufferObject* _samplerCopy;
+	FrameBuffer*   _outputFB;
+	FrameBuffer*   _samplerCopy;
 };
 
 #endif

@@ -34,12 +34,12 @@ the server or disabled from rendering alltogheter.
 Objects created from this class have theyr position in relative space based on the parent mesh position.
 (Same for scale,rotation and so on).
 
-The SubMesh is composed of a VBO object that contains vertx,normal and textcoord data, a vector of materials,
+The SubMesh is composed of a VB object that contains vertx,normal and textcoord data, a vector of materials,
 and a name.
 */
 
 #include "core.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class Mesh;
 class SubMesh : public Object3D {

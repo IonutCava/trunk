@@ -26,26 +26,6 @@
 #include "config.h"
 
 enum MATRIX_MODE;
-#if defined( OS_WINDOWS )
-#  ifndef WIN32_LEAN_AND_MEAN
-#    define WIN32_LEAN_AND_MEAN
-#  endif
-#  include "windows.h"
-#  ifdef min
-#    undef min
-#  endif
-#  ifdef max
-#	 undef max
-#  endif
-//////////////////////////////////////////////////////////////////////
-////////////////////////////////////Needed Linux Headers//////////////
-#elif defined OS_LINUX
-#  include <X11/Xlib.h>
-//////////////////////////////////////////////////////////////////////
-////////////////////////////////////Needed Mac Headers//////////////
-#elif defined OS_APPLE
-#  include <Carbon/Carbon.h>
-#endif
 
 #if !defined(__gl_h_) && !defined(__GL_H__) && !defined(__X_GL_H)
 
@@ -88,21 +68,10 @@ namespace Divide {
 #if defined(_DEBUG) || defined(_PROFILE)
         ///from: https://sites.google.com/site/opengltutorialsbyaks/introduction-to-opengl-4-1---tutorial-05
         ///Check the current operation for errors
-        void DebugOutputToFile(GLuint contexId, GLenum source, GLenum type, GLuint id, GLenum severity, const GLchar* message);
         void APIENTRY CALLBACK DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam);
-        ///Check the current operation for errors
-        void GLCheckError(const std::string& File, GLuint Line, GLchar* operation);
-        ///Clear previous error codes
-        void GLFlushErrors();
 #endif
     }
 }
-
-#if defined(_DEBUG) || defined(_PROFILE)
-#    define GLCheck(Func) (Divide::GL::GLFlushErrors(), (Func), Divide::GL::GLCheckError(__FILE__, __LINE__,#Func))
-#else
-#    define GLCheck(Func) (Func)
-#endif
 
 #define BUFFER_OFFSET(i) reinterpret_cast<void*>(i)
 
@@ -241,7 +210,6 @@ namespace Divide {
     /*--------- Context Management -----*/
     extern bool _applicationClosing;
     extern bool _contextAvailable;
-    extern bool _useDebugOutputCallback;
 
     ///Main rendering window
     extern GLFWwindow* _mainWindow;
@@ -268,9 +236,9 @@ namespace Divide {
     inline void _matrixMode(const MATRIX_MODE& mode) { _currentMatrixMode = mode; }
 
     void _unproject(const vec3<GLfloat>& windowCoords, vec3<GLfloat>& objCoords); 
-    void _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection);
-    void _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
-    void _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
+    GLfloat* _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection);
+    GLfloat* _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
+    GLfloat* _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
     void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum = false);
     void _pushMatrix();
     void _popMatrix();

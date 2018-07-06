@@ -28,16 +28,16 @@ RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
     return _shadowStateBlock;
 }
 
-void SceneNodeRenderState::removeFromDrawExclusionMask(I32 stageMask) {
+void SceneNodeRenderState::removeFromDrawExclusionMask(U32 stageMask) {
     assert((stageMask & ~(INVALID_STAGE-1)) == 0);
     _exclusionMask &= ~stageMask;
 }
 
-void SceneNodeRenderState::addToDrawExclusionMask(I32 stageMask) {
+void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
     assert((stageMask & ~(INVALID_STAGE-1)) == 0);
     _exclusionMask |= static_cast<RenderStage>(stageMask);
 }
 
 bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage)  const {
-    return !bitCompare(_exclusionMask,currentStage);
+    return _drawState && !bitCompare(_exclusionMask, currentStage);
 }

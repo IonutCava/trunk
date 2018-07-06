@@ -37,8 +37,8 @@ public:
 
     ~SceneGraph(){
         D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
-        _root->unload(); //< Should recursivelly call unload on the entire scene graph
-        //Should recursivelly call delete on the entire scene graph
+        _root->unload(); //< Should recursively call unload on the entire scene graph
+        //Should recursively call delete on the entire scene graph
         SAFE_DELETE(_root);
     }
 
@@ -64,6 +64,12 @@ public:
 
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
     void addToDeletionQueue(SceneGraphNode* node) {_pendingDeletionNodes.push_back(node);}
+
+    inline void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const {
+        casters.clear();
+        receivers.clear();
+        _root->getShadowCastersAndReceivers(casters, receivers, visibleOnly);
+    }
 
 protected:
     void printInternal(SceneGraphNode* const sgn);

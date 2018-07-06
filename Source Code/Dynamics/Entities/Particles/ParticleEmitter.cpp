@@ -9,8 +9,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
 
-mat4<F32> ParticleEmitter::_viewMatrixCache;
-
 ParticleEmitterDescriptor::ParticleEmitterDescriptor() {
    _particleCount = 1000;
    _spread = 1.5f;
@@ -76,7 +74,7 @@ bool ParticleEmitter::initData(){
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
     _impostor = New Impostor(_name);
-    _renderState.addToDrawExclusionMask(Z_PRE_PASS_STAGE);
+    _renderState.addToDrawExclusionMask(SHADOW_STAGE);
     return (_particleShader != nullptr);
 }
 
@@ -133,42 +131,50 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
+bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
-        return;
+        return false;
 
     SET_STATE_BLOCK(_particleStateBlock);
-    _particleDepthShader->bind();
-    GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
-    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[1][0], _viewMatrixCache.m[2][0]));
-    _particleDepthShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[0][1], _viewMatrixCache.m[1][1], _viewMatrixCache.m[2][1]));
+
+    if(!_particleDepthShader->bind())
+        return false;
+
+    const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
+    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
+    _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+    return true;
 }
 
-void ParticleEmitter::releaseDepthMaterial(){
-    if(!_enabled || !_created)
-        return;
+bool ParticleEmitter::releaseDepthMaterial(){
+    return true;
 }
 
-void ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
+bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
-        return;
+        return false;
 
     SET_STATE_BLOCK(_particleStateBlock);
-    _particleShader->bind();
-    GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
+
+    if(!_particleShader->bind())
+        return false;
+
+    const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
     _particleShader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
-    _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[1][0], _viewMatrixCache.m[2][0]));
-    _particleShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[0][1], _viewMatrixCache.m[1][1], _viewMatrixCache.m[2][1]));
+    _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
+    _particleShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
     _particleTexture->Bind(Material::TEXTURE_UNIT0);
-    GFX_DEVICE.getDepthBuffer()->Bind(1, TextureDescriptor::Depth);
+    GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
+    return true;
 }
 
-void ParticleEmitter::releaseMaterial(){
+bool ParticleEmitter::releaseMaterial(){
     if(!_enabled || !_created)
-        return;
+        return false;
 
     _particleTexture->Unbind(Material::TEXTURE_UNIT0);
-    GFX_DEVICE.getDepthBuffer()->Unbind(1);
+    GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Unbind(1);
+    return true;
 }
 
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
@@ -187,7 +193,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
     _descriptor = descriptor;
     _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 4 * sizeof(F32), nullptr, true, true);
     _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 4 * sizeof(U8), nullptr, true, true);
-    _particleGPUBuffer->SetAttribute(Divide::VERTEX_NORMAL_LOCATION, 1, 1, 4, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->SetAttribute(16, 1, 1, 4, false, 0, 0, FLOAT_32);
     _particleGPUBuffer->SetAttribute(Divide::VERTEX_COLOR_LOCATION, 2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 
     _particles.resize(descriptor._particleCount);
@@ -234,12 +240,14 @@ void ParticleEmitter::uploadToGPU(){
 }
 
 ///The onDraw call will emit particles
-void ParticleEmitter::onDraw(const RenderStage& currentStage){
+bool ParticleEmitter::onDraw(const RenderStage& currentStage){
     if(!_enabled || _particlesCurrentCount == 0 || !_created)
-        return;
+        return false;
     
     sortParticles();
     uploadToGPU();
+
+    return true;
 }
 
 void ParticleEmitter::sortParticles(){

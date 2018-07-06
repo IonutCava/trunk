@@ -156,7 +156,7 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -310,6 +310,7 @@
       <ShowProgress>NotSet</ShowProgress>
       <LinkStatus>
       </LinkStatus>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|Win32'">
@@ -489,7 +490,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\PointLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ParallelSplitShadowMaps.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\ShadowMap.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMap.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\SpotLight.cpp" />
@@ -572,8 +573,6 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingSphere.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathFPU.h" />
-    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathSIMD.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
@@ -652,7 +651,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\PointLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\SpotLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ParallelSplitShadowMaps.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMaps.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\SingleShadowMap.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\BloomPreRenderOperator.h" />

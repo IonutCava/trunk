@@ -3,6 +3,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Application.h"
 #include <boost/algorithm/string.hpp>
 
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
@@ -10,7 +11,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
     ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
 
     ptr->setState(RES_LOADING);
-    ptr->enableThreadedLoading(_descriptor.getThreaded());
+    ptr->enableThreadedLoading(_descriptor.getThreaded() && Application::getInstance().mainLoopActive());
     if(_descriptor.getResourceLocation().compare("default") == 0){
         ptr->setResourceLocation(par.getParam<std::string>("assetsLocation") + "/" +
                                  par.getParam<std::string>("shaderLocation") + "/" );
@@ -18,7 +19,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
         ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
 
-    ///get all of the preprocessor defines
+    //get all of the preprocessor defines
     if(!_descriptor.getPropertyListString().empty()){
         vectorImpl<std::string> defines;
         boost::split(defines, _descriptor.getPropertyListString(), boost::is_any_of(","), boost::token_compress_on);

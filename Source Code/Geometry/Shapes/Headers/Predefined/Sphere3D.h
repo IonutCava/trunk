@@ -24,7 +24,7 @@
 #define _SPHERE_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class Sphere3D : public Object3D {
 public:
@@ -55,12 +55,12 @@ public:
         return SceneNode::computeBoundingBox(sgn);
     }
 
-    void onDraw(const RenderStage& currentStage){
+    bool onDraw(const RenderStage& currentStage){
         if(_dirty){
             createSphere(_resolution,_resolution);
             _dirty = false;
         }
-        Object3D::onDraw(currentStage);
+        return Object3D::onDraw(currentStage);
     }
 
 private:
@@ -124,7 +124,7 @@ private:
         }
 
         _geometry->setIndiceLimits(indiceLimits);
-        _geometry->queueRefresh();
+        _geometry->Create();
     }
 
 protected:

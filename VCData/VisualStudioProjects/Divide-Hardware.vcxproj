@@ -172,7 +172,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -229,7 +229,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -282,7 +282,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
@@ -322,14 +322,14 @@
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\Headers\FrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBufferObject\Headers\PixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\GenericVertexData.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\VertexBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dFrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers\d3dPixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dGenericVertexData.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dVertexBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBuffer\Headers\FrameBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBuffer\Headers\PixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\GenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBuffer\Headers\VertexBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBuffer\Headers\d3dRenderTarget.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBuffer\Headers\d3dPixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dGenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\Headers\d3dVertexBuffer.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dResources.h" />
@@ -345,10 +345,10 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers\glPixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glGenericVertexData.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBuffer\Headers\glFrameBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBuffer\Headers\glPixelBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\Headers\glGenericVertexData.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\Headers\glVertexArray.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
@@ -379,12 +379,13 @@
     <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Input\InputInterface.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\FrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dFrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\d3dPixelBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\d3dVertexBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBuffer\FrameBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBuffer\d3dRenderTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBuffer\d3dVertexBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp" />
@@ -393,10 +394,10 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\d3dTexture.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glGenericVertexData.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBuffer\glFrameBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBuffer\glPixelBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glGenericVertexData.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBuffer\glVertexArray.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
@@ -449,7 +450,7 @@
     <None Include="..\..\assets\shaders\GLSL\depthPass.glsl">
       <FileType>Document</FileType>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\fboPreview.glsl">
+    <None Include="..\..\assets\shaders\GLSL\fbPreview.glsl">
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\bumpMapping.frag">
@@ -519,13 +520,14 @@
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\clippingPlanes.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\foliage.vert">
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert">
       <FileType>Document</FileType>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert">
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vbInputData.vert">
       <FileType>Document</FileType>
     </None>
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vertexDefault.vert">

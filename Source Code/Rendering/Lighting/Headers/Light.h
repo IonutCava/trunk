@@ -58,16 +58,17 @@ enum LightPropertiesF{
 };
 
 struct LightProperties {
-    vec4<F32> _attenuation; //x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
-    vec4<F32> _position; ///<Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
-    vec4<F32> _direction; ///<xyz = Used by spot lights, w = spotExponent
-    vec4<F32> _diffuse;   ///< rgb = diffuse,  w = ambientFactor;
-    vec4<F32> _specular;  ///< rgb = specular color, w = brightness
+    vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
+    vec4<F32> _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
+    vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
+    vec4<F32> _specular;    //< rgb = specular color, w = brightness
+    mat4<F32> _lightVP[4];  //< light viewProjection matrices (e.g. for shadowmapping)
+    F32       _floatValues[4]; //< random float values
 };
 
 class Impostor;
 class ParamHandler;
-class FrameBufferObject;
 class ShadowMapInfo;
 class SceneRenderState;
 ///A light object placed in the scene at a certain position
@@ -89,7 +90,7 @@ public:
     ///Get light vector properties
     virtual vec3<F32> getVProperty(const LightPropertiesV& key) const;
     ///Get light floating point properties
-    virtual F32 getFProperty(const LightPropertiesF& key) const;
+    virtual F32  getFProperty(const LightPropertiesF& key) const;
     ///Get light ID
     inline U32   getId() const {return _id;}
     ///Get light slot
@@ -100,8 +101,8 @@ public:
     inline const LightProperties& getProperties() const {return _properties;}
     ///Get light diffuse color
     inline vec3<F32>  getDiffuseColor() const {return _properties._diffuse.rgb();}
-    ///Get light position for omni and spot or direction for a directional light (also accesible via the "getDirection" method of the "DirectionalLight" class
-    inline vec3<F32>  getPosition()     const {return _properties._position.rgb();}
+    ///Get light position for omni and spot or direction for a directional light (also accessible via the "getDirection" method of the "DirectionalLight" class
+    inline vec3<F32>  getPosition()     const {return _properties._position.xyz();}
            void       setPosition(const vec3<F32>& newPosition);
     ///Get direction for spot lights
     inline vec3<F32>  getDirection() const {return _properties._direction.xyz();}
@@ -126,35 +127,32 @@ public:
     ///See LightType enum
     inline const LightType& getLightType() const {return _type;}
     inline const LightMode& getLightMode() const {return _mode;}
-    ///Get a pointer to the light's imposter
+    ///Get a pointer to the light's impostor
     inline Impostor* const getImpostor() const {return _impostor;}
     //Checks if this light needs and update
     void updateState(const bool force = false);
 
     ///Dummy function from SceneNode;
-    void onDraw(const RenderStage& currentStage) {};
+    bool onDraw(const RenderStage& currentStage) { return true; }
 
     ///SceneNode concrete implementations
     bool unload();
     bool computeBoundingBox(SceneGraphNode* const sgn);
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    virtual void setCameraToLightView(const vec3<F32>& eyePos) = 0;
-            void setCameraToSceneView();
+    virtual const mat4<F32>& getLightViewMatrix(U8 index = 0) = 0;
 
     /*----------- Shadow Mapping-------------------*/
     ///Set the function used to generate shadows for this light (usually _scenegraph->render)
     inline ShadowMapInfo* getShadowMapInfo() const {return _shadowMapInfo;}
-    void setShadowMappingCallback(const DELEGATE_CBK& callback);
+    inline void setShadowMappingCallback(const DELEGATE_CBK& callback) { _callback = callback; }
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
-    inline const mat4<F32 >& getLightProjectionMatrix() const {return _lightProjectionMatrix;}
-    ///We need to render the scene from the light's perspective
-    ///This varies depending on the current pass:
-    ///--The higher the pass, the closer the view
-    ///sceneHalfExtent is the half extent of the world bounding box
-    virtual void renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent = 1) = 0;
     virtual void generateShadowMaps(const SceneRenderState& sceneRenderState);
+    inline const mat4<F32>& getVPMatrix(U8 index)   const { return _properties._lightVP[index]; }
+    inline const F32&       getFloatValue(U8 index) const { return _properties._floatValues[index]; }
+    inline void setVPMatrix(U8 index, const mat4<F32>& newValue)   { _properties._lightVP[index].set(newValue);  _dirty = true;}
+    inline void setFloatValue(U8 index, F32 newValue)              { _properties._floatValues[index] = newValue; _dirty = true;}
 
 protected:
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
@@ -184,22 +182,21 @@ protected:
 private:
 
     U8   _slot;
-    bool _drawImpostor, _castsShadows;
+    bool _drawImpostor;
+    bool _castsShadows;
     bool _updateLightBB;
     Impostor* _impostor; ///< Used for debug rendering -Ionut
-    SceneGraphNode *_lightSGN, *_impostorSGN;
+    SceneGraphNode* _lightSGN;
+    SceneGraphNode* _impostorSGN;
     DELEGATE_CBK _callback;
     F32   _score;
     bool  _dirty;
     bool  _enabled;
 
 protected:
-    mat4<F32> _lightProjectionMatrix;
-    mat4<F32> _bias;
-    vec3<F32> _lightPos;
-    vec3<F32> _lightPosInitial;
     vec2<F32> _zPlanes;
     vec3<F32> _eyePos;
+    mat4<F32> _lightViewMatrix;
     ShadowMapInfo* _shadowMapInfo;
     ParamHandler& _par;
 };

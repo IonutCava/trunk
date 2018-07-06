@@ -1,4 +1,5 @@
 #include "Headers/ShaderProgram.h"
+
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/LightManager.h"
@@ -6,14 +7,16 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _optimise(optimise),
+                                                    _useCompute(false),
                                                     _useTessellation(false),
                                                     _useGeometry(false),
                                                     _useFragment(true),
                                                     _useVertex(true),
-                                                    _compiled(false),
+                                                    _linked(false),
                                                     _bound(false),
                                                     _dirty(true),
                                                     _wasBound(false),
@@ -21,7 +24,7 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
                                                     _elapsedTimeMS(0.0f)
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
-    _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
+    _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = _refreshComp = false;
 
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
 
@@ -52,6 +55,17 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _fogEndLoc         = -1;
     _fogModeLoc        = -1;
     _fogDetailLevelLoc = -1;
+#if defined(CSM_USE_LAYERED_RENDERING)
+    for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
+        _shadowCPV[i] = -1;
+    }
+#endif
+    U32 i = 0, j = 0;
+    for (; i < Material::TEXTURE_UNIT0; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
+
+    for (i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -67,8 +81,15 @@ ShaderProgram::~ShaderProgram()
 U8 ShaderProgram::update(const U64 deltaTime){
     _elapsedTime += deltaTime;
     _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
+    if (!isHWInitComplete())
+        return 0;
+
     ParamHandler& par = ParamHandler::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
+#ifdef _DEBUG
+    this->Uniform("dvd_showShadowSplits", par.getParam<bool>("rendering.debug.showSplits"));
+#endif
+    this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Uniform(_enableFogLoc, enableFog);
     this->Uniform(_lightAmbientLoc, LightManager::getInstance().getAmbientLight());
 
@@ -116,18 +137,16 @@ U8 ShaderProgram::update(const U64 deltaTime){
     return 1;
 }
 
-void ShaderProgram::threadedLoad(const std::string& name){
-    if(ShaderProgram::generateHWResource(name)) 
-        HardwareResource::threadedLoad(name);
-
-    update(0.0);
-}
-
 bool ShaderProgram::generateHWResource(const std::string& name){
     _name = name;
+
     if (!HardwareResource::generateHWResource(name))
         return false;
-    
+
+    HardwareResource::threadedLoad(name);
+
+    assert(isHWInitComplete());
+
     _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix");
     _extendedMatrixEntry[WV_MATRIX]     = this->cachedLoc("dvd_WorldViewMatrix");
     _extendedMatrixEntry[WV_INV_MATRIX] = this->cachedLoc("dvd_WorldViewMatrixInverse");
@@ -153,55 +172,64 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _fogEndLoc         = this->cachedLoc("fogEnd");
     _fogModeLoc        = this->cachedLoc("fogMode");
     _fogDetailLevelLoc = this->cachedLoc("fogDetailLevel");
+#if defined(CSM_USE_LAYERED_RENDERING)
+    for (U32 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
+        _shadowCPV[i] = this->cachedLoc(std::string("dvd_shadowCPV[" + Util::toString(i) + "]"));
+    }
+#endif
+    _dirty = true;
 
     return true;
 }
 
-void ShaderProgram::bind(){
+bool ShaderProgram::bind(){
     _bound = true;
     _wasBound = true;
     if(_shaderProgramId == 0) 
-        return;
+        return false;
 
-    //Apply global shader values valid throughout current render call:
-    this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Attribute(_cameraLocationLoc, Frustum::getInstance().getEyePos());
+    return true;
 }
 
 void ShaderProgram::uploadNodeMatrices(){
     GFXDevice& GFX = GFX_DEVICE;
+#if defined(CSM_USE_LAYERED_RENDERING)
+    if (_shadowCPV[0] != -1 && GFX.isCurrentRenderStage(SHADOW_STAGE)){
+        Light* currentLight = LightManager::getInstance().getCurrentLight();
+        if (currentLight)
+            for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i)
+                this->Uniform(_shadowCPV[i], currentLight->getVPMatrix(i));
+            this->Uniform("dvd_currentSplitCount", currentLight->getShadowMapInfo()->numLayers());
+    }
+#endif
     I32 currentLocation = -1;
     /*Get and upload matrix data*/
     if (_extendedMatricesDirty == true){
 
         currentLocation = _extendedMatrixEntry[NORMAL_MATRIX];
         if (currentLocation != -1){
-            GFX.getMatrix(NORMAL_MATRIX, _cachedNormalMatrix);
-            this->Uniform(currentLocation, _cachedNormalMatrix);
+            this->Uniform(currentLocation, GFX.getMatrix3(NORMAL_MATRIX));
         }
         
         currentLocation = _extendedMatrixEntry[WORLD_MATRIX];
         if (currentLocation != -1){
-            GFX.getMatrix(WORLD_MATRIX, _cachedMatrix);
-            this->Uniform(currentLocation, _cachedMatrix);
+            this->Uniform(currentLocation, GFX.getMatrix4(WORLD_MATRIX));
         }
 
         currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
         if (currentLocation != -1){
-            GFX.getMatrix(WV_MATRIX, _cachedMatrix);
-            this->Uniform(currentLocation, _cachedMatrix);
+            this->Uniform(currentLocation, GFX.getMatrix4(WV_MATRIX));
         }
 
         currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
         if (currentLocation != -1){
-            GFX.getMatrix(WV_INV_MATRIX, _cachedMatrix);
-            this->Uniform(currentLocation, _cachedMatrix);
+            this->Uniform(currentLocation, GFX.getMatrix4(WV_INV_MATRIX));
         }
  
         currentLocation = _extendedMatrixEntry[WVP_MATRIX];
         if (currentLocation != -1){
-            GFX.getMatrix(WVP_MATRIX, _cachedMatrix);
-            this->Uniform(currentLocation, _cachedMatrix);
+            this->Uniform(currentLocation, GFX.getMatrix4(WVP_MATRIX));
         }
 
         _extendedMatricesDirty = false;
@@ -227,6 +255,24 @@ void ShaderProgram::uploadNodeMatrices(){
         this->Uniform(_clipPlanesLoc, _clipPlanes);
         this->Uniform(_clipPlanesActiveLoc, _clipPlanesStates);
     }
+}
+
+void ShaderProgram::ApplyMaterial(Material* const material){
+    for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
+        if (material->getTexture(i)){
+            if (i >= Material::TEXTURE_UNIT0)
+               Uniform(_textureOperationUniformSlots[i], (I32)material->getTextureOperation(i));
+        }
+    }
+
+    if (material->isTranslucent()){
+        Uniform("opacity",      material->getOpacityValue());
+        Uniform("useAlphaTest", material->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE));
+    }
+
+    Uniform("material",     material->getMaterialMatrix());
+    Uniform("textureCount", material->getTextureCount());
+
 }
 
 void ShaderProgram::unbind(bool resetActiveProgram){
@@ -269,8 +315,8 @@ void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& 
     }
 }
 
-void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation){
-    _compiled = false;
+void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation, const bool compute){
+    _linked = false;
     _wasBound = _bound;
 
     if(_wasBound) unbind();
@@ -280,10 +326,9 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool
     _refreshFrag = fragment;
     _refreshGeom = geometry;
     _refreshTess = tessellation;
+    _refreshComp = compute;
     //recreate all the needed shaders
     generateHWResource(getName());
-    //clear refresh tags
-    _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
 
     if(_wasBound)  bind();
 }

@@ -39,7 +39,8 @@ protected:
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void updateAnimations(SceneGraphNode* const sgn);
-
+    void drawReset(SceneGraphNode* const sgn);
+    
 private:
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
     
@@ -47,7 +48,6 @@ private:
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
     bool _softwareSkinning;
-
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
 

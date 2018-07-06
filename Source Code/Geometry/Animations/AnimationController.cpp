@@ -171,7 +171,7 @@ I32 SceneAnimator::GetBoneIndex(const std::string& bname) const {
 void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
     child->_globalTransform = child->_localTransform;
     Bone* parent = child->_parent;
-    // this will climb the nodes up along through the parents concentating all the matrices to get the Object to World transform, or in this case, the Bone To World transform
+    // this will climb the nodes up along through the parents concatenating all the matrices to get the Object to World transform, or in this case, the Bone To World transform
     if(GFX_DEVICE.getApi() == Direct3D){
         while( parent ){
             child->_globalTransform *= parent->_localTransform;

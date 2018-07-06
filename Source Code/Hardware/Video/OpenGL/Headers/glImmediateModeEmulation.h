@@ -44,6 +44,7 @@ public:
     void begin(PrimitiveType type);
     void vertex(const vec3<F32>& vert);
     ///Specify each attribute at least once(even with dummy values) before calling begin!
+    void attribute1i(const std::string& attribName, I32 value);
     void attribute4ub(const std::string& attribName, const vec4<U8>& value);
     void attribute4f(const std::string& attribName, const vec4<F32>& value);
     void end();

@@ -30,7 +30,7 @@ class Texture;
 typedef Texture Texture2D;
 
 enum PrimitiveType;
-///IMPrimitive replaces immediate mode calls to VBO based rendering
+///IMPrimitive replaces immediate mode calls to VB based rendering
 class IMPrimitive  : private boost::noncopyable{
 public:
     inline void setRenderStates(const DELEGATE_CBK& setupStatesCallback, const DELEGATE_CBK& releaseStatesCallback){
@@ -41,6 +41,7 @@ public:
     virtual void beginBatch() = 0;
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(const vec3<F32>& vert) = 0;
+    virtual void attribute1i(const std::string& attribName, I32 value) = 0;
     virtual void attribute4ub(const std::string& attribName, const vec4<U8>& value) = 0;
     virtual void attribute4f(const std::string& attribName, const vec4<F32>& value) = 0;
     virtual void end() = 0;

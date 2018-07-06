@@ -4,29 +4,28 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-bool Frustum::ContainsPoint(const vec3<F32>& point) const {
-   for(I8 p = 0; p < 6; ++p)
-      if(_frustumPlanes[p][0] * point.x +
-         _frustumPlanes[p][1] * point.y +
-         _frustumPlanes[p][2] * point.z +
-         _frustumPlanes[p][3] <= 0)
-         return false;
+Frustum::Frustum() : Singleton(), _pointsDirty(true)
+{
+}
 
-   return true;
+bool Frustum::ContainsPoint(const vec3<F32>& point) const {
+    for (const Plane<F32>& frustumPlane : _frustumPlanes){
+        if (frustumPlane.classifyPoint(point) != Plane<F32>::POSITIVE_SIDE)
+            return false;
+    }
+    
+    return true;
 }
 
 I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
-    F32 t = 0.0f;
-    for(U8 p = 0; p < 6; ++p) {
-        t =	_frustumPlanes[p][0] * center.x +
-            _frustumPlanes[p][1] * center.y +
-            _frustumPlanes[p][2] * center.z +
-            _frustumPlanes[p][3];
+    F32 distance = 0.0f;
+    for (const Plane<F32>& frustumPlane : _frustumPlanes){
+        distance = frustumPlane.getDistance(center);
 
-        if( t < -radius)
+        if (distance < -radius)
             return FRUSTUM_OUT;
 
-        if(fabs(t) < radius)
+        if (fabs(distance) < radius)
             return FRUSTUM_INTERSECT;
     }
 
@@ -34,24 +33,18 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 }
 
 I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-    const vec3<F32> *tCorners = bbox.getPoints();
+    const vec3<F32> *boxCorners = bbox.getPoints();
 
     I32 iTotalIn = 0;
     I32 iInCount = 8;
     I32 iPtIn = 1;
-    F32 side = 0.0f;
 
-    for(U8 p = 0; p < 6; ++p) {
+    for (const Plane<F32>& frustumPlane : _frustumPlanes){
         iInCount = 8;
         iPtIn = 1;
 
         for(U8 c = 0; c < 8; ++c) {
-            side = _frustumPlanes[p][0] * tCorners[c].x +
-                   _frustumPlanes[p][1] * tCorners[c].y +
-                   _frustumPlanes[p][2] * tCorners[c].z +
-                   _frustumPlanes[p][3];
-
-            if(side < 0) {
+            if (frustumPlane.classifyPoint(boxCorners[c]) == Plane<F32>::NEGATIVE_SIDE) {
                 iPtIn = 0;
                 iInCount--;
             }
@@ -72,49 +65,93 @@ I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
 void Frustum::Extract(const vec3<F32>& eye){
     _eyePos = eye;
 
-    GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX, _viewProjectionMatrixCache);
+    const mat4<F32>& viewProjectionMatrixCache = GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX);
 
-    _frustumPlanes[0][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 0];
-    _frustumPlanes[0][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 4];
-    _frustumPlanes[0][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[ 8];
-    _frustumPlanes[0][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[12];
+    Plane<F32>& rightPlane  = _frustumPlanes[0];
+    Plane<F32>& leftPlane   = _frustumPlanes[1];
+    Plane<F32>& bottomPlane = _frustumPlanes[2];
+    Plane<F32>& topPlane    = _frustumPlanes[3];
+    Plane<F32>& farPlane    = _frustumPlanes[4];
+    Plane<F32>& nearPlane   = _frustumPlanes[5];
 
-    _frustumPlanes[0].normalize();
+    // Right plane
+    rightPlane.set(viewProjectionMatrixCache[ 3] - viewProjectionMatrixCache[ 0],
+                   viewProjectionMatrixCache[ 7] - viewProjectionMatrixCache[ 4],
+                   viewProjectionMatrixCache[11] - viewProjectionMatrixCache[ 8],
+                   viewProjectionMatrixCache[15] - viewProjectionMatrixCache[12]);
 
-    _frustumPlanes[1][0] = _viewProjectionMatrixCache[ 3] + _viewProjectionMatrixCache[ 0];
-    _frustumPlanes[1][1] = _viewProjectionMatrixCache[ 7] + _viewProjectionMatrixCache[ 4];
-    _frustumPlanes[1][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[ 8];
-    _frustumPlanes[1][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[12];
+    rightPlane.normalize();
 
-    _frustumPlanes[1].normalize();
+    // Left plane
+    leftPlane.set(viewProjectionMatrixCache[ 3] + viewProjectionMatrixCache[ 0],
+                  viewProjectionMatrixCache[ 7] + viewProjectionMatrixCache[ 4],
+                  viewProjectionMatrixCache[11] + viewProjectionMatrixCache[ 8],
+                  viewProjectionMatrixCache[15] + viewProjectionMatrixCache[12]);
 
-    _frustumPlanes[2][0] = _viewProjectionMatrixCache[ 3] + _viewProjectionMatrixCache[ 1];
-    _frustumPlanes[2][1] = _viewProjectionMatrixCache[ 7] + _viewProjectionMatrixCache[ 5];
-    _frustumPlanes[2][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[ 9];
-    _frustumPlanes[2][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[13];
+    leftPlane.normalize();
 
-    _frustumPlanes[2].normalize();
+    // Bottom plane
+    bottomPlane.set(viewProjectionMatrixCache[ 3] + viewProjectionMatrixCache[ 1],
+                    viewProjectionMatrixCache[ 7] + viewProjectionMatrixCache[ 5],
+                    viewProjectionMatrixCache[11] + viewProjectionMatrixCache[ 9],
+                    viewProjectionMatrixCache[15] + viewProjectionMatrixCache[13]);
 
-    _frustumPlanes[3][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 1];
-    _frustumPlanes[3][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 5];
-    _frustumPlanes[3][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[ 9];
-    _frustumPlanes[3][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[13];
+    bottomPlane.normalize();
 
-    _frustumPlanes[3].normalize();
+    // Top plane
+    topPlane.set(viewProjectionMatrixCache[ 3] - viewProjectionMatrixCache[ 1],
+                 viewProjectionMatrixCache[ 7] - viewProjectionMatrixCache[ 5],
+                 viewProjectionMatrixCache[11] - viewProjectionMatrixCache[ 9],
+                 viewProjectionMatrixCache[15] - viewProjectionMatrixCache[13]);
+
+    topPlane.normalize();
 
     // Far Plane
-    _frustumPlanes[4][0] = _viewProjectionMatrixCache[ 3] - _viewProjectionMatrixCache[ 2];
-    _frustumPlanes[4][1] = _viewProjectionMatrixCache[ 7] - _viewProjectionMatrixCache[ 6];
-    _frustumPlanes[4][2] = _viewProjectionMatrixCache[11] - _viewProjectionMatrixCache[10];
-    _frustumPlanes[4][3] = _viewProjectionMatrixCache[15] - _viewProjectionMatrixCache[14];
+    farPlane.set(viewProjectionMatrixCache[ 3] - viewProjectionMatrixCache[ 2],
+                 viewProjectionMatrixCache[ 7] - viewProjectionMatrixCache[ 6],
+                 viewProjectionMatrixCache[11] - viewProjectionMatrixCache[10],
+                 viewProjectionMatrixCache[15] - viewProjectionMatrixCache[14]);
 
-    _frustumPlanes[4].normalize();
+    farPlane.normalize();
 
     // Near Plane
-    _frustumPlanes[5][0] = _viewProjectionMatrixCache[3]  + _viewProjectionMatrixCache[ 2];
-    _frustumPlanes[5][1] = _viewProjectionMatrixCache[7]  + _viewProjectionMatrixCache[ 6];
-    _frustumPlanes[5][2] = _viewProjectionMatrixCache[11] + _viewProjectionMatrixCache[10];
-    _frustumPlanes[5][3] = _viewProjectionMatrixCache[15] + _viewProjectionMatrixCache[14];
+    nearPlane.set(viewProjectionMatrixCache[ 3] + viewProjectionMatrixCache[ 2],
+                  viewProjectionMatrixCache[ 7] + viewProjectionMatrixCache[ 6],
+                  viewProjectionMatrixCache[11] + viewProjectionMatrixCache[10],
+                  viewProjectionMatrixCache[15] + viewProjectionMatrixCache[14]);
+ 
+    nearPlane.normalize();
 
-    _frustumPlanes[5].normalize();
+    _pointsDirty = true;
+
+
+}
+
+void Frustum::intersectionPoint(const Plane<F32> & a, const Plane<F32> & b, const Plane<F32> & c, vec3<F32>& outResult){
+    outResult.set((a.getDistance() * (Cross(b.getNormal(), c.getNormal()))) + 
+                  (b.getDistance() * (Cross(c.getNormal(), a.getNormal()))) + 
+                  (c.getDistance() * (Cross(a.getNormal(), b.getNormal()))) / -Dot(a.getNormal(), Cross(b.getNormal(), c.getNormal())));
+}
+
+void Frustum::updatePoints(){
+    if (!_pointsDirty)
+        return;
+
+    const Plane<F32>& rightPlane  = _frustumPlanes[0];
+    const Plane<F32>& leftPlane = _frustumPlanes[1];
+    const Plane<F32>& bottomPlane = _frustumPlanes[2];
+    const Plane<F32>& topPlane = _frustumPlanes[3];
+    const Plane<F32>& farPlane = _frustumPlanes[4];
+    const Plane<F32>& nearPlane = _frustumPlanes[5];
+
+    intersectionPoint(nearPlane, leftPlane,  topPlane,    _frustumPoints[0]);
+    intersectionPoint(nearPlane, rightPlane, topPlane,    _frustumPoints[1]);
+    intersectionPoint(nearPlane, rightPlane, bottomPlane, _frustumPoints[2]);
+    intersectionPoint(nearPlane, leftPlane,  bottomPlane, _frustumPoints[3]);
+    intersectionPoint(farPlane,  leftPlane,  topPlane,    _frustumPoints[4]);
+    intersectionPoint(farPlane,  rightPlane, topPlane,    _frustumPoints[5]);
+    intersectionPoint(farPlane,  rightPlane, bottomPlane, _frustumPoints[6]);
+    intersectionPoint(farPlane,  leftPlane,  bottomPlane, _frustumPoints[7]);
+
+    _pointsDirty = false;
 }

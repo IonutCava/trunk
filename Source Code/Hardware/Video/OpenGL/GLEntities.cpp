@@ -1,13 +1,13 @@
-//Creation and management of new OpenGL related entities: GL fonts, FBO's, VBO's etc
+//Creation and management of new OpenGL related entities: GL fonts, FB's, VB's etc
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Headers/glImmediateModeEmulation.h"
 
-#include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glVertexArrayObject.h"
-#include "Hardware/Video/OpenGL/Buffers/VertexBufferObject/Headers/glGenericVertexData.h"
-#include "Hardware/Video/OpenGL/Buffers/FrameBufferObject/Headers/glFrameBufferObject.h"
-#include "Hardware/Video/OpenGL/Buffers/PixelBufferObject/Headers/glPixelBufferObject.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
+#include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
+#include "Hardware/Video/OpenGL/Buffers/FrameBuffer/Headers/glFrameBuffer.h"
+#include "Hardware/Video/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 
 namespace IMPrimitiveValidation{
     inline bool isValid(glIMPrimitive* const priv){ return (priv && !priv->inUse()); }
@@ -41,16 +41,16 @@ RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& 
     return New glRenderStateBlock(descriptor);
 }
 
-FrameBufferObject* GL_API::newFBO(const FBOType& type)  {
-    return New glFrameBufferObject(type);
+FrameBuffer* GL_API::newFB(const FBType& type)  {
+    return New glFrameBuffer(type);
 }
 
-VertexBufferObject* GL_API::newVBO(const PrimitiveType& type) {
-    return New glVertexArrayObject(type);
+VertexBuffer* GL_API::newVB(const PrimitiveType& type) {
+    return New glVertexArray(type);
 }
 
-PixelBufferObject* GL_API::newPBO(const PBOType& type) {
-    return New glPixelBufferObject(type);
+PixelBuffer* GL_API::newPB(const PBType& type) {
+    return New glPixelBuffer(type);
 }
 
 GenericVertexData* GL_API::newGVD() {

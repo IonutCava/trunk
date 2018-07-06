@@ -6,8 +6,11 @@
 
 enum RenderStage;
 class Quad3D;
-class FrameBufferObject;
+class Texture;
+class FrameBuffer;
+class ShaderProgram;
 class SamplerDescriptor;
+typedef Texture Texture2D;
 ///It's called a prerender operator because it operates on the buffer before "rendering" to the screen
 ///Technically, it's a post render operation
 class PreRenderOperator {
@@ -40,11 +43,11 @@ public:
 	virtual void operation() = 0;
 	virtual void reshape(I32 width, I32 height) = 0;
 	///Reference to state
-	inline void enabled(bool state)           {_enabled = state;}
-	inline bool enabled()               const {return _enabled; }
-	inline void genericFlag(bool state)       {_genericFlag = state;}
-	inline bool genericFlag()           const {return _genericFlag;}
-	inline void addInputFBO(FrameBufferObject* const input)          {_inputFBO.push_back(input);}
+	inline void enabled(bool state)                       {_enabled = state;}
+	inline bool enabled()                           const {return _enabled; }
+	inline void genericFlag(bool state)                   {_genericFlag = state;}
+	inline bool genericFlag()                       const {return _genericFlag;}
+	inline void addInputFB(FrameBuffer* const input)      {_inputFB.push_back(input);}
 
 protected:
 
@@ -53,7 +56,7 @@ protected:
 	bool    _enabled;
 	///Used to represent anything (for example: HDR on/off for bloom)
 	bool    _genericFlag;
-	vectorImpl<FrameBufferObject* > _inputFBO;
+	vectorImpl<FrameBuffer* > _inputFB;
 	vec2<U16> _resolution;
 	SamplerDescriptor* _internalSampler;
 

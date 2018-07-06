@@ -31,6 +31,11 @@ inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) {
     return v1.x * v2.y - v1.y * v2.x;
 }
 
+template<class T>
+inline vec2<T> Inverse(const vec2<T>& v) {
+    return vec2<T>(v.y, v.x); 
+}
+
 /// multiply a vector by a value
 template<class T>
 inline vec2<T> operator*(T fl, const vec2<T>& v) {
@@ -61,6 +66,10 @@ inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
     return vec3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
 }
 
+template<class T>
+inline vec3<T> Inverse(const vec3<T>& v) {
+    return vec3<T>(v.z, v.y, v.x); 
+}
 /// multiply a vector by a value
 template<class T>
 inline vec4<T> operator*(T fl, const vec4<T>& v) {
@@ -155,7 +164,7 @@ inline vec2<T>::vec2(const vec4<T> &v) {
 */
 /// compare 2 vectors within the specified tolerance
 template<class T>
-inline bool vec3<T>::compare(const vec3 &v,F32 epsi=EPSILON) const {
+inline bool vec3<T>::compare(const vec3 &v, F32 epsi = EPSILON) const {
     return FLOAT_COMPARE_TOLERANCE(this->x,v.x,epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->y,v.y,epsi) &&
            FLOAT_COMPARE_TOLERANCE(this->z,v.z,epsi);
@@ -265,13 +274,13 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
     return vector.dot(*this - vA) / vector.dot(vector);
 }
 
-/// lerp between the 2 specified vectors by the specified ammount
+/// lerp between the 2 specified vectors by the specified amount
 template<class T>
 inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, T factor) const {
     return ((u * (1 - factor)) + (v * factor));
 }
 
-/// lerp between the 2 specified vectors by the specified ammount for each component
+/// lerp between the 2 specified vectors by the specified amount for each component
 template<class T>
 inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, const vec3& factor) const {
     return (vec3((u.x * (1 - factor.x)) + (v.x * factor.x),
@@ -279,13 +288,13 @@ inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, const vec3& factor) c
                  (u.z * (1 - factor.z)) + (v.z * factor.z)));
 }
 
- /// lerp between this and the specified vector by the specified ammount
+ /// lerp between this and the specified vector by the specified amount
 template<class T>
 inline void vec3<T>::lerp(const vec3 &v, T factor) {
     set((*this * (1 - factor)) + (v * factor));
 }
 
-/// lerp between this and the specified vector by the specified ammount for each component
+/// lerp between this and the specified vector by the specified amount for each component
 template<class T>
 inline void vec3<T>::lerp(const vec3 &v,const vec3& factor) {
     set((*this * (1 - factor)) + (v * factor));
@@ -353,22 +362,22 @@ inline vec3<T>::vec3(const vec4<T> &v) {
 *  vec4 inline definitions
 */
 
-/// compare this vector with the one specified and see if they match within the specified ammount
+/// compare this vector with the one specified and see if they match within the specified amount
 template<class T>
-inline bool vec4<T>::compare(const vec4 &v,F32 epsi=EPSILON) const {
+inline bool vec4<T>::compare(const vec4 &v,F32 epsi = EPSILON) const {
     return (FLOAT_COMPARE_TOLERANCE((F32)this->x, (F32)v.x, epsi) &&
             FLOAT_COMPARE_TOLERANCE((F32)this->y, (F32)v.y, epsi) &&
             FLOAT_COMPARE_TOLERANCE((F32)this->z, (F32)v.z, epsi) &&
             FLOAT_COMPARE_TOLERANCE((F32)this->w, (F32)v.w, epsi));
 }
 
-/// lerp between the 2 vectors by the specified ammount
+/// lerp between the 2 vectors by the specified amount
 template<class T>
 inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const {
     return ((u * (1 - factor)) + (v * factor));
 }
 
-/// lerp between the 2 specified vectors by the specified ammount for each componet
+/// lerp between the 2 specified vectors by the specified amount for each component
 template<class T>
 inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, const vec4& factor) const {
     return (vec4((u.x * (1 - factor.x)) + (v.x * factor.x),

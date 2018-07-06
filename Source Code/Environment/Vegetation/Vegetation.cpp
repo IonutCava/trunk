@@ -9,7 +9,7 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 Vegetation::~Vegetation(){
     PRINT_FN(Locale::get("UNLOAD_VEGETATION_BEGIN"),_terrain->getName().c_str());
@@ -70,10 +70,13 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
         _grassShader->Uniform("windSpeed", _windS);
         _grassShader->Uniform("grassScale", _grassSize);
         _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
-        _grassShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
         _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
     _stateRefreshIntervalBuffer += deltaTime;
+}
+
+bool Vegetation::onDraw(const RenderStage& renderStage){
+    return !(!_render || !_success || !_threadedLoadComplete);
 }
 
 void Vegetation::render(SceneGraphNode* const sgn){
@@ -152,19 +155,19 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             ChunkGrassData& chunkGrassData = chunk->getGrassData();
 
             if(chunkGrassData.empty()){
-                assert(chunkGrassData._grassVBO == nullptr);
+                assert(chunkGrassData._grassVB == nullptr);
 
                 U32 chunkSize = size / _terrain->getQuadtree().getChunkCount();
                 chunkGrassData._grassIndices.resize(_billboardCount);
                 chunkGrassData._grassIndexOffset.resize(_billboardCount);
                 chunkGrassData._grassIndexSize.resize(_billboardCount);
-                chunkGrassData._grassVBO = GFX_DEVICE.newVBO(TRIANGLES);
-                chunkGrassData._grassVBO->useLargeIndices(true);
-                chunkGrassData._grassVBO->computeTriangles(false);
-                chunkGrassData._grassVBO->reservePositionCount( chunkSize);
-                chunkGrassData._grassVBO->reserveNormalCount( chunkSize );
-                chunkGrassData._grassVBO->getTexcoord().reserve( chunkSize );
-                chunkGrassData._grassVBO->setShaderProgram(_grassShader);
+                chunkGrassData._grassVB = GFX_DEVICE.newVB(TRIANGLES);
+                chunkGrassData._grassVB->useLargeIndices(true);
+                chunkGrassData._grassVB->computeTriangles(false);
+                chunkGrassData._grassVB->reservePositionCount( chunkSize);
+                chunkGrassData._grassVB->reserveNormalCount( chunkSize );
+                chunkGrassData._grassVB->getTexcoord().reserve( chunkSize );
+                chunkGrassData._grassVB->setShaderProgram(_grassShader);
             }
     
             _grassSize = ((F32)(map_color+1) / 256) * _grassScale;	
@@ -172,9 +175,9 @@ bool Vegetation::generateGrass(U32 billboardCount, U32 size){
             for(U8 i=0; i < 12 ; ++i)	{ // 4 vertices per quad, 3 quads per grass element
                 data.set(matRot * (_vertices[i] * _grassSize));
 
-                chunkGrassData._grassVBO->addPosition(currentVertex + vec3<F32>(Dot(data, T), Dot(data, N), Dot(data, B)));
-                chunkGrassData._grassVBO->addNormal( _texcoords[i%4].t < 0.2f ? N : -N );
-                chunkGrassData._grassVBO->getTexcoord().push_back(vec2<F32>(_texcoords[i%4].s, uv_offset_t + _texcoords[i%4].t));
+                chunkGrassData._grassVB->addPosition(currentVertex + vec3<F32>(Dot(data, T), Dot(data, N), Dot(data, B)));
+                chunkGrassData._grassVB->addNormal( _texcoords[i%4].t < 0.2f ? N : -N );
+                chunkGrassData._grassVB->getTexcoord().push_back(vec2<F32>(_texcoords[i%4].s, uv_offset_t + _texcoords[i%4].t));
             }
 
             U32 idx = (U32)chunkGrassData._grassIndices[index].size();	

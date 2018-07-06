@@ -14,6 +14,17 @@ struct selectionQueueDistanceFrontToBack{
     }
 };
 
+void Scene::onLostFocus(){
+   state()._moveFB = 0;
+   state()._moveLR = 0;
+   state()._roll   = 0; 
+   state()._angleLR = 0;
+   state()._angleUD = 0;
+#ifndef _DEBUG
+   _paramHandler.setParam("freezeLoopTime", true);
+#endif
+}
+
 static vectorImpl<SceneGraphNode* > _sceneSelectionCandidates;
 void Scene::findSelection(F32 mouseX, F32 mouseY){
     const vec2<F32>& zPlanes = Frustum::getInstance().getZPlanes();
@@ -34,12 +45,14 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
         _currentSelection = nullptr;
     }
      // set it's state to selected
-    if(_currentSelection) _currentSelection->setSelected(true);
+    if(_currentSelection) {
+        _currentSelection->setSelected(true);
 #ifdef _DEBUG
-    _pointsA[DEBUG_LINE_RAY_PICK].push_back(startRay);
-    _pointsB[DEBUG_LINE_RAY_PICK].push_back(endRay);
-    _colors[DEBUG_LINE_RAY_PICK].push_back(vec4<U8>(0,255,0,255));
+        _pointsA[DEBUG_LINE_RAY_PICK].push_back(startRay);
+        _pointsB[DEBUG_LINE_RAY_PICK].push_back(endRay);
+        _colors[DEBUG_LINE_RAY_PICK].push_back(vec4<U8>(0,255,0,255));
 #endif
+    }
 }
 
 bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
@@ -107,9 +120,12 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_RIGHT:	state()._angleLR = 0; break;
         case OIS::KC_UP   :
         case OIS::KC_DOWN : state()._angleUD = 0; break;
-        case OIS::KC_F2:{
+        case OIS::KC_P: 
+            _paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false)); 
+            break;
+        case OIS::KC_F2:
             renderState().toggleSkeletons();
-        }break;
+            break;
         case OIS::KC_F3:
             _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
             break;

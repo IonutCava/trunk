@@ -27,13 +27,18 @@ void AITenisScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void AITenisScene::processTasks(const U64 deltaTime){
+void AITenisScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = 0.7;
-    if (_taskTimers[0] >= FpsDisplay){
+    if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[0] = 0.0;
+        _guiTimers[0] = 0.0;
     }
+    Scene::processGUI(deltaTime);
+}
+
+void AITenisScene::processTasks(const U64 deltaTime){
+
 
     Scene::processTasks(deltaTime);
 
@@ -394,7 +399,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f,0.2f,0.2f),
                   "Number of items in Render Bin: %d",0);
-    _taskTimers.push_back(0.0); //Fps
+    _guiTimers.push_back(0.0); //Fps
     return true;
 }
 

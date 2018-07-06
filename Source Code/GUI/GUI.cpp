@@ -125,6 +125,7 @@ bool GUI::init(){
     shaderMask.i = 0;
     shaderMask.b.b1 = 1;//<Only fragment shader
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
+    immediateModeShader.setThreadedLoading(false);
     //immediateModeShader.setBoolMask(shaderMask);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
 

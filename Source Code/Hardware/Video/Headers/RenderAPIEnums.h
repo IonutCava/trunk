@@ -29,7 +29,7 @@
 #endif
 
 namespace Divide {
-    ///State the various attribute locations to use in shaders with VAO/VBO's
+    ///State the various attribute locations to use in shaders with VAO/VB's
     enum {
          VERTEX_POSITION_LOCATION    = 0,
          VERTEX_COLOR_LOCATION       = 1,
@@ -45,10 +45,12 @@ namespace Divide {
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
 enum MATRIX_MODE{
     VIEW_MATRIX = 0,
-    PROJECTION_MATRIX = 1,
-    VIEW_PROJECTION_MATRIX = 2,
-    VIEW_PROJECTION_INV_MATRIX  = 3, //<ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
-    TEXTURE_MATRIX = 4
+    VIEW_INV_MATRIX = 1,
+    PROJECTION_MATRIX = 2,
+    PROJECTION_INV_MATRIX = 3,
+    VIEW_PROJECTION_MATRIX = 4,
+    VIEW_PROJECTION_INV_MATRIX  = 5, //<ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
+    TEXTURE_MATRIX = 6
 };
 
 ///Compund matrices or sub-matrices
@@ -89,45 +91,33 @@ enum RenderStage {
     DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE
 };
 
-enum PBOType {
-    PBO_TEXTURE_1D,
-    PBO_TEXTURE_2D,
-    PBO_TEXTURE_3D
+enum PBType {
+    PB_TEXTURE_1D,
+    PB_TEXTURE_2D,
+    PB_TEXTURE_3D
 };
 
-enum FBOType {
-    FBO_PLACEHOLDER,
-    FBO_2D_COLOR,
-    FBO_2D_ARRAY_COLOR, ///<FBO that uses texture arrays
-    FBO_2D_COLOR_MS,///<Multisampled FBO with fallback to FBO_2D_COLOR
-    FBO_CUBE_COLOR,
-    FBO_CUBE_COLOR_ARRAY,
-    FBO_CUBE_DEPTH_ARRAY,
-    FBO_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
-    FBO_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
-    FBO_CUBE_DEPTH,
-    FBO_2D_DEFERRED
+enum FBType {
+    FB_PLACEHOLDER,
+    FB_2D_COLOR,
+    FB_2D_ARRAY_COLOR, ///<FB that uses texture arrays
+    FB_2D_COLOR_MS,    ///<Multisampled FB with fallback to FB_2D_COLOR
+    FB_CUBE_COLOR,
+    FB_CUBE_COLOR_ARRAY,
+    FB_CUBE_DEPTH_ARRAY,
+    FB_2D_DEPTH,  ///< This is the same as 2D_COLOR with color writes disabled.
+    FB_2D_ARRAY_DEPTH, ///< This is the same as 2D_DEPTH but uses array textures
+    FB_CUBE_DEPTH,
+    FB_2D_DEFERRED
 };
 
 enum RenderAPI {
-    OpenGL,
-    OpenGLES,
-    Direct3D,///< not supported yet
-    Software,///< not supported yet
+    OpenGL,  ///< 4.x+
+    OpenGLES,///< 3.x+
+    Direct3D,///< 11.x+
+    Mantle,  ///< not supported yet
     None,    ///< not supported yet
     GFX_RENDER_API_PLACEHOLDER
-};
-
-enum RenderAPIVersion{
-    OpenGL1x,  ///< support dropped
-    OpenGL2x,  ///< support dropped
-    OpenGL3x,
-    OpenGL4x,  ///< not supported yet
-    Direct3D8, ///< support dropped
-    Direct3D9, ///< support dropped
-    Direct3D10,///< not supported yet
-    Direct3D11,///< not supported yet
-    GFX_RENDER_API_VER_PLACEHOLDER
 };
 
 enum PrimitiveType {
@@ -138,10 +128,9 @@ enum PrimitiveType {
     TRIANGLES       = 0x0004,
     TRIANGLE_STRIP  = 0x0005,
     TRIANGLE_FAN    = 0x0006,
-    QUADS           = 0x0007,
-    QUAD_STRIP      = 0x0008,
-    POLYGON         = 0x0009,
-    PrimitiveType_PLACEHOLDER = 0x0010
+    QUAD_STRIP      = 0x0007,
+    POLYGON         = 0x0008,
+    PrimitiveType_PLACEHOLDER = 0x009
 };
 
 enum RenderDetailLevel{
@@ -294,7 +283,8 @@ enum TextureWrap {
     /** If the texture coordinates for a pixel are outside [0...1] the texture is not applied to that pixel */
     TEXTURE_DECAL = 0x3,
     TEXTURE_REPEAT = 0x4,
-    TextureWrap_PLACEHOLDER = 0x5
+    TEXTURE_MIRROR_REPEAT = 0x5,
+    TextureWrap_PLACEHOLDER = 0x6
 };
 
 enum GFXImageFormat{
@@ -359,7 +349,4 @@ enum GPUVendor {
     GPU_VENDOR_PLACEHOLDER
 };
 
-enum GPURenderer{
-    GPU_RENDERER_PLACEHOLDER
-};
 #endif

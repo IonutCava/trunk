@@ -4,22 +4,9 @@
 
 #include "lightInput.cmn"
 
-#if defined(USE_RELIEF_MAPPING)
 out vec4 _vertexWV;
-#else
-vec4 _vertexWV;
-#endif
-
 out vec3 _normalWV;
 out vec3 _viewDirection;
-out vec3 _lightDirection[MAX_LIGHT_COUNT]; //<Light direction
-out vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS];
-smooth out float _attenuation[MAX_LIGHT_COUNT];
-
-uniform bool dvd_enableShadowMapping = false;
-uniform int  dvd_lightCount;
-uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
-uniform mat4 dvd_TestViewMatrix;
 
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
 
@@ -35,7 +22,7 @@ void loopNormalLOD(in vec3 T, in vec3 B) {
 
     int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
 
-    for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+    for (int i = 0; i < MAX_LIGHTS_PER_NODE; i++){
         if(currentLightCount == i) break;
 
         currentLight = dvd_LightSource[dvd_lightIndex[i]];
@@ -85,7 +72,7 @@ void loopLowLOD() {
 
     int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1.0f)));
 
-    for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+    for (int i = 0; i < MAX_LIGHTS_PER_NODE; i++){
         if(currentLightCount == i) break;
 
         currentLight = dvd_LightSource[dvd_lightIndex[i]];
@@ -144,12 +131,4 @@ void computeLightVectors(){
         loopLowLOD();
     #endif
    
-
-    if(dvd_enableShadowMapping) {
-        for(int i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
-            if(dvd_lightCount == i) break;
-
-            _shadowCoord[i] = dvd_lightProjectionMatrices[i] * _vertexW;
-        }
-    }	
 }

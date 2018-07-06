@@ -16,9 +16,9 @@ WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
     return ptr;
 }
 
-#pragma message("HACK: ToDo: add proper water alpha controls")
 template<>
 bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::string& name) {
+    STUBBED("HACK: ToDo: add proper water alpha controls")
     res->setState(RES_LOADING);
 
     ///Set water plane to be single-sided

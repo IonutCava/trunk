@@ -20,8 +20,28 @@
 
 REGISTER_SCENE(WarScene);
 
+
 void WarScene::preRender(){
     
+}
+
+void WarScene::processGUI(const U64 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    if (_guiTimers[0] >= FpsDisplay){
+        const Camera& cam = renderState().getCamera();
+        const vec3<F32>& eyePos = cam.getEye();
+        const vec3<F32>& euler = cam.getEuler();
+        //const vec3<F32>& lampPos = _lampLightNode->getTransform()->getPosition();
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _GUI->modifyText("camPosition", "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
+        /*_GUI->modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
+        lampPos.x, lampPos.y, lampPos.z);*/
+
+        _guiTimers[0] = 0.0;
+    }
+    Scene::processGUI(deltaTime);
 }
 
 void WarScene::processTasks(const U64 deltaTime){
@@ -47,42 +67,27 @@ void WarScene::processTasks(const U64 deltaTime){
     LightManager::getInstance().getLight(0)->setDirection(_sunvector);
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 
-    D32 FpsDisplay = getSecToMs(0.3);
     D32 BobTimer = getSecToMs(5);
     D32 DwarfTimer = getSecToMs(8);
     D32 BullTimer = getSecToMs(10);
 
-    if (_taskTimers[0] >= FpsDisplay){
-        const Camera& cam = renderState().getCamera();
-        const vec3<F32>& eyePos = cam.getEye();
-        const vec3<F32>& euler  = cam.getEuler();
-        //const vec3<F32>& lampPos = _lampLightNode->getTransform()->getPosition();
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _GUI->modifyText("camPosition","Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                         eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
-        /*_GUI->modifyText("lampPosition","Lamp Position  [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
-                            lampPos.x, lampPos.y, lampPos.z);*/
-        
-        _taskTimers[0] = 0.0;
-    }
-    if(_taskTimers[1] >= BobTimer){
+    if(_taskTimers[0] >= BobTimer){
         if(_bobNode)
             _bobNode->getComponent<AnimationComponent>()->playNextAnimation();
 
-        _taskTimers[1] = 0.0;
+        _taskTimers[0] = 0.0;
     }
-    if(_taskTimers[2] >= DwarfTimer){
+    if(_taskTimers[1] >= DwarfTimer){
         SceneGraphNode* dwarf = _sceneGraph->findNode("Soldier1");
          if(dwarf)
              dwarf->getComponent<AnimationComponent>()->playNextAnimation();
-        _taskTimers[2] = 0.0;
+        _taskTimers[1] = 0.0;
     }
-    if(_taskTimers[3] >= BullTimer){
+    if(_taskTimers[2] >= BullTimer){
         SceneGraphNode* bull = _sceneGraph->findNode("Soldier2");
          if(bull)
              bull->getComponent<AnimationComponent>()->playNextAnimation();
-        _taskTimers[3] = 0.0;
+        _taskTimers[2] = 0.0;
     }
     Scene::processTasks(deltaTime);
 }
@@ -118,7 +123,7 @@ static boost::atomic_bool navMeshStarted;
 void navMeshCreationCompleteCallback(Navigation::NavigationMesh* navMesh){
     navMesh->save();
     AIManager::getInstance().addNavMesh(navMesh);
-    AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+    //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 }
 
 void WarScene::updateSceneStateInternal(const U64 deltaTime){
@@ -137,7 +142,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
         else{
             AIManager::getInstance().addNavMesh(navMesh);
 #ifdef _DEBUG
-            AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
+            //AIManager::getInstance().toggleNavMeshDebugDraw(navMesh, true);
 #endif
         }
 
@@ -160,7 +165,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
     _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
-    renderState().drawDebugLines(true);
+    //renderState().drawDebugLines(true);
 
     U32 count = 0;
     FOR_EACH(AIEntity* character, _army1){
@@ -188,7 +193,8 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
     //Position camera
     renderState().getCamera().setEye(vec3<F32>(54.5f, 25.5f, 1.5f));
     renderState().getCamera().setGlobalRotation(-90/*yaw*/,35/*pitch*/);
-  
+    renderState().csmSplitCount(3); // 3 splits
+    renderState().shadowMapResolutionFactor(4.0f); //2048x2048 per split
     // Add some obstacles
     SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
     SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
@@ -273,7 +279,11 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
 
     ParticleEmitterDescriptor particleSystem;
+#ifdef _DEBUG
+    particleSystem._particleCount = 200;
+#else
     particleSystem._particleCount = 20000;
+#endif
     particleSystem._spread = 5.0f;
 
     ParticleEmitter* test = addParticleEmitter("TESTPARTICLES", particleSystem);
@@ -452,7 +462,7 @@ bool WarScene::loadResources(bool continueOnErrors){
     cam->setTurnSpeedFactor(0.01f);
     _cameraMgr->addNewCamera("tpsCamera", cam);
 
-    _taskTimers.push_back(0.0); //Fps
+    _guiTimers.push_back(0.0); //Fps
     _taskTimers.push_back(0.0); //animation bull
     _taskTimers.push_back(0.0); //animation dwarf
     _taskTimers.push_back(0.0); //animation bob

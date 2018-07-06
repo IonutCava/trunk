@@ -52,7 +52,9 @@ public:
                         _drawObjects(true),
                         _debugDrawLines(false),
                         _camera(nullptr),
-                        _shadowMapResolutionFactor(1)
+                        _shadowMapResolutionFactor(1),
+                        _csmSplitCount(3),
+                        _csmSplitLogFactor(0.95f)
     {
     }
 
@@ -91,7 +93,11 @@ public:
     ///This can be dinamically controlled in case scene rendering needs it
     inline F32  shadowMapResolutionFactor()           const {return _shadowMapResolutionFactor;}
     inline void shadowMapResolutionFactor(F32 factor)       {_shadowMapResolutionFactor = factor;}
-
+    inline U8   csmSplitCount()               const { return _csmSplitCount; }
+    inline void csmSplitCount(U8 splitCount)        { _csmSplitCount = splitCount; }
+    inline F32  csmSplitLogFactor()           const { return _csmSplitLogFactor; }
+    inline void csmSplitLogFactor(F32 factor)       { _csmSplitLogFactor = factor; }
+    
 protected:
     friend class Scene;
     bool _drawBB;
@@ -103,6 +109,10 @@ protected:
     vec2<U16> _cachedResolution;
     ///cached shadowmap resolution factor
     F32       _shadowMapResolutionFactor;
+    ///CSM split count
+    U8        _csmSplitCount;
+    ///CSM split weight
+    F32       _csmSplitLogFactor;
 };
 
 class SceneState{

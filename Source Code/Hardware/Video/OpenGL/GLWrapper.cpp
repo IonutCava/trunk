@@ -30,8 +30,8 @@ namespace IMPrimitiveValidation{
 }
 
 void GL_API::beginFrame(){
-    GLCheck(glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]));
-    GLCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     SET_DEFAULT_STATE_BLOCK();
 }
@@ -55,8 +55,8 @@ void GL_API::endFrame(){
     clearStates(false,false,false,true);
 
     glfwSwapBuffers(Divide::GL::_mainWindow);
-    GLCheck(glEndQuery(GL_TIME_ELAPSED));
-    GLCheck(glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &_frameDurationGPU));
+    glEndQuery(GL_TIME_ELAPSED);
+    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &_frameDurationGPU);
 
     if (_queryBackBuffer) {
         _queryBackBuffer = 0;
@@ -88,7 +88,7 @@ void GL_API::debugDraw(){
             SET_DEFAULT_STATE_BLOCK(true);
         }
         if(priv->_hasLines){
-            GLCheck(glLineWidth(std::min(priv->_lineWidth, (F32)_lineWidthLimit)));
+            glLineWidth(std::min(priv->_lineWidth, (F32)_lineWidthLimit));
         }
 
         bool texture = (priv->_texture != nullptr);
@@ -104,7 +104,7 @@ void GL_API::debugDraw(){
         priv->renderBatch(priv->forceWireframe());
 
         if(priv->_hasLines) {
-            GLCheck(glLineWidth(1.0f));
+            glLineWidth(1.0f);
         }
         if(priv->_texture){
             priv->_texture->Unbind(0);
@@ -276,7 +276,7 @@ void GL_API::Screenshot(char *filename, const vec4<GLfloat>& rect){
     // allocate memory for the pixels
     GLubyte *imageData = New GLubyte[w * h * 4];
     // read the pixels from the frame buffer
-    GLCheck(glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData));
+    glReadPixels(rect.x,rect.y,rect.z,rect.w,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid*)imageData);
     //save to file
     ImageTools::SaveSeries(filename,vec2<GLushort>(w,h),32,imageData);
 }

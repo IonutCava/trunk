@@ -129,6 +129,8 @@ public:
     inline const vec3<F32>&  getEuler()      const {return _euler;}
     inline const vec3<F32>&  getTarget()     const {return _target;}
     inline const mat4<F32>&  getViewMatrix()       {updateViewMatrix(); return _viewMatrix;}
+    inline const mat4<F32>&  getWorldMatrix()      {getViewMatrix().inverse(_worldMatrix); return _worldMatrix;}
+                 void        getFrustumCorners(vectorImpl<vec3<F32>>& corners, const vec2<F32>& zPlanes, F32 verticalFoVRadians) const;
     ///Nothing really to unload
     virtual bool unload() {return true;}
     ///Add an event listener called after every RenderLookAt or RenderLookAtCube call
@@ -145,6 +147,7 @@ protected:
     virtual void updateViewMatrix();
 
 protected:
+    mat4<F32>       _worldMatrix;
     mat4<F32>       _viewMatrix;
     mat4<F32>       _reflectedViewMatrix;
     Quaternion<F32> _orientation;

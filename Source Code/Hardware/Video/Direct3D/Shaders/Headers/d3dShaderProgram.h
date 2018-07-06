@@ -31,7 +31,7 @@ public:
     ~d3dShaderProgram(){};
 
     bool unload(){unbind(); return true;}
-    void bind(){}
+    bool bind(){return false;}
     void unbind(bool resetActiveProgram = true){}
     void attachShader(Shader* const shader,const bool refresh = false){}
     void detachShader(Shader* const shader) {}
@@ -63,7 +63,7 @@ public:
 
 private:
     I32  cachedLoc(const std::string& name, const bool uniform = true) { return -1; }
-    bool flushLocCache(){return true;}
+    void flushLocCache(){}
 
 private:
     Unordered_map<std::string, I32 > _shaderVars;
@@ -71,7 +71,6 @@ private:
 protected:
     inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
     void validate(){}
-    void link(){}
 };
 
 #endif

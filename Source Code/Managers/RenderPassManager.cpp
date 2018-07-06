@@ -8,7 +8,7 @@ struct RenderPassCallOrder{
     }
 };
 
-RenderPassManager::RenderPassManager() : _renderPassesLocked(false)
+RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPassesResetQueued(false)
 {
     RenderQueue::createInstance();
 }
@@ -27,8 +27,9 @@ void RenderPassManager::lock() {
     RenderQueue::getInstance().lock();
 }
 
-void RenderPassManager::unlock() {
+void RenderPassManager::unlock(bool resetNodes) {
     _renderPassesLocked = false;
+    _renderPassesResetQueued = true;
     RenderQueue::getInstance().unlock();
 }
 

@@ -101,11 +101,15 @@ void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
-void SceneManager::renderVisibleNodes() {
+void SceneManager::updateVisibleNodes() {
     SceneGraph* sceneGraph = _activeScene->getSceneGraph();
     //sceneGraph->update();
     _renderPassCuller->cullSceneGraph(sceneGraph->getRoot(), _activeScene->state());
-    _renderPassManager->render(_activeScene->renderState(), sceneGraph);
+}
+
+void SceneManager::renderVisibleNodes() {
+    updateVisibleNodes();
+    _renderPassManager->render(_activeScene->renderState(), _activeScene->getSceneGraph());
 }
 
 void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {

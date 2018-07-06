@@ -1,5 +1,5 @@
 -- Vertex
-#include "vboInputData.vert"
+#include "vbInputData.vert"
 out vec3 normals;
 out vec3 position;
 out mat4 TBN;
@@ -34,9 +34,6 @@ layout(std140) uniform dvd_MatrixBlock
     mat4 dvd_ViewMatrix;
 	mat4 dvd_ViewProjectionMatrix;
 };
-
-in vec3  inVertexData;
-in vec3  inNormalData;
 
 out vec3 normals;
 out vec3 position;

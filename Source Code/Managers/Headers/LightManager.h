@@ -54,8 +54,11 @@ public:
     void idle();
     void update(const bool force = false);
     inline LightMap& getLights()      {return _lights;}
-    inline Light*    getLight(U32 id) {return _lights[id];}
+    inline Light*    getLight(U32 id) {if(_lights.find(id) != _lights.end() ) return _lights[id]; else return nullptr;}
     inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
+
+    inline Light*    getCurrentLight()             const { return _currLight; }
+    inline void      setCurrentLight(Light* light)       { _currLight = light; }
     ///shadow mapping
     void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
     void unbindDepthMaps(Light* light, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
@@ -64,11 +67,9 @@ public:
 
     ///shadow mapping
     void previewShadowMaps(Light* light = nullptr);
-    inline void togglePreviewShadowMaps() {_previewShadowMaps = !_previewShadowMaps;}
+    void togglePreviewShadowMaps();
 
-    inline       F32                     getLigthOrthoHalfExtent()              const {return _worldHalfExtent;}
     inline       U16                     getLightCountForCurrentNode()          const {return (U16)_currLightsPerNode.size();}
-    inline const vectorImpl<mat4<F32> >& getLightProjectionMatricesCache()      const {return _lightProjectionMatricesCache;}
     inline const vectorImpl<I32>&        getLightTypesForCurrentNode()          const {return _currLightTypes;}
     inline const vectorImpl<I32>&        getLightIndicesForCurrentNode()        const {return _currLightIndices;}
     inline const vectorImpl<I32>&        getShadowCastingLightsForCurrentNode() const {return _currShadowLights;}
@@ -89,14 +90,13 @@ private:
     Light*    _dominantLight;
     Light*    _currLight;
     bool      _shadowMapsEnabled;
-    F32       _worldHalfExtent;
     vec4<F32> _ambientLight;
+
     vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currShadowLights;
     vectorImpl<I32>         _currLightIndices;
     vectorImpl<Light* >     _currLightsPerNode;
     vectorImpl<Light* >     _tempLightsPerNode;
-    vectorImpl<mat4<F32 > > _lightProjectionMatricesCache;
 END_SINGLETON
 
 #endif

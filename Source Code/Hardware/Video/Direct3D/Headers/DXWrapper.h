@@ -26,10 +26,10 @@
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
 #include "core.h"
-#include "Hardware/Video/Direct3D/Buffers/FrameBufferObject/Headers/d3dFrameBufferObject.h"
-#include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dVertexBufferObject.h"
-#include "Hardware/Video/Direct3D/Buffers/VertexBufferObject/Headers/d3dGenericVertexData.h"
-#include "Hardware/Video/Direct3D/Buffers/PixelBufferObject/Headers/d3dPixelBufferObject.h"
+#include "Hardware/Video/Direct3D/Buffers/FrameBuffer/Headers/d3dRenderTarget.h"
+#include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dVertexBuffer.h"
+#include "Hardware/Video/Direct3D/Buffers/VertexBuffer/Headers/d3dGenericVertexData.h"
+#include "Hardware/Video/Direct3D/Buffers/PixelBuffer/Headers/d3dPixelBuffer.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShaderProgram.h"
 #include "Hardware/Video/Direct3D/Shaders/Headers/d3dShader.h"
 #include "Hardware/Video/Direct3D/Textures/Headers/d3dTexture.h"
@@ -49,8 +49,9 @@ private:
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
     vec3<F32> unproject(const vec3<F32>& windowCoord) const;
-    void lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection);
-    void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
+    F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection);
+    F32* lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
+    const F32* getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
     void idle();
     void flush();
     void beginFrame();
@@ -58,13 +59,13 @@ private:
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
-    inline FrameBufferObject*  newFBO(const FBOType& type)                          {return New d3dFrameBufferObject(type); }
-    inline GenericVertexData*  newGVD()                                             {return New d3dGenericVertexData(); }
-    inline VertexBufferObject* newVBO(const PrimitiveType& type)                    {return New d3dVertexBufferObject(type);}
-    inline PixelBufferObject*  newPBO(const PBOType& type)                          {return New d3dPixelBufferObject(type);}
-    inline Texture2D*          newTexture2D(const bool flipped = false)             {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
-    inline TextureCubemap*     newTextureCubemap(const bool flipped = false)        {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
-    inline ShaderProgram*      newShaderProgram(const bool optimise = false)        {return New d3dShaderProgram(optimise);}
+    inline FrameBuffer*        newFB(const FBType& type)                      {return New d3dRenderTarget(type); }
+    inline GenericVertexData*  newGVD()                                       {return New d3dGenericVertexData(); }
+    inline VertexBuffer*       newVB(const PrimitiveType& type)               {return New d3dVertexBuffer(type);}
+    inline PixelBuffer*        newPB(const PBType& type)                      {return New d3dPixelBuffer(type);}
+    inline Texture2D*          newTexture2D(const bool flipped = false)       {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
+    inline TextureCubemap*     newTextureCubemap(const bool flipped = false)  {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
+    inline ShaderProgram*      newShaderProgram(const bool optimise = false)  {return New d3dShaderProgram(optimise);}
 
     inline Shader*             newShader(const std::string& name,const  ShaderType& type,const bool optimise = false)  {return New d3dShader(name,type,optimise);}
            bool                initShaders();
@@ -72,8 +73,9 @@ private:
 
     void lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView = true, bool lockProjection = true);
     void releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView = true, bool releaseProjection = true);
-    void setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    void setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
+    F32* setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
+    const F32* getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
+    F32* setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
     void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false);
 
     void toggle2D(bool _2D);

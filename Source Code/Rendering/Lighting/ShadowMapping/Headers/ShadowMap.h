@@ -28,14 +28,15 @@
 enum ShadowType{
     SHADOW_TYPE_NONE = -1,
     SHADOW_TYPE_Single,
-    SHADOW_TYPE_PSSM,
+    SHADOW_TYPE_CSM,
     SHADOW_TYPE_CubeMap,
     SHADOW_TYPE_PLACEHOLDER,
 };
 
 class Light;
 class ParamHandler;
-class FrameBufferObject;
+class ShadowMapInfo;
+class FrameBuffer;
 class SceneRenderState;
 ///All the information needed for a single light's shadowmap
 class ShadowMap {
@@ -49,32 +50,36 @@ public:
     ///Setup needed after rendering the light
     virtual void postRender();
     ///Get the current shadow mapping tehnique
-    inline ShadowType getShadowMapType() const {return _shadowMapType;};
+    inline  ShadowType             getShadowMapType()     const { return _shadowMapType; }
+    inline  FrameBuffer*           getDepthMap()                { return _depthMap; }
+    inline  const vectorImpl<F32>& getShadowFloatValues() const { return _shadowFloatValues; }
 
-    inline  FrameBufferObject* getDepthMap() {return _depthMap;}
     inline  bool isBound() {return _isBound;}
+
             U16  resolution();
-    virtual void resolution(U16 resolution, const SceneRenderState& sceneRenderState) {_init = true;}
+    virtual void resolution(U16 resolution, F32 resolutionFactor) {}
+
+    virtual void init(ShadowMapInfo* const smi) = 0;
     virtual bool Bind(U8 offset);
     virtual bool Unbind(U8 offset);
     virtual void previewShadowMaps() = 0;
-
-protected:
-    virtual void renderInternal(const SceneRenderState& renderState) const = 0;
+    virtual void togglePreviewShadowMaps(bool state) {}
 
 protected:
     ShadowType _shadowMapType;
     ///The depth maps. Number depends on the current method
-    FrameBufferObject*  _depthMap;
+    FrameBuffer* _depthMap;
     ///A global resolution factor for all methods (higher = better quality)
     F32 _resolutionFactor;
     U16 _maxResolution;
-    DELEGATE_CBK _callback;
-    ///Internal pointer to the parrent light
+    ///Internal pointer to the parent light
     Light* _light;
     ParamHandler& _par;
     bool _init;
     bool _isBound;
+    mat4<F32> _bias;
+    // _shadowFloatValues are generic floating point values needed for shadow mapping such as farBounds, biases, etc.
+    vectorImpl<F32>        _shadowFloatValues;
 };
 
 class ShadowMapInfo {
@@ -83,21 +88,24 @@ public:
     virtual ~ShadowMapInfo();
     inline ShadowMap* getShadowMap() {return _shadowMap;}
            ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState);
-    inline U16  resolution() const {return _resolution;}
-
-    inline void resolution(U16 resolution, const SceneRenderState& sceneRenderState) {
+    inline U16  resolution()       const {return _resolution;}
+    inline F32  resolutionFactor() const {return _resolutionFactor;}
+    inline void resolution(U16 resolution, F32 resolutionFactor) {
         _resolution = resolution;
+        _resolutionFactor = resolutionFactor;
         if(_shadowMap)
-            _shadowMap->resolution(_resolution,sceneRenderState);
+            _shadowMap->resolution(_resolution, _resolutionFactor);
     }
 
+    inline U8   numLayers()              const {return _numLayers;}
+    inline void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs(layerCount), Config::MAX_SPLITS_PER_LIGHT); }
+
 private:
+    U8         _numLayers;
     U16        _resolution;
+    F32        _resolutionFactor;
     ShadowMap* _shadowMap;
     Light*     _light;
-public:
-
-    U8         _numSplits;
 };
 
 #endif

@@ -28,6 +28,7 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 class Shader;
+class Material;
 enum ShaderType;
 enum MATRIX_MODE;
 
@@ -35,10 +36,11 @@ class ShaderProgram : public HardwareResource {
 public:
     virtual ~ShaderProgram();
 
-    virtual void bind();
+    virtual bool bind();
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
+    void ApplyMaterial(Material* const material);
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
     inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
@@ -100,7 +102,7 @@ public:
     inline bool isBound() const {return _bound;}
 
     //calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
-           void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false);
+           void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
     //calling refresh will force an update on default shader uniforms
            void refresh() {_dirty = true;}
     //add global shader defines
@@ -109,15 +111,20 @@ public:
     //add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
            void addShaderUniform(const std::string& uniform, const ShaderType& type);
            void removeUniform(const std::string& uniform, const ShaderType& type);
+    //flash stored uniform locations
+    virtual void flushLocCache() = 0;
 
     inline void setShaderMask(const P32 mask) {
         _useVertex       = (mask.b.b0 == 1);
         _useFragment     = (mask.b.b1 == 1);
         _useGeometry     = (mask.b.b2 == 1);
         _useTessellation = (mask.b.b3 == 1);
-        _compiled = false;
+        _linked = false;
     }
 
+    inline void useCompute(const bool state){
+        _useCompute = state;
+    }
     void uploadNodeMatrices();
 
 protected:
@@ -130,11 +137,9 @@ protected:
 protected:
 
     ShaderProgram(const bool optimise = false);
-    void threadedLoad(const std::string& name);
 
     virtual I32 cachedLoc(const std::string& name, const bool uniform = true) = 0;
     virtual void validate() = 0;
-    virtual void link() = 0;
     template<typename T>
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const std::string& name);
@@ -145,15 +150,17 @@ protected:
     bool _useGeometry;
     bool _useFragment;
     bool _useVertex;
+    bool _useCompute;
     bool _refreshVert;
     bool _refreshFrag;
     bool _refreshGeom;
     bool _refreshTess;
+    bool _refreshComp;
     bool _optimise;
     bool _dirty;
     bool _wasBound;
     boost::atomic_bool _bound;
-    boost::atomic_bool _compiled;
+    boost::atomic_bool _linked;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
     U64 _elapsedTime;
     F32 _elapsedTimeMS;
@@ -169,18 +176,19 @@ protected:
     ShaderIdMap _shaderIdMap;
     ///cached clipping planes
     vectorImpl<vec4<F32> > _clipPlanes;
-    ///cached clippin planes' states
+    ///cached clipping planes' states
     vectorImpl<I32 >       _clipPlanesStates;
 
 private:
-    ///Small hack to avoid stack allocations
-    mat4<F32> _cachedMatrix;
-    mat3<F32> _cachedNormalMatrix;
+    char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
 
     ///Various uniform/attribute locations
+#if defined(CSM_USE_LAYERED_RENDERING)
+    I32 _shadowCPV[Config::MAX_SPLITS_PER_LIGHT];
+#endif
     I32 _timeLoc;
     I32 _cameraLocationLoc;
     I32 _clipPlanesLoc;

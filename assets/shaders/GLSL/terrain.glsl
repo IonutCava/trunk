@@ -8,8 +8,6 @@ layout(std140) uniform dvd_MatrixBlock
     mat4 dvd_ViewProjectionMatrix;
 };
 
-in vec3  inVertexData;
-
 void main(void){
     vec4 dvd_Vertex = vec4(inVertexData,1.0);
     gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * dvd_Vertex;
@@ -17,7 +15,7 @@ void main(void){
 
 -- Vertex
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
-#include "vboInputData.vert"
+#include "vbInputData.vert"
 
 uniform vec3 bbox_min;
 uniform vec3 bbox_diff;
@@ -32,15 +30,6 @@ void main(void){
 
     computeLightVectors();
     
-    if(dvd_enableShadowMapping) {
-        // Transformed position 
-        //vec4 pos = dvd_WorldViewMatrix * dvd_Vertex;
-        // position multiplied by the inverse of the camera matrix
-        //pos = dvd_WorldViewMatrixInverse * pos;
-        // position multiplied by the light matrix. The vertex's position from the light's perspective
-        _shadowCoord[0] = dvd_lightProjectionMatrices[0] * dvd_Vertex;
-    }
-
     gl_Position = dvd_ViewProjectionMatrix * dvd_Vertex;
 }
 
@@ -59,7 +48,6 @@ void main (void)
 -- Fragment
 
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
-in vec3 _lightDirection[MAX_LIGHT_COUNT];
 in vec3 _viewDirection;
 in vec2 _texCoord;
 in vec3 _normalMV;
@@ -78,7 +66,6 @@ uniform sampler2D texBlend3;
 uniform sampler2D texWaterCaustics;
 
 uniform int   dvd_lightCount;
-uniform int   dvd_lightType[MAX_LIGHT_COUNT];
 uniform float dvd_time;
 uniform bool  dvd_isReflection;
 
@@ -101,11 +88,7 @@ vec4 CausticsColor();
 #include "shadowMapping.frag"
 
 
-#if defined(SKIP_HARDWARE_CLIPPING)
-bool isUnderWater() { return dvd_ClipDistance[0] < 0; }
-#else
 bool isUnderWater() { return gl_ClipDistance[0] < 0; }
-#endif
     
 void main (void)
 {
@@ -132,7 +115,7 @@ vec4 CausticsColor()
 const float shadowMaxDistance = 200.0;
 vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
 {	
-    if(dvd_isReflection) computeData();
+    if (dvd_isReflection) computeData();
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN  = normalize(_viewDirection);
     vec2 uv_detail   = uv * detail_scale;
@@ -179,7 +162,7 @@ vec4 NormalMapping(in vec2 uv, in vec3 pixelToLightTBN)
     
 vec4 NormalMappingUnderwater(in vec2 uv, in vec3 pixelToLightTBN)
 {	
-    if(dvd_isReflection) computeData();
+    if (dvd_isReflection) computeData();
 
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN  = normalize(_viewDirection);

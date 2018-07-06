@@ -6,12 +6,12 @@
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
 FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
-                                             FrameBufferObject* result,
+                                             FrameBuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,target,resolution,sampler),
-                                                                                 _outputFBO(result)
+                                                                                 _outputFB(result)
 {
-    _samplerCopy = GFX_DEVICE.newFBO(FBO_2D_COLOR);
+    _samplerCopy = GFX_DEVICE.newFB(FB_2D_COLOR);
     TextureDescriptor fxaaDescriptor(TEXTURE_2D,
                                      RGBA,
                                      RGBA8,
@@ -21,7 +21,9 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
     _samplerCopy->AddAttachment(fxaaDescriptor,TextureDescriptor::Color0);
     _samplerCopy->toggleDepthBuffer(false);
     _samplerCopy->Create(resolution.width,resolution.height);
-    _fxaa = CreateResource<ShaderProgram>(ResourceDescriptor("FXAA"));
+    ResourceDescriptor fxaa("FXAA");
+    fxaa.setThreadedLoading(false);
+    _fxaa = CreateResource<ShaderProgram>(fxaa);
 }
 
 FXAAPreRenderOperator::~FXAAPreRenderOperator(){
@@ -41,17 +43,17 @@ void FXAAPreRenderOperator::operation(){
     GFXDevice& gfx = GFX_DEVICE;
 
     //Copy current screen
-    _samplerCopy->BlitFrom(_inputFBO[0]);
+    _samplerCopy->BlitFrom(_inputFB[0]);
     ///Apply FXAA to the output screen using the sampler copy as the texture input
-    _outputFBO->Begin(FrameBufferObject::defaultPolicy());
+    _outputFB->Begin(FrameBuffer::defaultPolicy());
         _samplerCopy->Bind(0);
         _fxaa->bind();
         _fxaa->UniformTexture("texScreen", 0);
-        _fxaa->Uniform("size", vec2<F32>((F32)_outputFBO->getWidth(), (F32)_outputFBO->getHeight()));
+        _fxaa->Uniform("size", vec2<F32>(_outputFB->getWidth(), _outputFB->getHeight()));
             gfx.toggle2D(true);
             _renderQuad->setCustomShader(_fxaa);//<Render quad is shared, so update internal shader
             gfx.renderInstance(_renderQuad->renderInstance());
             gfx.toggle2D(false);
         _samplerCopy->Unbind(0);
-    _outputFBO->End();
+    _outputFB->End();
 }

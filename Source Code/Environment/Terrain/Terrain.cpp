@@ -13,7 +13,7 @@
 
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
@@ -21,7 +21,7 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _alphaTexturePresent(false),
     _terrainWidth(0),
     _terrainHeight(0),
-    _groundVBO(nullptr),
+    _groundVB(nullptr),
     _terrainQuadtree(New Quadtree()),
     _plane(nullptr),
     _drawBBoxes(false),
@@ -63,8 +63,8 @@ void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneS
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-#pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
-void Terrain::prepareMaterial(SceneGraphNode* const sgn){
+bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
+    STUBBED("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")
     //Transform the Object (Rot, Trans, Scale)
     if(!GFX_DEVICE.excludeFromStateChange(getType())){ ///< only if the node is not in the exclusion mask
         _terrainTransform = sgn->getTransform();
@@ -72,7 +72,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
 
     //Prepare the main light (directional light only, sun) for now.
     if(!GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE)){
-        //Find the most influental light for the terrain. Usually the Sun
+        //Find the most influential light for the terrain. Usually the Sun
         _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
         //Update lights for this node
         LightManager::getInstance().update();
@@ -88,7 +88,7 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     }
 
     ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
-    _groundVBO->setShaderProgram(terrainShader);
+    _groundVB->setShaderProgram(terrainShader);
     _plane->setCustomShader(terrainShader);
 
     const vectorImpl<I32>& indices = LightManager::getInstance().getLightIndicesForCurrentNode();
@@ -104,11 +104,12 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
     if(_alphaTexturePresent){
         _terrainTextures[TERRAIN_TEXTURE_ALPHA]->Bind(6); //AlphaMap: Alpha
     }
-    terrainShader->bind();
+
+    if(!terrainShader->bind())
+        return false;
+
     terrainShader->Uniform("material",getMaterial()->getMaterialMatrix());
-    terrainShader->Uniform("worldHalfExtent", LightManager::getInstance().getLigthOrthoHalfExtent());
     terrainShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
-    terrainShader->Uniform("dvd_lightProjectionMatrices",LightManager::getInstance().getLightProjectionMatricesCache());
     terrainShader->Uniform("dvd_lightType",types);
     terrainShader->Uniform("dvd_lightIndex", indices);
     terrainShader->Uniform("dvd_lightCastsShadows",lightShadowCast);
@@ -122,9 +123,11 @@ void Terrain::prepareMaterial(SceneGraphNode* const sgn){
         terrainShader->Uniform("bbox_min", _boundingBox.getMin());
         terrainShader->Uniform("dvd_isReflection", false);
     }
+
+    return true;
 }
 
-void Terrain::releaseMaterial(){
+bool Terrain::releaseMaterial(){
     if(_alphaTexturePresent) _terrainTextures[TERRAIN_TEXTURE_ALPHA]->Unbind(6);
     _terrainTextures[TERRAIN_TEXTURE_BLUE]->Unbind(5);
     _terrainTextures[TERRAIN_TEXTURE_GREEN]->Unbind(4);
@@ -140,21 +143,27 @@ void Terrain::releaseMaterial(){
             LightManager::getInstance().unbindDepthMaps(l, offset);
         }
     }
+    return true;
 }
 
-void Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
+bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(!GFX_DEVICE.excludeFromStateChange(getType())){
         _terrainTransform = sgn->getTransform();
     }
     SET_STATE_BLOCK(_terrainDepthRenderState);
     ShaderProgram* terrainShader = getMaterial()->getShaderProgram(SHADOW_STAGE);
-    _groundVBO->setShaderProgram(terrainShader);
+    _groundVB->setShaderProgram(terrainShader);
     _plane->setCustomShader(terrainShader);
-    terrainShader->bind();
+    if(!terrainShader->bind())
+        return false;
+
     terrainShader->Uniform("dvd_enableShadowMapping", false);
+
+    return true;
 }
 
-void Terrain::releaseDepthMaterial(){
+bool Terrain::releaseDepthMaterial(){
+    return true;
 }
 
 void Terrain::render(SceneGraphNode* const sgn){
@@ -166,8 +175,9 @@ void Terrain::drawBoundingBox(SceneGraphNode* const sgn){
     if(_drawBBoxes)	_terrainQuadtree->DrawBBox();
 }
 
-void Terrain::onDraw(const RenderStage& currentStage){
+bool Terrain::onDraw(const RenderStage& currentStage){
     _eyePos = GET_ACTIVE_SCENE()->renderState().getCamera().getEye();
+     return true;
 }
 
 void Terrain::postDraw(const RenderStage& currentStage){
@@ -185,7 +195,7 @@ void Terrain::drawInfinitePlain(){
 }
 
 void Terrain::drawGround() const{
-    assert(_groundVBO);
+    assert(_groundVB);
     _terrainQuadtree->DrawGround(_drawReflected);
 }
 
@@ -230,10 +240,10 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
     assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
     vec3<F32> pos(_boundingBox.getMin().x + x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x), 0.0f, _boundingBox.getMin().z + z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
-    pos.y =   (_groundVBO->getPosition()[ COORD(posI.x,  posI.y,  _terrainWidth) ].y)  * (1.0f-posD.x) * (1.0f-posD.y)
-            + (_groundVBO->getPosition()[ COORD(posI.x+1,posI.y,  _terrainWidth) ].y)  *       posD.x  * (1.0f-posD.y)
-            + (_groundVBO->getPosition()[ COORD(posI.x,  posI.y+1,_terrainWidth) ].y)  * (1.0f-posD.x) *       posD.y
-            + (_groundVBO->getPosition()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ].y)  *       posD.x  *       posD.y;
+    pos.y =   (_groundVB->getPosition()[ COORD(posI.x,  posI.y,  _terrainWidth) ].y)  * (1.0f-posD.x) * (1.0f-posD.y)
+            + (_groundVB->getPosition()[ COORD(posI.x+1,posI.y,  _terrainWidth) ].y)  *       posD.x  * (1.0f-posD.y)
+            + (_groundVB->getPosition()[ COORD(posI.x,  posI.y+1,_terrainWidth) ].y)  * (1.0f-posD.x) *       posD.y
+            + (_groundVB->getPosition()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ].y)  *       posD.x  *       posD.y;
     return pos;
 }
 
@@ -248,10 +258,10 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
     if(posI.y >= (U32)_terrainHeight-1)	posI.y = _terrainHeight-2;
     assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
-    return (_groundVBO->getNormal()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
-         + (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
-         + (_groundVBO->getNormal()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
-         + (_groundVBO->getNormal()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
+    return (_groundVB->getNormal()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
+         + (_groundVB->getNormal()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
+         + (_groundVB->getNormal()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
+         + (_groundVB->getNormal()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
 }
 
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
@@ -265,8 +275,8 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
     if(posI.y >= (U32)_terrainHeight-1)	posI.y = _terrainHeight-2;
     assert(posI.x>=0 && posI.x<(U32)_terrainWidth-1 && posI.y>=0 && posI.y<(U32)_terrainHeight-1);
 
-    return    (_groundVBO->getTangent()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
-            + (_groundVBO->getTangent()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
-            + (_groundVBO->getTangent()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
-            + (_groundVBO->getTangent()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
+    return    (_groundVB->getTangent()[ COORD(posI.x,  posI.y,  _terrainWidth) ])  * (1.0f-posD.x) * (1.0f-posD.y)
+            + (_groundVB->getTangent()[ COORD(posI.x+1,posI.y,  _terrainWidth) ])  *       posD.x  * (1.0f-posD.y)
+            + (_groundVB->getTangent()[ COORD(posI.x,  posI.y+1,_terrainWidth) ])  * (1.0f-posD.x) *       posD.y
+            + (_groundVB->getTangent()[ COORD(posI.x+1,posI.y+1,_terrainWidth) ])  *       posD.x  *       posD.y;
 }

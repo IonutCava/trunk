@@ -6,11 +6,13 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
-#pragma message("ToDo: check water visibility - Ionut")
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
                            _plane(nullptr),_texture(nullptr), _shader(nullptr),_planeTransform(nullptr),
-                           _node(nullptr),_planeSGN(nullptr),_waterLevel(0),_waterDepth(0),_clippingPlaneID(-1),_reflectionRendering(false){}
+                           _node(nullptr),_planeSGN(nullptr),_waterLevel(0),_waterDepth(0),_clippingPlaneID(-1),_reflectionRendering(false)
+{
+    STUBBED("ToDo: check water visibility - Ionut")
+}
 
 void WaterPlane::postLoad(SceneGraphNode* const sgn){
     assert(_texture && _shader && _plane);
@@ -70,7 +72,7 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2
     _shader->Uniform("_transparencyBias", transparency);
 }
 
-void WaterPlane::onDraw(const RenderStage& currentStage){
+bool WaterPlane::onDraw(const RenderStage& currentStage){
     const vec3<F32>& newEye = GET_ACTIVE_SCENE()->renderState().getCamera().getEye();
 
     if(newEye != _eyePos){
@@ -84,12 +86,14 @@ void WaterPlane::onDraw(const RenderStage& currentStage){
         _shader->Uniform("water_bb_diff",bb.getMax() - bb.getMin());
         _shader->Uniform("underwater",isPointUnderWater(_eyePos));
     }
+
+    return true;
 }
 
 void WaterPlane::postDraw(const RenderStage& currentStage){
 }
 
-void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
+bool WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
     //Prepare the main light (directional light only, sun) for now.
     //Find the most influental light for the terrain. Usually the Sun
     _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
@@ -111,12 +115,16 @@ void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
     _texture->Bind(0);
     _reflectedTexture->Bind(1);
     //_refractedTexture->Bind(2);
-    _shader->bind();
+    if(!_shader->bind())
+        return false;
+
     _shader->Uniform("material",getMaterial()->getMaterialMatrix());
     _shader->Uniform("dvd_isReflection", GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
+
+    return true;
 }
 
-void WaterPlane::releaseMaterial(){
+bool WaterPlane::releaseMaterial(){
     //_refractedTexture->Unbind(2);
     _reflectedTexture->Unbind(1);
     _texture->Unbind(0);
@@ -127,6 +135,7 @@ void WaterPlane::releaseMaterial(){
             LightManager::getInstance().unbindDepthMaps(l, offset);
         }
     }
+    return true;
 }
 
 void WaterPlane::render(SceneGraphNode* const sgn){
@@ -135,7 +144,7 @@ void WaterPlane::render(SceneGraphNode* const sgn){
 
 bool WaterPlane::getDrawState(const RenderStage& currentStage)  const {
     // Wait for the Reflector to update
-    if(!_createdFBO) return false;
+    if(!_createdFB) return false;
 
     // Make sure we are not drawing ourself unless this is desired
     if((currentStage == REFLECTION_STAGE || _reflectionRendering) && !_updateSelf)	return false;
@@ -171,7 +180,7 @@ void WaterPlane::updateReflection(){
         GFX_DEVICE.enableClipPlane(_clippingPlaneID);
     }
 
-    _reflectedTexture->Begin(FrameBufferObject::defaultPolicy());
+    _reflectedTexture->Begin(FrameBuffer::defaultPolicy());
         _renderCallback(); //< render to the reflective texture
     _reflectedTexture->End();
 
@@ -185,7 +194,7 @@ void WaterPlane::updateReflection(){
 void WaterPlane::updatePlaneEquation(){
     _absNormal = _planeTransform->getOrientation() * WORLD_Y_AXIS;
     _absNormal.normalize();
-    _reflectionPlane.set(_absNormal,_waterLevel);
+    _reflectionPlane.set(_absNormal,-_waterLevel);
     _reflectionPlane.active(false);
     if(_clippingPlaneID == -1){
         _clippingPlaneID = GFX_DEVICE.addClipPlane(_reflectionPlane);

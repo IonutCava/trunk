@@ -126,9 +126,10 @@ namespace GL_ENUM_TABLE {
        glDataFormat[SIGNED_BYTE] = GL_BYTE;
        glDataFormat[SIGNED_SHORT] = GL_SHORT;
        glDataFormat[SIGNED_INT] = GL_INT;
-       glDataFormat[FLOAT_16] = GL_HALF_FLOAT_ARB;
+       glDataFormat[FLOAT_16] = GL_HALF_FLOAT;
        glDataFormat[FLOAT_32] = GL_FLOAT;
 
+       glWrapTable[TEXTURE_MIRROR_REPEAT] = GL_MIRRORED_REPEAT;
        glWrapTable[TEXTURE_REPEAT] = GL_REPEAT;
        glWrapTable[TEXTURE_CLAMP] = GL_CLAMP;
        glWrapTable[TEXTURE_CLAMP_TO_EDGE] = GL_CLAMP_TO_EDGE;

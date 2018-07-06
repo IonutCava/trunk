@@ -27,7 +27,7 @@
 
 class BoundingBox;
 class RenderInstance;
-class VertexBufferObject;
+class VertexBuffer;
 class Object3D : public SceneNode {
 public:
     enum ObjectType {
@@ -47,18 +47,18 @@ public:
         OBJECT_FLAG_PLACEHOLDER
     };
 
-    Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, const PrimitiveType& vboType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
-    Object3D(const std::string& name,const ObjectType& type = OBJECT_3D_PLACEHOLDER,const PrimitiveType& vboType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
+    Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER, const PrimitiveType& vbType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
+    Object3D(const std::string& name,const ObjectType& type = OBJECT_3D_PLACEHOLDER,const PrimitiveType& vbType = TRIANGLES,const ObjectFlag& flag = OBJECT_FLAG_NONE);
 
     virtual ~Object3D();
 
-    inline  VertexBufferObject* const getGeometryVBO()  const {assert(_geometry != nullptr); return _geometry;}
-    inline  ObjectType                getType()         const {return _geometryType;}
-    inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
-    inline  RenderInstance*     const renderInstance()  const {return _renderInstance;}
+    inline  VertexBuffer*   const getGeometryVB()   const {assert(_geometry != nullptr); return _geometry;}
+    inline  ObjectType            getType()         const {return _geometryType;}
+    inline  ObjectFlag            getFlag()         const {return _geometryFlag;}
+    inline  RenderInstance* const renderInstance()  const {return _renderInstance;}
 
     virtual void  postLoad(SceneGraphNode* const sgn);
-    virtual void  onDraw(const RenderStage& currentStage);
+    virtual bool  onDraw(const RenderStage& currentStage);
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:
@@ -68,12 +68,12 @@ protected:
     virtual void computeTangents();
 
 protected:
-    bool		          _update;
-    ObjectType            _geometryType;
-    ObjectFlag            _geometryFlag;
-    VertexBufferObject*   _geometry;
+    bool		    _update;
+    ObjectType      _geometryType;
+    ObjectFlag      _geometryFlag;
+    VertexBuffer*   _geometry;
     ///The actual render instance needed by the rendering API
-    RenderInstance*       _renderInstance;
+    RenderInstance* _renderInstance;
 };
 
 #endif

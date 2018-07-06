@@ -8,16 +8,16 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
-void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBufferObject* const vbo){
+void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBuffer* const vb){
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
 
-    _chunkIndOffset = vbo->getIndexCount();
+    _chunkIndOffset = vb->getIndexCount();
 
     for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++)
-        ComputeIndicesArray(i, depth, pos, HMsize, vbo);
+        ComputeIndicesArray(i, depth, pos, HMsize, vb);
 
-    const vectorImpl<vec3<F32>>& vertices = vbo->getPosition();
+    const vectorImpl<vec3<F32>>& vertices = vb->getPosition();
 
     F32 tempMin = 100000.0f;
     F32 tempMax = -100000.0f;
@@ -38,7 +38,7 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize,
     }
 }
 
-void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize, VertexBufferObject* const vbo){
+void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize, VertexBuffer* const vb){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
     U32 offset = (U32)pow(2.0f, (F32)(lod));
@@ -66,11 +66,11 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
             U32 indexB = iOffset + (jOffset + (offset)) * nHMTotalWidth;
             _indice[lod].push_back(indexA);
             _indice[lod].push_back(indexB);
-            vbo->addIndex(indexA);
-            vbo->addIndex(indexB);
+            vb->addIndex(indexA);
+            vb->addIndex(indexB);
         }
         _indice[lod].push_back(TERRAIN_STRIP_RESTART_INDEX);
-        vbo->addIndex(TERRAIN_STRIP_RESTART_INDEX);
+        vb->addIndex(TERRAIN_STRIP_RESTART_INDEX);
     }
 
     if(lod > 0) _lodIndOffset[lod] = (U32)(_indice[lod-1].size() + _lodIndOffset[lod-1]);
@@ -80,7 +80,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 }
 
 void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
-	if(_grassData._grassVBO == nullptr)
+	if(_grassData._grassVB == nullptr)
 		return;
 
     // the first offset is always 0;
@@ -88,9 +88,9 @@ void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
     // get the index vector for every billboard texture
     for(U8 index = 0; index < bilboardCount; ++index){
         const vectorImpl<U32>& grassIndices = _grassData._grassIndices[index];
-        // add every index for the current texture to the VBO
+        // add every index for the current texture to the VB
         for(U32 i = 0; i < grassIndices.size(); ++i){
-            _grassData._grassVBO->addIndex(grassIndices[i]);
+            _grassData._grassVB->addIndex(grassIndices[i]);
         }
         // save the number of indices for the current texture
         _grassData._grassIndexSize[index] = (U32)grassIndices.size();
@@ -111,13 +111,13 @@ void TerrainChunk::Destroy(){
     _grassData._grassVisibility = 0;
 }
 
-I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferObject* const vbo){
+I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBuffer* const vb){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
     if(lod>0) lod--;
    
-    vbo->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
-    vbo->setRangeCount(_lodIndCount[lod]);
-    GFX_DEVICE.renderBuffer(vbo);
+    vb->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
+    vb->setRangeCount(_lodIndCount[lod]);
+    GFX_DEVICE.renderBuffer(vb);
 
     return 1;
 }
@@ -131,11 +131,11 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 distance, U32 index, Transform* const 
     U32 indicesCount = _grassData._grassIndexSize[index];
 
     if(indicesCount > 0){
-		assert(_grassData._grassVBO != nullptr);
-		_grassData._grassVBO->currentShader()->Uniform("grassVisibilityRange", _grassData._grassVisibility);
-        _grassData._grassVBO->setFirstElement(_grassData._grassIndexOffset[index]);
-        _grassData._grassVBO->setRangeCount(indicesCount);
-        GFX_DEVICE.renderBuffer(_grassData._grassVBO, parentTransform);
+		assert(_grassData._grassVB != nullptr);
+		_grassData._grassVB->currentShader()->Uniform("grassVisibilityRange", _grassData._grassVisibility);
+        _grassData._grassVB->setFirstElement(_grassData._grassIndexOffset[index]);
+        _grassData._grassVB->setRangeCount(indicesCount);
+        GFX_DEVICE.renderBuffer(_grassData._grassVB, parentTransform);
     }
 }
 

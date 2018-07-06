@@ -25,31 +25,32 @@
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
-class ShaderProgram;
 class Quad3D;
 class Texture;
+class FrameBuffer;
+class ShaderProgram;
 typedef Texture Texture2D;
-class FrameBufferObject;
+
 class BloomPreRenderOperator : public PreRenderOperator {
 public:
-	BloomPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	BloomPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~BloomPreRenderOperator();
 
 	void operation();
 	void reshape(I32 width, I32 height);
 
 protected:
-	// tone maps _inputFBO[0] converting it from HDR to LDR
+	// tone maps _inputFB[0] converting it from HDR to LDR
 	void toneMapScreen();
 
 private:
 	ShaderProgram* _blur;
 	ShaderProgram* _bright;
-	FrameBufferObject* _outputFBO;
-	FrameBufferObject* _tempBloomFBO;
-	FrameBufferObject* _tempHDRFBO;
-	FrameBufferObject* _luminaFBO[2];
-	U32                _luminaMipLevel;
+	FrameBuffer* _outputFB;
+	FrameBuffer* _tempBloomFB;
+	FrameBuffer* _tempHDRFB;
+	FrameBuffer* _luminaFB[2];
+	U32          _luminaMipLevel;
 };
 
 #endif

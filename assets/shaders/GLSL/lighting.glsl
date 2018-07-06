@@ -2,7 +2,7 @@
 //#include "inOut.geom"
 
 -- Vertex
-#include "vboInputData.vert"
+#include "vbInputData.vert"
 #include "lightingDefaults.vert"
 
 #if defined(ADD_FOLIAGE)

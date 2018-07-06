@@ -251,3 +251,32 @@ void Camera::updateListeners(){
         listener();
     }
 }
+
+void Camera::getFrustumCorners(vectorImpl<vec3<F32>>& corners, const vec2<F32>& zPlanes, F32 verticalFoV) const {
+    corners.resize(8);
+    const vec3<F32>& dir   = getViewDir();
+    const vec3<F32>& eye   = getEye();
+    const vec3<F32>& up    = getUpDir();
+    const vec3<F32>& right = getRightDir();
+
+    F32 tanFoVdiv2 = std::tan(verticalFoV* 0.5f);
+    F32 aspectRatio = Frustum::getInstance().getAspectRatio();
+    // these heights and widths are half the heights and widths of the near and far plane rectangles
+    F32 near_height = tanFoVdiv2 * zPlanes.x;
+    F32 far_height = tanFoVdiv2 * zPlanes.y;
+
+    F32 near_width = near_height * aspectRatio;
+    F32 far_width = far_height * aspectRatio;
+    vec3<F32> fc = eye + dir*zPlanes.y;
+    vec3<F32> nc = eye + dir*zPlanes.x;
+
+    corners[0] = nc - up*near_height - right*near_width;
+    corners[1] = nc + up*near_height - right*near_width;
+    corners[2] = nc + up*near_height + right*near_width;
+    corners[3] = nc - up*near_height + right*near_width;
+
+    corners[4] = fc - up*far_height - right*far_width;
+    corners[5] = fc + up*far_height - right*far_width;
+    corners[6] = fc + up*far_height + right*far_width;
+    corners[7] = fc - up*far_height + right*far_width;
+}

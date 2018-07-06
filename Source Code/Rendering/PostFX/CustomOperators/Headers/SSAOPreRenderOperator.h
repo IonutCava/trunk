@@ -24,16 +24,14 @@
 #define _SSAO_PRE_RENDER_OPERATOR_H_
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
-///This Operator processes the entire geometry via the SSAOShader, generating a intermediate FBO
-///The intermidiate FBO contains each object's normals in the "rgb" components, and the linear depth in the "a" component
-///The intermidiate FBO is then passed as a 2D sampler in the second stage shader, processed and produces a full screen texure as a result
-///The result FBO contains AO ambient values that should be added to the final fragment's ambient lighting value
-class ShaderProgram;
-class Quad3D;
-class FrameBufferObject;
+///This Operator processes the entire geometry via the SSAOShader, generating a intermediate FB
+///The intermediate FB contains each object's normals in the "rgb" components, and the linear depth in the "a" component
+///The intermediate FB is then passed as a 2D sampler in the second stage shader, processed and produces a full screen texure as a result
+///The result FB contains AO ambient values that should be added to the final fragment's ambient lighting value
+
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
-	SSAOPreRenderOperator(Quad3D* const target, FrameBufferObject* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
+	SSAOPreRenderOperator(Quad3D* const target, FrameBuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
 	~SSAOPreRenderOperator();
 
 	void operation();
@@ -41,7 +39,7 @@ public:
 
 private:
 	ShaderProgram* _ssaoShader;
-	FrameBufferObject* _outputFBO;
+	FrameBuffer*   _outputFB;
 };
 
 #endif

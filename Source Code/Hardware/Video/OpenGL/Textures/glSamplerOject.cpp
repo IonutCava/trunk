@@ -22,49 +22,54 @@ glSamplerObject::~glSamplerObject()
 
 bool glSamplerObject::Destroy() {
     if(_samplerID > 0 && _samplerID != Divide::GL::_invalidObjectID){
-        GLCheck(glDeleteSamplers(1, &_samplerID));
+        glDeleteSamplers(1, &_samplerID);
         _samplerID = 0;
     }
     return (_samplerID == 0);
 }
 
 bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
-    if(_samplerID == Divide::GL::_invalidObjectID) GLCheck(glGenSamplers(1, &_samplerID));
+    if(_samplerID == Divide::GL::_invalidObjectID) glGenSamplers(1, &_samplerID);
 
-    GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD()));
-    GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD()));
-    GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD()));
-    GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_MIN_FILTER, glTextureFilterTable[descriptor.minFilter()]));
-    GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_MAG_FILTER, glTextureFilterTable[descriptor.magFilter()]));
-    GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_S, glWrapTable[descriptor.wrapU()]));
-    GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_T, glWrapTable[descriptor.wrapV()]));
-    GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_R, glWrapTable[descriptor.wrapW()]));
+    glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
+    glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());
+    glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
+    glSamplerParameteri(_samplerID, GL_TEXTURE_MIN_FILTER, glTextureFilterTable[descriptor.minFilter()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_MAG_FILTER, glTextureFilterTable[descriptor.magFilter()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_S, glWrapTable[descriptor.wrapU()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_T, glWrapTable[descriptor.wrapV()]);
+    glSamplerParameteri(_samplerID, GL_TEXTURE_WRAP_R, glWrapTable[descriptor.wrapW()]);
+    if (descriptor.wrapU() == TEXTURE_CLAMP_TO_BORDER ||
+        descriptor.wrapV() == TEXTURE_CLAMP_TO_BORDER ||
+        descriptor.wrapW() == TEXTURE_CLAMP_TO_BORDER){
+            glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, descriptor.borderColor());
+    }
 
     if(descriptor._useRefCompare){
-        GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,  GL_COMPARE_R_TO_TEXTURE));
-        GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]));
+        glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,  GL_COMPARE_R_TO_TEXTURE);
+        glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]);
     }
 
-    if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps() && GL_API::_anisotropySupported) {
+    if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
          U8 anisoLevel = std::min<I32>((I32)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
-         GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel));
+         glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel);
     }
-    //GLCheck(glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
+    //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
     return true;
 }
 
 void glSamplerObject::Bind(GLuint textureUnit) const{
-    GLCheck(glBindSampler(textureUnit, _samplerID));
+    glBindSampler(textureUnit, _samplerID);
 }
 
 void glSamplerObject::Unbind(GLuint textureUnit){
-    GLCheck(glBindSampler(textureUnit, 0));
+    glBindSampler(textureUnit, 0);
 }
 
 void glSamplerObject::Bind() const{
-    GLCheck(glBindSampler(GL_API::getActiveTextureUnit(), _samplerID));
+    glBindSampler(GL_API::getActiveTextureUnit(), _samplerID);
 }
 
 void glSamplerObject::Unbind(){
-    GLCheck(glBindSampler(GL_API::getActiveTextureUnit(), 0));
+    glBindSampler(GL_API::getActiveTextureUnit(), 0);
 }

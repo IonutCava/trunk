@@ -39,6 +39,7 @@ bool Texture::LoadFile(U32 target, const std::string& name){
 
     if(img.alpha()){
         U32 imgSize = _bitDepth * _width * _height;
+        #pragma omp parallel for
         for(U32 i = 0; i < imgSize; i += _bitDepth){
             if (img.data()[i + _bitDepth - 1] < 255){
                 _hasTransparency = true;

@@ -44,17 +44,17 @@ class TerrainChunk;
 class Terrain;
 class Transform;
 class ShaderProgram;
-class VertexBufferObject;
+class VertexBuffer;
 class QuadtreeNode {
 public:
     ///recursive node building function
-    void Build(const U8 depth,const vec2<U32>& pos,const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO, U32& chunkCount);
+    void Build(const U8 depth,const vec2<U32>& pos,const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, U32& chunkCount);
     bool computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
     void Destroy();
 
     inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
-    void DrawGround(I32 options,VertexBufferObject* const terrainVBO);
+    void DrawGround(I32 options,VertexBuffer* const terrainVB);
     void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
     void DrawBBox();
     void GenerateGrassIndexBuffer(U32 bilboardCount);

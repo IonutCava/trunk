@@ -22,9 +22,9 @@ SkinnedSubMesh::~SkinnedSubMesh()
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     //sgn->getTransform()->setTransforms(_localMatrix);
-    // If the mesh has animation data, use dynamic VBO's if we use software skinning
+    // If the mesh has animation data, use dynamic VB's if we use software skinning
     _softwareSkinning = ParamHandler::getInstance().getParam<bool>("mesh.useSoftwareSkinning", false);
-    getGeometryVBO()->Create(!_softwareSkinning);
+    getGeometryVB()->Create(!_softwareSkinning);
     sgn->setComponent(SGNComponent::SGN_COMP_ANIMATION, New AnimationComponent(_animator, sgn));
 
     Object3D::postLoad(sgn);
@@ -34,6 +34,12 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
 void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     updateAnimations(sgn);
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+}
+
+void SkinnedSubMesh::drawReset(SceneGraphNode* const sgn){
+    FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getParent()->getChildren()){
+        it.second->getComponent<AnimationComponent>()->reset();
+    }
 }
 
 // update possible animations

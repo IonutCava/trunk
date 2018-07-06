@@ -12,7 +12,7 @@
 class ShaderProgram;
 class Quad3D;
 class PreRenderStage;
-class FrameBufferObject;
+class FrameBuffer;
 struct ScreenSampler;
 DEFINE_SINGLETON(PreRenderStageBuilder)
 
@@ -20,12 +20,12 @@ public:
 	PreRenderStageBuilder();
    ~PreRenderStageBuilder();
    ///Adding PreRenderOperators to the PreRender stage, needs an input shader to be applied to the scene/target
-   ///A target fullscreen quad to which it should render it's output. This output is saved in the "result" FBO
+   ///A target fullscreen quad to which it should render it's output. This output is saved in the "result" FB
    ///"state" is a reference to the global variable that enables or disables the effect (via options, PostFX, config, etc)
    template<class T>
    inline PreRenderOperator* addPreRenderOperator(Quad3D* const target,
 												  bool& state,
-												  FrameBufferObject* result,
+												  FrameBuffer* result,
 												  const vec2<U16>& resolution){
 			return addToStage(New T(target,result,resolution,_screenSampler),state);
    }

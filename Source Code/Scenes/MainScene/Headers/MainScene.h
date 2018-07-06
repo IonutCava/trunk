@@ -49,6 +49,7 @@ private:
     bool updateLights();
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
+    void processGUI(const U64 deltaTime);
     void test(boost::any a, CallbackParam b);
     bool onKeyUp(const OIS::KeyEvent& key);
     bool onMouseMove(const OIS::MouseEvent& key);

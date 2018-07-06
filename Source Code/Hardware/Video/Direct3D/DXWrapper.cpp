@@ -40,12 +40,19 @@ void DX_API::setMousePosition(U16 x, U16 y) const
 {
 }
 
-void DX_API::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)
+F32* DX_API::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)
 {
+    return nullptr;
 }
 
-void DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
+F32* DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
 {
+    return nullptr;
+}
+
+const F32* DX_API::getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
+{
+    return nullptr;
 }
 
 void DX_API::beginFrame()
@@ -80,12 +87,19 @@ void DX_API::releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseVi
 {
 }
 
-void DX_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
+F32* DX_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
+    return nullptr;
 }
 
-void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes)
+const F32* DX_API::getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
+    return nullptr;
+}
+
+F32* DX_API::setPerspectiveProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
+{
+    return nullptr;
 }
 
 void DX_API::setAnaglyphFrustum(F32 camIOD, bool rightFrustum)

@@ -2,9 +2,10 @@
 #include "Headers/CubeShadowMap.h"
 #include "Headers/SingleShadowMap.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Headers/ParallelSplitShadowMaps.h"
+#include "Scenes/Headers/SceneState.h"
+#include "Headers/CascadedShadowMaps.h"
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Hardware/Video/Buffers/FrameBufferObject/Headers/FrameBufferObject.h"
+#include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
 ShadowMap::ShadowMap(Light* light, ShadowType type) : _resolutionFactor(1),
                                                       _init(false),
@@ -13,6 +14,7 @@ ShadowMap::ShadowMap(Light* light, ShadowType type) : _resolutionFactor(1),
                                                       _shadowMapType(type),
                                                       _par(ParamHandler::getInstance())
 {
+    _bias.bias();
 }
 
 ShadowMap::~ShadowMap()
@@ -23,8 +25,9 @@ ShadowMap::~ShadowMap()
 ShadowMapInfo::ShadowMapInfo(Light* light) : _light(light),
                                              _shadowMap(nullptr)
 {
-     _resolution = 1024;
-     _numSplits = 3;
+     _resolution = 512;
+     _resolutionFactor = 1.0f;
+     _numLayers = 1;
 }
 
 ShadowMapInfo::~ShadowMapInfo(){
@@ -35,21 +38,26 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
     if(_shadowMap) return _shadowMap;
 
     if(!_light->castsShadows()) return nullptr;
+    _resolutionFactor = renderState.shadowMapResolutionFactor();
 
     switch(_light->getLightType()){
-        case LIGHT_TYPE_POINT:
+        case LIGHT_TYPE_POINT:{
+            _numLayers = 6;
             _shadowMap = New CubeShadowMap(_light);
-            break;
-        case LIGHT_TYPE_DIRECTIONAL:
-            _shadowMap = New PSShadowMaps(_light);
-            break;
-        case LIGHT_TYPE_SPOT:
+            }break;
+        case LIGHT_TYPE_DIRECTIONAL:{
+            _numLayers = renderState.csmSplitCount();
+            _shadowMap = New CascadedShadowMaps(_light, _numLayers, renderState.csmSplitLogFactor());
+            }break;
+        case LIGHT_TYPE_SPOT:{
             _shadowMap = New SingleShadowMap(_light);
-            break;
+            }break;
         default:
             break;
     };
-    _shadowMap->resolution(_resolution, renderState);
+
+    _shadowMap->init(this);
+
     return _shadowMap;
 }
 
@@ -60,7 +68,7 @@ bool ShadowMap::Bind(U8 offset){
     _isBound = true;
 
     if(_depthMap){
-        if(getShadowMapType() == SHADOW_TYPE_PSSM){
+        if(getShadowMapType() == SHADOW_TYPE_CSM){
             _depthMap->Bind(offset, TextureDescriptor::Color0);
             _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
         }else{

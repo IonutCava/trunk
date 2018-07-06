@@ -159,26 +159,23 @@ void RenderBin::render(const RenderStage& currentRenderStage){
         //Get the current scene node and validate it
         sgn = getItem(j)._node;
         assert(sgn);
+        //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
+        if(!sgn->onDraw(currentRenderStage))
+            continue; //< If the SGN isn't ready for rendering, skip it this frame
         //And get it's attached SceneNode and validate it
         sn = sgn->getNode();
-
-        //Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
-        sgn->onDraw(currentRenderStage);
-        //Call any pre-draw operations on the SceneNode (refresh VBO, update materials, etc)
-        sn->onDraw(currentRenderStage);
-
+        if (!sn) continue;
         //Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
-        if(sn->getDrawState(currentRenderStage)) {
+        if (sn->getDrawState(currentRenderStage) && sn->isReadyForDraw(currentRenderStage)) {
             U8 lightCount = 0;
             if(!isDepthPass && sn->getType() != TYPE_SKY){
-                //Find the most influental lights for this node.
+                //Find the most influential lights for this node.
                 //Use MAX_LIGHTS_PER_SCENE_NODE to allow more lights to affect this node
                 lightCount = lightMgr.findLightsForSceneNode(sgn);
                 //Update lights for this node
                 lightMgr.update();
-                //Only 2 sets of shadow maps for every node
             }
-
+            //Only 2 sets of shadow maps for every node
             CLAMP<U8>(lightCount, 0, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
             //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
             if(isLightValidStage){
@@ -191,13 +188,13 @@ void RenderBin::render(const RenderStage& currentRenderStage){
             //setup materials and render the node
             //As nodes are sorted, this should be very fast
             //We need to apply different materials for each stage
-            isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn);
+            bool materialBound = (isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn));
 
             //Call render and the stage exclusion mask should do the rest
-            sn->render(sgn);
+            if (materialBound) sn->render(sgn);
 
             //Unbind current material properties
-            isDepthPass ?  sn->releaseDepthMaterial() : sn->releaseMaterial();
+            /*bool materialUnBound = */(isDepthPass ? sn->releaseDepthMaterial() : sn->releaseMaterial());
 
             //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
             if(isLightValidStage){
@@ -208,8 +205,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
             }
         }
 
-        // Perform any post draw operations regardless of the draw state
-        sn->postDraw(currentRenderStage);
+        sgn->postDraw(currentRenderStage);
     }
 }
 

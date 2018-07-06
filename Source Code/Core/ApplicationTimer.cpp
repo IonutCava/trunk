@@ -76,7 +76,10 @@ ApplicationTimer::ApplicationTimer() : _targetFrameRate(60.0f),
     _startupTicks.QuadPart = 0LL;
     _currentTicks.QuadPart = 0LL;
 }
-
+#ifdef min
+#undef min
+#undef max
+#endif
 ///No need for init to be threadsafe
 void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init
@@ -88,9 +91,7 @@ void ApplicationTimer::init(U8 targetFrameRate) {
         assert(false && "Current system does not support 'QueryPerformanceFrequency calls!");
 
     QueryPerformanceCounter(&_startupTicks);
-//#elif defined( OS_APPLE ) // Apple OS X
-    //??
-#else //Linux
+#else
     gettimeofday(&_startupTicks,nullptr);
 #endif
 
@@ -109,11 +110,8 @@ namespace {
 };
 
 U64 ApplicationTimer::getElapsedTimeInternal() {
-
 #if defined( OS_WINDOWS )
     QueryPerformanceCounter(&_currentTicks);
-//#elif defined( OS_APPLE ) // Apple OS X
-    //??
 #else
     gettimeofday(&_currentTicks,nullptr);
 #endif
@@ -144,8 +142,8 @@ void ApplicationTimer::benchmarkInternal(){
 
     //Min/Max FPS (after every target second)
     if(count > _targetFrameRate){
-        maxFps = Util::max(maxFps, _fps);
-        minFps = Util::min(minFps, _fps);
+        maxFps = std::max(maxFps, _fps);
+        minFps = std::min(minFps, _fps);
     }
 
     //Every 10 seconds (targeted)

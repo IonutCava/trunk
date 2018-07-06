@@ -30,17 +30,17 @@ class Terrain;
 class Texture;
 class Transform;
 class SceneState;
+class FrameBuffer;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
-class FrameBufferObject;
 typedef Texture Texture2D;
 
 #define GRASS_STRIP_RESTART_INDEX std::numeric_limits<U32>::max() - 1
 
 enum RenderStage;
 ///Generates grass and trees on the terrain.
-///Grass VBO's + all resources are stored locally in the class.
+///Grass VB's + all resources are stored locally in the class.
 ///Trees are added to the SceneGraph and handled by the scene.
 class Vegetation : public SceneNode {
 public:
@@ -74,10 +74,11 @@ public:
 
 protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    bool onDraw(const RenderStage& renderStage);
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
-    bool generateGrass(U32 index, U32 size);     ///< index = current grass type (billboard, vbo etc)
+    bool generateGrass(U32 index, U32 size);     ///< index = current grass type (billboard, vb etc)
                                                  ///< size = the available vertex count
 private:
     //variables

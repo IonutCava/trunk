@@ -8,20 +8,9 @@ uniform vec3  fogColor;
 
 const float LOG2 = 1.442695;
 
-#if defined(SKIP_HARDWARE_CLIPPING)
-in float dvd_ClipDistance[MAX_CLIP_PLANES];
-#else
-in float gl_ClipDistance[MAX_CLIP_PLANES];
-#endif
-
 void computeData() {
-
-#if defined(SKIP_HARDWARE_CLIPPING)
-    if(dvd_ClipDistance[0] < 0) discard;
-#else
-    if(gl_ClipDistance[0] < 0) discard;
-#endif
-
+    if(gl_ClipDistance[0] < 0)
+        discard;
 }
 
 void applyFog(inout vec4 color){

@@ -230,13 +230,13 @@ namespace XML {
         switch(shadowDetailLevel){
             default:
             case DETAIL_HIGH:
-                shadowResolutionFactor = 1;
+                shadowResolutionFactor = 4;
                 break;
             case DETAIL_MEDIUM:
                 shadowResolutionFactor = 2;
                 break;
             case DETAIL_LOW:
-                shadowResolutionFactor = 4;
+                shadowResolutionFactor = 2;
                 break;
         };
         U8 aaMethod = pt.get<U8>("rendering.FSAAmethod",FS_MSAA);

@@ -33,7 +33,7 @@ public:
     ~glShaderProgram();
 
     bool unload(){unbind(); return true;}
-    void bind();
+    bool bind();
     void unbind(bool resetActiveProgram = true);
     U8   update(const U64 deltaTime);
     void attachShader(Shader* const shader,const bool refresh = false);
@@ -78,9 +78,15 @@ private:
     vectorImpl<GLint> _UBOLocation;
     vectorImpl<glUniformBufferObject* > _uniformBufferObjects;
     boost::atomic_bool _validationQueued;
-    U32 _shaderProgramIdTemp;
     GLenum _binaryFormat;
     bool   _loadedFromBinary;
+    Shader* _vertexShader;
+    Shader* _fragmentShader;
+    Shader* _geometryShader;
+    Shader* _tessellationControlShader;
+    Shader* _tessellationEvaluationShader;
+    Shader* _computeShader;
+    GLuint  _shaderProgramIDTemp;
 
 protected:
     bool generateHWResource(const std::string& name);
@@ -90,7 +96,6 @@ protected:
 protected:
     friend class glUniformBufferObject;
     inline GLuint getUBOLocation(const UBO_NAME& ubo) {assert((GLuint)ubo < _UBOLocation.size()); return _UBOLocation[ubo];}
-    void initUBO();
 };
 
 #endif

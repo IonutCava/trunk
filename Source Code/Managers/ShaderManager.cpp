@@ -22,7 +22,9 @@ bool ShaderManager::init(){
         ERROR_FN(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
     }
     _init = GFX_DEVICE.initShaders();
-    _imShader = CreateResource<ShaderProgram>(ResourceDescriptor("ImmediateModeEmulation"));
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
+    immediateModeShader.setThreadedLoading(false);
+    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
     return _init;
 }
 
@@ -54,7 +56,7 @@ U8 ShaderManager::update(const U64 deltaTime){
 
 U8 ShaderManager::idle(){
     if(_recompileQueue.empty()) return 0;
-    _recompileQueue.top()->recompile(true,true,true,true);
+    _recompileQueue.top()->recompile(true,true,true,true,true);
     _recompileQueue.pop();
     return 1;
 }
@@ -178,7 +180,7 @@ bool ShaderManager::recompileShaderProgram(const std::string& name) {
 bool ShaderManager::unbind(){
     if(!_nullShader){
         _nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL_SHADER"));
-        ///the null shader should never be nullptr!!!!
+        //the null shader should never be nullptr!!!!
         assert(_nullShader != nullptr); //LoL -Ionut
     }
     //Should use program 0 and set previous shader ID to 0 as well

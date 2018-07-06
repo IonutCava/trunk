@@ -28,19 +28,20 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
 {
     //All lights default to fully dynamic for now.
     setLightMode(LIGHT_MODE_MOVABLE);
-
+    for (U8 i = 0; i < Config::MAX_SPLITS_PER_LIGHT; ++i){
+        _properties._floatValues[i] = -1.0f;
+        _properties._lightVP[i].identity();
+    }
     _properties._diffuse.set(DefaultColors::WHITE());
     _properties._specular.set(DefaultColors::WHITE());
     _properties._direction.w = 0.0f;
-   
+    
     _properties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 45.0f); //constAtt, linearAtt, quadAtt, spotCuroff
     _properties._specular.w = 1.0f;
-    setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
-                                           DELEGATE_REF(SceneManager::getInstance())));
+    setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
     _dirty = true;
     _enabled = true;
-    _bias.bias();
-
+    _renderState.addToDrawExclusionMask(DEPTH_STAGE);
     assert(LightManager::hasInstance());
     LightManager::getInstance().addLight(this);
 }
@@ -59,7 +60,6 @@ bool Light::unload(){
         SAFE_DELETE(_impostor);
     }
 
-    assert(LightManager::hasInstance());
     LightManager::getInstance().removeLight(getId());
         
     removeShadowMapInfo();
@@ -128,13 +128,13 @@ void Light::updateState(const bool force){
 }
 
 void Light::setLightProperties(const LightPropertiesV& key, const vec3<F32>& value){
-    ///Simple light's can't be changed. Period!
+    //Simple light's can't be changed. Period!
     if(_mode == LIGHT_MODE_SIMPLE){
         ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Simple",LightEnum(key));
         return;
     }
 
-    ///Movable lights have no restrictions
+    //Movable lights have no restrictions
     switch(key){
         default: ERROR_FN(Locale::get("WARNING_INVALID_PROPERTY_SET"),_id);	return;
         case LIGHT_PROPERTY_DIFFUSE  : 	_properties._diffuse = value;		break;
@@ -145,7 +145,7 @@ void Light::setLightProperties(const LightPropertiesV& key, const vec3<F32>& val
 }
 
 void Light::setPosition(const vec3<F32>& newPosition){
-    ///Togglable lights can't be moved.
+    //Togglable lights can't be moved.
     if(_mode == LIGHT_MODE_TOGGLABLE){
         ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable","LIGHT_POSITION");
         return;
@@ -162,7 +162,7 @@ void Light::setPosition(const vec3<F32>& newPosition){
 }
 
 void Light::setDirection(const vec3<F32>& newDirection){
-    ///Togglable lights can't be moved.
+    //Togglable lights can't be moved.
     if(_mode == LIGHT_MODE_TOGGLABLE){
         ERROR_FN(Locale::get("WARNING_ILLEGAL_PROPERTY"),_id, "Light_Togglable","LIGHT_DIRECTION");
         return;
@@ -292,28 +292,14 @@ bool Light::removeShadowMapInfo(){
     return true;
 }
 
-void Light::setCameraToSceneView(){
-    //Set the ortho projection so that it encompasses the entire scene
-    GFX_DEVICE.setOrthoProjection(vec4<F32>(-1.0, 1.0, -1.0, 1.0), _zPlanes);
-    //Extract the view frustum from this projection mode
-    Frustum::getInstance().Extract(_eyePos - _lightPos);
-    //get the VP from the new Frustum as this is the light's full MVP
-    GFX_DEVICE.getMatrix(VIEW_PROJECTION_MATRIX, _lightProjectionMatrix);
-    //_lightProjectionMatrix.set(_bias * _lightProjectionMatrix);
-}
-
 void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
     ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState);
 
-    if(!sm)
+    if (!sm)
         return;
 
     sm->render(sceneRenderState, _callback);
     sm->postRender();
-}
-
-void Light::setShadowMappingCallback(const DELEGATE_CBK& callback) {
-    _callback = callback;
 }
 
 void Light::setLightMode(const LightMode& mode) {

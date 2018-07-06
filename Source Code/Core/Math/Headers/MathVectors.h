@@ -45,12 +45,6 @@
 #ifndef _MATH_VECTORS_H_
 #define _MATH_VECTORS_H_
 
-#if defined(USE_MATH_SIMD) && defined(USE_SIMD_HEADER)
-    #include "MathSIMD.h"
-#else
-    #include "MathFPU.h"
-#endif
-
 #include "MathHelper.h"
 
 template<class T>
@@ -67,9 +61,10 @@ template<class T>
 class mat4;
 template<class T>
 class Quaternion;
-/********************************************//**
-/* vec2 -  A 2-tuple used to represent things like a vector in 2D space, a point in 2D space or just 2 values linked togheter
-/**********************************************/
+/***********************************************************************
+/* vec2 -  A 2-tuple used to represent things like a vector in 2D space,
+/* a point in 2D space or just 2 values linked together
+/***********************************************************************/
 template<class T>
 class vec2 {
 public:
@@ -134,9 +129,9 @@ public:
     inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB) const;
     /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
     inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB) const;
-    /// lerp between the 2 specified vectors by the specified ammount
+    /// lerp between the 2 specified vectors by the specified amount
     inline vec2 lerp(const vec2 &u, const vec2 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified ammount for each component
+    /// lerp between the 2 specified vectors by the specified amount for each component
     inline vec2 lerp(const vec2 &u, const vec2 &v, const vec2& factor) const;
 
     union {
@@ -154,9 +149,10 @@ inline vec2<T> normalize(vec2<T>& vector) {
     return vector;
 }
 
-/********************************************//**
-/* vec3 -  A 3-tuple used to represent things like a vector in 3D space, a point in 3D space or just 3 values linked togheter
-/**********************************************/
+/***********************************************************************
+/* vec3 -  A 3-tuple used to represent things like a vector in 3D space,
+/* a point in 3D space or just 3 values linked together
+/***********************************************************************/
 template <class T>
 class vec3 {
 public:
@@ -211,9 +207,9 @@ public:
     /// return the vector's length
     inline T    length()          const {return square_root_tpl(lengthSquared()); }
     /// return true if length is zero
-    inline bool isZeroLength()    const {return lengthSquared() < (EPSILON * EPSILON); }
+    inline bool isZeroLength()    const { return lengthSquared() < (EPSILON * EPSILON); }
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec3 &v,F32 epsi=EPSILON) const;
+    inline bool compare(const vec3 &v,F32 epsi = EPSILON) const;
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
@@ -236,13 +232,13 @@ public:
     inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB) const;
     /// return the closest point on the line segment created between the 2 points (A, B) and this vector
     inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) const;
-    /// lerp between the 2 specified vectors by the specified ammount
+    /// lerp between the 2 specified vectors by the specified amount
     inline vec3 lerp(const vec3 &u, const vec3 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified ammount for each component
+    /// lerp between the 2 specified vectors by the specified amount for each component
     inline vec3 lerp(const vec3 &u, const vec3 &v, const vec3& factor) const;
-    /// lerp between this and the specified vector by the specified ammount
+    /// lerp between this and the specified vector by the specified amount
     inline void lerp(const vec3 &v, T factor);
-    /// lerp between this and the specified vector by the specified ammount for each component
+    /// lerp between this and the specified vector by the specified amount for each component
     inline void lerp(const vec3 &v, const vec3& factor);
     /// this calculates a vector between the two specified points and returns the result
     inline vec3 vector(const vec3 &vp1, const vec3 &vp2) const;
@@ -279,9 +275,10 @@ inline vec3<T> normalize(vec3<T>& vector) {
     return vector;
 }
 
-/********************************************//**
-/* vec4 -  A 4-tuple used to represent things like a vector in 4D space (w-component) or just 4 values linked togheter
-/**********************************************/
+/*************************************************************************************
+/* vec4 -  A 4-tuple used to represent things like a vector in 4D space (w-component)
+/* or just 4 values linked together
+/************************************************************************************/
 template <class T>
 class vec4 {
 public:
@@ -340,10 +337,10 @@ public:
     /// set all the components back to 0
     inline void reset()                  { this->x = this->y = this->z = this->w = 0;}
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec4 &v,F32 epsi=EPSILON) const;
-    /// lerp between the 2 specified vectors by the specified ammount
+    inline bool compare(const vec4 &v,F32 epsi = EPSILON) const;
+    /// lerp between the 2 specified vectors by the specified amount
     inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) const;
-    /// lerp between the 2 specified vectors by the specified ammount for each component
+    /// lerp between the 2 specified vectors by the specified amount for each component
     inline vec4 lerp(const vec4 &u, const vec4 &v, const vec4& factor) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
@@ -383,6 +380,7 @@ extern vec3<F32> WORLD_X_NEG_AXIS;
 extern vec3<F32> WORLD_Y_NEG_AXIS;
 extern vec3<F32> WORLD_Z_NEG_AXIS;
 extern vec3<F32> DEFAULT_GRAVITY;
+extern vec4<F32> UNIT_RECT;
 
 extern vec2<I32> iVECTOR2_ZERO;
 extern vec3<I32> iVECTOR3_ZERO;

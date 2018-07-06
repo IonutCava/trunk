@@ -1,4 +1,5 @@
 #include "Headers/Material.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
@@ -48,7 +49,7 @@ Material::Material() : Resource("temp_material"),
    /// set a polygon offset
    stateDescriptor._zBias = 1.1f;
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
-   stateDescriptor.setColorWrites(true,true,false,false);
+   stateDescriptor.setColorWrites(true,false,false,false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    
     assert(_defaultRenderStates[FINAL_STAGE] != nullptr);
@@ -65,6 +66,11 @@ Material::~Material(){
     SAFE_DELETE(_defaultRenderStates[SHADOW_STAGE]);
     SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
     _defaultRenderStates.clear();
+}
+
+void Material::update(const U64 deltaTime){
+    // build one shader per frame
+    computeShaderInternal();
 }
 
 RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
@@ -108,22 +114,20 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
 }
 
 //Here we set the shader's name
-ShaderProgram* Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
+void Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()){
         //and we are trying to assing the same one again, return.
         shaderReference = FindResourceImpl<ShaderProgram>(_shaderInfo[renderStage]._shader);
-        if (_shaderInfo[renderStage]._shader.compare(shader) == 0){
-            return shaderReference;
-        }else{
+        if (_shaderInfo[renderStage]._shader.compare(shader) != 0){
             PRINT_FN(Locale::get("REPLACE_SHADER"), _shaderInfo[renderStage]._shader.c_str(), shader.c_str());
             RemoveResource(shaderReference);
         }
     }
 
     (!shader.empty()) ? _shaderInfo[renderStage]._shader = shader : _shaderInfo[renderStage]._shader = "NULL_SHADER";
-
+    
     ResourceDescriptor shaderDescriptor(_shaderInfo[renderStage]._shader);
     std::stringstream ss;
     if (!_shaderInfo[renderStage]._shaderDefines.empty()){
@@ -135,14 +139,17 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
     ss << "DEFINE_PLACEHOLDER";
     shaderDescriptor.setPropertyList(ss.str());
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
-    shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
-    
-    _dirty = true;
-    _shaderInfo[renderStage]._computedShader = true;
+    P32 mask;
+    mask.i = 0;
+    mask.b.b0 = 1;
+    mask.b.b1 = 1;
+#if defined(CSM_USE_LAYERED_RENDERING)
+    mask.b.b2 = (renderStage == SHADOW_STAGE) ? 1 : 0;
+#endif
+    shaderDescriptor.setBoolMask(mask);
     _computedShaderTextures = true;
-    _shaderInfo[renderStage]._shaderRef = shaderReference;
 
-    return shaderReference;
+    _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
 }
 
 void Material::clean() {
@@ -158,71 +165,80 @@ void Material::clean() {
 
 ///If the current material doesn't have a shader associated with it, then add the default ones.
 ///Manually setting a shader, overrides this function by setting _computedShaders to "true"
-void Material::computeShader(bool force, const RenderStage& renderStage){
+bool Material::computeShader(bool force, const RenderStage& renderStage){
     bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD;
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
     //bool forwardPassShader = !deferredPassShader && !depthPassShader;
 
-    if(_shaderInfo[renderStage]._computedShader && !force && (renderStage == FINAL_STAGE && _computedShaderTextures)) 
-        return;
+    if (_shaderInfo[renderStage]._computedShader && !force)
+        return false;
 
-    if(_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)){
+
+    if (_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
-
-        if(renderStage == Z_PRE_PASS_STAGE)
-            shader += ".PrePass";
-
+  
+        if (depthPassShader){
+            if (renderStage == Z_PRE_PASS_STAGE){
+                shader += ".PrePass";
+            }else{
+                shader += ".Shadow";
+#if defined(CSM_USE_LAYERED_RENDERING)
+                addShaderDefines(renderStage, "CSM_USE_LAYERED_RENDERING");
+#endif
+            }
+        }
+ 
         //What kind of effects do we need?
-        if(_textures[TEXTURE_UNIT0]){
+        if (_textures[TEXTURE_UNIT0]){
             //Bump mapping?
-            if(_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
+            if (_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
                 addShaderDefines(renderStage, "COMPUTE_TBN");
                 shader += ".Bump"; //Normal Mapping
-                if(_bumpMethod == 2){ //Parallax Mapping
+                if (_bumpMethod == 2){ //Parallax Mapping
                     shader += ".Parallax";
                     addShaderDefines(renderStage, "USE_PARALLAX_MAPPING");
-                }else if(_bumpMethod == 3){ //Relief Mapping
+                }else if (_bumpMethod == 3){ //Relief Mapping
                     shader += ".Relief";
                     addShaderDefines(renderStage, "USE_RELIEF_MAPPING");
                 }
-            }else{
+            }
+            else{
                 // Or simple texture mapping?
                 shader += ".Texture";
             }
         }
 
-        if(isTranslucent()){
-            switch(_translucencySource){
-                case TRANSLUCENT_DIFFUSE :{
+        if (isTranslucent()){
+            switch (_translucencySource){
+                case TRANSLUCENT_DIFFUSE:{
                     shader += ".OpacityDiffuse";
                     addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
                 }break;
-                case TRANSLUCENT_OPACITY :{
+                case TRANSLUCENT_OPACITY:{
                     shader += ".Opacity";
                     addShaderDefines(renderStage, "USE_OPACITY");
                 }break;
-                case TRANSLUCENT_OPACITY_MAP :{
+                case TRANSLUCENT_OPACITY_MAP:{
                     shader += ".OpacityMap";
                     addShaderDefines(renderStage, "USE_OPACITY_MAP");
                 }break;
-                case TRANSLUCENT_DIFFUSE_MAP :{
+                case TRANSLUCENT_DIFFUSE_MAP:{
                     shader += ".OpacityDiffuseMap";
                     addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
                 }break;
             }
         }
 
-        if(_textures[TEXTURE_SPECULAR]){
+        if (_textures[TEXTURE_SPECULAR]){
             shader += ".Specular";
             addShaderDefines(renderStage, "USE_SPECULAR_MAP");
         }
 
         //if this is true, geometry shader will take a triangle strip as input, else it will use triangles
-        if(_gsInputType == GS_TRIANGLES){
-            shader += ".Triangles";
+        if (_gsInputType == GS_TRIANGLES){
             addShaderDefines(renderStage, "USE_GEOMETRY_TRIANGLE_INPUT");
-        }else if(_gsInputType == GS_LINES){
+        }else if (_gsInputType == GS_LINES){
             shader += ".Lines";
             addShaderDefines(renderStage, "USE_GEOMETRY_LINE_INPUT");
         }else{
@@ -230,20 +246,37 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             addShaderDefines(renderStage, "USE_GEOMETRY_POINT_INPUT");
         }
 
-        //Add the GPU skinnig module to the vertex shader?
-        if(_hardwareSkinning){
+        //Add the GPU skinning module to the vertex shader?
+        if (_hardwareSkinning){
             addShaderDefines(renderStage, "USE_GPU_SKINNING");
             shader += ",Skinned"; //<Use "," instead of "." will add a Vertex only property
         }
 
         //Add any modifiers you wish
-        if(!_shaderModifier.empty()){
+        if (!_shaderModifier.empty()){
             shader += ".";
             shader += _shaderModifier;
         }
 
-        setShaderProgram(shader,renderStage);
+        setShaderProgram(shader, renderStage);
+
+        return true;
     }
+
+    return false;
+}
+
+void Material::computeShaderInternal(){
+    if (_shaderComputeQueue.empty())
+        return;
+
+    std::pair<RenderStage, ResourceDescriptor> currentItem = _shaderComputeQueue.front();
+
+    _dirty = true;
+    _shaderInfo[currentItem.first]._shaderRef = CreateResource<ShaderProgram>(currentItem.second);
+    _shaderInfo[currentItem.first]._computedShader = true;
+
+    _shaderComputeQueue.pop();
 }
 
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {

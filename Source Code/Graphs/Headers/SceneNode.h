@@ -61,13 +61,15 @@ public:
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations (this is after sort and transform updates)
-    virtual void onDraw(const RenderStage& currentStage);
+    /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
+    virtual bool onDraw(const RenderStage& currentStage) = 0;
     virtual	bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage)  const { return _renderState.getDrawState(currentStage); }
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
+    virtual bool      isReadyForDraw(const RenderStage& currentStage);
     virtual bool	  isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
     Material* getMaterial();
@@ -102,21 +104,23 @@ protected:
     virtual void postDraw(const RenderStage& currentStage) {/*Nothing yet*/ }
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-
+    /// Called if something changed for the SGN that affects rendering
+    virtual void drawReset(SceneGraphNode* const sgn) {}
     /*Rendering/Processing*/
     virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
 
     /* Normal material */
-    virtual	void prepareMaterial(SceneGraphNode* const sgn);
-    virtual	void releaseMaterial();
+    virtual	bool prepareMaterial(SceneGraphNode* const sgn);
+    virtual	bool releaseMaterial();
 
     /* Depth map material */
-    virtual	void prepareDepthMaterial(SceneGraphNode* const sgn);
-    virtual	void releaseDepthMaterial();
+    virtual	bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    virtual	bool releaseDepthMaterial();
 
     /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
     virtual void preFrameDrawEnd(SceneGraphNode* const sgn);
-    virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; //Post insertion calls (Use this to setup child objects during creation)
+    // Post insertion calls (Use this to setup child objects during creation)
+    virtual void postLoad(SceneGraphNode* const sgn) { _nodeReady = (sgn != nullptr); }; 
 
 protected:
     ShaderProgram*        _customShader;
@@ -135,7 +139,6 @@ private:
     bool          _refreshMaterialData;
     bool          _nodeReady; //< make sure postload was called with a valid SGN
     SceneNodeType _type;
-    char          _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 };
 
 #endif

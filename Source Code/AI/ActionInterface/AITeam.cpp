@@ -31,8 +31,8 @@ void AITeam::update(const U64 deltaTime){
     }
 }
 
-#pragma message("ToDo: Use proper agent radius navmeshes! -Ionut")
 void AITeam::resetNavMeshes() {
+    STUBBED("ToDo: Use proper agent radius navmeshes! -Ionut")
     for(I32 i = 0; i < maxAgentRadiusCount; ++i){
         Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(i);
         if(!_teamCrowd[i] && navMesh){

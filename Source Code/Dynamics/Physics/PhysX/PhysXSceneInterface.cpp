@@ -108,11 +108,11 @@ void PhysXSceneInterface::update(const U64 deltaTime){
     }
 }
 
-#pragma message("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
 namespace {
     PxShape* g_shapes[2048];// = New PxShape*[nShapes];
 }
 void PhysXSceneInterface::updateActor(const PhysXActor& actor){
+    STUBBED("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
     if(actor._transform->isPhysicsDirty()){
 
         const vec3<F32>& position = actor._transform->getPosition();
@@ -189,9 +189,8 @@ PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const std::string& actorN
     return newActor;
 }
 
-#pragma message("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
 SceneGraphNode* PhysXSceneInterface::addToScene(PhysXActor& actor){
-
+    STUBBED("ToDo: Only 1 shape per actor for now. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;
     SceneGraphNode* tempNode = nullptr;
 

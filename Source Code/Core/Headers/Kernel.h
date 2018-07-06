@@ -140,11 +140,13 @@ private:
     static bool   _keepAlive;
     static bool   _applicationReady;
     static bool   _renderingPaused;
-
+    static bool   _freezeLoopTime;
+    static bool   _freezeGUITime;
    static DELEGATE_CBK      _mainLoopCallback;
    boost::threadpool::pool* _mainTaskPool;
    // both are in ms
    static U64 _currentTime;
+   static U64 _currentTimeFrozen;
    static U64 _currentTimeDelta;
    static U64 _previousTime;
    static D32 _nextGameTick;

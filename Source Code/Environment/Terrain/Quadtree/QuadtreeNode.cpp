@@ -7,7 +7,7 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBufferObject* const groundVBO, U32& chunkCount){
+void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, U32& chunkCount){
     _LOD = 0;
 
     U32 div = (U32)pow(2.0f, (F32)depth);
@@ -18,7 +18,7 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
 
     if(std::max(newsize.x, newsize.y) < minHMSize)	{
         _terrainChunk = New TerrainChunk();
-        _terrainChunk->Load(depth, pos, HMsize, groundVBO);
+        _terrainChunk->Load(depth, pos, HMsize, groundVB);
 		chunkCount++;
         _children = nullptr;
         return;
@@ -43,10 +43,10 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
     tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
     tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
     tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW].Build(depth+1, tNewHMpos[CHILD_NW], HMsize, minHMSize, groundVBO, chunkCount);
-    _children[CHILD_NE].Build(depth+1, tNewHMpos[CHILD_NE], HMsize, minHMSize, groundVBO, chunkCount);
-    _children[CHILD_SW].Build(depth+1, tNewHMpos[CHILD_SW], HMsize, minHMSize, groundVBO, chunkCount);
-    _children[CHILD_SE].Build(depth+1, tNewHMpos[CHILD_SE], HMsize, minHMSize, groundVBO, chunkCount);
+    _children[CHILD_NW].Build(depth+1, tNewHMpos[CHILD_NW], HMsize, minHMSize, groundVB, chunkCount);
+    _children[CHILD_NE].Build(depth+1, tNewHMpos[CHILD_NE], HMsize, minHMSize, groundVB, chunkCount);
+    _children[CHILD_SW].Build(depth+1, tNewHMpos[CHILD_SW], HMsize, minHMSize, groundVB, chunkCount);
+    _children[CHILD_SE].Build(depth+1, tNewHMpos[CHILD_SE], HMsize, minHMSize, groundVB, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
@@ -91,8 +91,8 @@ void QuadtreeNode::GenerateGrassIndexBuffer(U32 bilboardCount){
     }
 }
 
-#pragma message("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
 void QuadtreeNode::DrawGrass(U32 geometryIndex, Transform* const parentTransform){
+    STUBBED("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
     if(_LOD < 0  || !isInView(CHUNK_BIT_TESTCHILDREN)) return;
 
     if(!_children){
@@ -148,7 +148,7 @@ bool QuadtreeNode::isInView(I32 options) {
 	return true;
 }
 
-void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
+void QuadtreeNode::DrawGround(I32 options,VertexBuffer* const terrainVB){
   
 	if(!isInView(options))
 		return;
@@ -157,13 +157,13 @@ void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
         assert(_terrainChunk);
 
         if(options & CHUNK_BIT_WATERREFLECTION)
-            _terrainChunk->DrawGround(Config::TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVBO);
+            _terrainChunk->DrawGround(Config::TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVB);
 		else
-			_terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVBO);
+			_terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVB);
     }else{
-        _children[CHILD_NW].DrawGround(options, terrainVBO);
-        _children[CHILD_NE].DrawGround(options, terrainVBO);
-        _children[CHILD_SW].DrawGround(options, terrainVBO);
-        _children[CHILD_SE].DrawGround(options, terrainVBO);
+        _children[CHILD_NW].DrawGround(options, terrainVB);
+        _children[CHILD_NE].DrawGround(options, terrainVB);
+        _children[CHILD_SW].DrawGround(options, terrainVB);
+        _children[CHILD_SE].DrawGround(options, terrainVB);
     }
 }

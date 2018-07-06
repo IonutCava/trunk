@@ -6,12 +6,12 @@
 
 #define SHOULD_TOGGLE(state) (!oldState || oldState->_descriptor.state != _descriptor.state)
 
-#define TOGGLE_NO_CHECK(state, enumValue) if(_descriptor.state) GLCheck(glEnable(enumValue));  \
-                                          else GLCheck(glDisable(enumValue));
+#define TOGGLE_NO_CHECK(state, enumValue) if(_descriptor.state) glEnable(enumValue);  \
+                                          else glDisable(enumValue);
 
 #define TOGGLE_WITH_CHECK(state, enumValue) if(!oldState || oldState->_descriptor.state != _descriptor.state) { \
-                                                if(_descriptor.state) GLCheck(glEnable(enumValue));  \
-                                                else GLCheck(glDisable(enumValue)); \
+                                                if(_descriptor.state) glEnable(enumValue);  \
+                                                else glDisable(enumValue); \
                                             }
 glRenderStateBlock::glRenderStateBlock(const RenderStateBlockDescriptor& descriptor) : RenderStateBlock(),
                                                                                        _descriptor(descriptor),
@@ -30,28 +30,28 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
     TOGGLE_WITH_CHECK(_cullMode, GL_CULL_FACE);
 
     if(SHOULD_TOGGLE(_blendSrc) || SHOULD_TOGGLE(_blendDest)){
-        GLCheck(glBlendFuncSeparate(glBlendTable[_descriptor._blendSrc], glBlendTable[_descriptor._blendDest], GL_ONE, GL_ZERO));
+        glBlendFuncSeparate(glBlendTable[_descriptor._blendSrc], glBlendTable[_descriptor._blendDest], GL_ONE, GL_ZERO);
     }
     
     if(SHOULD_TOGGLE(_blendOp)){
-        GLCheck(glBlendEquation(glBlendOpTable[_descriptor._blendOp]));
+        glBlendEquation(glBlendOpTable[_descriptor._blendOp]);
     }
     
     if(SHOULD_TOGGLE(_cullMode)) {
-        GLCheck(glCullFace(glCullModeTable[_descriptor._cullMode]));
+        glCullFace(glCullModeTable[_descriptor._cullMode]);
     }
 
     if(SHOULD_TOGGLE(_zBias)){
         if (IS_ZERO(_descriptor._zBias)){
-            GLCheck(glDisable(GL_POLYGON_OFFSET_FILL));
+            glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
-            GLCheck(glEnable(GL_POLYGON_OFFSET_FILL));
-            GLCheck(glPolygonOffset( _descriptor._zBias, _descriptor._zUnits));
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset( _descriptor._zBias, _descriptor._zUnits);
         }
     }
         
     if(SHOULD_TOGGLE(_fillMode)){
-        GLCheck(glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[_descriptor._fillMode]));
+        glPolygonMode(GL_FRONT_AND_BACK, glFillModeTable[_descriptor._fillMode]);
     }
 
     // ------------------- DEPTH PASS DEPENDENT STATES -------------------------------------- //
@@ -65,38 +65,38 @@ void glRenderStateBlock::activate(glRenderStateBlock* oldState){
            SHOULD_TOGGLE(_writeBlueChannel) ||
            SHOULD_TOGGLE(_writeGreenChannel) ||
            SHOULD_TOGGLE(_writeAlphaChannel)) {
-                GLCheck(glColorMask(_descriptor._writeRedChannel,
-                                    _descriptor._writeBlueChannel,
-                                    _descriptor._writeGreenChannel,
-                                    _descriptor._writeAlphaChannel));
+                glColorMask(_descriptor._writeRedChannel,
+                            _descriptor._writeBlueChannel,
+                            _descriptor._writeGreenChannel,
+                            _descriptor._writeAlphaChannel);
         }
 
        if(SHOULD_TOGGLE(_zFunc)){
-          GLCheck(glDepthFunc(glCompareFuncTable[_descriptor._zFunc]));
+          glDepthFunc(glCompareFuncTable[_descriptor._zFunc]);
        }
         if(SHOULD_TOGGLE(_zWriteEnable)){
-            GLCheck(glDepthMask(_descriptor._zWriteEnable));
+            glDepthMask(_descriptor._zWriteEnable);
         }
    
 
        if(SHOULD_TOGGLE(_stencilFunc) ||
           SHOULD_TOGGLE(_stencilRef)  ||
           SHOULD_TOGGLE(_stencilMask)) {
-          GLCheck(glStencilFunc(glCompareFuncTable[_descriptor._stencilFunc],
-                        _descriptor._stencilRef,
-                        _descriptor._stencilMask));
+          glStencilFunc(glCompareFuncTable[_descriptor._stencilFunc],
+                                           _descriptor._stencilRef,
+                                           _descriptor._stencilMask);
        }
 
        if(SHOULD_TOGGLE(_stencilFailOp)  ||
           SHOULD_TOGGLE(_stencilZFailOp) ||
           SHOULD_TOGGLE(_stencilPassOp)) {
-          GLCheck(glStencilOp(glStencilOpTable[_descriptor._stencilFailOp],
-                              glStencilOpTable[_descriptor._stencilZFailOp],
-                              glStencilOpTable[_descriptor._stencilPassOp]));
+          glStencilOp(glStencilOpTable[_descriptor._stencilFailOp],
+                      glStencilOpTable[_descriptor._stencilZFailOp],
+                      glStencilOpTable[_descriptor._stencilPassOp]);
        }
 
        if(SHOULD_TOGGLE(_stencilWriteMask)){
-          GLCheck(glStencilMask(_descriptor._stencilWriteMask));
+          glStencilMask(_descriptor._stencilWriteMask);
        }
   //}
 }

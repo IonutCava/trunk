@@ -38,15 +38,8 @@
 #include <math.h>
 
 #pragma warning(disable:4201) // nameless struct/union
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 
-#ifndef F32
-#define F32 float
-#endif
-#ifndef I32
-#define I32 signed int
-#endif
-
-#define EPSILON				0.000001f
 #ifndef M_PI
 #define M_PI				3.141592653589793238462643383279f		// PI
 #endif
@@ -149,9 +142,9 @@ public:
     };
 };
 
-inline vec2 operator*(F32 fl, const vec2& v)	{ return vec2(v.x*fl, v.y*fl);}
-
-inline F32 Dot(const vec2& a, const vec2& b) { return(a.x*b.x+a.y*b.y); }
+inline vec2 operator*(F32 fl, const vec2& v)  { return vec2(v.x*fl, v.y*fl); }
+inline F32  Dot(const vec2& a, const vec2& b) { return(a.x*b.x+a.y*b.y); }
+inline vec2 Inverse(const vec2& v)            { return vec2(v.y, v.x); }
 
 class vec3 {
 public:
@@ -256,12 +249,10 @@ public:
     }
 };
 
-inline vec3 operator*(F32 fl, const vec3& v)	{ return vec3(v.x*fl, v.y*fl, v.z*fl);}
-
-inline F32 Dot(const vec3& a, const vec3& b) { return(a.x*b.x+a.y*b.y+a.z*b.z); }
-inline vec3 Cross(const vec3 &v1, const vec3 &v2) {
-    return vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x);
-}
+inline vec3 operator*(F32 fl, const vec3& v)	  { return vec3(v.x*fl, v.y*fl, v.z*fl); }
+inline F32  Dot(const vec3& a, const vec3& b)     { return(a.x*b.x+a.y*b.y+a.z*b.z); }
+inline vec3 Cross(const vec3 &v1, const vec3 &v2) { return vec3(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z, v1.x * v2.y - v1.y * v2.x); }
+inline vec3 Inverse(const vec3& v)                { return vec3(v.z, v.y, v.x); }
 
 inline vec2::vec2(const vec3 &_v) {
     this->x = _v.x;

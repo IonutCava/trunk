@@ -57,7 +57,7 @@ public:
 
     inline void set(const Quaternion& q) {_x = q._x; _y = q._y; _z = q._z; _w = q._w; _dirty = true; } 
 
-    //! normalising a quaternion works similar to a vector. This method will not do anything
+    //! normalizing a quaternion works similar to a vector. This method will not do anything
     //! if the quaternion is close enough to being unit-length. define EPSILON as something
     //! small like 0.00001f to get accurate results
     inline void normalize() {
@@ -349,9 +349,9 @@ public:
         T sqz = _z * _z;
         T sqw = _w * _w;
         T test = _x * _y + _z * _w;
-        T unit = sqx + sqy + sqz + sqw; // if normalised is one, otherwise is correction factor
+        T unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise is correction factor
 
-        if(test > (0.5f-EPSILON) * unit) { // singularity at north pole
+        if(test > (0.5f - EPSILON) * unit) { // singularity at north pole
             heading  = 2 * atan2(_x , _w);
             attitude = M_PIDIV2;
             bank     = 0;

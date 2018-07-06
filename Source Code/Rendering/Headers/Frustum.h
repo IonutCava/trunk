@@ -25,6 +25,7 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/Headers/Singleton.h"
+#include "Core/Math/Headers/Plane.h"
 
 #define FRUSTUM_OUT			0
 #define FRUSTUM_IN			1
@@ -35,19 +36,63 @@ DEFINE_SINGLETON( Frustum )
 
 public:
     void Extract(const vec3<F32>& eye);
+    inline void Extract() { Extract(_eyePos); }
+
     bool ContainsPoint(const vec3<F32>& point) const;
     I8  ContainsBoundingBox(const BoundingBox& bbox) const;
     I8  ContainsSphere(const vec3<F32>& center, F32 radius) const;
 
-    inline void setZPlanes(const vec2<F32>& zPlanes)       {_zPlanes = zPlanes;}
-    inline const vec3<F32>& getEyePos()				 const {return _eyePos;}
-    inline const vec2<F32>& getZPlanes()             const {return _zPlanes;}
+    inline const vec3<F32>&  getEyePos()		const { return _eyePos; }
+    inline const vec2<F32>&  getZPlanes()       const { return _zPlanes; }
+    inline const F32         getVerticalFoV()   const { return _verticalFoV; }
+    inline const F32         getHorizontalFoV() const { return Util::yfov_to_xfov(_verticalFoV, _aspectRatio); }
+    inline const F32         getAspectRatio()   const { return _aspectRatio; }
+    inline const vec3<F32>&  getPoint(U8 index)       { updatePoints(); return _frustumPoints[index]; }
+
+    inline void setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes) {
+        _aspectRatio = aspectRatio;
+        _verticalFoV = verticalFoV;
+        _zPlanes = zPlanes;
+    }
+
+    inline void setOrtho(const vec4<F32>& rect, const vec2<F32>& zPlanes) {
+        _orthoRect = rect;
+        _zPlanes = zPlanes;
+    }
+
+    inline void lock() {
+        _eyePosLock = _eyePos;
+        _zPlanesLock = _zPlanes;
+        _verticalFoVLock = _verticalFoV;
+        _aspectRatioLock = _aspectRatio;
+        _orthoRectLock = _orthoRect;
+    }
+
+    inline void unlock(bool extract = false) {
+        _eyePos = _eyePosLock;
+        _zPlanes = _zPlanesLock;
+        _aspectRatio = _aspectRatioLock;
+        _verticalFoV = _verticalFoVLock;
+        _orthoRect = _orthoRectLock;
+        if (extract)
+            Extract(_eyePos);
+    }
+protected:
+    Frustum();
 
 private:
-    vec3<F32> _eyePos;
-    vec2<F32> _zPlanes;
-    vec4<F32> _frustumPlanes[6];
-    mat4<F32> _viewProjectionMatrixCache;
+    void intersectionPoint(const Plane<F32> & a, const Plane<F32> & b, const Plane<F32> & c, vec3<F32>& outResult);
+    void updatePoints();
+
+private:
+    F32        _verticalFoV, _verticalFoVLock;
+    F32        _aspectRatio, _aspectRatioLock;
+    bool       _pointsDirty;
+    vec3<F32>  _eyePos,  _eyePosLock;
+    vec2<F32>  _zPlanes, _zPlanesLock;
+    vec4<F32>  _orthoRect, _orthoRectLock;
+    vec3<F32>  _frustumPoints[8];
+    Plane<F32> _frustumPlanes[6];
 
 END_SINGLETON
 

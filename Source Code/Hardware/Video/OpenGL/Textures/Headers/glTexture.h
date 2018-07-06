@@ -44,7 +44,7 @@ protected:
     void threadedLoad(const std::string& name);
 
     friend class GL_API;
-    friend class glFrameBufferObject;
+    friend class glFrameBuffer;
     typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
     static textureBoundMapDef textureBoundMap;
 
@@ -58,8 +58,6 @@ private:
     GLenum _format;
     GLenum _internalFormat;
     GLenum _type;
-    bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
-    GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
 
     ///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
     glSamplerObject  _sampler;

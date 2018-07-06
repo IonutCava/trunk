@@ -9,7 +9,7 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
-#pragma message("TODO (Prio 1): - Bake transforms inside vbos for STATIC nodes")
+#pragma message("TODO (Prio 1): - Bake transforms inside vbs for STATIC nodes")
 #pragma message("               - assert if 'getTransform()' is called for such nodes. Use default identity matrix for static nodes")
 #pragma message("               - premultiply positions AND normals AND tangents AND bitangets to avoid artifacts")
 #pragma message("               - Ionut")
@@ -24,6 +24,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
+                                                  _inView(false),
                                                   _selected(false),
                                                   _isSelectable(false),
                                                   _noDefaultTransform(false),
@@ -46,7 +47,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GU
     _components[SGNComponent::SGN_COMP_PHYSICS]    = New PhysicsComponent(this);
 }
 
-///If we are destroyng the current graph node
+///If we are destroying the current graph node
 SceneGraphNode::~SceneGraphNode(){
     unload();
 
@@ -82,6 +83,17 @@ void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ) const {
 
     ReadLock r_lock(_queryLock);
     boxes.push_back(_boundingBox);
+}
+
+void SceneGraphNode::getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly) const {
+   FOR_EACH(const NodeChildren::value_type& it, _children){
+       it.second->getShadowCastersAndReceivers(casters, receivers, visibleOnly);
+    }
+
+    if (!visibleOnly || visibleOnly && _inView) {
+        if (getCastsShadows())    casters.push_back(this);
+        if (getReceivesShadows()) receivers.push_back(this);
+    }
 }
 
 const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {

@@ -89,11 +89,28 @@ void MainScene::processInput(const U64 deltaTime){
     }
 }
 
+void MainScene::processGUI(const U64 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.5);
+    D32 TimeDisplay = getSecToMs(1.0);
+
+    if (_guiTimers[0] >= FpsDisplay){
+        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
+        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
+        _guiTimers[0] = 0.0;
+    }
+
+    if (_guiTimers[1] >= TimeDisplay){
+        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
+        _guiTimers[1] = 0.0;
+    }
+
+    Scene::processGUI(deltaTime);
+}
+
 void MainScene::processTasks(const U64 deltaTime){
     updateLights();
     D32 SunDisplay = getSecToMs(1.50);
-    D32 FpsDisplay = getSecToMs(0.5);
-    D32 TimeDisplay = getSecToMs(1.0);
     if (_taskTimers[0] >= SunDisplay){
         _sunAngle.y += 0.0005f;
         _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
@@ -103,17 +120,7 @@ void MainScene::processTasks(const U64 deltaTime){
         _taskTimers[0] = 0.0;
     }
 
-    if (_taskTimers[1] >= FpsDisplay){
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[1] = 0.0;
-    }
 
-    if (_taskTimers[2] >= TimeDisplay){
-        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
-        _taskTimers[2] = 0.0;
-    }
 
     Scene::processTasks(deltaTime);
 }
@@ -153,7 +160,7 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GU
     _waterGraphNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_IGNORE);
     ///General rendering callback
     renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, false));
-    ///Render the scene for water reflection FBO generation
+    ///Render the scene for water reflection FB generation
     _water->setRenderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, true));
     return loadState;
 }
@@ -222,8 +229,8 @@ bool MainScene::loadResources(bool continueOnErrors){
                   vec3<F32>(0.6f,0.2f,0.2f),
                   "Number of items in Render Bin: %d",0);
     _taskTimers.push_back(0.0); //Sun
-    _taskTimers.push_back(0.0); //Fps
-    _taskTimers.push_back(0.0); //Time
+    _guiTimers.push_back(0.0); //Fps
+    _guiTimers.push_back(0.0); //Time
 
     _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),

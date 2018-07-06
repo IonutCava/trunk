@@ -4,23 +4,23 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
-Object3D::Object3D(const ObjectType& type,const PrimitiveType& vboType,const ObjectFlag& flag) :
+Object3D::Object3D(const ObjectType& type,const PrimitiveType& vbType,const ObjectFlag& flag) :
                                           SceneNode(TYPE_OBJECT3D),
                                           _update(false),
                                           _geometryType(type),
                                           _geometryFlag(flag),
-                                          _geometry(GFX_DEVICE.newVBO(vboType))
+                                          _geometry(GFX_DEVICE.newVB(vbType))
 
 {
     _renderInstance = New RenderInstance(this);
 }
 
-Object3D::Object3D(const std::string& name,const ObjectType& type,const PrimitiveType& vboType,const ObjectFlag& flag) :
+Object3D::Object3D(const std::string& name,const ObjectType& type,const PrimitiveType& vbType,const ObjectFlag& flag) :
                                                                     SceneNode(name,TYPE_OBJECT3D),
                                                                     _update(false),
                                                                     _geometryType(type),
                                                                     _geometryFlag(flag),
-                                                                    _geometry(GFX_DEVICE.newVBO(vboType))
+                                                                    _geometry(GFX_DEVICE.newVB(vbType))
 {
     _renderInstance = New RenderInstance(this);
 }
@@ -46,12 +46,11 @@ void  Object3D::postLoad(SceneGraphNode* const sgn){
     SceneNode::postLoad(sgn);
 }
 
-void Object3D::onDraw(const RenderStage& currentStage){
-    if (getState() != RES_LOADED) return;
+bool Object3D::onDraw(const RenderStage& currentStage){
+    if (getState() != RES_LOADED) 
+        return false;
 
-    SceneNode::onDraw(currentStage);
-
-    //check if we need to update vbo shader
+    //check if we need to update vb shader
     if(getMaterial()){
         ShaderProgram* stageShader = getMaterial()->getShaderProgram(bitCompare(SHADOW_STAGE,currentStage) ? SHADOW_STAGE : (bitCompare(FINAL_STAGE,currentStage) ? FINAL_STAGE : Z_PRE_PASS_STAGE));
         assert(stageShader != nullptr);
@@ -62,6 +61,8 @@ void Object3D::onDraw(const RenderStage& currentStage){
     if(_customShader){
        _geometry->setShaderProgram(_customShader);
     }
+
+    return true;
 }
 
 void Object3D::computeNormals() {
@@ -136,7 +137,7 @@ void Object3D::computeTangents(){
         bitangent.set((deltaPos2 * deltaUV1.x   - deltaPos1 * deltaUV2.x)*r);
 
         // Set the same tangent for all three vertices of the triangle.
-        // They will be merged later, in vboindexer.cpp
+        // They will be merged later, in vbindexer.cpp
         _geometry->addTangent(tangent);
         _geometry->addTangent(tangent);
         _geometry->addTangent(tangent);

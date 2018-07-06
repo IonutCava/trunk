@@ -37,7 +37,7 @@ public:
     bool loadResources(bool continueOnErrors);
     bool unload();
     void processInput(const U64 deltaTime);
-    void processTasks(const U64 deltaTime);
+    void processGUI(const U64 deltaTime);
 
     bool onKeyUp(const OIS::KeyEvent& key);
     bool onMouseMove(const OIS::MouseEvent& key);

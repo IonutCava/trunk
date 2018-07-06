@@ -23,8 +23,9 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
-#include <limits>
+#include <limits.h>
 #include <boost/function.hpp>
+
 ///Data Types
 #ifndef U8
 #define U8   unsigned char
@@ -71,20 +72,20 @@
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 
-static const F32 TEST_EPSILON     = std::numeric_limits<F32>::epsilon();
+static const F32 EPSILON     = std::numeric_limits<F32>::epsilon();
 static const D32 TEST_EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
-inline bool IS_ZERO(F32 X) { return  (fabs(X) < TEST_EPSILON); }
-inline bool IS_ZERO(D32 X) { return  (fabs(X) < TEST_EPSILON_D32); }
+inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON); }
+inline bool IS_ZERO(D32 X) { return  (std::fabs(X) < TEST_EPSILON_D32); }
 
-inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) { return (fabs(X) < TOLERANCE); }
-inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) { return (fabs(X) < TOLERANCE); }
+inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
+inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) { return (std::fabs(X) < TOLERANCE); }
 
-inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return (fabs(X/Y - 1) < TEST_EPSILON); }
-inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return (fabs(X/Y - 1) < TEST_EPSILON_D32); }
+inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return (std::fabs(X / Y - 1.0f) < EPSILON); }
+inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return (std::fabs(X / Y - 1.0) < TEST_EPSILON_D32); }
 
-inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  { return (fabs(X/Y - 1) < TOLERANCE); }
-inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs(X/Y - 1) < TOLERANCE); }
+inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  { return (std::fabs(X / Y - 1.0f) < TOLERANCE); }
+inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (std::fabs(X / Y - 1.0) < TOLERANCE); }
 
 #if defined(NDEBUG)
 #   define New new
@@ -98,8 +99,6 @@ inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs
 #   define New new(__FILE__, __LINE__)
 #   define Del delete
 #endif
-void * malloc_simd(const size_t bytes);
-void free_simd(void * pxData);
 
 #ifdef _DEBUG
 void log_delete(size_t t,char* zFile, I32 nLine);

@@ -1,4 +1,3 @@
-/*
 float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
     
     // Gaussian 3x3 filter
@@ -20,11 +19,10 @@ float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
         fShadow = 1.0;
     }
     return fShadow;
-}*/
+}
 
 void applyShadowSpot(in int shadowIndex, inout float shadow) {
-    vec3 vPixPosInDepthMap = ((_shadowCoord[shadowIndex].xyz / _shadowCoord[shadowIndex].w) + 1.0) * 0.5;
-    //shadow = filterFinalShadow(texDepthMapFromLight[shadowIndex], vPixPosInDepthMap);
-
-    shadow = texture(texDepthMapFromLight[shadowIndex], vPixPosInDepthMap);
+    vec4 shadow_coord = getCoord(dvd_LightSource[dvd_lightIndex[shadowIndex]], 0);
+    shadow_coord.xyz = shadow_coord.xyz / shadow_coord.w;
+    shadow = filterFinalShadow(texDepthMapFromLight[shadowIndex], shadow_coord.xyz);
 }

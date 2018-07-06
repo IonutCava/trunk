@@ -21,12 +21,38 @@ void PingPongScene::preRender(){
 }
 //<<end copy-paste
 
-void PingPongScene::processTasks(const U64 deltaTime){
+void PingPongScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
-    if (_taskTimers[0] >= FpsDisplay){
+    if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        _taskTimers[0] = 0.0;
+        _guiTimers[0] = 0.0;
     }
+    Scene::processGUI(deltaTime);
+}
+
+void PingPongScene::processTasks(const U64 deltaTime){
+    static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
+    static bool direction = false;
+    if (!direction){
+        _sunAngle.y += 0.005f;
+        _sunAngle.x += 0.005f;
+    }
+    else{
+        _sunAngle.y -= 0.005f;
+        _sunAngle.x -= 0.005f;
+    }
+
+    if (_sunAngle.y <= RADIANS(25) || _sunAngle.y >= RADIANS(70))
+        direction = !direction;
+
+    _sunvector = vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+        -cosf(_sunAngle.y),
+        -sinf(_sunAngle.x) * sinf(_sunAngle.y));
+    /*
+    LightManager::getInstance().getLight(0)->setDirection(_sunvector);
+    getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
+*/
+
     Scene::processTasks(deltaTime);
 }
 
@@ -268,7 +294,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
     _quotes.push_back("It's not the hard. Even a monkey can do it.");
 
-    _taskTimers.push_back(0.0); //Fps
+    _guiTimers.push_back(0.0); //Fps
     _taskTimers.push_back(0.0); //Light
     return true;
 }

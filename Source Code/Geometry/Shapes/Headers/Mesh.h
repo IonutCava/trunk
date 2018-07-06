@@ -54,7 +54,7 @@ public:
 
     inline const BoundingBox& getMaxBoundingBox() const { return _maxBoundingBox; }
 
-    virtual void  addSubMesh(SubMesh* const subMesh);
+    virtual void addSubMesh(SubMesh* const subMesh);
 
     /// Use playAnimations() to toggle animation playback for the current mesh (and all submeshes) on or off
     inline void playAnimations(const bool state)       { _playAnimations = state; }

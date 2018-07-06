@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-//PreRenderStage is a class specialized in applying certain shaders and generating FBO results
+//PreRenderStage is a class specialized in applying certain shaders and generating FB results
 //
 class PreRenderOperator;
 class PreRenderStage{

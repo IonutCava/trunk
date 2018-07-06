@@ -178,7 +178,7 @@ namespace NS_GLIM
 
     void GLIM_BATCH::RenderBatchInstancedOGL (int iInstances, bool bWireframe)
     {
-        if (!glDrawElementsInstancedARB)
+        if (!glDrawElementsInstanced)
             return;
 
         if (!BeginRender ())
@@ -193,7 +193,7 @@ namespace NS_GLIM
             {
                 (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles));
 
-                (glDrawElementsInstancedARB (GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0, iInstances));
+                (glDrawElementsInstanced(GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0, iInstances));
             }
         }
         else
@@ -203,7 +203,7 @@ namespace NS_GLIM
             {
                 (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe));
 
-                (glDrawElementsInstancedARB (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0, iInstances));
+                (glDrawElementsInstanced (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0, iInstances));
             }
         }
 
@@ -212,7 +212,7 @@ namespace NS_GLIM
         {
             (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points));
 
-            (glDrawElementsInstancedARB (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0, iInstances));
+            (glDrawElementsInstanced (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0, iInstances));
         }
 
         // render all lines
@@ -220,7 +220,7 @@ namespace NS_GLIM
         {
             (glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines));
 
-            (glDrawElementsInstancedARB (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0, iInstances));
+            (glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0, iInstances));
         }
 
         EndRender ();

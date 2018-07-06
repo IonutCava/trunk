@@ -24,7 +24,7 @@
 #define _QUAD_3D_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 class ShaderProgram;
 class Quad3D : public Object3D {
@@ -69,7 +69,7 @@ public:
        computeTangents();
 
        _geometry->setIndiceLimits(vec2<U32>(0,3));
-       _geometry->queueRefresh();
+       _geometry->Create();
     }
 
     enum CornerLocation{

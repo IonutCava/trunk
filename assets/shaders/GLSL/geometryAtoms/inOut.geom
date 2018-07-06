@@ -10,9 +10,8 @@ layout (triangle_strip, max_vertices=3) out;
 in vec4  _vertexWV[];
 in vec3  _normalWV[];
 in vec3  _viewDirection[];
-in vec3 _lightDirection[MAX_LIGHT_COUNT][]; //<Light direction
-in vec4 _shadowCoord[MAX_SHADOW_CASTING_LIGHTS][];
-in float _attenuation[MAX_LIGHT_COUNT][];
+in vec3 _lightDirection[MAX_LIGHTS_PER_NODE][]; //<Light direction
+in float _attenuation[MAX_LIGHTS_PER_NODE][];
 
 void main() {
 #if defined(USE_GEOMETRY_TRIANGLE_INPUT)

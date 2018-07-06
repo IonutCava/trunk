@@ -8,13 +8,13 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 #include "Hardware/Video/Headers/RenderStateBlock.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 #define COORD(x,y,w)	((y)*(w)+(x))
 
 bool Terrain::unload(){
     SAFE_DELETE(_terrainQuadtree);
-    SAFE_DELETE(_groundVBO);
+    SAFE_DELETE(_groundVB);
     SAFE_DELETE(_terrainRenderState);
     SAFE_DELETE(_terrainDepthRenderState);
     SAFE_DELETE(_terrainReflectionRenderState);
@@ -58,10 +58,10 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 
     _terrainHeightScaleFactor = terrain->getScale().y;
 
-    _groundVBO = GFX_DEVICE.newVBO(TRIANGLE_STRIP);
-    _groundVBO->useLargeIndices(true);//<32bit indices
-    const vectorImpl<vec3<F32> >& normalData	= _groundVBO->getNormal();
-    const vectorImpl<vec3<F32> >& tangentData	= _groundVBO->getTangent();
+    _groundVB = GFX_DEVICE.newVB(TRIANGLE_STRIP);
+    _groundVB->useLargeIndices(true);//<32bit indices
+    const vectorImpl<vec3<F32> >& normalData	= _groundVB->getNormal();
+    const vectorImpl<vec3<F32> >& tangentData	= _groundVB->getTangent();
 
     ImageTools::ImageData img;
     img.create(terrain->getVariable("heightmap"));
@@ -79,9 +79,9 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
     if(_terrainWidth%2==0)	_terrainWidth++;
     if(_terrainHeight%2==0)	_terrainHeight++;
 
-    _groundVBO->resizePositionCount(_terrainWidth*_terrainHeight);
-    _groundVBO->resizeNormalCount(_terrainWidth*_terrainHeight);
-    _groundVBO->resizeTangentCount(_terrainWidth*_terrainHeight);
+    _groundVB->resizePositionCount(_terrainWidth*_terrainHeight);
+    _groundVB->resizeNormalCount(_terrainWidth*_terrainHeight);
+    _groundVB->resizeTangentCount(_terrainWidth*_terrainHeight);
 
     _boundingBox.set(vec3<F32>(-_terrainWidth/2,  0.0f, -_terrainHeight/2),
                      vec3<F32>( _terrainWidth/2, 40.0f,  _terrainHeight/2));
@@ -105,7 +105,7 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
             F32 h = (F32)(data[idxIMG*img.bpp() + 0] + data[idxIMG*img.bpp() + 1] + data[idxIMG*img.bpp() + 2])/3.0f;
 
             vertexData.y = (bMin.y + ((F32)h) * (bMax.y - bMin.y)/(255)) * _terrainHeightScaleFactor;
-            _groundVBO->modifyPositionValue(idxHM,vertexData);
+            _groundVB->modifyPositionValue(idxHM,vertexData);
         }
     }
 
@@ -115,12 +115,12 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
         for(U32 i=offset; i < _terrainWidth-offset; i++) {
             U32 idx = COORD(i,j,_terrainWidth);
 
-            vU.set(_groundVBO->getPosition(COORD(i+offset, j+0, _terrainWidth)) -  _groundVBO->getPosition(COORD(i-offset, j+0, _terrainWidth)));
-            vV.set(_groundVBO->getPosition(COORD(i+0, j+offset, _terrainWidth)) -  _groundVBO->getPosition(COORD(i+0, j-offset, _terrainWidth)));
+            vU.set(_groundVB->getPosition(COORD(i+offset, j+0, _terrainWidth)) -  _groundVB->getPosition(COORD(i-offset, j+0, _terrainWidth)));
+            vV.set(_groundVB->getPosition(COORD(i+0, j+offset, _terrainWidth)) -  _groundVB->getPosition(COORD(i+0, j-offset, _terrainWidth)));
             vUV.cross(vV,vU); vUV.normalize();
-            _groundVBO->modifyNormalValue(idx,vUV);
+            _groundVB->modifyNormalValue(idx,vUV);
             vU = -vU; vU.normalize();
-            _groundVBO->modifyTangentValue(idx,vU);
+            _groundVB->modifyTangentValue(idx,vU);
         }
     }
 
@@ -129,14 +129,14 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
             U32 idx0 = COORD(i,	j,		_terrainWidth);
             U32 idx1 = COORD(i,	offset,	_terrainWidth);
 
-            _groundVBO->modifyNormalValue(idx0, normalData[idx1]);
-            _groundVBO->modifyTangentValue(idx0,tangentData[idx1]);
+            _groundVB->modifyNormalValue(idx0, normalData[idx1]);
+            _groundVB->modifyTangentValue(idx0,tangentData[idx1]);
 
             idx0 = COORD(i,	_terrainHeight-1-j,		 _terrainWidth);
             idx1 = COORD(i,	_terrainHeight-1-offset, _terrainWidth);
 
-            _groundVBO->modifyNormalValue(idx0,normalData[idx1]);
-            _groundVBO->modifyTangentValue(idx0,tangentData[idx1]);
+            _groundVB->modifyNormalValue(idx0,normalData[idx1]);
+            _groundVB->modifyTangentValue(idx0,tangentData[idx1]);
         }
     }
 
@@ -145,23 +145,23 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
             U32 idx0 = COORD(i,		    j,	_terrainWidth);
             U32 idx1 = COORD(offset,	j,	_terrainWidth);
 
-            _groundVBO->modifyNormalValue(idx0,normalData[idx1]);
-            _groundVBO->modifyTangentValue(idx0,normalData[idx1]);
+            _groundVB->modifyNormalValue(idx0,normalData[idx1]);
+            _groundVB->modifyTangentValue(idx0,normalData[idx1]);
 
             idx0 = COORD(_terrainWidth-1-i,		 j,	_terrainWidth);
             idx1 = COORD(_terrainWidth-1-offset, j,	_terrainWidth);
 
-            _groundVBO->modifyNormalValue(idx0,normalData[idx1]);
-            _groundVBO->modifyTangentValue(idx0,normalData[idx1]);
+            _groundVB->modifyNormalValue(idx0,normalData[idx1]);
+            _groundVB->modifyTangentValue(idx0,normalData[idx1]);
         }
     }
     //Terrain dimensions
     vec2<U32> terrainDim(_terrainWidth, _terrainHeight);
     //Use primitive restart for each strip
-    _groundVBO->setIndicesDelimiter(TERRAIN_STRIP_RESTART_INDEX);
+    _groundVB->setIndicesDelimiter(TERRAIN_STRIP_RESTART_INDEX);
     _terrainQuadtree->setParentShaderProgram(getMaterial()->getShaderProgram());
-    _terrainQuadtree->setParentVBO(_groundVBO);
-    _terrainQuadtree->Build(_boundingBox, terrainDim, terrain->getChunkSize(), _groundVBO);
+    _terrainQuadtree->setParentVB(_groundVB);
+    _terrainQuadtree->Build(_boundingBox, terrainDim, terrain->getChunkSize(), _groundVB);
 
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true); //No default material
@@ -186,7 +186,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     }
     _node = sgn;
 
-    _groundVBO->Create();
+    _groundVB->Create();
     _planeSGN = _node->addNode(_plane);
     _plane->computeBoundingBox(_planeSGN);
     _plane->renderInstance()->preDraw(true);
@@ -210,7 +210,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
     s->UniformTexture("texBlend2", 5);
     if(_alphaTexturePresent) s->UniformTexture("texBlend3",6);
 
-    _groundVBO->setShaderProgram(s);
+    _groundVB->setShaderProgram(s);
 
     SceneNode::postLoad(sgn);
 }
@@ -218,7 +218,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
     ///The terrain's final bounding box is the QuadTree's root bounding box
     ///Compute the QuadTree boundingboxes and get the root BB
-    _boundingBox = _terrainQuadtree->computeBoundingBox(_groundVBO->getPosition());
+    _boundingBox = _terrainQuadtree->computeBoundingBox(_groundVB->getPosition());
     ///Inform the scenegraph of our new BB
     sgn->getBoundingBox() = _boundingBox;
     return  SceneNode::computeBoundingBox(sgn);

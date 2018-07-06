@@ -41,7 +41,7 @@ public:
     ~glUniformBufferObject();
     ///Create a new buffer object to hold our uniform shader data
     ///if "dynamic" is false, the buffer will be created using GL_STATIC_DRAW
-    ///if "dynamic" is true, the buffer will use eiter GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
+    ///if "dynamic" is true, the buffer will use either GL_STREAM_DRAW or GL_DYNAMIC_DRAW depending on the "stream" param
     ///default value will be a GL_DYNAMIC_DRAW, as most data will change once every few frames
     ///(lights might change per frame, so stream will be better in that case)
     void Create(GLint bufferIndex, bool dynamic = true, bool stream = false);
@@ -53,6 +53,8 @@ public:
     virtual bool bindBufferBase() const;
     static GLuint getBindingIndice();
     static void   unbind();
+
+    void printUniformBlockInfo(GLint prog, GLint block_index);
 
 protected:
     static vectorImpl<GLuint> _bindingIndices;

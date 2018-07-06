@@ -24,12 +24,6 @@ SceneNode::SceneNode(const std::string& name, const SceneNodeType& type) : Resou
                                                              _sgnReferenceCount(0),
                                                              _physicsAsset(nullptr)
 {
-    U32 i = 0, j = 0;
-    for(; i <  Material::TEXTURE_UNIT0; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
-
-    for(i = Material::TEXTURE_UNIT0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", j++);
 }
 
 SceneNode::~SceneNode() {
@@ -45,15 +39,6 @@ void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Scen
     _material->clean();
 }
 
-void SceneNode::onDraw(const RenderStage& currentStage){
-    Material* mat = getMaterial();
-
-    if(!mat)
-        return;
-
-    mat->computeShader(false, currentStage);
-}
-
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
     assert(_nodeReady);
 
@@ -65,6 +50,13 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
     if (sgn->getComponent<AnimationComponent>()){
         sgn->getComponent<AnimationComponent>()->renderSkeleton();
     }
+}
+bool SceneNode::isReadyForDraw(const RenderStage& currentStage){
+    Material* mat = getMaterial();
+    if (!mat)
+        return true;
+
+    return mat->getShaderProgram(currentStage)->isHWInitComplete();
 }
 
 bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
@@ -133,12 +125,12 @@ void SceneNode::setMaterial(Material* const m){
     }
 }
 
-void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
+bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     assert(_nodeReady);
 
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material)
-        return;
+        return true;
 
     if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
         SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
@@ -149,126 +141,123 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     Scene* activeScene = GET_ACTIVE_SCENE();
     LightManager& lightMgr = LightManager::getInstance();
 
-    s->bind();
-
     Texture2D* texture = nullptr;
-    for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        if((texture = _material->getTexture(i)) != nullptr){
+    for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
+        if ((texture = _material->getTexture(i)) != nullptr){
             texture->Bind(i);
-
-            if(i >= Material::TEXTURE_UNIT0)
-                s->Uniform(_textureOperationUniformSlots[i], (I32)_material->getTextureOperation(i));
         }
-
-    if(_material->isTranslucent()){
-        s->Uniform("opacity", _material->getOpacityValue());
-        s->Uniform("useAlphaTest", _material->useAlphaTest());
     }
 
-    s->Uniform("material",_material->getMaterialMatrix());
-    
-    s->Uniform("textureCount", _material->getTextureCount());
+    if(!s->bind())
+        return false;
 
+    s->ApplyMaterial(_material);
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
-
     s->Uniform("lodLevel", (I32)getCurrentLOD());
-
-    if(lightMgr.shadowMappingEnabled()){
-        s->Uniform("worldHalfExtent", lightMgr.getLigthOrthoHalfExtent());
-        s->Uniform("dvd_lightProjectionMatrices",lightMgr.getLightProjectionMatricesCache());
-        s->Uniform("dvd_enableShadowMapping",sgn->getReceivesShadows());
-    }else{
-        s->Uniform("dvd_enableShadowMapping",false);
-    }
-
-    s->Uniform("dvd_lightIndex",       lightMgr.getLightIndicesForCurrentNode());
-    s->Uniform("dvd_lightType",        lightMgr.getLightTypesForCurrentNode());
-    s->Uniform("dvd_lightCount",       lightMgr.getLightCountForCurrentNode());
-    s->Uniform("dvd_lightCastsShadows",lightMgr.getShadowCastingLightsForCurrentNode());
-    s->Uniform("dvd_isReflection",     GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
+    s->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
+    s->Uniform("dvd_lightIndex",          lightMgr.getLightIndicesForCurrentNode());
+    s->Uniform("dvd_lightType",           lightMgr.getLightTypesForCurrentNode());
+    s->Uniform("dvd_lightCount",          lightMgr.getLightCountForCurrentNode());
+    s->Uniform("dvd_lightCastsShadows",   lightMgr.getShadowCastingLightsForCurrentNode());
+    s->Uniform("dvd_isReflection",        GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 
     s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
     s->Uniform("windSpeed", activeScene->state().getWindSpeed());
 
-    if (sgn->getComponent<AnimationComponent>()){
-        s->Uniform("hasAnimations", true);
-        s->Uniform("boneTransforms", sgn->getComponent<AnimationComponent>()->animationTransforms());
+    AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
+    if (animComponent){
+        const vectorImpl<mat4<F32> >& boneTransforms = animComponent->animationTransforms();
+        s->Uniform("dvd_hasAnimations", !boneTransforms.empty());
+        s->Uniform("boneTransforms", boneTransforms);
     }else{
-        s->Uniform("hasAnimations", false);
+        s->Uniform("dvd_hasAnimations", false);
     }
+
+    return true;
 }
 
-void SceneNode::releaseMaterial(){
+bool SceneNode::releaseMaterial(){
     assert(_nodeReady);
 
     //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material) return;
+    if(!_material) return true;
 
     Texture2D* texture = nullptr;
     for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
         if((texture = _material->getTexture(i)) != nullptr)
             texture->Unbind(i);
+
+    return true;
 }
 
-void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
+bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     assert(_nodeReady);
 
     if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN)
-        return;
+        return true;
 
     bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
     
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material) {
         SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
-        return;
+        return true;
     }
     SET_STATE_BLOCK(_material->getRenderState(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
 
     ShaderProgram* s = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
     assert(s != nullptr);
-    s->bind();
 
-    if(_material->isTranslucent()){
-        switch(_material->getTranslucencySource()){
-            case Material::TRANSLUCENT_DIFFUSE :
-                s->Uniform("material", _material->getMaterialMatrix());
-            case Material::TRANSLUCENT_OPACITY :
-                s->Uniform("opacity", _material->getOpacityValue());
-            case Material::TRANSLUCENT_OPACITY_MAP :
-                _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
-                break;
-            case Material::TRANSLUCENT_DIFFUSE_MAP :
-                _material->getTexture(Material::TEXTURE_UNIT0)->Bind(Material::TEXTURE_UNIT0);
-                break;
+    if (!s->bind())
+        return false;
+
+    s->ApplyMaterial(_material);
+
+    if (_material->isTranslucent()){
+        switch (_material->getTranslucencySource()){
+        case Material::TRANSLUCENT_OPACITY_MAP:
+            _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);
+            break;
+        case Material::TRANSLUCENT_DIFFUSE_MAP:
+            _material->getTexture(Material::TEXTURE_UNIT0)->Bind(Material::TEXTURE_UNIT0);
+            break;
         };
     }
 
-    if (sgn->getComponent<AnimationComponent>()){
-        s->Uniform("hasAnimations", true);
-        s->Uniform("boneTransforms", sgn->getComponent<AnimationComponent>()->animationTransforms());
-    }else{
-        s->Uniform("hasAnimations", false);
+    AnimationComponent* animComponent = sgn->getComponent<AnimationComponent>();
+    if (animComponent){
+        const vectorImpl<mat4<F32> >& boneTransforms = animComponent->animationTransforms();
+        s->Uniform("dvd_hasAnimations", !boneTransforms.empty());
+        s->Uniform("boneTransforms", boneTransforms);
+    }
+    else{
+        s->Uniform("dvd_hasAnimations", false);
     }
 
     s->Uniform("lodLevel", (I32)getCurrentLOD());
+
+    return true;
 }
 
-void SceneNode::releaseDepthMaterial(){
+bool SceneNode::releaseDepthMaterial(){
     assert(_nodeReady);
 
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material || !_material->isTranslucent())
-        return;
+        return true;
 
-    Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-    if(opacityMap){
-        opacityMap->Unbind(Material::TEXTURE_OPACITY);
-    }else{
-        // maybe the diffuse texture has an alpha channel so use it as an opacity map
-        Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
-        diffuse->Unbind(Material::TEXTURE_OPACITY);
+    if (_material->isTranslucent()){
+        switch (_material->getTranslucencySource()){
+        case Material::TRANSLUCENT_OPACITY_MAP:
+            _material->getTexture(Material::TEXTURE_OPACITY)->Unbind(Material::TEXTURE_OPACITY);
+            break;
+        case Material::TRANSLUCENT_DIFFUSE_MAP:
+            _material->getTexture(Material::TEXTURE_UNIT0)->Unbind(Material::TEXTURE_UNIT0);
+            break;
+        };
     }
+
+    return true;
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {

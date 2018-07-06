@@ -18,7 +18,6 @@ glIMPrimitive::glIMPrimitive() : IMPrimitive()
     glimPrimitiveType[TRIANGLES] = NS_GLIM::GLIM_TRIANGLES;
     glimPrimitiveType[TRIANGLE_STRIP] = NS_GLIM::GLIM_TRIANGLE_STRIP;
     glimPrimitiveType[TRIANGLE_FAN] = NS_GLIM::GLIM_TRIANGLE_FAN;
-    glimPrimitiveType[QUADS] = NS_GLIM::GLIM_QUADS;
     glimPrimitiveType[QUAD_STRIP] = NS_GLIM::GLIM_QUAD_STRIP;
     glimPrimitiveType[POLYGON] = NS_GLIM::GLIM_POLYGON;
 }
@@ -48,6 +47,10 @@ void glIMPrimitive::attribute4ub(const std::string& attribName, const vec4<U8>& 
 
 void glIMPrimitive::attribute4f(const std::string& attribName, const vec4<F32>& value){
     _imInterface->Attribute4f(attribName.c_str(), value.x, value.y, value.z, value.w);
+}
+
+void glIMPrimitive::attribute1i(const std::string& attribName, I32 value) {
+    _imInterface->Attribute1i(attribName.c_str(), value);
 }
 
 void glIMPrimitive::end(){

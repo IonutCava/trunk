@@ -25,22 +25,22 @@
 
 #include "core.h"
 
-class QuadtreeNode;
-class BoundingBox;
 class Terrain;
 class Transform;
+class BoundingBox;
+class VertexBuffer;
+class QuadtreeNode;
 class ShaderProgram;
-class VertexBufferObject;
 class Quadtree {
 public:
 
-    void Build(BoundingBox& terrainBBox, vec2<U32>& HMSize, U32 minHMSize, VertexBufferObject* const groundVBO);
+    void Build(BoundingBox& terrainBBox, vec2<U32>& HMSize, U32 minHMSize, VertexBuffer* const groundVB);
     BoundingBox& computeBoundingBox(const vectorImpl<vec3<F32> >& vertices);
     void Destroy();
 
 	inline U32  getChunkCount() const { return _chunkCount;}
     inline void setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
-    inline void setParentVBO(VertexBufferObject* const vbo) {_parentVBO = vbo;}
+    inline void setParentVB(VertexBuffer* const vb) {_parentVB = vb;}
 
     void DrawGround(bool drawInReflection);
     void DrawGrass(U32 geometryIndex, Transform* const parentTransform);
@@ -49,17 +49,17 @@ public:
 
     QuadtreeNode*	FindLeaf(const vec2<F32>& pos);
 
-    Quadtree()	{_root = nullptr; _parentShaderProgram = nullptr; _parentVBO = nullptr; _chunkCount = 0;}
+    Quadtree()	{_root = nullptr; _parentShaderProgram = nullptr; _parentVB = nullptr; _chunkCount = 0;}
     ~Quadtree()	{Destroy();}
 
 protected:
-    void GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const groundVBO);
+    void GenerateIndexBuffer(vec2<U32>& HMsize, VertexBuffer* const groundVB);
 
 private:
-	U32                  _chunkCount;
-    QuadtreeNode*	     _root;
-    ShaderProgram*       _parentShaderProgram; //<Pointer to the terrain shader
-    VertexBufferObject*  _parentVBO; //<Pointer to the terrain VBO
+	U32             _chunkCount;
+    QuadtreeNode*	_root;
+    ShaderProgram*  _parentShaderProgram; //<Pointer to the terrain shader
+    VertexBuffer*   _parentVB; //<Pointer to the terrain VB
 };
 
 #endif

@@ -1,5 +1,5 @@
 -- Vertex
-#include "vboInputData.vert"
+#include "vbInputData.vert"
 #include "lightInput.cmn"
 
 out vec3 _pixToLight;		
@@ -7,7 +7,6 @@ out vec3 _pixToEye;
 
 uniform vec3 water_bb_min;
 uniform vec3 water_bb_diff;
-uniform mat4 dvd_lightProjectionMatrices[MAX_SHADOW_CASTING_LIGHTS];
 
 void main(void)
 {

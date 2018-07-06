@@ -25,11 +25,11 @@
 
 #include "core.h"
 
-class GFXDevice;
 class Quad3D;
 class Camera;
+class GFXDevice;
+class FrameBuffer;
 class ShaderProgram;
-class FrameBufferObject;
 class PreRenderOperator;
 
 class Texture;
@@ -49,7 +49,7 @@ public:
 
     void init(const vec2<U16>& resolution);
     void idle();
-    void reshapeFBO(I32 newwidth , I32 newheight);
+    void reshapeFB(I32 newwidth , I32 newheight);
 
     inline void toggleDepthPreview(const bool state) {_depthPreview = state;}
 
@@ -61,12 +61,23 @@ private:
     bool _enableFXAA;
     bool _underwater;
     bool _depthPreview;
+
+    enum TexOperatorBindPoint {
+        TEX_BIND_POINT_SCREEN = 0,
+        TEX_BIND_POINT_BLOOM = 1,
+        TEX_BIND_POINT_SSAO = 2,
+        TEX_BIND_POINT_BORDER = 3,
+        TEX_BIND_POINT_NOISE = 4,
+        TEX_BIND_POINT_UNDERWATER = 5,
+        TEX_BIND_POINT_LEFT_EYE = 6,
+        TEX_BIND_POINT_RIGHT_EYE = 7,
+    };
     /// Bloom
-    FrameBufferObject* _bloomFBO;
+    FrameBuffer* _bloomFB;
     PreRenderOperator* _bloomOP;
 
     /// SSAO
-    FrameBufferObject* _SSAO_FBO;
+    FrameBuffer* _SSAO_FB;
 
     /// FXAA
     PreRenderOperator* _fxaaOP;

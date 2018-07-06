@@ -1,7 +1,3 @@
-#if defined(USE_RELIEF_MAPPING)
-in vec4 _vertexWV;
-#endif
-
 //Normal or BumpMap
 uniform sampler2D texNormalMap;
 uniform vec2 dvd_zPlanes;

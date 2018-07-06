@@ -3,9 +3,6 @@
 out vec4 _posPos;
 out vec2 _texCoord;
 
-in vec2  inTexCoordData;
-in vec3  inVertexData;
-
 uniform mat4 dvd_WorldViewProjectionMatrix;
 
 uniform float FXAA_SUBPIX_SHIFT = 1.0/4.0;

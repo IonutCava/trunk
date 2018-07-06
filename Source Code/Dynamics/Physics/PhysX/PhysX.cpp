@@ -5,7 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
-#include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
+#include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 #include <Samples/PxToolkit/include/PxToolkit.h>
 #include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>
@@ -179,26 +179,26 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     //Disabled for now - Ionut
     isSkinnedMesh = false;
     if(!ok){
-        VertexBufferObject* nodeVBO = sNode->getGeometryVBO();
-        if(nodeVBO->getPosition().empty())
+        VertexBuffer* nodeVB = sNode->getGeometryVB();
+        if(nodeVB->getPosition().empty())
             return true;
 
-        if(nodeVBO->getTriangles().empty()) {
-            nodeVBO->computeTriangles(true);
-            if(!nodeVBO->computeTriangleList())
+        if(nodeVB->getTriangles().empty()) {
+            nodeVB->computeTriangles(true);
+            if(!nodeVB->computeTriangleList())
                 return false;
         }
 
         PxDefaultFileOutputStream stream(nodeName.c_str());
         if(!isSkinnedMesh) {
             PxTriangleMeshDesc meshDesc;
-            meshDesc.points.count     = (PxU32)nodeVBO->getPosition().size();
+            meshDesc.points.count     = (PxU32)nodeVB->getPosition().size();
             meshDesc.points.stride    = sizeof(vec3<F32>);
-            meshDesc.points.data      = &nodeVBO->getPosition()[0];
-            meshDesc.triangles.count  = (PxU32)nodeVBO->getTriangles().size();
+            meshDesc.points.data      = &nodeVB->getPosition()[0];
+            meshDesc.triangles.count  = (PxU32)nodeVB->getTriangles().size();
             meshDesc.triangles.stride = 3*sizeof(U32);
-            meshDesc.triangles.data   = &nodeVBO->getTriangles()[0];
-            //if(!nodeVBO->usesLargeIndices())
+            meshDesc.triangles.data   = &nodeVB->getTriangles()[0];
+            //if(!nodeVB->usesLargeIndices())
                 //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
 
             if(!_cooking->cookTriangleMesh(meshDesc, stream)){

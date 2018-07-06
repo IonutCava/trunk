@@ -62,7 +62,7 @@ public:
     /// Get the units current movement speed
     virtual F32  getMovementSpeed()              const {return _moveSpeed;}
     /// Set destination tolerance
-    inline void setMovementTolerance(F32 movementTolerance) {_moveTolerance = Util::max(0.1f,movementTolerance);}
+    inline void setMovementTolerance(F32 movementTolerance) {_moveTolerance = std::max(0.1f,movementTolerance);}
     /// Get the units current movement tolerance
     inline F32  getMovementTolerance()          const {return _moveTolerance;}
     /// Set unit type

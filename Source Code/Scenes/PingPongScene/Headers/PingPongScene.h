@@ -47,6 +47,7 @@ public:
 	bool loadResources(bool continueOnErrors);
 	void processInput(const U64 deltaTime);
 	void processTasks(const U64 deltaTime);
+    void processGUI(const U64 deltaTime);
 
 	bool onKeyUp(const OIS::KeyEvent& key);
 	bool onJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis,I32 deadZone);

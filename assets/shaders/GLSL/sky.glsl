@@ -1,5 +1,4 @@
 -- Vertex
-in vec3  inVertexData;
 
 uniform mat4 dvd_WorldViewProjectionMatrix;
 
