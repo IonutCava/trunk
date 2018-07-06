@@ -176,15 +176,12 @@ class RenderStateBlock : public GUIDWrapper {
     inline FillMode fillMode() const {
         return _fillMode;
     }
-
     inline U32 getHash() const {
         return _cachedHash;
     }
-
     bool operator==(RenderStateBlock& RSBD) const {
         return _cachedHash == RSBD._cachedHash;
     }
-
     bool operator!=(RenderStateBlock& RSBD) const {
         return _cachedHash != RSBD._cachedHash;
     }

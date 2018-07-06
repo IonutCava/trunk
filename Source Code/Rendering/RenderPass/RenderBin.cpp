@@ -88,7 +88,6 @@ RenderBin::RenderBin(const RenderBinType& rbType,
     renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_GRASS)] = "Grass Bin";
     renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_TREES)] = "Trees Bin";
     renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DECALS)] = "Decals Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SHADOWS)] = "Shadow Bin";
 }
 
 void RenderBin::sort(U32 binIndex, RenderStage renderStage) {

@@ -94,9 +94,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            Framebuffer::FramebufferTarget depthPassPolicy;
-            depthPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::DEPTH;
-            GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(depthPassPolicy);
+            GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(Framebuffer::defaultPolicy());
         } break;
     };
 

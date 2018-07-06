@@ -43,6 +43,7 @@ glFramebuffer::glFramebuffer(bool useResolveBuffer)
 {
     _attOffset.fill(0);
     _attDirty.fill(false);
+    _previousMask = FramebufferTarget::BufferMask::BOTH;
 }
 
 glFramebuffer::~glFramebuffer() {
@@ -170,15 +171,22 @@ void glFramebuffer::initAttachment(AttachmentType type,
     }
 }
 
+void glFramebuffer::toggleAttachment(TextureDescriptor::AttachmentType type, bool state) {
+    std::pair<GLenum, U32> att = _attachments[to_uint(type)];
+    if (att.second != 0) {
+        glNamedFramebufferTexture(_framebufferHandle, att.first, state ? att.second : 0, 0);
+    }
+}
+
 void glFramebuffer::removeDepthBuffer() {
 
+    toggleAttachment(AttachmentType::Depth, false);
     if (_attachmentTexture[to_uint(AttachmentType::Depth)]) {
         RemoveResource(_attachmentTexture[to_uint(AttachmentType::Depth)]);
     }
 
-    glNamedFramebufferTexture(_framebufferHandle, GL_DEPTH_ATTACHMENT, 0, 0);
-    
     _attachmentChanged[to_uint(AttachmentType::Depth)] = false;
+    _attachments[to_uint(AttachmentType::Depth)].second = 0;
     _isLayeredDepth = false;
     _hasDepth = false;
 }
@@ -323,12 +331,9 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
         input->resolve();
     }
 
-    GLuint previousFB =
-        GL_API::getActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY,
-                        input->_framebufferHandle);
-    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY,
-                        this->_framebufferHandle);
+    GLuint previousFB = GL_API::getActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_ONLY, input->_framebufferHandle);
+    GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_WRITE_ONLY, this->_framebufferHandle);
 
     if (blitColor && _hasColor) {
         size_t colorCount = _colorBuffers.size();
@@ -417,6 +422,46 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
         _resolved = false;
     }
 
+    if (_previousMask != drawPolicy._drawMask) {
+        switch (drawPolicy._drawMask) {
+            case FramebufferTarget::BufferMask::DEPTH: {
+                for (U32 i = 0; i < _attachments.size(); ++i) {
+                    AttachmentType type = static_cast<AttachmentType>(i);
+                    if (type != AttachmentType::Depth) {
+                        toggleAttachment(type, false);
+                    }
+                }
+                
+                if (_previousMask != FramebufferTarget::BufferMask::BOTH) {
+                    toggleAttachment(AttachmentType::Depth, true);
+                }
+            } break;
+            case FramebufferTarget::BufferMask::COLOR: {
+                for (U32 i = 0; i < _attachments.size(); ++i) {
+                    AttachmentType type = static_cast<AttachmentType>(i);
+                    if (type != AttachmentType::Depth) {
+                        toggleAttachment(type, true);
+                    }
+                }
+                toggleAttachment(AttachmentType::Depth, false);
+            } break;
+            case FramebufferTarget::BufferMask::BOTH: {
+                if (_previousMask == FramebufferTarget::BufferMask::DEPTH) {
+                    for (U32 i = 0; i < _attachments.size(); ++i) {
+                        AttachmentType type = static_cast<AttachmentType>(i);
+                        if (type != AttachmentType::Depth) {
+                            toggleAttachment(type, true);
+                        }
+                    }
+                } else {
+                    toggleAttachment(AttachmentType::Depth, true);
+                }
+            };
+        };
+        checkStatus();
+        _previousMask = drawPolicy._drawMask;
+    }
+
     glFramebuffer::_bufferBound = true;
 }
 
@@ -440,7 +485,7 @@ void glFramebuffer::setInitialAttachments() {
     // Reset attachments if they changed (e.g. after layered rendering);
     for (U32 i = 0; i < _attDirty.size(); ++i) {
         if (_attDirty[i]) {
-            glNamedFramebufferTexture(_framebufferHandle, _attachments[i].first, _attachments[i].second, 0);
+            toggleAttachment(static_cast<AttachmentType>(i), true);
         }
     }
     _attDirty.fill(false);
@@ -507,6 +552,8 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
     }
 
     _attachmentTexture[to_uint(slot)]->refreshMipMaps();
+
+    checkStatus();
 }
 
 void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
@@ -514,7 +561,7 @@ void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
     GLenum textureType = GLUtil::glTextureTypeTable[to_uint(
         _attachmentTexture[to_uint(slot)]->getTextureType())];
     // Only 2D texture support for now
-    DIVIDE_ASSERT(textureType == GL_TEXTURE_2D,
+    DIVIDE_ASSERT(textureType == GL_TEXTURE_2D || textureType == GL_TEXTURE_2D_MULTISAMPLE,
                   "glFramebuffer error: Changing mip level is only available "
                   "for 2D textures!");
     _attachmentTexture[to_uint(slot)]->setMipMapRange(mipLevel, mipMaxLevel);
@@ -523,6 +570,8 @@ void glFramebuffer::setMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                             ? GL_DEPTH_ATTACHMENT
                             : _colorBuffers[to_uint(slot)],
         _attachmentTexture[to_uint(slot)]->getHandle(), writeLevel);
+
+    checkStatus();
 }
 
 void glFramebuffer::resetMipLevel(TextureDescriptor::AttachmentType slot) {
@@ -547,6 +596,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
 }
 
 bool glFramebuffer::checkStatus() const {
+#if defined(ENABLE_GPU_VALIDATION)
     // check FB status
     switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
     {
@@ -594,6 +644,9 @@ bool glFramebuffer::checkStatus() const {
             return false;
         }
     };
+#else
+    return true;
+#endif
 }
 
 };  // namespace Divide

@@ -89,7 +89,6 @@ class RenderBin {
         RBT_VEGETATION_GRASS,
         RBT_VEGETATION_TREES,
         RBT_DECALS,
-        RBT_SHADOWS,
         COUNT
     };
 

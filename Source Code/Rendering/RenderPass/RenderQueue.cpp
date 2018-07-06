@@ -75,11 +75,6 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
                 RenderBin::RenderBinType::RBT_DELEGATE,
                 RenderingOrder::List::FRONT_TO_BACK, 2.0f);
         } break;
-        case RenderBin::RenderBinType::RBT_SHADOWS: {
-            temp = MemoryManager_NEW RenderBinDelegate(
-                RenderBin::RenderBinType::RBT_SHADOWS,
-                RenderingOrder::List::NONE, 3.0f);
-        } break;
         case RenderBin::RenderBinType::RBT_DECALS: {
             temp = MemoryManager_NEW RenderBinMesh(
                 RenderBin::RenderBinType::RBT_DECALS,

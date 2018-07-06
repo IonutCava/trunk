@@ -606,8 +606,7 @@ void GFXDevice::constructHIZ() {
     // We skip the first level as that's our full resolution image
     for (U16 i = 1; i < numLevels; ++i) {
         // Inform the shader of the resolution we are downsampling from
-        _HIZConstructProgram->Uniform("LastMipSize",
-                                      vec2<I32>(currentWidth, currentHeight));
+        _HIZConstructProgram->Uniform("LastMipSize", vec2<I32>(currentWidth, currentHeight));
         // Calculate next viewport size
         currentWidth /= 2;
         currentHeight /= 2;

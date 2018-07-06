@@ -80,6 +80,8 @@ class glFramebuffer : public Framebuffer {
                         bool resize);
     void resetMipMaps(FramebufferTarget::BufferMask mask);
 
+    void toggleAttachment(TextureDescriptor::AttachmentType type, bool state);
+
    protected:
     bool _hasDepth;
     bool _hasColor;
@@ -99,6 +101,7 @@ class glFramebuffer : public Framebuffer {
     std::array<bool, to_const_uint(AttType::COUNT)> _attDirty;
     std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
     std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
+    FramebufferTarget::BufferMask _previousMask;
 };
 
 };  // namespace Divide

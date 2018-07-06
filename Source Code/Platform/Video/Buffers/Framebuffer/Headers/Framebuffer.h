@@ -98,6 +98,10 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
     virtual void resetMipLevel(TextureDescriptor::AttachmentType slot) = 0;
 
+    void setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel);
+
+    void resetMipLevel();
+
     virtual void begin(const FramebufferTarget& drawPolicy) = 0;
 
     virtual void end() = 0;
@@ -158,6 +162,8 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
     virtual bool checkStatus() const = 0;
 
    protected:
+    P32 _colorMask;
+    bool _depthWritesEnabled;
     bool _shouldRebuild;
     bool _useDepthBuffer;
     bool _disableColorWrites;

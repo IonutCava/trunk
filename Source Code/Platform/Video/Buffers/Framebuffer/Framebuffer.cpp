@@ -19,6 +19,8 @@ Framebuffer::Framebuffer(bool multiSampled)
     _clearColor.set(DefaultColors::WHITE());
     _attachmentChanged.fill(false);
     _attachmentTexture.fill(nullptr);
+    _colorMask.i = 1;
+    _depthWritesEnabled = true;
 }
 
 Framebuffer::~Framebuffer()
@@ -42,6 +44,25 @@ Texture* Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
     }
 
     return nullptr;
+}
+
+
+void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
+    for (U32 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
+        Texture* tex = _attachmentTexture[i];
+        if (tex != nullptr) {
+            setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, static_cast<TextureDescriptor::AttachmentType>(i));
+        }
+    }
+}
+
+void Framebuffer::resetMipLevel() {
+    for (U32 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
+        Texture* tex = _attachmentTexture[i];
+        if (tex != nullptr) {
+            resetMipLevel(static_cast<TextureDescriptor::AttachmentType>(i));
+        }
+    }
 }
 
 };
