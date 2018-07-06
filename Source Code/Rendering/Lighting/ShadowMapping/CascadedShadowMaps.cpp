@@ -16,8 +16,8 @@
 
 namespace Divide {
 
-CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera* shadowCamera, U8 numSplits)
-    : ShadowMap(context, light, shadowCamera, ShadowType::LAYERED)
+CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, U8 numSplits)
+    : ShadowMap(context, light, shadowCameras, ShadowType::LAYERED)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = 0.0f;
@@ -67,15 +67,6 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, Camera*
     _blurBuffer = _context.allocateRT("CSM_Blur");
     _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-
-    ShaderBufferParams params;
-    params._primitiveCount = Config::Lighting::MAX_SPLITS_PER_LIGHT;
-    params._primitiveSizeInBytes = sizeof(mat4<F32>);
-    params._ringBufferLength = 1;
-    params._unbound = false;
-    params._updateFrequency = BufferUpdateFrequency::OFTEN;
-
-    _shadowMatricesBuffer = _context.newSB(params);
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
@@ -129,19 +120,22 @@ void CascadedShadowMaps::render(GFXDevice& context, U32 passIdx) {
     }
     _previousFrustumBB.transformHomogeneous(_shadowCamera->getViewMatrix());*/
 
-    _shadowMatricesBuffer->setData(_shadowMatrices.data());
-    _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
-    _shadowMatricesBuffer->incQueue();
-
     RenderPassManager::PassParams params;
     params.doPrePass = false;
-    params.camera = _shadowCamera;
     params.stage = RenderStage::SHADOW;
     params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params.pass = passIdx;
+    params.bindTargets = false;
 
-    context.parent().renderPassManager().doCustomPass(params);
+    RenderTarget& target = _context.renderTarget(params.target);
 
+    target.begin(RenderTarget::defaultPolicy());
+    for (U8 i = 0; i < _numSplits; ++i) {
+        target.drawToLayer(RTAttachment::Type::Colour, 0, to_U16(i + getArrayOffset()));
+        params.camera = _shadowCameras[i];
+        context.parent().renderPassManager().doCustomPass(params);
+    }
+    target.end();
     postRender(context);
 }
 
@@ -200,7 +194,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
     
         vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
 
-        const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid - currentEye);
+        const mat4<F32>& viewMatrix = _shadowCameras[pass]->lookAt(currentEye, frustumCentroid - currentEye);
         // Determine the position of the frustum corners in light space
         for (U8 i = 0; i < 8; ++i) {
             _frustumCornersLS[i].set(viewMatrix.transformHomogeneous(_frustumCornersWS[i]));
@@ -208,7 +202,7 @@ void CascadedShadowMaps::applyFrustumSplits() {
 
         F32 frustumSphereRadius = BoundingSphere(_frustumCornersLS).getRadius();
         vec2<F32> clipPlanes(std::max(1.0f, minZ - _nearClipOffset), frustumSphereRadius * 2 + _nearClipOffset * 2);
-        const mat4<F32>& projMatrix = _shadowCamera->setProjection(UNIT_RECT * frustumSphereRadius, clipPlanes);
+        const mat4<F32>& projMatrix = _shadowCameras[pass]->setProjection(UNIT_RECT * frustumSphereRadius, clipPlanes);
         mat4<F32>::Multiply(viewMatrix, projMatrix, _shadowMatrices[pass]);
 
         // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/

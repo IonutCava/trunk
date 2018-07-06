@@ -12,8 +12,8 @@
 
 namespace Divide {
 
-SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera)
-    : ShadowMap(context, light, shadowCamera, ShadowType::SINGLE) {
+SingleShadowMap::SingleShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras)
+    : ShadowMap(context, light, shadowCameras, ShadowType::SINGLE) {
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(),
                      "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
@@ -37,14 +37,14 @@ void SingleShadowMap::init(ShadowMapInfo* const smi) {
 
 
 void SingleShadowMap::render(GFXDevice& context, U32 passIdx) {
-    _shadowCamera->lookAt(_light->getPosition(), _light->getSpotDirection());
-    _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
+    _shadowCameras[0]->lookAt(_light->getPosition(), _light->getSpotDirection());
+    _shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
 
     RenderPassManager& passMgr = context.parent().renderPassManager();
     RenderPassManager::PassParams params;
     params.doPrePass = false;
     params.occlusionCull = false;
-    params.camera = _shadowCamera;
+    params.camera = _shadowCameras[0];
     params.stage = RenderStage::SHADOW;
     params.target = RenderTargetID(RenderTargetUsage::SHADOW, to_U32(getShadowMapType()));
     params.drawPolicy = &RenderTarget::defaultPolicy();

@@ -179,13 +179,16 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
 
             RenderPassCmd cmd;
-            cmd._renderTarget = params.target;
+            if (params.bindTargets) {
+                cmd._renderTarget = params.target;
+            }
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             _context.renderQueueToSubPasses(cmd);
             RenderSubPassCmds postRenderSubPasses(1);
             Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
+
             cleanCommandBuffer(commandBuffer);
             _context.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
@@ -235,7 +238,9 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         drawPolicy.drawMask().setEnabled(RTAttachment::Type::Depth,  0, drawToDepth);
 
         RenderPassCmd cmd;
-        cmd._renderTarget = params.target;
+        if (params.bindTargets) {
+            cmd._renderTarget = params.target;
+        }
         cmd._renderTargetDescriptor = drawPolicy;
         _context.renderQueueToSubPasses(cmd);
 

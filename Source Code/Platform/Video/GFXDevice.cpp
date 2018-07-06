@@ -163,7 +163,13 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 const RenderStagePass& stagePass,
-                                U32 passIndex) {
+                                U32 passIndex,
+                                Camera* camera) {
+
+    if (!camera) {
+        camera = _cubeCamera;
+    }
+
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
     RenderTarget& cubeMapTarget = renderTarget(cubeMap);
@@ -201,7 +207,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                               vec3<F32>( 0.0f,  0.0f, -1.0f)};
 
     // Set a 90 degree vertical FoV perspective projection
-    _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
+    camera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the desired render stage, remembering the previous one
     const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
     // Enable our render target
@@ -212,9 +218,11 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     RenderPassManager::PassParams params;
     params.doPrePass = stagePass._stage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
-    params.camera = _cubeCamera;
+    params.camera = camera;
     params.stage = stagePass._stage;
     params.target = cubeMap;
+    // We do our own binding
+    params.bindTargets = false;
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
         cubeMapTarget.drawToFace(hasColour ? RTAttachment::Type::Colour
@@ -222,7 +230,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                  0,
                                  i + arrayOffset);
         // Point our camera to the correct face
-        _cubeCamera->lookAt(pos, TabCenter[i], TabUp[i]);
+        camera->lookAt(pos, TabCenter[i], TabUp[i]);
         // Pass our render function to the renderer
         params.pass = passIndex + i;
         passMgr.doCustomPass(params);
@@ -239,8 +247,13 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           const RenderStagePass& stagePass,
-                                          U32 passIndex)
+                                          U32 passIndex,
+                                          Camera* camera)
 {
+    if (!camera) {
+        camera = _dualParaboloidCamera;
+    }
+
     RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
     const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Colour, 0, false);
     const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Depth, 0, false);
@@ -263,7 +276,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     }
 
     // Set a 90 degree vertical FoV perspective projection
-    _dualParaboloidCamera->setProjection(1.0f, 180.0f, zPlanes);
+    camera->setProjection(1.0f, 180.0f, zPlanes);
     // Set the desired render stage, remembering the previous one
     const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
 
@@ -271,10 +284,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     RenderPassManager::PassParams params;
     params.doPrePass = stagePass._stage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
-    params.camera = _dualParaboloidCamera;
+    params.camera = camera;
     params.stage = stagePass._stage;
     params.target = targetBuffer;
-
+    params.bindTargets = false;
     // Enable our render target
     paraboloidTarget.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
@@ -283,13 +296,13 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                          0,
                                          i + arrayOffset);
             // Point our camera to the correct face
-            _dualParaboloidCamera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
+            camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
             // And generated required matrices
             // Pass our render function to the renderer
             params.pass = passIndex + i;
             passMgr.doCustomPass(params);
         }
-        paraboloidTarget.end();
+    paraboloidTarget.end();
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -477,7 +490,6 @@ void GFXDevice::renderFromCamera(Camera& camera) {
     Camera::activeCamera(&camera);
     // Tell the Rendering API to draw from our desired PoV
     camera.updateLookAt();
-    
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
     const mat4<F32>& projMatrix = camera.getProjectionMatrix();

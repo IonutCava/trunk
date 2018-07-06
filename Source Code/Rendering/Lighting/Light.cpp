@@ -19,11 +19,12 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
       _impostor(nullptr),
       _lightSGN(nullptr),
       _shadowMapInfo(nullptr),
-      _shadowCamera(nullptr),
       _castsShadows(false),
       _spotPropertiesChanged(false),
       _spotCosOuterConeAngle(0.0f)
 {
+    _shadowCameras.fill(nullptr);
+
     if (type == LightType::DIRECTIONAL) {
         // 0,0,0 is not a valid direction for directional lights
         _positionAndRange.set(1.0f);
@@ -47,12 +48,13 @@ Light::~Light()
 }
 
 bool Light::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    _shadowCamera = Camera::createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
+    for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+        _shadowCameras[i] = Camera::createCamera(getName() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
 
-    _shadowCamera->setMoveSpeedFactor(0.0f);
-    _shadowCamera->setTurnSpeedFactor(0.0f);
-    _shadowCamera->setFixedYawAxis(true);
-
+        _shadowCameras[i]->setMoveSpeedFactor(0.0f);
+        _shadowCameras[i]->setTurnSpeedFactor(0.0f);
+        _shadowCameras[i]->setFixedYawAxis(true);
+    }
     if (_parentPool.addLight(*this)) {
         return SceneNode::load(onLoadCallback);
     }
@@ -62,7 +64,10 @@ bool Light::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) 
 
 bool Light::unload() {
     _parentPool.removeLight(getGUID(), getLightType());
-    Camera::destroyCamera(_shadowCamera);
+    for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
+        Camera::destroyCamera(_shadowCameras[i]);
+    }
+    _shadowCameras.fill(nullptr);
     removeShadowMapInfo();
 
     return SceneNode::unload();
@@ -187,7 +192,7 @@ bool Light::removeShadowMapInfo() {
 }
 
 void Light::validateOrCreateShadowMaps(GFXDevice& context, SceneRenderState& sceneRenderState) {
-    _shadowMapInfo->createShadowMap(context, sceneRenderState, shadowCamera());
+    _shadowMapInfo->createShadowMap(context, sceneRenderState, _shadowCameras);
 }
 
 void Light::generateShadowMaps(GFXDevice& context, U32 passIdx) {

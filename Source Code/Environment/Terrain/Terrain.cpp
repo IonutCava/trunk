@@ -534,8 +534,8 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     F32 minAltitude = _altitudeRange.x;
     F32 altitudeRange = _altitudeRange.y - _altitudeRange.x;
 
-    //_context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
-    //drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
+    _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
+    drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     drawCommandsInOut.front().shaderProgram()->Uniform("TerrainOrigin", vec3<F32>(-(_terrainDimensions.width * 0.5f), 0.0f, -(_terrainDimensions.height * 0.5f)));
     drawCommandsInOut.front().shaderProgram()->Uniform("MinHeight", minAltitude);
     drawCommandsInOut.front().shaderProgram()->Uniform("HeightRange", altitudeRange);

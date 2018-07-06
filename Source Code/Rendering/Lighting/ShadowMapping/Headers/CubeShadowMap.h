@@ -38,7 +38,7 @@ namespace Divide {
 
 class CubeShadowMap : public ShadowMap {
    public:
-    explicit CubeShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera);
+    explicit CubeShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras);
     ~CubeShadowMap();
     void render(GFXDevice& context, U32 passIdx);
 

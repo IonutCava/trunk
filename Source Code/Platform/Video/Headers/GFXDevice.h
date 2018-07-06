@@ -215,14 +215,16 @@ public:  // GPU interface
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         const RenderStagePass& stagePass,
-        U32 passIndex);
+        U32 passIndex,
+        Camera* camera = nullptr);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
         const RenderStagePass& stagePass,
-        U32 passIndex);
+        U32 passIndex,
+        Camera* camera = nullptr);
 
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix

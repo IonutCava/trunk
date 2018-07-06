@@ -213,9 +213,8 @@ class Light : public SceneNode {
         _type = type;
     }
 
-    /// Get a ref to the shadow camera used by this light
-    Camera* const shadowCamera() const { return _shadowCamera; }
     void updateImpostor();
+
    protected:
     bool _spotPropertiesChanged;
     /// Used to generate spot light penumbra using D3D's dual-cone method
@@ -242,7 +241,7 @@ class Light : public SceneNode {
     /// Used for debug rendering
     std::shared_ptr<ImpostorSphere> _impostor;
     SceneGraphNode_wptr _impostorSGN;
-    Camera* _shadowCamera;
+    ShadowCameraPool _shadowCameras;
     LightPool& _parentPool;
     bool _enabled;
 };

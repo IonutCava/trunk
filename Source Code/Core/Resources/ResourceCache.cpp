@@ -3,6 +3,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
 namespace Divide {
 
@@ -38,6 +39,7 @@ void ResourceCache::clear() {
             ++it;
         }
     }
+    WAIT_FOR_CONDITION_TIMEOUT(_resDB.empty(), Time::SecondsToMilliseconds(2.0))
     assert(_resDB.empty());
 }
 

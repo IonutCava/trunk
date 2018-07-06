@@ -3,7 +3,7 @@
 
 #include "lightInput.cmn"
 
-void computeLightVectors(){
+void computeLightVectors() {
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * dvd_Normal);
 #if defined(COMPUTE_TBN)

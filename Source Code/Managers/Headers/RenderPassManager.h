@@ -55,6 +55,7 @@ public:
               camera(nullptr),
               occlusionCull(false),
               doPrePass(true),
+              bindTargets(true),
               pass(0),
               clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
         {
@@ -66,6 +67,7 @@ public:
         Camera* camera = nullptr;
         bool occlusionCull = false;
         bool doPrePass = true;
+        bool bindTargets = true;
         U32 pass = 0;
         PlaneList clippingPlanes;
     };

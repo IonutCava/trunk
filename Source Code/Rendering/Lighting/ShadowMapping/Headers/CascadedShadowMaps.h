@@ -50,7 +50,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 /// This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
    public:
-    explicit CascadedShadowMaps(GFXDevice& context, Light* light, Camera* shadowCamera, U8 numSplits);
+    explicit CascadedShadowMaps(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, U8 numSplits);
     ~CascadedShadowMaps();
     void render(GFXDevice& context, U32 passIdx);
     void postRender(GFXDevice& context);
@@ -81,7 +81,6 @@ class CascadedShadowMaps : public ShadowMap {
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32       > _splitDepths;
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
-    ShaderBuffer* _shadowMatricesBuffer;
 };
 
 };  // namespace Divide

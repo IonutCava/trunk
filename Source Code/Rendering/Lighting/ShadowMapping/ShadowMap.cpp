@@ -14,11 +14,11 @@ namespace Divide {
 std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::_depthMapUsage;
 
 
-ShadowMap::ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, ShadowType type)
+ShadowMap::ShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, ShadowType type)
     : _context(context),
       _init(false),
       _light(light),
-      _shadowCamera(shadowCamera),
+      _shadowCameras(shadowCameras),
       _shadowMapType(type),
       _arrayOffset(findDepthMapLayer(_shadowMapType))
 {
@@ -206,7 +206,7 @@ ShadowMapInfo::~ShadowMapInfo()
     MemoryManager::DELETE(_shadowMap);
 }
 
-ShadowMap* ShadowMapInfo::createShadowMap(GFXDevice& context, const SceneRenderState& renderState, Camera* shadowCamera) {
+ShadowMap* ShadowMapInfo::createShadowMap(GFXDevice& context, const SceneRenderState& renderState, const ShadowCameraPool& shadowCameras) {
     if (_shadowMap) {
         return _shadowMap;
     }
@@ -218,15 +218,15 @@ ShadowMap* ShadowMapInfo::createShadowMap(GFXDevice& context, const SceneRenderS
     switch (_light->getLightType()) {
         case LightType::POINT: {
             _numLayers = 6;
-            _shadowMap = MemoryManager_NEW CubeShadowMap(context, _light, shadowCamera);
+            _shadowMap = MemoryManager_NEW CubeShadowMap(context, _light, shadowCameras);
         } break;
         case LightType::DIRECTIONAL: {
             DirectionalLight* dirLight = static_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
-            _shadowMap = MemoryManager_NEW CascadedShadowMaps(context, _light, shadowCamera, _numLayers);
+            _shadowMap = MemoryManager_NEW CascadedShadowMaps(context, _light, shadowCameras, _numLayers);
         } break;
         case LightType::SPOT: {
-            _shadowMap = MemoryManager_NEW SingleShadowMap(context, _light, shadowCamera);
+            _shadowMap = MemoryManager_NEW SingleShadowMap(context, _light, shadowCameras);
         } break;
         default:
             break;

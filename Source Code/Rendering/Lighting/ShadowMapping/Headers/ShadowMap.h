@@ -52,10 +52,12 @@ class Camera;
 class ShadowMapInfo;
 class SceneRenderState;
 
+typedef std::array<Camera*, Config::Lighting::MAX_SPLITS_PER_LIGHT> ShadowCameraPool;
+
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
    public:
-    explicit ShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera, ShadowType type);
+    explicit ShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras, ShadowType type);
     virtual ~ShadowMap();
 
     /// Render the scene and save the frame to the shadow map
@@ -93,7 +95,7 @@ class NOINITVTABLE ShadowMap {
     U16 _arrayOffset;
     /// Internal pointer to the parent light
     Light* _light;
-    Camera* _shadowCamera;
+    const ShadowCameraPool& _shadowCameras;
     bool _init;
 };
 
@@ -104,7 +106,7 @@ class ShadowMapInfo {
 
     inline ShadowMap* getShadowMap() { return _shadowMap; }
 
-    ShadowMap* createShadowMap(GFXDevice& context, const SceneRenderState& sceneRenderState, Camera* shadowCamera);
+    ShadowMap* createShadowMap(GFXDevice& context, const SceneRenderState& sceneRenderState, const ShadowCameraPool& shadowCameras);
 
     inline U8 numLayers() const { return _numLayers; }
 

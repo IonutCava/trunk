@@ -9,8 +9,8 @@
 
 namespace Divide {
 
-CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, Camera* shadowCamera)
-    : ShadowMap(context, light, shadowCamera, ShadowType::CUBEMAP)
+CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, const ShadowCameraPool& shadowCameras)
+    : ShadowMap(context, light, shadowCameras, ShadowType::CUBEMAP)
 {
     
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "Single Shadow Map");
@@ -45,7 +45,8 @@ void CubeShadowMap::render(GFXDevice& context, U32 passIdx) {
                             _light->getPosition(),
                             vec2<F32>(0.1f, _light->getRange()),
                             RenderStagePass(RenderStage::SHADOW, RenderPassType::DEPTH_PASS),
-                            passIdx);
+                            passIdx,
+                            _shadowCameras[0]);
 }
 
 };
