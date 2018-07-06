@@ -120,7 +120,7 @@ namespace Divide {
         ///If sceneNodeName = true, find a node in the graph based on the SceneNode's name
         SceneGraphNode* findNode(const stringImpl& name, bool sceneNodeName = false);
         ///Find the graph nodes whom's bounding boxes intersects the given ray
-        void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
+        void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
 
         ///Selection helper functions
         void setSelected(const bool state);
@@ -132,19 +132,10 @@ namespace Divide {
         /*Node Management*/
 
         /*Parent <-> Children*/
-        SceneGraphNode*  getRoot()        const;
         inline      SceneGraphNode*  getParent()      const { return _parent; }
         inline      NodeChildren&    getChildren()          { return _children; }
         void             setParent(SceneGraphNode* const parent);
 
-        /// Alias for changing parent
-        inline void attachToNode(SceneGraphNode* const target) {
-            setParent(target);
-        }
-
-        inline void attachToRoot() {
-            setParent(getRoot());
-        }
         /*Parent <-> Children*/
 
         /*Bounding Box Management*/
@@ -228,7 +219,7 @@ namespace Divide {
 
         friend class SceneGraph;
         friend vectorImpl<SceneGraphNode>;
-        explicit SceneGraphNode(SceneGraph* const sg, SceneNode* const node, const stringImpl& name);
+        explicit SceneGraphNode(SceneNode* const node, const stringImpl& name);
         ~SceneGraphNode();
 
     protected:
@@ -247,7 +238,6 @@ namespace Divide {
         SceneNode* _node;
         NodeChildren _children;
         SceneGraphNode *_parent;
-        SceneGraph     *_sceneGraph;
         std::atomic<bool> _active;
         std::atomic<bool> _loaded;
         std::atomic<bool> _inView;

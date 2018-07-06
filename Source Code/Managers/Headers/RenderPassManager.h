@@ -58,7 +58,7 @@ DEFINE_SINGLETON (RenderPassManager)
 
 public:
     ///Call every renderqueue's render function in order
-    void render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph);
+    void render(const SceneRenderState& sceneRenderState, const SceneGraph& activeSceneGraph);
     ///Add a new pass with the specified key
     void addRenderPass(const stringImpl& renderPassName, U8 orderKey);
     ///Find a renderpass by name and remove it from the manager

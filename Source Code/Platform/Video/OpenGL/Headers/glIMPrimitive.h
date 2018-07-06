@@ -26,6 +26,8 @@
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 
+#include <memory>
+
 namespace NS_GLIM {
     class GLIM_BATCH;
     enum GLIM_ENUM : int;
@@ -65,7 +67,7 @@ public:
 
 protected:
     /// Rendering API specific implementation
-    NS_GLIM::GLIM_BATCH*  _imInterface;
+    std::unique_ptr<NS_GLIM::GLIM_BATCH>  _imInterface;
 };
 
 }; //namespace Divide

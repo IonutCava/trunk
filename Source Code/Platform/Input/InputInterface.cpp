@@ -65,9 +65,9 @@ U8 InputInterface::init(Kernel* const kernel, const stringImpl& windowTitle) {
             MemoryManager::DELETE( _pJoystickInterface );
         } else{
             // Create force feedback effect manager.
-            _pEffectMgr = MemoryManager_NEW EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+            _pEffectMgr.reset(new EffectManager(_pJoystickInterface, _nEffectUpdateFreq));
             // Initialize the event handler.
-            _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
+            _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr.get());
         }
     }
 
@@ -157,7 +157,6 @@ void InputInterface::terminate() {
         _pInputInterface = nullptr;
     }
 
-    MemoryManager::DELETE( _pEffectMgr );
     MemoryManager::DELETE( _pEventHdlr );
 
 #if defined OIS_LINUX_PLATFORM

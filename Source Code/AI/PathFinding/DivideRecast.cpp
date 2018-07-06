@@ -11,7 +11,7 @@ namespace Navigation {
     DivideRecast::DivideRecast()
     {
         // Setup the default query filter
-        _filter = MemoryManager_NEW dtQueryFilter();
+        _filter.reset(new dtQueryFilter());
         _filter->setIncludeFlags(0xFFFF);    // Include all
         _filter->setExcludeFlags(0);         // Exclude none
         // Area flags for polys to consider in search, and their cost
@@ -28,7 +28,6 @@ namespace Navigation {
 
     DivideRecast::~DivideRecast()
     {
-        MemoryManager::DELETE( _filter );
     }
 
     PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh, 
@@ -53,12 +52,12 @@ namespace Navigation {
         I32 nVertCount=0;
 
         // find the start polygon
-        status = navQuery.findNearestPoly(pStartPos, extents, _filter, &StartPoly, StartNearest) ;
+        status = navQuery.findNearestPoly(pStartPos, extents, _filter.get(), &StartPoly, StartNearest) ;
         if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK)) 
             return PATH_ERROR_NO_NEAREST_POLY_START; // couldn't find a polygon
 
         // find the end polygon
-        status = navQuery.findNearestPoly(pEndPos, extents, _filter, &EndPoly, EndNearest) ;
+        status = navQuery.findNearestPoly(pEndPos, extents, _filter.get(), &EndPoly, EndNearest) ;
         if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
             return PATH_ERROR_NO_NEAREST_POLY_END; // couldn't find a polygon
 
@@ -66,7 +65,7 @@ namespace Navigation {
                                    EndPoly, 
                                    StartNearest, 
                                    EndNearest, 
-                                   _filter,
+                                   _filter.get(),
                                    PolyPath, 
                                    &nPathCount, 
                                    MAX_PATHPOLY) ;
@@ -143,7 +142,7 @@ namespace Navigation {
             return false;
         }
         dtPolyRef resultPoly;
-        navMesh.getNavQuery().findRandomPoint(_filter, frand, &resultPoly, resultPt._v);
+        navMesh.getNavQuery().findRandomPoint(_filter.get(), frand, &resultPoly, resultPt._v);
 
         return true;
     }
@@ -167,7 +166,7 @@ namespace Navigation {
             query.findRandomPointAroundCircle(resultPoly, 
                                               centerPosition._v,
                                               radius, 
-                                              _filter, 
+                                              _filter.get(), 
                                               frand,  
                                               &resultPoly, 
                                               resultPt._v);
@@ -213,7 +212,7 @@ namespace Navigation {
 
         dtStatus status = navMesh.getNavQuery().findNearestPoly(position._v, 
                                                                 extents._v,
-                                                                _filter, 
+                                                                _filter.get(), 
                                                                 &resultPoly, 
                                                                 resultPt._v);
         if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) {

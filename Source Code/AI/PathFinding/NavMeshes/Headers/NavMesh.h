@@ -212,7 +212,7 @@ namespace Divide {
         bool _renderConnections;
         RenderMode _renderMode;
         ///DebugDraw interface
-        NavMeshDebugDraw *_debugDrawInterface;
+        std::unique_ptr<NavMeshDebugDraw> _debugDrawInterface;
     };
         }; // namespace Navigation
     }; // namespace AI

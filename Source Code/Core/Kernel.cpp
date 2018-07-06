@@ -251,8 +251,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 }
 
 void Kernel::renderScene() {
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
-                                                                                   FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer().getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
+                                                                                  FINAL_STAGE;
     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     if (_GFX.anaglyphEnabled() && postProcessing) {
@@ -289,8 +289,8 @@ void Kernel::renderScene() {
 }
 
 void Kernel::renderSceneAnaglyph(){
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
-                                                                                   FINAL_STAGE;
+    RenderStage stage = (_GFX.getRenderer().getType() != RENDERER_FORWARD_PLUS) ? DEFERRED_STAGE : 
+                                                                                  FINAL_STAGE;
 
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
@@ -398,7 +398,7 @@ void Kernel::submitRenderCall(const RenderStage& stage,
                               const SceneRenderState& sceneRenderState, 
                               const DELEGATE_CBK<>& sceneRenderCallback) const {
     _GFX.setRenderStage(stage);
-    _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
+    _GFX.getRenderer().render(sceneRenderCallback, sceneRenderState);
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {

@@ -92,7 +92,7 @@ public:
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
     inline SceneState&                     state()                  {return _sceneState;}
     inline SceneRenderState&               renderState()            {return _sceneState.getRenderState();}
-    inline SceneGraph*                       getSceneGraph()            {return _sceneGraph;}
+    inline SceneGraph&                     getSceneGraph()          {return _sceneGraph;}
 
     void registerTask(Task_ptr taskItem);
     void clearTasks();
@@ -141,7 +141,7 @@ protected:
     GFXDevice&     _GFX;
     GUI*           _GUI;
     ParamHandler&  _paramHandler;
-    SceneGraph*    _sceneGraph;
+    SceneGraph     _sceneGraph;
     
     vectorImpl<D32>                _taskTimers;
     vectorImpl<D32>                _guiTimers;

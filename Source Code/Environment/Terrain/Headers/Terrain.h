@@ -27,6 +27,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
+#include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
@@ -100,7 +101,7 @@ public:
     void  terrainSmooth(F32 k);
     void  initializeVegetation(TerrainDescriptor* const terrain, SceneGraphNode* const terrainSGN);
 
-    inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
+    inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
@@ -134,10 +135,10 @@ protected:
     VegetationDetails _vegDetails;
 
     U8            _lightCount;
-    U16              _terrainWidth;
+    U16           _terrainWidth;
     U16           _terrainHeight;
     U32           _chunkSize;
-    Quadtree*      _terrainQuadtree;
+    Quadtree      _terrainQuadtree;
  
     vec2<F32> _terrainScaleFactor;
     F32     _farPlane;

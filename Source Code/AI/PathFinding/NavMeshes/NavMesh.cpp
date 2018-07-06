@@ -24,8 +24,7 @@ namespace Navigation {
                         par.getParam<stringImpl>("scenesLocation") + "/" +
                         par.getParam<stringImpl>("currentScene"));
 
-        _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw();
-        assert(_debugDrawInterface != nullptr);
+        _debugDrawInterface.reset(new NavMeshDebugDraw());
 
         _fileName   =  path + "/navMeshes/";
         _configFile = path + "/navMeshConfig.ini";
@@ -67,7 +66,6 @@ namespace Navigation {
         _navMesh = nullptr;
         _tempNavMesh = nullptr;
 
-        MemoryManager::DELETE( _debugDrawInterface );
         return true;
     }
 
@@ -145,7 +143,7 @@ namespace Navigation {
             return false;
         }
 
-        _sgn = (sgn != nullptr) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
+        _sgn = (sgn != nullptr) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH().getRoot();
         _loadCompleteClbk = creationCompleteCallback;
 
         if (_buildThreaded && threaded) {
@@ -593,34 +591,34 @@ namespace Navigation {
          switch(mode) {
             case RENDER_NAVMESH:
                 if (_navMesh) {
-                    duDebugDrawNavMesh(_debugDrawInterface, *_navMesh, 0);
+                    duDebugDrawNavMesh(_debugDrawInterface.get(), *_navMesh, 0);
                 }
                 break;
             case RENDER_CONTOURS:
                 if (_countourSet) {
-                   duDebugDrawContours(_debugDrawInterface, *_countourSet);
+                   duDebugDrawContours(_debugDrawInterface.get(), *_countourSet);
                 }
                 break;
             case RENDER_POLYMESH:
                 if (_polyMesh) {
-                   duDebugDrawPolyMesh(_debugDrawInterface, *_polyMesh);
+                   duDebugDrawPolyMesh(_debugDrawInterface.get(), *_polyMesh);
                 }
                 break;
             case RENDER_DETAILMESH:
                 if (_polyMeshDetail) {
-                    duDebugDrawPolyMeshDetail(_debugDrawInterface, *_polyMeshDetail);
+                    duDebugDrawPolyMeshDetail(_debugDrawInterface.get(), *_polyMeshDetail);
                 }
                 break;
             case RENDER_PORTALS:
                 if (_navMesh) {
-                   duDebugDrawNavMeshPortals(_debugDrawInterface, *_navMesh);
+                   duDebugDrawNavMeshPortals(_debugDrawInterface.get(), *_navMesh);
                 }
                 break;
          }
 
          if (!_building) {
             if (_countourSet && _renderConnections) {
-                duDebugDrawRegionConnections(_debugDrawInterface, *_countourSet);
+                duDebugDrawRegionConnections(_debugDrawInterface.get(), *_countourSet);
             }
          }
 

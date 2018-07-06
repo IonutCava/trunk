@@ -36,6 +36,7 @@
 namespace Divide {
 
 enum RenderStage : I32;
+enum RendererType : I32;
 enum SceneNodeType : I32;
 
 class Light;
@@ -127,8 +128,8 @@ public: // GPU interface
     ///Checks if the current rendering stage is any of the stages defined in renderStageMask
     ///@param renderStageMask Is a bitmask of the stages we whish to check if active
     inline bool isCurrentRenderStage(U8 renderStageMask);
-    void      setRenderer(Renderer* const renderer);
-    Renderer* getRenderer() const;
+    void      setRenderer(RendererType rendererType);
+    Renderer& getRenderer() const;
         
     /// Clipping plane management. All the clipping planes are handled by shader programs only!
     void updateClipPlanes() override;
@@ -461,8 +462,8 @@ protected:
 
     RenderAPI _apiId;
     GPUVendor _GPUVendor;
-    Renderer* _renderer;
     GPUState  _state;
+    std::unique_ptr<Renderer> _renderer;
     /* Rendering buffers*/
     Framebuffer* _renderTarget[RenderTarget_PLACEHOLDER];
     /*State management */

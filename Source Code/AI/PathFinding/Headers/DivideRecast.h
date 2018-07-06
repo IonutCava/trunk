@@ -143,7 +143,7 @@ namespace Divide {
             /// Stores all created paths
             PATHDATA _pathStore[MAX_PATHSLOT];
             /// The poly filter that will be used for all (random) point and nearest poly searches.
-            dtQueryFilter* _filter;
+            std::unique_ptr<dtQueryFilter> _filter;
 
     END_SINGLETON
 

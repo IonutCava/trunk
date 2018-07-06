@@ -112,13 +112,13 @@ void WarScene::processTasks(const U64 deltaTime){
         _taskTimers[0] = 0.0;
     }
     if(_taskTimers[1] >= DwarfTimer){
-        SceneGraphNode* dwarf = _sceneGraph->findNode("Soldier1");
+        SceneGraphNode* dwarf = _sceneGraph.findNode("Soldier1");
          if(dwarf)
              dwarf->getComponent<AnimationComponent>()->playNextAnimation();
         _taskTimers[1] = 0.0;
     }
     if(_taskTimers[2] >= BullTimer){
-        SceneGraphNode* bull = _sceneGraph->findNode("Soldier2");
+        SceneGraphNode* bull = _sceneGraph.findNode("Soldier2");
          if(bull)
              bull->getComponent<AnimationComponent>()->playNextAnimation();
         _taskTimers[2] = 0.0;
@@ -248,11 +248,11 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     _sun->csmNearClipOffset(25.0f);
     // Add some obstacles
     SceneGraphNode* cylinder[5];
-    cylinder[0] = _sceneGraph->findNode("cylinderC");
-    cylinder[1] = _sceneGraph->findNode("cylinderNW");
-    cylinder[2] = _sceneGraph->findNode("cylinderNE");
-    cylinder[3] = _sceneGraph->findNode("cylinderSW");
-    cylinder[4] = _sceneGraph->findNode("cylinderSE");
+    cylinder[0] = _sceneGraph.findNode("cylinderC");
+    cylinder[1] = _sceneGraph.findNode("cylinderNW");
+    cylinder[2] = _sceneGraph.findNode("cylinderNE");
+    cylinder[3] = _sceneGraph.findNode("cylinderSW");
+    cylinder[4] = _sceneGraph.findNode("cylinderSE");
 
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable = std::begin(cylinder[i]->getChildren())->second->getComponent<RenderingComponent>();
@@ -297,7 +297,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
             currentPos.second = 200 - 40 * (i%30) - 50;
         }
 
-        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+        currentNode = _sceneGraph.getRoot()->addNode(currentMesh, currentName);
         assert(currentNode);
         currentNode->setSelectable(true);
         currentNode->usageContext(baseNode->usageContext());
@@ -311,7 +311,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
         pComp->setPosition(vec3<F32>(currentPos.first, -0.01f, currentPos.second));
     }
     SceneGraphNode* baseFlagNode = cylinder[1];
-    _flag[0] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team1Flag");
+    _flag[0] = _sceneGraph.getRoot()->addNode(cylinderMeshNW, "Team1Flag");
     _flag[0]->setSelectable(false);
     _flag[0]->usageContext(baseFlagNode->usageContext());
     PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
@@ -322,7 +322,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
 
-    _flag[1] = _sceneGraph->getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
+    _flag[1] = _sceneGraph.getRoot()->addNode(cylinderMeshNW, "Team2Flag");      
     _flag[1]->setSelectable(false);
     _flag[1]->usageContext(baseFlagNode->usageContext());
 
@@ -336,8 +336,8 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
 
     AI::WarSceneAISceneImpl::registerFlags(_flag[0], _flag[1]);
 
-    /*_bobNode = _sceneGraph->findNode("Soldier3");
-    _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
+    /*_bobNode = _sceneGraph.findNode("Soldier3");
+    _bobNodeBody = _sceneGraph.findNode("Soldier3_Bob.md5mesh-submesh-0");
     _lampLightNode = nullptr;
     if(_bobNodeBody != nullptr){
         ResourceDescriptor tempLight("Light_lamp");
@@ -386,7 +386,7 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
     particleSource->addGenerator(timeGenerator);
 
-    SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particles, _sceneGraph->getRoot() );
+    SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particles, _sceneGraph.getRoot() );
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
@@ -419,9 +419,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
     _faction[0]->addEnemyTeam(_faction[1]->getTeamID());
     _faction[1]->addEnemyTeam(_faction[0]->getTeamID());
 
-    SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
-    SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
-    SceneGraphNode* soldierNode3 = _sceneGraph->findNode("Soldier3");
+    SceneGraphNode* soldierNode1 = _sceneGraph.findNode("Soldier1");
+    SceneGraphNode* soldierNode2 = _sceneGraph.findNode("Soldier2");
+    SceneGraphNode* soldierNode3 = _sceneGraph.findNode("Soldier3");
     SceneNode* soldierMesh1 = soldierNode1->getNode();
     SceneNode* soldierMesh2 = soldierNode2->getNode();
     SceneNode* soldierMesh3 = soldierNode3->getNode();
@@ -500,7 +500,7 @@ bool WarScene::initializeAI(bool continueOnErrors){
                 zFactor = 2;
             }
 
-            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+            currentNode = _sceneGraph.getRoot()->addNode(currentMesh, currentName);
             currentNode->getComponent<PhysicsComponent>()->setScale(currentScale);
             DIVIDE_ASSERT(currentNode != nullptr, "WarScene error: INVALID SOLDIER NODE TEMPLATE!");
             currentNode->setSelectable(true);
@@ -563,9 +563,9 @@ bool WarScene::initializeAI(bool continueOnErrors){
     if(state || continueOnErrors) {
         Scene::initializeAI(continueOnErrors);
     }
-    _sceneGraph->getRoot()->deleteNode(soldierNode1);
-    _sceneGraph->getRoot()->deleteNode( soldierNode2 );
-    _sceneGraph->getRoot()->deleteNode( soldierNode3 );
+    _sceneGraph.getRoot()->deleteNode(soldierNode1);
+    _sceneGraph.getRoot()->deleteNode( soldierNode2 );
+    _sceneGraph.getRoot()->deleteNode( soldierNode3 );
 
     for (U8 i = 0; i < 2; ++i) {
         _orders[i].push_back(MemoryManager_NEW AI::WarSceneOrder(AI::WarSceneOrder::ORDER_FIND_ENEMY_FLAG));

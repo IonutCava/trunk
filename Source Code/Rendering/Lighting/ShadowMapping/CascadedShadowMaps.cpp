@@ -143,7 +143,7 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
     for (U8 i = 0; i < _numSplits; ++i) {
         ApplyFrustumSplit(i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
-        GFX_DEVICE.getRenderer()->render(sceneRenderFunction, renderState);
+        GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
         LightManager::getInstance().registerShadowPass();
     }
     _depthMap->End();

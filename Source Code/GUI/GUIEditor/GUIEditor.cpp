@@ -647,7 +647,7 @@ bool GUIEditor::Handle_ReloadScene(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_PrintSceneGraph(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]:Printing scene graph!");
-    GET_ACTIVE_SCENEGRAPH()->print();
+    GET_ACTIVE_SCENEGRAPH().print();
     return true;
 }
 

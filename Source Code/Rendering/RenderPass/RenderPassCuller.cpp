@@ -40,8 +40,6 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
 
     cullSceneGraphGPU(sceneState);
 
-    currentNode->getRoot()->inView(true);
-
     GFX_DEVICE.processVisibleNodes(_visibleNodes);
     GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
 
@@ -59,35 +57,36 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode,
     }
     RenderStage currentStage = GFX_DEVICE.getRenderStage();
 
-    currentNode->inView(false);
     //Bounding Boxes should be updated, so we can early cull now.
     bool skipChildren = false;
 
-    //Skip all of this for inactive nodes.
-    if(currentNode->isActive() && currentNode->getParent()) {
-        SceneNode* node = currentNode->getNode();
-        //If this node isn't render-disabled, check if it is visible
-        //Skip expensive frustum culling if we shouldn't draw the node in the first place
-        if ( !node->renderState().getDrawState( currentStage ) ) {
-            //If the current SceneGraphNode isn't visible, it's children aren't visible as well
-            skipChildren = true;
-        } else {
-            RenderingComponent* renderingCmp = currentNode->getComponent<RenderingComponent>();
-            if (currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && 
-                (renderingCmp ? renderingCmp->castsShadows() : false))) {
-                //Perform visibility test on current node
-                if (node->isInView(sceneRenderState, 
-                                   currentNode, 
-                                   currentStage == SHADOW_STAGE ? false : 
-                                                                  true)) {
-                    //If the current node is visible, add it to the render queue
-                    _visibleNodes.push_back(currentNode);
-                    currentNode->inView(true);
+    if (currentNode->getParent()) {
+        currentNode->inView(false);
+        //Skip all of this for inactive nodes.
+        if (currentNode->isActive()) {
+            SceneNode* node = currentNode->getNode();
+            //If this node isn't render-disabled, check if it is visible
+            //Skip expensive frustum culling if we shouldn't draw the node in the first place
+            if (!node->renderState().getDrawState(currentStage)) {
+                //If the current SceneGraphNode isn't visible, it's children aren't visible as well
+                skipChildren = true;
+            } else {
+                RenderingComponent* renderingCmp = currentNode->getComponent<RenderingComponent>();
+                if (currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE &&
+                    (renderingCmp ? renderingCmp->castsShadows() : false))) {
+                    //Perform visibility test on current node
+                    if (node->isInView(sceneRenderState,
+                        currentNode,
+                        currentStage == SHADOW_STAGE ? false :
+                        true)) {
+                        //If the current node is visible, add it to the render queue
+                        _visibleNodes.push_back(currentNode);
+                        currentNode->inView(true);
+                    }
                 }
             }
         }
     }
-
     //If we don't need to skip child testing
     if ( !skipChildren ) {
         for (SceneGraphNode::NodeChildren::value_type& it : currentNode->getChildren()) {

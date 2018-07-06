@@ -62,7 +62,6 @@ GFXDevice::GFXDevice() : _api(nullptr),
    _stateDepthOnlyRenderingHash = 0;
    // Pointers
    _imShader = nullptr;
-   _renderer = nullptr;
    _nodeBuffer = nullptr;
    _gfxDataBuffer = nullptr;
    _activeShaderProgram = nullptr;
@@ -276,7 +275,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap,
         // And generated required matrices
         _cubeCamera->renderLookAt();
         // Pass our render function to the renderer
-        getRenderer()->render(renderFunction, GET_ACTIVE_SCENE()->renderState());
+        getRenderer().render(renderFunction, GET_ACTIVE_SCENE()->renderState());
     }
     // Resolve our render target
     cubeMap.End();
@@ -586,7 +585,7 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     }
     vectorAlg::vecSize nodeCount = visibleNodes.size();
     // Pass the list of nodes to the renderer for a pre-render pass
-    getRenderer()->processVisibleNodes(visibleNodes, _gpuBlock);
+    getRenderer().processVisibleNodes(visibleNodes, _gpuBlock);
     // Generate and upload all lighting data
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
     // The first entry has identity values (e.g. for rendering points)

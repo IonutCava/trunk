@@ -33,8 +33,7 @@ Scene::Scene() :  Resource("temp_scene"),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
-                 _currentSky(nullptr),
-                 _sceneGraph(MemoryManager_NEW SceneGraph())
+                 _currentSky(nullptr)
 {
     _mousePressed[OIS::MB_Left]    = false;
     _mousePressed[OIS::MB_Right]   = false;
@@ -63,25 +62,25 @@ bool Scene::idle() { //Called when application is idle
         loadXMLAssets(true);
     }
 
-    if ( _sceneGraph ) {
-        if ( _sceneGraph->getRoot()->getChildren().empty() ) {
+    if (!_sceneGraph.getRoot() || _sceneGraph.getRoot()->getChildren().empty() ) {
             return false;
-        }
-        _sceneGraph->idle();
+    }
+
+    _sceneGraph.idle();
     
-        if ( _cookCollisionMeshesScheduled && checkLoadFlag() ) {
-            if ( GFX_DEVICE.getFrameCount() > 1 ) {
-                _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh( _name );
-                _cookCollisionMeshesScheduled = false;
-            }
+    if ( _cookCollisionMeshesScheduled && checkLoadFlag() ) {
+        if ( GFX_DEVICE.getFrameCount() > 1 ) {
+            _sceneGraph.getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh( _name );
+            _cookCollisionMeshesScheduled = false;
         }
     }
+    
     return true;
 }
 
 void Scene::onCameraChange() {
-    if ( _sceneGraph ) {
-        _sceneGraph->getRoot()->onCameraChange();
+    if ( _sceneGraph.getRoot() ) {
+        _sceneGraph.getRoot()->onCameraChange();
     }
 }
 
@@ -132,7 +131,7 @@ bool Scene::loadModel( const FileData& data ) {
         return false;
     }
 
-    SceneGraphNode* meshNode = _sceneGraph->getRoot()->createNode( thisObj, data.ItemName );
+    SceneGraphNode* meshNode = _sceneGraph.getRoot()->createNode( thisObj, data.ItemName );
     meshNode->getComponent<RenderingComponent>()->castsShadows(data.castsShadows);
     meshNode->getComponent<RenderingComponent>()->receivesShadows(data.receivesShadows);
     meshNode->getComponent<PhysicsComponent>()->setScale( data.scale );
@@ -194,7 +193,7 @@ bool Scene::loadGeometry( const FileData& data ) {
     }
 
     thisObj->setMaterialTpl( tempMaterial );
-    SceneGraphNode* thisObjSGN = _sceneGraph->getRoot()->createNode( thisObj );
+    SceneGraphNode* thisObjSGN = _sceneGraph.getRoot()->createNode( thisObj );
     thisObjSGN->getComponent<PhysicsComponent>()->setScale( data.scale );
     thisObjSGN->getComponent<PhysicsComponent>()->setRotation( data.orientation );
     thisObjSGN->getComponent<PhysicsComponent>()->setPosition( data.position );
@@ -240,7 +239,7 @@ SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const p
     if ( parentNode ) {
         returnNode = parentNode->addNode( lightItem );
     } else {
-        returnNode = _sceneGraph->getRoot()->addNode( lightItem );
+        returnNode = _sceneGraph.getRoot()->addNode( lightItem );
     }
     return returnNode;
 }
@@ -260,7 +259,7 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode* const parentNode
 
 SceneGraphNode* Scene::addSky(Sky* const skyItem) {
     assert(skyItem != nullptr);
-    return _sceneGraph->getRoot()->createNode(skyItem);
+    return _sceneGraph.getRoot()->createNode(skyItem);
 }
 
 bool Scene::preLoad() {
@@ -276,7 +275,7 @@ bool Scene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* co
     renderState()._cameraMgr = cameraMgr;
     preLoad();
     loadXMLAssets();
-    SceneGraphNode* root = _sceneGraph->getRoot();
+    SceneGraphNode* root = _sceneGraph.getRoot();
     //Add terrain from XML
     if ( !_terrainInfoArray.empty() ) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
@@ -383,8 +382,6 @@ void Scene::clearObjects() {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
-
-    MemoryManager::DELETE( _sceneGraph );
 }
 
 void Scene::clearLights(){
@@ -422,7 +419,7 @@ bool Scene::updateCameraControls(){
 void Scene::updateSceneState(const U64 deltaTime){
     updateSceneStateInternal(deltaTime);
     state()._cameraUnderwater = renderState().getCamera().getEye().y < state()._waterHeight;
-    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
+    _sceneGraph.sceneUpdate(deltaTime, _sceneState);
 }
 
 void Scene::deleteSelection(){

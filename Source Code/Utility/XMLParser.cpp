@@ -711,7 +711,7 @@ namespace XML {
     Material* loadMaterialXML(const std::string &matName, bool rendererDependent){
         std::string materialFile(matName);
         if (rendererDependent ) {
-            materialFile += "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
+            materialFile += "-" + getRendererTypeName(GFX_DEVICE.getRenderer().getType()) + ".xml";
         } else {
             materialFile += ".xml";
         }
@@ -805,7 +805,7 @@ namespace XML {
                              par.getParam<std::string>("scenesLocation") + "/" +
                              par.getParam<std::string>("currentScene") + "/materials/");
 
-        std::string fileLocation(location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml");
+        std::string fileLocation(location +  file + "-" + getRendererTypeName(GFX_DEVICE.getRenderer().getType()) + ".xml");
         pt_writer.clear();
         pt_writer.put("material.name",file);
         pt_writer.put("material.ambient.<xmlattr>.r",  mat.getShaderData()._ambient.r);

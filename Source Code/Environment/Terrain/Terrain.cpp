@@ -2,7 +2,6 @@
 #include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
 
-#include "Quadtree/Headers/Quadtree.h"
 #include "Quadtree/Headers/QuadtreeNode.h"
 
 #include "Core/Headers/ParamHandler.h"
@@ -21,7 +20,6 @@ Terrain::Terrain() : Object3D(TERRAIN),
     _alphaTexturePresent(false),
     _terrainWidth(0),
     _terrainHeight(0),
-    _terrainQuadtree(MemoryManager_NEW Quadtree()),
     _plane(nullptr),
     _drawBBoxes(false),
     _vegetationGrassNode(nullptr),
@@ -53,7 +51,6 @@ Terrain::~Terrain()
 }
 
 bool Terrain::unload() {
-    MemoryManager::DELETE( _terrainQuadtree );
     MemoryManager::DELETE_VECTOR(_terrainTextures);
 
     RemoveResource( _vegDetails.grassBillboards );
@@ -73,9 +70,9 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 
 void Terrain::buildQuadtree() {
     reserveTriangleCount( ( _terrainWidth - 1 ) * ( _terrainHeight - 1 ) * 2 );
-    _terrainQuadtree->Build( _boundingBox, vec2<U32>( _terrainWidth, _terrainHeight ), _chunkSize, this);
+    _terrainQuadtree.Build( _boundingBox, vec2<U32>( _terrainWidth, _terrainHeight ), _chunkSize, this);
     //The terrain's final bounding box is the QuadTree's root bounding box
-    _boundingBox = _terrainQuadtree->computeBoundingBox();
+    _boundingBox = _terrainQuadtree.computeBoundingBox();
 
     Material* mat = getMaterialTpl();
     for (U8 i = 0; i < 3; ++i){
@@ -126,7 +123,7 @@ bool Terrain::isInView( const SceneRenderState& sceneRenderState, SceneGraphNode
 }
 
 void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    _terrainQuadtree->sceneUpdate(deltaTime, sgn, sceneState);
+    _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -152,10 +149,10 @@ void Terrain::getDrawCommands(SceneGraphNode* const sgn,
 
     if (_terrainInView){
         vectorImpl<GenericDrawCommand> tempCommands;
-        tempCommands.reserve(_terrainQuadtree->getChunkCount());
+        tempCommands.reserve(_terrainQuadtree.getChunkCount());
 
         // draw ground
-        _terrainQuadtree->createDrawCommands(sceneRenderState, tempCommands);
+        _terrainQuadtree.createDrawCommands(sceneRenderState, tempCommands);
 
         std::sort(std::begin(tempCommands), std::end(tempCommands),
             [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
@@ -185,7 +182,7 @@ void Terrain::getDrawCommands(SceneGraphNode* const sgn,
 
 void Terrain::postDrawBoundingBox(SceneGraphNode* const sgn) const {
     if (_drawBBoxes) {
-        _terrainQuadtree->drawBBox();
+        _terrainQuadtree.drawBBox();
     }
 }
 

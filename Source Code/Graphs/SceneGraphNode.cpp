@@ -25,10 +25,8 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-SceneGraphNode::SceneGraphNode(SceneGraph* const sg, 
-                               SceneNode* const node, 
+SceneGraphNode::SceneGraphNode(SceneNode* const node, 
                                const stringImpl& name ) : GUIDWrapper(),
-                                                         _sceneGraph(sg),
                                                          _node(node),
                                                          _elapsedTime(0ULL),
                                                          _parent(nullptr),
@@ -83,10 +81,6 @@ void SceneGraphNode::addBoundingBox(const BoundingBox& bb, const SceneNodeType& 
             _parent->getBoundingBox().setComputed( false );
         }
     }
-}
-
-SceneGraphNode* SceneGraphNode::getRoot() const {
-    return _sceneGraph->getRoot();
 }
 
 void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ) const {
@@ -169,8 +163,7 @@ SceneGraphNode* SceneGraphNode::createNode( SceneNode* const node, const stringI
     //Create a new SceneGraphNode with the SceneNode's info
     //We need to name the new SceneGraphNode
     //If we did not supply a custom name use the SceneNode's name
-    SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(_sceneGraph, 
-                                                                      node, 
+    SceneGraphNode* sceneGraphNode = MemoryManager_NEW SceneGraphNode(node, 
                                                                       name.empty() ? node->getName() : 
                                                                                      name);
     //Set the current node as the new node's parent
@@ -228,14 +221,14 @@ SceneGraphNode* SceneGraphNode::findNode(const stringImpl& name, bool sceneNodeN
     return nullptr;
 }
 
-void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
+void SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
 
     if ( isSelectable() && _boundingBox.Intersect( ray, start, end ) ) {
         selectionHits.push_back( this );
     }
 
     for (const NodeChildren::value_type& it : _children ) {
-        it.second->Intersect( ray, start, end, selectionHits );
+        it.second->intersect( ray, start, end, selectionHits );
     }
 }
 
@@ -319,7 +312,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _node->sceneUpdate(deltaTime, this, sceneState);
 
     if (_shouldDelete) {
-        GET_ACTIVE_SCENEGRAPH()->addToDeletionQueue(this);
+        GET_ACTIVE_SCENEGRAPH().addToDeletionQueue(this);
     }
 }
 

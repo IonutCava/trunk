@@ -74,9 +74,9 @@ DEFINE_SINGLETON( InputInterface )
 
     inline void stop() { _bMustStop = true; }
     inline JoystickInterface* getJoystickInterface(){ return _pJoystickInterface; }
-    inline EffectManager* getEffectManager()        { return _pEffectMgr; }
-    inline OIS::Keyboard* getKeyboard() const { return _pKeyboard; }
-    inline OIS::Mouse*    getMouse()    const { return _pMouse; }
+    inline EffectManager& getEffectManager()  { return *_pEffectMgr; }
+    inline OIS::Keyboard& getKeyboard() const { return *_pKeyboard; }
+    inline OIS::Mouse&    getMouse()    const { return *_pMouse; }
 
 
     inline bool isKeyDown(Input::KeyCode keyCode) const {
@@ -134,7 +134,7 @@ protected:
     vectorImpl<OIS::JoyStick* >       _pJoysticks;
 
     JoystickInterface* _pJoystickInterface;
-    EffectManager*     _pEffectMgr;
+    std::unique_ptr<EffectManager>     _pEffectMgr;
 
     bool               _bMustStop;
     bool               _bIsInitialized;

@@ -3,6 +3,7 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 
 #include "Managers/Headers/AIManager.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Console.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -233,7 +234,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
             vec3<F32> prevScale(pComp->getScale());
 
             SceneGraphNode* targetNode = _entity->getUnitRef()->getBoundNode();
-            _workingMemory._flags[flag].value()->attachToNode(targetNode);
+            _workingMemory._flags[flag].value()->setParent(targetNode);
             pComp->setPosition(vec3<F32>(0.0f, 0.75f, 1.5f));
             pComp->setScale(prevScale / targetNode->getComponent<PhysicsComponent>()->getScale());
 
@@ -258,7 +259,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type, const WarSceneAction* warA
             vec3<F32> prevScale(pComp->getScale());
 
             SceneGraphNode* targetNode = _workingMemory._flags[flag].value()->getParent();
-            _workingMemory._flags[flag].value()->attachToRoot();
+            _workingMemory._flags[flag].value()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
             pComp->setPosition(_initialFlagPositions[flag]);
             pComp->setScale(prevScale * targetNode->getComponent<PhysicsComponent>()->getScale());
         } break;

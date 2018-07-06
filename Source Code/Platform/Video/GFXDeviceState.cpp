@@ -135,7 +135,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
         add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #   endif
     // We start of with a forward plus renderer
-    setRenderer(MemoryManager_NEW ForwardPlusRenderer());
+    setRenderer(RENDERER_FORWARD_PLUS);
     ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", false);
     // Everything is ready from the rendering point of view
     return NO_ERR;
@@ -150,7 +150,7 @@ void GFXDevice::closeRenderingApi() {
     PostFX::destroyInstance();
     // Delete the renderer implementation
     Console::printfn(Locale::get("CLOSING_RENDERER"));
-    MemoryManager::DELETE( _renderer );
+    _renderer.reset(nullptr);
     // Delete our default render state blocks
     MemoryManager::DELETE_HASHMAP(_stateBlockMap);
     // Destroy all of the immediate mode emulation primitives created during runtime
@@ -238,14 +238,23 @@ void GFXDevice::endFrame() {
     _api->endFrame();  
 }
 
-Renderer* GFXDevice::getRenderer() const {
+Renderer& GFXDevice::getRenderer() const {
     DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!"); 
-    return _renderer;
+    return *_renderer;
 }
 
-void GFXDevice::setRenderer(Renderer* const renderer) {
-    DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
-    MemoryManager::SAFE_UPDATE( _renderer, renderer );
+void GFXDevice::setRenderer(RendererType rendererType) {
+    DIVIDE_ASSERT(rendererType != RendererType_PLACEHOLDER, "GFXDevice error: Tried to create an invalid renderer!"); 
+    Renderer* renderer = nullptr;
+    switch (rendererType) {
+        case RENDERER_FORWARD_PLUS: {
+            renderer = new ForwardPlusRenderer();
+        }break;
+        case RENDERER_DEFERRED_SHADING: {
+            renderer = new DeferredShadingRenderer();
+        }break;
+    }
+    _renderer.reset(renderer);
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

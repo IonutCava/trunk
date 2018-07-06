@@ -262,7 +262,7 @@ bool Material::computeShader(const RenderStage& renderStage,
 
     DIVIDE_ASSERT(_shadingMode != ShadingMode_PLACEHOLDER, "Material computeShader error: Invalid shading mode specified!");
 
-    bool deferredPassShader = GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD_PLUS;
+    bool deferredPassShader = GFX_DEVICE.getRenderer().getType() != RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
 
     //the base shader is either for a Deferred Renderer or a Forward  one ...

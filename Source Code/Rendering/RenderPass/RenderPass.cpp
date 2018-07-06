@@ -18,7 +18,7 @@ RenderPass::~RenderPass()
 {
 }
 
-void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeSceneGraph) {
+void RenderPass::render(const SceneRenderState& renderState, const SceneGraph& activeSceneGraph) {
     const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
           RenderQueue& renderQueue = RenderQueue::getInstance();
     bool  isDisplayStage = GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE);

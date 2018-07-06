@@ -77,7 +77,7 @@ void SingleShadowMap::renderInternal(const SceneRenderState& renderState,
 
     _depthMap->Begin(Framebuffer::defaultPolicy());
         //draw the scene
-        GFX_DEVICE.getRenderer()->render(sceneRenderFunction, renderState);
+        GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
     //unbind the associated depth map
     _depthMap->End();
     LightManager::getInstance().registerShadowPass();

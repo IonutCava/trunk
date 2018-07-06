@@ -49,10 +49,10 @@ void CubeScene::preRender() {
 
     g_i >= 180 ? g_j = -1 : g_j = 1;
 
-    SceneGraphNode* cutia1 = _sceneGraph->findNode("Cutia1");
-    SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
-    SceneGraphNode* bila = _sceneGraph->findNode("Bila");
-    SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
+    SceneGraphNode* cutia1 = _sceneGraph.findNode("Cutia1");
+    SceneGraphNode* hellotext = _sceneGraph.findNode("HelloText");
+    SceneGraphNode* bila = _sceneGraph.findNode("Bila");
+    SceneGraphNode* dwarf = _sceneGraph.findNode("dwarf");
     cutia1->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0.3f*g_i, 0.6f*g_i,0));
     hellotext->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0.6f,0.2f,0.4f),g_i);
     bila->getComponent<PhysicsComponent>()->translateY(g_j*0.25f);
@@ -63,7 +63,7 @@ void CubeScene::processInput(const U64 deltaTime){
 }
 
 bool CubeScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI* const gui){
-    GFX_DEVICE.setRenderer(MemoryManager_NEW DeferredShadingRenderer());
+    GFX_DEVICE.setRenderer(RENDERER_DEFERRED_SHADING);
     //Load scene resources
     return SCENE_LOAD(name,cameraMgr,gui,true,true);
 }
@@ -81,7 +81,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false); //ToDo: Shadows are ... for another time -Ionut
-            _sceneGraph->getRoot()->addNode(light);
+            _sceneGraph.getRoot()->addNode(light);
             addLight(light);
     }
 
@@ -95,8 +95,9 @@ bool CubeScene::onKeyUp(const Input::KeyEvent& key)
     bool keyState = Scene::onKeyUp(key);
     switch(key._key)
     {
-        case Input::KeyCode::KC_T:    _GFX.getRenderer()->toggleDebugView(); break;
-        default: break;
+        case Input::KeyCode::KC_T: {
+            _GFX.getRenderer().toggleDebugView();
+        }break;
     }
     return keyState;
 }

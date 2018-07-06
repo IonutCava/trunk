@@ -59,7 +59,7 @@ public:
     void print();
     void idle();
 
-    void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
+    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
     inline void addToDeletionQueue(SceneGraphNode* node) {
         _pendingDeletionNodes.push_back(node);
     }

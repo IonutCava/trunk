@@ -50,9 +50,9 @@ protected:
     void downSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRanges);
 
 private:
-    LightGrid* _opaqueGrid;
-    LightGrid* _transparentGrid;
-    Framebuffer* _depthRanges;
+    std::unique_ptr<LightGrid>     _opaqueGrid;
+    std::unique_ptr<LightGrid>     _transparentGrid;
+    Framebuffer*   _depthRanges;
     ShaderProgram* _depthRangesConstructProgram;
     vectorImpl<vec2<F32> > _depthRangesCache;
     vectorImpl<LightGrid::LightInternal > _omniLightList;

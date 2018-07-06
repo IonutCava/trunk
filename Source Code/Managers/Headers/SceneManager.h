@@ -145,7 +145,7 @@ inline Scene* GET_ACTIVE_SCENE() {
 }
 
 ///Return a pointer to the currently active scene's scenegraph
-inline SceneGraph* GET_ACTIVE_SCENEGRAPH() {
+inline SceneGraph& GET_ACTIVE_SCENEGRAPH() {
     return GET_ACTIVE_SCENE()->getSceneGraph();
 }
 

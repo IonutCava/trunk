@@ -91,10 +91,10 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
     PhysicsComponent* ballTransform = _ballSGN->getComponent<PhysicsComponent>();
     vec3<F32> ballPosition  = ballTransform->getPosition();
 
-    SceneGraphNode* table = _sceneGraph->findNode("table");
-    SceneGraphNode* net = _sceneGraph->findNode("net");
-    SceneGraphNode* opponent = _sceneGraph->findNode("opponent");
-    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
+    SceneGraphNode* table = _sceneGraph.findNode("table");
+    SceneGraphNode* net = _sceneGraph.findNode("net");
+    SceneGraphNode* opponent = _sceneGraph.findNode("opponent");
+    SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
     vec3<F32> paddlePosition   = paddle->getComponent<PhysicsComponent>()->getPosition();
     vec3<F32> opponentPosition = opponent->getComponent<PhysicsComponent>()->getPosition();
     vec3<F32> tablePosition     = table->getComponent<PhysicsComponent>()->getPosition();
@@ -216,7 +216,7 @@ void PingPongScene::processInput(const U64 deltaTime){
     if (state()._angleLR) _paddleCam->rotateYaw(state()._angleLR);
     if (state()._angleUD) _paddleCam->rotatePitch(state()._angleUD);
 
-    SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
+    SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
 
     vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
@@ -264,13 +264,13 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _ball->getMaterialTpl()->setAmbient(vec4<F32>(0.25f, 0.25f, 0.25f, 1.0f));
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph->addNode(_ball, "PingPongBallSGN");
+    _ballSGN = _sceneGraph.addNode(_ball, "PingPongBallSGN");
     _ballSGN->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2 ,2));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     Light* light = CreateResource<Light>(tempLight);
-    addLight(light, _sceneGraph->getRoot());
+    addLight(light, _sceneGraph.getRoot());
     light->setRange(30.0f);
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));

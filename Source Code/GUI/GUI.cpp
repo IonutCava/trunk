@@ -69,7 +69,7 @@ void GUI::draw2D() {
     for (const guiMap::value_type& guiStackIterator : _guiStack) {
         gfx.drawGUIElement( guiStackIterator.second );
     }
-    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
+    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse().getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 }
 
@@ -145,7 +145,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
-    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
+    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse().getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
     _defaultMsgBox = addMsgBox( "AssertMsgBox", "Assertion failure", "Assertion failed with message: " );
     _init = true;

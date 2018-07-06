@@ -7,7 +7,7 @@
 namespace Divide {
     SceneGraph::SceneGraph()
     {
-        _root = MemoryManager_NEW SceneGraphNode(this, MemoryManager_NEW SceneRoot(), "ROOT");
+        _root = MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot(), "ROOT");
         _root->getComponent<RenderingComponent>()->castsShadows(false);
         _root->getComponent<RenderingComponent>()->receivesShadows(false);
         _root->setBBExclusionMask(TYPE_SKY |
@@ -43,8 +43,8 @@ namespace Divide {
         _root->sceneUpdate(deltaTime, sceneState);
     }
 
-    void SceneGraph::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
-        _root->Intersect(ray, start, end, selectionHits);
+    void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
+        _root->intersect(ray, start, end, selectionHits);
     }
 
     void SceneGraph::print() {

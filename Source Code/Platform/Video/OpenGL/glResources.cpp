@@ -100,7 +100,7 @@ namespace Divide {
         void initGlew() {
 #ifdef GLEW_MX
             if ( _GLEWContextPtr.get() == nullptr ) {
-                _GLEWContextPtr.reset(MemoryManager_NEW GLEWContext);
+                _GLEWContextPtr.reset(new GLEWContext);
             }
 #endif //GLEW_MX
             // As we are using the bleeding edge of OpenGL functionality, experimental must be set to 'true';
@@ -119,14 +119,14 @@ namespace Divide {
 #   if defined( OS_WINDOWS )
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
             if ( _WGLEWContextPtr.get() == nullptr ) {
-                _WGLEWContextPtr.reset(MemoryManager_NEW WGLEWContext);
+                _WGLEWContextPtr.reset(new WGLEWContext);
             }
 
             err = wglewInit();
 #    else //! OS_WINDOWS
             /// Same as for normal GLEW initialization, but this time, init platform specific pointers
             if ( _GLXEWContextPtr.get() == nullptr ) {
-                _GLXEWContextPtr.reset(MemoryManager_NEW GLXEWContext);
+                _GLXEWContextPtr.reset(new GLXEWContext);
             }
 
             err = glxewInit();

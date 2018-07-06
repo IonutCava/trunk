@@ -45,7 +45,7 @@ void RenderPassManager::unlock(bool resetNodes) {
     RenderQueue::getInstance().unlock();
 }
 
-void RenderPassManager::render(const SceneRenderState& sceneRenderState, SceneGraph* activeSceneGraph) {
+void RenderPassManager::render(const SceneRenderState& sceneRenderState, const SceneGraph& activeSceneGraph) {
     for (RenderPassItem& rpi : _renderPasses) {
         rpi.renderPass().render(sceneRenderState, activeSceneGraph);
     }

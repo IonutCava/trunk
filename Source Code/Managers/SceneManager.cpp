@@ -120,7 +120,7 @@ void SceneManager::preRender() {
 }
 
 void SceneManager::updateVisibleNodes() {
-    _renderPassCuller->cullSceneGraph(_activeScene->getSceneGraph()->getRoot(), _activeScene->state());
+    _renderPassCuller->cullSceneGraph(GET_ACTIVE_SCENEGRAPH().getRoot(), _activeScene->state());
 }
 
 void SceneManager::renderVisibleNodes() {

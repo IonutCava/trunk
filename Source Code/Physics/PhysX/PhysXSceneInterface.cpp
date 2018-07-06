@@ -227,7 +227,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
         case PxGeometryType::ePLANE: {
             sgnName = "PlaneActor";
             if(FindResourceImpl<Quad3D>(sgnName)) {
-                outNode = GET_ACTIVE_SCENEGRAPH()->findNode(sgnName);
+                outNode = GET_ACTIVE_SCENEGRAPH().findNode(sgnName);
                 PhysicsSceneInterface::addToScene(actor, outNode);
                 return;
             }
@@ -251,7 +251,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
     if(actor._type != PxGeometryType::eTRIANGLEMESH) {
         if(sceneNode){
             sceneNode->renderState().setDrawState(true);
-            outNode = _parentScene->getSceneGraph()->addNode(sceneNode, sgnName);
+            outNode = _parentScene->getSceneGraph().addNode(sceneNode, sgnName);
             outNode->getComponent<RenderingComponent>()->castsShadows(shadowState);
         }
         if(!outNode){

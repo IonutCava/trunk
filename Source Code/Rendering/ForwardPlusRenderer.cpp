@@ -1,5 +1,6 @@
 #include "Headers/ForwardPlusRenderer.h"
 
+#include "Core/Headers/Console.h"
 #include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
@@ -7,8 +8,8 @@ namespace Divide {
 
 ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
 {
-    _opaqueGrid = MemoryManager_NEW LightGrid();
-    _transparentGrid = MemoryManager_NEW LightGrid();
+    _opaqueGrid.reset(/*MemoryManager_NEW*/new LightGrid());
+    _transparentGrid.reset(/*MemoryManager_NEW*/new LightGrid());
     /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
     ResourceDescriptor rangesDesc("DepthRangesConstruct");
 
@@ -41,9 +42,7 @@ ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
 
 ForwardPlusRenderer::~ForwardPlusRenderer()
 {
-    MemoryManager::DELETE( _depthRanges );
-    MemoryManager::DELETE( _opaqueGrid );
-    MemoryManager::DELETE( _transparentGrid );
+    MemoryManager::DELETE(_depthRanges);
     RemoveResource(_depthRangesConstructProgram);
 }
 
@@ -98,7 +97,8 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
         downSampleDepthBuffer(_depthRangesCache);
         // We take a copy of this, and prune the grid using depth ranges found from pre-z pass 
         // (for opaque geometry).
-        _opaqueGrid = _transparentGrid;
+        STUBBED("ADD OPTIMIZED COPY!!!");
+        *_opaqueGrid = *_transparentGrid;
         // Note that the pruning does not occur if the pre-z pass was not performed
         // (depthRanges is empty in this case).
         _opaqueGrid->prune(_depthRangesCache);
