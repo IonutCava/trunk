@@ -98,17 +98,6 @@ enum class ShaderBufferLocation : U8 {
     COUNT
 };
 
-/// Using multiple threads for streaming and issuing API specific construction
-/// commands to the rendering API will
-/// cause problems with libraries such as ASSIMP or with the scenegraph. Having
-/// 2 rendering contexts with a single
-/// display list, one for rendering and one for loading seems the best approach
-/// (for now)
-enum class CurrentContext : U8 { 
-    GFX_RENDERING_CTX = 0, 
-    GFX_LOADING_CTX = 1
-};
-
 enum class RenderStage : U8 {
     SHADOW = 0,
     REFLECTION = 1,

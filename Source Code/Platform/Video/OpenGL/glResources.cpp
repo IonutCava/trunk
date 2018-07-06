@@ -63,6 +63,7 @@ GLuint _invalidObjectID = GL_INVALID_INDEX;
 GLuint _lastQueryResult = GL_INVALID_INDEX;
 
 SDL_GLContext _glRenderContext;
+const DisplayWindow* _glMainRenderWindow;
 thread_local SDL_GLContext _glSecondaryContext = nullptr;
 SharedLock _glSecondaryContextMutex;
 

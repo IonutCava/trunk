@@ -11,8 +11,10 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
@@ -245,10 +247,6 @@ void glShaderProgram::attachShader(glShader* const shader) {
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister) {
-    if (_asyncLoad) {
-        GL_API::createOrValidateContextForCurrentThread(_context);
-    }
-
     // We need a new API specific object
     // If we try to refresh the program, we already have a handle
     if (_shaderProgramID == GLUtil::_invalidObjectID) {
@@ -446,13 +444,14 @@ bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoad
     _linked = false;
 
     // try to link the program in a separate thread
-    return _context.loadInContext(
-        !_loadedFromBinary && _asyncLoad
-            ? CurrentContext::GFX_LOADING_CTX
-            : CurrentContext::GFX_RENDERING_CTX,
-        [this, onLoadCallback](const Task& parent){
-            threadedLoad(std::move(onLoadCallback), false);
-        });
+     CreateTask(_context.parent().platformContext(),
+                [this, onLoadCallback](const Task& parent) {
+                    if (!_loadedFromBinary && _asyncLoad) {
+                        GL_API::createOrValidateContextForCurrentThread(_context);
+                    }
+                    threadedLoad(std::move(onLoadCallback), false);
+                }).startTask((!_loadedFromBinary && _asyncLoad) ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+    return true;
 }
 
 void glShaderProgram::reloadShaders(bool reparseShaderSource) {

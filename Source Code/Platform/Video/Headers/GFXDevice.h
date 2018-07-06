@@ -242,7 +242,6 @@ public:  // GPU interface
     void toggleFullScreen();
     void increaseResolution();
     void decreaseResolution();
-    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK<void, const Task&>& callback);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
@@ -501,10 +500,7 @@ protected:
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
 
     vector<DebugView_ptr> _debugViews;
-
-    mutable SharedLock _GFXLoadQueueLock;
-    std::deque<DELEGATE_CBK<void, const Task&>> _GFXLoadQueue;
-
+    
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;
 

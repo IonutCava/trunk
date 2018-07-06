@@ -312,11 +312,10 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -331,6 +330,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
@@ -360,11 +360,10 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -379,6 +378,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
@@ -406,7 +406,6 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
@@ -427,6 +426,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <AdditionalOptions>
       </AdditionalOptions>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
@@ -450,7 +450,6 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>WORLDEDITOR;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS</PreprocessorDefinitions>
@@ -469,6 +468,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>

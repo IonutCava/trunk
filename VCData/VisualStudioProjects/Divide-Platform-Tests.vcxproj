@@ -177,7 +177,6 @@
       <OpenMPSupport>true</OpenMPSupport>
       <ShowIncludes>false</ShowIncludes>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -193,6 +192,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
@@ -234,7 +234,6 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <OpenMPSupport>true</OpenMPSupport>
       <ShowIncludes>false</ShowIncludes>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -250,6 +249,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
@@ -350,7 +350,6 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -358,6 +357,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <SDLCheck>false</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -391,7 +391,6 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <OpenMPSupport>true</OpenMPSupport>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
@@ -406,6 +405,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <SDLCheck>false</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <PrecompiledHeader>Use</PrecompiledHeader>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

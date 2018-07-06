@@ -59,7 +59,7 @@
 
 namespace Divide {
 
-template <U32 alignment = 16>
+template <size_t alignment = 16>
 struct alligned_base {
     void *operator new (size_t size)
     {

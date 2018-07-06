@@ -323,9 +323,9 @@ mat2<T>::mat2(U m0, U m1,
 
 template<typename T>
 template<typename U>
-mat2<T>::mat2(const U *m) noexcept
-    : mat2(m[0], m[1],
-           m[2], m[3])
+mat2<T>::mat2(const U *values) noexcept
+    : mat2(values[0], values[1],
+           values[2], values[3])
 {
 }
 
@@ -825,10 +825,10 @@ mat3<T>::mat3(U m0, U m1, U m2,
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const U *m) noexcept
-    : mat3(m[0], m[1], m[2],
-           m[3], m[4], m[5],
-           m[6], m[7], m[8])
+mat3<T>::mat3(const U *values) noexcept
+    : mat3(values[0], values[1], values[2],
+           values[3], values[4], values[5],
+           values[6], values[7], values[8])
 {
 }
 
@@ -1448,11 +1448,11 @@ mat4<T>::mat4() noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(U m) noexcept
-    : mat{ static_cast<T>(m), static_cast<T>(m), static_cast<T>(m), static_cast<T>(m),
-           static_cast<T>(m), static_cast<T>(m), static_cast<T>(m), static_cast<T>(m),
-           static_cast<T>(m), static_cast<T>(m), static_cast<T>(m), static_cast<T>(m), 
-           static_cast<T>(m), static_cast<T>(m), static_cast<T>(m), static_cast<T>(m)}
+mat4<T>::mat4(U value) noexcept
+    : mat{ static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
+           static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
+           static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value),
+           static_cast<T>(value), static_cast<T>(value), static_cast<T>(value), static_cast<T>(value)}
 {
 }
 
@@ -1471,11 +1471,11 @@ mat4<T>::mat4(U m0, U m1, U m2, U m3,
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const U *m) noexcept
-    : mat4(m[0], m[1], m[2], m[3],
-           m[4], m[5], m[6], m[7],
-           m[8], m[9], m[10], m[11],
-           m[12], m[13], m[14], m[15])
+mat4<T>::mat4(const U *values) noexcept
+    : mat4(values[0],  values[1],  values[2],  values[3],
+           values[4],  values[5],  values[6],  values[7],
+           values[8],  values[9],  values[10], values[11],
+           values[12], values[13], values[14], values[15])
 {
 }
 
@@ -1703,19 +1703,24 @@ mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(U f) const {
-    return mat4<T>(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
-                   mat[4]  * f, mat[5]  * f, mat[6]  * f, mat[7]  * f,
-                   mat[8]  * f, mat[9]  * f, mat[10] * f, mat[11] * f,
-                   mat[12] * f, mat[13] * f, mat[14] * f, mat[15] * f);
+     mat4<T> ret(mat[0]  * f, mat[1]  * f, mat[2]  * f, mat[3]  * f,
+                 mat[4]  * f, mat[5]  * f, mat[6]  * f, mat[7]  * f,
+                 mat[8]  * f, mat[9]  * f, mat[10] * f, mat[11] * f,
+                 mat[12] * f, mat[13] * f, mat[14] * f, mat[15] * f);
+     ret.mat[15] = mat[15] * f;
+     return ret;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(U f) const {
-    return mat4<T>(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
-                   mat[4]  / f, mat[5]  / f, mat[6]  / f, mat[7]  / f,
-                   mat[8]  / f, mat[9]  / f, mat[10] / f, mat[11] / f,
-                   mat[12] / f, mat[13] / f, mat[14] / f, mat[15] / f);
+    mat4<T> ret(mat[0]  / f, mat[1]  / f, mat[2]  / f, mat[3]  / f,
+                mat[4]  / f, mat[5]  / f, mat[6]  / f, mat[7]  / f,
+                mat[8]  / f, mat[9]  / f, mat[10] / f, mat[11] / f,
+                mat[12] / f, mat[13] / f, mat[14] / f, mat[15] / f);
+
+    ret.mat[15] = mat[15] / f;
+    return ret;
 }
 
 template<typename T>
@@ -1739,13 +1744,8 @@ mat4<T> mat4<T>::operator-(U f) const {
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator*=(U f) {
-    U8 index = 0;
     for (U8 i = 0; i < 4; ++i) {
-        index = i * 4;
-        setRow(i, mat[index + 0] * f,
-                  mat[index + 1] * f,
-                  mat[index + 2] * f,
-                  mat[index + 3] * f);
+        _vec[i] *= f;
     }
 
     return *this;
@@ -1754,13 +1754,8 @@ mat4<T>& mat4<T>::operator*=(U f) {
 template<typename T>
 template<typename U>
 mat4<T>& mat4<T>::operator/=(U f) {
-    U8 index = 0;
     for (U8 i = 0; i < 4; ++i) {
-        index = i * 4;
-        setRow(i, mat[index + 0] / f,
-                  mat[index + 1] / f,
-                  mat[index + 2] / f,
-                  mat[index + 3] / f);
+        _vec[i] /= f;
     }
 
     return *this;

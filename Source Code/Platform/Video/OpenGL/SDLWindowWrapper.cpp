@@ -96,6 +96,7 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
     GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
+        GLUtil::_glMainRenderWindow = &window;
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
         Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
         Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
@@ -127,6 +128,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     }
 
     SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
+    GLUtil::_glMainRenderWindow = &window;
     glbinding::Binding::initialize();
     if (glbinding::getCurrentContext() == 0) {
         return ErrorCode::GLBINGING_INIT_ERROR;
@@ -485,8 +487,7 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
         bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
         assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
         ACKNOWLEDGE_UNUSED(ctxFound);
-        const DisplayWindow& window = context.parent().platformContext().app().windowManager().getActiveWindow();
-        SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContext);
+        SDL_GL_MakeCurrent(GLUtil::_glMainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well
         if (Config::ENABLE_GPU_VALIDATION) {
@@ -499,7 +500,6 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
     }
 
     initGLSW();
-    
 }
 
 vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {

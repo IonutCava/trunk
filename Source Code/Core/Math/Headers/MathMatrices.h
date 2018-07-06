@@ -131,7 +131,7 @@ public:
     mat2(U m0, U m1,
          U m2, U m3) noexcept;
     template<typename U>
-    mat2(const U *m) noexcept;
+    mat2(const U *values) noexcept;
     mat2(const mat2 &B) noexcept;
     template<typename U>
     mat2(const mat2<U> &B) noexcept;
@@ -286,7 +286,7 @@ class mat3 {
          U m3, U m4, U m5,
          U m6, U m7, U m8) noexcept;
     template<typename U>
-    mat3(const U *m) noexcept;
+    mat3(const U *values) noexcept;
     template<typename U>
     mat3(const mat2<U> &B, bool zeroFill) noexcept;
     mat3(const mat3 &B) noexcept;
@@ -465,7 +465,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
          U m8,  U m9,  U m10, U m11,
          U m12, U m13, U m14, U m15) noexcept;
     template<typename U>
-    mat4(const U *m) noexcept;
+    mat4(const U *values) noexcept;
     template<typename U>
     mat4(const mat2<U> &B, bool zeroFill) noexcept;
     template<typename U>
@@ -672,19 +672,20 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
 
     union {
         struct {
-            T _11, _12, _13, _14;  // standard names for components
-            T _21, _22, _23, _24;  // standard names for components
-            T _31, _32, _33, _34;  // standard names for components
-            T _41, _42, _43, _44;  // standard names for components
+            T _11, _12, _13, _14;
+            T _21, _22, _23, _24;
+            T _31, _32, _33, _34;
+            T _41, _42, _43, _44;
         };
         T mat[16];
         T m[4][4];
-        simd_vector<T> _reg[4];
         vec4<T> _vec[4];
         struct
         {
             vec4<T> right, up, dir, position;
         } _comp;
+
+        simd_vector<T> _reg[4];
     };
 };
 

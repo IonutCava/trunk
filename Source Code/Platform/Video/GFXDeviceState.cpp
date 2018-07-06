@@ -460,15 +460,6 @@ void GFXDevice::idle() {
     PostFX::instance().idle(_parent.platformContext().config());
     // And to the shader manager
     ShaderProgram::idle();
-
-    UpgradableReadLock r_lock(_GFXLoadQueueLock);
-    if (!_GFXLoadQueue.empty()) {
-        for(DELEGATE_CBK<void, const Task&>& cbk : _GFXLoadQueue) {
-            cbk(idleTask);
-        }
-        UpgradeToWriteLock w_lock(r_lock);
-        _GFXLoadQueue.clear();
-    }
 }
 
 void GFXDevice::beginFrame() {

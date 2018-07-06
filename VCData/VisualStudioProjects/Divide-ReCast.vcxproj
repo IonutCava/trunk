@@ -192,11 +192,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4127;4996</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
@@ -211,6 +210,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -239,11 +239,10 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DisableSpecificWarnings>4127;4996</DisableSpecificWarnings>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <StringPooling>false</StringPooling>
+      <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
@@ -258,6 +257,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -287,7 +287,6 @@
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DisableSpecificWarnings>4127</DisableSpecificWarnings>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
@@ -304,6 +303,7 @@
       <LanguageStandard>stdcpp14</LanguageStandard>
       <AdditionalOptions>
       </AdditionalOptions>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -326,7 +326,6 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>$(SolutionDir)../3rdParty/;$(SolutionDir)../3rdParty/sdl\;$(SolutionDir)../3rdParty/boost\;$(SolutionDir)../3rdParty/OpenCL\;$(SolutionDir)../3rdParty/chaiscript\include/;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/SimpleCL\include/;$(SolutionDir)../Source Code/Libs/simplefilewatcher\;$(SolutionDir)../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)../Source Code/Libs/imgui\;$(SolutionDir)../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)../3rdParty/GSL/include/;</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -347,6 +346,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -3,6 +3,7 @@
 #include "Core/Headers/StringHelper.h"
 
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
@@ -65,11 +66,9 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     }
 
     MeshLoadData loadingData(ptr, &_cache, &_context, _descriptor);
-    _context.gfx().loadInContext(_descriptor.getThreaded() ? CurrentContext::GFX_LOADING_CTX : CurrentContext::GFX_RENDERING_CTX,
-    [this, tempMeshData, loadingData](const Task& parent) {
+    CreateTask(_context, [this, tempMeshData, loadingData](const Task& parent) {
         threadedMeshLoad(loadingData, tempMeshData);
-    });
-
+    }).startTask(_descriptor.getThreaded() ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return ptr;
 }

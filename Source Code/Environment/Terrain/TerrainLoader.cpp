@@ -274,10 +274,11 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
-    return context.gfx().loadInContext(threadedLoading ? CurrentContext::GFX_LOADING_CTX : CurrentContext::GFX_RENDERING_CTX,
-                                       [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
-                                            loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
-                                       });
+    CreateTask(context, [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
+        loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
+    }).startTask(threadedLoading ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+
+    return true;
 }
 
 bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,

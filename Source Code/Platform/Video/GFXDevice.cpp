@@ -539,29 +539,6 @@ void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
     parent().setViewportDirty();
 }
 
-/// Depending on the context, either immediately call the function, or pass it
-/// to the loading thread via a queue
-bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<void, const Task&>& callback) {
-    static const Task mainTask;
-    // Skip invalid callbacks
-    if (callback) {
-        if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
-            CreateTask(parent().platformContext(), callback).startTask();
-        } else {
-            if (Runtime::isMainThread()) {
-                callback(mainTask);
-            } else {
-                WriteLock w_lock(_GFXLoadQueueLock);
-                _GFXLoadQueue.push_back(callback);
-            }
-        }
-
-        // The callback is valid and has been processed
-        return true;
-    }
-    
-    return false;
-}
 
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/

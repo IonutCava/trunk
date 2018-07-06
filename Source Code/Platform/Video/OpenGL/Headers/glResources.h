@@ -137,6 +137,7 @@ void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 extern GLuint _invalidObjectID;
 extern GLuint _lastQueryResult;
 extern SDL_GLContext _glRenderContext;
+extern const DisplayWindow* _glMainRenderWindow;
 extern thread_local SDL_GLContext _glSecondaryContext;
 extern SharedLock _glSecondaryContextMutex;
 

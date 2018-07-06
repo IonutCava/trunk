@@ -834,8 +834,9 @@ void GL_API::drawIMGUI(ImDrawData* data) {
 
 bool GL_API::switchWindow(I64 windowGUID) {
     if (windowGUID != -1 && windowGUID != s_activeWindowGUID) {
-        DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
+        const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
         SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
+        GLUtil::_glMainRenderWindow = &window;
         s_activeWindowGUID = windowGUID;
         return true;
     }

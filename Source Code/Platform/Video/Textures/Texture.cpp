@@ -59,12 +59,10 @@ Texture::~Texture()
 }
 
 bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
-                                      : CurrentContext::GFX_RENDERING_CTX,
-        [this, onLoadCallback](const Task& parent) {
-            threadedLoad(std::move(onLoadCallback));
-        }
-    );
+    CreateTask(_context.parent().platformContext(),
+               [this, onLoadCallback](const Task& parent) {
+                    threadedLoad(std::move(onLoadCallback));
+              }).startTask(_asyncLoad ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
 }

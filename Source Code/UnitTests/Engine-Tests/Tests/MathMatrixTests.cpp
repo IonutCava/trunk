@@ -381,13 +381,50 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, scalar)
                            5.0f, 6.0f, 7.0f, 8.0f,
                            9.0f, 8.0f, 7.0f, 6.0f,
                            5.0f, 4.0f, 3.0f, 2.0f);
-    const mat4<F32> result4( 3.0f,  6.0f,  9.0f, 12.0f,
-                            15.0f, 18.0f, 21.0f, 24.0f,
-                            27.0f, 24.0f, 21.0f, 18.0f,
-                            15.0f, 12.0f,  9.0f,  6.0f);
 
-    CHECK_FALSE(input4 == result4);
-    CHECK_TRUE((input4 * 3) == result4);
+    const mat4<F32> result4A( 3.0f,  6.0f,  9.0f, 12.0f,
+                             15.0f, 18.0f, 21.0f, 24.0f,
+                             27.0f, 24.0f, 21.0f, 18.0f,
+                             15.0f, 12.0f,  9.0f,  6.0f);
+
+    const mat4<F32> result4B( 0.5f,  1.0f, 1.5f,  2.0f,
+                              2.5f,  3.0f, 3.5f,  4.0f,
+                              4.5f,  4.0f, 3.5f,  3.0f,
+                              2.5f,  2.0f, 1.5f,  1.0f);
+
+    CHECK_FALSE(input4 == result4A);
+
+    mat4<F32> something(input4);
+    CHECK_EQUAL(something, input4);
+    CHECK_EQUAL((something * 3), result4A);
+    CHECK_EQUAL((something / 2), result4B);
+}
+
+TEST_MEMBER_FUNCTION(mat4, addSubtractOperator, scalar)
+{
+    const mat4<F32> input4(1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 8.0f, 7.0f, 6.0f,
+                           5.0f, 4.0f, 3.0f, 2.0f);
+
+    const mat4<F32> result4A(-2.0f, -1.0f, 0.0f,  1.0f,
+                              2.0f,  3.0f, 4.0f,  5.0f,
+                              6.0f,  5.0f, 4.0f,  3.0f,
+                              2.0f,  1.0f, 0.0f, -1.0f);
+
+    const mat4<F32> result4B( 4.0f,  5.0f,  6.0f,  7.0f,
+                              8.0f,  9.0f, 10.0f, 11.0f,
+                             12.0f, 11.0f, 10.0f,  9.0f,
+                              8.0f,  7.0f,  6.0f,  5.0f);
+
+
+    const mat4<F32> result4C(4.0f, 5.0f, 6.0f, 7.0f,
+        8.0f, 9.0f, 10.0f, 11.0f,
+        12.0f, 11.0f, 10.0f, 9.0f,
+        8.0f, 7.0f, 6.0f, 5.0f);
+
+    CHECK_TRUE((input4 - 3) == result4A);
+    CHECK_TRUE((input4 + 3) == result4B);
 }
 
 // this depends on multiply tests!
@@ -417,7 +454,7 @@ TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
                            9.0f, 8.0f, 7.0f, 6.0f,
                            5.0f, 4.0f, 3.0f, 2.0f);
     CHECK_FALSE((input4 / 2) == (input4 * 2));
-    CHECK_TRUE((input4 / 2) == (input4 * 0.5f));
+    CHECK_EQUAL((input4 / 2), (input4 * 0.5f));
 }
 
 TEST_MEMBER_FUNCTION(mat4, Reflect, Plane)
@@ -551,6 +588,23 @@ TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
     CHECK_TRUE(result4B.compare(input4B * input4A, 0.02f));
 
     CHECK_TRUE(input4A.compare(input4A * inputIdentity4x4f, 0.02f));
+}
+
+TEST_MEMBER_FUNCTION(matN, construct, NA)
+{
+    const mat4<F32> input4A(24.300f, 92.000f,  1.200f, 4.300f,
+                             5.000f,  0.000f, 95.500f, 0.200f,
+                            43.000f,  2.110f,  9.000f, 9.200f,
+                             5.000f,  7.000f, 11.000f, 6.435f);
+
+    mat4<F32> resultA(&input4A.mat[0]);
+    mat4<F32> resultB(input4A.mat[0], input4A.mat[1], input4A.mat[2], input4A.mat[3],
+                      input4A.mat[4], input4A.mat[5], input4A.mat[6], input4A.mat[7],
+                      input4A.mat[8], input4A.mat[9], input4A.mat[10], input4A.mat[11],
+                      input4A.mat[12], input4A.mat[13], input4A.mat[14], input4A.mat[15]);
+
+    CHECK_EQUAL(input4A, resultA);
+    CHECK_EQUAL(input4A, resultB);
 }
 
 TEST_MEMBER_FUNCTION(matN, inverse, NA)
