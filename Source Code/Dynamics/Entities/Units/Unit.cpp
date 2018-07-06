@@ -16,6 +16,7 @@ Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
 
 Unit::~Unit()
 {
+    UNREGISTER_FRAME_LISTENER(this);
 }
 
 /// Pathfinding, collision detection, animation playback should all be controlled from here

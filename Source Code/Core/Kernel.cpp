@@ -74,7 +74,6 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
 }
 
 Kernel::~Kernel(){
-    SAFE_DELETE(_cameraMgr);
     _mainTaskPool->wait();
     SAFE_DELETE(_mainTaskPool);
     REMOVE_TIMER(s_appLoopTimer);
@@ -470,6 +469,7 @@ void Kernel::shutdown(){
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
     _sceneMgr.destroyInstance();
+    SAFE_DELETE(_cameraMgr);
     _GFX.closeRenderer();
     ResourceCache::getInstance().destroyInstance();
     LightManager::getInstance().destroyInstance();

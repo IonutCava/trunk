@@ -340,9 +340,9 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     _renderDrawCommand.setLoD(1);
     _renderDrawCommand.setDrawID(GFX_DEVICE.getDrawID(sgn->getGUID()));
     _renderDrawCommand.setShaderProgram(getDrawShader(currentRenderStage));
-    buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
-    buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);
-    buffer->getDrawAttribDescriptor(instLocation).setOffset(_instanceCountGrass * queryId);
+    buffer->getDrawAttribDescriptor(posLocation).offset(_instanceCountGrass * queryId);
+    buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryId);
+    buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryId);
         
     GFX_DEVICE.submitRenderCommand(buffer, _renderDrawCommand);
 }

@@ -150,9 +150,8 @@ public:
     
     void drawPoints(U32 numPoints, size_t stateHash);
     void drawGUIElement(GUIElement* guiElement);
-    void submitRenderCommand(VertexBuffer* const buffer,      const GenericDrawCommand& cmd);
-    void submitRenderCommand(VertexBuffer* const buffer,      const vectorImpl<GenericDrawCommand>& cmds);
-    void submitRenderCommand(GenericVertexData* const buffer, const GenericDrawCommand& cmd);
+    void submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd);
+    void submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds);
     void setBufferData(const GenericDrawCommand& cmd);
 
     inline I32 getDrawID(I64 drawIDIndex) {

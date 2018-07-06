@@ -22,6 +22,8 @@ SceneManager::SceneManager() : FrameListener(),
 }
 
 SceneManager::~SceneManager(){
+    UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
+
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     //PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
@@ -35,12 +37,13 @@ SceneManager::~SceneManager(){
 }
 
 bool SceneManager::init(GUI* const gui){
+    REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
+
     //Load default material
     PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
     _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial", false);
     _defaultMaterial->dumpToFile(false);
 
-    REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
     _GUI = gui;
     _renderPassCuller = New RenderPassCuller();
     _renderPassManager = &RenderPassManager::getOrCreateInstance();

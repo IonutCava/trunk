@@ -114,16 +114,7 @@ void GFXDevice::drawGUIElement(GUIElement* guiElement){
     guiElement->lastDrawTimer(GETUSTIME());
 }
 
-void GFXDevice::submitRenderCommand(VertexBuffer* const buffer, const GenericDrawCommand& cmd) {
-    assert(buffer != nullptr);
-    if(cmd._cmd.instanceCount == 0)
-        return;
-    
-    setBufferData(cmd);
-    buffer->Draw(cmd);
-}
-
-void GFXDevice::submitRenderCommand(GenericVertexData* const buffer, const GenericDrawCommand& cmd){
+void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd){
     assert(buffer != nullptr);
     if(cmd._cmd.instanceCount == 0)
         return;
@@ -132,8 +123,8 @@ void GFXDevice::submitRenderCommand(GenericVertexData* const buffer, const Gener
     buffer->Draw(cmd);
 }
 
-void GFXDevice::submitRenderCommand(VertexBuffer* const buffer, const vectorImpl<GenericDrawCommand>& cmds){
-    STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");
+void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds){
+    STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");    
     FOR_EACH(const GenericDrawCommand& cmd, cmds){
         submitRenderCommand(buffer, cmd);
     }

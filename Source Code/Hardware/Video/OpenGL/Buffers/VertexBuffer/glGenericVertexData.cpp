@@ -130,7 +130,7 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, U32 elementCountOf
     glBindBufferRange(GL_TRANSFORM_FEEDBACK_BUFFER, getBindPoint(_bufferObjects[buffer]), _bufferObjects[buffer], elementCountOffset * _elementSize[buffer], elementCount * _elementSize[buffer]);
 }
 
-void glGenericVertexData::Draw(const GenericDrawCommand& command) {
+void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind) {
     const IndirectDrawCommand& cmd = command._cmd;
 
     if (cmd.instanceCount == 0) return;
@@ -226,22 +226,22 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data,
 }
 
 void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor){
-    DIVIDE_ASSERT(_elementSize[descriptor._parentBuffer] != 0, "glGenericVertexData error: attribute's parent buffer has an invalid element size!");
+    DIVIDE_ASSERT(_elementSize[descriptor.bufferIndex()] != 0, "glGenericVertexData error: attribute's parent buffer has an invalid element size!");
 
-    if(!descriptor._dirty) return;
+    if(!descriptor.dirty()) return;
 
-    if(!descriptor._wasSet){
-        glEnableVertexAttribArray(descriptor._index);
-        descriptor._wasSet = true;
+    if(!descriptor.wasSet()){
+        glEnableVertexAttribArray(descriptor.attribIndex());
+        descriptor.wasSet(true);
     }
     if (!_persistentMapped){
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[descriptor._parentBuffer]);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[descriptor.bufferIndex()]);
     }
-    glVertexAttribPointer(descriptor._index, descriptor._componentsPerElement, glDataFormat[descriptor._type], descriptor._normalized ? GL_TRUE : GL_FALSE,
-                          (GLsizei)descriptor._stride, (GLvoid*)(descriptor._elementCountOffset * _elementSize[descriptor._parentBuffer]));
-    if (descriptor._divisor > 0) glVertexAttribDivisor(descriptor._index, descriptor._divisor);
+    glVertexAttribPointer(descriptor.attribIndex(), descriptor.componentsPerElement(), glDataFormat[descriptor.dataType()], descriptor.normalized() ? GL_TRUE : GL_FALSE,
+                          (GLsizei)descriptor.stride(), (GLvoid*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
+    if (descriptor.instanceDivisor() > 0) glVertexAttribDivisor(descriptor.attribIndex(), descriptor.instanceDivisor());
 
-    descriptor._dirty = false;
+    descriptor.clean();
 }
 
 void glGenericVertexData::SetAttributes(bool feedbackPass) {

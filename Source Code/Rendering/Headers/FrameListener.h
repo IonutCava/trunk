@@ -53,7 +53,7 @@ public:
 	///Or the frame listenr manager will assing it an ID
     FrameListener() : _callOrder(0) {}
 	virtual ~FrameListener(){}
-	inline const std::string& getName() {return _listenerName;}
+	inline const std::string& getName() const {return _listenerName;}
 
     bool operator<(FrameListener& that){
         return this->_callOrder < that._callOrder;

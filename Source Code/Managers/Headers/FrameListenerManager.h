@@ -42,8 +42,6 @@ public:
     void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt, const D32 interpolationFactor = 1.0);
 
 private:
-    vectorImpl<FrameListener* >::const_iterator findListener(const std::string& name);
-
     bool frameStarted(const FrameEvent& evt);
     bool framePreRenderStarted(const FrameEvent& evt);
     bool framePreRenderEnded(const FrameEvent& evt);
@@ -58,13 +56,17 @@ private:
 
 private:
     vectorImpl<FrameListener* > _listeners;
-    vectorImpl<FrameListener* > _removedListeners;
     EventTimeMap _eventTimers[FRAME_EVENT_ENDED + 1];
 
 END_SINGLETON
 
 inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder){
     FrameListenerManager::getInstance().registerFrameListener(listener, callOrder);
+}
+
+
+inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener){
+    FrameListenerManager::getInstance().removeFrameListener(listener);
 }
 
 #endif

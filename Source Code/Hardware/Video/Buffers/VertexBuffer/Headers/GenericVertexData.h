@@ -22,16 +22,14 @@
 
 #ifndef _GENERIC_VERTEX_DATA_H
 #define _GENERIC_VERTEX_DATA_H
-#include <boost/noncopyable.hpp>
-#include "Utility/Headers/Vector.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
-#include "Managers/Headers/FrameListenerManager.h"
+
+#include "VertexDataInterface.h"
+
 /// This class is used to upload generic VB data to the GPU that can be rendered directly or instanced.
 /// Use this class to create precise VB data with specific usage (such as particle systems)
 /// Use IMPrimitive for on-the-fly geometry creation
 
-class GenericVertexData : private boost::noncopyable, public FrameListener {
+class GenericVertexData : public VertexDataInterface {
 public:
 
     struct AttributeDescriptor {
@@ -42,27 +40,38 @@ public:
         {
         }
 
-        void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement, bool normalized, size_t stride, U32 elementCountOffset, GFXDataFormat dataType){
-            setBufferIndex(bufferIndex);
-            setInstanceDivisor(instanceDivisor);
-            setComponentsPerElement(componentsPerElement);
-            setNormalized(normalized);
-            setStride(stride);
-            setOffset(elementCountOffset);
-            _type = dataType;
+        void set(U32 bufferIndex, U32 instanceDivisor, U32 componentsPerElement, bool normalized, size_t stride, U32 elementCountOffset, GFXDataFormat dataType) {
+            this->bufferIndex(bufferIndex);
+            this->instanceDivisor(instanceDivisor);
+            this->componentsPerElement(componentsPerElement);
+            this->normalized(normalized);
+            this->stride(stride);
+            this->offset(elementCountOffset);
+            this->dataType(dataType);
         }
 
-        inline void setOffset(U32 elementCountOffset)                 { _elementCountOffset = elementCountOffset; _dirty = true; }
-        inline void setBufferIndex(U32 bufferIndex)                   { _parentBuffer = bufferIndex; _dirty = true; }
-        inline void setInstanceDivisor(U32 instanceDivisor)           { _divisor = instanceDivisor; _dirty = true; }
-        inline void setComponentsPerElement(U32 componentsPerElement) { _componentsPerElement = componentsPerElement; _dirty = true; }
-        inline void setNormalized(bool normalized)                    { _normalized = normalized; _dirty = true; }
-        inline void setStride(size_t stride)                          { _stride = stride; _dirty = true; }
+        inline void attribIndex(U32 index)                         { _index = index; _dirty = true; }
+        inline void offset(U32 elementCountOffset)                 { _elementCountOffset = elementCountOffset; _dirty = true; }
+        inline void bufferIndex(U32 bufferIndex)                   { _parentBuffer = bufferIndex; _dirty = true; }
+        inline void instanceDivisor(U32 instanceDivisor)           { _divisor = instanceDivisor; _dirty = true; }
+        inline void componentsPerElement(U32 componentsPerElement) { _componentsPerElement = componentsPerElement; _dirty = true; }
+        inline void normalized(bool normalized)                    { _normalized = normalized; _dirty = true; }
+        inline void stride(size_t stride)                          { _stride = stride; _dirty = true; }
+        inline void dataType(GFXDataFormat type)                   { _type = type; _dirty = true; }
+        inline void wasSet(bool wasSet)                            { _wasSet = wasSet; }
+        inline void clean()                                        { _dirty = false; }
 
+        inline U32           attribIndex()          const { return _index; }
+        inline U32           offset()               const { return _elementCountOffset; }
+        inline U32           bufferIndex()          const { return _parentBuffer; }
+        inline U32           instanceDivisor()      const { return _divisor; }
+        inline U32           componentsPerElement() const { return _componentsPerElement; }
+        inline bool          normalized()           const { return _normalized; }
+        inline size_t        stride()               const { return _stride; }
+        inline GFXDataFormat dataType()             const { return _type; }
+        inline bool          wasSet()               const { return _wasSet; }
+        inline bool          dirty()                const { return _dirty; }
     protected:
-        friend class GenericVertexData;
-        friend class glGenericVertexData;
-        friend class d3dGenericVertexData;
         U32 _index;
         U32 _divisor;
         U32 _parentBuffer;
@@ -73,11 +82,11 @@ public:
         bool _normalized;
         size_t _stride;
         GFXDataFormat _type;
+    
     };
 
-    GenericVertexData(bool persistentMapped) : FrameListener(), _persistentMapped(persistentMapped)
+    GenericVertexData(bool persistentMapped) : VertexDataInterface(), _persistentMapped(persistentMapped)
     {
-        REGISTER_FRAME_LISTENER(this, 4);
         _doubleBufferedQuery = true;
     }
 
@@ -90,7 +99,12 @@ public:
     virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
     virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
-    virtual void Draw(const GenericDrawCommand& command) = 0;
+    virtual void Draw(const GenericDrawCommand& command, bool skipBind = false) = 0;
+    
+    inline void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false) {
+        for(const GenericDrawCommand& cmd : commands)
+            Draw(cmd, skipBind);
+    }
 
     virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
     virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam) = 0;
@@ -103,8 +117,17 @@ public:
 
     inline void toggleDoubleBufferedQueries(const bool state) { _doubleBufferedQuery = state; }
 
-    inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; desc._index = attribIndex; return desc; }
-    inline AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapFdbk[attribIndex]; desc._index = attribIndex; return desc; }
+    inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { 
+        AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; 
+        desc.attribIndex(attribIndex); 
+        return desc; 
+    }
+
+    inline AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex) { 
+        AttributeDescriptor& desc = _attributeMapFdbk[attribIndex]; 
+        desc.attribIndex(attribIndex);
+        return desc; 
+    }
 
 protected:
     typedef Unordered_map<U32, AttributeDescriptor > attributeMap;

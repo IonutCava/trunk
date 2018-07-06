@@ -26,7 +26,9 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&Reflector::previewReflection, this), 2);
 }
 
-Reflector::~Reflector(){
+Reflector::~Reflector()
+{
+    UNREGISTER_FRAME_LISTENER(this);
     SAFE_DELETE(_reflectedTexture);
     RemoveResource(_previewReflectionShader);
 }

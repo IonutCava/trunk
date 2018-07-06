@@ -37,6 +37,7 @@ public:
 
     virtual ~VertexDataInterface()
     {
+        UNREGISTER_FRAME_LISTENER(this);
     }
 
     virtual void Draw(const GenericDrawCommand& command, bool skipBind = false) = 0;

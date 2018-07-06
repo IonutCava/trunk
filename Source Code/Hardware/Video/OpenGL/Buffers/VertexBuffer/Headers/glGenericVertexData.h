@@ -60,7 +60,7 @@ public:
 
 protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command);
+    void Draw(const GenericDrawCommand& command, bool skipBind = false);
 
 protected:
     void SetAttributes(bool feedbackPass);

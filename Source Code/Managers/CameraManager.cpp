@@ -11,6 +11,7 @@ CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(), _kernel
 }
 
 CameraManager::~CameraManager() {
+    UNREGISTER_FRAME_LISTENER(this);
     PRINT_FN(Locale::get("CAMERA_MANAGER_DELETE"));
     PRINT_FN(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
     FOR_EACH(CameraPool::value_type& it, _cameraPool){

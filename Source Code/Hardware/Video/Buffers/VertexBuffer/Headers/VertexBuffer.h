@@ -23,18 +23,14 @@
 #ifndef _VERTEX_BUFFER_OBJECT_H
 #define _VERTEX_BUFFER_OBJECT_H
 
-#include <iostream>
-#include "Utility/Headers/Vector.h"
-#include "Utility/Headers/GUIDWrapper.h"
-#include "Core/Math/Headers/MathClasses.h"
-#include "Hardware/Video/Headers/RenderAPIWrapper.h"
+#include "VertexDataInterface.h"
 
 enum GFXDataFormat;
 class ShaderProgram;
 /// Vertex Buffer interface class to allow API-independent implementation of data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.: OGL uses a vertex array object for this)
-class VertexBuffer : public GUIDWrapper {
+class VertexBuffer : public VertexDataInterface {
 protected:
     enum VertexAttribute{
         ATTRIB_POSITION = 0,
@@ -49,7 +45,7 @@ protected:
     };
 public:
 
-    VertexBuffer() : GUIDWrapper(),
+    VertexBuffer() : VertexDataInterface(),
                     _largeIndices(false),
                     _format(UNSIGNED_SHORT),
                     _primitiveRestartEnabled(false),
@@ -270,6 +266,9 @@ public:
     }
 
 protected:
+    /// Just before we render the frame
+    virtual bool frameStarted(const FrameEvent& evt) { return VertexDataInterface::frameStarted(evt); }
+
     virtual void checkStatus() = 0;
     virtual bool Refresh() = 0;
     virtual bool CreateInternal() = 0;

@@ -3,18 +3,10 @@
 ///Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder){
     //Check if the listener has a name or we should assign an id
-    if(listener->getName().empty()){
-        listener->setName("generic_f_listener_" + Util::toString(_listeners.size() + _removedListeners.size()));
-    }
+    if(listener->getName().empty())
+        listener->setName("generic_f_listener_" + Util::toString(_listeners.size()));
+    
     listener->setCallOrder(callOrder);
-    //Check if the listener is in the trash bin
-    for (vectorImpl<FrameListener* >::iterator it = _removedListeners.begin(); it != _removedListeners.end(); ++it){
-        //If it is, restore it, else, just add a new one
-        if ((*it)->getName().compare(listener->getName()) == 0){
-            _removedListeners.erase(it);
-            break;
-        }
-    }
 
     _listeners.push_back(listener);
 
@@ -23,9 +15,11 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 ca
 
 ///Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener){
-    vectorImpl<FrameListener* >::const_iterator it = findListener(listener->getName());
-    if (it != _listeners.end()){        //If it is, restore it, else, just add a new one
-        _removedListeners.push_back(*it);
+    std::string name = listener->getName();
+    vectorImpl<FrameListener* >::iterator it = std::find_if(_listeners.begin(), _listeners.end(), [&name](FrameListener const* fl) 
+                                                              { return fl->getName().compare(name) == 0; });
+    if (it != _listeners.end()){
+        _listeners.erase(it);
     }else{
         ERROR_FN(Locale::get("ERROR_FRAME_LISTENER_REMOVE"), listener->getName().c_str());
     }
@@ -128,11 +122,7 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt){
 
 ///When the application is idle, we should really clear up old events
 void FrameListenerManager::idle(){
-    for (vectorImpl<FrameListener* >::iterator it = _removedListeners.end(); it != _removedListeners.begin(); it--){
-        _listeners.erase(findListener((*it)->getName()));
-    }
 
-    _removedListeners.clear();
 }
 
 ///Please see the Ogre3D documentation about this
@@ -162,15 +152,4 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
     }
     times.erase(times.begin(), it);
     return (times.back() - times.front()) / getSecToMs(times.size()-1);
-}
-
-vectorImpl<FrameListener* >::const_iterator FrameListenerManager::findListener(const std::string& name){
-    vectorImpl<FrameListener* >::const_iterator it = _listeners.begin();
-    for (;it != _listeners.end(); ++it){
-        ///If it is, restore it, else, just add a new one
-        if ((*it)->getName().compare(name) == 0)
-            break;
-    }
-
-    return it;
 }

@@ -45,6 +45,7 @@ void LightManager::init(){
     STUBBED("Replace light map bind slots with bindless textures! Max texture units is currently hard coded! -Ionut!");
 
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
+
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
@@ -66,6 +67,8 @@ void LightManager::init(){
 }
 
 bool LightManager::clear(){
+    UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
+
     //Lights are removed by the sceneGraph
     FOR_EACH(Light::LightMap::value_type it, _lights){
         //in case we had some light hanging

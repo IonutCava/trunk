@@ -38,7 +38,7 @@ public:
     void Create(U8 numBuffers = 1, U8 numQueries = 1)
     {
     }
-    void Draw(const GenericDrawCommand& command) 
+    void Draw(const GenericDrawCommand& command, bool skipBind = false) 
     {
     }
     void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false)

@@ -68,10 +68,10 @@ public:
     ///Add a friend to our team
     bool addFriend(AIEntity* const friendEntity);
 
-    const std::string& getName() {return _name;}
+    const std::string& getName() const {return _name;}
 
            void addUnitRef(NPC* const npc);
-    inline NPC* getUnitRef()               {return _unitRef;}
+    inline NPC* getUnitRef()                {return _unitRef;}
 
     /// PathFinding
     /// Index ID identifying the agent of this character in the crowd
