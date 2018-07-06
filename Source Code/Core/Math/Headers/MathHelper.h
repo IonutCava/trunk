@@ -40,21 +40,19 @@
 #define _CORE_MATH_MATH_HELPER_H_
 
 #include "Platform/DataTypes/Headers/PlatformDefines.h"
+#include <boost/thread/tss.hpp>
+
 #include <sstream>
 #include <cctype>
 #include <algorithm>
 
 namespace Divide {
 
-#undef M_PI
-#define M_PI 3.141592653589793238462643383279f          //  PI
-#define M_PIDIV2 1.570796326794896619231321691639f      //  PI / 2
-#define M_2PI 6.283185307179586476925286766559f         //  2 * PI
-#define M_PI2 9.869604401089358618834490999876f         //  PI ^ 2
-#define M_PIDIV180 0.01745329251994329576923690768488f  //  PI / 180
-#define M_180DIVPI 57.295779513082320876798154814105f   //  180 / PI
-#define M_PIDIV360 \
-    0.00872664625997164788461845384244f  //  PI / 180 / 2 - PI / 360
+static const D32 M_2PI = 2 * M_PI;
+static const D32 M_PI2 = M_PI * M_PI;
+static const D32 M_PIDIV180 = M_PI / 180;
+static const D32 M_180DIVPI = 180 / M_PI;
+static const D32 M_PIDIV360 = M_PIDIV180 / 2;
 
 const F32 INV_RAND_MAX = 1.0f / (RAND_MAX + 1);
 
@@ -106,6 +104,8 @@ void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b);
 
 template <typename T>
 class mat4;
+template <typename T>
+class vec2;
 template <typename T>
 class vec3;
 template <typename T>
@@ -181,6 +181,24 @@ U64 MillisecondsToMicroseconds(T a);
 
 namespace Util {
 
+struct GraphPlot2D;
+struct GraphPlot3D;
+struct GlobalFloatEvent {
+    const char* _eventName;
+    F32 _eventValue;
+    U64 _timestamp;
+};
+
+void flushFloatEvents();
+
+void recordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp);
+
+const vectorImpl<GlobalFloatEvent>& getFloatEvents();
+
+void plotFloatEvents(const char* eventName,
+                     vectorImpl<GlobalFloatEvent> eventsCopy,
+                     GraphPlot2D& targetGraph);
+
 /// a la Boost
 template <typename T>
 void hash_combine(std::size_t& seed, const T& v);
@@ -243,7 +261,7 @@ vec3<F32> toFloatColor(const vec3<U8>& byteColor);
 
 namespace Mat4 {
 template <typename T>
-T* multiply(const T* a, const T* b, T* r = nullptr);
+void multiply(const T* a, const T* b, T* r);
 
 template <typename T>
 __forceinline T det(const T* mat);

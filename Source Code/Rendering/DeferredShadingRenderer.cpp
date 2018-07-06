@@ -165,7 +165,7 @@ void DeferredShadingRenderer::secondPass(
     // Pass 2
     // Draw a 2D fullscreen quad with lighting shader applied and all generated
     // textures bound to that shader
-    GFX_DEVICE.toggle2D(true);
+    GFX::Scoped2DRendering scoped2D(true);
 
     _deferredBuffer->Bind(0, TextureDescriptor::Color0);
     _deferredBuffer->Bind(1, TextureDescriptor::Color1);
@@ -204,7 +204,6 @@ void DeferredShadingRenderer::secondPass(
         GFX_DEVICE.submitRenderCommand(cmd);
     }
 
-    GFX_DEVICE.toggle2D(false);
     GUI& gui = GUI::getInstance();
     GUIElement* guiElement = gui.getGuiElement("FinalImage");
     if (guiElement) {

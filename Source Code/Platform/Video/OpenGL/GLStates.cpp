@@ -33,6 +33,7 @@ vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::_samplerMap;
+ShaderProgram* GL_API::_activeShaderProgram = nullptr;
 
 /// Reset as much of the GL default state as possible within the limitations
 /// given
@@ -360,22 +361,20 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint id) {
 bool GL_API::setActiveProgram(glShaderProgram* const program) {
     // Check if we are binding a new program or unbinding all shaders
     GLuint newProgramId = (program != nullptr) ? program->getId() : 0;
-    // Get the previous program's handle to compare against. The active program
-    // is stored in the GFXDevice object,
-    // so indirects are unavoidable
-    ShaderProgram* previousProgram = GFX_DEVICE.activeShaderProgram();
-    GLuint oldProgramId =
-        (previousProgram != nullptr) ? previousProgram->getId() : 0;
+    // Get the previous program's handle to compare against.
+    GLuint oldProgramId = (GL_API::_activeShaderProgram != nullptr)
+                              ? GL_API::_activeShaderProgram->getId()
+                              : 0;
     // Prevent double bind
     if (oldProgramId == newProgramId) {
         return false;
     }
     // Unbind the previous program (if we had one)
-    if (previousProgram != nullptr) {
-        previousProgram->unbind(false);
+    if (GL_API::_activeShaderProgram != nullptr) {
+        GL_API::_activeShaderProgram->unbind(false);
     }
     // Remember the new binding for future reference
-    GFX_DEVICE.activeShaderProgram(program);
+    GL_API::_activeShaderProgram = program;
     // Bind the new program
     glUseProgram(newProgramId);
 

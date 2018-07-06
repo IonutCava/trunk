@@ -331,7 +331,7 @@ __forceinline void inverse(const T* in, T* out) {
 }
 
 template <typename T>
-T* multiply(const T* a, const T* b, T* r) {
+void multiply(const T* a, const T* b, T* r) {
     memset(r, 0, sizeof(T) * 16);
     U32 row, row_offset;
     for (row = 0, row_offset = row * 4; row < 4; ++row, row_offset = row * 4) {
@@ -351,7 +351,6 @@ T* multiply(const T* a, const T* b, T* r) {
             (a[row_offset + 0] * b[3 + 0]) + (a[row_offset + 1] * b[3 + 4]) +
             (a[row_offset + 2] * b[3 + 8]) + (a[row_offset + 3] * b[3 + 12]);
     }
-    return r;
 }
 
 };  // namespace Mat4

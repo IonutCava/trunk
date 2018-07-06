@@ -278,6 +278,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLint _activePackUnpackSkipPixels[2];
     static GLint _activePackUnpackSkipRows[2];
     static vec4<GLfloat> _prevClearColor;
+    static ShaderProgram* _activeShaderProgram;
     /// Boolean value used to verify if we are using the U16 or U32 primitive
     /// restart index
     static bool _lastRestartIndexSmall;

@@ -33,6 +33,7 @@
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
 #include "GFXState.h"
+#include "ScopedStates.h"
 
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
@@ -107,12 +108,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void toggle2D(bool state);
     /// Toggle hardware rasterization on or off.
     inline void toggleRasterization(bool state) override;
+    /// Query rasterization state
+    inline bool rasterizationState();
     /// Change the width of rendered lines to the specified value
     inline void setLineWidth(F32 width) override;
     /// Restore the width of rendered lines to the previously set value
     inline void restoreLineWidth();
-    /// Render specified function inside of a viewport of specified dimensions and
-    /// position
+    /// Render specified function inside of a viewport of specified dimensions
+    /// and position
     inline void renderInViewport(const vec4<I32>& rect,
                                  const DELEGATE_CBK<>& callback);
     void postProcessingEnabled(const bool state);
@@ -215,8 +218,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline bool drawDebugAxis() const { return _drawDebugAxis; }
 
     inline RenderStage getRenderStage() const { return _renderStage; }
-
-    /// Some Scene Node Types are excluded from certain operations (lights triggers,
+    /// Renders the result of plotting the specified 2D graph
+    void plot2DGraph(const Util::GraphPlot2D& plot2D,
+                     const vec4<U8>& color) const;
+    /// Renders the result of plotting the specified 3D graph
+    void plot3DGraph(const Util::GraphPlot3D& plot3D,
+                     const vec4<U8>& color) const;
+    /// Some Scene Node Types are excluded from certain operations (lights
+    /// triggers,
     /// etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {
         return (_stateExclusionMask & currentType) == currentType;
@@ -225,14 +234,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void setStateChangeExclusionMask(I32 stateMask) {
         _stateExclusionMask = stateMask;
     }
-
-    inline void setPrevShaderId(const U32& id) { _prevShaderId = id; }
-
-    inline U32 getPrevShaderId() const { return _prevShaderId; }
-
-    inline void setPrevTextureId(const U32& id) { _prevTextureId = id; }
-
-    inline U32 getPrevTextureId() const { return _prevTextureId; }
 
     /// Get the entire list of clipping planes
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
@@ -255,20 +256,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline Framebuffer* getRenderTarget(RenderTarget target) const {
         return _renderTarget[target];
-    }
-
-    inline ShaderProgram* activeShaderProgram() const {
-        return _activeShaderProgram;
-    }
-
-    inline void activeShaderProgram(ShaderProgram* const program) {
-        _activeShaderProgram = program;
-    }
-
-    RenderDetailLevel generalDetailLevel() const { return _generalDetailLevel; }
-
-    void generalDetailLevel(RenderDetailLevel detailLevel) {
-        _generalDetailLevel = detailLevel;
     }
 
     RenderDetailLevel shadowDetailLevel() const { return _shadowDetailLevel; }
@@ -412,12 +399,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
-    U32 _prevShaderId, _prevTextureId;
     I32 _stateExclusionMask;
     bool _drawDebugAxis;
     bool _viewportUpdate;
-    ShaderProgram* _activeShaderProgram;
-
     vectorImpl<Line> _axisLines;
     vectorImpl<Line> _axisLinesTrasnformed;
 
@@ -438,7 +422,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
                                       //testing disabled
     size_t _state2DRenderingHash;     //<Special render state for 2D rendering
     size_t _stateDepthOnlyRenderingHash;
-    mat4<F32> _textureMatrix;
     /// The interpolation factor between the current and the last frame
     D32 _interpolationFactor;
     /// Line width management
@@ -459,7 +442,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// getMatrix cache
     mat4<F32> _mat4Cache;
     /// Quality settings
-    RenderDetailLevel _generalDetailLevel;
     RenderDetailLevel _shadowDetailLevel;
 
     vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;

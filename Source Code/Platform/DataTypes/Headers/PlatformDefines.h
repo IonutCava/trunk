@@ -40,7 +40,8 @@
 #include <limits.h>
 #include <functional>
 #include <atomic>
-
+#define _USE_MATH_DEFINES
+#include <math.h>
 #if defined(OS_WINDOWS)
 #include <windows.h>
 #ifdef DELETE

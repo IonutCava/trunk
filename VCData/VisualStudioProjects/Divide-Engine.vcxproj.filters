@@ -886,6 +886,9 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\ProfileTimer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathUtil.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

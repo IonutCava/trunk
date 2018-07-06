@@ -3,6 +3,9 @@
 
 namespace Divide {
 namespace Util {
+
+static boost::thread_specific_ptr<vectorImpl<GlobalFloatEvent>> _globalFloatEvents;
+
 void getPermutations(const stringImpl& inputString,
                      vectorImpl<stringImpl>& permutationContainer) {
     permutationContainer.clear();
@@ -71,13 +74,13 @@ void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         if (yaw < -M_PI) {
             yaw = fmod(yaw, M_PI * 2.0f);
             if (yaw < -M_PI) {
-                yaw += M_PI * 2.0f;
+                yaw += static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.yaw = Angle::RadiansToDegrees(yaw);
         } else if (yaw > M_PI) {
             yaw = fmod(yaw, M_PI * 2.0f);
             if (yaw > M_PI) {
-                yaw -= M_PI * 2.0f;
+                yaw -= static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.yaw = degrees ? Angle::RadiansToDegrees(yaw) : yaw;
         }
@@ -88,13 +91,13 @@ void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         if (pitch < -M_PI) {
             pitch = fmod(pitch, M_PI * 2.0f);
             if (pitch < -M_PI) {
-                pitch += M_PI * 2.0f;
+                pitch += static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.pitch = Angle::RadiansToDegrees(pitch);
         } else if (pitch > M_PI) {
             pitch = fmod(pitch, M_PI * 2.0f);
             if (pitch > M_PI) {
-                pitch -= M_PI * 2.0f;
+                pitch -= static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.pitch =
                 degrees ? Angle::RadiansToDegrees(pitch) : pitch;
@@ -106,15 +109,61 @@ void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw,
         if (roll < -M_PI) {
             roll = fmod(roll, M_PI * 2.0f);
             if (roll < -M_PI) {
-                roll += M_PI * 2.0f;
+                roll += static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.roll = Angle::RadiansToDegrees(roll);
         } else if (roll > M_PI) {
             roll = fmod(roll, M_PI * 2.0f);
             if (roll > M_PI) {
-                roll -= M_PI * 2.0f;
+                roll -= static_cast<F32>(M_PI) * 2.0f;
             }
             inputRotation.roll = degrees ? Angle::RadiansToDegrees(roll) : roll;
+        }
+    }
+}
+
+void flushFloatEvents() {
+    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+    if( !vec ) {
+        vec = new vectorImpl<GlobalFloatEvent>();
+        _globalFloatEvents.reset(vec);
+    }
+    vec->clear();
+}
+
+void recordFloatEvent(const char* eventName, F32 eventValue, U64 timestamp) {
+    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+    if( !vec ) {
+        vec = new vectorImpl<GlobalFloatEvent>();
+        _globalFloatEvents.reset(vec);
+    }
+    GlobalFloatEvent floatEvent{ eventName, eventValue, timestamp };
+    vec->push_back(floatEvent);
+}
+
+const vectorImpl<GlobalFloatEvent>& getFloatEvents() {
+    vectorImpl<GlobalFloatEvent>* vec = _globalFloatEvents.get();
+    if (!vec) {
+        vec = new vectorImpl<GlobalFloatEvent>();
+        _globalFloatEvents.reset(vec);
+    }
+
+    return *vec;
+}
+
+void plotFloatEvents(const char* eventName,
+                     vectorImpl<GlobalFloatEvent> eventsCopy,
+                     GraphPlot2D& targetGraph) {
+    targetGraph._plotName = eventName;
+    targetGraph._coords.clear();
+    for (GlobalFloatEvent& crtEvent : eventsCopy) {
+        // direct pointer compare
+        if (eventName == crtEvent._eventName) {
+            vectorAlg::emplace_back(
+                targetGraph._coords,
+                static_cast<F32>(
+                    Time::MicrosecondsToMilliseconds(crtEvent._timestamp)),
+                crtEvent._eventValue);
         }
     }
 }

@@ -39,7 +39,7 @@
 #ifndef _CORE_MATH_PLANE_H_
 #define _CORE_MATH_PLANE_H_
 
-#include "MathVectors.h"
+#include "MathUtil.h"
 
 namespace Divide {
 

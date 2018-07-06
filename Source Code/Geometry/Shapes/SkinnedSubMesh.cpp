@@ -36,15 +36,24 @@ bool SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn) {
 
 void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
     _buildingBoundingBoxes = false;
+    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
+    currentBBStatus = true;
+    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
+    currentBBComputing = false;
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnim(
     U32 animationIndex, AnimationComponent* const animComp) {
-    typedef hashMapImpl<U32 /*frame index*/, BoundingBox> animBBs;
     const AnimEvaluator& currentAnimation =
         animComp->GetAnimationByIndex(animationIndex);
 
-    animBBs currentBBs;
+    boundingBoxPerFrame& currentBBs = _boundingBoxes[animationIndex];
+    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
+    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
+    // We might need to recompute BBs so clear any possible old values
+    currentBBs.clear();
+    currentBBStatus = false;
+    currentBBComputing = true;
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionId);
@@ -81,48 +90,43 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(
 
         bb.setComputed(true);
     }
-
-    animBBs& oldAnim = animComp->getBBoxesForAnimation(animationIndex);
-
-    oldAnim.clear();
-    oldAnim.swap(currentBBs);
 }
 
 bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn) {
     AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
+    // If anymations are paused or unavailable, keep the current BB
     if (!animComp->playAnimations()) {
-        return _buildingBoundingBoxes;
-    }
-
-    if (_buildingBoundingBoxes) {
         return true;
     }
-
+    // Attempt to get the map of BBs for the current animation
     U32 animationIndex = animComp->animationIndex();
-    AnimationComponent::boundingBoxPerFrame& animBB =
-        animComp->getBBoxesForAnimation(animationIndex);
-
-    if (animBB.empty()) {
-        if (!_buildingBoundingBoxes) {
-            _buildingBoundingBoxes = true;
-            if (USE_MUTITHREADED_LOADING) {
-                Kernel& kernel = Application::getInstance().getKernel();
-                Task* task = kernel.AddTask(
-                    1, 1,
-                    DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
-                                  this, animationIndex, animComp),
-                    DELEGATE_BIND(
-                        &SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
-                        this, animationIndex));
-                task->startTask();
-            } else {
-                buildBoundingBoxesForAnim(animationIndex, animComp);
-                buildBoundingBoxesForAnimCompleted(animationIndex);
-            }
+    boundingBoxPerFrame& animBB = _boundingBoxes[animationIndex];
+    // If the BBs are computed, set the BB for the current frame as the node BB
+    if (!animBB.empty()) {
+        // Update the BB, only if the calculation task has finished
+        if (!_boundingBoxesComputing[animationIndex]) {
+            sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+            return true;
         }
+        return false;
+    }
 
-    } else {
-        sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
+    if (!_buildingBoundingBoxes) {
+        _buildingBoundingBoxes = true;
+        if (USE_MUTITHREADED_LOADING) {
+            Kernel& kernel = Application::getInstance().getKernel();
+            Task* task = kernel.AddTask(
+                1, 1,
+                DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
+                                this, animationIndex, animComp),
+                DELEGATE_BIND(
+                    &SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
+                    this, animationIndex));
+            task->startTask();
+        } else {
+            buildBoundingBoxesForAnim(animationIndex, animComp);
+            buildBoundingBoxesForAnimCompleted(animationIndex);
+        }
     }
 
     return true;

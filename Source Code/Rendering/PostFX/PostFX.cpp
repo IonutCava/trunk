@@ -224,7 +224,8 @@ void PostFX::updateResolution(I32 width, I32 height) {
 }
 
 void PostFX::displayScene() {
-    _gfx->toggle2D(true);
+    GFX::Scoped2DRendering scoped2D(true);
+
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
 
     ShaderProgram* drawShader = nullptr;
@@ -274,7 +275,6 @@ void PostFX::displayScene() {
     }
 
     _gfx->drawPoints(1, _gfx->getDefaultStateBlock(true), drawShader);
-    _gfx->toggle2D(false);
 }
 
 void PostFX::idle() {

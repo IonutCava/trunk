@@ -45,9 +45,6 @@ class SceneAnimator;
 class SceneGraphNode;
 class AnimationComponent : public SGNComponent {
    public:
-    typedef hashMapImpl<U32 /*frame index*/, BoundingBox> boundingBoxPerFrame;
-    typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame>
-        boundingBoxPerAnimation;
     typedef hashMapImpl<U32 /*animationID*/, I32 /*last frame index*/>
         frameIndexes;
 
@@ -97,10 +94,6 @@ class AnimationComponent : public SGNComponent {
 
     inline I32 animationIndex() const { return _currentAnimIndex; }
 
-    inline boundingBoxPerFrame& getBBoxesForAnimation(U32 animationID) {
-        return _boundingBoxes[animationID];
-    }
-
     const AnimEvaluator& GetAnimationByIndex(I32 animationID) const;
 
     void resetTimers();
@@ -120,10 +113,6 @@ class AnimationComponent : public SGNComponent {
     bool _playAnimations;
     /// Animation timestamp changed
     bool _updateAnimations;
-    /// BoundingBoxes for every frame
-    boundingBoxPerFrame _bbsPerFrame;
-    /// store a map of bounding boxes for every animation at every frame
-    boundingBoxPerAnimation _boundingBoxes;
     /// used to upload bone data to the gpu
     ShaderBuffer* _boneTransformBuffer[2];
     /// used to switch bone buffers around per frame

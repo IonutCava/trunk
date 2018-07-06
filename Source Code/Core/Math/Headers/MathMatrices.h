@@ -586,7 +586,9 @@ class mat4 {
     }
 
     mat4<T> operator*(const mat4<T> &m) const {
-        return mat4<T>(Util::Mat4::multiply(this->mat, m.mat));
+        mat4<T> retValue;
+        Util::Mat4::multiply(this->mat, m.mat, retValue.mat);
+        return retValue;
     }
 
     inline T elementSum() const {

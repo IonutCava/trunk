@@ -38,10 +38,10 @@ namespace Divide {
 /// position
 inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
                                         const DELEGATE_CBK<>& callback) {
-    setViewport(rect);
+    GFX::ScopedViewport viewport(rect);
     callback();
-    restoreViewport();
 }
+
 /// Compare the current render stage flag with the given mask
 inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
     DIVIDE_ASSERT(
@@ -57,6 +57,9 @@ inline void GFXDevice::setLineWidth(F32 width) {
 }
 /// Restore the width of rendered lines to the previously set value
 inline void GFXDevice::restoreLineWidth() { setLineWidth(_previousLineWidth); }
+/// Query rasterization state
+inline bool GFXDevice::rasterizationState() { return _rasterizationEnabled; }
+
 /// Toggle hardware rasterization on or off.
 inline void GFXDevice::toggleRasterization(bool state) {
     if (_rasterizationEnabled == state) {
@@ -80,11 +83,10 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback,
 
 /// Sets the current render stage.
 ///@param stage Is used to inform the rendering pipeline what we are rendering.
-///Shadows? reflections? etc
+/// Shadows? reflections? etc
 inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
-    RenderStage prevRenderStage = _renderStage;
-    _renderStage = stage;
-    return prevRenderStage;
+    std::swap(_renderStage, stage);
+    return stage;
 }
 /// disable or enable a clip plane by index
 inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {

@@ -363,7 +363,7 @@ void Vegetation::gpuCull() {
         _cullShader->Uniform("cullType",
                              /*queryId*/ (U32)INSTANCE_CLOUD_REDUCTION);
 
-        GFX_DEVICE.toggleRasterization(false);
+        GFX::ScopedRasterizer scoped2D(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
             ->Bind(0, TextureDescriptor::Depth);
         buffer->BindFeedbackBufferRange(CulledPositionBuffer,
@@ -387,7 +387,6 @@ void Vegetation::gpuCull() {
         //_cullDrawCommand.setInstanceCount(_instanceCountTrees);
         //_cullDrawCommand.sourceBuffer(_treeGPUBuffer);
         // GFX_DEVICE.submitRenderCommand(_cullDrawCommand);
-        GFX_DEVICE.toggleRasterization(true);
     }
 }
 

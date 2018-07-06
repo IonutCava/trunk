@@ -251,12 +251,11 @@ void GFXDevice::endFrame() {
 
     if (Application::getInstance().mainLoopActive()) {
         // Render all 2D debug info and call API specific flush function
-        toggle2D(true);
+        GFX::Scoped2DRendering scoped2D(true);
         for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction :
              _2dRenderQueue) {
             callbackFunction.second();
         }
-        toggle2D(false);
 
         // Remove dead primitives in 3 steps (or we could automate this with
         // shared_ptr?):

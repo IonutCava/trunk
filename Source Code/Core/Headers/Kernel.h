@@ -175,6 +175,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static vectorImpl<U64> _threadedCallbackBuffer;
     static hashMapImpl<U64, DELEGATE_CBK<> > _threadedCallbackFunctions;
 
+    static Util::GraphPlot2D _appTimeGraph;
     // Command line arguments
     I32 _argc;
     char** _argv;

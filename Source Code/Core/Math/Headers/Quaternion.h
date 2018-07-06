@@ -67,7 +67,7 @@ class Quaternion {
         F32 toleranceRad = Angle::DegreesToRadians(tolerance);
 
         return (std::abs(angleRad) <= toleranceRad) ||
-               FLOAT_COMPARE_TOLERANCE(angleRad, M_PI, toleranceRad);
+               FLOAT_COMPARE_TOLERANCE(angleRad, static_cast<F32>(M_PI), toleranceRad);
     }
 
     inline void set(const vec4<T>& values) { _elements.set(values); }
@@ -325,12 +325,12 @@ class Quaternion {
 
         if (test > (0.5f - EPSILON_F32) * unit) {  // singularity at north pole
             heading = 2 * std::atan2(x, w);
-            attitude = M_PIDIV2;
+            attitude = static_cast<T>(M_PI_2);
             bank = 0;
         } else if (test <
                    -(0.5f - EPSILON_F32) * unit) {  // singularity at south pole
             heading = -2 * std::atan2(x, w);
-            attitude = -M_PIDIV2;
+            attitude = -static_cast<T>(M_PI_2);
             bank = 0;
         } else {
             T x2 = 2 * x;

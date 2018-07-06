@@ -38,6 +38,8 @@ SharedLock Kernel::_threadedCallbackLock;
 vectorImpl<U64> Kernel::_threadedCallbackBuffer;
 hashMapImpl<U64, DELEGATE_CBK<> > Kernel::_threadedCallbackFunctions;
 
+Util::GraphPlot2D Kernel::_appTimeGraph;
+
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
@@ -194,12 +196,23 @@ void Kernel::mainLoopApp() {
     Time::STOP_TIMER(s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)
+    if (GFX_DEVICE.getFrameCount() % Config::TARGET_FRAME_RATE == 0) {
+        Util::plotFloatEvents("kernel.mainLoopApp", Util::getFloatEvents(), _appTimeGraph);
+    }
+    GFX_DEVICE.renderInViewport(
+        vec4<I32>(0, 0, 256, 256),
+        DELEGATE_BIND((void (GFXDevice::*)(Util::GraphPlot2D& plot2D)) &
+                          GFXDevice::plot2DGraph,
+                      &GFX_DEVICE, _appTimeGraph));
     if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0) {
         Console::printfn(
             "GPU: [ %5.5f ] [DrawCalls: %d]",
             Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
             GFX_DEVICE.getDrawCallCount());
+
+        Util::flushFloatEvents();
     }
+    Util::recordFloatEvent("kernel.mainLoopApp", s_appLoopTimer->get(), _currentTime);
 #endif
 }
 

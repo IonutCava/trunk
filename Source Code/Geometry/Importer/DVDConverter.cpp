@@ -327,7 +327,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
-    tempSubMesh->setGeometryLimits(importBB.getMin(), importBB.getMax());
+    SubMeshDVDConverterAttorney::setGeometryLimits(*tempSubMesh, importBB.getMin(), importBB.getMax());
 
     if (_aiScenePointer->HasAnimations() && skinned) {
         // create animator from current scene and current submesh pointer in

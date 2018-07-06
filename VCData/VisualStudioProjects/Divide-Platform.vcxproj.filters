@@ -211,6 +211,9 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXState.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\ScopedStates.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -364,6 +367,9 @@
       <Filter>Video\OpenGL\GLIM</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\GFXState.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\ScopedStates.cpp">
       <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>

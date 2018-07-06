@@ -61,12 +61,9 @@ GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE) {
     _imShader = nullptr;
     _nodeBuffer = nullptr;
     _gfxDataBuffer = nullptr;
-    _activeShaderProgram = nullptr;
     _HIZConstructProgram = nullptr;
     _previewDepthMapShader = nullptr;
     // Integers
-    _prevShaderId = 0;
-    _prevTextureId = 0;
     _stateExclusionMask = 0;
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
@@ -84,7 +81,6 @@ GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE) {
     _enablePostProcessing = false;
     // Enumerated Types
     _shadowDetailLevel = DETAIL_HIGH;
-    _generalDetailLevel = DETAIL_HIGH;
     _GPUVendor = GPU_VENDOR_PLACEHOLDER;
     _apiId = GFX_RENDER_API_PLACEHOLDER;
     // Utility cameras
@@ -419,7 +415,8 @@ void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     } else if (mode == PROJECTION_MATRIX) {
         mat.set(_gpuBlock._ProjectionMatrix);
     } else if (mode == TEXTURE_MATRIX) {
-        mat.set(_textureMatrix);
+        mat.identity();
+        Console::errorfn(Locale::get("ERROR_TEXTURE_MATRIX_ACCESS"));
     } else if (mode == VIEW_INV_MATRIX) {
         _gpuBlock._ViewMatrix.getInverse(mat);
     } else if (mode == PROJECTION_INV_MATRIX) {
@@ -790,7 +787,7 @@ void GFXDevice::ConstructHIZ() {
         currentWidth = currentWidth > 0 ? currentWidth : 1;
         currentHeight = currentHeight > 0 ? currentHeight : 1;
         // Update the viewport with the new resolution
-        setViewport(vec4<I32>(0, 0, currentWidth, currentHeight));
+        GFX::ScopedViewport viewport(vec4<I32>(0, 0, currentWidth, currentHeight));
         // Bind next mip level for rendering but first restrict fetches only to
         // previous level
         _renderTarget[RENDER_TARGET_DEPTH]->SetMipLevel(
@@ -798,10 +795,6 @@ void GFXDevice::ConstructHIZ() {
         // Dummy draw command as the full screen quad is generated completely by
         // a geometry shader
         drawPoints(1, _stateDepthOnlyRenderingHash, _HIZConstructProgram);
-        // Restore the viewport to it's original value
-        // (should only be called once outside the loop, but our stack based
-        // system is preventing us from doing that
-        restoreViewport();
     }
     // Reset mipmap level range for the depth buffer
     _renderTarget[RENDER_TARGET_DEPTH]->ResetMipLevel(TextureDescriptor::Depth);
@@ -832,6 +825,28 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     tempPriv->_canZombify = allowPrimitiveRecycle;
 
     return tempPriv;
+}
+/// Renders the result of plotting the specified 2D graph
+void GFXDevice::plot2DGraph(const Util::GraphPlot2D& plot2D, const vec4<U8>& color) const {
+    Util::GraphPlot3D plot3D;
+    plot3D._plotName = plot2D._plotName;
+    plot3D._coords.reserve(plot2D._coords.size());
+    for (const vec2<F32>& coords : plot2D._coords){
+        vectorAlg::emplace_back(plot3D._coords, coords.x, coords.y, 0.0f);
+    }
+    plot3DGraph(plot3D, color);
+}
+
+/// Renders the result of plotting the specified 3D graph
+void GFXDevice::plot3DGraph(const Util::GraphPlot3D& plot3D, const vec4<U8>& color) const {
+    vectorImpl<Line> plotLines;
+    plotLines.reserve(plot3D._coords.size());
+    vectorAlg::vecSize coordCount = plot3D._coords.size();
+    for (vectorAlg::vecSize i = 0; i < coordCount - 1; ++i) {
+        const vec3<F32>& startCoord = plot3D._coords[i];
+        const vec3<F32>& endCoord = plot3D._coords[i + 1];
+        vectorAlg::emplace_back(plotLines, startCoord, endCoord, color);
+    }
 }
 
 /// Draw the outlines of a box defined by min and max as extents using the

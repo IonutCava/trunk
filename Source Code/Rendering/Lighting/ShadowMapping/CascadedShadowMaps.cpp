@@ -263,7 +263,7 @@ void CascadedShadowMaps::postRender() {
         return;
     }
 
-    GFX_DEVICE.toggle2D(true);
+    GFX::Scoped2DRendering scoped2D(true);
 
     _blurDepthMapShader->bind();
 
@@ -293,8 +293,6 @@ void CascadedShadowMaps::postRender() {
                               _blurDepthMapShader);
     }
     _depthMap->End();
-
-    GFX_DEVICE.toggle2D(false);
 }
 
 bool CascadedShadowMaps::BindInternal(U8 offset) {

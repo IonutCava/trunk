@@ -55,6 +55,9 @@ and a name.
 namespace Divide {
 
 class SubMesh : public Object3D {
+    friend class SubMeshMeshAttorney;
+    friend class SubMeshDVDConverterAttorney;
+
    public:
     SubMesh(const stringImpl& name, ObjectFlag flag = OBJECT_FLAG_NONE);
 
@@ -69,20 +72,10 @@ class SubMesh : public Object3D {
     /// scene->mMeshes[n] == (SubMesh with _id == n)
     inline void setId(U32 id) { _id = id; }
     inline Mesh* getParentMesh() { return _parentMesh; }
-    inline void setSceneMatrix(const mat4<F32>& sceneMatrix) {
-        _sceneRootMatrix = sceneMatrix;
-    }
 
    protected:
-    friend class Mesh;
     void setParentMesh(Mesh* const parentMesh);
 
-    friend class DVDConverter;
-    mat4<F32> _sceneRootMatrix;
-
-    inline void setGeometryLimits(const vec3<F32>& min, const vec3<F32>& max) {
-        _importBB.set(min, max);
-    }
     void getDrawCommands(SceneGraphNode* const sgn,
                          const RenderStage& currentRenderStage,
                          SceneRenderState& sceneRenderState,
@@ -95,6 +88,23 @@ class SubMesh : public Object3D {
     Mesh* _parentMesh;
     BoundingBox _importBB;
     GenericDrawCommand _drawCmd;
+};
+
+class SubMeshMeshAttorney {
+   private:
+    static void setParentMesh(SubMesh& submesh, Mesh* const parentMesh) {
+        submesh.setParentMesh(parentMesh);
+    }
+    friend class Mesh;
+};
+
+class SubMeshDVDConverterAttorney {
+   private:
+    static void setGeometryLimits(SubMesh& submesh, const vec3<F32>& min,
+                                  const vec3<F32>& max) {
+        submesh._importBB.set(min, max);
+    }
+    friend class DVDConverter;
 };
 
 };  // namespace Divide
