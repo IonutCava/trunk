@@ -39,6 +39,7 @@
 #endif
 #include <CEGUI/CEGUI.h>
 
+#include "Core/Headers/Console.h"
 #include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
@@ -66,7 +67,7 @@ class GUIConsole : public PlatformContextComponent {
     void update(const U64 deltaTimeUS);
 
     /// Add text to the console Window. Uses a text buffer if the console isn't ready for display yet
-    void printText(const char* output, bool error);
+    void printText(const Console::OutputEntry& entry);
 
    protected:
     void RegisterHandlers();  //< Register our handler functions
@@ -81,13 +82,13 @@ class GUIConsole : public PlatformContextComponent {
     void CreateCEGUIWindow();  //< The function which will load in the CEGUI
                                //Window and register event handlers
     // Post the message to the ChatHistory listbox with a white colour default
-    void OutputText(const char* inMsg, const bool error = false);
+    void OutputText(const Console::OutputEntry& text);
 
    protected:
     /// used to check if the console is ready
     bool _init;
     bool _closing;
-    bool _lastMsgError;
+    Console::EntryType _lastMsgType;
     CEGUI::String _lastMsg;
     /// pointer to the editBox to reduce typing and casting
     CEGUI::Editbox* _editBox;
@@ -107,7 +108,9 @@ class GUIConsole : public PlatformContextComponent {
     I16 _inputHistoryIndex;
     
     SharedLock _outputLock;
-    boost::circular_buffer<std::pair<stringImpl, bool>> _outputBuffer;
+    boost::circular_buffer<Console::OutputEntry> _outputBuffer;
+
+    size_t _consoleCallbackIndex;
 };
 
 };  // namespace Divide

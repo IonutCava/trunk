@@ -50,6 +50,7 @@ namespace Attorney {
 class PanelManager;
 class DisplayWindow;
 class PlatformContext;
+class ApplicationOutput;
 class ImwWindowManagerDivide;
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
@@ -135,6 +136,7 @@ class Editor : public PlatformContextComponent,
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
+    void drawOutputWindow();
 
   private:
     Theme _currentTheme;
@@ -146,6 +148,7 @@ class Editor : public PlatformContextComponent,
     I64 _activeWindowGUID = -1;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
     std::unique_ptr<PanelManager> _panelManager;
+    std::unique_ptr<ApplicationOutput> _applicationOutput;
 
     bool              _running;
     bool              _sceneHovered;
@@ -159,6 +162,7 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
+    size_t _consoleCallbackIndex;
 }; //Editor
 
 namespace Attorney {
@@ -176,6 +180,9 @@ namespace Attorney {
         public: //ToDo: fix this -Ionut
         static void setScenePreviewRect(Editor& editor, const vec4<I32>& rect, bool hovered) {
             editor.setScenePreviewRect(rect, hovered);
+        }
+        static void drawOutputWindow(Editor& editor) {
+            editor.drawOutputWindow();
         }
 
         friend class Divide::PanelManager;

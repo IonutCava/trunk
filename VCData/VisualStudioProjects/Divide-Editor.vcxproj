@@ -66,6 +66,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\ImguiExtras.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Sample.cpp" />
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\ApplicationOutput.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\PanelManager.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\PanelManagerPane.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\Widgets\TabbedWindow.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
     <ClInclude Include="..\..\Source Code\Editor\Headers\Sample.h" />
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ApplicationOutput.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\PanelManager.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\PanelManagerPane.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\TabbedWindow.h" />

@@ -188,6 +188,9 @@
     <ClCompile Include="..\..\Source Code\Editor\Widgets\TabbedWindow.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\ApplicationOutput.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h">
@@ -401,6 +404,9 @@
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\TabbedWindow.h">
+      <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ApplicationOutput.h">
       <Filter>Widgets\Headers</Filter>
     </ClInclude>
   </ItemGroup>

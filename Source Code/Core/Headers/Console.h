@@ -38,23 +38,31 @@ constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
 constexpr int MAX_CONSOLE_ENTRIES = 128;
 
 class Console : private NonCopyable {
-    typedef std::function<void(const char*, bool)> ConsolePrintCallback;
-
    public:
+     enum class EntryType : U8 {
+         Info = 0,
+         Warning,
+         Error,
+         Command
+    };
+
+   
     struct OutputEntry {
-        OutputEntry() : _error(false)
+        OutputEntry() : _type(EntryType::Info)
         {
         }
 
-        OutputEntry(const stringImplBest& text, bool error)
+        OutputEntry(const stringImplBest& text, EntryType type)
             : _text(text),
-             _error(error)
+              _type(type)
         {
         }
 
         stringImplBest _text;
-        bool _error;
+        EntryType _type;
     };
+
+    typedef std::function<void(const Console::OutputEntry&)> ConsolePrintCallback;
 
    public:
     static void start();
@@ -67,6 +75,10 @@ class Console : private NonCopyable {
     template <typename... T>
     inline static void printf(const char* format, T&&... args);
     template <typename... T>
+    inline static void warnfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static void warnf(const char* format, T&&... args);
+    template <typename... T>
     inline static void errorfn(const char* format, T&&... args);
     template <typename... T>
     inline static void errorf(const char* format, T&&... args);
@@ -76,14 +88,22 @@ class Console : private NonCopyable {
     template <typename... T>
     inline static void d_printf(const char* format, T&&... args);
     template <typename... T>
+    inline static void d_warnfn(const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_warnf(const char* format, T&&... args);
+    template <typename... T>
     inline static void d_errorfn(const char* format, T&&... args);
     template <typename... T>
     inline static void d_errorf(const char* format, T&&... args);
-    
+
     template <typename... T>
     inline static void printfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
     inline static void printf(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void warnfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void warnf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
     inline static void errorfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
@@ -92,6 +112,10 @@ class Console : private NonCopyable {
     inline static void d_printfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
     inline static void d_printf(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_warnfn(std::ofstream& outStream, const char* format, T&&... args);
+    template <typename... T>
+    inline static void d_warnf(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
     inline static void d_errorfn(std::ofstream& outStream, const char* format, T&&... args);
     template <typename... T>
@@ -108,19 +132,27 @@ class Console : private NonCopyable {
 
     static bool errorStreamEnabled() { return _errorStreamEnabled; }
     static void toggleErrorStream(const bool state) { _errorStreamEnabled = state; }
-    static void bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
-        _guiConsoleCallback = guiConsoleCallback;
+    static size_t bindConsoleOutput(const ConsolePrintCallback& guiConsoleCallback) {
+        _guiConsoleCallbacks.push_back(guiConsoleCallback);
+        return _guiConsoleCallbacks.size() - 1;
     }
 
+    static bool unbindConsoleOutput(size_t index) {
+        if (index < _guiConsoleCallbacks.size()) {
+            _guiConsoleCallbacks.erase(std::begin(_guiConsoleCallbacks) + index);
+            return true;
+        }
+        return false;
+    }
    protected:
     static const char* formatText(const char* format, ...);
-    static void output(const char* text, const bool newline, const bool error);
-    static void output(std::ostream& outStream, const char* text, const bool newline, const bool error);
-    static void decorate(std::ostream& outStream, const char* text, const bool newline, const bool error);
+    static void output(const char* text, const bool newline, const EntryType type);
+    static void output(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
+    static void decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
     static void outThread();
 
    private:
-    static ConsolePrintCallback _guiConsoleCallback;
+    static vectorImpl<ConsolePrintCallback> _guiConsoleCallbacks;
     static bool _timestamps;
     static bool _threadID;
     static bool _enabled;

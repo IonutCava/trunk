@@ -17,7 +17,7 @@ bool Console::_errorStreamEnabled = true;
 
 std::thread Console::_printThread;
 std::atomic_bool Console::_running = false;
-Console::ConsolePrintCallback Console::_guiConsoleCallback;
+vectorImpl<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 
 //Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
@@ -76,7 +76,7 @@ const char* Console::formatText(const char* format, ...) {
     return textBuffer;
 }
 
-void Console::decorate(std::ostream& outStream, const char* text, const bool newline, const bool error) {
+void Console::decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type) {
     if (_timestamps) {
         outStream << "[ " << std::internal
                           << std::setw(9)
@@ -90,23 +90,23 @@ void Console::decorate(std::ostream& outStream, const char* text, const bool new
         outStream << "[ " << std::this_thread::get_id() << " ] ";
     }
 
-    outStream << (error ? " Error: " : "");
+    outStream << (type == EntryType::Error ? " Error: " : type == EntryType::Warning ? " Warning: " : "");
     outStream << text;
     outStream << (newline ? "\n" : "");
 }
 
-void Console::output(std::ostream& outStream, const char* text, const bool newline, const bool error) {
+void Console::output(std::ostream& outStream, const char* text, const bool newline, const EntryType type) {
     if (_enabled) {
-        decorate(outStream, text, newline, error);
+        decorate(outStream, text, newline, type);
     }
 }
 
-void Console::output(const char* text, const bool newline, const bool error) {
+void Console::output(const char* text, const bool newline, const EntryType type) {
     if (_enabled) {
         stringstreamImplBest outStream;
-        decorate(outStream, text, newline, error);
+        decorate(outStream, text, newline, type);
 
-        OutputEntry entry(outStream.str() , error);
+        OutputEntry entry(outStream.str() , type);
 
         //moodycamel::ProducerToken ptok(outBuffer());
         WAIT_FOR_CONDITION_TIMEOUT(outBuffer().enqueue(/*ptok, */entry),
@@ -126,10 +126,10 @@ void Console::outThread() {
 
         OutputEntry entry;
         if (outBuffer().try_dequeue(/*ctok, */entry)) {
-            ((entry._error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+            ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
-            if (_guiConsoleCallback) {
-                _guiConsoleCallback(entry._text.c_str(), entry._error);
+            for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
+                cbk(entry);
             }
         } else {
             std::this_thread::yield();

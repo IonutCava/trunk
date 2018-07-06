@@ -714,11 +714,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     vec4<U8>(255,  50, 0, 255),                    // Colour
                                     "PROFILE DATA",                                // Text
                                     12);                                           // Font size
-
-    Console::bindConsoleOutput([this](const char* output, bool error) {
-                                   _platformContext->gui().getConsole().printText(output, error);
-                               });
-    
+   
     ShadowMap::initShadowMaps(_platformContext->gfx());
     _sceneManager->init(*_platformContext, *_resCache);
     if (!_sceneManager->switchScene(entryData.startupScene, true, false)) {
@@ -753,7 +749,6 @@ void Kernel::shutdown() {
     Script::onShutdown();
     _sceneManager.reset();
     // release the scene
-    Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     _platformContext->gui().destroy();  /// Deactivate GUI 
     Camera::destroyPool();
     ShadowMap::clearShadowMaps(_platformContext->gfx());

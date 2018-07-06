@@ -3,9 +3,11 @@
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
 #include "Editor/Widgets/Headers/PanelManager.h"
+#include "Editor/Widgets/Headers/ApplicationOutput.h"
 #include "Editor/Widgets/Headers/ImWindowManagerDivide.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -49,6 +51,7 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _scenePreviewFocused(false),
       _scenePreviewWasFocused(false),
       _activeWindowGUID(-1),
+      _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
@@ -56,6 +59,8 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
     _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
 #endif
     _panelManager = std::make_unique<PanelManager>(context);
+    _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
+    
     _mainWindow = nullptr;
     REGISTER_FRAME_LISTENER(this, 99999);
 }
@@ -147,6 +152,10 @@ bool Editor::init() {
 
     ImGui::ResetStyle(imguiThemeMap[to_base(_currentTheme)]);
 
+    _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
+        _applicationOutput->printText(entry);
+    });
+
 #if !defined(DISABLE_IMWINDOW)
     if (_windowManager->Init()) {
         InitSample();
@@ -160,6 +169,7 @@ bool Editor::init() {
 }
 
 void Editor::close() {
+    Console::unbindConsoleOutput(_consoleCallbackIndex);
     _panelManager.reset();
     ImGui::Shutdown();
     _fontTexture.reset();
@@ -289,6 +299,12 @@ bool Editor::frameEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
 
     return true;
+}
+
+void Editor::drawOutputWindow() {
+    if (_applicationOutput) {
+        _applicationOutput->draw();
+    }
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data

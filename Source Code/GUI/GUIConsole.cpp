@@ -33,18 +33,24 @@ GUIConsole::GUIConsole(PlatformContext& context, ResourceCache& cache)
       _init(false),
       _closing(false),
       _editBox(nullptr),
-      _lastMsgError(false),
+      _lastMsgType(Console::EntryType::Info),
       _inputHistoryIndex(0),
+      _consoleCallbackIndex(0),
       _outputWindow(nullptr),
       _consoleWindow(nullptr),
       _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES)
 {
     // we need a default command parser, so just create it here
     _cmdParser = MemoryManager_NEW GUIConsoleCommandParser(_context, cache);
+
+    _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
+        printText(entry);
+    });
 }
 
 GUIConsole::~GUIConsole()
 {
+    Console::unbindConsoleOutput(_consoleCallbackIndex);
     _closing = true;
 
     if (_consoleWindow) {
@@ -162,9 +168,9 @@ void GUIConsole::setVisible(bool visible) {
         _editBox->setText("");
     }
 
-    printText(visible ? "Toggling console display: ON"
-                      : "Toggling console display: OFF",
-              false);
+    printText(Console::OutputEntry(visible ? "Toggling console display: ON"
+                                           : "Toggling console display: OFF",
+                                   Console::EntryType::Info));
     if (_outputWindow->getItemCount() > 0 && visible) {
         _outputWindow->ensureItemIsVisible(
             _outputWindow->getListboxItemFromIndex(
@@ -179,20 +185,24 @@ bool GUIConsole::isVisible() {
     return _consoleWindow->isVisible();
 }
 
-void GUIConsole::printText(const char* output, bool error) {
+void GUIConsole::printText(const Console::OutputEntry& entry) {
     WriteLock w_lock(_outputLock);
-    _outputBuffer.push_back(std::make_pair(output, error));
+    _outputBuffer.push_back(entry);
 }
 
-void GUIConsole::OutputText(const char* inMsg, const bool error) {
+void GUIConsole::OutputText(const Console::OutputEntry& text) {
     if (_outputWindow->getItemCount() == _CEGUI_MAX_CONSOLE_ENTRIES - 1) {
         _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
     }
 
     CEGUI::FormattedListboxTextItem* crtItem =
         new CEGUI::FormattedListboxTextItem(
-            CEGUI::String(inMsg), error ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
-                                        : CEGUI::Colour(0.4f, 0.4f, 0.3f),
+            CEGUI::String(text._text),
+            (text._type == Console::EntryType::Error 
+                         ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
+                         : text._type == Console::EntryType::Warning 
+                                      ? CEGUI::Colour(1.0f, 1.0f, 0.0f)
+                                      : CEGUI::Colour(0.4f, 0.4f, 0.3f)),
             CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
 
     crtItem->setTextParsingEnabled(false);
@@ -213,18 +223,16 @@ void GUIConsole::update(const U64 deltaTimeUS) {
         size_t entryCount = _outputBuffer.size();
         if (entryCount > 0) {
             for(size_t i = 0; i < entryCount; ++i) {
-                const std::pair<stringImpl, bool>& message = _outputBuffer[i];
+                const Console::OutputEntry& message = _outputBuffer[i];
 
-                bool error = message.second;
-                if (_lastMsgError != error) {
-                    _lastMsgError = error;
-                    OutputText(_lastMsg.c_str(), _lastMsgError);
+                Console::EntryType type = message._type;
+                if (_lastMsgType != type) {
+                    _lastMsgType = type;
+                    OutputText(message);
                     _lastMsg.clear();
                 }
-                if (error) {
-                    _lastMsg.append("Error: ");
-                }
-                _lastMsg.append(message.first.c_str());
+         
+                _lastMsg.append(message._text.c_str());
                 _lastMsg.append("\n");
             }
             UpgradeToWriteLock uw_lock(ur_lock);
@@ -233,7 +241,7 @@ void GUIConsole::update(const U64 deltaTimeUS) {
     }
 
     if (!_lastMsg.empty()) {
-        OutputText(_lastMsg.c_str(), _lastMsgError);
+        OutputText(Console::OutputEntry(_lastMsg.c_str(), _lastMsgType));
         _lastMsg.clear();
     }
 }

@@ -1001,7 +1001,7 @@ namespace Divide {
                 ImGui::Text("%s\n", wd.name);
             } else if (strcmp(wd.name, DockedWindowNames[4]) == 0) {
                 // Draw Output Window
-                ImGui::Text("%s\n", wd.name);
+                Attorney::EditorPanelManager::drawOutputWindow(context().editor());
             } else if (strcmp(wd.name, "Preferences") == 0) {
                 ImGui::DragFloat("Window Alpha##WA1", &_manager->getDockedWindowsAlpha(), 0.005f, -0.01f, 1.0f, _manager->getDockedWindowsAlpha() < 0.0f ? "(default)" : "%.3f");
                 bool border = _manager->getDockedWindowsBorder();
