@@ -271,8 +271,7 @@ void ParticleEmitter::uploadToGPU() {
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), readOffset, GFXDataFormat::FLOAT_32);
-    _particleGPUBuffer->getDrawAttribDescriptor(
-                            to_uint(AttribLocation::VERTEX_COLOR))
+    _particleGPUBuffer->getDrawAttribDescriptor(to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 4 * sizeof(U8), readOffset, GFXDataFormat::UNSIGNED_BYTE);
 
     _writeOffset = (_writeOffset + 1) % 3;

@@ -65,6 +65,17 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
     return formatted.get();
 }
 
+void CStringRemoveChar(char* str, char charToRemove) {
+    char *src, *dst;
+    for (src = dst = str; *src != '\0'; src++) {
+        *dst = *src;
+        if (*dst != charToRemove) {
+            dst++;
+        }
+    }
+    *dst = '\0';
+}
+
 vec4<U8> ToByteColor(const vec4<F32>& floatColor) {
     return vec4<U8>(ToByteColor(floatColor.rgb()),
                     FLOAT_TO_CHAR(floatColor.a));

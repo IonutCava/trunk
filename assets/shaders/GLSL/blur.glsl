@@ -4,8 +4,13 @@ out vec2 _texCoord;
 void main(void)
 {
     vec2 uv = vec2(0,0);
-    if((gl_VertexID & 1) != 0)uv.x = 1;
-    if((gl_VertexID & 2) != 0)uv.y = 1;
+    if((gl_VertexID & 1) != 0) {
+        uv.x = 1;
+    }
+
+    if((gl_VertexID & 2) != 0) {
+        uv.y = 1;
+    }
 
     _texCoord = uv * 2;
     gl_Position.xy = uv * 4 - 1;
@@ -98,6 +103,7 @@ void main() {
 
 void main(void)
 {
+
 }
 
 

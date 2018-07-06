@@ -75,6 +75,4 @@ void main()
         dvd_drawCommands[ident].instanceCount = 0;
         return;
     }
-
-    dvd_drawCommands[ident].instanceCount = 1;
 }

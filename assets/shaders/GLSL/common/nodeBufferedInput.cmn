@@ -10,7 +10,7 @@ struct NodeData {
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
 {
-    NodeData dvd_Matrices[];
+    NodeData dvd_Matrices[MAX_VISIBLE_NODES + 1];
 };
 
 #define dvd_WorldMatrix   dvd_Matrices[dvd_drawID]._matrix[0]
@@ -41,10 +41,6 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._matrix[2][2].rgb
 #define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._matrix[2][3].rgb
 #define dvd_MatShininess   dvd_Matrices[dvd_drawID]._matrix[2][3].w
-
-#else
-
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 
 #endif
 
