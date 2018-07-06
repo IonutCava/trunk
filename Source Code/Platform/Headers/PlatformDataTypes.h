@@ -90,6 +90,12 @@ enum class CallbackParam : U32 {
     TYPE_VOID
 };
 
+template <typename From, typename To>
+struct static_caster
+{
+    To operator()(From p) { return static_cast<To>(p); }
+};
+
 /*
 template<typename Enum>
 constexpr U32 operator"" _u32 ( Enum value )

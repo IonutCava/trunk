@@ -90,19 +90,17 @@ void Quadtree::Build(GFXDevice& context,
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;
-    vec3<U32> firstTri, secondTri;
+    vectorImpl<vec3<U32>>& triangles = terrain->getTriangles();
+    triangles.reserve(terrainHeight * terrainWidth * 2);
+
     I32 vertexIndex = -1;
     for (U32 j = 0; j < (terrainHeight - 1); ++j) {
         for (U32 i = 0; i < (terrainWidth - 1); ++i) {
             vertexIndex = (j * terrainWidth) + i;
             // Top triangle (T0)
-            firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1,
-                         vertexIndex + 1);
+            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
             // Bottom triangle (T1)
-            secondTri.set(vertexIndex, vertexIndex + terrainWidth,
-                          vertexIndex + terrainWidth + 1);
-            terrain->addTriangle(firstTri);
-            terrain->addTriangle(secondTri);
+            triangles.emplace_back(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
         }
     }
 }

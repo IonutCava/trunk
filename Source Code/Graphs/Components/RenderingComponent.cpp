@@ -802,7 +802,7 @@ void RenderingComponent::drawDebugAxis() {
 
     PhysicsComponent* const transform = _parentSGN.get<PhysicsComponent>();
     if (transform) {
-        mat4<F32> tempOffset(GetMatrix(transform->getOrientation()));
+        mat4<F32> tempOffset(GetMatrix(transform->getOrientation()), false);
         tempOffset.setTranslation(transform->getPosition());
         _axisGizmo->worldMatrix(tempOffset);
     } else {

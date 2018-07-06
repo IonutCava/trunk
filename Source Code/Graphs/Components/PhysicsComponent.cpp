@@ -282,7 +282,7 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D64 interpolationFactor) {
         SceneGraphNode_wptr grandParentPtr = _parentSGN.getParent();
         _worldMatrixInterp.set(getLocalPosition(interpolationFactor),
                                getLocalScale(interpolationFactor),
-                               GetMatrix(getLocalOrientation(interpolationFactor)));
+                               mat4<F32>(GetMatrix(getLocalOrientation(interpolationFactor)), false));
         if (!grandParentPtr.expired()) {
             _worldMatrixInterp *= grandParentPtr.lock()->get<PhysicsComponent>()->getWorldMatrix(interpolationFactor);
         }

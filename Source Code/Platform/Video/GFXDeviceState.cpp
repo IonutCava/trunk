@@ -101,8 +101,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _cubeCamera = Camera::createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
     _dualParaboloidCamera = Camera::createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
 
-    _2DCamera->lockView(true);
-
     // Create general purpose render state blocks
     RenderStateBlock::init();
     RenderStateBlock defaultState;

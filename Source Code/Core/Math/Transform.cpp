@@ -43,7 +43,7 @@ const mat4<F32>& Transform::getMatrix() {
             //    1. Scale
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
-            _worldMatrix *= GetMatrix(_transformValues._orientation);
+            _worldMatrix *= mat4<F32>(GetMatrix(_transformValues._orientation), false);
             _rebuildMatrix = false;
         }
         //    3. Translate

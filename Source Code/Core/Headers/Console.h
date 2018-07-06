@@ -39,7 +39,7 @@
 #include <functional>
 #include <atomic>
 #include <fstream>
-#include <ConcurrentQueue/blockingconcurrentqueue.h>
+#include <ConcurrentQueue/concurrentqueue.h>
 
 namespace Divide {
 
@@ -124,7 +124,7 @@ class Console : private NonCopyable {
     static bool _enabled;
     static std::atomic_bool _running;
     static std::thread _printThread;
-    static moodycamel::BlockingConcurrentQueue<OutputEntry> _outputBuffer;
+    static moodycamel::ConcurrentQueue<OutputEntry> _outputBuffer;
 };
 
 };  // namespace Divide

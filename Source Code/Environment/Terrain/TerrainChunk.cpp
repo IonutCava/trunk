@@ -59,6 +59,7 @@ void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimensio
 
     for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
         ComputeIndicesArray(i, depth, pos, HMsize);
+        _terrainVB->addIndices(_indice[i], true);
     }
 
     F32 height = 0.0f;
@@ -110,22 +111,15 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
     _indice[lod].reserve(nIndice);
 
     U32 iOffset = 0;
-    U32 indexA = 0;
-    U32 indexB = 0;
     U32 jOffset = 0;
     for (U16 j = 0; j < nHMHeight - 1; j++) {
         jOffset = j * (offset) + nHMOffsetY;
         for (U16 i = 0; i < nHMWidth; i++) {
             iOffset = i * (offset) + nHMOffsetX;
-            indexA = iOffset + jOffset * nHMTotalWidth;
-            indexB = iOffset + (jOffset + (offset)) * nHMTotalWidth;
-            _indice[lod].push_back(indexA);
-            _indice[lod].push_back(indexB);
-            _terrainVB->addIndex(indexA);
-            _terrainVB->addIndex(indexB);
+            _indice[lod].push_back(iOffset + jOffset * nHMTotalWidth);
+            _indice[lod].push_back(iOffset + (jOffset + (offset)) * nHMTotalWidth);
         }
         _indice[lod].push_back(Config::PRIMITIVE_RESTART_INDEX_L);
-        _terrainVB->addRestartIndex();
     }
 
     if (lod > 0) {

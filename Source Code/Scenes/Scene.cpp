@@ -442,7 +442,7 @@ void Scene::toggleFlashlight(U8 playerIndex) {
                                  to_const_U32(SGNComponent::ComponentType::RENDERING) |
                                  to_const_U32(SGNComponent::ComponentType::NETWORKING);
 
-    SceneGraphNode_ptr flashLight = _flashLight[playerIndex];
+    SceneGraphNode_ptr& flashLight = _flashLight[playerIndex];
     if (!flashLight) {
         ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
         tempLightDesc.setEnumValue(to_const_U32(LightType::SPOT));
@@ -452,8 +452,13 @@ void Scene::toggleFlashlight(U8 playerIndex) {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColour(DefaultColours::WHITE());
-        flashLight = _sceneGraph->getRoot().addNode(tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
-        hashAlg::emplace(_flashLight, playerIndex, flashLight);
+        flashLight = _sceneGraph->getRoot().addNode(tempLight,
+                                                    lightMask,
+                                                    PhysicsGroup::GROUP_IGNORE);
+        hashAlg::emplace(_flashLight,
+                         playerIndex,
+                         flashLight);
+                     
     }
 
     flashLight->getNode<Light>()->toggleEnabled();
@@ -724,7 +729,15 @@ bool Scene::load(const stringImpl& name) {
     loadXMLAssets();
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this, std::placeholders::_1));
 
-    WAIT_FOR_CONDITION(_loadingTasks == 0);
+    U32 totalLoadingTasks = _loadingTasks;
+    Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
+    while (totalLoadingTasks > 0) {
+        if (totalLoadingTasks != _loadingTasks) {
+            totalLoadingTasks = _loadingTasks;
+            Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
+        }
+        std::this_thread::yield();
+    }
 
     _loadComplete = true;
     return _loadComplete;

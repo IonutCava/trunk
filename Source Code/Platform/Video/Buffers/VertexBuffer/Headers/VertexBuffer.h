@@ -184,10 +184,34 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         }
     }
 
-    inline void addRestartIndex() {
-        _primitiveRestartEnabled = true;
+    template <typename T>
+    inline void addIndices(const vectorImplBest<T>& indices, bool containsRestartIndex) {
         if (usesLargeIndices()) {
-        	addIndex(Config::PRIMITIVE_RESTART_INDEX_L);
+            std::transform(std::cbegin(indices),
+                           std::cend(indices),
+                           std::back_inserter(_hardwareIndicesL),
+                           static_caster<T, U32>());
+                           
+        } else {
+            std::transform(std::cbegin(indices),
+                           std::cend(indices),
+                           std::back_inserter(_hardwareIndicesS),
+                           static_caster<T, U16>());
+        }
+
+        if (containsRestartIndex) {
+            hasRestartIndex(true);
+        }
+    }
+
+    inline void hasRestartIndex(bool state) {
+        _primitiveRestartEnabled = state;
+    }
+
+    inline void addRestartIndex() {
+        hasRestartIndex(true);
+        if (usesLargeIndices()) {
+            addIndex(Config::PRIMITIVE_RESTART_INDEX_L);
         } else {
             addIndex(Config::PRIMITIVE_RESTART_INDEX_S);
         }

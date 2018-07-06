@@ -141,11 +141,16 @@ void VertexBuffer::fromBuffer(VertexBuffer& other) {
     _staticBuffer = other._staticBuffer;
     _format = other._format;
     _partitions = other._partitions;
-    _hardwareIndicesL = other._hardwareIndicesL;
-    _hardwareIndicesS = other._hardwareIndicesS;
-    _data = other._data;
     _primitiveRestartEnabled = other._primitiveRestartEnabled;
     _attribDirty = other._attribDirty;
+
+    //_hardwareIndicesL = other._hardwareIndicesL;
+    //_hardwareIndicesS = other._hardwareIndicesS;
+    //_data = other._data;
+
+    unchecked_copy(_hardwareIndicesL, other._hardwareIndicesL);
+    unchecked_copy(_hardwareIndicesS, other._hardwareIndicesS);
+    unchecked_copy(_data, other._data);
 }
 
 bool VertexBuffer::deserialize(ByteBuffer& dataIn) {

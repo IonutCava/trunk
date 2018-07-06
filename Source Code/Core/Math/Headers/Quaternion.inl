@@ -191,7 +191,7 @@ inline Quaternion<F32> Quaternion<F32>::operator*(const Quaternion<F32>& rq) con
 
 template <typename T>
 inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& rq) {
-    (*this) = rq * (*this);
+    (*this) = (*this) * rq;
     return (*this);
 }
 
@@ -306,13 +306,12 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
 
 template <typename T>
 void Quaternion<T>::fromAxisAngle(const vec3<T>& v, Angle::DEGREES<T> angle) {
-    Angle::RADIANS<T> angleRad = Angle::to_RADIANS(angle);
+    Angle::RADIANS<T> angleHAlfRad = Angle::to_RADIANS(angle) * 0.5f;
 
-    angleRad *= 0.5f;
     vec3<T> vn(v);
     vn.normalize();
 
-    _elements.set(vn * std::sin(angleRad), std::cos(angleRad));
+    _elements.set(vn * std::sin(angleHAlfRad), std::cos(angleHAlfRad));
 }
 
 template <typename T>
@@ -415,30 +414,33 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 }
 
 template <typename T>
-void Quaternion<T>::getMatrix(mat4<F32>& outMatrix) const {
+void Quaternion<T>::getMatrix(mat3<F32>& outMatrix) const {
     const T& x = X();
     const T& y = Y();
     const T& z = Z();
     const T& w = W();
+    T fTx = x + x;
+    T fTy = y + y;
+    T fTz = z + z;
+    T fTwx = fTx*w;
+    T fTwy = fTy*w;
+    T fTwz = fTz*w;
+    T fTxx = fTx*x;
+    T fTxy = fTy*x;
+    T fTxz = fTz*x;
+    T fTyy = fTy*y;
+    T fTyz = fTz*y;
+    T fTzz = fTz*z;
 
-    T xx = x * x;
-    T xy = x * y;
-    T xz = x * z;
-    T xw = x * w;
-    T yy = y * y;
-    T yz = y * z;
-    T yw = y * w;
-    T zz = z * z;
-    T zw = z * w;
-    outMatrix.mat[0] = 1 - 2 * (yy + zz);
-    outMatrix.mat[1] = 2 * (xy - zw);
-    outMatrix.mat[2] = 2 * (xz + yw);
-    outMatrix.mat[4] = 2 * (xy + zw);
-    outMatrix.mat[5] = 1 - 2 * (xx + zz);
-    outMatrix.mat[6] = 2 * (yz - xw);
-    outMatrix.mat[8] = 2 * (xz - yw);
-    outMatrix.mat[9] = 2 * (yz + xw);
-    outMatrix.mat[10] = 1 - 2 * (xx + yy);
+    outMatrix.m[0][0] = 1.0f - (fTyy + fTzz);
+    outMatrix.m[0][1] =         fTxy - fTwz;
+    outMatrix.m[0][2] =         fTxz + fTwy;
+    outMatrix.m[1][0] =         fTxy + fTwz;
+    outMatrix.m[1][1] = 1.0f - (fTxx + fTzz);
+    outMatrix.m[1][2] =         fTyz - fTwx;
+    outMatrix.m[2][0] =         fTxz - fTwy;
+    outMatrix.m[2][1] =         fTyz + fTwx;
+    outMatrix.m[2][2] = 1.0f - (fTxx + fTyy);
 }
 
 template <typename T>
@@ -449,7 +451,10 @@ void Quaternion<T>::getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const 
 
 template <typename T>
 void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
-    T heading = 0, attitude = 0, bank = 0;
+    T& heading = euler.yaw;
+    T& attitude = euler.roll;
+    T& bank = euler.pitch;
+
     const T& x = X();
     const T& y = Y();
     const T& z = Z();
@@ -478,10 +483,109 @@ void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
         attitude = std::asin(2 * test / unit);
         bank = std::atan2(x2 * w - y2 * z, -sqx + sqy - sqz + sqw);
     }
-    // Convert back from Z = pitch to Z = roll
-    euler.yaw = heading;
-    euler.pitch = bank;
-    euler.roll = attitude;
+}
+
+template <typename T>
+void Quaternion<T>::fromAxes(const vec3<T>* axis) {
+
+    mat3<T> rot;
+    for (U8 col = 0; col < 3; col++) {
+        rot.setCol(iCol, axis[iCol]);
+    }
+
+    fromMatrix(rot);
+}
+
+template <typename T>
+void Quaternion<T>::fromAxes(const vec3<T>& xAxis, const vec3<T>& yAxis, const vec3<T>& zAxis) {
+
+    mat3<T> rot;
+    
+    rot.setCol(0, xAxis);
+    rot.setCol(1, yAxis);
+    rot.setCol(2, zAxis);
+
+    fromMatrix(rot);
+}
+
+template <typename T>
+void Quaternion<T>::toAxes(vec3<T>* axis) const {
+    
+    mat3<T> rot
+    getMatrix(rot);
+
+    for (U8 col = 0; col < 3; col++) {
+        axis[col].set(rot.getCol(col));
+    }
+}
+
+template <typename T>
+void Quaternion<T>::toAxes(vec3<T>& xAxis, vec3<T>& yAxis, vec3<T>& zAxis) const {
+    mat3<T> rot
+    getMatrix(rot);
+    xAxis.set(rot.getCol(0));
+    yAxis.set(rot.getCol(1));
+    zAxis.set(rot.getCol(2));
+}
+
+template <typename T>
+vec3<T> Quaternion<T>::xAxis() const {
+    const T& x = X();
+    const T& y = Y();
+    const T& z = Z();
+    const T& w = W();
+
+    //T fTx = 2.0f*x;
+    T fTy = 2.0f*y;
+    T fTz = 2.0f*z;
+    T fTwy = fTy*w;
+    T fTwz = fTz*w;
+    T fTxy = fTy*x;
+    T fTxz = fTz*x;
+    T fTyy = fTy*y;
+    T fTzz = fTz*z;
+
+    return vec3<T>(1.0f - (fTyy + fTzz), fTxy + fTwz, fTxz - fTwy);
+}
+
+template <typename T>
+vec3<T> Quaternion<T>::yAxis() const {
+    const T& x = X();
+    const T& y = Y();
+    const T& z = Z();
+    const T& w = W();
+
+    T fTx = 2.0f*x;
+    T fTy = 2.0f*y;
+    T fTz = 2.0f*z;
+    T fTwx = fTx*w;
+    T fTwz = fTz*w;
+    T fTxx = fTx*x;
+    T fTxy = fTy*x;
+    T fTyz = fTz*y;
+    T fTzz = fTz*z;
+
+    return vec3<T>(fTxy - fTwz, 1.0f - (fTxx + fTzz), fTyz + fTwx);
+}
+
+template <typename T>
+vec3<T> Quaternion<T>::zAxis() const {
+    const T& x = X();
+    const T& y = Y();
+    const T& z = Z();
+    const T& w = W();
+
+    T fTx = 2.0f*x;
+    T fTy = 2.0f*y;
+    T fTz = 2.0f*z;
+    T fTwx = fTx*w;
+    T fTwy = fTy*w;
+    T fTxx = fTx*x;
+    T fTxz = fTz*x;
+    T fTyy = fTy*y;
+    T fTyz = fTz*y;
+
+    return vec3<T>(fTxz + fTwy, fTyz - fTwx, 1.0f - (fTxx + fTyy));
 }
 
 template <typename T>
@@ -556,7 +660,7 @@ inline Quaternion<T> RotationFromVToU(
     } else if (d < (1e-6f - 1.0f)) {
         if (!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
-            q.fromAxisAngle(fallbackAxis, Angle::to_RADIANS(to_F32(M_PI)));
+            q.fromAxisAngle(fallbackAxis, to_F32(M_PI));
         } else {
             // Generate an axis
             vec3<T> axis;
@@ -566,7 +670,7 @@ inline Quaternion<T> RotationFromVToU(
                 axis.cross(WORLD_Y_AXIS, v);
 
             axis.normalize();
-            q.fromAxisAngle(axis, Angle::to_RADIANS(to_F32(M_PI)));
+            q.fromAxisAngle(axis, to_F32(M_PI));
         }
     } else {
         F32 s = Divide::Sqrt((1 + d) * 2.0f);
@@ -588,15 +692,15 @@ inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32
 }
 
 template <typename T>
-inline mat4<T> GetMatrix(const Quaternion<T>& q) {
-    mat4<T> temp;
+inline mat3<T> GetMatrix(const Quaternion<T>& q) {
+    mat3<T> temp;
     q.getMatrix(temp);
     return temp;
 }
 
 template <typename T>
 inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q) {
-    vec3<T> euler;
+    vec3<Angle::RADIANS<T>> euler;
     q.getEuler(euler);
     return euler;
 }

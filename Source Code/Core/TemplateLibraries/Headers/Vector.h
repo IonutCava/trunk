@@ -66,4 +66,12 @@ void pop_front(vectorImpl<T>& vec)
     assert(!vec.empty());
     vec.erase(std::begin(vec));
 }
+
+template<typename T>
+void unchecked_copy(vectorImpl<T>& dst, const vectorImpl<T>& src)
+{
+    dst.resize(src.size());
+    memcpy(dst.data(), src.data(), src.size() * sizeof(T));
+}
+
 #endif

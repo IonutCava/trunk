@@ -287,7 +287,7 @@ class mat3 {
     template<typename U>
     mat3(const U *m) noexcept;
     template<typename U>
-    mat3(const mat2<U> &B) noexcept;
+    mat3(const mat2<U> &B, bool zeroFill) noexcept;
     mat3(const mat3 &B) noexcept;
     template<typename U>
     mat3(const mat3<U> &B) noexcept;
@@ -466,9 +466,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     mat4(const U *m) noexcept;
     template<typename U>
-    mat4(const mat2<U> &B) noexcept;
+    mat4(const mat2<U> &B, bool zeroFill) noexcept;
     template<typename U>
-    mat4(const mat3<U> &B) noexcept;
+    mat4(const mat3<U> &B, bool zeroFill) noexcept;
     mat4(const mat4 &B) noexcept;
     template<typename U>
     mat4(const mat4<U> &B) noexcept;

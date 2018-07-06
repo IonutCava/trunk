@@ -91,21 +91,11 @@ class Camera : public Resource {
     /// positive Yaw
     /// behind the camera and a negative one in front of the camera
     /// (so we invert the angle - left will turn left when facing -Z)
-    inline void rotateYaw(Angle::DEGREES<F32> angle) {
-        rotate(Quaternion<F32>(
-            _yawFixed ? _fixedYawAxis : _orientation * WORLD_Y_AXIS,
-            -angle * _cameraTurnSpeed));
-    }
+    void rotateYaw(Angle::DEGREES<F32> angle);
     /// Change camera's roll.
-    inline void rotateRoll(Angle::DEGREES<F32> angle) {
-        rotate(Quaternion<F32>(_orientation * WORLD_Z_AXIS,
-                               -angle * _cameraTurnSpeed));
-    }
+    void rotateRoll(Angle::DEGREES<F32> angle);
     /// Change camera's pitch
-    inline void rotatePitch(Angle::DEGREES<F32> angle) {
-        rotate(Quaternion<F32>(_orientation * WORLD_X_AXIS,
-                               -angle * _cameraTurnSpeed));
-    }
+    void rotatePitch(Angle::DEGREES<F32> angle);
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the euler angles
     inline void setYaw(Angle::DEGREES<F32> angle) {
@@ -241,8 +231,7 @@ class Camera : public Resource {
 
     inline const Angle::DEGREES<F32> getHorizontalFoV() const {
         Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_verticalFoV) * 0.5f;
-        return Angle::to_DEGREES(2.0f *
-                                       std::atan(tan(halfFoV) * _aspectRatio));
+        return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _aspectRatio));
     }
 
     inline const F32 getAspectRatio() const { return _aspectRatio; }
@@ -292,8 +281,6 @@ class Camera : public Resource {
     inline void lockMovement(bool state) { _movementLocked = state; }
 
     inline void lockRotation(bool state) { _rotationLocked = state; }
-
-    inline void lockView(bool state) { _viewMatrixLocked = state; }
 
     inline void lockFrustum(bool state) { _frustumLocked = state; }
 
@@ -346,7 +333,6 @@ class Camera : public Resource {
 
     bool _projectionDirty;
     bool _viewMatrixDirty;
-    bool _viewMatrixLocked;
     bool _frustumLocked;
     bool _rotationLocked;
     bool _movementLocked;

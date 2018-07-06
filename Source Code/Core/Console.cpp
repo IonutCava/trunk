@@ -17,7 +17,9 @@ std::thread Console::_printThread;
 std::atomic_bool Console::_running;
 Console::ConsolePrintCallback Console::_guiConsoleCallback;
 
-moodycamel::BlockingConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
+//Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
+//https://github.com/cameron314/concurrentqueue
+moodycamel::ConcurrentQueue<Console::OutputEntry> Console::_outputBuffer(MAX_CONSOLE_ENTRIES);
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
@@ -110,12 +112,15 @@ void Console::outThread() {
     //moodycamel::ConsumerToken ctok(_outputBuffer);
     while (_running) {
         OutputEntry entry;
-        _outputBuffer.wait_dequeue(/*ctok, */entry);
-        std::ostream& outStream = entry._error ? std::cerr : std::cout;
-        outStream << entry._text.c_str();
+        if (_outputBuffer.try_dequeue(/*ctok, */entry)) {
+            std::ostream& outStream = entry._error ? std::cerr : std::cout;
+            outStream << entry._text.c_str();
 
-        if (_guiConsoleCallback) {
-            _guiConsoleCallback(entry._text.c_str(), entry._error);
+            if (_guiConsoleCallback) {
+                _guiConsoleCallback(entry._text.c_str(), entry._error);
+            }
+        }  else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(16));
         }
     }
 }

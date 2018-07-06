@@ -6,8 +6,7 @@ Camera::Camera(const stringImpl& name, const CameraType& type, const vec3<F32>& 
     : Resource(ResourceType::DEFAULT, name),
       _isOrthoCamera(false),
       _projectionDirty(true),
-      _viewMatrixDirty(true),
-      _viewMatrixLocked(false),
+      _viewMatrixDirty(false),
       _rotationLocked(false),
       _movementLocked(false),
       _frustumLocked(false),
@@ -52,7 +51,6 @@ void Camera::fromCamera(Camera& camera) {
     _cameraTurnSpeed = camera._cameraTurnSpeed;
     _cameraZoomSpeed = camera._cameraZoomSpeed;
 
-    lockView(camera._viewMatrixLocked);
     lockFrustum(camera._frustumLocked);
     _accumPitchDegrees = camera._accumPitchDegrees;
 
@@ -109,13 +107,14 @@ void Camera::rotate(const Quaternion<F32>& q) {
     }
 
     if (_type == CameraType::FIRST_PERSON) {
-        vec3<F32> euler;
+        vec3<Angle::DEGREES<F32>> euler;
         q.getEuler(euler);
+        euler = Angle::to_DEGREES(euler);
         rotate(euler.yaw, euler.pitch, euler.roll);
     } else {
-        Quaternion<F32> tempOrientation(q);
+        Quaternion<F32> tempOrientation = q * _orientation;
         tempOrientation.normalize();
-        _orientation = tempOrientation * _orientation;
+        _orientation = tempOrientation;
     }
 
     _viewMatrixDirty = true;
@@ -163,6 +162,18 @@ void Camera::rotate(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::D
     }
 
     _viewMatrixDirty = true;
+}
+
+void Camera::rotateYaw(Angle::DEGREES<F32> angle) {
+    rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _orientation * WORLD_Y_AXIS, -angle * _cameraTurnSpeed));
+}
+
+void Camera::rotateRoll(Angle::DEGREES<F32> angle) {
+    rotate(Quaternion<F32>(_orientation * WORLD_Z_AXIS, -angle * _cameraTurnSpeed));
+}
+
+void Camera::rotatePitch(Angle::DEGREES<F32> angle) {
+    rotate(Quaternion<F32>(_orientation * WORLD_X_AXIS, -angle * _cameraTurnSpeed));
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
@@ -236,7 +247,7 @@ bool Camera::updateProjection() {
                                     _zPlanes.x,
                                     _zPlanes.y);
         } else {
-            _projectionMatrix.perspective(Angle::to_RADIANS(_verticalFoV),
+            _projectionMatrix.perspective(_verticalFoV,
                                           _aspectRatio,
                                           _zPlanes.x,
                                           _zPlanes.y);
@@ -277,37 +288,34 @@ void Camera::setAspectRatio(F32 ratio) {
     _projectionDirty = true;
 }
 
-void Camera::setVerticalFoV(F32 verticalFoV) {
+void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) {
     _verticalFoV = verticalFoV;
     _projectionDirty = true;
 }
 
-void Camera::setHorizontalFoV(F32 horizontalFoV) {
+void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) {
     _verticalFoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _aspectRatio));
     _projectionDirty = true;
 }
 
 bool Camera::updateViewMatrix() {
-    if (!_viewMatrixDirty || _viewMatrixLocked) {
+    if (!_viewMatrixDirty) {
         return false;
     }
-
-    vec3<F32> xAxis, yAxis, zAxis;
 
     _orientation.normalize();
 
     // Reconstruct the view matrix.
-    _orientation.getMatrix(_viewMatrix);
-
-    xAxis.set(_viewMatrix.m[0][0], _viewMatrix.m[1][0], _viewMatrix.m[2][0]);
-    yAxis.set(_viewMatrix.m[0][1], _viewMatrix.m[1][1], _viewMatrix.m[2][1]);
-    zAxis.set(_viewMatrix.m[0][2], _viewMatrix.m[1][2], _viewMatrix.m[2][2]);
+    mat3<F32> rotation;
+    _orientation.getMatrix(rotation);
+    vec3<F32> xAxis = _orientation.xAxis();
+    vec3<F32> yAxis = _orientation.yAxis();
+    vec3<F32> zAxis = _orientation.zAxis();
 
     _target = -zAxis + _eye;
 
-    _viewMatrix.m[3][0] = -xAxis.dot(_eye);
-    _viewMatrix.m[3][1] = -yAxis.dot(_eye);
-    _viewMatrix.m[3][2] = -zAxis.dot(_eye);
+    _viewMatrix.set(rotation);
+    _viewMatrix.setRow(3, -xAxis.dot(_eye), -yAxis.dot(_eye), -zAxis.dot(_eye), 1.0f);
     _orientation.getEuler(_euler);
     _euler = Angle::to_DEGREES(_euler);
 

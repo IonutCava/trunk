@@ -41,10 +41,11 @@ namespace {
         }
 
         bool init(U32 size, const DisplayWindow& window) {
+            SDL_Window* raw = window.getRawWindow();
             WriteLock w_lock(_glContextLock);
             _contexts.resize(size, std::make_pair(nullptr, false));
             for (std::pair<SDL_GLContext, bool>& ctx : _contexts) {
-                ctx.first = SDL_GL_CreateContext(window.getRawWindow());
+                ctx.first = SDL_GL_CreateContext(raw);
             }
             return true;
         }

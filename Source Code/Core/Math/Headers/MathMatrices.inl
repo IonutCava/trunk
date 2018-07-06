@@ -594,10 +594,10 @@ mat3<T>::mat3(const U *m) noexcept
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const mat2<U> &B) noexcept
+mat3<T>::mat3(const mat2<U> &B, bool zeroFill) noexcept
     : mat3(B[0], B[1], 0,
            B[2], B[3], 0,
-           0,    0,    0) //maybe m[8] should be 1?
+           0,    0,    (zeroFill ? 0 : 1))
 {
 }
 
@@ -1241,21 +1241,21 @@ mat4<T>::mat4(const U *m) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat2<U> &B) noexcept
+mat4<T>::mat4(const mat2<U> &B, bool zeroFill) noexcept
     : mat4(B[0],              B[1],              static_cast<U>(0), static_cast<U>(0),
            B[2],              B[3],              static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) //maybe m[15] should be 1?
+           static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1), static_cast<U>(0),
+           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1))
 {
 }
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat3<U> &B) noexcept
+mat4<T>::mat4(const mat3<U> &B, bool zeroFill) noexcept
     : mat4(B[0],              B[1],              B[2],              static_cast<U>(0),
-           B[3],              B[4],              B[5]               static_cast<U>(0),
+           B[3],              B[4],              B[5],              static_cast<U>(0),
            B[6],              B[7],              B[8],              static_cast<U>(0),
-           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0)) //maybe m[15] should be 1?
+           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1))
 {
 }
 
@@ -2167,7 +2167,7 @@ void mat4<T>::perspective(Angle::DEGREES<U> fovyRad, U aspect, U zNear, U zFar) 
     assert(!IS_ZERO(aspect));
     assert(zFar > zNear);
 
-    Angle::DEGREES<F32> tanHalfFovy = std::tan(fovyRad * 0.5f);
+    Angle::RADIANS<F32> tanHalfFovy = std::tan(Angle::to_RADIANS(fovyRad) * 0.5f);
 
     zero();
 

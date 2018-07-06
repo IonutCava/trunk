@@ -135,12 +135,22 @@ class Quaternion {
     void fromMatrix(const mat3<T>& rotationMatrix);
 
     //! Convert to Matrix
-    void getMatrix(mat4<F32>& outMatrix) const;
+    void getMatrix(mat3<F32>& outMatrix) const;
 
     //! Convert to Axis/Angles
     void getAxisAngle(vec3<T>* axis, Angle::DEGREES<T>* angle) const;
 
     void getEuler(vec3<Angle::RADIANS<T>>& euler) const;
+
+
+    /// X/Y/Z Axis get/set a la Ogre: OgreQuaternion.cpp
+    void fromAxes(const vec3<T>* axis);
+    void fromAxes(const vec3<T>& xAxis, const vec3<T>& yAxis, const vec3<T>& zAxis);
+    void toAxes(vec3<T>* axis) const;
+    void toAxes(vec3<T>& xAxis, vec3<T>& yAxis, vec3<T>& zAxis) const;
+    vec3<T> xAxis() const;
+    vec3<T> yAxis() const;
+    vec3<T> zAxis() const;
 
     inline F32 X() const;
     inline F32 Y() const;
@@ -169,7 +179,7 @@ template <typename T>
 inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t);
 
 template <typename T>
-inline mat4<T> GetMatrix(const Quaternion<T>& q);
+inline mat3<T> GetMatrix(const Quaternion<T>& q);
 
 template <typename T>
 inline vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q);

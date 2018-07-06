@@ -253,39 +253,9 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     
     U16 heightmapWidth = terrainDimensions.width;
     U16 heightmapHeight = terrainDimensions.height;
-    vectorImpl<U16> heightValues;
-
     const stringImpl& terrainMapLocation = terrainDescriptor->getVariable("heightmapLocation");
 
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
-    if (terrainDescriptor->is16Bit()) {
-        assert(heightmapWidth != 0 && heightmapHeight != 0);
-        // only raw files for 16 bit support
-        assert(hasExtension(terrainRawFile, "raw"));
-        // Read File Data
-
-        vectorImpl<Byte> data;
-        readFile(terrainMapLocation + terrainRawFile, data, FileType::BINARY);
-        if (data.empty()) {
-            return false;
-        }
-
-        U32 positionCount = to_U32(data.size());
-        heightValues.reserve(positionCount / 2);
-        for (U32 i = 0; i < positionCount + 1; i += 2) {
-            heightValues.push_back((data[i + 1] << 8) |
-                                    data[i]);
-        }
-
-    } else {
-        ImageTools::ImageData img;
-        ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + terrainRawFile, img);
-        assert(terrainDimensions == img.dimensions());
-        // data will be destroyed when img gets out of scope
-        const U8* data = (const U8*)img.data();
-        assert(data);
-        heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
-    }
 
     vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
     Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
@@ -302,20 +272,18 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     I32 terrainHeight = (I32)dimensions.y;
     F32 minAltitude = terrainDescriptor->getAltitudeRange().x;
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
-    F32 altitudeRange = maxAltitude - minAltitude;
 
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
-
     terrainBB.set(vec3<F32>(-terrainWidth * 0.5f, minAltitude, -terrainHeight * 0.5f),
                   vec3<F32>(terrainWidth * 0.5f, maxAltitude, terrainHeight * 0.5f));
 
     terrainBB.translate(terrainDescriptor->getPosition());
     terrainBB.multiply(vec3<F32>(terrainScaleFactor.x, terrainScaleFactor.y,
                                  terrainScaleFactor.x));
-    F32 yOffset = terrainDescriptor->getPosition().y;
+
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
-    F32 yScaleFactor = terrainScaleFactor.y;
+    F32 yOffset = terrainDescriptor->getPosition().y;
 
     VertexBuffer* groundVB = terrain->getGeometryVB();
 
@@ -325,6 +293,39 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     ByteBuffer terrainCache;
     if (!terrainCache.loadFromFile(cacheLocation) || !groundVB->deserialize(terrainCache)) {
+        F32 altitudeRange = maxAltitude - minAltitude;
+        F32 yScaleFactor = terrainScaleFactor.y;
+
+        vectorImpl<U16> heightValues;
+        if (terrainDescriptor->is16Bit()) {
+            assert(heightmapWidth != 0 && heightmapHeight != 0);
+            // only raw files for 16 bit support
+            assert(hasExtension(terrainRawFile, "raw"));
+            // Read File Data
+
+            vectorImpl<Byte> data;
+            readFile(terrainMapLocation + terrainRawFile, data, FileType::BINARY);
+            if (data.empty()) {
+                return false;
+            }
+
+            U32 positionCount = to_U32(data.size());
+            heightValues.reserve(positionCount / 2);
+            for (U32 i = 0; i < positionCount + 1; i += 2) {
+                heightValues.push_back((data[i + 1] << 8) |
+                    data[i]);
+            }
+
+        } else {
+            ImageTools::ImageData img;
+            ImageTools::ImageDataInterface::CreateImageData(terrainMapLocation + terrainRawFile, img);
+            assert(terrainDimensions == img.dimensions());
+            // data will be destroyed when img gets out of scope
+            const U8* data = (const U8*)img.data();
+            assert(data);
+            heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
+        }
+
         groundVB->resizeVertexCount(terrainWidth * terrainHeight);
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
@@ -339,9 +340,9 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                                 j < to_I32(heightmapHeight) ? j : j - 1,
                                                 heightmapWidth);
 
-                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),                         // X
+                    vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),                           // X
                                         ((minAltitude + altitudeRange * (heightValues[idxIMG] / fMax)) * yScaleFactor) + yOffset, // Y
-                                        bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1));                        // Z
+                                        bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1));                          // Z
                     #pragma omp critical
                     {
                         groundVB->modifyPositionValue(idxHM, vertexData);
@@ -365,7 +366,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                               heightValues[idxIMG * 3 + 2]) / 3.0f) / byteMax;
 
                     vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   //X
-                                         ((minAltitude + altitudeRange * h) * yScaleFactor) + yOffset,      //Y
+                                         ((minAltitude + altitudeRange * h) * yScaleFactor) + yOffset,    //Y
                                          bMin.z + (to_F32(j)) * (bMax.z - bMin.z) / (terrainHeight - 1)); //Z
 
                     

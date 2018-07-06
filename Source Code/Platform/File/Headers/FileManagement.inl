@@ -43,9 +43,10 @@ bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
 
     size_t fileSize = 0;
     if (!filePath.empty()) {
-        std::ifstream streamIn(filePath.c_str(), fileType == FileType::BINARY
-                                                           ? std::ios::in | std::ios::binary
-                                                           : std::ios::in);
+        std::ifstream streamIn(filePath.c_str(),
+                               fileType == FileType::BINARY
+                                         ? std::ios::in | std::ios::binary
+                                         : std::ios::in);
 
         if (!streamIn.eof() && !streamIn.fail()) {
             streamIn.seekg(0, std::ios::end);
@@ -63,5 +64,29 @@ bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
     return fileSize > 0;
 }
 
+//Optimized variant for vectors
+template<>
+inline bool readFile(const stringImpl& filePath, vectorImpl<Byte>& contentOut, FileType fileType) {
+    size_t fileSize = 0;
+    if (!filePath.empty()) {
+        std::ifstream streamIn(filePath.c_str(),
+                               fileType == FileType::BINARY
+                                         ? std::ios::in | std::ios::binary
+                                         : std::ios::in);
+
+        if (!streamIn.eof() && !streamIn.fail()) {
+            streamIn.seekg(0, std::ios::end);
+            fileSize = streamIn.tellg();
+            streamIn.seekg(0, std::ios::beg);
+
+            contentOut.resize(fileSize);
+            streamIn.read(contentOut.data(), fileSize);
+        }
+
+        streamIn.close();
+    };
+
+    return fileSize > 0;
+}
 }; //namespace divide
 #endif //_PLATFORM_FILE_FILE_MANAGEMENT_INL_

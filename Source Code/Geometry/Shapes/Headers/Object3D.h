@@ -101,21 +101,30 @@ class Object3D : public SceneNode {
         _geometryPartitionID = to_U16(ID);
     }
 
+    // Procedural geometry deformation support?
+    inline vectorImpl<vec3<U32> >& getTriangles() {
+        return _geometryTriangles;
+    }
+
     inline const vectorImpl<vec3<U32> >& getTriangles() const {
         return _geometryTriangles;
     }
+
     inline void reserveTriangleCount(U32 size) {
         _geometryTriangles.reserve(size);
     }
+
     inline void addTriangle(const vec3<U32>& triangle) {
         _geometryTriangles.push_back(triangle);
     }
+
     inline void addTriangles(const vectorImpl<vec3<U32>>& triangles) {
         reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
         _geometryTriangles.insert(std::end(_geometryTriangles),
-                                  std::begin(triangles),
-                                  std::end(triangles));
+                                  std::cbegin(triangles),
+                                  std::cend(triangles));
     }
+
     // Create a list of triangles from the vertices + indices lists based on
     // primitive type
     bool computeTriangleList(bool force = false);

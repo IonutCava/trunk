@@ -105,8 +105,8 @@ namespace Paths {
 
         Shaders::HLSL::g_parentShaderLoc = "HLSL/";
 
-        g_includePattern = std::regex("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
-        g_usePattern = std::regex("^[ ]*use[ ]*\\([ ]*[\"](.*)[\"][ ]*\\).*");
+        g_includePattern = std::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
+        g_usePattern = std::regex(R"(^\s*use\s*\(\s*\"(.*)\"\s*\))");
     }
 
     void updatePaths(const PlatformContext& context) {
