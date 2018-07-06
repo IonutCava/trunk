@@ -58,6 +58,18 @@ bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
     return true;
 }
 
+bool TextureDataContainer::addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
+    if (Config::Build::IS_DEBUG_BUILD && !_textures.empty()) {
+        for (auto entry : textureEntries) {
+            addTexture(entry);
+        }
+    } else {
+        _textures.insert(eastl::cend(_textures), eastl::cbegin(textureEntries), eastl::cend(textureEntries));
+    }
+
+    return true;
+}
+
 bool TextureDataContainer::removeTexture(U8 binding) {
     vectorEASTL<eastl::pair<TextureData, U8>>::iterator it;
     it = eastl::find_if(eastl::begin(_textures), eastl::end(_textures),

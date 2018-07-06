@@ -60,6 +60,12 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         }
     }
 
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(RenderStagePass::pass(i))][to_base(RenderStagePass::stage(i))];
+        pkg = std::make_unique<RenderPackage>(_context, true);
+        pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
+    }
+
     RenderStateBlock depthDesc;
     depthDesc.setColourWrites(false, false, false, false);
     depthDesc.setZFunc(ComparisonFunction::LESS);
@@ -163,17 +169,14 @@ RenderingComponent::~RenderingComponent()
 }
 
 std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const RenderStagePass& stagePass) {
-    std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
-    if (!pkg) {
-        pkg = std::make_unique<RenderPackage>(_context, true);
+    std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(stagePass.pass())][to_base(stagePass.stage())];
+    DIVIDE_ASSERT(pkg != nullptr, "RenderingComponent::renderData error: Attempt to reference a render package that wasn't created yet!");
 
-        pkg->isOcclusionCullable(_parentSGN.getNode<Object3D>()->getType() != SceneNodeType::TYPE_SKY);
-    }
     return pkg;
 }
 
 const std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const RenderStagePass& stagePass) const {
-    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
+    const std::unique_ptr<RenderPackage>& pkg = _renderData[to_base(stagePass.pass())][to_base(stagePass.stage())];
     DIVIDE_ASSERT(pkg != nullptr, "RenderingComponent::renderData error: Attempt to reference a render package that wasn't created yet!");
 
     return pkg;
@@ -269,9 +272,7 @@ void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     TextureDataContainer& textures = set->_textureData;
 
     textures.clear();
-    for (auto texture : _textureDependencies.textures()) {
-        textures.addTexture(texture);
-    }
+    textures.addTextures(_textureDependencies.textures());
 
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {

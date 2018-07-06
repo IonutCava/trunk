@@ -31,7 +31,12 @@ bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
     }
 
     _workerThreadCount = threadCount;
+#if defined(USE_BOOST_ASIO_THREADPOOL)
     _mainTaskPool = std::make_unique<boost::asio::thread_pool>(_workerThreadCount);
+#else
+    STUBBED("ToDo: Modify ThreadPool class to use a boost lockfree queue. -Ionut");
+    _mainTaskPool = std::make_unique<ThreadPool>(_workerThreadCount);
+#endif
     _stopRequested.store(false);
     nameThreadpoolWorkers(workerName.c_str());
 
@@ -44,7 +49,11 @@ void TaskPool::shutdown() {
 
 bool TaskPool::enqueue(const PoolTask& task) {
     assert(_mainTaskPool != nullptr);
+#if defined(USE_BOOST_ASIO_THREADPOOL)
     boost::asio::post(*_mainTaskPool, task);
+#else
+    _mainTaskPool->AddJob(task);
+#endif
     _runningTaskCount.fetch_add(1);
 
     return true;
@@ -82,8 +91,13 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
     }
 
     _stopRequested.store(false);
+#if defined(USE_BOOST_ASIO_THREADPOOL)
     _mainTaskPool->stop();
     _mainTaskPool->join();
+#else
+    _mainTaskPool->WaitAll();
+    _mainTaskPool->JoinAll();
+#endif
 }
 
 

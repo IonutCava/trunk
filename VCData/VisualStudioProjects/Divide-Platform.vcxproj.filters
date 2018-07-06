@@ -181,45 +181,6 @@
     <ClInclude Include="..\../Source Code/Libs/GLIM\glimInterface.h">
       <Filter>Video\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\future.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\pool.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\pool_adaptors.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\scheduling_policies.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\shutdown_policies.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\size_policies.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\task_adaptors.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\detail\future.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\detail\locking_ptr.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\detail\pool_core.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\detail\scope_guard.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool\include/threadpool\detail\worker_thread.hpp">
-      <Filter>Threading\ThreadPool-Boost\Headers\threadpool\detail</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Platform\Compute\Headers\OpenCLInterface.h">
       <Filter>Compute\Headers</Filter>
     </ClInclude>
@@ -330,9 +291,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Platform\File\Headers\FileUpdateMonitor.h">
       <Filter>File\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/Threadpool-c++11\Threadpool.hpp">
-      <Filter>Threading\ThreadPool-C++11\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\../Source Code/Platform\Threading\Headers\ThreadPool.h">
       <Filter>Threading\Headers</Filter>
@@ -650,12 +608,6 @@
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/simplefilewatcher/Source\FileWatcherWin32.cpp">
       <Filter>File\FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/Threadpool-c++11\Threadpool.cpp">
-      <Filter>Threading\ThreadPool-C++11</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Platform\Threading\ThreadPoolImpl.cpp">
-      <Filter>Threading</Filter>
     </ClCompile>
     <ClCompile Include="..\../Source Code/stdafx-platform.cpp" />
     <ClCompile Include="..\../Source Code/Platform\Input\JoystickInterface.cpp">
@@ -979,24 +931,6 @@
     </Filter>
     <Filter Include="File\FileWatcher">
       <UniqueIdentifier>{4496482a-d2ee-46f3-a668-a6a8551fb52f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-Boost">
-      <UniqueIdentifier>{f504933d-1d6d-4a49-a869-5527311798b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-Boost\Headers">
-      <UniqueIdentifier>{330cacb9-1aa9-49d5-bfd2-2420382162db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-Boost\Headers\threadpool">
-      <UniqueIdentifier>{fc1a648a-0bcd-43e7-aac2-589e3c8ebb53}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-Boost\Headers\threadpool\detail">
-      <UniqueIdentifier>{a205ee33-6098-4f11-b36a-d54e67db176b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-C++11">
-      <UniqueIdentifier>{1f4a293a-effd-43da-984b-845766578e93}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Threading\ThreadPool-C++11\Headers">
-      <UniqueIdentifier>{e9b07882-532e-4580-a65a-0e35fb7dfa97}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

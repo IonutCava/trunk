@@ -35,6 +35,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Threading/Headers/Task.h"
 
+#if !defined(USE_BOOST_ASIO_THREADPOOL)
+#include <Threadpool/ThreadPool.h>
+#endif
+
 namespace Divide {
 
 class TaskPool {
@@ -74,7 +78,11 @@ class TaskPool {
     void runCbkAndClearTask(U32 taskIdentifier);
 
   private:
-    std::unique_ptr<boost::asio::thread_pool> _mainTaskPool;
+#if defined(USE_BOOST_ASIO_THREADPOOL)
+      std::unique_ptr<boost::asio::thread_pool> _mainTaskPool;
+#else
+      std::unique_ptr<ThreadPool> _mainTaskPool;
+#endif
     boost::lockfree::queue<U32> _threadedCallbackBuffer;
     std::atomic_uint _runningTaskCount;
     std::atomic_bool _stopRequested = false;
