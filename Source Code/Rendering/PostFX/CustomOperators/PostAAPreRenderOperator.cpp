@@ -12,10 +12,8 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebu
       _useSMAA(false),
       _postAASamples(0)
 {
-    TextureDescriptor descriptor = _ldrTarget->getDescriptor();
-    descriptor.getSampler().toggleSRGBColorSpace(false);
     _samplerCopy = GFX_DEVICE.newFB();
-    _samplerCopy->addAttachment(descriptor, TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(_ldrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");
@@ -49,11 +47,6 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
 
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute() {
-    // Copy current screen and bind it as an input texture
-    if (!ldrTargetValid()) {
-        _ldrTarget->blitFrom(_hdrTarget);
-    }
-
     _samplerCopy->blitFrom(_ldrTarget);
     _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
@@ -61,7 +54,6 @@ void PostAAPreRenderOperator::execute() {
     _ldrTarget->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _useSMAA ? _smaa : _fxaa);
     _ldrTarget->end();
-    ldrTargetValid(true);
 }
 
 };

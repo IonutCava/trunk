@@ -24,8 +24,14 @@ enum class FilterType : U32 {
     FILTER_SS_AMBIENT_OCCLUSION = toBit(3),
     FILTER_DEPTH_OF_FIELD = toBit(4),
     FILTER_MOTION_BLUR = toBit(5),
-    FILTER_BLOOM_TONEMAP = toBit(6),
+    FILTER_BLOOM = toBit(6),
     FILTER_LUT_CORECTION = toBit(7)
+};
+
+enum class FilterSpace : U32 {
+    FILTER_SPACE_HDR = 0,
+    FILTER_SPACE_LDR = 1,
+    COUNT
 };
 
 /// It's called a prerender operator because it operates on the buffer before
@@ -61,22 +67,12 @@ class NOINITVTABLE PreRenderOperator {
     virtual void debugPreview(U8 slot) const {
     };
 
-    static bool ldrTargetValid() { return _ldrTargetValid; }
-
-   protected:
-    static void ldrTargetValid(bool state) { _ldrTargetValid = state; }
-
-   protected:
-    friend class PreRenderBatch;
-    static void onExecute(U32 filterMask) { _ldrTargetValid = false; }
-
    protected:
     Framebuffer* _hdrTarget;
     Framebuffer* _ldrTarget;
-    FilterType _operatorType;
-    vectorImpl<Framebuffer*> _inputFB;
+    FilterType  _operatorType;
 
-    static bool _ldrTargetValid;;
+    vectorImpl<Framebuffer*> _inputFB;
 };
 
 };  // namespace Divide

@@ -20,37 +20,37 @@ class PreRenderBatch {
     void bindOutput(U8 slot);
 
     inline PreRenderOperator& getOperator(FilterType type) {
-        PreRenderOperator* op = _operators[getOperatorIndex(type)];
-        assert(op != nullptr);
-
-        return *op;
+        OperatorBatch& batch = _operators[to_uint(getOperatorSpace(type))];
+        OperatorBatch::iterator it = 
+            std::find_if(std::begin(batch), std::end(batch),
+                        [type](PreRenderOperator* op) { 
+                            return op->operatorType() == type;
+                        });
+        assert(it != std::cend(batch));
+        return *(*it);
     }
 
    private:
-    inline U32 getOperatorIndex(FilterType type) const {
-        switch (type) {
-            case FilterType::FILTER_SS_REFLECTIONS:
-                return 0;
-            case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
-                return 1;
-            case FilterType::FILTER_DEPTH_OF_FIELD:
-                return 2;
-            case FilterType::FILTER_MOTION_BLUR:
-                return 3;
-            case FilterType::FILTER_BLOOM_TONEMAP:
-                return 4;
-            case FilterType::FILTER_SS_ANTIALIASING:
-                return 5;
-        };
+    inline FilterSpace getOperatorSpace(FilterType type) {
+        switch(type) {
+            case FilterType::FILTER_SS_ANTIALIASING :
+                return FilterSpace::FILTER_SPACE_LDR;
+        }
 
-        return 6; //FilterType::FILTER_LUT_CORECTION;
+        return FilterSpace::FILTER_SPACE_HDR;
     }
 
   private:
-    std::array<PreRenderOperator*, 8> _operators;
+    typedef vectorImpl<PreRenderOperator*> OperatorBatch;
+    OperatorBatch _operators[to_const_uint(FilterSpace::COUNT)];
+
     PreRenderOperator* _debugOperator;
     Framebuffer* _postFXOutput;
     Framebuffer* _renderTarget;
+    Framebuffer* _previousExposure;
+    Framebuffer* _currentExposure;
+    ShaderProgram* _toneMap;
+    ShaderProgram* _luminanceCalc;
 };
 
 };  // namespace Divide

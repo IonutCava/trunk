@@ -16,8 +16,6 @@ float saturate(float v) { return clamp(v, 0.0, 1.0); }
 vec3  saturate(vec3 v)  { return clamp(v, 0.0, 1.0); }
 vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
 
-vec3 pow_vec3(vec3 v, float p) { return vec3(pow(v.x, p), pow(v.y, p), pow(v.z, p)); }
-
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
     targetTexture.xyz = mix(targetTexture.xyz, projectedTex.xyz, projectedTextureMixWeight);
@@ -34,11 +32,17 @@ vec4 applyFog(in vec4 color) {
 }
 
 const float gamma = 2.2;
+const float invGamma = 1.0 / gamma;
+const vec3 invGammaVec = vec3(invGamma);
+const vec3 gammaVec = vec3(gamma);
 
-vec3 ToLinear(vec3 v) { return pow_vec3(v,     gamma); }
-vec4 ToLinear(vec4 v) { return vec4(pow_vec3(v.rgb,     gamma), v.a); }
-vec3 ToSRGB(vec3 v)   { return pow_vec3(v, 1.0/gamma); }
-vec4 ToSRGB(vec4 v)   { return vec4(pow_vec3(v.rgb, 1.0/gamma), v.a);}
+float ToLinear(float v) { return pow(v, gamma); }
+vec3  ToLinear(vec3 v)  { return pow(v, gammaVec); }
+vec4  ToLinear(vec4 v)  { return vec4(pow(v.rgb, gammaVec), v.a); }
+
+float ToSRGB(float v) { return pow(v, invGamma); }
+vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
+vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
 
 
 #endif //_LIGHTING_DEFAULTS_FRAG_

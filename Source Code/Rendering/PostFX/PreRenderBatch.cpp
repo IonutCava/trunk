@@ -1,6 +1,8 @@
 #include "Headers/PreRenderBatch.h"
 #include "Headers/PreRenderOperator.h"
 
+#include "Core/Resources/Headers/ResourceCache.h"
+
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DofPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
@@ -8,13 +10,24 @@
 
 namespace Divide {
 
-bool PreRenderOperator::_ldrTargetValid = false;
+namespace {
+    inline U32 nextPOW2(U32 n) {
+        n--;
+        n |= n >> 1;
+        n |= n >> 2;
+        n |= n >> 4;
+        n |= n >> 8;
+        n |= n >> 16;
+        n++;
+        return n;
+    }
+};
 
 PreRenderBatch::PreRenderBatch() : _debugOperator(nullptr),
                                    _postFXOutput(nullptr),
-                                   _renderTarget(nullptr)
+                                   _renderTarget(nullptr),
+                                   _toneMap(nullptr)
 {
-    _operators.fill(nullptr);
 }
 
 PreRenderBatch::~PreRenderBatch()
@@ -23,48 +36,69 @@ PreRenderBatch::~PreRenderBatch()
 }
 
 void PreRenderBatch::destroy() {
-    for (PreRenderOperator*& op : _operators) {
-        MemoryManager::DELETE_CHECK(op);
+    for (OperatorBatch& batch : _operators) {
+        MemoryManager::DELETE_VECTOR(batch);
+        batch.clear();
     }
-    _operators.fill(nullptr);
+    
     MemoryManager::DELETE(_postFXOutput);
+    RemoveResource(_toneMap);
+    RemoveResource(_luminanceCalc);
 }
 
 void PreRenderBatch::init(Framebuffer* renderTarget) {
     assert(_postFXOutput == nullptr);
     _renderTarget = renderTarget;
 
+    _previousExposure = GFX_DEVICE.newFB();
+    _currentExposure = GFX_DEVICE.newFB();
     _postFXOutput = GFX_DEVICE.newFB();
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.setFilters(TextureFilter::NEAREST);
+    screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
     screenSampler.toggleSRGBColorSpace(true);
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
-                                       GFXImageFormat::RGB8,
+                                       GFXImageFormat::RGBA8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
     //Color0 holds the LDR screen texture
     _postFXOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
 
-    // HDR input -> HDR output
-    _operators[getOperatorIndex(FilterType::FILTER_SS_AMBIENT_OCCLUSION)]
-        = MemoryManager_NEW SSAOPreRenderOperator(_renderTarget, _postFXOutput);
+    SamplerDescriptor lumaSampler;
+    lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    lumaSampler.toggleMipMaps(true);
 
-    // HDR input -> HDR output
-    _operators[getOperatorIndex(FilterType::FILTER_DEPTH_OF_FIELD)]
-        = MemoryManager_NEW DoFPreRenderOperator(_renderTarget, _postFXOutput);
+    TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
+                                     GFXImageFormat::RED16F,
+                                     GFXDataFormat::FLOAT_16);
+    lumaDescriptor.setSampler(lumaSampler);
+    _currentExposure->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    lumaSampler.setFilters(TextureFilter::LINEAR);
+    lumaDescriptor.setSampler(lumaSampler);
+    _previousExposure->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _previousExposure->setClearColor(DefaultColors::BLACK());
 
-    // HDR input -> LDR output
-    _operators[getOperatorIndex(FilterType::FILTER_BLOOM_TONEMAP)]
-        = MemoryManager_NEW BloomPreRenderOperator(_renderTarget, _postFXOutput);
+    // Order is very important!
+    OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
+    hdrBatch.push_back(MemoryManager_NEW SSAOPreRenderOperator(_renderTarget, _postFXOutput));
+    hdrBatch.push_back(MemoryManager_NEW DoFPreRenderOperator(_renderTarget, _postFXOutput));
+    hdrBatch.push_back(MemoryManager_NEW BloomPreRenderOperator(_renderTarget, _postFXOutput));
 
-    // LDR input -> LDR output
-    _operators[getOperatorIndex(FilterType::FILTER_SS_ANTIALIASING)]
-        = MemoryManager_NEW PostAAPreRenderOperator(_renderTarget, _postFXOutput);
+    OperatorBatch& ldrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_LDR)];
+    ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_renderTarget, _postFXOutput));
 
-    //_debugOperator = _operators[getOperatorIndex(FilterType::FILTER_SS_AMBIENT_OCCLUSION)];
+    ResourceDescriptor toneMap("bloom.ToneMap");
+    toneMap.setThreadedLoading(false);
+    _toneMap = CreateResource<ShaderProgram>(toneMap);
+
+    ResourceDescriptor luminanceCalc("bloom.LuminanceCalc");
+    luminanceCalc.setThreadedLoading(false);
+    _luminanceCalc = CreateResource<ShaderProgram>(luminanceCalc);
+
+    //_debugOperator = hdrBatch[0];
 }
 
 void PreRenderBatch::bindOutput(U8 slot) {
@@ -76,31 +110,72 @@ void PreRenderBatch::bindOutput(U8 slot) {
 }
 
 void PreRenderBatch::idle() {
-    for (PreRenderOperator* op : _operators) {
-        if (op != nullptr) {
-            op->idle();
+    for (OperatorBatch& batch : _operators) {
+        for (PreRenderOperator* op : batch) {
+            if (op != nullptr) {
+                op->idle();
+            }
         }
     }
 }
 
 void PreRenderBatch::execute(U32 filterMask) {
-    PreRenderOperator::onExecute(filterMask);
+    OperatorBatch& hdrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_HDR)];
+    OperatorBatch& ldrBatch = _operators[to_uint(FilterSpace::FILTER_SPACE_LDR)];
 
-    for (PreRenderOperator* op : _operators) {
+    // Compute exposure
+    // Step 1: Luminance calc
+    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _previousExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+
+    _currentExposure->begin(Framebuffer::defaultPolicy());
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _luminanceCalc);
+    _currentExposure->end();
+
+    // Use previous exposure to control adaptive luminance
+    _previousExposure->blitFrom(_currentExposure);
+
+    // Execute all HDR based operators
+    for (PreRenderOperator* op : hdrBatch) {
         if (op != nullptr && BitCompare(filterMask, to_uint(op->operatorType()))) {
             op->execute();
         }
     }
 
-    if (!PreRenderOperator::ldrTargetValid()) {
-        _postFXOutput->blitFrom(_renderTarget);
+    // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
+    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _currentExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
+    _postFXOutput->begin(Framebuffer::defaultPolicy());
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _toneMap);
+    _postFXOutput->end();
+
+    // Execute all LDR based operators
+    for (PreRenderOperator* op : ldrBatch) {
+        if (op != nullptr && BitCompare(filterMask, to_uint(op->operatorType()))) {
+            op->execute();
+        }
     }
+    
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {
-    for (PreRenderOperator* op : _operators) {
-        if (op != nullptr) {
-            op->reshape(width, height);
+    U16 lumaRez = to_ushort(nextPOW2(to_uint(width / 3.0f)));
+    U16 lumaRezCopy = lumaRez;
+    I32 luminaMipLevel = 0;
+    while (lumaRez >>= 1) {
+        luminaMipLevel++;
+    }
+    // make the texture square sized and power of two
+    _currentExposure->create(lumaRezCopy, lumaRezCopy);
+    _previousExposure->create(1, 1);
+
+    _toneMap->Uniform("exposureMipLevel", luminaMipLevel);
+
+    for (OperatorBatch& batch : _operators) {
+        for (PreRenderOperator* op : batch) {
+            if (op != nullptr) {
+                op->reshape(width, height);
+            }
         }
     }
 

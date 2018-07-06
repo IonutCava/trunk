@@ -885,14 +885,14 @@
     <None Include="..\..\assets\shaders\GLSL\bloom.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\bloomApply.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\SSAOApply.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\SMAA.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
   </ItemGroup>
 </Project>

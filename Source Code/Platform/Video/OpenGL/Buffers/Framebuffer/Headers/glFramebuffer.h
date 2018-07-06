@@ -92,14 +92,17 @@ class glFramebuffer : public Framebuffer {
     static bool _viewportChanged;
     static bool _bufferBound;
     vectorImpl<GLenum> _colorBuffers;
+    vectorImpl<bool>   _colorBufferEnabled;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;
     std::array<I32, to_const_uint(AttType::COUNT)> _attOffset;
     std::array<bool, to_const_uint(AttType::COUNT)> _attDirty;
     std::array<std::pair<GLenum, U32>, to_const_uint(AttType::COUNT)> _attachments;
+    std::array<bool, to_const_uint(AttType::COUNT)> _attachmentState;
     std::array<vec2<U16>, to_const_uint(AttType::COUNT)> _mipMapLevel;
     FramebufferTarget::BufferMask _previousMask;
+    FramebufferTarget::ColorMask  _previousColorMask;
 };
 
 };  // namespace Divide

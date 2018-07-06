@@ -58,11 +58,11 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
 
     _ssaoOutput->create(_hdrTarget->getWidth(), _hdrTarget->getHeight());
 
-    ResourceDescriptor ssaoGenerate("SSAOPass");
+    ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
     _ssaoGenerateShader = CreateResource<ShaderProgram>(ssaoGenerate);
 
-    ResourceDescriptor ssaoApply("SSAOApply");
+    ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");
     ssaoApply.setThreadedLoading(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(ssaoApply);
 }

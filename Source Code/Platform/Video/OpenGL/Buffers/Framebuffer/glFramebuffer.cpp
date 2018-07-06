@@ -46,7 +46,9 @@ glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
 {
     _attOffset.fill(0);
     _attDirty.fill(false);
+    _attachmentState.fill(false);
     _previousMask = FramebufferTarget::BufferMask::BOTH;
+    _previousColorMask.fill(true);
 }
 
 glFramebuffer::~glFramebuffer() {
@@ -159,20 +161,24 @@ void glFramebuffer::initAttachment(AttachmentType type,
     }
     _attOffset[slot] = offset + 1;
 
-    _attachments[to_uint(type)] = std::make_pair(attachment, tex->getHandle());
+    _attachments[slot] = std::make_pair(attachment, tex->getHandle());
     _attachmentChanged[slot] = false;
     _attDirty[slot] = true;
     if (!resize) {
         if (type != AttachmentType::Depth) {
             _colorBuffers.push_back(attachment);
+            _colorBufferEnabled.push_back(true);
+            assert(_colorBuffers.size() <= to_uint(AttachmentType::COUNT) - 1);
         }
     }
 }
 
 void glFramebuffer::toggleAttachment(TextureDescriptor::AttachmentType type, bool state) {
-    std::pair<GLenum, U32> att = _attachments[to_uint(type)];
-    if (att.second != 0) {
+    U32 slot = to_uint(type);
+    std::pair<GLenum, U32> att = _attachments[slot];
+    if (att.second != 0 && state != _attachmentState[slot]) {
         glNamedFramebufferTexture(_framebufferHandle, att.first, state ? att.second : 0, 0);
+        _attachmentState[slot] = state;
     }
 }
 
@@ -252,6 +258,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
         _resolved = false;
         _isLayeredDepth = false;
         _colorBuffers.resize(0);
+        _colorBufferEnabled.resize(0);
     }
 
 
@@ -336,11 +343,13 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
     if (blitColor && _hasColor) {
         size_t colorCount = _colorBuffers.size();
         for (U8 i = 0; i < colorCount; ++i) {
-            glDrawBuffer(this->_colorBuffers[i]);
-            glReadBuffer(input->_colorBuffers[i]);
-            glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
-                              this->_width, this->_height, GL_COLOR_BUFFER_BIT,
-                              GL_NEAREST);
+            if (_colorBufferEnabled[i]) {
+                glDrawBuffer(this->_colorBuffers[i]);
+                glReadBuffer(input->_colorBuffers[i]);
+                glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
+                                  this->_width, this->_height, GL_COLOR_BUFFER_BIT,
+                                  GL_NEAREST);
+            }
         }
         _context.registerDrawCalls(to_uint(colorCount));
     }
@@ -413,12 +422,6 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
 
-    if (drawPolicy._clearBuffersOnBind) {
-        clear();
-    }
-
-    resetMipMaps(drawPolicy._drawMask);
-
     if (_resolveBuffer) {
         _resolved = false;
     }
@@ -463,6 +466,45 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
         _previousMask = drawPolicy._drawMask;
     }
 
+    if (_previousColorMask != drawPolicy._colorMask) {
+        bool allBuffersActive = true;
+        for (bool state : drawPolicy._colorMask) {
+            if (!state) {
+                allBuffersActive = false;
+                break;
+            }
+        }
+
+        if (allBuffersActive) {
+            glNamedFramebufferDrawBuffers(_framebufferHandle,
+                                          static_cast<GLsizei>(_colorBuffers.size()),
+                                           _colorBuffers.data());
+        } else {
+            vectorImpl<GLenum> colorBuffers;
+            size_t bufferCount = _colorBuffers.size();
+            colorBuffers.reserve(bufferCount);
+            
+            for (size_t i = 0; i < bufferCount; ++i) {
+                _colorBufferEnabled[i] = drawPolicy._colorMask[i];
+                if (_colorBufferEnabled[i]) {
+                    colorBuffers.push_back(_colorBuffers[i]);
+                }
+            }
+
+            glNamedFramebufferDrawBuffers(_framebufferHandle,
+                                          static_cast<GLsizei>(colorBuffers.size()),
+                                          colorBuffers.data());
+        }
+        checkStatus();
+        _previousColorMask = drawPolicy._colorMask;
+    }
+
+    if (drawPolicy._clearBuffersOnBind) {
+        clear();
+    }
+
+    resetMipMaps(drawPolicy._drawMask);
+
     glFramebuffer::_bufferBound = true;
 }
 
@@ -496,7 +538,9 @@ void glFramebuffer::clear() const {
     if (_hasColor) {
         GLuint index = 0;
         for (; index < _colorBuffers.size(); ++index) {
-            glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index++, _clearColor._v);
+            if (_colorBufferEnabled[index]) {
+                glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index++, _clearColor._v);
+            }
         }
         _context.registerDrawCalls(index);
     }

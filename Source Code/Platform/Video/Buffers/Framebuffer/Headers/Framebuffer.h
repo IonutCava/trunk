@@ -48,6 +48,8 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
             COUNT
         };
 
+        typedef std::array<bool, 4> ColorMask;
+        ColorMask _colorMask;
         BufferMask _drawMask;
         bool _clearBuffersOnBind;
         bool _changeViewport;
@@ -57,6 +59,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
               _clearBuffersOnBind(true),
               _changeViewport(true)
         {
+            _colorMask.fill(true);
         }
     };
 

@@ -11,7 +11,7 @@ void main(void)
     gl_Position.zw = vec2(0,1);
 }
 
--- Fragment
+-- Fragment.SSAOCalc
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -107,4 +107,20 @@ void main(void) {
 
     _ssaaOut = vec4(vec3(1.0 - dif * (dvd_ZPlanesCombined.y + dvd_ZPlanesCombined.x) * 255), 1.0);
     _screenOut = texture(texScreen, VAR._texCoord);
+}
+
+--Fragment.SSAOApply
+
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texSSAO;
+
+out vec4 _colorOut;
+
+void main() {
+    float ssaoFilter = texture(texSSAO, VAR._texCoord).r;
+    _colorOut = texture(texScreen, VAR._texCoord);
+
+    if (ssaoFilter > 0) {
+        _colorOut.rgb = _colorOut.rgb * ssaoFilter;
+    }
 }

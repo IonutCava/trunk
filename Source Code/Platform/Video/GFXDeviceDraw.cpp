@@ -184,6 +184,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     if (transform) {
         // ... get the node's world matrix properly interpolated
         dataOut._worldMatrix.set(transform->getWorldMatrix(_interpolationFactor));
+
         mat4<F32> normalMatrix(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate

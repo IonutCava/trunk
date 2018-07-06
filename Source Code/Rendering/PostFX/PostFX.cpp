@@ -229,9 +229,9 @@ void PostFX::idle() {
     }
 
     if (enableBloom) {
-        SetBit(_filterMask, to_uint(FilterType::FILTER_BLOOM_TONEMAP));
+        SetBit(_filterMask, to_uint(FilterType::FILTER_BLOOM));
     } else {
-        ClearBit(_filterMask, to_uint(FilterType::FILTER_BLOOM_TONEMAP));
+        ClearBit(_filterMask, to_uint(FilterType::FILTER_BLOOM));
     }
 
     if (enableLUT) {

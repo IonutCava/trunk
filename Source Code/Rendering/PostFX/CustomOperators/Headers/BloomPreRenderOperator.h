@@ -52,13 +52,10 @@ class BloomPreRenderOperator : public PreRenderOperator {
    private:
     Framebuffer* _bloomOutput;
     Framebuffer* _bloomBlurBuffer[2];
-    Framebuffer* _previousExposure;
-    Framebuffer* _currentExposure;
 
     ShaderProgram* _blur;
-    ShaderProgram* _bloom;
+    ShaderProgram* _bloomCalc;
     ShaderProgram* _bloomApply;
-    ShaderProgram* _luminanceCalc;
 
     U32 _horizBlur;
     U32 _vertBlur;
