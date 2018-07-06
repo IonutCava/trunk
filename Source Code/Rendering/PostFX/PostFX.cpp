@@ -65,7 +65,7 @@ PostFX::~PostFX()
         if(_enableSSAO)
             SAFE_DELETE(_SSAO_FBO);
     }
-    PreRenderStageBuilder::getInstance().DestroyInstance();
+    PreRenderStageBuilder::getInstance().destroyInstance();
 }
 
 void PostFX::init(const vec2<U16>& resolution){

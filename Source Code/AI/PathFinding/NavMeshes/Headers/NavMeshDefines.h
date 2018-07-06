@@ -73,6 +73,16 @@ namespace Navigation {
         I32 MaxVertex ;
         I32 Target ;
     } PATHDATA ;
+
+    enum PathErrorCode{
+        PATH_ERROR_NONE                    = 0,
+        PATH_ERROR_NO_NEAREST_POLY_START   = -1,
+        PATH_ERROR_NO_NEAREST_POLY_END     = -2,
+        PATH_ERROR_COULD_NOT_CREATE_PATH   = -3,
+        PATH_ERROR_COULD_NOT_FIND_PATH     = -4,
+        PATH_ERROR_NO_STRAIGHT_PATH_CREATE = -5,
+        PATH_ERROR_NO_STRAIGHT_PATH_FIND   = -6
+    };
 };
 
 #endif

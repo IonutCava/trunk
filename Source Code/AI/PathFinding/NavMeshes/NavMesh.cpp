@@ -1,5 +1,6 @@
 #include "Headers/NavMesh.h"
 #include "Headers/NavMeshDebugDraw.h"
+#include "../Headers/NavigationPath.h"
 
 #include <SimpleIni.h>
 #include "Core/Headers/ParamHandler.h"
@@ -31,17 +32,23 @@ namespace Navigation {
         _polyMeshDetail = NULL;
         _navMesh  = NULL;
         _tempNavMesh = NULL;
+        _navQuery = NULL;
         _building = false;
     }
 
     NavigationMesh::~NavigationMesh(){
-        if(_buildThread) _buildThread->stopTask();
+        if(_buildThread)
+            _buildThread->stopTask();
 
         freeIntermediates(true);
         dtFreeNavMesh(_navMesh);
         dtFreeNavMesh(_tempNavMesh);
         _navMesh = NULL;
         _tempNavMesh = NULL;
+        if(_navQuery){
+            dtFreeNavMeshQuery(_navQuery);
+            _navQuery = 0 ;
+        }
     }
 
     void NavigationMesh::freeIntermediates(bool freeAll){
@@ -224,6 +231,10 @@ namespace Navigation {
         rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
         PRINT_FN(Locale::get("NAV_MESH_BOUNDS"),cfg.bmax[0],cfg.bmax[1],cfg.bmax[2],cfg.bmin[0],cfg.bmin[1],cfg.bmin[2]);
 
+        _extents = vec3<F32>(cfg.bmax[0] - cfg.bmin[0],
+                             cfg.bmax[1] - cfg.bmin[1],
+                             cfg.bmax[2] - cfg.bmin[2]);
+
         if(!createPolyMesh(cfg, data, &ctx)){
             data.isValid(false);
             return false;
@@ -266,6 +277,8 @@ namespace Navigation {
         }
 
         data.isValid(true);
+        _navQuery = dtAllocNavMeshQuery();
+        _navQuery->init(_navMesh, 2048);
 
         return NavigationMeshLoader::saveMeshFile(data, geometrySaveFile.c_str());//input geometry;
     }

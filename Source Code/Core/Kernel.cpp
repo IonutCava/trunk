@@ -63,7 +63,7 @@ Kernel::~Kernel(){
     SAFE_DELETE(_mainTaskPool);
 }
 
-void Kernel::Idle(){
+void Kernel::idle(){
     GFX_DEVICE.idle();
     PHYSICS_DEVICE.idle();
     PostFX::getInstance().idle();
@@ -80,7 +80,7 @@ void Kernel::Idle(){
 
 static F32 oldFrameTime = 0;
 
-void Kernel::MainLoopApp(){
+void Kernel::mainLoopApp(){
     // Update time at every render loop
     oldFrameTime = _currentTimeMS;
     Kernel::_currentTimeMS   = GETMSTIME();
@@ -95,7 +95,7 @@ void Kernel::MainLoopApp(){
         return;
     }
 
-    Kernel::Idle();
+    Kernel::idle();
     //Restore GPU to default state: clear buffers and set default render state
     GFX_DEVICE.beginFrame();
     //Get current frame-to-application speed factor
@@ -107,7 +107,7 @@ void Kernel::MainLoopApp(){
     //Process physics
     PHYSICS_DEVICE.process(_currentTimeMS - oldFrameTime);
     //Process the current frame
-    _keepAlive = APP.getKernel()->MainLoopScene(evt);
+    _keepAlive = APP.getKernel()->mainLoopScene(evt);
     //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
     frameMgr.createEvent(FRAME_EVENT_PROCESS,evt);
     _keepAlive = frameMgr.frameRenderingQueued(evt);
@@ -118,12 +118,12 @@ void Kernel::MainLoopApp(){
     _keepAlive = frameMgr.frameEnded(evt);
 }
 
-void Kernel::FirstLoop(){
+void Kernel::firstLoop(){
     ParamHandler& par = ParamHandler::getInstance();
     bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
     par.setParam("rendering.enableShadows",false);
     //Skip one frame so all resources can be built while the splash screen is displayed
-    MainLoopApp();
+    mainLoopApp();
     Kernel::_applicationReady = true;
     Framerate::getInstance().benchmark(true);
     //Hide splash screen
@@ -131,14 +131,14 @@ void Kernel::FirstLoop(){
                                 par.getParam<U16>("runtime.resolutionHeight"));
     GFX_DEVICE.setWindowPos(10,50);
     //Bind main render loop
-    _mainLoopCallback = DELEGATE_REF(Kernel::MainLoopApp);
+    _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
     par.setParam("rendering.enableShadows", shadowMappingEnabled);
 }
 
 static const I32 SKIP_TICKS = 1000 / Config::TICKS_PER_SECOND;
-bool Kernel::MainLoopScene(FrameEvent& evt){
+bool Kernel::mainLoopScene(FrameEvent& evt){
     if(_renderingPaused) {
-        Idle();
+        idle();
         return true;
     }
     _activeScene = GET_ACTIVE_SCENE();
@@ -193,7 +193,7 @@ bool Kernel::presentToScreen(FrameEvent& evt){
     return true;
 }
 
-I8 Kernel::Initialize(const std::string& entryPoint) {
+I8 Kernel::initialize(const std::string& entryPoint) {
     I8 windowId = -1;
     I8 returnCode = 0;
     ParamHandler& par = ParamHandler::getInstance();
@@ -284,43 +284,43 @@ void Kernel::beginLogicLoop(){
     //lock the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
     //The first loop compiles all the textures, so, do not render the first frame
-    _mainLoopCallback = DELEGATE_REF(Kernel::FirstLoop);
+    _mainLoopCallback = DELEGATE_REF(Kernel::firstLoop);
     //Target FPS is define in "config.h". So all movement is capped around that value
     //start rendering
     GFX_DEVICE.initDevice(Config::TARGET_FRAME_RATE);
 }
 
-void Kernel::Shutdown(){
+void Kernel::shutdown(){
     _keepAlive = false;
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
     PRINT_FN(Locale::get("STOP_GUI"));
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
-    _GUI.DestroyInstance(); ///Deactivate GUI
+    _GUI.destroyInstance(); ///Deactivate GUI
     PRINT_FN(Locale::get("STOP_POST_FX"));
-    PostFX::getInstance().DestroyInstance();
+    PostFX::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
     _sceneMgr.deinitializeAI(true);
     AIManager::getInstance().Destroy();
-    AIManager::getInstance().DestroyInstance();
-    _sceneMgr.DestroyInstance();
+    AIManager::getInstance().destroyInstance();
+    _sceneMgr.destroyInstance();
     _shaderMgr.Destroy();
-    _lightPool.DestroyInstance();
+    _lightPool.destroyInstance();
     _GFX.closeRenderer();
     PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
-    ResourceCache::getInstance().DestroyInstance();
+    ResourceCache::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
-    _frameMgr.DestroyInstance();
-    _shaderMgr.DestroyInstance();
+    _frameMgr.destroyInstance();
+    _shaderMgr.destroyInstance();
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.exitPhysics();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     _inputInterface.terminate();
-    _inputInterface.DestroyInstance();
+    _inputInterface.destroyInstance();
     _SFX.closeAudioApi();
-    _SFX.DestroyInstance();
+    _SFX.destroyInstance();
     _GFX.closeRenderingApi();
-    _GFX.DestroyInstance();
+    _GFX.destroyInstance();
     Locale::clear();
 }
 

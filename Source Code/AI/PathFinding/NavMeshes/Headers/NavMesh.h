@@ -103,11 +103,15 @@ namespace Navigation {
         bool load(SceneGraphNode* const node);
 
         void render();
-        inline void debugDraw(bool state) {_debugDraw = state;}
-        inline bool debugDraw() {return _debugDraw;}
+        inline void debugDraw(bool state)       {_debugDraw = state;}
+        inline bool debugDraw()           const {return _debugDraw;}
 
         inline void setRenderMode(const RenderMode& mode) {_renderMode = mode;}
         inline void setRenderConnections(bool state)      {_renderConnections = state;}
+
+        inline const vec3<F32>& getExtents() const {return _extents;}
+
+        inline const dtNavMeshQuery& getNavQuery() const {return *_navQuery;}
 
         NavigationMesh();
         ~NavigationMesh();
@@ -168,6 +172,10 @@ namespace Navigation {
         std::string _fileName;
         /// Configuration file
         std::string _configFile;
+        /// NavMesh extents
+        vec3<F32> _extents;
+        ///  Query object used for this mesh
+        dtNavMeshQuery* _navQuery;
         ///SceneGraphNode from which to build
         SceneGraphNode* _sgn;
         boost::atomic<bool> _debugDraw;

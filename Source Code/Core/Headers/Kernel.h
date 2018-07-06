@@ -59,18 +59,18 @@ public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
 
-    I8 Initialize(const std::string& entryPoint);
-    void Shutdown();
+    I8 initialize(const std::string& entryPoint);
+    void shutdown();
 
     ///This sets the _mainLoopCallback and starts the main loop
     void beginLogicLoop();
     ///Our main loop entry function. The actual callback can be changed at runtime (i.e. pausing rendering in some menus, or pre-rendering a frame offscreen)
-    inline static void MainLoopStatic() {_mainLoopCallback();}
+    inline static void mainLoopStatic() {_mainLoopCallback();}
     ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
-           static void MainLoopApp();
+           static void mainLoopApp();
     ///Called after a swap-buffer call and before a clear-buffer call.
     ///In a GPU-bound application, the CPU will wait on the GPU to finish processing the frame so this should keep it busy (old-GLUT heritage)
-           static void Idle();
+           static void idle();
     ///Update all engine components that depend on the current resolution
     static void updateResolutionCallback(I32 w, I32 h);
 
@@ -107,8 +107,8 @@ public: ///Input
     bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
 private:
-   static void FirstLoop();
-   bool MainLoopScene(FrameEvent& evt);
+   static void firstLoop();
+   bool mainLoopScene(FrameEvent& evt);
    bool presentToScreen(FrameEvent& evt);
 
 private:

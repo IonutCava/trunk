@@ -15,15 +15,15 @@ Application::Application() : _kernel(NULL),
 }
 
 Application::~Application(){
-    ParamHandler::DestroyInstance();
+    ParamHandler::destroyInstance();
     PRINT_FN(Locale::get("STOP_KERNEL"));
     SAFE_DELETE(_kernel);
     PRINT_FN(Locale::get("STOP_APPLICATION"));
-    Console::DestroyInstance();
-    Framerate::DestroyInstance();
+    Console::destroyInstance();
+    Framerate::destroyInstance();
 }
 
-I8 Application::Initialize(const std::string& entryPoint,I32 argc, char **argv){
+I8 Application::initialize(const std::string& entryPoint,I32 argc, char **argv){
     assert(!entryPoint.empty());
     //Read language table
     ParamHandler::getInstance().setDebugOutput(false);
@@ -35,7 +35,7 @@ I8 Application::Initialize(const std::string& entryPoint,I32 argc, char **argv){
     _kernel = New Kernel(argc,argv,this->getInstance());
     assert(_kernel != NULL);
     //and load it via an XML file config
-    _mainWindowId = _kernel->Initialize(entryPoint);
+    _mainWindowId = _kernel->initialize(entryPoint);
     return _mainWindowId;
 }
 
@@ -47,8 +47,8 @@ void Application::run(){
     _kernel->beginLogicLoop();
 }
 
-void Application::Deinitialize(){
-    _kernel->Shutdown();
+void Application::deinitialize(){
+    _kernel->shutdown();
     if(_totalMemoryOcuppied != 0)
         ERROR_FN(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"), _totalMemoryOcuppied);
 }

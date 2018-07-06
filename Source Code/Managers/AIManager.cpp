@@ -1,7 +1,24 @@
 #include "Headers/AIManager.h"
+#include "AI/PathFinding/Headers/NavigationPath.h"
 
 AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true)
 {
+    Navigation::DivideRecast::createInstance();
+}
+
+///Clear up any remaining AIEntities
+void AIManager::Destroy(){
+    WriteLock w_lock(_updateMutex);
+    for_each(AIEntityMap::value_type& entity, _aiEntities){
+        SAFE_DELETE(entity.second);
+    }
+    _aiEntities.clear();
+    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+         SAFE_DELETE(navMesh);
+    }
+    _navMeshes.clear();
+
+    Navigation::DivideRecast::destroyInstance();
 }
 
 #pragma message("ToDo: Maybe create the \"Unit\" class and agregate it with AIEntity? -Ionut")
@@ -53,19 +70,6 @@ void AIManager::destroyEntity(U32 guid){
     WriteLock w_lock(_updateMutex);
     SAFE_DELETE(_aiEntities[guid]);
     _aiEntities.erase(guid);
-}
-
-///Clear up any remaining AIEntities
-void AIManager::Destroy(){
-    WriteLock w_lock(_updateMutex);
-    for_each(AIEntityMap::value_type& entity, _aiEntities){
-        SAFE_DELETE(entity.second);
-    }
-    _aiEntities.clear();
-    for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
-         SAFE_DELETE(navMesh);
-    }
-    _navMeshes.clear();
 }
 
 bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){

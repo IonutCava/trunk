@@ -43,7 +43,7 @@ public :
 			_instance = new T;
 	}
 
-	inline static void DestroyInstance() {
+	inline static void destroyInstance() {
 		if(_instance){
 			delete _instance;
 			_instance = 0;

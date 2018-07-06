@@ -22,7 +22,7 @@ SceneManager::~SceneManager(){
     }
     _sceneMap.clear();
     //Destroy the model loader;
-    DVDConverter::getInstance().DestroyInstance();
+    DVDConverter::getInstance().destroyInstance();
 }
 
 bool SceneManager::init(){

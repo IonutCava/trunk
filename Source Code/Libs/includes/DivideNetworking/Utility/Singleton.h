@@ -39,7 +39,7 @@ public :
 		return *_instance;
 	}
 
-	inline static void DestroyInstance() {
+	inline static void destroyInstance() {
 		WriteLock w_lock(_singletonMutex);
 		SAFE_DELETE(_instance);
 	}

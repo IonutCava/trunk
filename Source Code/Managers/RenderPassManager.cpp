@@ -19,7 +19,7 @@ RenderPassManager::~RenderPassManager()
 		SAFE_DELETE(rpi._rp);
 	}
 	_renderPasses.clear();
-	RenderQueue::DestroyInstance();
+	RenderQueue::destroyInstance();
 }
 
 void RenderPassManager::render(const SceneRenderState& sceneRenderState) {

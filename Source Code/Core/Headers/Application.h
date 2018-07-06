@@ -34,8 +34,8 @@ DEFINE_SINGLETON( Application )
 
 public:
     ///Startup and shutdown
-    I8 Initialize(const std::string& entryPoint,I32 argc, char **argv);
-    void Deinitialize();
+    I8 initialize(const std::string& entryPoint,I32 argc, char **argv);
+    void deinitialize();
     void run();
 
     ///Application resolution (either fullscreen resolution or window dimensions)

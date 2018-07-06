@@ -2,155 +2,139 @@
 #include "Waypoints/Headers/WaypointGraph.h"
 
 namespace Navigation {
-   tQueryFilter::tQueryFilter() {
-   }
+    static const U8  DT_TILECACHE_NULL_AREA     = 0;
+    static const U8  DT_TILECACHE_WALKABLE_AREA = 63;
+    static const U16 DT_TILECACHE_NULL_IDX      = 0xffff;
 
-   bool tQueryFilter::passFilter(const dtPolyRef ref, const dtMeshTile* tile, const dtPoly* poly) const  {
-      return Parent::passFilter(ref, tile, poly);
-   }
+    DivideRecast::DivideRecast()
+    {
+        // Setup the default query filter
+        _filter = new dtQueryFilter();
+        _filter->setIncludeFlags(0xFFFF);    // Include all
+        _filter->setExcludeFlags(0);         // Exclude none
+        // Area flags for polys to consider in search, and their cost
+        _filter->setAreaCost(SAMPLE_POLYAREA_GROUND, 1.0f);       // TODO have a way of configuring the filter
+        _filter->setAreaCost(DT_TILECACHE_WALKABLE_AREA, 1.0f);
+        
+        // Init path store. MaxVertex 0 means empty path slot
+        for(I32 i = 0; i < MAX_PATHSLOT; i++) {
+            _pathStore[i].MaxVertex = 0;
+            _pathStore[i].Target = 0;
+        }
+    }
 
-   NavigationPath::NavigationPath() :  _from(0.0f, 0.0f, 0.0f),
-                                       _to(0.0f, 0.0f, 0.0f)  {
-      _mesh = NULL;
-      _waypoints = NULL;
+    DivideRecast::~DivideRecast()
+    {
+        SAFE_DELETE(_filter);
+    }
 
-      _from.set(0, 0, 0);
-      _fromSet = false;
-      _to.set(0, 0, 0);
-      _toSet = false;
-      _length = 0.0f;
+    PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh, 
+                                         const vec3<F32>& startPos, 
+                                         const vec3<F32>& endPos, 
+                                         I32 pathSlot,
+                                         I32 target) {
+        
+        const F32* pStartPos = &startPos[0];
+        const F32* pEndPos = &endPos[0];
+        const F32* extents = &navMesh.getExtents()[0];
+        const dtNavMeshQuery& navQuery = navMesh.getNavQuery();
 
-      _curIndex = -1;
-      _isLooping = false;
-      _autoUpdate = false;
-      _isSliced = false;
+        dtStatus status;
+        dtPolyRef StartPoly;
+        dtPolyRef EndPoly;
+        dtPolyRef PolyPath[MAX_PATHPOLY];
+        F32 StraightPath[MAX_PATHVERT * 3];
+        F32 StartNearest[3];
+        F32 EndNearest[3];
+        I32 nPathCount = 0;
+        I32 nVertCount=0;
 
-      _maxIterations = 1;
+        // find the start polygon
+        status = navQuery.findNearestPoly(pStartPos, extents, _filter, &StartPoly, StartNearest) ;
+        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK)) 
+            return PATH_ERROR_NO_NEAREST_POLY_START; // couldn't find a polygon
 
-      _alwaysRender = false;
-      _Xray = false;
+        // find the end polygon
+        status = navQuery.findNearestPoly(pEndPos, extents, _filter, &EndPoly, EndNearest) ;
+        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+            return PATH_ERROR_NO_NEAREST_POLY_END; // couldn't find a polygon
 
-      _query = dtAllocNavMeshQuery();
-   }
+        status = navQuery.findPath(StartPoly, EndPoly, StartNearest, EndNearest, _filter, PolyPath, &nPathCount, MAX_PATHPOLY) ;
+        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+            return PATH_ERROR_COULD_NOT_CREATE_PATH; // couldn't create a path
+        if(nPathCount==0)
+            return PATH_ERROR_COULD_NOT_FIND_PATH; // couldn't find a path
 
-   NavigationPath::~NavigationPath() {
-      dtFreeNavMeshQuery(_query);
-      _query = NULL;
-   }
+        status = navQuery.findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_PATHVERT) ;
+        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+            return PATH_ERROR_NO_STRAIGHT_PATH_CREATE; // couldn't create a path
+        if(nVertCount==0)
+            return PATH_ERROR_NO_STRAIGHT_PATH_FIND; // couldn't find a path
 
-  bool NavigationPath::init() {
-      // Check that al the right data is provided.
-      if(!_mesh || !_mesh->getNavigationMesh())
-         return false;
+        // At this point we have our path.  Copy it to the path store
+        I32 nIndex=0 ;
+        for(I32 nVert = 0; nVert < nVertCount; nVert++) {
+            _pathStore[pathSlot].PosX[nVert]=StraightPath[nIndex++];
+            _pathStore[pathSlot].PosY[nVert]=StraightPath[nIndex++];
+            _pathStore[pathSlot].PosZ[nVert]=StraightPath[nIndex++];
 
-      if(!(_fromSet && _toSet) && !(_waypoints && _waypoints->getSize()))
-         return false;
+           //PRINT_FN("Path Vert %i, %f %f %f", nVert, m_PathStore[pathSlot].PosX[nVert], m_PathStore[pathSlot].PosY[nVert], m_PathStore[pathSlot].PosZ[nVert]) ;
+        }
+   
+        _pathStore[pathSlot].MaxVertex=nVertCount;
+        _pathStore[pathSlot].Target=target;
 
-      // Initialise out query.
-      if(dtStatusFailed(_query->init(_mesh->getNavigationMesh(), MaxPathLen)))
-         return false;
+        return PATH_ERROR_NONE;
+    }
 
-      _points.clear();
-      _visitPoints.clear();
-      _length = 0.0f;
+    std::vector<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {
+       
+        std::vector<vec3<F32> > result;
+        if(pathSlot < 0 || pathSlot >= MAX_PATHSLOT || _pathStore[pathSlot].MaxVertex <= 0)
+            return result;
 
-      return true;
-   }
+        PATHDATA *path = &(_pathStore[pathSlot]);
+        result.reserve(path->MaxVertex);
+        for(I32 i = 0; i < path->MaxVertex; i++) {
+            result.push_back(vec3<F32>(path->PosX[i], path->PosY[i], path->PosZ[i]));
+        }
 
-   void NavigationPath::resize()  {
-   }
+        return result;
+    }
 
-   bool NavigationPath::plan()  {
-      if(_isSliced)
-         return planSliced();
-      else
-         return planInstant();
-   }
+    I32 DivideRecast::getTarget(I32 pathSlot) {
+        if(pathSlot < 0 || pathSlot >= MAX_PATHSLOT)
+            return 0;
+        
+        return _pathStore[pathSlot].Target;
+    }
 
-   bool NavigationPath::planSliced()  {
-      // Initialise query and visit locations.
-      if(!init())
-         return false;
+    /// Random number generator implementation used by getRandomNavMeshPoint method.
+    static F32 frand() {
+        return (F32)rand()/(F32)RAND_MAX;
+    }
 
-      bool visited = visitNext();
+    vec3<F32> DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh){
+        F32 resultPoint[3];
+        dtPolyRef resultPoly;
+        navMesh.getNavQuery().findRandomPoint(_filter, frand, &resultPoly, resultPoint);
 
-      return visited;
-   }
+        return vec3<F32>(resultPoint[0], resultPoint[1], resultPoint[2]);
+    }
 
-   bool NavigationPath::visitNext()  {
-      U32 s = _visitPoints.size();
+    bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt){
+        dtPolyRef navmeshPoly;
+        return findNearestPolyOnNavmesh(navMesh, position, resultPt, navmeshPoly);
+    }
 
-      if(s < 2)
-         return false;
-
-      // Current leg of journey.
-      vec3<F32> start = _visitPoints[s-1];
-      vec3<F32> end   = _visitPoints[s-2];
-
-      // Convert to Detour-friendly coordinates and data structures.
-      F32 from[] = {start.x, start.z, -start.y};
-      F32 to[] =   {end.x,   end.z,   -end.y};
-      F32 extents[] = {1.0f, 1.0f, 1.0f};
-      dtPolyRef startRef, endRef;
-
-      if(dtStatusFailed(_query->findNearestPoly(from, extents, &_filter, &startRef, start)))  {
-          ERROR_FN(Locale::get("ERROR_NAV_NO_POLY_NEAR_POINTS"), start.x, start.y, start.z);
-         return false;
-      }
-
-      if(dtStatusFailed(_query->findNearestPoly(to, extents, &_filter, &endRef, end)))
-      {
-          ERROR_FN(Locale::get("ERROR_NAV_NO_POLY_NEAR_POINTS"), end.x, end.y, end.z);
-         return false;
-      }
-
-      // Init sliced pathfind.
-      _status = _query->initSlicedFindPath(startRef, endRef, from, to, &_filter);
-
-      if(dtStatusFailed(_status))
-         return false;
-
-      return true;
-   }
-
-   bool NavigationPath::update()  {
-      return false;
-   }
-
-   bool NavigationPath::finalise()  {
-      resize();
-
-      return dtStatusSucceed(_status);
-   }
-
-   bool NavigationPath::planInstant()  {
-      if(!init())
-         return false;
-
-      visitNext();
-
-      while(update());
-
-      if(!finalise())
-         return false;
-
-      resize();
-
-      return true;
-   }
-
-   vec3<F32> NavigationPath::getNode(I32 idx)  {
-      if(idx < getCount() && idx >= 0)
-         return _points[idx];
-
-      return vec3<F32>();
-   }
-
-   I32 NavigationPath::getCount()  {
-      return _points.size();
-   }
-
-   I32 NavigationPath::getObject(I32 idx)  {
-      return -1;
-   }
+    bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt, dtPolyRef &resultPoly){
+        F32 pt[] = {position.x, position.y, position.z};
+        F32 rPt[3];
+        const F32* extents = &navMesh.getExtents()[0];
+        dtStatus status = navMesh.getNavQuery().findNearestPoly(pt, extents, _filter, &resultPoly, rPt);
+        if((status&DT_FAILURE) || (status&DT_STATUS_DETAIL_MASK))
+            return false; // couldn't find a polygon
+        resultPt.set(rPt[0],rPt[1],rPt[2]);
+        return true;
+    }
 };

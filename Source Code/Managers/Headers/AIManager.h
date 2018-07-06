@@ -32,6 +32,9 @@ DEFINE_SINGLETON(AIManager)
     typedef Unordered_map<I64, AIEntity*> AIEntityMap;
 
 public:
+    /// Destroy all entities
+    void Destroy();
+
     U8 tick();
     ///Handle any debug information rendering (nav meshes, AI paths, etc);
     ///Called by Scene::postRender after depth map preview call
@@ -44,15 +47,16 @@ public:
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
     ///Remove a nav mesh
     void destroyNavMesh(Navigation::NavigationMesh* const navMesh);
-    /// Destroy all entities
-    void Destroy();
+ 
     inline void setSceneCallback(boost::function0<void> callback) {WriteLock w_lock(_updateMutex); _sceneCallback = callback;}
     inline void pauseUpdate(bool state) {_pauseUpdate = state;}
+
     ///Toggle NavMesh debugDraw
     void toggleNavMeshDebugDraw(bool state);
 
 protected:
     AIManager();
+
 private:
     void processInput();  ///< sensors
     void processData();   ///< think

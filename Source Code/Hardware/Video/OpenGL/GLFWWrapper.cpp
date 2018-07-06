@@ -429,7 +429,7 @@ void GL_API::closeRenderingApi(){
 void GL_API::initDevice(GLuint targetFrameRate){
     assert(_imShader != NULL);
     while(!glfwWindowShouldClose(Divide::GL::_mainWindow)) {
-        Kernel::MainLoopStatic();
+        Kernel::mainLoopStatic();
     }
 }
 

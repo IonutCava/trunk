@@ -59,9 +59,9 @@ void GFXDevice::closeRenderingApi(){
         SAFE_DELETE(it.second);
     }
     _stateBlockMap.clear();
-    Frustum::DestroyInstance();
+    Frustum::destroyInstance();
     ///Destroy all rendering Passes
-    RenderPassManager::getInstance().DestroyInstance();
+    RenderPassManager::getInstance().destroyInstance();
 }
 
 void GFXDevice::closeRenderer(){
