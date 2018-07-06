@@ -59,6 +59,13 @@ namespace {
         return r;
     }
 
+    inline __m128 SIMPLE_DOT(__m128 a, __m128 b)
+    {
+        a = _mm_mul_ps(a, b);
+        b = _mm_hadd_ps(a, a);
+        return _mm_hadd_ps(b, b);
+    }
+
     inline void DOT_SIMD(const __m128 &a, const __m128 &b, F32 &dot)
     {
         _mm_store_ss(&dot, DOT_SIMD(a, b));
@@ -661,8 +668,7 @@ inline void vec4<T>::normalize() {
 
 template <>
 inline void vec4<F32>::normalize() {
-    __m128 inverse_norm = _mm_rsqrt_ps(_mm_dp_ps(_reg._reg, _reg._reg, 0x7F));
-    _reg._reg = _mm_mul_ps(_reg._reg, inverse_norm);
+    _reg._reg = _mm_mul_ps(_reg._reg, _mm_rsqrt_ps(SIMPLE_DOT(_reg._reg, _reg._reg)));
 }
 
 /// lerp between this and the specified vector by the specified amount
