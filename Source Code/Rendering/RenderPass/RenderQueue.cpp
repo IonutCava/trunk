@@ -37,17 +37,13 @@ U16 RenderQueue::getRenderQueueStackSize() const {
     return temp;
 }
 
-RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
-    RenderBin* temp = getBin(rbType);
-    if (temp != nullptr) {
-        return temp;
-    }
-
+RenderingOrder::List RenderQueue::getSortOrder(RenderBinType rbType) {
     RenderingOrder::List sortOrder = RenderingOrder::List::COUNT;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
-            // By state varies based on the current rendering stage
-            sortOrder = RenderingOrder::List::BY_STATE;
+            // Opaque items should be rendered front to back in depth passes for early-Z reasons
+            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::BY_STATE
+                                                 : RenderingOrder::List::FRONT_TO_BACK;
         } break;
         case RenderBinType::RBT_SKY: {
             sortOrder = RenderingOrder::List::NONE;
@@ -55,31 +51,42 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
         case RenderBinType::RBT_IMPOSTOR:
         case RenderBinType::RBT_TERRAIN:
         case RenderBinType::RBT_DECALS: {
-            sortOrder = RenderingOrder::List::FRONT_TO_BACK;
+            // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
+            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::FRONT_TO_BACK
+                                                 : RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_WATER:
         case RenderBinType::RBT_VEGETATION_GRASS:
         case RenderBinType::RBT_PARTICLES:
         case RenderBinType::RBT_TRANSLUCENT: {
-            sortOrder = RenderingOrder::List::BACK_TO_FRONT;
+            // Translucent items should be rendered by material in depth passes to avoid useless material switches
+            // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
+            // and the Opaque pass should have finished by now
+            sortOrder = !_context.isDepthStage() ? RenderingOrder::List::BACK_TO_FRONT
+                                                 : RenderingOrder::List::BY_STATE;
         } break;
-
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
-            return nullptr;
         } break;
     };
+    
+    return sortOrder;
+}
 
-    temp = MemoryManager_NEW RenderBin(_context, rbType, sortOrder);
+RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
+    RenderBin* temp = getBin(rbType);
+    if (temp != nullptr) {
+        return temp;
+    }
+
+    temp = MemoryManager_NEW RenderBin(_context, rbType);
     // Bins are sorted by their type
     _renderBins[rbType._to_integral()] = temp;
     
     _activeBins.resize(0);
-    for (RenderBin* bin : _renderBins) {
-        if (bin != nullptr) {
-            _activeBins.push_back(bin);
-        }
-    }
+    std::back_insert_iterator<vectorImpl<RenderBin*>> back_it(_activeBins);
+    auto const usedPredicate = [](RenderBin* ptr) { return ptr != nullptr; };
+    std::copy_if(std::begin(_renderBins), std::end(_renderBins), back_it, usedPredicate);
 
     return temp;
 }
@@ -105,8 +112,7 @@ RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
         }
         case SceneNodeType::TYPE_VEGETATION_TREES:
         case SceneNodeType::TYPE_OBJECT3D: {
-            if (static_cast<Object3D*>(node.get())->getObjectType() ==
-                Object3D::ObjectType::TERRAIN) {
+            if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::TERRAIN) {
                 return getOrCreateBin(RenderBinType::RBT_TERRAIN);
             }
             // Check if the object has a material with translucency
@@ -168,9 +174,10 @@ void RenderQueue::sort() {
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
+            RenderingOrder::List sortOrder = getSortOrder(renderBin->getType());
             sortTask.addChildTask(CreateTask(pool,
-                [renderBin](const Task& parentTask) {
-                    renderBin->sort(parentTask);
+                [renderBin, sortOrder](const Task& parentTask) {
+                    renderBin->sort(sortOrder, parentTask);
                 })._task)->startTask(Task::TaskPriority::HIGH);
         }
     }

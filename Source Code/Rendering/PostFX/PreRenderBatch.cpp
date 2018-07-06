@@ -52,7 +52,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
-    screenSampler.toggleSRGBColourSpace(true);
+
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGBA8,
                                        GFXDataFormat::UNSIGNED_BYTE);
@@ -64,6 +64,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     lumaSampler.toggleMipMaps(true);
+
     TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
@@ -86,16 +87,16 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
     ldrBatch.push_back(MemoryManager_NEW PostAAPreRenderOperator(_context, *this, _resCache));
 
-    ResourceDescriptor toneMap("bloom.ToneMap");
+    ResourceDescriptor toneMap("toneMap");
     toneMap.setThreadedLoading(false);
     _toneMap = CreateResource<ShaderProgram>(_resCache, toneMap);
 
-    ResourceDescriptor toneMapAdaptive("bloom.ToneMap.Adaptive");
+    ResourceDescriptor toneMapAdaptive("toneMap.Adaptive");
     toneMapAdaptive.setThreadedLoading(false);
     toneMapAdaptive.setPropertyList("USE_ADAPTIVE_LUMINANCE");
     _toneMapAdaptive = CreateResource<ShaderProgram>(_resCache, toneMapAdaptive);
 
-    ResourceDescriptor luminanceCalc("bloom.LuminanceCalc");
+    ResourceDescriptor luminanceCalc("luminanceCalc");
     luminanceCalc.setThreadedLoading(false);
     _luminanceCalc = CreateResource<ShaderProgram>(_resCache, luminanceCalc);
 

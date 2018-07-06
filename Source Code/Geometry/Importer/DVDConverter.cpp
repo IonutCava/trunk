@@ -443,6 +443,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             // The first texture is always "Replace"
             texture._operation = count == 0 ? Material::TextureOperation::REPLACE
                                             : aiTextureOperationTable[op];
+            texture._srgbSpace = true;
             material._textures[to_U32(usage)] = texture;
                                                                 
         }  // endif
@@ -480,6 +481,8 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
+            texture._srgbSpace = false;
+
             material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
         }  // endif
@@ -509,6 +512,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
+            texture._srgbSpace = false;
             material._textures[to_base(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
         }  // endif
@@ -544,6 +548,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._textureName = img_name;
                 texture._texturePath = img_path;
                 texture._operation = aiTextureOperationTable[op];
+                texture._srgbSpace = false;
                 material._textures[to_base(ShaderProgram::TextureUsage::OPACITY)] = texture;
                 material._doubleSided = true;
             }  // endif
@@ -574,6 +579,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture._textureName = img_name;
             texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
+            texture._srgbSpace = false;
             material._textures[to_base(ShaderProgram::TextureUsage::SPECULAR)] = texture;
         }  // endif
     }      // endif

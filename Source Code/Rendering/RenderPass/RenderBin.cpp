@@ -67,13 +67,11 @@ struct RenderQueueDistanceFrontToBack {
 };
 
 RenderBin::RenderBin(GFXDevice& context, 
-                     RenderBinType rbType,
-                     RenderingOrder::List renderOrder)
+                     RenderBinType rbType)
     : _context(context),
       _binIndex(0),
       _rbType(rbType),
-      _binPropertyMask(0),
-      _renderOrder(renderOrder)
+      _binPropertyMask(0)
 {
     _renderBinStack.reserve(125);
 
@@ -88,20 +86,13 @@ RenderBin::~RenderBin()
 {
 }
 
-void RenderBin::sort(const Task& parentTask) {
+void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
     // WriteLock w_lock(_renderBinGetMutex);
-    switch (_renderOrder) {
-        default:
+    switch (renderOrder) {
         case RenderingOrder::List::BY_STATE: {
-            if (_context.isDepthStage()) {
-                std::sort(std::begin(_renderBinStack),
-                          std::end(_renderBinStack),
-                          RenderQueueDistanceFrontToBack());
-            } else {
-                std::sort(std::begin(_renderBinStack),
-                          std::end(_renderBinStack),
-                          RenderQueueKeyCompare());
-            }
+            std::sort(std::begin(_renderBinStack),
+                        std::end(_renderBinStack),
+                        RenderQueueKeyCompare());
         } break;
         case RenderingOrder::List::BACK_TO_FRONT: {
             std::sort(std::begin(_renderBinStack),
@@ -116,9 +107,9 @@ void RenderBin::sort(const Task& parentTask) {
         case RenderingOrder::List::NONE: {
             // no need to sort
         } break;
+        default:
         case RenderingOrder::List::COUNT: {
-            Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")),
-                             _rbType._to_string());
+            Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
     };
 

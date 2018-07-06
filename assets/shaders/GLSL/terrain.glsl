@@ -112,7 +112,7 @@ vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
 void main(void) {
     bumpInit();
 
-   _colourOut = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(distance, 0.0))));
+   _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(distance, 0.0));
 
    _normalOut = packNormal(getProcessedNormal());
    _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());

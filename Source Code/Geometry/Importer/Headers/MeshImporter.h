@@ -43,10 +43,12 @@ namespace Divide {
     namespace Import {
         struct TextureEntry {
             TextureEntry()
+              : _srgbSpace(false),
+                _wrapU(TextureWrap::REPEAT),
+                _wrapV(TextureWrap::REPEAT),
+                _wrapW(TextureWrap::REPEAT),
+                _operation(Material::TextureOperation::REPLACE)
             {
-                _srgbSpace = true;
-                _wrapU = _wrapV = _wrapW = TextureWrap::REPEAT;
-                _operation = Material::TextureOperation::REPLACE;
             }
 
             bool serialize(ByteBuffer& dataOut) const;
@@ -54,6 +56,9 @@ namespace Divide {
 
             stringImpl _textureName;
             stringImpl _texturePath;
+
+            // Only Albedo/Diffuse should be sRGB
+            // Normals, specular, etc should be in linear space
             bool _srgbSpace;
             TextureWrap _wrapU, _wrapV, _wrapW;
             Material::TextureOperation _operation;

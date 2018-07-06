@@ -367,9 +367,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\HardwareQuery.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -1142,5 +1140,10 @@
     <None Include="..\..\assets\shaders\GLSL\terrainTess.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\assets\shaders\GLSL\toneMap.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </Text>
   </ItemGroup>
 </Project>

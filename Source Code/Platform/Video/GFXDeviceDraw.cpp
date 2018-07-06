@@ -41,19 +41,7 @@ void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
                 RenderSubPassCmd subPassCmd;
                 RenderPackage& package = renderQueue.getPackage(idx);
                 GenericDrawCommands& drawCommands = package._drawCommands;
-                vectorAlg::vecSize commandCount = drawCommands.size();
-                if (commandCount > 0) {
-                    vectorAlg::vecSize previousCommandIndex = 0;
-                    vectorAlg::vecSize currentCommandIndex = 1;
-                    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
-                        GenericDrawCommand& previousCommand = drawCommands[previousCommandIndex];
-                        GenericDrawCommand& currentCommand = drawCommands[currentCommandIndex];
-                        if (!batchCommands(previousCommand, currentCommand))
-                        {
-                            previousCommandIndex = currentCommandIndex;
-                        }
-                    }
-
+                if (drawCommands.size() > 0 && batchCommands(drawCommands)) {
                     std::for_each(std::begin(drawCommands),
                                   std::end(drawCommands),
                                   [&](GenericDrawCommand& cmd) -> void {
@@ -170,13 +158,8 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                                   bool refreshNodeData)
 {
     Time::ScopedTimer timer(_commandBuildTimer);
-    // If there aren't any nodes visible in the current pass, don't update
-    // anything (but clear the render queue
+    // If there aren't any nodes visible in the current pass, don't update anything (but clear the render queue
 
-    U32 textureHandle = 0;
-    U32 lastUnit0Handle = 0;
-    U32 lastUnit1Handle = 0;
-    U32 lastUsedSlot = 0;
     RenderStagePass currentStage = getRenderStage();
     if (refreshNodeData) {
         bufferData._lastCommandCount = 0;
@@ -223,33 +206,12 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                                                                                                : renderable->commandOffset(),
                                                                                refreshNodeData ? nodeCount
                                                                                                : renderable->commandIndex());
-
         if (pkg.isRenderable()) {
             if (refreshNodeData) {
+
                 NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
-                if (isDepthStage()) {
-                    for (TextureData& data : pkg._textureData.textures()) {
-                        if (data.getHandleLow() == to_base(ShaderProgram::TextureUsage::UNIT0)) {
-                            textureHandle = data.getHandleHigh();
-                            if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
-                                  (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
-                                || (lastUsedSlot == 0 && lastUnit0Handle != 0))
-                            {
-                                data.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT1));
-                                    // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
-                                    dataOut._properties.w = 1;
-                                    lastUnit1Handle = textureHandle;
-                                    lastUsedSlot = 1;
-                            } else {
-                                lastUnit0Handle = textureHandle;
-                                lastUsedSlot = 0;
-                            }
-                        }
-                    }
-                } else {
-                    //set properties.w to -1 to skip occlusion culling for the node
-                    dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
-                }
+                //set properties.w to -1 to skip occlusion culling for the node
+                dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
 
                 if (refreshNodeData) {
                     for (GenericDrawCommand& cmd : pkg._drawCommands) {
@@ -323,31 +285,48 @@ U32 GFXDevice::getLastCullCount() const {
     return cullCount;
 }
 
-bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
-                              GenericDrawCommand& currentIDC) const {
-    if (previousIDC.compatible(currentIDC) &&
-        // Batchable commands must share the same buffer
-        previousIDC.sourceBuffer()->getGUID() ==
-        currentIDC.sourceBuffer()->getGUID() &&
-        // And the same shader program
-        previousIDC.pipeline().shaderProgram()->getID() ==
-        currentIDC.pipeline().shaderProgram()->getID())
-    {
-        U32 prevCount = previousIDC.drawCount();
-        if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
-            return false;
-        }
-        // If the rendering commands are batchable, increase the draw count for
-        // the previous one
-        previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
-        // And set the current command's draw count to zero so it gets removed
-        // from the list later on
-        currentIDC.drawCount(0);
+bool GFXDevice::batchCommands(GenericDrawCommands& commands) const {
+    auto batch = [](GenericDrawCommand& previousIDC,
+                    GenericDrawCommand& currentIDC)  -> bool {
+            if (previousIDC.compatible(currentIDC) &&
+                // Batchable commands must share the same buffer
+                previousIDC.sourceBuffer()->getGUID() == currentIDC.sourceBuffer()->getGUID())
+            {
+                U32 prevCount = previousIDC.drawCount();
+                if (previousIDC.cmd().baseInstance + prevCount != currentIDC.cmd().baseInstance) {
+                    return false;
+                }
+                // If the rendering commands are batchable, increase the draw count for the previous one
+                previousIDC.drawCount(to_U16(prevCount + currentIDC.drawCount()));
+                // And set the current command's draw count to zero so it gets removed from the list later on
+                currentIDC.drawCount(0);
 
-        return true;
+                return true;
+            }
+
+            return false;
+    };
+
+
+    vectorAlg::vecSize previousCommandIndex = 0;
+    vectorAlg::vecSize currentCommandIndex = 1;
+    const vectorAlg::vecSize commandCount = commands.size();
+    for (; currentCommandIndex < commandCount; ++currentCommandIndex) {
+        GenericDrawCommand& previousCommand = commands[previousCommandIndex];
+        GenericDrawCommand& currentCommand = commands[currentCommandIndex];
+        if (!batch(previousCommand, currentCommand))
+        {
+            previousCommandIndex = currentCommandIndex;
+        }
     }
 
-    return false;
+    commands.erase(std::remove_if(std::begin(commands),
+                   std::end(commands),
+                   [](const GenericDrawCommand& cmd) -> bool {
+                       return cmd.drawCount() == 0;
+                   }),
+                   std::end(commands));
+    return true;
 }
 
 bool GFXDevice::draw(const GenericDrawCommand& cmd) {

@@ -92,6 +92,8 @@ void LightPool::init() {
     iconSampler.toggleMipMaps(false);
     iconSampler.setAnisotropy(0);
     iconSampler.setWrapMode(TextureWrap::REPEAT);
+    iconSampler.toggleSRGBColourSpace(true);
+
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.setThreadedLoading(false);
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);

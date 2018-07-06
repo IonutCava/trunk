@@ -47,9 +47,9 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
     skyboxSampler.setFilters(TextureFilter::LINEAR);
-    skyboxSampler.toggleSRGBColourSpace(true);
     skyboxSampler.setAnisotropy(0);
     skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    skyboxSampler.toggleSRGBColourSpace(true);
 
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");

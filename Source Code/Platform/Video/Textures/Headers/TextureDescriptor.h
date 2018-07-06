@@ -62,6 +62,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR, TextureFilter::LINEAR);
         setAnisotropy(16);
         setLOD();
+        // Everything we load should be SRGB. Everything we create at runtime shouldn't
         toggleSRGBColourSpace(false);
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
@@ -357,7 +358,7 @@ class TextureDescriptor : public PropertyDescriptor {
 
     private:
         GFXImageFormat _baseFormat;
-        GFXDataFormat _dataType;
+        GFXDataFormat  _dataType;
 
 };
 

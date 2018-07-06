@@ -60,6 +60,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     blurMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     blurMapSampler.setAnisotropy(0);
     blurMapSampler.toggleMipMaps(false);
+
     TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                         GFXImageFormat::RG32F,
                                         GFXDataFormat::FLOAT_32);

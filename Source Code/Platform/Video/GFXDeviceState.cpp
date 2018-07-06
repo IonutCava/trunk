@@ -152,6 +152,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
     hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.toggleMipMaps(true);
+
     hiZDescriptor.setSampler(hiZSampler);
     hiZDescriptor.toggleAutomaticMipMapGeneration(false);
 

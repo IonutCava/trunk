@@ -374,7 +374,7 @@ enum class GFXImageFormat : U32 {
     RGBA,
     RGBA4,
     RGBA8,
-    SRGBA8,
+    SRGB_ALPHA8,
     RGBA8I,
     RGBA16F,
     RGBA32F,
@@ -481,7 +481,7 @@ inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
 
     case GFXImageFormat::RGBA4:
     case GFXImageFormat::RGBA8:
-    case GFXImageFormat::SRGBA8:
+    case GFXImageFormat::SRGB_ALPHA8:
     case GFXImageFormat::RGBA8I:
     case GFXImageFormat::RGBA16F:
     case GFXImageFormat::RGBA32F:

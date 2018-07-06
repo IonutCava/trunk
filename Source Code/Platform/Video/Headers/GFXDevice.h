@@ -59,7 +59,6 @@ class RenderDocManager;
 
 namespace Divide {
 
-enum class RenderStage : U32;
 enum class RendererType : U32;
 enum class SceneNodeType : U32;
 enum class WindowEvent : U32;
@@ -432,8 +431,8 @@ protected:
         SceneRenderState& sceneRenderState,
         RenderPass::BufferData& bufferData,
         bool refreshNodeData);
-    bool batchCommands(GenericDrawCommand& previousIDC,
-        GenericDrawCommand& currentIDC) const;
+
+    bool batchCommands(GenericDrawCommands& commands) const;
     void constructHIZ(RenderTarget& depthBuffer);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }

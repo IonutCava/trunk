@@ -48,6 +48,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     noiseSampler.setAnisotropy(0);
     noiseSampler.setFilters(TextureFilter::NEAREST);
     noiseSampler.setWrapMode(TextureWrap::REPEAT);
+    noiseSampler.toggleSRGBColourSpace(true);
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
     ResourceDescriptor textureAttachment(attachmentName);

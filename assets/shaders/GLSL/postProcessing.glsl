@@ -13,12 +13,15 @@ void main(void)
 
 -- Fragment
 
+#include "utility.frag"
+
 out vec4 _colourOut;
 
 layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
 layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
+layout(binding = TEXTURE_DEPTH_MAP)         uniform sampler2D texDepthMap;
 
 uniform float _noiseTile;
 uniform float _noiseFactor;
@@ -86,5 +89,7 @@ void main(void){
     if (_fadeActive) {
         colour = mix(colour, _fadeColour, _fadeStrength);
     }
-    _colourOut = colour;
+
+    float depth = textureLod(texDepthMap, getScreenPositionNormalised(), 0).r;
+    _colourOut = vec4(applyFog(depth, colour.rgb), colour.a);
 }

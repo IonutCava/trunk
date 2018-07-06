@@ -87,13 +87,13 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
 
     if (texDescriptor.getSampler().srgb()) {
         if (texDescriptor._internalFormat == GFXImageFormat::RGBA8) {
-            texDescriptor._internalFormat = GFXImageFormat::SRGBA8;
+            texDescriptor._internalFormat = GFXImageFormat::SRGB_ALPHA8;
         }
         if (texDescriptor._internalFormat == GFXImageFormat::RGB8) {
             texDescriptor._internalFormat = GFXImageFormat::SRGB8;
         }
     } else {
-        if (texDescriptor._internalFormat == GFXImageFormat::SRGBA8) {
+        if (texDescriptor._internalFormat == GFXImageFormat::SRGB_ALPHA8) {
             texDescriptor._internalFormat = GFXImageFormat::RGBA8;
         }
         if (texDescriptor._internalFormat == GFXImageFormat::SRGB8) {

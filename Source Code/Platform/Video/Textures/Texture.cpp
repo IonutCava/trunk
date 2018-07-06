@@ -190,12 +190,15 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {
         case GFXImageFormat::LUMINANCE:
+            assert(!srgb);
             _descriptor._internalFormat = GFXImageFormat::LUMINANCE;
             break;
         case GFXImageFormat::RED:
+            assert(!srgb);
             _descriptor._internalFormat = GFXImageFormat::RED8;
             break;
         case GFXImageFormat::RG:
+            assert(!srgb);
             _descriptor._internalFormat = GFXImageFormat::RG8;
             break;
         case GFXImageFormat::BGR:
@@ -207,7 +210,7 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
         case GFXImageFormat::BGRA:
         case GFXImageFormat::RGBA:
             _descriptor._internalFormat =
-                srgb ? GFXImageFormat::SRGBA8 : 
+                srgb ? GFXImageFormat::SRGB_ALPHA8 :
                        GFXImageFormat::RGBA8;
             break;
         case GFXImageFormat::COMPRESSED_RGB_DXT1: {

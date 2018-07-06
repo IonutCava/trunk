@@ -61,6 +61,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.setFilters(TextureFilter::LINEAR);
                 depthMapSampler._useRefCompare = true;
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
+
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                      GFXImageFormat::DEPTH_COMPONENT,
@@ -78,6 +79,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthMapSampler.setAnisotropy(8);
                 depthMapSampler._useRefCompare = false;
+
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                      GFXImageFormat::RG32F,
                                                      GFXDataFormat::FLOAT_32);
@@ -89,6 +91,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthSampler.setFilters(TextureFilter::NEAREST);
                 depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthSampler._useRefCompare = true;
+
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                   GFXImageFormat::DEPTH_COMPONENT,
                                                   GFXDataFormat::UNSIGNED_INT);
@@ -109,6 +112,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.toggleMipMaps(false);
                 depthMapSampler._useRefCompare = true;  //< Use compare function
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
+
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY,
                                                      GFXImageFormat::DEPTH_COMPONENT,
                                                      GFXDataFormat::UNSIGNED_INT);

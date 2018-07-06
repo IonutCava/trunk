@@ -601,7 +601,7 @@ void main(void)
 
     setProcessedNormal(getTerrainNormal());
 
-    _colourOut = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x)));
+    _colourOut = mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x);
 
 #if defined(_DEBUG)
     if (ToggleWireframe == 1.0) {

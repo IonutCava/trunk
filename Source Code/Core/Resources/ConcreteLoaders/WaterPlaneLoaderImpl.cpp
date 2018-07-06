@@ -19,6 +19,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
     defaultSampler.toggleMipMaps(false);
+
     ResourceDescriptor waterShader("water");
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterTexture("waterTexture_" + name);

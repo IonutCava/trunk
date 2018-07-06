@@ -102,13 +102,10 @@ class RenderBin {
 
     friend class RenderQueue;
 
-    RenderBin(GFXDevice& context,
-              RenderBinType rbType,
-              RenderingOrder::List renderOrder);
-
+    explicit RenderBin(GFXDevice& context, RenderBinType rbType);
     ~RenderBin();
 
-    void sort(const Task& parentTask);
+    void sort(RenderingOrder::List renderOrder, const Task& parentTask);
     void populateRenderQueue(const Task& parentTask, const RenderStagePass& renderStagePass);
     void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
     void refresh();
@@ -137,7 +134,6 @@ class RenderBin {
     U32 _binPropertyMask;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
-    RenderingOrder::List _renderOrder;
 };
 
 };  // namespace Divide

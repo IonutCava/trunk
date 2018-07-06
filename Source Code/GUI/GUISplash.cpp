@@ -23,6 +23,7 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashSampler.setAnisotropy(0);
     splashSampler.setWrapMode(TextureWrap::CLAMP);
     splashSampler.toggleSRGBColourSpace(true);
+
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
@@ -30,6 +31,7 @@ GUISplash::GUISplash(ResourceCache& cache,
     splashImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     splashImage.setEnumValue(to_base(TextureType::TEXTURE_2D));
     _splashImage = CreateResource<Texture>(cache, splashImage);
+
     ResourceDescriptor splashShader("fbPreview");
     splashShader.setThreadedLoading(false);
     _splashShader = CreateResource<ShaderProgram>(cache, splashShader);

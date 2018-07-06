@@ -39,13 +39,11 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     normalSampler.setWrapMode(TextureWrap::REPEAT);
     normalSampler.setAnisotropy(8);
     normalSampler.toggleMipMaps(true);
-    normalSampler.toggleSRGBColourSpace(false);
 
     SamplerDescriptor heightMapSampler;
     heightMapSampler.setWrapMode(TextureWrap::CLAMP);
     heightMapSampler.setAnisotropy(0);
     heightMapSampler.toggleMipMaps(false);
-    heightMapSampler.toggleSRGBColourSpace(false);
 
     const stringImpl& terrainMapLocation = terrainDescriptor->getVariable("textureLocation");
 
@@ -533,6 +531,8 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     SamplerDescriptor grassSampler;
     grassSampler.setAnisotropy(0);
     grassSampler.setWrapMode(TextureWrap::CLAMP);
+    grassSampler.toggleSRGBColourSpace(true);
+
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
     textureDetailMaps.setID(textureCount);

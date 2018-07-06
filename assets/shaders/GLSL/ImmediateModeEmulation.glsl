@@ -26,7 +26,7 @@ void main(){
         _colourOut = texture(texDiffuse0, VAR._texCoord);
         _colourOut.rgb += _colour.rgb;
     }
-    _colourOut = ToSRGB(_colourOut);
+    _colourOut = _colourOut;
 }
 
 -- Fragment.GUI

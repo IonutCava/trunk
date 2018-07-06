@@ -180,7 +180,7 @@ void fillEnumTables() {
     glImageFormatTable[to_base(GFXImageFormat::RGBA)] = GL_RGBA;
     glImageFormatTable[to_base(GFXImageFormat::RGBA4)] = GL_RGBA4;
     glImageFormatTable[to_base(GFXImageFormat::RGBA8)] = GL_RGBA8;
-    glImageFormatTable[to_base(GFXImageFormat::SRGBA8)] = GL_SRGB8_ALPHA8;
+    glImageFormatTable[to_base(GFXImageFormat::SRGB_ALPHA8)] = GL_SRGB8_ALPHA8;
     glImageFormatTable[to_base(GFXImageFormat::RGBA8I)] = GL_RGBA8I;
     glImageFormatTable[to_base(GFXImageFormat::RGBA16F)] = GL_RGBA16F;
     glImageFormatTable[to_base(GFXImageFormat::RGBA32F)] = GL_RGBA32F;

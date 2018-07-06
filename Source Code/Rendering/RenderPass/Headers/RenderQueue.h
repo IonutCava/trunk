@@ -69,6 +69,8 @@ class RenderQueue {
     }
 
   private:
+    RenderingOrder::List getSortOrder(RenderBinType rbType);
+
     RenderBin* getBinForNode(const std::shared_ptr<SceneNode>& nodeType,
                              const Material_ptr& matInstance);
 

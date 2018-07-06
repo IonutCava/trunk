@@ -163,7 +163,6 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
     if (!_particles->_textureFileName.empty()) {
         SamplerDescriptor textureSampler;
         textureSampler.toggleSRGBColourSpace(true);
-
         ResourceDescriptor texture(_particles->_textureFileName);
 
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);

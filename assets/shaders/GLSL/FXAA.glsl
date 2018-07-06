@@ -80,5 +80,5 @@ void main(void)
 
     vec4  Console360ConstDir = vec4(1.0, -1.0, 0.25, -0.25);
     _colourOut = FxaaPixelShader(pos, ConsolePosPos, texScreen, texScreen, texScreen, rcpFrame, ConsoleRcpFrameOpt, ConsoleRcpFrameOpt2, Console360RcpFrameOpt2, QualitySubpix, QualityEdgeThreshold, 0.0, 8.0, 0.125, 0.05, Console360ConstDir);
-    _colourOut.rgb = ToSRGB(_colourOut.rgb);
+    _colourOut.rgb = _colourOut.rgb;
 }

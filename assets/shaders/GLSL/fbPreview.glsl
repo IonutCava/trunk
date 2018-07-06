@@ -31,7 +31,7 @@ void main()
 {
     _colourOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
     if (!linearSpace) {
-        _colourOut = ToSRGB(_colourOut);
+        _colourOut = _colourOut;
     }
     if (unpack2Channel) {
         _colourOut.rgb = unpackNormal(_colourOut.rg);

@@ -80,10 +80,6 @@ void main (void)
 
     // add Specular
     _colourOut.rgb = clamp(_colourOut.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
-
-    // add Fog
-    _colourOut.rgb = ToSRGB(applyFog(vec4(_colourOut.rgb, 1.0))).rgb;
-
     _normalOut = packNormal(N);
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
 }

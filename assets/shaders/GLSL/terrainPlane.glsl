@@ -31,8 +31,7 @@ layout(location = 1) out vec2 _normalOut;
 layout(location = 2) out vec2 _velocityOut;
 
 void main(void) {
-    _colourOut = ToSRGB(applyFog((texture(texWaterCaustics, _scrollingUV.st) +
-        texture(texWaterCaustics, _scrollingUV.pq)) * 0.5));
+    _colourOut = (texture(texWaterCaustics, _scrollingUV.st) + texture(texWaterCaustics, _scrollingUV.pq)) * 0.5)
 
     _normalOut = packNormal(normalize(VAR._normalWV));
     _velocityOut = velocityCalc(dvd_InvProjectionMatrix, getScreenPositionNormalised());
