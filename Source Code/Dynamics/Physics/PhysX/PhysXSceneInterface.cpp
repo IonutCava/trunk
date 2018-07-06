@@ -93,7 +93,7 @@ void PhysXSceneInterface::release(){
     _gScene->release();
 }
 
-void PhysXSceneInterface::update(){
+void PhysXSceneInterface::update(const D32 deltaTime){
     if(!_gScene) 
         return;
 
@@ -107,14 +107,26 @@ void PhysXSceneInterface::update(){
     }
 }
 
+#pragma("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
 void PhysXSceneInterface::updateActor(const PhysXActor& actor){
-   PxU32 nShapes = actor._actor->getNbShapes();
-   PxShape** shapes=New PxShape*[nShapes];
-   actor._actor->getShapes(shapes, nShapes);
-   while (nShapes--){
-       updateShape(shapes[nShapes], actor._transform);
-   }
-   SAFE_DELETE_ARRAY(shapes);
+    if(actor._transform->isPhysicsDirty()){
+        const vec3<F32>& position = actor._transform->getPosition();
+        const vec4<F32>& orientation = actor._transform->getGlobalOrientation().asVec4();
+
+        physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
+                                           PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());
+        actor._actor->setGlobalPose(posePxTransform);
+        actor._transform->cleanPhysics();
+        return;
+    }
+
+    PxU32 nShapes = actor._actor->getNbShapes();
+    PxShape** shapes=New PxShape*[nShapes];
+    actor._actor->getShapes(shapes, nShapes);
+    while (nShapes--){
+        updateShape(shapes[nShapes], actor._transform);
+    }
+    SAFE_DELETE_ARRAY(shapes);
 }
 
 void PhysXSceneInterface::updateShape(PxShape* const shape, Transform* const t){
@@ -136,11 +148,11 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, Transform* const t){
     t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
 }
 
-void PhysXSceneInterface::process(F32 timeStep){
+void PhysXSceneInterface::process(const D32 deltaTime){
     if(!_gScene)
         return;
 
-    _gScene->simulate((physx::PxReal)timeStep);
+    _gScene->simulate((physx::PxReal)deltaTime);
 
     while(!_gScene->fetchResults()){
         idle();

@@ -98,6 +98,8 @@ public:
     void stopTask();
     void pauseTask(bool state);
 
+    inline bool isFinished() const {return _done;}
+
 private:
     mutable SharedLock _lock;
     mutable boost::atomic<U32> _tickInterval;

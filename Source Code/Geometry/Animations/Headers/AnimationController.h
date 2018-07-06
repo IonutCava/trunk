@@ -84,7 +84,7 @@ private:
     Bone* LoadSkeleton(std::ifstream& file, Bone* pNode);
 
     void UpdateTransforms(Bone* pNode);
-    void Calculate( D32 pTime);
+    void Calculate(D32 pTime);
     void CalcBoneMatrices();
     /// Calculates the global transformation matrix for the given internal node
     void CalculateBoneToWorldTransform(Bone* pInternalNode);

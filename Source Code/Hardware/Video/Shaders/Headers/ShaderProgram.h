@@ -36,7 +36,7 @@ public:
 
     virtual void bind();
     virtual void unbind(bool resetActiveProgram = true);
-    virtual U8   tick(const U32 deltaTime);
+    virtual U8   update(const D32 deltaTime);
 
     ///Attributes
     virtual void Attribute(const std::string& ext, D32 value) = 0;

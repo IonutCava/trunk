@@ -4,13 +4,13 @@
 #include "Utility/Headers/Localization.h"
 
 #if defined(_DEBUG) || defined(_PROFILE)
-ProfileTimer::ProfileTimer() : _init(false), _timer(0)
+ProfileTimer::ProfileTimer() : _init(false), _timer(0), _timerSaved(0)
 {
-
 }
 
 ProfileTimer::~ProfileTimer()
 {
+    Framerate::getInstance().removeTimer(this);
     SAFE_DELETE(_name);
 }
 
@@ -20,12 +20,36 @@ void ProfileTimer::start(){
 
 void ProfileTimer::stop(){
     _timer = Framerate::getInstance().getElapsedTime() - _timer;
+    _timerSaved.store(_timer);
 }
 
 void ProfileTimer::create(const char* name){
+    if(_init)
+        return;
+
     _name = strdup(name);
     _init = true;
+    // should never be called twice for the same object
+    Framerate::getInstance().addTimer(this);
 }
+
+void ProfileTimer::print() const {
+    PRINT_FN("[ %s ] : [ %5.3f ]", _name, _timerSaved);
+}
+
+void Framerate::addTimer(ProfileTimer* const timer) {
+    _profileTimers.push_back(timer);
+}
+
+void Framerate::removeTimer(ProfileTimer* const timer) {
+    for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
+        if(strcmp((*it)->name(), timer->name()) == 0){
+            _profileTimers.erase(it);
+            return;
+        }
+    }
+}
+
 #endif
 
 ///No need for init to be threadsafe
@@ -105,6 +129,12 @@ void Framerate::benchmarkInternal(){
             averageFps = 0.0f;
 
         resetAverage = !resetAverage;
+
+#if defined(_DEBUG) || defined(_PROFILE)
+        for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
+            (*it)->print();
+        }
+#endif
     }
     ++count;
 }

@@ -29,9 +29,11 @@ void Task::run(){
         while(true){
             if(_end) break;
 
-            while(_paused) boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
+            while(_paused) 
+                boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
 
-            if(_tickInterval > 0) boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
+            if(_tickInterval > 0) 
+                boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
 
             _callback();
 

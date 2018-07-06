@@ -39,9 +39,9 @@ public:
     ///Called on interface destruction
     virtual void release() = 0;
     ///Physics update callback for custom behaviour
-    virtual void update() = 0;
+    virtual void update(const D32 deltaTime) = 0;
     ///Custom process step
-    virtual void process(F32 timeStep) = 0;
+    virtual void process(const D32 deltaTime) = 0;
 
     inline Scene* getParentScene() {return _parentScene;}
 protected:

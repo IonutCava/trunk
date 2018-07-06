@@ -135,8 +135,8 @@ public:
 
    I8   initPhysics(U8 targetFrameRate);
    bool exitPhysics();
-   void update();
-   void process(F32 dt);
+   void update(const D32 deltaTime);
+   void process(const D32 deltaTime);
    void idle();
 
    void updateTimeStep(U8 timeStepFactor);

@@ -72,7 +72,7 @@ public:
 	virtual void preFrameDrawEnd(SceneGraphNode* const sgn) {/*nothing yet*/}
 	virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
 	/// Called from SceneGraph "sceneUpdate"
-	virtual void sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState);
+	virtual void sceneUpdate(const D32 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
 
 	inline void setSceneMatrix(const mat4<F32>& sceneMatrix){ _sceneRootMatrix = sceneMatrix; }
 

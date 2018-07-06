@@ -393,7 +393,7 @@ void PostFX::idle(){
     if(_enableNoise){
         _timer += GETMSTIME();
         if(_timer > _tickInterval ){
-            _timer = 0;
+            _timer = 0.0;
             _randomNoiseCoefficient = (F32)random(1000) * 0.001f;
             _randomFlashCoefficient = (F32)random(1000) * 0.001f;
         }

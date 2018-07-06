@@ -9,19 +9,20 @@ void FlashScene::render(){
 void FlashScene::preRender(){
 }
 
-void FlashScene::processInput(){
+void FlashScene::processInput(const D32 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD );
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-void FlashScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.3f;
-    if (time - _taskTimers[0] >= FpsDisplay)	{
+void FlashScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    if (_taskTimers[0] >= FpsDisplay)	{
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
+    Scene::processTasks(deltaTime);
 }
 
 bool FlashScene::load(const std::string& name, CameraManager* const cameraMgr){
@@ -43,7 +44,7 @@ bool FlashScene::loadResources(bool continueOnErrors){
                                Font::DIVIDE_DEFAULT,       //Font
                                vec3<F32>(0.0f,0.2f, 1.0f), //Color
                                "FPS: %s",0);    //Text and arguments
-        _taskTimers.push_back(0.0f);
+        _taskTimers.push_back(0.0);
     i = 0;
     return true;
 }

@@ -84,7 +84,7 @@ public:
     /// Culling and visibility checks
     void updateVisualInformation();
     /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U32 sceneTime, SceneState& sceneState);
+    void sceneUpdate(const D32 deltaTime, SceneState& sceneState);
     /*Node Management*/
     template<class T>
     ///Always use the level of redirection needed to reduce virtual function overhead
@@ -210,7 +210,8 @@ private:
     BoundingSphere _boundingSphere; ///<For faster visibility culling
 
     Transform*	_transform;
-    U32 _childQueue,_updateTimer;
+    U32 _childQueue;
+    D32 _updateTimer;
     std::string _name;
     mutable SharedLock _queryLock;
 

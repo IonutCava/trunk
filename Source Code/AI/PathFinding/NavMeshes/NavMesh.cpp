@@ -154,7 +154,7 @@ namespace Navigation {
     bool NavigationMesh::buildProcess(){
         _building = true;
         // Create mesh
-        U32 timeStart = GETMSTIME();
+        D32 timeStart = GETMSTIME();
         bool success = generateMesh();
 
         if(success){
@@ -484,7 +484,7 @@ namespace Navigation {
         return true;
     }
 
-    void NavigationMesh::tick(U32 deltaMsTime) {
+    void NavigationMesh::update(const D32 deltaTime) {
        _debugDrawInterface->paused(!_debugDraw);
     }
 

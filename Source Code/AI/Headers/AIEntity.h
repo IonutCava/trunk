@@ -40,7 +40,7 @@ public:
 	~AIEntity();
 	void processInput();
 	void processData();
-	void update();
+	void update(const D32 deltaTime);
 
 	SceneGraphNode* getBoundNode() {return _node;}
 	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}

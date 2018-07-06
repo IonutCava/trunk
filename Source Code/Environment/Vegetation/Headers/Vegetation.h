@@ -65,7 +65,7 @@ public:
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
     void draw(const RenderStage& currentStage, Transform* const parentTransform);
-    void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 private:
     bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode

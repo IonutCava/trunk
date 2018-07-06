@@ -45,8 +45,8 @@ public:
     virtual bool exit();
     virtual void idle();
     virtual void release();
-    virtual void update();
-    virtual void process(F32 timeStep);
+    virtual void update(const D32 deltaTime);
+    virtual void process(const D32 deltaTime);
 
     PhysXActor* getOrCreateRigidActor(const std::string& actorName);
     void addRigidActor(PhysXActor* const actor, bool threaded = true);

@@ -80,12 +80,12 @@ namespace Navigation {
         dtFreeObstacleAvoidanceDebugData(_vod);
     }
 
-    void DivideDtCrowd::tick(const F32 dt) {
+    void DivideDtCrowd::update(const D32 deltaTime) {
         dtNavMesh* nav = _recast->getNavigationMesh();
         dtCrowd* crowd = _crowd;
         if (!nav || !crowd) return;
         // TimeVal startTime = getPerfTime();
-        crowd->update(dt, &_agentDebug);
+        crowd->update(deltaTime, &_agentDebug);
         // TimeVal endTime = getPerfTime();
         // Update agent trails
         for(I32 i = 0; i < crowd->getAgentCount(); ++i) {

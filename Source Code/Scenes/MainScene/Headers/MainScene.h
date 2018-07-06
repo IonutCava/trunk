@@ -47,8 +47,8 @@ private:
     /*Specific Scene Requirement*/
     void renderEnvironment(bool waterReflection);
     bool updateLights();
-    void processInput();
-    void processTasks(const U32 time);
+    void processInput(const D32 deltaTime);
+    void processTasks(const D32 deltaTime);
     void test(boost::any a, CallbackParam b);
     void onKeyDown(const OIS::KeyEvent& key);
     void onKeyUp(const OIS::KeyEvent& key);

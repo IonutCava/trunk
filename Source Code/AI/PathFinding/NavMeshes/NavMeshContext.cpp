@@ -28,8 +28,8 @@ namespace Navigation {
     }
 
     void rcContextDivide::doStopTimer(const rcTimerLabel label){
-        const U32 endTime = GETMSTIME();
-        const I32 deltaTime = (I32)(endTime - _startTime[label]);
+        const D32 endTime = GETMSTIME();
+        const D32 deltaTime = (D32)(endTime - _startTime[label]);
         if (_accTime[label] == -1)
             _accTime[label] = deltaTime;
         else

@@ -15,9 +15,9 @@ CameraManager::~CameraManager() {
 	_cameraPool.clear();
 }
 
-void CameraManager::tick(U32 elapsedTime){
+void CameraManager::update(const D32 deltaTime){
 	for_each(CameraPool::value_type& it, _cameraPool){
-		it.second->tick(elapsedTime);
+		it.second->update(deltaTime);
 	}
 }
 

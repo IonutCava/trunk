@@ -57,7 +57,7 @@ public:
     void setDescriptor(const ParticleEmitterDescriptor& descriptor);
 
     /// preprocess particles here
-    void tick();
+    void update(const D32 deltaTime);
 
     ///Dummy function from SceneNode;
     void onDraw(const RenderStage& currentStage);

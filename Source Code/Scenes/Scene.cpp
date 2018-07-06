@@ -293,17 +293,20 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
                            10,
                            false,
                            false,
-                           DELEGATE_BIND(&AIManager::tick,
+                           DELEGATE_BIND(&AIManager::update,
                            DELEGATE_REF(AIManager::getInstance()))));
     _loadComplete = true;
     return _loadComplete;
 }
 
 bool Scene::unload(){
+    // prevent double unload calls
+    if(!checkLoadFlag()) return false;
     clearTasks();
     clearObjects();
     clearLights();
     clearPhysics();
+    _loadComplete = false;
     return true;
 }
 
@@ -348,7 +351,7 @@ void Scene::clearObjects(){
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){
         RemoveResource(_terrainInfoArray[i]);
     }
-    _skiesSGN.clear(); ///< Skies are cleared in the SceneGraph
+    _skiesSGN.clear(); //< Skies are cleared in the SceneGraph
     _terrainInfoArray.clear();
     while(!_modelDataArray.empty())
         _modelDataArray.pop();
@@ -362,8 +365,8 @@ void Scene::clearLights(){
     LightManager::getInstance().clear();
 }
 
-void Scene::updateSceneState(const U32 sceneTime){
-    _sceneGraph->sceneUpdate(sceneTime, _sceneState);
+void Scene::updateSceneState(const D32 deltaTime){
+    _sceneGraph->sceneUpdate(deltaTime, _sceneState);
 }
 
 void Scene::deleteSelection(){
@@ -403,4 +406,9 @@ void Scene::removeTask(U32 guid){
             return;
         }
     }
+}
+
+void Scene::processTasks(const D32 deltaTime){
+    for(U16 i = 0; i < _taskTimers.size(); ++i)
+        _taskTimers[i] += deltaTime;
 }

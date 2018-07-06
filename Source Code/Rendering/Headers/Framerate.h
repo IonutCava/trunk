@@ -26,6 +26,7 @@
 #include "config.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/Singleton.h"
+#include "Utility/Headers/Vector.h"
 #include <boost/atomic.hpp>
 
 #if defined( OS_WINDOWS )
@@ -87,16 +88,23 @@ public:
     inline F32  getFrameTime()   const {return _frameTime;}
     inline F32  getSpeedfactor() const {return _speedfactor;}
 
-    inline U32 getElapsedTime(){ //in milliseconds
+    inline D32 getElapsedTime(){ //in milliseconds
         if(!_init)
             return 0;
 
         QueryPerformanceCounter(&_currentTicks);
-        return (_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
+        return (D32)(_currentTicks.QuadPart-_startupTicks.QuadPart) / _ticksPerMillisecond;
   }
 
 protected:
   void benchmarkInternal();
+
+#if defined(_DEBUG) || defined(_PROFILE)
+  friend class ProfileTimer;
+  void addTimer(ProfileTimer* const timer);
+  void removeTimer(ProfileTimer* const timer);
+  vectorImpl<ProfileTimer* > _profileTimers;
+#endif
 
 END_SINGLETON
 
@@ -111,14 +119,47 @@ public:
     void create(const char* name);
     void start();
     void stop();
-    inline U32  get()  const {return _timer;}
-    inline bool init() const {return _init;}
+    void print() const;
+
+    inline const char* name() const {return _name;}
+    inline D32         get()  const {return _timer;}
+    inline bool        init() const {return _init;}
 
 protected:
-    char*              _name;
+    const char*        _name;
     boost::atomic_bool _init;
-    boost::atomic_uint _timer;
+    boost::atomic<D32> _timer;
+    boost::atomic<D32> _timerSaved;
 };
+
+    inline ProfileTimer* ADD_TIMER(const char* timerName) {
+        ProfileTimer* timer = new ProfileTimer();
+        timer->create(timerName); 
+        return timer;
+    }
+
+    inline void START_TIMER(ProfileTimer* const timer)  {
+        assert(timer);
+        timer->start();
+    }
+
+    inline void STOP_TIMER(ProfileTimer* const timer)   {
+        assert(timer);
+        timer->stop();
+    }
+
+    inline void PRINT_TIMER(ProfileTimer* const timer)  {
+        assert(timer);
+        timer->print();
+    }
+
+#else
+    class ProfileTimer {};
+    inline ProfileTimer* ADD_TIMER(const char* timerName) {return NULL;}
+    inline void START_TIMER(ProfileTimer* const timer)  {}
+    inline void STOP_TIMER(ProfileTimer* const timer)   {}
+    inline void PRINT_TIMER(ProfileTimer* const timer)  {}
 #endif //_DEBUG
 
+    inline void REMOVE_TIMER(ProfileTimer*& timer) { SAFE_DELETE(timer);  }
 #endif //_FRAMERATE_H_

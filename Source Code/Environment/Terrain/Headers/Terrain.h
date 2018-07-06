@@ -66,7 +66,7 @@ public:
     void releaseMaterial();
     void prepareDepthMaterial(SceneGraphNode* const sgn);
     void releaseDepthMaterial();
-    void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void drawBoundingBox(SceneGraphNode* const sgn);
 
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }

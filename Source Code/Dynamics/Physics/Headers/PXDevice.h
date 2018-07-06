@@ -37,8 +37,8 @@ public:
     inline I8   initPhysics(U8 targetFrameRate) {return _api.initPhysics(targetFrameRate);}
     inline bool exitPhysics() {return _api.exitPhysics();}
     inline void updateTimeStep(U8 timeStepFactor) {_api.updateTimeStep(timeStepFactor);}
-    inline void update() {_api.update();}
-    inline void process(F32 dt) {_api.process(dt);}
+    inline void update(const D32 deltaTime) {_api.update(deltaTime);}
+    inline void process(const D32 deltaTime) {_api.process(deltaTime);}
     inline void idle() {_api.idle();}
     inline void setPhysicsScene(PhysicsSceneInterface* const targetScene) {_api.setPhysicsScene(targetScene);}
     inline void initScene(){_api.initScene();}

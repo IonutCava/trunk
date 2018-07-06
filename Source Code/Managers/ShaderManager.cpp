@@ -41,10 +41,11 @@ void ShaderManager::registerShaderProgram(const std::string& name, ShaderProgram
     }
 }
 
-U8 ShaderManager::tick(const U32 deltaTime){
+U8 ShaderManager::update(const D32 deltaTime){
     for_each(ShaderProgramMap::value_type& it, _shaderPrograms){
         std::string name = it.first;
-        if(it.second->tick(deltaTime) == 0)	return 0;//+ Error
+        if(it.second->update(deltaTime) == 0)
+            return 0;//+ Error
     }
     return 1;
 }

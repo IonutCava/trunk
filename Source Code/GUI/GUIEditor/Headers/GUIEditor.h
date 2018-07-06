@@ -38,7 +38,8 @@ DEFINE_SINGLETON( GUIEditor )
         bool init();
         void setVisible(bool visible); //< Hide or show the editor
         bool isVisible();              //< Return true if editor is visible, false if is hidden
-        bool tick(U32 deltaMsTime);    //< Used to update time dependent elements
+        bool update(const D32 deltaTime);    //< Used to update time dependent elements
+
     private:
         GUIEditor();
         ~GUIEditor();

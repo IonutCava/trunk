@@ -41,27 +41,43 @@
 #define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
 #define M_PIDIV360          0.00872664625997164788461845384244f     //  PI / 180 / 2 - PI / 360
 
-#define DegToRad(a)	(a)*=M_PIDIV180
-#define RadToDeg(a)	(a)*=M_180DIVPI
-#define RADIANS(a)	((a)*M_PIDIV180)
-#define DEGREES(a)	((a)*M_180DIVPI)
+template<class T>
+inline void DegToRad(T& a)	{ a*=M_PIDIV180; }
+template<class T>
+inline void RadToDeg(T& a)	{ a*=M_180DIVPI; }
+template<class T>
+inline F32 RADIANS(T a)	    { return a*M_PIDIV180;}
+template<class T>
+inline F32 DEGREES(T a)	    { return a*M_180DIVPI; }
+template<class T>
+inline F32 kilometre(T a)   { return a*1000.0f; }
+template<class T>
+inline F32 metre(T a)		{ return a*1.0f; }
+template<class T>
+inline F32 decimetre(T a)   { return a*0.1f; }
+template<class T>
+inline F32 centimetre(T a)  { return a*0.01f; }
+template<class T>
+inline F32 millimeter(T a)  { return a*0.001f; }
 
-#define kilometre(a)    a*1000
-#define metre(a)		a*1
-#define decimetre(a)    a*0.1f
-#define centimetre(a)   a*0.01f
-#define millimeter(a)   a*0.001f
+template<class T>
+inline D32 getMsToSec(T a) { return a*0.001; }
 
-#define getMsToSec(a) a*0.001f
-#define getSecToMs(a) a*1000.0f
+template<class T>
+inline D32 getSecToMs(T a) { return a*1000.0; }
 
-#define MsToSec(a)   (a)*=0.001f
-#define SecToMs(a)   (a)*=1000.0f
+template<class T>
+inline void MsToSec(T& a)  { a*=0.001; }
+
+template<class T>
+inline void SecToMs(T& a)  { a*=1000.0; }
 
 const  F32 INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
+
 inline F32 random(F32 max=1.0)      { return max * rand() * INV_RAND_MAX; }
 inline F32 random(F32 min, F32 max) { return min + (max - min) * INV_RAND_MAX * rand(); }
 inline I32 random(I32 max=RAND_MAX) { return rand()%(max+1); }
+
 inline bool bitCompare(U32 bitMask, U32 bit) {return ((bitMask & bit) == bit);}
 
 template <class T>

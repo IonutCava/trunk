@@ -35,7 +35,7 @@ public:
     /// Destroy all entities
     void Destroy();
 
-    U8 tick();
+    U8 update();
     ///Handle any debug information rendering (nav meshes, AI paths, etc);
     ///Called by Scene::postRender after depth map preview call
     void debugDraw(bool forceAll = true);
@@ -61,10 +61,10 @@ protected:
 private:
     void processInput();  ///< sensors
     void processData();   ///< think
-    void updateEntities();///< react
+    void updateEntities(const D32 deltaTime);///< react
 
 private:
-    U32 _deltaTimeMS;
+    D32 _deltaTimeMS;
     boost::atomic<bool> _navMeshDebugDraw;
     boost::atomic<bool> _pauseUpdate;
     AIEntityMap _aiEntities;

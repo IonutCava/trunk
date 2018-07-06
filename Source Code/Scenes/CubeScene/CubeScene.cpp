@@ -10,11 +10,11 @@ REGISTER_SCENE(CubeScene);
 void CubeScene::render(){
 }
 
-void CubeScene::processTasks(const U32 time){
+void CubeScene::processTasks(const D32 deltaTime){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
-	F32 updateLights = 0.005f;
+	D32 updateLights = getSecToMs(0.05);
 
-	if(time - _taskTimers[0] >= updateLights){
+	if(_taskTimers[0] >= updateLights){
 		for(U8 row=0; row<3; row++)
 			for(U8 col=0; col < lights.size()/3.0f; col++){
 				F32 x = col * 150.0f - 5.0f + cos(GETMSTIME()*(col-row+2)*0.008f)*200.0f;
@@ -28,8 +28,9 @@ void CubeScene::processTasks(const U32 time){
 				lights[row*10+col]->setLightProperties(LIGHT_PROPERTY_DIFFUSE,vec4<F32>(r,g,b,1));
 			}
 
-		_taskTimers[0] += updateLights;
+		_taskTimers[0] = 0.0;
 	}
+    Scene::processTasks(deltaTime);
 }
 
 I8 j = 1;
@@ -54,7 +55,7 @@ void CubeScene::preRender() {
 	dwarf->getTransform()->rotate(vec3<F32>(0,1,0),i);
 }
 
-void CubeScene::processInput(){
+void CubeScene::processInput(const D32 deltaTime){
 	if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
 	if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
 	if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -85,7 +86,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			addLight(light);
 	}
 
-	_taskTimers.push_back(0.0f);
+	_taskTimers.push_back(0.0);
 
 	return true;
 }

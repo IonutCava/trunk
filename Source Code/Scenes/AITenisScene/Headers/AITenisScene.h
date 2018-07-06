@@ -64,8 +64,8 @@ public:
     bool loadResources(bool continueOnErrors);
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
-    void processInput();
-    void processTasks(const U32 time);
+    void processInput(const D32 deltaTime);
+    void processTasks(const D32 deltaTime);
     void onKeyDown(const OIS::KeyEvent& key);
     void onKeyUp(const OIS::KeyEvent& key);
     void onMouseMove(const OIS::MouseEvent& key);

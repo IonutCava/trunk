@@ -12,6 +12,6 @@ bool GUIEditorLightInterface::init(CEGUI::Window *parent) {
 	return GUIEditorInterface::init(parent);
 }
 
-bool GUIEditorLightInterface::tick(U32 deltaMsTime){
+bool GUIEditorLightInterface::update(const D32 deltaTime){
 	return true;
 }

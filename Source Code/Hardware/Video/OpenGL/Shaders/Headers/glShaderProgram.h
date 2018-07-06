@@ -35,7 +35,7 @@ public:
     bool unload(){unbind(); return true;}
     void bind();
     void unbind(bool resetActiveProgram = true);
-    U8   tick(const U32 deltaTime);
+    U8   update(const D32 deltaTime);
     void attachShader(Shader* const shader,const bool refresh = false);
     void detachShader(Shader* const shader);
     //Attributes

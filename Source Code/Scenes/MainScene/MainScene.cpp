@@ -61,7 +61,7 @@ void MainScene::renderEnvironment(bool waterReflection){
     GFX_DEVICE.render(SCENE_GRAPH_UPDATE(_sceneGraph),renderState());
 }
 
-void MainScene::processInput(){
+void MainScene::processInput(const D32 deltaTime){
     bool update = false;
     Camera& cam = renderState().getCamera();
     if(state()._angleLR){
@@ -110,31 +110,32 @@ void MainScene::processInput(){
     }
 }
 
-void MainScene::processTasks(const U32 time){
-    F32 timeSec = getMsToSec(time); ///<convert to seconds
-    F32 SunDisplay = 1.50f;
-    F32 FpsDisplay = 0.5f;
-    F32 TimeDisplay = 1.0f;
-    if (timeSec - _taskTimers[0] >= SunDisplay){
+void MainScene::processTasks(const D32 deltaTime){
+    D32 SunDisplay = getSecToMs(1.50);
+    D32 FpsDisplay = getSecToMs(0.5);
+    D32 TimeDisplay = getSecToMs(1.0);
+    if (_taskTimers[0] >= SunDisplay){
         _sunAngle.y += 0.0005f;
         _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
                                 -cosf(_sunAngle.y),
                                 -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                                 0.0f );
-        _taskTimers[0] += SunDisplay;
+        _taskTimers[0] = 0.0;
     }
 
-    if (timeSec - _taskTimers[1] >= FpsDisplay){
+    if (_taskTimers[1] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
         GUI::getInstance().modifyText("underwater","Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[1] += FpsDisplay;
+        _taskTimers[1] = 0.0;
     }
 
-    if (timeSec - _taskTimers[2] >= TimeDisplay){
-        GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", timeSec);
-        _taskTimers[2] += TimeDisplay;
+    if (_taskTimers[2] >= TimeDisplay){
+        GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", GETTIME());
+        _taskTimers[2] = 0.0;
     }
+
+    Scene::processTasks(deltaTime);
 }
 
 bool MainScene::load(const std::string& name, CameraManager* const cameraMgr){
@@ -244,9 +245,9 @@ bool MainScene::loadResources(bool continueOnErrors){
                                 Font::BATANG,
                                 vec3<F32>(0.6f,0.2f,0.2f),
                                 "Number of items in Render Bin: %d",0);
-    _taskTimers.push_back(0.0f); //Sun
-    _taskTimers.push_back(0.0f); //Fps
-    _taskTimers.push_back(0.0f); //Time
+    _taskTimers.push_back(0.0); //Sun
+    _taskTimers.push_back(0.0); //Fps
+    _taskTimers.push_back(0.0); //Time
 
     _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     _sunvector = vec4<F32>(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),

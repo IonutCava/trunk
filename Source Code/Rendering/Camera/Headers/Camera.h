@@ -43,7 +43,7 @@ public:
     Camera(const CameraType& type);
     virtual ~Camera() {}
 
-    virtual void tick(U32 elapsedTime);
+    virtual void update(const D32 deltaTime);
     ///Camera save/load system
     ///Saves the minimum ammount of information in order to restore the camera at a later stage
     void saveCamera();

@@ -143,7 +143,7 @@ namespace Navigation {
           * limit the maximum amount of time spent for preparing a frame. This can have as consequence
           * that some agents will only start to move after a few frames, when their paths are calculated.
           **/
-        void tick(const F32 dt);
+        void update(const D32 deltaTime);
         /// The height of agents in this crowd. All agents in a crowd have the same height, and height is
         /// determined by the agent height parameter with which the navmesh is build.
         inline D32 getAgentHeight() const { return _recast->getConfigParams().getAgentHeight(); }

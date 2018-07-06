@@ -63,11 +63,11 @@ void free_simd(void * pxData);
 #include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Vector.h"
 
-inline U32 GETMSTIME() {
+inline D32 GETMSTIME() {
 	return Framerate::getInstance().getElapsedTime();
 }
 
-inline U32 GETTIME() {
+inline D32 GETTIME() {
 	return getMsToSec(GETMSTIME());
 }
 

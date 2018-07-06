@@ -1,6 +1,6 @@
 #include "Headers\AutoKeyRepeat.h"
 
-AutoRepeatKey::AutoRepeatKey(F32 repeatDelay, F32 initialDelay):
+AutoRepeatKey::AutoRepeatKey(D32 repeatDelay, D32 initialDelay):
     _key(OIS::KC_UNASSIGNED),
     _repeatDelay(repeatDelay),
     _initialDelay(initialDelay)
@@ -11,7 +11,7 @@ void AutoRepeatKey::begin(const OIS::KeyEvent &evt) {
     _key = evt.key;
     _char = evt.text;
 
-    _elapsed = 0;
+    _elapsed = 0.0;
     _delay = _initialDelay;
 }
 
@@ -22,10 +22,10 @@ void AutoRepeatKey::end(const OIS::KeyEvent &evt) {
 }
 
 //Inject key repeats if the _repeatDelay expired between calls
-void AutoRepeatKey::update(F32 elapsed) {
+void AutoRepeatKey::update(const D32 deltaTime) {
     if (_key == OIS::KC_UNASSIGNED) return;
 
-    _elapsed += elapsed;
+    _elapsed += deltaTime;
     if (_elapsed < _delay) return;
 
     _elapsed -= _delay;
@@ -37,5 +37,5 @@ void AutoRepeatKey::update(F32 elapsed) {
         _elapsed -= _repeatDelay;
     } while (_elapsed >= _repeatDelay);
 
-    _elapsed = 0;
+    _elapsed = 0.0;
 }

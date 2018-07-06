@@ -55,10 +55,10 @@ public:
         return _root->findNode(name,sceneNodeName);
     }
 
-    /// Update transforms and bounding boxes
+    /// Update transforms and bounding boxes (this can be called on demand from multiple threads => no deltaTime. compute internally)
     void update();
     /// Update all nodes. Called from "updateSceneState" from class Scene
-    void sceneUpdate(const U32 sceneTime, SceneState& sceneState);
+    void sceneUpdate(const D32 deltaTime, SceneState& sceneState);
 
     void print();
 

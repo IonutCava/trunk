@@ -87,9 +87,9 @@ Mesh* DVDConverter::load(const std::string& file){
 
     _fileLocation = file;
     _modelName = _fileLocation.substr( _fileLocation.find_last_of( '/' ) + 1 );
-    U32 start = GETMSTIME();
+    D32 start = GETMSTIME();
     _aiScenePointer = importer->ReadFile( file, _ppsteps );
-    U32 elapsed = GETMSTIME() - start;
+    D32 elapsed = GETMSTIME() - start;
 
     D_PRINT_FN(Locale::get("LOAD_MESH_TIME"),_modelName.c_str(),getMsToSec(elapsed));
 

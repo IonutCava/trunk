@@ -421,7 +421,7 @@ public:
     }
 #endif
 
-    U8 tick()
+    U8 update(const D32 deltaTime)
     {
       const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
       U8 nEffectUpdateCnt = 0;

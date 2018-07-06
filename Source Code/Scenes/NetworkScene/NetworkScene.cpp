@@ -20,32 +20,33 @@ void NetworkScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void NetworkScene::processInput(){
+void NetworkScene::processInput(const D32 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
-void NetworkScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.3f;
-    F32 TimeDisplay = 0.01f;
-    F32 ServerPing = 1.0f;
-    if (time - _taskTimers[0] >= FpsDisplay){
+void NetworkScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    D32 TimeDisplay = getSecToMs(0.01);
+    D32 ServerPing = getSecToMs(1.0);
+    if (_taskTimers[0] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
 
-    if (time - _taskTimers[1] >= TimeDisplay){
+    if (_taskTimers[1] >= TimeDisplay){
         GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
-        _taskTimers[1] += TimeDisplay;
+        _taskTimers[1] = 0.0;
     }
 
-    if (time - _taskTimers[2] >= ServerPing){
+    if (_taskTimers[2] >= ServerPing){
         GUI::getInstance().modifyText("statusText", (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
         GUI::getInstance().modifyText("serverMessage",(char*)_paramHandler.getParam<std::string>("serverResponse").c_str());
-        _taskTimers[2] += ServerPing;
+        _taskTimers[2] = 0.0;
     }
+    Scene::processTasks(deltaTime);
 }
 
 void NetworkScene::checkPatches(){

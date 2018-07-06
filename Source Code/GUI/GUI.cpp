@@ -14,8 +14,7 @@
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-GUI::GUI() : _prevElapsedTime(0),
-             _init(false),
+GUI::GUI() : _init(false),
              _enableCEGUIRendering(false),
              _rootSheet(NULL),
              _console(New GUIConsole())
@@ -44,8 +43,9 @@ void GUI::onResize(const vec2<U16>& newResolution){
     _cachedResolution = newResolution;
 }
 
-void GUI::draw(U32 timeElapsed){
-    if(!_init) return;
+void GUI::draw(const D32 deltaTime){
+    if(!_init) 
+        return;
     GFXDevice& gfx = GFX_DEVICE;
 
     gfx.toggle2D(true);
@@ -63,23 +63,14 @@ void GUI::draw(U32 timeElapsed){
     _guiShader->unbind();
     gfx.toggle2D(false);
 
-    if(timeElapsed == 0){
-        timeElapsed = GETMSTIME();
-    }
-    if(_prevElapsedTime == 0){
-        _prevElapsedTime = timeElapsed - 10;//<10 MS difference
-    }
+    D32 deltaTimeSec = getMsToSec(deltaTime);
+    _input.update(deltaTimeSec);
+    CEGUI::System::getSingleton().injectTimePulse(deltaTimeSec);
+    GUIEditor::getInstance().update(deltaTimeSec);
 
-    U32 timeDiffInMs = timeElapsed - _prevElapsedTime;
-    F32 timeElapsedSec = getMsToSec(timeDiffInMs);
-
-    _input.update(timeElapsedSec);
-    CEGUI::System::getSingleton().injectTimePulse(timeElapsedSec);
     if(_enableCEGUIRendering){
         CEGUI::System::getSingleton().renderAllGUIContexts();
     }
-    GUIEditor::getInstance().tick(timeElapsedSec);
-    _prevElapsedTime = timeElapsed;
 }
 
 bool GUI::init(){

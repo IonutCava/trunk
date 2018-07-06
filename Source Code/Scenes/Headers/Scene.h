@@ -72,15 +72,15 @@ public:
     bool removeGeometry(SceneNode* node);
 
     /**Begin scene logic loop*/
-    virtual void processInput() = 0;                //<Get all input commands from the user
-    virtual void processTasks(const U32 time) = 0;  //<Update the scene based on the inputs
+    virtual void processInput(const D32 deltaTime) = 0;  //<Get all input commands from the user
+    virtual void processTasks(const D32 deltaTime); //<Update the scene based on the inputs
     virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
     virtual void postRender();                      //<Perform any post rendering operations
     bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
-    virtual void updateSceneState(const U32 sceneTime);
+    virtual void updateSceneState(const D32 deltaTime);
     inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return NULL;} CLAMP<I32>(index,0,_skiesSGN.size() - 1); return _skiesSGN[index];}
     inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
     inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
@@ -124,7 +124,7 @@ protected:
 
     PhysicsSceneInterface*         _physicsInterface;
     ///Datablocks for models,vegetation,terrains,tasks etc
-    vectorImpl<F32>                _taskTimers;
+    vectorImpl<D32>                _taskTimers;
     FileDataStack                  _modelDataArray;
     vectorImpl<FileData>           _vegetationDataArray;
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;

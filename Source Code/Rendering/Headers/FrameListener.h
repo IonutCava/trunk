@@ -23,9 +23,9 @@
 ///I'm sorry for using it, but it's so simple to implement, I decided to use something that people already know and are comfortable with
 ///-Ionut
 struct FrameEvent{
-  F32 _timeSinceLastEvent;
-  F32 _timeSinceLastFrame;
-  F32 _currentTime;
+  D32 _timeSinceLastEvent;
+  D32 _timeSinceLastFrame;
+  D32 _currentTime;
 };
 /// FrameListener class.
 ///Has 3 events, associated with the start of rendering a frame, the end of rendering and the end of buffer swapping after frames

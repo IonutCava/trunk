@@ -56,5 +56,5 @@ void ParticleEmitter::onDraw(const RenderStage& currentStage){
 }
 
 /// Pre-process particles
-void ParticleEmitter::tick(){
+void ParticleEmitter::update(const D32 deltaTime){
 }

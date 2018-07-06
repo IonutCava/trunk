@@ -52,17 +52,18 @@ Terrain::~Terrain()
 {
 }
 
-void Terrain::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+void Terrain::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     ///Query shadow state every "_stateRefreshInterval" milliseconds
-
-    if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
+    if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _shadowMapped = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
 
-        _stateRefreshIntervalBuffer += _stateRefreshInterval;
+        _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
-    _veg->sceneUpdate(sceneTime,sgn,sceneState);
+    _stateRefreshIntervalBuffer += deltaTime;
 
-    SceneNode::sceneUpdate(sceneTime, sgn, sceneState);
+    _veg->sceneUpdate(deltaTime,sgn,sceneState);
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 #pragma message("ToDo: Add multiple local lights for terrain, such as torches, rockets, flashlights etc - Ionut")

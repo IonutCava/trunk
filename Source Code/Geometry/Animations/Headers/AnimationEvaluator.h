@@ -58,11 +58,11 @@ public:
 	void Evaluate( D32 pTime, Unordered_map<std::string, Bone*>& bones);
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
-	U32 GetFrameIndexAt(D32 time);
+	U32 GetFrameIndexAt(const D32 elapsedTime);
 
 	inline U32 GetFrameIndex() const {return _lastFrameIndex;}
 	inline U32 GetFrameCount() const {return _transforms.size();}
-	inline vectorImpl<mat4<F32> >& GetTransforms(D32 dt){ return _transforms[GetFrameIndexAt(dt)]; }
+	inline vectorImpl<mat4<F32> >& GetTransforms(const D32 elapsedTime){ return _transforms[GetFrameIndexAt(elapsedTime)]; }
 
 protected:
 	friend class SceneAnimator;

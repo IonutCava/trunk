@@ -57,8 +57,8 @@ public:
     inline  ObjectFlag                getFlag()         const {return _geometryFlag;}
     inline  RenderInstance*   const   renderInstance()  const {return _renderInstance;}
     /// Called from SceneGraph "sceneUpdate"
-    virtual void  sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-        SceneNode::sceneUpdate(sceneTime,sgn,sceneState);
+    virtual void  sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+        SceneNode::sceneUpdate(deltaTime,sgn,sceneState);
     }
     virtual void  postLoad(SceneGraphNode* const sgn) {} ///<To avoid a lot of typing
     virtual	void  render(SceneGraphNode* const sgn);

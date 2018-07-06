@@ -100,7 +100,7 @@ public:
       * the detour agent position (possibly with additional physics engine clipping
       * and collision testing).
       **/
-    virtual void update(U32 elapsedTime);
+    virtual void update(const D32 deltaTime);
     /**
       * Update the destination for this agent.
       * If updatePreviousPath is set to true the previous path will be reused instead

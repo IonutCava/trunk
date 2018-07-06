@@ -1,6 +1,7 @@
 #include "Headers/Transform.h"
 
 Transform::Transform()	: _dirty(true),
+                          _physicsDirty(true),
                           _rebuildMatrix(true),
                           _hasParentTransform(false),
                           _scale(vec3<F32>(1.0f)),
@@ -18,6 +19,7 @@ Transform::Transform(const Quaternion<F32>& orientation,
                                                 _translation(translation),
                                                 _scale(scale),
                                                 _dirty(true),
+                                                _physicsDirty(true),
                                                 _rebuildMatrix(true),
                                                 _hasParentTransform(false),
                                                 _parentTransform(NULL)

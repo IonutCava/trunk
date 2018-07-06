@@ -25,13 +25,14 @@ void AITenisScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void AITenisScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.75f;
-    if (getMsToSec(time) - _taskTimers[0] >= FpsDisplay){
+void AITenisScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = 0.7;
+    if (_taskTimers[0] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
+    Scene::processTasks(deltaTime);
     checkCollisions();
 }
 
@@ -87,33 +88,33 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
     if(!_gamePlaying) return;
 
     UpgradableReadLock ur_lock(_gameLock);
-    ///Shortcut to the scene graph nodes containing our agents
+    //Shortcut to the scene graph nodes containing our agents
     SceneGraphNode* Player1 = _aiPlayer1->getBoundNode();
     SceneGraphNode* Player2 = _aiPlayer2->getBoundNode();
     SceneGraphNode* Player3 = _aiPlayer3->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getBoundNode();
-    ///Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
+    //Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
     vec3<F32> netPosition  = _net->getTransform()->getPosition();
     vec3<F32> ballPosition = _ballSGN->getTransform()->getPosition();
-    const vec3<F32>& player1Pos   = Player1->getTransform()->getPosition();
-    const vec3<F32>& player2Pos   = Player2->getTransform()->getPosition();
-    const vec3<F32>& player3Pos   = Player3->getTransform()->getPosition();
-    const vec3<F32>& player4Pos   = Player4->getTransform()->getPosition();
-    const vec3<F32>& netBBMax = _net->getBoundingBox().getMax();
-    const vec3<F32>& netBBMin = _net->getBoundingBox().getMin();
+    vec3<F32> player1Pos   = Player1->getTransform()->getPosition();
+    vec3<F32> player2Pos   = Player2->getTransform()->getPosition();
+    vec3<F32> player3Pos   = Player3->getTransform()->getPosition();
+    vec3<F32> player4Pos   = Player4->getTransform()->getPosition();
+    vec3<F32> netBBMax     = _net->getBoundingBox().getMax();
+    vec3<F32> netBBMin     = _net->getBoundingBox().getMin();
 
     UpgradeToWriteLock uw_lock(ur_lock);
-    ///Is the ball traveling from team 1 to team 2?
+    //Is the ball traveling from team 1 to team 2?
     _directionTeam1ToTeam2 ? ballPosition.z -= 0.123f : ballPosition.z += 0.123f;
-    ///Is the ball traveling upwards or is it falling?
+    //Is the ball traveling upwards or is it falling?
     _upwardsDirection ? ballPosition.y += 0.066f : ballPosition.y -= 0.066f;
-    ///In case of a side drift, update accordingly
+    //In case of a side drift, update accordingly
     if(_applySideImpulse) ballPosition.x += _sideImpulseFactor;
 
-    ///After we finish our computations, apply the new transform
+    //After we finish our computations, apply the new transform
     //setPosition/getPosition should be thread-safe
     _ballSGN->getTransform()->setPosition(ballPosition);
-    ///Add a spin to the ball just for fun ...
+    //Add a spin to the ball just for fun ...
     _ballSGN->getTransform()->rotateEuler(vec3<F32>(ballPosition.z,1,1));
 
     //----------------------COLLISIONS------------------------------//
@@ -130,10 +131,10 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
         _upwardsDirection = true;
     }
 
-    ///Where does the Kinetic  energy of the ball run out?
+    //Where does the Kinetic  energy of the ball run out?
     if(ballPosition.y > 3.5) _upwardsDirection = false;
 
-    ///Did we hit a player?
+    //Did we hit a player?
 
     bool collisionTeam1 = _collisionPlayer1 || _collisionPlayer2;
     bool collisionTeam2 = _collisionPlayer3 || _collisionPlayer4;
@@ -163,7 +164,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
     }
 
     //-----------------VALIDATING THE RESULTS----------------------//
-    ///Which team won?
+    //Which team won?
     if(ballPosition.z >= player1Pos.z && ballPosition.z >= player2Pos.z){
         _lostTeam1 = true;
         updated = true;
@@ -173,7 +174,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
         _lostTeam1 = false;
         updated = true;
     }
-    ///Which team kicked the ball in the net?
+    //Which team kicked the ball in the net?
     if(_collisionNet){
         if(ballPosition.y < netBBMax.y - 0.25){
             if(_directionTeam1ToTeam2){
@@ -186,8 +187,8 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
     }
 
     if(ballPosition.x + 0.5f < netBBMin.x || ballPosition.x + 0.5f > netBBMax.x){
-        ///If we hit the ball and it touched the opposing team's terrain
-        ///Or if the opposing team hit the ball but it didn't land in our terrain
+        //If we hit the ball and it touched the opposing team's terrain
+        //Or if the opposing team hit the ball but it didn't land in our terrain
         if(_collisionFloor){
             if((_touchedTerrainTeam2 && _directionTeam1ToTeam2) || (!_directionTeam1ToTeam2 && !_touchedTerrainTeam1)){
                 _lostTeam1 = false;
@@ -215,7 +216,7 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
     }
 }
 
-void AITenisScene::processInput(){
+void AITenisScene::processInput(const D32 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -342,7 +343,7 @@ bool AITenisScene::deinitializeAI(bool continueOnErrors){
 }
 
 bool AITenisScene::loadResources(bool continueOnErrors){
-    ///Create our ball
+    //Create our ball
     ResourceDescriptor ballDescriptor("Tenis Ball");
     _ball = CreateResource<Sphere3D>(ballDescriptor);
     _ballSGN = addGeometry(_ball,"TenisBallSGN");
@@ -384,7 +385,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
                                 Font::DIVIDE_DEFAULT,
                                 vec3<F32>(0.6f,0.2f,0.2f),
                                 "Number of items in Render Bin: %d",0);
-    _taskTimers.push_back(0.0f); //Fps
+    _taskTimers.push_back(0.0); //Fps
     return true;
 }
 

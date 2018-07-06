@@ -56,11 +56,11 @@ public:
     inline bool deinitializeAI(bool continueOnErrors)  { return _activeScene->deinitializeAI(continueOnErrors); }
     /// Update animations, network data, sounds, triggers etc.
     inline void updateCameras()                           { _activeScene->updateCameras();}
-    inline void updateSceneState(const U32 sceneTime)     { _activeScene->updateSceneState(sceneTime); }
+    inline void updateSceneState(const D32 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
 
     ///Gather input events and process them in the current scene
-    inline void processInput()                      { _activeScene->processInput(); }
-    inline void processTasks(const U32 time)        { _activeScene->processTasks(time); }
+    inline void processInput(const D32 deltaTime)   { _activeScene->processInput(deltaTime); }
+    inline void processTasks(const D32 deltaTime)   { _activeScene->processTasks(deltaTime); }
 
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
     ///Get the number of frames render since the application started

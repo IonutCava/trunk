@@ -36,7 +36,7 @@ ShaderProgram::~ShaderProgram()
     _shaderIdMap.clear();
 }
 
-U8 ShaderProgram::tick(const U32 deltaTime){
+U8 ShaderProgram::update(const D32 deltaTime){
     ParamHandler& par = ParamHandler::getInstance();
     this->Uniform("dvd_enableFog",par.getParam<bool>("rendering.enableFog"));
     this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
@@ -97,7 +97,7 @@ void ShaderProgram::threadedLoad(const std::string& name){
     if(ShaderProgram::generateHWResource(name)) 
         HardwareResource::threadedLoad(name);
 
-    tick(0);
+    update(0.0);
 }
 
 bool ShaderProgram::generateHWResource(const std::string& name){

@@ -34,8 +34,8 @@ public:
 	bool load(const std::string& name, CameraManager* const cameraMgr);
 	bool loadResources(bool continueOnErrors);
 
-	void processTasks(const U32 time);
-	void processInput();
+	void processTasks(const D32 deltaTime);
+	void processInput(const D32 deltaTime);
 
 private:
 	void test();

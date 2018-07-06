@@ -33,7 +33,7 @@ protected:
 	GUIEditorSceneGraphInterface();
 	~GUIEditorSceneGraphInterface();
 	bool init(CEGUI::Window *parent);
-	bool tick(U32 deltaMsTime);
+	bool update(const D32 deltaTime);
 
 END_SINGLETON
 

@@ -66,7 +66,7 @@ public:
     Texture2D*	_noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
-    F32 _timer, _tickInterval;
+    D32 _timer, _tickInterval;
     F32 _eyeOffset;
 
     Quad3D*	_renderQuad;

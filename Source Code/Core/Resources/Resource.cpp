@@ -21,7 +21,7 @@ void* operator new(size_t t ,char* zFile, I32 nLine){
     }
 
     sprintf(Divide::Memory::outputLogBuffer,
-            "[ %d ] : New allocation [ %d ] in: \"%s\" at line: %d.\n\t Max allocation: [ %d ] in file \"%s\" at line: %d\n\n",
+            "[ %9.2f ] : New allocation [ %d ] in: \"%s\" at line: %d.\n\t Max allocation: [ %d ] in file \"%s\" at line: %d\n\n",
             GETTIME(), t, zFile, nLine, Divide::Memory::maxAlloc, Divide::Memory::zMaxFile, Divide::Memory::nMaxLine);
 
     Application::getInstance().logMemoryOperation(true, Divide::Memory::outputLogBuffer, t);
@@ -33,7 +33,7 @@ void* operator new(size_t t ,char* zFile, I32 nLine){
 void operator delete(void * pxData ,char* zFile, I32 nLine){
 #ifdef _DEBUG
     sprintf(Divide::Memory::outputLogBuffer,
-            "[ %d ] : New deallocation [ %d ] in: \"%s\" at line: %d.\n\n",
+            "[ %9.2f ] : New deallocation [ %d ] in: \"%s\" at line: %d.\n\n",
             GETTIME(), sizeof(pxData), zFile, nLine);
     Application::getInstance().logMemoryOperation(false, Divide::Memory::outputLogBuffer, sizeof(pxData));
 #endif

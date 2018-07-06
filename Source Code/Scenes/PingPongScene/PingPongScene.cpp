@@ -21,12 +21,13 @@ void PingPongScene::preRender(){
 }
 //<<end copy-paste
 
-void PingPongScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.3f;
-    if (time - _taskTimers[0] >= FpsDisplay){
+void PingPongScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    if (_taskTimers[0] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
+    Scene::processTasks(deltaTime);
 }
 
 void PingPongScene::resetGame(){
@@ -163,7 +164,7 @@ void PingPongScene::test(boost::any a, CallbackParam b){
     }
 }
 
-void PingPongScene::processInput(){
+void PingPongScene::processInput(const D32 deltaTime){
     //Move FB = Forward/Back = up/down
     //Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
@@ -248,8 +249,8 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     _quotes.push_back("You're lucky the room's empty. I'd be so ashamed otherwise if I were you");
     _quotes.push_back("It's not the hard. Even a monkey can do it.");
 
-    _taskTimers.push_back(0.0f); //Fps
-    _taskTimers.push_back(0.0f); //Light
+    _taskTimers.push_back(0.0); //Fps
+    _taskTimers.push_back(0.0); //Light
     return true;
 }
 

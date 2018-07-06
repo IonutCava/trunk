@@ -11,16 +11,17 @@ void PhysXScene::preRender(){
 }
 //<<end copy-paste
 
-void PhysXScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.3f;
-    if (time - _taskTimers[0] >= FpsDisplay){
+void PhysXScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    if (_taskTimers[0] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
+    Scene::processTasks(deltaTime);
 }
 
-void PhysXScene::processInput(){
+void PhysXScene::processInput(const D32 deltaTime){
     if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
     if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
@@ -54,7 +55,7 @@ bool PhysXScene::loadResources(bool continueOnErrors){
                                 vec3<F32>(0.6f,0.2f,0.2f),
                                 "Number of items in Render Bin: %d",0);
 
-    _taskTimers.push_back(0.0f); //Fps
+    _taskTimers.push_back(0.0); //Fps
     renderState().getCamera().setRotation(25/*yaw*/,-75/*pitch*/);
     renderState().getCamera().setEye(vec3<F32>(0,30,-40));
     _addingActors = false;

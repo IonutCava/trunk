@@ -1,7 +1,7 @@
 #include "Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
-AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTimeMS(0)
+AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTimeMS(0.0)
 {
     Navigation::DivideRecast::createInstance();
 }
@@ -21,9 +21,10 @@ void AIManager::Destroy(){
     Navigation::DivideRecast::destroyInstance();
 }
 
-U8 AIManager::tick(){
-    ///Lock the entities during tick() adding or deleting entities is suspended until this returns
+U8 AIManager::update(){
+    ///Lock the entities during update() adding or deleting entities is suspended until this returns
     ReadLock r_lock(_updateMutex);
+    /// use internal delta time calculations
     _deltaTimeMS = GETMSTIME() - _deltaTimeMS;
     if(_aiEntities.empty() || _pauseUpdate){
         boost::this_thread::sleep(boost::posix_time::milliseconds(10));
@@ -34,7 +35,7 @@ U8 AIManager::tick(){
 
     processInput();  //sensors
     processData();   //think
-    updateEntities();//react
+    updateEntities(_deltaTimeMS);//react
     return 0;
 }
 
@@ -50,9 +51,9 @@ void AIManager::processData(){   //think
     }
 }
 
-void AIManager::updateEntities(){//react
+void AIManager::updateEntities(const D32 deltaTime){//react
     for_each(AIEntityMap::value_type& entity, _aiEntities){
-        entity.second->update();
+        entity.second->update(deltaTime);
     }
 }
 
@@ -125,7 +126,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 void AIManager::debugDraw(bool forceAll){
     ReadLock r_lock(_navMeshMutex);
     for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
-        navMesh->tick(_deltaTimeMS);
+        navMesh->update(_deltaTimeMS);
         if(forceAll || navMesh->debugDraw()){
             navMesh->render();
         }

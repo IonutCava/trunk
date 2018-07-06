@@ -21,13 +21,15 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "Rendering/Headers/DeferredLightingRenderer.h"
 
-U32 Kernel::_currentTime = 0;
-U32 Kernel::_currentTimeMS = 0;
+D32 Kernel::_lastFrameTime = 0.0;
+D32 Kernel::_currentTime = 0.0;
+D32 Kernel::_currentTimeDelta = 0.0;
 bool Kernel::_keepAlive = true;
 bool Kernel::_applicationReady = false;
 bool Kernel::_renderingPaused = false;
 
 boost::function0<void> Kernel::_mainLoopCallback;
+ProfileTimer* s_appLoopTimer = NULL;
 
 Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _argc(argc),
@@ -55,12 +57,14 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
      //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
      //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
      _mainTaskPool = New boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
+     s_appLoopTimer = ADD_TIMER("MainLoopTimer");
 }
 
 Kernel::~Kernel(){
     SAFE_DELETE(_cameraMgr);
     _mainTaskPool->wait();
     SAFE_DELETE(_mainTaskPool);
+    REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::idle(){
@@ -78,13 +82,14 @@ void Kernel::idle(){
     }
 }
 
-static F32 oldFrameTime = 0;
 
 void Kernel::mainLoopApp(){
+    START_TIMER(s_appLoopTimer);
     // Update time at every render loop
-    oldFrameTime = _currentTimeMS;
-    Kernel::_currentTimeMS   = GETMSTIME();
-    Kernel::_currentTime     = getMsToSec(Kernel::_currentTimeMS);
+    Kernel::_lastFrameTime    = Kernel::_currentTime;
+    Kernel::_currentTime      = GETMSTIME();
+    Kernel::_currentTimeDelta = Kernel::_currentTime - Kernel::_lastFrameTime;
+
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
     Application& APP = Application::getInstance();
 
@@ -105,7 +110,7 @@ void Kernel::mainLoopApp(){
     frameMgr.createEvent(FRAME_EVENT_STARTED,evt);
     _keepAlive = frameMgr.frameStarted(evt);
     //Process physics
-    PHYSICS_DEVICE.process(_currentTimeMS - oldFrameTime);
+    PHYSICS_DEVICE.process(_currentTimeDelta);
     //Process the current frame
     _keepAlive = APP.getKernel()->mainLoopScene(evt);
     //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
@@ -116,6 +121,8 @@ void Kernel::mainLoopApp(){
     //Launch the FRAME_ENDED event (buffers have been swapped)
     frameMgr.createEvent(FRAME_EVENT_ENDED,evt);
     _keepAlive = frameMgr.frameEnded(evt);
+
+    STOP_TIMER(s_appLoopTimer);
 }
 
 void Kernel::firstLoop(){
@@ -134,6 +141,7 @@ void Kernel::firstLoop(){
     GFX_DEVICE.setWindowPos(10,50);
     //Bind main render loop
     _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
+    _currentTime =  GETMSTIME();
     par.setParam("rendering.enableShadows", shadowMappingEnabled);
 }
 
@@ -144,31 +152,32 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         return true;
     }
     _activeScene = GET_ACTIVE_SCENE();
-    _cameraMgr->tick(_currentTimeMS);
+    _cameraMgr->update(_currentTimeDelta);
 
     _loops = 0;
-    //while(_currentTimeMS > _nextGameTick && _loops < MAX_FRAMESKIP) {
+    //while(_currentTime > _nextGameTick && _loops < Config::MAX_FRAMESKIP) 
+    {
         // Update scene based on input
-        _sceneMgr.processInput();
+        _sceneMgr.processInput(_currentTimeDelta);
 
         // process all scene events
-        _sceneMgr.processTasks(_currentTimeMS);
+        _sceneMgr.processTasks(_currentTimeDelta);
 
         //Update the scene state based on current time
-        _sceneMgr.updateSceneState(_currentTimeMS);
+        _sceneMgr.updateSceneState(_currentTimeDelta);
 
         //Update physics
-        _PFX.update();
+        _PFX.update(_currentTimeDelta);
 
         _nextGameTick += SKIP_TICKS;
         _loops++;
-    //}
+    }
 
     bool sceneRenderState = presentToScreen(evt);
     // Get input events
-    _inputInterface.tick();
+    _inputInterface.update(_currentTimeDelta);
     // Draw the GUI
-    _GUI.draw(_currentTimeMS);
+    _GUI.draw(_currentTimeDelta);
     return sceneRenderState;
 }
 
@@ -180,7 +189,7 @@ bool Kernel::presentToScreen(FrameEvent& evt){
     _sceneMgr.preRender();
 
     //perform time-sensitive shader tasks
-    _shaderMgr.tick(_currentTimeMS);
+    _shaderMgr.update(_currentTimeDelta);
 
     _frameMgr.createEvent(FRAME_PRERENDER_END,evt);
     if(!_frameMgr.framePreRenderEnded(evt)) return false;
@@ -302,6 +311,8 @@ void Kernel::shutdown(){
     PRINT_FN(Locale::get("STOP_POST_FX"));
     PostFX::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_SCENE_MANAGER"));
+    AIManager::getInstance().pauseUpdate(true);
+    _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
     AIManager::getInstance().Destroy();
     AIManager::getInstance().destroyInstance();

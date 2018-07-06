@@ -83,7 +83,7 @@ void AIEntity::processData(){
     _actionProcessor->processData();
 }
 
-void AIEntity::update(){
+void AIEntity::update(const D32 deltaTime){
     ReadLock r_lock(_managerQueryMutex);
     if(!_actionProcessor) return;
     _actionProcessor->update(_node, _unitRef);

@@ -17,7 +17,6 @@ SceneManager::~SceneManager(){
     PRINT_FN(Locale::get("SCENE_MANAGER_DELETE"));
     PRINT_FN(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
     for_each(SceneMap::value_type& it, _sceneMap){
-        it.second->unload();
         SAFE_DELETE(it.second);
     }
     _sceneMap.clear();

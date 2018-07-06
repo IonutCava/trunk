@@ -39,14 +39,14 @@ glShaderProgram::~glShaderProgram()
     _uniformBufferObjects.clear();
 }
 
-U8 glShaderProgram::tick(const U32 deltaTime){
+U8 glShaderProgram::update(const D32 deltaTime){
     //Validate the program after we used it once
     if(_validationQueued && isHWInitComplete() && _wasBound/*after it was used at least once*/){
         validateInternal();
         flushLocCache();
     }
 
-    return ShaderProgram::tick(deltaTime);
+    return ShaderProgram::update(deltaTime);
 }
 
 std::string glShaderProgram::getLog() const {

@@ -31,8 +31,8 @@ void SubMesh::onDraw(const RenderStage& currentStage){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void SubMesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState){
-	Object3D::sceneUpdate(sceneTime, sgn,sceneState);
+void SubMesh::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
+	Object3D::sceneUpdate(deltaTime, sgn,sceneState);
 }
 
 void SubMesh::updateTransform(SceneGraphNode* const sgn){

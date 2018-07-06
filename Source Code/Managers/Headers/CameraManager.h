@@ -42,7 +42,7 @@ public:
 
 	void addCameraChangeListener(boost::function0<void> f) {_listeners.push_back(f);}
 
-	void tick(U32 elapsedTime);
+	void update(const D32 deltaTime);
 
 private:
 	Camera* _camera;

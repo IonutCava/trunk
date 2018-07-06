@@ -34,7 +34,7 @@ protected:
 	virtual ~GUIEditorInterface() {}
 	virtual bool init(CEGUI::Window *parent) {_parent = parent; return (_parent != NULL);}
 	///Handle tick with time difference from last call
-	virtual bool tick(U32 deltaMsTime) = 0;
+	virtual bool update(const D32 deltaTime) = 0;
 	CEGUI::Window *_parent;
 };
 

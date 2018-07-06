@@ -19,13 +19,13 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     Object3D::postLoad(sgn);
 }
 
-void SkinnedSubMesh::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+void SkinnedSubMesh::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     if(_playAnimations)
-        sgn->animationTransforms(_animator->GetTransforms(_deltaTime));
+        sgn->animationTransforms(_animator->GetTransforms(_elapsedTime));
     else
         sgn->animationTransforms().clear();
 
-    Object3D::sceneUpdate(sceneTime,sgn,sceneState);
+    Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }
 
 /// Create a mesh animator from assimp imported data
@@ -44,14 +44,14 @@ void SkinnedSubMesh::renderSkeleton(SceneGraphNode* const sgn){
     assert(_animator != NULL);
 
     _animator->setGlobalMatrix(sgn->getTransform()->getGlobalMatrix());
-    _animator->RenderSkeleton(_deltaTime);
+    _animator->RenderSkeleton(_elapsedTime);
 }
 
 // update possible animations
-void SkinnedSubMesh::updateAnimations(D32 timeIndex, SceneGraphNode* const sgn){
-    _skeletonAvailable = false;
-    _deltaTime = timeIndex;
+void SkinnedSubMesh::updateAnimations(const D32 deltaTime, SceneGraphNode* const sgn){
+    _elapsedTime = GETTIME();
 
+    _skeletonAvailable = false;
     if(!_animator ||!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE))
         return;
 
@@ -65,7 +65,7 @@ void SkinnedSubMesh::updateAnimations(D32 timeIndex, SceneGraphNode* const sgn){
     //All animation data is valid, so we have a skeleton to render if needed
     _skeletonAvailable = true;
 
-    ///Software skinning
+    //Software skinning
     if(!_softwareSkinning)
         return;
 

@@ -24,13 +24,14 @@ void WarScene::preRender(){
     getSkySGN(0)->getNode<Sky>()->setSunVector(_sunvector);
 }
 
-void WarScene::processTasks(const U32 time){
-    F32 FpsDisplay = 0.3f;
-    if (time - _taskTimers[0] >= FpsDisplay){
+void WarScene::processTasks(const D32 deltaTime){
+    D32 FpsDisplay = getSecToMs(0.3);
+    if (_taskTimers[0] >= FpsDisplay){
         GUI::getInstance().modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", Framerate::getInstance().getFps(), Framerate::getInstance().getFrameTime());
         GUI::getInstance().modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
-        _taskTimers[0] += FpsDisplay;
+        _taskTimers[0] = 0.0;
     }
+    processTasks(deltaTime);
 }
 
 void WarScene::resetSimulation(){
@@ -54,7 +55,7 @@ void WarScene::processSimulation(boost::any a, CallbackParam b){
     //assert(_groundPlaceholder);
 }
 
-void WarScene::processInput(){
+void WarScene::processInput(const D32 deltaTime){
     if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
     if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 
@@ -195,7 +196,7 @@ bool WarScene::loadResources(bool continueOnErrors){
     cam->setTurnSpeedFactor(0.01f);
     _cameraMgr->addNewCamera("tpsCamera", cam);
 
-    _taskTimers.push_back(0.0f); //Fps
+    _taskTimers.push_back(0.0); //Fps
     return true;
 }
 

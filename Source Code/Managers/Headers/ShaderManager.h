@@ -47,8 +47,7 @@ public:
     bool    init();
     void    Destroy();
     ///Called once per frame
-    ///deltaTime = elapsed time in milliseconds
-    U8      tick(const U32 deltaTime);
+    U8      update(const D32 deltaTime);
     ///Called once per frame after a swap buffer request
     U8      idle();
     ///Calling refresh will mark all shader programs as dirty

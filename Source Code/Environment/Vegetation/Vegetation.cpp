@@ -60,10 +60,10 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
     _render = true;
 }
 
-void Vegetation::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+void Vegetation::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     if(!_render || !_success) return;
     ///Query shadow state every "_stateRefreshInterval" milliseconds
-    if (sceneTime - _stateRefreshIntervalBuffer >= _stateRefreshInterval){
+    if (_stateRefreshIntervalBuffer >= _stateRefreshInterval){
         _windX = sceneState.getWindDirX();
         _windZ = sceneState.getWindDirZ();
         _windS = sceneState.getWindSpeed();
@@ -74,8 +74,9 @@ void Vegetation::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, Sce
         _grassShader->Uniform("dvd_enableShadowMapping", _shadowMapped);
         _grassShader->Uniform("worldHalfExtent", GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth() * 0.5f);
         _grassShader->unbind();
-        _stateRefreshIntervalBuffer += _stateRefreshInterval;
+        _stateRefreshIntervalBuffer -= _stateRefreshInterval;
     }
+    _stateRefreshIntervalBuffer += deltaTime;
 }
 
 void Vegetation::draw(const RenderStage& currentStage, Transform* const parentTransform){

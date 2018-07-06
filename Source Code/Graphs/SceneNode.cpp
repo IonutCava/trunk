@@ -41,7 +41,7 @@ SceneNode::~SceneNode() {
     SAFE_DELETE(_physicsAsset);
 }
 
-void SceneNode::sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState){
+void SceneNode::sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     if(!_material)
         return;
 

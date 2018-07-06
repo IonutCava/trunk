@@ -112,9 +112,9 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
 }
 
 ///Process results
-void PhysX::process(F32 dt){
+void PhysX::process(const D32 deltaTime){
     if(_targetScene && _timeStep > EPSILON){
-        _accumulator  += dt;
+        _accumulator  += deltaTime;
         
         if(_accumulator < _timeStep)
             return;
@@ -125,9 +125,9 @@ void PhysX::process(F32 dt){
 }
 
 ///Update actors
-void PhysX::update(){
+void PhysX::update(const D32 deltaTime){
     if(_targetScene){
-        _targetScene->update();
+        _targetScene->update(deltaTime);
     }
 }
 
@@ -235,6 +235,7 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
             tempActor->_isDynamic = true;
         }
         targetScene->addRigidActor(tempActor, false);
+        nodeTransform->cleanPhysics();
     }
     
     physx::PxGeometry* geometry = NULL;

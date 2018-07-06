@@ -35,11 +35,11 @@ private:
     I32 _key;
     U32 _char;
 
-    F32 _elapsed;
-    F32 _delay;
+    D32 _elapsed;
+    D32 _delay;
 
-    F32 _repeatDelay;  //< Time intervals between key injections
-    F32 _initialDelay; //< The time after begin() and before repeatKey() is called. If end() is called in that interval, the key will not repeat
+    D32 _repeatDelay;  //< Time intervals between key injections
+    D32 _initialDelay; //< The time after begin() and before repeatKey() is called. If end() is called in that interval, the key will not repeat
 
 protected:
     ///Override this to define custom events for key repeats
@@ -47,13 +47,13 @@ protected:
 
 public:
     ///Default constructor
-     AutoRepeatKey(F32 repeatDelay = 0.035f, F32 initialDelay = 0.300f);
+    AutoRepeatKey(D32 repeatDelay = 0.035, D32 initialDelay = 0.300);
     ///Called when a key is pressed
     void begin(const OIS::KeyEvent &evt);
     ///Called when a key is released
     void end(const OIS::KeyEvent &evt);
     ///Update the internal time interval between frames
-    void update(F32 elapsed);
+    void update(const D32 deltaTime);
     ///Adjust delay between key injections
     inline void setRepeatDelay(F32 repeatDelay) {_repeatDelay = repeatDelay;}
     ///Adjust the initial delay before we start injecting key repeats

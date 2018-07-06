@@ -37,8 +37,8 @@ void SceneGraph::print(){
 void SceneGraph::startUpdateThread(){
 }
 
-void SceneGraph::sceneUpdate(const U32 sceneTime, SceneState& sceneState){
-    _root->sceneUpdate(sceneTime, sceneState);
+void SceneGraph::sceneUpdate(const D32 deltaTime, SceneState& sceneState){
+    _root->sceneUpdate(deltaTime, sceneState);
 }
 
 void SceneGraph::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){

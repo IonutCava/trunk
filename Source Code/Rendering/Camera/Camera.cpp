@@ -59,7 +59,7 @@ void Camera::restoreCamera() {
     }
 }
 
-void Camera::tick(U32 elapsedTime) {
+void Camera::update(const D32 deltaTime) {
     //static bool oddFrame = true;
     _cameraMoveSpeed = FRAME_SPEED_FACTOR * _moveSpeedFactor;
     _cameraTurnSpeed = FRAME_SPEED_FACTOR * _turnSpeedFactor;

@@ -28,7 +28,7 @@ void ASIOImpl::handlePacket(WorldPacket& p){
 void ASIOImpl::HandlePongOpCode(WorldPacket& p){
 	F32 time = 0;
 	p >> time;
-	F32 result = GETMSTIME() - time;
+	D32 result = GETMSTIME() - time;
 	ParamHandler::getInstance().setParam("serverResponse",std::string("Server says: Pinged with : ") +
 					Util::toString(floor(result+0.5f)) + std::string(" ms latency"));
 }

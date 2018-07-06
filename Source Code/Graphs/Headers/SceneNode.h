@@ -95,7 +95,7 @@ public:
     virtual void drawBoundingBox(SceneGraphNode* const sgn);
     virtual void postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U32 sceneTime, SceneGraphNode* const sgn, SceneState& sceneState);
+    virtual void sceneUpdate(const D32 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     inline       void           setType(const SceneNodeType& type)        {_type = type;}
     inline const SceneNodeType& getType()					        const {return _type;}

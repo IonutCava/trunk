@@ -62,6 +62,6 @@ void Mesh::updateTransform(SceneGraphNode* const sgn){
 }
 
 /// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(const U32 sceneTime,SceneGraphNode* const sgn, SceneState& sceneState){
-    Object3D::sceneUpdate(sceneTime,sgn,sceneState);
+void Mesh::sceneUpdate(const D32 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState){
+    Object3D::sceneUpdate(deltaTime,sgn,sceneState);
 }

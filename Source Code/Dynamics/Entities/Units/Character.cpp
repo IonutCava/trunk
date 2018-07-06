@@ -39,7 +39,7 @@ D32 Character::getAgentRadius() const {
     return _detourCrowd ? _detourCrowd->getAgentRadius() : 0.0;
 }
 
-void Character::update(U32 elapsedTime) {
+void Character::update(const D32 deltaTime) {
 }
 
 void Character::updateDestination(const vec3<F32>& destination, bool updatePreviousPath ){

@@ -22,7 +22,7 @@ bool GUIEditorAIInterface::init(CEGUI::Window *parent) {
 	return GUIEditorInterface::init(parent);
 }
 
-bool GUIEditorAIInterface::tick(U32 deltaMsTime){
+bool GUIEditorAIInterface::update(const D32 deltaTime){
 	bool state = true;
 	if(_createNavMeshQueued){
 		AIManager::getInstance().toggleNavMeshDebugDraw(_debugDrawCheckbox->isSelected());

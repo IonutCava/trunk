@@ -42,7 +42,7 @@ namespace Navigation{
         I32 doGetAccumulatedTime(const rcTimerLabel /*label*/) const;
 
     private:
-        U32 _startTime[RC_MAX_TIMERS];
+        D32 _startTime[RC_MAX_TIMERS];
         I32 _accTime[RC_MAX_TIMERS];
     };
 };

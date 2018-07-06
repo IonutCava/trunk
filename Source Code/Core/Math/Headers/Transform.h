@@ -41,6 +41,7 @@ public:
     void rotateQuaternion(const Quaternion<F32>& quat) { setDirty(); WriteLock w_lock(_lock); _orientation = quat;                      rebuildMatrix(); }
     ///Helper functions
     inline bool isDirty()         const {return _dirty;}
+    inline bool isPhysicsDirty()  const {return _physicsDirty;}
     inline bool isUniformScaled() const {ReadLock r_lock(_lock); return _scale.isUniform();}
     ///Transformation helper functions. These just call the normal translate/rotate/scale functions
     inline void scale(const F32 scale)            {this->scale(vec3<F32>(scale,scale,scale)); }
@@ -107,10 +108,13 @@ public:
     void applyTransforms();
     ///Compares 2 transforms
     bool compare(const Transform* const t);
+    ///Call this when the physics actor is updated
+    inline void cleanPhysics()  {_physicsDirty = false;}
 
 private:
+    
     inline void clean()         {_dirty = false; _rebuildMatrix = false;}
-    inline void setDirty()      {_dirty = true;}
+    inline void setDirty()      {_dirty = true; _physicsDirty = true;}
     inline void rebuildMatrix() {_rebuildMatrix = true;}
 
 private:
@@ -124,6 +128,8 @@ private:
     Quaternion<F32> _orientation;
     ///_dirty is set to true whenever a translation, rotation or scale is applied
     boost::atomic_bool _dirty;
+    ///_physicsDirty is a hack flag to sync SGN transform with physics actor's pose
+    boost::atomic_bool _physicsDirty;
     ///_rebuildMatrix is set to true only when a rotation or scale is applied to avoid rebuilding matrices on translation only
     boost::atomic_bool _rebuildMatrix;
     Transform*         _parentTransform;

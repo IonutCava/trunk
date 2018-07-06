@@ -36,7 +36,7 @@ protected:
 	GUIEditorAIInterface();
 	~GUIEditorAIInterface();
 	bool init(CEGUI::Window *parent);
-	bool tick(U32 deltaMsTime);
+	bool update(const D32 deltaTime);
 
 	bool Handle_CreateNavMesh(const CEGUI::EventArgs &e);
 	bool Handle_ToggleDebugDraw(const CEGUI::EventArgs &e);

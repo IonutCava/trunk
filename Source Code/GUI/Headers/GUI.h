@@ -60,7 +60,7 @@ DEFINE_SINGLETON( GUI )
 
 public:
     /// Main display call
-    void draw(U32 timeElapsed = 0);
+    void draw(const D32 deltaTime = 0);
     /// Destroy items and close the GUI
     void close();
     /// Add a text label
@@ -101,7 +101,6 @@ private:
 private:
     bool _init;                     //< Set to true when the GUI has finished loading
     bool _enableCEGUIRendering;     //< Toggle CEGUI rendering on/off (e.g. to check raw application rendering performance)
-    U32 _prevElapsedTime;           //< Time when the GUI was last rendered. Used to calculate frametime
     GUIInput    _input;             //< Used to implement key repeat
     GUIConsole* _console;           //< Pointer to the GUIConsole object
     guiMap      _guiStack;          //< All the GUI elements created

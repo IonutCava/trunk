@@ -103,7 +103,7 @@ namespace Navigation {
         /// Load a saved NavigationMesh from a file.
         bool load(SceneGraphNode* const node);
         /// Called once per frame with the time diff between this and the last frame
-        void tick(U32 deltaMsTime);
+        void update(const D32 deltaTime);
         /// Render the debug mesh if debug drawing is enabled
         void render();
         inline void debugDraw(bool state)       {_debugDraw = state;}
