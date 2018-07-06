@@ -281,7 +281,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
                 RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::REVEALAGE));
                 state1._blendProperties._blendSrc = BlendProperty::ZERO;
-                state1._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+                state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
                 state1._blendProperties._blendOp = BlendOperation::ADD;
             }
             // Don't clear our screen target. That would be BAD.

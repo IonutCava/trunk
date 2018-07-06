@@ -58,7 +58,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (colour.a < 1.0 - ALPHA_DISCARD_THRESHOLD) {
+    if (colour.a < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
 
@@ -86,7 +86,7 @@ vec2 computeMoments(in float depth) {
 
 void main(void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (colour.a < 1.0 - ALPHA_DISCARD_THRESHOLD) discard;
+    if (colour.a < 1.0 - Z_TEST_SIGMA) discard;
 
     _colourOut = computeMoments(gl_FragCoord.z);
 }
@@ -99,6 +99,6 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main(void){
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (colour.a < 1.0 - ALPHA_DISCARD_THRESHOLD) discard;
+    if (colour.a < 1.0 - Z_TEST_SIGMA) discard;
 
 }

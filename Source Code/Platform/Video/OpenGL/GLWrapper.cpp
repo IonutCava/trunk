@@ -280,7 +280,7 @@ bool GL_API::initGLSW() {
     // Add version as the first shader statement, followed by copyright notice
     appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
 
-    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2016 DIVIDE-Studio*/", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2018 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "invariant gl_Position;", lineOffsets);
@@ -338,7 +338,6 @@ bool GL_API::initGLSW() {
     appendToShaderHeader(ShaderType::COUNT,    "const uint MAX_SPLITS_PER_LIGHT = " + to_stringImpl(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "const int MAX_VISIBLE_NODES = " + to_stringImpl(Config::MAX_VISIBLE_NODES) + ";", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "const float Z_TEST_SIGMA = 0.0001;", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "const float ALPHA_DISCARD_THRESHOLD = 0.05;", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "const uint DEPTH_EXP_WARP = 32;", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX,   "const uint MAX_BONE_COUNT_PER_NODE = " + to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE) + ";", lineOffsets);
 

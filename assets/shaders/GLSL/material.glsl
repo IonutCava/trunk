@@ -147,7 +147,7 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
 
     /* If your scene has a lot of content very close to the far plane,
     then include this line (one rsqrt instruction):*/
-    b /= sqrt(1e4 * abs(csZ));
+    //b /= sqrt(1e4 * abs(csZ));
 
     float w = clamp(a * a * a * 1e8 * b * b * b, 1e-2, 3e2);
     _accum = premultipliedReflect * w;
@@ -155,6 +155,15 @@ void writePixel(vec4 premultipliedReflect, float csZ) {
     _revealage = premultipliedReflect.a;
 }
 #endif
+
+void nvidiaSample(in vec4 color, in float linearDepth) {
+    // Tuned to work well with FP16 accumulation buffers and 0.001 < linearDepth < 2.5
+    // See Equation (9) from http://jcgt.org/published/0002/02/09/
+    float weight = clamp(0.03 / (1e-5 + pow(linearDepth, 4.0)), 1e-2, 3e3);
+    _accum = vec4(color.rgb * color.a, color.a) * weight;
+    _revealage = color.a;
+}
+
 #endif
 
 void main (void){
@@ -175,11 +184,12 @@ void main (void){
     float linearDepth = ToLinearDepth(getDepthValue(screenPositionNormalised));
 
 #if defined(USE_COLOURED_WOIT)
-    writePixel(colourOut, colourOut.rgb - vec3(0.2), linearDepth);
+    //writePixel(colourOut, colourOut.rgb - vec3(0.2), linearDepth);
 #else //USE_COLOURED_WOIT
-    writePixel(colourOut, linearDepth);
+    //writePixel(colourOut, linearDepth);
 #endif //USE_COLOURED_WOIT
 
+    nvidiaSample(colourOut, linearDepth);
 #else //OIT_PASS
 
     _colourOut = colourOut;

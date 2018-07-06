@@ -230,12 +230,7 @@ vec4 private_getAlbedo() {
     albedo.a = getOpacity();
 
 #if defined(USE_ALPHA_DISCARD)
-    if (albedo.a < 1.0 - ALPHA_DISCARD_THRESHOLD) {
-        discard;
-    }
-#endif
-#if defined(OIT_PASS)
-    if (albedo.a > 1.0 - ALPHA_DISCARD_THRESHOLD) {
+    if (albedo.a < 1.0 - Z_TEST_SIGMA) {
         discard;
     }
 #endif

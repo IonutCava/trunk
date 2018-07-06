@@ -51,10 +51,10 @@ void main() {
     // dst' =  (accum.rgb / accum.a) * (1 - revealage) + dst
     // [dst has already been modulated by the transmission colors and coverage and the blend mode
     // inverts revealage for us] 
-#ifdef USE_COLOURED_WOIT
-    _colourOut = vec4(accum.rgb / max(accum.a, 0.00001), revealage);
-#else
     vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
+#ifdef USE_COLOURED_WOIT
+    _colourOut = vec4(averageColor, revealage);
+#else
     _colourOut = vec4(averageColor, 1.0 - revealage);
 #endif
 
