@@ -15,8 +15,6 @@ layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
-uniform float underwaterDiffuseScale;
-
 vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
     return texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0));
 }
@@ -61,11 +59,6 @@ vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 nor
                blendMap.a);
 }
 
-vec3 getTBNNormal(in vec2 uv, in vec3 normal) {
-    mat3 TBN = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
-    return TBN * normal;
-}
-
 vec4 getTerrainAlbedo(){
     vec4 blendMap;
     vec4 colour = vec4(0.0);
@@ -100,7 +93,7 @@ vec3 getTerrainNormal() {
 #else//(CURRENT_TEXTURE_COUNT % 4) == 0
         tbnTemp = getFinalTBN4(blendMap, 0, detailScale[i]);
 #endif
-        tbnTemp = getTBNNormal(VAR._texCoord, normalize(2.0 * tbnTemp - 1.0));
+        tbnTemp = getTBNMatrix() * normalize(2.0 * tbnTemp - 1.0);
         tbn = normalUDNBlend(tbnTemp, tbn);
     }
 

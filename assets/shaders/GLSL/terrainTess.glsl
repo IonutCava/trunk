@@ -2,10 +2,6 @@
 
 #include "vbInputData.vert"
 
-uniform float TerrainLength;
-uniform float TerrainWidth;
-uniform vec3 TerrainOrigin;
-
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
     vec4 _tScale;
@@ -18,7 +14,8 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
 
 vec2 calcTerrainTexCoord(in vec4 pos)
 {
-    return vec2(abs(pos.x - TerrainOrigin.x) / TerrainWidth, abs(pos.z - TerrainOrigin.z) / TerrainLength);
+    vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5), -(TERRAIN_LENGTH * 0.5));
+    return vec2(abs(pos.x - TerrainOrigin.x) / TERRAIN_WIDTH, abs(pos.z - TerrainOrigin.y) / TERRAIN_LENGTH);
 }
 
 void main(void)
@@ -30,7 +27,6 @@ void main(void)
     vec4 patchPosition = vec4(dvd_Vertex.xyz * posAndScale.w, 1.0);
     
     VAR._vertexW = dvd_WorldMatrix(VAR.dvd_instanceID) * vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
-    VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
     // Calcuate texture coordantes (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
@@ -44,9 +40,6 @@ void main(void)
 #include "nodeBufferedInput.cmn"
 
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
-
-uniform float MinHeight;
-uniform float HeightRange;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -68,17 +61,17 @@ patch out float gl_TessLevelInner[2];
 
 out float tcs_tessLevel[];
 
+mat4 mvMatrix;
+
 /**
 * Dynamic level of detail using camera distance algorithm.
 */
 float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     float sampleHeight = texture(TexTerrainHeight, t0).r;
-    p0.y = MinHeight + HeightRange * sampleHeight;
+    p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
     sampleHeight = texture(TexTerrainHeight, t1).r;
-    p1.y = MinHeight + HeightRange * sampleHeight;
-
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
+    p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
     vec3 offset = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.xyz;
     vec4 view0 = mvMatrix * vec4(p0.xyz + offset, p0.w);
@@ -125,13 +118,12 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
     float g_tessellatedTriWidth = 10.0;
 
     float sampleHeight = texture(TexTerrainHeight, t0).r;
-    p0.y = MinHeight + HeightRange * sampleHeight;
+    p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
     sampleHeight = texture(TexTerrainHeight, t1).r;
-    p1.y = MinHeight + HeightRange * sampleHeight;
+    p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
 
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
-    vec3 offset = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.xyz;
+    vec3 offset = dvd_TerrainData[_in[0].dvd_drawID]._positionAndTileScale.xyz;
 
     vec4 center = 0.5 * (p0 + p1);
     vec4 view0 = mvMatrix * vec4(center.xyz + offset, center.w);
@@ -180,6 +172,8 @@ float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 
 void main(void)
 {
+    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
+
     // Outer tessellation level
     gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
     gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
@@ -236,12 +230,6 @@ layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_Terra
     TerrainNodeData dvd_TerrainData[];
 };
 
-uniform float MinHeight;
-uniform float HeightRange;
-
-//
-// Inputs
-//
 layout(quads, fractional_even_spacing) in;
 
 patch in float gl_TessLevelOuter[4];
@@ -265,31 +253,57 @@ vec2 interpolate2(in vec2 v0, in vec2 v1, in vec2 v2, in vec2 v3)
     return mix(a, b, gl_TessCoord.y);
 }
 
+vec3 getNormal(in float sampleHeight, in vec2 tex_coord) {
+    const vec2 size = vec2(2.0, 0.0);
+    const ivec3 off = ivec3(-1, 0, 1);
+
+    float s11 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
+    float s01 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.xy).x;
+    float s21 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.zy).x;
+    float s10 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.yx).x;
+    float s12 = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * textureOffset(TexTerrainHeight, tex_coord, off.yz).x;
+    vec3 va = normalize(vec3(size.xy, s21 - s01));
+    vec3 vb = normalize(vec3(size.yx, s12 - s10));
+
+    return cross(va, vb);
+}
+
+vec3 getTangent(in vec3 normal) {
+    vec3 temp_tangent = vec3(0.0, 0.0, 1.0);
+    vec3 bitangent = cross(temp_tangent, normal);
+    vec3 tangent = cross(normal, bitangent);
+    return tangent;
+}
+
 void main()
 {
+    PassData(0);
+
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
     gl_Position = interpolate(gl_in[0].gl_Position, gl_in[1].gl_Position, gl_in[2].gl_Position, gl_in[3].gl_Position);
 
-    
     // Terrain heightmap coords
     vec2 terrainTexCoord = interpolate2(VAR[0]._texCoord, VAR[1]._texCoord, VAR[2]._texCoord, VAR[3]._texCoord);
 
     // Sample the heightmap and offset y position of vertex
     float sampleHeight = texture(TexTerrainHeight, terrainTexCoord).r;
-    gl_Position.y = MinHeight + HeightRange * sampleHeight;
+    gl_Position.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
     // Project the vertex to clip space and send it along
     vec3 offset = dvd_TerrainData[VAR[0].dvd_drawID]._positionAndTileScale.xyz;
-
     _out._vertexW = vec4(gl_Position.xyz + offset, gl_Position.w);
 
 #if !defined(SHADOW_PASS)
     _out._vertexW = dvd_WorldMatrix(VAR[0].dvd_instanceID) * _out._vertexW;
+    mat3 normalMatrix = dvd_NormalMatrixWV(VAR[0].dvd_instanceID);
+    vec3 normal = getNormal(sampleHeight, terrainTexCoord);
+    _out._normalWV = normalize(normalMatrix * normal);
+    _out._tangentWV = normalize(normalMatrix * getTangent(normal));
+    _out._bitangentWV = normalize(cross(_out._normalWV, _out._tangentWV));
 #endif
 
     gl_Position = _out._vertexW;
 
-    PassData(0);
     _out._texCoord = terrainTexCoord;
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
@@ -299,8 +313,6 @@ void main()
 --Geometry
 
 uniform float ToggleWireframe = 1.0;
-uniform float underwaterDiffuseScale;
-uniform float dvd_waterHeight;
 
 layout(triangles) in;
 
@@ -309,7 +321,7 @@ in float tes_tessLevel[];
 layout(triangle_strip, max_vertices = 4) out;
 
 out vec4 _scrollingUV;
-smooth out float distance;
+smooth out float _waterDistance;
 smooth out float _waterDepth;
 
 #if defined(_DEBUG)
@@ -322,12 +334,12 @@ out vec4 geom_vertexWVP;
 #endif
 
 float waterDepth(int index) {
-    return 1.0 - (dvd_waterHeight - VAR[index]._vertexW.y);
+    return 1.0 - (dvd_clip_plane[0].w - VAR[index]._vertexW.y);
 }
 
 vec4 getScrollingUV(int index) {
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR[index]._texCoord * underwaterDiffuseScale;
+    vec2 noiseUV = VAR[index]._texCoord * UNDERWATER_DIFFUSE_SCALE;
     vec4 scrollingUV;
     scrollingUV.st = noiseUV;
     scrollingUV.pq = noiseUV + time2;
@@ -351,7 +363,7 @@ vec4 wireframeColor()
 }
 
 vec4 getWVPPositon(int index) {
-    return dvd_ProjectionMatrix * dvd_ViewMatrix * gl_in[index].gl_Position;
+    return dvd_ViewProjectionMatrix * gl_in[index].gl_Position;
 }
 
 void main(void)
@@ -396,11 +408,14 @@ void main(void)
     #endif
 
         gl_Position = getWVPPositon(i);
-        distance = gl_in[i].gl_ClipDistance[0];
+
+#if !defined(SHADOW_PASS)
+        _waterDistance = gl_in[i].gl_ClipDistance[0];
         _waterDepth = waterDepth(i);
+
         _scrollingUV = getScrollingUV(i);
 
-#if defined(_DEBUG)
+#   if defined(_DEBUG)
         gs_wireColor = wireColor;
 
         if (i == 0) {
@@ -410,24 +425,28 @@ void main(void)
         } else {
             gs_edgeDist = vec3(0, 0, hc);
         }
+#   endif
 #endif
         EmitVertex();
     }
 
     PassData(0);
-    // This closes the the triangle
 #if defined(SHADOW_PASS)
     geom_vertexWVP = gl_in[0].gl_Position;
 #endif
+
+    // This closes the triangle
     gl_Position = getWVPPositon(0);
-    distance = gl_in[0].gl_ClipDistance[0];
+
+#if !defined(SHADOW_PASS)
+    _waterDistance = gl_in[0].gl_ClipDistance[0];
     _scrollingUV = getScrollingUV(0);
     _waterDepth = waterDepth(0);
-#if defined(_DEBUG)
+#   if defined(_DEBUG)
     gs_edgeDist = vec3(ha, 0, 0);
     gs_wireColor = wireColor;
+#   endif
 #endif
-
     EmitVertex();
 
     EndPrimitive();
@@ -477,7 +496,7 @@ void main()
 uniform float ToggleWireframe = 1.0;
 
 in vec4 _scrollingUV;
-smooth in float distance;
+smooth in float _waterDistance;
 smooth in float _waterDepth;
 
 #if defined(_DEBUG)
@@ -518,34 +537,37 @@ vec4 CausticsColour() {
     setAlbedo((texture(texWaterCaustics, _scrollingUV.st) +
                texture(texWaterCaustics, _scrollingUV.pq)) * 0.5);
 
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo(); //getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterColour() {
 
-    vec2 coords = VAR._texCoord * underwaterDiffuseScale;
+    vec2 coords = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
     setAlbedo(texture(texUnderwaterAlbedo, coords));
 
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    setProcessedNormal(getTBNNormal(VAR._texCoord, tbn));
+    setProcessedNormal(getTBNMatrix() * tbn);
 
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo(); //getPixelColour(VAR._texCoord);
 }
 
 vec4 UnderwaterMappingRoutine() {
     return mix(CausticsColour(), UnderwaterColour(), _waterDepth);
 }
 
-vec4 TerrainMappingRoutine() { // -- HACK - Ionut
+vec4 TerrainMappingRoutine() {
     setAlbedo(getTerrainAlbedo());
-    return getPixelColour(VAR._texCoord);
+    return getAlbedo();//getPixelColour(VAR._texCoord);
 }
 
 void main(void)
 {
+    bumpInit();
+
     setProcessedNormal(getTerrainNormal());
 
-    vec4 colour = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(distance, 0.0))));
+    vec4 colour = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(_waterDistance, 0.0))));
+    
 #if defined(_DEBUG)
     float d = min(gs_edgeDist.x, gs_edgeDist.y);
     d = min(d, gs_edgeDist.z);

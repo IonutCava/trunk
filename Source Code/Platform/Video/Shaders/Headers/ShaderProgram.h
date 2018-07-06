@@ -300,7 +300,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
    protected:
     template <typename T>
     friend class ImplResourceLoader;
-
+    bool _shouldRecompile;
     bool _asyncLoad;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected

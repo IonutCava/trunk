@@ -57,7 +57,7 @@ vec4 mappingFlat(){
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
     vec3 bump = getBump(VAR._texCoord);
-    return mix(getPixelColour(VAR._texCoord, getTBNNormal(bump)),
+    return mix(getPixelColour(getTBNMatrix() * bump),
                mappingFlat(),
                vec4(dvd_lodLevel > 1));
 }
@@ -78,9 +78,9 @@ vec4 mappingParallax(){
 #endif
 
 vec4 getFinalPixelColour() {
-
 //return MappingRoutine();
 #if defined(COMPUTE_TBN)
+    bumpInit();
 #    if defined(USE_PARALLAX_MAPPING)
     return ParallaxMapping();
 #    elif defined(USE_RELIEF_MAPPING)

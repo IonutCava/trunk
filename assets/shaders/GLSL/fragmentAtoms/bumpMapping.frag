@@ -3,9 +3,14 @@
 
 uniform int bumpMapLightID = 0;
 
-vec3 getTBNNormal(in vec3 bump) {
-    mat3 TBN = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
-    return TBN * bump;
+mat3 _privateTBNMatrix;
+
+void bumpInit() {
+    _privateTBNMatrix = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
+}
+
+mat3 getTBNMatrix() {
+    return _privateTBNMatrix;
 }
 
 vec3 getBump(in vec2 uv) {
@@ -67,7 +72,7 @@ vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
                      (vec2(viewVecTBN.x, -viewVecTBN.y) / 
                      viewVecTBN.z));
 
-    return getPixelColour(vTexCoord, getTBNNormal(getBump(vTexCoord)));
+    return getPixelColour(vTexCoord, getTBNMatrix() * getBump(vTexCoord));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
@@ -90,10 +95,8 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return getPixelColour(uv + uv_offset, getTBNNormal(getBump(uv + uv_offset)));
+    return getPixelColour(uv + uv_offset, getTBNMatrix() * getBump(uv + uv_offset));
 }
-
-
 
 /*---------------- Normal blending -----------------*/
 //ref: http://blog.selfshadow.com/sandbox/normals.html

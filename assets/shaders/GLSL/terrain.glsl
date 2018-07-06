@@ -5,8 +5,6 @@
 
 uniform vec3 bbox_min;
 uniform vec3 bbox_extent;
-uniform float dvd_waterHeight;
-uniform float underwaterDiffuseScale;
 
 out vec4 _scrollingUV;
 smooth out float distance;
@@ -18,11 +16,11 @@ void main(void){
     computeData();
 
     VAR._texCoord = vec3((VAR._vertexW.xyz - bbox_min) / bbox_extent).sp;
-    _waterDepth = 1.0 - (dvd_waterHeight - VAR._vertexW.y) / (dvd_waterHeight - bbox_min.y);
+    _waterDepth = 1.0 - (dvd_clip_plane[0].w - VAR._vertexW.y) / (dvd_waterHeight - bbox_min.y);
     computeLightVectors();
 
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR._texCoord * underwaterDiffuseScale;
+    vec2 noiseUV = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
     _scrollingUV.st = noiseUV;
     _scrollingUV.pq = noiseUV + time2;
     _scrollingUV.s -= time2;
@@ -83,11 +81,11 @@ vec4 CausticsColour() {
 
 vec4 UnderwaterColour() {
 
-    vec2 coords = VAR._texCoord * underwaterDiffuseScale;
+    vec2 coords = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
     setAlbedo(texture(texUnderwaterAlbedo, coords));
 
     vec3 tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
-    setProcessedNormal(getTBNNormal(VAR._texCoord, tbn));
+    setProcessedNormal(getTBNMatrix() * tbn);
 
     return getPixelColour(VAR._texCoord);
 }
@@ -109,6 +107,8 @@ vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
 }
 
 void main(void) {
+    bumpInit();
+
    _colourOut = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), min(distance, 0.0))));
 
    _normalOut = packNormal(getProcessedNormal());

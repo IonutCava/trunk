@@ -1,6 +1,7 @@
 #include "Headers/Terrain.h"
 #include "Headers/TerrainLoader.h"
 #include "Headers/TerrainDescriptor.h"
+#include "Headers/TerrainTessellator.h"
 
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -13,47 +14,12 @@
 
 namespace Divide {
 
-namespace Test {
-
-void init(VertexBuffer* vb) {
-    vb->resizeVertexCount(4);
-    vb->modifyPositionValue(0, -1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(1,  1.0f, 0.0f, -1.0f);
-    vb->modifyPositionValue(2,  1.0f, 0.0f,  1.0f);
-    vb->modifyPositionValue(3, -1.0f, 0.0f,  1.0f);
-
-    vb->modifyColourValue(0, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(1, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(2, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-    vb->modifyColourValue(3, Util::ToByteColour(vec3<F32>(0.18f, 0.91f, 0.46f)));
-
-    vb->modifyNormalValue(0, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(1, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(2, 0.0f, 1.0f, 0.0f);
-    vb->modifyNormalValue(3, 0.0f, 1.0f, 0.0f);
-    
-    vb->modifyTexCoordValue(0, 0.0f, 2.0f);
-    vb->modifyTexCoordValue(1, 2.0f, 2.0f);
-    vb->modifyTexCoordValue(2, 2.0f, 0.0f);
-    vb->modifyTexCoordValue(3, 0.0f, 0.0f);
-
-    vb->addIndex(0);
-    vb->addIndex(1);
-    vb->addIndex(2);
-    vb->addIndex(3);
-}
-};
-
-
 bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
                                 bool threadedLoading,
                                 const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback ) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
-
-    Attorney::TerrainLoader::setUnderwaterDiffuseScale(
-        *terrain, terrainDescriptor->getVariablef("underwaterDiffuseScale"));
 
     SamplerDescriptor blendMapSampler;
     blendMapSampler.setWrapMode(TextureWrap::CLAMP);
@@ -213,6 +179,29 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     Material_ptr terrainMaterial =
         CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
 
+    const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
+
+    U16 heightmapWidth = terrainDimensions.width;
+    U16 heightmapHeight = terrainDimensions.height;
+
+    if (heightmapWidth % 2 == 0) {
+        heightmapWidth++;
+    }
+    if (heightmapHeight % 2 == 0) {
+        heightmapHeight++;
+    }
+
+    const vec2<F32>& altitudeRange = terrainDescriptor->getAltitudeRange();
+
+    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), heightmapWidth, heightmapHeight);
+
+    Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
+    Attorney::TerrainLoader::scaleFactor(*terrain).set(terrainDescriptor->getScale());
+    Attorney::TerrainLoader::offsetPosition(*terrain).set(terrainDescriptor->getPosition());
+    Attorney::TerrainLoader::altitudeRange(*terrain).set(altitudeRange);
+
+    F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
+
     terrainMaterial->setDiffuse(
         vec4<F32>(DefaultColours::WHITE().rgb() / 2, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
@@ -223,10 +212,14 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(textureCount));
-
-    terrainMaterial->setShaderProgram("terrainTess", true);
-    terrainMaterial->setShaderProgram("terrainTess.Shadow", RenderStage::SHADOW, true);
-    terrainMaterial->setShaderProgram("terrainTess.PrePass", RenderPassType::DEPTH_PASS, true);
+    terrainMaterial->setShaderDefines("TERRAIN_WIDTH " + to_stringImpl(heightmapWidth));
+    terrainMaterial->setShaderDefines("TERRAIN_LENGTH " + to_stringImpl(heightmapHeight));
+    terrainMaterial->setShaderDefines("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
+    terrainMaterial->setShaderDefines("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x));
+    terrainMaterial->setShaderDefines("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
+    terrainMaterial->setShaderProgram("terrainTess." + name, true);
+    terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
+    terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
@@ -292,38 +285,16 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     Attorney::TerrainLoader::chunkSize(*terrain) = terrainDescriptor->getChunkSize();
 
-    const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
-    
-    U16 heightmapWidth = terrainDimensions.width;
-    U16 heightmapHeight = terrainDimensions.height;
     const stringImpl& terrainMapLocation = terrainDescriptor->getVariable("heightmapLocation");
-
     stringImpl terrainRawFile(terrainDescriptor->getVariable("heightmap"));
 
-    Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
-    Attorney::TerrainLoader::scaleFactor(*terrain).set(terrainDescriptor->getScale());
-    Attorney::TerrainLoader::offsetPosition(*terrain).set(terrainDescriptor->getPosition());
-    Attorney::TerrainLoader::altitudeRange(*terrain).set(terrainDescriptor->getAltitudeRange());
-
-    vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
-    if (dimensions.x % 2 == 0) {
-        dimensions.x++;
-    }
-    if (dimensions.y % 2 == 0) {
-        dimensions.y++;
-    }
-    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), dimensions.x, dimensions.y);
-
-    I32 terrainWidth = (I32)dimensions.x;
-    I32 terrainHeight = (I32)dimensions.y;
+    const vec2<U16>& terrainDimensions = Attorney::TerrainLoader::dimensions(*terrain);
+    
     F32 minAltitude = terrainDescriptor->getAltitudeRange().x;
     F32 maxAltitude = terrainDescriptor->getAltitudeRange().y;
-
-
-
     BoundingBox& terrainBB = Attorney::TerrainLoader::boundingBox(*terrain);
-    terrainBB.set(vec3<F32>(-terrainWidth * 0.5f, minAltitude, -terrainHeight * 0.5f),
-                  vec3<F32>(terrainWidth * 0.5f, maxAltitude, terrainHeight * 0.5f));
+    terrainBB.set(vec3<F32>(-terrainDimensions.x * 0.5f, minAltitude, -terrainDimensions.y * 0.5f),
+                  vec3<F32>( terrainDimensions.x * 0.5f, maxAltitude,  terrainDimensions.y * 0.5f));
 
     const vec3<F32>& bMin = terrainBB.getMin();
     const vec3<F32>& bMax = terrainBB.getMax();
@@ -337,7 +308,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
         vectorImpl<U16> heightValues;
         if (terrainDescriptor->is16Bit()) {
-            assert(heightmapWidth != 0 && heightmapHeight != 0);
+            assert(terrainDimensions.x != 0 && terrainDimensions.y != 0);
             // only raw files for 16 bit support
             assert(hasExtension(terrainRawFile, "raw"));
             // Read File Data
@@ -364,8 +335,12 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
             heightValues.insert(std::end(heightValues), &data[0], &data[img.imageLayers().front()._data.size()]);
         }
 
-        terrain->_physicsVerts.resize(terrainWidth * terrainHeight);
+        terrain->_physicsVerts.resize(terrainDimensions.x * terrainDimensions.y);
 
+        const vec2<U16>& imageDimensions = terrainDescriptor->getDimensions();
+
+        I32 terrainWidth = to_I32(terrainDimensions.x);
+        I32 terrainHeight = to_I32(terrainDimensions.y);
         // scale and translate all height by half to convert from 0-255 (0-65335) to -127 - 128 (-32767 - 32768)
         if (terrainDescriptor->is16Bit()) {
             const F32 fMax = to_F32(std::numeric_limits<U16>::max() + 1);
@@ -375,9 +350,9 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 for (I32 i = 0; i < terrainWidth; i++) {
                     U32 idxHM = TER_COORD(i, j, terrainWidth);
 
-                    U32 idxIMG = TER_COORD<U32>(i < to_I32(heightmapWidth) ? i : i - 1,
-                                                j < to_I32(heightmapHeight) ? j : j - 1,
-                                                heightmapWidth);
+                    U32 idxIMG = TER_COORD<U32>(i < to_I32(imageDimensions.x) ? i : i - 1,
+                                                j < to_I32(imageDimensions.y) ? j : j - 1,
+                                                imageDimensions.x);
 
                     vec3<F32> vertexData(bMin.x + (to_F32(i)) * (bMax.x - bMin.x) / (terrainWidth - 1),   // X
                                          minAltitude + altitudeRange * (heightValues[idxIMG] / fMax),     // Y
@@ -396,9 +371,9 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
                 for (I32 i = 0; i < terrainWidth; i++) {
                     U32 idxHM = TER_COORD(i, j, terrainWidth);
 
-                    U32 idxIMG = TER_COORD<U32>(i < to_I32(heightmapWidth) ? i : i - 1,
-                                                j < to_I32(heightmapHeight) ? j : j - 1,
-                                                heightmapWidth);
+                    U32 idxIMG = TER_COORD<U32>(i < to_I32(imageDimensions.x) ? i : i - 1,
+                                                j < to_I32(imageDimensions.y) ? j : j - 1,
+                                                imageDimensions.x);
 
                     F32 heightValue = ((heightValues[idxIMG * 3 + 0] +
                                         heightValues[idxIMG * 3 + 1] +
@@ -497,17 +472,21 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     }
 
     VertexBuffer* vb = terrain->getGeometryVB();
-    Test::init(vb);
+    Attorney::TerrainTessellatorLoader::initTessellationPatch(vb);
     vb->keepData(false);
     vb->create(true);
 
     initializeVegetation(terrain, terrainDescriptor);
     Attorney::TerrainLoader::buildQuadtree(*terrain);
 
+    F32 underwaterDiffuseScale = terrainDescriptor->getVariablef("underwaterDiffuseScale");
+
     ResourceDescriptor planeShaderDesc("terrainPlane.Colour");
+    planeShaderDesc.setPropertyList("UNDERWATER_DIFFUSE_SCALE " + to_stringImpl(underwaterDiffuseScale));
     ShaderProgram_ptr planeShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
     planeShaderDesc.setResourceName("terrainPlane.Depth");
     ShaderProgram_ptr planeDepthShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), planeShaderDesc);
+
     Quad3D_ptr plane = CreateResource<Quad3D>(terrain->parentResourceCache(), infinitePlane);
     // our bottom plane is placed at the bottom of our water entity
     F32 height = bMin.y;
@@ -522,7 +501,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
 
     ResourceDescriptor renderGeometry("TerrainRenderGeometry");
     renderGeometry.setFlag(true);  // No default material
-    renderGeometry.setUserPtr((void*)(&dimensions));
+    renderGeometry.setUserPtr((void*)(&terrainDimensions));
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
     return terrain->load(onLoadCallback);

@@ -32,6 +32,7 @@
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
+#include "TerrainTessellator.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
@@ -158,17 +159,18 @@ class Terrain : public Object3D {
     VegetationDetails _vegDetails;
 
     U32 _chunkSize;
+    bool _cameraUpdated;
     vec3<F32> _offsetPosition;
     vec2<F32> _altitudeRange;
     vec2<U16> _terrainDimensions;
     Quadtree _terrainQuadtree;
+    TerrainTessellator _terrainTessellator;
 
     F32 _waterHeight;
     bool _drawBBoxes;
     Quad3D_ptr _plane;
     ShaderProgram_ptr _planeShader;
     ShaderProgram_ptr _planeDepthShader;
-    F32 _underwaterDiffuseScale;
     vec2<F32> _terrainScaleFactor;
     SceneGraphNode_wptr _vegetationGrassNode;
     vectorImpl<TerrainChunk*> _terrainChunks;
@@ -195,10 +197,6 @@ class TerrainChunk {
 
 class TerrainLoader {
    private:
-    static void setUnderwaterDiffuseScale(Terrain& terrain, F32 diffuseScale) {
-        terrain._underwaterDiffuseScale = diffuseScale;
-    }
-
     static void addTextureLayer(Terrain& terrain,
                                 TerrainTextureLayer* textureLayer) {
         terrain._terrainTextures.push_back(textureLayer);

@@ -28,7 +28,8 @@ std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
 ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
-      _asyncLoad(asyncLoad)
+      _asyncLoad(asyncLoad),
+      _shouldRecompile(false)
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
@@ -58,6 +59,10 @@ bool ShaderProgram::unload() {
 
 /// Called once per frame. Update common values used across programs
 bool ShaderProgram::update(const U64 deltaTime) {
+    if (_shouldRecompile) {
+        recompile();
+    }
+
     return true;
 }
 
@@ -69,6 +74,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
         _definesList.push_back(define);
+        _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
         // If we did find it, we'll show an error message in debug builds about
         // double add
@@ -85,6 +91,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     // If we find it, we remove it
     if (it != std::end(_definesList)) {
         _definesList.erase(it);
+        _shouldRecompile = getState() == ResourceState::RES_LOADED;
     } else {
         // If we did not find it, we'll show an error message in debug builds
         Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")),
@@ -109,7 +116,7 @@ bool ShaderProgram::recompile() {
     if (wasBound) {
         bind();
     }
-
+    _shouldRecompile = false;
     return state;
 }
 

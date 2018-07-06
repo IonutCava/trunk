@@ -3,14 +3,13 @@
 #include "vbInputData.vert"
 
 out vec4 _scrollingUV;
-uniform float underwaterDiffuseScale;
 
 void main(void) {
 
     computeData();
 
     float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR._texCoord * underwaterDiffuseScale;
+    vec2 noiseUV = VAR._texCoord * UNDERWATER_DIFFUSE_SCALE;
     _scrollingUV.st = noiseUV;
     _scrollingUV.pq = noiseUV + time2;
     _scrollingUV.s -= time2;
