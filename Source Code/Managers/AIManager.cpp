@@ -73,6 +73,27 @@ void AIManager::destroyEntity(U32 guid){
     _aiEntities.erase(guid);
 }
 
+/// Example nav mesh code:
+/*
+    PRINT_FN("Selecting 2 random points on the current navmesh and finding a path between them: ");
+    CONSOLE_TIMESTAMP_OFF();
+    vec3<F32> temp1 = Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh);
+    vec3<F32> temp2 = Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh);
+    PRINT_FN("Random point A [X: %5.2f | Y: %5.2f | Z:%5.2f]", temp1.x, temp1.y, temp1.z);
+    PRINT_FN("Random point B [X: %5.2f | Y: %5.2f | Z:%5.2f]", temp2.x, temp2.y, temp2.z);
+    Navigation::PathErrorCode err = Navigation::DivideRecast::getInstance().FindPath(*navMesh, temp1,temp2,0,1);
+    if(err == Navigation::PATH_ERROR_NONE){
+        U8 spaceCtr = 0;
+        vectorImpl<vec3<F32> > path = Navigation::DivideRecast::getInstance().getPath(0);
+        for(vectorImpl<vec3<F32> >::const_iterator it = path.begin(); it != path.end(); ++it, ++spaceCtr){
+            const vec3<F32>& currentNode = *it;
+            for(U8 j = 0; j < spaceCtr; ++j)
+                PRINT_F(" ");
+            PRINT_FN("Node %d : [X: %5.2f | Y: %5.2f | Z:%5.2f]",spaceCtr, currentNode.x, currentNode.y, currentNode.z);
+        }
+    }
+    CONSOLE_TIMESTAMP_ON();
+*/
 bool AIManager::addNavMesh(Navigation::NavigationMesh* const navMesh){
     navMesh->debugDraw(_navMeshDebugDraw);
     WriteLock w_lock(_navMeshMutex);

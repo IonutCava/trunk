@@ -87,9 +87,9 @@ namespace Navigation {
         return PATH_ERROR_NONE;
     }
 
-    std::vector<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {
+    vectorImpl<vec3<F32> > DivideRecast::getPath(I32 pathSlot) {
        
-        std::vector<vec3<F32> > result;
+        vectorImpl<vec3<F32> > result;
         if(pathSlot < 0 || pathSlot >= MAX_PATHSLOT || _pathStore[pathSlot].MaxVertex <= 0)
             return result;
 

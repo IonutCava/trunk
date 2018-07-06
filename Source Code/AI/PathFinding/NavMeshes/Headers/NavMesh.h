@@ -139,6 +139,8 @@ namespace Navigation {
         bool createNavigationMesh(dtNavMeshCreateParams &params);
         /// Load nav mesh configuration from file
         bool loadConfigFromFile();
+        /// Create a navigation mesh query to help in pathfinding.
+        bool createNavigationQuery(U32 maxNodes = 2048);
 
     private:
         bool _saveIntermediates;

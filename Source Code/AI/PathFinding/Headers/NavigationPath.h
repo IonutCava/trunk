@@ -94,7 +94,7 @@ namespace Navigation {
             * The path has a maximum length of MAX_PATHVERT, and is an empty list in case no path is
             * defined or an invalid pathSlot index is given.
             **/
-            std::vector<vec3<F32> > getPath(I32 pathSlot);
+            vectorImpl<vec3<F32> > getPath(I32 pathSlot);
             /**
             * The ID number identifying the target for the path at specified slot. Targets have
             * no meaning for OgreRecast but you can use them to give them their own meanings.

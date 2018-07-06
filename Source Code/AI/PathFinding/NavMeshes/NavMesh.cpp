@@ -283,10 +283,14 @@ namespace Navigation {
         }
 
         data.isValid(true);
-        _navQuery = dtAllocNavMeshQuery();
-        _navQuery->init(_navMesh, 2048);
+        createNavigationQuery();
 
         return NavigationMeshLoader::saveMeshFile(data, geometrySaveFile.c_str());//input geometry;
+    }
+
+    bool NavigationMesh::createNavigationQuery(U32 maxNodes){
+        _navQuery = dtAllocNavMeshQuery();
+        return (_navQuery->init(_navMesh, maxNodes) == DT_SUCCESS);
     }
 
     bool NavigationMesh::createPolyMesh(rcConfig &cfg, NavModelData &data, rcContextDivide *ctx){
@@ -588,13 +592,13 @@ namespace Navigation {
 
             _navMesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA, tileHeader.tileRef, 0);
         }
+        fclose(fp);
 
         _extents.set(header.extents[0],
                      header.extents[1],
                      header.extents[2]);
-        fclose(fp);
 
-        return true;
+        return createNavigationQuery();
     }
 
     bool NavigationMesh::save(){
