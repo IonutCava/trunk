@@ -259,7 +259,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Engine_p.exe nopause</Command>
+ $(OutDir)Test-Engine_p.exe nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

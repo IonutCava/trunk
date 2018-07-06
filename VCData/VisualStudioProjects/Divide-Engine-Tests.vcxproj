@@ -252,7 +252,7 @@ $(OutDir)Test-Platform.exe nopause</Command>
     </Lib>
     <PostBuildEvent>
       <Command>cd $(OutDir)
-$(OutDir)Test-Platform_p.exe nopause</Command>
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -177,6 +177,11 @@ void Console::stop() {
     if (_running) {
         _enabled = false;
         _running = false;
+        {
+            UniqueLock lk(condMutex());
+            entryAdded() = true;
+            entryEnqueCV().notify_one();
+        }
         _printThread.join();
     }
 }
