@@ -447,7 +447,16 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
         }
     );
 
-    GFX_DEVICE.buildDrawCommands(visibleNodes, activeScene.renderState(), refreshNodeData, pass);
+    SceneRenderState& renderState = activeScene.renderState();
+    I32 stagePass = 0;
+    if (stage == RenderStage::REFLECTION) {
+        stagePass = renderState.currentReflectorIndex();
+    } else if (stage == RenderStage::SHADOW) {
+        stagePass = renderState.currentShadowLightIndex();
+    }
+
+    RenderPass::BufferData& bufferData = RenderPassManager::instance().getBufferData(stage, stagePass, pass);
+    GFX_DEVICE.buildDrawCommands(visibleNodes, renderState, bufferData, refreshNodeData);
 }
 
 void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass) {

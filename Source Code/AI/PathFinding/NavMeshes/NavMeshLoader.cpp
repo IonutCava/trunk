@@ -382,8 +382,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                 }
             } break;
             default: {
-                assert(false);  // we should never reach this due to the bit
-                                // checks above
+                // we should never reach this due to the bit checks above
+                DIVIDE_UNEXPECTED_CALL();
             } break;
         };
 

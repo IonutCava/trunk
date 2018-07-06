@@ -34,10 +34,11 @@ namespace {
 const char* glShader::CACHE_LOCATION_TEXT = "shaderCache/Text/";
 const char* glShader::CACHE_LOCATION_BIN = "shaderCache/Binary/";
 
+SharedLock glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 stringImpl glShader::shaderAtomLocationPrefix[to_const_uint(ShaderType::COUNT) + 1];
 
-IMPLEMENT_ALLOCATOR(glShader, 0, 0);
+IMPLEMENT_CUSTOM_ALLOCATOR(glShader, 0, 0);
 glShader::glShader(GFXDevice& context,
                    const stringImpl& name,
                    const ShaderType& type,
@@ -224,12 +225,14 @@ void glShader::removeShader(glShader* s) {
     stringImpl name(s->getName());
     // Try to find it
     ULL nameHash = _ID_RT(name);
+    UpgradableReadLock ur_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it.
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
             MemoryManager::DELETE(it->second);
+            UpgradeToWriteLock w_lock(ur_lock);
             _shaderNameMap.erase(nameHash);
         }
     }
@@ -238,6 +241,7 @@ void glShader::removeShader(glShader* s) {
 /// Return a new shader reference
 glShader* glShader::getShader(const stringImpl& name, const bool recompile) {
     // Try to find the shader
+    ReadLock r_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(_ID_RT(name));
     if (it != std::end(_shaderNameMap)) {
         if (!recompile) {
@@ -278,6 +282,7 @@ glShader* glShader::loadShader(const stringImpl& name,
         ULL nameHash = _ID_RT(name);
         // If we loaded the source code successfully, either update it (if we
         // recompiled) or register it
+        WriteLock w_lock(_shaderNameLock);
         if (recompile) {
             _shaderNameMap[nameHash] = shader;
         } else {

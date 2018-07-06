@@ -417,7 +417,8 @@ bool WarScene::load(const stringImpl& name) {
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
-            light->setCastShadows(i == 0 ? true : false);
+            //light->setCastShadows(i == 0 ? true : false);
+            light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
@@ -443,7 +444,8 @@ bool WarScene::load(const stringImpl& name) {
             std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
-            light->setCastShadows(i == 1 ? true : false);
+            //light->setCastShadows(i == 1 ? true : false);
+            light->setCastShadows(false);
             light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));

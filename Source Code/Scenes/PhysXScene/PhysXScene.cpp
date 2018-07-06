@@ -61,7 +61,7 @@ U16 PhysXScene::registerInputActions() {
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         if (!_hasGroundPlane) {
-            assert(false);
+            DIVIDE_UNEXPECTED_CALL();
             // register ground plane
             _hasGroundPlane = true;
         }
@@ -141,7 +141,7 @@ void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
         }
         for (U16 i = 0; i < stackSize; i++) {
             Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-            assert(false);
+            DIVIDE_UNEXPECTED_CALL();
             //CREATE BOX
         }
         Offset += CubeSize;
@@ -161,7 +161,7 @@ void PhysXScene::createTower(const std::atomic_bool& stopRequested, U32 size) {
         if (stopRequested) {
             return;
         }
-        assert(false);
+        DIVIDE_UNEXPECTED_CALL();
         //CREATE BOX *vec3<F32>(0, 5.0f + 5 * i, 0), 0.5f
     }
     s_sceneState = PhysXState::STATE_IDLE;

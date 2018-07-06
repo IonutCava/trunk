@@ -418,7 +418,7 @@ bool WarSceneAIProcessor::preAction(ActionType type,
             _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value());
         } break;
         default: {
-            assert(false);
+            DIVIDE_UNEXPECTED_CALL();
         } break;
     };
 
@@ -513,7 +513,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             _messageCallback(1, _entity->getName());
         } break;
         default: {
-            assert(false);
+            DIVIDE_UNEXPECTED_CALL();
         } break;
     };
 
@@ -597,7 +597,7 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
             }
         } break;
         default: {
-            assert(false);
+            DIVIDE_UNEXPECTED_CALL();
         } break;
     };
 

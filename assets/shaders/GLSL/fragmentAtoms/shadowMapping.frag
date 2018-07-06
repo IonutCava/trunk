@@ -8,6 +8,7 @@ layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDe
 
 #if defined(_DEBUG)
 #define DEBUG_SHADOWMAPPING
+//#define DEBUG_SHADOWSPLITS
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -2;
 #endif
@@ -17,10 +18,12 @@ int _shadowTempInt = -2;
 #include "shadow_spot.frag"
 
 float getShadowFactor(int lightIndex) {
-    switch (dvd_LightSource[lightIndex]._options.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_LightSource[lightIndex]._options.z);
-        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_LightSource[lightIndex]._options.z);
-        //case LIGHT_SPOT            : return applyShadowSpot(dvd_LightSource[lightIndex]._options.z); 
+    Light light = dvd_LightSource[lightIndex];
+
+    switch (light._options.x) {
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(light._options.z, light._options.w);
+        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(light._options.z);
+        //case LIGHT_SPOT            : return applyShadowSpot(light._options.z); 
     }
 }
 

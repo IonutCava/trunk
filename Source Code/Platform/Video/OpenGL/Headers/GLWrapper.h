@@ -140,7 +140,6 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if unbound is false
     /// or a 'Shader Storage Block Object' otherwise
     ShaderBuffer* newSB(GFXDevice& context,
-                        const stringImpl& bufferName,
                         const U32 ringBufferLength = 1,
                         const bool unbound = false,
                         const bool persistentMapped = true,

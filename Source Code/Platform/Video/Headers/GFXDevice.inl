@@ -290,32 +290,6 @@ GFXDevice::getMatrix(const MATRIX& mode) {
     return _mat4Cache;
 }
 
-inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage, U32 pass) const {
-    U32 bufferIdx = getNodeBufferIndexForStage(stage);
-    assert(pass < MAX_PASSES_PER_STAGE && _indirectCommandBuffers[bufferIdx][pass]);
-    return *_indirectCommandBuffers[bufferIdx][pass];
-}
-
-inline U32 GFXDevice::getNodeBufferIndexForStage(RenderStage stage) const {
-    U32 bufferIdx = 0;
-    switch (stage) {
-    case RenderStage::REFLECTION:
-        bufferIdx = 1;
-        break;
-    case RenderStage::SHADOW:
-        bufferIdx = 2;
-        break;
-    };
-
-    return bufferIdx;
-}
-
-inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const {
-    U32 bufferIdx = getNodeBufferIndexForStage(stage);
-    assert(pass < MAX_PASSES_PER_STAGE && _nodeBuffers[bufferIdx][pass]);
-    return *_nodeBuffers[bufferIdx][pass];
-}
-
 /// Submit multiple draw commands that use the same source buffer (e.g. terrain or batched meshes)
 inline void
 GFXDevice::submitCommands(const vectorImpl<GenericDrawCommand>& cmds, bool useIndirectRender) {

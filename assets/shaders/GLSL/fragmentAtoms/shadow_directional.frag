@@ -25,7 +25,7 @@ bool inRange(const in float value){
     return value >= 0.0 && value <= 1.0;
 }
 
-float applyShadowDirectional(int shadowIndex) {
+float applyShadowDirectional(int shadowIndex, int splitCount) {
 
     Shadow currentShadowSource  = dvd_ShadowSource[shadowIndex];
 #   if !defined(_DEBUG)
@@ -35,25 +35,24 @@ float applyShadowDirectional(int shadowIndex) {
     
     // find the appropriate depth map to look up in based on the depth of this fragment
     _shadowTempInt = 0;
-    for (int i = 0; i < MAX_SPLITS_PER_LIGHT; ++i) {
+    for (int i = 0; i < splitCount; ++i) {
         if (zDist > currentShadowSource._floatValues[i].x)      {
             _shadowTempInt = i + 1;
         }
     }
-
-
+    
     // GLOBAL
     const int SplitPowLookup[8] = { 0, 1, 1, 2, 2, 2, 2, 3 };
     // Ensure that every fragment in the quad choses the same split so that derivatives
     // will be meaningful for proper texture filtering and LOD selection.
-    int SplitPow = 1 << _shadowTempInt;
+    /*int SplitPow = 1 << _shadowTempInt;
     int SplitX = int(abs(dFdx(SplitPow)));
     int SplitY = int(abs(dFdy(SplitPow)));
     int SplitXY = int(abs(dFdx(SplitY)));
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
-    //_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
+    _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;*/
 
-    if (_shadowTempInt < 0 || _shadowTempInt > MAX_SPLITS_PER_LIGHT) {
+    if (_shadowTempInt < 0 || _shadowTempInt > splitCount) {
         return 1.0;
     }
 

@@ -29,50 +29,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _STL_VECTOR_H_
-#define _STL_VECTOR_H_
+#ifndef _TEMPLATE_ALLOCATOR_H_
+#define _TEMPLATE_ALLOCATOR_H_
 
-#include "TemplateAllocator.h"
-#include <vector>
-
-namespace vectorAlg = std;
-
-template <typename Type>
-using vectorImpl = vectorAlg::vector<Type, dvd_allocator<Type>>;
-
-template <typename Type>
-using vectorImplAligned = vectorAlg::vector<Type>;
-
-namespace std {
-    typedef size_t vecSize;
-
-    // template<typename T1, typename T2>
-    // using pair = std::pair<T1, T2>;
-
-    template <typename T>
-    inline void shrinkToFit(vectorImpl<T>& inputVector) {
-        inputVector.shrink_to_fit();
-    }
-
-    template <typename T, class... Args>
-    inline void emplace_back(vectorImpl<T>& inputVector,
-        Args&&... args) {
-        inputVector.emplace_back(std::forward<Args>(args)...);
-    }
-
+#include "config.h"
 #if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
-    template <typename T>
-    inline void shrinkToFit(vectorImplAligned<T>& inputVector) {
-        inputVector.shrink_to_fit();
-    }
-
-    template <typename T, class... Args>
-    inline void emplace_back(vectorImplAligned<T>& inputVector,
-        Args&&... args) {
-        inputVector.emplace_back(std::forward<Args>(args)...);
-    }
+#include <Allocator/stl_allocator.h>
+    template <typename Type>
+    using dvd_allocator = stl_allocator<Type>;
+#else
+#include <memory>
+    template <typename Type>
+    using dvd_allocator = std::allocator<Type>;
 #endif
 
-};
-
-#endif //_STL_VECTOR_H_
+#endif //_TEMPLATE_ALLOCATOR_H_

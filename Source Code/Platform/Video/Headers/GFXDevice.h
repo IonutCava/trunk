@@ -89,6 +89,7 @@ DEFINE_SINGLETON(GFXDevice)
     typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
     typedef std::stack<vec4<I32>> ViewportStack;
 
+  public:
     struct NodeData {
         mat4<F32> _worldMatrix;
         mat4<F32> _normalMatrixWV;
@@ -391,7 +392,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline const PlaneList& getClippingPlanes() const { return _clippingPlanes; }
 
     /// Return the last number of HIZ culled items
-    U32 getLastCullCount(U32 pass = 0) const;
+    U32 getLastCullCount() const;
 
     /// 2D rendering enabled
     inline bool is2DRendering() const { return _2DRendering; }
@@ -468,13 +469,12 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->newShaderProgram(*this, name, resourceLocation, asyncLoad);
     }
     
-    inline ShaderBuffer* newSB(const stringImpl& bufferName,
-                               const U32 ringBufferLength = 1,
+    inline ShaderBuffer* newSB(const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
                                    BufferUpdateFrequency::ONCE) {
-        return _api->newSB(*this, bufferName, ringBufferLength, unbound, persistentMapped, frequency);
+        return _api->newSB(*this, ringBufferLength, unbound, persistentMapped, frequency);
     }
 
     inline U64 getFrameDurationGPU() {
@@ -521,11 +521,11 @@ DEFINE_SINGLETON(GFXDevice)
    protected:
     friend class SceneManager;
     friend class RenderPass;
-    void occlusionCull(U32 pass);
+    void occlusionCull(const RenderPass::BufferData& bufferData);
     void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
-                           bool refreshNodeData,
-                           U32 pass);
+                           RenderPass::BufferData& bufferData,
+                           bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
     void constructHIZ();
@@ -553,12 +553,6 @@ DEFINE_SINGLETON(GFXDevice)
     ErrorCode createAPIInstance();
 
     NodeData& processVisibleNode(const SceneGraphNode& node, U32 dataIndex);
-
-    ShaderBuffer& getCommandBuffer(RenderStage stage, U32 pass) const;
-
-    U32 getNodeBufferIndexForStage(RenderStage stage) const;
-
-    ShaderBuffer& getNodeBuffer(RenderStage stage, U32 pass) const;
 
     RenderTarget& activeRenderTarget();
     const RenderTarget& activeRenderTarget() const;
@@ -644,10 +638,6 @@ DEFINE_SINGLETON(GFXDevice)
     vectorImpl<RenderQueue> _renderQueues;
 
     ShaderBuffer* _gfxDataBuffer;
-    typedef std::array<ShaderBuffer*, MAX_PASSES_PER_STAGE> RenderStageBuffer;
-    // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFERS
-    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _indirectCommandBuffers;
-    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 
     GenericCommandPool _commandPool;

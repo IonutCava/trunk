@@ -32,6 +32,7 @@
 #ifndef _HASH_MAP_H_
 #define _HASH_MAP_H_
 
+#include "TemplateAllocator.h"
 #include <algorithm>
 
 template<class T>
@@ -39,8 +40,6 @@ struct EnumHash;
 
 template <typename Key>
 using HashType = EnumHash<Key>;
-
-#include <Allocator/stl_allocator.h>
 
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == BOOST_IMP
 #include <boost/Unordered_Map.hpp>
@@ -60,7 +59,7 @@ using hashMapImpl = hashAlg::unordered_map<K,
                                            V,
                                            HashFun,
                                            std::equal_to<K>,
-                                           stl_allocator<std::pair<const K, V>>>;
+                                           dvd_allocator<std::pair<const K, V>>>;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImplAligned = hashAlg::unordered_map<K,
@@ -144,6 +143,7 @@ inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, con
     return map.insert(valuePair);
 }
 
+#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturnAligned<K, V, HashFun> emplace(hashMapImplAligned<K, V, HashFun>& map, K key, const V& val) {
     return map.emplace(key, val);
@@ -153,6 +153,8 @@ template <typename K, typename V, typename HashFun = HashType<K> >
 inline hashPairReturnAligned<K, V, HashFun> insert(hashMapImplAligned<K, V, HashFun>& map, const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
     return map.insert(valuePair);
 }
+#endif //USE_CUSTOM_MEMORY_ALLOCATORS
+
 #endif
 }; //namespace hashAlg
 

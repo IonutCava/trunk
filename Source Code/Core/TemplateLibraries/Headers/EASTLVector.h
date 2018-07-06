@@ -35,12 +35,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define EA_COMPILER_HAS_MOVE_SEMANTICS
 #endif
 #include <EASTL/vector.h>
-#include <Allocator/stl_allocator.h>
+#include "TemplateAllocator.h"
 
 namespace vectorAlg = eastl;
 
 template <typename Type>
-using vectorImpl = vectorAlg::vector<Type, stl_allocator<Type>>;
+using vectorImpl = vectorAlg::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type>
 using vectorImplAligned = vectorAlg::vector<Type>;

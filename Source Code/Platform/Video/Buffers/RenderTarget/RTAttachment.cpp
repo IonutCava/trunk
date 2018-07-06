@@ -86,7 +86,7 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachment::Type type, U8 index)
         }
     }
 
-    assert(false);
+    DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
     return _attachment[0][0];
 }
 

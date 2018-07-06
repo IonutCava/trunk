@@ -10,13 +10,16 @@ RenderPassManager::RenderPassManager()
 
 RenderPassManager::~RenderPassManager()
 {
-    _renderPasses.clear();
+    for (RenderPass* rp : _renderPasses) {
+        MemoryManager::DELETE(rp);
+    }
+
     MemoryManager::DELETE(_renderQueue);
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
-    for (RenderPass& rp : _renderPasses) {
-        rp.render(sceneRenderState);
+    for (RenderPass* rp : _renderPasses) {
+        rp->render(sceneRenderState);
     }
 }
 
@@ -25,12 +28,12 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              std::initializer_list<RenderStage> renderStages) {
     assert(!renderPassName.empty());
 
-    _renderPasses.push_back(RenderPass(renderPassName, orderKey, renderStages));
-    RenderPass& item = _renderPasses.back();
+    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(renderPassName, orderKey, renderStages));
+    RenderPass& item = *_renderPasses.back();
 
     std::sort(std::begin(_renderPasses), std::end(_renderPasses),
-              [](const RenderPass& a, const RenderPass& b)
-                  -> bool { return a.sortKey() < b.sortKey(); });
+              [](RenderPass* a, RenderPass* b)
+                  -> bool { return a->sortKey() < b->sortKey(); });
 
     assert(item.sortKey() == orderKey);
 
@@ -38,22 +41,38 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
 }
 
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
-    for (vectorImpl<RenderPass>::iterator it = std::begin(_renderPasses);
+    for (vectorImpl<RenderPass*>::iterator it = std::begin(_renderPasses);
          it != std::end(_renderPasses); ++it) {
-        if (it->getName().compare(name) == 0) {
+        if ((*it)->getName().compare(name) == 0) {
             _renderPasses.erase(it);
             break;
         }
     }
 }
 
-U16 RenderPassManager::getLastTotalBinSize(RenderStage displayStage) const {
-    for (const RenderPass& pass : _renderPasses) {
-        if (pass.hasStageFlag(displayStage)) {
-            return pass.getLastTotalBinSize();
+U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {
+    return getPassForStage(renderStage)->getLastTotalBinSize();
+}
+
+RenderPass* RenderPassManager::getPassForStage(RenderStage renderStage) const {
+    for (RenderPass* pass : _renderPasses) {
+        if (pass->hasStageFlag(renderStage)) {
+            return pass;
         }
     }
 
-    return 0;
+    DIVIDE_UNEXPECTED_CALL();
+    return nullptr;
 }
+
+const RenderPass::BufferData& 
+RenderPassManager::getBufferData(RenderStage renderStage, U32 pass, U32 stage) const {
+    return getPassForStage(renderStage)->getBufferData(pass, stage);
+}
+
+RenderPass::BufferData&
+RenderPassManager::getBufferData(RenderStage renderStage, U32 pass, U32 stage) {
+    return getPassForStage(renderStage)->getBufferData(pass, stage);
+}
+
 };

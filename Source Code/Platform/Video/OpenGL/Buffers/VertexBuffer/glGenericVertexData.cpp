@@ -8,7 +8,7 @@ namespace Divide {
 
 hashMapImpl<GLuint, glGenericVertexData::BufferBindConfig> glGenericVertexData::_bindConfigs;
 
-IMPLEMENT_ALLOCATOR(glGenericVertexData, 0, 0)
+IMPLEMENT_CUSTOM_ALLOCATOR(glGenericVertexData, 0, 0)
 bool glGenericVertexData::setIfDifferentBindRange(GLuint bindIndex, const BufferBindConfig& bindConfig) {
 
     // If this is a new index, this will just create a default config

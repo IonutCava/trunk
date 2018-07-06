@@ -12,14 +12,13 @@
 
 namespace Divide {
 
-IMPLEMENT_ALLOCATOR(glUniformBuffer, 0, 0)
+IMPLEMENT_CUSTOM_ALLOCATOR(glUniformBuffer, 0, 0)
 glUniformBuffer::glUniformBuffer(GFXDevice& context,
-                                 const stringImpl& bufferName,
                                  const U32 ringBufferLength,
                                  bool unbound,
                                  bool persistentMapped,
                                  BufferUpdateFrequency frequency)
-    : ShaderBuffer(context, bufferName, ringBufferLength, unbound, persistentMapped, frequency),
+    : ShaderBuffer(context, ringBufferLength, unbound, persistentMapped, frequency),
       _mappedBuffer(nullptr),
       _alignment(0),
       _allignedBufferSize(0),

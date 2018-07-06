@@ -952,6 +952,9 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\TemplateAllocator.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

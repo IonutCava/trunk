@@ -396,6 +396,7 @@
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h" />
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLVector.h" />
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h" />
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\TemplateAllocator.h" />
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h" />

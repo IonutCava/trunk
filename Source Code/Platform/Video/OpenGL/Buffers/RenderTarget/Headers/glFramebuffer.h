@@ -38,7 +38,7 @@
 namespace Divide {
 
 class glFramebuffer : public RenderTarget {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer

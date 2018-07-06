@@ -33,18 +33,40 @@
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 
 class SceneGraph;
+class ShaderBuffer;
 class SceneRenderState;
 enum class RenderStage : U32;
 
 // A RenderPass may contain multiple linked stages.
 // Usefull to avoid having multiple renderqueues per pass if 2 stages depend on one:
 // E.g.: Z_PRE_PASS + DISPLAY share the same renderqueue
-class RenderPass {
+class RenderPass : private NonCopyable {
    public:
+       struct BufferData {
+           BufferData();
+           ~BufferData();
+
+           ShaderBuffer* _renderData;
+           ShaderBuffer* _cmdBuffer;
+           U32 _lastCommandCount;
+           U32 _lasNodeCount;
+       };
+   protected:
+
+    struct BufferDataPool {
+        explicit BufferDataPool(U32 maxPasses, U32 maxStages);
+        ~BufferDataPool();
+
+        BufferData& getBufferData(U32 pass, I32 idx);
+        typedef vectorImpl<BufferData*> BufferPool;
+        vectorImpl<BufferPool> _buffers;
+    };
+
+   public:
+    // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
     RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
     ~RenderPass();
 
@@ -60,16 +82,20 @@ class RenderPass {
                             }) != std::cend(_stageFlags);
     }
 
+
+    BufferData& getBufferData(U32 pass, I32 idx);
    protected:
     bool preRender(SceneRenderState& renderState, U32 pass);
     bool postRender(SceneRenderState& renderState, U32 pass);
 
+    std::pair<U32, U32> getRenderPassInfoForStages(const vectorImpl<RenderStage>& stages) const;
    private:
     U8 _sortKey;
     stringImpl _name;
     bool _useZPrePass;
     U16 _lastTotalBinSize;
     vectorImpl<RenderStage> _stageFlags;
+    BufferDataPool* _passBuffers;
 };
 
 };  // namespace Divide

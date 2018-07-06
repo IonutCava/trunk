@@ -77,30 +77,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
     // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping.
     // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
-    _gfxDataBuffer = newSB("dvd_GPUBlock", 1, false, false, BufferUpdateFrequency::OFTEN);
+    _gfxDataBuffer = newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _gfxDataBuffer->create(1, sizeof(GPUBlock));
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-    // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
-    // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
-    // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
-    // Create a shader buffer to hold all of our indirect draw commands
-    // Useful if we need access to the buffer in GLSL/Compute programs
-    for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
-        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _indirectCommandBuffers[bufferIndex][j] = newSB(Util::StringFormat("dvd_GPUCmds%d_%d", i, j), 1, true, false, BufferUpdateFrequency::OFTEN);
-            _indirectCommandBuffers[bufferIndex][j]->create(to_uint(_drawCommandsCache.size()), sizeof(_drawCommandsCache.front()));
-            _indirectCommandBuffers[bufferIndex][j]->addAtomicCounter(3);
-        }
-    }
-    
-    for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
-        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _nodeBuffers[bufferIndex][j] = newSB(Util::StringFormat("dvd_MatrixBlock%d_%d", i, j), 1, true, true, BufferUpdateFrequency::OFTEN);
-            _nodeBuffers[bufferIndex][j]->create(to_uint(_matricesData.size()), sizeof(_matricesData.front()));
-        }
-    }
 
     // Utility cameras
     CameraManager& cameraMgr = Application::instance().kernel().getCameraMgr();
@@ -273,22 +252,6 @@ void GFXDevice::closeRenderingAPI() {
     }
     _gfxDataBuffer->destroy();
     MemoryManager::DELETE(_gfxDataBuffer);
-
-    for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
-        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
-        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _indirectCommandBuffers[bufferIndex][j]->destroy();
-            MemoryManager::DELETE(_indirectCommandBuffers[bufferIndex][j]);
-        }
-    }
-
-    for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
-        U32 bufferIndex = getNodeBufferIndexForStage(static_cast<RenderStage>(i));
-        for (U32 j = 0; j < g_shaderBuffersPerStageCount[i]; ++j) {
-            _nodeBuffers[bufferIndex][j]->destroy();
-            MemoryManager::DELETE(_nodeBuffers[bufferIndex][j]);
-        }
-    }
 
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();

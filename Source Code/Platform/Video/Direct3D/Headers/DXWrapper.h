@@ -60,14 +60,12 @@ DEFINE_SINGLETON_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void endFrame(bool swapBuffers) override;
 
     inline ShaderBuffer* newSB(GFXDevice& context,
-                               const stringImpl& bufferName,
                                const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
                                    BufferUpdateFrequency::ONCE) const override {
         return MemoryManager_NEW d3dConstantBuffer(context,
-                                                   bufferName, 
                                                    ringBufferLength,
                                                    unbound,
                                                    persistentMapped,

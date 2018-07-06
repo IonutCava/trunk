@@ -31,7 +31,7 @@ namespace {
 
 bool glFramebuffer::_viewportChanged = false;
 
-IMPLEMENT_ALLOCATOR(glFramebuffer, 0, 0)
+IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
 glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
     : RenderTarget(context, useResolveBuffer),
       _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer(context)

@@ -64,19 +64,17 @@ void LightPool::init() {
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr), 1);
     // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
-                                                                                    1,
-                                                                                    true,
-                                                                                    false,
-                                                                                    BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB(1,
+                                                                                   true,
+                                                                                   false,
+                                                                                   BufferUpdateFrequency::OCASSIONAL);
     // SHADOWS holds info about the currently active shadow casting lights:
     // ViewProjection Matrices, View Space Position, etc
     // Should be SSBO (not UBO) to use std430 alignment. Structures should not be padded
-    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
-                                                                                    1,
-                                                                                    true,
-                                                                                    false,
-                                                                                    BufferUpdateFrequency::OCASSIONAL);
+    _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB(1,
+                                                                                   true,
+                                                                                   false,
+                                                                                   BufferUpdateFrequency::OCASSIONAL);
 
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]
         ->create(Config::Lighting::MAX_POSSIBLE_LIGHTS, sizeof(LightProperties));
@@ -174,14 +172,17 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState) {
     ShadowMap::clearShadowMapBuffers();
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
+    I32 idx = 0;
     for (Light* light : _shadowCastingLights) {
-        if (light != nullptr) {
+        if(light != nullptr) {
+            Attorney::SceneRenderStateLightPool::shadowLightIndex(sceneRenderState, idx++);
             _currentShadowCastingLight = light;
             light->validateOrCreateShadowMaps(sceneRenderState);
             light->generateShadowMaps(sceneRenderState);
         }
     }
 
+    Attorney::SceneRenderStateLightPool::shadowLightIndex(sceneRenderState , -1);
     _currentShadowCastingLight = nullptr;
     return true;
 }
@@ -302,6 +303,9 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
 
             temp._options.x = typeUint;
             temp._options.y = light->castsShadows();
+            if (light->getLightType() == LightType::DIRECTIONAL) {
+                temp._options.w = static_cast<DirectionalLight*>(light)->csmSplitCount();
+            }
 
             if (light->castsShadows() &&
                 lightShadowPropertiesCount < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {

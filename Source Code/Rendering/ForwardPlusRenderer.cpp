@@ -25,7 +25,7 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
 
-    _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB("dvd_perTileLightIndexBuffer", 1, true, true, BufferUpdateFrequency::ONCE));
+    _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB(1, true, true, BufferUpdateFrequency::ONCE));
     _perTileLightIndexBuffer->create(maxNumLightsPerTile * numTiles, sizeof(U32));
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }

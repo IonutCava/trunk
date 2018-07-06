@@ -227,8 +227,8 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
 
 void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
-                                  bool refreshNodeData,
-                                  U32 pass)
+                                  RenderPass::BufferData& bufferData,
+                                  bool refreshNodeData)
 {
     Time::ScopedTimer timer(_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
@@ -240,8 +240,8 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     U32 lastUsedSlot = 0;
     RenderStage currentStage = getRenderStage();
     if (refreshNodeData) {
-        _lastCommandCount[getNodeBufferIndexForStage(currentStage)] = 0;
-        _lastNodeCount[getNodeBufferIndexForStage(currentStage)] = 0;
+        bufferData._lastCommandCount = 0;
+        bufferData._lasNodeCount = 0;
     }
 
     if (currentStage == RenderStage::SHADOW) {
@@ -307,43 +307,46 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     });
     
     if (refreshNodeData) {
-        _lastCommandCount[getNodeBufferIndexForStage(currentStage)] = cmdCount;
-        _lastNodeCount[getNodeBufferIndexForStage(currentStage)] = nodeCount;
-        assert(cmdCount >= nodeCount);
-        getNodeBuffer(currentStage, pass).setData(_matricesData.data());
+        bufferData._lastCommandCount = cmdCount;
+        bufferData._lasNodeCount = nodeCount;
 
-        ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
+        assert(cmdCount >= nodeCount);
+        bufferData._renderData->setData(_matricesData.data());
+
+        ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
         cmdBuffer.setData(_drawCommandsCache.data());
         _api->registerCommandBuffer(cmdBuffer);
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
-        getNodeBuffer(currentStage, pass).bind(ShaderBufferLocation::NODE_INFO);
+        bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO);
     }
 }
 
-void GFXDevice::occlusionCull(U32 pass) {
+void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData) {
     static const U32 GROUP_SIZE_AABB = 64;
     uploadGPUBlock();
 
-    RenderStage currentStage = getRenderStage();
-    getCommandBuffer(currentStage, pass).bind(ShaderBufferLocation::GPU_COMMANDS);
-    getCommandBuffer(currentStage, pass).bindAtomicCounter();
+    bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
+    bufferData._cmdBuffer->bindAtomicCounter();
 
     RenderTarget* screenTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
 
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
 
-    U32 cmdCount = _lastCommandCount[getNodeBufferIndexForStage(currentStage)];
+    U32 cmdCount = bufferData._lastCommandCount;
     _HIZCullProgram->bind();
     _HIZCullProgram->Uniform("dvd_numEntities", cmdCount);
     _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
     _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
 }
 
-U32 GFXDevice::getLastCullCount(U32 pass) const {
-    U32 cullCount = getCommandBuffer(getRenderStage(), pass).getAtomicCounter();
+U32 GFXDevice::getLastCullCount() const {
+    const RenderPass::BufferData& bufferData = 
+        RenderPassManager::instance().getBufferData(RenderStage::DISPLAY, 0, 0);
+
+    U32 cullCount = bufferData._cmdBuffer->getAtomicCounter();
     if (cullCount > 0) {
-        getCommandBuffer(getRenderStage(), pass).resetAtomicCounter();
+        bufferData._cmdBuffer->resetAtomicCounter();
     }
     return cullCount;
 }

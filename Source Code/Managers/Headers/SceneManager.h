@@ -241,12 +241,12 @@ class SceneManagerKernel {
 
 class SceneManagerRenderPass {
    private:
-    static void preRender() {
-        Divide::SceneManager::instance().preRender();
+    static void preRender(Divide::SceneManager& mgr) {
+        mgr.preRender();
     }
 
-    static bool generateShadowMaps() {
-        return Divide::SceneManager::instance().generateShadowMaps();
+    static bool generateShadowMaps(Divide::SceneManager& mgr) {
+        return mgr.generateShadowMaps();
     }
 
     friend class Divide::RenderPass;

@@ -40,9 +40,6 @@ const bool USE_OPENGL_RENDERING = true;
 const bool USE_OPENGL_ES = false;
 /// if this is false, a variable timestep will be used for the game loop
 const bool USE_FIXED_TIMESTEP = true;
-/// How many textures to store per material.
-/// bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
-const unsigned int MAX_TEXTURE_STORAGE = 6;
 /// Application desired framerate for physics and input simulations
 const unsigned int TARGET_FRAME_RATE = 60;
 /// Minimum required RAM size (in bytes) for the current build
@@ -229,6 +226,11 @@ const unsigned int FORWARD_PLUS_LIGHT_INDEX_BUFFER_SENTINEL = 0x7fffffff;
 #ifndef SERVER_LOG_FILE
 #define SERVER_LOG_FILE "server.log"
 #endif  // SERVER_LOG_FILE
+
+/// Disable or enable custom, general purpose allocators in the code
+/// (used by containers, frequently created objects, etc)
+/// This does not disable all custom allocators as some, like special object pools are very specialised 
+//#define USE_CUSTOM_MEMORY_ALLOCATORS
 
 #define BOOST_IMP 0
 #define STL_IMP 1

@@ -402,7 +402,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual RenderTarget* newRT(GFXDevice& context, bool multisampled) const = 0;
     virtual VertexBuffer* newVB(GFXDevice& context) const = 0;
     virtual ShaderBuffer* newSB(GFXDevice& context,
-                                const stringImpl& bufferName,
                                 const U32 ringBufferLength = 1,
                                 const bool unbound = false,
                                 const bool persistentMapped = true,

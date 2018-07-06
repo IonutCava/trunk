@@ -184,7 +184,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     template <typename T>
     inline T* get() const {
-        assert(false && "INVALID COMPONENT");
+        static_assert(false, "INVALID COMPONENT");
         return nullptr;
     }
 

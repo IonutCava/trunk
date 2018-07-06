@@ -138,7 +138,7 @@ class Material : public Resource, public FrameListener {
         stringImpl _shader;
         RenderStage _stage;
         std::atomic<ShaderCompilationStage> _shaderCompStage;
-        vectorImpl<stringImpl> _shaderDefines;
+        vectorImplAligned<stringImpl> _shaderDefines;
 
         const ShaderProgram_ptr& getProgram() const;
 
@@ -273,7 +273,7 @@ class Material : public Resource, public FrameListener {
     ///#define MAX_SHADOW_CASTERS 2
     inline void setShaderDefines(RenderStage renderStage,
                                  const stringImpl& shaderDefines) {
-        vectorImpl<stringImpl>& defines =
+        vectorImplAligned<stringImpl>& defines =
             _shaderInfo[to_uint(renderStage)]._shaderDefines;
         if (std::find(std::begin(defines), std::end(defines), shaderDefines) ==
             std::end(defines)) {

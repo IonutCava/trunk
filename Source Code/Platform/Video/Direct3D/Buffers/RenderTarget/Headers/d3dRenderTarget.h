@@ -37,7 +37,7 @@
 namespace Divide {
     
 class d3dRenderTarget : public RenderTarget {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
    public:
     d3dRenderTarget(GFXDevice& context, bool multisampled);
     ~d3dRenderTarget();

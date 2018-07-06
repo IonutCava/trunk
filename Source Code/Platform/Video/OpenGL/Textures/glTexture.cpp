@@ -306,7 +306,8 @@ void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                     layer._data.data());
             } break;
             default:
-                assert(false && "unsupported texture format");
+                DIVIDE_UNEXPECTED_CALL("Unsupported texture format!");
+                break;
         }
     };
     _mipMapsDirty = true;

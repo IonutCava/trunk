@@ -6,7 +6,6 @@
 namespace Divide {
 
     ShaderBuffer::ShaderBuffer(GFXDevice& context,
-                               const stringImpl& bufferName,
                                const U32 ringBufferLength,
                                bool unbound,
                                bool persistentMapped,
@@ -22,9 +21,6 @@ namespace Divide {
                                                         _frequency(frequency),
                                                         _unbound(unbound),
                                                         _persistentMapped(persistentMapped && !Config::Profile::DISABLE_PERSISTENT_BUFFER)
-#  if defined(ENABLE_GPU_VALIDATION)
-                                                        ,_bufferName(bufferName)
-#   endif
     {
     }
 

@@ -37,10 +37,9 @@ namespace Divide {
 
 /// Base class for shader constant buffers
 class d3dConstantBuffer final : public ShaderBuffer {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
    public:
     d3dConstantBuffer(GFXDevice& context,
-                      const stringImpl& bufferName,
                       const U32 ringBufferLength,
                       bool unbound,
                       bool persistentMapped,

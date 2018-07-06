@@ -112,7 +112,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 }
 
 void Sky::sceneUpdate(const U64 deltaTime,
-                       SceneGraphNode& sgn,
+                      SceneGraphNode& sgn,
                       SceneState& sceneState) {
 
     sgn.get<PhysicsComponent>()->setPosition(sceneState.renderState().getCameraConst().getEye());

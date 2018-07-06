@@ -198,7 +198,7 @@ InputState InputInterface::getJoystickeButtonState(Input::Joystick device, Joyst
                     return joyState.mButtons[button] ? InputState::PRESSED
                                                      : InputState::RELEASED;
                 }
-                assert(false && "Invalid joystick entry detected!");
+                DIVIDE_UNEXPECTED_CALL("Invalid joystick entry detected!");
             }
         }
     }

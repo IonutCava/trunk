@@ -66,7 +66,7 @@ const char* get(ULL key, const char* defaultValue) {
             // Usually, the entire language table is loaded.
             return entry->second.c_str();
         }
-        assert(false && "Locale error: INVALID STRING KEY!");
+        DIVIDE_UNEXPECTED_CALL("Locale error: INVALID STRING KEY!");
     }
 
     return defaultValue;

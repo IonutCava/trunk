@@ -68,7 +68,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
                                RTAttachment::Type::Colour, 0);
     _blurBuffer->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 
-    _shadowMatricesBuffer = GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN);
+    _shadowMatricesBuffer = GFX_DEVICE.newSB(1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
 
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
@@ -152,12 +152,9 @@ void CascadedShadowMaps::calculateSplitDepths(const Camera& cam) {
     }
     _splitDepths[_numSplits] = fd;
 
-    for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
-        if (i < _numSplits) {
-            _light->setShadowFloatValue(i, 0.5f * (-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f);
-        } else {
-            _light->setShadowFloatValue(i, 1.0f);
-        }
+    for (U8 i = 0; i < _numSplits; ++i) {
+        F32 crtSplitDepth = 0.5f * (-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f;
+       _light->setShadowFloatValue(i, crtSplitDepth);
     }
 }
 

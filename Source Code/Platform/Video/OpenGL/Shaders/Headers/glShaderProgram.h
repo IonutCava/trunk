@@ -44,7 +44,7 @@ namespace Attorney {
 };
 /// OpenGL implementation of the ShaderProgram entity
 class glShaderProgram final : public ShaderProgram {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
     friend class Attorney::GLAPIShaderProgram;
    public:
     explicit glShaderProgram(GFXDevice& context,

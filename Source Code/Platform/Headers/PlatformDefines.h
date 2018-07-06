@@ -654,7 +654,7 @@ inline TO safe_static_cast(D64 from)
 bool preAssert(const bool expression, const char* failMessage);
 /// It is safe to call evaluate expressions and call functions inside the assert
 /// check as it will compile for every build type
-inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
+FORCE_INLINE bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
 #if defined(_DEBUG) || defined(_PROFILE)
     if (preAssert(expression, failMessage)) {
 #   if defined(_DEBUG)
@@ -665,6 +665,10 @@ inline bool DIVIDE_ASSERT(const bool expression, const char* failMessage) {
     ACKNOWLEDGE_UNUSED(failMessage);
 #endif
     return expression;
+}
+
+FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "") {
+    DIVIDE_ASSERT(false, failMessage);
 }
 
 typedef union {
@@ -931,11 +935,18 @@ struct AtomicWrapper
 
 #endif
 
+#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #if !defined(AUTOMATIC_XALLOCATOR_INIT_DESTROY)
 #define AUTOMATIC_XALLOCATOR_INIT_DESTROY
 #endif
-
 // Modify the allocator values to TIGHTLY fit memory requirments
 // The application will assert if it requires more allocators than the specified nubmer
 // xallocator.cpp contains the number of allocators available
 #include <Allocator/Allocator.h>
+
+#define USE_CUSTOM_ALLOCATOR DECLARE_ALLOCATOR
+#define IMPLEMENT_CUSTOM_ALLOCATOR(class, objects, memory) IMPLEMENT_ALLOCATOR(class, objects, memory)
+#else
+#define USE_CUSTOM_ALLOCATOR
+#define IMPLEMENT_CUSTOM_ALLOCATOR(class, objects, memory)
+#endif

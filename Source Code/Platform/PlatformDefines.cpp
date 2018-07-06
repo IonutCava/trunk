@@ -7,7 +7,9 @@
 
 #include "Core/Headers/Console.h"
 
+#if defined(USE_CUSTOM_MEMORY_ALLOCATORS)
 #include <Allocator/xallocator.h>
+#endif
 
 #if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"

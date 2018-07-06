@@ -66,7 +66,7 @@ bool AnimEvaluator::initBuffers() {
     DIVIDE_ASSERT(_boneTransformBuffer.get() == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
-    _boneTransformBuffer.reset(GFX_DEVICE.newSB("dvd_BoneTransforms", 1, true, false, BufferUpdateFrequency::ONCE));
+    _boneTransformBuffer.reset(GFX_DEVICE.newSB(1, true, false, BufferUpdateFrequency::ONCE));
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "

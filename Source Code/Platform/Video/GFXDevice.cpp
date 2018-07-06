@@ -219,7 +219,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     targetBuffer.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
             targetBuffer.drawToLayer(hasColour ? RTAttachment::Type::Colour
-                                              : RTAttachment::Type::Depth,
+                                               : RTAttachment::Type::Depth,
                                      0,
                                      i + arrayOffset);
             // Point our camera to the correct face

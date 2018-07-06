@@ -159,11 +159,19 @@ vec4 getPixelColour(const in vec2 texCoord, in vec3 normalWV) {
 #if defined(_DEBUG) && defined(DEBUG_SHADOWMAPPING)
     if (dvd_showDebugInfo == 1) {
         switch (_shadowTempInt){
-            case -1: colour    = vec3(1.0); break;
+#if defined(DEBUG_SHADOWSPLITS)
+            case -1: colour = vec3(1.0); break;
+            case  0: colour = vec3(1.0, 0.0, 0.0); break;
+            case  1: colour = vec3(0.0, 1.0, 0.0); break;
+            case  2: colour = vec3(0.0, 0.0, 1.0); break;
+            case  3: colour = vec3(1.0, 0.25, 0.40); break;
+#else
+            case -1: colour = vec3(1.0); break;
             case  0: colour.r += 0.15; break;
             case  1: colour.g += 0.25; break;
             case  2: colour.b += 0.40; break;
-            case  3: colour   += vec3(0.15, 0.25, 0.40); break;
+            case  3: colour += vec3(0.15, 0.25, 0.40); break;
+#endif
         };
     }
 #endif

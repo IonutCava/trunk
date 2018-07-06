@@ -41,6 +41,7 @@ class SceneGraph;
 class RenderQueue;
 class SceneRenderState;
 enum class RenderStage : U32;
+
 DEFINE_SINGLETON(RenderPassManager)
 
   public:
@@ -52,19 +53,26 @@ DEFINE_SINGLETON(RenderPassManager)
                               std::initializer_list<RenderStage> renderStages);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
-    U16  getLastTotalBinSize(RenderStage displayStage) const;
+    U16  getLastTotalBinSize(RenderStage renderStage) const;
 
     inline RenderQueue& getQueue() {
         return *_renderQueue;
     }
 
+    RenderPass::BufferData&
+    getBufferData(RenderStage renderStage, U32 pass, U32 stage);
+
+    const RenderPass::BufferData&
+    getBufferData(RenderStage renderStage, U32 pass, U32 stage) const;
+
   private:
     RenderPassManager();
     ~RenderPassManager();
 
+    RenderPass* getPassForStage(RenderStage renderStage) const;
   private:
     // Some vector implementations are not move-awarem so use STL in this case
-    vectorImpl<RenderPass> _renderPasses;
+    vectorImpl<RenderPass*> _renderPasses;
     RenderQueue* _renderQueue;
 
 END_SINGLETON

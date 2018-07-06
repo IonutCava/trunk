@@ -43,7 +43,7 @@ namespace Divide {
 
 class glBufferImpl;
 class glGenericVertexData : public GenericVertexData {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
     enum class GVDUsage : U32 {
         DRAW = 0,
         FDBCK = 1,

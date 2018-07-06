@@ -134,7 +134,7 @@ ProfileTimer& ProfileTimer::getNewTimer(const char* timerName) {
         }
     }
 
-    assert(false && "Reached max profile timer count!");
+    DIVIDE_UNEXPECTED_CALL("Reached max profile timer count!");
     return g_profileTimers[0];
 }
 

@@ -59,7 +59,7 @@ namespace Import {
             for (SubMeshData& subMesh : _subMeshData) {
                 if (!subMesh.deserialize(tempBuffer)) {
                     //handle error
-                    assert(false);
+                    DIVIDE_UNEXPECTED_CALL();
                 }
             }
             tempBuffer >> _hasAnimations;
@@ -105,7 +105,7 @@ namespace Import {
         for (const TextureEntry& texture : _textures) {
             if (!texture.serialize(dataOut)) {
                 //handle error
-                assert(false);
+                DIVIDE_UNEXPECTED_CALL();
             }
         }
 
@@ -129,7 +129,7 @@ namespace Import {
         for (TextureEntry& texture : _textures) {
             if (!texture.deserialize(dataIn)) {
                 //handle error
-                assert(false);
+                DIVIDE_UNEXPECTED_CALL();
             }
         }
 
@@ -222,11 +222,11 @@ namespace Import {
                                                dataIn._modelName + "." +
                                                g_parsedAssetAnimationExt)) {
                         //handle error
-                        assert(false);
+                        DIVIDE_UNEXPECTED_CALL();
                     }
                 } else {
                     //handle error. No ASSIMP animation data available
-                    assert(false);
+                    DIVIDE_UNEXPECTED_CALL();
                 }
             }
         }

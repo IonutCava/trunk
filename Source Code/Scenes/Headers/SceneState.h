@@ -57,15 +57,21 @@ struct FogDescriptor {
 };
 
 class Scene;
+class LightPool;
+class RenderPass;
 namespace Attorney {
     class SceneRenderStateScene;
     class SceneStateScene;
+    class SceneRenderStateLightPool;
+    class SceneRenderStateRenderPass;
 };
 
 /// Contains all the information needed to render the scene: camera position,
 /// render state, etc
 class SceneRenderState : public SceneComponent {
     friend class Attorney::SceneRenderStateScene;
+    friend class Attorney::SceneRenderStateLightPool;
+    friend class Attorney::SceneRenderStateRenderPass;
 
    public:
     enum class GizmoState : U32 {
@@ -152,10 +158,18 @@ class SceneRenderState : public SceneComponent {
         _gizmoState = newState;
     }
 
+
+    inline I32 currentShadowLightIndex() {
+        return _currentShadowLightIndex;
+    }
+
+    inline I32 currentReflectorIndex() {
+        return _currentReflectorIndex;
+    }
+
     inline GizmoState gizmoState() const {
         return _gizmoState;
     }
-
 
     inline CameraManager& getCameraMgr() {
         return *_cameraMgr;
@@ -179,6 +193,13 @@ class SceneRenderState : public SceneComponent {
         _playAnimations = state; 
     }
 
+    inline void currentShadowLightIndex(I32 idx) {
+        _currentShadowLightIndex = idx;
+    }
+
+    inline void currentReflectorIndex(I32 idx) {
+        _currentReflectorIndex = idx;
+    }
    protected:
     bool _drawBB;
     bool _debugDrawLines;
@@ -190,6 +211,9 @@ class SceneRenderState : public SceneComponent {
     bool _drawBoundingBoxes;
     bool _drawWireframe;
     bool _drawOctreeRegions;
+
+    I32 _currentShadowLightIndex;
+    I32 _currentReflectorIndex;
 
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
@@ -336,6 +360,26 @@ class SceneRenderStateScene {
         sceneRenderState.playAnimations(playAnimations);
     }
     friend class Divide::Scene;
+};
+
+class SceneRenderStateLightPool {
+   private:
+    static void shadowLightIndex(SceneRenderState& sceneRenderState,
+                                 I32 shadowLightIndex) {
+        sceneRenderState.currentShadowLightIndex(shadowLightIndex);                                    
+    }
+
+    friend class Divide::LightPool;
+};
+
+class SceneRenderStateRenderPass {
+   private:
+    static void reflectorIndex(SceneRenderState& sceneRenderState,
+                               I32 reflectorIndex) {
+        sceneRenderState.currentReflectorIndex(reflectorIndex);
+    }
+
+    friend class Divide::RenderPass;
 };
 
 class SceneStateScene {

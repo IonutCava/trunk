@@ -13,7 +13,7 @@ namespace Divide {
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
-IMPLEMENT_ALLOCATOR(glShaderProgram, 0, 0);
+IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const stringImpl& name,
                                  const stringImpl& resourceLocation,
@@ -54,6 +54,8 @@ bool glShaderProgram::unload() {
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
         glShader::removeShader(it.second);
     }
+    _shaderIDMap.clear();
+
     return ShaderProgram::unload();
 }
 

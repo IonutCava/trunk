@@ -33,12 +33,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _BOOST_VECTOR_H_
 
 #include <boost/container/vector.hpp>
-#include <Allocator/stl_allocator.h>
+#include "TemplateAllocator.h"
 
 namespace vectorAlg = boost;
 
 template<typename Type>
-using vectorImpl = boost::container::vector<Type, stl_allocator<Type>>;
+using vectorImpl = boost::container::vector<Type, dvd_allocator<Type>>;
 
 template <typename Type>
 using vectorImplAligned = boost::container::vector<Type>;

@@ -74,7 +74,7 @@ bool ImageData::create(const stringImpl& filename) {
             _bpp = 32;
         } break;
         default:
-            assert(false && "invalid file format");
+            DIVIDE_UNEXPECTED_CALL("Invalid file format!");
             break;
     };
 
@@ -153,7 +153,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                 _format = GFXImageFormat::COMPRESSED_RGBA_DXT5;
             } break;
             default: {
-                assert(false && "unsupported compressed format!");
+                DIVIDE_UNEXPECTED_CALL("Unsupported compressed format!");
                 ilDeleteImage(ilTexture);
                 return false;
             }
@@ -179,7 +179,7 @@ bool ImageData::loadDDS_IL(const stringImpl& filename) {
                 _format = GFXImageFormat::LUMINANCE_ALPHA;
             } break;
             default: {
-                assert(false && "unsupported image format");
+                DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
                 ilDeleteImage(ilTexture);
                 return false;
             }
@@ -239,7 +239,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
             _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;
             break;
         default:
-            assert(false && "unsupported texture type");
+            DIVIDE_UNEXPECTED_CALL("Unsupported texture type!");
             break;
     };
 
@@ -280,7 +280,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                 _bpp = 8;
             } break;
             default:
-                assert(false && "unsupported image format");
+                DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
                 break;
         };
     }

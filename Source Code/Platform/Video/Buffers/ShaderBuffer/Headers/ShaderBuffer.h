@@ -40,10 +40,9 @@ class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : protected GraphicsResource, 
                                   public RingBuffer,
                                   public GUIDWrapper {
-    DECLARE_ALLOCATOR
+    USE_CUSTOM_ALLOCATOR
    public:
-    explicit ShaderBuffer(GFXDevice& context, 
-                          const stringImpl& bufferName,
+    explicit ShaderBuffer(GFXDevice& context,
                           const U32 ringBufferLength,
                           bool unbound,
                           bool persistentMapped,
@@ -103,10 +102,6 @@ class NOINITVTABLE ShaderBuffer : protected GraphicsResource,
     const bool _unbound;
     const bool _persistentMapped;
     const BufferUpdateFrequency _frequency;
-
-#   if defined(ENABLE_GPU_VALIDATION)
-    stringImpl _bufferName;
-#   endif
 };
 
 };  // namespace Divide
