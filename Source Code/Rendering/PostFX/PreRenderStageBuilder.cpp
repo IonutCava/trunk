@@ -9,8 +9,8 @@ namespace Divide {
 PreRenderStageBuilder::PreRenderStageBuilder() {
     _renderStage = MemoryManager_NEW PreRenderStage();
     _screenSampler = MemoryManager_NEW SamplerDescriptor;
-    _screenSampler->setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    _screenSampler->setFilters(TEXTURE_FILTER_NEAREST);
+    _screenSampler->setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    _screenSampler->setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
     _screenSampler->toggleMipMaps(
         false);  // it's a flat texture on a full screen quad. really?
     _screenSampler->setAnisotropy(0);

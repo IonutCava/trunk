@@ -202,8 +202,8 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
     if (feedbackActive) {
         GL_API::setActiveTransformFeedback(_transformFeedback);
         glBeginTransformFeedback(
-            GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command
-                                                            .primitiveType()]);
+            GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[enum_to_uint(command
+                                                            .primitiveType())]);
         // Count the number of primitives written to the buffer
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN,
                      _feedbackQueries[_currentWriteQuery][command.queryID()]);
@@ -211,10 +211,11 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        GLenum type = command.renderWireframe()
-                          ? GL_LINE_LOOP
-                          : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable
-                                [command.primitiveType()];
+        GLenum type =
+            command.renderWireframe()
+                ? GL_LINE_LOOP
+                : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[enum_to_uint(
+                      command.primitiveType())];
 
         if (_indexBuffer > 0) {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
@@ -403,7 +404,7 @@ void glGenericVertexData::SetAttributeInternal(
     // Update the attribute data
     glVertexAttribPointer(
         descriptor.attribIndex(), descriptor.componentsPerElement(),
-        GLUtil::GL_ENUM_TABLE::glDataFormat[descriptor.dataType()],
+        GLUtil::GL_ENUM_TABLE::glDataFormat[enum_to_uint(descriptor.dataType())],
         descriptor.normalized() ? GL_TRUE : GL_FALSE,
         (GLsizei)descriptor.stride(),
         (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));

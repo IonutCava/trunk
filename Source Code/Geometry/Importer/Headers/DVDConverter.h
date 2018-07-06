@@ -107,11 +107,12 @@ DEFINE_SINGLETON(DVDConverter)
     stringImpl _fileLocation;
     stringImpl _modelName;
 
-    TextureWrap aiTextureMapModeTable[TextureWrap_PLACEHOLDER];
-    Material::ShadingMode
-        aiShadingModeInternalTable[Material::ShadingMode_PLACEHOLDER];
-    Material::TextureOperation
-        aiTextureOperationTable[Material::TextureOperation_PLACEHOLDER];
+    TextureWrap aiTextureMapModeTable[enum_to_uint_const(
+        TextureWrap::TextureWrap_PLACEHOLDER)];
+    Material::ShadingMode aiShadingModeInternalTable[enum_to_uint_const(
+        Material::ShadingMode::ShadingMode_PLACEHOLDER)];
+    Material::TextureOperation aiTextureOperationTable[enum_to_uint_const(
+        Material::TextureOperation::TextureOperation_PLACEHOLDER)];
 END_SINGLETON
 
 };  // namespace Divide

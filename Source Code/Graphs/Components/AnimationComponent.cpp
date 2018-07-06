@@ -127,10 +127,11 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     _boneTransformBuffer[_writeBuffer]->UpdateData(
         0, animationTransforms.size() * sizeof(mat4<F32>),
         animationTransforms.data());
-    _boneTransformBuffer[_readBuffer]->Bind(SHADER_BUFFER_BONE_TRANSFORMS);
+    _boneTransformBuffer[_readBuffer]->Bind(
+        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS);
 
-    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations ||
-        _currentTimeStamp < 0.0) {
+    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE) ||
+        !_playAnimations || _currentTimeStamp < 0.0) {
         return true;
     }
     // All animation data is valid, so we have a skeleton to render if needed
@@ -166,9 +167,10 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
     Object3D* node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
 
-    if (node->getObjectType() != Object3D::SUBMESH ||
-        (node->getObjectType() == Object3D::SUBMESH &&
-         !bitCompare(node->getFlagMask(), Object3D::OBJECT_FLAG_SKINNED))) {
+    if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
+        (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
+         !bitCompare(node->getFlagMask(), 
+                     enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))) {
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 

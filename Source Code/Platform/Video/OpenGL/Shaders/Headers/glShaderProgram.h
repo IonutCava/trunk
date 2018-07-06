@@ -61,6 +61,9 @@ class glShaderProgram : public ShaderProgram {
     void attachShader(Shader* const shader, const bool refresh = false);
     /// Remove a shader stage from this program
     void detachShader(Shader* const shader);
+    /// Register a shader buffer to be used every time the shader is 
+    /// used to render. Makes sure the buffer is bound to the proper location
+    void registerShaderBuffer(ShaderBuffer& buffer);
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const;
@@ -131,10 +134,11 @@ class glShaderProgram : public ShaderProgram {
     GLenum _binaryFormat;
     bool _validated;
     bool _loadedFromBinary;
-    Shader* _shaderStage[ShaderType_PLACEHOLDER];
+    Shader*
+        _shaderStage[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
+    GLenum _shaderStageTable[enum_to_uint_const(
+        ShaderType::ShaderType_PLACEHOLDER)];
     GLuint _shaderProgramIDTemp;
-    GLenum _shaderStageTable[6];
-
     static stringImpl _lastPathPrefix;
     static stringImpl _lastPathSuffix;
 };

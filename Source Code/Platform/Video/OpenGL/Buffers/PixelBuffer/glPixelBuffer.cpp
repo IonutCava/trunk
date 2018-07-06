@@ -30,14 +30,14 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
 
 glPixelBuffer::glPixelBuffer(PBType type) : PixelBuffer(type) {
     switch (_pbtype) {
-        case PB_TEXTURE_1D:
-            _textureType = GLUtil::GLenum_to_uint(GL_TEXTURE_1D);
+        case PBType::PB_TEXTURE_1D:
+            _textureType = enum_to_uint(GL_TEXTURE_1D);
             break;
-        case PB_TEXTURE_2D:
-            _textureType = GLUtil::GLenum_to_uint(GL_TEXTURE_2D);
+        case PBType::PB_TEXTURE_2D:
+            _textureType = enum_to_uint(GL_TEXTURE_2D);
             break;
-        case PB_TEXTURE_3D:
-            _textureType = GLUtil::GLenum_to_uint(GL_TEXTURE_3D);
+        case PBType::PB_TEXTURE_3D:
+            _textureType = enum_to_uint(GL_TEXTURE_3D);
             break;
         default:
             Console::errorfn(Locale::get("ERROR_PB_INVALID_TYPE"));
@@ -67,14 +67,14 @@ void* glPixelBuffer::Begin(GLubyte nFace) const {
     GL_API::bindTexture(0, _textureID, textureTypeEnum);
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch (_pbtype) {
-        case PB_TEXTURE_1D:
+        case PBType::PB_TEXTURE_1D:
             glTexSubImage1D(textureTypeEnum, 0, 0, _width, _format, _dataType, 0);
             break;
-        case PB_TEXTURE_2D:
+        case PBType::PB_TEXTURE_2D:
             glTexSubImage2D(textureTypeEnum, 0, 0, 0, _width, _height, _format,
                             _dataType, 0);
             break;
-        case PB_TEXTURE_3D:
+        case PBType::PB_TEXTURE_3D:
             glTexSubImage3D(textureTypeEnum, 0, 0, 0, 0, _width, _height, _depth,
                             _format, _dataType, 0);
             break;
@@ -82,10 +82,10 @@ void* glPixelBuffer::Begin(GLubyte nFace) const {
 
     GLsizeiptr bufferSize = (_width * 4) * sizeOf(_dataType);
     switch (_pbtype) {
-        case PB_TEXTURE_2D:
+        case PBType::PB_TEXTURE_2D:
             bufferSize *= _height;
             break;
-        case PB_TEXTURE_3D:
+        case PBType::PB_TEXTURE_3D:
             bufferSize *= _height * _depth;
             break;
     };
@@ -111,9 +111,9 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
                            GFXDataFormat dataTypeEnum) {
     GLenum textureTypeEnum = static_cast<GLenum>(_textureType);
     _internalFormat =
-        GLUtil::GL_ENUM_TABLE::glImageFormatTable[internalFormatEnum];
-    _format = GLUtil::GL_ENUM_TABLE::glImageFormatTable[formatEnum];
-    _dataType = GLUtil::GL_ENUM_TABLE::glDataFormat[dataTypeEnum];
+        GLUtil::GL_ENUM_TABLE::glImageFormatTable[enum_to_uint(internalFormatEnum)];
+    _format = GLUtil::GL_ENUM_TABLE::glImageFormatTable[enum_to_uint(formatEnum)];
+    _dataType = GLUtil::GL_ENUM_TABLE::glDataFormat[enum_to_uint(dataTypeEnum)];
 
     Destroy();
     Console::printfn(Locale::get("GL_PB_GEN"), width, height);
@@ -121,9 +121,12 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     _height = height;
     _depth = depth;
     GLuint size = _width;
-    if (_pbtype != PB_TEXTURE_1D) size *= _height;
-    if (_pbtype == PB_TEXTURE_3D) size *= _depth;
-
+    if (_pbtype != PBType::PB_TEXTURE_1D) {
+        size *= _height;
+    }
+    if (_pbtype == PBType::PB_TEXTURE_3D) {
+        size *= _depth;
+    }
     size *= 4 /*channels*/;
 
     glGenTextures(1, &_textureID);
@@ -131,20 +134,20 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     GL_API::bindTexture(0, _textureID, textureTypeEnum);
     glTexParameteri(textureTypeEnum, GL_GENERATE_MIPMAP, 0);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MIN_FILTER,
-                    GLUtil::GLenum_to_uint(GL_NEAREST));
+                    enum_to_uint(GL_NEAREST));
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MAG_FILTER,
-                    GLUtil::GLenum_to_uint(GL_NEAREST));
+                    enum_to_uint(GL_NEAREST));
     glTexParameteri(textureTypeEnum, GL_TEXTURE_BASE_LEVEL, 0);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_MAX_LEVEL, 1000);
     glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_S,
-                    GLUtil::GLenum_to_uint(GL_REPEAT));
-    if (_pbtype != PB_TEXTURE_1D) {
+                    enum_to_uint(GL_REPEAT));
+    if (_pbtype != PBType::PB_TEXTURE_1D) {
         glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_T,
-                        GLUtil::GLenum_to_uint(GL_REPEAT));
+                        enum_to_uint(GL_REPEAT));
     }
-    if (_pbtype == PB_TEXTURE_3D) {
+    if (_pbtype == PBType::PB_TEXTURE_3D) {
         glTexParameteri(textureTypeEnum, GL_TEXTURE_WRAP_R,
-                        GLUtil::GLenum_to_uint(GL_REPEAT));
+                        enum_to_uint(GL_REPEAT));
     }
 
     void* pixels = nullptr;
@@ -176,19 +179,19 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     memset(pixels, 0, size * sizeOf(_dataType));
 
     switch (_pbtype) {
-        case PB_TEXTURE_1D:
+        case PBType::PB_TEXTURE_1D:
             glTexImage1D(textureTypeEnum, 0,
-                         GLUtil::GLenum_to_uint(_internalFormat), _width, 0,
+                         enum_to_uint(_internalFormat), _width, 0,
                          _format, _dataType, pixels);
             break;
-        case PB_TEXTURE_2D:
+        case PBType::PB_TEXTURE_2D:
             glTexImage2D(textureTypeEnum, 0,
-                         GLUtil::GLenum_to_uint(_internalFormat), _width,
+                         enum_to_uint(_internalFormat), _width,
                          _height, 0, _format, _dataType, pixels);
             break;
-        case PB_TEXTURE_3D:
+        case PBType::PB_TEXTURE_3D:
             glTexImage3D(textureTypeEnum, 0,
-                         GLUtil::GLenum_to_uint(_internalFormat), _width,
+                         enum_to_uint(_internalFormat), _width,
                          _height, _depth, 0, _format, _dataType, pixels);
             break;
     };
@@ -203,17 +206,17 @@ void glPixelBuffer::updatePixels(const GLfloat* const pixels) {
     GL_API::bindTexture(0, _textureID, static_cast<GLenum>(_textureType));
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
     switch (_pbtype) {
-        case PB_TEXTURE_1D:
+        case PBType::PB_TEXTURE_1D:
             glBufferData(GL_PIXEL_UNPACK_BUFFER,
                          (_width * 4) * sizeOf(_dataType), NULL,
                          GL_STREAM_DRAW);
             break;
-        case PB_TEXTURE_2D:
+        case PBType::PB_TEXTURE_2D:
             glBufferData(GL_PIXEL_UNPACK_BUFFER,
                          (_width * _height * 4) * sizeOf(_dataType), NULL,
                          GL_STREAM_DRAW);
             break;
-        case PB_TEXTURE_3D:
+        case PBType::PB_TEXTURE_3D:
             glBufferData(GL_PIXEL_UNPACK_BUFFER,
                          (_width * _height * _depth * 4) * sizeOf(_dataType),
                          NULL, GL_STREAM_DRAW);

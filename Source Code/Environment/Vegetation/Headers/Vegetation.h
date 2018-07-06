@@ -50,7 +50,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
-enum RenderStage : I32;
+enum class RenderStage : U32;
 
 struct VegetationDetails {
     U16 billboardCount;

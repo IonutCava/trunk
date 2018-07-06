@@ -42,7 +42,7 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 
-enum RenderStage : I32;
+enum class RenderStage : U32;
 
 class Sky : public SceneNode {
    public:

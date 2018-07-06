@@ -40,29 +40,39 @@ namespace Divide {
 
 /// Base class for shader uniform blocks
 class glBufferLockManager;
-class glUniformBuffer : public ShaderBuffer {
+class glUniformBuffer final : public ShaderBuffer {
    public:
      glUniformBuffer(const stringImpl &bufferName, bool unbound,
                      bool persistentMapped);
     ~glUniformBuffer();
 
     /// Create a new buffer object to hold our uniform shader data
-    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void DiscardAllData() const;
-    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
-    virtual void UpdateData(GLintptr offset, GLsizeiptr size,
-                            const bufferPtr data) const;
-    virtual bool BindRange(ShaderBufferLocation bindIndex,
-                           U32 offsetElementCount, U32 rangeElementCount) const;
-    virtual bool Bind(ShaderBufferLocation bindIndex) const;
+    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
 
-    void PrintInfo(const ShaderProgram* shaderProgram,
-                   ShaderBufferLocation bindIndex);
+    void DiscardAllData() const;
+
+    void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
+
+    void UpdateData(GLintptr offset, GLsizeiptr size,
+                    const bufferPtr data) const;
+
+    bool BindRange(U32 bindIndex, U32 offsetElementCount,
+                   U32 rangeElementCount);
+
+    bool Bind(U32 bindIndex);
+    
+    void PrintInfo(const ShaderProgram *shaderProgram,
+                   U32 bindIndex);
 
    protected:
+    typedef hashMapImpl<U32, U32> bindIndexMap;
+    typedef hashMapImpl<U32, vec3<U32>> bindRangeIndexMap;
+
     GLuint _UBOid;
     bufferPtr _mappedBuffer;
-    
+    bindIndexMap _bindIndexMap;
+    bindRangeIndexMap _bindRangeIndexMap;
+
     const GLenum _target;
     const std::unique_ptr<glBufferLockManager> _lockManager;
 };

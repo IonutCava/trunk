@@ -41,6 +41,7 @@ namespace Divide {
 class Camera;
 class Material;
 class Shader;
+class ShaderBuffer;
 struct GenericDrawCommand;
 
 class ShaderProgram : public HardwareResource {
@@ -64,6 +65,9 @@ class ShaderProgram : public HardwareResource {
     virtual void unbind(bool resetActiveProgram = true);
     virtual bool update(const U64 deltaTime);
     virtual bool unload() { return true; }
+
+    virtual void registerShaderBuffer(ShaderBuffer& buffer) = 0;
+
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
     inline void Uniform(const stringImpl& ext, U32 value) {
@@ -208,12 +212,12 @@ class ShaderProgram : public HardwareResource {
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline vectorAlg::vecSize getFunctionCount(ShaderType shader, U8 LoD) {
-        return _functionIndex[shader][LoD].size();
+        return _functionIndex[enum_to_uint(shader)][LoD].size();
     }
 
     inline void setFunctionCount(ShaderType shader, U8 LoD,
                                  vectorAlg::vecSize count) {
-        _functionIndex[shader][LoD].resize(count, 0);
+        _functionIndex[enum_to_uint(shader)][LoD].resize(count, 0);
     }
 
     inline void setFunctionCount(ShaderType shader, vectorAlg::vecSize count) {
@@ -224,23 +228,32 @@ class ShaderProgram : public HardwareResource {
 
     inline void setFunctionIndex(ShaderType shader, U8 LoD, U32 index,
                                  U32 functionEntry) {
-        if (_functionIndex[shader][LoD].empty()) return;
 
-        DIVIDE_ASSERT(index < _functionIndex[shader][LoD].size(),
+        U32 shaderTypeValue = enum_to_uint(shader);
+
+        if (_functionIndex[shaderTypeValue][LoD].empty()) {
+            return;
+        }
+
+        DIVIDE_ASSERT(index < _functionIndex[shaderTypeValue][LoD].size(),
                       "ShaderProgram error: Invalid function index specified "
                       "for update!");
-        if (_availableFunctionIndex[shader].empty()) return;
+        if (_availableFunctionIndex[shaderTypeValue].empty()) {
+            return;
+        }
 
         DIVIDE_ASSERT(
-            functionEntry < _availableFunctionIndex[shader].size(),
+            functionEntry < _availableFunctionIndex[shaderTypeValue].size(),
             "ShaderProgram error: Specified function entry does not exist!");
-        _functionIndex[shader][LoD][index] =
-            _availableFunctionIndex[shader][functionEntry];
+        _functionIndex[shaderTypeValue][LoD][index] =
+            _availableFunctionIndex[shaderTypeValue][functionEntry];
     }
 
-    inline U32 addFunctionIndex(ShaderType type, U32 index) {
-        _availableFunctionIndex[type].push_back(index);
-        return U32(_availableFunctionIndex[type].size() - 1);
+    inline U32 addFunctionIndex(ShaderType shader, U32 index) {
+        U32 shaderTypeValue = enum_to_uint(shader);
+
+        _availableFunctionIndex[shaderTypeValue].push_back(index);
+        return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
     }
     /** ------ END EXPERIMENTAL CODE ----- **/
 
@@ -268,7 +281,7 @@ class ShaderProgram : public HardwareResource {
     const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
    protected:
-    bool _refreshStage[ShaderType_PLACEHOLDER];
+    bool _refreshStage[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
     bool _optimise;
     bool _dirty;
     std::atomic_bool _bound;
@@ -281,7 +294,8 @@ class ShaderProgram : public HardwareResource {
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
     /// A list of custom shader uniforms
-    vectorImpl<stringImpl> _customUniforms[ShaderType_PLACEHOLDER];
+    vectorImpl<stringImpl>
+        _customUniforms[enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)];
     /// ID<->shaders pair
     typedef hashMapImpl<U32, Shader*> ShaderIDMap;
     ShaderIDMap _shaderIDMap;
@@ -296,9 +310,10 @@ class ShaderProgram : public HardwareResource {
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
 
-    vectorImpl<U32>
-        _functionIndex[ShaderType_PLACEHOLDER][Config::SCENE_NODE_LOD];
-    vectorImpl<U32> _availableFunctionIndex[ShaderType_PLACEHOLDER];
+    vectorImpl<U32> _functionIndex[enum_to_uint_const(
+        ShaderType::ShaderType_PLACEHOLDER)][Config::SCENE_NODE_LOD];
+    vectorImpl<U32> _availableFunctionIndex[enum_to_uint_const(
+        ShaderType::ShaderType_PLACEHOLDER)];
 };
 
 };  // namespace Divide

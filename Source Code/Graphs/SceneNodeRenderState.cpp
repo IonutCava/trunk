@@ -18,7 +18,7 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
     if (_shadowStateBlockHash == 0) {
         RenderStateBlockDescriptor depthDesc;
         /// Cull back faces for shadow rendering
-        depthDesc.setCullMode(CULL_MODE_CCW);
+        depthDesc.setCullMode(CullMode::CULL_MODE_CCW);
         // depthDesc.setZBias(1.0f, 2.0f);
         depthDesc.setColorWrites(true, true, false, false);
         _shadowStateBlockHash = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
@@ -27,16 +27,16 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(INVALID_STAGE - 1)) == 0);
+    assert((stageMask & ~(enum_to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
     _exclusionMask &= ~stageMask;
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
-    assert((stageMask & ~(INVALID_STAGE - 1)) == 0);
-    _exclusionMask |= static_cast<RenderStage>(stageMask);
+    assert((stageMask & ~(enum_to_uint(RenderStage::INVALID_STAGE) - 1)) == 0);
+    _exclusionMask |= stageMask;
 }
 
 bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage) const {
-    return _drawState && !bitCompare(_exclusionMask, currentStage);
+    return _drawState && !bitCompare(_exclusionMask, enum_to_uint(currentStage));
 }
 };

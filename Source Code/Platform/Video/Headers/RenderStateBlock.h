@@ -88,21 +88,27 @@ class RenderStateBlockDescriptor : public GUIDWrapper {
 
     void setFillMode(FillMode mode);
     void setZBias(F32 zBias, F32 zUnits);
-    void setZFunc(ComparisonFunction zFunc = CMP_FUNC_LEQUAL);
+    void setZFunc(ComparisonFunction zFunc = ComparisonFunction::CMP_FUNC_LEQUAL);
     void flipCullMode();
     void setCullMode(CullMode mode);
     void setZEnable(bool enable);
     void setZReadWrite(bool read, bool write = true);
 
-    void setBlend(bool enable, BlendProperty src = BLEND_PROPERTY_SRC_ALPHA,
-                  BlendProperty dest = BLEND_PROPERTY_INV_SRC_ALPHA,
-                  BlendOperation op = BLEND_OPERATION_ADD);
+    void setBlend(
+        bool enable,
+        BlendProperty src = BlendProperty::BLEND_PROPERTY_SRC_ALPHA,
+        BlendProperty dest = BlendProperty::BLEND_PROPERTY_INV_SRC_ALPHA,
+        BlendOperation op = BlendOperation::BLEND_OPERATION_ADD);
 
-    void setStencil(bool enable, U32 stencilRef = 0,
-                    StencilOperation stencilFailOp = STENCIL_OPERATION_KEEP,
-                    StencilOperation stencilZFailOp = STENCIL_OPERATION_KEEP,
-                    StencilOperation stencilPassOp = STENCIL_OPERATION_KEEP,
-                    ComparisonFunction stencilFunc = CMP_FUNC_NEVER);
+    void setStencil(
+        bool enable, U32 stencilRef = 0,
+        StencilOperation stencilFailOp =
+            StencilOperation::STENCIL_OPERATION_KEEP,
+        StencilOperation stencilZFailOp =
+            StencilOperation::STENCIL_OPERATION_KEEP,
+        StencilOperation stencilPassOp =
+            StencilOperation::STENCIL_OPERATION_KEEP,
+        ComparisonFunction stencilFunc = ComparisonFunction::CMP_FUNC_NEVER);
 
     void setStencilReadWriteMask(U32 read, U32 write);
 

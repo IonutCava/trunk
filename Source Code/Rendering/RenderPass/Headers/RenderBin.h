@@ -43,8 +43,9 @@
 #include "Core/Math/Headers/MathMatrices.h"
 
 namespace Divide {
-enum RenderStage : I32;
+
 class SceneGraphNode;
+enum class RenderStage : U32;
 
 struct RenderBinItem {
     SceneGraphNode* _node;

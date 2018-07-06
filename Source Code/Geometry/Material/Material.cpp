@@ -440,7 +440,7 @@ void Material::bindTextures() {
             ShaderProgram::TEXTURE_UNIT0);
     }
 
-    if (!GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+    if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
         if (_textures[ShaderProgram::TEXTURE_NORMALMAP]) {
             _textures[ShaderProgram::TEXTURE_NORMALMAP]->Bind(
                 ShaderProgram::TEXTURE_NORMALMAP);

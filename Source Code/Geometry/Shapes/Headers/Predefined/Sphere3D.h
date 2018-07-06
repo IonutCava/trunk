@@ -41,7 +41,10 @@ class Sphere3D : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
     Sphere3D(F32 radius, F32 resolution)
-        : Object3D(SPHERE_3D), _radius(radius), _resolution(resolution) {
+        : Object3D(ObjectType::SPHERE_3D),
+          _radius(radius),
+          _resolution(resolution)
+    {
         _dirty = true;
         _vertexCount = resolution * resolution;
         getGeometryVB()->reservePositionCount(_vertexCount);
@@ -53,6 +56,7 @@ class Sphere3D : public Object3D {
         }
         clean();
     }
+
     virtual ~Sphere3D() {}
     inline F32 getRadius() { return _radius; }
     inline F32 getResolution() { return _resolution; }

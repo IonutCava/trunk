@@ -165,16 +165,16 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
         reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
         if (gpuVendorByte.compare(0, 5, "Intel") == 0) {
-            GFX_DEVICE.setGPUVendor(GPU_VENDOR_INTEL);
+            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_INTEL);
         } else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) {
-            GFX_DEVICE.setGPUVendor(GPU_VENDOR_NVIDIA);
+            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_NVIDIA);
         } else if (gpuVendorByte.compare(0, 3, "ATI") == 0 ||
                    gpuVendorByte.compare(0, 3, "AMD") == 0) {
-            GFX_DEVICE.setGPUVendor(GPU_VENDOR_AMD);
+            GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_AMD);
         }
     } else {
         gpuVendorByte = "Unknown GPU Vendor";
-        GFX_DEVICE.setGPUVendor(GPU_VENDOR_OTHER);
+        GFX_DEVICE.setGPUVendor(GPUVendor::GPU_VENDOR_OTHER);
     }
 
     // Cap max anisotropic level to what the hardware supports
@@ -313,7 +313,8 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(VERTEX_POSITION_LOCATION);
+    NS_GLIM::glim.SetVertexAttribLocation(
+        enum_to_uint(AttribLocation::VERTEX_POSITION_LOCATION));
 
     // We need a dummy VAO object for point rendering
     glGenVertexArrays(1, &_pointDummyVAO);

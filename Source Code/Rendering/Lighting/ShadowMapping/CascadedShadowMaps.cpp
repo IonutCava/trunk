@@ -51,11 +51,14 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "EVCSM");
     SamplerDescriptor depthMapSampler;
-    depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
-    depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthMapSampler.setFilters(
+        TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR);
+    depthMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(true);
     depthMapSampler.setAnisotropy(8);
-    TextureDescriptor depthMapDescriptor(TEXTURE_2D_ARRAY, RG32F, FLOAT_32);
+    TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                                         GFXImageFormat::RG32F,
+                                         GFXDataFormat::FLOAT_32);
     depthMapDescriptor.setLayerCount(_numSplits);
     depthMapDescriptor.setSampler(depthMapSampler);
 
@@ -65,11 +68,13 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     _depthMap->setClearColor(DefaultColors::WHITE());
 
     SamplerDescriptor blurMapSampler;
-    blurMapSampler.setFilters(TEXTURE_FILTER_LINEAR);
-    blurMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    blurMapSampler.setFilters(TextureFilter::TEXTURE_FILTER_LINEAR);
+    blurMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     blurMapSampler.toggleMipMaps(false);
     depthMapSampler.setAnisotropy(0);
-    TextureDescriptor blurMapDescriptor(TEXTURE_2D_ARRAY, RG32F, FLOAT_32);
+    TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
+                                        GFXImageFormat::RG32F,
+                                        GFXDataFormat::FLOAT_32);
     blurMapDescriptor.setLayerCount(_numSplits);
     blurMapDescriptor.setSampler(blurMapSampler);
 
@@ -103,10 +108,10 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
         vec2<U16> screenResolution =
             GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
                 ->getResolution();
-        _horizBlur = _blurDepthMapShader->GetSubroutineIndex(GEOMETRY_SHADER,
-                                                             "computeCoordsH");
-        _vertBlur = _blurDepthMapShader->GetSubroutineIndex(GEOMETRY_SHADER,
-                                                            "computeCoordsV");
+        _horizBlur = _blurDepthMapShader->GetSubroutineIndex(
+            ShaderType::GEOMETRY_SHADER, "computeCoordsH");
+        _vertBlur = _blurDepthMapShader->GetSubroutineIndex(
+            ShaderType::GEOMETRY_SHADER, "computeCoordsV");
         _blurBuffer->Create(_resolution, _resolution);
         updateResolution(screenResolution.width, screenResolution.height);
     }
@@ -259,7 +264,7 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
 }
 
 void CascadedShadowMaps::postRender() {
-    if (GFX_DEVICE.shadowDetailLevel() == DETAIL_LOW) {
+    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::DETAIL_LOW) {
         return;
     }
 
@@ -268,7 +273,7 @@ void CascadedShadowMaps::postRender() {
     _blurDepthMapShader->bind();
 
     // Blur horizontally
-    _blurDepthMapShader->SetSubroutine(GEOMETRY_SHADER, _horizBlur);
+    _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY_SHADER, _horizBlur);
     _blurDepthMapShader->Uniform("blurSize",
                                  1.0f / (_depthMap->getWidth() * 1.0f));
     _blurBuffer->Begin(*_renderPolicy);
@@ -281,7 +286,7 @@ void CascadedShadowMaps::postRender() {
     }
     _blurBuffer->End();
     // Blur vertically
-    _blurDepthMapShader->SetSubroutine(GEOMETRY_SHADER, _vertBlur);
+    _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY_SHADER, _vertBlur);
     _depthMap->Begin(*_renderPolicy);
     _blurBuffer->Bind();
     _blurDepthMapShader->Uniform("blurSize",

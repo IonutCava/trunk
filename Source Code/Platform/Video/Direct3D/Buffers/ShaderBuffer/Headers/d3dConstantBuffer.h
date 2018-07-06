@@ -36,7 +36,7 @@
 namespace Divide {
 
 /// Base class for shader constant buffers
-class d3dConstantBuffer : public ShaderBuffer {
+class d3dConstantBuffer final : public ShaderBuffer {
    public:
     d3dConstantBuffer(const stringImpl& bufferName, bool unbound,
                       bool persistentMapped);
@@ -44,17 +44,21 @@ class d3dConstantBuffer : public ShaderBuffer {
 
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
-    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void DiscardAllData() const;
-    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
-    virtual void UpdateData(ptrdiff_t offset,
-                            ptrdiff_t size,
-                            const bufferPtr data) const;
-    virtual bool BindRange(ShaderBufferLocation bindIndex,
-                           U32 offsetElementCount, U32 rangeElementCount) const;
-    virtual bool Bind(ShaderBufferLocation bindIndex) const;
-    virtual void PrintInfo(const ShaderProgram* shaderProgram,
-                           ShaderBufferLocation bindIndex);
+    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
+
+    void DiscardAllData() const;
+
+    void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const;
+
+    void UpdateData(ptrdiff_t offset, ptrdiff_t size,
+                    const bufferPtr data) const;
+
+    bool BindRange(U32 bindIndex, U32 offsetElementCount,
+                   U32 rangeElementCount);
+
+    bool Bind(U32 bindIndex);
+
+    void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex);
 };
 
 };  // namespace Divide

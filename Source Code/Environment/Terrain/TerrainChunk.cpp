@@ -27,7 +27,7 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
 
     VegetationDetails& vegDetails =
         TerrainChunkAttorney::vegetationDetails(*parentTerrain);
-    vegDetails.name += "_chunk_" + Util::toString(_chunkID);
+    vegDetails.name += "_chunk_" + std::to_string(_chunkID);
     _vegetation = MemoryManager_NEW Vegetation(
         vegDetails);  //<Deleted by the sceneGraph on "unload"
     _vegetation->renderState().useDefaultMaterial(false);

@@ -41,7 +41,7 @@ class BoundingBox;
 
 class Object3D : public SceneNode {
    public:
-    enum ObjectType {
+    enum class ObjectType : U32 {
         SPHERE_3D = toBit(0),
         BOX_3D = toBit(1),
         QUAD_3D = toBit(2),
@@ -53,18 +53,26 @@ class Object3D : public SceneNode {
         OBJECT_3D_PLACEHOLDER = toBit(8)
     };
 
-    enum ObjectFlag {
+    enum class ObjectFlag : U32 {
         OBJECT_FLAG_NONE = toBit(0),
         OBJECT_FLAG_SKINNED = toBit(1),
         OBJECT_FLAG_NO_VB = toBit(2),
         OBJECT_FLAG_PLACEHOLDER = toBit(3)
     };
 
-    explicit Object3D(const ObjectType& type = OBJECT_3D_PLACEHOLDER,
-                      U32 flag = OBJECT_FLAG_NONE);
+    explicit Object3D(ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
+                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+
+    explicit Object3D(ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
+                      U32 flagMask = enum_to_uint(ObjectFlag::OBJECT_FLAG_NONE));
+
     explicit Object3D(const stringImpl& name,
-                      const ObjectType& type = OBJECT_3D_PLACEHOLDER,
-                      U32 flag = OBJECT_FLAG_NONE);
+                      ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
+                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
+
+    explicit Object3D(const stringImpl& name,
+                      ObjectType type = ObjectType::OBJECT_3D_PLACEHOLDER,
+                      U32 flagMask = enum_to_uint(ObjectFlag::OBJECT_FLAG_NONE));
 
     virtual ~Object3D();
 

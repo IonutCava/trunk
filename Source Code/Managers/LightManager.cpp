@@ -70,11 +70,11 @@ void LightManager::init() {
 
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(
         Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
-    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(SHADER_BUFFER_LIGHT_NORMAL);
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(ShaderBufferLocation::SHADER_BUFFER_LIGHT_NORMAL);
 
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(
         Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(SHADER_BUFFER_LIGHT_SHADOW);
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(ShaderBufferLocation::SHADER_BUFFER_LIGHT_SHADOW);
 
     _cachedResolution.set(
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)
@@ -201,7 +201,7 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
 
     // Tell the engine that we are drawing to depth maps
     // set the current render stage to SHADOW_STAGE
-    RenderStage previousRS = GFX_DEVICE.setRenderStage(SHADOW_STAGE);
+    RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW_STAGE);
     // generate shadowmaps for each light
     for (Light::LightMap::value_type& light : _lights) {
         setCurrentLight(light.second);
@@ -220,7 +220,7 @@ void LightManager::togglePreviewShadowMaps() {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled ||
-        !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) {
+        !GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
         return;
     }
 
@@ -237,7 +237,7 @@ void LightManager::previewShadowMaps(Light* light) {
 #ifdef _DEBUG
     // Stop if we have shadows disabled
     if (!_shadowMapsEnabled || !_previewShadowMaps ||
-        !GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) {
+        !GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE)) {
         return;
     }
     if (!light) {

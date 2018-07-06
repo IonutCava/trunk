@@ -55,10 +55,6 @@ inline const char* fromBase(const eastl::string& input) {
     return input.c_str();
 }
 
-template <typename T>
-inline stringImpl toString(T data) {
-    return stringImpl(std::to_string(data).c_str());
-}
 };
 
 #else  // defined(STRING_IMP) && STRING_IMP == 1
@@ -73,10 +69,6 @@ inline const std::string& toBase(const std::string& input) { return input; }
 
 inline const char* fromBase(const std::string& input) { return input.c_str(); }
 
-template <typename T>
-inline stringImpl toString(T data) {
-    return std::to_string(data);
-}
 };
 #endif  // defined(VECTOR_IMP)
 

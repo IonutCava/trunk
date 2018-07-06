@@ -24,7 +24,8 @@ ShaderProgram::ShaderProgram(const bool optimise)
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
     // Start with clean refresh flags
-    memset(_refreshStage, false, ShaderType_PLACEHOLDER * sizeof(bool));
+    memset(_refreshStage, false,
+           enum_to_uint(ShaderType::ShaderType_PLACEHOLDER) * sizeof(bool));
     // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
     _timeLoc = -1;
@@ -183,16 +184,17 @@ void ShaderProgram::addShaderUniform(const stringImpl& uniform,
                                      const ShaderType& type) {
     // Find the string in the list of uniforms
     vectorImpl<stringImpl>::iterator it =
-        std::find(std::begin(_customUniforms[type]),
-                  std::end(_customUniforms[type]), uniform);
+        std::find(std::begin(_customUniforms[enum_to_uint(type)]),
+                  std::end(_customUniforms[enum_to_uint(type)]), uniform);
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
-        _customUniforms[type].push_back(uniform);
+        _customUniforms[enum_to_uint(type)].push_back(uniform);
     } else {
         // If we did find it, we'll show an error message in debug builds about
         // double add
         Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_ADD"),
-                           uniform.c_str(), (U32)type, getName().c_str());
+                           uniform.c_str(), enum_to_uint(type),
+                           getName().c_str());
     }
 }
 
@@ -200,18 +202,19 @@ void ShaderProgram::addShaderUniform(const stringImpl& uniform,
 /// previously for the specified shader type
 void ShaderProgram::removeUniform(const stringImpl& uniform,
                                   const ShaderType& type) {
+    U32 typeInt = enum_to_uint(type);
     // Find the string in the list of uniforms
     vectorImpl<stringImpl>::iterator it =
-        std::find(std::begin(_customUniforms[type]),
-                  std::end(_customUniforms[type]), uniform);
+        std::find(std::begin(_customUniforms[typeInt]),
+                  std::end(_customUniforms[typeInt]), uniform);
     // If we find it, we remove it
-    if (it != std::end(_customUniforms[type])) {
-        _customUniforms[type].erase(it);
+    if (it != std::end(_customUniforms[typeInt])) {
+        _customUniforms[typeInt].erase(it);
     } else {
         // If we did find it, we'll show an error message in debug builds about
         // double add
         Console::d_errorfn(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"),
-                           uniform.c_str(), (U32)type, getName().c_str());
+                           uniform.c_str(), typeInt, getName().c_str());
     }
 }
 
@@ -226,12 +229,14 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
         unbind();
     }
     // Update refresh flags
-    _refreshStage[VERTEX_SHADER] = vertex;
-    _refreshStage[FRAGMENT_SHADER] = fragment;
-    _refreshStage[GEOMETRY_SHADER] = geometry;
-    _refreshStage[TESSELATION_CTRL_SHADER] = tessellation;
-    _refreshStage[TESSELATION_EVAL_SHADER] = tessellation;
-    _refreshStage[COMPUTE_SHADER] = compute;
+    _refreshStage[enum_to_uint(ShaderType::VERTEX_SHADER)] = vertex;
+    _refreshStage[enum_to_uint(ShaderType::FRAGMENT_SHADER)] = fragment;
+    _refreshStage[enum_to_uint(ShaderType::GEOMETRY_SHADER)] = geometry;
+    _refreshStage[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+        tessellation;
+    _refreshStage[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+        tessellation;
+    _refreshStage[enum_to_uint(ShaderType::COMPUTE_SHADER)] = compute;
     // Recreate all of the needed shaders
     generateHWResource(getName());
     // Restore bind state

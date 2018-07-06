@@ -277,7 +277,7 @@ SceneGraphNode& Scene::addLight(LightType type,
 
     ResourceDescriptor defaultLight(
         lightType +
-        Util::toString(LightManager::getInstance().getLights().size()));
+        std::to_string(LightManager::getInstance().getLights().size()));
     defaultLight.setEnumValue(type);
     return addLight(CreateResource<Light>(defaultLight), parentNode);
 }

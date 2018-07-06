@@ -16,15 +16,15 @@ ptree pt;
 
 namespace {
 const char *getFilterName(TextureFilter filter) {
-    if (filter == TEXTURE_FILTER_LINEAR) {
+    if (filter == TextureFilter::TEXTURE_FILTER_LINEAR) {
         return "TEXTURE_FILTER_LINEAR";
-    } else if (filter == TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST) {
+    } else if (filter == TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST) {
         return "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST";
-    } else if (filter == TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST) {
+    } else if (filter == TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST) {
         return "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST";
-    } else if (filter == TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR) {
+    } else if (filter == TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR) {
         return "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR";
-    } else if (filter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR) {
+    } else if (filter == TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR) {
         return "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR";
     }
 
@@ -33,28 +33,28 @@ const char *getFilterName(TextureFilter filter) {
 
 TextureFilter getFilter(const char *filter) {
     if (strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0) {
-        return TEXTURE_FILTER_LINEAR;
+        return TextureFilter::TEXTURE_FILTER_LINEAR;
     } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0) {
-        return TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST;
+        return TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST;
     } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST") == 0) {
-        return TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST;
+        return TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST;
     } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR") == 0) {
-        return TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR;
+        return TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR;
     } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR") == 0) {
-        return TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+        return TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
     }
 
-    return TEXTURE_FILTER_NEAREST;
+    return TextureFilter::TEXTURE_FILTER_NEAREST;
 }
 
 const char *getWrapModeName(TextureWrap wrapMode) {
-    if (wrapMode == TEXTURE_CLAMP) {
+    if (wrapMode == TextureWrap::TEXTURE_CLAMP) {
         return "TEXTURE_CLAMP";
-    } else if (wrapMode == TEXTURE_CLAMP_TO_EDGE) {
+    } else if (wrapMode == TextureWrap::TEXTURE_CLAMP_TO_EDGE) {
         return "TEXTURE_CLAMP_TO_EDGE";
-    } else if (wrapMode == TEXTURE_CLAMP_TO_BORDER) {
+    } else if (wrapMode == TextureWrap::TEXTURE_CLAMP_TO_BORDER) {
         return "TEXTURE_CLAMP_TO_BORDER";
-    } else if (wrapMode == TEXTURE_DECAL) {
+    } else if (wrapMode == TextureWrap::TEXTURE_DECAL) {
         return "TEXTURE_DECAL";
     }
 
@@ -63,24 +63,24 @@ const char *getWrapModeName(TextureWrap wrapMode) {
 
 TextureWrap getWrapMode(const char *wrapMode) {
     if (strcmp(wrapMode, "TEXTURE_CLAMP") == 0) {
-        return TEXTURE_CLAMP;
+        return TextureWrap::TEXTURE_CLAMP;
     } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_EDGE") == 0) {
-        return TEXTURE_CLAMP_TO_EDGE;
+        return TextureWrap::TEXTURE_CLAMP_TO_EDGE;
     } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_BORDER") == 0) {
-        return TEXTURE_CLAMP_TO_BORDER;
+        return TextureWrap::TEXTURE_CLAMP_TO_BORDER;
     } else if (strcmp(wrapMode, "TEXTURE_DECAL") == 0) {
-        return TEXTURE_DECAL;
+        return TextureWrap::TEXTURE_DECAL;
     }
 
-    return TEXTURE_REPEAT;
+    return TextureWrap::TEXTURE_REPEAT;
 }
 
 const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
-    if (bumpMethod == Material::BUMP_NORMAL) {
+    if (bumpMethod == Material::BumpMethod::BUMP_NORMAL) {
         return "BUMP_NORMAL";
-    } else if (bumpMethod == Material::BUMP_PARALLAX) {
+    } else if (bumpMethod == Material::BumpMethod::BUMP_PARALLAX) {
         return "BUMP_PARALLAX";
-    } else if (bumpMethod == Material::BUMP_RELIEF) {
+    } else if (bumpMethod == Material::BumpMethod::BUMP_RELIEF) {
         return "BUMP_RELIEF";
     }
 
@@ -89,30 +89,35 @@ const char *getBumpMethodName(Material::BumpMethod bumpMethod) {
 
 Material::BumpMethod getBumpMethod(const char *bumpMethod) {
     if (strcmp(bumpMethod, "BUMP_NORMAL") == 0) {
-        return Material::BUMP_NORMAL;
+        return Material::BumpMethod::BUMP_NORMAL;
     } else if (strcmp(bumpMethod, "BUMP_PARALLAX") == 0) {
-        return Material::BUMP_PARALLAX;
+        return Material::BumpMethod::BUMP_PARALLAX;
     } else if (strcmp(bumpMethod, "BUMP_RELIEF") == 0) {
-        return Material::BUMP_RELIEF;
+        return Material::BumpMethod::BUMP_RELIEF;
     }
 
-    return Material::BUMP_NONE;
+    return Material::BumpMethod::BUMP_NONE;
 }
 
 const char *getTextureOperationName(Material::TextureOperation textureOp) {
-    if (textureOp == Material::TextureOperation_Multiply) {
+    if (textureOp == Material::TextureOperation::TextureOperation_Multiply) {
         return "TEX_OP_MULTIPLY";
-    } else if (textureOp == Material::TextureOperation_Decal) {
+    } else if (textureOp ==
+               Material::TextureOperation::TextureOperation_Decal) {
         return "TEX_OP_DECAL";
-    } else if (textureOp == Material::TextureOperation_Add) {
+    } else if (textureOp == Material::TextureOperation::TextureOperation_Add) {
         return "TEX_OP_ADD";
-    } else if (textureOp == Material::TextureOperation_SmoothAdd) {
+    } else if (textureOp ==
+               Material::TextureOperation::TextureOperation_SmoothAdd) {
         return "TEX_OP_SMOOTH_ADD";
-    } else if (textureOp == Material::TextureOperation_SignedAdd) {
+    } else if (textureOp ==
+               Material::TextureOperation::TextureOperation_SignedAdd) {
         return "TEX_OP_SIGNED_ADD";
-    } else if (textureOp == Material::TextureOperation_Divide) {
+    } else if (textureOp ==
+               Material::TextureOperation::TextureOperation_Divide) {
         return "TEX_OP_DIVIDE";
-    } else if (textureOp == Material::TextureOperation_Subtract) {
+    } else if (textureOp ==
+               Material::TextureOperation::TextureOperation_Subtract) {
         return "TEX_OP_SUBTRACT";
     }
 
@@ -121,22 +126,22 @@ const char *getTextureOperationName(Material::TextureOperation textureOp) {
 
 Material::TextureOperation getTextureOperation(const char *operation) {
     if (strcmp(operation, "TEX_OP_MULTIPLY") == 0) {
-        return Material::TextureOperation_Multiply;
+        return Material::TextureOperation::TextureOperation_Multiply;
     } else if (strcmp(operation, "TEX_OP_DECAL") == 0) {
-        return Material::TextureOperation_Decal;
+        return Material::TextureOperation::TextureOperation_Decal;
     } else if (strcmp(operation, "TEX_OP_ADD") == 0) {
-        return Material::TextureOperation_Add;
+        return Material::TextureOperation::TextureOperation_Add;
     } else if (strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0) {
-        return Material::TextureOperation_SmoothAdd;
+        return Material::TextureOperation::TextureOperation_SmoothAdd;
     } else if (strcmp(operation, "TEX_OP_SIGNED_ADD") == 0) {
-        return Material::TextureOperation_SignedAdd;
+        return Material::TextureOperation::TextureOperation_SignedAdd;
     } else if (strcmp(operation, "TEX_OP_DIVIDE") == 0) {
-        return Material::TextureOperation_Divide;
+        return Material::TextureOperation::TextureOperation_Divide;
     } else if (strcmp(operation, "TEX_OP_SUBTRACT") == 0) {
-        return Material::TextureOperation_Subtract;
+        return Material::TextureOperation::TextureOperation_Subtract;
     }
 
-    return Material::TextureOperation_Replace;
+    return Material::TextureOperation::TextureOperation_Replace;
 }
 
 void saveTextureXML(const std::string &textureNode, Texture *texture,
@@ -196,11 +201,11 @@ Texture *loadTextureXML(const std::string &textureNode,
 inline std::string getRendererTypeName(RendererType type) {
     switch (type) {
         default:
-        case RendererType_PLACEHOLDER:
+        case RendererType::RendererType_PLACEHOLDER:
             return "Unknown_Renderer_Type";
-        case RENDERER_FORWARD_PLUS:
+        case RendererType::RENDERER_FORWARD_PLUS:
             return "Forward_Renderer";
-        case RENDERER_DEFERRED_SHADING:
+        case RendererType::RENDERER_DEFERRED_SHADING:
             return "Deferred_Shading Renderer";
     }
 }
@@ -246,7 +251,7 @@ void loadConfig(const std::string &file) {
 
     I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
     if (shadowDetailLevel <= 0) {
-        GFX_DEVICE.shadowDetailLevel(DETAIL_LOW);
+        GFX_DEVICE.shadowDetailLevel(RenderDetailLevel::DETAIL_LOW);
         par.setParam("rendering.enableShadows", false);
     } else {
         GFX_DEVICE.shadowDetailLevel(
@@ -476,7 +481,7 @@ void loadTerrain(const std::string &file, Scene *const scene) {
 
             layerName = name + ".textureLayers." + format.c_str();
 
-            layerOffsetStr = Util::toString(i);
+            layerOffsetStr = std::to_string(i);
             temp = stringAlg::toBase(
                 pt.get<std::string>(layerName + ".blendMap", ""));
             DIVIDE_ASSERT(!temp.empty(), "Blend Map for terrain missing!");
@@ -922,7 +927,7 @@ Material *loadMaterialXML(const std::string &matName, bool rendererDependent) {
     mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v", 50.f));
 
     mat->setDoubleSided(pt.get<bool>("material.doubleSided", false));
-    mat->setShadingMode(Material::SHADING_BLINN_PHONG);
+    mat->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
     if (boost::optional<ptree &> child =
             pt.get_child_optional("diffuseTexture1")) {
         mat->setTexture(ShaderProgram::TEXTURE_UNIT0,
@@ -1052,13 +1057,13 @@ void dumpMaterial(Material &mat) {
                       stringAlg::fromBase(shaderProg->getName()));
     }
 
-    shaderProg = mat.getShaderInfo(SHADOW_STAGE).getProgram();
+    shaderProg = mat.getShaderInfo(RenderStage::SHADOW_STAGE).getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.shadowEffect",
                       stringAlg::fromBase(shaderProg->getName()));
     }
 
-    shaderProg = mat.getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
+    shaderProg = mat.getShaderInfo(RenderStage::Z_PRE_PASS_STAGE).getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.zPrePassEffect",
                       stringAlg::fromBase(shaderProg->getName()));

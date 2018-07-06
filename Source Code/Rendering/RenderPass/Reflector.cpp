@@ -67,10 +67,12 @@ bool Reflector::build() {
     Console::printfn(Locale::get("REFLECTOR_INIT_FB"), _resolution.x,
                      _resolution.y);
     SamplerDescriptor reflectionSampler;
-    reflectionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    reflectionSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
     // Less precision for reflections
-    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    TextureDescriptor reflectionDescriptor(TextureType::TEXTURE_2D,
+                                           GFXImageFormat::RGBA8,
+                                           GFXDataFormat::UNSIGNED_BYTE);
 
     reflectionDescriptor.setSampler(reflectionSampler);
 

@@ -39,7 +39,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->beginBatch();
     _axisGizmo->attribute4ub("inColorData", _axisLines[0]._color);
     // Set the mode to line rendering
-    _axisGizmo->begin(LINES);
+    _axisGizmo->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : _axisLines) {
         _axisGizmo->attribute4ub("inColorData", line._color);
@@ -79,7 +79,8 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
             return false;
         }
         if (mat->getShaderInfo(currentStage)._shaderCompStage !=
-            Material::ShaderInfo::SHADER_STAGE_COMPUTED) {
+            Material::ShaderInfo::ShaderCompilationStage::
+                SHADER_STAGE_COMPUTED) {
             return false;
         }
     }
@@ -169,7 +170,7 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
     if (sceneRenderState.gizmoState() == SceneRenderState::ALL_GIZMO) {
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
             if (_parentSGN.getNode<Object3D>()->getObjectType() ==
-                Object3D::MESH) {
+                Object3D::ObjectType::MESH) {
                 drawDebugAxis();
             }
         }
@@ -237,8 +238,9 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
         return 0L;
     }
 
-    bool depthPass = GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE);
-    bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
+    bool depthPass = GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE);
+    bool shadowStage =
+        GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE);
 
     if (!_materialInstance && depthPass) {
         return shadowStage
@@ -246,19 +248,22 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
     }
 
-    bool reflectionStage = GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE);
+    bool reflectionStage =
+        GFX_DEVICE.isCurrentRenderStage(RenderStage::REFLECTION_STAGE);
 
     return _materialInstance->getRenderStateBlock(
-        depthPass ? (shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE)
-                  : (reflectionStage ? REFLECTION_STAGE : FINAL_STAGE));
+        depthPass ? (shadowStage ? RenderStage::SHADOW_STAGE
+                                 : RenderStage::Z_PRE_PASS_STAGE)
+                  : (reflectionStage ? RenderStage::REFLECTION_STAGE
+                                     : RenderStage::FINAL_STAGE));
 }
 
 const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     vectorAlg::vecSize commandOffset, SceneRenderState& sceneRenderState,
     RenderStage renderStage) {
     _drawCommandsCache.clear();
-    _parentSGN.getNode()->getDrawCommands(
-        _parentSGN, renderStage, sceneRenderState, _drawCommandsCache);
+    _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
+                                          sceneRenderState, _drawCommandsCache);
     U32 i = 0;
     for (GenericDrawCommand& cmd : _drawCommandsCache) {
         cmd.drawID(static_cast<U32>(commandOffset) + i++);
@@ -282,7 +287,7 @@ void RenderingComponent::inViewCallback() {
         bool isTranslucent =
             mat->isTranslucent()
                 ? (mat->useAlphaTest() ||
-                   GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE))
+                   GFX_DEVICE.isCurrentRenderStage(RenderStage::SHADOW_STAGE))
                 : false;
         _materialPropertyMatrix.setCol(
             1, vec4<F32>(

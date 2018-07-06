@@ -19,7 +19,9 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
                        ? MemoryManager_NEW glBufferLockManager(true)
                        : nullptr),
 
-      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER) {}
+      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
+{
+}
 
 glUniformBuffer::~glUniformBuffer() 
 {
@@ -86,11 +88,27 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size,
     }
 }
 
-bool glUniformBuffer::BindRange(ShaderBufferLocation bindIndex,
+bool glUniformBuffer::BindRange(U32 bindIndex,
                                 U32 offsetElementCount,
-                                U32 rangeElementCount) const {
+                                U32 rangeElementCount) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
+
+    vec3<U32> bindConfiguration(_UBOid, offsetElementCount, rangeElementCount);
+    bindRangeIndexMap::iterator it = _bindRangeIndexMap.find(bindIndex);
+    if (it == std::end(_bindRangeIndexMap)) {
+        hashAlg::emplace(_bindRangeIndexMap, bindIndex, bindConfiguration);
+    } else {
+        // Prevent double bind only if the range is identical
+        if (it->second == bindConfiguration) {
+            return false;
+        } else {
+            // Remember the new binding state for future reference
+            it->second = bindConfiguration;
+        }
+    }
+    // Remove default bind check cache
+    _bindIndexMap.erase(_bindIndexMap.find(bindIndex));
 
     glBindBufferRange(_target, bindIndex, _UBOid,
                       _primitiveSize * offsetElementCount,
@@ -98,9 +116,25 @@ bool glUniformBuffer::BindRange(ShaderBufferLocation bindIndex,
     return true;
 }
 
-bool glUniformBuffer::Bind(ShaderBufferLocation bindIndex) const {
+bool glUniformBuffer::Bind(U32 bindIndex) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
+
+    bindIndexMap::iterator it = _bindIndexMap.find(bindIndex);
+    if (it == std::end(_bindIndexMap)) {
+        hashAlg::emplace(_bindIndexMap, bindIndex, _UBOid);
+    } else {
+        // Prevent double bind
+        if (it->second == _UBOid) {
+            return false;
+        } else {
+            // Remember the new binding state for future reference
+            it->second = _UBOid;
+        }
+    }
+
+    // Remove ranged bind check cache
+    _bindRangeIndexMap.erase(_bindRangeIndexMap.find(bindIndex));
 
     glBindBufferBase(_target, bindIndex, _UBOid);
 
@@ -108,7 +142,7 @@ bool glUniformBuffer::Bind(ShaderBufferLocation bindIndex) const {
 }
 
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,
-                                ShaderBufferLocation bindIndex) {
+                                U32 bindIndex) {
     GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 

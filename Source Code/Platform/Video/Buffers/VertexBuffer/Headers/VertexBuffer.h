@@ -61,7 +61,7 @@ class VertexBuffer : public VertexDataInterface {
     VertexBuffer()
         : VertexDataInterface(),
           _largeIndices(false),
-          _format(UNSIGNED_SHORT),
+          _format(GFXDataFormat::UNSIGNED_SHORT),
           _primitiveRestartEnabled(false),
           _indexDelimiter(0),
           _currentPartitionIndex(0) {
@@ -92,7 +92,8 @@ class VertexBuffer : public VertexDataInterface {
                       "VertexBuffer error: Index format type specified before "
                       "buffer creation!");
         _largeIndices = state;
-        _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;
+        _format = _largeIndices ? GFXDataFormat::UNSIGNED_INT
+                                : GFXDataFormat::UNSIGNED_SHORT;
     }
 
     inline void reservePositionCount(U32 size) { _dataPosition.reserve(size); }

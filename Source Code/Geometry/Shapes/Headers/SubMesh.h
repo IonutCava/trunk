@@ -59,7 +59,8 @@ class SubMesh : public Object3D {
     friend class SubMeshDVDConverterAttorney;
 
    public:
-    SubMesh(const stringImpl& name, ObjectFlag flag = OBJECT_FLAG_NONE);
+    SubMesh(const stringImpl& name,
+            ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
 
     virtual ~SubMesh();
 

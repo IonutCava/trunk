@@ -40,6 +40,7 @@
 #include <limits.h>
 #include <functional>
 #include <atomic>
+#include <type_traits>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #if defined(OS_WINDOWS)
@@ -82,6 +83,32 @@ typedef int64_t I64;
 typedef __int64 _I64;
 typedef float F32;
 typedef double D32;
+
+template <typename Enum>
+auto to_underlying_type(const Enum value) ->
+    typename std::underlying_type<Enum>::type {
+    return static_cast<typename std::underlying_type<Enum>::type>(value);
+}
+
+template<typename T>
+constexpr U32 enum_to_uint_const(const T value) {
+    return static_cast<U32>(value);
+}
+
+template <typename T>
+U32 enum_to_uint(const T value) {
+    return static_cast<U32>(to_underlying_type(value));
+}
+
+template<typename T>
+constexpr I32 enum_to_int_const(const T value) {
+    return static_cast<I32>(value);
+}
+
+template <typename T>
+I32 enum_to_int(const T value) {
+    return static_cast<I32>(to_underlying_type(value));
+}
 
 /// Converts an arbitrary positive integer value to a bitwise value used for
 /// masks

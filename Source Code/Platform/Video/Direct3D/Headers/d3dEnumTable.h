@@ -38,9 +38,13 @@
 namespace Divide {
 
 namespace D3D_ENUM_TABLE {
+
 void fill();
+
 };
-extern unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
+
+extern U32 d3dTextureTypeTable[enum_to_uint_const(
+    TextureType::TextureType_PLACEHOLDER)];
 
 };  // namespace Divide
 #endif

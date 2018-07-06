@@ -17,7 +17,7 @@
 namespace Divide {
 
 DeferredShadingRenderer::DeferredShadingRenderer()
-    : Renderer(RENDERER_DEFERRED_SHADING), _cachedLightCount(0) {
+    : Renderer(RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0) {
     _lightTexture = GFX_DEVICE.newPB();
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
@@ -28,21 +28,29 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     deferredPreview.setThreadedLoading(false);
     _previewDeferredShader = CreateResource<ShaderProgram>(deferredPreview);
     SamplerDescriptor gBufferSampler;
-    gBufferSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
-    gBufferSampler.setFilters(TEXTURE_FILTER_NEAREST);
+    gBufferSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
+    gBufferSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
     gBufferSampler.toggleMipMaps(false);
 
     TextureDescriptor gBuffer[4];  /// 4 Gbuffer elements (mipmaps are ignored
                                    /// for deferredBuffers)
     // Albedo R8G8B8A8, 32bit format for diffuse
-    gBuffer[0] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    gBuffer[0] =
+        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,
+                          GFXDataFormat::UNSIGNED_BYTE);
     // Position R32G32B32A32, HDR 128bit format for position data
-    gBuffer[1] = TextureDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
+    gBuffer[1] =
+        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA32F,
+                          GFXDataFormat::FLOAT_32);
     // Normals R16G16B16A16, 64bit format for normals
-    gBuffer[2] = TextureDescriptor(TEXTURE_2D, RGBA16F, FLOAT_32);
+    gBuffer[2] =
+        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F,
+                          GFXDataFormat::FLOAT_32);
     // Blend (for transparent objects - unused for now) R8G8B8A8, 32bit format
     // for blend
-    gBuffer[3] = TextureDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    gBuffer[3] =
+        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,
+                          GFXDataFormat::UNSIGNED_BYTE);
 
     for (U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
 
@@ -77,25 +85,25 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     updateResolution(width, height);
 
     GUI& gui = GUI::getInstance();
-    gui.addText("PositionData",  // Unique ID
-                vec2<I32>(60, 60),  // Position
-                Font::DIVIDE_DEFAULT,  // Font
-                vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                "POSITION DATA", 0);  // Text and arguments
-    gui.addText("NormalData",  // Unique ID
-                vec2<I32>(60 + width / 2, 60),  // Position
-                Font::DIVIDE_DEFAULT,  // Font
-                vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                "NORMAL DATA", 0);  // Text and arguments
-    gui.addText("FinalImage",  // Unique ID
+    gui.addText("PositionData",                  // Unique ID
+                vec2<I32>(60, 60),               // Position
+                Font::DIVIDE_DEFAULT,            // Font
+                vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
+                "POSITION DATA", 0);             // Text and arguments
+    gui.addText("NormalData",                    // Unique ID
+                vec2<I32>(60 + width / 2, 60),   // Position
+                Font::DIVIDE_DEFAULT,            // Font
+                vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
+                "NORMAL DATA", 0);               // Text and arguments
+    gui.addText("FinalImage",                    // Unique ID
                 vec2<I32>(60, 60 + height / 2),  // Position
-                Font::DIVIDE_DEFAULT,  // Font
-                vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                "FINAL IMAGE", 0);  // Text and arguments
-    gui.addText("LightTexture",  // Unique ID
+                Font::DIVIDE_DEFAULT,            // Font
+                vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
+                "FINAL IMAGE", 0);               // Text and arguments
+    gui.addText("LightTexture",                  // Unique ID
                 vec2<I32>(60 + width / 2, 60 + height / 2),  // Position
-                Font::DIVIDE_DEFAULT,  // Font
-                vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+                Font::DIVIDE_DEFAULT,                        // Font
+                vec3<F32>(0.0f, 0.2f, 1.0f),                 // Color
                 "LIGHT TEXTURE", 0);  // Text and arguments
 }
 
@@ -118,7 +126,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
 void DeferredShadingRenderer::processVisibleNodes(
     const vectorImpl<SceneGraphNode*>& visibleNodes,
     const GFXDevice::GPUBlock& gpuBlock) {
-    GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
+    GFX_DEVICE.setRenderStage(RenderStage::DEFERRED_STAGE);
 
     Light::LightMap& lights = LightManager::getInstance().getLights();
     if (lights.size() != _cachedLightCount) {
@@ -198,7 +206,7 @@ void DeferredShadingRenderer::secondPass(
     _deferredShader->Uniform("lightCount", (I32)_cachedLightCount);
 
     cmd.shaderProgram(_deferredShader);
-    if (_renderQuads[_debugView ? 4 : 0]->onDraw(GFX_DEVICE.getRenderStage())){
+    if (_renderQuads[_debugView ? 4 : 0]->onDraw(GFX_DEVICE.getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
         GFX_DEVICE.submitRenderCommand(cmd);
     }

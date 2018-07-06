@@ -52,6 +52,9 @@ class d3dShaderProgram : public ShaderProgram {
     bool isValid() const { return false; }
     void attachShader(Shader* const shader, const bool refresh = false) {}
     void detachShader(Shader* const shader) {}
+
+    void registerShaderBuffer(ShaderBuffer& buffer) {}
+
     // Subroutines
     void SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
     }

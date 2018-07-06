@@ -14,7 +14,7 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
     } else {
         Material* matTemp = CreateResource<Material>(
             ResourceDescriptor("Material_" + _descriptor.getName()));
-        matTemp->setShadingMode(Material::SHADING_BLINN_PHONG);
+        matTemp->setShadingMode(Material::ShadingMode::SHADING_BLINN_PHONG);
         ptr->setMaterialTpl(matTemp);
     }
 

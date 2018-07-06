@@ -39,10 +39,11 @@ namespace Divide {
 
 class PixelBuffer {
    public:
-    virtual bool Create(U16 width, U16 height, U16 depth = 0,
-                        GFXImageFormat internalFormatEnum = RGBA8,
-                        GFXImageFormat formatEnum = RGBA,
-                        GFXDataFormat dataTypeEnum = FLOAT_32) = 0;
+    virtual bool Create(
+        U16 width, U16 height, U16 depth = 0,
+        GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
+        GFXImageFormat formatEnum = GFXImageFormat::RGBA,
+        GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
 
     virtual void Destroy() = 0;
 

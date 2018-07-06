@@ -14,7 +14,9 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
       _outputFB(result),
       _ready(false) {
     _samplerCopy = GFX_DEVICE.newFB();
-    TextureDescriptor fxaaDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    TextureDescriptor fxaaDescriptor(TextureType::TEXTURE_2D,
+                                     GFXImageFormat::RGBA8,
+                                     GFXDataFormat::UNSIGNED_BYTE);
     fxaaDescriptor.setSampler(*_internalSampler);
 
     _samplerCopy->AddAttachment(fxaaDescriptor, TextureDescriptor::Color0);

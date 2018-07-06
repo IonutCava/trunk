@@ -45,9 +45,9 @@
 
 namespace Divide {
 
-enum RenderStage : I32;
-enum RendererType : I32;
-enum SceneNodeType : I32;
+enum class RenderStage : U32;
+enum class RendererType : U32;
+enum class SceneNodeType : U32;
 
 class Light;
 class Camera;
@@ -159,7 +159,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Checks if the current rendering stage is any of the stages defined in
     /// renderStageMask
     ///@param renderStageMask Is a bitmask of the stages we whish to check if active
-    inline bool isCurrentRenderStage(U8 renderStageMask);
+    inline bool isCurrentRenderStage(U32 renderStageMask);
+    inline bool isCurrentRenderStage(RenderStage renderStage);
     void setRenderer(RendererType rendererType);
     Renderer& getRenderer() const;
 
@@ -183,10 +184,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
-                         const DELEGATE_CBK<>& renderFunction,
-                         const vec2<F32>& zPlanes,
-                         const RenderStage& renderStage = REFLECTION_STAGE);
+    void generateCubeMap(
+        Framebuffer& cubeMap, const vec3<F32>& pos,
+        const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes,
+        const RenderStage& renderStage = RenderStage::REFLECTION_STAGE);
 
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
@@ -236,7 +237,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// triggers,
     /// etc)
     inline bool excludeFromStateChange(const SceneNodeType& currentType) {
-        return (_stateExclusionMask & currentType) == currentType;
+        return (_stateExclusionMask & enum_to_int(currentType)) ==
+               enum_to_int(currentType);
     }
 
     inline void setStateChangeExclusionMask(I32 stateMask) {
@@ -296,7 +298,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline VertexBuffer* newVB() const override { return _api->newVB(); }
 
-    inline PixelBuffer* newPB(const PBType& type = PB_TEXTURE_2D) const override {
+    inline PixelBuffer* newPB(
+        const PBType& type = PBType::PB_TEXTURE_2D) const override {
         return _api->newPB(type);
     }
 

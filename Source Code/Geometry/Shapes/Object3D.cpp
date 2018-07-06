@@ -6,24 +6,37 @@
 
 namespace Divide {
 
-Object3D::Object3D(const ObjectType& type, U32 flag)
-    : Object3D("", type, flag)
+Object3D::Object3D(ObjectType type, ObjectFlag flag)
+    : Object3D("", type, enum_to_uint(flag)) 
+{
+}
 
-{}
+Object3D::Object3D(ObjectType type, U32 flagMask)
+    : Object3D("", type, flagMask)
 
-Object3D::Object3D(const stringImpl& name, const ObjectType& type, U32 flag)
-    : SceneNode(name, TYPE_OBJECT3D),
+{
+}
+
+Object3D::Object3D(const stringImpl& name, ObjectType type, ObjectFlag flag)
+    : Object3D(name, type, enum_to_uint(flag))
+{
+}
+
+Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
+    : SceneNode(name, SceneNodeType::TYPE_OBJECT3D),
       _update(false),
       _geometryType(type),
-      _geometryFlagMask(flag),
+      _geometryFlagMask(flagMask),
       _geometryPartitionID(0) {
-    _buffer = bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB)
+    _buffer = bitCompare(_geometryFlagMask,
+                         enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
                   ? nullptr
                   : GFX_DEVICE.newVB();
 }
 
 Object3D::~Object3D() {
-    if (!bitCompare(_geometryFlagMask, OBJECT_FLAG_NO_VB)) {
+    if (!bitCompare(_geometryFlagMask,
+                    enum_to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
         MemoryManager::DELETE(_buffer);
     }
 }
@@ -64,8 +77,7 @@ void Object3D::render(SceneGraphNode& sgn,
         sgn.getComponent<RenderingComponent>()->getDrawCommands());
 }
 
-bool Object3D::onDraw(SceneGraphNode& sgn,
-                      const RenderStage& currentStage) {
+bool Object3D::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     return onDraw(currentStage);
 }
 
@@ -183,9 +195,10 @@ bool Object3D::computeTriangleList(bool force) {
 
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = geometry->getPartitionCount(_geometryPartitionID);
-    PrimitiveType type =
-        (_geometryType == MESH || _geometryType == SUBMESH ? TRIANGLES
-                                                           : TRIANGLE_STRIP);
+    PrimitiveType type = (_geometryType == ObjectType::MESH ||
+                                  _geometryType == ObjectType::SUBMESH
+                              ? PrimitiveType::TRIANGLES
+                              : PrimitiveType::TRIANGLE_STRIP);
     // We can't have a VB without vertex positions
     DIVIDE_ASSERT(!geometry->getPosition().empty(),
                   "Object3D error: computeTriangleList called with no position "
@@ -197,7 +210,7 @@ bool Object3D::computeTriangleList(bool force) {
 
     U32 indiceCount = partitionCount;
     bool largeIndices = geometry->usesLargeIndices();
-    if (type == TRIANGLE_STRIP) {
+    if (type == PrimitiveType::TRIANGLE_STRIP) {
         U32 indiceStart = 2 + partitionOffset;
         U32 indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
@@ -219,7 +232,7 @@ bool Object3D::computeTriangleList(bool force) {
                 _geometryTriangles.push_back(curTriangle);
             }
         }
-    } else if (type == TRIANGLES) {
+    } else if (type == PrimitiveType::TRIANGLES) {
         indiceCount /= 3;
         _geometryTriangles.reserve(indiceCount);
         if (largeIndices) {

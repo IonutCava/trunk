@@ -234,31 +234,6 @@ U convertData(const T& data) {
     return targetValue;
 }
 
-template <typename T>
-stringImpl toString(T data) {
-    return stringAlg::toString(data);
-}
-
-template <>
-inline stringImpl toString(U8 data) {
-    return stringAlg::toString(static_cast<U32>(data));
-}
-
-template <>
-inline stringImpl toString(U16 data) {
-    return stringAlg::toString(static_cast<U32>(data));
-}
-
-template <>
-inline stringImpl toString(I8 data) {
-    return stringAlg::toString(static_cast<I32>(data));
-}
-
-template <>
-inline stringImpl toString(I16 data) {
-    return stringAlg::toString(static_cast<I32>(data));
-}
-
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
 inline stringImpl& ltrim(stringImpl& s) {
     s.erase(std::begin(s),

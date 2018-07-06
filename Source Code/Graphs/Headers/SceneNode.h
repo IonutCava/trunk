@@ -42,7 +42,7 @@ namespace Divide {
 class Scene;
 class Material;
 
-enum SceneNodeType {
+enum class SceneNodeType : U32 {
     TYPE_ROOT = toBit(1),       //< root node
     TYPE_OBJECT3D = toBit(2),   //< 3d objects in the scene
     TYPE_TRANSFORM = toBit(3),  //< dummy node to stack multiple transforms
@@ -61,7 +61,7 @@ class SceneState;
 class SceneRenderState;
 class ShaderProgram;
 class SceneGraphNode;
-enum RenderStage : I32;
+enum class RenderStage : U32;
 
 class SceneNode : public Resource {
     friend class SceneNodeRenderAttorney;

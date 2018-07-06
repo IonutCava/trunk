@@ -42,9 +42,9 @@ class glPixelBuffer : public PixelBuffer {
     ~glPixelBuffer() { Destroy(); }
 
     bool Create(GLushort width, GLushort height, GLushort depth = 0,
-                GFXImageFormat internalFormatEnum = RGBA8,
-                GFXImageFormat formatEnum = RGBA,
-                GFXDataFormat dataTypeEnum = FLOAT_32);
+                GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
+                GFXImageFormat formatEnum = GFXImageFormat::RGBA,
+                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32);
 
     void Destroy();
 

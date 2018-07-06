@@ -128,11 +128,11 @@ namespace NS_GLIM
         {
             m_bCreatedVBOs = false;
             glDeleteVertexArrays(1, &m_VertexArrayObjectID);
-            glDeleteBuffers (1, &m_uiVertexBufferID);
-            glDeleteBuffers (1, &m_uiElementBufferID_Points);
-            glDeleteBuffers (1, &m_uiElementBufferID_Lines);
-            glDeleteBuffers (1, &m_uiElementBufferID_Triangles);
-            glDeleteBuffers (1, &m_uiElementBufferID_Wireframe);
+            Divide::GLUtil::freeBuffer(m_uiVertexBufferID);
+            Divide::GLUtil::freeBuffer(m_uiElementBufferID_Points);
+            Divide::GLUtil::freeBuffer(m_uiElementBufferID_Lines);
+            Divide::GLUtil::freeBuffer(m_uiElementBufferID_Triangles);
+            Divide::GLUtil::freeBuffer(m_uiElementBufferID_Wireframe);
         }
 
 #endif

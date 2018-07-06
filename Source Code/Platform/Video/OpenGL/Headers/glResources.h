@@ -105,24 +105,33 @@ namespace GL_ENUM_TABLE {
 /// Populate enumeration tables with appropriate API values
 void fill();
 
-extern GLenum glBlendTable[BlendProperty_PLACEHOLDER];
-extern GLenum glBlendOpTable[BlendOperation_PLACEHOLDER];
-extern GLenum glCompareFuncTable[ComparisonFunction_PLACEHOLDER];
-extern GLenum glStencilOpTable[StencilOperation_PLACEHOLDER];
-extern GLenum glCullModeTable[CullMode_PLACEHOLDER];
-extern GLenum glFillModeTable[FillMode_PLACEHOLDER];
-extern GLenum glTextureTypeTable[TextureType_PLACEHOLDER];
-extern GLenum glImageFormatTable[GFXImageFormat_PLACEHOLDER];
-extern GLenum glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
-extern GLenum glDataFormat[GDF_PLACEHOLDER];
-extern GLenum glWrapTable[TextureWrap_PLACEHOLDER];
-extern GLenum glTextureFilterTable[TextureFilter_PLACEHOLDER];
-extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
+extern GLenum
+    glBlendTable[enum_to_uint_const(BlendProperty::BlendProperty_PLACEHOLDER)];
+extern GLenum glBlendOpTable[enum_to_uint_const(
+    BlendOperation::BlendOperation_PLACEHOLDER)];
+extern GLenum glCompareFuncTable[enum_to_uint_const(
+    ComparisonFunction::ComparisonFunction_PLACEHOLDER)];
+extern GLenum glStencilOpTable[enum_to_uint_const(
+    StencilOperation::StencilOperation_PLACEHOLDER)];
+extern GLenum
+    glCullModeTable[enum_to_uint_const(CullMode::CullMode_PLACEHOLDER)];
+extern GLenum
+    glFillModeTable[enum_to_uint_const(FillMode::FillMode_PLACEHOLDER)];
+extern GLenum glTextureTypeTable[enum_to_uint_const(
+    TextureType::TextureType_PLACEHOLDER)];
+extern GLenum glImageFormatTable[enum_to_uint_const(
+    GFXImageFormat::GFXImageFormat_PLACEHOLDER)];
+extern GLenum glPrimitiveTypeTable[enum_to_uint_const(
+    PrimitiveType::PrimitiveType_PLACEHOLDER)];
+extern GLenum glDataFormat[enum_to_uint_const(GFXDataFormat::GDF_PLACEHOLDER)];
+extern GLenum
+    glWrapTable[enum_to_uint_const(TextureWrap::TextureWrap_PLACEHOLDER)];
+extern GLenum glTextureFilterTable[enum_to_uint_const(
+    TextureFilter::TextureFilter_PLACEHOLDER)];
+extern NS_GLIM::GLIM_ENUM glimPrimitiveType[enum_to_uint_const(
+    PrimitiveType::PrimitiveType_PLACEHOLDER)];
 
 };  // namespace GL_ENUM_TABLE
-inline std::underlying_type<GLenum>::type GLenum_to_uint(GLenum e) {
-    return static_cast<std::underlying_type<GLenum>::type>(e);
-}
 };  // namespace GLUtil
 };  // namespace Divide
 

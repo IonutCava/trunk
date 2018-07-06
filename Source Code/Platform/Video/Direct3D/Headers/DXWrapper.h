@@ -90,15 +90,15 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     }
 
     inline Texture* newTextureArray(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TEXTURE_2D_ARRAY, flipped);
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D_ARRAY, flipped);
     }
 
     inline Texture* newTexture2D(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TEXTURE_2D, flipped);
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D, flipped);
     }
 
     inline Texture* newTextureCubemap(const bool flipped = false) const override {
-        return MemoryManager_NEW d3dTexture(TEXTURE_CUBE_MAP, flipped);
+        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_CUBE_MAP, flipped);
     }
 
     inline ShaderProgram* newShaderProgram(

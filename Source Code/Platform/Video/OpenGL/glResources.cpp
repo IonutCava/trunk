@@ -49,163 +49,243 @@ void glfw_focus_callback(GLFWwindow* window, I32 focusState) {
 }
 
 namespace GL_ENUM_TABLE {
-GLenum glBlendTable[BlendProperty_PLACEHOLDER];
-GLenum glBlendOpTable[BlendOperation_PLACEHOLDER];
-GLenum glCompareFuncTable[ComparisonFunction_PLACEHOLDER];
-GLenum glStencilOpTable[StencilOperation_PLACEHOLDER];
-GLenum glCullModeTable[CullMode_PLACEHOLDER];
-GLenum glFillModeTable[FillMode_PLACEHOLDER];
-GLenum glTextureTypeTable[TextureType_PLACEHOLDER];
-GLenum glImageFormatTable[GFXImageFormat_PLACEHOLDER];
-GLenum glPrimitiveTypeTable[PrimitiveType_PLACEHOLDER];
-GLenum glDataFormat[GDF_PLACEHOLDER];
-GLenum glWrapTable[TextureWrap_PLACEHOLDER];
-GLenum glTextureFilterTable[TextureFilter_PLACEHOLDER];
-NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
+GLenum
+    glBlendTable[enum_to_uint_const(BlendProperty::BlendProperty_PLACEHOLDER)];
+GLenum glBlendOpTable[enum_to_uint_const(
+    BlendOperation::BlendOperation_PLACEHOLDER)];
+GLenum glCompareFuncTable[enum_to_uint_const(
+    ComparisonFunction::ComparisonFunction_PLACEHOLDER)];
+GLenum glStencilOpTable[enum_to_uint_const(
+    StencilOperation::StencilOperation_PLACEHOLDER)];
+GLenum glCullModeTable[enum_to_uint_const(CullMode::CullMode_PLACEHOLDER)];
+GLenum glFillModeTable[enum_to_uint_const(FillMode::FillMode_PLACEHOLDER)];
+GLenum glTextureTypeTable[enum_to_uint_const(
+    TextureType::TextureType_PLACEHOLDER)];
+GLenum glImageFormatTable[enum_to_uint_const(
+    GFXImageFormat::GFXImageFormat_PLACEHOLDER)];
+GLenum glPrimitiveTypeTable[enum_to_uint_const(
+    PrimitiveType::PrimitiveType_PLACEHOLDER)];
+GLenum glDataFormat[enum_to_uint_const(GFXDataFormat::GDF_PLACEHOLDER)];
+GLenum glWrapTable[enum_to_uint_const(TextureWrap::TextureWrap_PLACEHOLDER)];
+GLenum glTextureFilterTable[enum_to_uint_const(
+    TextureFilter::TextureFilter_PLACEHOLDER)];
+NS_GLIM::GLIM_ENUM glimPrimitiveType[enum_to_uint_const(
+    PrimitiveType::PrimitiveType_PLACEHOLDER)];
 
 void fill() {
-    glBlendTable[BLEND_PROPERTY_ZERO] = GL_ZERO;
-    glBlendTable[BLEND_PROPERTY_ONE] = GL_ONE;
-    glBlendTable[BLEND_PROPERTY_SRC_COLOR] = GL_SRC_COLOR;
-    glBlendTable[BLEND_PROPERTY_INV_SRC_COLOR] = GL_ONE_MINUS_SRC_COLOR;
-    glBlendTable[BLEND_PROPERTY_SRC_ALPHA] = GL_SRC_ALPHA;
-    glBlendTable[BLEND_PROPERTY_INV_SRC_ALPHA] = GL_ONE_MINUS_SRC_ALPHA;
-    glBlendTable[BLEND_PROPERTY_DEST_ALPHA] = GL_DST_ALPHA;
-    glBlendTable[BLEND_PROPERTY_INV_DEST_ALPHA] = GL_ONE_MINUS_DST_ALPHA;
-    glBlendTable[BLEND_PROPERTY_DEST_COLOR] = GL_DST_COLOR;
-    glBlendTable[BLEND_PROPERTY_INV_DEST_COLOR] = GL_ONE_MINUS_DST_COLOR;
-    glBlendTable[BLEND_PROPERTY_SRC_ALPHA_SAT] = GL_SRC_ALPHA_SATURATE;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_ZERO)] =
+        GL_ZERO;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_ONE)] =
+        GL_ONE;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_SRC_COLOR)] =
+        GL_SRC_COLOR;
+    glBlendTable[enum_to_uint_const(
+        BlendProperty::BLEND_PROPERTY_INV_SRC_COLOR)] = GL_ONE_MINUS_SRC_COLOR;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_SRC_ALPHA)] =
+        GL_SRC_ALPHA;
+    glBlendTable[enum_to_uint_const(
+        BlendProperty::BLEND_PROPERTY_INV_SRC_ALPHA)] = GL_ONE_MINUS_SRC_ALPHA;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_DEST_ALPHA)] =
+        GL_DST_ALPHA;
+    glBlendTable[enum_to_uint_const(
+        BlendProperty::BLEND_PROPERTY_INV_DEST_ALPHA)] = GL_ONE_MINUS_DST_ALPHA;
+    glBlendTable[enum_to_uint_const(BlendProperty::BLEND_PROPERTY_DEST_COLOR)] =
+        GL_DST_COLOR;
+    glBlendTable[enum_to_uint_const(
+        BlendProperty::BLEND_PROPERTY_INV_DEST_COLOR)] = GL_ONE_MINUS_DST_COLOR;
+    glBlendTable[enum_to_uint_const(
+        BlendProperty::BLEND_PROPERTY_SRC_ALPHA_SAT)] = GL_SRC_ALPHA_SATURATE;
 
-    glBlendOpTable[BLEND_OPERATION_ADD] = GL_FUNC_ADD;
-    glBlendOpTable[BLEND_OPERATION_SUBTRACT] = GL_FUNC_SUBTRACT;
-    glBlendOpTable[BLEND_OPERATION_REV_SUBTRACT] = GL_FUNC_REVERSE_SUBTRACT;
-    glBlendOpTable[BLEND_OPERATION_MIN] = GL_MIN;
-    glBlendOpTable[BLEND_OPERATION_MAX] = GL_MAX;
+    glBlendOpTable[enum_to_uint_const(BlendOperation::BLEND_OPERATION_ADD)] =
+        GL_FUNC_ADD;
+    glBlendOpTable[enum_to_uint_const(
+        BlendOperation::BLEND_OPERATION_SUBTRACT)] = GL_FUNC_SUBTRACT;
+    glBlendOpTable[enum_to_uint_const(
+        BlendOperation::BLEND_OPERATION_REV_SUBTRACT)] =
+        GL_FUNC_REVERSE_SUBTRACT;
+    glBlendOpTable[enum_to_uint_const(BlendOperation::BLEND_OPERATION_MIN)] =
+        GL_MIN;
+    glBlendOpTable[enum_to_uint_const(BlendOperation::BLEND_OPERATION_MAX)] =
+        GL_MAX;
 
-    glCompareFuncTable[CMP_FUNC_NEVER] = GL_NEVER;
-    glCompareFuncTable[CMP_FUNC_LESS] = GL_LESS;
-    glCompareFuncTable[CMP_FUNC_EQUAL] = GL_EQUAL;
-    glCompareFuncTable[CMP_FUNC_LEQUAL] = GL_LEQUAL;
-    glCompareFuncTable[CMP_FUNC_GREATER] = GL_GREATER;
-    glCompareFuncTable[CMP_FUNC_NEQUAL] = GL_NOTEQUAL;
-    glCompareFuncTable[CMP_FUNC_GEQUAL] = GL_GEQUAL;
-    glCompareFuncTable[CMP_FUNC_ALWAYS] = GL_ALWAYS;
+    glCompareFuncTable[enum_to_uint_const(ComparisonFunction::CMP_FUNC_NEVER)] =
+        GL_NEVER;
+    glCompareFuncTable[enum_to_uint_const(ComparisonFunction::CMP_FUNC_LESS)] =
+        GL_LESS;
+    glCompareFuncTable[enum_to_uint_const(ComparisonFunction::CMP_FUNC_EQUAL)] =
+        GL_EQUAL;
+    glCompareFuncTable[enum_to_uint_const(
+        ComparisonFunction::CMP_FUNC_LEQUAL)] = GL_LEQUAL;
+    glCompareFuncTable[enum_to_uint_const(
+        ComparisonFunction::CMP_FUNC_GREATER)] = GL_GREATER;
+    glCompareFuncTable[enum_to_uint_const(
+        ComparisonFunction::CMP_FUNC_NEQUAL)] = GL_NOTEQUAL;
+    glCompareFuncTable[enum_to_uint_const(
+        ComparisonFunction::CMP_FUNC_GEQUAL)] = GL_GEQUAL;
+    glCompareFuncTable[enum_to_uint_const(
+        ComparisonFunction::CMP_FUNC_ALWAYS)] = GL_ALWAYS;
 
-    glStencilOpTable[STENCIL_OPERATION_KEEP] = GL_KEEP;
-    glStencilOpTable[STENCIL_OPERATION_ZERO] = GL_ZERO;
-    glStencilOpTable[STENCIL_OPERATION_REPLACE] = GL_REPLACE;
-    glStencilOpTable[STENCIL_OPERATION_INCR] = GL_INCR;
-    glStencilOpTable[STENCIL_OPERATION_DECR] = GL_DECR;
-    glStencilOpTable[STENCIL_OPERATION_INV] = GL_INVERT;
-    glStencilOpTable[STENCIL_OPERATION_INCR_WRAP] = GL_INCR_WRAP;
-    glStencilOpTable[STENCIL_OPERATION_DECR_WRAP] = GL_DECR_WRAP;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_KEEP)] = GL_KEEP;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_ZERO)] = GL_ZERO;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_REPLACE)] = GL_REPLACE;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_INCR)] = GL_INCR;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_DECR)] = GL_DECR;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_INV)] = GL_INVERT;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_INCR_WRAP)] = GL_INCR_WRAP;
+    glStencilOpTable[enum_to_uint_const(
+        StencilOperation::STENCIL_OPERATION_DECR_WRAP)] = GL_DECR_WRAP;
 
-    glCullModeTable[CULL_MODE_NONE] = GL_BACK;
-    glCullModeTable[CULL_MODE_CW] = GL_BACK;
-    glCullModeTable[CULL_MODE_CCW] = GL_FRONT;
-    glCullModeTable[CULL_MODE_ALL] = GL_FRONT_AND_BACK;
+    glCullModeTable[enum_to_uint_const(CullMode::CULL_MODE_NONE)] = GL_BACK;
+    glCullModeTable[enum_to_uint_const(CullMode::CULL_MODE_CW)] = GL_BACK;
+    glCullModeTable[enum_to_uint_const(CullMode::CULL_MODE_CCW)] = GL_FRONT;
+    glCullModeTable[enum_to_uint_const(CullMode::CULL_MODE_ALL)] =
+        GL_FRONT_AND_BACK;
 
-    glFillModeTable[FILL_MODE_POINT] = GL_POINT;
-    glFillModeTable[FILL_MODE_WIREFRAME] = GL_LINE;
-    glFillModeTable[FILL_MODE_SOLID] = GL_FILL;
+    glFillModeTable[enum_to_uint_const(FillMode::FILL_MODE_POINT)] = GL_POINT;
+    glFillModeTable[enum_to_uint_const(FillMode::FILL_MODE_WIREFRAME)] =
+        GL_LINE;
+    glFillModeTable[enum_to_uint_const(FillMode::FILL_MODE_SOLID)] = GL_FILL;
 
-    glTextureTypeTable[TEXTURE_1D] = GL_TEXTURE_1D;
-    glTextureTypeTable[TEXTURE_2D] = GL_TEXTURE_2D;
-    glTextureTypeTable[TEXTURE_3D] = GL_TEXTURE_3D;
-    glTextureTypeTable[TEXTURE_CUBE_MAP] = GL_TEXTURE_CUBE_MAP;
-    glTextureTypeTable[TEXTURE_2D_ARRAY] = GL_TEXTURE_2D_ARRAY;
-    glTextureTypeTable[TEXTURE_CUBE_ARRAY] = GL_TEXTURE_CUBE_MAP_ARRAY;
-    glTextureTypeTable[TEXTURE_2D_MS] = GL_TEXTURE_2D_MULTISAMPLE;
-    glTextureTypeTable[TEXTURE_2D_ARRAY_MS] = GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_1D)] =
+        GL_TEXTURE_1D;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_2D)] =
+        GL_TEXTURE_2D;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_3D)] =
+        GL_TEXTURE_3D;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_CUBE_MAP)] =
+        GL_TEXTURE_CUBE_MAP;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_2D_ARRAY)] =
+        GL_TEXTURE_2D_ARRAY;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_CUBE_ARRAY)] =
+        GL_TEXTURE_CUBE_MAP_ARRAY;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_2D_MS)] =
+        GL_TEXTURE_2D_MULTISAMPLE;
+    glTextureTypeTable[enum_to_uint_const(TextureType::TEXTURE_2D_ARRAY_MS)] =
+        GL_TEXTURE_2D_MULTISAMPLE_ARRAY;
 
-    glImageFormatTable[LUMINANCE] = GL_LUMINANCE;
-    glImageFormatTable[LUMINANCE_ALPHA] = GL_LUMINANCE_ALPHA;
-    glImageFormatTable[LUMINANCE_ALPHA16F] = gl::GL_LUMINANCE_ALPHA16F_ARB;
-    glImageFormatTable[LUMINANCE_ALPHA32F] = gl::GL_LUMINANCE_ALPHA32F_ARB;
-    glImageFormatTable[INTENSITY] = GL_INTENSITY;
-    glImageFormatTable[ALPHA] = GL_ALPHA;
-    glImageFormatTable[RED] = GL_RED;
-    glImageFormatTable[RED8] = GL_R8;
-    glImageFormatTable[RED16] = GL_R16;
-    glImageFormatTable[RED16F] = GL_R16F;
-    glImageFormatTable[RED32] = GL_R32UI;
-    glImageFormatTable[RED32F] = GL_R32F;
-    glImageFormatTable[BLUE] = GL_BLUE;
-    glImageFormatTable[GREEN] = GL_GREEN;
-    glImageFormatTable[RG] = GL_RG;
-    glImageFormatTable[RG8] = GL_RG8;
-    glImageFormatTable[RG16] = GL_RG16;
-    glImageFormatTable[RG16F] = GL_RG16F;
-    glImageFormatTable[RG32] = GL_RG32UI;
-    glImageFormatTable[RG32F] = GL_RG32F;
-    glImageFormatTable[RGB] = GL_RGB;
-    glImageFormatTable[BGR] = GL_BGR;
-    glImageFormatTable[RGB8] = GL_RGB8;
-    glImageFormatTable[SRGB8] = GL_SRGB8;
-    glImageFormatTable[RGB8I] = GL_RGB8I;
-    glImageFormatTable[RGB16] = GL_RGB16;
-    glImageFormatTable[RGB16F] = GL_RGB16F;
-    glImageFormatTable[BGRA] = GL_BGRA;
-    glImageFormatTable[RGBA] = GL_RGBA;
-    glImageFormatTable[RGBA4] = GL_RGBA4;
-    glImageFormatTable[RGBA8] = GL_RGBA8;
-    glImageFormatTable[SRGBA8] = GL_SRGB8_ALPHA8;
-    glImageFormatTable[RGBA8I] = GL_RGBA8I;
-    glImageFormatTable[RGBA16F] = GL_RGBA16F;
-    glImageFormatTable[RGBA32F] = GL_RGBA32F;
-    glImageFormatTable[DEPTH_COMPONENT] = GL_DEPTH_COMPONENT;
-    glImageFormatTable[DEPTH_COMPONENT16] = GL_DEPTH_COMPONENT16;
-    glImageFormatTable[DEPTH_COMPONENT24] = GL_DEPTH_COMPONENT24;
-    glImageFormatTable[DEPTH_COMPONENT32] = GL_DEPTH_COMPONENT32;
-    glImageFormatTable[DEPTH_COMPONENT32F] = GL_DEPTH_COMPONENT32F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::LUMINANCE)] =
+        GL_LUMINANCE;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::LUMINANCE_ALPHA)] =
+        GL_LUMINANCE_ALPHA;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::LUMINANCE_ALPHA16F)] =
+        gl::GL_LUMINANCE_ALPHA16F_ARB;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::LUMINANCE_ALPHA32F)] =
+        gl::GL_LUMINANCE_ALPHA32F_ARB;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::INTENSITY)] =
+        GL_INTENSITY;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::ALPHA)] = GL_ALPHA;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED)] = GL_RED;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED8)] = GL_R8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED16)] = GL_R16;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED16F)] = GL_R16F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED32)] = GL_R32UI;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RED32F)] = GL_R32F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::BLUE)] = GL_BLUE;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::GREEN)] = GL_GREEN;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG)] = GL_RG;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG8)] = GL_RG8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG16)] = GL_RG16;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG16F)] = GL_RG16F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG32)] = GL_RG32UI;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RG32F)] = GL_RG32F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGB)] = GL_RGB;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::BGR)] = GL_BGR;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGB8)] = GL_RGB8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::SRGB8)] = GL_SRGB8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGB8I)] = GL_RGB8I;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGB16)] = GL_RGB16;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGB16F)] = GL_RGB16F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::BGRA)] = GL_BGRA;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA)] = GL_RGBA;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA4)] = GL_RGBA4;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA8)] = GL_RGBA8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::SRGBA8)] =
+        GL_SRGB8_ALPHA8;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA8I)] = GL_RGBA8I;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA16F)] =
+        GL_RGBA16F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::RGBA32F)] =
+        GL_RGBA32F;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::DEPTH_COMPONENT)] =
+        GL_DEPTH_COMPONENT;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::DEPTH_COMPONENT16)] =
+        GL_DEPTH_COMPONENT16;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::DEPTH_COMPONENT24)] =
+        GL_DEPTH_COMPONENT24;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::DEPTH_COMPONENT32)] =
+        GL_DEPTH_COMPONENT32;
+    glImageFormatTable[enum_to_uint_const(GFXImageFormat::DEPTH_COMPONENT32F)] =
+        GL_DEPTH_COMPONENT32F;
 
-    glPrimitiveTypeTable[API_POINTS] = GL_POINTS;
-    glPrimitiveTypeTable[LINES] = GL_LINES;
-    glPrimitiveTypeTable[LINE_LOOP] = GL_LINE_LOOP;
-    glPrimitiveTypeTable[LINE_STRIP] = GL_LINE_STRIP;
-    glPrimitiveTypeTable[TRIANGLES] = GL_TRIANGLES;
-    glPrimitiveTypeTable[TRIANGLE_STRIP] = GL_TRIANGLE_STRIP;
-    glPrimitiveTypeTable[TRIANGLE_FAN] = GL_TRIANGLE_FAN;
-    // glPrimitiveTypeTable[QUADS] = GL_QUADS; //<Deprecated
-    glPrimitiveTypeTable[QUAD_STRIP] = GL_QUAD_STRIP;
-    glPrimitiveTypeTable[POLYGON] = GL_POLYGON;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::API_POINTS)] =
+        GL_POINTS;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::LINES)] = GL_LINES;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::LINE_LOOP)] =
+        GL_LINE_LOOP;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::LINE_STRIP)] =
+        GL_LINE_STRIP;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::TRIANGLES)] =
+        GL_TRIANGLES;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::TRIANGLE_STRIP)] =
+        GL_TRIANGLE_STRIP;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::TRIANGLE_FAN)] =
+        GL_TRIANGLE_FAN;
+    // glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::QUADS)] =
+    // GL_QUADS; //<Deprecated
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::QUAD_STRIP)] =
+        GL_QUAD_STRIP;
+    glPrimitiveTypeTable[enum_to_uint_const(PrimitiveType::POLYGON)] =
+        GL_POLYGON;
 
-    glDataFormat[UNSIGNED_BYTE] = GL_UNSIGNED_BYTE;
-    glDataFormat[UNSIGNED_SHORT] = GL_UNSIGNED_SHORT;
-    glDataFormat[UNSIGNED_INT] = GL_UNSIGNED_INT;
-    glDataFormat[SIGNED_BYTE] = GL_BYTE;
-    glDataFormat[SIGNED_SHORT] = GL_SHORT;
-    glDataFormat[SIGNED_INT] = GL_INT;
-    glDataFormat[FLOAT_16] = GL_HALF_FLOAT;
-    glDataFormat[FLOAT_32] = GL_FLOAT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::UNSIGNED_BYTE)] =
+        GL_UNSIGNED_BYTE;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::UNSIGNED_SHORT)] =
+        GL_UNSIGNED_SHORT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::UNSIGNED_INT)] =
+        GL_UNSIGNED_INT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::SIGNED_BYTE)] = GL_BYTE;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::SIGNED_SHORT)] = GL_SHORT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::SIGNED_INT)] = GL_INT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::FLOAT_16)] = GL_HALF_FLOAT;
+    glDataFormat[enum_to_uint_const(GFXDataFormat::FLOAT_32)] = GL_FLOAT;
 
-    glWrapTable[TEXTURE_MIRROR_REPEAT] = GL_MIRRORED_REPEAT;
-    glWrapTable[TEXTURE_REPEAT] = GL_REPEAT;
-    glWrapTable[TEXTURE_CLAMP] = GL_CLAMP;
-    glWrapTable[TEXTURE_CLAMP_TO_EDGE] = GL_CLAMP_TO_EDGE;
-    glWrapTable[TEXTURE_CLAMP_TO_BORDER] = GL_CLAMP_TO_BORDER;
-    glWrapTable[TEXTURE_DECAL] = GL_DECAL;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_MIRROR_REPEAT)] =
+        GL_MIRRORED_REPEAT;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_REPEAT)] = GL_REPEAT;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_CLAMP)] = GL_CLAMP;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_CLAMP_TO_EDGE)] =
+        GL_CLAMP_TO_EDGE;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_CLAMP_TO_BORDER)] = GL_CLAMP_TO_BORDER;
+    glWrapTable[enum_to_uint_const(TextureWrap::TEXTURE_DECAL)] = GL_DECAL;
 
-    glTextureFilterTable[TEXTURE_FILTER_LINEAR] = GL_LINEAR;
-    glTextureFilterTable[TEXTURE_FILTER_NEAREST] = GL_NEAREST;
-    glTextureFilterTable[TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST] =
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_LINEAR)] = GL_LINEAR;
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_NEAREST)] = GL_NEAREST;
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST)] =
         GL_NEAREST_MIPMAP_NEAREST;
-    glTextureFilterTable[TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST] =
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST)] =
         GL_LINEAR_MIPMAP_NEAREST;
-    glTextureFilterTable[TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR] =
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR)] =
         GL_NEAREST_MIPMAP_LINEAR;
-    glTextureFilterTable[TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR] =
+    glTextureFilterTable[enum_to_uint_const(TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)] =
         GL_LINEAR_MIPMAP_LINEAR;
 
-    glimPrimitiveType[API_POINTS] = NS_GLIM::GLIM_POINTS;
-    glimPrimitiveType[LINES] = NS_GLIM::GLIM_LINES;
-    glimPrimitiveType[LINE_LOOP] = NS_GLIM::GLIM_LINE_LOOP;
-    glimPrimitiveType[LINE_STRIP] = NS_GLIM::GLIM_LINE_STRIP;
-    glimPrimitiveType[TRIANGLES] = NS_GLIM::GLIM_TRIANGLES;
-    glimPrimitiveType[TRIANGLE_STRIP] = NS_GLIM::GLIM_TRIANGLE_STRIP;
-    glimPrimitiveType[TRIANGLE_FAN] = NS_GLIM::GLIM_TRIANGLE_FAN;
-    glimPrimitiveType[QUAD_STRIP] = NS_GLIM::GLIM_QUAD_STRIP;
-    glimPrimitiveType[POLYGON] = NS_GLIM::GLIM_POLYGON;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::API_POINTS)] = NS_GLIM::GLIM_POINTS;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::LINES)] = NS_GLIM::GLIM_LINES;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::LINE_LOOP)] = NS_GLIM::GLIM_LINE_LOOP;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::LINE_STRIP)] = NS_GLIM::GLIM_LINE_STRIP;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::TRIANGLES)] = NS_GLIM::GLIM_TRIANGLES;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::TRIANGLE_STRIP)] =
+        NS_GLIM::GLIM_TRIANGLE_STRIP;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::TRIANGLE_FAN)] = NS_GLIM::GLIM_TRIANGLE_FAN;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::QUAD_STRIP)] = NS_GLIM::GLIM_QUAD_STRIP;
+    glimPrimitiveType[enum_to_uint_const(PrimitiveType::POLYGON)] = NS_GLIM::GLIM_POLYGON;
 }
 }
 }  /// GLutil
@@ -342,9 +422,9 @@ static GLhalf ftoh(GLfloat val) {
 static U32 VecTo_UNSIGNED_INT_2_10_10_10_REV(const vec4<U32>& values) {
     U32 returnValue = 0;
     returnValue = returnValue | (values.a << 30);
-	returnValue = returnValue | (values.b << 20);
-	returnValue = returnValue | (values.g << 10);
-	returnValue = returnValue | (values.r << 0);
+    returnValue = returnValue | (values.b << 20);
+    returnValue = returnValue | (values.g << 10);
+    returnValue = returnValue | (values.r << 0);
 
     return returnValue;
 }
@@ -352,11 +432,10 @@ static U32 VecTo_UNSIGNED_INT_2_10_10_10_REV(const vec4<U32>& values) {
 static I32 VecTo_INT_2_10_10_10_REV(const vec4<I32>& values) {
     I32 returnValue = 0;
     returnValue = returnValue | (values.a << 30);
-	returnValue = returnValue | (values.b << 20);
-	returnValue = returnValue | (values.g << 10);
-	returnValue = returnValue | (values.r << 0);
+    returnValue = returnValue | (values.b << 20);
+    returnValue = returnValue | (values.g << 10);
+    returnValue = returnValue | (values.r << 0);
 
     return returnValue;
 }
-
 }

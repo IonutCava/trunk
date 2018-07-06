@@ -19,13 +19,14 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     SamplerDescriptor depthMapSampler;
-    depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
     depthMapSampler._useRefCompare = true;
-    depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL;
+    depthMapSampler._cmpFunc = ComparisonFunction::CMP_FUNC_LEQUAL;
     // Default filters, LINEAR is OK for this
-    TextureDescriptor depthMapDescriptor(TEXTURE_2D, DEPTH_COMPONENT,
-                                         UNSIGNED_INT);
+    TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D,
+                                         GFXImageFormat::DEPTH_COMPONENT,
+                                         GFXDataFormat::UNSIGNED_INT);
 
     depthMapDescriptor.setSampler(depthMapSampler);
     _depthMap = GFX_DEVICE.newFB();

@@ -12,7 +12,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler)
     : PreRenderOperator(SSAO_STAGE, resolution, sampler), _outputFB(result) {
-    TextureDescriptor outputDescriptor(TEXTURE_2D, RGB8, UNSIGNED_BYTE);
+    TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
+                                       GFXImageFormat::RGB8,
+                                       GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(*_internalSampler);
     _outputFB->AddAttachment(outputDescriptor, TextureDescriptor::Color0);
     _outputFB->Create(_resolution.width, _resolution.height);

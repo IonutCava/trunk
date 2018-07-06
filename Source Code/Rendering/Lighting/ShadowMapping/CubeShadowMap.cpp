@@ -14,14 +14,16 @@ CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
     Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
                      "Single Shadow Map");
     // Default filters, LINEAR is OK for this
-    TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP, DEPTH_COMPONENT,
-                                         UNSIGNED_INT);
+    TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_MAP,
+                                         GFXImageFormat::DEPTH_COMPONENT,
+                                         GFXDataFormat::UNSIGNED_INT);
 
     SamplerDescriptor depthMapSampler;
-    depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthMapSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthMapSampler.toggleMipMaps(false);
-    depthMapSampler._useRefCompare = true;       //< Use compare function
-    depthMapSampler._cmpFunc = CMP_FUNC_LEQUAL;  //< Use less or equal
+    depthMapSampler._useRefCompare = true;  //< Use compare function
+    depthMapSampler._cmpFunc =
+        ComparisonFunction::CMP_FUNC_LEQUAL;  //< Use less or equal
     depthMapDescriptor.setSampler(depthMapSampler);
 
     _depthMap = GFX_DEVICE.newFB();
@@ -57,7 +59,10 @@ void CubeShadowMap::render(SceneRenderState& renderState,
         return;
     }
 
-    GFX_DEVICE.generateCubeMap(*_depthMap, _light->getPosition(),
-                               sceneRenderFunction, SHADOW_STAGE);
+    GFX_DEVICE.generateCubeMap(*_depthMap,
+                                _light->getPosition(),
+                                sceneRenderFunction,
+                                vec2<F32>(0.1f, _light->getRange()),
+                                RenderStage::SHADOW_STAGE);
 }
 };

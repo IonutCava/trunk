@@ -39,7 +39,7 @@ namespace Divide {
 
 class Texture;
 class ShaderProgram;
-enum PrimitiveType : I32;
+enum class PrimitiveType : U32;
 /// IMPrimitive replaces immediate mode calls to VB based rendering
 class IMPrimitive : public GUIDWrapper, private NonCopyable {
    public:

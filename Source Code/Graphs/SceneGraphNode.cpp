@@ -77,7 +77,7 @@ SceneGraphNode::~SceneGraphNode() {
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
-    if (!bitCompare(_bbAddExclusionList, type)) {
+    if (!bitCompare(_bbAddExclusionList, enum_to_uint(type))) {
         _boundingBox.Add(bb);
         if (_parent) {
             _parent->getBoundingBox().setComputed(false);
@@ -339,7 +339,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
                                  const RenderStage& renderStage) {
     if (_reset[renderStage]) {
         _reset[renderStage] = false;
-        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(DEPTH_STAGE)) {
+        if (getParent() && !GFX_DEVICE.isCurrentRenderStage(RenderStage::DEPTH_STAGE)) {
             for (SceneGraphNode::NodeChildren::value_type& it :
                  getParent()->getChildren()) {
                 if (it.second->getComponent<AnimationComponent>()) {

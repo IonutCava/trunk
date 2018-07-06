@@ -52,7 +52,7 @@ class GenericVertexData : public VertexDataInterface {
               _componentsPerElement(0),
               _normalized(false),
               _stride(0),
-              _type(UNSIGNED_INT),
+              _type(GFXDataFormat::UNSIGNED_INT),
               _wasSet(false),
               _elementCountOffset(0),
               _dirty(false) {}

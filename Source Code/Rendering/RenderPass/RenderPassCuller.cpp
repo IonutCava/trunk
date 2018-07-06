@@ -77,13 +77,13 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode& currentNode,
             } else {
                 RenderingComponent* renderingCmp =
                     currentNode.getComponent<RenderingComponent>();
-                if (currentStage != SHADOW_STAGE ||
-                    (currentStage == SHADOW_STAGE &&
+                if (currentStage != RenderStage::SHADOW_STAGE ||
+                    (currentStage == RenderStage::SHADOW_STAGE &&
                      (renderingCmp ? renderingCmp->castsShadows() : false))) {
                     // Perform visibility test on current node
                     if (node->isInView(
                             sceneRenderState, currentNode,
-                            currentStage == SHADOW_STAGE ? false : true)) {
+                            currentStage == RenderStage::SHADOW_STAGE ? false : true)) {
                         // If the current node is visible, add it to the render
                         // queue
                         _visibleNodes.push_back(&currentNode);

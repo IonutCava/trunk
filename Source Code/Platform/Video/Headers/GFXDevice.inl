@@ -43,11 +43,18 @@ inline void GFXDevice::renderInViewport(const vec4<I32>& rect,
 }
 
 /// Compare the current render stage flag with the given mask
-inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
+inline bool GFXDevice::isCurrentRenderStage(U32 renderStageMask) {
     DIVIDE_ASSERT(
-        (renderStageMask & ~(INVALID_STAGE - 1)) == 0,
+        (renderStageMask & ~(enum_to_uint(RenderStage::INVALID_STAGE) - 1)) == 0,
         "GFXDevice error: render stage query received an invalid bitmask!");
-    return bitCompare(renderStageMask, _renderStage);
+    return bitCompare(renderStageMask, enum_to_uint(_renderStage));
+}
+
+inline bool GFXDevice::isCurrentRenderStage(RenderStage renderStage) {
+        DIVIDE_ASSERT(renderStage != RenderStage::INVALID_STAGE,
+        "GFXDevice error: render stage query received an invalid bitmask!");
+
+    return renderStage == _renderStage;
 }
 /// Change the width of rendered lines to the specified value
 inline void GFXDevice::setLineWidth(F32 width) {
@@ -90,16 +97,17 @@ inline RenderStage GFXDevice::setRenderStage(RenderStage stage) {
 }
 /// disable or enable a clip plane by index
 inline void GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
-    assert(index != ClipPlaneIndex_PLACEHOLDER);
-    if (state != _clippingPlanes[index].active()) {
-        _clippingPlanes[index].active(state);
+    assert(index != ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER);
+    U32 idx = enum_to_uint(index);
+    if (state != _clippingPlanes[idx].active()) {
+        _clippingPlanes[idx].active(state);
         _api->updateClipPlanes();
     }
 }
 /// modify a single clip plane by index
 inline void GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
-    assert(index != ClipPlaneIndex_PLACEHOLDER);
-    _clippingPlanes[index] = p;
+    assert(index != ClipPlaneIndex::ClipPlaneIndex_PLACEHOLDER);
+    _clippingPlanes[enum_to_uint(index)] = p;
     updateClipPlanes();
 }
 /// set a new list of clipping planes. The old one is discarded

@@ -211,21 +211,6 @@ void getPermutations(const stringImpl& inputString,
 
 bool isNumber(const stringImpl& s);
 
-template <typename T>
-stringImpl toString(T data);
-
-template <>
-stringImpl toString(U8 data);
-
-template <>
-stringImpl toString(U16 data);
-
-template <>
-stringImpl toString(I8 data);
-
-template <>
-stringImpl toString(I16 data);
-
 // U = to data type, T = from data type
 template <typename U, typename T>
 U convertData(const T& data);

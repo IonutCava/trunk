@@ -203,7 +203,7 @@ void WarScene::startSimulation() {
         stringImpl info(
             "Can't reload the navigation mesh this soon.\n Please wait \\[ ");
         info.append(
-            Util::toString(Time::MicrosecondsToSeconds(diffTime)).c_str());
+            std::to_string(Time::MicrosecondsToSeconds(diffTime)).c_str());
         info.append(" ] seconds more!");
 
         _infoBox->setMessage(info);
@@ -305,25 +305,25 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         if (i < 10) {
             baseNode = cylinder[1];
             currentMesh = cylinderMeshNW;
-            currentName = "Cylinder_NW_" + Util::toString((I32)i);
+            currentName = "Cylinder_NW_" + std::to_string((I32)i);
             currentPos.first = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
         } else if (i >= 10 && i < 20) {
             baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
-            currentName = "Cylinder_NE_" + Util::toString((I32)i);
+            currentName = "Cylinder_NE_" + std::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
         } else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
-            currentName = "Cylinder_SW_" + Util::toString((I32)i);
+            currentName = "Cylinder_SW_" + std::to_string((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
         } else {
             baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
-            currentName = "Cylinder_SE_" + Util::toString((I32)i);
+            currentName = "Cylinder_SE_" + std::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 30) - 50;
             currentPos.second = 200 - 40 * (i % 30) - 50;
         }
@@ -558,22 +558,22 @@ bool WarScene::initializeAI(bool continueOnErrors) {
                 currentMesh = soldierMesh1;
                 currentScale =
                     soldierNode1->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_1_" + Util::toString((I32)k) + "_" +
-                              Util::toString((I32)i);
+                currentName = "Soldier_1_" +std::to_string((I32)k) + "_" +
+                              std::to_string((I32)i);
             } else if (i >= 5 && i < 10) {
                 currentMesh = soldierMesh2;
                 currentScale =
                     soldierNode2->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_2_" + Util::toString((I32)k) + "_" +
-                              Util::toString((I32)i % 5);
+                currentName = "Soldier_2_" + std::to_string((I32)k) + "_" +
+                              std::to_string((I32)i % 5);
                 speed = 5.75f;
                 zFactor = 1;
             } else {
                 currentMesh = soldierMesh3;
                 currentScale =
                     soldierNode3->getComponent<PhysicsComponent>()->getScale();
-                currentName = "Soldier_3_" + Util::toString((I32)k) + "_" +
-                              Util::toString((I32)i % 10);
+                currentName = "Soldier_3_" + std::to_string((I32)k) + "_" +
+                              std::to_string((I32)i % 10);
                 speed = 5.35f;
                 zFactor = 2;
             }

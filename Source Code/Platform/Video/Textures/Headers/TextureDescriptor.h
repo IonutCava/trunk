@@ -64,7 +64,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         toggleMipMaps(true);
         toggleSRGBColorSpace(false);
         // The following 2 are mainly used by depthmaps for hardware comparisons
-        _cmpFunc = CMP_FUNC_LEQUAL;
+        _cmpFunc = ComparisonFunction::CMP_FUNC_LEQUAL;
         _useRefCompare = false;
         _borderColor.set(DefaultColors::BLACK());
     }
@@ -89,14 +89,14 @@ class SamplerDescriptor : public PropertyDescriptor {
         _borderColor.set(color);
     }
 
-    inline void setWrapMode(TextureWrap wrapUVW = TEXTURE_REPEAT) {
+    inline void setWrapMode(TextureWrap wrapUVW = TextureWrap::TEXTURE_REPEAT) {
         setWrapModeU(wrapUVW);
         setWrapModeV(wrapUVW);
         setWrapModeW(wrapUVW);
     }
 
     inline void setWrapMode(TextureWrap wrapU, TextureWrap wrapV,
-                            TextureWrap wrapW = TEXTURE_REPEAT) {
+                            TextureWrap wrapW = TextureWrap::TEXTURE_REPEAT) {
         setWrapModeU(wrapU);
         setWrapModeV(wrapV);
         setWrapModeW(wrapW);
@@ -112,8 +112,9 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void setWrapModeV(TextureWrap wrapV) { _wrapV = wrapV; }
     inline void setWrapModeW(TextureWrap wrapW) { _wrapW = wrapW; }
 
-    inline void setFilters(TextureFilter minFilter = TEXTURE_FILTER_LINEAR,
-                           TextureFilter magFilter = TEXTURE_FILTER_LINEAR) {
+    inline void setFilters(
+        TextureFilter minFilter = TextureFilter::TEXTURE_FILTER_LINEAR,
+        TextureFilter magFilter = TextureFilter::TEXTURE_FILTER_LINEAR) {
         setMinFilter(minFilter);
         setMagFilter(magFilter);
     }
@@ -128,11 +129,12 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline void toggleMipMaps(const bool state) {
         _generateMipMaps = state;
         if (state) {
-            if (_minFilter == TEXTURE_FILTER_LINEAR)
-                _minFilter = TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+            if (_minFilter == TextureFilter::TEXTURE_FILTER_LINEAR)
+                _minFilter = TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
         } else {
-            if (_minFilter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)
-                _minFilter = TEXTURE_FILTER_LINEAR;
+            if (_minFilter ==
+                TextureFilter::TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)
+                _minFilter = TextureFilter::TEXTURE_FILTER_LINEAR;
         }
     }
 
@@ -220,8 +222,9 @@ class TextureDescriptor : public PropertyDescriptor {
     };
 
     TextureDescriptor()
-        : TextureDescriptor(TextureType_PLACEHOLDER, GFXImageFormat_PLACEHOLDER,
-                            GDF_PLACEHOLDER) {}
+        : TextureDescriptor(TextureType::TextureType_PLACEHOLDER,
+                            GFXImageFormat::GFXImageFormat_PLACEHOLDER,
+                            GFXDataFormat::GDF_PLACEHOLDER) {}
 
     TextureDescriptor(TextureType type, GFXImageFormat internalFormat,
                       GFXDataFormat dataType)
@@ -257,7 +260,8 @@ class TextureDescriptor : public PropertyDescriptor {
     inline void setLayerCount(U8 layerCount) { _layerCount = layerCount; }
 
     inline bool isCubeTexture() const {
-        return (_type == TEXTURE_CUBE_MAP || _type == TEXTURE_CUBE_ARRAY);
+        return (_type == TextureType::TEXTURE_CUBE_MAP ||
+                _type == TextureType::TEXTURE_CUBE_ARRAY);
     }
 
     /// A TextureDescriptor will always have a sampler, even if it is the

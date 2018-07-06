@@ -9,7 +9,8 @@ namespace Divide {
 
 glIMPrimitive::glIMPrimitive() : IMPrimitive() {
     _imInterface.reset(new NS_GLIM::GLIM_BATCH());
-    _imInterface->SetVertexAttribLocation(VERTEX_POSITION_LOCATION);
+    _imInterface->SetVertexAttribLocation(
+        enum_to_uint(AttribLocation::VERTEX_POSITION_LOCATION));
 }
 
 glIMPrimitive::~glIMPrimitive() {}
@@ -20,7 +21,7 @@ void glIMPrimitive::beginBatch() {
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {
-    _imInterface->Begin(GLUtil::GL_ENUM_TABLE::glimPrimitiveType[type]);
+    _imInterface->Begin(GLUtil::GL_ENUM_TABLE::glimPrimitiveType[enum_to_uint(type)]);
 }
 
 void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {

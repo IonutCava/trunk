@@ -81,7 +81,7 @@ void ASIO::sendPacket(WorldPacket& p) const {
 
     if (_debugOutput) {
         std::cout << "ASIO: sent opcode [ 0x"
-                  << Util::toString(p.getOpcode()).c_str() << "]" << std::endl;
+                  << std::to_string(p.getOpcode()) << "]" << std::endl;
     }
 }
 

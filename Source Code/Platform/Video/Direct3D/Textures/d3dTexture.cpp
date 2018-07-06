@@ -5,6 +5,6 @@ namespace Divide {
 
 d3dTexture::d3dTexture(TextureType type, bool flipped)
     : Texture(type, flipped) {
-    _type = d3dTextureTypeTable[type];
+    _type = d3dTextureTypeTable[enum_to_uint(type)];
 }
 };

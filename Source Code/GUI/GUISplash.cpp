@@ -12,7 +12,7 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     SamplerDescriptor splashSampler;
     splashSampler.toggleMipMaps(true);
     splashSampler.setAnisotropy(16);
-    splashSampler.setWrapMode(TEXTURE_CLAMP);
+    splashSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP);
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setFlag(true);
     splashImage.setThreadedLoading(false);

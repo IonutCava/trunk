@@ -46,12 +46,12 @@ class Texture;
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlockDescriptor;
-enum RenderStage : I32;
-enum BlendProperty : I32;
+enum class RenderStage : U32;
+enum class BlendProperty : U32;
 
 class Material : public Resource {
    public:
-    enum BumpMethod {
+    enum class BumpMethod : U32 {
         BUMP_NONE = 0,    //<Use phong
         BUMP_NORMAL = 1,  //<Normal mapping
         BUMP_PARALLAX = 2,
@@ -60,7 +60,7 @@ class Material : public Resource {
     };
 
     /// How should each texture be added
-    enum TextureOperation {
+    enum class TextureOperation : U32 {
         TextureOperation_Multiply = 0x0,
         TextureOperation_Add = 0x1,
         TextureOperation_Subtract = 0x2,
@@ -72,7 +72,7 @@ class Material : public Resource {
         TextureOperation_PLACEHOLDER = 0x8
     };
 
-    enum TranslucencySource {
+    enum class TranslucencySource : U32 {
         TRANSLUCENT_DIFFUSE = 0,
         TRANSLUCENT_OPACITY_MAP,
         TRANSLUCENT_DIFFUSE_MAP,
@@ -80,7 +80,7 @@ class Material : public Resource {
     };
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
-    enum ShadingMode {
+    enum class ShadingMode : U32 {
         SHADING_FLAT = 0x1,
         SHADING_PHONG = 0x2,
         SHADING_BLINN_PHONG = 0x3,
@@ -122,7 +122,7 @@ class Material : public Resource {
     /// ShaderInfo stores information about the shader programs used by this
     /// material
     struct ShaderInfo {
-        enum ShaderCompilationStage {
+        enum class ShaderCompilationStage : U32 {
             SHADER_STAGE_REQUESTED = 0,
             SHADER_STAGE_QUEUED = 1,
             SHADER_STAGE_COMPUTED = 2,
@@ -143,11 +143,14 @@ class Material : public Resource {
         ShaderInfo() {
             _shaderRef = nullptr;
             _shader = "";
-            _shaderCompStage = ShaderCompilationStage_PLACEHOLDER;
+            _shaderCompStage =
+                ShaderCompilationStage::ShaderCompilationStage_PLACEHOLDER;
             _isCustomShader = false;
-            for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+            for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+                 ++i) {
                 memset(_shadingFunction[i], 0,
-                       BumpMethod_PLACEHOLDER * sizeof(U32));
+                       enum_to_uint(BumpMethod::BumpMethod_PLACEHOLDER) *
+                           sizeof(U32));
             }
         }
 
@@ -157,8 +160,11 @@ class Material : public Resource {
             _shader = other._shader;
             _shaderCompStage = other._shaderCompStage;
             _isCustomShader = other._isCustomShader;
-            for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
-                for (U8 j = 0; j < BumpMethod_PLACEHOLDER; ++j) {
+            for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+                 ++i) {
+                for (U32 j = 0;
+                     j < enum_to_uint(BumpMethod::BumpMethod_PLACEHOLDER);
+                     ++j) {
                     _shadingFunction[i][j] = other._shadingFunction[i][j];
                 }
             }
@@ -166,7 +172,9 @@ class Material : public Resource {
             return *this;
         }
 
-        U32 _shadingFunction[ShaderType_PLACEHOLDER][BumpMethod_PLACEHOLDER];
+        U32 _shadingFunction
+            [enum_to_uint_const(ShaderType::ShaderType_PLACEHOLDER)]
+            [enum_to_uint_const(BumpMethod::BumpMethod_PLACEHOLDER)];
 
        protected:
         StateTracker<bool> _trackedBools;
@@ -225,7 +233,8 @@ class Material : public Resource {
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     void setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     Texture* const texture,
-                    const TextureOperation& op = TextureOperation_Replace);
+                    const TextureOperation& op =
+                        TextureOperation::TextureOperation_Replace);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
     inline void addCustomTexture(Texture* texture, U32 offset) {
@@ -270,10 +279,10 @@ class Material : public Resource {
     }
 
     inline void addShaderDefines(const stringImpl& shaderDefines) {
-        addShaderDefines(FINAL_STAGE, shaderDefines);
-        addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
-        addShaderDefines(SHADOW_STAGE, shaderDefines);
-        addShaderDefines(REFLECTION_STAGE, shaderDefines);
+        addShaderDefines(RenderStage::FINAL_STAGE, shaderDefines);
+        addShaderDefines(RenderStage::Z_PRE_PASS_STAGE, shaderDefines);
+        addShaderDefines(RenderStage::SHADOW_STAGE, shaderDefines);
+        addShaderDefines(RenderStage::REFLECTION_STAGE, shaderDefines);
     }
 
     /// toggle multi-threaded shader loading on or off for this material
@@ -287,13 +296,13 @@ class Material : public Resource {
     inline void setShaderProgram(
         const stringImpl& shader, const bool computeOnAdd,
         const DELEGATE_CBK<>& shaderCompileCallback = DELEGATE_CBK<>()) {
-        setShaderProgram(shader, FINAL_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::FINAL_STAGE, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, Z_PRE_PASS_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::Z_PRE_PASS_STAGE, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, SHADOW_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::SHADOW_STAGE, computeOnAdd,
                          shaderCompileCallback);
-        setShaderProgram(shader, REFLECTION_STAGE, computeOnAdd,
+        setShaderProgram(shader, RenderStage::REFLECTION_STAGE, computeOnAdd,
                          shaderCompileCallback);
     }
     size_t setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,
@@ -320,7 +329,7 @@ class Material : public Resource {
     inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
         return _textures[textureUsage];
     }
-    ShaderInfo& getShaderInfo(RenderStage renderStage = FINAL_STAGE);
+    ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::FINAL_STAGE);
 
     inline const TextureOperation& getTextureOperation() const {
         return _operation;
@@ -384,8 +393,7 @@ class Material : public Resource {
     bool _doubleSided;
     bool _hardwareSkinning;  ///< Use shaders that have bone transforms
                              ///implemented
-    typedef hashMapImpl<RenderStage, ShaderInfo, hashAlg::hash<I32>>
-        shaderInfoMap;
+    typedef hashMapImpl<RenderStage, ShaderInfo> shaderInfoMap;
     shaderInfoMap _shaderInfo;
 
     bool _shaderThreadedLoad;

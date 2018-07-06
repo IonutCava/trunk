@@ -18,8 +18,7 @@ U8 InputInterface::init(Kernel& kernel, const stringImpl& windowTitle) {
                                      .getParam<stringImpl>("appTitle", "Divide")
                                      .c_str());
     // Create OIS input manager
-    pl.insert(
-        std::make_pair("WINDOW", stringAlg::fromBase(Util::toString(hwnd))));
+    pl.insert(std::make_pair("WINDOW", std::to_string(hwnd)));
     pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_mouse", "DISCL_NONEXCLUSIVE"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));

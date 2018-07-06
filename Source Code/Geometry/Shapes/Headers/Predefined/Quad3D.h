@@ -40,7 +40,7 @@ namespace Divide {
 class ShaderProgram;
 class Quad3D : public Object3D {
    public:
-    Quad3D(const bool doubleSided = true) : Object3D(QUAD_3D) {
+    Quad3D(const bool doubleSided = true) : Object3D(ObjectType::QUAD_3D) {
         vec3<F32> vertices[] = {vec3<F32>(-1.0f, 1.0f, 0.0f),  // TOP LEFT
                                 vec3<F32>(1.0f, 1.0f, 0.0f),  // TOP RIGHT
                                 vec3<F32>(-1.0f, -1.0f, 0.0f),  // BOTTOM LEFT

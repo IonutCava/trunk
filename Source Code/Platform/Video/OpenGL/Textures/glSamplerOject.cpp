@@ -19,41 +19,38 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
     glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_LOD, descriptor.maxLOD());
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MIN_FILTER,
-        GLUtil::GLenum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[descriptor
-                                                            .minFilter()]));
+        enum_to_uint(
+            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[enum_to_uint(descriptor
+                                                            .minFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_MAG_FILTER,
-        GLUtil::GLenum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[descriptor
-                                                            .magFilter()]));
+        enum_to_uint(
+            GLUtil::GL_ENUM_TABLE::glTextureFilterTable[enum_to_uint(descriptor
+                                                            .magFilter())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_S,
-        GLUtil::GLenum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapU()]));
+        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapU())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_T,
-        GLUtil::GLenum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapV()]));
+        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapV())]));
     glSamplerParameteri(
         _samplerID, GL_TEXTURE_WRAP_R,
-        GLUtil::GLenum_to_uint(
-            GLUtil::GL_ENUM_TABLE::glWrapTable[descriptor.wrapW()]));
-    if (descriptor.wrapU() == TEXTURE_CLAMP_TO_BORDER ||
-        descriptor.wrapV() == TEXTURE_CLAMP_TO_BORDER ||
-        descriptor.wrapW() == TEXTURE_CLAMP_TO_BORDER) {
+        enum_to_uint(GLUtil::GL_ENUM_TABLE::glWrapTable[enum_to_uint(descriptor.wrapW())]));
+    if (descriptor.wrapU() == TextureWrap::TEXTURE_CLAMP_TO_BORDER ||
+        descriptor.wrapV() == TextureWrap::TEXTURE_CLAMP_TO_BORDER ||
+        descriptor.wrapW() == TextureWrap::TEXTURE_CLAMP_TO_BORDER) {
         glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR,
                              descriptor.borderColor());
     }
 
     if (descriptor._useRefCompare) {
         glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_MODE,
-                            GLUtil::GLenum_to_uint(GL_COMPARE_R_TO_TEXTURE));
+                            enum_to_uint(GL_COMPARE_R_TO_TEXTURE));
         glSamplerParameteri(
             _samplerID, GL_TEXTURE_COMPARE_FUNC,
-            GLUtil::GLenum_to_uint(
-                GLUtil::GL_ENUM_TABLE::glCompareFuncTable[descriptor
-                                                              ._cmpFunc]));
+            enum_to_uint(
+                GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(descriptor
+                                                              ._cmpFunc)]));
     }
 
     if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {

@@ -78,23 +78,23 @@ void PostFX::init(const vec2<U16>& resolution) {
         postFXShader.setThreadedLoading(false);
         std::stringstream ss;
         ss << "TEX_BIND_POINT_SCREEN "
-           << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_SCREEN))
+           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_SCREEN))
            << ", ";
         ss << "TEX_BIND_POINT_BLOOM "
-           << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_BLOOM))
+           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_BLOOM))
            << ", ";
         ss << "TEX_BIND_POINT_SSAO "
-           << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_SSAO))
+           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_SSAO))
            << ", ";
         ss << "TEX_BIND_POINT_NOISE "
-           << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_NOISE))
+           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_NOISE))
            << ", ";
         ss << "TEX_BIND_POINT_BORDER "
-           << stringAlg::fromBase(Util::toString((U32)TEX_BIND_POINT_BORDER))
+           << stringAlg::fromBase(std::to_string((U32)TEX_BIND_POINT_BORDER))
            << ", ";
         ss << "TEX_BIND_POINT_UNDERWATER "
            << stringAlg::fromBase(
-                  Util::toString((U32)TEX_BIND_POINT_UNDERWATER));
+                  std::to_string((U32)TEX_BIND_POINT_UNDERWATER));
         postFXShader.setPropertyList(stringAlg::toBase(ss.str()));
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
@@ -109,25 +109,25 @@ void PostFX::init(const vec2<U16>& resolution) {
         _postProcessingShader->Uniform("_noiseTile", 0.05f);
         _postProcessingShader->Uniform("_noiseFactor", 0.02f);
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "Vignette"));  // 0
+            ShaderType::FRAGMENT_SHADER, "Vignette"));  // 0
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "Noise"));  // 1
+            ShaderType::FRAGMENT_SHADER, "Noise"));  // 1
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "Bloom"));  // 2
+            ShaderType::FRAGMENT_SHADER, "Bloom"));  // 2
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "SSAO"));  // 3
+            ShaderType::FRAGMENT_SHADER, "SSAO"));  // 3
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "screenUnderwater"));  // 4
+            ShaderType::FRAGMENT_SHADER, "screenUnderwater"));  // 4
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "screenNormal"));  // 5
+            ShaderType::FRAGMENT_SHADER, "screenNormal"));  // 5
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "ColorPassThrough"));  // 6
+            ShaderType::FRAGMENT_SHADER, "ColorPassThrough"));  // 6
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "outputScreen"));  // 7
+            ShaderType::FRAGMENT_SHADER, "outputScreen"));  // 7
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            FRAGMENT_SHADER, "outputDepth"));  // 8
+            ShaderType::FRAGMENT_SHADER, "outputDepth"));  // 8
         _shaderFunctionSelection.resize(
-            _postProcessingShader->GetSubroutineUniformCount(FRAGMENT_SHADER),
+            _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT_SHADER),
             0);
     }
 
@@ -239,7 +239,7 @@ void PostFX::displayScene() {
     } else {
         drawShader = _postProcessingShader;
         _postProcessingShader->bind();
-        _postProcessingShader->SetSubroutines(FRAGMENT_SHADER,
+        _postProcessingShader->SetSubroutines(ShaderType::FRAGMENT_SHADER,
                                               _shaderFunctionSelection);
 
 #ifdef _DEBUG

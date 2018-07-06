@@ -16,9 +16,7 @@ Texture::Texture(TextureType type, const bool flipped)
       _samplerDirty(true),
       _mipMapsDirty(true),
       _hasTransparency(false),
-      _power2Size(true)
-{
-}
+      _power2Size(true) {}
 
 Texture::~Texture() {}
 
@@ -30,14 +28,14 @@ bool Texture::generateHWResource(const stringImpl& name) {
         return false;
     }
     // Each texture type is loaded differently
-    if (_textureType == TEXTURE_2D) {
+    if (_textureType == TextureType::TEXTURE_2D) {
         // 2D Textures are loaded directly
-        if (!LoadFile(_textureType, getResourceLocation())) {
+        if (!LoadFile(enum_to_uint(_textureType), getResourceLocation())) {
             return false;
         }
         // Cube maps and texture arrays need to load each face/layer separately
-    } else if (_textureType == TEXTURE_CUBE_MAP ||
-               _textureType == TEXTURE_2D_ARRAY) {
+    } else if (_textureType == TextureType::TEXTURE_CUBE_MAP ||
+               _textureType == TextureType::TEXTURE_2D_ARRAY) {
         // Each texture face/layer must be in a comma separated list
         std::stringstream textureLocationList(getResourceLocation().c_str());
         // We loop over every texture in the above list and store it in this
@@ -57,14 +55,15 @@ bool Texture::generateHWResource(const stringImpl& name) {
             }
         }
         // Cube maps have exactly 6 faces, so make sure all of them are loaded
-        if (idx != 6 && _textureType == TEXTURE_CUBE_MAP) {
+        if (idx != 6 && _textureType == TextureType::TEXTURE_CUBE_MAP) {
             Console::errorfn(
                 Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"),
                 getResourceLocation().c_str());
             return false;
         }
         // Same logic applies to texture arrays
-        if (idx != _numLayers && _textureType == TEXTURE_2D_ARRAY) {
+        if (idx != _numLayers &&
+            _textureType == TextureType::TEXTURE_2D_ARRAY) {
             Console::errorfn(
                 Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"),
                 getResourceLocation().c_str());
@@ -134,22 +133,24 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     }
 
     // Create a new Rendering API-dependent texture object
-    GFXImageFormat internalFormat = RGB8;
+    GFXImageFormat internalFormat = GFXImageFormat::RGB8;
     // Select the proper color space internal format
     bool srgb = _samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {
-        case RED:
-            internalFormat = RED8;
+        case GFXImageFormat::RED:
+            internalFormat = GFXImageFormat::RED8;
             break;
-        case RG:
-            internalFormat = RG8;
+        case GFXImageFormat::RG:
+            internalFormat = GFXImageFormat::RG8;
             break;
-        case RGB:
-            internalFormat = srgb ? SRGB8 : RGB8;
+        case GFXImageFormat::RGB:
+            internalFormat =
+                srgb ? GFXImageFormat::SRGB8 : GFXImageFormat::RGB8;
             break;
-        case RGBA:
-            internalFormat = srgb ? SRGBA8 : RGBA8;
+        case GFXImageFormat::RGBA:
+            internalFormat =
+                srgb ? GFXImageFormat::SRGBA8 : GFXImageFormat::RGBA8;
             break;
     }
 

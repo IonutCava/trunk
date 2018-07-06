@@ -15,7 +15,8 @@ Material* ImplResourceLoader<Material>::operator()() {
         if (_descriptor.getFlag()) {
             ptr->setShaderProgram("", true);
         }
-        if (_descriptor.getEnumValue() == Object3D::OBJECT_FLAG_SKINNED) {
+        if (_descriptor.getEnumValue() ==
+            enum_to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
             ptr->setHardwareSkinning(true);
         }
     }

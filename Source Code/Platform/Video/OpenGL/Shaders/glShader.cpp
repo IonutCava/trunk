@@ -19,22 +19,22 @@ glShader::glShader(const stringImpl& name, const ShaderType& type,
             Console::errorfn(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),
                              type);
             break;
-        case VERTEX_SHADER:
+        case ShaderType::VERTEX_SHADER:
             _shader = glCreateShader(GL_VERTEX_SHADER);
             break;
-        case FRAGMENT_SHADER:
+        case ShaderType::FRAGMENT_SHADER:
             _shader = glCreateShader(GL_FRAGMENT_SHADER);
             break;
-        case GEOMETRY_SHADER:
+        case ShaderType::GEOMETRY_SHADER:
             _shader = glCreateShader(GL_GEOMETRY_SHADER);
             break;
-        case TESSELATION_CTRL_SHADER:
+        case ShaderType::TESSELATION_CTRL_SHADER:
             _shader = glCreateShader(GL_TESS_CONTROL_SHADER);
             break;
-        case TESSELATION_EVAL_SHADER:
+        case ShaderType::TESSELATION_EVAL_SHADER:
             _shader = glCreateShader(GL_TESS_EVALUATION_SHADER);
             break;
-        case COMPUTE_SHADER:
+        case ShaderType::COMPUTE_SHADER:
             _shader = glCreateShader(GL_COMPUTE_SHADER);
             break;
     };

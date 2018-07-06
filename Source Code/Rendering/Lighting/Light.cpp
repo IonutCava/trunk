@@ -14,7 +14,7 @@
 namespace Divide {
 
 Light::Light(const F32 range, const LightType& type)
-    : SceneNode(TYPE_LIGHT),
+    : SceneNode(SceneNodeType::TYPE_LIGHT),
       _type(type),
       _drawImpostor(false),
       _updateLightBB(false),
@@ -47,7 +47,7 @@ Light::Light(const F32 range, const LightType& type)
 
     memset(_dirty, true, PropertyType_PLACEHOLDER * sizeof(bool));
     _enabled = true;
-    _renderState.addToDrawExclusionMask(DEPTH_STAGE);
+    _renderState.addToDrawExclusionMask(enum_to_uint(RenderStage::DEPTH_STAGE));
 }
 
 Light::~Light() { unload(); }

@@ -21,19 +21,25 @@ glShaderProgram::glShaderProgram(const bool optimise)
     // each API has it's own invalid id. This is OpenGL's
     _shaderProgramID = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
-    _shaderStageTable[VERTEX_SHADER] = GL_VERTEX_SHADER;
-    _shaderStageTable[FRAGMENT_SHADER] = GL_FRAGMENT_SHADER;
-    _shaderStageTable[GEOMETRY_SHADER] = GL_GEOMETRY_SHADER;
-    _shaderStageTable[TESSELATION_CTRL_SHADER] = GL_TESS_CONTROL_SHADER;
-    _shaderStageTable[TESSELATION_EVAL_SHADER] = GL_TESS_EVALUATION_SHADER;
-    _shaderStageTable[COMPUTE_SHADER] = GL_COMPUTE_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::VERTEX_SHADER)] =
+        GL_VERTEX_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::FRAGMENT_SHADER)] =
+        GL_FRAGMENT_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::GEOMETRY_SHADER)] =
+        GL_GEOMETRY_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
+        GL_TESS_CONTROL_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
+        GL_TESS_EVALUATION_SHADER;
+    _shaderStageTable[enum_to_uint(ShaderType::COMPUTE_SHADER)] =
+        GL_COMPUTE_SHADER;
     // pointers to all of our shader stages
-    _shaderStage[VERTEX_SHADER] = nullptr;
-    _shaderStage[FRAGMENT_SHADER] = nullptr;
-    _shaderStage[GEOMETRY_SHADER] = nullptr;
-    _shaderStage[TESSELATION_CTRL_SHADER] = nullptr;
-    _shaderStage[TESSELATION_EVAL_SHADER] = nullptr;
-    _shaderStage[COMPUTE_SHADER] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::VERTEX_SHADER)] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::FRAGMENT_SHADER)] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::GEOMETRY_SHADER)] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] = nullptr;
+    _shaderStage[enum_to_uint(ShaderType::COMPUTE_SHADER)] = nullptr;
 }
 
 glShaderProgram::~glShaderProgram() {
@@ -75,7 +81,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
         if (!_loadedFromBinary &&
-            GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
+            GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
                 "Catalyst 14.x destroys uniforms on shader dump, for whatever "
@@ -208,7 +214,8 @@ void glShaderProgram::threadedLoad(const stringImpl& name) {
             _shaderProgramIDTemp = glCreateProgram();
         }
         // For every possible stage that the program might use
-        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+             ++i) {
             // Get the shader pointer for that stage
             Shader* shader = _shaderStage[i];
             // If a shader exists for said stage
@@ -240,14 +247,13 @@ void glShaderProgram::link() {
     // driver a hint to give us access to it later
     if (Config::USE_SHADER_BINARY) {
         glProgramParameteri(_shaderProgramIDTemp,
-                            GL_PROGRAM_BINARY_RETRIEVABLE_HINT,
-                            1);
+                            GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
     }
 #endif
     Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(),
                        _shaderProgramIDTemp);
 
-    /*glProgramParameteri(_shaderProgramIDTemp, 
+    /*glProgramParameteri(_shaderProgramIDTemp,
                         GL_PROGRAM_SEPARABLE,
                         1);
     */
@@ -257,7 +263,7 @@ void glShaderProgram::link() {
         // This isn't as optimised as it should/could be, but it works
         vectorImpl<const char*> vars;
         for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(strdup(("outData" + Util::toString(i)).c_str()));
+            vars.push_back(strdup(("outData" + std::to_string(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top
         // prio
@@ -301,7 +307,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
     // Check if we need to refresh an existing program, or create a new one
     bool refresh = false;
-    for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+    for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER); ++i) {
         if (_refreshStage[i]) {
             refresh = true;
             break;
@@ -312,7 +318,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
     // Load the program from the binary file, if available and allowed, to avoid
     // linking.
     if (Config::USE_SHADER_BINARY && !refresh &&
-        GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
+        GFX_DEVICE.getGPUVendor() == GPUVendor::GPU_VENDOR_NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
@@ -377,8 +383,9 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Mirror initial shader defines to match line count
         GLint initialOffset = 20;
-        if (GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {  // nVidia
-                                                               // specific
+        if (GFX_DEVICE.getGPUVendor() ==
+            GPUVendor::GPU_VENDOR_NVIDIA) {  // nVidia
+                                             // specific
             initialOffset += 6;
         }
         // Get all of the preprocessor defines and add them to the general
@@ -397,10 +404,13 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
         // Now that we have an offset for the general header, we need to move to
         // per-stage offsets
-        GLint lineCountOffset[ShaderType_PLACEHOLDER];
+        GLint lineCountOffset[enum_to_uint_const(
+            ShaderType::ShaderType_PLACEHOLDER)];
         // Every stage has it's own uniform specific header
-        stringImpl shaderSourceUniforms[ShaderType_PLACEHOLDER];
-        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+        stringImpl shaderSourceUniforms[enum_to_uint_const(
+            ShaderType::ShaderType_PLACEHOLDER)];
+        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+             ++i) {
             // We start off from the general offset
             lineCountOffset[i] = initialOffset;
             // And add every custom uniform specified (yet again, we add all the
@@ -415,8 +425,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
             lineCountOffset[i] += 42;
         }
         // GLSW directives are accounted here
-        lineCountOffset[VERTEX_SHADER] += 18;
-        lineCountOffset[FRAGMENT_SHADER] += 10;
+        lineCountOffset[enum_to_uint(ShaderType::VERTEX_SHADER)] += 18;
+        lineCountOffset[enum_to_uint(ShaderType::FRAGMENT_SHADER)] += 10;
 
         // Split the shader name to get the effect file name and the effect
         // properties
@@ -448,41 +458,43 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         }
 
         // Create an appropriate name for every shader stage
-        stringImpl shaderCompileName[ShaderType_PLACEHOLDER];
-        shaderCompileName[VERTEX_SHADER] =
+        stringImpl shaderCompileName[enum_to_uint_const(
+            ShaderType::ShaderType_PLACEHOLDER)];
+        shaderCompileName[enum_to_uint(ShaderType::VERTEX_SHADER)] =
             shaderName + ".Vertex" + vertexProperties;
-        shaderCompileName[FRAGMENT_SHADER] =
+        shaderCompileName[enum_to_uint(ShaderType::FRAGMENT_SHADER)] =
             shaderName + ".Fragment" + shaderProperties;
-        shaderCompileName[GEOMETRY_SHADER] =
+        shaderCompileName[enum_to_uint(ShaderType::GEOMETRY_SHADER)] =
             shaderName + ".Geometry" + shaderProperties;
-        shaderCompileName[TESSELATION_CTRL_SHADER] =
+        shaderCompileName[enum_to_uint(ShaderType::TESSELATION_CTRL_SHADER)] =
             shaderName + ".TessellationC" + shaderProperties;
-        shaderCompileName[TESSELATION_EVAL_SHADER] =
+        shaderCompileName[enum_to_uint(ShaderType::TESSELATION_EVAL_SHADER)] =
             shaderName + ".TessellationE" + shaderProperties;
-        shaderCompileName[COMPUTE_SHADER] =
+        shaderCompileName[enum_to_uint(ShaderType::COMPUTE_SHADER)] =
             shaderName + ".Compute" + shaderProperties;
 
         // For every stage
-        for (U8 i = 0; i < ShaderType_PLACEHOLDER; ++i) {
+        for (U32 i = 0; i < enum_to_uint(ShaderType::ShaderType_PLACEHOLDER);
+             ++i) {
             // Brute force conversion to an enum
-            ShaderType type = (ShaderType)(i);
+            ShaderType type = static_cast<ShaderType>(i);
 
             // If we request a refresh for the current stage, we need to have a
             // pointer for the stage's shader already
-            if (!_refreshStage[type]) {
+            if (!_refreshStage[i]) {
                 // Else, we ask the shader manager to see if it was previously
                 // loaded elsewhere
-                _shaderStage[type] = ShaderManager::getInstance().getShader(
-                    shaderCompileName[type], refresh);
+                _shaderStage[i] = ShaderManager::getInstance().getShader(
+                    shaderCompileName[i], refresh);
             }
 
             // If this is the first time this shader is loaded ...
-            if (!_shaderStage[type]) {
+            if (!_shaderStage[i]) {
                 // Use GLSW to read the appropriate part of the effect file
                 // based on the specified stage and properties
                 const char* sourceCode =
-                    glswGetShader(shaderCompileName[type].c_str(),
-                                  lineCountOffset[type], _refreshStage[type]);
+                    glswGetShader(shaderCompileName[i].c_str(),
+                                  lineCountOffset[i], _refreshStage[i]);
                 // GLSW may fail for various reasons (not a valid effect stage,
                 // invalid name, etc)
                 if (sourceCode) {
@@ -495,26 +507,25 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                         codeString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
                     Util::replaceStringInPlace(codeString,
                                                "//__CUSTOM_UNIFORMS__",
-                                               shaderSourceUniforms[type]);
+                                               shaderSourceUniforms[i]);
                     // Load our shader from the final string and save it in the
                     // manager in case a new Shader Program needs it
-                    _shaderStage[type] =
-                        ShaderManager::getInstance().loadShader(
-                            shaderCompileName[type], codeString, type,
-                            _refreshStage[type]);
+                    _shaderStage[i] = ShaderManager::getInstance().loadShader(
+                        shaderCompileName[i], codeString, type,
+                        _refreshStage[i]);
                 }
             }
             // Show a message, in debug, if we don't have a shader for this
             // stage
-            if (!_shaderStage[type]) {
+            if (!_shaderStage[i]) {
                 Console::d_printfn(Locale::get("WARN_GLSL_SHADER_LOAD"),
-                                   shaderCompileName[type].c_str());
+                                   shaderCompileName[i].c_str());
             } else {
                 // Try to compile the shader (it doesn't double compile shaders,
                 // so it's safe to call it multiple types)
-                if (!_shaderStage[type]->compile()) {
+                if (!_shaderStage[i]->compile()) {
                     Console::errorfn(Locale::get("ERROR_GLSL_SHADER_COMPILE"),
-                                     _shaderStage[type]->getShaderID());
+                                     _shaderStage[i]->getShaderID());
                 }
             }
         }
@@ -522,8 +533,8 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
 
     // try to link the program in a separate thread
     return GFX_DEVICE.loadInContext(/*_threadedLoading && !_loadedFromBinary ?
-                                       GFX_LOADING_CONTEXT : */
-                                    GFX_RENDERING_CONTEXT,
+                                       CurrentContext::GFX_LOADING_CONTEXT : */
+                                    CurrentContext::GFX_RENDERING_CONTEXT,
                                     DELEGATE_BIND(
                                         &glShaderProgram::threadedLoad, this,
                                         name));
@@ -601,6 +612,8 @@ void glShaderProgram::unbind(bool resetActiveProgram) {
     ShaderProgram::unbind(resetActiveProgram);
 }
 
+void glShaderProgram::registerShaderBuffer(ShaderBuffer& buffer) {}
+
 /// This is used to set all of the subroutine indices for the specified shader
 /// stage for this program
 void glShaderProgram::SetSubroutines(ShaderType type,
@@ -611,7 +624,7 @@ void glShaderProgram::SetSubroutines(ShaderType type,
                   "unbound or unlinked program!");
     // Validate data and send to GPU
     if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
-        glUniformSubroutinesuiv(_shaderStageTable[type],
+        glUniformSubroutinesuiv(_shaderStageTable[enum_to_uint(type)],
                                 (GLsizei)indices.size(), indices.data());
     }
 }
@@ -624,7 +637,8 @@ void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
 
     if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
-        glUniformSubroutinesuiv(_shaderStageTable[type], 1, value);
+        glUniformSubroutinesuiv(_shaderStageTable[enum_to_uint(type)], 1,
+                                value);
     }
 }
 
@@ -635,7 +649,7 @@ U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
                   "invalid program!");
 
     I32 subroutineCount = 0;
-    glGetProgramStageiv(_shaderProgramID, _shaderStageTable[type],
+    glGetProgramStageiv(_shaderProgramID, _shaderStageTable[enum_to_uint(type)],
                         GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
 
     return std::max(subroutineCount, 0);
@@ -649,7 +663,7 @@ U32 glShaderProgram::GetSubroutineUniformLocation(
                   "invalid program!");
 
     return glGetSubroutineUniformLocation(
-        _shaderProgramID, _shaderStageTable[type], name.c_str());
+        _shaderProgramID, _shaderStageTable[enum_to_uint(type)], name.c_str());
 }
 
 /// Get the index of the specified subroutine name for the specified stage. Not
@@ -660,8 +674,8 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type,
                   "glShaderProgram error: tried to query subroutines on an "
                   "invalid program!");
 
-    return glGetSubroutineIndex(_shaderProgramID, _shaderStageTable[type],
-                                name.c_str());
+    return glGetSubroutineIndex(
+        _shaderProgramID, _shaderStageTable[enum_to_uint(type)], name.c_str());
 }
 
 /// Set an uniform value
@@ -782,8 +796,7 @@ void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value,
 
     if (!_bound) {
         glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
-                                  rowMajor ? GL_TRUE : GL_FALSE,
-                                  value.mat);
+                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
     } else {
         glUniformMatrix3fv(location, 1, rowMajor ? GL_TRUE : GL_FALSE, value);
     }
@@ -798,10 +811,10 @@ void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value,
 
     if (!_bound) {
         glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
-                                  rowMajor ? GL_TRUE : GL_FALSE,
-                                  value.mat);
+                                  rowMajor ? GL_TRUE : GL_FALSE, value.mat);
     } else {
-        glUniformMatrix4fv(location, 1, rowMajor ? GL_TRUE : GL_FALSE, value.mat);
+        glUniformMatrix4fv(location, 1, rowMajor ? GL_TRUE : GL_FALSE,
+                           value.mat);
     }
 }
 
@@ -889,14 +902,12 @@ void glShaderProgram::Uniform(GLint location,
     }
 
     if (!_bound) {
-        glProgramUniformMatrix3fv(_shaderProgramID, location,
-                                  (GLsizei)values.size(),
-                                  rowMajor ? GL_TRUE : GL_FALSE,
-                                  values.front());
+        glProgramUniformMatrix3fv(
+            _shaderProgramID, location, (GLsizei)values.size(),
+            rowMajor ? GL_TRUE : GL_FALSE, values.front());
     } else {
         glUniformMatrix3fv(location, (GLsizei)values.size(),
-                           rowMajor ? GL_TRUE : GL_FALSE,
-                           values.front());
+                           rowMajor ? GL_TRUE : GL_FALSE, values.front());
     }
 }
 
@@ -909,14 +920,12 @@ void glShaderProgram::Uniform(GLint location,
     }
 
     if (!_bound) {
-        glProgramUniformMatrix4fv(_shaderProgramID, location,
-                                  (GLsizei)values.size(),
-                                  rowMajor ? GL_TRUE : GL_FALSE,
-                                  values.front());
+        glProgramUniformMatrix4fv(
+            _shaderProgramID, location, (GLsizei)values.size(),
+            rowMajor ? GL_TRUE : GL_FALSE, values.front());
     } else {
         glUniformMatrix4fv(location, (GLsizei)values.size(),
-                           rowMajor ? GL_TRUE : GL_FALSE,
-                           values.front());
+                           rowMajor ? GL_TRUE : GL_FALSE, values.front());
     }
 }
 

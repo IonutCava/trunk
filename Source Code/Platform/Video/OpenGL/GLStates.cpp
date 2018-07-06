@@ -162,7 +162,7 @@ void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
     const PlaneList& list = GFX_DEVICE.getClippingPlanes();
     // For every clip plane that we support (usually 6)
-    for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
+    for (U32 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
         // Check its state
         const bool& clipPlaneActive = list[i].active();
         // And compare it with OpenGL's current state
@@ -444,30 +444,30 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     // Check separate blend functions
     if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
         glBlendFuncSeparate(
-            GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendSrc],
-            GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendDest],
+            GLUtil::GL_ENUM_TABLE::glBlendTable[enum_to_uint(newDescriptor._blendSrc)],
+            GLUtil::GL_ENUM_TABLE::glBlendTable[enum_to_uint(newDescriptor._blendDest)],
             GL_ONE, GL_ZERO);
     }
     // Check the blend equation
     if (SHOULD_TOGGLE(_blendOp)) {
         glBlendEquation(
-            GLUtil::GL_ENUM_TABLE::glBlendOpTable[newDescriptor._blendOp]);
+            GLUtil::GL_ENUM_TABLE::glBlendOpTable[enum_to_uint(newDescriptor._blendOp)]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
     if (SHOULD_TOGGLE(_cullMode)) {
         glCullFace(
-            GLUtil::GL_ENUM_TABLE::glCullModeTable[newDescriptor._cullMode]);
+            GLUtil::GL_ENUM_TABLE::glCullModeTable[enum_to_uint(newDescriptor._cullMode)]);
     }
     // Check rasterization mode
     if (SHOULD_TOGGLE(_fillMode)) {
         glPolygonMode(
             GL_FRONT_AND_BACK,
-            GLUtil::GL_ENUM_TABLE::glFillModeTable[newDescriptor._fillMode]);
+            GLUtil::GL_ENUM_TABLE::glFillModeTable[enum_to_uint(newDescriptor._fillMode)]);
     }
     // Check the depth function
     if (SHOULD_TOGGLE(_zFunc)) {
         glDepthFunc(
-            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._zFunc]);
+            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(newDescriptor._zFunc)]);
     }
     // Check if we need to toggle the depth mask
     if (SHOULD_TOGGLE(_zWriteEnable)) {
@@ -480,19 +480,19 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     // Stencil function is dependent on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
         glStencilFunc(
-            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor
-                                                          ._stencilFunc],
+            GLUtil::GL_ENUM_TABLE::glCompareFuncTable[enum_to_uint(newDescriptor
+                                                          ._stencilFunc)],
             newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
         glStencilOp(
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor
-                                                        ._stencilFailOp],
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor
-                                                        ._stencilZFailOp],
-            GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor
-                                                        ._stencilPassOp]);
+            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
+                                                        ._stencilFailOp)],
+            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
+                                                        ._stencilZFailOp)],
+            GLUtil::GL_ENUM_TABLE::glStencilOpTable[enum_to_uint(newDescriptor
+                                                        ._stencilPassOp)]);
     }
     // Check and set polygon offset
     if (SHOULD_TOGGLE(_zBias)) {

@@ -6,7 +6,8 @@
 
 namespace Divide {
 
-ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS) {
+ForwardPlusRenderer::ForwardPlusRenderer()
+    : Renderer(RendererType::RENDERER_FORWARD_PLUS) {
     _opaqueGrid.reset(/*MemoryManager_NEW*/ new LightGrid());
     _transparentGrid.reset(/*MemoryManager_NEW*/ new LightGrid());
     /// Initialize our depth ranges construction shader (see LightManager.cpp
@@ -15,20 +16,22 @@ ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS) {
 
     stringImpl gridDim("LIGHT_GRID_TILE_DIM_X ");
     gridDim.append(
-        Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_X).c_str());
+        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X).c_str());
     gridDim.append(",LIGHT_GRID_TILE_DIM_Y ");
     gridDim.append(
-        Util::toString(Config::Lighting::LIGHT_GRID_TILE_DIM_Y).c_str());
+        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y).c_str());
     rangesDesc.setPropertyList(gridDim);
 
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
     _depthRangesConstructProgram->UniformTexture("depthTex", 0);
     /// Depth ranges are used for grid based light culling
     SamplerDescriptor depthRangesSampler;
-    depthRangesSampler.setFilters(TEXTURE_FILTER_NEAREST);
-    depthRangesSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthRangesSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
+    depthRangesSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthRangesSampler.toggleMipMaps(false);
-    TextureDescriptor depthRangesDescriptor(TEXTURE_2D, RGBA32F, FLOAT_32);
+    TextureDescriptor depthRangesDescriptor(TextureType::TEXTURE_2D,
+                                            GFXImageFormat::RGBA32F,
+                                            GFXDataFormat::FLOAT_32);
     depthRangesDescriptor.setSampler(depthRangesSampler);
     // The down-sampled depth buffer is used to cull screen space lights for our
     // Forward+ rendering algorithm.
@@ -128,13 +131,14 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
         _depthRangesConstructProgram->bind();
         _depthRangesConstructProgram->Uniform(
             "dvd_ProjectionMatrixInverse",
-            GFX_DEVICE.getMatrix(PROJECTION_INV_MATRIX));
+            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV_MATRIX));
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)
             ->Bind(ShaderProgram::TEXTURE_UNIT0, TextureDescriptor::Depth);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _depthRangesConstructProgram);
 
-        _depthRanges->ReadData(RG, FLOAT_32, &depthRanges[0]);
+        _depthRanges->ReadData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32,
+                               &depthRanges[0]);
     }
     _depthRanges->End();
 }

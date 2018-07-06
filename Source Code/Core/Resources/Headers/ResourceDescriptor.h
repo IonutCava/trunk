@@ -68,7 +68,7 @@ class ResourceDescriptor {
     explicit ResourceDescriptor(const stringImpl& name = "default",
                                 const stringImpl& resourceLocation = "default",
                                 bool flag = false, U32 ID = 0,
-                                U8 enumValue = 0);
+                                U32 enumValue = 0);
 
     virtual ~ResourceDescriptor();
 
@@ -93,7 +93,7 @@ class ResourceDescriptor {
     }
     inline bool getFlag() const { return _flag; }
     inline bool getThreaded() const { return _threaded; }
-    inline U8 getEnumValue() const { return _enumValue; }
+    inline U32 getEnumValue() const { return _enumValue; }
     inline U32 getID() const { return _ID; }
     inline P32 getMask() const { return _mask; }
 
@@ -103,7 +103,7 @@ class ResourceDescriptor {
     inline void setResourceLocation(const stringImpl& resourceLocation) {
         _resourceLocation = resourceLocation;
     }
-    inline void setEnumValue(U8 enumValue) { _enumValue = enumValue; }
+    inline void setEnumValue(U32 enumValue) { _enumValue = enumValue; }
     inline void setName(const stringImpl& name) { _name = name; }
     inline void setFlag(bool flag) { _flag = flag; }
     inline void setID(U32 ID) { _ID = ID; }
@@ -130,7 +130,7 @@ class ResourceDescriptor {
     U32 _ID;
     /// 4 bool values representing  ... anything ...
     P32 _mask;
-    U8 _enumValue;
+    U32 _enumValue;
     /// Use for extra resource properties: textures, samplers, terrain etc.
     PropertyDescriptor* _propertyDescriptor;
 };

@@ -49,7 +49,8 @@ struct CameraFrustum {
 F32 _anaglyphIOD = -0.01f;
 };
 
-GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE) 
+GFXDevice::GFXDevice()
+    : _api(nullptr), _renderStage(RenderStage::INVALID_STAGE)
 {
     // Hash values
     _state2DRenderingHash = 0;
@@ -81,8 +82,8 @@ GFXDevice::GFXDevice() : _api(nullptr), _renderStage(INVALID_STAGE)
     _rasterizationEnabled = true;
     _enablePostProcessing = false;
     // Enumerated Types
-    _shadowDetailLevel = DETAIL_HIGH;
-    _GPUVendor = GPU_VENDOR_PLACEHOLDER;
+    _shadowDetailLevel = RenderDetailLevel::DETAIL_HIGH;
+    _GPUVendor = GPUVendor::GPU_VENDOR_PLACEHOLDER;
     _API_ID = GFX_RENDER_API_PLACEHOLDER;
     // Utility cameras
     _2DCamera = MemoryManager_NEW FreeFlyCamera();
@@ -237,12 +238,14 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     bool isValidFB = true;
     if (hasColor) {
         // We only need the color attachment
-        isValidFB = (colorAttachment->getTextureType() == TEXTURE_CUBE_MAP);
+        isValidFB = (colorAttachment->getTextureType() ==
+                     TextureType::TEXTURE_CUBE_MAP);
     } else {
         // We don't have a color attachment, so we require a cube map depth
         // attachment
-        isValidFB =
-            (hasDepth && depthAttachment->getTextureType() == TEXTURE_CUBE_MAP);
+        isValidFB = (hasDepth &&
+                     depthAttachment->getTextureType() ==
+                         TextureType::TEXTURE_CUBE_MAP);
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -410,24 +413,23 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
 /// Return a GFXDevice specific matrix or a derivative of it
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
     // The matrix names are self-explanatory
-    if (mode == VIEW_PROJECTION_MATRIX) {
+    if (mode == MATRIX_MODE::VIEW_PROJECTION_MATRIX) {
         mat.set(_gpuBlock._ViewProjectionMatrix);
-    } else if (mode == VIEW_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW_MATRIX) {
         mat.set(_gpuBlock._ViewMatrix);
-    } else if (mode == PROJECTION_MATRIX) {
+    } else if (mode == MATRIX_MODE::PROJECTION_MATRIX) {
         mat.set(_gpuBlock._ProjectionMatrix);
-    } else if (mode == TEXTURE_MATRIX) {
+    } else if (mode == MATRIX_MODE::TEXTURE_MATRIX) {
         mat.identity();
         Console::errorfn(Locale::get("ERROR_TEXTURE_MATRIX_ACCESS"));
-    } else if (mode == VIEW_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW_INV_MATRIX) {
         _gpuBlock._ViewMatrix.getInverse(mat);
-    } else if (mode == PROJECTION_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::PROJECTION_INV_MATRIX) {
         _gpuBlock._ProjectionMatrix.getInverse(mat);
-    } else if (mode == VIEW_PROJECTION_INV_MATRIX) {
+    } else if (mode == MATRIX_MODE::VIEW_PROJECTION_INV_MATRIX) {
         _gpuBlock._ViewProjectionMatrix.getInverse(mat);
     } else {
-        DIVIDE_ASSERT(
-            mode == -1,
+        DIVIDE_ASSERT(false,
             "GFXDevice error: attempted to query an invalid matrix target!");
     }
 }
@@ -739,7 +741,8 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     }
     // If we want and can call the function in the loading thread, add it to the
     // lock-free, single-producer, single-consumer queue
-    if (context == GFX_LOADING_CONTEXT && _state.loadingThreadAvailable()) {
+    if (context == CurrentContext::GFX_LOADING_CONTEXT && 
+        _state.loadingThreadAvailable()) {
         while (!_state.getLoadQueue().push(callback))
             ;
     } else {
@@ -873,21 +876,21 @@ void GFXDevice::drawBox3D(const vec3<F32>& min, const vec3<F32>& max,
     // Set it's color
     priv->attribute4ub("inColorData", color);
     // Draw the bottom loop
-    priv->begin(LINE_LOOP);
+    priv->begin(PrimitiveType::LINE_LOOP);
     priv->vertex(min.x, min.y, min.z);
     priv->vertex(max.x, min.y, min.z);
     priv->vertex(max.x, min.y, max.z);
     priv->vertex(min.x, min.y, max.z);
     priv->end();
     // Draw the top loop
-    priv->begin(LINE_LOOP);
+    priv->begin(PrimitiveType::LINE_LOOP);
     priv->vertex(min.x, max.y, min.z);
     priv->vertex(max.x, max.y, min.z);
     priv->vertex(max.x, max.y, max.z);
     priv->vertex(min.x, max.y, max.z);
     priv->end();
     // Connect the top to the bottom
-    priv->begin(LINES);
+    priv->begin(PrimitiveType::LINES);
     priv->vertex(min.x, min.y, min.z);
     priv->vertex(min.x, max.y, min.z);
     priv->vertex(max.x, min.y, min.z);
@@ -931,7 +934,7 @@ void GFXDevice::drawLines(const vectorImpl<Line>& lines,
     priv->beginBatch();
     priv->attribute4ub("inColorData", lines[0]._color);
     // Set the mode to line rendering
-    priv->begin(LINES);
+    priv->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : lines) {
         priv->attribute4ub("inColorData", line._color);
@@ -953,7 +956,8 @@ void GFXDevice::Screenshot(char* filename) {
     U32 bufferSize = resolution.width * resolution.height * 4;
     U8* imageData = MemoryManager_NEW U8[bufferSize];
     // Read the pixels from the main render target (RGBA16F)
-    _renderTarget[RENDER_TARGET_SCREEN]->ReadData(RGBA, UNSIGNED_BYTE,
+    _renderTarget[RENDER_TARGET_SCREEN]->ReadData(GFXImageFormat::RGBA,
+                                                  GFXDataFormat::UNSIGNED_BYTE,
                                                   imageData);
     // Save to file
     ImageTools::SaveSeries(filename,

@@ -42,9 +42,9 @@ class d3dPixelBuffer : public PixelBuffer {
     ~d3dPixelBuffer() { Destroy(); }
 
     bool Create(U16 width, U16 height, U16 depth = 0,
-                GFXImageFormat internalFormatEnum = RGBA8,
-                GFXImageFormat formatEnum = RGBA,
-                GFXDataFormat dataTypeEnum = FLOAT_32) {
+                GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,
+                GFXImageFormat formatEnum = GFXImageFormat::RGBA,
+                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) {
         return true;
     }
 

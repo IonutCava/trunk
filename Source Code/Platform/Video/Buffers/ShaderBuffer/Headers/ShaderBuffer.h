@@ -73,12 +73,32 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
         UpdateData(0, _bufferSize, data);
     }
 
-    virtual bool BindRange(ShaderBufferLocation bindIndex,
+    virtual bool BindRange(U32 bindIndex,
                            U32 offsetElementCount,
-                           U32 rangeElementCount) const = 0;
-    virtual bool Bind(ShaderBufferLocation bindIndex) const = 0;
+                           U32 rangeElementCount) = 0;
+
+    inline bool BindRange(ShaderBufferLocation bindIndex,
+                          U32 offsetElementCount,
+                          U32 rangeElementCount) {
+        return BindRange(enum_to_uint(bindIndex),
+                         offsetElementCount,
+                         rangeElementCount);
+
+    }
+
+    virtual bool Bind(U32 bindIndex) = 0;
+
+    inline bool Bind(ShaderBufferLocation bindIndex) {
+        return Bind(enum_to_uint(bindIndex));
+    }
+
+    inline void PrintInfo(const ShaderProgram *shaderProgram,
+                          ShaderBufferLocation bindIndex) {
+        PrintInfo(shaderProgram, enum_to_uint(bindIndex));
+    }
+
     virtual void PrintInfo(const ShaderProgram *shaderProgram,
-                           ShaderBufferLocation bindIndex) = 0;
+                           U32 bindIndex) = 0;
 
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }

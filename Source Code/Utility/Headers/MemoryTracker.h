@@ -112,13 +112,13 @@ class MemoryTracker {
         MemoryTracker::Lock lock(*this);
         WriteLock w_lock(_mutex);
         if (!_map.empty()) {
-            output.append(Util::toString(_map.size()) +
+            output.append(std::to_string(_map.size()) +
                           " memory leaks detected\n");
             for (iterator it = std::begin(_map); it != std::end(_map); ++it) {
                 const Entry& entry = it->second;
                 output.append(entry.File());
                 output.append(", ");
-                output.append(Util::toString(entry.Line()));
+                output.append(std::to_string(entry.Line()));
                 output.append("\n");
                 sizeLeaked += entry.Size();
             }

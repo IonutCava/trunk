@@ -6,7 +6,7 @@
 namespace Divide {
 namespace AI {
 
-const char* GOAPFactName(GOAPFact fact) { return Util::toString(fact).c_str(); }
+const char* GOAPFactName(GOAPFact fact) { return std::to_string(fact).c_str(); }
 
 GOAPGoal::GOAPGoal(const std::string& name)
     : goap::WorldState(), _relevancy(0.0f) {

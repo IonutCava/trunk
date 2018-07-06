@@ -74,7 +74,8 @@ class RenderingComponent : public SGNComponent {
     U8 lodLevel() const;
     void lodLevel(U8 LoD);
 
-    ShaderProgram* const getDrawShader(RenderStage renderStage = FINAL_STAGE);
+    ShaderProgram* const getDrawShader(
+        RenderStage renderStage = RenderStage::FINAL_STAGE);
     size_t getDrawStateHash(RenderStage renderStage);
 
     inline const vectorImpl<GenericDrawCommand>& getDrawCommands() const {

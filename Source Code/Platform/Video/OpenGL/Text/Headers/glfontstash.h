@@ -103,13 +103,12 @@ static void glfons__renderDelete(void* userPtr)
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex)
         glDeleteTextures(1, &gl->tex);
-    if(gl->glfons_vboID)
-        glDeleteBuffers(1, &gl->glfons_vboID);
     if(gl->glfons_vaoID)
         glDeleteVertexArrays(1, &gl->glfons_vaoID);
     gl->tex = 0;
-    gl->glfons_vboID = 0;
     gl->glfons_vaoID = 0;
+
+    Divide::GLUtil::freeBuffer(gl->glfons_vboID);
     free(gl);
 }
 

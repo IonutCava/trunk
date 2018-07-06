@@ -56,7 +56,7 @@ namespace Divide {
 class SubMesh;
 class Mesh : public Object3D {
    public:
-    Mesh(ObjectFlag flag = OBJECT_FLAG_NONE);
+    Mesh(ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
 
     virtual ~Mesh();
 

@@ -54,9 +54,7 @@ class Variable {
     virtual void setValue(D32 dValue) { _dValue = dValue; }
 
     virtual stringImpl toString() const {
-        std::ostringstream oss;
-        oss << _dValue;
-        return stringAlg::toBase(oss.str());
+        return stringAlg::toBase(std::to_string(_dValue));
     }
 
     virtual void update(){};
@@ -194,7 +192,7 @@ class VariableEffect {
         MapVariables::const_iterator iterVars;
         for (iterVars = std::begin(_mapVariables);
              iterVars != std::end(_mapVariables); ++iterVars) {
-            str += iterVars->first + ":" + iterVars->second->toString() + " ";
+           str += iterVars->first + ":" + iterVars->second->toString() + " ";
         }
         return str;
     }

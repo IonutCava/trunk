@@ -11,10 +11,13 @@ namespace Divide {
 Texture* ImplResourceLoader<Texture>::operator()() {
     Texture* ptr = nullptr;
 
-    if (_descriptor.getEnumValue() == TEXTURE_CUBE_MAP) {
+    if (_descriptor.getEnumValue() ==
+        enum_to_uint(TextureType::TEXTURE_CUBE_MAP)) {
         ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
-    } else if (_descriptor.getEnumValue() == TEXTURE_2D_ARRAY ||
-               _descriptor.getEnumValue() == TEXTURE_2D_ARRAY_MS) {
+    } else if (_descriptor.getEnumValue() ==
+                   enum_to_uint(TextureType::TEXTURE_2D_ARRAY) ||
+               _descriptor.getEnumValue() ==
+                   enum_to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
         ptr = GFX_DEVICE.newTextureArray(_descriptor.getFlag());
         ptr->setNumLayers(_descriptor.getID());
     } else {

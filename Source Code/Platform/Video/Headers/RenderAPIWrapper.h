@@ -129,7 +129,8 @@ struct GenericDrawCommand {
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
     inline PrimitiveType primitiveType() const { return _type; }
 
-    GenericDrawCommand() : GenericDrawCommand(TRIANGLE_STRIP, 0, 0) {}
+    GenericDrawCommand()
+        : GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 0) {}
 
     GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count,
                        U32 instanceCount = 1)
@@ -159,7 +160,7 @@ struct GenericDrawCommand {
     }
 };
 
-enum ShaderType : I32;
+enum class ShaderType : U32;
 class Shader;
 class Texture;
 class IMPrimitive;
@@ -194,7 +195,7 @@ class RenderAPIWrapper {
                                 const bool persistentMapped = true) const = 0;
     virtual GenericVertexData* newGVD(
         const bool persistentMapped = false) const = 0;
-    virtual PixelBuffer* newPB(const PBType& type = PB_TEXTURE_2D) const = 0;
+    virtual PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
     virtual Texture* newTextureArray(const bool flipped = false) const = 0;
     virtual Texture* newTexture2D(const bool flipped = false) const = 0;
     virtual Texture* newTextureCubemap(const bool flipped = false) const = 0;

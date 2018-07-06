@@ -8,7 +8,7 @@
 namespace Divide {
 
 Mesh::Mesh(ObjectFlag flag)
-    : Object3D(MESH, flag),
+    : Object3D(ObjectType::MESH, flag),
       _visibleToNetwork(true),
       _playAnimations(true),
       _playAnimationsCurrent(false) {
@@ -41,8 +41,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMeshRefMap::value_type& it : _subMeshRefMap) {
-        sgn.addNode(it.second,
-                    sgn.getName() + "_" + Util::toString(it.first));
+        sgn.addNode(it.second, sgn.getName() + "_" + std::to_string(it.first));
     }
 
     Object3D::postLoad(sgn);
@@ -53,7 +52,8 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
-    if (bitCompare(getFlagMask(), OBJECT_FLAG_SKINNED)) {
+    if (bitCompare(getFlagMask(),
+                   enum_to_uint(ObjectFlag::OBJECT_FLAG_SKINNED))) {
         bool playAnimation =
             (_playAnimations &&
              ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));

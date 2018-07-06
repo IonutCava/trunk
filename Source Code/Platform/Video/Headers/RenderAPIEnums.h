@@ -32,6 +32,8 @@
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 
+#include "Platform/DataTypes/Headers/PlatformDefines.h"
+
 #ifndef toBit
 #define toBit(X) (1 << (X))
 #endif
@@ -39,7 +41,7 @@
 namespace Divide {
 
 /// State the various attribute locations to use in shaders with VAO/VB's
-enum AttribLocation {
+enum class AttribLocation : U32 {
     VERTEX_POSITION_LOCATION = 0,
     VERTEX_COLOR_LOCATION = 1,
     VERTEX_NORMAL_LOCATION = 2,
@@ -50,7 +52,7 @@ enum AttribLocation {
     VERTEX_BONE_INDICE_LOCATION = 7
 };
 
-enum ShaderBufferLocation {
+enum class ShaderBufferLocation : U32 {
     SHADER_BUFFER_GPU_BLOCK = 0,
     SHADER_BUFFER_LIGHT_NORMAL = 1,
     SHADER_BUFFER_LIGHT_SHADOW = 2,
@@ -61,14 +63,14 @@ enum ShaderBufferLocation {
 
 /// Fixed pipeline functionality should be avoided. Both D3D and OGL should have
 /// these matrices
-enum MATRIX_MODE {
+enum class MATRIX_MODE : U32 {
     VIEW_MATRIX = 0,
     VIEW_INV_MATRIX = 1,
     PROJECTION_MATRIX = 2,
     PROJECTION_INV_MATRIX = 3,
     VIEW_PROJECTION_MATRIX = 4,
-    VIEW_PROJECTION_INV_MATRIX =
-        5,  //<ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
+    // ViewProjection matrix's invers: inverse (VIEW_PROJECTION_MATRIX)
+    VIEW_PROJECTION_INV_MATRIX = 5,  
     TEXTURE_MATRIX = 6
 };
 
@@ -78,9 +80,12 @@ enum MATRIX_MODE {
 /// 2 rendering contexts with a single
 /// display list, one for rendering and one for loading seems the best approach
 /// (for now)
-enum CurrentContext { GFX_RENDERING_CONTEXT = 0, GFX_LOADING_CONTEXT };
+enum class CurrentContext : U32 { 
+    GFX_RENDERING_CONTEXT = 0, 
+    GFX_LOADING_CONTEXT = 1
+};
 
-enum RenderStage {
+enum class RenderStage : U32 {
     DEFERRED_STAGE = toBit(1),
     SHADOW_STAGE = toBit(2),
     REFLECTION_STAGE = toBit(3),
@@ -93,7 +98,7 @@ enum RenderStage {
     DEPTH_STAGE = SHADOW_STAGE | Z_PRE_PASS_STAGE
 };
 
-enum ClipPlaneIndex {
+enum class ClipPlaneIndex : U32{
     CLIP_PLANE_0 = 0,
     CLIP_PLANE_1 = 1,
     CLIP_PLANE_2 = 2,
@@ -103,9 +108,13 @@ enum ClipPlaneIndex {
     ClipPlaneIndex_PLACEHOLDER = 6,
 };
 
-enum PBType { PB_TEXTURE_1D, PB_TEXTURE_2D, PB_TEXTURE_3D };
+enum class PBType : U32 { 
+    PB_TEXTURE_1D, 
+    PB_TEXTURE_2D, 
+    PB_TEXTURE_3D 
+};
 
-enum PrimitiveType {
+enum class PrimitiveType : U32 {
     API_POINTS = 0x0000,
     LINES = 0x0001,
     LINE_LOOP = 0x0002,
@@ -118,7 +127,7 @@ enum PrimitiveType {
     PrimitiveType_PLACEHOLDER = 0x009
 };
 
-enum RenderDetailLevel {
+enum class RenderDetailLevel : U32 {
     DETAIL_LOW = 0,
     DETAIL_MEDIUM = 1,
     DETAIL_HIGH = 2,
@@ -127,7 +136,7 @@ enum RenderDetailLevel {
 
 /// Specifies how the red, green, blue, and alpha source blending factors are
 /// computed.
-enum BlendProperty {
+enum class BlendProperty : U32 {
     BLEND_PROPERTY_ZERO = 0,
     BLEND_PROPERTY_ONE,
     BLEND_PROPERTY_SRC_COLOR,
@@ -150,7 +159,7 @@ enum BlendProperty {
 };
 
 /// Specifies how source and destination colors are combined.
-enum BlendOperation {
+enum class BlendOperation : U32 {
     /// The ADD equation is useful for antialiasing and transparency, among
     /// other things.
     BLEND_OPERATION_ADD = 0,
@@ -170,7 +179,7 @@ enum BlendOperation {
 
 /// Valid comparison functions for most states
 /// YYY = test value using this function
-enum ComparisonFunction {
+enum class ComparisonFunction : U32 {
     /// Never passes.
     CMP_FUNC_NEVER = 0,
     /// Passes if the incoming YYY value is less than the stored YYY value.
@@ -194,7 +203,7 @@ enum ComparisonFunction {
 };
 
 /// Specifies whether front- or back-facing facets are candidates for culling.
-enum CullMode {
+enum class CullMode : U32 {
     CULL_MODE_NONE = 0,
     /// Cull Back facing polygons
     CULL_MODE_CW,
@@ -207,7 +216,7 @@ enum CullMode {
 };
 
 /// Available shader stages
-enum ShaderType {
+enum class ShaderType : U32 {
     FRAGMENT_SHADER = 0,
     VERTEX_SHADER = 1,
     GEOMETRY_SHADER = 2,
@@ -218,7 +227,7 @@ enum ShaderType {
 };
 
 /// Valid front and back stencil test actions
-enum StencilOperation {
+enum class StencilOperation : U32 {
     /// Keeps the current value.
     STENCIL_OPERATION_KEEP = 0,
     /// Sets the stencil buffer value to 0.
@@ -245,7 +254,7 @@ enum StencilOperation {
 };
 
 /// Defines all available fill modes for primitives
-enum FillMode {
+enum class FillMode : U32 {
     /// Polygon vertices that are marked as the start of a boundary edge are
     /// drawn as points.
     FILL_MODE_POINT = 1,
@@ -257,7 +266,7 @@ enum FillMode {
     FillMode_PLACEHOLDER
 };
 
-enum TextureType {
+enum class TextureType : U32 {
     TEXTURE_1D = 0,
     TEXTURE_2D,
     TEXTURE_3D,
@@ -269,7 +278,7 @@ enum TextureType {
     TextureType_PLACEHOLDER
 };
 
-enum TextureFilter {
+enum class TextureFilter : U32 {
     TEXTURE_FILTER_LINEAR = 0x0000,
     TEXTURE_FILTER_NEAREST = 0x0001,
     TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST = 0x0002,
@@ -279,7 +288,7 @@ enum TextureFilter {
     TextureFilter_PLACEHOLDER = 0x0006
 };
 
-enum TextureWrap {
+enum class TextureWrap : U32 {
     /** Texture coordinates outside [0...1] are clamped to the nearest valid
        value.     */
     TEXTURE_CLAMP = 0x0,
@@ -293,7 +302,7 @@ enum TextureWrap {
     TextureWrap_PLACEHOLDER = 0x6
 };
 
-enum GFXImageFormat {
+enum class GFXImageFormat : U32 {
     LUMINANCE = 0,
     LUMINANCE_ALPHA,
     LUMINANCE_ALPHA16F,
@@ -337,7 +346,7 @@ enum GFXImageFormat {
     GFXImageFormat_PLACEHOLDER
 };
 
-enum GFXDataFormat {
+enum class GFXDataFormat : U32 {
     UNSIGNED_BYTE = 0x0000,
     UNSIGNED_SHORT = 0x0001,
     UNSIGNED_INT = 0x0002,
@@ -349,7 +358,7 @@ enum GFXDataFormat {
     GDF_PLACEHOLDER
 };
 
-enum GPUVendor {
+enum class GPUVendor : U32 {
     GPU_VENDOR_NVIDIA = 0,
     GPU_VENDOR_AMD,
     GPU_VENDOR_INTEL,

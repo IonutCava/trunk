@@ -37,7 +37,7 @@
 #include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
-enum GFXImageFormat : I32;
+enum class GFXImageFormat : U32;
 namespace ImageTools {
 
 class ImageData {

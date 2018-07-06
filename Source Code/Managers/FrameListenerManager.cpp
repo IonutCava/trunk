@@ -14,7 +14,7 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
     // Check if the listener has a name or we should assign an id
     if (listener->getName().empty()) {
         listener->setName("generic_f_listener_" +
-                          Util::toString(_listeners.size()));
+                          std::to_string(_listeners.size()));
     }
 
     listener->setCallOrder(callOrder);

@@ -50,7 +50,7 @@ class SceneState;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
-    SceneRoot() : SceneNode("root", TYPE_ROOT) {
+    SceneRoot() : SceneNode("root", SceneNodeType::TYPE_ROOT) {
         _renderState.useDefaultMaterial(false);
         setState(RES_LOADED);
     }
@@ -77,7 +77,7 @@ class SceneRoot : public SceneNode {
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
    public:
-    SceneTransform() : SceneNode(TYPE_TRANSFORM) {
+    SceneTransform() : SceneNode(SceneNodeType::TYPE_TRANSFORM) {
         _renderState.useDefaultMaterial(false);
         setState(RES_LOADED);
     }
@@ -317,7 +317,7 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     UsageContext _usageContext;
     std::unique_ptr<SGNComponent> _components[SGNComponent::ComponentType_PLACEHOLDER];
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
-    hashMapImpl<RenderStage, bool, hashAlg::hash<I32>> _reset;
+    hashMapImpl<RenderStage, bool, hashAlg::hash<RenderStage>> _reset;
 
     StateTracker<bool> _trackedBools;
 };

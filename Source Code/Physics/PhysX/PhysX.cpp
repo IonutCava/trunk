@@ -218,7 +218,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         }
 
         VertexBuffer* nodeVB = sNode->getGeometryVB();
-        if (sNode->getObjectType() == Object3D::SUBMESH) {
+        if (sNode->getObjectType() == Object3D::ObjectType::SUBMESH) {
             nodeVB = node.getParent()->getNode<Object3D>()->getGeometryVB();
         }
 
@@ -248,7 +248,7 @@ bool PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
     PhysXSceneInterface* targetScene =
         dynamic_cast<PhysXSceneInterface*>(_targetScene);
     PhysicsComponent* nodePhysics =
-        sNode->getObjectType() == Object3D::SUBMESH
+        sNode->getObjectType() == Object3D::ObjectType::SUBMESH
             ? node.getParent()->getComponent<PhysicsComponent>()
             : node.getComponent<PhysicsComponent>();
 

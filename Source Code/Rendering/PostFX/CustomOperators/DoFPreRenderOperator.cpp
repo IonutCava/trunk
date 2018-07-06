@@ -11,7 +11,9 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler)
     : PreRenderOperator(DOF_STAGE, resolution, sampler), _outputFB(result) {
-    TextureDescriptor dofDescriptor(TEXTURE_2D, RGBA8, UNSIGNED_BYTE);
+    TextureDescriptor dofDescriptor(TextureType::TEXTURE_2D,
+                                    GFXImageFormat::RGBA8,
+                                    GFXDataFormat::UNSIGNED_BYTE);
     dofDescriptor.setSampler(*_internalSampler);
 
     _samplerCopy->AddAttachment(dofDescriptor, TextureDescriptor::Color0);

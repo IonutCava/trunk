@@ -5,16 +5,9 @@
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
-SceneGraph::SceneGraph()
-    : _root(nullptr)
-{
-    load();
-}
+SceneGraph::SceneGraph() : _root(nullptr) { load(); }
 
-SceneGraph::~SceneGraph()
-{
-    unload();
-}
+SceneGraph::~SceneGraph() { unload(); }
 
 void SceneGraph::load() {
     if (_root != nullptr) {
@@ -22,12 +15,16 @@ void SceneGraph::load() {
     }
 
     _root.reset(MemoryManager_NEW SceneGraphNode(MemoryManager_NEW SceneRoot(),
-                "ROOT"));
+                                                 "ROOT"));
     _root->getComponent<RenderingComponent>()->castsShadows(false);
     _root->getComponent<RenderingComponent>()->receivesShadows(false);
-    _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |
-                              TYPE_PARTICLE_EMITTER | TYPE_VEGETATION_GRASS |
-                              TYPE_VEGETATION_TREES);
+    _root->setBBExclusionMask(
+        enum_to_uint(SceneNodeType::TYPE_SKY) |
+        enum_to_uint(SceneNodeType::TYPE_LIGHT) |
+        enum_to_uint(SceneNodeType::TYPE_TRIGGER) |
+        enum_to_uint(SceneNodeType::TYPE_PARTICLE_EMITTER) |
+        enum_to_uint(SceneNodeType::TYPE_VEGETATION_GRASS) |
+        enum_to_uint(SceneNodeType::TYPE_VEGETATION_TREES));
 }
 
 void SceneGraph::unload() {
@@ -98,15 +95,17 @@ void SceneGraph::printInternal(SceneGraphNode& sgn) {
             // Get the shader's name
             shader = mat->getShaderInfo().getProgram()->getName();
         }
-        if (mat->getShaderInfo(SHADOW_STAGE).getProgram()) {
+        if (mat->getShaderInfo(RenderStage::SHADOW_STAGE).getProgram()) {
             // Get the depth shader's name
-            depthShader =
-                mat->getShaderInfo(SHADOW_STAGE).getProgram()->getName();
+            depthShader = mat->getShaderInfo(RenderStage::SHADOW_STAGE)
+                              .getProgram()
+                              ->getName();
         }
-        if (mat->getShaderInfo(Z_PRE_PASS_STAGE).getProgram()) {
+        if (mat->getShaderInfo(RenderStage::Z_PRE_PASS_STAGE).getProgram()) {
             // Get the depth shader's name
-            depthShader =
-                mat->getShaderInfo(Z_PRE_PASS_STAGE).getProgram()->getName();
+            depthShader = mat->getShaderInfo(RenderStage::Z_PRE_PASS_STAGE)
+                              .getProgram()
+                              ->getName();
         }
     }
     // Print our current node's information

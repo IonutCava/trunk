@@ -51,7 +51,7 @@ class InputInterface;
 class SceneRenderState;
 class FrameListenerManager;
 
-enum RenderStage : I32;
+enum class RenderStage : U32;
 
 struct FrameEvent;
 class GUI;

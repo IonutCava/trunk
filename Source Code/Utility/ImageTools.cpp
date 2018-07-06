@@ -14,22 +14,22 @@ namespace ImageTools {
 inline GFXImageFormat textureFormatDevIL(ILint format) {
     switch (format) {
         case IL_RGB:
-            return RGB;
+            return GFXImageFormat::RGB;
         case IL_ALPHA:
-            return ALPHA;
+            return GFXImageFormat::ALPHA;
         case IL_RGBA:
-            return RGBA;
+            return GFXImageFormat::RGBA;
         case IL_BGR:
-            return BGR;
+            return GFXImageFormat::BGR;
         case IL_BGRA:
-            return BGRA;
+            return GFXImageFormat::BGRA;
         case IL_LUMINANCE:
-            return LUMINANCE;
+            return GFXImageFormat::LUMINANCE;
         case IL_LUMINANCE_ALPHA:
-            return LUMINANCE_ALPHA;
+            return GFXImageFormat::LUMINANCE_ALPHA;
     };
 
-    return RGB;
+    return GFXImageFormat::RGB;
 }
 
 void initialize() {
@@ -231,7 +231,7 @@ I8 SaveSeries(char* filename, const vec2<U16>& dimensions, U8 pixelDepth,
     stringImpl newFilename(filename);
     // compute the new filename by adding the
     // series number and the extension
-    newFilename.append(Util::toString(savedImages) + ".tga");
+    newFilename.append(std::to_string(savedImages) + ".tga");
 
     // save the image
     I8 status =

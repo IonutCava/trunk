@@ -41,7 +41,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", false, false));
     _gfxDataBuffer->Create(1, sizeof(GPUBlock));
-    _gfxDataBuffer->Bind(SHADER_BUFFER_GPU_BLOCK);
+    _gfxDataBuffer->Bind(ShaderBufferLocation::SHADER_BUFFER_GPU_BLOCK);
     // Every visible node will first update this buffer with required data
     // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
@@ -49,7 +49,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
-    _nodeBuffer->Bind(SHADER_BUFFER_NODE_INFO);
+    _nodeBuffer->Bind(ShaderBufferLocation::SHADER_BUFFER_NODE_INFO);
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);
@@ -61,12 +61,12 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     _defaultStateNoDepthHash =
         getOrCreateStateBlock(defaultStateDescriptorNoDepth);
     RenderStateBlockDescriptor state2DRenderingDesc;
-    state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
+    state2DRenderingDesc.setCullMode(CullMode::CULL_MODE_NONE);
     state2DRenderingDesc.setZReadWrite(false, true);
     _state2DRenderingHash = getOrCreateStateBlock(state2DRenderingDesc);
     RenderStateBlockDescriptor stateDepthOnlyRendering;
     stateDepthOnlyRendering.setColorWrites(false, false, false, false);
-    stateDepthOnlyRendering.setZFunc(CMP_FUNC_ALWAYS);
+    stateDepthOnlyRendering.setZFunc(ComparisonFunction::CMP_FUNC_ALWAYS);
     _stateDepthOnlyRenderingHash =
         getOrCreateStateBlock(stateDepthOnlyRendering);
     // Block with hash 0 is null, and it's used to force a block update,
@@ -92,34 +92,39 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
-    TextureDescriptor screenDescriptor(TEXTURE_2D_MS, RGBA16F, FLOAT_16);
+    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS,
+                                       GFXImageFormat::RGBA16F,
+                                       GFXDataFormat::FLOAT_16);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
-    screenSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    screenSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST,
+                             TextureFilter::TEXTURE_FILTER_NEAREST);
+    screenSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
     // Next, create a depth attachment for the screen render target.
     // Must also multisampled. Use full float precision for long view distances
     SamplerDescriptor depthSampler;
-    depthSampler.setFilters(TEXTURE_FILTER_NEAREST);
-    depthSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST);
+    depthSampler.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthSampler.toggleMipMaps(false);
     // Use greater or equal depth compare function, but depth comparison is
     // disabled, anyway.
-    depthSampler._cmpFunc = CMP_FUNC_GEQUAL;
-    TextureDescriptor depthDescriptor(TEXTURE_2D_MS, DEPTH_COMPONENT32F,
-                                      FLOAT_32);
+    depthSampler._cmpFunc = ComparisonFunction::CMP_FUNC_GEQUAL;
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
+                                      GFXImageFormat::DEPTH_COMPONENT32F,
+                                      GFXDataFormat::FLOAT_32);
     depthDescriptor.setSampler(depthSampler);
     // The depth render target uses a HierarchicalZ buffer to help with
     // occlusion culling
     // Must be as close as possible to the screen's depth buffer
     SamplerDescriptor depthSamplerHiZ;
-    depthSamplerHiZ.setFilters(TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST,
-                               TEXTURE_FILTER_NEAREST);
-    depthSamplerHiZ.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
+    depthSamplerHiZ.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST,
+                               TextureFilter::TEXTURE_FILTER_NEAREST);
+    depthSamplerHiZ.setWrapMode(TextureWrap::TEXTURE_CLAMP_TO_EDGE);
     depthSamplerHiZ.toggleMipMaps(true);
-    TextureDescriptor depthDescriptorHiZ(TEXTURE_2D_MS, DEPTH_COMPONENT32F,
-                                         FLOAT_32);
+    TextureDescriptor depthDescriptorHiZ(TextureType::TEXTURE_2D_MS,
+                                         GFXImageFormat::DEPTH_COMPONENT32F,
+                                         GFXDataFormat::FLOAT_32);
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
     // Add the attachments to the render targets
     _renderTarget[RENDER_TARGET_SCREEN]->AddAttachment(
@@ -173,7 +178,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
     // We start of with a forward plus renderer
-    setRenderer(RENDERER_FORWARD_PLUS);
+    setRenderer(RendererType::RENDERER_FORWARD_PLUS);
     ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer",
                                                false);
     // Everything is ready from the rendering point of view
@@ -292,14 +297,14 @@ Renderer& GFXDevice::getRenderer() const {
 }
 
 void GFXDevice::setRenderer(RendererType rendererType) {
-    DIVIDE_ASSERT(rendererType != RendererType_PLACEHOLDER,
+    DIVIDE_ASSERT(rendererType != RendererType::RendererType_PLACEHOLDER,
                   "GFXDevice error: Tried to create an invalid renderer!");
     Renderer* renderer = nullptr;
     switch (rendererType) {
-        case RENDERER_FORWARD_PLUS: {
+        case RendererType::RENDERER_FORWARD_PLUS: {
             renderer = new ForwardPlusRenderer();
         } break;
-        case RENDERER_DEFERRED_SHADING: {
+        case RendererType::RENDERER_DEFERRED_SHADING: {
             renderer = new DeferredShadingRenderer();
         } break;
     }

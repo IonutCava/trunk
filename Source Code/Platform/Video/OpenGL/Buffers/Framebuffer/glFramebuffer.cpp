@@ -102,41 +102,42 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
     TextureType currentType = texDescriptor._type;
 
     if (_multisampled) {
-        if (currentType == TEXTURE_2D) {
-            currentType = TEXTURE_2D_MS;
+        if (currentType == TextureType::TEXTURE_2D) {
+            currentType = TextureType::TEXTURE_2D_MS;
         }
-        if (currentType == TEXTURE_2D_ARRAY) {
-            currentType = TEXTURE_2D_ARRAY_MS;
+        if (currentType == TextureType::TEXTURE_2D_ARRAY) {
+            currentType = TextureType::TEXTURE_2D_ARRAY_MS;
         }
     } else {
-        if (currentType == TEXTURE_2D_MS) {
-            currentType = TEXTURE_2D;
+        if (currentType == TextureType::TEXTURE_2D_MS) {
+            currentType = TextureType::TEXTURE_2D;
         }
-        if (currentType == TEXTURE_2D_ARRAY_MS) {
-            currentType = TEXTURE_2D_ARRAY;
+        if (currentType == TextureType::TEXTURE_2D_ARRAY_MS) {
+            currentType = TextureType::TEXTURE_2D_ARRAY;
         }
     }
 
     bool isLayeredTexture =
-        (currentType == TEXTURE_2D_ARRAY ||
-         currentType == TEXTURE_2D_ARRAY_MS ||
-         currentType == TEXTURE_CUBE_ARRAY || currentType == TEXTURE_3D);
+        (currentType == TextureType::TEXTURE_2D_ARRAY ||
+         currentType == TextureType::TEXTURE_2D_ARRAY_MS ||
+         currentType == TextureType::TEXTURE_CUBE_ARRAY ||
+         currentType == TextureType::TEXTURE_3D);
 
     SamplerDescriptor sampler = texDescriptor.getSampler();
     GFXImageFormat internalFormat = texDescriptor._internalFormat;
     if (sampler.srgb()) {
-        if (internalFormat == RGBA8) {
-            internalFormat = SRGBA8;
+        if (internalFormat == GFXImageFormat::RGBA8) {
+            internalFormat = GFXImageFormat::SRGBA8;
         }
-        if (internalFormat == RGB8) {
-            internalFormat = SRGB8;
+        if (internalFormat == GFXImageFormat::RGB8) {
+            internalFormat = GFXImageFormat::SRGB8;
         }
     } else {
-        if (internalFormat == SRGBA8) {
-            internalFormat = RGBA8;
+        if (internalFormat == GFXImageFormat::SRGBA8) {
+            internalFormat = GFXImageFormat::RGBA8;
         }
-        if (internalFormat == SRGB8) {
-            internalFormat = RGB8;
+        if (internalFormat == GFXImageFormat::SRGB8) {
+            internalFormat = GFXImageFormat::RGB8;
         }
     }
     if (_multisampled) {
@@ -149,12 +150,12 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
 
     stringImpl attachmentName("Framebuffer_Att_");
     attachmentName.append(getAttachmentName(type));
-    attachmentName.append(Util::toString(getGUID()));
+    attachmentName.append(std::to_string(getGUID()));
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(sampler);
-    textureAttachment.setEnumValue(currentType);
+    textureAttachment.setEnumValue(enum_to_uint(currentType));
     _attachmentTexture[slot] = CreateResource<Texture>(textureAttachment);
 
     Texture* tex = _attachmentTexture[slot];
@@ -168,8 +169,9 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type,
     tex->loadData(
         isLayeredTexture
             ? 0
-            : GLUtil::GLenum_to_uint(
-                  GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType]),
+            : enum_to_uint(
+                  GLUtil::GL_ENUM_TABLE::glTextureTypeTable[enum_to_uint(
+                      currentType)]),
         NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], internalFormat,
         internalFormat);
 
@@ -219,30 +221,33 @@ void glFramebuffer::AddDepthBuffer() {
     TextureDescriptor desc = _attachment[TextureDescriptor::Color0];
     TextureType texType = desc._type;
 
-    if (texType == TEXTURE_2D_ARRAY) {
-        texType = TEXTURE_2D;
+    if (texType == TextureType::TEXTURE_2D_ARRAY) {
+        texType = TextureType::TEXTURE_2D;
     }
-    if (texType == TEXTURE_2D_ARRAY_MS) {
-        texType = TEXTURE_2D_MS;
+    if (texType == TextureType::TEXTURE_2D_ARRAY_MS) {
+        texType = TextureType::TEXTURE_2D_MS;
     }
-    if (texType == TEXTURE_CUBE_ARRAY) {
-        texType = TEXTURE_CUBE_MAP;
+    if (texType == TextureType::TEXTURE_CUBE_ARRAY) {
+        texType = TextureType::TEXTURE_CUBE_MAP;
     }
 
     GFXDataFormat dataType = desc._dataType;
-    bool fpDepth = (dataType == FLOAT_16 || dataType == FLOAT_32);
+    bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 || 
+                    dataType == GFXDataFormat::FLOAT_32);
     SamplerDescriptor screenSampler;
-    screenSampler.setFilters(TEXTURE_FILTER_NEAREST, TEXTURE_FILTER_NEAREST);
+    screenSampler.setFilters(TextureFilter::TEXTURE_FILTER_NEAREST, 
+                             TextureFilter::TEXTURE_FILTER_NEAREST);
     screenSampler.setWrapMode(desc.getSampler().wrapU(),
                               desc.getSampler().wrapV(),
                               desc.getSampler().wrapW());
     screenSampler.toggleMipMaps(false);
     TextureDescriptor depthDescriptor(
-        texType, fpDepth ? DEPTH_COMPONENT32F : DEPTH_COMPONENT,
-        fpDepth ? dataType : UNSIGNED_INT);
+        texType, fpDepth ? GFXImageFormat::DEPTH_COMPONENT32F
+                         : GFXImageFormat::DEPTH_COMPONENT,
+        fpDepth ? dataType : GFXDataFormat::UNSIGNED_INT);
 
     screenSampler._useRefCompare = true;       //< Use compare function
-    screenSampler._cmpFunc = CMP_FUNC_LEQUAL;  //< Use less or equal
+    screenSampler._cmpFunc = ComparisonFunction::CMP_FUNC_LEQUAL;  //< Use less or equal
     depthDescriptor.setSampler(screenSampler);
     _attachmentDirty[TextureDescriptor::Depth] = true;
     _attachment[TextureDescriptor::Depth] = depthDescriptor;
@@ -465,9 +470,8 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     DIVIDE_ASSERT(slot < TextureDescriptor::AttachmentType_PLACEHOLDER,
                   "glFrameBuffer::DrawToLayer Error: invalid slot received!");
 
-    GLenum textureType =
-        GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]
-                                                      ->getTextureType()];
+    GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[enum_to_uint(
+        _attachmentTexture[slot]->getTextureType())];
     // only for array textures (it's better to simply ignore the command if the
     // format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
@@ -511,9 +515,8 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
 void glFramebuffer::SetMipLevel(GLushort mipLevel, GLushort mipMaxLevel,
                                 GLushort writeLevel,
                                 TextureDescriptor::AttachmentType slot) {
-    GLenum textureType =
-        GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]
-                                                      ->getTextureType()];
+    GLenum textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[enum_to_uint(
+        _attachmentTexture[slot]->getTextureType())];
     // Only 2D texture support for now
     DIVIDE_ASSERT(textureType == GL_TEXTURE_2D,
                   "glFramebuffer error: Changing mip level is only available "
@@ -536,9 +539,12 @@ void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat,
         _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_READ_ONLY);
-        glReadPixels(rect.x, rect.y, rect.z, rect.w,
-                     GLUtil::GL_ENUM_TABLE::glImageFormatTable[imageFormat],
-                     GLUtil::GL_ENUM_TABLE::glDataFormat[dataType], outData);
+        glReadPixels(
+            rect.x, rect.y, rect.z, rect.w,
+            GLUtil::GL_ENUM_TABLE::glImageFormatTable[enum_to_uint(
+                imageFormat)],
+            GLUtil::GL_ENUM_TABLE::glDataFormat[enum_to_uint(dataType)],
+            outData);
     }
 }
 
@@ -578,10 +584,10 @@ bool glFramebuffer::checkStatus() const {
             return false;
         }
         default: {
-            if (GLUtil::GLenum_to_uint(status) == 0x8CD9) {
+            if (enum_to_uint(status) == 0x8CD9) {
                 /*GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS*/
                 Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
-            } else if (GLUtil::GLenum_to_uint(status) == 0x8CDA) {
+            } else if (enum_to_uint(status) == 0x8CDA) {
                  /*GL_FRAMEBUFFER_INCOMPLETE_FORMATS*/
                 Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
             } else {
