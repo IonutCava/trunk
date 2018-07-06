@@ -157,6 +157,7 @@ class LightPool : public SceneComponent {
 
   private:
       void init();
+      void waitForTasks();
 
   private:
     GFXDevice& _context;

@@ -14,6 +14,9 @@ GFXRTPool::GFXRTPool(GFXDevice& parent)
       _poolSize(0),
       _poolIndex(0)
 {
+    STUBBED("ToDo: Change this to only keep frameHistory per player to reduce VRAM usage! "
+            "No need to store per-frame render targets as they get overriden anyway. -Ionut");
+
     resize(1);
 }
 

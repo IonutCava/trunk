@@ -178,10 +178,7 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
         return true;
     }
 
-    for (TaskHandle& task : _lightUpdateTask) {
-        task.wait();
-    }
-
+    waitForTasks();
     ShadowMap::clearShadowMapBuffers(_context);
     Time::ScopedTimer timer(_shadowPassTimer);
     // generate shadowmaps for each light
@@ -221,10 +218,7 @@ void LightPool::previewShadowMaps(Light* light) {
         return;
     }
 
-    for (TaskHandle& task : _lightUpdateTask) {
-        task.wait();
-    }
-
+    waitForTasks();
     // If no light is specified show as many shadowmaps as possible
     if (!light) {
         U32 rowIndex = 0;
@@ -266,12 +260,16 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
-void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+void LightPool::waitForTasks() {
     for (TaskHandle& task : _lightUpdateTask) {
         task.wait();
     }
-
     _lightUpdateTask.clear();
+}
+
+void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+    waitForTasks();
+
     // Create and upload light data for current pass
     _activeLightCount.fill(0);
     _sortedLights.resize(0);
@@ -355,18 +353,14 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
 
     if (!_sortedLights.empty()) {
         // Sort all lights (Sort in parallel by type)
-        TaskPool& pool = Application::instance().kernel().taskPool();
-        _lightUpdateTask.emplace_back(CreateTask(pool, lightUpdate));
-        _lightUpdateTask.back().startTask(Task::TaskPriority::HIGH, g_usePersistentMapping ? 0 : to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+        _lightUpdateTask.emplace_back(CreateTask(Application::instance().kernel().taskPool(), lightUpdate));
+        _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, g_usePersistentMapping ? 0 : to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
     }
 }
 
 void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,
                                 ShaderBufferLocation shadowDataLocation) {
-    for (TaskHandle& task : _lightUpdateTask) {
-        task.wait();
-    }
-
+    waitForTasks();
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)]->bind(lightDataLocation);
     _lightShaderBuffer[to_const_uint(ShaderBufferType::SHADOW)]->bind(shadowDataLocation);
 }

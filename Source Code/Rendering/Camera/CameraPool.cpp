@@ -11,7 +11,6 @@
 
 namespace Divide {
 
-bool Camera::_addNewListener = false;
 Camera* Camera::_activeCamera = nullptr;
 Camera* Camera::_previousCamera = nullptr;
 
@@ -20,25 +19,17 @@ vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > Camera::_updateCameralisteners;
 
 SharedLock Camera::_cameraPoolLock;
 Camera::CameraPool Camera::_cameraPool;
-Camera::CameraPoolGUID Camera::_cameraPoolGUID;
 
 void Camera::update(const U64 deltaTime) {
-    if (_addNewListener) {
-        Camera* cam = nullptr;
-        ReadLock r_lock(_cameraPoolLock);
-        for (CameraPool::value_type& it : _cameraPool) {
-            cam = it.second;
-            cam->clearListeners();
-            for (const DELEGATE_CBK_PARAM<const Camera&>& listener : _updateCameralisteners) {
-                cam->addUpdateListenerInternal(listener);
-            }
-        }
-        _addNewListener = false;
-    }
-
     ReadLock r_lock(_cameraPoolLock);
     for (CameraPool::value_type& it : _cameraPool) {
         it.second->updateInternal(deltaTime);
+    }
+}
+
+void Camera::onUpdate(const Camera& cam) {
+    for (const DELEGATE_CBK_PARAM<const Camera&>& listener : _updateCameralisteners) {
+        listener(cam);
     }
 }
 
@@ -83,7 +74,6 @@ void Camera::destroyPool() {
         it.second->unload();
     }
     MemoryManager::DELETE_HASHMAP(_cameraPool);
-    _cameraPoolGUID.clear();
 }
 
 Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
@@ -107,13 +97,8 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
     }
 
     if (camera != nullptr) {
-        for (const DELEGATE_CBK_PARAM<const Camera&>& listener : _updateCameralisteners) {
-            camera->addUpdateListenerInternal(listener);
-        }
-
         WriteLock w_lock(_cameraPoolLock);
         hashAlg::emplace(_cameraPool, _ID_RT(camera->getName()), camera);
-        hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
     }
 
     return camera;
@@ -128,7 +113,6 @@ bool Camera::destroyCamera(Camera*& camera) {
         if (camera->unload()) {
             WriteLock w_lock(_cameraPoolLock);
             _cameraPool.erase(_ID_RT(camera->getName()));
-            _cameraPoolGUID.erase(camera->getGUID());
             MemoryManager::DELETE(camera);
             return true;
         }
@@ -153,7 +137,6 @@ void Camera::addChangeListener(const DELEGATE_CBK_PARAM<const Camera&>& f) {
 
 void Camera::addUpdateListener(const DELEGATE_CBK_PARAM<const Camera&>& f) {
     _updateCameralisteners.push_back(f);
-    _addNewListener = true;
 }
 
 }; //namespace Divide

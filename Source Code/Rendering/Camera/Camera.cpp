@@ -38,7 +38,9 @@ Camera::~Camera()
     MemoryManager::DELETE(_frustum);
 }
 
-void Camera::fromCamera(const Camera& camera) {
+void Camera::fromCamera(Camera& camera) {
+    camera.updateLookAt();
+
     if (camera._isOrthoCamera) {
         setProjection(camera._orthoRect,
                       camera.getZPlanes());
@@ -81,8 +83,7 @@ void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
     Quaternion<F32> yawRot(WORLD_Y_AXIS, -yaw);
 
     if (!IS_ZERO(roll)) {
-        Quaternion<F32> tempOrientation(WORLD_Z_AXIS, -roll);
-        setRotation(yawRot * pitchRot * tempOrientation);
+        setRotation(yawRot * pitchRot * Quaternion<F32>(WORLD_Z_AXIS, -roll));
     } else {
         setRotation(yawRot * pitchRot);
     }
@@ -224,7 +225,7 @@ void Camera::updateLookAt() {
     bool projMatrixUpdated = updateProjection();
     bool frustumUpdated = updateFrustum();
     if (viewMatrixUpdated || projMatrixUpdated || frustumUpdated) {
-        updateListeners();
+        onUpdate(*this);
     }
 }
 
@@ -325,12 +326,6 @@ bool Camera::updateViewMatrix() {
     _frustumDirty = true;
 
     return true;
-}
-
-void Camera::updateListeners() {
-    for (const DELEGATE_CBK_PARAM<const Camera&>& listener : _listeners) {
-        listener(*this);
-    }
 }
 
 bool Camera::updateFrustum() {

@@ -207,9 +207,9 @@ void SceneManager::setActiveScene(Scene* const scene) {
 
     Attorney::SceneManager::onRemoveActive(_scenePool->defaultSceneActive() ? _scenePool->defaultScene()
                                                                             : getActiveScene());
-    
-    Attorney::SceneManager::onSetActive(*scene);
+
     _scenePool->activeScene(*scene);
+    Attorney::SceneManager::onSetActive(*scene);
     ShadowMap::resetShadowMaps(_platformContext->gfx());
     _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());

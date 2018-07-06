@@ -50,7 +50,7 @@ class Camera : public Resource {
 
    public:
 
-    void fromCamera(const Camera& camera);
+    void fromCamera(Camera& camera);
 
     void updateLookAt();
 
@@ -107,26 +107,20 @@ class Camera : public Resource {
                                -angle * _cameraTurnSpeed));
     }
     /// Sets the camera's Yaw angle.
-    /// This creates a new orientation quaternion for the camera and extracts
-    /// the
-    /// euler angles
+    /// This creates a new orientation quaternion for the camera and extracts the euler angles
     inline void setYaw(F32 angle) {
         setRotation(angle, _euler.pitch, _euler.roll);
     }
-    /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted
-    /// values
+    /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
     inline void setPitch(F32 angle) {
         setRotation(_euler.yaw, angle, _euler.roll);
     }
-    /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted
-    /// values
+    /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
     inline void setRoll(F32 angle) {
         setRotation(_euler.yaw, _euler.pitch, angle);
     }
     /// Sets the camera's Yaw angle.
-    /// This creates a new orientation quaternion for the camera and extracts
-    /// the
-    /// euler angles
+    /// This creates a new orientation quaternion for the camera and extracts the euler angles
     inline void setGlobalYaw(F32 angle) {
         setGlobalRotation(angle, _euler.pitch, _euler.roll);
     }
@@ -284,10 +278,6 @@ class Camera : public Resource {
     /// Nothing really to unload
     virtual bool unload() { return true; }
 
-    /// Informs all listeners of a new event
-    virtual void updateListeners();
-    /// Clear all listeners from the current camera
-    virtual void clearListeners() { _listeners.clear(); }
     const mat4<F32>& setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes);
 
     const mat4<F32>& setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes);
@@ -325,9 +315,6 @@ class Camera : public Resource {
     /// Called when the camera becomes active/ is deactivated
     virtual void setActiveInternal(bool state);
 
-    virtual void addUpdateListenerInternal(const DELEGATE_CBK_PARAM<const Camera&>& f) {
-        _listeners.push_back(f);
-    }
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
@@ -355,7 +342,7 @@ class Camera : public Resource {
     F32 _cameraZoomSpeed;
     CameraType _type;
 
-    vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _listeners;
+
     bool _projectionDirty;
     bool _viewMatrixDirty;
     bool _viewMatrixLocked;
@@ -381,6 +368,9 @@ class Camera : public Resource {
        static bool    destroyCamera(Camera*& camera);
        static Camera* findCamera(U64 nameHash);
 
+       /// Informs all listeners of a new event
+       static void onUpdate(const Camera& cam);
+
        static void addChangeListener(const DELEGATE_CBK_PARAM<const Camera& /*new camera*/>& f);
        static void addUpdateListener(const DELEGATE_CBK_PARAM<const Camera& /*updated camera*/>& f);
 
@@ -395,9 +385,6 @@ class Camera : public Resource {
 
       static CameraPool _cameraPool;
       static SharedLock _cameraPoolLock;
-      static CameraPoolGUID _cameraPoolGUID;
-
-      static bool _addNewListener;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);

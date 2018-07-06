@@ -48,7 +48,6 @@ public:
     void processGUI(const U64 deltaTime) override;
 
     void onSetActive() override;
-    void onRemoveActive() override;
 private:
     void loadScene(I64 btnGUID);
 
