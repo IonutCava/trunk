@@ -75,7 +75,6 @@ class Frustum {
     vec3<F32> _frustumPoints[8];
     Plane<F32> _frustumPlanes[6];
     mat4<F32> _viewProjectionMatrixCache;
-    mat4<F32> _viewProjectionMatrixCacheOld;
 };
 
 };  // namespace Divide

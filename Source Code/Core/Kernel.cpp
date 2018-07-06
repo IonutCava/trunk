@@ -62,9 +62,9 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(
-        &LightManager::onCameraChange, &LightManager::getInstance()));
+        &LightManager::onCameraUpdate, &LightManager::getInstance(), std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
-        DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraChange));
+        DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
@@ -79,7 +79,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
-Kernel::~Kernel() {
+Kernel::~Kernel()
+{
     MemoryManager::DELETE(_mainTaskPool);
 }
 

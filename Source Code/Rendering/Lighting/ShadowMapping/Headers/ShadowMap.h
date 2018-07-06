@@ -81,6 +81,8 @@ class NOINITVTABLE ShadowMap {
 
     virtual void updateResolution(I32 newWidth, I32 newHeight) {}
 
+    virtual void onCameraUpdate(Camera& camera) {}
+
    protected:
     virtual bool BindInternal(U8 offset);
 

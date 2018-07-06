@@ -173,7 +173,7 @@ class Light : public SceneNode {
     inline Impostor* const getImpostor() const { return _impostor; }
 
     /// Checks if this light needs and update
-    void onCameraChange();
+    void onCameraUpdate(Camera& camera);
 
     bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
 

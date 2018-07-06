@@ -10,17 +10,6 @@ void main(){
   gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
 
--- Vertex.GUI
-
-out vec2 _texCoord;
-out vec4 _color;
-
-void main(){
-  _texCoord = inTexCoordData;
-  _color = inColorData / vec4(255.0);
-  gl_Position = dvd_ProjectionMatrix * vec4(inVertexData,1.0);
-} 
-
 -- Fragment
 
 #include "utility.frag"

@@ -245,12 +245,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Bind a texture specified by a GL handle and GL type to the specified
     /// unit
     /// using the sampler object defined by hash value
-    static bool bindTexture(GLuint unit, GLuint handle, GLenum type,
+    static bool bindTexture(GLuint unit, GLuint handle, GLenum target,
                             size_t samplerHash = 0);
     /// Bind multiple textures specified by an array of handles and an offset
     /// unit
     static bool bindTextures(GLuint unitOffset, GLuint textureCount,
-                             GLuint* textureHandles, GLenum* types,
+                             GLuint* textureHandles, GLenum* targets,
                              GLuint* samplerHandles);
 
     /// Bind the sampler object described by the hash value to the specified
@@ -260,11 +260,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// consecutive texture units starting from the specified offset
     static bool bindSamplers(GLuint unitOffset, GLuint samplerCount,
                              GLuint* samplerHandles);
-    /// Bind the default texture handle (0) to the specified unit and set it to the
-    /// specified type
-    static bool unbindTexture(GLuint unit, GLenum type) {
-        return bindTexture(unit, 0, type);
-    }
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
 

@@ -72,12 +72,6 @@ void Frustum::Extract() {
     _viewProjectionMatrixCache.set(
         GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION));
 
-    if (_viewProjectionMatrixCacheOld == _viewProjectionMatrixCache) {
-        return;
-    }
-
-    _viewProjectionMatrixCacheOld.set(_viewProjectionMatrixCache);
-
     Plane<F32>& rightPlane = _frustumPlanes[0];
     Plane<F32>& leftPlane = _frustumPlanes[1];
     Plane<F32>& bottomPlane = _frustumPlanes[2];

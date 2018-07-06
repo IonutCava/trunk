@@ -57,7 +57,7 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
 
     bool clear();
     void idle();
-    void onCameraChange();
+    void onCameraUpdate(Camera& camera);
     inline Light::LightList& getLights() { return _lights; }
     Light* getLight(I64 lightGUID);
 

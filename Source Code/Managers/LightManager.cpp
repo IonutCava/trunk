@@ -174,9 +174,9 @@ U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
 /// listener group
 /// Update only if needed. Get projection and view matrices if they changed
 /// Also, search for the dominant light if any
-void LightManager::onCameraChange() {
+void LightManager::onCameraUpdate(Camera& camera) {
     for (Light* light : _lights) {
-        light->onCameraChange();
+        light->onCameraUpdate(camera);
     }
 }
 

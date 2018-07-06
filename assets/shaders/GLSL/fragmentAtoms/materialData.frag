@@ -5,6 +5,10 @@
     #define HAS_TRANSPARENCY
 #endif
 
+#if defined(USE_OPACITY_MAP) && defined(USE_OPACITY_DIFFUSE_MAP)
+	#undef USE_OPACITY_DIFFUSE_MAP
+#endif
+
 #if !defined(SKIP_TEXTURES)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;

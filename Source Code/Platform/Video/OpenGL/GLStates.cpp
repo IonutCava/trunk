@@ -245,7 +245,7 @@ bool GL_API::bindSampler(GLuint unit, size_t samplerHash) {
 bool GL_API::bindTextures(GLuint unitOffset,
                           GLuint textureCount,
                           GLuint* textureHandles,
-                          GLenum* types,
+                          GLenum* targets,
                           GLuint* samplerHandles) {
     if (textureCount > 0 &&
         unitOffset + textureCount <
@@ -263,7 +263,7 @@ bool GL_API::bindTextures(GLuint unitOffset,
                 std::pair<GLuint, GLenum>& currentMapping =
                     _textureBoundMap[offset + i];
                 currentMapping.first = textureHandles[i];
-                currentMapping.second = types[i];
+                currentMapping.second = targets[i];
             }
         }
         return true;
@@ -276,7 +276,7 @@ bool GL_API::bindTextures(GLuint unitOffset,
 /// using the sampler object defined by hash value
 bool GL_API::bindTexture(GLuint unit,
                          GLuint handle,
-                         GLenum type,
+                         GLenum target,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
@@ -289,13 +289,13 @@ bool GL_API::bindTexture(GLuint unit,
     GL_API::bindSampler(unit, samplerHash);
     // Prevent double bind only for the texture
     std::pair<GLuint, GLenum>& currentMapping = _textureBoundMap[unit];
-    if (currentMapping.first != handle || currentMapping.second != type) {
+    if (currentMapping.first != handle || currentMapping.second != target) {
         // Remember the new binding state for future reference
         currentMapping.first = handle;
-        currentMapping.second = type;
+        currentMapping.second = target;
         // Bind the texture to the current unit
         GL_API::setActiveTextureUnit(unit);
-        glBindTexture(type, handle); 
+        glBindTexture(target, handle); 
         
         return true;
     }

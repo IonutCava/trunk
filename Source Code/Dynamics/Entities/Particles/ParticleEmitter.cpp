@@ -172,7 +172,7 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
-void ParticleEmitter::onCameraChange(SceneGraphNode& sgn) {
+void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
     const mat4<F32>& viewMatrixCache =
         GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW);
     _particleShader->Uniform(

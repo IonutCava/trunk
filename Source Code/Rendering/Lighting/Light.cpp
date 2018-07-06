@@ -84,7 +84,7 @@ void Light::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Light::onCameraChange() {
+void Light::onCameraUpdate(Camera& camera) {
     assert(_lightSGN != nullptr);
     if (!getEnabled()) {
         return;
@@ -111,6 +111,13 @@ void Light::onCameraChange() {
     }
 
     _updateLightBB = false;
+
+    if (_shadowMapInfo) {
+        ShadowMap* sm = _shadowMapInfo->getShadowMap();
+        if (sm) {
+            sm->onCameraUpdate(camera);
+        }
+    }
 }
 
 void Light::setPosition(const vec3<F32>& newPosition) {

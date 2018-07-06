@@ -54,6 +54,7 @@ Application::~Application() {
 
     ParamHandler::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
+    _kernel.reset(nullptr);
     Locale::clear();
     Console::flush();
 }
@@ -75,7 +76,12 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
     assert(_kernel.get() != nullptr);
 
     // and load it via an XML file config
-    return _kernel->initialize(entryPoint);
+    ErrorCode err = _kernel->initialize(entryPoint);
+    if (err != ErrorCode::NO_ERR) {
+        _kernel.reset(nullptr);
+    }
+
+    return err;
 }
 
 void Application::run() { _kernel->runLogicLoop(); }

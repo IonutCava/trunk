@@ -20,7 +20,8 @@ namespace Divide {
 
 CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
                                        F32 numSplits)
-    : ShadowMap(light, shadowCamera, ShadowType::LAYERED) {
+    : ShadowMap(light, shadowCamera, ShadowType::LAYERED)
+{
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
@@ -83,7 +84,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     _blurBuffer->setClearColor(DefaultColors::WHITE());
 }
 
-CascadedShadowMaps::~CascadedShadowMaps() {
+CascadedShadowMaps::~CascadedShadowMaps()
+{
     RemoveResource(_previewDepthMapShader);
     RemoveResource(_blurDepthMapShader);
     MemoryManager::DELETE(_blurBuffer);
@@ -132,32 +134,32 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
         return;
     }
 
-    Camera& sceneCamera = renderState.getCamera();
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
-    const vec2<F32>& currentPlanes = renderState.getCameraConst().getZPlanes();
-
-    if (_sceneZPlanes != currentPlanes) {
-        _sceneZPlanes = currentPlanes;
-        CalculateSplitDepths(sceneCamera);
-    }
     _lightPosition = _light->getPosition();
 
-    _viewInvMatrixCache = sceneCamera.getWorldMatrix();
-    sceneCamera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
-    sceneCamera.getFrustum().getCornersViewSpace(_frustumCornersVS);
+    Camera& camera = renderState.getCamera();
+    const vec2<F32>& currentPlanes = camera.getZPlanes();
+    if (_sceneZPlanes != currentPlanes)
+    {
+        _sceneZPlanes = currentPlanes;
+        CalculateSplitDepths(camera);
+    }
+    
+    camera.getWorldMatrix(_viewInvMatrixCache);
+    camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
+    camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
 
     _depthMap->Begin(*_renderPolicy);
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-    for (U8 i = 0; i < _numSplits; ++i) {
-        ApplyFrustumSplit(i);
-        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
-                               true);
-        GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
-    }
+        renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
+            for (U8 i = 0; i < _numSplits; ++i) {
+                ApplyFrustumSplit(i);
+                _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
+                                       true);
+                GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
+            }
+        renderState.getCameraMgr().popActiveCamera();
     _depthMap->End();
-
-    renderState.getCameraMgr().popActiveCamera();
 }
 
 void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam) {

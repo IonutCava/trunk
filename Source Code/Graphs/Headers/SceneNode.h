@@ -57,6 +57,7 @@ enum class SceneNodeType : U32 {
     COUNT
 };
 
+class Camera;
 class SceneState;
 class SceneRenderState;
 class ShaderProgram;
@@ -116,7 +117,7 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void onCameraChange(SceneGraphNode& sgn) {}
+    virtual void onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {}
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn) {
@@ -145,8 +146,8 @@ class SceneNodeGraph {
         node.postLoad(sgn);
     }
 
-    static void onCameraChange(SceneNode& node, SceneGraphNode& sgn) {
-        node.onCameraChange(sgn);
+    static void onCameraUpdate(SceneNode& node, SceneGraphNode& sgn, Camera& camera) {
+        node.onCameraUpdate(sgn, camera);
     }
 
     static void sceneUpdate(SceneNode& node, const U64 deltaTime,

@@ -93,8 +93,8 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
-void Scene::onCameraChange() {
-    _sceneGraph.getRoot().onCameraChange();
+void Scene::onCameraUpdate(Camera& camera) {
+    _sceneGraph.getRoot().onCameraUpdate(camera);
 }
 
 void Scene::postRender() {

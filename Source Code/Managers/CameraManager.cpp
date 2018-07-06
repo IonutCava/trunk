@@ -34,7 +34,7 @@ bool CameraManager::frameStarted(const FrameEvent& evt) {
         for (CameraPool::value_type& it : _cameraPool) {
             cam = it.second;
             cam->clearListeners();
-            for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
+            for (const DELEGATE_CBK_PARAM<Camera>& listener : _updateCameralisteners) {
                 cam->addUpdateListener(listener);
             }
         }
@@ -52,10 +52,12 @@ void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
 
     _camera = cam;
 
-    if (callActivate) _camera->onActivate();
+    if (callActivate) {
+        _camera->onActivate();
+    }
 
-    for (const DELEGATE_CBK<>& listener : _changeCameralisteners) {
-        listener();
+    for (const DELEGATE_CBK_PARAM<Camera>& listener : _changeCameralisteners) {
+        listener(*cam);
     }
 }
 
@@ -71,7 +73,7 @@ void CameraManager::addNewCamera(const stringImpl& cameraName,
         "postProcessing.anaglyphOffset"));
     camera->setName(cameraName);
 
-    for (const DELEGATE_CBK<>& listener : _updateCameralisteners) {
+    for (const DELEGATE_CBK_PARAM<Camera>& listener : _updateCameralisteners) {
         camera->addUpdateListener(listener);
     }
 

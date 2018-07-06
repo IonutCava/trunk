@@ -127,8 +127,7 @@ const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
 }
 
 bool AnimationComponent::onDraw(RenderStage currentStage) {
-    if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY ||
-        !_playAnimations) {
+    if (!_playAnimations) {
         return true;
     }
 

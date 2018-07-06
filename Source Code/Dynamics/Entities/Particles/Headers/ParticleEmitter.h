@@ -96,7 +96,7 @@ class ParticleEmitter : public SceneNode {
                          RenderStage renderStage,
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
-    void onCameraChange(SceneGraphNode& sgn);
+    void onCameraUpdate(SceneGraphNode& sgn, Camera& camera);
 
    private:
     I32 findUnusedParticle();

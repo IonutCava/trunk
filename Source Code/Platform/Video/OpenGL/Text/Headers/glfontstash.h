@@ -75,6 +75,7 @@ static void glfons__renderUpdate(void* userPtr,
     }
 
     Divide::GL_API::setPixelUnpackAlignment(1, gl->width, rect[1], rect[0]);
+    glBindTexture(GL_TEXTURE_2D, gl->tex);
     Divide::GLUtil::DSAWrapper::dsaTextureSubImage(
         gl->tex, GL_TEXTURE_2D, 0, rect[0], rect[1], 0, w, h, -1, GL_RED,
         GL_UNSIGNED_BYTE, (Divide::bufferPtr)data);
@@ -102,6 +103,7 @@ static void glfons__renderDraw(void* userPtr,
         bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts,
         (Divide::bufferPtr)colors);
 
+    glBindTexture(GL_TEXTURE_2D, gl->tex);
     Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);

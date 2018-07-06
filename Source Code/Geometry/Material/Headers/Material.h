@@ -192,7 +192,7 @@ class Material : public Resource {
         _dirty = true;
         _shaderData._diffuse = value;
         if (value.a < 0.95f) {
-            _translucencyCheck = false;
+            _translucencyCheck = true;
         }
     }
 
@@ -216,7 +216,7 @@ class Material : public Resource {
     inline void setOpacity(F32 value) {
         _dirty = true;
         _shaderData._diffuse.a = value;
-        _translucencyCheck = false;
+        _translucencyCheck = true;
     }
     inline void setShininess(F32 value) {
         _dirty = true;

@@ -282,12 +282,8 @@ class Camera : public Resource {
         return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
     }
 
-    inline const mat4<F32>& getWorldMatrix() {
-        if (updateViewMatrix()) {
-            _viewMatrix.getInverse(_worldMatrix);
-        }
-
-        return _worldMatrix;
+    inline void getWorldMatrix(mat4<F32>& worldMatOut) {
+        getViewMatrix().getInverse(worldMatOut);
     }
 
     /// Nothing really to unload
@@ -295,7 +291,7 @@ class Camera : public Resource {
     /// Add an event listener called after every RenderLookAt or
     /// RenderLookAtCube
     /// call
-    virtual void addUpdateListener(const DELEGATE_CBK<>& f) {
+    virtual void addUpdateListener(const DELEGATE_CBK_PARAM<Camera>& f) {
         _listeners.push_back(f);
     }
     /// Informs all listeners of a new event
@@ -350,7 +346,6 @@ class Camera : public Resource {
 
    protected:
     mat4<F32> _viewMatrix;
-    mat4<F32> _worldMatrix;
     mat4<F32> _projectionMatrix;
     mat4<F32> _reflectedViewMatrix;
     Quaternion<F32> _orientation, _tempOrientation;
@@ -373,7 +368,7 @@ class Camera : public Resource {
     F32 _camIOD;
     CameraType _type;
 
-    vectorImpl<DELEGATE_CBK<> > _listeners;
+    vectorImpl<DELEGATE_CBK_PARAM<Camera> > _listeners;
     bool _isActive;
     bool _projectionDirty;
     bool _viewMatrixDirty;

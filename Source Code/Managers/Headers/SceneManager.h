@@ -139,7 +139,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
   protected:
     void initPostLoadState();
-    void onCameraChange();
+    void onCameraUpdate(Camera& camera);
     void sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const;
 
   protected:
@@ -180,8 +180,8 @@ class SceneManagerKernel {
     static void initPostLoadState() {
         Divide::SceneManager::getInstance().initPostLoadState();
     }
-    static void onCameraChange() {
-        Divide::SceneManager::getInstance().onCameraChange();
+    static void onCameraUpdate(Camera& camera) {
+        Divide::SceneManager::getInstance().onCameraUpdate(camera);
     }
     friend class Divide::Kernel;
 };

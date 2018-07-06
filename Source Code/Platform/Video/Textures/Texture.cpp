@@ -113,22 +113,23 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
     if (img.alpha()) {
         // Each pixel is independent so this is a brilliant place to parallelize
         // work
+        I32 i = 0;
         bool abort = false;
-#pragma omp parallel for
-        for (I32 i = 0; i < width; i++) {
-#pragma omp flush(abort)
+#       pragma omp parallel for
+        for (i = 0; i < width; i++) {
+#           pragma omp flush(abort)
             if (!abort) {
                 // We process one column per thread
                 for (I32 j = 0; j < height; j++) {
                     // Check alpha value
                     if (img.getColor(i, j).a < 250) {
-// If the pixel is transparent, toggle translucency flag
-#pragma omp critical
+                        // If the pixel is transparent, toggle translucency flag
+#                       pragma omp critical
                         {
                             // Should be thread-safe
                             _hasTransparency = true;
                             abort = true;
-#pragma omp flush(abort)
+#                           pragma omp flush(abort)
                         }
                     }
                 }

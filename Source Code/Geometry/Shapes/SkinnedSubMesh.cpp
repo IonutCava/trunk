@@ -14,8 +14,7 @@ const static bool USE_MUTITHREADED_LOADING = false;
 
 SkinnedSubMesh::SkinnedSubMesh(const stringImpl& name)
     : SubMesh(name, Object3D::ObjectFlag::OBJECT_FLAG_SKINNED),
-    _parentAnimatorPtr(nullptr),
-    _parentBoneBuffer(nullptr)
+    _parentAnimatorPtr(nullptr)
 {
     _buildingBoundingBoxes = false;
 }

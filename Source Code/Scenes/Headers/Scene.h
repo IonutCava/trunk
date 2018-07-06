@@ -239,7 +239,7 @@ class NOINITVTABLE Scene : public Resource {
     void clearPhysics();
     /**End loading and unloading logic*/
     /// This is a camera listener. Do not call directly.
-    void onCameraChange();
+    void onCameraUpdate(Camera& camera);
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls();
     /// Draw debug entities
@@ -292,7 +292,9 @@ class SceneManager {
     static bool deinitializeAI(Scene& scene, bool continueOnErrors) {
         return scene.deinitializeAI(continueOnErrors);
     }
-    static void onCameraChange(Scene& scene) { scene.onCameraChange(); }
+    static void onCameraUpdate(Scene& scene, Camera& camera) {
+        scene.onCameraUpdate(camera); 
+    }
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
     static bool load(Scene& scene, const stringImpl& name,

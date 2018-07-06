@@ -328,6 +328,8 @@ auto DELEGATE_CREF(Args&&... args)
 template <typename T = void>
 using DELEGATE_CBK = std::function<T()>;
 
+template <typename P, typename T = void>
+using DELEGATE_CBK_PARAM = std::function < T(P& param) > ;
 
 U32 HARDWARE_THREAD_COUNT();
 

@@ -201,8 +201,8 @@ void SceneManager::postRender() {
     _activeScene->postRender();
 }
 
-void SceneManager::onCameraChange() {
-    Attorney::SceneManager::onCameraChange(*_activeScene);
+void SceneManager::onCameraUpdate(Camera& camera) {
+    Attorney::SceneManager::onCameraUpdate(*_activeScene, camera);
 }
 
 ///--------------------------Input

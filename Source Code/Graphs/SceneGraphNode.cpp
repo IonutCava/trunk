@@ -281,11 +281,11 @@ void SceneGraphNode::setInitialBoundingBox(
     }
 }
 
-void SceneGraphNode::onCameraChange() {
+void SceneGraphNode::onCameraUpdate(Camera& camera) {
     for (NodeChildren::value_type& it : _children) {
-        it.second->onCameraChange();
+        it.second->onCameraUpdate(camera);
     }
-    Attorney::SceneNodeGraph::onCameraChange(*_node, *this);
+    Attorney::SceneNodeGraph::onCameraUpdate(*_node, *this, camera);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut

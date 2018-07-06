@@ -20,7 +20,7 @@ Material::Material()
       _hardwareSkinning(false),
       _useAlphaTest(false),
       _dumpToFile(true),
-      _translucencyCheck(false),
+      _translucencyCheck(true),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE)
 {
@@ -157,6 +157,23 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           const TextureOperation& op) {
     bool computeShaders = false;
     U32 slot = to_uint(textureUsageSlot);
+
+    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
+        _operation = op;
+    }
+
+    if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
+        Texture* diffuseMap = _textures[to_uint(ShaderProgram::TextureUsage::UNIT0)];
+        if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
+            return;
+        }
+
+    }
+
+    _translucencyCheck =
+        (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
+         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
+
     if (_textures[slot]) {
         UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
         RemoveResource(_textures[slot]);
@@ -170,14 +187,6 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     if (texture) {
         REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
     }
-
-    if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
-        _operation = op;
-    }
-
-    _translucencyCheck =
-        (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
-         textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
 
     if (computeShaders) {
         recomputeShaders();
@@ -548,7 +557,7 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
 }
 
 bool Material::isTranslucent() {
-    if (!_translucencyCheck) {
+    if (_translucencyCheck) {
         _translucencySource.clear();
         bool useAlphaTest = false;
         // In order of importance (less to more)!
@@ -576,7 +585,7 @@ bool Material::isTranslucent() {
         if (!_translucencySource.empty()) {
             setDoubleSided(true, useAlphaTest);
         }
-        _translucencyCheck = true;
+        _translucencyCheck = false;
         recomputeShaders();
     }
 

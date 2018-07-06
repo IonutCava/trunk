@@ -288,10 +288,8 @@ namespace DSAWrapper {
                 return;
             }
 #endif
-
-            glGenerateTextureMipmapEXT(texture, target);
-            return;
         }
+
         GL_API::bindTexture(0, texture, target);
         glGenerateMipmap(target);
     }
@@ -303,29 +301,23 @@ namespace DSAWrapper {
         if (!GL_USE_DSA_EXTENSION) {
             if (height == -1 && depth == -1) {
                 glTextureStorage1D(texture, levels, internalformat, width);
-            }
-            else if (depth == -1) {
+            } else if (depth == -1) {
                 glTextureStorage2D(texture, levels, internalformat, width, height);
-            }
-            else {
+            } else {
                 glTextureStorage3D(texture, levels, internalformat, width, height,
                     depth);
             }
             return;
         }
 #endif
-
+        Divide::GL_API::bindTexture(0, texture, target);
         if (height == -1 && depth == -1) {
-            glext::glTextureStorage1DEXT(texture, target, levels, internalformat,
-                width);
-        }
-        else if (depth == -1) {
-            glext::glTextureStorage2DEXT(texture, target, levels, internalformat,
-                width, height);
-        }
-        else {
-            glext::glTextureStorage3DEXT(texture, target, levels, internalformat,
-                width, height, depth);
+            glTexStorage1D(target, levels, internalformat, width);
+        } else if (depth == -1) {
+            glTexStorage2D(target, levels, internalformat, width, height);
+        } else {
+            glTexStorage3D(target, levels, internalformat, width, height,
+                           depth);
         }
     }
 
@@ -339,8 +331,7 @@ namespace DSAWrapper {
             if (depth == -1) {
                 glTextureStorage2DMultisample(texture, samples, internalformat,
                     width, height, fixedsamplelocations);
-            }
-            else {
+            } else {
                 glTextureStorage3DMultisample(texture, samples, internalformat,
                     width, height, depth,
                     fixedsamplelocations);
@@ -348,15 +339,13 @@ namespace DSAWrapper {
             return;
         }
 #endif
+        Divide::GL_API::bindTexture(0, texture, target);
         if (depth == -1) {
-            glext::glTextureStorage2DMultisampleEXT(texture, target, samples,
-                internalformat, width, height,
-                fixedsamplelocations);
-        }
-        else {
-            glext::glTextureStorage3DMultisampleEXT(texture, target, samples,
-                internalformat, width, height,
-                depth, fixedsamplelocations);
+            glTexStorage2DMultisample(target, samples, internalformat, width,
+                                      height, fixedsamplelocations);
+        } else {
+            glTexStorage3DMultisample(target, samples, internalformat, width,
+                                      height, depth, fixedsamplelocations);
         }
     }
 
@@ -370,12 +359,10 @@ namespace DSAWrapper {
             if (height == -1 && depth == -1) {
                 glTextureSubImage1D(texture, level, xoffset, width, format, type,
                     pixels);
-            }
-            else if (depth == -1) {
+            } else if (depth == -1) {
                 glTextureSubImage2D(texture, level, xoffset, yoffset, width, height,
                     format, type, pixels);
-            }
-            else {
+            } else {
                 glTextureSubImage3D(texture, level, xoffset, yoffset, zoffset,
                     width, height, depth, format, type, pixels);
             }
@@ -383,22 +370,19 @@ namespace DSAWrapper {
         }
 #endif
 
+        Divide::GL_API::bindTexture(0, texture, target);
         if (height == -1 && depth == -1) {
-            glext::glTextureSubImage1DEXT(texture, target, level, xoffset, width,
-                format, type, pixels);
-        }
-        else if (depth == -1 || target == GL_TEXTURE_CUBE_MAP) {
-            glext::glTextureSubImage2DEXT(
-                texture,
-                target == GL_TEXTURE_CUBE_MAP
-                ? GL_TEXTURE_CUBE_MAP_POSITIVE_X + static_cast<GLuint>(zoffset)
-                : target,
-                level, xoffset, yoffset, width, height, format, type, pixels);
-        }
-        else {
-            glext::glTextureSubImage3DEXT(texture, target, level, xoffset, yoffset,
-                zoffset, width, height, depth, format,
-                type, pixels);
+            glTexSubImage1D(target, level, xoffset, width, format, type, pixels);
+        } else if (depth == -1 || target == GL_TEXTURE_CUBE_MAP) {
+            glTexSubImage2D(target == GL_TEXTURE_CUBE_MAP
+                                ? GL_TEXTURE_CUBE_MAP_POSITIVE_X +
+                                      static_cast<GLuint>(zoffset)
+                                : target,
+                            level, xoffset, yoffset, width, height, format,
+                            type, pixels);
+        } else {
+            glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width,
+                            height, depth, format, type, pixels);
         }
     }
 
@@ -411,8 +395,6 @@ namespace DSAWrapper {
                 return;
             }
 #endif
-            glext::glTextureParameterfEXT(texture, target, pname, param);
-            return;
         }
         GL_API::bindTexture(0, texture, target);
         glTexParameterf(target, pname, param);
@@ -425,11 +407,10 @@ namespace DSAWrapper {
             if (!GL_USE_DSA_EXTENSION) {
                 glTextureParameteri(texture, pname, param);
                 return;
-    }
+            }
 #endif
-            glext::glTextureParameteriEXT(texture, target, pname, param);
-            return;
-}
+        }
+
         GL_API::bindTexture(0, texture, target);
         glTexParameteri(target, pname, param);
     }
