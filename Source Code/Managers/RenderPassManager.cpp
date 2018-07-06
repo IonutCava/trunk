@@ -37,7 +37,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     TaskPool& pool = parent().platformContext().taskPool();
     TaskHandle renderTarsk = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
 
-    for (vec_size i = 0; i < _renderPasses.size(); ++i) {
+    for (vec_size_eastl i = 0; i < _renderPasses.size(); ++i) {
         RenderPass& rp = _renderPasses[i];
         GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
         CreateTask(pool,
@@ -65,18 +65,18 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
 
     RenderPass& item = _renderPasses.back();
 
-    std::sort(std::begin(_renderPasses),
-              std::end(_renderPasses),
-              [](const RenderPass& a, const RenderPass& b) -> bool {
-                    return a.sortKey() < b.sortKey();
-              });
+    eastl::sort(eastl::begin(_renderPasses),
+                eastl::end(_renderPasses),
+                [](RenderPass* a, RenderPass* b) -> bool {
+                      return a->sortKey() < b->sortKey();
+                });
 
     return item;
 }
 
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
-    for (vector<RenderPass>::iterator it = std::begin(_renderPasses);
-         it != std::end(_renderPasses); ++it) {
+    for (vectorEASTL<RenderPass>::iterator it = eastl::begin(_renderPasses);
+         it != eastl::end(_renderPasses); ++it) {
         if ((*it).name().compare(name) == 0) {
             _renderPasses.erase(it);
             // Remove one command buffer

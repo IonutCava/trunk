@@ -94,7 +94,7 @@ private:
     GFXDevice& _context;
     RenderQueue _renderQueue;
 
-    vector<RenderPass> _renderPasses;
+    vectorEASTL<RenderPass> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
 
     ShaderProgram_ptr _OITCompositionShader;
