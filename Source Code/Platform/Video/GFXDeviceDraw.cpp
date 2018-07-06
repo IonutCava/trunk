@@ -32,36 +32,33 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::renderQueueToSubPasses(RenderPassCmd& commandsInOut) {
-    ReadLock lock(_renderQueueLock);
-    for (RenderPackageQueue& renderQueue : _renderQueues) {
-        if (!renderQueue.empty()) {
-            U32 queueSize = renderQueue.size();
-            for (U32 idx = 0; idx < queueSize; ++idx) {
-                RenderSubPassCmd subPassCmd;
-                RenderPackage& package = renderQueue.getPackage(idx);
-                GenericDrawCommands& drawCommands = package._drawCommands;
-                if (drawCommands.size() > 0 && batchCommands(drawCommands)) {
-                    std::for_each(std::begin(drawCommands),
-                                  std::end(drawCommands),
-                                  [&](GenericDrawCommand& cmd) -> void {
-                                      cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
-                                  });
+void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& subPassCmd) {
+    RenderPackageQueue& renderQueue = _renderQueues[queueType._to_integral()];
 
-                    for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                        subPassCmd._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
-                    }
+    assert(renderQueue.locked() == false);
+    if (!renderQueue.empty()) {
+        U32 queueSize = renderQueue.size();
+        for (U32 idx = 0; idx < queueSize; ++idx) {
+            RenderPackage& package = renderQueue.getPackage(idx);
+            GenericDrawCommands& drawCommands = package._drawCommands;
+            if (drawCommands.size() > 0 && batchCommands(drawCommands)) {
+                std::for_each(std::begin(drawCommands),
+                                std::end(drawCommands),
+                                [&](GenericDrawCommand& cmd) -> void {
+                                    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT);
+                                });
 
-                    subPassCmd._textures.set(package._textureData);
-                    subPassCmd._commands.insert(std::cbegin(subPassCmd._commands),
-                                                std::cbegin(drawCommands),
-                                                std::cend(drawCommands));
-                    commandsInOut._subPassCmds.push_back(subPassCmd);
+                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
+                    subPassCmd._shaderBuffers.emplace_back(it._buffer, it._slot, it._range);
                 }
+
+                subPassCmd._textures.set(package._textureData);
+                subPassCmd._commands.insert(std::cbegin(subPassCmd._commands),
+                                            std::cbegin(drawCommands),
+                                            std::cend(drawCommands));
             }
-            renderQueue.clear();
         }
-        renderQueue.unlock();
+        renderQueue.clear();
     }
 }
 
@@ -70,13 +67,23 @@ void GFXDevice::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     _api->flushCommandBuffer(commandBuffer);
 }
 
-void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
+void GFXDevice::lockQueue(RenderBinType type) {
+    _renderQueues[type._to_integral()].lock();
+}
+
+void GFXDevice::unlockQueue(RenderBinType type) {
+    _renderQueues[type._to_integral()].unlock();
+}
+
+void GFXDevice::addToRenderQueue(RenderBinType queueType, const RenderPackage& package) {
+    U32 queueIndex = queueType._to_integral();
+
+    assert(_renderQueues[queueIndex].locked() == true);
+
     if (!package.isRenderable()) {
         return;
     }
 
-    ReadLock lock(_renderQueueLock);
-    assert(_renderQueues.size() > queueIndex);
     RenderPackageQueue& queue = _renderQueues[queueIndex];
 
     if (!queue.empty()) {
@@ -93,24 +100,6 @@ void GFXDevice::addToRenderQueue(U32 queueIndex, const RenderPackage& package) {
     }
 
     queue.push_back(package);
-}
-
-I32 GFXDevice::reserveRenderQueue() {
-    UpgradableReadLock ur_lock(_renderQueueLock);
-    //ToDo: Nothing about this bloody thing is threadsafe
-    I32 queueCount = to_I32(_renderQueues.size());
-    for (I32 i = 0; i < queueCount; ++i) {
-        RenderPackageQueue& queue = _renderQueues[i];
-        if (queue.empty() && !queue.locked()) {
-            queue.lock();
-            return i;
-        }
-    }
-
-    UpgradeToWriteLock uw_lock(ur_lock);
-    _renderQueues.emplace_back();
-    _renderQueues[queueCount].lock();
-    return queueCount;
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -152,7 +141,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     return dataOut;
 }
 
-void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
+void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                                   SceneRenderState& sceneRenderState,
                                   RenderPass::BufferData& bufferData,
                                   bool refreshNodeData)
@@ -182,57 +171,45 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         }
     }
 
-    std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
-                 [&](RenderPassCuller::VisibleNode& node) -> void
-    {
-
-        const SceneGraphNode* nodeRef = node.second;
-        RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
-        Attorney::RenderingCompGFXDevice::prepareDrawPackage(*renderable, sceneRenderState, currentStage);
-    });
-
     U32 nodeCount = 0;
     U32 cmdCount = 0;
-    std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
-        [&](RenderPassCuller::VisibleNode& node) -> void
-    {
-        const SceneGraphNode* nodeRef = node.second;
 
-        RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
-        RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
-                                                                               sceneRenderState,
-                                                                               currentStage,
-                                                                               refreshNodeData ? cmdCount
-                                                                                               : renderable->commandOffset(),
-                                                                               refreshNodeData ? nodeCount
-                                                                                               : renderable->commandIndex());
-        if (pkg.isRenderable()) {
-            if (refreshNodeData) {
+    for (const vectorImpl<SceneGraphNode*>& queue : sortedNodes) {
+        std::for_each(std::begin(queue), std::end(queue),
+            [&](SceneGraphNode* node) -> void
+            {
+                RenderingComponent* renderable = node->get<RenderingComponent>();
+                Attorney::RenderingCompGFXDevice::prepareDrawPackage(*renderable, sceneRenderState, currentStage);
+            });
 
-                NodeData& dataOut = processVisibleNode(*nodeRef, nodeCount);
-                //set properties.w to -1 to skip occlusion culling for the node
-                dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
-
-                if (refreshNodeData) {
-                    for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                        for (U32 i = 0; i < cmd.drawCount(); ++i) {
-                            _drawCommandsCache[cmdCount++].set(cmd.cmd());
-                        }
-                    }
-                } else {
-                    if (Config::Build::IS_DEBUG_BUILD) {
+        std::for_each(std::begin(queue), std::end(queue),
+            [&](SceneGraphNode* node) -> void
+            {
+                RenderingComponent* renderable = node->get<RenderingComponent>();
+                RenderPackage& pkg = 
+                    Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
+                                                                     sceneRenderState,
+                                                                     currentStage,
+                                                                     refreshNodeData ? cmdCount
+                                                                                     : renderable->commandOffset(),
+                                                                     refreshNodeData ? nodeCount
+                                                                                     : renderable->commandIndex());
+                if (pkg.isRenderable()) {
+                    if (refreshNodeData) {
+                        NodeData& dataOut = processVisibleNode(*node, nodeCount);
+                        //set properties.w to -1 to skip occlusion culling for the node
+                        dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
                         for (GenericDrawCommand& cmd : pkg._drawCommands) {
                             for (U32 i = 0; i < cmd.drawCount(); ++i) {
-                                DIVIDE_ASSERT(_drawCommandsCache[cmdCount++] == cmd.cmd());
+                                _drawCommandsCache[cmdCount++].set(cmd.cmd());
                             }
                         }
                     }
+                    nodeCount++;
                 }
-            }
-            nodeCount++;
-        }
-    });
-    
+            });
+    }
+
     if (refreshNodeData) {
         bufferData._lastCommandCount = cmdCount;
         bufferData._lasNodeCount = nodeCount;
@@ -252,10 +229,6 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
         bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO);
-    } else {
-        if (Config::Build::IS_DEBUG_BUILD) {
-            assert(!bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO));
-        }
     }
 }
 

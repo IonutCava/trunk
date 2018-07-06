@@ -43,7 +43,9 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue {
+   public:
     typedef std::array<RenderBin*, RenderBinType::COUNT> RenderBinArray;
+    typedef std::array<vectorImpl<SceneGraphNode*>, to_base(RenderBinType::COUNT)> SortedQueues;
 
   public:
     RenderQueue(GFXDevice& context);
@@ -68,6 +70,8 @@ class RenderQueue {
         return _renderBins;
     }
 
+    const SortedQueues& getSortedQueues();
+
   private:
     RenderingOrder::List getSortOrder(RenderBinType rbType);
 
@@ -79,6 +83,7 @@ class RenderQueue {
   private:
     GFXDevice& _context;
     RenderBinArray _renderBins;
+    SortedQueues   _sortedQueues;
     vectorImpl<RenderBin*> _activeBins;
 };
 

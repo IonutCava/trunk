@@ -108,6 +108,11 @@ class ImageData : private NonCopyable {
     vec4<U8> getColour(I32 x, I32 y, U32 mipLevel = 0) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
+    void getRed(I32 x, I32 y, U8& r, U32 mipLevel = 0) const;
+    void getGreen(I32 x, I32 y, U8& g, U32 mipLevel = 0) const;
+    void getBlue(I32 x, I32 y, U8& b, U32 mipLevel = 0) const;
+    void getAlpha(I32 x, I32 y, U8& a, U32 mipLevel = 0) const;
+
     inline TextureType compressedTextureType() const {
         return _compressedTextureType;
     }

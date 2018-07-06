@@ -149,6 +149,20 @@ void cleanCommandBuffer(CommandBuffer& cmdBuffer) {
 
 void RenderPassManager::doCustomPass(PassParams& params) {
     static CommandBuffer commandBuffer;
+
+    static const vectorImpl<RenderBinType> depthExclusionList
+    {
+        RenderBinType::RBT_DECAL,
+        RenderBinType::RBT_TRANSLUCENT
+    };
+
+    static const vectorImpl<RenderBinType> shadowExclusionList
+    {
+        RenderBinType::RBT_DECAL,
+        RenderBinType::RBT_SKY,
+        RenderBinType::RBT_TRANSLUCENT
+    };
+
     commandBuffer.resize(0);
 
 
@@ -181,17 +195,30 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
 
             RenderPassCmd cmd;
+            cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             if (params.bindTargets) {
                 cmd._renderTarget = params.target;
             }
-            cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
-            _context.renderQueueToSubPasses(cmd);
+            U32 binCount = to_U32(RenderBinType::COUNT);
+            RenderSubPassCmds binCmds(binCount);
+
+            for (U32 i = 0; i < binCount; ++i) {
+                if (std::find(std::begin(depthExclusionList),
+                              std::end(depthExclusionList),
+                              RenderBinType::_from_integral(i)) == std::cend(depthExclusionList))
+                {
+                    _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
+                }
+            }
+
+            cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(binCmds), std::cend(binCmds));
+
             RenderSubPassCmds postRenderSubPasses(1);
             Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
-
             cleanCommandBuffer(commandBuffer);
+            
             _context.flushCommandBuffer(commandBuffer);
             commandBuffer.resize(0);
 
@@ -244,7 +271,27 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             cmd._renderTarget = params.target;
         }
         cmd._renderTargetDescriptor = drawPolicy;
-        _context.renderQueueToSubPasses(cmd);
+
+        U32 binCount = to_U32(RenderBinType::COUNT);
+        RenderSubPassCmds binCmds(binCount);
+
+        if (params.stage == RenderStage::SHADOW) {
+            for (U32 i = 0; i < binCount; ++i) {
+                if (std::find(std::begin(shadowExclusionList),
+                    std::end(shadowExclusionList),
+                    RenderBinType::_from_integral(i)) == std::cend(shadowExclusionList))
+                {
+                    _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
+                }
+            }
+        }  else {
+            for (U32 i = 0; i < binCount; ++i) {
+                _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), binCmds[i]);
+            }
+            
+        }
+
+        cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(binCmds), std::cend(binCmds));
 
         RenderSubPassCmds postRenderSubPasses(1);
         Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);

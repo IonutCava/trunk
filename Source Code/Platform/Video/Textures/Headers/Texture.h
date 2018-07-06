@@ -137,8 +137,10 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
-    /// If the texture has an alpha channel and at least one pixel is
-    /// translucent, return true
+    /// If the texture has an alpha channel and at least one pixel is translucent, return true
+    inline bool hasTranslucency() const { return _hasTranslucency; }
+    /// If the texture has an alpha channel and at least on pixel is fully transparent and
+    // no pixels are partially transparent, return true
     inline bool hasTransparency() const { return _hasTransparency; }
     /// Get the type of the texture
     inline TextureType getTextureType() const { return _textureData._textureType; }
@@ -178,6 +180,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     bool _mipMapsDirty;
     bool _samplerDirty;
     bool _hasTransparency;
+    bool _hasTranslucency;
     bool _asyncLoad;
     TextureData  _textureData;
     TextureDescriptor _descriptor;

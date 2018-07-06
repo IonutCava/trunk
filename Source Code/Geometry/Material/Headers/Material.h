@@ -54,7 +54,7 @@ enum class ReflectorType : U32;
 
 class Material : public CachedResource {
    public:
-    enum class BumpMethod : U32 {
+    enum class BumpMethod : U8 {
         NONE = 0,    //<Use phong
         NORMAL = 1,  //<Normal mapping
         PARALLAX = 2,
@@ -63,7 +63,7 @@ class Material : public CachedResource {
     };
 
     /// How should each texture be added
-    enum class TextureOperation : U32 {
+    enum class TextureOperation : U8 {
         NONE = 0,
         MULTIPLY = 1,
         ADD = 2,
@@ -76,12 +76,19 @@ class Material : public CachedResource {
         COUNT
     };
 
-    enum class TranslucencySource : U32 {
+    enum class TranslucencySource : U8 {
         DIFFUSE = 0,
         DIFFUSE_MAP,
         OPACITY_MAP,
         COUNT
     };
+
+    enum class TranslucencyType : U8 {
+        FULL_TRANSPARENT = 0,
+        TRANSLUCENT,
+        COUNT
+    };
+
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
     enum class ShadingMode : U32 {
@@ -147,11 +154,10 @@ class Material : public CachedResource {
     void setOpacity(F32 value);
     void setShininess(F32 value);
     void setShadingMode(const ShadingMode& mode);
-    void useAlphaTest(const bool state);
     // Should the shaders be computed on add? Should reflections be always parsed? Etc
     void setHighPriority(const bool state);
 
-    void setDoubleSided(const bool state, const bool useAlphaTest = true);
+    void setDoubleSided(const bool state);
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::REPLACE);
@@ -253,13 +259,13 @@ class Material : public CachedResource {
 
     void rebuild();
     void clean();
-    bool updateTranslucency();
-    bool isTranslucent() const;
+    void updateTranslucency(bool requestRecomputeShaders = true);
+    bool hasTranslucency() const;
+    bool hasTransparency() const;
 
     void dumpToFile(bool state);
     bool isDirty() const;
     bool isDoubleSided() const;
-    bool useAlphaTest() const;
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
     bool computeShader(const RenderStagePass& renderStagePass, const bool computeOnAdd);
@@ -302,13 +308,12 @@ class Material : public CachedResource {
     /// use for special shader tokens, such as "Tree"
     std::array<stringImpl, to_base(RenderStagePass::count())> _shaderModifier;
     TranslucencySource _translucencySource;
+    TranslucencyType _translucencyType;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;
-    /// use discard if true / blend if otherwise
-    bool _useAlphaTest;
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;

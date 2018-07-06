@@ -74,10 +74,6 @@ inline void Material::setShininess(F32 value) {
     _colourData._shininess = value;
 }
 
-inline void Material::useAlphaTest(const bool state) {
-    _useAlphaTest = state;
-}
-
 // Should the shaders be computed on add? Should reflections be always parsed? Etc
 inline void Material::setHighPriority(const bool state) {
     _highPriority = state;
@@ -217,7 +213,11 @@ inline const Material::BumpMethod&  Material::getBumpMethod()  const {
     return _bumpMethod;
 }
 
-inline bool Material::isTranslucent() const {
+inline bool Material::hasTranslucency() const {
+    return _translucencyType != TranslucencyType::FULL_TRANSPARENT;
+}
+
+inline bool Material::hasTransparency() const {
     return _translucencySource != TranslucencySource::COUNT;
 }
 
@@ -231,10 +231,6 @@ inline bool Material::isDirty() const {
 
 inline bool Material::isDoubleSided() const {
     return _doubleSided;
-}
-
-inline bool Material::useAlphaTest() const {
-    return _useAlphaTest;
 }
 
 inline U32 Material::defaultReflectionTextureIndex() const {

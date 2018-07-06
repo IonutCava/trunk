@@ -24,7 +24,6 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
       _context(context),
       _lodLevel(0),
-      _drawOrder(0),
       _commandIndex(0),
       _commandOffset(0),
       _preDrawPass(false),
@@ -730,7 +729,7 @@ bool RenderingComponent::clearRefraction() {
     if (mat == nullptr) {
         return false;
     }
-    if (!mat->isTranslucent()) {
+    if (!mat->hasTransparency()) {
         return false;
     }
     mat->updateRefractionIndex(_reflectorType, -1);

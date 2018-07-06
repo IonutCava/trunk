@@ -40,6 +40,7 @@ U16 RenderQueue::getRenderQueueStackSize() const {
 RenderingOrder::List RenderQueue::getSortOrder(RenderBinType rbType) {
     RenderingOrder::List sortOrder = RenderingOrder::List::COUNT;
     switch (rbType) {
+        case RenderBinType::RBT_TRANSPARENT:
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
             sortOrder = !_context.isDepthStage() ? RenderingOrder::List::BY_STATE
@@ -50,14 +51,11 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderBinType rbType) {
         } break;
         case RenderBinType::RBT_IMPOSTOR:
         case RenderBinType::RBT_TERRAIN:
-        case RenderBinType::RBT_DECALS: {
+        case RenderBinType::RBT_DECAL: {
             // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
             sortOrder = !_context.isDepthStage() ? RenderingOrder::List::FRONT_TO_BACK
                                                  : RenderingOrder::List::NONE;
         } break;
-        case RenderBinType::RBT_WATER:
-        case RenderBinType::RBT_VEGETATION_GRASS:
-        case RenderBinType::RBT_PARTICLES:
         case RenderBinType::RBT_TRANSLUCENT: {
             // Translucent items should be rendered by material in depth passes to avoid useless material switches
             // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
@@ -95,30 +93,30 @@ RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
                                       const Material_ptr& matInstance) {
     assert(node != nullptr);
     switch (node->getType()) {
-        case SceneNodeType::TYPE_LIGHT: {
-            return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
-        }
-        case SceneNodeType::TYPE_WATER: {
-            return getOrCreateBin(RenderBinType::RBT_WATER);
-        }
-        case SceneNodeType::TYPE_PARTICLE_EMITTER: {
-            return getOrCreateBin(RenderBinType::RBT_PARTICLES);
-        }
-        case SceneNodeType::TYPE_VEGETATION_GRASS: {
-            return getOrCreateBin(RenderBinType::RBT_VEGETATION_GRASS);
-        }
-        case SceneNodeType::TYPE_SKY: {
-            return getOrCreateBin(RenderBinType::RBT_SKY);
-        }
-        case SceneNodeType::TYPE_VEGETATION_TREES:
+        case SceneNodeType::TYPE_LIGHT: return getOrCreateBin(RenderBinType::RBT_IMPOSTOR);
+        case SceneNodeType::TYPE_WATER:
+        case SceneNodeType::TYPE_PARTICLE_EMITTER: return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+        case SceneNodeType::TYPE_VEGETATION_GRASS: return getOrCreateBin(RenderBinType::RBT_TRANSPARENT);
+        case SceneNodeType::TYPE_SKY: return getOrCreateBin(RenderBinType::RBT_SKY);
+        
         case SceneNodeType::TYPE_OBJECT3D: {
-            if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::TERRAIN) {
-                return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+        case SceneNodeType::TYPE_VEGETATION_TREES:
+            if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
+                Object3D::ObjectType type = static_cast<Object3D*>(node.get())->getObjectType();
+                switch (type) {
+                    case Object3D::ObjectType::TERRAIN: return getOrCreateBin(RenderBinType::RBT_TERRAIN);
+                    case Object3D::ObjectType::DECAL: return getOrCreateBin(RenderBinType::RBT_DECAL);
+                }
             }
-            // Check if the object has a material with translucency
-            if (matInstance && matInstance->isTranslucent()) {
+            // Check if the object has a material with transparency/translucency
+            if (matInstance) {
                 // Add it to the appropriate bin if so ...
-                return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+                if (matInstance->hasTransparency()) {
+                    if (matInstance->hasTranslucency()) {
+                        return getOrCreateBin(RenderBinType::RBT_TRANSLUCENT);
+                    }
+                    return getOrCreateBin(RenderBinType::RBT_TRANSPARENT);
+                }
             }
             //... else add it to the general geometry bin
             return getOrCreateBin(RenderBinType::RBT_OPAQUE);
@@ -141,20 +139,11 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePas
 }
 
 void RenderQueue::populateRenderQueues(const RenderStagePass& renderStagePass) {
-    TaskPool& pool = Application::instance().kernel().taskPool();
-
-    TaskHandle populateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
-            populateTask.addChildTask(
-                CreateTask(pool,
-                           [renderBin, &renderStagePass](const Task& parentTask) {
-                               renderBin->populateRenderQueue(parentTask, renderStagePass);
-                           })._task)->startTask(Task::TaskPriority::HIGH);
+            renderBin->populateRenderQueue(renderStagePass);
         }
     }
-    populateTask.startTask(Task::TaskPriority::MAX);
-    populateTask.wait();
 }
 
 void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
@@ -164,12 +153,6 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
 }
 
 void RenderQueue::sort() {
-    U32 index = 0;
-    for (RenderBin* renderBin : _activeBins) {
-        renderBin->binIndex(index);
-        index += renderBin->getBinSize();
-    }
-
     TaskPool& pool = Application::instance().kernel().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
@@ -189,6 +172,15 @@ void RenderQueue::refresh() {
     for (RenderBin* renderBin : _activeBins) {
         renderBin->refresh();
     }
+}
+
+const RenderQueue::SortedQueues& RenderQueue::getSortedQueues() {
+    for (RenderBin* renderBin : _activeBins) {
+        vectorImpl<SceneGraphNode*>& nodes = _sortedQueues[renderBin->getType()._to_integral()];
+        renderBin->getSortedNodes(nodes);
+    }
+
+    return _sortedQueues;
 }
 
 };

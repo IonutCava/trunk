@@ -322,6 +322,26 @@ vec4<U8> ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
     return returnColour;
 }
 
+void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
+    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    r = _data[mipLevel]._data[idx + 0];
+}
+
+void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
+    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    g = _data[mipLevel]._data[idx + 1];
+}
+
+void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
+    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    b = _data[mipLevel]._data[idx + 2];
+}
+
+void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
+    I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
+    a = _alpha ? _data[mipLevel]._data[idx + 3] : 255;
+}
+
 void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
     I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     r = _data[mipLevel]._data[idx + 0];

@@ -74,20 +74,14 @@ struct RenderingOrder {
 
 //Bins can sold certain node types. This is also the order in which nodes will be rendered!
 BETTER_ENUM(RenderBinType, U32, 
-    RBT_TERRAIN = 0,
-    RBT_OPAQUE,
-    RBT_SKY,
-    RBT_WATER,
-    RBT_VEGETATION_GRASS,
-    RBT_TRANSLUCENT,
-    RBT_PARTICLES,
-    RBT_DECALS,
-    RBT_IMPOSTOR,
+    RBT_TERRAIN = 0, //< Terrains should ocupy most of the screen and be balanced fill/geometry cost
+    RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
+    RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate
+    RBT_TRANSPARENT, //< Transparent items use a simple 0/1 alpha value supplied via an opacity map or the albedo's alpha channel
+    RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
+    RBT_DECAL,       //< Decals are drawn over everything
+    RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
     COUNT)
-
-enum class RenderBitProperty : U32 {
-    TRANSLUCENT = toBit(1)
-};
 
 class SceneRenderState;
 class RenderStagePass;
@@ -106,7 +100,7 @@ class RenderBin {
     ~RenderBin();
 
     void sort(RenderingOrder::List renderOrder, const Task& parentTask);
-    void populateRenderQueue(const Task& parentTask, const RenderStagePass& renderStagePass);
+    void populateRenderQueue(const RenderStagePass& renderStagePass);
     void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
     void refresh();
 
@@ -119,19 +113,16 @@ class RenderBin {
         return _renderBinStack[index];
     }
 
+    void getSortedNodes(vectorImpl<SceneGraphNode*>& nodes) const;
+
     inline U16 getBinSize() const { return (U16)_renderBinStack.size(); }
 
     inline RenderBinType getType() const { return _rbType; }
-
-    inline void binIndex(U32 index) { _binIndex = index; }
 
     inline bool empty() const { return getBinSize() == 0; }
 
    private:
     GFXDevice& _context;
-    // mutable SharedLock _renderBinGetMutex;
-    U32 _binIndex;
-    U32 _binPropertyMask;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
 };

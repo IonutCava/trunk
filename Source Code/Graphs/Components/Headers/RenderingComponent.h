@@ -129,8 +129,6 @@ class RenderingComponent : public SGNComponent {
     bool castsShadows() const;
     bool receivesShadows() const;
     
-    inline U32 drawOrder() const { return _drawOrder; }
-
     inline U32 commandIndex() const { return _commandIndex; }
 
     inline U32 commandOffset() const { return _commandOffset; }
@@ -185,8 +183,6 @@ class RenderingComponent : public SGNComponent {
     RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
 
 
-    inline void drawOrder(U32 index) { _drawOrder = index; }
-
     inline void commandIndex(U32 index) { _commandIndex = index; }
 
     inline void commandOffset(U32 offset) { _commandOffset = offset; }
@@ -214,7 +210,6 @@ class RenderingComponent : public SGNComponent {
 
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
-    U32 _drawOrder;
     U32 _commandIndex;
     U32 _commandOffset;
     bool _preDrawPass;
@@ -326,10 +321,6 @@ class RenderingCompRenderBin {
                            const RenderStagePass& renderStagePass,
                            RenderSubPassCmds& subPassesInOut) {
         renderable.postRender(sceneRenderState, renderStagePass, subPassesInOut);
-    }
-
-    static void drawOrder(RenderingComponent& renderable, U32 index) {
-        renderable.drawOrder(index);
     }
 
     friend class Divide::RenderBin;

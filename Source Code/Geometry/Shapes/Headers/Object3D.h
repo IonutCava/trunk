@@ -52,6 +52,7 @@ class Object3D : public SceneNode {
         SUBMESH = 6,
         TERRAIN = 7,
         FLYWEIGHT = 8,
+        DECAL = 9,
         COUNT
     };
 

@@ -55,7 +55,7 @@ ivec4 dvd_BufferIntegerValues(in uint index) {
 
 #if defined(FRAG_SHADER)
 NodeData dvd_private_node_data = dvd_Matrices[VAR.dvd_instanceID];
-// x - useAlphaTest; y - textureOperation; z - parallax/relief mapping factor, w - reserved
+// x - textureOperation; y - parallax/relief mapping factor, z - reserved, w - reserved
 #define buffer_matProperties dvd_private_node_data._colourMatrix[3]
 #define buffer_integers dvd_private_node_data._properties
 

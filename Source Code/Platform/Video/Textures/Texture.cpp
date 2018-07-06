@@ -32,6 +32,7 @@ Texture::Texture(GFXDevice& context,
       _samplerDirty(true),
       _mipMapsDirty(true),
       _hasTransparency(false),
+      _hasTranslucency(false),
       _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
@@ -155,18 +156,19 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Extract width, height and bitdepth
     U16 width = img.dimensions().width;
     U16 height = img.dimensions().height;
-    // If we have an alpha channel, we must check for translucency
+    // If we have an alpha channel, we must check for translucency/transparency
     if (img.alpha()) {
         auto findAlpha = [this, &img, height](const Task& parent, U32 start, U32 end) {
-            U8 tempR, tempG, tempB, tempA;
+            U8 tempA;
             for (U32 i = start; i < end; ++i) {
-                if (!_hasTransparency) {
-                    for (I32 j = 0; j < height; ++j) {
-                        img.getColour(i, j, tempR, tempG, tempB, tempA);
-                        if (tempA < 250) {
-                            _hasTransparency = true;
-                             return;
-                        }
+                for (I32 j = 0; j < height; ++j) {
+                    if (_hasTransparency && _hasTranslucency) {
+                        return;
+                    }
+                    img.getAlpha(i, j, tempA);
+                    if (IS_IN_RANGE_INCLUSIVE(tempA, 0, 254)) {
+                        _hasTransparency = true;
+                        _hasTranslucency = tempA > 0;
                     }
                 }
                 if (parent.stopRequested()) {

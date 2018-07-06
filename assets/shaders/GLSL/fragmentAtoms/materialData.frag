@@ -229,6 +229,12 @@ vec4 private_getAlbedo() {
 
     albedo.a = getOpacity();
 
+#if defined(USE_ALPHA_DISCARD)
+    if (albedo.a < ALPHA_DISCARD_THRESHOLD) {
+        discard;
+    }
+#endi
+f
     return albedo;
 }
 

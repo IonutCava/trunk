@@ -31,7 +31,6 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _doubleSided(false),
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
-      _useAlphaTest(false),
       _dumpToFile(true),
       _translucencyCheck(true),
       _highPriority(false),
@@ -39,7 +38,8 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _refractionIndex(-1),
       _shadingMode(ShadingMode::COUNT),
       _bumpMethod(BumpMethod::NONE),
-      _translucencySource(TranslucencySource::COUNT)
+      _translucencySource(TranslucencySource::COUNT),
+      _translucencyType(TranslucencyType::COUNT)
 {
     _textures.fill(nullptr);
     _textureExtenalFlag.fill(false);
@@ -106,7 +106,6 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_translucencyCheck = base._translucencyCheck;
     cloneMat->_dumpToFile = base._dumpToFile;
-    cloneMat->_useAlphaTest = base._useAlphaTest;
     cloneMat->_doubleSided = base._doubleSided;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
@@ -118,6 +117,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultReflection = base._defaultReflection;
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
+    cloneMat->_translucencyType = base._translucencyType;
 
     for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
         cloneMat->_shaderModifier[i] = base._shaderModifier[i];
@@ -432,22 +432,31 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         setShaderDefines(renderStagePass, "USE_SPECULAR_MAP");
     }
 
-    if (updateTranslucency()) {
-        switch (_translucencySource) {
-            case TranslucencySource::OPACITY_MAP: {
-                shader += ".OpacityMap";
-                setShaderDefines(renderStagePass, "USE_OPACITY_MAP");
-            } break;
-            case TranslucencySource::DIFFUSE: {
-                shader += ".DiffuseAlpha";
-                setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE");
-            } break;
-            case TranslucencySource::DIFFUSE_MAP: {
-                shader += ".DiffuseMapAlpha";
-                setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE_MAP");
-            } break;
-        };
-    }
+    updateTranslucency(false);
+
+    switch (_translucencySource) {
+        case TranslucencySource::OPACITY_MAP: {
+            shader += ".OpacityMap";
+            setShaderDefines(renderStagePass, "USE_OPACITY_MAP");
+        } break;
+        case TranslucencySource::DIFFUSE: {
+            shader += ".DiffuseAlpha";
+            setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE");
+        } break;
+        case TranslucencySource::DIFFUSE_MAP: {
+            shader += ".DiffuseMapAlpha";
+            setShaderDefines(renderStagePass, "USE_OPACITY_DIFFUSE_MAP");
+        } break;
+        default: break;
+    };
+
+    switch (_translucencyType) {
+        case TranslucencyType::FULL_TRANSPARENT: {
+            shader += ".AlphaDiscard";
+            setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
+        } break;
+        default: break;
+    };
 
     if (_doubleSided) {
         shader += ".DoubleSided";
@@ -567,12 +576,12 @@ bool Material::unload() {
     return true;
 }
 
-void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
-    if (_doubleSided == state && _useAlphaTest == useAlphaTest) {
+void Material::setDoubleSided(const bool state) {
+    if (_doubleSided == state) {
         return;
     }
+
     _doubleSided = state;
-    _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
         for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
@@ -594,41 +603,53 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     recomputeShaders();
 }
 
-bool Material::updateTranslucency() {
+void Material::updateTranslucency(bool requestRecomputeShaders) {
     if (_translucencyCheck) {
-        bool useAlphaTest = false;
         _translucencySource = TranslucencySource::COUNT;
+        _translucencyType = TranslucencyType::COUNT;
+
         // In order of importance (less to more)!
         // diffuse channel alpha
         if (_colourData._diffuse.a < 0.95f) {
             _translucencySource = TranslucencySource::DIFFUSE;
-            useAlphaTest = (_colourData._diffuse.a < 0.15f);
+            if (_colourData._diffuse.a < 0.05f) {
+                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
+            }
         }
 
         // base texture is translucent
-        if (_textures[to_base(ShaderProgram::TextureUsage::UNIT0)] &&
-            _textures[to_base(ShaderProgram::TextureUsage::UNIT0)]->hasTransparency()) {
+        Texture_ptr albedo = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
+        if (albedo && albedo->hasTransparency()) {
             _translucencySource = TranslucencySource::DIFFUSE_MAP;
-            useAlphaTest = true;
+            if (!albedo->hasTranslucency()) {
+                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
+            }
         }
 
         // opacity map
-        if (_textures[to_base(ShaderProgram::TextureUsage::OPACITY)]) {
+        Texture_ptr opacity = _textures[to_base(ShaderProgram::TextureUsage::OPACITY)];
+        if (opacity && opacity->hasTransparency()) {
             _translucencySource = TranslucencySource::OPACITY_MAP;
-            useAlphaTest = false;
+            if (!opacity->hasTranslucency()) {
+                _translucencyType = TranslucencyType::FULL_TRANSPARENT;
+            }
         }
 
         _translucencyCheck = false;
 
         // Disable culling for translucent items
         if (_translucencySource != TranslucencySource::COUNT) {
-            setDoubleSided(true, useAlphaTest);
+            if (_translucencyType != TranslucencyType::FULL_TRANSPARENT) {
+                _translucencyType = TranslucencyType::TRANSLUCENT;
+            }
+
+            setDoubleSided(true);
         } else {
-            recomputeShaders();
+            if (requestRecomputeShaders) {
+                recomputeShaders();
+            }
         }
     }
-
-    return isTranslucent();
 }
 
 void Material::getSortKeys(const RenderStagePass& renderStagePass, I32& shaderKey, I32& textureKey) const {
@@ -647,7 +668,7 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
     retMatrix.setRow(0, _colourData._diffuse);
     retMatrix.setRow(1, _colourData._specular);
     retMatrix.setRow(2, vec4<F32>(_colourData._emissive.rgb(), _colourData._shininess));
-    retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_F32(getTextureOperation()), getParallaxFactor(), 0.0));
+    retMatrix.setRow(3, vec4<F32>(to_F32(getTextureOperation()), getParallaxFactor(), 0.0, 0.0));
 }
 
 void Material::rebuild() {

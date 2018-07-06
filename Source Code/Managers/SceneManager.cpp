@@ -637,11 +637,14 @@ SceneManager::getVisibleNodesCache(RenderStage stage) {
 }
 
 void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass) {
-    RenderQueue& queue = parent().renderPassManager().getQueue();
+    GFXDevice& gfx = _platformContext->gfx();
+    RenderPassManager& mgr = parent().renderPassManager();
+    RenderQueue& queue = mgr.getQueue();
 
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
 
     if (refreshNodeData) {
+        // Add all the visible nodes to the proper bins
         queue.refresh();
         const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
@@ -649,28 +652,16 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
         }
     }
     
+    // Sort all bins
     queue.sort();
 
-    auto setOrder = [&visibleNodes](const Task& parentTask, U32 start, U32 end) { 
-        for (U32 i = start; i < end; ++i) {
-            RenderPassCuller::VisibleNode& node = visibleNodes[i];
-            node.first = node.second->get<RenderingComponent>()->drawOrder();
-        }
-    };
+    // Prepare draw buffers
+    RenderPass::BufferData& bufferData = mgr.getBufferData(stage.stage(), pass);
 
-    parallel_for(setOrder, to_U32(visibleNodes.size()), 10);
-
-    std::sort(std::begin(visibleNodes), std::end(visibleNodes),
-        [](const RenderPassCuller::VisibleNode& nodeA,
-           const RenderPassCuller::VisibleNode& nodeB)
-        {
-            return nodeA.first < nodeB.first;
-        }
-    );
-
-    RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(stage.stage(), pass);
-
-    _platformContext->gfx().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
+    // Get all of the sorted render bins
+    SceneRenderState& renderState = getActiveScene().renderState();
+    const RenderQueue::SortedQueues& sortedQueues = queue.getSortedQueues();
+    gfx.buildDrawCommands(sortedQueues, renderState, bufferData, refreshNodeData);
 }
 
 bool SceneManager::populateRenderQueue(const Camera& camera,

@@ -50,7 +50,7 @@
 
 #include "Rendering/Camera/Headers/Frustum.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
-#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 #include <stack>
 #include <ArenaAllocator/arena_allocator.h>
@@ -197,11 +197,12 @@ public:  // GPU interface
 
     bool draw(const GenericDrawCommand& cmd);
 
-    void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
-    void renderQueueToSubPasses(RenderPassCmd& commandsInOut);
+    void lockQueue(RenderBinType type);
+    void unlockQueue(RenderBinType type);
+    void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
+    void renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& commandsInOut);
     void flushCommandBuffer(const CommandBuffer& commandBuffer);
 
-    I32  reserveRenderQueue();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
@@ -424,13 +425,12 @@ protected:
     friend class RenderPass;
     friend class RenderPassManager;
 
-    void occlusionCull(const RenderPass::BufferData& bufferData,
-        const Texture_ptr& depthBuffer);
+    void occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer);
 
-    void buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNodes,
-        SceneRenderState& sceneRenderState,
-        RenderPass::BufferData& bufferData,
-        bool refreshNodeData);
+    void buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
+                           SceneRenderState& sceneRenderState,
+                           RenderPass::BufferData& bufferData,
+                           bool refreshNodeData);
 
     bool batchCommands(GenericDrawCommands& commands) const;
     void constructHIZ(RenderTarget& depthBuffer);
@@ -528,8 +528,7 @@ protected:
 
     vectorImpl<DebugView_ptr> _debugViews;
 
-    mutable SharedLock _renderQueueLock;
-    vectorImpl<RenderPackageQueue> _renderQueues;
+    std::array<RenderPackageQueue, to_base(RenderBinType::COUNT)> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
     std::deque<DELEGATE_CBK<void, const Task&>> _GFXLoadQueue;

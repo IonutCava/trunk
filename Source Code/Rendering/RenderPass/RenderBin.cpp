@@ -11,6 +11,10 @@
 
 namespace Divide {
 
+namespace {
+    constexpr U32 AVERAGE_BIN_SIZE = 127;
+};
+
 RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
                              I32 sortKeyA,
                              I32 sortKeyB,
@@ -21,12 +25,6 @@ RenderBinItem::RenderBinItem(const RenderStagePass& currentStage,
       _sortKeyB(sortKeyB),
       _distanceToCameraSq(distToCamSq)
 {
-    _stateHash = 0;
-    const Material_ptr& nodeMaterial = _renderable->getMaterialInstance();
-    // If we do not have a material, no need to continue
-    if (!nodeMaterial) {
-        return;
-    }
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
     _stateHash = renderable.getDrawStateHash(currentStage);
@@ -66,20 +64,11 @@ struct RenderQueueDistanceFrontToBack {
     }
 };
 
-RenderBin::RenderBin(GFXDevice& context, 
-                     RenderBinType rbType)
+RenderBin::RenderBin(GFXDevice& context, RenderBinType rbType)
     : _context(context),
-      _binIndex(0),
-      _rbType(rbType),
-      _binPropertyMask(0)
+      _rbType(rbType)
 {
-    _renderBinStack.reserve(125);
-
-    if(_rbType != +RenderBinType::RBT_OPAQUE &&  _rbType != +RenderBinType::RBT_TERRAIN)  {
-        SetBit(_binPropertyMask, to_base(RenderBitProperty::TRANSLUCENT));
-    } else {
-        ClearBit(_binPropertyMask, to_base(RenderBitProperty::TRANSLUCENT));
-    }
+    _renderBinStack.reserve(AVERAGE_BIN_SIZE);
 }
 
 RenderBin::~RenderBin()
@@ -91,8 +80,8 @@ void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
     switch (renderOrder) {
         case RenderingOrder::List::BY_STATE: {
             std::sort(std::begin(_renderBinStack),
-                        std::end(_renderBinStack),
-                        RenderQueueKeyCompare());
+                      std::end(_renderBinStack),
+                      RenderQueueKeyCompare());
         } break;
         case RenderingOrder::List::BACK_TO_FRONT: {
             std::sort(std::begin(_renderBinStack),
@@ -112,17 +101,20 @@ void RenderBin::sort(RenderingOrder::List renderOrder, const Task& parentTask) {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
     };
+}
 
-    U32 index = _binIndex;
-    for (RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable, index++);
+void RenderBin::getSortedNodes(vectorImpl<SceneGraphNode*>& nodes) const {
+    nodes.resize(0);
+    for (const RenderBinItem& item : _renderBinStack) {
+        nodes.push_back(&(item._renderable->getSGN()));
     }
 }
 
 void RenderBin::refresh() {
     // WriteLock w_lock(_renderBinGetMutex);
     _renderBinStack.resize(0);
-    _renderBinStack.reserve(128);
+
+    _renderBinStack.reserve(AVERAGE_BIN_SIZE);
 }
 
 void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const vec3<F32>& eyePos) {
@@ -144,16 +136,15 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& r
                             *renderable);
 }
 
-void RenderBin::populateRenderQueue(const Task& parentTask, const RenderStagePass& renderStagePass) {
-    I32 renderQueueIndex = _context.reserveRenderQueue();
+void RenderBin::populateRenderQueue(const RenderStagePass& renderStagePass) {
     // We need to apply different materials for each stage. As nodes are sorted, this should be very fast
+    RenderBinType type = getType();
+    _context.lockQueue(type);
     for (const RenderBinItem& item : _renderBinStack) {
-        if (parentTask.stopRequested()) {
-            break;
-        }
-        _context.addToRenderQueue(renderQueueIndex,
+        _context.addToRenderQueue(type,
                                   Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStagePass));
     }
+    _context.unlockQueue(type);
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
