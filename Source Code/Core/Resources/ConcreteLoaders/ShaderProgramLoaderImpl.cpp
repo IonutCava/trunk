@@ -38,7 +38,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
 
     // get all of the preprocessor defines
     if (!_descriptor.getPropertyListString().empty()) {
-        vector<stringImpl> defines = Util::Split(_descriptor.getPropertyListString(), ',');
+        vector<stringImpl> defines = Util::Split<vector<stringImpl>, stringImpl>(_descriptor.getPropertyListString().c_str(), ',');
         for (U8 i = 0; i < defines.size(); i++) {
             if (!defines[i].empty()) {
                 ptr->addShaderDefine(Util::Trim(defines[i]));

@@ -47,34 +47,28 @@ bool TextureDataContainer::addTexture(const eastl::pair<TextureData, U8 /*bindin
 }
 
 bool TextureDataContainer::addTexture(const TextureData& data, U8 binding) {
-    if (Config::Build::IS_DEBUG_BUILD) {
-        if (eastl::find_if(eastl::cbegin(_textures),
-                           eastl::cend(_textures),
-                           [&binding](const eastl::pair<TextureData, U8>& textureData) {
-                                 return (textureData.second == binding);
-                            }) != eastl::cend(_textures))
-        {
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_DATA_CONTAINER_CONFLICT")));
-            return false;
-        }
+    if (eastl::find_if(eastl::cbegin(_textures),
+                        eastl::cend(_textures),
+                        [&binding](const eastl::pair<TextureData, U8>& textureData) {
+                            return (textureData.second == binding);
+                        }) == eastl::cend(_textures))
+    
+    {
+        ++_textureCount;
+        _textures.emplace_back(data, binding);
+        return true;
     }
 
-    ++_textureCount;
-    _textures.emplace_back(data, binding);
-    return true;
+    return false;
 }
 
 bool TextureDataContainer::addTextures(const vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>>& textureEntries) {
-    if (Config::Build::IS_DEBUG_BUILD && !_textures.empty()) {
-        for (auto entry : textureEntries) {
-            addTexture(entry);
-        }
-    } else {
-        _textureCount += textureEntries.size();
-        _textures.insert(eastl::cend(_textures), eastl::cbegin(textureEntries), eastl::cend(textureEntries));
+    bool ret = false;
+    for (auto entry : textureEntries) {
+        ret = ret || addTexture(entry);
     }
 
-    return true;
+    return ret;
 }
 
 bool TextureDataContainer::removeTexture(U8 binding) {

@@ -331,7 +331,7 @@ JoystickElement  InputInterface::joystickElementByName(const stringImpl& element
         return JoystickElement(JoystickElementType::VECTOR_MOVE);
     } 
 
-    vector<stringImpl> buttonElements = Util::Split(elementName, '_');
+    vector<stringImpl> buttonElements = Util::Split<vector<stringImpl>, stringImpl>(elementName.c_str(), '_');
     assert(buttonElements.size() == 2 && "Invalid joystick element name!");
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
 

@@ -29,35 +29,9 @@ getBRDFFactors(in int lightIndex,
 #endif
 }
 
-uint GetNumLightsInThisTile(uint nTileIndex)
-{
-    uint nNumLightsInThisTile = 0;
-    uint nIndex = uint(dvd_otherData.w) * nTileIndex;
-    uint nNextLightIndex = perTileLightIndices[nIndex];
-    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
-    {
-        nIndex++;
-        nNextLightIndex = perTileLightIndices[nIndex];
-        nNumLightsInThisTile++;
-    }
-
-    return nNumLightsInThisTile;
-}
-
-uint GetNumLights(int type) {
-    uint ret = 0;
-    int count = int(dvd_LightSource.length());
-    for (int i = 0; i < count; ++i) {
-        if (int(dvd_LightSource[i]._options.x) == type) {
-            ++ret;
-        }
-    }
-    return ret;
-}
-
 vec4 getPixelColour(const in vec2 texCoord) {
     //Occlusion culling visibility debug code
-#if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
+#if defined(DEBUG_HIZ_CULLING)
     if (dvd_customData > 2.0) {
         return vec4(1.0, 0.0, 0.0, 1.0);
     }
@@ -76,13 +50,12 @@ vec4 getPixelColour(const in vec2 texCoord) {
         // Apply all lighting contributions
         uint lightIdx;
         
-        uint directionalLightCount = GetNumLights(LIGHT_DIRECTIONAL);
         // Directional lights
-        for (lightIdx = 0; lightIdx < directionalLightCount; ++lightIdx) {
+        for (lightIdx = 0; lightIdx < DIRECTIONAL_LIGHT_COUNT; ++lightIdx) {
             getBRDFFactors(int(lightIdx), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
-        uint offset = directionalLightCount;
+        uint offset = DIRECTIONAL_LIGHT_COUNT;
         // Point lights
         uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
         uint nNextLightIndex = perTileLightIndices[nIndex];
@@ -93,7 +66,7 @@ vec4 getPixelColour(const in vec2 texCoord) {
             getBRDFFactors(int(nLightIndex - 1 + offset), processedNormal, albedo.rgb, specular, reflectivity, lightColour, reflectionCoeff);
         }
 
-        offset = GetNumLights(LIGHT_OMNIDIRECTIONAL);
+        offset += POINT_LIGHT_COUNT;
         // Spot lights
         // Moves past the first sentinel to get to the spot lights.
         nNextLightIndex = perTileLightIndices[++nIndex];

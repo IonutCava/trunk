@@ -149,9 +149,10 @@ bool createDirectories(const char* path) {
     //Always end in a '/'
     assert(path[strlen(path) - 1] == '/');
 
-    vector<stringImpl> directories = Util::Split(path, '/');
+    vector<stringImpl> directories;
+    Util::Split<vector<stringImpl>, stringImpl>(path, '/', directories);
     if (directories.empty()) {
-        directories = Util::Split(path, '\\');
+        Util::Split<vector<stringImpl>, stringImpl>(path, '\\', directories);
     }
 
     stringImpl previousPath = ".";

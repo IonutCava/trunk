@@ -21,7 +21,7 @@ void computeData() {
     VAR.dvd_drawID = gl_DrawIDARB;
     dvd_Vertex  = vec4(inVertexData, 1.0);
     //Occlusion culling visibility debug code
-#if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
+#if defined(DEBUG_HIZ_CULLING)
     if (dvd_customData > 2.0) {
         dvd_Vertex.xyz *= 5;
     }

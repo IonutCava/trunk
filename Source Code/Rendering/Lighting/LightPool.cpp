@@ -70,8 +70,8 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = Config::Lighting::MAX_POSSIBLE_LIGHTS;
-    bufferDescriptor._primitiveSizeInBytes = sizeof(LightProperties);
+    bufferDescriptor._primitiveCount = 1;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._unbound = true;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
@@ -348,13 +348,14 @@ void LightPool::uploadLightBuffers(U8 stageIndex) {
         // Passing 0 elements is fine (early out in the buffer code)
         vec_size lightPropertyCount = _sortedLightProperties[stageIndex].size();
 
-        lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
+        vec4<I32> properties(to_I32(lightPropertyCount),
+                             _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
+                             _activeLightCount[stageIndex][to_base(LightType::POINT)],
+                             to_I32(_sortedShadowProperties.size()));
+        _lightShaderBuffer[stageIndex]->writeBytes(0, sizeof(vec4<I32>), properties._v);
 
-        if (lightPropertyCount > 0) {
-            _lightShaderBuffer[stageIndex]->writeData(0, lightPropertyCount, _sortedLightProperties[stageIndex].data());
-        } else {
-            _lightShaderBuffer[stageIndex]->writeData(nullptr);
-        }
+        lightPropertyCount = std::min(lightPropertyCount, static_cast<size_t>(Config::Lighting::MAX_POSSIBLE_LIGHTS));
+        _lightShaderBuffer[stageIndex]->writeBytes(sizeof(vec4<I32>), lightPropertyCount * sizeof(LightProperties), lightPropertyCount > 0 ? _sortedLightProperties[stageIndex].data() : nullptr);
 
         _buffersUpdated[stageIndex] = true;
     }

@@ -108,6 +108,7 @@ class TextLabelStyle : public Hashable {
 };
 
 struct TextElement {
+    typedef vectorEASTL<eastl::fixed_string<char, 128 + 1>> TextType;
     TextElement(const TextLabelStyle& textLabelStyle,
                 const RelativePosition2D& position)
         : TextElement(textLabelStyle.getHash(), position)
@@ -122,10 +123,10 @@ struct TextElement {
     }
 
     inline void text(const stringImpl& text) {
-        Util::Split(text, '\n', _text);
+        Util::Split(text.c_str(), '\n', _text);
     }
 
-    inline const vectorFast<stringImpl>& text() const {
+    inline const TextType& text() const {
         return _text;
     }
 
@@ -133,7 +134,7 @@ struct TextElement {
     RelativePosition2D _position;
 
   private:
-    vectorFast<stringImpl> _text;
+      TextType _text;
 };
 
 struct TextElementBatch {

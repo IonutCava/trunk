@@ -33,6 +33,14 @@ void d3dConstantBuffer::writeData(ptrdiff_t offsetElementCount,
     ACKNOWLEDGE_UNUSED(data);
 }
 
+void d3dConstantBuffer::writeBytes(ptrdiff_t offsetInBytes,
+                                   ptrdiff_t rangeInBytes,
+                                   const bufferPtr data) {
+    ACKNOWLEDGE_UNUSED(offsetInBytes);
+    ACKNOWLEDGE_UNUSED(rangeInBytes);
+    ACKNOWLEDGE_UNUSED(data);
+
+}
 bool d3dConstantBuffer::bindRange(U8 bindIndex,
                                   U32 offsetElementCount,
                                   U32 rangeElementCount) {

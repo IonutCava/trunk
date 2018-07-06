@@ -16,6 +16,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -36,6 +37,10 @@ void GFXDevice::uploadGPUBlock() {
 }
 
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
+    if (Config::ENABLE_GPU_VALIDATION) {
+        DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
+    }
+
     commandBuffer.batch();
 
     if (!commandBuffer.validate()) {

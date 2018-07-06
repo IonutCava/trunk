@@ -32,8 +32,7 @@ float shadow_loop(){
     }
 
     float shadow = 1.0;
-    int count = int(dvd_ShadowSource.length());
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < TOTAL_SHADOW_LIGHTS; ++i) {
         shadow *= getShadowFactor(i, gl_FragCoord.z, dvd_ShadowSource[i]._lightDetails);
     }
 

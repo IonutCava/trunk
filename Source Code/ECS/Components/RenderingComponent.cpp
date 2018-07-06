@@ -257,11 +257,16 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
 
 void RenderingComponent::onRender(RenderStagePass renderStagePass) {
     const Material_ptr& mat = getMaterialInstance();
+    bool texturesChanged = false;
     if (mat) {
-        mat->getTextureData(renderStagePass, _descriptorSetCache->_textureData);
+        texturesChanged = mat->getTextureData(renderStagePass, _descriptorSetCache->_textureData);
     }
 
-    if (*_descriptorSetCache != *getDrawPackage(renderStagePass).descriptorSet(0)) {
+    const DescriptorSet_ptr& existingDescriptorSet = getDrawPackage(renderStagePass).descriptorSet(0);
+    if (texturesChanged || 
+        _descriptorSetCache->_shaderBuffers != existingDescriptorSet->_shaderBuffers ||
+        _descriptorSetCache->_textureData != existingDescriptorSet->_textureData)
+    {
         getDrawPackage(renderStagePass).descriptorSet(0, _descriptorSetCache);
     }
 }
@@ -411,11 +416,14 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     ShaderBufferList& shaderBuffersCache = _descriptorSetCache->_shaderBuffers;
 
-    shaderBuffersCache.erase(std::remove_if(std::begin(shaderBuffersCache),
-                                            std::end(shaderBuffersCache),
-                                            [&slot](const ShaderBufferBinding& binding)
-                                                 -> bool { return binding._binding == slot; }),
-                             std::end(shaderBuffersCache));
+    ShaderBufferList::iterator it = std::find_if(std::begin(shaderBuffersCache),
+                                                 std::end(shaderBuffersCache),
+                                                 [slot](const ShaderBufferBinding& binding)
+                                                  -> bool { return binding._binding == slot; });
+
+    if (it != std::cend(shaderBuffersCache)) {
+        shaderBuffersCache.erase(it);
+    }
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStagePass renderStagePass) {

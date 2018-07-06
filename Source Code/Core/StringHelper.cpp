@@ -49,11 +49,6 @@ stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
     return input.substr(0, inputLength - count);
 }
 
-vector<stringImpl> Split(const stringImpl& input, char delimiter) {
-    vector<stringImpl> elems;
-    return Split(input, delimiter, elems);
-}
-
 U32 LineCount(const stringImpl& str) {
     return to_U32(std::count(std::cbegin(str), std::cend(str), '\n')) + 1;
 }

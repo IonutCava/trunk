@@ -327,11 +327,7 @@ bool GL_API::initGLSW() {
         appendToShaderHeader(ShaderType::COUNT, "//#pragma optionNV(unroll all)", lineOffsets);
     }
 
-    if (Config::USE_HIZ_CULLING) {
-        appendToShaderHeader(ShaderType::COUNT, "#define USE_HIZ_CULLING", lineOffsets);
-    }
-
-    if (Config::DEBUG_HIZ_CULLING) {
+    if (Config::USE_HIZ_CULLING && Config::DEBUG_HIZ_CULLING) {
         appendToShaderHeader(ShaderType::COUNT, "#define DEBUG_HIZ_CULLING", lineOffsets);
     }
 
@@ -772,14 +768,14 @@ void GL_API::drawText(const TextElementBatch& batch) {
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
         
-        const vectorFast<stringImpl>& text = entry.text();
-        vec_size lineCount = text.size();
-        for (vec_size i = 0; i < lineCount; ++i) {
+        const TextElement::TextType& text = entry.text();
+        vec_size_eastl lineCount = text.size();
+        for (vec_size_eastl i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
-                            textX,
-                            textY - (lh * i),
-                            text[i].c_str(),
-                            nullptr);
+                         textX,
+                         textY - (lh * i),
+                         text[i].c_str(),
+                         nullptr);
         }
         drawCount += lineCount;
         

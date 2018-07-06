@@ -74,6 +74,10 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                            ptrdiff_t rangeElementCount,
                            const bufferPtr data) = 0;
 
+    virtual void writeBytes(ptrdiff_t offsetInBytes,
+                            ptrdiff_t rangeInBytes,
+                            const bufferPtr data) = 0;
+
     virtual void writeData(const bufferPtr data);
 
     virtual void readData(ptrdiff_t offsetElementCount,

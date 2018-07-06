@@ -44,11 +44,14 @@ constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_
 constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_TEXCOORD);
 constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::VERTEX_COLOR);
 
+const GLuint GLFONSBufferCount = 3;
 struct GLFONScontext {
     GLuint tex;
     int width, height;
 	GLuint glfons_vaoID;
-    GLuint glfons_vboID;
+    GLuint glfons_vboID[GLFONSBufferCount];
+    GLuint max_verts[GLFONSBufferCount];
+    GLuint current_vbo;
 };
 typedef struct GLFONScontext GLFONScontext;
 
@@ -61,6 +64,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
 		glDeleteTextures(1, &gl->tex);
 		gl->tex = 0;
 	}
+
     glCreateTextures(GL_TEXTURE_2D, 1, &gl->tex);
 	if (!gl->tex) return 0;
 
@@ -69,8 +73,12 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
 
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     {
-    	if (!gl->glfons_vboID) glCreateBuffers(1, &gl->glfons_vboID);
-		if (!gl->glfons_vboID) return 0;
+        if (!gl->glfons_vboID[0]) {
+            glCreateBuffers(GLFONSBufferCount, gl->glfons_vboID);
+        }
+
+		if (!gl->glfons_vboID[0])
+            return 0;
 
         Divide::U32 prevOffset = 0;
         glEnableVertexAttribArray(GLFONS_VERTEX_ATTRIB);
@@ -87,8 +95,6 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
         glVertexAttribBinding(GLFONS_VERTEX_ATTRIB, 0);
         glVertexAttribBinding(GLFONS_TCOORD_ATTRIB, 0);
         glVertexAttribBinding(GLFONS_COLOR_ATTRIB, 0);
-
-        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID, 0, sizeof(FONSvert));
     }
 
     if (Divide::Config::ENABLE_GPU_VALIDATION) {
@@ -96,13 +102,16 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
                       gl->glfons_vaoID,
                       -1,
                       Divide::Util::StringFormat("DVD_FONT_VAO_%d", gl->glfons_vaoID).c_str());
-        glObjectLabel(GL_BUFFER,
-                      gl->glfons_vboID,
-                      -1,
-                      Divide::Util::StringFormat("DVD_FONT_VB_%d", gl->glfons_vboID).c_str());
+
+        for (GLuint i = 0; i < GLFONSBufferCount; ++i) {
+            glObjectLabel(GL_BUFFER,
+                          gl->glfons_vboID[i],
+                          -1,
+                          Divide::Util::StringFormat("DVD_FONT_VB_%d_%d", gl->glfons_vboID, i).c_str());
+        }
     }
 
-    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID) {
+    if (!gl->tex || !gl->glfons_vaoID || !gl->glfons_vboID[0]) {
         return 0;
     }
 
@@ -139,12 +148,24 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     if (gl->tex == 0 || gl->glfons_vaoID == 0)
         return;
 
-    Divide::GL_API::bindTexture(0, gl->tex);
+    size_t dataSize = nverts * sizeof(FONSvert);
+    { //Update
+        if (nverts > gl->max_verts[gl->current_vbo]) {
+            glNamedBufferData(gl->glfons_vboID[gl->current_vbo], dataSize, verts, GL_STREAM_DRAW);
+            gl->max_verts[gl->current_vbo] = nverts;
+        } else {
+            glNamedBufferSubData(gl->glfons_vboID[gl->current_vbo], 0, dataSize, verts);
+        }
+    }
+    { //Draw
+        Divide::GL_API::bindTexture(0, gl->tex);
+        Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
+        glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID[gl->current_vbo], 0, sizeof(FONSvert));
+        glDrawArrays(GL_TRIANGLES, 0, nverts);
+        glInvalidateBufferSubData(gl->glfons_vboID[gl->current_vbo], 0, dataSize);
+    }
 
-    Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
-    glNamedBufferData(gl->glfons_vboID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, nverts);
-    glInvalidateBufferData(gl->glfons_vboID);
+    gl->current_vbo = (gl->current_vbo + 1) % GLFONSBufferCount;
 }
 
 static void glfons__renderDelete(void* userPtr) {
@@ -155,7 +176,9 @@ static void glfons__renderDelete(void* userPtr) {
         Divide::GL_API::deleteVAOs(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
-    Divide::GLUtil::freeBuffer(gl->glfons_vboID);
+    Divide::GL_API::deleteBuffers(GLFONSBufferCount, gl->glfons_vboID);
+    memset(gl->glfons_vboID, 0, GLFONSBufferCount * sizeof(GLuint));
+
     free(gl);
 }
 

@@ -63,12 +63,19 @@ namespace Divide {
         bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b);
 
         /// http://stackoverflow.com/questions/236129/split-a-string-in-c
-        vector<stringImpl> Split(const stringImpl& input, char delimiter);
+        template<typename T_vec, typename T_str>
+        typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+                                std::is_same<T_vec, vectorFast<T_str>>::value ||
+                                std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
+        Split(const char* input, char delimiter);
 
-        template<typename T>
-        typename std::enable_if<std::is_same<T, vector<stringImpl>>::value ||
-                                std::is_same<T, vectorFast<stringImpl>>::value, T&>::type
-        Split(const stringImpl& input, char delimiter, T& elems);
+        template<typename T_vec, typename T_str>
+        typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+                                std::is_same<T_vec, vectorFast<T_str>>::value, T_vec&>::type
+        Split(const char* input, char delimiter, T_vec& elems);
+
+        template<typename T_str> vectorEASTL<T_str>&
+        Split(const char* input, char delimiter, vectorEASTL<T_str>& elems);
 
         /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
         stringImpl& Ltrim(stringImpl& s);

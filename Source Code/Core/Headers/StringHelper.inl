@@ -52,10 +52,10 @@ stringImpl StringFormat(const char *const format, Args&&... args) {
     return stringImpl(buf.data(), buf.size() - 1);
 }
 
-template<typename T>
-typename std::enable_if<std::is_same<T, vector<stringImpl>>::value ||
-                        std::is_same<T, vectorFast<stringImpl>>::value, T&>::type
-Split(const stringImpl& input, char delimiter, T& elems) {
+template<typename T_vec, typename T_str>
+typename std::enable_if<std::is_same<T_vec, typename vector<T_str>>::value ||
+                        std::is_same<T_vec, typename vectorFast<T_str>>::value, T_vec&>::type
+Split(const char* input, char delimiter, T_vec& elems) {
 #if defined(_USE_BOOST_STRING_SPLIT)
     boost::split(elems, input, [delimiter](char c) {return c == delimiter;});
 #else
@@ -69,6 +69,29 @@ Split(const stringImpl& input, char delimiter, T& elems) {
     }
 #endif
     return elems;
+}
+
+template<typename T_str>
+vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>& elems) {
+    elems.resize(0);
+    if (input != nullptr && strlen(input) > 0) {
+        istringstreamImpl ss(input);
+        stringImpl item;
+        while (std::getline(ss, item, delimiter)) {
+            elems.emplace_back(item.c_str());
+        }
+    }
+
+    return elems;
+}
+
+template<typename T_vec, typename T_str>
+typename std::enable_if<std::is_same<T_vec, vector<T_str>>::value ||
+                        std::is_same<T_vec, vectorFast<T_str>>::value ||
+                        std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
+Split(const char* input, char delimiter) {
+    T_vec elems;
+    return Split<T_vec, T_str>(input, delimiter, elems);
 }
 
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
