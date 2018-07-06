@@ -309,8 +309,7 @@ union Double_t {
 };
 
 inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
-    // Check if the numbers are really close -- needed
-    // when comparing numbers near zero.
+    // Check if the numbers are really close -- needed when comparing numbers near zero.
     F32 absDiff = std::fabs(A - B);
     if (absDiff <= maxDiff) {
         return true;
@@ -320,34 +319,39 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     Float_t uB(B);
 
     // Different signs means they do not match.
-    if (uA.Negative() != uB.Negative()) return false;
+    if (uA.Negative() != uB.Negative()) {
+        return false;
+    }
 
     // Find the difference in ULPs.
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
 inline bool AlmostEqualUlpsAndAbs(D32 A, D32 B, D32 maxDiff, I32 maxUlpsDiff) {
-    // Check if the numbers are really close -- needed
-    // when comparing numbers near zero.
+    // Check if the numbers are really close -- needed when comparing numbers near zero.
     D32 absDiff = std::fabs(A - B);
-    if (absDiff <= maxDiff) return true;
+    if (absDiff <= maxDiff) {
+        return true;
+    }
 
     Double_t uA(A);
     Double_t uB(B);
 
     // Different signs means they do not match.
-    if (uA.Negative() != uB.Negative()) return false;
+    if (uA.Negative() != uB.Negative()) {
+        return false;
+    }
 
     // Find the difference in ULPs.
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff,
-                                      F32 maxRelDiff) {
-    // Check if the numbers are really close -- needed
-    // when comparing numbers near zero.
+inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff) {
+    // Check if the numbers are really close -- needed when comparing numbers near zero.
     F32 diff = std::fabs(A - B);
-    if (diff <= maxDiff) return true;
+    if (diff <= maxDiff) {
+        return true;
+    }
 
     A = std::fabs(A);
     B = std::fabs(B);
@@ -356,12 +360,12 @@ inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff,
     return (diff <= largest * maxRelDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff,
-                                      D32 maxRelDiff) {
-    // Check if the numbers are really close -- needed
-    // when comparing numbers near zero.
+inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff) {
+    // Check if the numbers are really close -- needed when comparing numbers near zero.
     D32 diff = std::fabs(A - B);
-    if (diff <= maxDiff) return true;
+    if (diff <= maxDiff) {
+        return true;
+    }
 
     A = std::fabs(A);
     B = std::fabs(B);
@@ -371,6 +375,14 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff,
 }
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)p)
+
+#if defined(_MSC_VER)
+#define _FUNCTION_NAME_AND_SIG_ __FUNCSIG__
+#elif defined(__GNUC__)
+#define _FUNCTION_NAME_AND_SIG_ __PRETTY_FUNCTION__
+#else
+#define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
+#endif
 
 #define WAIT_FOR_CONDITION(p) {while (!(p)) {}}
 

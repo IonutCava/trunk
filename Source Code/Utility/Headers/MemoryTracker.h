@@ -88,7 +88,7 @@ class MemoryTracker {
         }
         WriteLock w_lock(_mutex);
         MemoryTracker::Lock lock(*this);
-        hashAlg::insert(_map, std::make_pair(p, Entry(file, line, size)));
+        hashAlg::emplace(_map, p, Entry(file, line, size));
     }
 
     inline void Remove(void* p) {
@@ -96,11 +96,14 @@ class MemoryTracker {
             return;
         }
 
-        WriteLock w_lock(_mutex);
-        MemoryTracker::Lock lock(*this);
-        iterator it = _map.find(p);
-        if (it != std::end(_map)) {
-            _map.erase(it);
+        if (!MemoryTracker::LogAllAllocations) 
+        {
+            WriteLock w_lock(_mutex);
+            MemoryTracker::Lock lock(*this);
+            iterator it = _map.find(p);
+            if (it != std::end(_map)) {
+                _map.erase(it);
+            }
         }
     }
 
@@ -112,7 +115,13 @@ class MemoryTracker {
         MemoryTracker::Lock lock(*this);
         WriteLock w_lock(_mutex);
         if (!_map.empty()) {
-            output.append(Util::StringFormat("%d memory leaks detected\n", _map.size()));
+            stringImpl msg = "";
+            if (MemoryTracker::LogAllAllocations) {
+                msg = "memory allocations detected";
+            } else {
+                msg = "memory leaks detected";
+            }
+            output.append(Util::StringFormat("%d %s\n", _map.size(), msg.c_str()));
             for (iterator it = std::begin(_map); it != std::end(_map); ++it) {
                 const Entry& entry = it->second;
                 output.append(entry.File());
@@ -128,6 +137,7 @@ class MemoryTracker {
     }
 
     static bool Ready;
+    static bool LogAllAllocations;
 
    private:
     inline void lock() { _locked = true; }

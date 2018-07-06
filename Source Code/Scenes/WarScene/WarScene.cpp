@@ -79,16 +79,17 @@ void WarScene::processGUI(const U64 deltaTime) {
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         Time::ApplicationTimer::getInstance().getFps(),
-                         Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                         GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
+        _GUI->modifyText("fpsDisplay",
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                                            Time::ApplicationTimer::getInstance().getFps(),
+                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+        _GUI->modifyText("RenderBinCount",
+                         Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
 
         _GUI->modifyText("camPosition",
-                         "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: "
-                         "%5.2f | Yaw: %5.2f]",
-                         eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
+                         Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                                            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 
         _guiTimers[0] = 0.0;
     }
@@ -113,16 +114,17 @@ void WarScene::processGUI(const U64 deltaTime) {
         U32 limitTimeSeconds = 0;
         U32 limitTimeMilliseconds = 0;
 
-        _GUI->modifyText("scoreDisplay", "Score: A -  %d B - %d [Limit: %d]\nElapsed game time [ %d:%d:%d / %d:%d:%d]",
-            AI::WarSceneAIProcessor::getScore(0),
-            AI::WarSceneAIProcessor::getScore(1),
-            _scoreLimit,
-            elapsedTimeMinutes,
-            elapsedTimeSeconds,
-            elapsedTimeMilliseconds,
-            limitTimeMinutes,
-            limitTimeSeconds,
-            limitTimeMilliseconds);
+        _GUI->modifyText("scoreDisplay",
+            Util::StringFormat("Score: A -  %d B - %d [Limit: %d]\nElapsed game time [ %d:%d:%d / %d:%d:%d]",
+                               AI::WarSceneAIProcessor::getScore(0),
+                               AI::WarSceneAIProcessor::getScore(1),
+                               _scoreLimit,
+                               elapsedTimeMinutes,
+                               elapsedTimeSeconds,
+                               elapsedTimeMilliseconds,
+                               limitTimeMinutes,
+                               limitTimeSeconds,
+                               limitTimeMilliseconds));
 
         _guiTimers[2] = 0.0;
     }
@@ -684,28 +686,27 @@ bool WarScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 63),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                 "fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f);  // Text and arguments
+                  Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
     _GUI->addText("RenderBinCount",
                   vec2<I32>(60, 83),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
-                  "Number of items in Render Bin: %d", 0);
+                  Util::StringFormat("Number of items in Render Bin: %d", 0));
     _GUI->addText("camPosition", vec2<I32>(60, 103),
                   Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.2f, 0.8f, 0.2f),
-                  "Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | "
-                  "Yaw: %5.2f]",
-                  renderState().getCamera().getEye().x,
-                  renderState().getCamera().getEye().y,
-                  renderState().getCamera().getEye().z,
-                  renderState().getCamera().getEuler().pitch,
-                  renderState().getCamera().getEuler().yaw);
+                  Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                                     renderState().getCamera().getEye().x,
+                                     renderState().getCamera().getEye().y,
+                                     renderState().getCamera().getEye().z,
+                                     renderState().getCamera().getEuler().pitch,
+                                     renderState().getCamera().getEuler().yaw));
 
     _GUI->addText("scoreDisplay",
         vec2<I32>(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
         vec3<F32>(0.2f, 0.8f, 0.2f),  // Color
-        "Score: A -  %d B - %d", 0, 0);  // Text and arguments
+        Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
     _GUI->addText("entityState", vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.0f, 0.0f, 0.0f),

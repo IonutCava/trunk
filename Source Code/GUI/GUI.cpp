@@ -368,29 +368,22 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& ID, const stringImpl& title,
 
 GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
-                      const char* format, ...) {
+                      const stringImpl& text) {
     ULL idHash = _ID_RT(ID);
 
-    va_list args;
-    stringImpl fmt_text;
-
-    va_start(args, format);
-    I32 len = _vscprintf(format, args) + 1;
-    char* text = MemoryManager_NEW char[len];
-    vsprintf(text, format, args);
-    fmt_text.append(text);
-    MemoryManager::DELETE_ARRAY(text);
-    va_end(args);
-
-    GUIText* t = MemoryManager_NEW GUIText(ID, fmt_text, vec2<F32>(position.width, position.height), font, color, _rootSheet);
+    GUIText* t = MemoryManager_NEW GUIText(ID,
+                                           text,
+                                           vec2<F32>(position.width, 
+                                                     position.height),
+                                           font,
+                                           color,
+                                           _rootSheet);
     guiMap::iterator it = _guiStack.find(idHash);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);
     } else {
         hashAlg::insert(_guiStack, std::make_pair(idHash, static_cast<GUIElement*>(t)));
     }
-
-    fmt_text.empty();
 
     return t;
 }
@@ -408,32 +401,22 @@ GUIFlash* GUI::addFlash(const stringImpl& ID, stringImpl movie,
     return flash;
 }
 
-GUIText* GUI::modifyText(const char* ID, const char* format, ...) {
+GUIText* GUI::modifyText(const char* ID, const stringImpl& text) {
     ULL idHash = _ID_RT(ID);
     
     guiMap::iterator it = _guiStack.find(idHash);
     if (it == std::cend(_guiStack)) {
         return nullptr;
     }
-    va_list args;
-    stringImpl fmt_text;
-
-    va_start(args, format);
-    I32 len = _vscprintf(format, args) + 1;
-    char* text = MemoryManager_NEW char[len];
-    vsprintf(text, format, args);
-    fmt_text.append(text);
-    MemoryManager::DELETE_ARRAY(text);
-    va_end(args);
-
+ 
     GUIElement* element = it->second;
     assert(element->getType() == GUIType::GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     assert(textElement != nullptr);
 
-    textElement->text(fmt_text);
-    fmt_text.empty();
+    textElement->text(text);
+    
     return textElement;
 }
 };

@@ -27,13 +27,14 @@ void NetworkScene::processGUI(const U64 deltaTime) {
     D32 TimeDisplay = Time::SecondsToMilliseconds(0.01);
     D32 ServerPing = Time::SecondsToMilliseconds(1.0);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay", "FPS: %5.2f",
-                         Time::ApplicationTimer::getInstance().getFps());
+        _GUI->modifyText("fpsDisplay",
+                         Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::getInstance().getFps()));
         _guiTimers[0] = 0.0;
     }
 
     if (_guiTimers[1] >= TimeDisplay) {
-        _GUI->modifyText("timeDisplay", "Elapsed time: %5.0f", time);
+        _GUI->modifyText("timeDisplay",
+                         Util::StringFormat("Elapsed time: %5.0f", time));
         _guiTimers[1] = 0.0;
     }
 
@@ -108,16 +109,16 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.6f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText("timeDisplay", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.6f, 0.2f, 0.2f), "Elapsed time: %5.0f",
-                  Time::ElapsedSeconds());
+                  vec3<F32>(0.6f, 0.2f, 0.2f),
+                  Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
     _GUI->addText("serverMessage",
                   vec2<I32>(resolution.width / 4,
                             resolution.height / 1),
                   Font::DIVIDE_DEFAULT, vec3<F32>(0.5f, 0.5f, 0.2f),
-                  "Server says: %s", "<< nothing yet >>");
+                  Util::StringFormat("Server says: %s", "<< nothing yet >>"));
     _GUI->addText("statusText",
                   vec2<I32>(resolution.width / 3,
                             resolution.height / 2),

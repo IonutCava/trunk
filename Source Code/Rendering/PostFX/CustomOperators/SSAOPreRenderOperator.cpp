@@ -100,6 +100,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
 {
     MemoryManager::DELETE(_ssaoOutput);
+    MemoryManager::DELETE(_ssaoOutputBlurred);
     RemoveResource(_ssaoGenerateShader);
     RemoveResource(_ssaoBlurShader);
     RemoveResource(_noiseTexture);

@@ -16,9 +16,10 @@ void FlashScene::processInput(const U64 deltaTime) {}
 void FlashScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         Time::ApplicationTimer::getInstance().getFps(),
-                         Time::ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay", 
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                                            Time::ApplicationTimer::getInstance().getFps(),
+                                            Time::ApplicationTimer::getInstance().getFrameTime()));
         _guiTimers[0] = 0.0;
     }
 }
@@ -44,7 +45,7 @@ bool FlashScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _guiTimers.push_back(0.0);
     i = 0;
     return true;

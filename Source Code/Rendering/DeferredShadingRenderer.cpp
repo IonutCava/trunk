@@ -93,22 +93,22 @@ DeferredShadingRenderer::DeferredShadingRenderer()
                 vec2<I32>(60, 60),               // Position
                 Font::DIVIDE_DEFAULT,            // Font
                 vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
-                "POSITION DATA", 0);             // Text and arguments
+                "POSITION DATA");                // Text
     gui.addText("NormalData",                    // Unique ID
                 vec2<I32>(60 + width / 2, 60),   // Position
                 Font::DIVIDE_DEFAULT,            // Font
                 vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
-                "NORMAL DATA", 0);               // Text and arguments
+                "NORMAL DATA");                  // Text
     gui.addText("FinalImage",                    // Unique ID
                 vec2<I32>(60, 60 + height / 2),  // Position
                 Font::DIVIDE_DEFAULT,            // Font
                 vec3<F32>(0.0f, 0.2f, 1.0f),     // Color
-                "FINAL IMAGE", 0);               // Text and arguments
+                "FINAL IMAGE");                  // Text
     gui.addText("LightTexture",                  // Unique ID
                 vec2<I32>(60 + width / 2, 60 + height / 2),  // Position
                 Font::DIVIDE_DEFAULT,                        // Font
                 vec3<F32>(0.0f, 0.2f, 1.0f),                 // Color
-                "LIGHT TEXTURE", 0);  // Text and arguments
+                "LIGHT TEXTURE");                            // Text
 }
 
 DeferredShadingRenderer::~DeferredShadingRenderer() {

@@ -14,6 +14,7 @@ namespace Divide {
 
 #if defined(_DEBUG)
 bool MemoryManager::MemoryTracker::Ready = false;
+bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 #endif
 
@@ -21,7 +22,8 @@ Application::Application() : _kernel(nullptr)
 {
 
 #if defined(_DEBUG)
-    MemoryManager::MemoryTracker::Ready = false; //< faster way of disabling memory tracking
+    MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
+    MemoryManager::MemoryTracker::LogAllAllocations = true;
 #endif
     _requestShutdown = false;
     _mainLoopPaused = false;

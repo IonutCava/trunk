@@ -29,6 +29,8 @@ void PreRenderBatch::destroy() {
         batch.clear();
     }
     
+    MemoryManager::DELETE(_previousLuminance);
+    MemoryManager::DELETE(_currentLuminance);
     MemoryManager::DELETE(_postFXOutput);
     RemoveResource(_toneMap);
     RemoveResource(_luminanceCalc);

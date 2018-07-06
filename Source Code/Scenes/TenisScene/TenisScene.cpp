@@ -34,11 +34,13 @@ void TenisScene::preRender() {
 void TenisScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = 0.7;
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         Time::ApplicationTimer::getInstance().getFps(),
-                         Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                         GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
+        _GUI->modifyText("fpsDisplay",
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                                            Time::ApplicationTimer::getInstance().getFps(),
+                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+        _GUI->modifyText("RenderBinCount",
+                         Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -54,7 +56,7 @@ void TenisScene::processTasks(const U64 deltaTime) {
 
     if (_scoreTeam1 == 10 || _scoreTeam2 == 10) {
         s_gameStarted = false;
-        _GUI->modifyText("Message", "Team %d won!", _scoreTeam1 == 10 ? 1 : 2);
+        _GUI->modifyText("Message", Util::StringFormat("Team %d won!", _scoreTeam1 == 10 ? 1 : 2));
     }
 }
 
@@ -256,8 +258,8 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
         }
         I32 score1 = _scoreTeam1;
         I32 score2 = _scoreTeam2;
-        _GUI->modifyText("Team1Score", "Team 1 Score: %d", score1);
-        _GUI->modifyText("Team2Score", "Team 2 Score: %d", score2);
+        _GUI->modifyText("Team1Score", Util::StringFormat("Team 1 Score: %d", score1));
+        _GUI->modifyText("Team2Score", Util::StringFormat("Team 2 Score: %d", score2));
         _GUI->modifyText("Message", (char*)message.c_str());
         _gamePlaying = false;
     }
@@ -414,12 +416,14 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _GUI->addText(
         "Team1Score", vec2<I32>(to_int(resolution.width - 250),
                                 to_int(resolution.height / 1.3f)),
-        Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f), "Team 1 Score: %d", 0);
+        Font::DIVIDE_DEFAULT, vec3<F32>(0, 0.8f, 0.8f),
+        Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
         "Team2Score", vec2<I32>(to_int(resolution.width - 250),
                                 to_int(resolution.height / 1.5f)),
-        Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0), "Team 2 Score: %d", 0);
+        Font::DIVIDE_DEFAULT, vec3<F32>(0.2f, 0.8f, 0),
+        Util::StringFormat("Team 2 Score: %d", 0));
 
     _GUI->addText("Message",
                   vec2<I32>(to_int(resolution.width - 250),
@@ -430,11 +434,11 @@ bool TenisScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText("RenderBinCount", vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
-                  "Number of items in Render Bin: %d", 0);
+                  Util::StringFormat("Number of items in Render Bin: %d", 0));
     _guiTimers.push_back(0.0);  // Fps
     return true;
 }

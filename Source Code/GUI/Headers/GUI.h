@@ -44,12 +44,12 @@ class Renderer;
 namespace Divide {
 
 namespace Font {
-const static stringImpl DIVIDE_DEFAULT("DroidSerif-Regular.ttf" /*"Test.ttf"*/);
-const static stringImpl BATANG("Batang.ttf");
-const static stringImpl DEJA_VU("DejaVuSans.ttf");
-const static stringImpl DROID_SERIF("DroidSerif-Regular.ttf");
-const static stringImpl DROID_SERIF_ITALIC("DroidSerif-Italic.ttf");
-const static stringImpl DROID_SERIF_BOLD("DroidSerif-Bold.ttf");
+const static char* DIVIDE_DEFAULT = "DroidSerif-Regular.ttf"; /*"Test.ttf"*/
+const static char* BATANG = "Batang.ttf";
+const static char* DEJA_VU = "DejaVuSans.ttf";
+const static char* DROID_SERIF = "DroidSerif-Regular.ttf";
+const static char* DROID_SERIF_ITALIC = "DroidSerif-Italic.ttf";
+const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
 };
 
 class GUIConsole;
@@ -80,10 +80,10 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     void update(const U64 deltaTime);
     /// Add a text label
     GUIText* addText(const stringImpl& id, const vec2<I32>& position,
-                     const stringImpl& font, const vec3<F32>& color, const char* format,
-                     ...);
+                     const stringImpl& font, const vec3<F32>& color,
+                     const stringImpl& text);
     /// Modify a text label
-    GUIText* modifyText(const char* id, const char* format, ...);
+    GUIText* modifyText(const char* id, const stringImpl& text);
     GUIMessageBox* addMsgBox(const stringImpl& id, const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre = vec2<I32>(0));
@@ -91,7 +91,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     /// The root of the window positioning system is bottom left, so 100,60 will
     /// place the button 100 pixels to the right and 60 up
     /// from the bottom
-    GUIButton* addButton(const stringImpl& ID, const stringImpl& text,
+    GUIButton* addButton(const stringImpl& id, const stringImpl& text,
                          const vec2<I32>& position, const vec2<U32>& dimensions,
                          const vec3<F32>& color, ButtonCallback callback,
                          const stringImpl& rootSheetID = "");

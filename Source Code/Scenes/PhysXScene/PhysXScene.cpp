@@ -26,11 +26,13 @@ void PhysXScene::preRender() {
 void PhysXScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         Time::ApplicationTimer::getInstance().getFps(),
-                         Time::ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d. Number of HiZ culled items: %d",
-                         GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT);
+        _GUI->modifyText("fpsDisplay",
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                                            Time::ApplicationTimer::getInstance().getFps(),
+                                            Time::ApplicationTimer::getInstance().getFrameTime()));
+        _GUI->modifyText("RenderBinCount",
+                         Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
+                                            GFX_RENDER_BIN_SIZE, GFX_HIZ_CULL_COUNT));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -100,10 +102,10 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 20),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText("RenderBinCount", vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
                   vec3<F32>(0.6f, 0.2f, 0.2f),
-                  "Number of items in Render Bin: %d", 0);
+                  Util::StringFormat("Number of items in Render Bin: %d", 0));
 
     _guiTimers.push_back(0.0);  // Fps
     renderState().getCamera().setFixedYawAxis(false);

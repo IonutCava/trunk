@@ -132,6 +132,12 @@ class vec2 {
     {
     }
 
+    template <typename U>
+    vec2(U _x, U _y) : x(static_cast<T>(_x)),
+                       y(static_cast<T>(_y))
+    {
+    }
+
     vec2(const T *_v) : vec2(_v[0], _v[1])
     {
     }

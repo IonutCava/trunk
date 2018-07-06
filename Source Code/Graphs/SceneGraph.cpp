@@ -36,7 +36,7 @@ SceneGraph::SceneGraph() : FrameListener(),
                          to_const_uint(SceneNodeType::TYPE_SKY) |
                          to_const_uint(SceneNodeType::TYPE_VEGETATION_GRASS);
 
-    _octree.reset(MemoryManager_NEW Octree(octreeNodeMask));
+    _octree.reset(new Octree(octreeNodeMask));
 }
 
 SceneGraph::~SceneGraph()

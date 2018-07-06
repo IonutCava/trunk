@@ -27,9 +27,10 @@ void PingPongScene::preRender() {
 void PingPongScene::processGUI(const U64 deltaTime) {
     D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
-        _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f",
-                         Time::ApplicationTimer::getInstance().getFps(),
-                         Time::ApplicationTimer::getInstance().getFrameTime());
+        _GUI->modifyText("fpsDisplay",
+                         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
+                                            Time::ApplicationTimer::getInstance().getFps(),
+                                            Time::ApplicationTimer::getInstance().getFrameTime()));
         _guiTimers[0] = 0.0;
     }
     Scene::processGUI(deltaTime);
@@ -210,7 +211,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
             _score++;
         }
 
-        _GUI->modifyText("Score", "Score: %d", _score);
+        _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score));
         _GUI->modifyText("Message", (char*)message.c_str());
         resetGame();
     }
@@ -332,7 +333,8 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _GUI->addText("Score",
                   vec2<I32>(to_int(resolution.width - 120),
                             to_int(resolution.height / 1.3f)),
-                  Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0), "Score: %d", 0);
+                  Font::DIVIDE_DEFAULT, vec3<F32>(1, 0, 0),
+                  Util::StringFormat("Score: %d", 0));
 
     _GUI->addText("Message",
                   vec2<I32>(to_int(resolution.width - 120),
@@ -346,7 +348,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
                   vec2<I32>(60, 60),  // Position
                   Font::DIVIDE_DEFAULT,  // Font
                   vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
-                  "FPS: %s", 0);  // Text and arguments
+                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");
     _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
