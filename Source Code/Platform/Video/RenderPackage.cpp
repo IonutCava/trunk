@@ -114,12 +114,12 @@ void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline)
     _pipelines.push_back(pipeline);
 }
 
-const ClipPlaneList& RenderPackage::clipPlanes(I32 index) const {
+const FrustumClipPlanes& RenderPackage::clipPlanes(I32 index) const {
     DIVIDE_ASSERT(index < to_I32(_clipPlanes.size()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     return _clipPlanes[index]._clippingPlanes;
 }
 
-void RenderPackage::clipPlanes(I32 index, const ClipPlaneList& clipPlanes) {
+void RenderPackage::clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) {
     DIVIDE_ASSERT(index < to_I32(_clipPlanes.size()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     _clipPlanes[index]._clippingPlanes = clipPlanes;
     SetBit(_dirtyFlags, CommandType::CLIP_PLANES);

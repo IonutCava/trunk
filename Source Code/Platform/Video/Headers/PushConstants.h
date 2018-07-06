@@ -113,6 +113,7 @@ struct PushConstant {
         _type = other._type;
         _flag = other._flag;
         _values.clear();
+        _values.reserve(other._values.size());
         for (const AnyParam& param : other._values) {
             _values.push_back(param);
         }

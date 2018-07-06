@@ -721,7 +721,7 @@ namespace ImWindow
 
 			PushStyle();
 
-            ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
+            //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
 			ImGui::Begin( "Main", NULL, iFlags);
 
 			if (NULL != m_pDraggedWindow)
@@ -757,7 +757,7 @@ namespace ImWindow
 				ImGui::SetNextWindowSize(ImVec2(pWindow->GetSize().x, fBottom), ImGuiCond_Always);
 
 				PushStyle(true, false);
-                ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
+                //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
 				ImGui::Begin("##StatusBar", NULL, iFlags);
 
 				PopStyle();
@@ -792,7 +792,7 @@ namespace ImWindow
 
 		m_pCurrentPlatformWindow = pWindow;
 		pWindow->SetState();
-        ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
+        //ImGui::SetNextWindowSize(ImVec2(0.f, 0.f));
 		ImGui::Begin("##Overlay", NULL, ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize);
 		ImDrawList* pDrawList = ImGui::GetWindowDrawList();
 		for (ImwList<DrawWindowAreaAction>::iterator it = m_lDrawWindowAreas.begin(); it != m_lDrawWindowAreas.end(); )

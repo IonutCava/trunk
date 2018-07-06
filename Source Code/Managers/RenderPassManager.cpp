@@ -11,6 +11,18 @@
 
 namespace Divide {
 
+RenderPassManager::PassParams::PassParams()
+  : drawPolicy(nullptr),
+    stage(RenderStage::COUNT),
+    camera(nullptr),
+    occlusionCull(false),
+    doPrePass(true),
+    bindTargets(true),
+    pass(0),
+    clippingPlanes(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+{
+}
+
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),

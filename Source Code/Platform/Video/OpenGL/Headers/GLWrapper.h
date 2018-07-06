@@ -50,6 +50,8 @@ struct glslopt_ctx;
 struct FONScontext;
 struct ImDrawData;
 
+#define USE_FIXED_FUNCTION_IMGUI
+
 namespace CEGUI {
     class OpenGL3Renderer;
 };
@@ -308,6 +310,12 @@ private:
     static GLint s_lineWidthLimit;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     static GLuint s_dummyVAO;
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+    /// Used to debug IMGUI drawing
+    static GLuint s_imguiVAO;
+    static GLuint s_imguiVBO;
+    static GLuint s_imguiIB;
+#endif
     /// Preferred anisotropic filtering level
     static GLuint s_anisoLevel;
     /// A cache of all fonts used
@@ -380,9 +388,9 @@ private:
     static VAOBindings s_vaoBufferData;
     static bool s_opengl46Supported;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
-
+#if !defined(USE_FIXED_FUNCTION_IMGUI)
     GenericVertexData* _IMGUIBuffer;
-
+#endif
     Time::ProfileTimer& _swapBufferTimer;
 };
 

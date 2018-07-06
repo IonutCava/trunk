@@ -218,10 +218,8 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, this->_framebufferHandle);
 
     if (blitColour && hasColour()) {
-        vectorImpl<RTAttachment_ptr> outputAttachments;
-        vectorImpl<RTAttachment_ptr> inputAttachments;
-        _attachmentPool->get(RTAttachmentType::Colour, outputAttachments);
-        input->_attachmentPool->get(RTAttachmentType::Colour, inputAttachments);
+        const vectorImpl<RTAttachment_ptr>& outputAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+        const vectorImpl<RTAttachment_ptr>& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
         
         U8 colourCount = to_U8(std::min(outputAttachments.size(),inputAttachments.size()));
 
@@ -372,10 +370,8 @@ void glFramebuffer::prepareBuffers(const RTDrawDescriptor& drawPolicy, const vec
 
 void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
-        vectorImpl<RTAttachment_ptr> attachments;
-
         /// Get the attachments in use for each type
-        _attachmentPool->get(static_cast<RTAttachmentType>(i), attachments);
+        const vectorImpl<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
 
         /// Reset attachments if they changed (e.g. after layered rendering);
         for (const RTAttachment_ptr& attachment : attachments) {
@@ -392,8 +388,7 @@ void glFramebuffer::toggleAttachments(const RTDrawDescriptor& drawPolicy) {
 void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     toggleAttachments(drawPolicy);
 
-    vectorImpl<RTAttachment_ptr> colourAttachments;
-    _attachmentPool->get(RTAttachmentType::Colour, colourAttachments);
+    const vectorImpl<RTAttachment_ptr>& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
 
     /// Setup draw buffers
     prepareBuffers(drawPolicy, colourAttachments);
@@ -518,12 +513,11 @@ void glFramebuffer::drawToLayer(RTAttachmentType type,
 }
 
 void glFramebuffer::setMipLevel(U16 writeLevel) {
-    vectorImpl<RTAttachment_ptr> attachments;
 
     // This is needed because certain drivers need all attachments to use the same mip level
     // This is also VERY SLOW so it might be worth optimising it per-driver version / IHV
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
-        _attachmentPool->get(static_cast<RTAttachmentType>(i), attachments);
+        const vectorImpl<RTAttachment_ptr>& attachments = _attachmentPool->get(static_cast<RTAttachmentType>(i));
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture();

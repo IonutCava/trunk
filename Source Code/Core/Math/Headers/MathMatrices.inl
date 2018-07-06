@@ -1528,35 +1528,20 @@ mat4<T>& mat4<T>::operator/=(U f) {
 
 template<typename T>
 bool mat4<T>::operator==(const mat4& B) const {
-    // Add a small epsilon value to avoid 0.0 != 0.0
-    if (!COMPARE(elementSum() + EPSILON_F32,
-        B.elementSum() + EPSILON_F32)) {
-        return false;
-    }
-
     for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return false;
-            }
+        if (_reg[i] != B._reg[i]) {
+            return false;
         }
     }
+
     return true;
 }
 
 template<typename T>
 bool mat4<T>::operator!=(const mat4 &B) const {
-    // Add a small epsilon value to avoid 0.0 != 0.0
-    if (!COMPARE(elementSum() + EPSILON_F32,
-        B.elementSum() + EPSILON_F32)) {
-        return true;
-    }
-
     for (U8 i = 0; i < 4; ++i) {
-        for (U8 j = 0; j < 4; ++j) {
-            if (!COMPARE(m[i][j], B.m[i][j])) {
-                return true;
-            }
+        if (_reg[i] != B._reg[i]) {
+            return true;
         }
     }
 
@@ -1566,12 +1551,13 @@ bool mat4<T>::operator!=(const mat4 &B) const {
 template<typename T>
 template<typename U>
 bool mat4<T>::operator==(const mat4<U>& B) const {
+    /*
     // Add a small epsilon value to avoid 0.0 != 0.0
     if (!COMPARE(elementSum() + EPSILON_F32,
         B.elementSum() + EPSILON_F32)) {
         return false;
     }
-
+    */
     for (U8 i = 0; i < 4; ++i) {
         for (U8 j = 0; j < 4; ++j) {
             if (!COMPARE(m[i][j], B.m[i][j])) {
@@ -1585,12 +1571,13 @@ bool mat4<T>::operator==(const mat4<U>& B) const {
 template<typename T>
 template<typename U>
 bool mat4<T>::operator!=(const mat4<U> &B) const {
+    /*
     // Add a small epsilon value to avoid 0.0 != 0.0
     if (!COMPARE(elementSum() + EPSILON_F32,
         B.elementSum() + EPSILON_F32)) {
         return true;
     }
-
+    */
     for (U8 i = 0; i < 4; ++i) {
         for (U8 j = 0; j < 4; ++j) {
             if (!COMPARE(m[i][j], B.m[i][j])) {

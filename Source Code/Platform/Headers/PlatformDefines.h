@@ -816,7 +816,7 @@ inline void SAFE_DELETE(T*& ptr) {
 }
 #define SET_SAFE_DELETE_FRIEND \
     template <typename T>      \
-    friend void MemoryManager::DELETE(T*& ptr);
+    friend void MemoryManager::SAFE_DELETE(T*& ptr);
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>

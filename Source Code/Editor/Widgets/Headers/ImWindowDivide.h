@@ -48,23 +48,26 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsDragWindow, bool bCreateState);
     virtual ~ImwWindowDivide();
 
-    virtual bool Init(ImWindow::ImwPlatformWindow* pMain);
+    virtual bool Init(ImWindow::ImwPlatformWindow* parent) override;
 
     virtual ImVec2 GetPosition() const override;
     virtual ImVec2 GetSize() const override;
-    virtual bool IsWindowMaximized() const;
-    virtual bool IsWindowMinimized() const;
+    virtual bool IsWindowMaximized() const override;
 
-    virtual void Show(bool bShow);
-    virtual void SetSize(int iWidth, int iHeight);
-    virtual void SetPosition(int iX, int iY);
-    virtual void SetWindowMaximized(bool bMaximized);
-    virtual void SetWindowMinimized();
-    virtual void SetTitle(const ImwChar* pTtile);
+    virtual void Show() override;
+    virtual void Hide() override;
+    virtual void SetSize(int iWidth, int iHeight) override;
+    virtual void SetPosition(int iX, int iY) override;
+    virtual void SetWindowMaximized(bool bMaximized) override;
+    virtual void SetTitle(const char* pTtile) override;
 
     protected:
-    virtual void PreUpdate();
-    virtual void Render();
+    virtual void PreUpdate() override;
+    virtual void Render() override;
+    virtual void Destroy() override;
+    virtual void StartDrag() override;
+    virtual void StopDrag() override;
+    virtual bool IsDraging() override;
 
     bool OnClose();
     void OnFocus(bool bHasFocus);
@@ -81,9 +84,9 @@ class ImwWindowDivide : public ImWindow::ImwPlatformWindow
     Texture_ptr    m_texture;
 
   private:
-    ImVec2 m_oPosition;
-    ImVec2 m_oSize;
     static U32 m_windowCount;
+
+    bool m_isMainWindow = false;
     PlatformContext& m_context;
     ShaderProgram_ptr m_imWindowProgram;
 };

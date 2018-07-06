@@ -174,8 +174,7 @@ void Kernel::onLoop() {
             // Process the current frame
             _timingData._keepAlive = mainLoopScene(evt, deltaTime) && _timingData._keepAlive;
 
-            // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended
-            // event)
+            // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
             frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
@@ -521,7 +520,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
         }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
-            Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx(), targetViewports[i]);
+            Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), targetViewports[i]);
         }
     }
 
@@ -742,6 +741,7 @@ void Kernel::shutdown() {
     WaitForAllTasks(_taskPool, true, true, true);
     if (Config::Build::ENABLE_EDITOR) {
         _editor->close();
+        _editor.reset();
     }
     SceneManager::onShutdown();
     Script::onShutdown();

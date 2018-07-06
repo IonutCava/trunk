@@ -18,7 +18,7 @@ ImwWindowManagerDivide::~ImwWindowManagerDivide()
 
 ImWindow::ImwPlatformWindow* ImwWindowManagerDivide::CreatePlatformWindow(bool bMain, ImWindow::ImwPlatformWindow* pParent, bool bDragWindow)
 {
-    IM_ASSERT(m_pCurrentPlatformWindow == NULL);
+    IM_ASSERT(m_pCurrentPlatformWindow == nullptr);
 
     ImwWindowDivide* pWindow = MemoryManager_NEW ImwWindowDivide(_context, bMain, bDragWindow, CanCreateMultipleWindow());
     if (pWindow->Init(pParent)) {

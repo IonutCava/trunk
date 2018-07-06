@@ -92,7 +92,7 @@ GFXDevice::GFXDevice(Kernel& parent)
     _renderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS),
     _prevRenderStagePass(RenderStage::COUNT, RenderPassType::COLOUR_PASS),
     _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer")),
-    _clippingPlanes(to_base(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0))
+    _clippingPlanes(Plane<F32>(0, 0, 0, 0))
 {
     // Hash values
     _state2DRenderingHash = 0;
@@ -479,7 +479,7 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
 }
 
 /// set a new list of clipping planes. The old one is discarded
-void GFXDevice::setClipPlanes(const ClipPlaneList& clipPlanes) {
+void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value, "GFXDevice error: invalid clip plane type!");
     static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>), "GFXDevice error: clip plane size mismatch!");
 
@@ -490,7 +490,7 @@ void GFXDevice::setClipPlanes(const ClipPlaneList& clipPlanes) {
 
         memcpy(&_gpuBlock._data._clipPlanes[0],
                _clippingPlanes._planes.data(),
-               sizeof(vec4<F32>) * to_base(Frustum::FrustPlane::COUNT));
+               sizeof(vec4<F32>) * to_base(ClipPlaneIndex::COUNT));
 
         _gpuBlock._needsUpload = true;
     }

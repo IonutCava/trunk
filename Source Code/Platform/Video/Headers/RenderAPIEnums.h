@@ -134,16 +134,6 @@ enum class RenderPassType : U32 {
     COUNT
 };
 
-enum class ClipPlaneIndex : U32 {
-    CLIP_PLANE_0 = 0,
-    CLIP_PLANE_1 = 1,
-    CLIP_PLANE_2 = 2,
-    CLIP_PLANE_3 = 3,
-    CLIP_PLANE_4 = 4,
-    CLIP_PLANE_5 = 5,
-    COUNT
-};
-
 enum class PBType : U32 { 
     PB_TEXTURE_1D, 
     PB_TEXTURE_2D, 

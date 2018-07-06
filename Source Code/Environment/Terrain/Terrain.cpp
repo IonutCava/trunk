@@ -116,7 +116,7 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     RenderingComponent* renderComp = sgn.get<RenderingComponent>();
     RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
-    ClipPlaneList clipPlanes = pkg.clipPlanes(0);
+    FrustumClipPlanes clipPlanes = pkg.clipPlanes(0);
     clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
                    Plane<F32>(WORLD_Y_AXIS, _waterHeight),
                    true);

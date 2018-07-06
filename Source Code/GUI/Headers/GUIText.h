@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-class GUIText : public GUIElement, public TextLabel {
+class GUIText : public GUIElement, public TextElement {
     friend class GUIInterface;
 
    public:
@@ -57,9 +57,6 @@ class GUIText : public GUIElement, public TextLabel {
     bool onMouseDown(const GUIEvent& event) override;
 
     vec2<F32> getPosition() const;
-
-private:
-    vec2<F32> _position;
 };
 
 };  // namespace Divide

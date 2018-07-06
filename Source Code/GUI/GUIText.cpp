@@ -12,15 +12,13 @@ GUIText::GUIText(U64 guiID,
                  CEGUI::Window* parent,
                  U8 fontSize)
     : GUIElement(guiID, parent, GUIType::GUI_TEXT),
-      TextLabel(text, font, colour, fontSize),
-      _position(relativePosition)
+      TextElement(TextLabelStyle(font.c_str(), colour, fontSize), relativePosition)
 {
 }
 
 void GUIText::draw(GFXDevice& context) const {
     if (!text().empty()) {
-        TextElement element(*this, getPosition());
-        Attorney::GFXDeviceGUI::drawText(context, element);
+        Attorney::GFXDeviceGUI::drawText(context, TextElementBatch(*this));
     }
 }
 

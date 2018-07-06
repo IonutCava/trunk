@@ -117,9 +117,9 @@ void GUI::draw(GFXDevice& context) const {
 
     //cache text elements
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
-        GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
-        if (!textElement.text().empty()) {
-            textBatch._data.emplace_back(textElement, textElement.getPosition());
+        GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
+        if (!textLabel.text().empty()) {
+            textBatch._data.push_back(textLabel);
         }
     }
 

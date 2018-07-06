@@ -20,6 +20,7 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews() {
     static DebugView* HiZPtr;
+    static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, vec4<U8>(255), 96).getHash();
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -159,15 +160,14 @@ void GFXDevice::renderDebugViews() {
             viewport.y += viewportHeight;
         }
 
-        // Draw labels at the end to reduce number of state changes
-        TextLabel label("", Font::DROID_SERIF_BOLD, vec4<U8>(255), 96);
+        TextElement text(labelStyleHash, vec2<F32>(10.0f));
         for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
+            // Draw labels at the end to reduce number of state changes
             setViewport._viewport.set(entry.second);
             GFX::SetViewPort(buffer, setViewport);
 
-            label.text(entry.first);
-            TextElement text(label, vec2<F32>(10.0f));
             text._position.y = entry.second.sizeY - 10.0f;
+            text.text(entry.first);
             drawText(text, buffer);
         }
 

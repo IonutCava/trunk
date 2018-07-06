@@ -87,12 +87,13 @@ public:
 
 protected:
     U32 createAPIFlags(RenderAPI api);
-
+    void pollSDLEvents();
 protected:
     U32 _apiFlags;
     I32 _displayIndex;
     I64 _activeWindowGUID;
     I64 _mainWindowGUID;
+    I64 _focusedWindowGUID;
     PlatformContext* _context;
     vectorImpl<DisplayWindow*> _windows;
 };

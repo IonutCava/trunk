@@ -23,6 +23,7 @@ ImwWindowDivide::ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsD
     : ImwPlatformWindow(bMain, bIsDragWindow, bCreateState)
     , m_context(context)
     , m_pWindow(nullptr)
+    , m_isMainWindow(false)
 {
     ++m_windowCount;
     ResourceDescriptor shaderDescriptor("IMGUI");
@@ -32,18 +33,21 @@ ImwWindowDivide::ImwWindowDivide(PlatformContext& context, bool bMain, bool bIsD
 
 ImwWindowDivide::~ImwWindowDivide()
 {
-    ImwSafeDelete(m_pWindow);
+    if (!m_isMainWindow) {
+        m_context.app().windowManager().destroyWindow(m_pWindow);
+    }
+
     --m_windowCount;
 }
 
-bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
+bool ImwWindowDivide::Init(ImwPlatformWindow* parent)
 {
-    ImwWindowDivide* pMainDivide= ((ImwWindowDivide*)pMain);
+    ImwWindowDivide* pMainDivide= ((ImwWindowDivide*)parent);
 
     SetState();
     ImGuiIO& io = ImGui::GetIO();
 
-    if (pMainDivide != NULL) {
+    if (pMainDivide != nullptr) {
         //Copy texture reference
         m_texture = pMainDivide->m_texture;
 
@@ -80,20 +84,18 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
         textureDescriptor.setPropertyDescriptor(descriptor);
         
         ResourceCache& parentCache = m_context.gfx().parent().resourceCache();
-        Texture_ptr tex = CreateResource<Texture>(parentCache, textureDescriptor);
-        assert(tex);
+        m_texture = CreateResource<Texture>(parentCache, textureDescriptor);
+        assert(m_texture);
 
         Texture::TextureLoadInfo info;
 
-        tex->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
+        m_texture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
 
         // Store our identifier
-        io.Fonts->TexID = (void *)(intptr_t)tex->getHandle();
+        io.Fonts->TexID = (void *)(intptr_t)m_texture->getHandle();
         m_pWindow = &m_context.app().windowManager().getWindow(0u);
+        m_isMainWindow = true;
     }
-
-    m_oSize = ImVec2(m_pWindow->getDimensions());
-    m_oPosition = ImVec2(m_pWindow->getPosition());
 
     m_pWindow->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) { ACKNOWLEDGE_UNUSED(args); OnClose();});
     m_pWindow->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) { OnFocus(args._flag);});
@@ -136,12 +138,12 @@ bool ImwWindowDivide::Init(ImwPlatformWindow* pMain)
 
 ImVec2 ImwWindowDivide::GetPosition() const
 {
-    return m_oPosition;
+    return ImVec2(m_pWindow->getPosition());
 }
 
 ImVec2 ImwWindowDivide::GetSize() const
 {
-    return m_oSize;
+    return ImVec2(m_pWindow->getDimensions());
 }
 
 bool ImwWindowDivide::IsWindowMaximized() const
@@ -149,14 +151,12 @@ bool ImwWindowDivide::IsWindowMaximized() const
     return m_pWindow->maximized();
 }
 
-bool ImwWindowDivide::IsWindowMinimized() const
-{
-    return m_pWindow->minimized();
-}
 
-void ImwWindowDivide::Show(bool bShow)
-{
-    m_pWindow->hidden(!bShow);
+void ImwWindowDivide::Show() {
+    m_pWindow->hidden(false);
+}
+void ImwWindowDivide::Hide() {
+    m_pWindow->hidden(true);
 }
 
 void ImwWindowDivide::SetSize(int iWidth, int iHeight)
@@ -167,8 +167,6 @@ void ImwWindowDivide::SetSize(int iWidth, int iHeight)
 void ImwWindowDivide::SetPosition(int iX, int iY)
 {
     m_pWindow->setPosition(iX, iY);
-    m_oPosition.x = (float)iX;
-    m_oPosition.y = (float)iY;
 }
 
 void ImwWindowDivide::SetWindowMaximized(bool bMaximized)
@@ -176,12 +174,7 @@ void ImwWindowDivide::SetWindowMaximized(bool bMaximized)
     m_pWindow->maximized(bMaximized);
 }
 
-void ImwWindowDivide::SetWindowMinimized()
-{
-    m_pWindow->minimized(true);
-}
-
-void ImwWindowDivide::SetTitle(const ImwChar* pTitle)
+void ImwWindowDivide::SetTitle(const char* pTitle)
 {
     m_pWindow->title(pTitle);
 }
@@ -241,26 +234,32 @@ void ImwWindowDivide::Render()
         return;
     }
 
-    //if (m_hDC != NULL && m_hRC != NULL)
-    {
-        //wglMakeCurrent(m_hDC, m_hRC);
+    SetState();
+    ImGui::GetIO().DisplaySize = GetSize();
 
-        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ImGui::Render();
+    RenderDrawList(ImGui::GetDrawData());
     
-        SetState();
-        ImGui::GetIO().DisplaySize = ImVec2(m_oSize.x, m_oSize.y);
-
-        ImGui::Render();
-        RenderDrawList(ImGui::GetDrawData());
-    
-        //SwapBuffers(m_hDC);
-
-        RestoreState();
-    }
+    RestoreState();
 }
 
-bool ImwWindowDivide::OnClose()
-{
+void ImwWindowDivide::Destroy() {
+    ImWindow::ImwPlatformWindow::Destroy();
+}
+
+void ImwWindowDivide::StartDrag() {
+    ImWindow::ImwPlatformWindow::StartDrag();
+}
+
+void ImwWindowDivide::StopDrag() {
+    ImWindow::ImwPlatformWindow::StopDrag();
+}
+
+bool ImwWindowDivide::IsDraging() {
+    return ImWindow::ImwPlatformWindow::IsDraging();
+}
+
+bool ImwWindowDivide::OnClose() {
     ImwPlatformWindow::OnClose();
     return true;
 }
@@ -274,12 +273,8 @@ void ImwWindowDivide::OnFocus(bool bHasFocus)
 
 void ImwWindowDivide::OnSize(int iWidth, int iHeight)
 {
-    m_oSize = ImVec2((float)iWidth, (float)iHeight);
-    /*if (m_hDC != NULL && m_hRC != NULL)
-    {
-        wglMakeCurrent(m_hDC, m_hRC);
-        glViewport(0, 0, iWidth, iHeight);
-    }*/
+    ACKNOWLEDGE_UNUSED(iWidth);
+    ACKNOWLEDGE_UNUSED(iHeight);
 }
 
 void ImwWindowDivide::OnMouseButton(int iButton, bool bDown)
@@ -331,6 +326,11 @@ void ImwWindowDivide::RenderDrawList(ImDrawData* pDrawData)
     pipelineDesc._stateHash = state.getHash();
     pipelineDesc._shaderProgram = m_imWindowProgram;
 
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
+    beginDebugScopeCmd._scopeName = "Render IMGUI";
+    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
+
     GFX::SetBlendCommand blendCmd;
     blendCmd._enabled = true;
     blendCmd._blendProperties = BlendingProperties{
@@ -354,6 +354,10 @@ void ImwWindowDivide::RenderDrawList(ImDrawData* pDrawData)
     GFX::DrawIMGUICommand drawIMGUI;
     drawIMGUI._data = pDrawData;
     GFX::AddDrawIMGUICommand(buffer, drawIMGUI);
+
+    GFX::EndDebugScopeCommand endDebugScope;
+    GFX::EndDebugScope(buffer, endDebugScope);
+
     m_context.gfx().flushCommandBuffer(buffer);
 }
 }; //namespace Divide

@@ -15,6 +15,12 @@
 
 namespace Divide {
 
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+    GLuint GL_API::s_imguiVAO = 0;
+    GLuint GL_API::s_imguiVBO = 0;
+    GLuint GL_API::s_imguiIB = 0;
+#endif
+
 /// The following static variables are used to remember the current OpenGL state
 GLuint GL_API::s_UBOffsetAlignment = 0;
 GLuint GL_API::s_UBMaxSize = 0;
@@ -275,10 +281,10 @@ void GL_API::toggleRasterization(bool state) {
 /// state
 void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
-    const ClipPlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
+    const FrustumClipPlanes& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     
     // For every clip plane that we support (usually 6)
-    for (U32 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
+    for (U32 i = 0; i < to_base(ClipPlaneIndex::COUNT); ++i) {
         // Check its state and compare it with OpenGL's current state
         bool& activePlane = _activeClipPlanes[i];
         if (activePlane != list._active[i]) {

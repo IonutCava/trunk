@@ -49,17 +49,7 @@ enum class RenderStage : U32;
 class RenderPassManager : public KernelComponent {
 public:
     struct PassParams {
-        PassParams()
-            : drawPolicy(nullptr),
-              stage(RenderStage::COUNT),
-              camera(nullptr),
-              occlusionCull(false),
-              doPrePass(true),
-              bindTargets(true),
-              pass(0),
-            clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
-        {
-        }
+        PassParams();
 
         RenderTargetID target;
         RTDrawDescriptor* drawPolicy = nullptr;
@@ -69,7 +59,7 @@ public:
         bool doPrePass = true;
         bool bindTargets = true;
         U32 pass = 0;
-        ClipPlaneList clippingPlanes;
+        FrustumClipPlanes clippingPlanes;
     };
 public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);

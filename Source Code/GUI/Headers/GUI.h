@@ -44,15 +44,6 @@ class Renderer;
 
 namespace Divide {
 
-namespace Font {
-const static char* DIVIDE_DEFAULT = "DroidSerif-Regular.ttf"; /*"Test.ttf"*/
-const static char* BATANG = "Batang.ttf";
-const static char* DEJA_VU = "DejaVuSans.ttf";
-const static char* DROID_SERIF = "DroidSerif-Regular.ttf";
-const static char* DROID_SERIF_ITALIC = "DroidSerif-Italic.ttf";
-const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
-};
-
 class GUIEditor;
 class GUIConsole;
 class GUIElement;

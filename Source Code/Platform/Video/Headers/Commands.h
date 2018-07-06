@@ -191,11 +191,11 @@ struct SetCameraCommand : Command {
 
 struct SetClipPlanesCommand : Command {
     SetClipPlanesCommand() : Command(CommandType::SET_CLIP_PLANES),
-        _clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+        _clippingPlanes(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
     {
     }
 
-    ClipPlaneList _clippingPlanes;
+    FrustumClipPlanes _clippingPlanes;
 };
 
 

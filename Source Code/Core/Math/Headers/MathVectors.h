@@ -98,17 +98,48 @@ public:
     {
     }
 
+    inline bool operator==(const simd_vector& other) const {
+        return !fneq128(_reg, other._reg);
+    }
+
+    inline bool operator!=(const simd_vector& other) const {
+        return fneq128(_reg, other._reg);
+    }
+
     __m128 _reg;
 };
 
 template<typename T>
 class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
+  public:
     simd_vector()  noexcept : simd_vector(0)
+    {
+    }
+
+    simd_vector(T val) noexcept : _reg(val)
     {
     }
 
     simd_vector(T reg[4])  noexcept : _reg(reg)
     {
+    }
+
+    inline bool operator==(const simd_vector& other) const {
+        for (U8 i = 0; i < 4; ++i) {
+            if (_reg[i] != other._reg[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    inline bool operator!=(const simd_vector& other) const {
+        for (U8 i = 0; i < 4; ++i) {
+            if (_reg[i] != other._reg[i]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     T _reg[4];

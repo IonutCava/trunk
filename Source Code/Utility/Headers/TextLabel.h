@@ -34,26 +34,89 @@
 
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/Hashable.h"
 
 namespace Divide {
-class TextLabel {
-   public:
-    TextLabel(const stringImpl& string,
-              const stringImpl& font,
-              const vec4<U8>& colour,
-              U8 fontSize)
-        : _width(1),
-          _font(font),
-          _fontSize(fontSize),
-          _colour(colour),
-          _blurAmount(0.0f),
-          _spacing(0.0f),
-          _alignFlag(0),
-          _bold(false),
-          _italic(false)
-          
+
+namespace Font {
+    const static char* DIVIDE_DEFAULT = "DroidSerif-Regular.ttf"; /*"Test.ttf"*/
+    const static char* BATANG = "Batang.ttf";
+    const static char* DEJA_VU = "DejaVuSans.ttf";
+    const static char* DROID_SERIF = "DroidSerif-Regular.ttf";
+    const static char* DROID_SERIF_ITALIC = "DroidSerif-Italic.ttf";
+    const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
+};
+
+class TextLabelStyle : public Hashable {
+  protected:
+    typedef hashMapImpl<size_t, TextLabelStyle> TextLabelStyleMap;
+    static TextLabelStyleMap s_textLabelStyleMap;
+    static SharedLock s_textLableStyleMapMutex;
+    static size_t s_defaultCacheValue;
+
+    typedef hashMapImpl<size_t, stringImpl> FontNameHashMap;
+    static FontNameHashMap s_fontNameMap;
+
+  public:
+    static const TextLabelStyle& get(size_t textLabelStyleHash);
+    static const TextLabelStyle& get(size_t textLabelStyleHash, bool& styleFound);
+    static const stringImpl& fontName(size_t fontNameHash);
+
+  public:
+   TextLabelStyle(const char* font,
+                  const vec4<U8>& colour,
+                  U8 fontSize);
+
+    size_t getHash() const override;
+
+    inline size_t font() const { return _font; }
+    inline U8 fontSize() const { return _fontSize; }
+    inline U8 width() const { return _width; }
+    inline F32 blurAmount() const { return _blurAmount; }
+    inline F32 spacing() const { return _spacing; }
+    inline U32 alignFlag() const { return _alignFlag; }
+    inline const vec4<U8>& colour() const { return _colour; }
+    inline bool bold() const { return _bold; }
+    inline bool italic() const { return _italic; }
+
+
+    inline void font(size_t font) { _font = font; _dirty = true; }
+    inline void fontSize(U8 fontSize) { _fontSize = fontSize; _dirty = true; }
+    inline void width(U8 width) { _width = width; _dirty = true; }
+    inline void blurAmount(F32 blurAmount) { _blurAmount = blurAmount; _dirty = true; }
+    inline void spacing(F32 spacing) { _spacing = spacing; _dirty = true; }
+    inline void alignFlag(U32 alignFlag) { _alignFlag = alignFlag; _dirty = true; }
+    inline void colour(const vec4<U8>& colour) { _colour.set(colour); _dirty = true; }
+    inline void bold(bool bold) { _bold = bold; _dirty = true; }
+    inline void italic(bool italic) { _italic = italic; _dirty = true; }
+
+ protected:
+    size_t _font;
+    U8 _fontSize;
+    U8 _width;
+    F32 _blurAmount;
+    F32 _spacing;
+    U32 _alignFlag;  ///< Check font-stash alignment for details
+    vec4<U8> _colour;
+    bool _bold;
+    bool _italic;
+
+ protected:
+    mutable bool _dirty = true;
+};
+
+struct TextElement {
+    TextElement(const TextLabelStyle& textLabelStyle,
+                const vec2<F32>& position)
+        : TextElement(textLabelStyle.getHash(), position)
     {
-        text(string);
+    }
+
+    TextElement(size_t textLabelStyleHash,
+                const vec2<F32>& position)
+        : _textLabelStyleHash(textLabelStyleHash),
+          _position(position)
+    {
     }
 
     inline void text(const stringImpl& text) {
@@ -64,30 +127,11 @@ class TextLabel {
         return _text;
     }
 
-    stringImpl _font;
-    U8 _fontSize;
-    U8 _width;
-    F32 _blurAmount;
-    F32 _spacing;
-    U32 _alignFlag;  ///< Check font-stash alignment for details
-    vec4<U8> _colour;
-    bool _bold;
-    bool _italic;
-
-private:
-    vectorImplFast<stringImpl> _text;
-};
-
-struct TextElement {
-    TextElement(const TextLabel& textLabel,
-                const vec2<F32>& position)
-        : _textLabel(textLabel),
-          _position(position)
-    {
-    }
-
-    TextLabel _textLabel;
+    size_t _textLabelStyleHash;
     vec2<F32> _position;
+
+  private:
+    vectorImplFast<stringImpl> _text;
 };
 
 struct TextElementBatch {
@@ -97,7 +141,7 @@ struct TextElementBatch {
     {
     }
 
-    TextElementBatch(TextElement& element)
+    TextElementBatch(const TextElement& element)
         : _data {element}
     {
     }

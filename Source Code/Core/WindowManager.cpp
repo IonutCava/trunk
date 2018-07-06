@@ -10,12 +10,44 @@
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+
+#include <AntTweakBar/include/AntTweakBar.h>
+
 namespace Divide {
+
+namespace {
+    Input::KeyCode SDLToOIS(SDL_Keycode code) {
+        switch (code) {
+            case SDLK_TAB: return Input::KeyCode::KC_TAB;
+            case SDLK_LEFT: return Input::KeyCode::KC_LEFT;
+            case SDLK_RIGHT: return Input::KeyCode::KC_RIGHT;
+            case SDLK_UP: return Input::KeyCode::KC_UP;
+            case SDLK_DOWN: return Input::KeyCode::KC_DOWN;
+            case SDLK_PAGEUP: return Input::KeyCode::KC_PGUP;
+            case SDLK_PAGEDOWN: return Input::KeyCode::KC_PGDOWN;
+            case SDLK_HOME: return Input::KeyCode::KC_HOME;
+            case SDLK_END: return Input::KeyCode::KC_END;
+            case SDLK_DELETE: return Input::KeyCode::KC_DELETE;
+            case SDLK_BACKSPACE: return Input::KeyCode::KC_BACK;
+            case SDLK_RETURN: return Input::KeyCode::KC_RETURN;
+            case SDLK_ESCAPE: return Input::KeyCode::KC_ESCAPE;
+            case SDLK_a: return Input::KeyCode::KC_A;
+            case SDLK_c: return Input::KeyCode::KC_C;
+            case SDLK_v: return Input::KeyCode::KC_V;
+            case SDLK_x: return Input::KeyCode::KC_X;
+            case SDLK_y: return Input::KeyCode::KC_Y;
+            case SDLK_z: return Input::KeyCode::KC_Z;
+        };
+        return Input::KeyCode::KC_YEN;
+    }
+}
+
 
 WindowManager::WindowManager() : _displayIndex(0),
                                  _apiFlags(0),
                                  _activeWindowGUID(-1),
                                  _mainWindowGUID(-1),
+                                 _focusedWindowGUID(-1),
                                  _context(nullptr)
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -66,7 +98,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     if (err == ErrorCode::NO_ERR) {
         setActiveWindow(idx);
         _mainWindowGUID = _windows[idx]->getGUID();
-
+        _focusedWindowGUID = _mainWindowGUID;
         GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
@@ -117,8 +149,6 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
         if (err != ErrorCode::NO_ERR) {
             _windows.pop_back();
             MemoryManager::SAFE_DELETE(window);
-        } else {
-            return to_U32(_windows.size() - 1);
         }
     }
 
@@ -127,23 +157,130 @@ U32 WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& e
 
 bool WindowManager::destroyWindow(DisplayWindow*& window) {
     SDL_HideWindow(window->getRawWindow());
+    I64 targetGUID = window->getGUID();
     if (window->destroyWindow() == ErrorCode::NO_ERR) {
-        I64 targetGUID = window->getGUID();
         _windows.erase(
             std::remove_if(std::begin(_windows), std::end(_windows),
                            [&targetGUID](DisplayWindow* window)
                                -> bool { return window->getGUID() == targetGUID;}),
             std::end(_windows));
-        window = nullptr;
+        MemoryManager::SAFE_DELETE(window);
         return true;
     }
     return false;
 }
 
 void WindowManager::update(const U64 deltaTime) {
+    pollSDLEvents();
     for (DisplayWindow* win : _windows) {
         win->update(deltaTime);
     }
+}
+
+void WindowManager::pollSDLEvents() {
+    static int s_KeyMod = 0;
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        if (Config::USE_ANT_TWEAK_BAR) {
+            if (_context->config().gui.enableDebugVariableControls) {
+                // send event to AntTweakBar
+                if (TwEventSDL(&event, SDL_MAJOR_VERSION, SDL_MINOR_VERSION) != 0) {
+                    continue;
+                }
+            }
+        }
+
+        if (event.type == SDL_WINDOWEVENT) {
+            for (DisplayWindow* win : _windows) {
+                win->handleEvent(event);
+            }
+            continue;
+        }
+
+        DisplayWindow& focusedWindow = getWindow(_focusedWindowGUID);
+        DisplayWindow::WindowEventArgs args;
+        args._windowGUID = _focusedWindowGUID;
+
+        switch(event.type) {
+            case SDL_QUIT: {
+                handleWindowEvent(WindowEvent::APP_QUIT,
+                                  -1,
+                                  event.quit.type,
+                                  event.quit.timestamp);
+            } break;
+             case SDL_KEYUP:
+             case SDL_KEYDOWN: {
+                 args._key = SDLToOIS(event.key.keysym.sym);
+                 if (event.key.type == SDL_KEYUP) {
+                     s_KeyMod = 0;
+                     args._flag = false;
+                     focusedWindow.notifyListeners(WindowEvent::KEY_PRESS, args);
+                 } else {
+                     s_KeyMod = event.key.keysym.mod;
+
+                     args._flag = true;
+                     args._mod = s_KeyMod;
+                     focusedWindow.notifyListeners(WindowEvent::KEY_PRESS, args);
+                 }
+             } break;
+             case SDL_TEXTINPUT: {
+                 args._char = event.text.text[0];
+                 if (event.text.text[0] != 0 && event.text.text[1] == 0)
+                 {
+                     if (s_KeyMod & TW_KMOD_CTRL && event.text.text[0] < 32) {
+                         args._char = (event.text.text[0] + 'a' - 1);
+                         args._mod = s_KeyMod;
+                     } else {
+                         if (s_KeyMod & KMOD_RALT) {
+                             s_KeyMod &= ~KMOD_CTRL;
+                         }
+
+                         args._char = event.text.text[0];
+                         args._mod = s_KeyMod;
+                     }
+                 }
+                 s_KeyMod = 0;
+                 focusedWindow.notifyListeners(WindowEvent::CHAR, args);
+             } break;
+             case SDL_MOUSEBUTTONDOWN: {
+                 args._flag = true;
+                 args.id = event.button.button;
+                 focusedWindow.notifyListeners(WindowEvent::MOUSE_BUTTON, args);
+             } break;
+             case SDL_MOUSEBUTTONUP: {
+                 if (event.type == SDL_MOUSEBUTTONDOWN && (event.button.button == 4 || event.button.button == 5))
+                 {
+                     static int s_WheelPos = 0;
+                     if (event.button.button == 4) {
+                         ++s_WheelPos;
+                     } else {
+                         --s_WheelPos;
+                     }
+                     args.x = event.wheel.x;
+                     args.y = event.wheel.y;
+                     args._mod = s_WheelPos;
+                     focusedWindow.notifyListeners(WindowEvent::MOUSE_WHEEL, args);
+                 } else {
+
+                     args._flag = false;
+                     args.id = event.button.button;
+                     focusedWindow.notifyListeners(WindowEvent::MOUSE_BUTTON, args);
+                 }
+             } break;
+             case SDL_MOUSEMOTION: {
+                 args.x = event.motion.x;
+                 args.y = event.motion.y;
+                 focusedWindow.notifyListeners(WindowEvent::MOUSE_MOVE, args);
+             } break;
+             case SDL_MOUSEWHEEL: {
+                 args.x = event.wheel.x;
+                 args.y = event.wheel.y;
+                 focusedWindow.notifyListeners(WindowEvent::MOUSE_WHEEL, args);
+             } break;
+        }
+    };
 }
 
 bool WindowManager::anyWindowFocus() const {
@@ -294,6 +431,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         } break;
         case WindowEvent::GAINED_FOCUS: {
             getWindow(winGUID).hasFocus(true);
+            _focusedWindowGUID = winGUID;
         } break;
         case WindowEvent::RESIZED_INTERNAL: {
             // Only if rendering window
@@ -318,25 +456,25 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), winGUID);
 
             if (_mainWindowGUID == winGUID) {
-                getWindow(winGUID).hidden(true);
-                _context->app().RequestShutdown();
+                handleWindowEvent(WindowEvent::APP_QUIT, -1, -1, -1);
             } else {
                 for (DisplayWindow* win : _windows) {
                     if (win->getGUID() == winGUID) {
                         if (!destroyWindow(win)) {
                             Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), winGUID);
-                            if (win != nullptr) {
-                                SDL_HideWindow(win->getRawWindow());
-                            }
+                            win->hidden(true);
                         }
-                        //Iterator is now invalidated!
                         break;
                     }
                 }
-
-               
             }
-        }
+        } break;
+        case WindowEvent::APP_QUIT: {
+            for (DisplayWindow* win : _windows) {
+                win->hidden(true);
+            }
+            _context->app().RequestShutdown();
+        }break;
     };
 }
 }; //namespace Divide

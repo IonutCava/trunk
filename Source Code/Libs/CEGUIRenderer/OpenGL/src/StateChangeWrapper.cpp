@@ -30,6 +30,10 @@
 #include "StateChangeWrapper.h"  
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
+namespace {
+    static const GLuint s_invalidBuffer = std::numeric_limits<GLuint>::max();
+};
+
 namespace Divide {
     BlendProperty getProperty(GLenum property) {
         for (U32 i = 0; i < to_U32(BlendProperty::COUNT); ++i) {
@@ -124,7 +128,7 @@ namespace CEGUI
     void OpenGL3StateChangeWrapper::BindBufferParams::reset()           
     {
         d_target = GL_NONE;
-        d_buffer = std::numeric_limits<unsigned int>::max();
+        d_buffer = s_invalidBuffer;
     }
 
     bool OpenGL3StateChangeWrapper::BindBufferParams::equal(GLenum target, GLuint buffer)

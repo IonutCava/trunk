@@ -35,7 +35,14 @@ namespace Divide {
 
 namespace {
     //ref: http://stackoverflow.com/questions/6042399/how-to-compare-m128-types
-    bool fneq128_b(__m128 const& a, __m128 const& b, F32 epsilon = 1.e-8f)
+    bool fneq128(__m128 const& a, __m128 const& b)
+    {
+        // returns true if at least one element in a is not equal to 
+        // the corresponding element in b
+        return _mm_movemask_ps(_mm_cmpeq_ps(a, b)) != 0xF;
+    }
+
+    bool fneq128(__m128 const& a, __m128 const& b, F32 epsilon)
     {
         // epsilon vector
         auto eps = _mm_set1_ps(epsilon);
@@ -616,7 +623,7 @@ template <typename T>
 template <typename U>
 inline bool vec4<T>::compare(const vec4<U> &v, U epsi) const {
     if (std::is_same<T, U>::value && std::is_same<U, F32>::value) {
-        return !fneq128_b(_reg._reg, v._reg._reg, epsi);
+        return !fneq128(_reg._reg, v._reg._reg, epsi);
     } else {
         return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
                 COMPARE_TOLERANCE(this->y, v.y, epsi) &&

@@ -307,7 +307,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     flushCommandBuffer(sBuffer());
 }
 
-void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
+void GFXDevice::blitToScreen(const vec4<I32>& targetViewport) {
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 

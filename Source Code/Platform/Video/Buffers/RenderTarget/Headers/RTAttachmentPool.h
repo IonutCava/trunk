@@ -55,7 +55,7 @@ public:
     RTAttachment_ptr& get(RTAttachmentType type, U8 index);
     const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
 
-    void get(RTAttachmentType type, vectorImpl<RTAttachment_ptr>& attachments) const;
+    const vectorImpl<RTAttachment_ptr>& get(RTAttachmentType type) const;
 
     U8 attachmentCount(RTAttachmentType type) const;
 
@@ -67,8 +67,8 @@ private:
     AttachmentPool _attachment;
     std::array < U8, to_base(RTAttachmentType::COUNT)> _attachmentCount;
 
-    bool _isFrameListener;
-
+    AttachmentPool _attachmentCache;
+    bool _isFrameListener = false;
     RenderTarget& _parent;
 };
 }; //namespace Divide

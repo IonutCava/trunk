@@ -35,29 +35,36 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/Plane.h"
 
 namespace Divide {
-    struct ClipPlaneList {
-        ClipPlaneList(U32 size, const Plane<F32>& defaultValue)
-            : _planes(size, defaultValue),
-              _active(size, false)
-        {
-        }
+    enum class ClipPlaneIndex : U32 {
+        CLIP_PLANE_0 = 0,
+        CLIP_PLANE_1,
+        CLIP_PLANE_2,
+        CLIP_PLANE_3,
+        CLIP_PLANE_4,
+        CLIP_PLANE_5,
+        COUNT
+    };
 
-        void resize(U32 size, const Plane<F32>& defaultValue) {
-            _planes.resize(size, defaultValue);
-            _active.resize(size, false);
+    template<size_t N>
+    struct ClipPlaneList {
+        ClipPlaneList(const Plane<F32>& defaultValue)
+        {
+            _planes.fill(defaultValue);
+            _active.fill(false);
         }
 
         void set(U32 index, const Plane<F32>& plane, bool active) {
-            assert(index < _planes.size());
+            assert(index < N);
 
             _planes[index].set(plane.getEquation());
             _active[index] = active;
         }
 
-        PlaneList _planes;
-        vectorImpl<bool> _active;
+        PlaneList<N> _planes;
+        std::array<bool, N> _active;
     };
-
+    
+    typedef ClipPlaneList<to_base(ClipPlaneIndex::COUNT)> FrustumClipPlanes;
 }; //namespace Divide
 
 #endif //_CLIP_PLANES_H_

@@ -513,7 +513,7 @@ namespace Divide {
         style.Colors[ImGuiCol_MenuBarBg] = style.Colors[ImGuiCol_WindowBg];
 
         //oMgr.GetMainPlatformWindow()->SetPos(2000,100);
-        oMgr.SetMainTitle("ImWindow Test");
+        //oMgr.SetMainTitle("ImWindow Test");
 
         ImwWindow* pWindow1 = new MyImwWindow();
 

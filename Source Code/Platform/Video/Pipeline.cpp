@@ -29,6 +29,7 @@ Pipeline::Pipeline(const PipelineDescriptor& descriptor)
 bool Pipeline::operator==(const Pipeline &other) const {
     return _descriptor._stateHash == other._descriptor._stateHash &&
            _descriptor._multiSampleCount == other._descriptor._multiSampleCount &&
+           _descriptor._shaderFunctions.size() == other._descriptor._shaderFunctions.size() &&
            _descriptor._shaderFunctions == other._descriptor._shaderFunctions &&
            (_descriptor._shaderProgram.expired() ? 0 : _descriptor._shaderProgram.lock()->getID())
                     == (other._descriptor._shaderProgram.expired() ? 0 : other._descriptor._shaderProgram.lock()->getID());
@@ -37,6 +38,7 @@ bool Pipeline::operator==(const Pipeline &other) const {
 bool Pipeline::operator!=(const Pipeline &other) const {
     return _descriptor._stateHash != other._descriptor._stateHash ||
            _descriptor._multiSampleCount != other._descriptor._multiSampleCount ||
+           _descriptor._shaderFunctions.size() != other._descriptor._shaderFunctions.size() ||
            _descriptor._shaderFunctions != other._descriptor._shaderFunctions ||
             (_descriptor._shaderProgram.expired() ? 0 : _descriptor._shaderProgram.lock()->getID())
                     != (other._descriptor._shaderProgram.expired() ? 0 : other._descriptor._shaderProgram.lock()->getID());

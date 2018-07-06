@@ -383,7 +383,7 @@ void GFXDevice::closeRenderingAPI() {
     RenderStateBlock::clear();
 
     EnvironmentProbe::onShutdown(*this);
-    MemoryManager::DELETE(_rtPool);
+    MemoryManager::SAFE_DELETE(_rtPool);
 
     _previewDepthMapShader = nullptr;
     _renderTargetDraw = nullptr;

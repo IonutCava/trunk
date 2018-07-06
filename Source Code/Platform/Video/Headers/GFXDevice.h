@@ -371,7 +371,7 @@ protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
 
-    void flushDisplay(const vec4<I32>& targetViewport);
+    void blitToScreen(const vec4<I32>& targetViewport);
 
 protected:
     friend class SceneManager;
@@ -396,7 +396,7 @@ protected:
 private:
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
-    void setClipPlanes(const ClipPlaneList& clipPlanes);
+    void setClipPlanes(const FrustumClipPlanes& clipPlanes);
     void renderFromCamera(Camera& camera);
 
     ErrorCode createAPIInstance();
@@ -441,7 +441,7 @@ protected:
     size_t _state2DRenderingHash;
     size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
-    ClipPlaneList _clippingPlanes;
+    FrustumClipPlanes _clippingPlanes;
 
     bool _2DRendering;
     // number of draw calls (rough estimate)
@@ -528,8 +528,8 @@ namespace Attorney {
             device.onCameraChange(camera);
         }
 
-        static void flushDisplay(GFXDevice& device, const vec4<I32>& targetViewport) {
-            device.flushDisplay(targetViewport);
+        static void blitToScreen(GFXDevice& device, const vec4<I32>& targetViewport) {
+            device.blitToScreen(targetViewport);
         }
 
         static void onChangeWindowSize(GFXDevice& device, U16 w, U16 h) {
@@ -573,11 +573,12 @@ namespace Attorney {
             device.renderFromCamera(camera);
         }
 
-        static void setClippingPlanes(GFXDevice& device, const ClipPlaneList& clippingPlanes) {
+        static void setClippingPlanes(GFXDevice& device, const FrustumClipPlanes& clippingPlanes) {
             device.setClipPlanes(clippingPlanes);
         }
+
         /// Get the entire list of clipping planes
-        static const ClipPlaneList& getClippingPlanes(GFXDevice& device) {
+        static const FrustumClipPlanes& getClippingPlanes(GFXDevice& device) {
             return device._clippingPlanes;
         }
 

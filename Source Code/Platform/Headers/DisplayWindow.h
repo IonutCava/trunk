@@ -78,6 +78,7 @@ enum class WindowEvent : U32 {
     MOUSE_BUTTON = 15,
     MOUSE_WHEEL = 16,
     CHAR = 17,
+    APP_QUIT = 18,
     COUNT
 };
 
@@ -92,6 +93,7 @@ enum class ErrorCode;
 class DisplayWindow : public GUIDWrapper {
 public:
     struct WindowEventArgs {
+        I64 _windowGUID = -1;
         bool _flag = false;
         Input::KeyCode _key;
         char _char = ' ';
@@ -102,9 +104,16 @@ public:
     };
     typedef DELEGATE_CBK<void, const WindowEventArgs&> EventListener;
 
-public:
+protected:
+    SET_SAFE_DELETE_FRIEND
+    SET_DELETE_VECTOR_FRIEND
+
+    friend class WindowManager;
     DisplayWindow(WindowManager& parent, PlatformContext& context);
     ~DisplayWindow();
+
+public:
+
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
                    const vec2<U16>& dimensions,
@@ -163,6 +172,9 @@ public:
 
     inline Input::InputInterface& inputHandler();
 
+    void handleEvent(SDL_Event event);
+    void notifyListeners(WindowEvent event, const WindowEventArgs& args);
+
 private:
     /// Internally change window size
     void setDimensionsInternal(U16 w, U16 h);
@@ -204,7 +216,7 @@ private:
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     std::unique_ptr<Input::InputInterface> _inputHandler;
-
+    Uint32 _windowID;
     // Varies from OS to OS
     WindowHandle _handle;
 

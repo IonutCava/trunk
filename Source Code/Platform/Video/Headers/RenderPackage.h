@@ -91,8 +91,8 @@ public:
     const Pipeline* pipeline(I32 index) const;
     void pipeline(I32 index, const Pipeline& pipeline);
 
-    const ClipPlaneList& clipPlanes(I32 index) const;
-    void clipPlanes(I32 index, const ClipPlaneList& pipeline);
+    const FrustumClipPlanes& clipPlanes(I32 index) const;
+    void clipPlanes(I32 index, const FrustumClipPlanes& pipeline);
 
     const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants);

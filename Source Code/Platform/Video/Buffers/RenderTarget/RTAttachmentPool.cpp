@@ -70,7 +70,16 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
                            index);
         // Just to be clear about our intentions
         ptr.reset();
+        --_attachmentCount[to_U32(type)];
+
+        _attachmentCache[to_U32(type)].resize(0);
+        for (const RTAttachment_ptr& att : _attachment[to_U32(type)]) {
+            if (att && att->used()) {
+                _attachmentCache[to_U32(type)].push_back(att);
+            }
+        }
     }
+
     ptr = std::make_shared<RTAttachment>(descriptor);
 
     ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
@@ -91,7 +100,9 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
 
     ptr->texture(tex);
 
-    _attachmentCount[to_U32(type)]++;
+    ++_attachmentCount[to_U32(type)];
+
+    _attachmentCache[to_U32(type)].push_back(ptr);
 
     return ptr;
 }
@@ -160,19 +171,8 @@ const RTAttachment_ptr& RTAttachmentPool::get(RTAttachmentType type, U8 index) c
     return getInternal(_attachment, type, index);
 }
 
-void RTAttachmentPool::get(RTAttachmentType type, vectorImpl<RTAttachment_ptr>& attachments) const {
-    if (!attachments.empty()) {
-        attachments.resize(0);
-    }
-
-    std::back_insert_iterator<vectorImpl<RTAttachment_ptr>> back_it(attachments);
-    auto const usedPredicate = [](const RTAttachment_ptr& ptr) { return ptr && ptr->used(); };
-
-    const vectorImpl<RTAttachment_ptr>& src = _attachment[to_U32(type)];
-    std::copy_if(std::cbegin(src),
-                 std::cend(src),
-                 back_it,
-                 usedPredicate);
+const vectorImpl<RTAttachment_ptr>& RTAttachmentPool::get(RTAttachmentType type) const {
+    return _attachmentCache[to_base(type)];
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachmentType type) const {

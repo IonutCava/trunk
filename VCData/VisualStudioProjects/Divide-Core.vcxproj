@@ -62,6 +62,7 @@
     <ClCompile Include="..\../Source Code/Utility\ImageTools.cpp" />
     <ClCompile Include="..\../Source Code/Utility\Localization.cpp" />
     <ClCompile Include="..\../Source Code/Utility\XMLParser.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\TextLabel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/config.h" />

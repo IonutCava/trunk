@@ -1,7 +1,6 @@
 -- Vertex
 
-uniform mat4 ProjMtx;
-in vec2 Position;
+layout(location = 13) in vec2 Position;
 
 out vec2 Frag_UV;
 out vec4 Frag_Color;
@@ -10,7 +9,7 @@ void main()
 {
     Frag_UV = inTexCoordData;
     Frag_Color = inColourData;
-    gl_Position = ProjMtx * vec4(Position.xy,0,1);
+    gl_Position = dvd_ProjectionMatrix * vec4(Position.xy,0,1);
 };
 
 -- Fragment

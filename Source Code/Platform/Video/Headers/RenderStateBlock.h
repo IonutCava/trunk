@@ -80,11 +80,11 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
     FillMode _fillMode;
 
+    mutable bool _dirty = true;
     static size_t s_defaultCacheValue;
 
   private:
     void operator=(const RenderStateBlock& b) = delete;
-    void clean();
 
    public:
     RenderStateBlock();
@@ -163,6 +163,8 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     inline FillMode fillMode() const {
         return _fillMode;
     }
+
+    size_t getHash() const override;
 
     bool operator==(const RenderStateBlock& RSBD) const {
         return getHash() == RSBD.getHash();

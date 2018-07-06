@@ -14,7 +14,6 @@ RenderStateBlock::RenderStateBlock()
     : GUIDWrapper()
 {
     setDefaultValues();
-    clean();
     if (s_defaultCacheValue == 0) {
         s_defaultCacheValue = getHash();
     }
@@ -22,6 +21,7 @@ RenderStateBlock::RenderStateBlock()
 
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
     : GUIDWrapper(other),
+     _dirty(true),
      _colourWrite(other._colourWrite),
      _cullMode(other._cullMode),
      _cullEnabled(other._cullEnabled),
@@ -57,19 +57,18 @@ void RenderStateBlock::flipCullMode() {
     if (_cullMode == CullMode::CCW) {
         _cullMode = CullMode::CW;
     }
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setCullMode(CullMode mode) {
     _cullMode = mode;
     _cullEnabled = _cullMode == CullMode::NONE ? false : true;
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setZRead(const bool enable) {
     _zEnable = enable;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setColourWrites(bool red,
@@ -80,40 +79,34 @@ void RenderStateBlock::setColourWrites(bool red,
     _colourWrite.b[1] = green ? 1 : 0;
     _colourWrite.b[2] = blue ? 1 : 0;
     _colourWrite.b[3] = alpha ? 1 : 0;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setScissorTest(const bool enable) {
     _scissorTest = enable;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setZBias(F32 zBias, F32 zUnits) {
     _zBias = zBias;
     _zUnits = zUnits;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setZFunc(ComparisonFunction zFunc) {
     _zFunc = zFunc;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setFillMode(FillMode mode) {
     _fillMode = mode;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write) {
     _stencilMask = read;
     _stencilWriteMask = write;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setStencil(bool enable,
@@ -128,8 +121,7 @@ void RenderStateBlock::setStencil(bool enable,
     _stencilZFailOp = stencilZFailOp;
     _stencilPassOp = stencilPassOp;
     _stencilFunc = stencilFunc;
-
-    clean();
+    _dirty = true;
 }
 
 void RenderStateBlock::setDefaultValues() {
@@ -151,38 +143,6 @@ void RenderStateBlock::setDefaultValues() {
     _stencilPassOp = StencilOperation::KEEP;
     _stencilFunc = ComparisonFunction::NEVER;
     _hash = s_defaultCacheValue;
-}
-
-void RenderStateBlock::clean() {
-    size_t previousCache = getHash();
-
-    // Avoid small float rounding errors offsetting the general hash value
-    U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
-    U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
-
-    _hash = 0;
-    Util::Hash_combine(_hash, _colourWrite.i);
-    Util::Hash_combine(_hash, to_U32(_cullMode));
-    Util::Hash_combine(_hash, _cullEnabled);
-    Util::Hash_combine(_hash, _zEnable);
-    Util::Hash_combine(_hash, to_U32(_zFunc));
-    Util::Hash_combine(_hash, zBias);
-    Util::Hash_combine(_hash, zUnits);
-    Util::Hash_combine(_hash, _scissorTest);
-    Util::Hash_combine(_hash, _stencilEnable);
-    Util::Hash_combine(_hash, _stencilRef);
-    Util::Hash_combine(_hash, _stencilMask);
-    Util::Hash_combine(_hash, _stencilWriteMask);
-    Util::Hash_combine(_hash, to_U32(_stencilFailOp));
-    Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
-    Util::Hash_combine(_hash, to_U32(_stencilPassOp));
-    Util::Hash_combine(_hash, to_U32(_stencilFunc));
-    Util::Hash_combine(_hash, to_U32(_fillMode));
-
-    if (previousCache != _hash) {
-        WriteLock w_lock(s_stateBlockMapMutex);
-        hashAlg::insert(s_stateBlockMap, _hash, *this);
-    }
 }
 
 void RenderStateBlock::init() {
@@ -217,4 +177,40 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool&
     return s_stateBlockMap.find(s_defaultCacheValue)->second;
 }
 
+size_t RenderStateBlock::getHash() const {
+    if (_dirty) {
+        size_t previousCache = Hashable::getHash();
+
+        // Avoid small float rounding errors offsetting the general hash value
+        U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
+        U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
+
+        _hash = 0;
+        Util::Hash_combine(_hash, _colourWrite.i);
+        Util::Hash_combine(_hash, to_U32(_cullMode));
+        Util::Hash_combine(_hash, _cullEnabled);
+        Util::Hash_combine(_hash, _zEnable);
+        Util::Hash_combine(_hash, to_U32(_zFunc));
+        Util::Hash_combine(_hash, zBias);
+        Util::Hash_combine(_hash, zUnits);
+        Util::Hash_combine(_hash, _scissorTest);
+        Util::Hash_combine(_hash, _stencilEnable);
+        Util::Hash_combine(_hash, _stencilRef);
+        Util::Hash_combine(_hash, _stencilMask);
+        Util::Hash_combine(_hash, _stencilWriteMask);
+        Util::Hash_combine(_hash, to_U32(_stencilFailOp));
+        Util::Hash_combine(_hash, to_U32(_stencilZFailOp));
+        Util::Hash_combine(_hash, to_U32(_stencilPassOp));
+        Util::Hash_combine(_hash, to_U32(_stencilFunc));
+        Util::Hash_combine(_hash, to_U32(_fillMode));
+
+        if (previousCache != _hash) {
+            WriteLock w_lock(s_stateBlockMapMutex);
+            hashAlg::insert(s_stateBlockMap, _hash, *this);
+        }
+        _dirty = false;
+    }
+
+    return Hashable::getHash();
+}
 };

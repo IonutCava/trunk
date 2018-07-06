@@ -375,6 +375,24 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.a);
 
 
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+    glGenVertexArrays(1, &s_imguiVAO);
+    glGenBuffers(1, &s_imguiVBO);
+    glGenBuffers(1, &s_imguiIB);
+
+    setActiveVAO(s_imguiVAO);
+    setActiveBuffer(GL_ARRAY_BUFFER, s_imguiVBO);
+    
+    glEnableVertexAttribArray(13);
+    glEnableVertexAttribArray(to_base(AttribLocation::VERTEX_TEXCOORD));
+    glEnableVertexAttribArray(to_base(AttribLocation::VERTEX_COLOR));
+
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+    glVertexAttribPointer(13, 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, pos));
+    glVertexAttribPointer(to_base(AttribLocation::VERTEX_TEXCOORD), 2, GL_FLOAT, GL_FALSE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, uv));
+    glVertexAttribPointer(to_base(AttribLocation::VERTEX_COLOR), 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(ImDrawVert), (GLvoid*)OFFSETOF(ImDrawVert, col));
+#undef OFFSETOF
+#else
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
     _IMGUIBuffer = _context.newGVD(1);
 
@@ -391,7 +409,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     descUV.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, uv)));
     descColour.set(0, 0, 4, true, 1, GFXDataFormat::UNSIGNED_BYTE, to_U32(OFFSETOF(ImDrawVert, col)));
 #undef OFFSETOF
-
+#endif
     // Prepare shader headers and various shader related states
     if (initShaders()) {
         // That's it. Everything should be ready for draw calls
@@ -409,6 +427,12 @@ void GL_API::closeRenderingAPI() {
     if (!deInitShaders()) {
         DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
     }
+
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+    deleteVAOs(1, &s_imguiVAO);
+    deleteBuffers(1, &s_imguiVBO);
+    deleteBuffers(1, &s_imguiIB);
+#endif
 
     CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
     _GUIGLrenderer = nullptr;

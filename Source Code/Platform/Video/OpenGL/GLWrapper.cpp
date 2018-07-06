@@ -62,7 +62,9 @@ GL_API::GL_API(GFXDevice& context)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
+#if !defined(USE_FIXED_FUNCTION_IMGUI)
       _IMGUIBuffer(nullptr),
+#endif
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
@@ -797,40 +799,46 @@ void GL_API::drawText(const TextElementBatch& batch) {
     vectorAlg::vecSize drawCount = 0;
 
     fonsClearState(_fonsContext);
+    size_t previousStyle = 0;
     for (const TextElement& entry : batch())
     {
-        const TextLabel& textLabel = entry._textLabel;
-        // Retrieve the font from the font cache
-        I32 font = getFont(textLabel._font);
-        // The font may be invalid, so skip this text label
-        if (font != FONS_INVALID) {
-            fonsSetFont(_fonsContext, font);
-            fonsSetBlur(_fonsContext, textLabel._blurAmount);
-            fonsSetBlur(_fonsContext, textLabel._spacing);
-            fonsSetAlign(_fonsContext, textLabel._alignFlag);
-            fonsSetSize(_fonsContext, to_F32(textLabel._fontSize));
-            fonsSetColour(_fonsContext,
-                            textLabel._colour.r,
-                            textLabel._colour.g,
-                            textLabel._colour.b,
-                            textLabel._colour.a);
-
-            F32 textX = entry._position.x;
-            F32 textY = height - entry._position.y;
-            F32 lh = 0;
-            fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-
-            const vectorImplFast<stringImpl>& text = textLabel.text();
-            vectorAlg::vecSize lineCount = text.size();
-            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-                fonsDrawText(_fonsContext,
-                                textX,
-                                textY - (lh * i),
-                                text[i].c_str(),
-                                nullptr);
+        if (previousStyle != entry._textLabelStyleHash) {
+            const TextLabelStyle& textLabelStyle = TextLabelStyle::get(entry._textLabelStyleHash);
+            // Retrieve the font from the font cache
+            I32 font = getFont(TextLabelStyle::fontName(textLabelStyle.font()));
+            // The font may be invalid, so skip this text label
+            if (font != FONS_INVALID) {
+                fonsSetFont(_fonsContext, font);
             }
-            drawCount += lineCount;
+            fonsSetBlur(_fonsContext, textLabelStyle.blurAmount());
+            fonsSetBlur(_fonsContext, textLabelStyle.spacing());
+            fonsSetAlign(_fonsContext, textLabelStyle.alignFlag());
+            fonsSetSize(_fonsContext, to_F32(textLabelStyle.fontSize()));
+            fonsSetColour(_fonsContext,
+                          textLabelStyle.colour().r,
+                          textLabelStyle.colour().g,
+                          textLabelStyle.colour().b,
+                          textLabelStyle.colour().a);
+            previousStyle = entry._textLabelStyleHash;
         }
+
+        F32 textX = entry._position.x;
+        F32 textY = height - entry._position.y;
+        F32 lh = 0;
+        fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+        
+        const vectorImplFast<stringImpl>& text = entry.text();
+        vectorAlg::vecSize lineCount = text.size();
+        for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+            fonsDrawText(_fonsContext,
+                            textX,
+                            textY - (lh * i),
+                            text[i].c_str(),
+                            nullptr);
+        }
+        drawCount += lineCount;
+        
+
         // Register each label rendered as a draw call
         _context.registerDrawCalls(to_U32(drawCount));
     }
@@ -839,16 +847,24 @@ void GL_API::drawText(const TextElementBatch& batch) {
 }
 
 void GL_API::drawIMGUI(ImDrawData* data) {
-#define USE_FIXED_FUNCTION
-
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+    GL_API::setActiveVAO(s_imguiVAO);
+#endif
     if (data != nullptr && data->Valid) {
         
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
-            assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
-#if defined(USE_FIXED_FUNCTION)
+
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+            const ImDrawIdx* idx_buffer_offset = 0;
+            setActiveBuffer(GL_ARRAY_BUFFER, s_imguiVBO);
+            glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front(), GL_STREAM_DRAW);
+
+            setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, s_imguiIB);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);
 #else
+            assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
             _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0, (bufferPtr)&cmd_list->VtxBuffer.front());
             _IMGUIBuffer->updateIndexBuffer(vectorImpl<U32>(std::cbegin(cmd_list->IdxBuffer), std::cend(cmd_list->IdxBuffer)));
 #endif
@@ -864,12 +880,17 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                                        (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
                     cmd.cmd().indexCount = to_U32(pcmd->ElemCount);
-#if defined(USE_FIXED_FUNCTION)
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+                    glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer_offset);
 #else
                     _IMGUIBuffer->draw(cmd);
 #endif
                 }
+#if defined(USE_FIXED_FUNCTION_IMGUI)
+                idx_buffer_offset += pcmd->ElemCount;
+#else
                 cmd.cmd().firstIndex += pcmd->ElemCount;
+#endif
             }
         }
     }
