@@ -28,7 +28,7 @@ void main(void)
     
     VAR._vertexW = vec4(patchPosition + vec4(posAndScale.xyz, 0.0));
 
-    // Calcuate texture coordantes (u,v) relative to entire terrain
+    // Calculate texture coordinates (u,v) relative to entire terrain
     VAR._texCoord = calcTerrainTexCoord(VAR._vertexW);
 
     // Send vertex position along
@@ -63,12 +63,10 @@ patch out float gl_TessLevelInner[2];
 
 out float tcs_tessLevel[];
 
-mat4 mvMatrix;
-
 /**
 * Dynamic level of detail using camera distance algorithm.
 */
-float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
+float dlodCameraDistance(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     float sampleHeight = texture(TexTerrainHeight, t0).r;
     p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
@@ -115,7 +113,7 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 * Dynamic level of detail using sphere algorithm.
 * Source adapated from the DirectX 11 Terrain Tessellation example.
 */
-float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
+float dlodSphere(mat4 mvMatrix, vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
     const float g_tessellatedTriWidth = 10.0;
 
@@ -175,42 +173,39 @@ void main(void)
 {
     PassData(gl_InvocationID);
 
-    mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
 
+    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
     // Outer tessellation level
     if (USE_CAMERA_DISTANCE)
     {
-        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+        gl_TessLevelOuter[0] = dlodCameraDistance(mvMatrix, gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+        gl_TessLevelOuter[1] = dlodCameraDistance(mvMatrix, gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+        gl_TessLevelOuter[2] = dlodCameraDistance(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+        gl_TessLevelOuter[3] = dlodCameraDistance(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     } 
     else
     {
-        gl_TessLevelOuter[0] = dlodSphere(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-        gl_TessLevelOuter[1] = dlodSphere(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-        gl_TessLevelOuter[2] = dlodSphere(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-        gl_TessLevelOuter[3] = dlodSphere(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+        gl_TessLevelOuter[0] = dlodSphere(mvMatrix, gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+        gl_TessLevelOuter[1] = dlodSphere(mvMatrix, gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+        gl_TessLevelOuter[2] = dlodSphere(mvMatrix, gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+        gl_TessLevelOuter[3] = dlodSphere(mvMatrix, gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
     }
     
-    float tscale_negx = dvd_TerrainData[VAR.dvd_drawID]._tScale.x;
-    float tscale_negz = dvd_TerrainData[VAR.dvd_drawID]._tScale.y;
-    float tscale_posx = dvd_TerrainData[VAR.dvd_drawID]._tScale.z;
-    float tscale_posz = dvd_TerrainData[VAR.dvd_drawID]._tScale.w;
+    TerrainNodeData data = dvd_TerrainData[VAR.dvd_drawID];
 
-    if (tscale_negx == 2.0) {
+    if (data._tScale.x == 2.0) {
         gl_TessLevelOuter[0] = max(2.0, gl_TessLevelOuter[0] * 0.5);
     }
 
-    if (tscale_negz == 2.0) {
+    if (data._tScale.y == 2.0) {
         gl_TessLevelOuter[1] = max(2.0, gl_TessLevelOuter[1] * 0.5);
     }
 
-    if (tscale_posx == 2.0) {
+    if (data._tScale.z == 2.0) {
         gl_TessLevelOuter[2] = max(2.0, gl_TessLevelOuter[2] * 0.5);
     }
 
-    if (tscale_posz == 2.0) {
+    if (data._tScale.w == 2.0) {
         gl_TessLevelOuter[3] = max(2.0, gl_TessLevelOuter[3] * 0.5);
     }
 
@@ -383,7 +378,8 @@ void waterDetails(in int index, in float minHeight) {
         float halfWidth = waterWidth * 0.5;
         float halfLength = waterLength * 0.5;
         if (vertexW.x >= -halfWidth && vertexW.x <= halfWidth &&
-            vertexW.z >= -halfLength && vertexW.z <= halfLength) {
+            vertexW.z >= -halfLength && vertexW.z <= halfLength)
+        {
 
             // Distance
             maxDistance = max(maxDistance, 1.0 - clamp(gl_ClipDistance[0], 0.0, 1.0));
@@ -481,7 +477,7 @@ void main(void)
     }
 #endif
 
-    float minHeight = dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
+    float minHeight = (dvd_WorldMatrix(VAR[0].dvd_instanceID) * vec4(0.0, TERRAIN_MIN_HEIGHT, 0.0, 1.0)).y;
 
     // Output verts
     for (int i = 0; i < gl_in.length(); ++i)

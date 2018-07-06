@@ -196,16 +196,16 @@ void GL_API::toggleRasterization(bool state) {
 void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
     const ClipPlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
+    
     // For every clip plane that we support (usually 6)
     for (U32 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
-        // Check its state
-        const bool& clipPlaneActive = list._active[i];
-        // And compare it with OpenGL's current state
-        if (_activeClipPlanes[i] != clipPlaneActive) {
+        // Check its state and compare it with OpenGL's current state
+        bool& activePlane = _activeClipPlanes[i];
+        if (activePlane != list._active[i]) {
             // Update the clip plane if it differs internally
-            _activeClipPlanes[i] = clipPlaneActive;
-            clipPlaneActive ? glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i))
-                            : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
+            activePlane != activePlane;
+            activePlane ? glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i))
+                        : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
         }
     }
 }

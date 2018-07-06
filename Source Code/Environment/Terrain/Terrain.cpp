@@ -56,7 +56,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     // Skip Object3D::load() to avoid triangle list computation (extremely expensive)!!!
 
     ShaderBufferDescriptor bufferDescriptor;
-    bufferDescriptor._primitiveCount = Terrain::MAX_RENDER_NODES;
+    bufferDescriptor._primitiveCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._primitiveSizeInBytes = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._unbound = true;
@@ -196,12 +196,16 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     }
 
     drawCommandsInOut.front().drawCount(tessellator.renderDepth());
+
+    U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
+
     STUBBED("This may cause stalls. Profile! -Ionut");
-#if 0
-    _shaderData->writeData(0, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
-#else
-    _shaderData->writeData((bufferPtr)tessellator.renderData().data());
-#endif
+    _shaderData->writeData(offset, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
+
+
+    sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
+                                                        vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
+                                                        *_shaderData);
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane

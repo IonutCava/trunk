@@ -167,7 +167,12 @@ void RTAttachmentPool::get(RTAttachmentType type, vectorImpl<RTAttachment_ptr>& 
 
     std::back_insert_iterator<vectorImpl<RTAttachment_ptr>> back_it(attachments);
     auto const usedPredicate = [](const RTAttachment_ptr& ptr) { return ptr && ptr->used(); };
-    std::copy_if(std::begin(_attachment[to_U32(type)]), std::end(_attachment[to_U32(type)]), back_it, usedPredicate);
+
+    const vectorImpl<RTAttachment_ptr>& src = _attachment[to_U32(type)];
+    std::copy_if(std::cbegin(src),
+                 std::cend(src),
+                 back_it,
+                 usedPredicate);
 }
 
 U8 RTAttachmentPool::attachmentCount(RTAttachmentType type) const {

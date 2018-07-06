@@ -67,7 +67,7 @@ struct TessellatedTerrainNode {
     vec2<F32> dimensions;
     U8 type; // 1, 2, 3, 4 -- the child # relative to its parent. (0 == root)
 
-             // Tessellation scale
+    // Tessellation scale
     F32 tscale_negx; // negative x edge
     F32 tscale_posx; // Positive x edge
     F32 tscale_negz; // Negative z edge
@@ -125,7 +125,7 @@ public:
     typedef vectorImpl<TessellatedNodeData> RenderDataVector;
 
 public:
-    // Reserves memory for the terrrain quadtree and initializes the data structure.
+    // Reserves memory for the terrain quadtree and initializes the data structure.
     TerrainTessellator();
     // Frees memory for the terrain quadtree.
     ~TerrainTessellator();
@@ -133,7 +133,7 @@ public:
     // Builds a terrain quadtree based on specified parameters and current camera position.
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
-    // Prepare data to draw the terrrain.
+    // Prepare data to draw the terrain.
     void updateRenderData();
 
     // Returns the final render depth

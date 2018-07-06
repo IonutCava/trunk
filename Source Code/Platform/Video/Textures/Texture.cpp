@@ -196,9 +196,10 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
         parallel_for(_context.parent().platformContext(), findAlpha, width, g_partitionSize);
     }
 
-    Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY")),
+    Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
                        name.c_str(),
-                       _hasTransparency ? "yes" : "no");
+                       _hasTransparency ? "yes" : "no",
+                       _hasTranslucency ? "yes" : "no");
 
     // Create a new Rendering API-dependent texture object
     _descriptor._type = _textureData._textureType;
