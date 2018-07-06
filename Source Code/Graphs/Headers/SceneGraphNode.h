@@ -130,8 +130,10 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     SceneGraphNode& addNode(SceneNode& node, const stringImpl& name = "");
     void removeNode(SceneGraphNode& node);
     inline void deleteNode(SceneGraphNode*& node) {
-        removeNode(*node);
-        MemoryManager::DELETE(node);
+        if (node) {
+            removeNode(*node);
+            MemoryManager::DELETE(node);
+        }
     }
     /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the

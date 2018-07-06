@@ -36,4 +36,9 @@ void BoundingSphere::operator=(const BoundingSphere& s) {
     this->_radius = s._radius;
 }
 
+bool BoundingSphere::Collision(const BoundingSphere& sphere2) const {
+    return (this->_center.distance(sphere2._center) <=
+           (this->_radius + sphere2._radius));
+}
+
 };  // namespace Divide

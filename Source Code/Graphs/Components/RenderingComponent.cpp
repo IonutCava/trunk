@@ -249,7 +249,10 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         }
     }
 #endif
-    
+    if (!_parentNodeActive) {
+        return;
+    }
+
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
@@ -394,17 +397,22 @@ void RenderingComponent::inViewCallback() {
 }
 
 void RenderingComponent::setActive(const bool state) {
-    _boundingBoxPrimitive->paused(state);
-    if (_skeletonPrimitive) {
-        _skeletonPrimitive->paused(state);
+    if (!state) {
+        _boundingBoxPrimitive->paused(true);
+        if (_skeletonPrimitive) {
+            _skeletonPrimitive->paused(true);
+        }
     }
-
     SGNComponent::setActive(state);
 }
 
 #ifdef _DEBUG
 /// Draw the axis arrow gizmo
 void RenderingComponent::drawDebugAxis() {
+    if (!_parentNodeActive) {
+        return;
+    }
+
     PhysicsComponent* const transform =
         _parentSGN.getComponent<PhysicsComponent>();
     if (transform) {

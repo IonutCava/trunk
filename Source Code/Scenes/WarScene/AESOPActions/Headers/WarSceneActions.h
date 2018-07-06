@@ -36,43 +36,43 @@
 namespace Divide {
 namespace AI {
 
+enum class ActionType : U32 {
+    APPROACH_ENEMY_FLAG = 0,
+    CAPTURE_ENEMY_FLAG = 1,
+    SCORE_FLAG = 2,
+    RETURN_TO_BASE = 3,
+    IDLE = 4,
+    ATTACK_ENEMY = 5,
+    COUNT
+};
+
 // Some useful predicates
 enum class Fact : U32 {
-    AtEnemyFlagLoc = 0,
-    AtHomeFlagLoc = 1,
-    HasEnemyFlag = 2,
-    EnemyHasFlag = 3,
-    Idling = 4,
-    EnemyDead = 5,
+    NEAR_ENEMY_FLAG = 0,
+    AT_HOME_BASE = 1,
+    HAS_ENEMY_FLAG = 2,
+    ENEMY_HAS_FLAG = 3,
+    IDLING = 4,
+    ENEMY_DEAD = 5,
     COUNT
 };
 
 inline const char* WarSceneFactName(GOAPFact fact) {
     switch (static_cast<Fact>(fact)) {
-        case Fact::AtEnemyFlagLoc:
+        case Fact::NEAR_ENEMY_FLAG:
             return "At enemy flag location";
-        case Fact::AtHomeFlagLoc:
-            return "At home location";
-        case Fact::HasEnemyFlag:
+        case Fact::AT_HOME_BASE:
+            return "At home base location";
+        case Fact::HAS_ENEMY_FLAG:
             return "Has enemy flag";
-        case Fact::EnemyHasFlag:
+        case Fact::ENEMY_HAS_FLAG:
             return "Enemy has flag";
-        case Fact::Idling:
+        case Fact::IDLING:
             return "Idling";
-        case Fact::EnemyDead:
+        case Fact::ENEMY_DEAD:
             return "Enemy Dead";
     };
     return GOAPFactName(fact);
-};
-
-enum class ActionType : U32 {
-    ACTION_APPROACH_FLAG = 0,
-    ACTION_CAPTURE_FLAG = 1,
-    ACTION_SCORE_FLAG = 2,
-    ACTION_RETURN_FLAG_TO_BASE = 3,
-    ACTION_IDLE = 4,
-    ACTION_ATTACK_ENEMY = 5,
-    COUNT
 };
 
 class WarSceneAISceneImpl;
@@ -89,36 +89,6 @@ class WarSceneAction : public GOAPAction {
 
    protected:
     ActionType _type;
-};
-
-class Idle : public WarSceneAction {
-   public:
-    Idle(const stringImpl& name, F32 cost = 1.0f);
-};
-
-class ApproachFlag : public WarSceneAction {
-   public:
-    ApproachFlag(const stringImpl& name, F32 cost = 1.0f);
-};
-
-class CaptureFlag : public WarSceneAction {
-   public:
-    CaptureFlag(const stringImpl& name, F32 cost = 1.0f);
-};
-
-class ReturnFlagHome : public WarSceneAction {
-   public:
-    ReturnFlagHome(const stringImpl& name, F32 cost = 1.0f);
-};
-
-class ScoreFlag : public WarSceneAction {
-   public:
-    ScoreFlag(const stringImpl& name, F32 cost = 1.0f);
-};
-
-class AttackEnemy : public WarSceneAction {
-   public:
-    AttackEnemy(const stringImpl& name, F32 cost = 1.0f);
 };
 
 };  // namespace AI

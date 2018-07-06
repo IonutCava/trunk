@@ -71,6 +71,90 @@ bool WarScene::removeUnits(bool removeNodesOnCall) {
 }
 
 bool WarScene::addUnits() {
+    using namespace AI;
+
+    // Go near the enemy flag.
+    // The enemy flag will never be at the home base, because that is a scoring condition
+    WarSceneAction approachEnemyFlag(ActionType::APPROACH_ENEMY_FLAG, "ApproachEnemyFlag");
+    approachEnemyFlag.setPrecondition(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(false));
+    approachEnemyFlag.setEffect(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
+    approachEnemyFlag.setEffect(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
+
+    // Grab the enemy flag only if we do not already have it and if we are near it
+    // The enemy flag will never be at the home base, because that is a scoring condition
+    WarSceneAction captureEnemyFlag(ActionType::CAPTURE_ENEMY_FLAG, "CaptureEnemyFlag");
+    captureEnemyFlag.setPrecondition(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
+    captureEnemyFlag.setPrecondition(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
+    captureEnemyFlag.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
+    captureEnemyFlag.setEffect(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
+
+    // A general purpose "go home" action
+    WarSceneAction returnToBase(ActionType::RETURN_TO_BASE, "ReturnToBase");
+    returnToBase.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
+    returnToBase.setEffect(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+
+    // We can only score if we and both flags are in the same base location
+    WarSceneAction scoreEnemyFlag(ActionType::SCORE_FLAG, "ScoreEnemyFlag");
+    scoreEnemyFlag.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+    scoreEnemyFlag.setPrecondition(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
+    scoreEnemyFlag.setPrecondition(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
+    scoreEnemyFlag.setEffect(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
+
+    // Do nothing, but do nothing at home
+    WarSceneAction idleAction(ActionType::IDLE, "Idle");
+    idleAction.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+    idleAction.setEffect(GOAPFact(Fact::IDLING), GOAPFact(true));
+
+    // Kill stuff in lack of a better occupation
+    WarSceneAction attackAction(ActionType::ATTACK_ENEMY, "Attack");
+    attackAction.setPrecondition(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
+    attackAction.setEffect(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
+
+    GOAPGoal captureFlag("Capture enemy flag", to_uint(WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
+    captureFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(true));
+    captureFlag.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+
+    GOAPGoal scoreFlag("Score", to_uint(WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
+    scoreFlag.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
+
+    GOAPGoal idle("Idle", to_uint(WarSceneOrder::WarOrder::IDLE));
+    idle.setVariable(GOAPFact(Fact::IDLING), GOAPValue(true));
+
+    GOAPGoal killEnemy("Kill", to_uint(WarSceneOrder::WarOrder::KILL_ENEMY));
+    killEnemy.setVariable(GOAPFact(Fact::ENEMY_DEAD), AI::GOAPValue(true));
+
+    GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_uint(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
+    protectFlagCarrier.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
+
+    std::array<GOAPPackage,  to_const_uint(WarSceneAISceneImpl::AIType::COUNT)> goapPackages;
+    for (GOAPPackage& goapPackage : goapPackages) {
+        goapPackage._worldState.setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+        goapPackage._worldState.setVariable(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(false));
+        goapPackage._worldState.setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(false));
+        goapPackage._worldState.setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
+        goapPackage._worldState.setVariable(GOAPFact(Fact::IDLING), GOAPValue(true));
+        goapPackage._worldState.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(false));
+
+        goapPackage._actionSet.push_back(idleAction);
+        goapPackage._actionSet.push_back(attackAction);
+        goapPackage._goalList.push_back(idle);
+        goapPackage._goalList.push_back(killEnemy);
+    }
+
+    GOAPPackage& animalPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::ANIMAL)];
+    GOAPPackage& lightPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::LIGHT)];
+    GOAPPackage& heavyPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::HEAVY)];
+
+    heavyPackage._actionSet.push_back(approachEnemyFlag);
+    heavyPackage._actionSet.push_back(captureEnemyFlag);
+    heavyPackage._actionSet.push_back(returnToBase);
+    heavyPackage._actionSet.push_back(scoreEnemyFlag);
+    heavyPackage._goalList.push_back(captureFlag);
+    heavyPackage._goalList.push_back(scoreFlag);
+    heavyPackage._goalList.push_back(protectFlagCarrier);
+
+    lightPackage._goalList.push_back(protectFlagCarrier);
+
     SceneGraphNode* lightNode = _sceneGraph.findNode("Soldier1");
     SceneGraphNode* animalNode = _sceneGraph.findNode("Soldier2");
     SceneGraphNode* heavyNode = _sceneGraph.findNode("Soldier3");
@@ -81,123 +165,16 @@ bool WarScene::addUnits() {
     assert(lightNodeMesh && animalNodeMesh && heavyNodeMesh);
 
     NPC* soldier = nullptr;
-    AI::AIEntity* aiSoldier = nullptr;
+    AIEntity* aiSoldier = nullptr;
     SceneNode* currentMesh = nullptr;
 
     vec3<F32> currentScale;
     stringImpl currentName;
 
-    AI::ApproachFlag approachEnemyFlag("ApproachEnemyFlag");
-    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
-                                      AI::GOAPValue(false));
-    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                      AI::GOAPValue(false));
-    approachEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::Idling),
-                                      AI::GOAPFact(true));
-    approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
-                                AI::GOAPValue(true));
-    approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                AI::GOAPValue(false));
-    approachEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::Idling),
-                                AI::GOAPFact(false));
-
-    AI::CaptureFlag captureEnemyFlag("CaptureEnemyFlag");
-    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtEnemyFlagLoc),
-                                     AI::GOAPValue(true));
-    captureEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                     AI::GOAPValue(false));
-    captureEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                               AI::GOAPValue(true));
-
-    AI::ReturnFlagHome returnToBase("ReturnFlagToBase");
-    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                 AI::GOAPValue(false));
-    returnToBase.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                 AI::GOAPValue(true));
-    returnToBase.setEffect(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                           AI::GOAPValue(true));
-
-    AI::ScoreFlag scoreEnemyFlag("ScoreEnemyFlag");
-    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                                   AI::GOAPValue(true));
-    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                                   AI::GOAPValue(true));
-    scoreEnemyFlag.setPrecondition(AI::GOAPFact(AI::Fact::EnemyHasFlag),
-                                   AI::GOAPValue(false));
-    scoreEnemyFlag.setEffect(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                             AI::GOAPValue(false));
-
-    AI::Idle idleAction("Idle");
-    idleAction.setPrecondition(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                               AI::GOAPValue(true));
-    idleAction.setEffect(AI::GOAPFact(AI::Fact::Idling), AI::GOAPFact(true));
-
-    AI::AttackEnemy attackAction("Attack");
-    attackAction.setPrecondition(AI::GOAPFact(AI::Fact::EnemyDead), 
-                                 AI::GOAPValue(false));
-    attackAction.setEffect(AI::GOAPFact(AI::Fact::EnemyDead), 
-                           AI::GOAPValue(true));
-
-    AI::GOAPGoal captureFlag(
-        "Capture enemy flag",
-        to_uint(AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
-    captureFlag.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                            AI::GOAPValue(true));
-    captureFlag.setVariable(AI::GOAPFact(AI::Fact::AtHomeFlagLoc),
-                            AI::GOAPValue(true));
-
-    AI::GOAPGoal scoreFlag(
-        "Score", to_uint(AI::WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG));
-    scoreFlag.setVariable(AI::GOAPFact(AI::Fact::HasEnemyFlag),
-                          AI::GOAPValue(false));
-
-    AI::GOAPGoal idle("Idle", to_uint(AI::WarSceneOrder::WarOrder::ORDER_IDLE));
-    idle.setVariable(AI::GOAPFact(AI::Fact::Idling), AI::GOAPValue(true));
-
-    AI::GOAPGoal killEnemy("Kill", to_uint(AI::WarSceneOrder::WarOrder::ORDER_KILL_ENEMY));
-    killEnemy.setVariable(AI::GOAPFact(AI::Fact::EnemyDead), AI::GOAPValue(true));
-
-    std::array<AI::GOAPPackage,
-               to_const_uint(AI::WarSceneAISceneImpl::AIType::COUNT)>
-        goapPackages;
-    for (AI::GOAPPackage& goapPackage : goapPackages) {
-        goapPackage._worldState.setVariable(
-            AI::GOAPFact(AI::Fact::AtEnemyFlagLoc), AI::GOAPValue(false));
-        goapPackage._worldState.setVariable(
-            AI::GOAPFact(AI::Fact::AtHomeFlagLoc), AI::GOAPValue(true));
-        goapPackage._worldState.setVariable(
-            AI::GOAPFact(AI::Fact::HasEnemyFlag), AI::GOAPValue(false));
-        goapPackage._worldState.setVariable(
-            AI::GOAPFact(AI::Fact::EnemyHasFlag), AI::GOAPValue(false));
-        goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::Idling),
-                                            AI::GOAPValue(true));
-        goapPackage._worldState.setVariable(AI::GOAPFact(AI::Fact::EnemyDead),
-                                            AI::GOAPValue(false));
-
-        goapPackage._actionSet.push_back(idleAction);
-        goapPackage._actionSet.push_back(attackAction);
-        goapPackage._goalList.push_back(idle);
-        goapPackage._goalList.push_back(killEnemy);
-    }
-
-    AI::GOAPPackage& animalPackage =
-        goapPackages[to_uint(AI::WarSceneAISceneImpl::AIType::ANIMAL)];
-    AI::GOAPPackage& lightPackage =
-        goapPackages[to_uint(AI::WarSceneAISceneImpl::AIType::LIGHT)];
-    AI::GOAPPackage& heavyPackage =
-        goapPackages[to_uint(AI::WarSceneAISceneImpl::AIType::HEAVY)];
-
-    heavyPackage._actionSet.push_back(approachEnemyFlag);
-    heavyPackage._actionSet.push_back(captureEnemyFlag);
-    heavyPackage._actionSet.push_back(returnToBase);
-    heavyPackage._actionSet.push_back(scoreEnemyFlag);
-    heavyPackage._goalList.push_back(captureFlag);
-    heavyPackage._goalList.push_back(scoreFlag);
-
     SceneGraphNode& root = GET_ACTIVE_SCENEGRAPH().getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
-            F32 speed = 5.5f;  // 5.5 m/s
+            F32 speed = -1.0f;
             F32 zFactor = 0.0f;
             I32 damage = 5;
             AI::WarSceneAISceneImpl::AIType type;
@@ -206,13 +183,14 @@ bool WarScene::addUnits() {
                 currentScale =
                     lightNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
+                speed = 7.5f;
                 type = AI::WarSceneAISceneImpl::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_2_%d_%d", k, i % 5);
-                speed = 5.75f;
+                speed = 9.5f;
                 zFactor = 1.0f;
                 type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
                 damage = 10;
@@ -221,7 +199,7 @@ bool WarScene::addUnits() {
                 currentScale =
                     heavyNode->getComponent<PhysicsComponent>()->getScale();
                 currentName = Util::stringFormat("Soldier_3_%d_%d", k, i % 10);
-                speed = 5.35f;
+                speed = 5.5f;
                 zFactor = 2.0f;
                 type = AI::WarSceneAISceneImpl::AIType::HEAVY;
                 damage = 15;
@@ -268,7 +246,7 @@ bool WarScene::addUnits() {
             soldier->setAttribute(to_uint(AI::UnitAttributes::HEALTH_POINTS), 100);
             soldier->setAttribute(to_uint(AI::UnitAttributes::DAMAGE), damage);
             soldier->setAttribute(to_uint(AI::UnitAttributes::ALIVE_FLAG), 1);
-            soldier->setMovementSpeed(speed);
+            soldier->setMovementSpeed(speed * 4);
 
             _army[k].push_back(aiSoldier);
             _armyNPCs[k].push_back(soldier);
@@ -374,13 +352,15 @@ void WarScene::startSimulation() {
         for (U8 i = 0; i < 2; ++i) {
             _faction[i]->clearOrders();
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
-                AI::WarSceneOrder::WarOrder::ORDER_CAPTURE_ENEMY_FLAG));
+                AI::WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG));
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
-                AI::WarSceneOrder::WarOrder::ORDER_SCORE_ENEMY_FLAG));
+                AI::WarSceneOrder::WarOrder::SCORE_ENEMY_FLAG));
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
-                AI::WarSceneOrder::WarOrder::ORDER_IDLE));
+                AI::WarSceneOrder::WarOrder::IDLE));
             _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
-                AI::WarSceneOrder::WarOrder::ORDER_KILL_ENEMY));
+                AI::WarSceneOrder::WarOrder::KILL_ENEMY));
+            _faction[i]->addOrder(std::make_shared<AI::WarSceneOrder>(
+                AI::WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
         }
     } else {
         stringImpl info(

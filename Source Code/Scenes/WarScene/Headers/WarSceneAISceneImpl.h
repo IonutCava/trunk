@@ -55,10 +55,11 @@ enum class UnitAttributes : U32 {
 
 enum class AIMsg : U32 { 
     HAVE_FLAG = 0,
-    ENEMY_HAS_FLAG = 1,
-    HAVE_SCORED = 2,
-    ATTACK = 3,
-    HAVE_DIED = 4,
+    RETURNED_FLAG = 1,
+    ENEMY_HAS_FLAG = 2,
+    HAVE_SCORED = 3,
+    ATTACK = 4,
+    HAVE_DIED = 5,
     COUNT
 };
 
@@ -118,7 +119,7 @@ public:
     }
 
     SGNNodeFact _flags[2];
-    SGNNodeFact _flagCarriers[2];
+    AINodeFact  _flagCarriers[2];
     SmallCounterFact _score[2];
     SmallCounterFact _teamAliveCount[2];
     PositionFact _teamFlagPosition[2];
@@ -140,10 +141,11 @@ class LocalWorkingMemory {
 class WarSceneOrder : public Order {
    public:
     enum class WarOrder : U32 {
-        ORDER_IDLE = 0,
-        ORDER_CAPTURE_ENEMY_FLAG = 1,
-        ORDER_SCORE_ENEMY_FLAG = 2,
-        ORDER_KILL_ENEMY = 3,
+        IDLE = 0,
+        CAPTURE_ENEMY_FLAG = 1,
+        SCORE_ENEMY_FLAG = 2,
+        KILL_ENEMY = 3,
+        PROTECT_FLAG_CARRIER = 4,
         COUNT
     };
 
@@ -199,6 +201,12 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool checkCurrentActionComplete(const GOAPAction& planStep);
 
    private:
+       // Helper queries
+       bool atHomeBase() const;
+       bool atEnemyBase() const;
+       bool nearOwnFlag() const;
+       bool nearEnemyFlag() const;
+
     bool DIE();
     void requestOrders();
     void updatePositions();

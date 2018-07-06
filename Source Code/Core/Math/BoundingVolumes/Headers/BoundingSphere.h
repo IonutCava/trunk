@@ -65,6 +65,8 @@ class BoundingSphere {
     F32 getRadius() const;
     F32 getDiameter() const;
 
+    bool Collision(const BoundingSphere& sphere2) const;
+
    private:
     bool _computed, _visibility, _dirty;
     vec3<F32> _center;
