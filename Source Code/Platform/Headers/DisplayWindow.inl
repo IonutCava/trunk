@@ -111,6 +111,10 @@ namespace Divide {
         _hasFocus = state;
     }
 
+    inline U8 DisplayWindow::opacity() const {
+        return _opacity;
+    }
+
     inline bool DisplayWindow::minimized() const {
         return _minimized;
     }

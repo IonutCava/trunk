@@ -85,6 +85,7 @@ void EndRenderSubPass(CommandBuffer& buffer, const EndRenderSubPassCommand& cmd)
 void BlitRenderTarget(CommandBuffer& buffer, const BlitRenderTargetCommand& cmd);
 void SetViewPort(CommandBuffer& buffer, const SetViewportCommand& cmd);
 void SetScissor(CommandBuffer& buffer, const SetScissorCommand& cmd);
+void SetBlend(CommandBuffer& buffer, const SetBlendCommand& cmd);
 void SetCamera(CommandBuffer& buffer, const SetCameraCommand& cmd);
 void SetClipPlanes(CommandBuffer& buffer, const SetClipPlanesCommand& cmd);
 void BindPipeline(CommandBuffer& buffer, const BindPipelineCommand& cmd);

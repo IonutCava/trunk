@@ -69,6 +69,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _minimized(false),
    _maximized(false),
    _hidden(true),
+   _opacity(255),
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
    _queuedType(WindowType::COUNT),
@@ -424,6 +425,12 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
         }
 
         SDL_SetWindowSize(_sdlWindow, w, h);
+    }
+}
+
+void DisplayWindow::opacity(U8 opacity) {
+    if (SDL_SetWindowOpacity(_sdlWindow, opacity / 255.0f) != -1) {
+        _opacity = opacity;
     }
 }
 

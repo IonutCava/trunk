@@ -62,6 +62,7 @@ GL_API::GL_API(GFXDevice& context)
       _prevWidthString(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
+      _IMGUIBuffer(nullptr),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
@@ -840,14 +841,12 @@ void GL_API::drawText(const TextElementBatch& batch) {
 void GL_API::drawIMGUI(ImDrawData* data) {
     if (data != nullptr && data->Valid) {
         
+        GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
-            const unsigned char* vtx_buffer = (const unsigned char*)&cmd_list->VtxBuffer.front();
-            const ImDrawIdx* idx_buffer = &cmd_list->IdxBuffer.front();
 
-            //glVertexPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, pos)));
-            //glTexCoordPointer(2, GL_FLOAT, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, uv)));
-            //glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(ImDrawVert), (void*)(vtx_buffer + OFFSETOF(ImDrawVert, col)));
+            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0, (bufferPtr)&cmd_list->VtxBuffer.front());
+            _IMGUIBuffer->updateIndexBuffer(vectorImpl<U32>(std::cbegin(cmd_list->IdxBuffer), std::cend(cmd_list->IdxBuffer)));
 
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
@@ -860,9 +859,11 @@ void GL_API::drawIMGUI(ImDrawData* data) {
                                        (I32)(pcmd->ClipRect.z - pcmd->ClipRect.x),
                                        (I32)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 
-                    //glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, idx_buffer);
+                    cmd.cmd().indexCount = to_U32(pcmd->ElemCount);
+
+                    _IMGUIBuffer->draw(cmd);
                 }
-                idx_buffer += pcmd->ElemCount;
+                cmd.cmd().firstIndex += pcmd->ElemCount;
             }
         }
     }
@@ -1038,6 +1039,10 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             case GFX::CommandType::SET_SCISSOR: {
                 setScissor(static_cast<GFX::SetScissorCommand*>(cmd.get())->_rect);
             }break;
+            case GFX::CommandType::SET_BLEND: {
+                GFX::SetBlendCommand* blendCmd = static_cast<GFX::SetBlendCommand*>(cmd.get());
+                setBlending(blendCmd->_enabled, blendCmd->_blendProperties);
+            }
             case GFX::CommandType::SET_VIEWPORT: {
                 _context.setViewport(static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport);
             }break;

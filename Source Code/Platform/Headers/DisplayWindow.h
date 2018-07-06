@@ -132,6 +132,9 @@ public:
     inline void type(WindowType type);
     inline void previousType();
 
+           void opacity(U8 opacity);
+    inline U8   opacity() const;
+
     inline void setDimensions(U16 dimensionX, U16 dimensionY);
     inline void setDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY);
     inline void setDimensions(WindowType windowType, const vec2<U16>& dimensions);
@@ -193,6 +196,7 @@ private:
     /// Did we resize the window via an OS call?
     bool _externalResizeEvent;
 
+    U8 _opacity;
     PositionByType   _windowPosition;
     ResolutionByType _prevDimensions;
     ResolutionByType _windowDimensions;

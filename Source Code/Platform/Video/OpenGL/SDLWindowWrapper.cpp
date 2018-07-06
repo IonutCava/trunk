@@ -17,6 +17,7 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 #if !defined(CEGUI_STATIC)
 #define CEGUI_STATIC
@@ -32,6 +33,8 @@
 
 #define HAVE_M_PI
 #include <SDL.h>
+
+#include <imgui.h>
 
 namespace Divide {
 namespace {
@@ -378,6 +381,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
         return ErrorCode::NO_ERR;
     }
+
+    // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
+    _IMGUIBuffer = _context.newGVD(1);
+
+    _IMGUIBuffer->create(1);
+    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, 2 * sizeof(vec2<F32>) + sizeof(vec4<U8>), false, NULL, true, true); //Pos, UV and Colour
+    _IMGUIBuffer->setIndexBuffer(MAX_IMGUI_VERTS * 3, true, true, {});
+
+    AttributeDescriptor& descPos   = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+    AttributeDescriptor& descUV     = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+    AttributeDescriptor& descColour = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
+
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+    descPos.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, pos)));
+    descUV.set(0, 0, 2, false, 1, GFXDataFormat::FLOAT_32, to_U32(OFFSETOF(ImDrawVert, uv)));
+    descColour.set(0, 0, 4, true, 1, GFXDataFormat::UNSIGNED_BYTE, to_U32(OFFSETOF(ImDrawVert, col)));
+#undef OFFSETOF
 
     return ErrorCode::GLSL_INIT_ERROR;
 }

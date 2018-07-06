@@ -304,6 +304,7 @@
     <None Include="..\..\assets\shaders\GLSL\grass.glsl" />
     <None Include="..\..\assets\shaders\GLSL\HiZConstruct.glsl" />
     <None Include="..\..\assets\shaders\GLSL\HiZOcclusionCull.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\IMGUI.glsl" />
     <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
     <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lightCull.glsl" />

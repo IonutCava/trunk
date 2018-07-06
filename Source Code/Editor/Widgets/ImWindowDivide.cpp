@@ -13,6 +13,7 @@
 
 #include "Rendering/Camera/Headers/Camera.h"
 
+
 namespace Divide {
 
 U32 ImwWindowDivide::m_windowCount = 0;
@@ -23,7 +24,7 @@ ImwWindowDivide::ImwWindowDivide(PlatformContext& context, ImWindow::EPlatformWi
     , m_pWindow(nullptr)
 {
     ++m_windowCount;
-    ResourceDescriptor shaderDescriptor("ImWindowProgram");
+    ResourceDescriptor shaderDescriptor("IMGUI");
     shaderDescriptor.setThreadedLoading(false);
     m_imWindowProgram = CreateResource<ShaderProgram>(context.gfx().parent().resourceCache(), shaderDescriptor);
 }
@@ -310,6 +311,14 @@ void ImwWindowDivide::RenderDrawList(ImDrawData* pDrawData)
     PipelineDescriptor pipelineDesc;
     pipelineDesc._stateHash = state.getHash();
     pipelineDesc._shaderProgram = m_imWindowProgram;
+
+    GFX::SetBlendCommand blendCmd;
+    blendCmd._enabled = true;
+    blendCmd._blendProperties = BlendingProperties{
+        BlendProperty::SRC_ALPHA,
+        BlendProperty::INV_SRC_ALPHA
+    };
+    GFX::SetBlend(buffer, blendCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &m_context.gfx().newPipeline(pipelineDesc);

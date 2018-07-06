@@ -67,6 +67,7 @@ enum class WindowType : U32;
 class DisplayWindow;
 class RenderStateBlock;
 class glHardwareQueryRing;
+class GenericVertexData;
 
 namespace GLUtil {
     class glVAOCache;
@@ -379,6 +380,8 @@ private:
     static VAOBindings s_vaoBufferData;
     static bool s_opengl46Supported;
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
+
+    GenericVertexData* _IMGUIBuffer;
 
     Time::ProfileTimer& _swapBufferTimer;
 };

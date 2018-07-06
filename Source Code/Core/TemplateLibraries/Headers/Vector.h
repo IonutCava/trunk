@@ -74,6 +74,11 @@ void unchecked_copy(vectorImpl<T>& dst, const vectorImpl<T>& src)
     memcpy(dst.data(), src.data(), src.size() * sizeof(T));
 }
 
+template<typename T, typename U>
+vectorImpl<T> convert(const vectorImpl<U>& data) {
+    return vectorImpl<T>(std::cbegin(data), std::cend(data));
+}
+
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
 template<typename T>
 inline vectorImplFast<T> erase_indices(const vectorImplFast<T>& data, vectorImplFast<vectorAlg::vecSize>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)

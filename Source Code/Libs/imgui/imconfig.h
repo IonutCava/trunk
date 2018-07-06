@@ -8,6 +8,8 @@
 
 #include "Platform/Headers/PlatformDefines.h"
 
+//max verts IMGUI will ever render. Change for your specific use case scenario
+#define MAX_IMGUI_VERTS 65535 
 //---- Define assertion handler. Defaults to calling assert().
 #define IM_ASSERT(_EXPR)  Divide::DIVIDE_ASSERT(_EXPR, "IMGUI")
 

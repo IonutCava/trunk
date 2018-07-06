@@ -32,6 +32,9 @@ void SetViewPort(CommandBuffer& buffer, const SetViewportCommand& cmd) {
 void SetScissor(CommandBuffer& buffer, const SetScissorCommand& cmd) {
     buffer.add(cmd);
 }
+void SetBlend(CommandBuffer& buffer, const SetBlendCommand& cmd) {
+    buffer.add(cmd);
+}
 void SetCamera(CommandBuffer& buffer, const SetCameraCommand& cmd) {
     buffer.add(cmd);
 }
@@ -103,6 +106,7 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SET_CAMERA:
             case GFX::CommandType::SET_CLIP_PLANES:
             case GFX::CommandType::SET_SCISSOR:
+            case GFX::CommandType::SET_BLEND:
             case GFX::CommandType::SET_VIEWPORT: {
                 hasWork = true;
                 break;
@@ -337,6 +341,9 @@ void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtI
         } break;
         case GFX::CommandType::SET_SCISSOR: {
             append(out, "SET_SCISSOR", crtIndent);
+        }break;
+        case GFX::CommandType::SET_BLEND: {
+            append(out, "SET_BLEND", crtIndent);
         }break;
         case GFX::CommandType::SET_VIEWPORT: {
             vec4<I32> viewport = static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport;

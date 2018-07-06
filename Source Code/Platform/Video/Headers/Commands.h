@@ -50,6 +50,7 @@ enum class CommandType : U8 {
     END_RENDER_SUB_PASS,
     SET_VIEWPORT,
     SET_SCISSOR,
+    SET_BLEND,
     BLIT_RT,
     SET_CAMERA,
     SET_CLIP_PLANES,
@@ -168,6 +169,16 @@ struct SetScissorCommand : Command {
     }
 
     vec4<I32> _rect;
+};
+
+struct SetBlendCommand : Command {
+    SetBlendCommand() : Command(CommandType::SET_BLEND)
+    {
+
+    }
+
+    bool _enabled = true;
+    BlendingProperties _blendProperties;
 };
 
 struct SetCameraCommand : Command {

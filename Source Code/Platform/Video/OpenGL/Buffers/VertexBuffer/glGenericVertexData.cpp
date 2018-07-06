@@ -297,19 +297,22 @@ void glGenericVertexData::setAttributeInternal(GLuint activeVAO, AttributeDescri
     bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
                          format != GFXDataFormat::FLOAT_32;
     
+    GLuint offset = (GLuint)(descriptor.offset() * dataSizeForType(format));
+    offset += descriptor.interleavedOffsetInBytes();
+
     if (!isIntegerType || descriptor.normalized()) {
         glVertexArrayAttribFormat(activeVAO,
                                   descriptor.attribIndex(),
                                   descriptor.componentsPerElement(),
                                   GLUtil::glDataFormat[to_U32(format)],
                                   descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                                  to_U32(descriptor.offset() * dataSizeForType(format)));
+                                  offset);
     } else {
         glVertexArrayAttribIFormat(activeVAO,
                                    descriptor.attribIndex(),
                                    descriptor.componentsPerElement(),
                                    GLUtil::glDataFormat[to_U32(format)],
-                                   to_U32(descriptor.offset() * dataSizeForType(format)));
+                                   offset);
     }
 
     glVertexArrayBindingDivisor(activeVAO, descriptor.bufferIndex(), descriptor.instanceDivisor());
