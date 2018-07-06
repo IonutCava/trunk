@@ -4,14 +4,17 @@
 #include "GUI/Headers/GUIMessageBox.h"
 
 #include "Core/Headers/Console.h"
+
+#if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
+#endif
 
 namespace Divide {
 namespace MemoryManager {
 void log_new(void* p, size_t size, const char* zFile, I32 nLine) {
 #if defined(_DEBUG)
     if (MemoryTracker::Ready) {
-        // AllocTracer.Add( p, size, zFile, nLine );
+         AllocTracer.Add( p, size, zFile, nLine );
     }
 #endif
 }
@@ -19,7 +22,7 @@ void log_new(void* p, size_t size, const char* zFile, I32 nLine) {
 void log_delete(void* p) {
 #if defined(_DEBUG)
     if (MemoryTracker::Ready) {
-        // AllocTracer.Remove( p );
+        AllocTracer.Remove( p );
     }
 #endif
 }

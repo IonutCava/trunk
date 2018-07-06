@@ -4,11 +4,14 @@
 #include "Headers/ApplicationTimer.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Utility/Headers/MemoryTracker.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 #define HAVE_M_PI
 #include <SDL.h>
+
+#if defined(_DEBUG)
+#include "Utility/Headers/MemoryTracker.h"
+#endif
 
 namespace Divide {
 
@@ -21,8 +24,9 @@ Application::Application() : _kernel(nullptr)
 {
 
     SDL_Init(0);
-
-    // MemoryTracker::Ready = false; //< faster way of disabling memory tracking
+#if defined(_DEBUG)
+    MemoryManager::MemoryTracker::Ready = false; //< faster way of disabling memory tracking
+#endif
     _requestShutdown = false;
     _mainLoopActive = false;
     _mainLoopPaused = false;

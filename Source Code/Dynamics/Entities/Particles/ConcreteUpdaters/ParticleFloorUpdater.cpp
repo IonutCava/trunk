@@ -10,7 +10,7 @@ void ParticleFloorUpdater::update(const U64 deltaTime, ParticleData *p) {
 
     vec3<F32> force;
     for (U32 i = 0; i < endID; ++i) {
-        if (p->_position[i].y < _floorY) {
+        if ((p->_position[i].y - (p->_position[i].w / 2)) < _floorY) {
             force.set(p->_acceleration[i]);
 
             F32 normalFactor = force.dot(WORLD_Y_AXIS);

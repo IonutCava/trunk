@@ -54,6 +54,59 @@ class PhysicsComponent : public SGNComponent {
         NODE_COLLIDE_NO_PUSH,
         NODE_COLLIDE
     };
+
+    enum class TransformType : U32 {
+        TRANSLATION = 0,
+        SCALE,
+        ROTATION,
+        COUNT
+    };
+
+    class TransformMask {
+        public:
+           TransformMask()
+           {
+               _transformFlags.fill(false);
+           }
+
+           inline bool hasSetFlags() const {
+                return getFlag(TransformType::SCALE) ||
+                       getFlag(TransformType::ROTATION) ||
+                       getFlag(TransformType::TRANSLATION);
+           }
+
+           inline bool getFlag(TransformType type) const {
+               return _transformFlags[to_uint(type)];
+           }
+
+           inline void clearAllFlags() {
+               _transformFlags.fill(false);
+           }
+
+           inline void setAllFlags() {
+               _transformFlags.fill(true);
+           }
+
+           inline bool clearFlag(TransformType type) {
+               _transformFlags[to_uint(type)] = false;
+           }
+
+           inline void setFlag(TransformType type) {
+               _transformFlags[to_uint(type)] = true;
+           }
+
+           inline void setFlags(const TransformMask& other) {
+               _transformFlags[to_uint(TransformType::SCALE)] = 
+                       other.getFlag(TransformType::SCALE);
+               _transformFlags[to_uint(TransformType::ROTATION)] =
+                       other.getFlag(TransformType::ROTATION);
+               _transformFlags[to_uint(TransformType::TRANSLATION)] =
+                       other.getFlag(TransformType::TRANSLATION);
+           }
+        private:
+           std::array<bool, to_const_uint(TransformType::COUNT)> _transformFlags;
+    };
+
    public:
     void update(const U64 deltaTime);
 
@@ -136,13 +189,16 @@ class PhysicsComponent : public SGNComponent {
 
     void useDefaultTransform(const bool state);
 
-    inline bool transformUpdated() const { return _transformUpdated; }
-    inline void transformUpdated(const bool state) {
-        _transformUpdated = state;
+    inline const TransformMask& transformUpdateMask() const {
+        return _transformUpdatedMask;
+    }
+
+    inline TransformMask& transformUpdateMask() {
+        return _transformUpdatedMask;
     }
 
    private:
-    void setTransformDirty();
+    void setTransformDirty(TransformType type);
 
    protected:
     PhysicsAsset* _physicsAsset;
@@ -152,7 +208,7 @@ class PhysicsComponent : public SGNComponent {
     TransformValues _cacheTransformValues;
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
-    bool _transformUpdated;
+    TransformMask _transformUpdatedMask;
     /// Transform cache values
     mat4<F32> _worldMatrix;
 };

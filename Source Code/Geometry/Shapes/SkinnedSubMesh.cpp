@@ -119,14 +119,10 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
 
     boundingBoxPerAnimationStatus::iterator it1 = _boundingBoxesAvailable.find(animationIndex);
     bool bbAvailable = !(it1 == std::end(_boundingBoxesAvailable) || it1->second == false);
-
-    boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
-    bool bbComputing = !(it2 == std::end(_boundingBoxesComputing) || it2->second == false);
-
-    assert(!(bbAvailable && bbComputing));
-
+    
     if (!bbAvailable) {
-        if (!bbComputing) {
+        boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
+        if (it2 == std::end(_boundingBoxesComputing) || it2->second == false) {
             DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
                                                    this, animationIndex, animComp);
             DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
@@ -143,15 +139,15 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
     // If the BBs are computed, set the BB for the current frame as the node BB
     if (it3 != std::end(_boundingBoxes)) {
-#if defined(_DEBUG)
+/*#if defined(_DEBUG)
         const boundingBoxPerFrame& bbPerFrame = it3->second;
         boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(animComp->frameIndex());
         if (it4 != std::end(bbPerFrame))  {
             sgn.setInitialBoundingBox(it4->second);
         }
-#else
+#else*/
         sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex())->second);
-#endif
+//#endif
 
     }
     return true;

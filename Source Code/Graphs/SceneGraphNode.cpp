@@ -107,6 +107,7 @@ void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
 
 void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox>& boxes) const {
     ReadLock r_lock(_childrenLock);
+
     for (const NodeChildren::value_type& it : _children) {
         it.second->getBBoxes(boxes);
     }
@@ -278,6 +279,13 @@ void SceneGraphNode::restoreActive() {
     setActive(_wasActive);
 }
 
+bool SceneGraphNode::updateBoundingBoxPosition(const vec3<F32>& position) {
+    vec3<F32> diff(position - _boundingSphere.getCenter());
+    _boundingBox.Translate(diff);
+    _boundingSphere.fromBoundingBox(_boundingBox);
+    return true;
+}
+
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
     if (_boundingBox.Transform(
             _initialBoundingBox, transform,
@@ -330,13 +338,16 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         }
     }
 
-    if (getComponent<PhysicsComponent>()->transformUpdated()) {
+    PhysicsComponent* pComp = getComponent<PhysicsComponent>();
+    const PhysicsComponent::TransformMask& transformUpdateMask = pComp->transformUpdateMask();
+    if (transformUpdateMask.hasSetFlags()) {
         _boundingBoxDirty = true;
         r_lock.lock();
         for (NodeChildren::value_type& it : _children) {
-            it.second->getComponent<PhysicsComponent>()->transformUpdated(true);
+            it.second->getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
         }
         r_lock.unlock();
+        pComp->transformUpdateMask().clearAllFlags();
     }
 
     assert(_node->getState() == ResourceState::RES_LOADED ||
@@ -351,8 +362,15 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     }
 
     if (_boundingBoxDirty) {
-        if (updateBoundingBoxTransform(
-                getComponent<PhysicsComponent>()->getWorldMatrix())) {
+        bool bbUpdated = false;
+        /*if (transformUpdateMask.getFlag(PhysicsComponent::TransformType::TRANSLATION) &&
+            !transformUpdateMask.getFlag(PhysicsComponent::TransformType::ROTATION) &&
+            transformUpdateMask.getFlag(PhysicsComponent::TransformType::SCALE)) {
+            bbUpdated = updateBoundingBoxPosition(pComp->getPosition());
+        }else {*/
+              bbUpdated = updateBoundingBoxTransform(pComp->getWorldMatrix());
+        //}
+        if (bbUpdated) {
             SceneGraphNode_ptr parent = _parent.lock();
             if (parent) {
                 parent->getBoundingBox().setComputed(false);
@@ -364,8 +382,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         }
         _boundingBoxDirty = false;
     }
-
-    getComponent<PhysicsComponent>()->transformUpdated(false);
 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node,
     		                                   deltaTime,

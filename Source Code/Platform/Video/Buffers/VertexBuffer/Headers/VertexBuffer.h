@@ -200,7 +200,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline void addPosition(const vec3<F32>& pos) {
-        setMinMaxPosition(pos);
         _dataPosition.push_back(pos);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
@@ -236,30 +235,30 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     }
 
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
-        DIVIDE_ASSERT(index < _dataPosition.size(),
-                      "VertexBuffer error: Invalid position offset!");
-        _dataPosition[index] = newValue;
+        /*DIVIDE_ASSERT(index < _dataPosition.size(),
+                      "VertexBuffer error: Invalid position offset!");*/
+        _dataPosition[index].set(newValue);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
     inline void modifyColorValue(U32 index, const vec4<U8>& newValue) {
         DIVIDE_ASSERT(index < _dataColor.size(),
                       "VertexBuffer error: Invalid color offset!");
-        _dataColor[index] = newValue;
+        _dataColor[index].set(newValue);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 
     inline void modifyNormalValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataNormal.size(),
                       "VertexBuffer error: Invalid normal offset!");
-        _dataNormal[index] = newValue;
+        _dataNormal[index].set(newValue);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_NORMAL)] = true;
     }
 
     inline void modifyTangentValue(U32 index, const vec3<F32>& newValue) {
         DIVIDE_ASSERT(index < _dataTangent.size(),
                       "VertexBuffer error: Invalid tangent offset!");
-        _dataTangent[index] = newValue;
+        _dataTangent[index].set(newValue);
         _attribDirty[to_uint(VertexAttribute::ATTRIB_TANGENT)] = true;
     }
 
@@ -277,8 +276,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _partitions.push_back(std::make_pair(
             getIndexCount() - currentIndexCount, currentIndexCount));
         _currentPartitionIndex = to_uint(_partitions.size());
-        _minPosition.push_back(std::numeric_limits<F32>::max());
-        _maxPosition.push_back(std::numeric_limits<F32>::min());
         return _currentPartitionIndex - 1;
     }
 
@@ -323,8 +320,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _hardwareIndicesS.clear();
         _attribDirty.fill(true);
         _VBoffset.fill(0);
-        _minPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::max()));
-        _maxPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::min()));
     }
 
    protected:
@@ -336,18 +331,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;
     virtual bool createInternal() = 0;
-
-    inline void setMinMaxPosition(const vec3<F32>& pos) {
-        vec3<F32>& min = _minPosition[_currentPartitionIndex];
-        vec3<F32>& max = _maxPosition[_currentPartitionIndex];
-
-        if (pos.x > max.x) max.x = pos.x;
-        if (pos.x < min.x) min.x = pos.x;
-        if (pos.y > max.y) max.y = pos.y;
-        if (pos.y < min.y) min.y = pos.y;
-        if (pos.z > max.z) max.z = pos.z;
-        if (pos.z < min.z) min.z = pos.z;
-    }
 
    protected:
     /// Number of LOD nodes in this buffer
@@ -371,8 +354,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     vectorImpl<vec3<F32> > _dataTangent;
     vectorImpl<P32 >       _boneIndices;
     vectorImpl<vec4<F32> > _boneWeights;
-    vectorImpl<vec3<F32> > _minPosition;
-    vectorImpl<vec3<F32> > _maxPosition;
     /// Cache system to update only required data
     std::array<bool, to_const_uint(VertexAttribute::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;

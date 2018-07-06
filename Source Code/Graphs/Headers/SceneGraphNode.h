@@ -106,6 +106,8 @@ class SceneGraphNode : public GUIDWrapper,
     /// Apply current transform to the node's BB. Return true if the bounding
     /// extents changed
     bool updateBoundingBoxTransform(const mat4<F32>& transform);
+    /// Apply only position related changes to the node's BB.
+    bool updateBoundingBoxPosition(const vec3<F32>& position);
     /// Called from SceneGraph "sceneUpdate"
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
     /// Called when the camera updates the view matrix and/or the projection

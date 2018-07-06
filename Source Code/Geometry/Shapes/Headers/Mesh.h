@@ -79,12 +79,19 @@ class Mesh : public Object3D {
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
+    inline bool isSubMesh(const SceneGraphNode_ptr& node) {
+        return std::find(std::cbegin(_subMeshNameMap), 
+                         std::cend(_subMeshNameMap),
+                         node->getNode()->getName()) != std::cend(_subMeshNameMap);
+    }
+
    protected:
     typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
     SubMeshRefMap _subMeshRefMap;
+    vectorImpl<stringImpl> _subMeshNameMap;
     BoundingBox _maxBoundingBox;
 };
 

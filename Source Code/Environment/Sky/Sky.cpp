@@ -131,7 +131,7 @@ void Sky::setSunProperties(const vec3<F32>& sunVect,
 }
 
 bool Sky::computeBoundingBox(SceneGraphNode& sgn) {
-    sgn.getBoundingBox().set(vec3<F32>(-_farPlane), vec3<F32>(_farPlane));
+    sgn.getBoundingBox().set(vec3<F32>(-_farPlane / 4), vec3<F32>(_farPlane / 4));
     return SceneNode::computeBoundingBox(sgn);
 }
 

@@ -243,13 +243,15 @@ void ParticleEmitter::uploadToGPU() {
         return;
     }
 
+    _particles->sort();
+
     U32 writeOffset = _writeOffset * to_uint(_particles->totalCount());
     U32 readOffset = _readOffset * to_uint(_particles->totalCount());
 
     _particleGPUBuffer->updateBuffer(1, _particles->aliveCount(), writeOffset,
-                                     _particles->_renderingPositions.data());
+                                        _particles->_renderingPositions.data());
     _particleGPUBuffer->updateBuffer(2, _particles->aliveCount(), writeOffset,
-                                     _particles->_color.data());
+                                        _particles->_color.data());
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), readOffset, GFXDataFormat::FLOAT_32);
@@ -267,7 +269,6 @@ void ParticleEmitter::uploadToGPU() {
 bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
                              RenderStage currentStage) {
     if (_enabled) {
-        _particles->sort();
         uploadToGPU();
         return true;
     }

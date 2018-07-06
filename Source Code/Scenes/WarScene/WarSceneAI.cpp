@@ -28,7 +28,7 @@ void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
     U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
     U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
 
-    g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName, unitName.c_str()) << std::endl;
+    g_dataOutput << Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName.c_str(), unitName.c_str()) << std::endl;
 }
 
 void WarScene::checkGameCompletion() {

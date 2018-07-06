@@ -443,18 +443,19 @@ bool WarSceneAIProcessor::postAction(ActionType type,
 
             // Attach flag to entity
             {
-                PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
-                    .value().lock()->getComponent<PhysicsComponent>();
-                vec3<F32> prevScale(pComp->getScale());
-                vec3<F32> prevPosition(pComp->getPosition());
-
                 std::weak_ptr<SceneGraphNode> targetNode = _entity->getUnitRef()->getBoundNode();
-                _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(targetNode.lock());
+                SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
+                PhysicsComponent* pComp = flag->getComponent<PhysicsComponent>();
+                PhysicsComponent* parentPComp = targetNode.lock()->getComponent<PhysicsComponent>();
+                flag->setParent(targetNode.lock());
+                vec3<F32> prevScale(pComp->getScale(1.0, true));
+                vec3<F32> parentScale(parentPComp->getScale(1.0, true));
+                vec3<F32> parentPos(parentPComp->getPosition());
+
                 pComp->pushTransforms();
-                pComp->setPosition(vec3<F32>(0.0f, 0.75f, 1.5f));
-                pComp->setScale(
-                    (prevScale /
-                    targetNode.lock()->getComponent<PhysicsComponent>()->getScale()));
+                pComp->setPosition(vec3<F32>(-2.5f, 2.75f, 1.0f));
+                pComp->setScale(prevScale / parentScale);
+                pComp->rotate(vec3<F32>(0, -90, 0));
             }
 
             _localWorkingMemory._hasEnemyFlag.value(true);
@@ -742,7 +743,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
 
     for (U8 i = 0; i < 2; ++i) {
         if (_globalWorkingMemory._teamAliveCount[i].value() == 0) {
-            _scoreCallback(i, "NONE");
+            _scoreCallback(i, "NONE - Entire enemy team dead");
             return false;
         }
     }

@@ -195,13 +195,14 @@ Mesh* DVDConverter::load(const stringImpl& file) {
     }
 
     U8 submeshBoneOffset = 0;
-    for (U16 n = 0; n < _aiScenePointer->mNumMeshes; n++) {
+    U32 numMeshes = _aiScenePointer->mNumMeshes;
+    for (U16 n = 0; n < numMeshes; ++n) {
         aiMesh* currentMesh = _aiScenePointer->mMeshes[n];
         // Skip points and lines ... for now -Ionut
         if (currentMesh->mNumVertices == 0) {
             continue;
         }
-        tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n, submeshBoneOffset);
+        tempSubMesh = loadSubMeshGeometry(currentMesh, tempMesh, n, submeshBoneOffset, (n != numMeshes - 1));
 
         if (tempSubMesh) {
             if (!tempSubMesh->getMaterialTpl()) {
@@ -236,7 +237,8 @@ Mesh* DVDConverter::load(const stringImpl& file) {
 SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                                            Mesh* parentMesh,
                                            U16 count, 
-                                           U8& submeshBoneOffsetOut) {
+                                           U8& submeshBoneOffsetOut,
+                                           bool hasMoreSubMeshes) {
     /// VERY IMPORTANT: default submesh, LOD0 should always be created first!!
     /// an assert is added in the LODn, where n >= 1, loading code to make sure
     /// the LOD0 submesh exists first
@@ -358,8 +360,6 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
 
     U32 idxCount = 0;
     U32 currentIndice = 0;
-    U32 lowestInd = std::numeric_limits<U32>::max();
-    U32 highestInd = 0;
     vec3<U32> triangleTemp;
 
     for (U32 k = 0; k < source->mNumFaces; k++) {
@@ -370,9 +370,6 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
             vb->addIndex(currentIndice);
             idxCount++;
             triangleTemp[m] = currentIndice;
-
-            lowestInd = std::min(currentIndice, lowestInd);
-            highestInd = std::max(currentIndice, highestInd);
         }
 
         tempSubMesh->addTriangle(triangleTemp);

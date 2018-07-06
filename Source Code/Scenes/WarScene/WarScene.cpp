@@ -378,7 +378,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     });
     
 #ifdef _DEBUG
-    const U32 particleCount = 2000;
+    const U32 particleCount = 750;
 #else
     const U32 particleCount = 20000;
 #endif
@@ -428,9 +428,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
     eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
     test->addUpdater(eulerUpdater);
+    std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>();
+    floorUpdater->_bounceFactor = 0.65f;
+    test->addUpdater(floorUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
-    test->addUpdater(std::make_shared<ParticleFloorUpdater>());
     
     state().generalVisibility(state().generalVisibility() * 2);
 

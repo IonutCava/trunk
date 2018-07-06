@@ -111,7 +111,7 @@ class ParticleEmitter : public SceneNode {
     U32 _readOffset, _writeOffset;
     /// create particles
     bool _enabled;
-    bool _uploaded;
+    std::atomic_bool _uploaded;
     /// draw the impostor?
     bool _drawImpostor;
     bool _updateParticleEmitterBB;

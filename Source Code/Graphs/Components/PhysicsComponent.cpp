@@ -12,7 +12,6 @@ namespace Divide {
 PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
-      _transformUpdated(true),
       _physicsAsset(nullptr)
 {
     _transform = MemoryManager_NEW Transform();
@@ -41,6 +40,8 @@ void PhysicsComponent::reset() {
     while (!_transformStack.empty()) {
         _transformStack.pop();
     }
+
+    _transformUpdatedMask.setAllFlags();
 }
 
 void PhysicsComponent::useDefaultTransform(const bool state) {
@@ -80,32 +81,33 @@ void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     }
 }
 
-void PhysicsComponent::setTransformDirty() {
+void PhysicsComponent::setTransformDirty(TransformType type) {
     if (_physicsAsset) {
         _physicsAsset->resetTransforms(true);
     }
-    _transformUpdated = true;
+
+    _transformUpdatedMask.setFlag(type);
 }
 
 void PhysicsComponent::setPosition(const vec3<F32>& position) {
     if (_transform) {
         _transform->setPosition(position);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setScale(const vec3<F32>& scale) {
     if (_transform) {
         _transform->setScale(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
     if (_transform) {
         _transform->setRotation(quat);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,
@@ -113,28 +115,28 @@ void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,
     if (_transform) {
         _transform->setRotation(axis, degrees, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& euler, bool inDegrees) {
     if (_transform) {
         _transform->setRotation(euler, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::translate(const vec3<F32>& axisFactors) {
     if (_transform) {
         _transform->translate(axisFactors);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
     if (_transform) {
         _transform->scale(axisFactors);
     }
-     setTransformDirty();
+     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees,
@@ -142,21 +144,21 @@ void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees,
     if (_transform) {
         _transform->rotate(axis, degrees, inDegrees);
     }
-     setTransformDirty();
+     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& euler, bool inDegrees) {
     if (_transform) {
         _transform->rotate(euler, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
     if (_transform) {
         _transform->rotate(quat);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat,
@@ -164,147 +166,147 @@ void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat,
     if (_transform) {
         _transform->rotateSlerp(quat, deltaTime);
     }
-   setTransformDirty();
+   setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setScale(const F32 scale) {
     if (_transform) {
         _transform->setScale(scale);
     }
-     setTransformDirty();
+     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setScaleX(const F32 scale) {
     if (_transform) {
         _transform->setScaleX(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setScaleY(const F32 scale) {
     if (_transform) {
         _transform->setScaleY(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setScaleZ(const F32 scale) {
     if (_transform) {
         _transform->setScaleZ(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scale(const F32 scale) {
     if (_transform) {
         _transform->scale(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleX(const F32 scale) {
     if (_transform) {
         _transform->scaleX(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleY(const F32 scale) {
     if (_transform) {
         _transform->scaleY(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleZ(const F32 scale) {
     if (_transform) {
         _transform->scaleZ(scale);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::rotateX(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateX(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateY(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateY(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateZ(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateZ(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationX(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationX(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationY(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationY(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationZ(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationZ(angle, inDegrees);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::translateX(const F32 positionX) {
     if (_transform) {
         _transform->translateX(positionX);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::translateY(const F32 positionY) {
     if (_transform) {
         _transform->translateY(positionY);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::translateZ(const F32 positionZ) {
     if (_transform) {
         _transform->translateZ(positionZ);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setPositionX(const F32 positionX) {
     if (_transform) {
         _transform->setPositionX(positionX);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setPositionY(const F32 positionY) {
     if (_transform) {
         _transform->setPositionY(positionY);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setPositionZ(const F32 positionZ) {
     if (_transform) {
         _transform->setPositionZ(positionZ);
     }
-    setTransformDirty();
+    setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::pushTransforms() {
@@ -320,7 +322,9 @@ bool PhysicsComponent::popTransforms() {
             _transform->setValues(_prevTransformValues);
             _transformStack.pop();
         }
-        setTransformDirty();
+        setTransformDirty(TransformType::TRANSLATION);
+        setTransformDirty(TransformType::SCALE);
+        setTransformDirty(TransformType::ROTATION);
         return true;
     }
     return false;

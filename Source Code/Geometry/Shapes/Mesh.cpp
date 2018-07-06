@@ -38,7 +38,12 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
 
     bb.reset();
     for (value_type it : sgn.getChildren()) {
-        bb.Add(it.second->getInitialBoundingBox());
+        SceneGraphNode_ptr child = it.second;
+        if (isSubMesh(child)) {
+            bb.Add(child->getInitialBoundingBox());
+        } else {
+            bb.Add(child->getBoundingBoxConst());
+        }
     }
     return SceneNode::computeBoundingBox(sgn);
 }
@@ -47,6 +52,7 @@ void Mesh::addSubMesh(SubMesh* const subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     hashAlg::emplace(_subMeshRefMap, subMesh->getID(), subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
+    _subMeshNameMap.push_back(subMesh->getName());
     _maxBoundingBox.reset();
 }
 
