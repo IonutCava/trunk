@@ -23,6 +23,34 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource(),
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
 
     _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
+
+    _extendedMatricesDirty = true;
+ 
+    _extendedMatrixEntry[WORLD_MATRIX]  = -1;
+    _extendedMatrixEntry[WV_MATRIX]     = -1;
+    _extendedMatrixEntry[WV_INV_MATRIX] = -1;
+    _extendedMatrixEntry[WVP_MATRIX]    = -1;
+    _extendedMatrixEntry[NORMAL_MATRIX] = -1;
+    _timeLoc             = -1;
+    _cameraLocationLoc   = -1;
+    _clipPlanesLoc       = -1;
+    _clipPlaneCountLoc   = -1;
+    _clipPlanesActiveLoc = -1;
+    _enableFogLoc        = -1;
+    _lightAmbientLoc     = -1;
+    _zPlanesLoc          = -1;
+    _screenDimensionLoc  = -1;
+    _texDepthMapFromLightArrayLoc = -1;
+    _texDepthMapFromLightCubeLoc  = -1;
+    _texNormalMapLoc   = -1;
+    _texOpacityMapLoc  = -1;
+    _texSpecularLoc    = -1;
+    _fogColorLoc       = -1;
+    _fogDensityLoc     = -1;
+    _fogStartLoc       = -1;
+    _fogEndLoc         = -1;
+    _fogModeLoc        = -1;
+    _fogDetailLevelLoc = -1;
 }
 
 ShaderProgram::~ShaderProgram()
@@ -39,12 +67,12 @@ U8 ShaderProgram::update(const U64 deltaTime){
     _elapsedTime += deltaTime;
     ParamHandler& par = ParamHandler::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
-    this->Uniform("dvd_enableFog", enableFog);
-    this->Uniform("dvd_lightAmbient", LightManager::getInstance().getAmbientLight());
+    this->Uniform(_enableFogLoc, enableFog);
+    this->Uniform(_lightAmbientLoc, LightManager::getInstance().getAmbientLight());
 
     if(_dirty){
-        this->Uniform("dvd_zPlanes",  Frustum::getInstance().getZPlanes());
-        this->Uniform("screenDimension", Application::getInstance().getResolution());
+        this->Uniform(_zPlanesLoc, Frustum::getInstance().getZPlanes());
+        this->Uniform(_screenDimensionLoc, Application::getInstance().getResolution());
         U8 shadowMapSlot = Config::MAX_TEXTURE_STORAGE;
         //Apply global shader values valid throughout application runtime:
         char depthMapSampler[32];
@@ -55,13 +83,13 @@ U8 ShaderProgram::update(const U64 deltaTime){
         }
         shadowMapSlot =  Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
         //Reserve first for directional shadows
-        this->UniformTexture("texDepthMapFromLightArray", shadowMapSlot);
+        this->UniformTexture(_texDepthMapFromLightArrayLoc, shadowMapSlot);
          //Reserve second for point shadows
-        this->UniformTexture("texDepthMapFromLightCube", shadowMapSlot + 1);
+        this->UniformTexture(_texDepthMapFromLightCubeLoc, shadowMapSlot + 1);
 
-        this->UniformTexture("texNormalMap",    Material::TEXTURE_NORMALMAP);
-        this->UniformTexture("texOpacityMap",   Material::TEXTURE_OPACITY);
-        this->UniformTexture("texSpecular",     Material::TEXTURE_SPECULAR);
+        this->UniformTexture(_texNormalMapLoc,  Material::TEXTURE_NORMALMAP);
+        this->UniformTexture(_texOpacityMapLoc, Material::TEXTURE_OPACITY);
+        this->UniformTexture(_texSpecularLoc,   Material::TEXTURE_SPECULAR);
 
         for(U32 i = Material::TEXTURE_UNIT0, j = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
         {
@@ -71,14 +99,14 @@ U8 ShaderProgram::update(const U64 deltaTime){
         }
 
         if(enableFog){
-            this->Uniform("fogColor",  vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
-                                                 par.getParam<F32>("rendering.sceneState.fogColor.g"),
-                                                 par.getParam<F32>("rendering.sceneState.fogColor.b")));
-            this->Uniform("fogDensity",par.getParam<F32>("rendering.sceneState.fogDensity"));
-            this->Uniform("fogStart",  par.getParam<F32>("rendering.sceneState.fogStart"));
-            this->Uniform("fogEnd",    par.getParam<F32>("rendering.sceneState.fogEnd"));
-            this->Uniform("fogMode",   par.getParam<FogMode>("rendering.sceneState.fogMode"));
-            this->Uniform("fogDetailLevel", par.getParam<U8>("rendering.fogDetailLevel", 2));
+            this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.g"),
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.b")));
+            this->Uniform(_fogDensityLoc, par.getParam<F32>("rendering.sceneState.fogDensity"));
+            this->Uniform(_fogStartLoc,   par.getParam<F32>("rendering.sceneState.fogStart"));
+            this->Uniform(_fogEndLoc,     par.getParam<F32>("rendering.sceneState.fogEnd"));
+            this->Uniform(_fogModeLoc,    par.getParam<FogMode>("rendering.sceneState.fogMode"));
+            this->Uniform(_fogDetailLevelLoc, par.getParam<U8>("rendering.fogDetailLevel", 2));
         }
         _dirty = false;
     }
@@ -95,7 +123,36 @@ void ShaderProgram::threadedLoad(const std::string& name){
 
 bool ShaderProgram::generateHWResource(const std::string& name){
     _name = name;
-    return HardwareResource::generateHWResource(name);
+    if (!HardwareResource::generateHWResource(name))
+        return false;
+    
+    _extendedMatrixEntry[WORLD_MATRIX]  = this->cachedLoc("dvd_WorldMatrix");
+    _extendedMatrixEntry[WV_MATRIX]     = this->cachedLoc("dvd_WorldViewMatrix");
+    _extendedMatrixEntry[WV_INV_MATRIX] = this->cachedLoc("dvd_WorldViewMatrixInverse");
+    _extendedMatrixEntry[WVP_MATRIX]    = this->cachedLoc("dvd_WorldViewProjectionMatrix");
+    _extendedMatrixEntry[NORMAL_MATRIX] = this->cachedLoc("dvd_NormalMatrix");
+    _timeLoc             = this->cachedLoc("dvd_time");
+    _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition", false);
+    _clipPlanesLoc       = this->cachedLoc("dvd_clip_plane");
+    _clipPlaneCountLoc   = this->cachedLoc("dvd_clip_plane_count");
+    _clipPlanesActiveLoc = this->cachedLoc("dvd_clip_plane_active");
+    _enableFogLoc        = this->cachedLoc("dvd_enableFog");
+    _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
+    _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
+    _screenDimensionLoc  = this->cachedLoc("screenDimension");
+    _texDepthMapFromLightArrayLoc = this->cachedLoc("texDepthMapFromLightArray");
+    _texDepthMapFromLightCubeLoc  = this->cachedLoc("texDepthMapFromLightCube");
+    _texNormalMapLoc   = this->cachedLoc("texNormalMap");
+    _texOpacityMapLoc  = this->cachedLoc("texOpacityMap");
+    _texSpecularLoc    = this->cachedLoc("texSpecular");
+    _fogColorLoc       = this->cachedLoc("fogColor");
+    _fogDensityLoc     = this->cachedLoc("fogDensity");
+    _fogStartLoc       = this->cachedLoc("fogStart");
+    _fogEndLoc         = this->cachedLoc("fogEnd");
+    _fogModeLoc        = this->cachedLoc("fogMode");
+    _fogDetailLevelLoc = this->cachedLoc("fogDetailLevel");
+
+    return true;
 }
 
 void ShaderProgram::bind(){
@@ -105,51 +162,68 @@ void ShaderProgram::bind(){
         return;
 
     //Apply global shader values valid throughout current render call:
-    this->Uniform("dvd_time", static_cast<F32>(getUsToMs(_elapsedTime)));
-    this->Attribute("dvd_cameraPosition",Frustum::getInstance().getEyePos());
+    this->Uniform(_timeLoc, static_cast<F32>(getUsToMs(_elapsedTime)));
+    this->Attribute(_cameraLocationLoc, Frustum::getInstance().getEyePos());
 }
 
 void ShaderProgram::uploadNodeMatrices(){
     GFXDevice& GFX = GFX_DEVICE;
+    I32 currentLocation = -1;
     /*Get and upload matrix data*/
-    if(this->getUniformLocation("dvd_NormalMatrix") != -1 ){
-        GFX.getMatrix(GFXDevice::NORMAL_MATRIX,_cachedNormalMatrix);
-        this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
-    }
-    if(this->getUniformLocation("dvd_WorldMatrix") != -1){
-        GFX.getMatrix(GFXDevice::WORLD_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_WorldMatrix",_cachedMatrix);
-    }
-    if(this->getUniformLocation("dvd_WorldViewMatrix") != -1){
-        GFX.getMatrix(GFXDevice::WV_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_WorldViewMatrix",_cachedMatrix);
-    }
-    if(this->getUniformLocation("dvd_WorldViewMatrixInverse") != -1){
-        GFX.getMatrix(GFXDevice::WV_INV_MATRIX,_cachedMatrix);
-        this->Uniform("dvd_WorldViewMatrixInverse",_cachedMatrix);
-    }
-    if(this->getUniformLocation("dvd_WorldViewProjectionMatrix") != -1){
-        GFX.getMatrix(GFXDevice::WVP_MATRIX, _cachedMatrix);
-        this->Uniform("dvd_WorldViewProjectionMatrix",_cachedMatrix);
+    if (_extendedMatricesDirty == true){
+
+        currentLocation = _extendedMatrixEntry[NORMAL_MATRIX];
+        if (currentLocation != -1){
+            GFX.getMatrix(NORMAL_MATRIX, _cachedNormalMatrix);
+            this->Uniform(currentLocation, _cachedNormalMatrix);
+        }
+        
+        currentLocation = _extendedMatrixEntry[WORLD_MATRIX];
+        if (currentLocation != -1){
+            GFX.getMatrix(WORLD_MATRIX, _cachedMatrix);
+            this->Uniform(currentLocation, _cachedMatrix);
+        }
+
+        currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
+        if (currentLocation != -1){
+            GFX.getMatrix(WV_MATRIX, _cachedMatrix);
+            this->Uniform(currentLocation, _cachedMatrix);
+        }
+
+        currentLocation = _extendedMatrixEntry[WV_INV_MATRIX];
+        if (currentLocation != -1){
+            GFX.getMatrix(WV_INV_MATRIX, _cachedMatrix);
+            this->Uniform(currentLocation, _cachedMatrix);
+        }
+ 
+        currentLocation = _extendedMatrixEntry[WVP_MATRIX];
+        if (currentLocation != -1){
+            GFX.getMatrix(WVP_MATRIX, _cachedMatrix);
+            this->Uniform(currentLocation, _cachedMatrix);
+        }
+
+        _extendedMatricesDirty = false;
     }
     
     /*Get and upload clip plane data*/
-    if(GFX_DEVICE.clippingPlanesDirty()){
-        GFX_DEVICE.updateClipPlanes();
-        size_t planeCount = GFX_DEVICE.getClippingPlanes().size();
-        this->Uniform("dvd_clip_plane_count", (I32)planeCount);
-        if(planeCount == 0) return;
+    if (GFX.clippingPlanesDirty()){
+        GFX.updateClipPlanes();
+        size_t planeCount = GFX.getClippingPlanes().size();
+        this->Uniform(_clipPlaneCountLoc, (I32)planeCount);
+        _clipPlanes.resize(0);
+        _clipPlanes.reserve(planeCount);
 
-        _clipPlanes.resize(planeCount);
-        _clipPlanesStates.resize(planeCount, false);
-        for(U32 i = 0; i < planeCount; i++){
-            const Plane<F32>& currentPlane = GFX_DEVICE.getClippingPlanes()[i];
-            _clipPlanes[i] = currentPlane.getEquation();
-            _clipPlanesStates[i] = currentPlane.active() ? 1 : 0;
+        _clipPlanesStates.resize(0);
+        _clipPlanesStates.reserve(planeCount);
+
+        if (planeCount == 0) return;
+        for (const Plane<F32>& currentPlane : GFX.getClippingPlanes()){
+            _clipPlanes.push_back(currentPlane.getEquation());
+            _clipPlanesStates.push_back(currentPlane.active() ? 1 : 0);
         }
 
-        this->Uniform("dvd_clip_plane", _clipPlanes);
-        this->Uniform("dvd_clip_plane_active",_clipPlanesStates);
+        this->Uniform(_clipPlanesLoc, _clipPlanes);
+        this->Uniform(_clipPlanesActiveLoc, _clipPlanesStates);
     }
 }
 
@@ -158,7 +232,9 @@ void ShaderProgram::unbind(bool resetActiveProgram){
 }
 
 vectorImpl<Shader* > ShaderProgram::getShaders(const ShaderType& type) const{
-    vectorImpl<Shader* > returnShaders;
+    static vectorImpl<Shader* > returnShaders;
+
+    returnShaders.clear();
     FOR_EACH(ShaderIdMap::value_type it, _shaderIdMap){
         if(it.second->getType() == type){
             returnShaders.push_back(it.second);
@@ -174,10 +250,8 @@ void ShaderProgram::removeShaderDefine(const std::string& define){
 }
 
 void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderType& type) {
-    if(type == FRAGMENT_SHADER)
-        _fragUniforms.push_back(uniform);
-    else
-        _vertUniforms.push_back(uniform);
+    if(type == FRAGMENT_SHADER) _fragUniforms.push_back(uniform);
+    else                        _vertUniforms.push_back(uniform);
 }
 
 void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& type) {
@@ -193,16 +267,11 @@ void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& 
     }
 }
 
-void ShaderProgram::recompile(const bool vertex,
-                              const bool fragment,
-                              const bool geometry,
-                              const bool tessellation)
-{
+void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation){
     _compiled = false;
     _wasBound = _bound;
 
-    if(_wasBound) 
-        unbind();
+    if(_wasBound) unbind();
 
     //update refresh tags
     _refreshVert = vertex;
@@ -214,6 +283,5 @@ void ShaderProgram::recompile(const bool vertex,
     //clear refresh tags
     _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = false;
 
-    if(_wasBound)
-        bind();
+    if(_wasBound)  bind();
 }

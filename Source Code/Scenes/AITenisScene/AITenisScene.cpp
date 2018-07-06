@@ -82,8 +82,8 @@ void AITenisScene::checkCollisions(){
     SceneGraphNode* Player2 = _aiPlayer2->getUnitRef()->getBoundNode();
     SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
     SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
-    BoundingBox ballBB     = _ballSGN->getBoundingBox();
-    BoundingBox floorBB    = _floor->getBoundingBox();
+    BoundingBox ballBB      = _ballSGN->getBoundingBoxConst();
+    BoundingBox floorBB     = _floor->getBoundingBoxConst();
     WriteLock w_lock(_gameLock);
     _collisionPlayer1 = ballBB.Collision(Player1->getBoundingBox());
     _collisionPlayer2 = ballBB.Collision(Player2->getBoundingBox());

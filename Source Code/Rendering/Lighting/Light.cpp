@@ -240,18 +240,18 @@ F32 Light::getFProperty(const LightPropertiesF& key) const {
     return -1.0f;
 }
 
-void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
+void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
     if(_type == LIGHT_TYPE_DIRECTIONAL) return;
 
     // Check if range changed
-    if(FLOAT_COMPARE(getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f, sgn->getBoundingBox().getMax().x))
+    if (FLOAT_COMPARE(getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f, sgn->getBoundingBoxConst().getMax().x))
         return;
     
     sgn->getBoundingBox().setComputed(false);
     
     _updateLightBB = true;
 
-    return SceneNode::updateBBatCurrentFrame(sgn);
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){

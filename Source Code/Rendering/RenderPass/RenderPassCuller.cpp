@@ -56,7 +56,7 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
 
             if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->getCastsShadows())){
                 //Perform visibility test on current node
-                if(node->isInView(currentNode->getBoundingBox(), currentNode->getBoundingSphere())){
+                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphere())){
                     //If the current node is visible, add it to the render queue
                     _visibleNodes.push_back(currentNode);
                 }

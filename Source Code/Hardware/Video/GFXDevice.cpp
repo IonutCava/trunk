@@ -413,15 +413,19 @@ void GFXDevice::enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32
     ShaderManager::getInstance().refresh();
 }
 
- void GFXDevice::popWorldMatrix(const bool force){
+ void GFXDevice::popWorldMatrix(){
      _worldMatrices.pop();
      _isUniformedScaled = _WDirty = true;
+
+     ShaderManager::getInstance().setMatricesDirty();
 }
 
 void GFXDevice::pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled){
     _worldMatrices.push(worldMatrix);
     _isUniformedScaled = isUniformedScaled;
     _WDirty = true;
+
+    ShaderManager::getInstance().setMatricesDirty();
 }
        
 void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
@@ -456,11 +460,16 @@ void GFXDevice::getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat) {
 void GFXDevice::cleanMatrices(){
     assert(!_worldMatrices.empty());
     if(_WDirty){
-        if(_VDirty) 	       _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
-        if(_VDirty || _PDirty) _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
+        if (_VDirty) 	       {
+            _api.getMatrix(VIEW_MATRIX, _viewCacheMatrix);
+        }
+        if (_VDirty || _PDirty) {
+            _api.getMatrix(VIEW_PROJECTION_MATRIX, _VPCachedMatrix);
+        }
         // we transpose the matrices when we use them in the shader
         _WVCachedMatrix.set(_worldMatrices.top() * _viewCacheMatrix);
         _WVPCachedMatrix.set(_worldMatrices.top() * _VPCachedMatrix);
+
         _VDirty = _PDirty = _WDirty = false;
     }
 }

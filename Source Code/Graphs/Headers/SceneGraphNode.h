@@ -86,8 +86,6 @@ public:
     ~SceneGraphNode();
 
     bool unload();
-    /// Recursivelly print information about this SGN and all it's children
-    void print();
     /// Update bounding boxes
     void checkBoundingBoxes();
     /// Position, rotation, scale updates
@@ -115,10 +113,10 @@ public:
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
 
     ///Selection helper functions
-            void setSelected(bool state);
-    inline 	bool isSelected()	         const {return _selected;}
-    inline bool  isSelectable()                 const {return _isSelectable;}
-    inline void  setSelectable(const bool state)      {_isSelectable = state;}
+           void setSelected(bool state);
+    inline bool isSelected()	                const {return _selected;}
+    inline bool isSelectable()                  const {return _isSelectable;}
+    inline void setSelectable(const bool state)       {_isSelectable = state;}
 
     const  std::string& getName() const {return _name;}
     /*Node Management*/
@@ -139,9 +137,8 @@ public:
     inline       BoundingBox&     getBoundingBox()               {ReadLock r_lock(_queryLock); return _boundingBox;}
     inline const BoundingBox&     getBoundingBoxConst()   const  {ReadLock r_lock(_queryLock); return _boundingBox;}
     inline const BoundingBox&     getInitialBoundingBox() const  {ReadLock r_lock(_queryLock); return _initialBoundingBox;}
-
-    vectorImpl<BoundingBox >& getBBoxes(vectorImpl<BoundingBox >& boxes );
-    inline   const BoundingSphere&  getBoundingSphere()  const  {ReadLock r_lock(_queryLock); return _boundingSphere;}
+    inline const BoundingSphere&  getBoundingSphere()     const  {ReadLock r_lock(_queryLock); return _boundingSphere;}
+    void getBBoxes(vectorImpl<BoundingBox >& boxes) const;
     /*Bounding Box Management*/
 
     /*Transform management*/
@@ -182,7 +179,7 @@ public:
 
     inline U64 getElapsedTime() const {return _elapsedTime;}
 
-    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
+    inline void setComponent(SGNComponent::ComponentType type, SGNComponent* component) { SAFE_UPDATE(_components[type], component); }
 
     template<class T>
     inline T* getComponent() { assert(false && "INVALID COMPONENT"); return nullptr; }
@@ -224,6 +221,7 @@ private:
 
     Transform*	_transform;
     Transform*  _transformPrevious;
+    mat4<F32>   _transformGlobalMatrixCache;
 
     U32 _childQueue;
     D32 _updateTimer;

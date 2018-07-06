@@ -42,6 +42,7 @@ public:
     bool   init(GUI* const gui);
 
     /*Base Scene Operations*/
+    void update(const U64 deltaTime);
     void preRender();
     void render(const RenderStage& stage, const Kernel& kernel);
     void postRender();

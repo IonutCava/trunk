@@ -168,6 +168,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         // process all scene events
         _sceneMgr.processTasks(deltaTime);
 
+        // update the scene graph
+        _sceneMgr.update(deltaTime);
+
         // Get input events
         if(Application::getInstance().hasFocus()) {
             InputInterface::getInstance().update(deltaTime);

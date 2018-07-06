@@ -472,7 +472,7 @@ namespace NS_GLIM
         }
             
         glBindBuffer (GL_ARRAY_BUFFER, m_uiVertexBufferID);
-        glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, nullptr, GL_STATIC_DRAW);
+        glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, nullptr, GL_STREAM_DRAW);
 
         // first upload the position data
         unsigned int uiOffset = uiVertices * sizeof (float) * 3;

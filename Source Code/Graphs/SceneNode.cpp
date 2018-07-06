@@ -65,10 +65,10 @@ void SceneNode::onDraw(const RenderStage& currentStage){
     mat->computeShader(false, currentStage);
 }
 
-void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
+void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
     //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     //Draw the bounding box if it's always on or if the scene demands it
-    if(sgn->getBoundingBox().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
+    if (sgn->getBoundingBoxConst().getVisibility() || GET_ACTIVE_SCENE()->renderState().drawBBox()){
         drawBoundingBox(sgn);
     }
     if (sgn->getComponent<AnimationComponent>()){
@@ -76,8 +76,8 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
     }
 }
 
-bool SceneNode::isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck){
-    Frustum& frust = Frustum::getInstance();
+bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
+    const Frustum& frust = Frustum::getInstance();
 
     const vec3<F32>& eye = frust.getEyePos();
     const vec3<F32>& center  = sphere.getCenter();
@@ -97,11 +97,8 @@ bool SceneNode::isInView(const BoundingBox& boundingBox,const BoundingSphere& sp
         }
     }
 
-    U8 lod = 0;
-    if(cameraDistance > Config::SCENE_NODE_LOD0)		lod = 2;
-    else if(cameraDistance > Config::SCENE_NODE_LOD1)	lod = 1;
-    _lodLevel = lod;
-
+    _lodLevel = (cameraDistance > Config::SCENE_NODE_LOD0) ? ((cameraDistance > Config::SCENE_NODE_LOD1) ? 2 : 1) : 0;
+    
     return true;
 }
 
@@ -141,10 +138,6 @@ void SceneNode::setMaterial(Material* const m){
             RemoveResource(_material);
         }
     }
-}
-
-void SceneNode::clearMaterials(){
-    setMaterial(nullptr);
 }
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
@@ -278,20 +271,16 @@ void SceneNode::releaseDepthMaterial(){
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
-    sgn->setInitialBoundingBox(sgn->getBoundingBox());
+    sgn->setInitialBoundingBox(sgn->getBoundingBoxConst());
     return true;
-}
-
-void SceneNode::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-
 }
 
 bool SceneNode::unload(){
-    clearMaterials();
+    setMaterial(nullptr);
     return true;
 }
 
-void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
-    const BoundingBox& bb = sgn->getBoundingBox();
+void SceneNode::drawBoundingBox(SceneGraphNode* const sgn) const {
+    const BoundingBox& bb = sgn->getBoundingBoxConst();
     GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),mat4<F32>());
 }

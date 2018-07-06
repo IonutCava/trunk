@@ -44,9 +44,10 @@ public:
 
     inline  SceneGraphNode* getRoot() const {return _root;}
 
-    inline  vectorImpl<BoundingBox >& getBBoxes(){
+    inline vectorImpl<BoundingBox >& getBBoxes(){
         _boundingBoxes.clear();
-        return _root->getBBoxes(_boundingBoxes);
+        _root->getBBoxes(_boundingBoxes);
+        return _boundingBoxes;
     }
 
     inline  SceneGraphNode* findNode(const std::string& name, bool sceneNodeName = false){
@@ -59,13 +60,13 @@ public:
     void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
 
     void print();
-
-    void startUpdateThread();
-
     void idle();
 
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
     void addToDeletionQueue(SceneGraphNode* node) {_pendingDeletionNodes.push_back(node);}
+
+protected:
+    void printInternal(SceneGraphNode* const sgn);
 
 private:
     boost::mutex    _rootAccessMutex;

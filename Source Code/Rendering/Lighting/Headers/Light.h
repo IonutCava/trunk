@@ -138,7 +138,7 @@ public:
     bool unload();
     bool computeBoundingBox(SceneGraphNode* const sgn);
     bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
-    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     virtual void setCameraToLightView(const vec3<F32>& eyePos) = 0;
             void setCameraToSceneView();
 

@@ -56,9 +56,6 @@ void SceneGraphNode::checkBoundingBoxes(){
         if(_parent) _parent->getBoundingBox().setComputed(false);
         _boundingBoxDirty = false;
     }
-
-    //Recreate bounding boxes for current frame
-    _node->updateBBatCurrentFrame(this);
 }
 
 void SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform){

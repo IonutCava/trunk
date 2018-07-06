@@ -30,10 +30,11 @@
 #include <boost/noncopyable.hpp>
 #include <boost/atomic.hpp>
 #include "Hardware/Platform/Headers/SharedMutex.h"
+#include "Utility/Headers/GUIDWrapper.h"
 
 ///A tracked object takes car of it's own reference counting and knows it's own size
 ///It also schedules it's own deletion (a pompous name for a smart pointer)
-class TrackedObject : private boost::noncopyable  {
+class TrackedObject : private boost::noncopyable, public GUIDWrapper {
     public:
       ///Increase reference count
       void AddRef();

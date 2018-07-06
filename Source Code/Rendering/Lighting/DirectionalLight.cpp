@@ -75,7 +75,7 @@ void DirectionalLight::setCameraToLightView(const vec3<F32>& eyePos){
     //Set the virtual light position DIRECTIONAL_LIGHT_DISTANCE units above our eye position
     //This is one example why we have different setup functions for each light type
     //This isn't valid for omni or spot
-    F32 maxWorldHeight = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getMax().y;
+    F32 maxWorldHeight = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBoxConst().getMax().y;
     F32 lightDistance = std::min((F32)(Config::DIRECTIONAL_LIGHT_DISTANCE),  maxWorldHeight + 25.0f);
     _lightPos = _eyePos - _properties._position.xyz() * lightDistance;
     //Tell our rendering API to move the camera

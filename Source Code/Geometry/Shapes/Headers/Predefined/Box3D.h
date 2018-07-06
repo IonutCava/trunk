@@ -85,7 +85,7 @@ public:
     }
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn){
-        if(sgn->getBoundingBox().isComputed()) return true;
+        if (sgn->getBoundingBoxConst().isComputed()) return true;
         sgn->getBoundingBox().set(vec3<F32>(-_size),vec3<F32>(_size));
         sgn->getBoundingBox().Multiply(0.5f);
         return SceneNode::computeBoundingBox(sgn);

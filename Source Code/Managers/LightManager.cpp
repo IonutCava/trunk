@@ -93,8 +93,8 @@ bool LightManager::checkId(U32 value){
 
 void LightManager::idle(){
     _shadowMapsEnabled = ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
-    F32 worldWidth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getWidth();
-    F32 worldDepth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBox().getDepth();
+    F32 worldWidth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBoxConst().getWidth();
+    F32 worldDepth = GET_ACTIVE_SCENEGRAPH()->getRoot()->getBoundingBoxConst().getDepth();
     _worldHalfExtent = std::max(worldWidth, worldDepth) * 0.5f;
     CLAMP<F32>(_worldHalfExtent, 1.0f, (F32)Config::DIRECTIONAL_LIGHT_DISTANCE);
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
@@ -274,7 +274,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 
             F32 radiusSq = squared(light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) + node->getBoundingSphere().getRadius());
             // get the distance to the light... score it 1 to 0 near to far.
-            vec3<F32> distToLight(node->getBoundingBox().getCenter()  - light->getPosition());
+            vec3<F32> distToLight(node->getBoundingBoxConst().getCenter() - light->getPosition());
             F32 distSq = radiusSq - distToLight.lengthSquared();
 
             if ( distSq > 0.0f ) {

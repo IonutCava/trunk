@@ -45,7 +45,7 @@ public:
     inline U32&          getHeight()  {return _height;}
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn){
-        if(sgn->getBoundingBox().isComputed()) return true;
+        if (sgn->getBoundingBoxConst().isComputed()) return true;
         vec3<F32> min(-_width*2,0,-_width*0.5f);
         vec3<F32> max(_width*1.5f*_text.length()*10,_width*_text.length()*1.5f,_width*0.5f);
         sgn->getBoundingBox().set(min,max);

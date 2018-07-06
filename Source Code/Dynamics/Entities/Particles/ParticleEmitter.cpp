@@ -122,13 +122,6 @@ void ParticleEmitter::postLoad(SceneGraphNode* const sgn){
     setState(RES_LOADED);
 }
 
-void ParticleEmitter::updateBBatCurrentFrame(SceneGraphNode* const sgn){
-    if (_updateParticleEmitterBB && _enabled && _created) {
-        sgn->updateBoundingBoxTransform(sgn->getTransform()->getGlobalMatrix());
-        _updateParticleEmitterBB = false;
-    }
-}
-
 bool ParticleEmitter::computeBoundingBox(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
@@ -221,18 +214,19 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
 }
 
 void ParticleEmitter::uploadToGPU(){
-    static const I32 attribSize = 4;
+    static const size_t attribSize_float = 4 * sizeof(F32);
+    static const size_t attribSize_char = 4 * sizeof(U8);
     if(_uploaded || !_created)
         return;
 
-    _particleGPUBuffer->UpdateBuffer(1, _descriptor._particleCount * sizeof(F32) * attribSize,
+    _particleGPUBuffer->UpdateBuffer(1, _descriptor._particleCount * attribSize_float,
                                         &_particlePositionData[0], 0, 
-                                        _particlesCurrentCount * sizeof(F32) * attribSize, 
+                                        _particlesCurrentCount * attribSize_float,
                                         true, true);
 
-    _particleGPUBuffer->UpdateBuffer(2, _descriptor._particleCount * sizeof(U8) * attribSize, 
+    _particleGPUBuffer->UpdateBuffer(2, _descriptor._particleCount * attribSize_char,
                                         &_particleColorData[0], 0, 
-                                        _particlesCurrentCount * sizeof(U8) * attribSize, 
+                                        _particlesCurrentCount * attribSize_char,
                                         true, true);
     _uploaded = true;
 }
@@ -255,10 +249,15 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     if(!_enabled || !_created)
         return;
 
+    if (_updateParticleEmitterBB) {
+        sgn->updateBoundingBoxTransform(sgn->getTransform()->getGlobalMatrix());
+        _updateParticleEmitterBB = false;
+    }
+
     F32 delta = getUsToSec(deltaTime);
 
     I32 newParticles = _descriptor._emissionInterval + random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
-    newParticles = (I32)(newParticles * delta);
+    newParticles = (I32)(newParticles * delta) / (_lodLevel + 1);
 
     const vec3<F32>& eyePos = Frustum::getInstance().getEyePos();
     const vec3<F32>& origin = sgn->getTransform()->getPosition();
@@ -315,6 +314,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     }
     _particlesCurrentCount = particlesCount;
     _uploaded = false;
+
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 // Finds a Particle in ParticlesContainer which isn't used yet. (i.e. life < 0);

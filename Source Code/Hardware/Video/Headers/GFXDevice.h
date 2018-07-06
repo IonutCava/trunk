@@ -50,15 +50,6 @@ friend class Frustum; ///< For matrix recovery operations
 typedef std::stack<mat4<F32>, vectorImpl<mat4<F32> > > matrixStack;
 
 public:
-    ///Compund matrices or sub-matrices
-    enum EXTENDED_MATRIX{
-        WORLD_MATRIX   = 0, //<Current model's world matrix. Changed for each render call, mainly
-        WV_MATRIX      = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
-        WV_INV_MATRIX  = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
-        WVP_MATRIX     = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
-        NORMAL_MATRIX  = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
-    };
-
     void setApi(const RenderAPI& api);
 
     inline RenderAPI        getApi()        {return _api.getId(); }
@@ -233,7 +224,7 @@ public:
            void getMatrix(const EXTENDED_MATRIX& mode, mat3<F32>& mat);
            void getMatrix(const EXTENDED_MATRIX& mode, mat4<F32>& mat);
            void pushWorldMatrix(const mat4<F32>& worldMatrix, const bool isUniformedScaled);
-           void popWorldMatrix(const bool force = false); 
+           void popWorldMatrix(); 
            void cleanMatrices();
 
     inline void setViewDirty(const bool state)        { _VDirty = state; }

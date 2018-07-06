@@ -1,7 +1,7 @@
 #include "Headers/TrackedObject.h"
 #include <cassert>
 
-TrackedObject::TrackedObject() : _refCount(1)
+TrackedObject::TrackedObject() : GUIDWrapper(), _refCount(1)
 {
     ///On creation, it only has a reference count of 1
 }

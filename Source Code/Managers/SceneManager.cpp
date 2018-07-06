@@ -93,13 +93,17 @@ bool SceneManager::frameEnded(const FrameEvent& evt){
     return true;
 }
 
+void SceneManager::update(const U64 deltaTime){
+    _activeScene->getSceneGraph()->update();
+}
+
 void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
 void SceneManager::renderVisibleNodes() {
     SceneGraph* sceneGraph = _activeScene->getSceneGraph();
-    sceneGraph->update();
+    //sceneGraph->update();
     _renderPassCuller->cullSceneGraph(sceneGraph->getRoot(), _activeScene->state());
     _renderPassManager->render(_activeScene->renderState(), sceneGraph);
 }

@@ -199,7 +199,7 @@ namespace Navigation {
         data.setName(nodeName);
 
         if(!NavigationMeshLoader::loadMeshFile(data, geometrySaveFile.c_str())){
-            if(!NavigationMeshLoader::parse(_sgn->getBoundingBox(), data, _sgn)){
+            if (!NavigationMeshLoader::parse(_sgn->getBoundingBoxConst(), data, _sgn)){
                 ERROR_FN(Locale::get("ERROR_NAV_PARSE_FAILED"), nodeName.c_str());
             }
         }

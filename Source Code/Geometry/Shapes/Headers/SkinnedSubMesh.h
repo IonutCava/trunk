@@ -31,7 +31,6 @@ public:
     ~SkinnedSubMesh();
 
 public:
-    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
     void postLoad(SceneGraphNode* const sgn);
 
     inline SceneAnimator* getAnimator() { return _animator; }
@@ -41,6 +40,9 @@ protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void updateAnimations(SceneGraphNode* const sgn);
 
+private:
+    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+    
 private:
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;

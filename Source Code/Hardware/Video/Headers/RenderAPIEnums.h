@@ -51,6 +51,15 @@ enum MATRIX_MODE{
     TEXTURE_MATRIX = 4
 };
 
+///Compund matrices or sub-matrices
+enum EXTENDED_MATRIX{
+    WORLD_MATRIX = 0, //<Current model's world matrix. Changed for each render call, mainly
+    WV_MATRIX = 1, //<WorldView matrix : ViewMatrix * WorldMatrix (as per OpenGL standards: name is backwards)
+    WV_INV_MATRIX = 2, //<WorldViewInverse matrix: (ViewMatrix * WorldMatrix)^-1
+    WVP_MATRIX = 4, //<WorldViewProjection matrix: ProjectionMatrix * ViewMatrix * WorldMatrix
+    NORMAL_MATRIX = 6, //<Normal matrix - for non-uniform scaled models: top left 3x3 of ((ViewMatrix * WorldMatrix)^-1)^T; for uniform scaled models: top left 3x3 of (ViewMatrix*WorldMatrix)
+};
+
 ///Using multiple threads for streaming and issuing API specific construction commands to the rendering API will
 ///cause problems with libraries such as ASSIMP or with the scenegraph. Having 2 rendering contexts with a single
 ///display list, one for rendering and one for loading seems the best approach (for now)

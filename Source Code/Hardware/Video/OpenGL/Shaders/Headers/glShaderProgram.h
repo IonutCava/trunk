@@ -39,36 +39,34 @@ public:
     void attachShader(Shader* const shader,const bool refresh = false);
     void detachShader(Shader* const shader);
     //Attributes
-    void Attribute(const std::string& ext, GLdouble value);
-    void Attribute(const std::string& ext, GLfloat value);
-    void Attribute(const std::string& ext, const vec2<GLfloat>& value);
-    void Attribute(const std::string& ext, const vec3<GLfloat>& value);
-    void Attribute(const std::string& ext, const vec4<GLfloat>& value);
-    //Uniforms
-    void Uniform(const std::string& ext, GLuint value);
-    void Uniform(const std::string& ext, GLint value);
-    void Uniform(const std::string& ext, GLfloat value);
-    void Uniform(const std::string& ext, const vec2<GLfloat>& value);
-    void Uniform(const std::string& ext, const vec2<GLint>& value);
-    void Uniform(const std::string& ext, const vec2<GLushort>& value);
-    void Uniform(const std::string& ext, const vec3<GLfloat>& value);
-    void Uniform(const std::string& ext, const vec4<GLfloat>& value);
-    void Uniform(const std::string& ext, const mat3<GLfloat>& value, bool rowMajor = false);
-    void Uniform(const std::string& ext, const mat4<GLfloat>& value, bool rowMajor = false);
-    void Uniform(const std::string& ext, const vectorImpl<GLint >& values);
-    void Uniform(const std::string& ext, const vectorImpl<GLfloat >& values);
-    void Uniform(const std::string& ext, const vectorImpl<vec2<GLfloat> >& values);
-    void Uniform(const std::string& ext, const vectorImpl<vec3<GLfloat> >& values);
-    void Uniform(const std::string& ext, const vectorImpl<vec4<GLfloat> >& values);
-    void Uniform(const std::string& ext, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor = false);
+    void Attribute(GLint location, GLdouble value);
+    void Attribute(GLint location, GLfloat value);
+    void Attribute(GLint location, const vec2<GLfloat>& value);
+    void Attribute(GLint location, const vec3<GLfloat>& value);
+    void Attribute(GLint location, const vec4<GLfloat>& value);
+    //Uniforms (no redundant 'if(location == -1) return' checks as the driver already handles that)
+    void Uniform(GLint location, U32 value);
+    void Uniform(GLint location, I32 value);
+    void Uniform(GLint location, F32 value);
+    void Uniform(GLint location, const vec2<F32>& value);
+    void Uniform(GLint location, const vec2<I32>& value);
+    void Uniform(GLint location, const vec2<U16>& value);
+    void Uniform(GLint location, const vec3<F32>& value);
+    void Uniform(GLint location, const vec4<F32>& value);
+    void Uniform(GLint location, const mat3<F32>& value, bool rowMajor = false);
+    void Uniform(GLint location, const mat4<F32>& value, bool rowMajor = false);
+    void Uniform(GLint location, const vectorImpl<I32 >& values);
+    void Uniform(GLint location, const vectorImpl<F32 >& values);
+    void Uniform(GLint location, const vectorImpl<vec2<F32> >& values);
+    void Uniform(GLint location, const vectorImpl<vec3<F32> >& values);
+    void Uniform(GLint location, const vectorImpl<vec4<F32> >& values);
+    void Uniform(GLint location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false);
     //Uniform Texture
-    void UniformTexture(const std::string& ext, GLushort slot);
+    void UniformTexture(GLint location, GLushort slot);
 
-    inline GLint getAttributeLocation(const std::string& name) { return cachedLoc(name,false); }
-    inline GLint getUniformLocation(const std::string& name)   { return cachedLoc(name,true);  }
     inline void  flushLocCache()                               { _shaderVars.clear();}
 
-private:
+protected:
     void threadedLoad(const std::string& name);
     GLint cachedLoc(const std::string& name, const bool uniform = true);
     void validateInternal();

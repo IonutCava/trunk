@@ -25,6 +25,7 @@
 
 #include "Utility/Headers/Vector.h"
 #include "Core/Resources/Headers/HardwareResource.h"
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 class Shader;
 enum ShaderType;
@@ -39,32 +40,55 @@ public:
     virtual U8   update(const U64 deltaTime);
 
     ///Attributes
-    virtual void Attribute(const std::string& ext, D32 value) = 0;
-    virtual void Attribute(const std::string& ext, F32 value) = 0 ;
-    virtual void Attribute(const std::string& ext, const vec2<F32>& value) = 0;
-    virtual void Attribute(const std::string& ext, const vec3<F32>& value) = 0;
-    virtual void Attribute(const std::string& ext, const vec4<F32>& value) = 0;
-    ///Uniforms
-    virtual void Uniform(const std::string& ext, U32 value) = 0;
-    virtual void Uniform(const std::string& ext, I32 value) = 0;
-    virtual void Uniform(const std::string& ext, F32 value) = 0 ;
-    virtual void Uniform(const std::string& ext, const vec2<F32>& value) = 0;
-    virtual void Uniform(const std::string& ext, const vec2<I32>& value) = 0;
-    virtual void Uniform(const std::string& ext, const vec2<U16>& value) = 0;
-    virtual void Uniform(const std::string& ext, const vec3<F32>& value) = 0;
-    virtual void Uniform(const std::string& ext, const vec4<F32>& value) = 0;
-    virtual void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<I32 >& values) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<F32 >& values) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) = 0;
-    virtual void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
+    inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
+    inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const std::string& ext, const vec2<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const std::string& ext, const vec3<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    inline void Attribute(const std::string& ext, const vec4<F32>& value) { Attribute(cachedLoc(ext, false), value); }
+    ///Uniforms (update constant buffer for D3D. Use index as location in buffer)
+    inline void Uniform(const std::string& ext, U32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, I32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, F32 value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const vec2<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const vec2<I32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const vec2<U16>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const vec3<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const vec4<F32>& value) { Uniform(cachedLoc(ext), value); }
+    inline void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
+    inline void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) { Uniform(cachedLoc(ext), value, rowMajor); }
+    inline void Uniform(const std::string& ext, const vectorImpl<I32 >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<F32 >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
     ///Uniform Texture
-    virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
-    virtual I32  getAttributeLocation(const std::string& name) = 0;
-    virtual I32  getUniformLocation(const std::string& name) = 0;
+    inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
+
+    ///Attribute+Uniform+UniformTexture implementation
+    virtual void Attribute(I32 location, D32 value) = 0;
+    virtual void Attribute(I32 location, F32 value) = 0;
+    virtual void Attribute(I32 location, const vec2<F32>& value) = 0;
+    virtual void Attribute(I32 location, const vec3<F32>& value) = 0;
+    virtual void Attribute(I32 location, const vec4<F32>& value) = 0;
+    virtual void Uniform(I32 location, U32 value) = 0;
+    virtual void Uniform(I32 location, I32 value) = 0;
+    virtual void Uniform(I32 location, F32 value) = 0;
+    virtual void Uniform(I32 location, const vec2<F32>& value) = 0;
+    virtual void Uniform(I32 location, const vec2<I32>& value) = 0;
+    virtual void Uniform(I32 location, const vec2<U16>& value) = 0;
+    virtual void Uniform(I32 location, const vec3<F32>& value) = 0;
+    virtual void Uniform(I32 location, const vec4<F32>& value) = 0;
+    virtual void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<I32 >& values) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<F32 >& values) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) = 0;
+    virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) = 0;
+    virtual void UniformTexture(I32, U16 slot) = 0;
+
     virtual void attachShader(Shader* const shader,const bool refresh = false) = 0;
     virtual void detachShader(Shader* const shader) = 0;
     ///ShaderProgram object id (i.e.: for OGL _shaderProgramId = glCreateProgram())
@@ -96,12 +120,15 @@ public:
 protected:
     friend class ShaderManager;
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
-
+    inline void setMatricesDirty() { _extendedMatricesDirty = true; }
+    I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
+    I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
 protected:
 
     ShaderProgram(const bool optimise = false);
     void threadedLoad(const std::string& name);
 
+    virtual I32 cachedLoc(const std::string& name, const bool uniform = true) = 0;
     virtual void validate() = 0;
     virtual void link() = 0;
     template<typename T>
@@ -139,10 +166,36 @@ protected:
     vectorImpl<vec4<F32> > _clipPlanes;
     ///cached clippin planes' states
     vectorImpl<I32 >       _clipPlanesStates;
+
 private:
     ///Small hack to avoid stack allocations
     mat4<F32> _cachedMatrix;
     mat3<F32> _cachedNormalMatrix;
+
+    Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
+    bool _extendedMatricesDirty;
+
+    ///Various uniform/attribute locations
+    I32 _timeLoc;
+    I32 _cameraLocationLoc;
+    I32 _clipPlanesLoc;
+    I32 _clipPlaneCountLoc;
+    I32 _clipPlanesActiveLoc;
+    I32 _enableFogLoc;
+    I32 _lightAmbientLoc;
+    I32 _zPlanesLoc;
+    I32 _screenDimensionLoc;
+    I32 _texDepthMapFromLightArrayLoc;
+    I32 _texDepthMapFromLightCubeLoc;
+    I32 _texNormalMapLoc;
+    I32 _texOpacityMapLoc;
+    I32 _texSpecularLoc;
+    I32 _fogColorLoc;
+    I32 _fogDensityLoc;
+    I32 _fogStartLoc;
+    I32 _fogEndLoc;
+    I32 _fogModeLoc;
+    I32 _fogDetailLevelLoc;
 };
 
 #endif

@@ -69,7 +69,6 @@ public:
     bool initData();
     bool unload();
 
-    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     ///SceneNode test
@@ -95,6 +94,7 @@ protected:
     void prepareMaterial(SceneGraphNode* const sgn);
     void releaseMaterial();
 
+private:
     I32 findUnusedParticle();
     void sortParticles();
     void uploadToGPU();

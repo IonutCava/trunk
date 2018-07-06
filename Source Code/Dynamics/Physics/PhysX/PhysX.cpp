@@ -265,8 +265,8 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
                                               PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
                                               PxQuat(PxIdentity)));
     }else{
-       const BoundingBox& maxBB = node->getBoundingBox();
-       geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
+        const BoundingBox& maxBB = node->getBoundingBoxConst();
+        geometry = New PxBoxGeometry(maxBB.getWidth(),maxBB.getHeight(),maxBB.getDepth());
     }
 
     assert(geometry != nullptr);

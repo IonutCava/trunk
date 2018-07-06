@@ -163,7 +163,9 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
     //bool forwardPassShader = !deferredPassShader && !depthPassShader;
 
-    if(_shaderInfo[renderStage]._computedShader && !force && (renderStage == FINAL_STAGE && _computedShaderTextures)) return;
+    if(_shaderInfo[renderStage]._computedShader && !force && (renderStage == FINAL_STAGE && _computedShaderTextures)) 
+        return;
+
     if(_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
@@ -215,6 +217,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             shader += ".Specular";
             addShaderDefines(renderStage, "USE_SPECULAR_MAP");
         }
+
         //if this is true, geometry shader will take a triangle strip as input, else it will use triangles
         if(_gsInputType == GS_TRIANGLES){
             shader += ".Triangles";

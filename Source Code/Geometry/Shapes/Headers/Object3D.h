@@ -64,11 +64,6 @@ public:
 protected:
     virtual	void  render(SceneGraphNode* const sgn);
 
-    /// Called from SceneGraph "sceneUpdate"
-    virtual void  sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
-        SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
-    }
-
     virtual void computeNormals();
     virtual void computeTangents();
 

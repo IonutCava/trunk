@@ -32,13 +32,15 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
 /// Called from SceneGraph "sceneUpdate"
 void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     updateAnimations(sgn);
-    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
 // update possible animations
 void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
     AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
     assert(animComp);
+
+    updateBBatCurrentFrame(sgn);
 
     //Software skinning
     if (!_softwareSkinning || !animComp->playAnimations()) return;
@@ -127,7 +129,7 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
     }
 
     const BoundingBox& bb1 = _boundingBoxes[currentAnimationID][currentFrameIndex];
-    const BoundingBox& bb2 = sgn->getBoundingBox();
+    const BoundingBox& bb2 = sgn->getBoundingBoxConst();
     if(!bb1.Compare(bb2)){
         sgn->setInitialBoundingBox(bb1);
     }

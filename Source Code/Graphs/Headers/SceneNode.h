@@ -70,7 +70,6 @@ public:
     virtual	bool	  unload();
     virtual bool	  isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
-            void	  clearMaterials();
             Material* getMaterial();
     /// A custom shader is used if we either don't have a material or we need to render in a special way.
     /// Either way, we are not using the fixed pipeline so a shader is always needed for rendering
@@ -78,9 +77,7 @@ public:
 
     /// Every SceneNode computes a bounding box in it's own way.
     virtual	bool computeBoundingBox(SceneGraphNode* const sgn);
-    /// Special BB transforms may be required at a certain frame
-    virtual void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-    virtual void drawBoundingBox(SceneGraphNode* const sgn);
+    virtual void drawBoundingBox(SceneGraphNode* const sgn) const;
 
     inline       void           setType(const SceneNodeType& type)        {_type = type;}
     inline const SceneNodeType& getType()					        const {return _type;}

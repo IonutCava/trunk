@@ -68,5 +68,5 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
         }
     }
 
-    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
+    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

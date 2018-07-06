@@ -36,36 +36,33 @@ public:
     void attachShader(Shader* const shader,const bool refresh = false){}
     void detachShader(Shader* const shader) {}
     //Attributes
-    void Attribute(const std::string& ext, D32 value){}
-    void Attribute(const std::string& ext, F32 value){}
-    void Attribute(const std::string& ext, const vec2<F32>& value){}
-    void Attribute(const std::string& ext, const vec3<F32>& value){}
-    void Attribute(const std::string& ext, const vec4<F32>& value){}
+    void Attribute(I32 location, D32 value){}
+    void Attribute(I32 location, F32 value){}
+    void Attribute(I32 location, const vec2<F32>& value){}
+    void Attribute(I32 location, const vec3<F32>& value){}
+    void Attribute(I32 location, const vec4<F32>& value){}
     //Uniforms
-    void Uniform(const std::string& ext, U32 value){}
-    void Uniform(const std::string& ext, I32 value){}
-    void Uniform(const std::string& ext, F32 value){}
-    void Uniform(const std::string& ext, const vec2<F32>& value){}
-    void Uniform(const std::string& ext, const vec2<I32>& value){}
-    void Uniform(const std::string& ext, const vec2<U16>& value){}
-    void Uniform(const std::string& ext, const vec3<F32>& value){}
-    void Uniform(const std::string& ext, const vec4<F32>& value){}
-    void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false){}
-    void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false){}
-    void Uniform(const std::string& ext, const vectorImpl<I32 >& values) {}
-    void Uniform(const std::string& ext, const vectorImpl<F32 >& values) {}
-    void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) {}
-    void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) {}
-    void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) {}
-    void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false){}
+    void Uniform(I32 location, U32 value) {}
+    void Uniform(I32 location, I32 value) {}
+    void Uniform(I32 location, F32 value) {}
+    void Uniform(I32 location, const vec2<F32>& value) {}
+    void Uniform(I32 location, const vec2<I32>& value) {}
+    void Uniform(I32 location, const vec2<U16>& value) {}
+    void Uniform(I32 location, const vec3<F32>& value) {}
+    void Uniform(I32 location, const vec4<F32>& value) {}
+    void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) {}
+    void Uniform(I32 location, const mat4<F32>& value, bool rowMajor = false) {}
+    void Uniform(I32 location, const vectorImpl<I32 >& values) {}
+    void Uniform(I32 location, const vectorImpl<F32 >& values) {}
+    void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) {}
+    void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) {}
+    void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) {}
+    void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) {}
     //Uniform Texture
-    void UniformTexture(const std::string& ext, U16 slot){}
-
-    I32 getAttributeLocation(const std::string& name);
-    I32 getUniformLocation(const std::string& name);
+    void UniformTexture(I32 location, U16 slot){}
 
 private:
-    I32   cachedLoc(const std::string& name,bool uniform = true){return 0;}
+    I32  cachedLoc(const std::string& name, const bool uniform = true) { return -1; }
     bool flushLocCache(){return true;}
 
 private:

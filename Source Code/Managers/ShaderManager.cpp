@@ -65,6 +65,12 @@ void ShaderManager::refresh(){
     }
 }
 
+void ShaderManager::setMatricesDirty(){
+    FOR_EACH(ShaderProgramMap::value_type& it, _shaderPrograms){
+        it.second->setMatricesDirty();
+    }
+}
+
 char* ShaderManager::shaderFileRead(const std::string &atomName, const std::string& location){
     AtomMap::iterator it = _atoms.find(atomName);
     if(it != _atoms.end()){

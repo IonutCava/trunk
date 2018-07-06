@@ -50,7 +50,7 @@ public:
     inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _geometry->queueRefresh();}
 
     virtual bool computeBoundingBox(SceneGraphNode* const sgn){
-        if(sgn->getBoundingBox().isComputed()) return true;
+        if (sgn->getBoundingBoxConst().isComputed()) return true;
         sgn->getBoundingBox().set(vec3<F32>(-_radius), vec3<F32>(_radius));
         return SceneNode::computeBoundingBox(sgn);
     }

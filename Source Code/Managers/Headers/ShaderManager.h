@@ -27,6 +27,7 @@
 #include "Utility/Headers/Vector.h"
 #include "Utility/Headers/UnorderedMap.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include <string>
 #include <stack>
 
@@ -72,6 +73,9 @@ public:
     bool    unbind();
     ///Return a default shader if we try to render something with a material that is missing a valid shader
     ShaderProgram* const getDefaultShader() const {return _imShader;}
+
+    void setMatricesDirty();
+
 private:
     ///Shader cache
     ShaderMap        _shaderNameMap;
