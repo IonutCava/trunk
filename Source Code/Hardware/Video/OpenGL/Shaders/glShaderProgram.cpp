@@ -241,7 +241,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
  		    //If reading was succesfull
 		    std::string vsString(vs);
-            Util::ReplaceStringInPlace(vsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+            Util::replaceStringInPlace(vsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
     		//Load our shader and save it in the manager in case a new Shader Program needs it
 	    	vertexShader = ShaderManager::getInstance().loadShader(vertexShaderName,vsString,VERTEX_SHADER,_refreshVert);
 	    }
@@ -273,7 +273,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 
             std::string fsString(fs);
 			//Insert our custom defines in the special define slot
-            Util::ReplaceStringInPlace(fsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+            Util::replaceStringInPlace(fsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
 			//Load and compile the shader
 		    fragmentShader = ShaderManager::getInstance().loadShader(fragmentShaderName,fsString,FRAGMENT_SHADER,_refreshFrag);
 	    }
@@ -299,7 +299,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		    const char* gs = glswGetShader(geometryShaderName.c_str(),lineCountOffset,_refreshGeom);
 		    if(gs != NULL){
                 std::string gsString(gs);
-                Util::ReplaceStringInPlace(gsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+                Util::replaceStringInPlace(gsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
 			    geometryShader = ShaderManager::getInstance().loadShader(geometryShaderName,gsString,GEOMETRY_SHADER,_refreshGeom);
 		    }else{
 			    //Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
@@ -329,7 +329,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		    const char* ts = glswGetShader(tessellationShaderName.c_str(),lineCountOffset,_refreshTess);
 		    if(ts != NULL){
                 std::string tsString(ts);
-                Util::ReplaceStringInPlace(tsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
+                Util::replaceStringInPlace(tsString, "__CUSTOM_DEFINES__", shaderSourceHeader);
 			    tessellationShader = ShaderManager::getInstance().loadShader(tessellationShaderName,tsString,TESSELATION_SHADER,_refreshTess);
 		    }else{
 			    //Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet

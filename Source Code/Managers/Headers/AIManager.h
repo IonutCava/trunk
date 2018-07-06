@@ -20,7 +20,7 @@
 
 #include "core.h"
 #include "AI/Headers/AIEntity.h"
-#include "AI/PathFinding/Headers/NavigationMesh.h"
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 #include <boost/atomic.hpp>
 DEFINE_SINGLETON(AIManager)

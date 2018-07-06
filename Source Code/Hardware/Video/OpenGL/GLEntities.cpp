@@ -22,20 +22,20 @@ namespace IMPrimitiveValidation{
 	inline bool isValid(glIMPrimitive* const priv){ return !priv->inUse(); }
 }
 
-IMPrimitive* GL_API::createPrimitive() {
-    return dynamic_cast<IMPrimitive*>(getOrCreateIMPrimitive());
+IMPrimitive* GL_API::createPrimitive(bool allowPrimitiveRecycle) {
+    return dynamic_cast<IMPrimitive*>(getOrCreateIMPrimitive(allowPrimitiveRecycle));
 }
 
-glIMPrimitive* GL_API::getOrCreateIMPrimitive(){
+glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
 	glIMPrimitive* tempPriv = NULL;
-	///Find a zombified primitive
+	//Find a zombified primitive
 	vectorImpl<glIMPrimitive* >::iterator it = std::find_if(_glimInterfaces.begin(),_glimInterfaces.end(),IMPrimitiveValidation::isValid);
-	if(it != _glimInterfaces.end()){///If we have one ...
+	if(allowPrimitiveRecycle && it != _glimInterfaces.end()){//If we have one ...
 		tempPriv = *it;
-		///... resurrect it
+		//... resurrect it
 		tempPriv->_zombieCounter = 0;
 		tempPriv->clear();
-	}else{///If we do not have a valid zombie, add a new element
+	}else{//If we do not have a valid zombie, add a new element
 		tempPriv = New glIMPrimitive();
 		_glimInterfaces.push_back(tempPriv);
 	}
@@ -43,6 +43,7 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(){
 	tempPriv->_inUse = true;
 	tempPriv->_setupStates.clear();
 	tempPriv->_resetStates.clear();
+	tempPriv->_canZombify = allowPrimitiveRecycle;
 	return tempPriv;
 }
 

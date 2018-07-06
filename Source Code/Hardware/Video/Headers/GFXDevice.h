@@ -92,7 +92,9 @@ public:
 			///sets a new horizontal FoV
 			void setHorizontalFoV(I32 newFoV);
 	inline void renderInViewport(const vec4<I32>& rect, boost::function0<void> callback)  {_api.renderInViewport(rect,callback);}
-    inline IMPrimitive* createPrimitive() { return _api.createPrimitive(); }
+	//returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner. 
+	//allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
+    inline IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) { return _api.createPrimitive(allowPrimitiveRecycle); }
 
 	inline void drawDebugAxis(const bool state)       {_drawDebugAxis = state;}
     inline bool drawDebugAxis()                 const {return _drawDebugAxis;}

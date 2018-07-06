@@ -180,7 +180,7 @@ protected:
 	virtual void debugDraw() = 0;
 	/*Primitives Rendering*/
     /*Immediate Mode Emmlation*/
-    virtual IMPrimitive* createPrimitive() = 0;
+    virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
     /*Immediate Mode Emmlation*/
 
 	/*Mesh Rendering*/

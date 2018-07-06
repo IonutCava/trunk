@@ -4,7 +4,7 @@
 #include "GUI/Headers/GUIConsole.h"
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
-#include "AI/PathFinding/Headers/NavigationMesh.h" ///< For NavMesh creation
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh creation
 
 GUIEditorAIInterface::GUIEditorAIInterface() : GUIEditorInterface(), _createNavMeshQueued(false)
 {

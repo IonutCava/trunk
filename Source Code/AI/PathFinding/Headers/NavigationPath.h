@@ -24,7 +24,7 @@
 #define _NAVIGATION_PATH_H_
 
 #include "core.h"
-#include "NavigationMesh.h"
+#include "NavMeshes/Headers/NavMesh.h"
 
 namespace Navigation {
    static const U32 MaxPathLen = 1024;

@@ -341,9 +341,6 @@
     <Filter Include="AI\PathFinding">
       <UniqueIdentifier>{03c3909f-c64d-42d0-a027-d7e4edbde7aa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AI\PathFinding\Headers">
-      <UniqueIdentifier>{cede592b-1b70-416e-baf9-223e356e30fb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scenes\WarScene\Resources">
       <UniqueIdentifier>{49715622-a5ce-4611-aa69-f4076cbfca75}</UniqueIdentifier>
     </Filter>
@@ -569,6 +566,21 @@
     <Filter Include="GUI\GUIEditor\Headers">
       <UniqueIdentifier>{76eb6003-dd36-483c-a501-1782735b82a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\PathFinding\Waypoints">
+      <UniqueIdentifier>{d25f0048-5417-4e38-8dfa-0e15b17ee8da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes">
+      <UniqueIdentifier>{3aa3ee32-05f8-4948-9e11-d8f89764029f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Waypoints\Headers">
+      <UniqueIdentifier>{0bc487a8-1c72-4992-9767-524490b0ecb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\Headers">
+      <UniqueIdentifier>{b4e909d0-d0a0-490b-847f-a221e6579611}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Headers">
+      <UniqueIdentifier>{4bcd89e4-207a-4655-9425-ac5e75cd943d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -787,21 +799,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp">
       <Filter>Scenes\WarScene</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp">
-      <Filter>AI\PathFinding</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
       <Filter>Geometry\Animations</Filter>
@@ -1109,9 +1106,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp">
       <Filter>Hardware\Platform</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshDebugDraw.cpp">
-      <Filter>AI\PathFinding</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
@@ -1147,6 +1141,24 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp">
       <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp">
+      <Filter>AI\PathFinding\Waypoints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp">
+      <Filter>AI\PathFinding\Waypoints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
+      <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp">
+      <Filter>AI\PathFinding</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1404,21 +1416,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h">
       <Filter>Scenes\WarScene\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h">
-      <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h">
       <Filter>Geometry\Animations\Headers</Filter>
@@ -1796,9 +1793,6 @@
     <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h">
       <Filter>Hardware\Video\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshDebugDraw.h">
-      <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h">
       <Filter>Hardware\Video\Headers</Filter>
     </ClInclude>
@@ -1828,6 +1822,27 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h">
       <Filter>Hardware\Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h">
+      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h">
+      <Filter>AI\PathFinding\Waypoints\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h">
+      <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h">
+      <Filter>AI\PathFinding\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

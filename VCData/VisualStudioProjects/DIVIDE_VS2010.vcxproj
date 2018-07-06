@@ -200,12 +200,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshDebugDraw.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
-    <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshLoader.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Kernel.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
@@ -395,12 +395,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshDebugDraw.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h" />
-    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDebugDraw.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshLoader.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\WaypointGraph.h" />
     <ClInclude Include="..\..\Source Code\core.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h" />

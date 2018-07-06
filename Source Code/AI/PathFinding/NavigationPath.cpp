@@ -1,5 +1,5 @@
 #include "Headers/NavigationPath.h"
-#include "Headers/WaypointGraph.h"
+#include "Waypoints/Headers/WaypointGraph.h"
 
 namespace Navigation {
    tQueryFilter::tQueryFilter() {

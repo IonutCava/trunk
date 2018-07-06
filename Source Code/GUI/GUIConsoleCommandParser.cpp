@@ -4,7 +4,7 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "AI/PathFinding/Headers/NavigationMesh.h" ///< For NavMesh creation
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh creation
 
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 {

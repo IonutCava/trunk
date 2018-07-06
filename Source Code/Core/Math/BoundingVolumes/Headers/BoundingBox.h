@@ -216,6 +216,7 @@ public:
 				}
 			}
 		}
+		ComputePoints();
 	}
 
     inline void  setComputed(bool state) {_computed = state;}
@@ -238,7 +239,7 @@ public:
 	inline void setMax(const vec3<F32>& max)   {/*WriteLock w_lock(_lock);*/ _max = max;}
 	inline void set(const vec3<F32>& min, const vec3<F32>& max)  {/*WriteLock w_lock(_lock);*/ _min = min; _max = max;}
     inline void reset(){_min.set(100000.0f, 100000.0f, 100000.0f); _max.set(-100000.0f, -100000.0f, -100000.0f);}
-    inline const vectorImpl<vec3<F32> >& getPoints() {ComputePoints(); return _points;}
+    inline const vectorImpl<vec3<F32> >& getPoints() const {return _points;}
 
 	inline F32 nearestDistanceFromPoint( const vec3<F32> &pos){
 		const vec3<F32>& center = getCenter();

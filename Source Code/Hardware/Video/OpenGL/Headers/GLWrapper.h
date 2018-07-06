@@ -117,7 +117,7 @@ private:
 				   const bool disableDepth = false);
 
     /*immediate mode emmlation*/
-    IMPrimitive* createPrimitive();
+    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true);
     /*immediate mode emmlation end*/
 
 	void renderInViewport(const vec4<GLint>& rect, boost::function0<GLvoid> callback);
@@ -169,7 +169,7 @@ private:
 	boost::atomic_bool _closeLoadingThread;
 
     FTFont* getFont(const std::string& fontName);
-	glIMPrimitive* getOrCreateIMPrimitive();
+	glIMPrimitive* getOrCreateIMPrimitive(bool allowPrimitiveRecycle = true);
 	///Used for rendering skeletons
 	void setupLineState(const OffsetMatrix& mat, RenderStateBlock* const drawState,const bool ortho);
 	void releaseLineState(const bool ortho);

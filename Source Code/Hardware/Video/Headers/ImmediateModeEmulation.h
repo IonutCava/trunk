@@ -35,7 +35,6 @@ public:
     inline void setRenderStates(boost::function0<void> setupStatesCallback, boost::function0<void> releaseStatesCallback){
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
-        _hasRenderStates = !(_setupStates.empty());
     }
 
     virtual void beginBatch() = 0;
@@ -53,12 +52,13 @@ public:
 	inline U8   zombieCounter()              const {return _zombieCounter;}
     inline void forceWireframe(bool state)         {_forceWireframe = state;}
     inline bool forceWireframe()             const {return _forceWireframe; }
-    inline bool hasRenderStates()            const {return _hasRenderStates;}
+    inline bool hasRenderStates()            const {return (!_setupStates.empty() && !_resetStates.empty());}
 
 public:
 
 	Texture2D*           _texture;
 	bool                 _hasLines;
+	bool                 _canZombify;
 	F32                  _lineWidth;
 
 protected:
@@ -73,7 +73,6 @@ protected:
     //render in wireframe mode
     bool                 _forceWireframe;
 	///2 functions used to setup or reset states
-    bool _hasRenderStates;
 	boost::function0<void> _setupStates;
 	boost::function0<void> _resetStates;
 };

@@ -98,7 +98,7 @@ private:
 				   const bool orthoMode = false,
 				   const bool disableDepth = false);
 	void debugDraw();
-    IMPrimitive* createPrimitive() { return NULL; }
+    IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return NULL; }
 	void renderInstance(RenderInstance* const instance);
 	void renderBuffer(VertexBufferObject* const vbo, Transform* const vboTransform = NULL);
 

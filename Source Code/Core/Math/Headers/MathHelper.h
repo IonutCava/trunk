@@ -27,7 +27,8 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <string>
 #include <sstream>
-	
+#include "Utility/Headers/Vector.h"
+
 namespace Util {
 	template <typename T>
 	class mat4;
@@ -36,13 +37,37 @@ namespace Util {
 	template <typename T>
 	class Quaternion;
 
-    inline void ReplaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
+    inline void replaceStringInPlace(std::string& subject, const std::string& search, const std::string& replace) {
         size_t pos = 0;
         while((pos = subject.find(search, pos)) != std::string::npos) {
              subject.replace(pos, search.length(), replace);
             pos += replace.length();
         }
     }
+
+	inline void swap(char* first, char* second){
+		char temp = *first;
+		*first  = *second;
+		*second = temp;
+	}
+
+	inline void permute(char* input, U32 startingIndex, U32 stringLength, vectorImpl<std::string>& container){
+		if(startingIndex == stringLength -1){
+			container.push_back(input);
+		}else{
+			for(U32 i = startingIndex; i < stringLength; i++){
+				swap(&input[startingIndex], &input[i]);
+				permute(input,startingIndex+1,stringLength,container);
+				swap(&input[startingIndex], &input[i]);
+			}
+		}
+	}
+
+	inline vectorImpl<std::string> getPermutations(const std::string& inputString){
+		vectorImpl<std::string> permutationContainer;
+		permute((char*)inputString.c_str(), 0, inputString.length()-1, permutationContainer);
+		return permutationContainer;
+	}
 
 	inline bool isNumber(const std::string& s){
 		std::stringstream ss;

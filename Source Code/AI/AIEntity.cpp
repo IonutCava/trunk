@@ -3,8 +3,8 @@
 
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "PathFinding/Headers/WaypointGraph.h"  ///< For waypoint movement
-#include "PathFinding/Headers/NavigationMesh.h" ///< For NavMesh movement
+#include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
+#include "PathFinding/NavMeshes/Headers/NavMesh.h" ///< For NavMesh movement
 
 AIEntity::AIEntity(const std::string& name)  : GUIDWrapper(),
                                               _name(name),

@@ -28,7 +28,10 @@
 #include <gtc/type_ptr.hpp>
 
 namespace IMPrimitiveValidation{
-	inline bool zombieCountMatch(glIMPrimitive* const priv){	return (priv->zombieCounter() >= GLIM_MAX_FRAMES_ZOMBIE_COUNT);}
+	inline bool zombieCountMatch(glIMPrimitive* const priv){
+		if(priv->_canZombify) return priv->zombieCounter() < GLIM_MAX_FRAMES_ZOMBIE_COUNT;
+		else  return true;
+	}
 }
 
 bool GL_API::_coreGeomShadersAvailable = false;
