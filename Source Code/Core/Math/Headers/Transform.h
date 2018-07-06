@@ -40,7 +40,22 @@ public:
     void scale(const vec3<F32>& scale)                 { WriteLock w_lock(_lock); setDirty(); _scale = scale;                           rebuildMatrix(); }
     void rotate(const vec3<F32>& axis, F32 degrees)    { WriteLock w_lock(_lock); setDirty(); _orientation.fromAxisAngle(axis,degrees); rebuildMatrix(); }
     void rotateEuler(const vec3<F32>& euler)           { WriteLock w_lock(_lock); setDirty(); _orientation.fromEuler(euler);            rebuildMatrix(); }
-    void rotateQuaternion(const Quaternion<F32>& quat) { WriteLock w_lock(_lock); setDirty(); _orientation = quat;                      rebuildMatrix(); }
+
+    void rotate(Quaternion<F32> quat) {
+        WriteLock w_lock(_lock); 
+        setDirty(); 
+        quat.normalize();
+        _orientation = _orientation * quat;
+        rebuildMatrix();
+    }
+
+    void rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime) {
+        WriteLock w_lock(_lock); 
+        setDirty(); 
+        _orientation.slerp(quat, deltaTime); 
+        rebuildMatrix();
+    }
+
     ///Helper functions
     inline bool isDirty()         const {return _dirty;}
     inline bool isPhysicsDirty()  const {return _physicsDirty;}
@@ -50,7 +65,7 @@ public:
             return getLocalScale().isUniform() && _parentTransform->isUniformScaled();
         }
 
-		return getLocalScale().isUniform();
+        return getLocalScale().isUniform();
     }
     ///Transformation helper functions. These just call the normal translate/rotate/scale functions
     inline void scale(const F32 scale)            {this->scale(vec3<F32>(scale,scale,scale)); }
@@ -74,8 +89,8 @@ public:
     inline vec3<F32> getScale() const {
         if(hasParentTransform()){
             ReadLock r_lock(_parentLock);
-			vec3<F32> parentScale = _parentTransform->getScale();
-			r_lock.unlock();
+            vec3<F32> parentScale = _parentTransform->getScale();
+            r_lock.unlock();
             return  parentScale * getLocalScale();
         }
 
@@ -85,8 +100,8 @@ public:
     inline vec3<F32> getPosition() const {
         if(hasParentTransform()){
             ReadLock r_lock(_parentLock);
-		    vec3<F32> parentPos = _parentTransform->getPosition();
-		    r_lock.unlock();
+            vec3<F32> parentPos = _parentTransform->getPosition();
+            r_lock.unlock();
             return parentPos + getLocalPosition();
         }
 
@@ -96,8 +111,8 @@ public:
     inline Quaternion<F32> getOrientation() const {
          if(hasParentTransform()){
             ReadLock r_lock(_parentLock);
-	        Quaternion<F32> parentOrientation = _parentTransform->getOrientation();
-	        r_lock.unlock();
+            Quaternion<F32> parentOrientation = _parentTransform->getOrientation();
+            r_lock.unlock();
             return parentOrientation.inverse() * getLocalOrientation();
         }
 
@@ -117,11 +132,18 @@ public:
         return mat4<F32>(); //identity
     }
 
+    void setRotation(const Quaternion<F32>& quat) { 
+        WriteLock w_lock(_lock);
+        setDirty(); 
+        _orientation = quat;  
+        rebuildMatrix(); 
+    }
+
     ///Sets the transform to match a certain transformation matrix.
     ///Scale, orientation and translation are extracted from the specified matrix
     inline void setTransforms(const mat4<F32>& transform) {
         WriteLock w_lock(_lock);
-	    setDirty();
+        setDirty();
         Util::Mat4::decompose(transform, _scale, _orientation, _translation);
     }
 
@@ -137,7 +159,7 @@ public:
     inline void setParentTransform(Transform* transform) {
         WriteLock w_lock(_parentLock);
         _parentTransform = transform;
-	    _hasParentTransform = (transform != NULL);
+        _hasParentTransform = (transform != NULL);
     }
 
     inline void clone(Transform* const transform){
@@ -145,8 +167,8 @@ public:
         _scale.set(transform->getLocalScale());
         _translation.set(transform->getLocalPosition());
         _orientation.set(transform->getLocalOrientation());
-		setDirty();
-		w_lock.unlock();
+        setDirty();
+        w_lock.unlock();
         setParentTransform(transform->getParentTransform());
     }
     
@@ -158,19 +180,19 @@ public:
     bool compare(const Transform* const t);
     ///Call this when the physics actor is updated
     inline void cleanPhysics()  {_physicsDirty = false;}
-	///Reset transform to identity
-	       void identity();
+    ///Reset transform to identity
+           void identity();
 private:
     
     inline void clean()         {_dirty = false; _rebuildMatrix = false;}
     inline void setDirty()      {_dirty = true; _physicsDirty = true;}
     inline void rebuildMatrix() {_rebuildMatrix = true;}
-	inline bool hasParentTransform() const {
+    inline bool hasParentTransform() const {
 #ifdef _DEBUG
         //ReadLock r_lock(_parentLock);
-		assert(_hasParentTransform && _parentTransform != NULL || !_hasParentTransform && _parentTransform == NULL); 
+        assert(_hasParentTransform && _parentTransform != NULL || !_hasParentTransform && _parentTransform == NULL); 
 #endif
-		return _hasParentTransform;
+        return _hasParentTransform;
     }
 
 private:

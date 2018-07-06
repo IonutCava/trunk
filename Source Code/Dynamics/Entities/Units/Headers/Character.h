@@ -93,19 +93,21 @@ public:
       **/
     virtual void update(const U64 deltaTime);
     /// Set the curent position of this charater
-    virtual void      setPosition(const vec3<F32> newPosition);
+    virtual void      setPosition(const vec3<F32>& newPosition);
+    /// Update character velocity
+    virtual void      setVelocity(const vec3<F32>& newVelocity);
     /// The current position of this character
     virtual vec3<F32> getPosition() const; 
     /// The direction in which the character is currently looking.
-    virtual vec3<F32> getLookingDirection() const;
-
-    virtual vec3<F32> getRelativeLookingDirection()                           const { return _lookingDirection; }
-    virtual void      setRelativeLookingDirection(const vec3<F32>& direction)       { _lookingDirection = direction; }
-
+    virtual      vec3<F32>  getLookingDirection();
+    inline const vec3<F32>& getRelativeLookingDirection()                           const {return _lookingDirection;}
+    inline const void       setRelativeLookingDirection(const vec3<F32>& direction)       {_lookingDirection = direction;}
 private:
     CharacterType _type;
     vec3<F32> _lookingDirection;
     vec3<F32> _newPosition;
+    vec3<F32> _newVelocity;
     boost::atomic_bool _positionDirty;
+    boost::atomic_bool _velocityDirty;
 };
 #endif

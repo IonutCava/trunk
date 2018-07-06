@@ -176,7 +176,7 @@ public:
         return tmp;
     }
 
-    inline void slerp(const Quaternion& q, F32 t) {	slerp(this, q1, t); }
+    inline void slerp(const Quaternion& q, F32 t) {	slerp(*this, q, t); }
 
     void slerp(const Quaternion& q0,const Quaternion& q1,F32 t) {
         F32 k0,k1,cosomega = q0._x * q1._x + q0._y * q1._y + q0._z * q1._z + q0._w * q1._w;
@@ -388,4 +388,8 @@ private:
     mat4<T> _mat;
     bool _dirty;
 };
+
+/// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'(from Ogre3D!)
+Quaternion<F32> rotationFromVToU(const vec3<F32>& v, const vec3<F32>& u, const vec3<F32> fallbackAxis = vec3<F32>(0.0));
+
 #endif

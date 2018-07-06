@@ -11,7 +11,7 @@ namespace Navigation {
                                                             _activeAgents(0)
     {
         _crowd = dtAllocCrowd();
-		_targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
+        _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
         if(!_crowd){
             ERROR_FN(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
             assert(_crowd != NULL);
@@ -82,23 +82,24 @@ namespace Navigation {
 
     void DivideDtCrowd::update(const U64 deltaTime) {
         dtNavMesh* nav = _recast->getNavigationMesh();
-        dtCrowd* crowd = _crowd;
-        if (!nav || !crowd) return;
+ 
+        if (!nav || !_crowd) return;
         // TimeVal startTime = getPerfTime();
-        crowd->update(getUsToMs(deltaTime), &_agentDebug);
+        _crowd->update(getUsToSec(deltaTime), &_agentDebug);
         // TimeVal endTime = getPerfTime();
         // Update agent trails
-        for(I32 i = 0; i < crowd->getAgentCount(); ++i) {
-            const dtCrowdAgent* ag = crowd->getAgent(i);
+        for(I32 i = 0; i < _crowd->getAgentCount(); ++i) {
+            const dtCrowdAgent* ag = _crowd->getAgent(i);
+            
+            if (!ag->active)  continue;
+
             AgentTrail* trail = &_trails[i];
-            if (!ag->active)
-                continue;
             // Update agent movement trail.
             trail->htrail = (trail->htrail + 1) % AGENT_MAX_TRAIL;
             dtVcopy(&trail->trail[trail->htrail*3], ag->npos);
         }
         _agentDebug.vod->normalizeSamples();
-        //m_crowdSampleCount.addSample((float)crowd->getVelocitySampleCount());
+        //m_crowdSampleCount.addSample((float)_crowd->getVelocitySampleCount());
         //m_crowdTotalTime.addSample(getPerfDeltaTimeUsec(startTime, endTime) / 1000.0f);
     }
     
@@ -168,10 +169,8 @@ namespace Navigation {
     }
     
     vec3<F32> DivideDtCrowd::calcVel(const vec3<F32>& position, const vec3<F32>& target, D32 speed) {
-        const F32* pos = &position.x;
-        const F32* tgt = &target.x;
         F32 res[3];
-        calcVel(res, pos, tgt, speed);
+        calcVel(res, &position.x, &target.x, speed);
         return vec3<F32>(res);
     }
 
@@ -185,26 +184,26 @@ namespace Navigation {
     void DivideDtCrowd::setMoveTarget(const vec3<F32>& position, bool adjust) {
         // Find nearest point on navmesh and set move request to that location.
         const dtNavMeshQuery& navquery = _recast->getNavQuery();
-        dtCrowd* crowd = _crowd;
-        const dtQueryFilter* filter = crowd->getFilter();
-        const F32* ext = crowd->getQueryExtents();
+ 
+        const dtQueryFilter* filter = _crowd->getFilter();
+        const F32* ext = _crowd->getQueryExtents();
         const F32 *p = &position.x;
         navquery.findNearestPoly(p, ext, filter, &_targetRef, _targetPos);
         // Adjust target using tiny local search. (instead of recalculating full path)
         if (adjust) {
-            for (I32 i = 0; i < crowd->getAgentCount(); ++i) {
-                const dtCrowdAgent* ag = crowd->getAgent(i);
+            for (I32 i = 0; i < _crowd->getAgentCount(); ++i) {
+                const dtCrowdAgent* ag = _crowd->getAgent(i);
                 if (!ag->active) continue;
                 F32 vel[3];
                 calcVel(vel, ag->npos, p, ag->params.maxSpeed);
-                crowd->requestMoveVelocity(i, vel);
+                _crowd->requestMoveVelocity(i, vel);
             }
         } else {
             // Move target using path finder (recalculate a full new path)
-            for (I32 i = 0; i < crowd->getAgentCount(); ++i) {
-                const dtCrowdAgent* ag = crowd->getAgent(i);
+            for (I32 i = 0; i < _crowd->getAgentCount(); ++i) {
+                const dtCrowdAgent* ag = _crowd->getAgent(i);
                 if (!ag->active) continue;
-                crowd->requestMoveTarget(i, _targetRef, _targetPos);
+                _crowd->requestMoveTarget(i, _targetRef, _targetPos);
             }
         }
     }
@@ -242,11 +241,10 @@ namespace Navigation {
     }
 
     F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent, const F32 maxRange) {
-		if (!agent || !agent->ncorners || agent->ncorners < 0)
+        if (!agent || !agent->ncorners || agent->ncorners < 0)
             return maxRange;
 
-        const bool endOfPath = (agent->cornerFlags[agent->ncorners-1] & DT_STRAIGHTPATH_END) ? true : false;
-        if (endOfPath)
+        if (agent->cornerFlags[agent->ncorners-1] & DT_STRAIGHTPATH_END)
             return dtMin(dtVdist2D(agent->npos, &agent->cornerVerts[(agent->ncorners-1)*3]), maxRange);
 
         return maxRange;

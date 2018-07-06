@@ -23,6 +23,7 @@ void WarScene::preRender(){
 }
 
 void WarScene::processTasks(const U64 deltaTime){
+    if(!_sceneReady) return;
 
     static vec2<F32> _sunAngle = vec2<F32>(0.0f, RADIANS(45.0f));
     static bool direction = false;
@@ -126,10 +127,12 @@ void WarScene::processInput(const U64 deltaTime){
 }
 
 void WarScene::updateSceneState(const U64 deltaTime){
+    if(!_sceneReady) return;
+
     static U64 totalTime = 0;
     static bool navMeshCreated = false;
     totalTime += deltaTime;
-    if(getUsToSec(totalTime) > 20 && !navMeshCreated && false){
+    if(getUsToSec(totalTime) > 20 && !navMeshCreated){
         Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
         temp->setFileName(GET_ACTIVE_SCENE()->getName());
         bool loaded = temp->load(NULL);//<Start from root for now
@@ -150,26 +153,22 @@ void WarScene::updateSceneState(const U64 deltaTime){
         mat4<F32> finalTransform(fingerPosition * position);
         _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());*/
     }
-        
+    
+    if(!navMeshCreated)
+        return;
+
     Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
 
     for_each(AIEntity* character, _army1){
-
-         // Update character (position, animations, state)
-        character->update(deltaTime);
         // If destination reached: Set new random destination
-        if ( character->destinationReached() ) {
+        if (character->destinationReached()) {
             character->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getUnitRef()->getPosition());
         }
     }
-
     
     for_each(AIEntity* character, _army2){
-
-         // Update character (position, animations, state)
-        character->update(deltaTime);
         // If destination reached: Set new random destination
-        if ( character->destinationReached() ) {
+        if (character->destinationReached()) {
             character->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getUnitRef()->getPosition());
         }
     }
@@ -213,7 +212,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     //------------------------ The rest of the scene elements -----------------------------///
 //	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
 //	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
-
+    _sceneReady = true;
     return loadState;
 }
 

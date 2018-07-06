@@ -147,7 +147,7 @@ void PhysXSceneInterface::updateShape(PxShape* const shape, const PhysXActor& ac
     if(actor._type == physx::PxGeometryType::ePLANE)
         std::swap(pQ.x,pQ.z);
        
-    t->rotateQuaternion(Quaternion<F32>(pQ.x,pQ.y,pQ.z,pQ.w));
+    t->setRotation(Quaternion<F32>(pQ.x,pQ.y,pQ.z,pQ.w));
     t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
     // do not flag dirty for physics
     actor._transform->cleanPhysics();

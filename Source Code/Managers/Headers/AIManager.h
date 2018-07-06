@@ -30,7 +30,7 @@
 #include <boost/atomic.hpp>
 DEFINE_SINGLETON(AIManager)
     typedef Unordered_map<I64, AIEntity*> AIEntityMap;
-	typedef Unordered_map<U32, AICoordination*> AITeamMap;
+    typedef Unordered_map<U32, AICoordination*> AITeamMap;
 
 public:
     /// Destroy all entities
@@ -44,8 +44,8 @@ public:
     bool addEntity(AIEntity* entity);
     ///Remove an AI Entity from the manager
     void destroyEntity(U32 guid);
-	///Register an AI Team
-	inline void registerTeam(AICoordination* const team) {_aiTeams[team->getTeamID()] = team;}
+    ///Register an AI Team
+    inline void registerTeam(AICoordination* const team) {_aiTeams[team->getTeamID()] = team;}
     ///Add a nav mesh
     bool addNavMesh(Navigation::NavigationMesh* const navMesh);
     Navigation::NavigationMesh* getNavMesh(U16 index) const {return (index >= _navMeshes.size() ? NULL : _navMeshes[index]);}
@@ -68,12 +68,12 @@ private:
     void updateEntities(const U64 deltaTime);///< react
 
 private:
-    D32 _deltaTimeMS;
+    U64 _deltaTime,_currentTime, _previousTime;
     boost::atomic<bool> _navMeshDebugDraw;
     boost::atomic<bool> _pauseUpdate;
-	boost::atomic<bool> _updateNavMeshes;
+    boost::atomic<bool> _updateNavMeshes;
     AIEntityMap _aiEntities;
-	AITeamMap   _aiTeams;
+    AITeamMap   _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
     boost::function0<void> _sceneCallback;

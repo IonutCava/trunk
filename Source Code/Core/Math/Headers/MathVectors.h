@@ -65,7 +65,8 @@ template<class T>
 class mat3;
 template<class T>
 class mat4;
-
+template<class T>
+class Quaternion;
 /********************************************//**
 /* vec2 -  A 2-tuple used to represent things like a vector in 2D space, a point in 2D space or just 2 values linked togheter
 /**********************************************/
@@ -207,8 +208,8 @@ public:
     inline void reset()                 { this->x = this->y = this->z = 0; }
     /// return the vector's length
     inline T    length()          const {return square_root_tpl(lengthSquared()); }
-	/// return true if length is zero
-	inline bool isZeroLength()    const {return lengthSquared() < (EPSILON * EPSILON); }
+    /// return true if length is zero
+    inline bool isZeroLength()    const {return lengthSquared() < (EPSILON * EPSILON); }
     /// compare 2 vectors within the specified tolerance
     inline bool compare(const vec3 &v,F32 epsi=EPSILON) const;
     /// uniform vector: x = y = z

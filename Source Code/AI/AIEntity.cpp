@@ -10,7 +10,7 @@
 #include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
-static const D32 DESTINATION_RADIUS = 1.0 * 1.0;
+static const D32 DESTINATION_RADIUS = 1.5 * 1.5;
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  : GUIDWrapper(),
                                               _name(name),
@@ -43,9 +43,10 @@ AIEntity::~AIEntity()
 }
 
 void AIEntity::load(const vec3<F32>& position) {
-    if(!isAgentLoaded() &&_detourCrowd) {
+    if(!isAgentLoaded() && _detourCrowd) {
         _agentID = _detourCrowd->addAgent(position);
         _agent = _detourCrowd->getAgent(_agentID);
+        _destination = position;
     }
     setPosition(position);
 }
@@ -133,12 +134,12 @@ void AIEntity::update(const U64 deltaTime){
 void AIEntity::setTeam(AICoordination* const coordination) {
     ReadLock r_lock(_updateMutex);
     if(_coordination){
-        ///Remove from old team
+        //Remove from old team
         _coordination->removeTeamMember(this);
     }
-    ///Update our team
+    //Update our team
     _coordination = coordination;
-    ///Add ourself to the new team
+    //Add ourself to the new team
     _coordination->addTeamMember(this);
 
     resetCrowd(_coordination->getCrowdPtr());
@@ -154,9 +155,9 @@ void AIEntity::addUnitRef(NPC* const npc) {
 bool AIEntity::addFriend(AIEntity* const friendEntity){
     ReadLock r_lock(_updateMutex);
     AICoordination* friendTeam = friendEntity->getTeam();
-    ///If no team, check if our friend has a team and add ourself to it
+    //If no team, check if our friend has a team and add ourself to it
     if(!_coordination){
-        ///If our friend has a team ...
+        //If our friend has a team ...
         if(friendTeam){
             ///Create friendship
             friendTeam->addTeamMember(this);
@@ -165,9 +166,9 @@ bool AIEntity::addFriend(AIEntity* const friendEntity){
         }
         return false;
     }
-    ///If we have team, add friend to our team
+    //If we have team, add friend to our team
     _coordination->addTeamMember(friendEntity);
-    ///If our friend isn't on our team, add him
+    //If our friend isn't on our team, add him
     if(!friendTeam){
         friendEntity->setTeam(_coordination);
     }
@@ -216,11 +217,15 @@ void AIEntity::setPosition(const vec3<F32> position) {
 }
 
 void AIEntity::updatePosition(const U64 deltaTime){
-    if(isAgentLoaded() && getAgent()->active)
-        _currentPosition = getAgent()->npos;
+    if(isAgentLoaded() && getAgent()->active){
+        _currentPosition.setV(getAgent()->npos);
+        _currentVelocity.setV(getAgent()->nvel);
+    }
     
-    if(_unitRef)          
+    if(_unitRef){          
         _unitRef->setPosition(_currentPosition);
+        _unitRef->setVelocity(_currentVelocity);
+    }
 }
 
 void AIEntity::updateDestination(const vec3<F32>& destination, bool updatePreviousPath ){
@@ -237,11 +242,15 @@ void AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     _stopped = false;
 }
 
+vec3<F32> AIEntity::getPosition() const {
+    return _currentPosition;
+}
+
 vec3<F32> AIEntity::getDestination() const {
     if (isAgentLoaded())
         return _destination;
 
-    return vec3<F32>();     // TODO this is not ideal
+    return getPosition();     // TODO this is not ideal
 }
 
 bool AIEntity::destinationReached(){

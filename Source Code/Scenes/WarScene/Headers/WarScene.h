@@ -40,7 +40,8 @@ public:
         _bobNodeBody(NULL),
         _lampLightNode(NULL),
         _lampTransform(NULL),
-        _lampTransformNode(NULL)
+        _lampTransformNode(NULL),
+        _sceneReady(false)
 	{
 		_scorTeam1 = 0;
 		_scorTeam2 = 0;
@@ -71,7 +72,8 @@ private:
 	vec4<F32> _sunvector;
 	SceneGraphNode* _groundPlaceholder;
 
-private: //Joc
+private: //Game
+    bool _sceneReady;
 	I8 _scorTeam1;
 	I8 _scorTeam2;
 	///AIEntities are the "processors" behing the NPC's
