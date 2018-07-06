@@ -221,6 +221,19 @@ void GFXDevice::submitRenderCommand(
     }
 }
 
+void GFXDevice::processNodeRenderData(
+    RenderingComponent::NodeRenderData& data) {
+    for (RenderingComponent::ShaderBufferList::value_type& it :
+         data._shaderBuffers) {
+        if (it.second) {
+            it.second->Bind(it.first);
+        }
+    }
+
+    makeTexturesResident(data._textureData);
+    submitRenderCommand(data._drawCommands);
+}
+
 /// Generate a cube texture and store it in the provided framebuffer
 void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
                                 const DELEGATE_CBK<>& renderFunction,
@@ -716,43 +729,25 @@ void GFXDevice::buildDrawCommands(
     if (visibleNodes.empty()) {
         return;
     }
-
+        
     // Reset previously generated commands
     _nonBatchedCommands.reserve(visibleNodes.size() + 1);
     _nonBatchedCommands.resize(0);
     _nonBatchedCommands.push_back(_defaultDrawCmd);
+        
+    U32 drawID = 0;
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     for (SceneGraphNode* node : visibleNodes) {
-        const vectorImpl<GenericDrawCommand>& nodeDrawCommands =
+        vectorImpl<GenericDrawCommand>& nodeDrawCommands =
             node->getComponent<RenderingComponent>()->getDrawCommands(
-                static_cast<U32>(_nonBatchedCommands.size()), sceneRenderState,
-                currentStage);
-        // ToDo: optimise this? -Ionut
-        for (const GenericDrawCommand& cmd : nodeDrawCommands) {
+                sceneRenderState, currentStage);
+        drawID += 1;
+        for (GenericDrawCommand& cmd : nodeDrawCommands) {
+            cmd.drawID(drawID);
             _nonBatchedCommands.push_back(cmd);
         }
     }
-
-    // Loop over the command list and find all batchable commands
-    vectorAlg::vecSize batchedCmdIDX = 0;
-    vectorAlg::vecSize cmdCount = _nonBatchedCommands.size();
-    for (vectorAlg::vecSize i = 1; i < cmdCount; i++) {
-        // Try and append the current command in the latest available batch
-        if (!batchCommands(_nonBatchedCommands[batchedCmdIDX],
-                           _nonBatchedCommands[i])) {
-            // If that fails, move to the index to the next unbatched command
-            batchedCmdIDX = i;
-        }
-    }
-
-    // Batched commands have a zero-draw count. Remove them from the list
-    /*_nonBatchedCommands.erase(
-        std::remove_if(std::begin(_nonBatchedCommands),
-                       std::end(_nonBatchedCommands),
-                       [](GenericDrawCommand& cmd)
-                           -> bool { return cmd.drawCount() == 0; }),
-        std::end(_nonBatchedCommands));*/
 
     // Extract the specific rendering commands from the draw commands
     // Rendering commands are stored in GPU memory. Draw commands are not.
@@ -761,6 +756,7 @@ void GFXDevice::buildDrawCommands(
     for (const GenericDrawCommand& cmd : _nonBatchedCommands) {
         _drawCommandsCache.push_back(cmd.cmd());
     }
+
     // Upload the rendering commands to the GPU memory
     uploadDrawCommands(_drawCommandsCache);
     

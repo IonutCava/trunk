@@ -91,7 +91,6 @@ class WaterPlane : public SceneNode, public Reflector {
                          SceneRenderState& sceneRenderState,
                          vectorImpl<GenericDrawCommand>& drawCommandsOut);
 
-    void postDraw(SceneGraphNode& sgn, const RenderStage& currentStage);
     void postLoad(SceneGraphNode& sgn);
     void previewReflection();
 

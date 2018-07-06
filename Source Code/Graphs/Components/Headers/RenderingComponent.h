@@ -43,6 +43,13 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderingComponent : public SGNComponent {
    public:
+    typedef vectorImpl<std::pair<ShaderBufferLocation, ShaderBuffer*>>  ShaderBufferList;
+    struct NodeRenderData {
+        vectorImpl<GenericDrawCommand> _drawCommands;
+        TextureDataContainer _textureData;
+        ShaderBufferList  _shaderBuffers;
+    };
+
     RenderingComponent(Material* const materialInstance,
                        SceneGraphNode& parentSGN);
     ~RenderingComponent();
@@ -88,12 +95,14 @@ class RenderingComponent : public SGNComponent {
 
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
-    const vectorImpl<GenericDrawCommand>& getDrawCommands(
-        U32 commandOffset,
+    vectorImpl<GenericDrawCommand>& getDrawCommands(
         SceneRenderState& sceneRenderState,
         RenderStage renderStage);
 
     void makeTextureResident(const Texture& texture, U8 slot);
+
+    void registerShaderBuffer(ShaderBufferLocation slot,
+                              ShaderBuffer* shaderBuffer);
 
 #ifdef _DEBUG
     void drawDebugAxis();
@@ -114,9 +123,8 @@ class RenderingComponent : public SGNComponent {
     bool _renderSkeleton;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
-    vectorImpl<GenericDrawCommand> _drawCommandsCache;
-    TextureDataContainer _textureData;
 
+    NodeRenderData _renderData;
 #ifdef _DEBUG
     vectorImpl<Line> _axisLines;
     IMPrimitive* _axisGizmo;

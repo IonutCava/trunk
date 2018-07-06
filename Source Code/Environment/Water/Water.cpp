@@ -159,9 +159,6 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, const RenderStage& currentStage) {
     return true;
 }
 
-void WaterPlane::postDraw(SceneGraphNode& sgn,
-                          const RenderStage& currentStage) {}
-
 void WaterPlane::getDrawCommands(
     SceneGraphNode& sgn, const RenderStage& currentRenderStage,
     SceneRenderState& sceneRenderState,

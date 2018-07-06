@@ -109,11 +109,6 @@ class SceneNode : public Resource {
     inline U8 getLODcount() const { return _LODcount; }
 
    protected:
-    /// Perform any post-draw operations (this is after releasing object and
-    /// shadow states)
-    virtual void postDraw(SceneGraphNode& sgn,
-                          const RenderStage& currentStage) { /*Nothing yet*/
-    }
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState);
@@ -136,16 +131,6 @@ class SceneNode : public Resource {
     SceneNodeType _type;
     bool _hasSGNParent;
     Material* _materialTemplate;
-};
-
-class SceneNodeRenderAttorney {
-   private:
-    static void postDraw(SceneNode& node, SceneGraphNode& sgn,
-                         const RenderStage& currentStage) {
-        node.postDraw(sgn, currentStage);
-    }
-
-    friend class RenderingComponent;
 };
 
 class SceneNodeGraphAttorney {

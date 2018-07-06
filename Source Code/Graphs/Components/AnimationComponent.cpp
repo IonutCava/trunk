@@ -28,6 +28,10 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
     _boneTransformBuffer[_readBuffer] = GFX_DEVICE.newSB("dvd_BoneTransforms");
     _boneTransformBuffer[_readBuffer]->Create((U32)_animator->GetBoneCount(),
                                               sizeof(mat4<F32>));
+
+    parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
+        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
+        _boneTransformBuffer[_readBuffer]);
 }
 
 AnimationComponent::~AnimationComponent() {
@@ -54,7 +58,13 @@ void AnimationComponent::update(const U64 deltaTime) {
             .GetFrameIndexAt(_currentTimeStamp);
 
     Object3D* node = _parentSGN.getNode<Object3D>();
-    node->updateAnimations(_parentSGN);
+    if (node->updateAnimations(_parentSGN)) {
+        vectorImpl<mat4<F32>>& animationTransforms =
+            _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
+        _boneTransformBuffer[_writeBuffer]->UpdateData(
+            0, animationTransforms.size() * sizeof(mat4<F32>),
+            animationTransforms.data());
+    }
 }
 
 void AnimationComponent::resetTimers() {
@@ -122,13 +132,9 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
 
     _skeletonAvailable = false;
 
-    vectorImpl<mat4<F32>>& animationTransforms =
-        _animator->GetTransforms(_currentAnimIndex, _currentTimeStamp);
-    _boneTransformBuffer[_writeBuffer]->UpdateData(
-        0, animationTransforms.size() * sizeof(mat4<F32>),
-        animationTransforms.data());
-    _boneTransformBuffer[_readBuffer]->Bind(
-        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS);
+    _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
+        ShaderBufferLocation::SHADER_BUFFER_BONE_TRANSFORMS,
+        _boneTransformBuffer[_readBuffer]);
 
     if (!GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE) ||
         !_playAnimations || _currentTimeStamp < 0.0) {
@@ -158,7 +164,8 @@ U32 AnimationComponent::boneCount() const {
 }
 
 const vectorImpl<mat4<F32>>& AnimationComponent::transformsByIndex(
-    U32 animationID, U32 index) const {
+    U32 animationID,
+    U32 index) const {
     return _animator->GetTransformsByIndex(animationID, index);
 }
 
@@ -169,7 +176,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
 
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
-         !bitCompare(node->getFlagMask(), 
+         !bitCompare(node->getFlagMask(),
                      to_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))) {
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
@@ -178,7 +185,8 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
 }
 
 const mat4<F32>& AnimationComponent::currentBoneTransform(
-    U32 animationID, const stringImpl& name) {
+    U32 animationID,
+    const stringImpl& name) {
     assert(_animator != nullptr);
     I32 boneIndex = _animator->GetBoneIndex(name);
     if (boneIndex == -1) {

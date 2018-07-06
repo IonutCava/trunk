@@ -17,16 +17,14 @@ RenderPass::~RenderPass() {}
 
 void RenderPass::render(const SceneRenderState& renderState,
                         const SceneGraph& activeSceneGraph) {
-    const RenderStage& currentStage = GFX_DEVICE.getRenderStage();
-    RenderQueue& renderQueue = RenderQueue::getInstance();
+    RenderStage currentStage = GFX_DEVICE.getRenderStage();
+    
     bool isDisplayStage = GFX_DEVICE.isCurrentRenderStage(RenderStage::DISPLAY_STAGE);
-    // Sort the render queue by the specified key
-    renderQueue.sort(currentStage);
 
+    RenderQueue& renderQueue = RenderQueue::getInstance();
     if (isDisplayStage) {
         _lastTotalBinSize = renderQueue.getRenderQueueStackSize();
     }
-
     U16 renderBinCount = renderQueue.getRenderQueueBinSize();
 
     // Draw the entire queue;

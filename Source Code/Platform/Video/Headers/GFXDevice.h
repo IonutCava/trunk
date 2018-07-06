@@ -85,6 +85,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         COUNT
     };
 
+    enum class RenderTarget : U32 {
+        RENDER_TARGET_SCREEN = 0,
+        RENDER_TARGET_ANAGLYPH = 1,
+        RENDER_TARGET_DEPTH = 2,
+        COUNT
+    };
+
     struct GPUBlock {
         mat4<F32> _ProjectionMatrix;
         mat4<F32> _ViewMatrix;
@@ -93,13 +100,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         vec4<F32> _ViewPort;
         vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
         vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
-    };
-
-    enum class RenderTarget : U32 {
-        RENDER_TARGET_SCREEN = 0,
-        RENDER_TARGET_ANAGLYPH = 1,
-        RENDER_TARGET_DEPTH = 2,
-        COUNT
     };
 
   public:  // GPU interface
@@ -152,6 +152,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(const GenericDrawCommand& cmd);
     void submitRenderCommand(const vectorImpl<GenericDrawCommand>& cmds);
+    void processNodeRenderData(RenderingComponent::NodeRenderData& data);
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc

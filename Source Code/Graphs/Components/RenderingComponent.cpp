@@ -19,9 +19,8 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderWireframe(false),
       _renderBoundingBox(false),
       _renderSkeleton(false),
-      _materialInstance(materialInstance)
-{
-      _textureData.reserve(ParamHandler::getInstance().getParam<I32>(
+      _materialInstance(materialInstance) {
+    _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
         "rendering.maxTextureSlots", 16));
 #ifdef _DEBUG
     // Red X-axis
@@ -73,18 +72,17 @@ void RenderingComponent::update(const U64 deltaTime) {
 }
 
 void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
-
     TextureDataContainer::iterator it;
-    it = std::find_if(std::begin(_textureData),
-                      std::end(_textureData),
-                      [&slot](const std::pair<U8, TextureData>& data)
-                          -> bool { return data.first == slot; });
+    it = std::find_if(std::begin(_renderData._textureData),
+                      std::end(_renderData._textureData),
+                      [&slot](const TextureData& data)
+                          -> bool { return data.getHandleLow() == slot; });
 
     TextureData data = texture.getData();
     data.setHandleLow(static_cast<U32>(slot));
 
-    if (it == std::end(_textureData)) {
-        _textureData.push_back(data);
+    if (it == std::end(_renderData._textureData)) {
+        _renderData._textureData.push_back(data);
     } else {
         *it = data;
     }
@@ -93,8 +91,8 @@ void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
 bool RenderingComponent::onDraw(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
-    
-    _textureData.resize(0);
+
+    _renderData._textureData.resize(0);
     Material* mat = getMaterialInstance();
     if (mat) {
         if (!mat->computeShader(currentStage, false,
@@ -108,7 +106,7 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
             return false;
         }
 
-        mat->getTextureData(_textureData);
+        mat->getTextureData(_renderData._textureData);
     }
 
     if (!_parentSGN.getNode()->onDraw(_parentSGN, currentStage)) {
@@ -190,8 +188,6 @@ bool RenderingComponent::receivesShadows() const {
 void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
                                   RenderStage renderStage) {
     SceneNode* const node = _parentSGN.getNode();
-    // Perform any post draw operations regardless of the draw state
-    SceneNodeRenderAttorney::postDraw(*node, _parentSGN, renderStage);
 
 #ifdef _DEBUG
     if (sceneRenderState.gizmoState() ==
@@ -226,18 +222,25 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
 
 void RenderingComponent::render(const SceneRenderState& sceneRenderState,
                                 const RenderStage& currentRenderStage) {
-    // Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
-    // Check if we should draw the node. (only after onDraw as it may contain
-    // exclusion mask changes before draw)
-    if (!_parentSGN.prepareDraw(sceneRenderState, currentRenderStage)) {
-        // If the SGN isn't ready for rendering, skip it this frame
-        return;
-    }
-
-    GFX_DEVICE.makeTexturesResident(_textureData);
-    GFX_DEVICE.submitRenderCommand(_drawCommandsCache);
-
+    GFX_DEVICE.processNodeRenderData(_renderData);
     postDraw(sceneRenderState, currentRenderStage);
+}
+
+void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
+                                              ShaderBuffer* shaderBuffer) {
+    ShaderBufferList::iterator it;
+    it = std::find_if(
+        std::begin(_renderData._shaderBuffers),
+        std::end(_renderData._shaderBuffers),
+        [&slot](const std::pair<ShaderBufferLocation, ShaderBuffer*>& binding)
+            -> bool { return binding.first == slot; });
+
+    if (it == std::end(_renderData._shaderBuffers)) {
+        _renderData._shaderBuffers.push_back(
+            std::make_pair(slot, shaderBuffer));
+    } else {
+        it->second = shaderBuffer;
+    }
 }
 
 U8 RenderingComponent::lodLevel() const {
@@ -284,17 +287,21 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                                      : RenderStage::FINAL_STAGE));
 }
 
-const vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
-    U32 commandOffset,
+vectorImpl<GenericDrawCommand>& RenderingComponent::getDrawCommands(
     SceneRenderState& sceneRenderState,
     RenderStage renderStage) {
-    _drawCommandsCache.clear();
-    _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
-                                          sceneRenderState, _drawCommandsCache);
-    for (GenericDrawCommand& cmd : _drawCommandsCache) {
-        cmd.drawID(commandOffset);
+    _renderData._drawCommands.clear();
+    // Call any pre-draw operations on the SceneGraphNode (e.g. tick animations)
+    // Check if we should draw the node. (only after onDraw as it may contain
+    // exclusion mask changes before draw)
+    // If the SGN isn't ready for rendering, skip it this frame
+    if (_parentSGN.prepareDraw(sceneRenderState, renderStage)) {
+        _parentSGN.getNode()->getDrawCommands(_parentSGN, renderStage,
+                                              sceneRenderState,
+                                              _renderData._drawCommands);
     }
-    return _drawCommandsCache;
+
+    return _renderData._drawCommands;
 }
 
 void RenderingComponent::inViewCallback() {
