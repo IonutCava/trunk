@@ -11,6 +11,11 @@
 
 namespace Divide {
 
+namespace {
+    U32 _readOffset = 0;
+    U32 _writeOffset = 2;
+}
+
 ParticleEmitter::ParticleEmitter()
     : SceneNode(SceneNodeType::TYPE_PARTICLE_EMITTER),
       _drawImpostor(false),

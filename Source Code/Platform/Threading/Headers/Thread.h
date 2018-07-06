@@ -32,12 +32,10 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#include <exception>
-#include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/signals2.hpp>
 #include <Threadpool/include/threadpool.hpp>
 
+#include <exception>
 #include <thread>
 
 typedef boost::threadpool::prio_pool ThreadPool;

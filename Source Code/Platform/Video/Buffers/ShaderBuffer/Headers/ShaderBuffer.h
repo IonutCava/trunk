@@ -38,48 +38,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class ShaderProgram;
-class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
+class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public GUIDWrapper {
    public:
-    ShaderBuffer(const stringImpl& bufferName, bool unbound,
-                 bool persistentMapped)
-        : GUIDWrapper(),
-          _bufferSize(0),
-          _primitiveSize(0),
-          _sizeFactor(0),
-          _primitiveCount(0),
-          _unbound(unbound),
-          _persistentMapped(persistentMapped &&
-                            !Config::Profile::DISABLE_PERSISTENT_BUFFER),
-          _bufferName(bufferName)
-    {
-    }
+    explicit ShaderBuffer(const stringImpl& bufferName, const U32 sizeFactor, bool unbound, bool persistentMapped);
 
-    virtual ~ShaderBuffer()
-    {
-    }
+    virtual ~ShaderBuffer();
 
     /// Create a new buffer to hold our shader data
-    virtual void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize) {
-        _sizeFactor = sizeFactor;
-        _primitiveCount = primitiveCount;
-        _primitiveSize = primitiveSize;
-        _bufferSize = primitiveSize * primitiveCount * sizeFactor;
-        DIVIDE_ASSERT(_bufferSize > 0, "ShaderBuffer::Create error: Invalid buffer size!");
-    }
-
+    virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
     virtual void Destroy() = 0;
-    virtual void DiscardAllData() const = 0;
-    virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size) const = 0;
+
     virtual void UpdateData(ptrdiff_t offsetElementCount,
                             ptrdiff_t rangeElementCount,
                             const bufferPtr data) const = 0;
-    inline void SetData(const bufferPtr data) {
-        UpdateData(0, _primitiveCount * _sizeFactor, data);
-    }
+
+    virtual void SetData(const bufferPtr data);
 
     virtual bool BindRange(U32 bindIndex,
                            U32 offsetElementCount,
                            U32 rangeElementCount) = 0;
+
+    virtual bool Bind(U32 bindIndex) = 0;
+
+    inline bool Bind(ShaderBufferLocation bindIndex) {
+        return Bind(to_uint(bindIndex));
+    }
 
     inline bool BindRange(ShaderBufferLocation bindIndex,
                           U32 offsetElementCount,
@@ -90,52 +73,16 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public GUIDWrapper {
 
     }
 
-    virtual bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,
-                                U32 rangeElementCount) = 0;
-
-    inline bool CheckBindRange(ShaderBufferLocation bindIndex,
-                               U32 offsetElementCount, U32 rangeElementCount) {
-        return CheckBindRange(to_uint(bindIndex), offsetElementCount,
-                              rangeElementCount);
-    }
-
-    virtual bool Bind(U32 bindIndex) = 0;
-
-    virtual bool CheckBind(U32 bindIndex) = 0;
-
-    inline bool Bind(ShaderBufferLocation bindIndex) {
-        return Bind(to_uint(bindIndex));
-    }
-    inline bool CheckBind(ShaderBufferLocation bindIndex) {
-        return CheckBind(to_uint(bindIndex));
-    }
-    inline void PrintInfo(const ShaderProgram *shaderProgram,
-                          ShaderBufferLocation bindIndex) {
-        PrintInfo(shaderProgram, to_uint(bindIndex));
-    }
-
-    virtual void PrintInfo(const ShaderProgram *shaderProgram,
-                           U32 bindIndex) = 0;
-
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
-    inline U32 getSizeFactor() const { return _sizeFactor;  }
-
-    static I32 getTargetDataAlignment(bool unbound = false) {
-        return _targetDataAlignment[unbound ? 0 : 1];
-    }
 
    protected:
-    static I32 _targetDataAlignment[2];
-
     size_t _bufferSize;
     size_t _primitiveSize;
-    U32 _sizeFactor;
     U32 _primitiveCount;
+
     const bool _unbound;
     const bool _persistentMapped;
-
-    stringImpl _bufferName;
 };
 
 };  // namespace Divide

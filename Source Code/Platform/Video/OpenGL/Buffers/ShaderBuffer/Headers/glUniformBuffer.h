@@ -42,18 +42,15 @@ namespace Divide {
 class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
    public:
-     glUniformBuffer(const stringImpl &bufferName, bool unbound,
+     glUniformBuffer(const stringImpl &bufferName,
+                     const U32 sizeFactor, 
+                     bool unbound,
                      bool persistentMapped);
     ~glUniformBuffer();
 
     void Destroy();
     /// Create a new buffer object to hold our uniform shader data
-    void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize);
-
-    void DiscardAllData() const;
-
-    void DiscardSubData(ptrdiff_t offsetElementCount,
-                        ptrdiff_t rangeElementCount) const;
+    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
 
     void UpdateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
@@ -63,20 +60,15 @@ class glUniformBuffer final : public ShaderBuffer {
                    U32 offsetElementCount,
                    U32 rangeElementCount);
 
-    bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,
-                        U32 rangeElementCount);
-
     bool Bind(U32 bindIndex);
 
-    bool CheckBind(U32 bindIndex);
-
-    void PrintInfo(const ShaderProgram *shaderProgram,
-                   U32 bindIndex);
 
    protected:
-    static vec4<U32> _currentBindConfig;
+    void PrintInfo(const ShaderProgram *shaderProgram, U32 bindIndex);
 
+   protected:
     GLuint _UBOid;
+    GLsizeiptr _alignmentPadding;
     bufferPtr _mappedBuffer;
 
     const GLenum _target;

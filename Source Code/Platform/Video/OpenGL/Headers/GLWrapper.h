@@ -118,7 +118,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
     /// unbound is false
     /// or a 'Shader Storage Block Object' otherwise
-    ShaderBuffer* newSB(const stringImpl& bufferName, const bool unbound = false,
+    ShaderBuffer* newSB(const stringImpl& bufferName, 
+                        const U32 sizeFactor = 1,
+                        const bool unbound = false,
                         const bool persistentMapped = true) const override;
     /// Create and return a new texture array (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!

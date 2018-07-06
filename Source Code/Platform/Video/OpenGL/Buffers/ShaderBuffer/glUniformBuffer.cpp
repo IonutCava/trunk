@@ -9,25 +9,50 @@
 
 namespace Divide {
 
-vec4<U32> glUniformBuffer::_currentBindConfig(Config::PRIMITIVE_RESTART_INDEX_L);
+namespace {
+    I32 g_targetDataAlignment[2] = {-1, -1};
+    vec4<U32> g_currentBindConfig(Config::PRIMITIVE_RESTART_INDEX_L);
 
-glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
+    I32 getTargetDataAlignment(bool unbound = false) {
+        return g_targetDataAlignment[unbound ? 0 : 1];
+    }
+
+    bool setIfDifferentBindRange(U32 UBOid,
+                                 U32 bindIndex,
+                                 U32 offsetElementCount,
+                                 U32 rangeElementCount) {
+        if (g_currentBindConfig.x != UBOid ||
+            g_currentBindConfig.y != bindIndex ||
+            g_currentBindConfig.z != offsetElementCount ||
+            g_currentBindConfig.w != rangeElementCount) {
+            g_currentBindConfig.set(UBOid, bindIndex, offsetElementCount, rangeElementCount);
+            return true;
+        }
+
+        return false;
+    }
+};
+
+glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
+                                 const U32 sizeFactor,
+                                 bool unbound,
                                  bool persistentMapped)
-    : ShaderBuffer(bufferName, unbound, persistentMapped),
+    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped),
       _UBOid(0),
       _mappedBuffer(nullptr),
+      _alignmentPadding(0),
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER),
       _lockManager(_persistentMapped
                        ? std::make_unique<glBufferLockManager>(true)
                        : nullptr)
 
 {
-    if (ShaderBuffer::_targetDataAlignment[0] == -1) {
-        ShaderBuffer::_targetDataAlignment[0] = 
+    if (g_targetDataAlignment[0] == -1) {
+        g_targetDataAlignment[0] = 
             ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);
     }
-    if (ShaderBuffer::_targetDataAlignment[1] == -1) {
-        ShaderBuffer::_targetDataAlignment[1] = 
+    if (g_targetDataAlignment[1] == -1) {
+        g_targetDataAlignment[1] = 
             ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
     }
 }
@@ -40,70 +65,41 @@ glUniformBuffer::~glUniformBuffer()
 void glUniformBuffer::Destroy() {
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(0, _bufferSize);
-        DiscardAllData();
+    } else {
+        glInvalidateBufferData(_UBOid);
     }
     GLUtil::freeBuffer(_UBOid, _mappedBuffer);
 }
 
-void glUniformBuffer::Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize) {
+void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     DIVIDE_ASSERT(
         _UBOid == 0,
         "glUniformBuffer::Create error: Tried to double create current UBO");
 
-    ShaderBuffer::Create(primitiveCount, sizeFactor, primitiveSize);
+    ShaderBuffer::Create(primitiveCount, primitiveSize);
 
-    I32 remainder = _bufferSize % ShaderBuffer::getTargetDataAlignment(_unbound);
-    STUBBED("THIS IS WRONG! Fix it! -Ionut");
-    if (remainder > 0) {
-        _primitiveCount += to_uint(
-            (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder) /
-            _primitiveSize);
-        _bufferSize = _primitiveCount * _primitiveSize * _sizeFactor;
-    }
+    _alignmentPadding = getTargetDataAlignment(_unbound);
+
+    _alignmentPadding = ((_bufferSize + (_alignmentPadding - 1)) & ~(_alignmentPadding - 1)) - _bufferSize;
 
     if (_persistentMapped) {
-        BufferStorageMask storage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-                                   GL_MAP_COHERENT_BIT;
-        BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
-                                  GL_MAP_COHERENT_BIT;
-
-        _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(
-            _bufferSize, storage, access, _UBOid);
+        _mappedBuffer = 
+            GLUtil::createAndAllocPersistentBuffer((_bufferSize + _alignmentPadding) * queueLength(),
+                                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+                                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+                                                   _UBOid);
 
         DIVIDE_ASSERT(_mappedBuffer != nullptr,
                         "glUniformBuffer::Create error: "
                         "Can't mapped persistent buffer!");
         
     } else {
-        GLUtil::createAndAllocBuffer(_bufferSize, GL_DYNAMIC_DRAW, _UBOid);
+        GLUtil::createAndAllocBuffer((_bufferSize + _alignmentPadding) * queueLength(), 
+                                     GL_DYNAMIC_DRAW,
+                                     _UBOid);
     }
 }
-
-void glUniformBuffer::DiscardAllData() const {
-    if (_persistentMapped) {
-        _lockManager->WaitForLockedRange();
-    } else {
-        glInvalidateBufferData(_UBOid);
-    }
-}
-
-void glUniformBuffer::DiscardSubData(ptrdiff_t offsetElementCount,
-                                     ptrdiff_t rangeElementCount) const {
-    DIVIDE_ASSERT((offsetElementCount + rangeElementCount) * _primitiveSize <=
-                      _bufferSize,
-                  "glUniformBuffer error: DiscardSubData was called with an "
-                  "invalid range (buffer overflow)!");
-
-    if (_persistentMapped) {
-        _lockManager->WaitForLockedRange();
-    } else {
-        glInvalidateBufferSubData(_UBOid, offsetElementCount * _primitiveSize,
-                                  rangeElementCount * _primitiveSize);
-    }
-}
-
-void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount,
-                                 const bufferPtr data) const {
+void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data) const {
 
     if (rangeElementCount == 0) {
         return;
@@ -113,21 +109,14 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
                   "glUniformBuffer::UpdateData error: was called for an "
                   "unmapped buffer!");
 
-    //DiscardSubData(offsetElementCount, rangeElementCount);
-
     GLintptr range = rangeElementCount * _primitiveSize;
     GLintptr offset = offsetElementCount * _primitiveSize;
-
-    if (offset > 0) {
-        I32 remainder = offset % ShaderBuffer::getTargetDataAlignment(_unbound);
-
-        offset = remainder ? offset + (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder)
-                           : offset;
-    }
 
     DIVIDE_ASSERT(offset + range <= (GLsizeiptr)_bufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
+
+    offset += _queueWriteIndex * (_bufferSize + _alignmentPadding);
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range);
@@ -135,12 +124,14 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
         memcpy(dst, data, range);
         _lockManager->LockRange(offset, range);
     } else {
+        /*
+        glInvalidateBufferSubData(_UBOid, offset, range);
+        */
         glNamedBufferSubData(_UBOid, offset, range, data);
     }
 }
 
-bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
-                                U32 rangeElementCount) {
+bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     DIVIDE_ASSERT(_UBOid != 0,
                   "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
@@ -148,31 +139,17 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
         return false;
     }
 
-    if (CheckBindRange(bindIndex, offsetElementCount, rangeElementCount)) {
-        _currentBindConfig.set(bindIndex, _UBOid, offsetElementCount, rangeElementCount);
-        size_t range = _primitiveSize * rangeElementCount;
-        I32 remainder = range % ShaderBuffer::getTargetDataAlignment(_unbound);
-
-        range = remainder ? range + (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder)
-                          : range;
-
-        GLintptr offset = offsetElementCount * _primitiveSize;
-
-        if (offset > 0) {
-            remainder = offset % ShaderBuffer::getTargetDataAlignment(_unbound);
-
-            offset = remainder ? offset + (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder)
-                : offset;
-        }
+    if (setIfDifferentBindRange(_UBOid, bindIndex, offsetElementCount, rangeElementCount)) {
+        size_t range = rangeElementCount * _primitiveSize;
+        size_t offset = offsetElementCount * _primitiveSize;
+        offset += _queueReadIndex * (_bufferSize + _alignmentPadding);
 
         if (_persistentMapped) {
             _lockManager->WaitForLockedRange(offset, range);
-        }
-
-        glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
-
-        if (_persistentMapped) {
+                glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
             _lockManager->LockRange(offset, range);
+        } else {
+            glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
         }
 
         return true;
@@ -181,18 +158,8 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
     return false;
 }
 
-bool glUniformBuffer::CheckBindRange(U32 bindIndex, U32 offsetElementCount,
-                                     U32 rangeElementCount) {
-    return _currentBindConfig !=
-           vec4<U32>(bindIndex, _UBOid, offsetElementCount, rangeElementCount);
-}
-
-bool glUniformBuffer::CheckBind(U32 bindIndex) {
-    return CheckBindRange(bindIndex, 0, _primitiveCount * _sizeFactor);
-}
-
 bool glUniformBuffer::Bind(U32 bindIndex) {
-    return BindRange(bindIndex, 0, _primitiveCount * _sizeFactor);
+    return BindRange(bindIndex, 0, _primitiveCount);
 }
 
 void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,

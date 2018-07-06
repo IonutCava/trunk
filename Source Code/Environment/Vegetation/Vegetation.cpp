@@ -47,7 +47,6 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _grassGPUBuffer[1] = GFX_DEVICE.newGVD(false);
     _treeGPUBuffer[0] = GFX_DEVICE.newGVD(false);
     _treeGPUBuffer[1] = GFX_DEVICE.newGVD(false);
-    _grassMatrices = GFX_DEVICE.newSB("dvd_transformBlock", true);
 
     _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
     _renderDrawCommand =
@@ -82,7 +81,6 @@ Vegetation::~Vegetation()
     MemoryManager::DELETE(_grassGPUBuffer[1]);
     MemoryManager::DELETE(_treeGPUBuffer[0]);
     MemoryManager::DELETE(_treeGPUBuffer[1]);
-    MemoryManager::DELETE(_grassMatrices);
     Console::printfn(Locale::get("UNLOAD_VEGETATION_END"));
 }
 
@@ -276,15 +274,6 @@ void Vegetation::uploadGrassData() {
             .set(to_uint(BufferUsage::UnculledSizeBuffer), instanceDiv, 1, false, 0, 0,
                  GFXDataFormat::FLOAT_32);
 
-        /*
-        _grassMatrices->Create(false, false, (I32)_grassMatricesTemp.size(),
-        sizeof(_grassMatricesTemp[0]));
-        _grassMatrices->UpdateData(0, _grassMatricesTemp.size(),
-        &_grassMatricesTemp[0]);
-        _grassMatrices->bind();
-        _grassMatricesTemp.clear();
-        */
-
         buffer->toggleDoubleBufferedQueries(false);
     }
 
@@ -453,7 +442,6 @@ void Vegetation::generateGrass() {
     Console::printfn(Locale::get("CREATE_GRASS_BEGIN"), grassElements);
 
     _grassPositions.reserve(grassElements);
-    //_grassMatricesTemp.reserve(grassElements);
     F32 densityFactor = 1.0f / _grassDensity;
 #pragma omp parallel for
     for (I32 index = 0; index < currentCount; ++index) {

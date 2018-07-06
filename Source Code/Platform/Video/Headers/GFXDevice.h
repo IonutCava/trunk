@@ -380,10 +380,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         return _api->newShader(name, type, optimise);
     }
 
-    inline ShaderBuffer* newSB(
-        const stringImpl& bufferName, const bool unbound = false,
-        const bool persistentMapped = true) const override {
-        return _api->newSB(bufferName, unbound, persistentMapped);
+    inline ShaderBuffer* newSB(const stringImpl& bufferName,
+                               const U32 sizeFactor = 1,
+                               const bool unbound = false,
+                               const bool persistentMapped = true) const override {
+        return _api->newSB(bufferName, sizeFactor, unbound, persistentMapped);
     }
 
     inline HardwareQuery* newHardwareQuery() const override {

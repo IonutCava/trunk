@@ -606,8 +606,12 @@ class vec4 {
             return *this;
         }
 
-        return (*this) * (1.0f / _f);
+        return vec4(static_cast<T>(this->x * (1.0f / _f)),
+                    static_cast<T>(this->y * (1.0f / _f)),
+                    static_cast<T>(this->z * (1.0f / _f)),
+                    static_cast<T>(this->w * (1.0f / _f)));
     }
+
     const vec4 operator-() const { return vec4(-x, -y, -z, -w); }
     const vec4 operator+(const vec4 &v) const {
         return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w);

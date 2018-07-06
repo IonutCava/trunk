@@ -64,16 +64,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // persistent mapping.
     // (Many small updates with BufferSubData are recommended with the target
     // usage of the buffer)
-    _gfxDataBuffer.reset(newSB("dvd_GPUBlock", false, false));
-    _gfxDataBuffer->Create(1, 1, sizeof(GPUBlock));
+    _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false));
+    _gfxDataBuffer->Create(1, sizeof(GPUBlock));
     _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
     // Every visible node will first update this buffer with required data
     // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
     // Shader Storage Buffer that's persistently
     // and coherently mapped
-    _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
-    _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, 1, sizeof(NodeData));
+    _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true));
+    _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
     _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();

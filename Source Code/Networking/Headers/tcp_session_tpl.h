@@ -98,7 +98,7 @@ class tcp_session_tpl : public subscriber,
     time_t _startTime;
 };
 
-typedef boost::shared_ptr<tcp_session_tpl> tcp_session_ptr;
+typedef std::shared_ptr<tcp_session_tpl> tcp_session_ptr;
 
 //----------------------------------------------------------------------
 

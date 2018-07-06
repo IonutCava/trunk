@@ -354,6 +354,43 @@ protected:
     bool _enabled;
 };
 
+
+class RingBuffer {
+    public:
+        explicit RingBuffer(U32 queueLength) : 
+            _queueLength(queueLength)
+        {
+            _queueReadIndex = 0;
+            _queueWriteIndex = _queueLength - 1;
+        }
+
+        virtual ~RingBuffer()
+        {
+        }
+
+        const inline U32 queueLength() const { return _queueLength; }
+
+        inline void incQueue() { 
+            if (queueLength() > 1) {
+                _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
+                _queueReadIndex = (_queueReadIndex + 1) % _queueLength;
+            }
+        }
+
+        inline void decQueue() {
+            if (queueLength() > 1) {
+                _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
+                _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
+            }
+        }
+
+    protected:
+        const U32 _queueLength;
+        U32 _queueReadIndex;
+        U32 _queueWriteIndex;
+
+};
+
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper {
    protected:
@@ -371,6 +408,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual Framebuffer* newFB(bool multisampled) const = 0;
     virtual VertexBuffer* newVB() const = 0;
     virtual ShaderBuffer* newSB(const stringImpl& bufferName,
+                                const U32 sizeFactor = 1,
                                 const bool unbound = false,
                                 const bool persistentMapped = true) const = 0;
     virtual GenericVertexData* newGVD(const bool persistentMapped = false) const = 0;

@@ -6,6 +6,10 @@
 
 namespace Divide {
 
+namespace {
+    static const U32 g_bufferQueueLength = 3;
+};
+
 AnimationComponent::AnimationComponent(SceneAnimator& animator,
                                        SceneGraphNode& parentSGN)
 
@@ -14,26 +18,14 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
-      _currentAnimIndex(0),
-      _dataRange(0),
-      _readOffset(-1),
-      _writeOffset(2),
-      _bufferSizeFactor(3)
+      _currentAnimIndex(0)
 {
     DIVIDE_ASSERT(_animator.boneCount() <= Config::MAX_BONE_COUNT_PER_NODE,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    _dataRange = to_int(_animator.boneCount());
-
-    I32 alignmentOffset = (_dataRange * sizeof(mat4<F32>)) % ShaderBuffer::getTargetDataAlignment(/*true*/);
-
-    if (alignmentOffset > 0) {
-        _dataRange += (ShaderBuffer::getTargetDataAlignment() - alignmentOffset) / sizeof(mat4<F32>);
-    }
-
-    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms"/*, true*/);
-    _boneTransformBuffer->Create(_dataRange, _bufferSizeFactor, sizeof(mat4<F32>));
+    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", g_bufferQueueLength/*, true*/);
+    _boneTransformBuffer->Create(to_uint(_animator.boneCount()), sizeof(mat4<F32>));
 }
 
 AnimationComponent::~AnimationComponent()
@@ -71,11 +63,10 @@ void AnimationComponent::update(const U64 deltaTime) {
         if (updateBuffers) {
             frameIndex = resultingFrameIndex;
 
-            _boneTransformBuffer->UpdateData(_writeOffset * _dataRange,
+            _boneTransformBuffer->UpdateData(0,
                                              animationTransforms.size(),
                                              (const bufferPtr)animationTransforms.data());
-            _writeOffset = (_writeOffset + 1) % _bufferSizeFactor;
-            _readOffset = (_readOffset + 1) % _bufferSizeFactor;
+            _boneTransformBuffer->incQueue();
         }
     }
 }
@@ -144,7 +135,7 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
     
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::BONE_TRANSFORMS,
-        vec2<U32>(_readOffset * _dataRange, _dataRange),
+        vec2<U32>(0, _boneTransformBuffer->getPrimitiveCount()),
         *_boneTransformBuffer);
 
     return true;

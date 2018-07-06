@@ -31,7 +31,6 @@
 
 #ifndef PHYSX_H_
 #define PHYSX_H_
-#include "config.h"
 
 #ifndef _PHYSICS_API_FOUND_
 #define _PHYSICS_API_FOUND_

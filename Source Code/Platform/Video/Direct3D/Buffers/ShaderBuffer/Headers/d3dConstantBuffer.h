@@ -38,19 +38,16 @@ namespace Divide {
 /// Base class for shader constant buffers
 class d3dConstantBuffer final : public ShaderBuffer {
    public:
-    d3dConstantBuffer(const stringImpl& bufferName, bool unbound,
+    d3dConstantBuffer(const stringImpl& bufferName,
+                      const U32 sizeFactor,
+                      bool unbound,
                       bool persistentMapped);
     ~d3dConstantBuffer();
 
     void Destroy();
     /// Reserve primitiveCount * implementation specific primitive size of space
     /// in the buffer and fill it with NULL values
-    void Create(U32 primitiveCount, U32 sizeFactor, ptrdiff_t primitiveSize);
-
-    void DiscardAllData() const;
-
-    void DiscardSubData(ptrdiff_t offsetElementCount,
-                        ptrdiff_t rangeElementCount) const;
+    void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
 
     void UpdateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
@@ -60,13 +57,7 @@ class d3dConstantBuffer final : public ShaderBuffer {
                    U32 offsetElementCount,
                    U32 rangeElementCount);
 
-    bool CheckBindRange(U32 bindIndex, U32 offsetElementCount,
-                        U32 rangeElementCount);
-
     bool Bind(U32 bindIndex);
-    bool CheckBind(U32 bindIndex);
-
-    void PrintInfo(const ShaderProgram* shaderProgram, U32 bindIndex);
 };
 
 };  // namespace Divide

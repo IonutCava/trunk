@@ -716,10 +716,14 @@ GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
 /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
 /// unbound is false
 /// or a 'Shader Storage Block Object' otherwise
-ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, const bool unbound,
+ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, 
+                            const U32 sizeFactor,
+                            const bool unbound,
                             const bool persistentMapped) const {
     // The shader buffer can also be persistently mapped, if requested
-    return MemoryManager_NEW glUniformBuffer(bufferName, unbound,
+    return MemoryManager_NEW glUniformBuffer(bufferName, 
+                                             sizeFactor,
+                                             unbound,
                                              persistentMapped);
 }
 

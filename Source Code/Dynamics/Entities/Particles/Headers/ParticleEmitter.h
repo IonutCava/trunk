@@ -108,7 +108,6 @@ class ParticleEmitter : public SceneNode {
     vectorImpl<std::shared_ptr<ParticleSource>> _sources;
     vectorImpl<std::shared_ptr<ParticleUpdater>> _updaters;
 
-    U32 _readOffset, _writeOffset;
     /// create particles
     bool _enabled;
     std::atomic_bool _uploaded;

@@ -121,8 +121,6 @@ class AnimationComponent : public SGNComponent {
     bool _updateAnimations;
     /// Bone buffer used to upload animation data to the GPU
     ShaderBuffer* _boneTransformBuffer;
-    /// Used to iterate through the bone buffer
-    I32 _readOffset, _writeOffset, _dataRange, _bufferSizeFactor;
 };
 
 };  // namespace Divide
