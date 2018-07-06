@@ -61,6 +61,9 @@ class GUI;
 struct LoopTimingData {
     LoopTimingData();
 
+    // number of scene update loops
+    U8 _updateLoops;
+
     bool _keepAlive;
     bool _freezeLoopTime;
     bool _freezeGUITime;
@@ -178,8 +181,10 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Time::ProfileTimer& _frameTimer;
     Time::ProfileTimer& _appIdleTimer;
     Time::ProfileTimer& _appScenePass;
-
-    Time::ProfileTimer& _physicsTimer;
+    Time::ProfileTimer& _physicsUpdateTimer;
+    Time::ProfileTimer& _physicsProcessTimer;
+    Time::ProfileTimer& _sceneUpdateTimer;
+    Time::ProfileTimer& _sceneUpdateLoopTimer;
     Time::ProfileTimer& _cameraMgrTimer;
     Time::ProfileTimer& _flushToScreenTimer;
     // Command line arguments

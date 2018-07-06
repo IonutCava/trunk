@@ -674,7 +674,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
         fonsSetBlur(_fonsContext, textLabel._blurAmount);
         fonsSetBlur(_fonsContext, textLabel._spacing);
         fonsSetAlign(_fonsContext, textLabel._alignFlag);
-        fonsSetSize(_fonsContext, to_float(textLabel._height));
+        fonsSetSize(_fonsContext, to_float(textLabel._fontSize));
         fonsSetFont(_fonsContext, font);
 
         fonsSetColor(_fonsContext,

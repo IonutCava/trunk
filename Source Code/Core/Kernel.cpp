@@ -22,7 +22,8 @@
 
 namespace Divide {
 
-LoopTimingData::LoopTimingData() : _previousTime(0ULL),
+LoopTimingData::LoopTimingData() : _updateLoops(0),
+                                   _previousTime(0ULL),
                                    _currentTime(0ULL),
                                    _currentTimeFrozen(0ULL),
                                    _currentTimeDelta(0ULL),
@@ -52,7 +53,10 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
       _appIdleTimer(Time::ADD_TIMER("Loop Idle Timer")),
       _appScenePass(Time::ADD_TIMER("Loop Scene Pass Timer")),
-      _physicsTimer(Time::ADD_TIMER("Physics Update Timer")),
+      _physicsUpdateTimer(Time::ADD_TIMER("Physics Update Timer")),
+      _sceneUpdateTimer(Time::ADD_TIMER("Scene Update Timer")),
+      _sceneUpdateLoopTimer(Time::ADD_TIMER("Scene Update Loop timer")),
+      _physicsProcessTimer(Time::ADD_TIMER("Physics Process Timer")),
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer"))
 {
@@ -61,8 +65,11 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _appLoopTimer.addChildTimer(_frameTimer);
     _frameTimer.addChildTimer(_appScenePass);
     _appScenePass.addChildTimer(_cameraMgrTimer);
-    _appScenePass.addChildTimer(_physicsTimer);
+    _appScenePass.addChildTimer(_physicsUpdateTimer);
+    _appScenePass.addChildTimer(_physicsProcessTimer);
+    _appScenePass.addChildTimer(_sceneUpdateTimer);
     _appScenePass.addChildTimer(_flushToScreenTimer);
+    _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
@@ -181,8 +188,11 @@ if (Config::Profile::BENCHMARK_PERFORMANCE ||
 {
     U32 frameCount = _GFX.getFrameCount();
     if (frameCount % 5 == 0) {
-        stringImpl profileData(Time::ApplicationTimer::instance().benchmarkReport());
+        stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
+
         if (Config::Profile::BENCHMARK_PERFORMANCE) {
+            profileData.append("\n");
+            profileData.append(Time::ApplicationTimer::instance().benchmarkReport());
             profileData.append("\n");
             profileData.append(Util::StringFormat("GPU: [ %5.5f ] [DrawCalls: %d]",
                                                   Time::MicrosecondsToSeconds<F32>(_GFX.getFrameDurationGPU()),
@@ -223,43 +233,57 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
         return true;
     }
 
-    // Process physics
-    _PFX.process(_timingData._freezeLoopTime ? 0ULL
-                                             : _timingData._currentTimeDelta);
+    {
+        Time::ScopedTimer timer2(_physicsProcessTimer);
+        // Process physics
+        _PFX.process(_timingData._freezeLoopTime ? 0ULL
+                                                : _timingData._currentTimeDelta);
+    }
 
-    U8 loops = 0;
-    while (_timingData._currentTime > _timingData._nextGameTick &&
-           loops < Config::MAX_FRAMESKIP) {
+    {
+        Time::ScopedTimer timer2(_sceneUpdateTimer);
 
-        if (!_timingData._freezeGUITime) {
-            _sceneMgr.processGUI(deltaTime);
-        }
+        _timingData._updateLoops = 0;
+        while (_timingData._currentTime > _timingData._nextGameTick &&
+            _timingData._updateLoops < Config::MAX_FRAMESKIP) {
 
-        if (!_timingData._freezeLoopTime) {
-            // Flush any pending threaded callbacks
-            _taskPool.flushCallbackQueue();
-            // Update scene based on input
-            _sceneMgr.processInput(deltaTime);
-            // process all scene events
-            _sceneMgr.processTasks(deltaTime);
-            // Update the scene state based on current time (e.g. animation matrices)
-            _sceneMgr.updateSceneState(deltaTime);
-        }
+            if (_timingData._updateLoops == 0) {
+                _sceneUpdateLoopTimer.start();
+            }
 
-        _timingData._nextGameTick += deltaTime;
-        loops++;
+            if (!_timingData._freezeGUITime) {
+                _sceneMgr.processGUI(deltaTime);
+            }
 
-        if (Config::USE_FIXED_TIMESTEP) {
-            if (loops == Config::MAX_FRAMESKIP &&
-                _timingData._currentTime > _timingData._nextGameTick) {
+            if (!_timingData._freezeLoopTime) {
+                // Flush any pending threaded callbacks
+                _taskPool.flushCallbackQueue();
+                // Update scene based on input
+                _sceneMgr.processInput(deltaTime);
+                // process all scene events
+                _sceneMgr.processTasks(deltaTime);
+                // Update the scene state based on current time (e.g. animation matrices)
+                _sceneMgr.updateSceneState(deltaTime);
+            }
+
+            if (_timingData._updateLoops == 0) {
+                _sceneUpdateLoopTimer.stop();
+            }
+
+            _timingData._nextGameTick += deltaTime;
+            _timingData._updateLoops++;
+
+            if (Config::USE_FIXED_TIMESTEP) {
+                if (_timingData._updateLoops == Config::MAX_FRAMESKIP &&
+                    _timingData._currentTime > _timingData._nextGameTick) {
+                    _timingData._nextGameTick = _timingData._currentTime;
+                }
+            } else {
                 _timingData._nextGameTick = _timingData._currentTime;
             }
-        } else {
-            _timingData._nextGameTick = _timingData._currentTime;
-        }
 
-    }  // while
-
+        }  // while
+    }
     D64 interpolationFactor = static_cast<D64>(_timingData._currentTime + 
                                                deltaTime -
                                                _timingData._nextGameTick);
@@ -276,7 +300,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
         _sceneMgr.onLostFocus();
     }
     {
-        Time::ScopedTimer timer3(_physicsTimer);
+        Time::ScopedTimer timer3(_physicsUpdateTimer);
         // Update physics - uses own timestep implementation
         _PFX.update(_timingData._freezeLoopTime ? 0ULL
                                                 : _timingData._currentTimeDelta);
@@ -484,11 +508,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Initialize GUI with our current resolution
     _GUI.init(renderResolution);
-    _GUI.addText(_ID("ProfileData"),  // Unique ID
-        vec2<I32>(renderResolution.width - 300, 60),  // Position
-        Font::DIVIDE_DEFAULT,            // Font
-        vec4<U8>(0, 64, 255, 255),       // Color
-        "PROFILE DATA");                 // Text
+    _GUI.addText(_ID("ProfileData"),                    // Unique ID
+        vec2<I32>(renderResolution.width * 0.75, 100),  // Position
+        Font::DROID_SERIF_BOLD,          // Font
+        vec4<U8>(255,  50, 0, 255),      // Color
+        "PROFILE DATA",                  // Text
+        12);                             // Font size
     LightManager::instance().init();
 
     _sceneMgr.init(&_GUI);

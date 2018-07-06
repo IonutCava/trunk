@@ -46,7 +46,7 @@ class GUIText : public GUIElement, public TextLabel {
             const stringImpl& font,
             const vec3<F32>& color,
             CEGUI::Window* parent,
-            U32 textHeight = 16);
+            U32 fontSize = 16);
 
     void draw() const;
     void mouseMoved(const GUIEvent& event);

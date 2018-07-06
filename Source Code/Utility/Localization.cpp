@@ -14,6 +14,8 @@ bool init(const stringImpl& newLanguage) {
     changeLanguage(newLanguage);
     // Use SimpleIni library for cross-platform INI parsing
     g_languageFile.SetUnicode();
+    g_languageFile.SetMultiLine(true);
+
     stringImpl file = "localisation/" + g_localeFile + ".ini";
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
@@ -29,9 +31,11 @@ bool init(const stringImpl& newLanguage) {
     // And add all pairs to the language table
     CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
     for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
+        stringImpl value(keyValuePairIt->second);
+        
         hashAlg::emplace(g_languageTable,
                          _ID_RT(keyValuePairIt->first.pItem),
-                         stringImpl(keyValuePairIt->second));
+                         value);
     }
 
     g_initialized = true;

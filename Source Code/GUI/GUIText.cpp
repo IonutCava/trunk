@@ -8,9 +8,9 @@ GUIText::GUIText(ULL ID,
                  const stringImpl& font,
                  const vec3<F32>& color,
                  CEGUI::Window* parent,
-                 U32 textHeight)
+                 U32 fontSize)
     : GUIElement(ID, parent, GUIType::GUI_TEXT),
-      TextLabel(text, font, color, textHeight),
+      TextLabel(text, font, color, fontSize),
       _heightCache(0.0f),
       _position(relativePosition)
 {

@@ -37,11 +37,13 @@
 namespace Divide {
 class TextLabel {
    public:
-    TextLabel(const stringImpl& string, const stringImpl& font,
-              const vec3<U8>& color, U32 textHeight = 16)
+    TextLabel(const stringImpl& string,
+              const stringImpl& font,
+              const vec3<U8>& color,
+              U32 fontSize)
         : _width(1),
           _font(font),
-          _height(textHeight),
+          _fontSize(fontSize),
           _color(color),
           _blurAmount(0.0f),
           _spacing(0.0f),
@@ -62,7 +64,7 @@ class TextLabel {
     }
 
     stringImpl _font;
-    U32 _height;
+    U32 _fontSize;
     U32 _width;
     F32 _blurAmount;
     F32 _spacing;

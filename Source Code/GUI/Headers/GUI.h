@@ -83,7 +83,8 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                      const vec2<I32>& position,
                      const stringImpl& font,
                      const vec4<U8>& color,
-                     const stringImpl& text);
+                     const stringImpl& text,
+                     U32 fontSize = 16);
     /// Modify a text label
     GUIText* modifyText(ULL ID,
                         const stringImpl& text);

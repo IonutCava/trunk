@@ -411,8 +411,10 @@ GUIMessageBox* GUI::addMsgBox(ULL ID,
 
 GUIText* GUI::addText(ULL ID,
                       const vec2<I32>& position,
-                      const stringImpl& font, const vec4<U8>& color,
-                      const stringImpl& text) {
+                      const stringImpl& font,
+                      const vec4<U8>& color,
+                      const stringImpl& text,
+                      U32 fontSize) {
 
     GUIText* t = MemoryManager_NEW GUIText(ID,
                                            text,
@@ -420,7 +422,9 @@ GUIText* GUI::addText(ULL ID,
                                                      position.height),
                                            font,
                                            color,
-                                           _rootSheet);
+                                           _rootSheet,
+                                           fontSize);
+
     guiMap::iterator it = _guiStack.find(ID);
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);
