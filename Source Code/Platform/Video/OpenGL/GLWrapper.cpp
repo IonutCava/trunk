@@ -57,16 +57,12 @@ void glHardwareQuery::destroy() {
 
 GL_API::GL_API()
     : RenderAPIWrapper(),
-      _crtWindowType(WindowType::COUNT),
       _prevSizeNode(0),
       _prevSizeString(0),
       _prevWidthNode(0),
       _prevWidthString(0),
       _lineWidthLimit(1),
       _dummyVAO(0),
-      _enableCEGUIRendering(false),
-      _internalMoveEvent(false),
-      _externalResizeEvent(false),
       _queryBackBuffer(0),
       _queryFrontBuffer(0),
       _fonsContext(nullptr),
@@ -100,10 +96,6 @@ void GL_API::deleteFonsContext() {
 
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame() {
-    WindowType mainWindowType = Application::getInstance().getWindowManager().mainWindowType();
-    if (_crtWindowType != mainWindowType) {
-        handleChangeWindowType(mainWindowType);
-    }
 // Start a duration query in debug builds
 #ifdef _DEBUG
     glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0].getID());
@@ -118,20 +110,13 @@ void GL_API::beginFrame() {
 
 /// Finish rendering the current frame
 void GL_API::endFrame() {
+    DisplayWindow& win = Application::getInstance()
+                         .getWindowManager()
+                         .getActiveWindow();
     // Revert back to the default OpenGL states
     clearStates();
-    // CEGUI handles its own states, so render it after we clear our states but
-    // before we swap buffers
-    if (_enableCEGUIRendering) {
-        /*glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 1, -1,
-                         "CEGUI OpenGL Renderer start!");*/
-        CEGUI::System::getSingleton().renderAllGUIContexts();
-        // glPopDebugGroup();
-    }
-
     // Swap buffers
-    SDL_GL_SwapWindow(GLUtil::_mainWindow);
-    pollWindowEvents();
+    SDL_GL_SwapWindow(win.getRawWindow());
 
     // End the timing query started in beginFrame() in debug builds
 #ifdef _DEBUG
@@ -702,7 +687,10 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
         }
 
         const vec2<U16>& displaySize
-            = Application::getInstance().getWindowManager().getWindowDimensions();
+            = Application::getInstance()
+                .getWindowManager()
+                .getActiveWindow()
+                .getDimensions();
 
         vec2<F32> position((relativeOffset.x * displaySize.x) / 100.0f,
                            (relativeOffset.y * displaySize.y) / 100.0f);

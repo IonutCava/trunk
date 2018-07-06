@@ -402,7 +402,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ballSGN.lock()->setSelectable(true);
 
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getResolution();
+        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
 
     GUIElement* btn = _GUI->addButton(
         "Serve", "Serve",

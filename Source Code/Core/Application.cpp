@@ -6,9 +6,6 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#define HAVE_M_PI
-#include <SDL.h>
-
 #if defined(_DEBUG)
 #include "Utility/Headers/MemoryTracker.h"
 #endif
@@ -23,7 +20,6 @@ MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 Application::Application() : _kernel(nullptr)
 {
 
-    SDL_Init(0);
 #if defined(_DEBUG)
     MemoryManager::MemoryTracker::Ready = false; //< faster way of disabling memory tracking
 #endif
@@ -65,17 +61,15 @@ Application::~Application()
     memLog.close();
 #endif
 
+    _windowManager.close();
     ParamHandler::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
     _kernel.reset(nullptr);
     Locale::clear();
     Console::flush();
-
-    SDL_Quit();
 }
 
-ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
-                                  char** argv) {
+ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char** argv) {
     assert(!entryPoint.empty());
     // Target FPS is usually 60. So all movement is capped around that value
     Time::ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
@@ -102,8 +96,17 @@ void Application::run() {
     _kernel->runLogicLoop();
 }
 
-void Application::snapCursorToPosition(I32 x, I32 y) const {
+void Application::onLoop() {
+    _windowManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
+}
+
+void Application::setCursorPosition(I32 x, I32 y) const {
+    _windowManager.setCursorPosition(x, y);
     _kernel->setCursorPosition(x, y);
+}
+
+void Application::onChangeWindowSize(U16 w, U16 h) const {
+    _kernel->onChangeWindowSize(w, h);
 }
 
 }; //namespace Divide

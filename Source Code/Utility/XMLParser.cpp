@@ -276,12 +276,13 @@ void loadConfig(const stringImpl &file) {
     par.setParam("rendering.shadowDetailLevel", shadowDetailLevel);
     par.setParam("rendering.enableFog", pt.get("rendering.enableFog", true));
 
-    I32 targetDisplay = pt.get("runtime.targetDisplay", 0);
-    vec2<U16> resolution(to_ushort(pt.get("runtime.resolution.<xmlattr>.w", 1024)),
-                         to_ushort(pt.get("runtime.resolution.<xmlattr>.h", 768)));
-    vec2<U16> splashScreenDimensions(to_ushort(pt.get("runtime.splashScreenSize.<xmlattr>.w", 400)),
-                                     to_ushort(pt.get("runtime.splashScreenSize.<xmlattr>.h", 300)));
-    bool startFullScreen = !pt.get("rendering.windowedMode", true);
+    par.setParam("runtime.targetDisplay", pt.get("runtime.targetDisplay", 0));
+    par.setParam("runtime.startFullScreen", !pt.get("rendering.windowedMode", true));
+    par.setParam("runtime.windowWidth", pt.get("runtime.resolution.<xmlattr>.w", 1024));
+    par.setParam("runtime.windowHeight", pt.get("runtime.resolution.<xmlattr>.h", 768));
+    par.setParam("runtime.splashWidth", pt.get("runtime.splashScreenSize.<xmlattr>.w", 400));
+    par.setParam("runtime.splashHeight", pt.get("runtime.splashScreenSize.<xmlattr>.h", 300));
+
     par.setParam("runtime.windowResizable", pt.get("runtime.windowResizable", true));
     par.setParam("runtime.enableVSync", pt.get("runtime.enableVSync", false));
     par.setParam("postProcessing.anaglyphOffset",
@@ -300,13 +301,6 @@ void loadConfig(const stringImpl &file) {
     par.setParam("rendering.zNear", pt.get("runtime.zNear", 0.1f));
     par.setParam("rendering.zFar", pt.get("runtime.zFar", 700.0f));
 
-
-    WindowManager& windowManager = Application::getInstance().getWindowManager();
-    windowManager.targetDisplay(targetDisplay - 1);
-    windowManager.setResolution(resolution);
-    windowManager.setWindowDimensions(WindowType::SPLASH, splashScreenDimensions);
-    windowManager.mainWindowType(startFullScreen ? WindowType::FULLSCREEN
-                                                 : WindowType::WINDOW);
 
     // global fog values
     par.setParam("rendering.sceneState.fogDensity",

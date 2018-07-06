@@ -175,7 +175,7 @@ bool glVertexArray::create(bool staticDraw) {
     if (!staticDraw) {
         // OpenGLES support isn't added, but this check doesn't break anything,
         // so I'll just leave it here -Ionut
-        GLenum usage = (_context.getAPI() == GFXDevice::RenderAPI::OpenGLES)
+        GLenum usage = (_context.getAPI() == RenderAPI::OpenGLES)
                            ? GL_STREAM_DRAW
                            : GL_DYNAMIC_DRAW;
         if (usage != _usage) {

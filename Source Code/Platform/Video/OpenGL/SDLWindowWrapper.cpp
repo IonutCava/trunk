@@ -23,88 +23,10 @@
 
 namespace Divide {
 
-ErrorCode GL_API::createWindow() {
-    ParamHandler& par = ParamHandler::getInstance();
-
-    Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG;
-#if defined(ENABLE_GPU_VALIDATION)
-    // OpenGL error handling is available in any build configuration
-    // if the proper defines are in place.
-    OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG | 
-                   SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG |
-                   SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
-#endif
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
-    SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-    // Toggle multi-sampling if requested.
-    // This options requires a client-restart, sadly.
-    I32 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
-    if (msaaSamples > 0) {
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples);
-    }
-
-    // OpenGL ES is not yet supported, but when added, it will need to mirror
-    // OpenGL functionality 1-to-1
-    if (Config::USE_OPENGL_ES) {
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    } else {
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-    }
-
-    U32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
-    if (par.getParam<bool>("runtime.windowResizable", true)) {
-        windowFlags |= SDL_WINDOW_RESIZABLE;
-    }
-
-    WindowManager& winManager = Application::getInstance().getWindowManager();
-    GLUtil::_mainWindow = SDL_CreateWindow(par.getParam<stringImpl>("appTitle", "Divide").c_str(),
-                                           SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
-                                           SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
-                                           1,
-                                           1,
-                                           windowFlags);
-
-    I32 positionX, positionY;
-    SDL_GetWindowPosition(GLUtil::_mainWindow, &positionX, &positionY);
-    winManager.setWindowPosition(positionX, positionY);
-
-      // Check if we have a valid window
-    if (!GLUtil::_mainWindow) {
-        SDL_Quit();
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
-                         Locale::get(_ID("ERROR_SDL_WINDOW")));
-        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
-        return ErrorCode::SDL_WINDOW_INIT_ERROR;
-    }
-
-    SysInfo& systemInfo = Application::getInstance().getSysInfo();
-    getWindowHandle(GLUtil::_mainWindow, systemInfo);
-
-    return ErrorCode::NO_ERR;
-}
-
-ErrorCode GL_API::createGLContext() {
-    DIVIDE_ASSERT(GLUtil::_mainWindow != nullptr,
-        "GL_API::createGLContext error: Tried to create an OpenGL context with no valid window!");
-
+ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
     SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-    GLUtil::_glSecondaryContexts.push_back(SDL_GL_CreateContext(GLUtil::_mainWindow));
-    GLUtil::_glRenderContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
+    GLUtil::_glSecondaryContexts.push_back(SDL_GL_CreateContext(window.getRawWindow()));
+    GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
     	Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
@@ -117,19 +39,7 @@ ErrorCode GL_API::createGLContext() {
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode GL_API::destroyWindow() {
-    DIVIDE_ASSERT(GLUtil::_mainWindow != nullptr,
-                  "GL_API::destroyWindow error: Tried to double-delete the same window!");
-
-    SDL_DestroyWindow(GLUtil::_mainWindow);
-    GLUtil::_mainWindow = nullptr;
-
-    return ErrorCode::NO_ERR;
-}
-
 ErrorCode GL_API::destroyGLContext() {
-    DIVIDE_ASSERT(GLUtil::_mainWindow != nullptr,
-        "GL_API::destroyGLContext error: Tried to destroy the OpenGL context with no valid window!");
     SDL_GL_DeleteContext(GLUtil::_glRenderContext);
 
     for (SDL_GLContext& ctx : GLUtil::_glSecondaryContexts) {
@@ -140,122 +50,23 @@ ErrorCode GL_API::destroyGLContext() {
     return ErrorCode::NO_ERR;
 }
 
-void GL_API::pollWindowEvents() {
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-            case SDL_QUIT: {
-                SDL_HideWindow(GLUtil::_mainWindow);
-                Application::getInstance().RequestShutdown();
-            } break;
-            case SDL_WINDOWEVENT:  {
-                switch (event.window.event) {
-                    case SDL_WINDOWEVENT_ENTER:
-                    case SDL_WINDOWEVENT_FOCUS_GAINED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::GAINED_FOCUS,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_LEAVE:
-                    case SDL_WINDOWEVENT_FOCUS_LOST: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::LOST_FOCUS,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_RESIZED: {
-                        _externalResizeEvent = true;
-                        changeWindowSize(to_ushort(event.window.data1),
-                                         to_ushort(event.window.data2));
-                        _externalResizeEvent = false;
-                    }break;
-                    case SDL_WINDOWEVENT_SIZE_CHANGED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESIZED_INTERNAL,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_MOVED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::MOVED,
-                                                     event.window.data1,
-                                                     event.window.data2);
-
-                        if (!_internalMoveEvent) {
-                            setWindowPosition(event.window.data1,
-                                              event.window.data2);
-                            _internalMoveEvent = false;
-                        }
-                    } break;
-                    case SDL_WINDOWEVENT_SHOWN: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::SHOWN,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_HIDDEN: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::HIDDEN,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_MINIMIZED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::MAXIMIZED,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_MAXIMIZED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::MAXIMIZED,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                    case SDL_WINDOWEVENT_RESTORED: {
-                        GFX_DEVICE.handleWindowEvent(WindowEvent::RESTORED,
-                                                     event.window.data1,
-                                                     event.window.data2);
-                    } break;
-                };
-            } break;
-        }
-    }
-}
 
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
+    ParamHandler& par = ParamHandler::getInstance();
+
     // Fill our (abstract API <-> openGL) enum translation tables with proper
     // values
     GLUtil::fillEnumTables();
-    if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
-        return ErrorCode::SDL_INIT_ERROR;
-    }
-    I32 numDisplays = SDL_GetNumVideoDisplays();
-    WindowManager& winManager = Application::getInstance().getWindowManager();
-    winManager.targetDisplay(std::max(std::min(winManager.targetDisplay(), numDisplays - 1), 0));
 
-    // Most runtime variables are stored in the ParamHandler, including
-    // initialization settings retrieved from XML
-    ParamHandler& par = ParamHandler::getInstance();
-    SysInfo& systemInfo = Application::getInstance().getSysInfo();
-    SDL_DisplayMode displayMode;
-    SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &displayMode);
-    systemInfo._systemResolutionWidth = displayMode.w;
-    systemInfo._systemResolutionHeight = displayMode.h;
-    winManager.setWindowDimensions(WindowType::FULLSCREEN,
-                                   to_ushort(displayMode.w),
-                                   to_ushort(displayMode.h));
-    winManager.setWindowDimensions(WindowType::FULLSCREEN_WINDOWED,
-                                   to_ushort(displayMode.w),
-                                   to_ushort(displayMode.h));
-
-    ErrorCode errorState = createWindow();
+    const DisplayWindow& window = Application::getInstance().getWindowManager().getActiveWindow();
+    ErrorCode errorState = createGLContext(window);
     if (errorState != ErrorCode::NO_ERR) {
         return errorState;
     }
 
-    errorState = createGLContext();
-    if (errorState != ErrorCode::NO_ERR) {
-        return errorState;
-    }
-
-    SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glRenderContext);
+    SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glRenderContext);
     glbinding::Binding::initialize();
     glbinding::Binding::useCurrentContext();
 
@@ -404,27 +215,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // per-draw call basis
     glEnable(GL_CULL_FACE);
 
-    // Query available display modes (resolution, bit depth per channel and
-    // refresh rates)
-    I32 numberOfDisplayModes = 0;
-    for (I32 display = 0; display < numDisplays; ++display) {
-        numberOfDisplayModes = SDL_GetNumDisplayModes(display);
-        for (I32 mode = 0; mode < numberOfDisplayModes; ++mode) {
-            SDL_GetDisplayMode(display, mode, &displayMode);
-            // Register the display modes with the GFXDevice object
-            GPUState::GPUVideoMode tempDisplayMode;
-            for (I32 i = 0; i < numberOfDisplayModes; ++i) {
-                tempDisplayMode._resolution.set(displayMode.w, displayMode.h);
-                tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
-                tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
-                tempDisplayMode._refreshRate.push_back(to_ubyte(displayMode.refresh_rate));
-                Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
-                GFX_DEVICE.gpuState().registerDisplayMode(to_ubyte(display), tempDisplayMode);
-                tempDisplayMode._refreshRate.clear();
-            }
-        }
-    }
-
     // Prepare font rendering subsystem
     if (!createFonsContext()) {
         Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));
@@ -463,7 +253,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 #endif
     
     // Once OpenGL is ready for rendering, init CEGUI
-    _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
     _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>("GUI.CEGUI.ExtraStates"));
     CEGUI::System::create(*_GUIGLrenderer);
@@ -498,127 +287,7 @@ void GL_API::closeRenderingAPI() {
     }
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
-
-    // Destroy the OpenGL Context(s)
     destroyGLContext();
-    // Destroy application windows and close SDL
-    destroyWindow();
-    SDL_QuitSubSystem(SDL_INIT_VIDEO);
-}
-
-void GL_API::handleChangeWindowType(WindowType newWindowType) {
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
-    WindowType crtWindowType = _crtWindowType;
-
-    _crtWindowType = newWindowType;
-    I32 switchState = 0;
-    switch (newWindowType) {
-        case WindowType::SPLASH: {
-            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(switchState >= 0);
-
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-        } break;
-        case WindowType::WINDOW: {
-            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(switchState >= 0);
-
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_TRUE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-        } break;
-        case WindowType::FULLSCREEN_WINDOWED: {
-            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, 0);
-            assert(switchState >= 0);
-
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_FALSE);
-        } break;
-        case WindowType::FULLSCREEN: {
-            switchState = SDL_SetWindowFullscreen(GLUtil::_mainWindow, SDL_WINDOW_FULLSCREEN);
-            assert(switchState >= 0);
-
-            SDL_SetWindowBordered(GLUtil::_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(GLUtil::_mainWindow, SDL_TRUE);
-        } break;
-    };
-
-    const vec2<U16>& dimensions = winManager.getWindowDimensions(newWindowType);
-    changeWindowSize(dimensions.width, dimensions.height);
-
-    centerWindowPosition();
-
-    if (crtWindowType == WindowType::COUNT) {
-        SDL_ShowWindow(GLUtil::_mainWindow);
-    }
-
-}
-
-void GL_API::changeWindowSize(U16 w, U16 h) {
-
-    WindowManager& winManager = Application::getInstance().getWindowManager();
-    WindowType type = winManager.mainWindowType();
-
-    if (_externalResizeEvent && type != WindowType::WINDOW) {
-        return;
-    }
-
-    if (type == WindowType::FULLSCREEN) {
-        // Should never be true, but need to be sure
-        SDL_DisplayMode mode, closestMode;
-        SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
-        mode.w = w;
-        mode.h = h;
-        SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
-        SDL_SetWindowDisplayMode(GLUtil::_mainWindow, &closestMode);
-    } else {
-        if (_externalResizeEvent) {
-            // Find a decent resolution close to our dragged dimensions
-            SDL_DisplayMode mode, closestMode;
-            SDL_GetCurrentDisplayMode(winManager.targetDisplay(), &mode);
-            mode.w = w;
-            mode.h = h;
-            SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
-            w = to_ushort(closestMode.w);
-            h = to_ushort(closestMode.h);
-        }
-
-        SDL_SetWindowSize(GLUtil::_mainWindow, w, h);
-        if (winManager.getWindowDimensions() != vec2<U16>(w, h)) {
-            winManager.setWindowDimensions(winManager.mainWindowType(), 
-                                           vec2<U16>(w, h));
-        }
-    }
-}
-
-void GL_API::changeResolution(GLushort w, GLushort h) {
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
-    if (winManager.mainWindowType() == WindowType::WINDOW) {
-        changeWindowSize(w, h);
-    }
-}
-
-/// Window positioning is handled by SDL
-void GL_API::setWindowPosition(I32 w, I32 h) {
-    _internalMoveEvent = true;
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
-    if (winManager.getWindowPosition() != vec2<I32>(w, h)) {
-        SDL_SetWindowPosition(GLUtil::_mainWindow, w, h);
-    }
-}
-
-/// Centering is also easier via SDL
-void GL_API::centerWindowPosition() {
-    _internalMoveEvent = true;
-    const WindowManager& winManager = Application::getInstance().getWindowManager();
-    SDL_SetWindowPosition(GLUtil::_mainWindow,
-            SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()),
-            SDL_WINDOWPOS_CENTERED_DISPLAY(winManager.targetDisplay()));
-}
-
-/// Mouse positioning is handled by SDL
-void GL_API::setCursorPosition(I32 x, I32 y) {
-    SDL_WarpMouseInWindow(GLUtil::_mainWindow, x, y);
 }
 
 /// This functions should be run in a separate, consumer thread.
@@ -626,7 +295,8 @@ void GL_API::setCursorPosition(I32 x, I32 y) {
 void GL_API::threadedLoadCallback() {
     glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
     if (glCtx == 0) {
-        SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glSecondaryContexts.front());
+        const DisplayWindow& window = Application::getInstance().getWindowManager().getActiveWindow();
+        SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContexts.front());
         glbinding::Binding::initialize(false);
     // Enable OpenGL debug callbacks for this context as well
     #if defined(ENABLE_GPU_VALIDATION)

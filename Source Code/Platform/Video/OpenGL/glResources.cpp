@@ -14,8 +14,6 @@ namespace GLUtil {
 
 /*-----------Object Management----*/
 GLuint _invalidObjectID = GL_INVALID_INDEX;
-SDL_Window* _mainWindow = nullptr;
-SDL_Window* _loaderWindow = nullptr;
 SDL_GLContext _glRenderContext;
 vectorImpl<SDL_GLContext> _glSecondaryContexts;
 

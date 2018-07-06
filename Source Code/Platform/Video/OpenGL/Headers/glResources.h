@@ -69,8 +69,6 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
 extern GLuint _invalidObjectID;
-/// Main rendering window
-extern SDL_Window* _mainWindow;
 extern SDL_GLContext _glRenderContext;
 extern vectorImpl<SDL_GLContext> _glSecondaryContexts;
 

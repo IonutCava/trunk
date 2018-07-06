@@ -788,7 +788,7 @@ void Scene::debugDraw(RenderStage stage) {
 }
 
 void Scene::findHoverTarget() {
-    const vec2<U16>& displaySize = Application::getInstance().getWindowManager().getWindowDimensions();
+    const vec2<U16>& displaySize = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
     const vec2<I32>& mousePos = _input->getMousePosition();
 

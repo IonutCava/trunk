@@ -52,6 +52,8 @@ namespace Divide {
 
     enum class WindowType : U32;
 
+    class DisplayWindow;
+
 class glHardwareQuery {
 public:
     glHardwareQuery();
@@ -113,12 +115,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     bool initShaders() override;
     /// Revert everything that was set up in "initShaders()"
     bool deInitShaders() override;
-    /// Window positioning is handled by SDL
-    void setWindowPosition(I32 w, I32 h);
-    /// Centering is also easier via SDL
-    void centerWindowPosition();
-    /// Mouse positioning is handled by SDL
-    void setCursorPosition(I32 x, I32 y) override;
     /// Prepare the GPU for rendering a frame
     void beginFrame() override;
     /// Finish rendering the current frame
@@ -202,10 +198,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
-    /// Internally change window size
-    void changeWindowSize(U16 w, U16 h);
-    /// Change rendering resolution
-    void changeResolution(U16 w, U16 h) override;
     /// Change the current viewport area. Redundancy check is performed in GFXDevice
     /// class
     void changeViewport(const vec4<GLint>& newViewport) const override;
@@ -294,12 +286,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                                  GLsizei stride);
 
   private:
-    ErrorCode createWindow();
-    ErrorCode createGLContext();
-    ErrorCode destroyWindow();
+    ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
-    void handleChangeWindowType(WindowType newWindowType);
-    void pollWindowEvents();
     /// FontStash library initialization
     bool createFonsContext();
     /// FontStash library deinitialization
@@ -311,8 +299,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                               ShaderOffsetArray& inOutOffset);
 
   private:
-    /// The current rendering window type
-    WindowType _crtWindowType;
     /// The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     /// The previous plain text string's font face size
@@ -351,13 +337,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
     static bool _primitiveRestartEnabled;
-    /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
-    /// performance)
-    bool _enableCEGUIRendering;
-    /// Did we generate the window move event?
-    bool _internalMoveEvent;
-    /// Did we resize the window via an OS call?
-    bool _externalResizeEvent;
     /// Current state of all available clipping planes
     std::array<bool, Config::MAX_CLIP_PLANES> _activeClipPlanes;
     /// Performance counters: front x 2 and back x 2

@@ -200,7 +200,7 @@ I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
         line.color(255, 0, 0, 255);
         line.width(2.0f);
 
-        if (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D) {
+        if (GFX_DEVICE.getAPI() == RenderAPI::Direct3D) {
             line.segment(parent.d1, parent.d2, parent.d3, me.d1, me.d2, me.d3);
         } else {
             line.segment(parent.a4, parent.b4, parent.c4, me.a4, me.b4, me.c4);

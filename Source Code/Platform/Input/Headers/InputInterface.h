@@ -46,7 +46,7 @@ namespace Attorney {
 DEFINE_SINGLETON(InputInterface)
     friend class Attorney::InputInterfaceEvent;
   public:
-    ErrorCode init(Kernel& kernel);
+    ErrorCode init(Kernel& kernel, const vec2<U16>& inputAreaDimensions);
 
     U8 update(const U64 deltaTime);
     void terminate();

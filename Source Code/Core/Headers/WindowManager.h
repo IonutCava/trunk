@@ -32,17 +32,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_WINDOW_MANAGER_H_
 #define _CORE_WINDOW_MANAGER_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Headers/DisplayWindow.h"
+
+#define HAVE_M_PI
+#include <SDL.h>
 
 namespace Divide {
 
-enum class WindowType : U32 {
-    WINDOW = 0,
-    SPLASH = 1,
-    FULLSCREEN = 2,
-    FULLSCREEN_WINDOWED = 3,
-    COUNT
-};
+static const U32 WINDOW_COUNT = 1;
 
 enum class WindowEvent : U32 {
     HIDDEN = 0,
@@ -54,53 +51,47 @@ enum class WindowEvent : U32 {
     GAINED_FOCUS = 6,
     RESIZED_INTERNAL = 7,
     RESIZED_EXTERNAL = 8,
-    MOVED = 9
+    MOVED = 9,
+    APP_LOOP = 10
 };
+
+enum class RenderAPI : U32;
 
 class WindowManager {
 public:
     WindowManager();
 
-    inline bool hasFocus() const;
-    inline void hasFocus(const bool state);
+    ErrorCode init(RenderAPI api,
+                   ResolutionByType initialResolutions,
+                   bool startFullScreen,
+                   I32 targetDisplayIndex);
 
-    inline bool minimized() const;
-    inline void minimized(const bool state);
+    void close();
 
-    inline WindowType mainWindowType() const;
-    inline void mainWindowType(WindowType type);
-
+    void setActiveWindow(U32 index);
+    ErrorCode initWindow(U32 index,
+                         U32 windowFlags,
+                         ResolutionByType initialResolutions,
+                         bool startFullScreen,
+                         I32 targetDisplayIndex);
     inline I32 targetDisplay() const;
     inline void targetDisplay(I32 displayIndex);
 
-    /// Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution() const;
-    inline const vec2<U16>& getPreviousResolution() const;
+    void setCursorPosition(I32 x, I32 y) const;
 
-    inline void setResolutionWidth(U16 w);
-    inline void setResolutionHeight(U16 h);
-    inline void setResolution(const vec2<U16>& resolution);
-
-    inline void setWindowDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY);
-    inline void setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions);
-    inline const vec2<U16>& getWindowDimensions() const;
-    inline const vec2<U16>& getWindowDimensions(WindowType windowType) const;
-
-    inline void setWindowPosition(I32 positionX, I32 positionY);
-    inline void setWindowPosition(const vec2<I32>& position);
-    inline const vec2<I32>& getWindowPosition() const;
+    inline DisplayWindow& getActiveWindow();
+    inline const DisplayWindow& getActiveWindow() const;
+    inline DisplayWindow& getWindow(I64 guid);
+    inline const DisplayWindow& getWindow(I64 guid) const;
+    void handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1, I32 data2);
 
 protected:
-    /// this is false if the window/application lost focus (e.g. clicked another
-    /// window, alt + tab, etc)
-    bool _hasFocus;
-    bool _minimized;
-    I32  _displayIndex;
-    WindowType _activeWindowType;
-    vec2<U16> _prevResolution;
-    vec2<I32> _windowPosition;
+    U32 createAPIFlags(RenderAPI api);
 
-    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _windowDimensions;
+protected:
+    I32 _displayIndex;
+    I64 _activeWindowGUID;
+    std::array<DisplayWindow, WINDOW_COUNT> _windows;
 };
 }; //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_

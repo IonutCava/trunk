@@ -19,17 +19,17 @@ namespace NS_GLIM
 
     GLIM_BATCH::GLIM_BATCH ()
     {
-        Clear (true, 64 * 3);
+        Clear (true, 64 * 3, 1);
     }
 
     GLIM_BATCH::~GLIM_BATCH ()
     {
     }
 
-    void GLIM_BATCH::Clear (bool reserveBuffers, unsigned int vertexCount)
+    void GLIM_BATCH::Clear (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount)
     {
         m_PrimitiveType = GLIM_ENUM::GLIM_NOPRIMITIVE;
-        m_Data.Reset (true, vertexCount);
+        m_Data.Reset (true, vertexCount, attributeCount);
     }
 
     void GLIM_BATCH::getBatchAABB (float& out_fMinX, float& out_fMaxX, float& out_fMinY, float& out_fMaxY, float& out_fMinZ, float& out_fMaxZ)
@@ -190,12 +190,12 @@ namespace NS_GLIM
     }
 #endif
 
-    void GLIM_BATCH::BeginBatch (bool reserveBuffers, unsigned int vertexCount)
+    void GLIM_BATCH::BeginBatch (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount)
     {
         GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH), "GLIM_BATCH::BeginBatch: This function cannot be called again before EndBatch has been called.");
 
         // clear all previous data
-        Clear (reserveBuffers, vertexCount);
+        Clear (reserveBuffers, vertexCount, attributeCount);
 
         // start an entirely new batch
         m_Data.m_State = GLIM_BATCH_STATE::STATE_BEGINNING_BATCH;

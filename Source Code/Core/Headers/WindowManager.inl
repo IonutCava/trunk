@@ -34,73 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-inline const vec2<U16>& WindowManager::getResolution() const {
-    return _windowDimensions[to_const_uint(WindowType::WINDOW)];
-}
-
-inline const vec2<U16>& WindowManager::getPreviousResolution() const {
-    return _prevResolution;
-}
-
-inline void WindowManager::setResolutionWidth(U16 w) {
-    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_const_uint(WindowType::WINDOW)].width = w;
-}
-
-inline void WindowManager::setResolutionHeight(U16 h) {
-    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_const_uint(WindowType::WINDOW)].height = h;
-}
-
-inline void WindowManager::setResolution(const vec2<U16>& resolution) {
-    _prevResolution.set(_windowDimensions[to_const_uint(WindowType::WINDOW)]);
-    _windowDimensions[to_const_uint(WindowType::WINDOW)].set(resolution);
-}
-
-inline void WindowManager::setWindowDimensions(WindowType windowType, U16 dimensionX, U16 dimensionY) {
-    _windowDimensions[to_uint(windowType)].set(dimensionX, dimensionY);
-}
-
-inline void WindowManager::setWindowDimensions(WindowType windowType, const vec2<U16>& dimensions) {
-    setWindowDimensions(windowType, dimensions.x, dimensions.y);
-}
-
-inline const vec2<U16>& WindowManager::getWindowDimensions() const {
-    return _windowDimensions[to_uint(mainWindowType())];
-}
-
-inline const vec2<U16>& WindowManager::getWindowDimensions(WindowType windowType) const {
-    return _windowDimensions[to_uint(windowType)];
-}
-
-inline void WindowManager::setWindowPosition(I32 positionX, I32 positionY) {
-    _windowPosition.set(positionX, positionY);
-}
-
-inline void WindowManager::setWindowPosition(const vec2<I32>& position) {
-    setWindowPosition(position.x, position.y);
-}
-
-inline const vec2<I32>& WindowManager::getWindowPosition() const {
-    return _windowPosition;
-}
-
-inline bool WindowManager::hasFocus() const {
-    return _hasFocus;
-}
-
-inline void WindowManager::hasFocus(const bool state) {
-    _hasFocus = state;
-}
-
-inline bool WindowManager::minimized() const {
-    return _minimized;
-}
-
-inline void WindowManager::minimized(const bool state) {
-    _minimized = state;
-}
-
 inline I32 WindowManager::targetDisplay() const {
     return _displayIndex;
 }
@@ -109,12 +42,32 @@ inline void WindowManager::targetDisplay(I32 displayIndex) {
     _displayIndex = displayIndex;
 }
 
-inline WindowType WindowManager::mainWindowType() const {
-    return _activeWindowType;
+inline DisplayWindow& WindowManager::getWindow(I64 guid) {
+    for (DisplayWindow& win : _windows) {
+        if (win.getGUID() == guid) {
+            return win;
+        }
+    }
+
+    return _windows[0];
 }
 
-inline void WindowManager::mainWindowType(WindowType type) {
-    _activeWindowType = type;
+inline const DisplayWindow& WindowManager::getWindow(I64 guid) const {
+    for (const DisplayWindow& win : _windows) {
+        if (win.getGUID() == guid) {
+            return win;
+        }
+    }
+
+    return _windows[0];
+}
+
+inline DisplayWindow& WindowManager::getActiveWindow() {
+    return getWindow(_activeWindowGUID);
+}
+
+inline const DisplayWindow& WindowManager::getActiveWindow() const {
+    return getWindow(_activeWindowGUID);
 }
 
 }; //namespace Divide

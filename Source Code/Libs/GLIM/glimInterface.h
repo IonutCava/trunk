@@ -47,7 +47,7 @@ namespace NS_GLIM
         virtual ~GLIM_Interface () {}
 
         //! Begins defining one piece of geometry that can later be rendered with one set of states.
-        virtual void BeginBatch (bool reserveBuffers, unsigned int vertexCount) = 0;
+        virtual void BeginBatch (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount) = 0;
         //! Ends defining the batch. After this call "RenderBatch" can be called to actually render it.
         virtual void EndBatch (void) = 0;
 

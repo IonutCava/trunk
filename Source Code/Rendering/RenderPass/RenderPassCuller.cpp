@@ -88,18 +88,17 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         std::launch launchPolicy = async ? std::launch::async | std::launch::deferred :
                                            std::launch::deferred;
 
-        _cullingTasks.resize(0);
-        _cullingTasks.reserve(childCount);
+        _cullingTasks.resize(childCount);
         for (U32 i = 0; i < childCount; ++i) {
             const SceneGraphNode& child = root.getChild(i, childCount);
-            _cullingTasks.push_back(std::async(launchPolicy, 
-                &RenderPassCuller::frustumCullNode, this, 
-                std::cref(child),
-                std::cref(camera),
-                stage,
-                cullMaxDistance,
-                i,
-                true));
+            _cullingTasks[i] = std::async(launchPolicy, 
+                                          &RenderPassCuller::frustumCullNode, this, 
+                                          std::cref(child),
+                                          std::cref(camera),
+                                          stage,
+                                          cullMaxDistance,
+                                          i,
+                                          true);
         }
 
         for (std::future<void>& task : _cullingTasks) {

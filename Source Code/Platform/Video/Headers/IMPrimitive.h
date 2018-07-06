@@ -76,7 +76,9 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
     }
 
     virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
-    virtual void beginBatch(bool reserveBuffers, unsigned int vertexCount) = 0;
+    virtual void beginBatch(bool reserveBuffers, 
+                            unsigned int vertexCount,
+                            unsigned int attributeCount) = 0;
 
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(F32 x, F32 y, F32 z) = 0;

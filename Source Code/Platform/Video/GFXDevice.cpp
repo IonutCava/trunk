@@ -294,7 +294,7 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(U32 renderStateBlockHash)
 
 void GFXDevice::increaseResolution() {
     const WindowManager& winManager = Application::getInstance().getWindowManager();
-    const vec2<U16>& resolution = winManager.getResolution();
+    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
 
     vectorImpl<GPUState::GPUVideoMode>::const_reverse_iterator it;
@@ -311,7 +311,7 @@ void GFXDevice::increaseResolution() {
 
 void GFXDevice::decreaseResolution() {
     const WindowManager& winManager = Application::getInstance().getWindowManager();
-    const vec2<U16>& resolution = winManager.getResolution();
+    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
     
     vectorImpl<GPUState::GPUVideoMode>::const_iterator it;
@@ -327,16 +327,16 @@ void GFXDevice::decreaseResolution() {
 
 void GFXDevice::toggleFullScreen() {
     WindowManager& winManager = Application::getInstance().getWindowManager();
-    switch (winManager.mainWindowType()) {
+    switch (winManager.getActiveWindow().type()) {
         case WindowType::WINDOW:
         case WindowType::SPLASH:
-            winManager.mainWindowType(WindowType::FULLSCREEN_WINDOWED);
+            winManager.getActiveWindow().type(WindowType::FULLSCREEN_WINDOWED);
             break;
         case WindowType::FULLSCREEN_WINDOWED:
-            winManager.mainWindowType(WindowType::FULLSCREEN);
+            winManager.getActiveWindow().type(WindowType::FULLSCREEN);
             break;
         case WindowType::FULLSCREEN:
-            winManager.mainWindowType(WindowType::WINDOW);
+            winManager.getActiveWindow().type(WindowType::WINDOW);
             break;
     };
 }
@@ -363,12 +363,10 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     Application& app = Application::getInstance();
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
-    app.getWindowManager().setResolution(vec2<U16>(w, h));
+    app.getWindowManager().getActiveWindow().setDimensions(WindowType::WINDOW, w, h);
 
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
     _gpuBlock._updated = true;
-
-    _api->changeResolution(w, h);
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it

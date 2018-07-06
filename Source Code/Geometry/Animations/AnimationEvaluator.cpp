@@ -129,7 +129,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
     aiQuaternion presentRotation(1, 0, 0, 0);
     aiQuaternion presentRotationDefault(1, 0, 0, 0);
     aiVector3D presentScaling(1, 1, 1);
-    bool transposeMat = GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::Direct3D;
+    bool transposeMat = GFX_DEVICE.getAPI() == RenderAPI::Direct3D;
     // calculate the transformations for each animation channel
     for (U32 a = 0; a < _channels.size(); a++) {
         

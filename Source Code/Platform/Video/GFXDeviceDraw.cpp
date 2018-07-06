@@ -418,7 +418,7 @@ void GFXDevice::drawSphere3D(IMPrimitive& primitive,
     U32 i, j;  // Looping variables
     primitive.paused(false);
     // Create the object
-    primitive.beginBatch(true, stacks * ((slices + 1) * 2));
+    primitive.beginBatch(true, stacks * ((slices + 1) * 2), 1);
     primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
     primitive.begin(PrimitiveType::LINE_LOOP);
     for (i = 0; i < stacks; i++) {
@@ -461,7 +461,7 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
                           const vec4<U8>& color)  {
     primitive.paused(false);
     // Create the object
-    primitive.beginBatch(true, 16);
+    primitive.beginBatch(true, 16, 1);
     // Set it's color
     primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(color));
     // Draw the bottom loop
@@ -535,7 +535,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
                 });
         }
         // Create the object containing all of the lines
-        primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14);
+        primitive.beginBatch(true, to_uint(lines.size()) * 2 * 14, 1);
         Util::ToFloatColor(lines[0]._colorStart, tempFloatColor);
         primitive.attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), tempFloatColor);
         // Set the mode to line rendering

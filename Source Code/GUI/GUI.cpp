@@ -29,6 +29,7 @@ GUI::GUI()
     : _init(false),
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
+      _enableCEGUIRendering(false),
       _console(MemoryManager_NEW GUIConsole())
 {
     // 500ms
@@ -62,12 +63,17 @@ void GUI::draw() const {
             element.lastDrawTimer(Time::ElapsedMicroseconds());
         }
     }
-     
     
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
+
+    // CEGUI handles its own states, so render it after we clear our states but
+    // before we swap buffers
+    if (_enableCEGUIRendering) {
+        CEGUI::System::getSingleton().renderAllGUIContexts();
+    }
 }
 
 void GUI::update(const U64 deltaTime) {
@@ -93,7 +99,7 @@ bool GUI::init(const vec2<U16>& resolution) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
-
+    _enableCEGUIRendering = !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
 #ifdef _DEBUG
     CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 #endif
@@ -297,7 +303,10 @@ GUIButton* GUI::addButton(const stringImpl& ID,
                           const stringImpl& rootSheetID) {
 
     const vec2<U16>& displaySize
-        = Application::getInstance().getWindowManager().getWindowDimensions();
+        = Application::getInstance()
+            .getWindowManager()
+            .getActiveWindow()
+            .getDimensions();
 
     vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
                         (position.y * 100.0f) / displaySize.y);
@@ -347,7 +356,10 @@ GUIText* GUI::addText(const stringImpl& ID, const vec2<I32>& position,
                       const char* format, ...) {
     ULL idHash = _ID_RT(ID);
     const vec2<U16>& displaySize
-        = Application::getInstance().getWindowManager().getWindowDimensions();
+        = Application::getInstance()
+            .getWindowManager()
+            .getActiveWindow()
+            .getDimensions();
 
     vec2<F32> relOffset((position.x * 100.0f) / displaySize.x,
                         ((displaySize.y - position.y) * 100.0f) / displaySize.y);

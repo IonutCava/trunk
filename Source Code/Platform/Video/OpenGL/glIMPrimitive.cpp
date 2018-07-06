@@ -17,8 +17,8 @@ glIMPrimitive::~glIMPrimitive()
 {
 }
 
-void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount) {
-    _imInterface->BeginBatch(reserveBuffers, vertexCount);
+void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) {
+    _imInterface->BeginBatch(reserveBuffers, vertexCount, attributeCount);
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {

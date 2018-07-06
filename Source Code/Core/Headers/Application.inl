@@ -68,8 +68,8 @@ inline const char* getErrorCodeName(ErrorCode code) {
             return "No physx API specified before trying to initialize the "
                    "PFX Device";
         };
-        case ErrorCode::SDL_INIT_ERROR: {
-            return "SDL failed to initialize";
+        case ErrorCode::WINDOW_INIT_ERROR: {
+            return "Windowing system failed to initialize";
         };
         case ErrorCode::SDL_WINDOW_INIT_ERROR: {
             return "SDL failed to create a valid window";
@@ -178,8 +178,8 @@ inline void Application::mainLoopPaused(bool state) {
 }
 
 inline void Application::snapCursorToCenter() const {
-    const vec2<U16>& center = _windowManager.getResolution();
-    snapCursorToPosition(to_int(center.x / 2), to_int(center.y / 2));
+    const vec2<U16>& center = _windowManager.getActiveWindow().getDimensions();
+    setCursorPosition(to_int(center.x / 2), to_int(center.y / 2));
 }
 
 inline void Application::throwError(ErrorCode err) {

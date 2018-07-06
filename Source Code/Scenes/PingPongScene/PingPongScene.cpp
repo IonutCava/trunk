@@ -321,7 +321,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setPosition(vec3<F32>(0, 6, 2));
     */
     const vec2<U16>& resolution
-        = Application::getInstance().getWindowManager().getResolution();
+        = Application::getInstance().getWindowManager().getActiveWindow().getDimensions();
     // Buttons and text labels
     _GUI->addButton("Serve", "Serve",
                     vec2<I32>(to_int(resolution.width - 120),

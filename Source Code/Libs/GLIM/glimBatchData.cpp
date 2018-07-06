@@ -127,10 +127,11 @@ glimBatchData::~glimBatchData() {
 #endif
 }
 
-void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount) {
+void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount) {
     m_State = GLIM_BATCH_STATE::STATE_EMPTY;
 
     m_Attributes.clear();
+    m_Attributes.reserve(attributeCount);
     m_PositionData.resize(0);
     
     m_IndexBuffer_Points.clear();

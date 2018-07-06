@@ -110,7 +110,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
-    const vec2<U16>& resolution = winManager.getResolution();
+    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
 
     // Create general purpose render state blocks
@@ -250,6 +250,12 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
+}
+
+void GFXDevice::onChangeWindowSize(U16 w, U16 h) {
+    setBaseViewport(vec4<I32>(0, 0, w, h));
+    // Update the 2D camera so it matches our new rendering viewport
+    _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)),  vec2<F32>(-1, 1));
 }
 
 /// Revert everything that was set up in initRenderingAPI()
@@ -395,42 +401,6 @@ void GFXDevice::endFrame() {
     // Unbind shaders
     ShaderManager::getInstance().unbind();
     _api->endFrame();
-}
-
-void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
-    Application& app = Application::getInstance();
-
-    switch (event) {
-        case WindowEvent::HIDDEN:{
-        } break;
-        case WindowEvent::SHOWN:{
-        } break;
-        case WindowEvent::MINIMIZED:{
-            app.mainLoopPaused(true);
-            app.getWindowManager().minimized(true);
-        } break;
-        case WindowEvent::MAXIMIZED:{
-            app.getWindowManager().minimized(false);
-        } break;
-        case WindowEvent::RESTORED: {
-            app.getWindowManager().minimized(false);
-        } break;
-        case WindowEvent::LOST_FOCUS:{
-            app.getWindowManager().hasFocus(false);
-        } break;
-        case WindowEvent::GAINED_FOCUS:{
-            app.getWindowManager().hasFocus(true);
-        } break;
-        case WindowEvent::RESIZED_INTERNAL:{
-            setBaseViewport(vec4<I32>(0, 0, data1, data2));
-            // Update the 2D camera so it matches our new rendering viewport
-            _2DCamera->setProjection(vec4<F32>(0, to_float(data1), 0, to_float(data2)),
-                                     vec2<F32>(-1, 1));
-            app.getKernel().onChangeWindowSize(to_ushort(data1), to_ushort(data2));
-        } break;
-        case WindowEvent::RESIZED_EXTERNAL:{
-        } break;
-    };
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

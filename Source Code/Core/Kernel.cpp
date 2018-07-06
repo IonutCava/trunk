@@ -223,6 +223,8 @@ void Kernel::mainLoopApp() {
                            to_float(s_appLoopTimer->get()),
                            _timingData._currentTime);
 #endif
+
+    APP.onLoop();
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
@@ -236,7 +238,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     // Update camera
     _cameraMgr->update(deltaTime);
 
-    if (_APP.getWindowManager().minimized()) {
+    if (_APP.getWindowManager().getActiveWindow().minimized()) {
         idle();
         return true;
     }
@@ -286,7 +288,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
     
     // Get input events
-    if (_APP.getWindowManager().hasFocus()) {
+    if (_APP.getWindowManager().getActiveWindow().hasFocus()) {
         _input.update(_timingData._currentTimeDelta);
     } else {
         _sceneMgr.onLostFocus();
@@ -404,8 +406,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _SFX.setAPI(SFXDevice::AudioAPI::SDL);
     // Using OpenGL for rendering as default
     if (Config::USE_OPENGL_RENDERING) {
-        _GFX.setAPI(Config::USE_OPENGL_ES ? GFXDevice::RenderAPI::OpenGLES
-                                            : GFXDevice::RenderAPI::OpenGL);
+        _GFX.setAPI(Config::USE_OPENGL_ES ? RenderAPI::OpenGLES
+                                          : RenderAPI::OpenGL);
     }
     // Load info from XML files
     stringImpl startupScene(XML::loadScripts(entryPoint));
@@ -413,13 +415,23 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
+
+    // Fulscreen is automatically calculated
+    ResolutionByType initRes;
+    initRes[to_const_uint(WindowType::WINDOW)].set(par.getParam<I32>("runtime.windowWidth", 1024),
+                                                   par.getParam<I32>("runtime.windowHeight", 768));
+    initRes[to_const_uint(WindowType::SPLASH)].set(par.getParam<I32>("runtime.splashWidth", 400),
+                                                   par.getParam<I32>("runtime.splashHeight", 300));
+
+    I32 targetDisplay = par.getParam<I32>("runtime.targetDisplay", 0);
+    bool startFullScreen = par.getParam<bool>("runtime.startFullScreen", true);
     WindowManager& winManager = _APP.getWindowManager();
-    WindowType windowType = winManager.mainWindowType();
 
-    vec2<U16> resolution = winManager.getResolution();
-    F32 aspectRatio = to_float(resolution.width) / to_float(resolution.height);
-
-    ErrorCode initError = _GFX.initRenderingAPI(_argc, _argv);
+    ErrorCode initError = winManager.init(_GFX.getAPI(), initRes, startFullScreen, targetDisplay);
+    if (initError != ErrorCode::NO_ERR) {
+        return initError;
+    }
+    initError = _GFX.initRenderingAPI(_argc, _argv);
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -434,6 +446,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     RenderPassManager::getInstance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
     RenderPassManager::getInstance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
 
+    DisplayWindow& mainWindow = winManager.getActiveWindow();
+    vec2<U16> resolution = initRes[to_const_uint(mainWindow.type())];
+    F32 aspectRatio = to_float(resolution.width) / to_float(resolution.height);
+
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
     _mainCamera = _cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY);
     _mainCamera->setProjection(aspectRatio,
@@ -446,27 +462,30 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _cameraMgr->pushActiveCamera(_mainCamera);
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
-    winManager.mainWindowType(WindowType::SPLASH);
+    winManager.getActiveWindow().type(WindowType::SPLASH);
     // Load and render the splash screen
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", winManager.getWindowDimensions(WindowType::SPLASH)).render();
+    GUISplash("divideLogo.jpg", initRes[to_const_uint(WindowType::SPLASH)]).render();
     _GFX.endFrame();
+    _APP.onLoop();
+    // Change window from splash screen to target type set on init()
+    winManager.getActiveWindow().previousType();
 
-    winManager.mainWindowType(windowType);
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
-    if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
+    initError = _SFX.initAudioAPI();
+    if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
-    if ((initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE)) !=
-        ErrorCode::NO_ERR) {
+    initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE);
+    if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
     // Bind the kernel with the input interface
-     if ((initError = Input::InputInterface::getInstance().init(*this)) !=
-        ErrorCode::NO_ERR) {
+    initError = Input::InputInterface::getInstance().init(*this, winManager.getActiveWindow().getDimensions());
+    if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
@@ -552,12 +571,13 @@ void Kernel::shutdown() {
     // Destroy the shader manager AFTER the resource cache
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
-        
    
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::onChangeWindowSize(U16 w, U16 h) {
+    Attorney::GFXDeviceKernel::onChangeWindowSize(w, h);
+
     if (Input::InputInterface::getInstance().isInit()) {
         const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
         ms.width = w;
@@ -571,11 +591,9 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
     }
 }
 
-///--------------------------Input
-/// Management-------------------------------------///
+///--------------------------Input Management-------------------------------------///
 
 bool Kernel::setCursorPosition(I32 x, I32 y) const {
-    _GFX.setCursorPosition(x, y);
     _GUI.setCursorPosition(x, y);
     return true;
 }

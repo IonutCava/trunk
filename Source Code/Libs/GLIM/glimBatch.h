@@ -20,7 +20,7 @@ namespace NS_GLIM
         virtual ~GLIM_BATCH ();
 
         // Begins defining one piece of geometry that can later be rendered with one set of states.
-        virtual void BeginBatch (bool reserveBuffers = true, unsigned int vertexCount = 64 * 3);
+        virtual void BeginBatch (bool reserveBuffers = true, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1);
         //! Ends defining the batch. After this call "RenderBatch" can be called to actually render it.
         virtual void EndBatch (void);
 
@@ -88,7 +88,7 @@ namespace NS_GLIM
         virtual void getBatchAABB (float& out_fMinX, float& out_fMaxX, float& out_fMinY, float& out_fMaxY, float& out_fMinZ, float& out_fMaxZ);
 
         //! Deletes all data associated with this object.
-        void Clear (bool reserveBuffers, unsigned int vertexCount);
+        void Clear (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount);
 
         //! Returns true if the GLIM_BATCH contains no batch data.
         bool isCleared (void) const {return (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY);}

@@ -35,8 +35,6 @@
 #include "WindowManager.h"
 #include "Platform/Threading/Headers/Thread.h"
 
-#include <fstream>
-
 namespace Divide {
 
 enum class ErrorCode : I32 {
@@ -48,7 +46,7 @@ enum class ErrorCode : I32 {
     GFX_NON_SPECIFIED = -5,
     SFX_NON_SPECIFIED = -6,
     PFX_NON_SPECIFIED = -7,
-    SDL_INIT_ERROR = -8,
+    WINDOW_INIT_ERROR = -8,
     SDL_WINDOW_INIT_ERROR = -9,
     FONT_INIT_ERROR = -10,
     GLBINGING_INIT_ERROR = -11,
@@ -78,6 +76,7 @@ DEFINE_SINGLETON(Application)
     /// Startup and shutdown
     ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();
+    void onLoop();
 
     inline void RequestShutdown();
     inline void CancelShutdown();
@@ -97,9 +96,10 @@ DEFINE_SINGLETON(Application)
     inline bool mainLoopPaused() const;
     inline void mainLoopPaused(bool state);
 
-    void snapCursorToPosition(I32 x, I32 y) const;
+    void onChangeWindowSize(U16 w, U16 h) const;
+    void setCursorPosition(I32 x, I32 y) const;
     inline void snapCursorToCenter() const;
-
+        
     inline void throwError(ErrorCode err);
     inline ErrorCode errorCode() const;
 

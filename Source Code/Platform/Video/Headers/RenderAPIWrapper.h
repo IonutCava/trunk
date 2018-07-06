@@ -70,6 +70,15 @@ typedef struct {
 } VideoModes;
 // FWD DECLARE CLASSES
 
+enum class RenderAPI : U32 {
+    OpenGL,    ///< 4.x+
+    OpenGLES,  ///< 3.x+
+    Direct3D,  ///< 12.x+ (not supported yet)
+    Vulkan,    ///< not supported yet
+    None,      ///< not supported yet
+    COUNT
+};
+
 struct IndirectDrawCommand {
     IndirectDrawCommand()
         : indexCount(0),
@@ -450,10 +459,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void beginFrame() = 0;
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame() = 0;
-    /// Platform specific cursor manipulation.
-    /// Set's the cursor's location to the specified X and Y relative to the
-    /// edge of the window
-    virtual void setCursorPosition(I32 x, I32 y) = 0;
     virtual IMPrimitive* newIMP(GFXDevice& context) const = 0;
     virtual Framebuffer* newFB(GFXDevice& context, bool multisampled) const = 0;
     virtual VertexBuffer* newVB(GFXDevice& context) const = 0;
@@ -496,7 +501,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void drawTriangle() = 0;
 
    protected:
-    virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void threadedLoadCallback() = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;

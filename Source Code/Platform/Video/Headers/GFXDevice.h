@@ -205,15 +205,6 @@ DEFINE_SINGLETON(GFXDevice)
        void cacheSettings();
    };
 
-   enum class RenderAPI : U32 {
-       OpenGL,    ///< 4.x+
-       OpenGLES,  ///< 3.x+
-       Direct3D,  ///< 12.x+ (not supported yet)
-       Vulkan,    ///< not supported yet
-       None,      ///< not supported yet
-       COUNT
-   };
-
    enum class RenderTargetID : U32 {
        SCREEN = 0,
        ANAGLYPH = 1,
@@ -260,7 +251,6 @@ DEFINE_SINGLETON(GFXDevice)
     void idle();
     void beginFrame();
     void endFrame();
-    void handleWindowEvent(WindowEvent event, I32 data1, I32 data2);
 
     /// Set all of the needed API specific settings for 2D (Ortho) / 3D
     /// (Perspective) rendering
@@ -478,10 +468,6 @@ DEFINE_SINGLETON(GFXDevice)
         return _api->getFrameDurationGPU();
     }
 
-    inline void setCursorPosition(I32 x, I32 y) {
-        _api->setCursorPosition(x, y);
-    }
-
   protected:
     void setBaseViewport(const vec4<I32>& viewport);
 
@@ -509,6 +495,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     void computeFrustumPlanes();
     void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
+
+    void onChangeWindowSize(U16 w, U16 h);
 
   protected:
     friend class Camera;
@@ -685,6 +673,10 @@ namespace Attorney {
 
         static void flushAnaglyph() {
             GFXDevice::getInstance().flushAnaglyph();
+        }
+
+        static void onChangeWindowSize(U16 w, U16 h) {
+            GFXDevice::getInstance().onChangeWindowSize(w, h);
         }
 
         friend class Divide::Kernel;

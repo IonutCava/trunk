@@ -51,7 +51,7 @@ void NavMeshDebugDraw::beginBatch() {
     assert(_primitive != nullptr);
 
     if (_dirty) {
-        _primitive->beginBatch(true, 1024);
+        _primitive->beginBatch(true, 1024, 1);
     }
 }
 

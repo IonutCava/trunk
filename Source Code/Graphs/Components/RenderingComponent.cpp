@@ -92,7 +92,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->stateHash(stateBlock.getHash());
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
-    _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
+    _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2, 1);
     _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(_axisLines[0]._colorStart));
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);

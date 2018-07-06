@@ -149,6 +149,8 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
 
   private:
     bool _init;              //< Set to true when the GUI has finished loading
+                             /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
+                             /// performance)
     CEGUIInput _ceguiInput;  //< Used to implement key repeat
     GUIConsole* _console;    //< Pointer to the GUIConsole object
     GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for
@@ -159,6 +161,8 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
     ShaderProgram* _guiShader;  //<Used to apply color for text for now
+
+    bool _enableCEGUIRendering;
 
 END_SINGLETON
 
