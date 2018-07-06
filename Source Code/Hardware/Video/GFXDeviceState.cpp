@@ -1,6 +1,7 @@
 #include "Headers/GFXDevice.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
@@ -131,26 +132,32 @@ I8 GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **arg
     return NO_ERR;
 }
 
-void GFXDevice::closeRenderingApi(){
+void GFXDevice::closeRenderingApi() {
+    closeRenderer();
+
     _shaderManager.destroyInstance();
     _api.closeRenderingApi();
     _loaderThread->join();
     SAFE_DELETE(_loaderThread);
 
-    FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap)
+    FOR_EACH(RenderStateMap::value_type& it, _stateBlockMap) {
         SAFE_DELETE(it.second);
-    
+    }
+
     _stateBlockMap.clear();
-    for(IMPrimitive*& priv : _imInterfaces)
+
+    for (IMPrimitive*& priv : _imInterfaces) {
         SAFE_DELETE(priv);
-    
+    }
+
     _imInterfaces.clear(); //<Should call all destructors
 
     //Destroy all rendering Passes
-    RenderPassManager::getInstance().destroyInstance();
+    RenderPassManager::destroyInstance();
 
-    for (Framebuffer*& renderTarget : _renderTarget)
+    for (Framebuffer*& renderTarget : _renderTarget) {
         SAFE_DELETE(renderTarget);
+    }
 
     SAFE_DELETE(_gfxDataBuffer);
     SAFE_DELETE(_nodeBuffer);
@@ -160,14 +167,16 @@ void GFXDevice::closeRenderer(){
     RemoveResource(_HIZConstructProgram);
     RemoveResource(_depthRangesConstructProgram);
     PRINT_FN(Locale::get("STOP_POST_FX"));
-    _postFX.destroyInstance();
-    _shaderManager.Destroy();
+    PostFX::destroyInstance();
+    _shaderManager.destroy();
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     SAFE_DELETE(_renderer);
 }
 
 void GFXDevice::idle() {
-    if (!_renderer) return;
+    if (!_renderer) {
+        return;
+    }
 
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
@@ -176,30 +185,39 @@ void GFXDevice::idle() {
     _shaderManager.idle();
 }
 
-void GFXDevice::beginFrame()    {
+void GFXDevice::beginFrame() {
     _api.beginFrame();
     setStateBlock(_defaultStateBlockHash);
 }
 
-void GFXDevice::endFrame()      { 
-    //Remove dead primitives in 3 steps (or we could automate this with shared_ptr?):
-    //1) Partition the vector in 2 parts: valid objects first, zombie objects second
-    vectorImpl<IMPrimitive* >::iterator zombie = std::partition(_imInterfaces.begin(),
-                                                                _imInterfaces.end(),
-                                                                [](IMPrimitive* const priv){
-                                                                    if(!priv->_canZombify) return true;
-                                                                    return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
-                                                                });
-    //2) For every zombie object, free the memory it's using
-    for( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _imInterfaces.end() ; ++i )
-        SAFE_DELETE(*i);
+void GFXDevice::endFrame() { 
 
-    //3) Remove all the zombie objects once the memory is freed
-    _imInterfaces.erase(zombie, _imInterfaces.end());
+    if (Application::getInstance().mainLoopActive()) {
+        // Render all 2D debug info and call API specific flush function
+        toggle2D(true);
+        for (std::pair<U32, DELEGATE_CBK>& callbackFunction : _2dRenderQueue) {
+            callbackFunction.second();
+        }
+        toggle2D(false);
 
-    FRAME_COUNT++;
-    FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-    FRAME_DRAW_CALLS = 0;
+        //Remove dead primitives in 3 steps (or we could automate this with shared_ptr?):
+        //1) Partition the vector in 2 parts: valid objects first, zombie objects second
+        vectorImpl<IMPrimitive* >::iterator zombie = std::partition(_imInterfaces.begin(), _imInterfaces.end(),
+                                                                    [](IMPrimitive* const priv){
+                                                                        if(!priv->_canZombify) return true;
+                                                                        return priv->zombieCounter() < IM_MAX_FRAMES_ZOMBIE_COUNT;
+                                                                    });
+        //2) For every zombie object, free the memory it's using
+        for ( vectorImpl<IMPrimitive *>::iterator i = zombie ; i != _imInterfaces.end(); ++i ) {
+            SAFE_DELETE(*i);
+        }
+        //3) Remove all the zombie objects once the memory is freed
+        _imInterfaces.erase(zombie, _imInterfaces.end());
+    
+        FRAME_COUNT++;
+        FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
+        FRAME_DRAW_CALLS = 0;
+    }
 
     _api.endFrame();  
 }

@@ -36,16 +36,6 @@ inline void GFXDevice::setApi(const RenderAPI& api){
     };
 }
 
-/// Render all 2D debug info and call API specific flush function
-inline void GFXDevice::flush(){
-    toggle2D(true);
-    for (std::pair<U32, DELEGATE_CBK>& callbackFunction : _2dRenderQueue){
-        callbackFunction.second();
-    }
-    toggle2D(false);
-    _api.flush();
-}
-
 /// Render specified function inside of a viewport of specified dimensions and position
 inline void GFXDevice::renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback){
     setViewport(rect);

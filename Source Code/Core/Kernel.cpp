@@ -35,7 +35,7 @@ ProfileTimer* s_appLoopTimer = nullptr;
 boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  Kernel::_callbackBuffer;
 Unordered_map<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
 
-#if USE_FIXED_TIMESTEP
+#if defined(USE_FIXED_TIMESTEP)
 static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
 #endif
 
@@ -60,10 +60,8 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     _cameraMgr = New CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
     // force all lights to update on camera change (to keep them still actually)
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange,
-                                                       DELEGATE_REF(LightManager::getInstance())));
-    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange,
-                                                      DELEGATE_REF(SceneManager::getInstance())));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::onCameraChange, DELEGATE_REF(LightManager::getInstance())));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&SceneManager::onCameraChange, DELEGATE_REF(SceneManager::getInstance())));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
@@ -72,14 +70,15 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     s_appLoopTimer = ADD_TIMER("MainLoopTimer");
 }
 
-Kernel::~Kernel(){
+Kernel::~Kernel()
+{
     _mainTaskPool->wait();
     SAFE_DELETE(_mainTaskPool);
     REMOVE_TIMER(s_appLoopTimer);
 }
 
-void Kernel::threadPoolCompleted(U64 onExitTaskID){
-    while (!_callbackBuffer.push(onExitTaskID)){
+void Kernel::threadPoolCompleted(U64 onExitTaskID) {
+    while (!_callbackBuffer.push(onExitTaskID)) {
         boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
     }
 }
@@ -90,24 +89,30 @@ void Kernel::idle(){
     SceneManager::getInstance().idle();
     LightManager::getInstance().idle();
     FrameListenerManager::getInstance().idle();
+
     ParamHandler& par = ParamHandler::getInstance();
+
+    _freezeGUITime  = par.getParam("freezeGUITime", false);
     bool freezeLoopTime = par.getParam("freezeLoopTime", false);
-    if (freezeLoopTime != _freezeLoopTime){
+    if (freezeLoopTime != _freezeLoopTime) {
         _freezeLoopTime = freezeLoopTime;
         _currentTimeFrozen = _currentTime;
         AIManager::getInstance().pauseUpdate(freezeLoopTime);
     }
-    _freezeGUITime  = par.getParam("freezeGUITime", false);
+
     std::string pendingLanguage = par.getParam<std::string>("language");
     if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
         Locale::changeLanguage(pendingLanguage);
     }
-    if (!_callbackBuffer.empty()){
+
+    if (!_callbackBuffer.empty()) {
         U64 onExitTaskID;
-        _callbackBuffer.pop(onExitTaskID);
-        DELEGATE_CBK& cbk = _threadedCallbackFunctions[onExitTaskID];
-        if (!cbk.empty())
-            cbk();
+        if (_callbackBuffer.pop(onExitTaskID)) {
+            DELEGATE_CBK& cbk = _threadedCallbackFunctions[onExitTaskID];
+            if (!cbk.empty()) {
+                cbk();
+            }
+        }
     }
 }
 
@@ -124,9 +129,9 @@ void Kernel::mainLoopApp(){
     START_TIMER(s_appLoopTimer);
 
     // Update time at every render loop
-    Kernel::_previousTime     = Kernel::_currentTime;
-    Kernel::_currentTime      = GETUSTIME();
-    Kernel::_currentTimeDelta = Kernel::_currentTime - Kernel::_previousTime;
+    _previousTime     = _currentTime;
+    _currentTime      = GETUSTIME();
+    _currentTimeDelta = _currentTime - _previousTime;
 
     FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
@@ -142,18 +147,19 @@ void Kernel::mainLoopApp(){
         _keepAlive = frameMgr.frameEvent(evt);
 
         //Process the current frame
-        _keepAlive = APP.getKernel()->mainLoopScene(evt);
+        _keepAlive = APP.getKernel()->mainLoopScene(evt) && _keepAlive;
+
         //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-        frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS,evt);
-        _keepAlive = frameMgr.frameEvent(evt);
+        frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS, evt);
+        _keepAlive = frameMgr.frameEvent(evt) && _keepAlive;
     }
     GFX_DEVICE.endFrame();
 
     //Launch the FRAME_ENDED event (buffers have been swapped)
     frameMgr.createEvent(_currentTime, FRAME_EVENT_ENDED,evt);
-    _keepAlive = frameMgr.frameEvent(evt);
+    _keepAlive = frameMgr.frameEvent(evt) && _keepAlive;
 
-    _keepAlive = APP.ShutdownRequested();
+    _keepAlive = !APP.ShutdownRequested() && _keepAlive;
 
     STOP_TIMER(s_appLoopTimer);
 
@@ -172,33 +178,37 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     
     //Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
-#if USE_FIXED_TIMESTEP
+
     _loops = 0;
-    U64 deltaTime = SKIP_TICKS;
-    while(_currentTime > _nextGameTick && _loops < Config::MAX_FRAMESKIP) {
-#else
+
+#if !defined(USE_FIXED_TIMESTEP)
     U64 deltaTime = _currentTimeDelta;
-    D32 interpolationFactor = 1.0f;
+#else
+    U64 deltaTime = SKIP_TICKS;
+    while (_currentTime > _nextGameTick && _loops < Config::MAX_FRAMESKIP) {    
 #endif
 
-        if (!_freezeGUITime){
+        if (!_freezeGUITime) {
             _sceneMgr.processGUI(deltaTime);
         }
-        if (!_freezeLoopTime){
+
+        if (!_freezeLoopTime) { 
             // Update scene based on input
             _sceneMgr.processInput(_currentTimeDelta);
             // process all scene events
             _sceneMgr.processTasks(deltaTime);
         }
 
-#if USE_FIXED_TIMESTEP
         _nextGameTick += deltaTime;
         _loops++;
 
-        if (_loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick)
+#if defined(USE_FIXED_TIMESTEP)
+        if (_loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
             _nextGameTick = _currentTime;
-    }
-    D32 interpolationFactor = std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0);
+        }
+    } // while
+
+    _GFX.setInterpolation(std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0));
 #endif
     
     // Get input events
@@ -211,26 +221,23 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     //Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
-    return presentToScreen(evt,interpolationFactor);
+    return presentToScreen(evt);
 }
 
-void Kernel::renderScene(){
-    if (_GFX.anaglyphEnabled()){
+void Kernel::renderScene() {
+    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
+    bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
+
+    if (_GFX.anaglyphEnabled() && postProcessing) {
         renderSceneAnaglyph();
         return;
     }
-
-    RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
-    bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
     
-    assert(_GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN) != nullptr);
-
     _GFX.isDepthPrePass(true);
-
     /// Lock the render pass manager because the Z_PRE_PASS and the FINAL_STAGE pass must render the exact same geometry
     RenderPassManager::getInstance().lock();
     // Z-prePass
@@ -238,25 +245,27 @@ void Kernel::renderScene(){
         SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
     _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
 
-    _GFX.ConstructHIZ();
     _GFX.isDepthPrePass(false);
 
-    if(postProcessing)
+    _GFX.ConstructHIZ();
+
+    if (postProcessing) {
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(Framebuffer::defaultPolicy());
+    }
 
     SceneManager::getInstance().render(stage, *this);
 
-    RenderPassManager::getInstance().unlock();
-
-    if(postProcessing)
+    if (postProcessing) {
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
-    
-    PostFX::getInstance().displayScene();
+        PostFX::getInstance().displayScene();
+    }
+
+    RenderPassManager::getInstance().unlock();
 }
 
 void Kernel::renderSceneAnaglyph(){
     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
-    
+
     Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
@@ -269,23 +278,26 @@ void Kernel::renderSceneAnaglyph(){
         RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this); 
-
+            SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this); 
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
         // first screen buffer
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(stage, *this);
+            SceneManager::getInstance().render(stage, *this);
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->End();
 
         RenderPassManager::getInstance().unlock();
+
     // Render to left eye
     currentCamera->setAnaglyph(false);
     currentCamera->renderLookAt();
         RenderPassManager::getInstance().lock();
         // Z-prePass
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+            SceneManager::getInstance().render(Z_PRE_PASS_STAGE, *this);
+        _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->End();
         // second screen buffer
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(stage, *this);
+            SceneManager::getInstance().render(stage, *this);
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->End();
 
         RenderPassManager::getInstance().unlock();
@@ -294,13 +306,13 @@ void Kernel::renderSceneAnaglyph(){
 }
 
 
-bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
+bool Kernel::presentToScreen(FrameEvent& evt) {
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
 
-    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START,evt, interpolationFactor);
-    if (!frameMgr.frameEvent(evt)) return false;
-
-    _GFX.setInterpolation(interpolationFactor);
+    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START, evt);
+    if (!frameMgr.frameEvent(evt)) {
+        return false;
+    }
 
     //Prepare scene for rendering
     _sceneMgr.preRender();
@@ -309,27 +321,31 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
     ShaderManager::getInstance().update(_currentTimeDelta);
 
     frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END, evt);
-    if (!frameMgr.frameEvent(evt)) return false;
+    if (!frameMgr.frameEvent(evt)) {
+        return false;
+    }
 
     renderScene();
 
     frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_START, evt);
-    if (!frameMgr.frameEvent(evt)) return false;
+    if (!frameMgr.frameEvent(evt)) {
+        return false;
+    }
 
     _sceneMgr.postRender();
 
     frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_END, evt);
-    if (!frameMgr.frameEvent(evt)) return false;
-
-    //render debug primitives, 2D elements and cleanup after us
-    _GFX.flush();
+    if (!frameMgr.frameEvent(evt)) {
+        return false;
+    }
 
     // Draw the GUI
-    _GUI.draw(_freezeGUITime ? 0ULL : _currentTimeDelta, interpolationFactor);
+    _GUI.draw(_freezeGUITime ? 0ULL : _currentTimeDelta);
+
     return true;
 }
 
-void Kernel::firstLoop(){
+void Kernel::firstLoop() {
     ParamHandler& par = ParamHandler::getInstance();
     bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
     //Skip two frames, one without and one with shadows, so all resources can be built while the splash screen is displayed
@@ -337,7 +353,7 @@ void Kernel::firstLoop(){
     par.setParam("freezeLoopTime", true);
     par.setParam("rendering.enableShadows",false);
     mainLoopApp();
-    if (shadowMappingEnabled){
+    if (shadowMappingEnabled) {
         par.setParam("rendering.enableShadows", true);
         mainLoopApp();
     }
@@ -358,7 +374,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
     _GFX.setRenderStage(stage);
     _GFX.getRenderer()->render(sceneRenderCallback, sceneRenderState);
 
-    if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)){
+    if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)) {
         // Draw bounding boxes, skeletons, axis gizmo, etc.
         _GFX.debugDraw(sceneRenderState);
         // Show NavMeshes
@@ -457,8 +473,10 @@ void Kernel::runLogicLoop(){
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
     //The first loops compiles all the visible data, so do not render the first couple of frames
     firstLoop();
+
     _keepAlive = true;
     _APP.mainLoopActive(true);
+
     while (_APP.mainLoopActive()) {
         Kernel::mainLoopApp();
     }
@@ -470,10 +488,10 @@ void Kernel::shutdown(){
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
-    _GUI.destroyInstance(); ///Deactivate GUI
+    GUI::destroyInstance(); ///Deactivate GUI
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
-    _sceneMgr.destroyInstance();
+    SceneManager::destroyInstance();
     // Close CEGUI
     try { 
         CEGUI::System::destroy();
@@ -481,39 +499,42 @@ void Kernel::shutdown(){
         D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
     SAFE_DELETE(_cameraMgr);
-    _GFX.closeRenderer();
-    ResourceCache::getInstance().destroyInstance();
-    LightManager::getInstance().destroyInstance();
+    ResourceCache::destroyInstance();
+    LightManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
-    FrameListenerManager::getInstance().destroyInstance();
+    FrameListenerManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.closePhysicsApi();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
-    InputInterface::getInstance().destroyInstance();
     _SFX.closeAudioApi();
-    _SFX.destroyInstance();
     _GFX.closeRenderingApi();
-    _GFX.destroyInstance();
+    InputInterface::destroyInstance();
+    SFXDevice::destroyInstance();
+    GFXDevice::destroyInstance();
     Locale::clear();
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){
-    Application& app = Application::getInstance();
-    app.setResolution(w, h);
-    if (app.mainLoopActive()){
-        //minimized
-        _renderingPaused = (w == 0 || h == 0);
-        app.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
-        vec2<U16> newResolution(w, h);
-        //Update the graphical user interface
-        GUI::getInstance().onResize(newResolution);
-        // Update light manager so that all shadow maps and other render targets match our needs
-        LightManager::getInstance().updateResolution(w, h);
-        // Cache resolution for faster access
-        SceneManager::getInstance().cacheResolution(newResolution);
-        // Update internal resolution tracking (used for joysticks and mouse)
-        InputInterface::getInstance().updateResolution(w,h);
+    Application& APP = Application::getInstance();
+    APP.setResolution(w, h);
+
+    if (!APP.mainLoopActive()){
+        return;
     }
+
+    //minimized
+    _renderingPaused = (w == 0 || h == 0);
+    APP.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
+    vec2<U16> newResolution(w, h);
+    //Update the graphical user interface
+    GUI::getInstance().onResize(newResolution);
+    // Update light manager so that all shadow maps and other render targets match our needs
+    LightManager::getInstance().updateResolution(w, h);
+    // Cache resolution for faster access
+    SceneManager::getInstance().cacheResolution(newResolution);
+    // Update internal resolution tracking (used for joysticks and mouse)
+    InputInterface::getInstance().updateResolution(w,h);
+    
 }
 
 ///--------------------------Input Management-------------------------------------///
@@ -536,31 +557,31 @@ bool Kernel::onMouseMove(const OIS::MouseEvent& arg) {
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
+bool Kernel::onMouseClickDown(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if(!_sceneMgr.onMouseClickDown(arg,button)) {
     }
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button) {
+bool Kernel::onMouseClickUp(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
     if(!_sceneMgr.onMouseClickUp(arg,button)) {
     }
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg,I8 axis,I32 deadZone) {
+bool Kernel::onJoystickMoveAxis(const OIS::JoyStickEvent& arg, I8 axis, I32 deadZone) {
     if(!_sceneMgr.onJoystickMoveAxis(arg,axis,deadZone)) {
     }
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg,I8 pov){
+bool Kernel::onJoystickMovePOV(const OIS::JoyStickEvent& arg, I8 pov){
     if(!_sceneMgr.onJoystickMovePOV(arg,pov)) {
     }
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg,I8 button){
+bool Kernel::onJoystickButtonDown(const OIS::JoyStickEvent& arg, I8 button){
     if(!_sceneMgr.onJoystickButtonDown(arg,button)) {
     }
     return true; //< InputInterface needs to know when this is completed

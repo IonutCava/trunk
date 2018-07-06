@@ -5,11 +5,12 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
-void GFXDevice::previewDepthBuffer(){
-    if (!_previewDepthBuffer)
+void GFXDevice::previewDepthBuffer() {
+    if (!_previewDepthBuffer) {
         return;
+    }
 
-    if(!_previewDepthMapShader){
+    if (!_previewDepthMapShader) {
         ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
         _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
         assert(_previewDepthMapShader != nullptr);
@@ -17,8 +18,9 @@ void GFXDevice::previewDepthBuffer(){
         _previewDepthMapShader->Uniform("useScenePlanes", true);
     }
 
-    if(_previewDepthMapShader->getState() != RES_LOADED)
+    if (_previewDepthMapShader->getState() != RES_LOADED) {
         return;
+    }
 
     _previewDepthMapShader->bind();
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
@@ -29,48 +31,58 @@ void GFXDevice::previewDepthBuffer(){
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
     drawDebugAxis(sceneRenderState);
 
-    _imShader->bind();
+    if (!_imShader->bind()) {
+        return;
+    }
 
-    for(IMPrimitive* priv : _imInterfaces){
-        if(priv->paused())
+    for (IMPrimitive* priv : _imInterfaces) {
+        if (priv->paused()) {
             continue;
+        }
 
-        if(!priv->inUse() && priv->_canZombify) {
+        if (!priv->inUse() && priv->_canZombify) {
             priv->zombieCounter(priv->zombieCounter() + 1);
             continue;
         }
-        
+
         setStateBlock(priv->stateHash());
 
         priv->setupStates();
         
-        if(priv->_hasLines)
+        if (priv->_hasLines) {
             setLineWidth(priv->_lineWidth);
-        
+        }
+
         bool texture = (priv->_texture != nullptr);
 
-        if(texture)
+        if (texture) {
             priv->_texture->Bind(0);
-        
+        }
+
         _imShader->Uniform("useTexture", texture);
         _imShader->Uniform("dvd_WorldMatrix", priv->worldMatrix());
 
+        priv->drawShader(_imShader);
         priv->render(1, priv->forceWireframe());
 
-        if(priv->_hasLines)
+        if (priv->_hasLines) {
             restoreLineWidth();
-      
+        }
+
         priv->resetStates();
 
-        if(priv->_canZombify)
+        if (priv->_canZombify) {
             priv->inUse(false);
+        }
     }
 }
 
 void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
-    if(!drawDebugAxis()) return;
+    if (!drawDebugAxis()) {
+        return;
+    }
 
-    if(_axisLines.empty()){
+    if (_axisLines.empty()) {
         //Red X-axis
         _axisLines.push_back(Line(VECTOR3_ZERO, WORLD_X_AXIS, vec4<U8>(255, 0, 0, 255)));
         //Green Y-axis

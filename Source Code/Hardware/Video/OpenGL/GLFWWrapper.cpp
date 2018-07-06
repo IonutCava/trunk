@@ -53,7 +53,7 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, Config::Profile::DISABLE_PERSISTENT_BUFFER ? 3 : 4);
     }
 
-    // I REALLY think resizable windows are a bad idea. Increase the resolution instead of messing up render targets
+    // I REALLY think re-sizable windows are a bad idea. Increase the resolution instead of messing up render targets
     glfwWindowHint(GLFW_RESIZABLE, par.getParam<bool>("runtime.allowWindowResize",false));
     // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
     glfwWindowHint(GLFW_RED_BITS,     8);
@@ -76,6 +76,8 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     glfwMakeContextCurrent(Divide::GLUtil::_mainWindow);
     // Init glew for main context
     Divide::GLUtil::initGlew();
+    // Bind the window close request received from GLFW with our custom callback
+    glfwSetWindowCloseCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_close_callback);
     // Bind our focus change callback to GLFW's internal wiring
     glfwSetWindowFocusCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_focus_callback);
     // Geometry shaders became core in version 3.3, shader storage buffers in 4.3, buffer storage in 4.4 so fail if we are missing the required version
@@ -88,7 +90,7 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     // The loader window will share context lists with the main window
     Divide::GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr, Divide::GLUtil::_mainWindow);
-    // The loader window is esential to the engine structure, so fail if we can't create it
+    // The loader window is essential to the engine structure, so fail if we can't create it
     if (!Divide::GLUtil::_loaderWindow) {
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
@@ -105,8 +107,8 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
     glDebugMessageCallback(&Divide::GLUtil::DebugCallback, NULL);
-    // nVidia flushes a lot of useful info about buffer alocations and shader recompiles due to state and what now,
-    // but those aren't needed until that's what's actuall causing the bottlenecks
+    // nVidia flushes a lot of useful info about buffer allocations and shader recompiles due to state and what now,
+    // but those aren't needed until that's what's actually causing the bottlenecks
     U32 nvidiaBufferErrors[] = {131185, 131218};
     // Disable shader compiler errors (shader class handles that)
     glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_FALSE);
@@ -117,7 +119,7 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
 #endif
 
     // If we got here, let's figure out what capabilities we have available
-    // Maximum addresable texture image units in the fragment shader
+    // Maximum addressable texture image units in the fragment shader
     GFX_DEVICE.setMaxTextureSlots(Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
     // Query GPU vendor to enable/disable vendor specific features
     std::string gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
@@ -241,7 +243,7 @@ I8 GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char *
 
     // In debug, we also have various performance counters to profile GPU rendering operations
 #ifdef _DEBUG
-    // We have multiple counter buffers, and each can be multi-buffered (currenly, only doublebuffered, front and back) to avoid pipeline stalls
+    // We have multiple counter buffers, and each can be multi-buffered (currently, only double-buffered, front and back) to avoid pipeline stalls
     for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
         glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
         DIVIDE_ASSERT(_queryID[i][0] != 0, "GLFWWrapper error: Invalid performance counter query ID!");
@@ -310,7 +312,7 @@ void GL_API::setMousePosition(GLushort x, GLushort y) const {
 }
 
 /// This functions should be run in a separate, consumer thread.
-/// The main app thread, the producer, adds tasks via a lockfree queue that is checked every 20 ms
+/// The main app thread, the producer, adds tasks via a lock-free queue that is checked every 20 ms
 void GL_API::createLoaderThread() {
     // We need a valid OpenGL context to make current in this thread
     assert(Divide::GLUtil::_loaderWindow != nullptr);

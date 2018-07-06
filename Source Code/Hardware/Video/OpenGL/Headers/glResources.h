@@ -61,6 +61,7 @@ namespace Divide {
     namespace GLUtil {
 
         GLint getIntegerv(GLenum param);
+        void glfw_close_callback(GLFWwindow *window);
         void glfw_focus_callback(GLFWwindow *window, I32);
         void glfw_error_callback(GLint error, const char* description);
         void initGlew();

@@ -65,9 +65,7 @@ DEFINE_SINGLETON( GUI )
 
 public:
     /// Main display call
-    void draw(const U64 deltaTime, const D32 interpolationFactor);
-    /// Destroy items and close the GUI
-    void close();
+    void draw(const U64 deltaTime);
     /// Add a text label
     GUIText* addText(const std::string& id,const vec2<I32>& position, const std::string& font,const vec3<F32>& color, char* format, ...);
     /// Add a button with a specific callback. The root of the window positioning system is bottom left, so 100,60 will place the button 100 pixels to the right and 60 up from the bottom

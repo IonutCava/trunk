@@ -1,6 +1,7 @@
 #include "Headers/Character.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Hardware/Video/Headers/GFXDevice.h"
 
 Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
                                                                        _type(type),
@@ -49,9 +50,9 @@ bool Character::frameRenderingQueued(const FrameEvent& evt) {
     sourceDirection.y = 0.0f;
 
     _oldPosition.set(t->getPosition());
-    _oldPosition.lerp(_curPosition, evt._interpolationFactor);  
+    _oldPosition.lerp(_curPosition, GFX_DEVICE.getInterpolation());  
     t->setPosition(_oldPosition);
-    t->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), evt._interpolationFactor);
+    t->rotateSlerp(t->getOrientation() * rotationFromVToU(sourceDirection, _curVelocity), GFX_DEVICE.getInterpolation());
     return true;
 }
 

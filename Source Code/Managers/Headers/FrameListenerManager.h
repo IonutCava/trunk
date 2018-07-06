@@ -39,7 +39,7 @@ public:
     bool frameEvent(const FrameEvent& evt);
 
     /// pass the current time in microseconds as the first parameter
-    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt, const D32 interpolationFactor = 1.0);
+    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
 
 private:
     bool frameStarted(const FrameEvent& evt);

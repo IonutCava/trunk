@@ -9,6 +9,8 @@
 
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
+
 namespace NS_GLIM
 {
     // One global GLIM_BATCH is always defined for immediate use.
@@ -17,20 +19,11 @@ namespace NS_GLIM
 
     GLIM_BATCH::GLIM_BATCH ()
     {
-    Clear ();
-#ifdef AE_RENDERAPI_OPENGL
-        vaoID = 0;
-#endif
+        Clear ();
     }
 
     GLIM_BATCH::~GLIM_BATCH ()
     {
-#ifdef AE_RENDERAPI_OPENGL
-        if(vaoID != 0){
-            glDeleteVertexArrays(1, &vaoID);
-            vaoID = 0;
-        }
-#endif
     }
 
     void GLIM_BATCH::Clear (void)
@@ -53,18 +46,11 @@ namespace NS_GLIM
     {
         // disable everything again
         m_Data.Unbind ();
-#ifdef AE_RENDERAPI_OPENGL
-        GL_API::setActiveVAO(0);
-#endif
     }
 
     bool GLIM_BATCH::BeginRender (void)
     {
 #ifdef AE_RENDERAPI_OPENGL
-        if(vaoID == 0){
-            glGenVertexArrays(1, &vaoID);
-        }
-        GL_API::setActiveVAO(vaoID);
         return (BeginRenderOGL ());
 #else
         return (BeginRenderD3D11 ());
@@ -103,19 +89,16 @@ namespace NS_GLIM
             s_StateChangeCallback ();
 
         // get the currently active shader program
-        int iCurrentProgram;
-        glGetIntegerv (GL_CURRENT_PROGRAM, &iCurrentProgram);
+        GLIM_CHECK (m_Data.m_ShaderProgramHandle > 0, "GLIM_BATCH::RenderBatch: Currently no shader is bound or the shader has an error.");
 
-        GLIM_CHECK (iCurrentProgram > 0, "GLIM_BATCH::RenderBatch: Currently no shader is bound or the shader has an error.");
-
-        m_Data.Upload (iCurrentProgram);
+        m_Data.Upload ( m_Data.m_ShaderProgramHandle);
 
         // if this happens the array is simply empty
         if (!m_Data.m_bUploadedToGPU)
             return (false);
 
         // bind all vertex arrays
-        m_Data.Bind (iCurrentProgram);
+        m_Data.Bind ( m_Data.m_ShaderProgramHandle);
 
         return (true);
     }
@@ -127,16 +110,13 @@ namespace NS_GLIM
 
         bWireframe |= GLIM_Interface::s_bForceWireframe;
 
-        GL_API::setActiveVAO(m_Data.m_VertexArrayObjectID);
-        (GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_Data.m_uiVertexBufferID));
-
         if (!bWireframe)
         {
             // render all triangles
             if (m_Data.m_uiTriangleElements > 0)
             {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
-                (glDrawElements (GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0));
+                glDrawElements (GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
             }
         }
         else
@@ -145,7 +125,7 @@ namespace NS_GLIM
             if (m_Data.m_uiWireframeElements > 0)
             {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
-                (glDrawElements (GL_LINES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0));
+                glDrawElements (GL_LINES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
             }
         }
         
@@ -153,24 +133,22 @@ namespace NS_GLIM
         if (m_Data.m_uiLineElements > 0)
         {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
-            (glDrawElements (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0));
+            glDrawElements (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
         }
 
         // render all points
         if (m_Data.m_uiPointElements > 0)
         {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
-            (glDrawElements (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0));
+            glDrawElements (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
         }
 
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         EndRender ();
     }
 
     void GLIM_BATCH::RenderBatchInstancedOGL (int iInstances, bool bWireframe)
     {
-        if (!glDrawElementsInstanced)
-            return;
-
         if (!BeginRender ())
             return;
 
@@ -182,7 +160,7 @@ namespace NS_GLIM
             if (m_Data.m_uiTriangleElements > 0)
             {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
-                (glDrawElementsInstanced(GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, 0, iInstances));
+                glDrawElementsInstanced(GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
             }
         }
         else
@@ -191,7 +169,7 @@ namespace NS_GLIM
             if (m_Data.m_uiWireframeElements > 0)
             {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
-                (glDrawElementsInstanced (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, 0, iInstances));
+                glDrawElementsInstanced (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
             }
         }
 
@@ -199,16 +177,17 @@ namespace NS_GLIM
         if (m_Data.m_uiPointElements > 0)
         {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
-            (glDrawElementsInstanced (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, 0, iInstances));
+            glDrawElementsInstanced (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
         }
 
         // render all lines
         if (m_Data.m_uiLineElements > 0)
         {
             GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
-            (glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, 0, iInstances));
+            glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
         }
 
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         EndRender ();
     }
 #endif
@@ -372,6 +351,11 @@ namespace NS_GLIM
     void GLIM_BATCH::SetVertexAttribLocation(unsigned int vertexLocation)
     {
         m_Data.m_VertAttribLocation = vertexLocation;
+    }
+    
+    void GLIM_BATCH::SetShaderProgramHandle(unsigned int shaderProgramHandle)
+    {
+        m_Data.m_ShaderProgramHandle = shaderProgramHandle;
     }
 
     void GLIM_BATCH::Vertex (float x, float y, float z)

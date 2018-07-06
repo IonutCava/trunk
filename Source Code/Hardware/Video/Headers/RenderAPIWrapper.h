@@ -140,8 +140,6 @@ protected:
     virtual void beginFrame() = 0;
     ///Clear shaders, restore active texture units, etc
     virtual void endFrame() = 0;
-    ///Clear buffers,shaders, etc.
-    virtual void flush() = 0;
 
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;

@@ -24,7 +24,7 @@
 ///I'm sorry for using it, but it's so simple to implement, I decided to use something that people already know and are comfortable with
 ///-Ionut
 
-enum FrameEventType{
+enum FrameEventType {
     FRAME_EVENT_ANY,
     FRAME_EVENT_STARTED,
     FRAME_PRERENDER_START,
@@ -35,12 +35,11 @@ enum FrameEventType{
     FRAME_EVENT_ENDED,
 };
 
-struct FrameEvent{
-  D32 _timeSinceLastEvent;
-  D32 _timeSinceLastFrame;
-  D32 _currentTime;
-  D32 _interpolationFactor;
-  FrameEventType _type;
+struct FrameEvent {
+    D32 _timeSinceLastEvent;
+    D32 _timeSinceLastFrame;
+    D32 _currentTime;
+    FrameEventType _type;
 };
 
 /// FrameListener class.

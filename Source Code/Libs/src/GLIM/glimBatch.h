@@ -36,6 +36,7 @@ namespace NS_GLIM
 #ifdef AE_RENDERAPI_OPENGL
         //! Specifies the shader program's attribute location for vertex data
         virtual void SetVertexAttribLocation(unsigned int vertexLocation = 0);
+        virtual void SetShaderProgramHandle(unsigned int shaderProgramHandle);
 #endif
         //! Specifies a new vertex of a primitive.
         virtual void Vertex (float x, float y, float z = 0.0f);
@@ -107,7 +108,6 @@ namespace NS_GLIM
         bool BeginRenderOGL (void);
         void RenderBatchOGL (bool bWireframe);
         void RenderBatchInstancedOGL (int iInstances, bool bWireframe);
-        unsigned int vaoID;
 #endif
 
 #ifdef AE_RENDERAPI_D3D11

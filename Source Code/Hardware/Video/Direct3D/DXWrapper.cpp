@@ -43,10 +43,6 @@ void DX_API::endFrame()
 {
 }
 
-void DX_API::flush()
-{
-}
-
 void DX_API::toggleRasterization(bool state)
 {
 }

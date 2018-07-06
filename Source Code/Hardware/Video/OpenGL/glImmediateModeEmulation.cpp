@@ -68,11 +68,15 @@ void glIMPrimitive::clear() {
 }
 
 void glIMPrimitive::renderBatch(bool wireframe) {
+    assert(_drawShader != nullptr);
+    _imInterface->SetShaderProgramHandle(_drawShader->getId());
     _imInterface->RenderBatch(wireframe);
     GFX_DEVICE.registerDrawCall();
 }
 
 void glIMPrimitive::renderBatchInstanced(I32 count, bool wireframe) {
+    assert(_drawShader != nullptr);
+    _imInterface->SetShaderProgramHandle(_drawShader->getId());
     _imInterface->RenderBatchInstanced(count, wireframe);
     GFX_DEVICE.registerDrawCall();
 }

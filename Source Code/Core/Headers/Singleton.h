@@ -24,10 +24,10 @@
 #define SINGLETON_H_
 
 template <class T>
-class Singleton{
+class Singleton {
 public :
     inline static T& getOrCreateInstance() {
-        if (!_instance){
+        if (!_instance) {
             _instance = new T;
         }
 
@@ -43,28 +43,36 @@ public :
     }
 
     inline static void createInstance() {
-        if (!_instance)
+        if (!_instance) {
             _instance = new T;
+        }
     }
 
     inline static void destroyInstance() {
-        if(_instance){
+        if (_instance) {
             delete _instance;
             _instance = 0;
         }
     }
 
 protected :
-    Singleton() {}
-    virtual ~Singleton() {}
+    Singleton() 
+    {
+    }
 
-private :
-    ///C++11 standard assures a static instance should be thread safe:
-    //"if control enters the declaration concurrently while the variable is being initialized,
-    //the concurrent execution shall wait for completion of the initialization."
-    static T* _instance;
+    virtual ~Singleton() 
+    {
+    }
+
+private:
     Singleton(Singleton&);
     void operator =(Singleton&);
+
+private :
+    /// C++11 standard assures a static instance should be thread safe:
+    /// "if control enters the declaration concurrently while the variable is being initialized,
+    /// the concurrent execution shall wait for completion of the initialization."
+    static T* _instance;
 };
 
 template <class T> T* Singleton<T>::_instance = 0;

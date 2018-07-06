@@ -14,127 +14,135 @@ namespace XML {
 
     namespace {
         const char* getFilterName(TextureFilter filter)	{
-            if(filter == TEXTURE_FILTER_LINEAR)
+            if (filter == TEXTURE_FILTER_LINEAR) {
                 return "TEXTURE_FILTER_LINEAR";
-            else if(filter == TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST)
+            } else if (filter == TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST) {
                 return "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST";
-            else if(filter == TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST)
+            } else if (filter == TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST) {
                 return "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST";
-            else if(filter == TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR)
+            } else if (filter == TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR) {
                 return "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR";
-            else if(filter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR)
+            } else if (filter == TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR) {
                 return "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR";
+            }
 
             return "TEXTURE_FILTER_NEAREST";
         }
 
         TextureFilter getFilter(const char* filter)	{
-            if(strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0 )
+            if (strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0 ) {
                 return TEXTURE_FILTER_LINEAR;
-            else if(strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0 )
+            } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0 ) {
                 return TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST;
-            else if(strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST") == 0 )
+            } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST") == 0 ) {
                 return TEXTURE_FILTER_LINEAR_MIPMAP_NEAREST;
-            else if(strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR") == 0 )
+            } else if (strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR") == 0 ) {
                 return TEXTURE_FILTER_NEAREST_MIPMAP_LINEAR;
-            else if(strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR") == 0 )
+            } else if (strcmp(filter, "TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR") == 0 ) {
                 return TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR;
+            }
 
             return TEXTURE_FILTER_NEAREST;
         }
 
         const char* getWrapModeName(TextureWrap wrapMode) {
-            if(wrapMode == TEXTURE_CLAMP)
+            if (wrapMode == TEXTURE_CLAMP) {
                 return "TEXTURE_CLAMP";
-            else if(wrapMode == TEXTURE_CLAMP_TO_EDGE)
+            } else if (wrapMode == TEXTURE_CLAMP_TO_EDGE) {
                 return "TEXTURE_CLAMP_TO_EDGE";
-            else if(wrapMode == TEXTURE_CLAMP_TO_BORDER)
+            } else if (wrapMode == TEXTURE_CLAMP_TO_BORDER) {
                 return "TEXTURE_CLAMP_TO_BORDER";
-            else if(wrapMode == TEXTURE_DECAL)
+            } else if (wrapMode == TEXTURE_DECAL) {
                 return "TEXTURE_DECAL";
+            }
 
             return "TEXTURE_REPEAT";
         }
 
         TextureWrap getWrapMode(const char* wrapMode) {
-            if(strcmp(wrapMode, "TEXTURE_CLAMP") == 0)
+            if (strcmp(wrapMode, "TEXTURE_CLAMP") == 0) {
                 return TEXTURE_CLAMP;
-            else if(strcmp(wrapMode, "TEXTURE_CLAMP_TO_EDGE")  == 0 )
+            } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_EDGE")  == 0 ) {
                 return TEXTURE_CLAMP_TO_EDGE;
-            else if(strcmp(wrapMode, "TEXTURE_CLAMP_TO_BORDER") == 0 )
+            } else if (strcmp(wrapMode, "TEXTURE_CLAMP_TO_BORDER") == 0 ) {
                 return TEXTURE_CLAMP_TO_BORDER;
-            else if(strcmp(wrapMode, "TEXTURE_DECAL") == 0 )
+            } else if (strcmp(wrapMode, "TEXTURE_DECAL") == 0 ) {
                 return TEXTURE_DECAL;
+            }
 
             return TEXTURE_REPEAT;
         }
 
         const char* getBumpMethodName(Material::BumpMethod bumpMethod)	{
-            if(bumpMethod == Material::BUMP_NORMAL)
+            if (bumpMethod == Material::BUMP_NORMAL) {
                 return "BUMP_NORMAL";
-            else if(bumpMethod == Material::BUMP_PARALLAX)
+            } else if (bumpMethod == Material::BUMP_PARALLAX) {
                 return "BUMP_PARALLAX";
-            else if(bumpMethod == Material::BUMP_RELIEF)
+            } else if (bumpMethod == Material::BUMP_RELIEF) {
                 return "BUMP_RELIEF";
+            }
 
             return "BUMP_NONE";
         }
 
         Material::BumpMethod getBumpMethod(const char* bumpMethod) {
-            if(strcmp(bumpMethod, "BUMP_NORMAL") == 0 )
+            if (strcmp(bumpMethod, "BUMP_NORMAL") == 0 ) {
                 return Material::BUMP_NORMAL;
-            else if(strcmp(bumpMethod, "BUMP_PARALLAX") == 0 )
+            } else if (strcmp(bumpMethod, "BUMP_PARALLAX") == 0 ) {
                 return Material::BUMP_PARALLAX;
-            else if(strcmp(bumpMethod, "BUMP_RELIEF") == 0 )
+            } else if (strcmp(bumpMethod, "BUMP_RELIEF") == 0 ) {
                 return Material::BUMP_RELIEF;
+            }
 
             return Material::BUMP_NONE;
         }
 
         const char* getTextureOperationName(Material::TextureOperation textureOp) {
-            if(textureOp == Material::TextureOperation_Multiply)
+            if (textureOp == Material::TextureOperation_Multiply) {
                 return "TEX_OP_MULTIPLY";
-            else if(textureOp == Material::TextureOperation_Decal)
+            } else if (textureOp == Material::TextureOperation_Decal) {
                 return "TEX_OP_DECAL";
-            else if(textureOp == Material::TextureOperation_Add)
+            } else if (textureOp == Material::TextureOperation_Add) {
                 return "TEX_OP_ADD";
-            else if(textureOp == Material::TextureOperation_SmoothAdd)
+            } else if (textureOp == Material::TextureOperation_SmoothAdd) {
                 return "TEX_OP_SMOOTH_ADD";
-            else if(textureOp == Material::TextureOperation_SignedAdd)
+            } else if (textureOp == Material::TextureOperation_SignedAdd) {
                 return "TEX_OP_SIGNED_ADD";
-            else if(textureOp == Material::TextureOperation_Divide)
+            } else if (textureOp == Material::TextureOperation_Divide) {
                 return "TEX_OP_DIVIDE";
-            else if(textureOp == Material::TextureOperation_Subtract)
+            } else if (textureOp == Material::TextureOperation_Subtract) {
                 return "TEX_OP_SUBTRACT";
+            }
 
             return "TEX_OP_REPLACE";
         }
 
         Material::TextureOperation getTextureOperation(const char* operation) {
-            if(strcmp(operation, "TEX_OP_MULTIPLY") == 0 )
+            if (strcmp(operation, "TEX_OP_MULTIPLY") == 0 ) {
                 return Material::TextureOperation_Multiply;
-            else if(strcmp(operation, "TEX_OP_DECAL") == 0 )
+            } else if (strcmp(operation, "TEX_OP_DECAL") == 0 ) {
                 return Material::TextureOperation_Decal;
-            else if(strcmp(operation, "TEX_OP_ADD") == 0 )
+            } else if (strcmp(operation, "TEX_OP_ADD") == 0 ) {
                 return Material::TextureOperation_Add;
-            else if(strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0 )
+            } else if (strcmp(operation, "TEX_OP_SMOOTH_ADD") == 0 ) {
                 return Material::TextureOperation_SmoothAdd;
-            else if(strcmp(operation, "TEX_OP_SIGNED_ADD") == 0 )
+            } else if (strcmp(operation, "TEX_OP_SIGNED_ADD") == 0 ) {
                 return Material::TextureOperation_SignedAdd;
-            else if(strcmp(operation, "TEX_OP_DIVIDE") == 0 )
+            } else if (strcmp(operation, "TEX_OP_DIVIDE") == 0 ) {
                 return Material::TextureOperation_Divide;
-            else if(strcmp(operation, "TEX_OP_SUBTRACT") == 0 )
+            } else if (strcmp(operation, "TEX_OP_SUBTRACT") == 0 ) {
                 return Material::TextureOperation_Subtract;
+            }
 
             return Material::TextureOperation_Replace;
         }
 
         void saveTextureXML(const std::string& textureNode, Texture* texture, ptree& tree, const std::string& operation = "") {
             const SamplerDescriptor& sampler = texture->getCurrentSampler();
-            while(texture->getState() != RES_LOADED)
-            {
+            while(texture->getState() != RES_LOADED) {
                 //texture not fully loaded yet
             }
+
             std::string fileLocation = texture->getResourceLocation();
             DIVIDE_ASSERT(!fileLocation.empty(), "INVALID TEXTURE SAVE FILE -------------------------------------");
             tree.put(textureNode+".file",fileLocation);
@@ -146,8 +154,9 @@ namespace XML {
             tree.put(textureNode+".magFilter",getFilterName(sampler.magFilter()));
             tree.put(textureNode+".anisotropy",(U32)sampler.anisotropyLevel());
 
-            if(!operation.empty())
+            if (!operation.empty()) {
                 tree.put(textureNode+".operation", operation);
+            }
         }
 
         Texture* loadTextureXML(const std::string& textureNode, const std::string& textureName) {
@@ -174,22 +183,18 @@ namespace XML {
             return CreateResource<Texture>(texture);
         }
 
-        inline std::string getRendererTypeName(RendererType type){
-            switch(type){
+        inline std::string getRendererTypeName(RendererType type) {
+            switch(type) {
                 default:
-            case RENDERER_PLACEHOLDER:
-                    return "Unknown Renderer Type";
-            case RENDERER_FORWARD:
-                return "Forward Renderer";
-            case RENDERER_DEFERRED_SHADING:
-                return "Deferred Shading Renderer";
-            case RENDERER_DEFERRED_LIGHTING:
-                return "Deferred Lighting Renderer";
+                case RENDERER_PLACEHOLDER       : return "Unknown Renderer Type";
+                case RENDERER_FORWARD           : return "Forward Renderer";
+                case RENDERER_DEFERRED_SHADING  : return "Deferred Shading Renderer";
+                case RENDERER_DEFERRED_LIGHTING : return "Deferred Lighting Renderer";
+            }
         }
     }
-    }
 
-    std::string loadScripts(const std::string& file){
+    std::string loadScripts(const std::string& file) {
         ParamHandler &par = ParamHandler::getInstance();
         PRINT_FN(Locale::get("XML_LOAD_SCRIPTS"));
         read_xml(file,pt);
@@ -201,6 +206,7 @@ namespace XML {
         loadConfig(par.getParam<std::string>("scriptLocation") + "/" + pt.get("config","config.xml"));
         read_xml(par.getParam<std::string>("scriptLocation") + "/" + pt.get("startupScene","scenes.xml"),pt);
         activeScene = pt.get("StartupScene",activeScene);
+
         return activeScene;
     }
 
@@ -218,10 +224,10 @@ namespace XML {
         par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
 
         I32 shadowDetailLevel = pt.get<I32>("rendering.shadowDetailLevel", 2);
-        if (shadowDetailLevel <= 0){
+        if (shadowDetailLevel <= 0) {
             GFX_DEVICE.shadowDetailLevel(DETAIL_LOW);
             par.setParam("rendering.enableShadows", false);
-        }else{
+        } else {
             GFX_DEVICE.shadowDetailLevel(static_cast<RenderDetailLevel>(std::min(shadowDetailLevel, 3) - 1));
             par.setParam("rendering.enableShadows", true);
         }
@@ -269,18 +275,19 @@ namespace XML {
         PRINT_FN(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
         std::string sceneLocation = par.getParam<std::string>("scriptLocation") + "/" +
                                     par.getParam<std::string>("scenesLocation") + "/" + sceneName;
-        try{
+        try {
             read_xml(sceneLocation + ".xml", pt);
-        }catch(	boost::property_tree::xml_parser_error & e ){
+        } catch ( boost::property_tree::xml_parser_error & e) {
             ERROR_FN(Locale::get("ERROR_XML_INVALID_SCENE"),sceneName.c_str());
             std::string error = e.what();
             error += " [check error log!]";
             throw error.c_str();
         }
+
         par.setParam("currentScene",sceneName);
         Scene* scene = sceneMgr.createScene(sceneName);
 
-        if(!scene)	{
+        if (!scene)	{
             ERROR_FN(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
             return;
         }
@@ -297,40 +304,43 @@ namespace XML {
 
         scene->state().getWaterLevel() = pt.get("water.waterLevel",0.0f);
         scene->state().getWaterDepth() = pt.get("water.waterDepth",-75);
-        if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")){
+
+        if (boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")) {
             par.setParam("options.cameraStartPosition.x", pt.get("options.cameraStartPosition.<xmlattr>.x",0.0f));
             par.setParam("options.cameraStartPosition.y", pt.get("options.cameraStartPosition.<xmlattr>.y",0.0f));
             par.setParam("options.cameraStartPosition.z", pt.get("options.cameraStartPosition.<xmlattr>.z",0.0f));
             par.setParam("options.cameraStartOrientation.xOffsetDegrees",pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees",0.0f));
             par.setParam("options.cameraStartOrientation.yOffsetDegrees",pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees",0.0f));
             par.setParam("options.cameraStartPositionOverride",true);
-        }else{
+        } else {
             par.setParam("options.cameraStartPositionOverride",false);
         }
-        if(boost::optional<ptree &> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")){
+
+        if (boost::optional<ptree &> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
             par.setParam("options.autoCookPhysicsAssets", pt.get<bool>("options.autoCookPhysicsAssets",false));
-        }else{
+        } else {
             par.setParam("options.autoCookPhysicsAssets", false);
         }
-        if(boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")){
+
+        if (boost::optional<ptree &> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
             par.setParam("options.cameraSpeed.move",pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
             par.setParam("options.cameraSpeed.turn",pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
-        }else{
+        } else {
             par.setParam("options.cameraSpeed.move", 35.0f);
             par.setParam("options.cameraSpeed.turn", 35.0f);
         }
 
-        if(boost::optional<ptree &> fog = pt.get_child_optional("fog")){
+        if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
             par.setParam("rendering.sceneState.fogDensity", pt.get("fog.fogDensity",0.01f));
             par.setParam("rendering.sceneState.fogColor.r", pt.get<F32>("fog.fogColor.<xmlattr>.r", 0.2f));
             par.setParam("rendering.sceneState.fogColor.g", pt.get<F32>("fog.fogColor.<xmlattr>.g", 0.2f));
             par.setParam("rendering.sceneState.fogColor.b",	pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
         }
 
-        scene->state().getFogDesc()._fogDensity   = par.getParam<F32>("rendering.sceneState.fogDensity");
+        scene->state().getFogDesc()._fogDensity = par.getParam<F32>("rendering.sceneState.fogDensity");
         scene->state().getFogDesc()._fogColor.set(par.getParam<F32>("rendering.sceneState.fogColor.r"),
-                                                   par.getParam<F32>("rendering.sceneState.fogColor.g"),
-                                                   par.getParam<F32>("rendering.sceneState.fogColor.b"));
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.g"),
+                                                  par.getParam<F32>("rendering.sceneState.fogColor.b"));
 
         loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
         loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
@@ -344,7 +354,8 @@ namespace XML {
         ptree::iterator itTerrain;
         ptree::iterator itTexture;
         std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
-        for (itTerrain = pt.get_child("terrainList").begin(); itTerrain != pt.get_child("terrainList").end(); ++itTerrain)	{
+
+        for (itTerrain = pt.get_child("terrainList").begin(); itTerrain != pt.get_child("terrainList").end(); ++itTerrain) {
             std::string name = itTerrain->second.data(); //The actual terrain name
             std::string tag = itTerrain->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
             //Check and skip commented terrain
@@ -361,7 +372,7 @@ namespace XML {
             I32 i = 0;
             std::string temp;
             std::string layerOffsetStr;
-            for (itTexture = pt.get_child(name + ".textureLayers").begin(); itTexture != pt.get_child(name + ".textureLayers").end(); ++itTexture, ++i) 	{
+            for (itTexture = pt.get_child(name + ".textureLayers").begin(); itTexture != pt.get_child(name + ".textureLayers").end(); ++itTexture, ++i) {
                 std::string layerName = itTexture->second.data();
                 std::string format = itTexture->first.data();
                 if (format.find("<xmlcomment>") != std::string::npos) {
@@ -376,35 +387,35 @@ namespace XML {
                 ter->addVariable("blendMap" + layerOffsetStr, assetLocation + temp);
 
                 temp = pt.get<std::string>(layerName + ".redAlbedo", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("redAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".redDetail", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("redDetail" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".greenAlbedo", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("greenAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".greenDetail", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("greenDetail" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".blueAlbedo", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("blueAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".blueDetail", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("blueDetail" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".alphaAlbedo", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("alphaAlbedo" + layerOffsetStr, assetLocation + temp);
                 }
                 temp = pt.get<std::string>(layerName + ".alphaDetail", "");
-                if (!temp.empty()){
+                if (!temp.empty()) {
                     ter->addVariable("alphaDetail" + layerOffsetStr, assetLocation + temp);
                 }
 
@@ -417,6 +428,7 @@ namespace XML {
                 ter->addVariable("diffuseScaleA" + layerOffsetStr, pt.get<F32>(layerName + ".alphaDiffuseScale", 0.0f));
                 ter->addVariable("detailScaleA"  + layerOffsetStr, pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
             }
+
             ter->setTextureLayerCount(i);
             ter->addVariable("grassMap",assetLocation + pt.get<std::string>(name + ".vegetation.map"));
             ter->addVariable("grassBillboard1", assetLocation + pt.get<std::string>(name + ".vegetation.grassBillboard1", ""));
@@ -439,185 +451,195 @@ namespace XML {
             scene->addTerrain(ter);
             count++;
         }
+
         PRINT_FN(Locale::get("XML_TERRAIN_COUNT"),count);
     }
 
-    void loadGeometry(const std::string &file, Scene* const scene) 	{
+    void loadGeometry(const std::string &file, Scene* const scene) {
         pt.clear();
         PRINT_FN(Locale::get("XML_LOAD_GEOMETRY"),file.c_str());
         read_xml(file,pt);
         ptree::iterator it;
         std::string assetLocation = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/";
 
-        if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry"))
-        for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it ) 	{
-            std::string name = it->second.data();
-            std::string format = it->first.data();
-            if(format.find("<xmlcomment>") != std::string::npos) continue;
-            FileData model;
-            model.ItemName = name;
-            model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
-            model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x",1);
-            model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y",1);
-            model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z",1);
-            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-            model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
-            model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
-            model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.type = GEOMETRY;
-            model.version = pt.get<F32>(name + ".version");
+        if(boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
+            for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it ) {
+                std::string name = it->second.data();
+                std::string format = it->first.data();
+                if(format.find("<xmlcomment>") != std::string::npos) continue;
+                FileData model;
+                model.ItemName = name;
+                model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
+                model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x",1);
+                model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y",1);
+                model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z",1);
+                model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+                model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+                model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
+                model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+                model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+                model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
+                model.type = GEOMETRY;
+                model.version = pt.get<F32>(name + ".version");
 
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
-                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
-            }else{
-                model.castsShadows = true;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
-                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
-            }else{
-                model.receivesShadows = true;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
-                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
-            }else{
-                model.staticUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
-                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
-            }else{
-                model.navigationUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
-                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
-            }else{
-                model.useHighDetailNavMesh = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")){
-                model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
-                model.physicsPushable = pt.get<bool>(name + ".addToPhysicsGroupPushable",false);
-            }else{
-                model.physicsUsage = false;
-            }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                    model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+                } else {
+                    model.castsShadows = true;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                    model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+                } else {
+                    model.receivesShadows = true;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
+                    model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+                } else {
+                    model.staticUsage = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
+                    model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+                } else {
+                    model.navigationUsage = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
+                    model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+                } else {
+                    model.useHighDetailNavMesh = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")) {
+                    model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
+                    model.physicsPushable = pt.get<bool>(name + ".addToPhysicsGroupPushable",false);
+                } else {
+                    model.physicsUsage = false;
+                }
 
-            scene->addModel(model);
+                scene->addModel(model);
+            }
         }
 
-        if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation"))
-        for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it ) {
-            std::string name = it->second.data();
-            std::string format = it->first.data();
-            if(format.find("<xmlcomment>") != std::string::npos) continue;
-            FileData model;
-            model.ItemName = name;
-            model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
-            model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
-            model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
-            model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
-            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-            model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
-            model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
-            model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.type = VEGETATION;
-            model.version = pt.get<F32>(name + ".version");
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
-                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
-            }else{
-                model.castsShadows = true;
+        if(boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation")) {
+            for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it ) {
+                std::string name = it->second.data();
+                std::string format = it->first.data();
+                if(format.find("<xmlcomment>") != std::string::npos) continue;
+                FileData model;
+                model.ItemName = name;
+                model.ModelName  = assetLocation + pt.get<std::string>(name + ".model");
+                model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
+                model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
+                model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
+                model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+                model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+                model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
+                model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+                model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+                model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
+                model.type = VEGETATION;
+                model.version = pt.get<F32>(name + ".version");
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                    model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+                } else {
+                    model.castsShadows = true;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                    model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+                } else {
+                    model.receivesShadows = true;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
+                    model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+                } else {
+                    model.staticUsage = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
+                    model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+                } else {
+                    model.navigationUsage = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
+                    model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+                } else {
+                    model.useHighDetailNavMesh = false;
+                }
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")) {
+                    model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
+                } else {
+                    model.physicsUsage = false;
+                }
+                scene->addModel(model);
             }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
-                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
-            }else{
-                model.receivesShadows = true;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
-                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
-            }else{
-                model.staticUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
-                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
-            }else{
-                model.navigationUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
-                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
-            }else{
-                model.useHighDetailNavMesh = false;
-            }
-             if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")){
-                model.physicsUsage = pt.get<bool>(name + ".addToPhysics",false);
-            }else{
-                model.physicsUsage = false;
-            }
-            scene->addModel(model);
         }
 
-        if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
-        for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
-            std::string name = it->second.data();
-            std::string format = it->first.data();
-            if(format.find("<xmlcomment>") != std::string::npos) continue;
+        if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives")) {
+            for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it ) {
+                std::string name = it->second.data();
+                std::string format = it->first.data();
+                if(format.find("<xmlcomment>") != std::string::npos) continue;
 
-            FileData model;
-            model.ItemName = name;
-            model.ModelName = pt.get<std::string>(name + ".model");
-            model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
-            model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
-            model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
-            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
-            model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
-            model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
-            model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r");
-            model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g");
-            model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");
-            /*The data variable stores a float variable (not void*) that can represent anything you want*/
-            /*For Text3D, it's the line width and for Box3D it's the edge length*/
-            if(model.ModelName.compare("Text3D") == 0){
-                model.data = pt.get<F32>(name + ".lineWidth");
-                model.data2 = pt.get<std::string>(name + ".text");
-                model.data3 = pt.get<std::string>(name + ".fontName");
-            }else if(model.ModelName.compare("Box3D") == 0)
-                model.data = pt.get<F32>(name + ".size");
-            else if(model.ModelName.compare("Sphere3D") == 0)
-                model.data = pt.get<F32>(name + ".radius");
-            else model.data = 0;
+                FileData model;
+                model.ItemName = name;
+                model.ModelName = pt.get<std::string>(name + ".model");
+                model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
+                model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
+                model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
+                model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+                model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+                model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
+                model.scale.x    = pt.get<F32>(name + ".scale.<xmlattr>.x");
+                model.scale.y    = pt.get<F32>(name + ".scale.<xmlattr>.y");
+                model.scale.z    = pt.get<F32>(name + ".scale.<xmlattr>.z");
+                model.color.r    = pt.get<F32>(name + ".color.<xmlattr>.r");
+                model.color.g    = pt.get<F32>(name + ".color.<xmlattr>.g");
+                model.color.b    = pt.get<F32>(name + ".color.<xmlattr>.b");
+                /*The data variable stores a float variable (not void*) that can represent anything you want*/
+                /*For Text3D, it's the line width and for Box3D it's the edge length*/
+                if (model.ModelName.compare("Text3D") == 0) {
+                    model.data = pt.get<F32>(name + ".lineWidth");
+                    model.data2 = pt.get<std::string>(name + ".text");
+                    model.data3 = pt.get<std::string>(name + ".fontName");
+                } else if (model.ModelName.compare("Box3D") == 0) {
+                    model.data = pt.get<F32>(name + ".size");
+                } else if (model.ModelName.compare("Sphere3D") == 0) {
+                    model.data = pt.get<F32>(name + ".radius");
+                } else {
+                    model.data = 0;
+                }
 
-            model.type = PRIMITIVE;
-            model.version = pt.get<F32>(name + ".version");
+                model.type = PRIMITIVE;
+                model.version = pt.get<F32>(name + ".version");
             
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")){
-                model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
-            }else{
-                model.castsShadows = true;
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                    model.castsShadows = pt.get<bool>(name + ".castsShadows",false);
+                } else {
+                    model.castsShadows = true;
+                }
+
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                    model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
+                } else {
+                    model.receivesShadows = true;
+                }
+
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
+                    model.staticUsage = pt.get<bool>(name + ".staticObject",false);
+                } else {
+                    model.staticUsage = false;
+                }
+
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
+                    model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
+                } else {
+                    model.navigationUsage = false;
+                }
+
+                if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
+                    model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
+                } else {
+                    model.useHighDetailNavMesh = false;
+                }
+                scene->addModel(model);
             }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")){
-                model.receivesShadows = pt.get<bool>(name + ".receivesShadows",false);
-            }else{
-                model.receivesShadows = true;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")){
-                model.staticUsage = pt.get<bool>(name + ".staticObject",false);
-            }else{
-                model.staticUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")){
-                model.navigationUsage = pt.get<bool>(name + ".addToNavigation",false);
-            }else{
-                model.navigationUsage = false;
-            }
-            if(boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")){
-                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail",false);
-            }else{
-                model.useHighDetailNavMesh = false;
-            }
-            scene->addModel(model);
         }
     }
 
@@ -632,20 +654,22 @@ namespace XML {
 
     Material* loadMaterialXML(const std::string &matName, bool rendererDependent){
         std::string materialFile(matName);
-        if (rendererDependent )
+        if (rendererDependent ) {
             materialFile += "-" + getRendererTypeName(GFX_DEVICE.getRenderer()->getType()) + ".xml";
-        else
+        } else {
             materialFile += ".xml";
+        }
 
         pt.clear();
         std::ifstream inp;
-        inp.open(materialFile.c_str(),
-                 std::ifstream::in);
-        if(inp.fail()){
+        inp.open(materialFile.c_str(), std::ifstream::in);
+
+        if (inp.fail()) {
             inp.clear(std::ios::failbit);
             inp.close();
             return nullptr;
         }
+
         inp.close();
         bool skip = false;
         PRINT_FN(Locale::get("XML_LOAD_MATERIAL"),matName.c_str());
@@ -653,9 +677,15 @@ namespace XML {
 
         std::string materialName = matName.substr(matName.rfind("/")+1,matName.length());
 
-        if(FindResourceImpl<Material>(materialName)) skip = true;
+        if (FindResourceImpl<Material>(materialName)) {
+            skip = true;
+        }
+
         Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
-        if(skip) return mat;
+        if (skip) {
+            return mat;
+        }
+
         //Skip if the material was cooked by a different renderer
 
         mat->setDiffuse(vec4<F32>(pt.get<F32>("material.diffuse.<xmlattr>.r",0.6f),
@@ -678,32 +708,37 @@ namespace XML {
 
         mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 
-        if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
+        if (boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")) {
             mat->setTexture(Material::TEXTURE_UNIT0, loadTextureXML("diffuseTexture1", pt.get("diffuseTexture1.file","none")));
         }
 
-        if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")){
+        if (boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture2")) {
             mat->setTexture(Material::TEXTURE_UNIT1,loadTextureXML("diffuseTexture2", pt.get("diffuseTexture2.file","none")),
                             getTextureOperation(pt.get<std::string>("diffuseTexture2.operation","TEX_OP_MULTIPLY").c_str()));
         }
 
-        if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap")){
+        if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap")) {
             mat->setTexture(Material::TEXTURE_NORMALMAP,loadTextureXML("bumpMap", pt.get("bumpMap.file","none")));
-            if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method"))
+            if (boost::optional<ptree &> child = pt.get_child_optional("bumpMap.method")) {
                 mat->setBumpMethod(getBumpMethod(pt.get<std::string>("bumpMap.method","BUMP_NORMAL").c_str()));
+            }
         }
-        if(boost::optional<ptree &> child = pt.get_child_optional("opacityMap")){
+
+        if (boost::optional<ptree &> child = pt.get_child_optional("opacityMap")) {
             mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML("opacityMap", pt.get("opacityMap.file","none")));
         }
-        if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
+
+        if (boost::optional<ptree &> child = pt.get_child_optional("specularMap")) {
             mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML("specularMap", pt.get("specularMap.file","none")));
         }
  
         return mat;
     }
 
-    void dumpMaterial(Material& mat){
-        if(!mat.isDirty()) return;
+    void dumpMaterial(Material& mat) {
+        if(!mat.isDirty()) {
+            return;
+        }
 
         ptree pt_writer;
         ParamHandler &par = ParamHandler::getInstance();
@@ -737,39 +772,42 @@ namespace XML {
 
         Texture* texture = nullptr;
 
-        if((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != nullptr){
+        if ((texture = mat.getTexture(Material::TEXTURE_UNIT0)) != nullptr) {
             saveTextureXML("diffuseTexture1", texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_UNIT1)) != nullptr){
+        if ((texture = mat.getTexture(Material::TEXTURE_UNIT1)) != nullptr) {
             saveTextureXML("diffuseTexture2", texture, pt_writer, getTextureOperationName(mat.getTextureOperation())); 
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != nullptr){
+        if ((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != nullptr) {
             saveTextureXML("bumpMap", texture, pt_writer);
             pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != nullptr){
+        if ((texture = mat.getTexture(Material::TEXTURE_OPACITY)) != nullptr) {
             saveTextureXML("opacityMap", texture, pt_writer);
         }
 
-        if((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != nullptr){
+        if ((texture = mat.getTexture(Material::TEXTURE_SPECULAR)) != nullptr) {
             saveTextureXML("specularMap", texture, pt_writer);
         }
 
-        ShaderProgram* s = mat.getShaderInfo().getProgram();
-        if(s){
-            pt_writer.put("shaderProgram.effect",s->getName());
+        ShaderProgram* shaderProg = mat.getShaderInfo().getProgram();
+        if (shaderProg) {
+            pt_writer.put("shaderProgram.effect", shaderProg->getName());
         }
-        s = mat.getShaderInfo(SHADOW_STAGE).getProgram();
-        if(s){
-            pt_writer.put("shaderProgram.shadowEffect",s->getName());
+
+        shaderProg = mat.getShaderInfo(SHADOW_STAGE).getProgram();
+        if (shaderProg) {
+            pt_writer.put("shaderProgram.shadowEffect", shaderProg->getName());
         }
-        s = mat.getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
-        if(s){
-            pt_writer.put("shaderProgram.zPrePassEffect",s->getName());
+
+        shaderProg = mat.getShaderInfo(Z_PRE_PASS_STAGE).getProgram();
+        if (shaderProg) {
+            pt_writer.put("shaderProgram.zPrePassEffect", shaderProg->getName());
         }
+
         boost::property_tree::xml_writer_settings<char> settings('\t', 1);
         FILE * xml = fopen(fileLocation.c_str(), "w");
         fclose(xml);

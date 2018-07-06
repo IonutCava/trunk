@@ -68,7 +68,6 @@ protected:
 
     void beginFrame();
     void endFrame();
-    void flush();
 
     IMPrimitive*        newIMP() const;
     Framebuffer*        newFB(bool multisampled) const;

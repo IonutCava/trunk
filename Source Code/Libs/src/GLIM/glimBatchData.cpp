@@ -9,7 +9,7 @@
 
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
-#define BUFFER_OFFSET(i) ((char *)nullptr + (i))
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace NS_GLIM
 {
@@ -110,6 +110,9 @@ namespace NS_GLIM
         m_pIndexBuffer_Lines = nullptr;
         m_pIndexBuffer_Triangles = nullptr;
         m_pIndexBuffer_Wireframe = nullptr;
+#else
+        m_VertAttribLocation = 0;
+        m_ShaderProgramHandle = 0;
 #endif
 
         Reset ();
@@ -364,21 +367,13 @@ namespace NS_GLIM
 
 #ifdef AE_RENDERAPI_OPENGL
 
-    int glimBatchData::getVertexAttribBindPoint (unsigned int uiCurrentProgram, const char* szAttribName) const
-    {
-        int iLocation = glGetAttribLocation (uiCurrentProgram, szAttribName);
-
-        return (iLocation);
-    }
-
     void glimBatchData::UnbindOGL (void)
     {
-        GL_API::setActiveVAO(0);
-        /*GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        if (!m_bUploadedToGPU)
+            return;
 
-        for (int i = 0; i < 16; ++i)
-            glDisableVertexAttribArray (i);*/
+        GL_API::setActiveVAO(0);
+        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
     }
 
     void glimBatchData::BindOGL (unsigned int uiCurrentProgram)
@@ -386,17 +381,22 @@ namespace NS_GLIM
         if (!m_bUploadedToGPU)
             return;
 
-        GL_API::setActiveVAO(m_VertexArrayObjectID);
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
+        GL_API::setActiveVAO(m_VertexArrayObjectID);
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
         std::map<std::string, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)
         {
-            const int iAttributeArray = getVertexAttribBindPoint (uiCurrentProgram, it->first.c_str ());
+            const int iAttributeArray =  glGetAttribLocation (uiCurrentProgram,  it->first.c_str());
 
             if (iAttributeArray < 0)
                 continue;
+
+            assert(m_VertAttribLocation != iAttributeArray);
+            assert(BUFFER_OFFSET (it->second.m_uiBufferOffset) != BUFFER_OFFSET(0));
 
             glEnableVertexAttribArray (iAttributeArray);
 
@@ -469,7 +469,7 @@ namespace NS_GLIM
         unsigned int uiOffset = uiVertices * sizeof (float) * 3;
 
         // offset is zero, but can use uiOffset as size
-        glBufferSubData (GL_ARRAY_BUFFER, 0, uiOffset, &m_PositionData[0]);
+        glBufferSubData (GL_ARRAY_BUFFER, 0, uiOffset, &m_PositionData.front());
         // the buffer in RAM can be cleared now
         m_PositionData.clear ();
         
@@ -480,12 +480,12 @@ namespace NS_GLIM
 
         for (it = m_Attributes.begin (); it != itend; ++it)
         {
-            const unsigned int uiAttributeSize = (unsigned int) (it->second.m_ArrayData.size ()) * 4; // already includes the number of vertices
+            const unsigned int uiAttributeSize = (unsigned int) (it->second.m_ArrayData.size ()) * sizeof(int); // already includes the number of vertices
 
             // upload the data
             glBufferSubData (GL_ARRAY_BUFFER, uiOffset, uiAttributeSize, &it->second.m_ArrayData[0].Float);
 
-            // free the temporary buffer in RAM, the data is now in a better place (the GPU)
+            // free the temporary buffer in RAM, the data is now in a better place (the VRAM)
             it->second.m_ArrayData.clear ();
 
             it->second.m_uiBufferStride = uiAttributeSize / uiVertices;
@@ -497,37 +497,37 @@ namespace NS_GLIM
             uiOffset += uiAttributeSize;
         }
 
-        m_uiPointElements = 0;
-        m_uiLineElements = 0;
-        m_uiTriangleElements = 0;
-        m_uiWireframeElements = 0;
+        m_uiWireframeElements = (unsigned int) m_IndexBuffer_Wireframe.size();
+        m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();
+        m_uiLineElements = (unsigned int) m_IndexBuffer_Lines.size ();
+        m_uiTriangleElements = (unsigned int) m_IndexBuffer_Triangles.size ();
 
         // upload the index buffer for the points
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Points);
-        if (!m_IndexBuffer_Points.empty ())
-        {
-            m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer_Points.size () * 4, &m_IndexBuffer_Points[0], GL_STATIC_DRAW);
+        if (m_uiPointElements > 0) {
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Points);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiPointElements * sizeof(unsigned int), &m_IndexBuffer_Points.front(), GL_STATIC_DRAW);
             m_IndexBuffer_Points.clear ();
         }
             
         // upload the index buffer for the lines
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Lines);
-        if (!m_IndexBuffer_Lines.empty ())
-        {
-            m_uiLineElements = (unsigned int) m_IndexBuffer_Lines.size ();
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer_Lines.size () * 4, &m_IndexBuffer_Lines[0], GL_STATIC_DRAW);
+        if (m_uiLineElements > 0) {
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Lines);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiLineElements * sizeof(unsigned int), &m_IndexBuffer_Lines.front(), GL_STATIC_DRAW);
             m_IndexBuffer_Lines.clear ();
         }
 
-
         // upload the index buffer for the triangles
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Triangles);
-        if (!m_IndexBuffer_Triangles.empty ())
-        {
-            m_uiTriangleElements = (unsigned int) m_IndexBuffer_Triangles.size ();
-            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer_Triangles.size () * 4, &m_IndexBuffer_Triangles[0], GL_STATIC_DRAW);
+        if (m_uiTriangleElements > 0) {
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Triangles);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiTriangleElements * sizeof(unsigned int), &m_IndexBuffer_Triangles.front(), GL_STATIC_DRAW);
             m_IndexBuffer_Triangles.clear ();
+        }
+
+        // upload the index buffer for the wireframe
+        if (m_uiWireframeElements > 0) {
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_uiElementBufferID_Wireframe);
+            glBufferData (GL_ELEMENT_ARRAY_BUFFER, m_uiWireframeElements * sizeof(unsigned int), &m_IndexBuffer_Wireframe.front(), GL_STATIC_DRAW);
+            m_IndexBuffer_Wireframe.clear ();
         }
     }
 #endif

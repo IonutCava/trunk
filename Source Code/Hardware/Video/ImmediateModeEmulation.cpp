@@ -10,6 +10,7 @@ IMPrimitive::IMPrimitive() : GUIDWrapper(),
                              _zombieCounter(0),
                              _lineWidth(1.0f),
                              _texture(nullptr),
+                             _drawShader(nullptr),
                              _stateHash(0)
 {
 }

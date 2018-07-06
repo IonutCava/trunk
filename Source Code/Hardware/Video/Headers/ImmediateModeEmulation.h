@@ -28,7 +28,7 @@
 #include "Utility/Headers/GUIDWrapper.h"
 
 class Texture;
-
+class ShaderProgram;
 enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VB based rendering
 class IMPrimitive : public GUIDWrapper, private boost::noncopyable  {
@@ -53,6 +53,10 @@ public:
             _resetStates();
     }
 
+    inline void drawShader(ShaderProgram* const shaderProgram) {
+        _drawShader = shaderProgram;
+    }
+
     virtual void render(U32 instanceCount = 1, bool forceWireframe = false) = 0;
 
     virtual void beginBatch() = 0;
@@ -73,6 +77,7 @@ public:
         _lineWidth = 1.0f;
         _canZombify = true;
         _texture = nullptr;
+        _drawShader = nullptr;
     }
 
     inline void paused(bool state)                 {_paused = state;}
@@ -98,10 +103,11 @@ protected:
 public:
     virtual ~IMPrimitive();
 
-    Texture* _texture;
-    bool     _hasLines;
-    bool     _canZombify;
-    F32      _lineWidth;
+    ShaderProgram* _drawShader;
+    Texture*       _texture;
+    bool           _hasLines;
+    bool           _canZombify;
+    F32            _lineWidth;
 
 protected:
     ///after rendering an IMPrimitive, it's "inUse" flag is set to false.

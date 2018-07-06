@@ -5,7 +5,7 @@
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
 #include "Core/Math/Headers/Plane.h"
-#include "Core/Headers/Application.h"
+
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Utility/Headers/ImageTools.h"
@@ -32,10 +32,13 @@ extern "C" {
 
 GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
                          _postFX(PostFX::getOrCreateInstance()),
-                         _shaderManager(ShaderManager::getOrCreateInstance()), //<Defaulting to OpenGL if no api has been defined
-                         _loaderThread(nullptr), _renderer(nullptr), _maxTextureSlots(0),
-                         _interpolationFactor(1.0), _renderStage(INVALID_STAGE)
+                         _shaderManager(ShaderManager::getOrCreateInstance()),
+                         _renderStage(INVALID_STAGE)
 {
+   _loaderThread = nullptr;
+   _renderer = nullptr;
+   _maxTextureSlots = 0;
+   _interpolationFactor = 1.0;
    _MSAASamples = _FXAASamples = 0;
    _previousLineWidth = _currentLineWidth = 1.0;
    _prevTextureId = _stateExclusionMask = _prevShaderId = 0;
@@ -57,8 +60,9 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _2DCamera->lockView(true);
    _2DCamera->lockFrustum(true);
 
-   for (Framebuffer*& renderTarget : _renderTarget)
+   for (Framebuffer*& renderTarget : _renderTarget) {
        renderTarget = nullptr;
+   }
 
    RenderPassManager::getOrCreateInstance().addRenderPass(New RenderPass("diffusePass"), 1);
    //RenderPassManager::getInstance().addRenderPass(shadowPass,2);
@@ -69,13 +73,12 @@ GFXDevice::~GFXDevice()
 }
 
 void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
-    DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0,
-                  "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    DIVIDE_ASSERT(cmd._shaderProgram && cmd._shaderProgram->getId() != 0, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
 
     cmd._shaderProgram->bind();
     cmd._shaderProgram->Uniform("lodLevel", (I32)cmd._lodIndex);
     
-    assert(cmd._drawID < (I32)_matricesData.size());
+    DIVIDE_ASSERT(cmd._drawID < (I32)_matricesData.size(), "GFXDevice error: Invalid draw ID encountered!");
 
     _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd._drawID, 0), 1);
         
@@ -83,8 +86,9 @@ void GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
 }
 
 void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
-    if(numPoints == 0)
+    if (numPoints == 0) {
         return;
+    }
 
     _defaultDrawCmd.setDrawID(-1);
     _defaultDrawCmd.setStateHash(stateHash);
@@ -94,43 +98,49 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash) {
     drawPoints(numPoints); 
 }
 
-void GFXDevice::drawGUIElement(GUIElement* guiElement){
+void GFXDevice::drawGUIElement(GUIElement* guiElement) {
     assert(guiElement);
-    if (!guiElement->isVisible()) return;
+    if (!guiElement->isVisible()) {
+        return;
+    }
 
     setStateBlock(guiElement->getStateBlockHash());
 
-    switch (guiElement->getType()){
-        case GUI_TEXT:{
+    switch (guiElement->getType()) {
+        case GUI_TEXT: {
             const GUIText& text = dynamic_cast<GUIText&>(*guiElement);
             drawText(text, text.getPosition());
         }break;
-        case GUI_FLASH:
+        case GUI_FLASH: {
             dynamic_cast<GUIFlash* >(guiElement)->playMovie();
-            break;
+        }break;
         default:
-            break;
+        break;
     };
+
     guiElement->lastDrawTimer(GETUSTIME());
 }
 
-void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd){
+void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd) {
     assert(buffer != nullptr);
-    if(cmd._cmd.instanceCount == 0)
+
+    if (cmd._cmd.instanceCount == 0) {
         return;
+    }
 
     setBufferData(cmd);
     buffer->Draw(cmd);
 }
 
-void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds){
+void GFXDevice::submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds) {
     STUBBED("Batch by state hash and submit multiple draw calls! - Ionut");    
-    FOR_EACH(const GenericDrawCommand& cmd, cmds){
+
+    FOR_EACH(const GenericDrawCommand& cmd, cmds) {
         submitRenderCommand(buffer, cmd);
     }
 }
 
-void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK& callback, const vec2<F32>& zPlanes, const RenderStage& renderStage){
+void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, const DELEGATE_CBK& callback, const vec2<F32>& zPlanes, const RenderStage& renderStage) {
     //Only use cube map FB's
     if (cubeMap.GetAttachment(TextureDescriptor::Color0)->getTextureType() != TEXTURE_CUBE_MAP) {
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
@@ -165,7 +175,7 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, con
     cubeMap.Begin(Framebuffer::defaultPolicy());
    
     //For each of the environment's faces (TOP,DOWN,NORTH,SOUTH,EAST,WEST)
-    for(U8 i = 0; i < 6; i++){
+    for (U8 i = 0; i < 6; ++i) {
         // true to the current cubemap face
         cubeMap.DrawToFace(TextureDescriptor::Color0, i);
         ///Set our Rendering API to render the desired face
@@ -181,22 +191,25 @@ void  GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos, con
     _kernel->getCameraMgr().popActiveCamera();
 }
 
-size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor){
+size_t GFXDevice::getOrCreateStateBlock(const RenderStateBlockDescriptor& descriptor) {
    size_t hashValue = descriptor.getHash();
 
-   if (_stateBlockMap.find(hashValue) == _stateBlockMap.end())
+   if (_stateBlockMap.find(hashValue) == _stateBlockMap.end()) {
        _stateBlockMap.insert(std::make_pair(hashValue, New RenderStateBlock(descriptor)));
+   }
 
    return hashValue;
 }
 
 size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
    stateBlockHash = stateBlockHash == 0 ? _defaultStateBlockHash : stateBlockHash;
+
    size_t prevStateHash = _newStateBlockHash;
    if (_currentStateBlockHash == 0 || stateBlockHash != _currentStateBlockHash) {
         _newStateBlockHash = stateBlockHash;
-        if (_newStateBlockHash)
+        if (_newStateBlockHash) {
             activateStateBlock(*_stateBlockMap[_newStateBlockHash], _stateBlockMap[_currentStateBlockHash]);
+        }
         _currentStateBlockHash = _newStateBlockHash;
    } else {
        _newStateBlockHash = _currentStateBlockHash;
@@ -212,13 +225,14 @@ const RenderStateBlockDescriptor& GFXDevice::getStateBlockDescriptor(size_t rend
 }
 
 void GFXDevice::changeResolution(U16 w, U16 h) {
-    if(_renderTarget[RENDER_TARGET_SCREEN] != nullptr) {
-        if (vec2<U16>(w,h) == _renderTarget[RENDER_TARGET_SCREEN]->getResolution() || !(w > 1 && h > 1)) 
+    if (_renderTarget[RENDER_TARGET_SCREEN] != nullptr) {
+        if (vec2<U16>(w,h) == _renderTarget[RENDER_TARGET_SCREEN]->getResolution() || !(w > 1 && h > 1)) {
             return;
-        
-        for (Framebuffer* renderTarget : _renderTarget){
-            if (renderTarget)
+        }
+        for (Framebuffer* renderTarget : _renderTarget) {
+            if (renderTarget) {
                 renderTarget->Create(w, h);
+            }
         }
     }
 
@@ -237,7 +251,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
 }
 
-void GFXDevice::enableFog(F32 density, const vec3<F32>& color){
+void GFXDevice::enableFog(F32 density, const vec3<F32>& color) {
     ParamHandler& par = ParamHandler::getInstance();
     par.setParam("rendering.sceneState.fogColor.r", color.r);
     par.setParam("rendering.sceneState.fogColor.g", color.g);
@@ -247,24 +261,25 @@ void GFXDevice::enableFog(F32 density, const vec3<F32>& color){
 }
 
 void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
-    if (mode == VIEW_PROJECTION_MATRIX)          mat.set(_gpuBlock._ViewProjectionMatrix);
-    else if (mode == VIEW_MATRIX)                mat.set(_gpuBlock._ViewMatrix);
-    else if (mode == PROJECTION_MATRIX)          mat.set(_gpuBlock._ProjectionMatrix);
-    else if (mode == TEXTURE_MATRIX)             mat.set(_textureMatrix);
-    else if (mode == VIEW_INV_MATRIX)            _gpuBlock._ViewMatrix.inverse(mat);
-    else if (mode == PROJECTION_INV_MATRIX)      _gpuBlock._ProjectionMatrix.inverse(mat);
-    else if(mode == VIEW_PROJECTION_INV_MATRIX)  _gpuBlock._ViewProjectionMatrix.inverse(mat);
+         if (mode == VIEW_PROJECTION_MATRIX)     { mat.set(_gpuBlock._ViewProjectionMatrix);     }
+    else if (mode == VIEW_MATRIX)                { mat.set(_gpuBlock._ViewMatrix);               }
+    else if (mode == PROJECTION_MATRIX)          { mat.set(_gpuBlock._ProjectionMatrix);         }
+    else if (mode == TEXTURE_MATRIX)             { mat.set(_textureMatrix);                      }
+    else if (mode == VIEW_INV_MATRIX)            { _gpuBlock._ViewMatrix.inverse(mat);           }
+    else if (mode == PROJECTION_INV_MATRIX)      { _gpuBlock._ProjectionMatrix.inverse(mat);     }
+    else if (mode == VIEW_PROJECTION_INV_MATRIX) { _gpuBlock._ViewProjectionMatrix.inverse(mat); }
     else { DIVIDE_ASSERT(mode == -1, "GFXDevice error: attempted to query an invalid matrix target!"); }
 }
 
-void GFXDevice::updateClipPlanes(){
-    for(U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i)
+void GFXDevice::updateClipPlanes() {
+    for (U8 i = 0 ; i < Config::MAX_CLIP_PLANES; ++i) {
         _gpuBlock._clipPlanes[i] = _clippingPlanes[i].getEquation();
+    }
 
     _gfxDataBuffer->UpdateData(0, sizeof(GPUBlock), &_gpuBlock, true);
 }
 
-void GFXDevice::updateViewportInternal(const vec4<I32>& viewport){
+void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     changeViewport(viewport);
     _gpuBlock._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
 
@@ -317,39 +332,39 @@ namespace {
 //Setting anaglyph frustum for specified eye
 void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum) {
 
-    if(!FLOAT_COMPARE(_anaglyphIOD,camIOD)){
+    if (!FLOAT_COMPARE(_anaglyphIOD,camIOD)) {
         static const D32 DTR = 0.0174532925;
         static const D32 screenZ = 10.0;
 
         //sets top of frustum based on FoV-Y and near clipping plane
-        F32 top = zPlanes.x*tan(DTR * verticalFoV * 0.5f);
-        F32 right = aspectRatio*top;
+        F32 top = zPlanes.x * tan(DTR * verticalFoV * 0.5f);
+        F32 right = aspectRatio * top;
         //sets right of frustum based on aspect ratio
-        F32 frustumshift = (camIOD/2)*zPlanes.x/screenZ;
+        F32 frustumshift = (camIOD / 2) * zPlanes.x / screenZ;
 
         _leftCam.topfrustum = top;
         _leftCam.bottomfrustum = -top;
         _leftCam.leftfrustum = -right + frustumshift;
         _leftCam.rightfrustum = right + frustumshift;
-        _leftCam.modeltranslation = camIOD/2;
+        _leftCam.modeltranslation = camIOD / 2;
 
         _rightCam.topfrustum = top;
         _rightCam.bottomfrustum = -top;
         _rightCam.leftfrustum = -right - frustumshift;
         _rightCam.rightfrustum = right - frustumshift;
-        _rightCam.modeltranslation = -camIOD/2;
+        _rightCam.modeltranslation = -camIOD / 2;
 
         _anaglyphIOD = camIOD;
     }
 
-    CameraFrustum& tempCamera = rightFrustum ? _rightCam : _leftCam;
+    CameraFrustum& tempCam = rightFrustum ? _rightCam : _leftCam;
 
-    _gpuBlock._ProjectionMatrix.frustum(tempCamera.leftfrustum,   tempCamera.rightfrustum,
-                                        tempCamera.bottomfrustum, tempCamera.topfrustum,
+    _gpuBlock._ProjectionMatrix.frustum(tempCam.leftfrustum,   tempCam.rightfrustum,
+                                        tempCam.bottomfrustum, tempCam.topfrustum,
                                         zPlanes.x, zPlanes.y);
 
     //translate to cancel parallax
-    _gpuBlock._ProjectionMatrix.translate(tempCamera.modeltranslation, 0.0, 0.0);
+    _gpuBlock._ProjectionMatrix.translate(tempCam.modeltranslation, 0.0, 0.0);
 
     _gpuBlock._ZPlanesCombined.x = zPlanes.x;
     _gpuBlock._ZPlanesCombined.y = zPlanes.y;
@@ -360,39 +375,44 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 asp
 
 void GFXDevice::toggle2D(bool state) {
     static size_t previousStateBlockHash = 0;
-    if (state == _2DRendering) return;
+    if (state == _2DRendering) {
+        return;
+    }
 
-    assert((state && !_2DRendering) || (!state && _2DRendering));
+    DIVIDE_ASSERT((state && !_2DRendering) || (!state && _2DRendering), "GFXDevice error: double toggle2D call with same value detected!");
 
     _2DRendering = state;
 
-    if (state){ //2D
+    if (state) { //2D
         previousStateBlockHash = setStateBlock(_state2DRenderingHash);
         _kernel->getCameraMgr().pushActiveCamera(_2DCamera);
         _2DCamera->renderLookAt();
-    }else{ //3D
+    } else { //3D
         _kernel->getCameraMgr().popActiveCamera();
         setStateBlock(previousStateBlockHash);
     }
 }
 
 void GFXDevice::postProcessingEnabled(const bool state) {
-    if (_enablePostProcessing != state){
+    if (_enablePostProcessing != state) {
         _enablePostProcessing = state; 
-        if(state) _postFX.idle();
+        if(state) {
+            _postFX.idle();
+        }
     }
 }
 
-void GFXDevice::restoreViewport(){
-    if (!_viewportUpdate)
+void GFXDevice::restoreViewport() {
+    if (!_viewportUpdate) {
         return;
+    }
 
     _viewport.pop();
     updateViewportInternal(_viewport.top());
     _viewportUpdate = false;
 }
 
-void GFXDevice::setViewport(const vec4<I32>& viewport){
+void GFXDevice::setViewport(const vec4<I32>& viewport) {
     _viewportUpdate = !viewport.compare(_viewport.top());
     
     if (_viewportUpdate) {
@@ -403,24 +423,24 @@ void GFXDevice::setViewport(const vec4<I32>& viewport){
    }
 }
 
-void GFXDevice::forceViewportInternal(const vec4<I32>& viewport){
-    while(!_viewport.empty())
+void GFXDevice::forceViewportInternal(const vec4<I32>& viewport) {
+    while (!_viewport.empty()) {
         _viewport.pop();
+    }
 
     _viewport.push(viewport);
     updateViewportInternal(viewport);
     _viewportUpdate = false;
 }
 
-void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes){
-    if(visibleNodes.empty()){
-        //_nodeBuffer->SetData(NULL);
+void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes) {
+    if (visibleNodes.empty()) {
         return;
     }
 
     // Generate and upload all lighting data
     
-    //LightManager::getInstance().buildLightGrid(_viewMatrix, _projectionMatrix, _gpuBlock._ZPlanesCombined.xy());
+    LightManager::getInstance().buildLightGrid(_gpuBlock._ViewMatrix, _gpuBlock._ProjectionMatrix, _gpuBlock._ZPlanesCombined.xy());
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
 
     // Generate and upload per node data
@@ -432,15 +452,16 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     NodeData temp; 
     _matricesData.push_back(temp);
 
-    for(U16 i = 0; i < visibleNodes.size(); ++i){
+    for (U16 i = 0; i < visibleNodes.size(); ++i) {
         SceneGraphNode* crtNode = visibleNodes[i];
         Transform* transform = crtNode->getTransform();
         if (transform) {
             temp._matrix[0].set(crtNode->getWorldMatrix(_interpolationFactor));
             temp._matrix[1].set(temp._matrix[0] * _gpuBlock._ViewMatrix);
-            if(!transform->isUniformScaled())
+            if (!transform->isUniformScaled()) {
                 temp._matrix[1].inverseTranspose();
-        }else{
+            }
+        } else {
             temp._matrix[0].identity();
             temp._matrix[1].identity();
         }
@@ -460,14 +481,16 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
 }
 
 bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
-    if (callback.empty())
+    if (callback.empty()) {
         return false;
+    }
 
-    if (context == GFX_LOADING_CONTEXT && loadingThreadAvailable()){
+    if (context == GFX_LOADING_CONTEXT && loadingThreadAvailable()) {
         while (!_loadQueue.push(callback));
-    }else{
+    } else {
         callback();
     }
+
     return true;
 }
 
@@ -482,10 +505,10 @@ void GFXDevice::ConstructHIZ() {
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     vec2<U16> resolution = _renderTarget[RENDER_TARGET_DEPTH]->getResolution();
     // calculate the number of mipmap levels for NPOT texture
-    U32 numLevels = 1 + (U32)floorf(log2f(fmaxf((F32)resolution.width, (F32)resolution.height)));
-    I32 currentWidth = resolution.width;
-    I32 currentHeight = resolution.height;
-    for (U32 i = 1; i < numLevels; i++) {
+    U16 numLevels = 1 + (U16)floorf(log2f(fmaxf((F32)resolution.width, (F32)resolution.height)));
+    U16 currentWidth  = resolution.width;
+    U16 currentHeight = resolution.height;
+    for (U16 i = 1; i < numLevels; ++i) {
         _HIZConstructProgram->Uniform("LastMipSize", vec2<I32>(currentWidth, currentHeight));
         // calculate next viewport size
         currentWidth  /= 2;
@@ -598,8 +621,10 @@ void GFXDevice::drawLines(const vectorImpl<Line >& lines,
                           const bool inViewport,
                           const bool disableDepth){
 
-    if(lines.empty()) return;
-    
+    if (lines.empty()) {
+        return;
+    }
+
     IMPrimitive* priv = getOrCreatePrimitive();
 
     priv->_hasLines = true;
@@ -607,19 +632,21 @@ void GFXDevice::drawLines(const vectorImpl<Line >& lines,
     priv->worldMatrix(globalOffset);
     priv->stateHash(getDefaultStateBlock(disableDepth));
    
-    if(inViewport)
+    if (inViewport) {
         priv->setRenderStates(DELEGATE_BIND(&GFXDevice::setViewport, DELEGATE_REF(GFX_DEVICE), viewport),
                               DELEGATE_BIND(&GFXDevice::restoreViewport, DELEGATE_REF(GFX_DEVICE)));            
+    }
+
     priv->beginBatch();
 
     priv->attribute4ub("inColorData", lines[0]._color);
 
     priv->begin(LINES);
 
-    for(size_t i = 0; i < lines.size(); i++){
-        priv->attribute4ub("inColorData", lines[i]._color);
-        priv->vertex( lines[i]._startPoint );
-        priv->vertex( lines[i]._endPoint );
+    for (const Line& line : lines) {
+        priv->attribute4ub("inColorData", line._color);
+        priv->vertex( line._startPoint );
+        priv->vertex( line._endPoint );
     }
 
     priv->end();

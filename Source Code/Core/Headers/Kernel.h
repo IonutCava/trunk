@@ -131,7 +131,7 @@ private:
    void renderScene();
    void renderSceneAnaglyph();
    bool mainLoopScene(FrameEvent& evt);
-   bool presentToScreen(FrameEvent& evt, const D32 interpolationFactor);
+   bool presentToScreen(FrameEvent& evt);
    void threadPoolCompleted(U64 onExitTaskID);
 
 private:

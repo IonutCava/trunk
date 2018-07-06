@@ -117,7 +117,6 @@ public:
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders()   { return _api.initShaders(); }
     inline bool deInitShaders() { return _api.deInitShaders(); }
-    inline void flush();
            void beginFrame();
            void endFrame();
     

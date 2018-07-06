@@ -46,7 +46,8 @@ GL_API::GL_API() : RenderAPIWrapper(),
                    _prevSizeNode(0),
                    _prevSizeString(0),
                    _lineWidthLimit(1),
-                   _pointDummyVAO(0)
+                   _pointDummyVAO(0),
+                   _fonsContext(nullptr)
 {
     _closeLoadingThread = false;
 
@@ -56,7 +57,7 @@ GL_API::GL_API() : RenderAPIWrapper(),
         }
     }
 
-    for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index){
+    for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index) {
         _activeClipPlanes[index] = false;
     }
 }
@@ -74,20 +75,22 @@ void GL_API::deleteFonsContext() {
     _fonsContext = nullptr;
 }
 
-void GL_API::beginFrame(){
+void GL_API::beginFrame() {
+
 #ifdef _DEBUG
     GLuint queryId = _queryID[_queryBackBuffer][0];
     glBeginQuery(GL_TIME_ELAPSED, queryId);
 #endif
+
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
     GFX_DEVICE.registerDrawCall();
 }
 
-void GL_API::endFrame(){
+void GL_API::endFrame() {
 
     //unbind all states (shaders, textures, buffers)
-    clearStates(false,false,false);
+    clearStates(false, false, false);
 
     glfwSwapBuffers(Divide::GLUtil::_mainWindow);
     glfwPollEvents();
@@ -101,10 +104,6 @@ void GL_API::endFrame(){
     _queryFrontBuffer = 3 - _queryBackBuffer;
     
 #endif
-}
-
-void GL_API::flush(){
-    clearStates(false,false,false);
 }
 
 bool GL_API::initShaders(){
@@ -128,12 +127,12 @@ bool GL_API::initShaders(){
 
     glswAddDirectiveToken("", "//__CUSTOM_DEFINES__");
 
-    if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
-        glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
-        glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
+    if (getGPUVendor() == GPU_VENDOR_NVIDIA) { //nVidia specific
+        glswAddDirectiveToken("","//#pragma optionNV(fastmath on)");
+        glswAddDirectiveToken("","//#pragma optionNV(fastprecision on)");
         glswAddDirectiveToken("","//#pragma optionNV(inline all)");
         glswAddDirectiveToken("","//#pragma optionNV(ifcvt none)");
-        glswAddDirectiveToken("","#pragma optionNV(strict on)");
+        glswAddDirectiveToken("","//#pragma optionNV(strict on)");
         glswAddDirectiveToken("","//#pragma optionNV(unroll all)");
     }
 
@@ -179,13 +178,13 @@ bool GL_API::initShaders(){
     return glswState == 1 && GL_API::_GLSLOptContex != nullptr;
 }
 
-bool GL_API::deInitShaders(){
+bool GL_API::deInitShaders() {
     glslopt_cleanup(_GLSLOptContex);
     //Shut down glsw and clean memory
     return (glswShutdown() == 1);
 }
 
-I32 GL_API::getFont(const std::string& fontName){
+I32 GL_API::getFont(const std::string& fontName) {
     const FontCache::const_iterator& it = _fonts.find(fontName);
     if(it == _fonts.end()){
         std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
@@ -204,28 +203,31 @@ I32 GL_API::getFont(const std::string& fontName){
     return it->second;
 }
 
-void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
+void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
     I32 font = getFont(textLabel._font);
-    if(font == FONS_INVALID) return;
+    if (font == FONS_INVALID) {
+        return;
+    }
 
     F32 lh = 0;
     fonsClearState(_fonsContext);
     fonsSetSize(_fonsContext, textLabel._height);
     fonsSetFont(_fonsContext, font);
     fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-    fonsSetColor(_fonsContext, textLabel._color.r * 255, 
-                               textLabel._color.g * 255,
-                               textLabel._color.b * 255, 
-                               textLabel._color.a * 255);
-    if(textLabel._blurAmount > 0.01f)
+    fonsSetColor(_fonsContext, textLabel._color.r * 255, textLabel._color.g * 255, textLabel._color.b * 255, textLabel._color.a * 255);
+
+    if (textLabel._blurAmount > 0.01f) {
         fonsSetBlur(_fonsContext, textLabel._blurAmount );
-    
-    if(textLabel._spacing > 0.01f)
+    }
+
+    if (textLabel._spacing > 0.01f) {
         fonsSetBlur(_fonsContext, textLabel._spacing );
-    
-    if(textLabel._alignFlag != 0)
+    }
+
+    if (textLabel._alignFlag != 0) {
         fonsSetAlign(_fonsContext, textLabel._alignFlag);
-    
+    }
+
     fonsDrawText(_fonsContext, position.x, _cachedResolution.y - (position.y + lh), textLabel._text.c_str(), nullptr);
     GFX_DEVICE.registerDrawCall();
 }
@@ -269,19 +271,23 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor){
     size_t hashValue = descriptor.getHash();
 
     samplerObjectMap::iterator it = _samplerMap.find(hashValue);
-    if (it == _samplerMap.end())
+
+    if (it == _samplerMap.end()) {
         _samplerMap.insert(std::make_pair(hashValue, New glSamplerObject(descriptor)));
- 
+    }
+
     return hashValue;
 }
 
 GLuint GL_API::getSamplerHandle(size_t samplerHash) {
-    if(samplerHash == 0)
+    if (samplerHash == 0) {
         return 0;
+    }
 
     samplerObjectMap::iterator it = _samplerMap.find(samplerHash);
-    if (it == _samplerMap.end()) 
+    if (it == _samplerMap.end()) {
         return 0;
+    }
 
     return it->second->getObjectHandle();
 }

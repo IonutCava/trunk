@@ -27,57 +27,67 @@ GUI::GUI() : _init(false),
 
 GUI::~GUI()
 {
-    close();
+    PRINT_FN(Locale::get("STOP_GUI"));
+    SAFE_DELETE(_console);
+    RemoveResource(_guiShader);
+    FOR_EACH(guiMap::value_type it, _guiStack) {
+        SAFE_DELETE(it.second);
+    }
+    _guiStack.clear();
 }
 
-void GUI::onResize(const vec2<U16>& newResolution){
+void GUI::onResize(const vec2<U16>& newResolution) {
     //CEGUI handles it's own init checks
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(newResolution.width, newResolution.height));
 
-    if (!_init || _cachedResolution == newResolution)
+    if (!_init || _cachedResolution == newResolution) {
         return;
+    }
 
-    vec2<I32> difDimensions(_cachedResolution.width - newResolution.width,
-                            _cachedResolution.height - newResolution.height);
+    vec2<I32> difDimensions((I32)_cachedResolution.width - newResolution.width, (I32)_cachedResolution.height - newResolution.height);
 
-    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack){
+    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
         guiStackIterator.second->onResize(difDimensions);
     }
+
     _cachedResolution = newResolution;
 }
 
-void GUI::draw2D(){
-    if(!_init) return;
-
-    GFXDevice& gfx = GFX_DEVICE;
+void GUI::draw2D() {
+    if (!_init) {
+        return;
+    }
 
     _guiShader->bind();
 
-    //------------------------------------------------------------------------
-    FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack){
+    GFXDevice& gfx = GFX_DEVICE;
+    FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack) {
         gfx.drawGUIElement(guiStackIterator.second);
     }
-    //------------------------------------------------------------------------
 }
 
-void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
-    if(!_init) return;
-    if(_console) _console->update(deltaTime);
+void GUI::draw(const U64 deltaTime) {
+    if (!_init) {
+        return;
+    }
 
-    D32 deltaTimeSec = getUsToSec(deltaTime);
+    if (_console) {
+        _console->update(deltaTime);
+    }
 
     _input.update(deltaTime);
-    CEGUI::System::getSingleton().injectTimePulse(deltaTimeSec);
+
+    CEGUI::System::getSingleton().injectTimePulse(getUsToSec(deltaTime));
 
     GUIEditor::getInstance().update(deltaTime);
 
-    if(_enableCEGUIRendering){
+    if (_enableCEGUIRendering) {
         CEGUI::System::getSingleton().renderAllGUIContexts();
     }
 }
 
-bool GUI::init(const vec2<U16>& resolution){
-    if(_init) {
+bool GUI::init(const vec2<U16>& resolution) {
+    if (_init) {
         D_ERROR_FN(Locale::get("ERROR_GUI_DOUBLE_INIT"));
         return false;
     }
@@ -132,18 +142,11 @@ bool GUI::init(const vec2<U16>& resolution){
     return true;
 }
 
-void GUI::close(){
-    PRINT_FN(Locale::get("STOP_GUI"));
-    SAFE_DELETE(_console);
-    RemoveResource(_guiShader);
-    FOR_EACH(guiMap::value_type it, _guiStack) {
-        SAFE_DELETE(it.second);
+bool GUI::checkItem(const OIS::MouseEvent& arg) {
+    if (!_init) { 
+        return true;
     }
-    _guiStack.clear();
-}
 
-bool GUI::checkItem(const OIS::MouseEvent& arg ){
-    if(!_init) return true;
     GUIEvent event;
     event.mousePoint.x = arg.state.X.abs;
     event.mousePoint.y = arg.state.Y.abs;
@@ -151,20 +154,24 @@ bool GUI::checkItem(const OIS::MouseEvent& arg ){
     FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
         guiStackIterator.second->onMouseMove(event);
     }
+
     CEGUI_DEFAULT_CONTEXT.injectMousePosition(arg.state.X.abs, arg.state.Y.abs);
     CEGUI_DEFAULT_CONTEXT.injectMouseWheelChange(arg.state.Z.abs);
+
     return true;
 }
 
 bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
-    if(!_init) return true;
+    if (!_init) {
+        return true;
+    }
 
-    if(key.key == OIS::KC_GRAVE && !pressed){
+    if (key.key == OIS::KC_GRAVE && !pressed) {
         _console->setVisible(!_console->isVisible());
     }
 
 #ifdef _DEBUG
-    if(key.key == OIS::KC_F11 && !pressed){
+    if (key.key == OIS::KC_F11 && !pressed) {
         GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
     }
 #endif
@@ -174,11 +181,13 @@ bool GUI::keyCheck(OIS::KeyEvent key, bool pressed) {
 }
 
 bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
-    if(!_init) return true;
+    if (!_init) {
+        return true;
+    }
 
-    if(pressed){
-        switch (button){
-            case OIS::MB_Left:{
+    if (pressed) {
+        switch (button) {
+            case OIS::MB_Left: {
                 CEGUI_DEFAULT_CONTEXT.injectMouseButtonDown(CEGUI::LeftButton);
                 GUIEvent event;
                 event.mouseClickCount = 0;
@@ -201,9 +210,9 @@ bool GUI::clickCheck(OIS::MouseButtonID button, bool pressed) {
             default:
                 break;
         }
-    }else{
-        switch (button){
-            case OIS::MB_Left:{
+    } else {
+        switch (button) {
+            case OIS::MB_Left: {
                 CEGUI_DEFAULT_CONTEXT.injectMouseButtonUp(CEGUI::LeftButton);
                 GUIEvent event;
                 event.mouseClickCount = 1;
@@ -234,7 +243,7 @@ GUIButton* GUI::addButton(const std::string& id, const std::string& text,
                     const vec2<I32>& position,const vec2<U32>& dimensions,const vec3<F32>& color,
                     ButtonCallback callback,const std::string& rootSheetId){
     CEGUI::Window* parent = nullptr;
-    if(!rootSheetId.empty()){
+    if (!rootSheetId.empty()) {
         parent = CEGUI_DEFAULT_CONTEXT.getRootWindow()->getChild(rootSheetId);
     }
     if(!parent) parent = _rootSheet;
@@ -300,7 +309,7 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
      bool onKeyDown(const GuiEvent &event);
 */
 
-bool GUI::bindRenderer(CEGUI::Renderer& renderer){
+bool GUI::bindRenderer(CEGUI::Renderer& renderer) {
     CEGUI::System::create(renderer);
     _enableCEGUIRendering =  !(ParamHandler::getInstance().getParam<bool>("GUI.CEGUI.SkipRendering"));
     return true;

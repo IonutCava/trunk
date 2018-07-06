@@ -47,7 +47,7 @@ typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 public:
     ///Create rendering API specific initialization of shader libraries
     bool    init(Kernel* const activeKernel);
-    void    Destroy();
+    void    destroy();
     ///Called once per frame
     U8      update(const U64 deltaTime);
     ///Called once per frame after a swap buffer request

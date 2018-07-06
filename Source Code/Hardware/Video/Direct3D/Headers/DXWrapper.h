@@ -48,7 +48,6 @@ protected:
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
-    void flush();
     void beginFrame();
     void endFrame();
 

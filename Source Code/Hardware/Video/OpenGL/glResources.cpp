@@ -53,6 +53,11 @@ namespace Divide {
             return tempValue;
         }
 
+        /// Send a shutdown request to the app on X-button clicks
+        void glfw_close_callback(GLFWwindow *window) {
+            Application::getInstance().RequestShutdown();
+        }
+
         /// Used by GLFW to inform the application if it has focus or not
         void glfw_focus_callback(GLFWwindow *window, I32 focusState) {
             Application::getInstance().hasFocus(focusState != 0);

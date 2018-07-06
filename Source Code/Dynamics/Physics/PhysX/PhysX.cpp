@@ -17,11 +17,11 @@ using namespace physx;
 physx::PxDefaultAllocator     PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 
-physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) 
-{ 	
+physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) { 	
 #ifdef PHYSX_PROFILE_SDK
-    if ( _profileZone == nullptr )
+    if (_profileZone == nullptr) {
         _profileZone = &physx::PxProfileZone::createProfileZone( &inFoundation, "SampleProfileZone", gProfileNameProvider );
+    }
 #endif
     return _profileZone;
 }
@@ -55,34 +55,34 @@ I8 PhysX::initPhysicsApi(U8 targetFrameRate) {
     assert(_zoneManager != nullptr);
 #endif
 
-    _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION,
-                                   *_foundation,
-                                   PxTolerancesScale(),
-                                   recordMemoryAllocations,
-                                   _zoneManager);
-    if(_gPhysicsSDK == nullptr) {
+    _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, *_foundation, PxTolerancesScale(), recordMemoryAllocations, _zoneManager);
+
+    if (_gPhysicsSDK == nullptr) {
         ERROR_FN(Locale::get("ERROR_START_PHYSX_API"));
         return PHYSX_INIT_ERROR;
     }
   
 #ifdef _DEBUG
-    if(getOrCreateProfileZone(*_foundation))
+    if (getOrCreateProfileZone(*_foundation)) {
         _zoneManager->addProfileZone(*_profileZone);
+    }
+
     _pvdConnection = _gPhysicsSDK->getPvdConnectionManager();
     _gPhysicsSDK->getPvdConnectionManager()->addHandler(*this);
-    if(_pvdConnection != nullptr){
-        if(PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000) != nullptr){
+
+    if (_pvdConnection != nullptr) {
+        if(PxVisualDebuggerExt::createConnection(_pvdConnection, "localhost", 5425, 10000) != nullptr) {
              D_PRINT_FN(Locale::get("CONNECT_PVD_OK"));
         }
     }
 #endif
 
-    if(!PxInitExtensions(*_gPhysicsSDK)){
+    if (!PxInitExtensions(*_gPhysicsSDK)) {
         ERROR_FN(Locale::get("ERROR_EXTENSION_PHYSX_API"));
         return PHYSX_EXTENSION_ERROR;
     }
     
-    if(!_cooking){
+    if (!_cooking) {
         PxCookingParams* cookparams = New PxCookingParams(PxTolerancesScale());
         cookparams->targetPlatform = PxPlatform::ePC;
         _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
@@ -91,21 +91,25 @@ I8 PhysX::initPhysicsApi(U8 targetFrameRate) {
 
     updateTimeStep(targetFrameRate);
     PRINT_FN(Locale::get("START_PHYSX_API_OK"));
+
     return NO_ERR;
 }
 
 bool PhysX::closePhysicsApi() {
-    if(!_gPhysicsSDK)
+    if (!_gPhysicsSDK) {
         return false;
-        
+    }
+    
     PRINT_FN(Locale::get("STOP_PHYSX_API"));
     
-    if(_cooking)
+    if (_cooking) {
         _cooking->release();
+    }
 
     PxCloseExtensions();
     _gPhysicsSDK->release();
     _foundation->release();
+
     return true;
 }
 
@@ -117,13 +121,14 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
 }
 
 ///Process results
-void PhysX::process(const U64 deltaTime){
-    if(_targetScene && _timeStep > 0.0f){
+void PhysX::process(const U64 deltaTime) {
+    if (_targetScene && _timeStep > 0.0f) {
         _accumulator  += static_cast<physx::PxReal>(getUsToMs(deltaTime));
         
-        if(_accumulator < _timeStep)
+        if(_accumulator < _timeStep) {
             return;
-         
+        }
+
         _accumulator -= _timeStep;
         _targetScene->process(_timeStep);
     }
@@ -131,13 +136,13 @@ void PhysX::process(const U64 deltaTime){
 
 ///Update actors
 void PhysX::update(const U64 deltaTime){
-    if(_targetScene){
+    if (_targetScene) {
         _targetScene->update(deltaTime);
     }
 }
 
 void PhysX::idle(){
-    if(_targetScene){
+    if (_targetScene) {
         _targetScene->idle();
     }
 }
@@ -146,14 +151,15 @@ PhysicsSceneInterface* PhysX::NewSceneInterface(Scene* scene) {
     return New PhysXSceneInterface(scene);
 }
 
-void PhysX::initScene(){
+void PhysX::initScene() {
     assert(_targetScene);
     _targetScene->init();
 }
 
-bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group){
+bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName, PhysicsActorMask mask, PhysicsCollisionGroup group) {
     assert(node != nullptr);
     assert(_targetScene != nullptr);
+
     Object3D* sNode = node->getNode<Object3D>();
 
     //Load cached version from file first
@@ -162,29 +168,31 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
 
     FILE* fp = fopen(nodeName.c_str(), "rb");
     bool ok = false;
-    if(fp)
-    {
+    if(fp) {
         fseek(fp, 0, SEEK_END);
         PxU32 filesize=ftell(fp);
         fclose(fp);
         ok = (filesize != 0);
     }
 
-    //if(group == GROUP_NON_COLLIDABLE)
-    //   return true;
+    if (group == GROUP_NON_COLLIDABLE) {
+        //return true;
+    }
 
-    if(!ok){
+    if (!ok) {
     
         sNode->computeTriangleList();
         const vectorImpl<vec3<U32> >& triangles = sNode->getTriangles();
 
-        if(sNode->getTriangles().empty())
+        if (sNode->getTriangles().empty()) {
             return false;
- 
+        }
+
         VertexBuffer* nodeVB = sNode->getGeometryVB();
-        if(sNode->getObjectType() == Object3D::SUBMESH)
+        if (sNode->getObjectType() == Object3D::SUBMESH) {
             nodeVB = node->getParent()->getNode<Object3D>()->getGeometryVB();
-        
+        }
+
         PxDefaultFileOutputStream stream(nodeName.c_str());
         
         PxTriangleMeshDesc meshDesc;
@@ -194,16 +202,16 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
         meshDesc.triangles.count  = (PxU32)triangles.size();
         meshDesc.triangles.stride = 3*sizeof(U32);
         meshDesc.triangles.data   = &triangles.front();
-        //if(!nodeVB->usesLargeIndices())
+        if (!nodeVB->usesLargeIndices()) {
             //meshDesc.flags = PxMeshFlag::e16_BIT_INDICES;
+        }
 
-        if(!_cooking->cookTriangleMesh(meshDesc, stream)){
+        if (!_cooking->cookTriangleMesh(meshDesc, stream)) {
             ERROR_FN(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
             return false;
         }
         
-
-    }else{
+    } else {
         PRINT_FN(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"), nodeName.c_str());
     }
     
@@ -217,21 +225,21 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     assert(nodeTransform != nullptr);
     tempActor->_transform = nodeTransform;
 
-    if(!tempActor->_actor) {
+    if (!tempActor->_actor) {
         const vec3<F32>& position = nodeTransform->getPosition();
         const vec4<F32>& orientation = nodeTransform->getOrientation().asVec4();
 
         physx::PxTransform posePxTransform(PxVec3(position.x, position.y, position.z),
                                            PxQuat(orientation.x,orientation.y,orientation.z,orientation.w).getConjugate());
 
-        if(mask != MASK_RIGID_DYNAMIC)
+        if (mask != MASK_RIGID_DYNAMIC) {
             tempActor->_actor = _gPhysicsSDK->createRigidStatic(posePxTransform);
-        else {
+        } else {
             tempActor->_actor = _gPhysicsSDK->createRigidDynamic(posePxTransform);
             tempActor->_isDynamic = true;
         }
 
-        if(!tempActor->_actor) {
+        if (!tempActor->_actor) {
             SAFE_DELETE(tempActor);
             return false;
         }
@@ -247,22 +255,17 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
 
     PxDefaultFileInputData stream(nodeName.c_str());
     physx::PxTriangleMesh* triangleMesh = _gPhysicsSDK->createTriangleMesh(stream);
-    if(!triangleMesh){
+
+    if (!triangleMesh) {
         ERROR_FN(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
         return false;
     }
 
     const vec3<F32>& scale = nodeTransform->getScale();
-    geometry = New PxTriangleMeshGeometry(triangleMesh, 
-                                            PxMeshScale(PxVec3(scale.x,scale.y,scale.z),
-                                            PxQuat(PxIdentity)));
-
-
+    geometry = New PxTriangleMeshGeometry(triangleMesh, PxMeshScale(PxVec3(scale.x,scale.y,scale.z), PxQuat(PxIdentity)));
     assert(geometry != nullptr);
 
-    static physx::PxMaterial* material = _gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f);
-
-    tempActor->_actor->createShape(*geometry, *material);
+    tempActor->_actor->createShape(*geometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
 
     return true;
 };
