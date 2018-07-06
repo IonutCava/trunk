@@ -1,5 +1,5 @@
-#include "Core/Headers/ParamHandler.h"
-
+#include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -8,25 +8,29 @@
 
 namespace {
     const bool USE_THREADED_SHADER_LOAD = true;
+    stringImpl s_defaultShaderProgramPath;
 };
 
 namespace Divide {
 
 template<>
 Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
-    const ParamHandler& par = ParamHandler::instance();
+    if (_descriptor.getResourceName().empty()) {
+        _descriptor.setResourceName(_descriptor.getName());
+    }
 
-    stringImpl resourceLocation;
-    if (_descriptor.getResourceLocation().compare("default") == 0) {
-        resourceLocation = 
-            par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +
-            par.getParam<stringImpl>(_ID("shaderLocation")) + "/";
-    } else {
-        resourceLocation = _descriptor.getResourceLocation();
+    if (s_defaultShaderProgramPath.empty()) {
+        s_defaultShaderProgramPath = _context.entryData().assetsLocation + "/" +
+                                     _context.config().defaultShadersLocation;
+    }
+
+    if (_descriptor.getResourceLocation().empty()) {
+        _descriptor.setResourceLocation(s_defaultShaderProgramPath);
     }
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_descriptor.getName(),
-                                                          resourceLocation,
+                                                          _descriptor.getResourceName(),
+                                                          _descriptor.getResourceLocation(),
                                                           USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
                                                                                    : false),
                           DeleteResource(_cache));

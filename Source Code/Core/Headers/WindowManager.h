@@ -53,13 +53,13 @@ enum class WindowEvent : U32 {
 
 enum class RenderAPI : U32;
 
-class GFXDevice;
+class PlatformContext;
 class WindowManager {
 public:
     WindowManager();
     ~WindowManager();
 
-    ErrorCode init(GFXDevice& context, 
+    ErrorCode init(PlatformContext& context,
                    RenderAPI api,
                    ResolutionByType initialResolutions,
                    bool startFullScreen,
@@ -72,7 +72,8 @@ public:
                          U32 windowFlags,
                          const ResolutionByType& initialResolutions,
                          bool startFullScreen,
-                         I32 targetDisplayIndex);
+                         I32 targetDisplayIndex,
+                         const char* windowTitle);
     inline I32 targetDisplay() const;
     inline void targetDisplay(I32 displayIndex);
 
@@ -90,6 +91,7 @@ protected:
 protected:
     I32 _displayIndex;
     I64 _activeWindowGUID;
+    PlatformContext* _context;
     vectorImpl<DisplayWindow*> _windows;
 };
 }; //namespace Divide

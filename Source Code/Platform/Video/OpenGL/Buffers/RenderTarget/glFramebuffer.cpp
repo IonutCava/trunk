@@ -71,8 +71,7 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
          type == RTAttachment::Type::Depth) {
         multisampled = texDescriptor._type == TextureType::TEXTURE_2D_MS ||
                        texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS;
-        multisampled = multisampled &&
-                       ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0) > 0;
+        multisampled = multisampled && GL_API::s_msaaSamples > 0;
     }
 
     if (multisampled) {
@@ -234,9 +233,11 @@ bool glFramebuffer::create(U16 width, U16 height) {
     }
 
     // For every attachment, be it a colour or depth attachment ...
+    I32 attachmentCountTotal = 0;
     for (U8 i = 0; i < to_const_ubyte(RTAttachment::Type::COUNT); ++i) {
         for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachment::Type>(i)); ++j) {
             initAttachment(static_cast<RTAttachment::Type>(i), j);
+            assert(GL_API::s_maxFBOAttachments > ++attachmentCountTotal);
         }
     }
 

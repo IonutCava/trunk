@@ -314,6 +314,9 @@ stringImpl  Trim(const stringImpl& s);
 //format is passed by value to conform with the requirements of va_start.
 //ref: http://codereview.stackexchange.com/questions/115760/use-va-list-to-format-a-string
 stringImpl StringFormat(const char *const format, ...);
+
+std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/> SplitPathToNameAndLocation(const stringImpl& input);
+
 void CStringRemoveChar(char* str, char charToRemove);
 bool FileExists(const char* filePath);
 /** Ogre3D

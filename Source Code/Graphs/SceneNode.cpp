@@ -29,12 +29,12 @@ namespace {
 };
 
 SceneNode::SceneNode(ResourceCache& parentCache, const stringImpl& name, const SceneNodeType& type)
-    : SceneNode(parentCache, name, "", type)
+    : SceneNode(parentCache, name, name, "", type)
 {
 }
 
-SceneNode::SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, const SceneNodeType& type)
-    : Resource(ResourceType::DEFAULT, name, resourceLocation),
+SceneNode::SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type)
+    : Resource(ResourceType::DEFAULT, name, resourceName, resourceLocation),
      _parentCache(parentCache),
      _materialTemplate(nullptr),
      _type(type),

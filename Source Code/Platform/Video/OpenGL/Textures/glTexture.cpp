@@ -16,10 +16,11 @@ namespace Divide {
 
 glTexture::glTexture(GFXDevice& context,
                      const stringImpl& name,
+                     const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
                      TextureType type,
                      bool asyncLoad)
-    : Texture(context, name, resourceLocation, type, asyncLoad),
+    : Texture(context, name, resourceName, resourceLocation, type, asyncLoad),
      _lockManager(MemoryManager_NEW glLockManager())
 {
     _allocatedStorage = false;
@@ -134,7 +135,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 handle,
-                ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
+                GL_API::s_msaaSamples,
                 glInternalFormat,
                 _width,
                 _height,
@@ -143,7 +144,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 handle,
-                ParamHandler::instance().getParam<I32>(_ID("rendering.MSAAsampless"), 0),
+                GL_API::s_msaaSamples,
                 glInternalFormat,
                 _width,
                 _height,

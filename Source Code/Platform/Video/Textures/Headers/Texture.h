@@ -65,6 +65,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public Resource {
 
     explicit Texture(GFXDevice& context,
                      const stringImpl& name,
+                     const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
                      TextureType type,
                      bool asyncLoad);
@@ -154,6 +155,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public Resource {
 
 
     static U16 computeMipCount(U16 width, U16 height);
+
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name);
@@ -176,6 +178,11 @@ class NOINITVTABLE Texture : public GraphicsResource, public Resource {
     bool _asyncLoad;
     TextureData  _textureData;
     TextureDescriptor _descriptor;
+
+  public:
+    static const char* s_defaultTextureFilePath;
+  protected:
+    static const char* s_missingTextureFileName;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Texture);

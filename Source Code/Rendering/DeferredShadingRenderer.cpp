@@ -82,7 +82,6 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     _renderQuads.push_back(CreateResource<Quad3D>(cache, mrt4));
     _renderQuads.push_back(CreateResource<Quad3D>(cache, mrtPreviewSmall));
 
-    ParamHandler& par = ParamHandler::instance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
     _context.gfx().shadowDetailLevel(RenderDetailLevel::OFF);
 

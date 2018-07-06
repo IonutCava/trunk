@@ -288,9 +288,10 @@ bool MainScene::loadResources(bool continueOnErrors) {
     registerTask(boxMove);
 
     ResourceDescriptor beepSound("beep sound");
+    beepSound.setResourceName("beep.wav");
     beepSound.setResourceLocation(
         _paramHandler.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/sounds/beep.wav");
+        "/sounds/");
     beepSound.setFlag(false);
     _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 

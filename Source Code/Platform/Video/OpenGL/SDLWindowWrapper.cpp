@@ -1,8 +1,10 @@
 ﻿#include "Headers/GLWrapper.h"
 
 #include "GUI/Headers/GUI.h"
+#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Configuration.h"
+#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
@@ -84,11 +86,11 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
     GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
-    	Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
-    					 Locale::get(_ID("ERROR_GL_OLD_VERSION")));
-    	Console::printfn(Locale::get(_ID("WARN_SWITCH_D3D")));
-    	Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
-   		return ErrorCode::OGL_OLD_HARDWARE;
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
+                         Locale::get(_ID("ERROR_GL_OLD_VERSION")));
+        Console::printfn(Locale::get(_ID("WARN_SWITCH_D3D")));
+        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
+        return ErrorCode::OGL_OLD_HARDWARE;
     }
 
     return ErrorCode::NO_ERR;
@@ -104,11 +106,8 @@ ErrorCode GL_API::destroyGLContext() {
 
 /// Try and create a valid OpenGL context taking in account the specified
 /// resolution and command line arguments
-ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
-    ParamHandler& par = ParamHandler::instance();
-
-    // Fill our (abstract API <-> openGL) enum translation tables with proper
-    // values
+ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration& config) {
+    // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
     const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
@@ -150,7 +149,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     }
 
     // Vsync is toggled on or off via the external config file
-    SDL_GL_SetSwapInterval(par.getParam<bool>(_ID("runtime.enableVSync"), false) ? 1 : 0);
+    SDL_GL_SetSwapInterval(config.runtime.enableVSync ? 1 : 0);
         
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
@@ -164,8 +163,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), s_maxTextureUnits);
     
     // Maximum number of colour attachments per framebuffer
-    par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
-                      GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
+    s_maxFBOAttachments = GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS);
 
     // Query GPU vendor to enable/disable vendor specific features
     GPUVendor vendor = GPUVendor::COUNT;
@@ -224,11 +222,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     _context.setGPURenderer(renderer);
     _context.setGPUVendor(vendor);
     // Cap max anisotropic level to what the hardware supports
-    par.setParam(
-        _ID("rendering.anisotropicFilteringLevel"),
-        std::min(
-            GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT),
-            par.getParam<GLint>(_ID("rendering.anisotropicFilteringLevel"), 1)));
+    GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
+    CLAMP(GL_API::s_anisoLevel, 1u, to_uint(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
                      GLUtil::getIntegerv(GL_MAJOR_VERSION),
@@ -242,9 +237,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                      samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason,
     // override user set MSAA levels
-    I32 msaaSamples = par.getParam<I32>(_ID("rendering.MSAAsampless"), 0);
+    GL_API::s_msaaSamples = config.rendering.msaaSamples;
     if (samplerBuffers == 0 || sampleCount == 0) {
-        msaaSamples = 0;
+        GL_API::s_msaaSamples = 0;
     }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
@@ -301,7 +296,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     //glEnable(GL_FRAMEBUFFER_SRGB);
     // Enable multisampling if we actually support and request it
-    msaaSamples  > 0 ? glEnable(GL_MULTISAMPLE) :  glDisable(GL_MULTISAMPLE);
+    GL_API::s_msaaSamples  > 0 ? glEnable(GL_MULTISAMPLE) :  glDisable(GL_MULTISAMPLE);
 
     // Line smoothing should almost always be used
     if (Config::USE_HARDWARE_AA_LINES) {
@@ -343,7 +338,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
-    _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>(_ID("GUI.CEGUI.ExtraStates")));
+    _GUIGLrenderer->enableExtraStateSettings(config.gui.cegui.extraStates);
     CEGUI::System::create(*_GUIGLrenderer);
 
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();

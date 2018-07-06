@@ -233,9 +233,8 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     shaderDescriptor.setPropertyList(ss.str());
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
-    ShaderComputeQueue::ShaderQueueElement queueElement;
+    ShaderComputeQueue::ShaderQueueElement queueElement(shaderDescriptor);
     queueElement._shaderData = &_shaderInfo[stageIndex];
-    queueElement._shaderDescriptor = shaderDescriptor;
     
     ShaderComputeQueue& shaderQueue = _context.shaderComputeQueue();
     if (computeOnAdd) {
@@ -250,7 +249,7 @@ void Material::clean() {
     if (_dirty && _dumpToFile) {
         updateTranslucency();
         if (!Config::Build::IS_DEBUG_BUILD) {
-            XML::dumpMaterial(_context, *this);
+            //XML::dumpMaterial(_context, *this);
         }
         _dirty = false;
     }

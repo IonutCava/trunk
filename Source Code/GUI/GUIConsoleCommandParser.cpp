@@ -1,6 +1,7 @@
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Headers/GUI.h"
+#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
@@ -136,9 +137,7 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    stringImpl filename =
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) +
-        "/" + args;
+    stringImpl filename = _context.entryData().assetsLocation + "/" + args;
     std::ifstream soundfile(filename.c_str());
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
@@ -150,9 +149,14 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
             return;
         }
 
+        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(filename);
+        const stringImpl& name = fileResult.first;
+        const stringImpl& path = fileResult.second;
+
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
-        sound.setResourceLocation(filename);
+        sound.setResourceName(name);
+        sound.setResourceLocation(path);
         sound.setFlag(false);
         _sound = CreateResource<AudioDescriptor>(_resCache, sound);
         if (filename.find("music") != stringImpl::npos) {
@@ -230,8 +234,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     } else {
         scale = to_float(atof(args2.c_str()));
     }
-    stringImpl assetLocation(
-        ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/");
+    stringImpl assetLocation(_context.entryData().assetsLocation + "/");
 
     FileData model;
     model.ItemName = args1 + "_console" + args;

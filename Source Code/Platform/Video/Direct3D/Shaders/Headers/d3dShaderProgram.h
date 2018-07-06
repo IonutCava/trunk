@@ -41,6 +41,7 @@ class d3dShaderProgram final : public ShaderProgram {
    public:
     explicit d3dShaderProgram(GFXDevice& context,
                               const stringImpl& name,
+                              const stringImpl& resourceName,
                               const stringImpl& resourceLocation,
                               bool asyncLoad);
 

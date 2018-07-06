@@ -105,6 +105,14 @@ stringImpl StringFormat(const char *const format, ...) {
     return stringImpl(temp.data(), length);
 }
 
+std::pair<stringImpl/*fileName*/, stringImpl/*filePath*/>
+SplitPathToNameAndLocation(const stringImpl& input) {
+    size_t pathNameSplitPoint = input.find_last_of('/') + 1;
+
+    return std::make_pair(input.substr(pathNameSplitPoint + 1, stringImpl::npos),
+                          input.substr(0, pathNameSplitPoint));
+}
+
 bool CompareIgnoreCase(const stringImpl& a, const stringImpl&b) {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b), 

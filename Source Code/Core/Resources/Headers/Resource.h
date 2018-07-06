@@ -78,6 +78,10 @@ class NOINITVTABLE Resource : public GUIDWrapper
                       const stringImpl& name);
     explicit Resource(ResourceType type, 
                       const stringImpl& name,
+                      const stringImpl& resourceName);
+    explicit Resource(ResourceType type,
+                      const stringImpl& name,
+                      const stringImpl& resourceName,
                       const stringImpl& resourceLocation);
 
     virtual ~Resource();
@@ -93,6 +97,9 @@ class NOINITVTABLE Resource : public GUIDWrapper
     /// Physical file location
     const stringImpl& getResourceLocation() const;
 
+    /// Physical file name
+    const stringImpl& getResourceName() const;
+
     ResourceState getState() const;
 
     ResourceType getType() const;
@@ -101,12 +108,14 @@ class NOINITVTABLE Resource : public GUIDWrapper
 
    protected:
     void setState(ResourceState currentState);
+    void setResourceName(const stringImpl& name);
     void setResourceLocation(const stringImpl& location);
 
    protected:
     stringImpl   _name;
     ResourceType _resourceType;
     stringImpl   _resourceLocation;  ///< Physical file location
+    stringImpl   _resourceName;      ///< Physical file name
     std::atomic<ResourceState> _resourceState;
     std::array<DELEGATE_CBK<void>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
     mutable SharedLock _callbackLock;

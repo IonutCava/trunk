@@ -27,8 +27,6 @@ RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
     _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, g_maxColourAttachments);
 
     if (!g_policiesInitialised) {
-        assert(ParamHandler::instance().getParam<I32>(_ID("rendering.maxRenderTargetOutputs"), 32) > g_maxColourAttachments);
-
         _policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         _policyDepthOnly.drawMask().disableAll();
         _policyDepthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);

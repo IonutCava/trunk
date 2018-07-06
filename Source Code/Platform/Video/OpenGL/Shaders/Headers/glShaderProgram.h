@@ -58,6 +58,7 @@ class glShaderProgram final : public ShaderProgram {
    public:
     explicit glShaderProgram(GFXDevice& context,
                              const stringImpl& name,
+                             const stringImpl& resourceName,
                              const stringImpl& resourceLocation,
                              bool asyncLoad);
     ~glShaderProgram();

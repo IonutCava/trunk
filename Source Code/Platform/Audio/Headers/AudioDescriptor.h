@@ -39,8 +39,8 @@ namespace Divide {
 
 class AudioDescriptor : public Resource {
    public:
-    AudioDescriptor(const stringImpl& name, const stringImpl& audioFile)
-        : Resource(ResourceType::DEFAULT, name, audioFile),
+    AudioDescriptor(const stringImpl& name, const stringImpl& audioFileName, const stringImpl& audioFilePath)
+        : Resource(ResourceType::DEFAULT, name, audioFileName, audioFilePath),
           _isLooping(false),
           _dirty(true),
           _is3D(false),
@@ -65,7 +65,9 @@ class AudioDescriptor : public Resource {
     }
 
     inline void setAudioFile(const stringImpl& filePath) {
-        setResourceLocation(filePath);
+        std::pair<stringImpl, stringImpl> ret = Util::SplitPathToNameAndLocation(filePath);
+        setResourceName(ret.first);
+        setResourceLocation(ret.second);
         _dirty = true;
     }
 

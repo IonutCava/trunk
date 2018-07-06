@@ -11,14 +11,19 @@
 
 namespace Divide {
 
+namespace {
+    const char* parentShaderLoc = "GLSL";
+};
+
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const stringImpl& name,
+                                 const stringImpl& resourceName,
                                  const stringImpl& resourceLocation,
                                  bool asyncLoad)
-    : ShaderProgram(context, name, resourceLocation, asyncLoad),
+    : ShaderProgram(context, name, resourceName, resourceLocation, asyncLoad),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -317,7 +322,7 @@ bool glShaderProgram::loadFromBinary() {
         if (Config::USE_SHADER_BINARY && false) {
             // Only available for new programs
             assert(_shaderProgramIDTemp == 0);
-            stringImpl fileName(glShader::CACHE_LOCATION_BIN + _name + ".bin");
+            stringImpl fileName(glShader::CACHE_LOCATION_BIN + _resourceName + ".bin");
             // Load the program's binary format from file
             FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
             if (inFile) {
@@ -369,7 +374,7 @@ bool glShaderProgram::loadFromBinary() {
 glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
     glShaderProgramLoadInfo loadInfo;
 
-    loadInfo._resourcePath = getResourceLocation() + "GLSL/";
+    loadInfo._resourcePath = getResourceLocation() + "/" + parentShaderLoc +"/";
     // Get all of the preprocessor defines and add them to the general shader header for this program
     for (U8 i = 0; i < _definesList.size(); ++i) {
         // Placeholders are ignored
@@ -382,24 +387,24 @@ glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
 
     // Split the shader name to get the effect file name and the effect properties
     // The effect file name is the part up until the first period or comma symbol
-    loadInfo._programName = _name.substr(0, _name.find_first_of(".,"));
+    loadInfo._programName = _resourceName.substr(0, _resourceName.find_first_of(".,"));
     // We also differentiate between general properties, and vertex properties
     // Get the position of the first "," symbol. Must be added at the end of the program's name!!
-    stringAlg::stringSize propPositionVertex = _name.find_first_of(",");
+    stringAlg::stringSize propPositionVertex = _resourceName.find_first_of(",");
     // Get the position of the first "." symbol
-    stringAlg::stringSize propPosition = _name.find_first_of(".");
+    stringAlg::stringSize propPosition = _resourceName.find_first_of(".");
     // If we have effect properties, we extract them from the name
     // (starting from the first "." symbol to the first "," symbol)
     if (propPosition != stringImpl::npos) {
         loadInfo._programProperties = "." +
-            _name.substr(propPosition + 1,
+            _resourceName.substr(propPosition + 1,
                 propPositionVertex - propPosition - 1);
     }
     // Vertex properties start off identically to the rest of the stages' names
     loadInfo._vertexStageProperties = loadInfo._programProperties;
     // But we also add the shader specific properties
     if (propPositionVertex != stringImpl::npos) {
-        loadInfo._vertexStageProperties += "." + _name.substr(propPositionVertex + 1);
+        loadInfo._vertexStageProperties += "." + _resourceName.substr(propPositionVertex + 1);
     }
 
     return loadInfo;
@@ -443,7 +448,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 bool glShaderProgram::load() {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
-    if (_name.compare("NULL") == 0) {
+    if (_resourceName.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
         return ShaderProgram::load();
@@ -505,7 +510,7 @@ bool glShaderProgram::load() {
 }
 
 bool glShaderProgram::recompileInternal() {
-    if (_name.compare("NULL") == 0) {
+    if (_resourceName.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
         return true;

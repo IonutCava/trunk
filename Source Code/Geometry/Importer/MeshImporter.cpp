@@ -234,6 +234,7 @@ namespace Import {
         Mesh_ptr mesh(MemoryManager_NEW Mesh(context.gfx(),
                                              cache,
                                              name,
+                                             dataIn._modelName,
                                              dataIn._modelPath,
                                              dataIn._hasAnimations
                                                  ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
@@ -335,6 +336,7 @@ namespace Import {
                 textureSampler.setWrapMode(tex._wrapU, tex._wrapV, tex._wrapW);
 
                 ResourceDescriptor texture(tex._textureName);
+                texture.setResourceName(tex._textureName);
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
                 texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));

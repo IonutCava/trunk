@@ -40,6 +40,7 @@ class d3dTexture final : public Texture {
    public:
     explicit d3dTexture(GFXDevice& context,
                         const stringImpl& name,
+                        const stringImpl& resourceName,
                         const stringImpl& resourceLocation,
                         TextureType type,
                         bool asyncLoad);

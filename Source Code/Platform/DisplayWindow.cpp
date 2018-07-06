@@ -1,9 +1,13 @@
 #include "Headers/DisplayWindow.h"
+
+#include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
+#include "Utility/Headers/Localization.h"
 
-#include "Core/Headers/ParamHandler.h"
-
+#ifndef HAVE_M_PI
 #define HAVE_M_PI
+#endif //HAVE_M_PI
+
 #include <SDL.h>
 
 namespace Divide {
@@ -41,14 +45,16 @@ ErrorCode DisplayWindow::destroyWindow() {
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode DisplayWindow::init(U32 windowFlags, WindowType initialType, const ResolutionByType& initialResolutions) {
-    ParamHandler& par = ParamHandler::instance();
-
+ErrorCode DisplayWindow::init(U32 windowFlags,
+                              WindowType initialType,
+                              const ResolutionByType& initialResolutions,
+                              const char* windowTitle)
+{
     _type = initialType;
 
     _windowDimensions = initialResolutions;
 
-    _mainWindow = SDL_CreateWindow(par.getParam<stringImpl>(_ID("appTitle"), "Divide").c_str(),
+    _mainWindow = SDL_CreateWindow(windowTitle,
                                    SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()),
                                    SDL_WINDOWPOS_CENTERED_DISPLAY(_context.targetDisplay()),
                                    1,

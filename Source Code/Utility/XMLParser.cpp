@@ -240,8 +240,6 @@ void populatePressRelease(PressReleaseActions& actions, const ptree & attributes
 }
 
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene) {
-    ParamHandler &par = ParamHandler::instance();
-
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
     read_xml(file.c_str(), pt);

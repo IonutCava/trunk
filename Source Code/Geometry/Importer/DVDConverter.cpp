@@ -402,10 +402,6 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Compare load results with the standard success value
     aiReturn result = AI_SUCCESS;
     // While we still have diffuse textures
-
-    stringImpl overridePath(par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +
-                            par.getParam<stringImpl>(_ID("defaultTextureLocation")) + "/");
-
     while (result == AI_SUCCESS) {
         // Load each one
         result = source->GetTexture(aiTextureType_DIFFUSE, count, &tName,
@@ -414,9 +410,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             break;
         }
         // get full path
-        stringImpl path = overridePath + tName.data;
-        // get only image name
-        stringImpl img_name = path.substr(path.find_last_of('/') + 1);
+        stringImpl path(Texture::s_defaultTextureFilePath);
+        path.append("/");
+        path.append(tName.data);
+
+        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult.first;
+        const stringImpl& img_path = fileResult.second;
+
         // if we have a name and an extension
         if (!img_name.substr(img_name.find_first_of(".")).empty()) {
 
@@ -437,7 +438,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
             }
             texture._textureName = img_name;
-            texture._texturePath = path;
+            texture._texturePath = img_path;
             // The first texture is always "Replace"
             texture._operation = count == 0 ? Material::TextureOperation::REPLACE
                                             : aiTextureOperationTable[op];
@@ -456,8 +457,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path = overridePath + tName.data;
-        stringImpl img_name = path.substr(path.find_last_of('/') + 1);
+        stringImpl path(Texture::s_defaultTextureFilePath);
+        path.append("/");
+        path.append(tName.data);
+
+        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult.first;
+        const stringImpl& img_path = fileResult.second;
 
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
 
@@ -473,7 +479,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
             }
             texture._textureName = img_name;
-            texture._texturePath = path;
+            texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
             material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
@@ -483,8 +489,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path = overridePath + tName.data;
-        stringImpl img_name = path.substr(path.find_last_of('/') + 1);
+        stringImpl path(Texture::s_defaultTextureFilePath);
+        path.append("/");
+        path.append(tName.data);
+
+        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult.first;
+        const stringImpl& img_path = fileResult.second;
+
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)];
         if (img_name.rfind('.') != stringImpl::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
@@ -498,7 +510,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
             }
             texture._textureName = img_name;
-            texture._texturePath = path;
+            texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
             material._textures[to_const_uint(ShaderProgram::TextureUsage::NORMALMAP)] = texture;
             material._bumpMethod = Material::BumpMethod::NORMAL;
@@ -513,8 +525,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping,
                                     &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
-            stringImpl path = overridePath + tName.data;
-            stringImpl img_name = path.substr(path.find_last_of('/') + 1);
+            stringImpl path(Texture::s_defaultTextureFilePath);
+            path.append("/");
+            path.append(tName.data);
+
+            std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+            const stringImpl& img_name = fileResult.first;
+            const stringImpl& img_path = fileResult.second;
+
             Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)];
 
             if (img_name.rfind('.') != stringImpl::npos) {
@@ -529,7 +547,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                     texture._wrapW = aiTextureMapModeTable[mode[2]];
                 }
                 texture._textureName = img_name;
-                texture._texturePath = path;
+                texture._texturePath = img_path;
                 texture._operation = aiTextureOperationTable[op];
                 material._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)] = texture;
                 material._doubleSided = true;
@@ -540,8 +558,14 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping,
                                 &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        stringImpl path = overridePath + tName.data;
-        stringImpl img_name = path.substr(path.find_last_of('/') + 1);
+        stringImpl path(Texture::s_defaultTextureFilePath);
+        path.append("/");
+        path.append(tName.data);
+
+        std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(path);
+        const stringImpl& img_name = fileResult.first;
+        const stringImpl& img_path = fileResult.second;
+
         Import::TextureEntry& texture = material._textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)];
         if (img_name.rfind('.') != stringImpl::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap,
@@ -555,7 +579,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                 texture._wrapW = aiTextureMapModeTable[mode[2]];
             }
             texture._textureName = img_name;
-            texture._texturePath = path;
+            texture._texturePath = img_path;
             texture._operation = aiTextureOperationTable[op];
             material._textures[to_const_uint(ShaderProgram::TextureUsage::SPECULAR)] = texture;
         }  // endif

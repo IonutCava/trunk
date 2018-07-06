@@ -84,23 +84,26 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
         _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
     
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
+    textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
     textureWaterCaustics.setResourceLocation(
         par.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/misc_images/terrain_water_NM.jpg");
+        "/misc_images/");
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
+     noiseTexture.setResourceName("bruit_gaussien.jpg");
      noiseTexture.setResourceLocation(
             par.getParam<stringImpl>(_ID("assetsLocation")) +
-            "/misc_images//bruit_gaussien.jpg");
+            "/misc_images/");
      noiseTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _noise = CreateResource<Texture>(cache, noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
+     borderTexture.setResourceName("vignette.jpg");
      borderTexture.setResourceLocation(
             par.getParam<stringImpl>(_ID("assetsLocation")) +
-            "/misc_images//vignette.jpeg");
+            "/misc_images/");
      borderTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 

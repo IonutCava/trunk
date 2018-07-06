@@ -80,7 +80,7 @@ public:
 protected:
     /// Try and create a valid OpenGL context taking in account the specified
     /// command line arguments
-    ErrorCode initRenderingAPI(I32 argc, char** argv) override;
+    ErrorCode initRenderingAPI(I32 argc, char** argv, const Configuration& config) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
     /// Prepare the GPU for rendering a frame
@@ -224,7 +224,8 @@ protected:
     static GLint s_maxTextureUnits;
     /// Number of available attribute binding indices
     static GLint s_maxAttribBindings;
-
+    /// Max nubmer of texture attachmentes to an FBO
+    static GLint s_maxFBOAttachments;
 public:
     /// Shader block data
     static GLuint s_UBOffsetAlignment;
@@ -248,6 +249,10 @@ private:
     static GLuint s_dummyVAO;
     /// Used to store all of the indirect draw commands
     static GLuint s_indirectDrawBuffer;
+    /// Preferred anisotropic filtering level
+    static GLuint s_anisoLevel;
+    /// Preferred msaa sample count
+    static GLuint s_msaaSamples;
     /// A cache of all fonts used
     typedef hashMapImpl<U64, I32> FontCache;
     FontCache _fonts;

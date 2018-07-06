@@ -76,15 +76,15 @@ private:
         physx::debugger::comm::PvdConnection& inFactory) {}
 
 public:
-    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed);
-    bool closePhysicsAPI();
-    void update(const U64 deltaTime);
-    void process(const U64 deltaTime);
-    void idle();
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed)  override;
+    bool closePhysicsAPI()  override;
+    void update(const U64 deltaTime)  override;
+    void process(const U64 deltaTime)  override;
+    void idle()  override;
 
-    void updateTimeStep(U8 timeStepFactor, F32 simSpeed);
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  override;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene);
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene)  override;
 
     inline physx::PxPhysics* const getSDK() { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);

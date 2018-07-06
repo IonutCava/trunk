@@ -23,7 +23,7 @@ PlatformContext::PlatformContext(std::unique_ptr<GFXDevice> gfx,
     _gui(std::move(gui)),
     _input(std::move(input)),
     _entryData(std::move(entryData)),
-    _config(std::move(config)
+    _config(std::move(config))
 {
 }
 

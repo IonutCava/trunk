@@ -60,6 +60,7 @@ class Mesh : public Object3D {
     explicit Mesh(GFXDevice& context,
                   ResourceCache& parentCache,
                   const stringImpl& name,
+                  const stringImpl& resourceName,
                   const stringImpl& resourceLocation,
                   ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NONE);
 

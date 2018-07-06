@@ -19,13 +19,15 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
+    waterTexture.setResourceName("terrain_water_NM.jpg");
     waterTexture.setResourceLocation(
         param.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/misc_images/terrain_water_NM.jpg");
+        "/misc_images/");
     waterTexture.setPropertyDescriptor(defaultSampler);
+    waterTextureDUDV.setResourceName("water_dudv.jpg");
     waterTextureDUDV.setResourceLocation(
         param.getParam<stringImpl>(_ID("assetsLocation")) +
-        "/misc_images/water_dudv.jpg");
+        "/misc_images/");
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
 
     Texture_ptr waterNM = CreateResource<Texture>(_cache, waterTexture);

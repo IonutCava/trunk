@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-Configuration::Configuration()
+Configuration::Configuration() : XML::IXMLSerializable()
 {
     debug.memFile = "none";
     debug.mesh.playAnimations = true;

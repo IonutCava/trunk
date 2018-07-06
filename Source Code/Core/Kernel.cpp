@@ -589,12 +589,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     //Temp hack
     par.setParam(_ID("assetsLocation"), entryData.assetsLocation);
     par.setParam(_ID("scenesLocation"), entryData.scenesLocation);
-    par.setParam(_ID("serverAddress"), entryData.serverAddress);
-    par.setParam(_ID("appTitle"), config.title);
     par.setParam(_ID("mesh.playAnimations"), config.debug.mesh.playAnimations);
     par.setParam(_ID("defaultTextureLocation"), config.defaultTextureLocation);
     par.setParam(_ID("shaderLocation"), config.defaultShadersLocation);
-    par.setParam(_ID("rendering.MSAAsampless"), config.rendering.msaaSamples);
     par.setParam(_ID("rendering.PostAASamples"), config.rendering.postAASamples);
     par.setParam(_ID("rendering.PostAAType"), config.rendering.postAAType);
     par.setParam(_ID("GUI.CEGUI.ExtraStates"), config.gui.cegui.extraStates);
@@ -602,15 +599,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     par.setParam(_ID("GUI.defaultScheme"),config.gui.cegui.defaultGUIScheme);
     par.setParam(_ID("GUI.consoleLayout"), config.gui.consoleLayoutFile);
     par.setParam(_ID("GUI.editorLayout"), config.gui.editorLayoutFile);
-    par.setParam(_ID("rendering.anisotropicFilteringLevel"), config.rendering.anisotropicFilteringLevel);
     par.setParam(_ID("rendering.enableFog"), config.rendering.enableFog);
-    par.setParam(_ID("runtime.targetDisplay"), config.runtime.targetDisplay);
-    par.setParam(_ID("runtime.startFullScreen"), !config.runtime.windowedMode);
-    par.setParam(_ID("runtime.windowWidth"), config.runtime.resolution.w);
-    par.setParam(_ID("runtime.windowHeight"), config.runtime.resolution.h);
-    par.setParam(_ID("runtime.splashWidth"), config.runtime.splashScreen.w);
-    par.setParam(_ID("runtime.splashHeight"), config.runtime.splashScreen.h);
-    par.setParam(_ID("runtime.windowResizable"), config.runtime.windowResizable);
+    par.setParam(_ID("runtime.targetDisplay"), to_int(config.runtime.targetDisplay));
+    par.setParam(_ID("runtime.windowWidth"), to_int(config.runtime.resolution.w));
+    par.setParam(_ID("runtime.windowHeight"), to_int(config.runtime.resolution.h));
+    par.setParam(_ID("runtime.splashWidth"), to_int(config.runtime.splashScreen.w));
+    par.setParam(_ID("runtime.splashHeight"), to_int(config.runtime.splashScreen.h));
     par.setParam(_ID("runtime.enableVSync"), config.runtime.enableVSync);
     par.setParam(_ID("postProcessing.anaglyphOffset"), config.rendering.anaglyphOffset);
     par.setParam(_ID("postProcessing.enableDepthOfField"), config.rendering.enableDepthOfField);
@@ -639,10 +633,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                    par.getParam<I32>(_ID("runtime.splashHeight"), 300));
 
     I32 targetDisplay = par.getParam<I32>(_ID("runtime.targetDisplay"), 0);
-    bool startFullScreen = par.getParam<bool>(_ID("runtime.startFullScreen"), true);
+    bool startFullScreen = !config.runtime.windowedMode;
     WindowManager& winManager = _APP.windowManager();
 
-    ErrorCode initError = winManager.init(_platformContext->gfx(), _platformContext->gfx().getAPI(), initRes, startFullScreen, targetDisplay);
+    ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), initRes, startFullScreen, targetDisplay);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }

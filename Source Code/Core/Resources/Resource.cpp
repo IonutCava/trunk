@@ -13,11 +13,19 @@ Resource::Resource(ResourceType type,
 {
     _loadingCallbacks.fill(DELEGATE_CBK<>());
 }
+Resource::Resource(ResourceType type,
+                  const stringImpl& name,
+                  const stringImpl& resourceName)
+    : Resource(type, name)
+{
+    _resourceName = resourceName;
+}
 
 Resource::Resource(ResourceType type, 
                    const stringImpl& name,
+                   const stringImpl& resourceName,
                    const stringImpl& resourceLocation)
-    : Resource(type, name)
+    : Resource(type, name, resourceName)
 {
     _resourceLocation = resourceLocation;
 }
@@ -40,7 +48,7 @@ const stringImpl& Resource::getName() const {
     return _name;
 }
 
-/// Physical file location
+/// Physical file path
 const stringImpl& Resource::getResourceLocation() const {
     return _resourceLocation;
 }
@@ -48,6 +56,16 @@ const stringImpl& Resource::getResourceLocation() const {
 void Resource::setResourceLocation(const stringImpl& location) {
     _resourceLocation = location;
 }
+
+/// Physical file name
+const stringImpl& Resource::getResourceName() const {
+    return _resourceName;
+}
+
+void Resource::setResourceName(const stringImpl& name) {
+    _resourceName = name;
+}
+
 
 ResourceState Resource::getState() const {
     return _resourceState;

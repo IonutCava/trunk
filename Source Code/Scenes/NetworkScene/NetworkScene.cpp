@@ -2,6 +2,8 @@
 #include "Network/Headers/ASIOImpl.h"
 
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/XMLEntryData.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 
@@ -71,7 +73,7 @@ void NetworkScene::checkPatches(I64 btnGUID) {
 }
 
 bool NetworkScene::load(const stringImpl& name) {
-    _asio->init( _paramHandler.getParam<stringImpl>(_ID("serverAddress")).c_str(), "443");
+    _asio->init(_context.entryData().serverAddress.c_str(), "443");
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
 
@@ -91,7 +93,7 @@ void NetworkScene::test(I64 btnGUID) {
 
 void NetworkScene::connect(I64 btnGUID) {
     _GUI->modifyText(_ID("statusText"), "Connecting to server ...");
-    _asio->connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
+    _asio->connect(_context.entryData().serverAddress.c_str(), "443");
 }
 
 void NetworkScene::disconnect(I64 btnGUID) {

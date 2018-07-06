@@ -88,6 +88,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
 
     explicit ShaderProgram(GFXDevice& context,
                            const stringImpl& name,
+                           const stringImpl& resourceName,
                            const stringImpl& resourceLocation,
                            bool asyncLoad);
     virtual ~ShaderProgram();

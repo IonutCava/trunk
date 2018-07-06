@@ -1,7 +1,8 @@
 #include "Headers/Texture.h"
 
+#include "Core/Headers/Console.h"
 #include "Core/Headers/TaskPool.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -10,12 +11,16 @@ namespace {
     static const U16 g_partitionSize = 128;
 };
 
+const char* Texture::s_defaultTextureFilePath = nullptr;
+const char* Texture::s_missingTextureFileName = nullptr;
+
 Texture::Texture(GFXDevice& context,
                  const stringImpl& name,
+                 const stringImpl& resourceName,
                  const stringImpl& resourceLocation,
                  TextureType type,
                  bool asyncLoad)
-    : Resource(ResourceType::GPU_OBJECT, name, resourceLocation),
+    : Resource(ResourceType::GPU_OBJECT, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
       _numLayers(1),
       _lockMipMaps(false),
@@ -48,62 +53,69 @@ bool Texture::load() {
 
 /// Load texture data using the specified file name
 void Texture::threadedLoad() {
-    // Make sure we have a valid file path
-    if (!getResourceLocation().empty() && getResourceLocation().compare("default") != 0) {
+    TextureLoadInfo info;
+    info._type = _textureData._textureType;
 
-        TextureLoadInfo info;
-        info._type = _textureData._textureType;
+    // Each texture face/layer must be in a comma separated list
+    stringstreamImpl textureLocationList(getResourceLocation());
+    stringstreamImpl textureFileList(getResourceName());
 
-        // Each texture face/layer must be in a comma separated list
-        stringstreamImpl textureLocationList(getResourceLocation());
-        // We loop over every texture in the above list and store it in this
-        // temporary string
-        stringImpl currentTexture;
-        while (std::getline(textureLocationList, currentTexture, ',')) {
-            // Skip invalid entries
-            if (!currentTexture.empty()) {
-                   // Attempt to load the current entry
-                    if (!loadFile(info, currentTexture)) {
-                        // Invalid texture files are not handled yet, so stop loading
-                        return;
+    // We loop over every texture in the above list and store it in this
+    // temporary string
+    stringImpl currentTextureFile;
+    stringImpl currentTextureLocation;
+    stringImpl currentTextureFullPath;
+    while (std::getline(textureLocationList, currentTextureLocation, ',') &&
+           std::getline(textureFileList, currentTextureFile, ','))
+    {
+        // Skip invalid entries
+        if (!currentTextureFile.empty()) {
+            currentTextureFullPath = (currentTextureLocation.empty() ? s_defaultTextureFilePath
+                                                                     : currentTextureLocation) +
+                                     "/" +
+                                     currentTextureFile;
+
+                // Attempt to load the current entry
+                if (!loadFile(info, currentTextureFullPath)) {
+                    // Invalid texture files are not handled yet, so stop loading
+                    return;
+                }
+                info._layerIndex++;
+                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                    if (info._layerIndex == 6) {
+                        info._layerIndex = 0;
+                        info._cubeMapCount++;
                     }
-                    info._layerIndex++;
-                    if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-                        if (info._layerIndex == 6) {
-                            info._layerIndex = 0;
-                            info._cubeMapCount++;
-                        }
-                    }
-            }
+                }
         }
+    }
 
-        if (info._type == TextureType::TEXTURE_CUBE_MAP ||
-            info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-            if (info._layerIndex != 6) {
-                Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
-                    getResourceLocation().c_str());
-                return;
-            }
+    if (info._type == TextureType::TEXTURE_CUBE_MAP ||
+        info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (info._layerIndex != 6) {
+            Console::errorfn(
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
+                getResourceLocation().c_str());
+            return;
         }
+    }
 
-        if (info._type == TextureType::TEXTURE_2D_ARRAY ||
-            info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
-            if (info._layerIndex != _numLayers) {
-                Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                    getResourceLocation().c_str());
-                return;
-            }
+    if (info._type == TextureType::TEXTURE_2D_ARRAY ||
+        info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (info._layerIndex != _numLayers) {
+            Console::errorfn(
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                getResourceLocation().c_str());
+            return;
         }
+    }
 
-        if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-            if (info._cubeMapCount != _numLayers) {
-                Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
-                    getResourceLocation().c_str());
-                return;
-            }
+    if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (info._cubeMapCount != _numLayers) {
+            Console::errorfn(
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                getResourceLocation().c_str());
+            return;
         }
     }
 }
@@ -120,13 +132,10 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     if (!img.data()) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
         // Missing texture fallback.
-        ParamHandler& par = ParamHandler::instance();
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
-        ImageTools::ImageDataInterface::CreateImageData(
-            par.getParam<stringImpl>(_ID("assetsLocation"), "assets") + "/" +
-            par.getParam<stringImpl>(_ID("defaultTextureLocation"), "textures") +
-            "/" + "missing_texture.jpg", img);
+        ImageTools::ImageDataInterface::CreateImageData(Util::StringFormat("%s/%s", s_defaultTextureFilePath, s_missingTextureFileName).c_str(), img);
+
     }
     
     // Extract width, height and bitdepth

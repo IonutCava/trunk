@@ -155,11 +155,6 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
 
         ResourceDescriptor texture(_particles->_textureFileName);
 
-        texture.setResourceLocation(
-            ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")) + "/" +
-            ParamHandler::instance().getParam<stringImpl>(_ID("defaultTextureLocation")) + "/" +
-            _particles->_textureFileName);
-
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
         texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
         _particleTexture = CreateResource<Texture>(_parentCache, texture);

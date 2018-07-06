@@ -57,7 +57,7 @@ enum class ErrorCode : I32;
 class NOINITVTABLE PhysicsAPIWrapper {
    protected:
     friend class PXDevice;
-    virtual ErrorCode initPhysicsAPI(U8 targetFrameRate) = 0;
+    virtual ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) = 0;
     virtual bool closePhysicsAPI() = 0;
     virtual void updateTimeStep(U8 timeStepFactor, F32 simSpeed) = 0;
     virtual void update(const U64 deltaTime) = 0;

@@ -674,7 +674,7 @@
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h" />
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.h" />
-    <ClInclude Include="..\..\Source Code\Core\XMLEntryData.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\XMLEntryData.cpp" />
     <ClInclude Include="..\..\Source Code\engineMain.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />

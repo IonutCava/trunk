@@ -5,6 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Rendering/Headers/Renderer.h"
@@ -42,7 +43,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
            //                                      ".\\RenderDoc\\renderdoc.dll",
            //                                      L"\\RenderDoc\\Captures\\");
         }
-        hardwareState = _api->initRenderingAPI(argc, argv);
+        hardwareState = _api->initRenderingAPI(argc, argv, _parent.platformContext().config());
     }
 
     if (hardwareState != ErrorCode::NO_ERR) {

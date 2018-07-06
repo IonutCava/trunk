@@ -59,16 +59,16 @@ public:
     inline void setAPI(PhysicsAPI API) { _API_ID = API; }
     inline PhysicsAPI getAPI() const { return _API_ID; }
 
-    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed);
-    bool closePhysicsAPI();
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) override;
+    bool closePhysicsAPI()  override;
 
-    void updateTimeStep(U8 timeStepFactor, F32 simSpeed);
-    void update(const U64 deltaTime);
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  override;
+    void update(const U64 deltaTime)  override;
     void process(const U64 deltaTime);
-    void idle();
+    void idle()  override;
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene);
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene)  override;
 
     PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
 

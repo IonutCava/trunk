@@ -9,22 +9,22 @@
 namespace Divide {
 
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, name, "", type, to_uint(flag))
+    : Object3D(context, parentCache, name, name, "", type, to_uint(flag))
 {
 }
 
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectType type, U32 flagMask)
-    : Object3D(context, parentCache, name, "", type, flagMask)
+    : Object3D(context, parentCache, name, name, "", type, flagMask)
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
-    : Object3D(context, parentCache, name, resourceLocation, type, to_uint(flag))
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, ObjectFlag flag)
+    : Object3D(context, parentCache, name, resourceName, resourceLocation, type, to_uint(flag))
 {
 }
 
-Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
-    : SceneNode(parentCache, name, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
+Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+    : SceneNode(parentCache, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
     _context(context),
     _update(false),
     _buffer(nullptr),

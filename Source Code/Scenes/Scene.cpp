@@ -154,8 +154,14 @@ bool Scene::idle() {  // Called when application is idle
 }
 
 void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile) {
+
+    std::pair<stringImpl, stringImpl> fileResult = Util::SplitPathToNameAndLocation(srcFile);
+    const stringImpl& musicFile = fileResult.first;
+    const stringImpl& musicFilePath = fileResult.second;
+
     ResourceDescriptor music(name);
-    music.setResourceLocation(srcFile);
+    music.setResourceName(musicFile);
+    music.setResourceLocation(musicFilePath);
     music.setFlag(true);
     hashAlg::emplace(state().music(type),
                      _ID_RT(name),

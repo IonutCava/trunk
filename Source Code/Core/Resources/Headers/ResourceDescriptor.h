@@ -66,10 +66,7 @@ class NOINITVTABLE PropertyDescriptor {
 
 class ResourceDescriptor {
    public:
-    explicit ResourceDescriptor(const stringImpl& name = "default",
-                                const stringImpl& resourceLocation = "default",
-                                bool flag = false, U32 ID = 0,
-                                U32 enumValue = 0);
+    explicit ResourceDescriptor(const stringImpl& resourceName);
 
     virtual ~ResourceDescriptor();
 
@@ -78,6 +75,9 @@ class ResourceDescriptor {
 
     inline const stringImpl& getPropertyListString() const {
         return _properties;
+    }
+    inline const stringImpl& getResourceName() const {
+        return _resourceName;
     }
     inline const stringImpl& getResourceLocation() const {
         return _resourceLocation;
@@ -105,6 +105,9 @@ class ResourceDescriptor {
     inline void setResourceLocation(const stringImpl& resourceLocation) {
         _resourceLocation = resourceLocation;
     }
+    inline void setResourceName(const stringImpl& resourceName) {
+        _resourceName = resourceName;
+    }
     inline void setEnumValue(U32 enumValue) { _enumValue = enumValue; }
     inline void setName(const stringImpl& name) { _name = name; }
     inline void setFlag(bool flag) { _flag = flag; }
@@ -126,6 +129,8 @@ class ResourceDescriptor {
     stringImpl _name;
     /// Physical file location
     stringImpl _resourceLocation;
+    /// Physical file name
+    stringImpl _resourceName;
     /// Comma separated list of properties
     stringImpl _properties;
     bool _flag;

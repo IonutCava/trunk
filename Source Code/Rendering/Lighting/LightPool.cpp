@@ -96,9 +96,10 @@ void LightPool::init() {
     iconImage.setThreadedLoading(false);
     iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
     stringImpl iconImageLocation =
-        Util::StringFormat("%s/misc_images/lightIcons.png",
+        Util::StringFormat("%s/misc_images/",
             ParamHandler::instance().getParam<stringImpl>(_ID("assetsLocation")).c_str());
     iconImage.setResourceLocation(iconImageLocation);
+    iconImage.setResourceName("lightIcons.png");
     iconImage.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 

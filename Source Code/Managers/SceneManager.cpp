@@ -131,7 +131,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache& cache) 
 
         // Load default material
         Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
-        _defaultMaterial = XML::loadMaterialXML(_platformContext->gfx(),
+        _defaultMaterial = XML::loadMaterialXML(*_platformContext,
                                                 _platformContext->entryData().scriptLocation + "/defaultMaterial",
                                                 false);
         _defaultMaterial->dumpToFile(false);

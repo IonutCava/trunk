@@ -48,7 +48,13 @@ class PlatformContext;
 class ShaderProgram;
 class ShaderComputeQueue : public FrameListener {
 public:
-    struct ShaderQueueElement {
+    class ShaderQueueElement {
+      public:
+          explicit ShaderQueueElement(ResourceDescriptor& descriptor)
+              : _shaderDescriptor(descriptor)
+        {
+        }
+
         ShaderProgramInfo* _shaderData = nullptr;
         ResourceDescriptor _shaderDescriptor;
     };

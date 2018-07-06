@@ -40,6 +40,7 @@ class XMLEntryData : public XML::IXMLSerializable {
 public:
     XMLEntryData();
     ~XMLEntryData();
+
 protected:
     bool fromXML(const char* xmlFile) override;
     bool toXML(const char* xmlFile) const override;

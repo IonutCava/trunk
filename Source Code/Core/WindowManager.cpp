@@ -1,6 +1,7 @@
 #include "Headers/WindowManager.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 #define HAVE_M_PI
@@ -9,7 +10,8 @@
 namespace Divide {
 
 WindowManager::WindowManager() : _displayIndex(0),
-                                 _activeWindowGUID(-1)
+                                 _activeWindowGUID(-1),
+                                 _context(nullptr)
 {
     _windows.emplace_back(MemoryManager_NEW DisplayWindow(*this));
     SDL_Init(SDL_INIT_VIDEO);
@@ -20,7 +22,7 @@ WindowManager::~WindowManager()
     MemoryManager::DELETE_VECTOR(_windows);
 }
 
-ErrorCode WindowManager::init(GFXDevice& context,
+ErrorCode WindowManager::init(PlatformContext& context,
                               RenderAPI api,
                               ResolutionByType initialResolutions,
                               bool startFullScreen,
@@ -29,6 +31,8 @@ ErrorCode WindowManager::init(GFXDevice& context,
     if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
         return ErrorCode::WINDOW_INIT_ERROR;
     }
+
+    _context = &context;
 
     targetDisplay(std::max(std::min(targetDisplayIndex, SDL_GetNumVideoDisplays() - 1), 0));
 
@@ -45,11 +49,16 @@ ErrorCode WindowManager::init(GFXDevice& context,
     initialResolutions[to_const_uint(WindowType::FULLSCREEN_WINDOWED)].set(to_ushort(displayMode.w),
                                                                            to_ushort(displayMode.h));
 
-    ErrorCode err = initWindow(0, createAPIFlags(api), initialResolutions, startFullScreen, targetDisplayIndex);
+    ErrorCode err = initWindow(0,
+                               createAPIFlags(api),
+                               initialResolutions,
+                               startFullScreen,
+                               targetDisplayIndex,
+                               _context->config().title.c_str());
 
     if (err == ErrorCode::NO_ERR) {
         setActiveWindow(0);
-        GPUState& gState = context.gpuState();
+        GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and
         // refresh rates)
         I32 numberOfDisplayModes = 0;
@@ -88,13 +97,15 @@ ErrorCode WindowManager::initWindow(U32 index,
                                     U32 windowFlags,
                                     const ResolutionByType& initialResolutions,
                                     bool startFullScreen,
-                                    I32 targetDisplayIndex) {
+                                    I32 targetDisplayIndex,
+                                    const char* windowTitle) {
     index = std::min(index, to_uint(_windows.size() - 1));
 
     return _windows[index]->init(windowFlags,
                                  startFullScreen ? WindowType::FULLSCREEN
                                                  : WindowType::WINDOW,
-                                 initialResolutions);
+                                 initialResolutions,
+                                 windowTitle);
 }
 
 void WindowManager::setActiveWindow(U32 index) {
@@ -105,8 +116,6 @@ void WindowManager::setActiveWindow(U32 index) {
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
-    ParamHandler& par = ParamHandler::instance();
-
     U32 windowFlags = 0;
 
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
@@ -131,7 +140,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
         // Toggle multi-sampling if requested.
         // This options requires a client-restart, sadly.
-        I32 msaaSamples = par.getParam<I32>(_ID("rendering.MSAAsampless"), 0);
+        I32 msaaSamples = _context->config().rendering.msaaSamples;
         if (msaaSamples > 0) {
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
             SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, msaaSamples);
@@ -155,7 +164,7 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
 
     windowFlags |= SDL_WINDOW_HIDDEN;
     windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-    if (par.getParam<bool>(_ID("runtime.windowResizable"), true)) {
+    if (_context->config().runtime.windowResizable) {
         windowFlags |= SDL_WINDOW_RESIZABLE;
     }
 

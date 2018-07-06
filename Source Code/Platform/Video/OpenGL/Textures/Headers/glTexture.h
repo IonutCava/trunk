@@ -41,6 +41,7 @@ class glTexture final : public Texture {
    public:
     explicit glTexture(GFXDevice& context,
                        const stringImpl& name,
+                       const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
                        TextureType type,
                        bool asyncLoad);
