@@ -150,15 +150,9 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
    private:
     static void firstLoop();
     void shutdown();
-    void renderScene();
     bool mainLoopScene(FrameEvent& evt);
     bool presentToScreen(FrameEvent& evt);
     void threadPoolCompleted(I64 onExitTaskID);
-
-   private:
-    void submitRenderCall(RenderStage stage,
-                          const SceneRenderState& sceneRenderState,
-                          const DELEGATE_CBK<>& sceneRenderCallback) const;
 
    private:
     Application& _APP;
@@ -190,19 +184,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     I32 _argc;
     char** _argv;
 };
-
-namespace Attorney {
-class KernelScene {
-   private:
-    static void submitRenderCall(const Kernel& kernel, RenderStage stage,
-                                 const SceneRenderState& sceneRenderState,
-                                 const DELEGATE_CBK<>& sceneRenderCallback) {
-        kernel.submitRenderCall(stage, sceneRenderState, sceneRenderCallback);
-    }
-
-    friend class Divide::SceneManager;
-};
-};  // namespace Attorney
 };  // namespace Divide
 
 #endif  //_CORE_KERNEL_H_

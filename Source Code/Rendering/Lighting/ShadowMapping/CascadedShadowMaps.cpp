@@ -158,9 +158,9 @@ void CascadedShadowMaps::render(SceneRenderState& renderState) {
     _shadowMatricesBuffer->bind(ShaderBufferLocation::LIGHT_SHADOW);
     _shadowMatricesBuffer->incQueue();
 
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _depthMap->begin(Framebuffer::defaultPolicy());
-        SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
+        SceneManager::getInstance().renderVisibleNodes(RenderStage::SHADOW, true);
     _depthMap->end();
     renderState.getCameraMgr().popActiveCamera();
 }

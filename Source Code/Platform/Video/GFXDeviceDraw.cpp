@@ -228,11 +228,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         _lastCommandCount = _lastNodeCount = 0;
     }
 
-    if (refreshNodeData) {
-        // Pass the list of nodes to the renderer for a pre-render pass
-        getRenderer().preRender(_gpuBlock);
-    }
-
     U32 textureHandle = 0;
     U32 lastUnit0Handle = 0;
     U32 lastUnit1Handle = 0;
@@ -356,17 +351,6 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
 }
 
 void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport) {
-}
-
-void GFXDevice::postProcessRenderTarget(RenderTarget renderTarget) {
-    switch(renderTarget) {
-        case RenderTarget::DEPTH: 
-            constructHIZ();
-            break;
-        case RenderTarget::ANAGLYPH:
-        case RenderTarget::SCREEN:
-            break;
-    }
 }
 
 /// This is just a short-circuit system (hack) to send a list of points to the

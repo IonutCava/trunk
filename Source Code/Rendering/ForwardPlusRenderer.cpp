@@ -56,8 +56,8 @@ ForwardPlusRenderer::~ForwardPlusRenderer() {
     RemoveResource(_depthRangesConstructProgram);
 }
 
-void ForwardPlusRenderer::preRender(const GFXDevice::GPUBlock& gpuBlock) {
-    buildLightGrid(gpuBlock);
+void ForwardPlusRenderer::preRender() {
+    buildLightGrid();
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
@@ -76,10 +76,12 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
                          resTemp.y / tileSize.y - 1);
 }
 
-bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
+bool ForwardPlusRenderer::buildLightGrid() {
     if (GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         return true;
     }
+    const vec2<F32>& zPlanes = GFX_DEVICE.getCurrentZPlanes();
+    const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
     Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
 
     //Disable all lights until we finish pruning
@@ -103,12 +105,12 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
             vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
                       Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
             // render target resolution
-            vec2<U16>(gpuBlock._data._ViewPort.zw()),
+            vec2<U16>(viewport.zw()),
             _omniLightList,
-            gpuBlock._data._ViewMatrix,
-            gpuBlock._data._ProjectionMatrix,
+            GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW),
+            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION),
             // current near plane
-            gpuBlock._data._ZPlanesCombined.x,
+            zPlanes.x,
             vectorImpl<vec2<F32>>());
 
         downSampleDepthBuffer(_depthRangesCache);
@@ -120,8 +122,7 @@ bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
         // Note that the pruning does not occur if the pre-z pass was not
         // performed (depthRanges is empty in this case).
         _opaqueGrid->prune(_depthRangesCache);
-        _transparentGrid->pruneFarOnly(gpuBlock._data._ZPlanesCombined.x,
-                                       _depthRangesCache);
+        _transparentGrid->pruneFarOnly(zPlanes.x, _depthRangesCache);
 
         vectorImpl<I64> guidList;
         guidList.reserve(_opaqueGrid->getViewSpaceLights().size() + 

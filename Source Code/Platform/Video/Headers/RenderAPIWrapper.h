@@ -374,6 +374,7 @@ class RingBuffer {
 };
 
 /// Renderer Programming Interface
+template <typename Derived>
 class NOINITVTABLE RenderAPIWrapper {
    protected:
     friend class GFXDevice;

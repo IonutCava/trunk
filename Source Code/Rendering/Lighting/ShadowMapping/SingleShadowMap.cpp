@@ -55,22 +55,21 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
 }
 
 void SingleShadowMap::render(SceneRenderState& renderState) {
-    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera);
     _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
     _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getRange()));
     _shadowCamera->renderLookAt();
 
     _depthMap->begin(Framebuffer::defaultPolicy());
     // draw the scene
-    SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
+    SceneManager::getInstance().renderVisibleNodes(RenderStage::SHADOW, true);
     // unbind the associated depth map
     _depthMap->end();
-    renderState.getCameraMgr().popActiveCamera(false);
+    renderState.getCameraMgr().popActiveCamera();
 }
 
 void SingleShadowMap::previewShadowMaps() {
     _depthMap->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
-                            _previewDepthMapShader);
+    GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
 }
 };

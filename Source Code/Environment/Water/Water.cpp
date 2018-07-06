@@ -213,7 +213,7 @@ void WaterPlane::updateRefraction() {
     // If we are below, we render the scene normally
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(RenderStage::DISPLAY);
     GFX_DEVICE.toggleClipPlane(_refractionPlaneID, true);
-    _cameraMgr.getActiveCamera()->renderLookAt();
+    _cameraMgr.getActiveCamera().renderLookAt();
     // bind the refractive texture
     _refractionTexture->begin(Framebuffer::defaultPolicy());
     // render to the reflective texture
@@ -238,8 +238,8 @@ void WaterPlane::updateReflection() {
         _cameraUnderWater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
     GFX_DEVICE.toggleClipPlane(_reflectionPlaneID, true);
 
-    _cameraUnderWater ? _cameraMgr.getActiveCamera()->renderLookAt()
-                        : _cameraMgr.getActiveCamera()->renderLookAtReflected(
+    _cameraUnderWater ? _cameraMgr.getActiveCamera().renderLookAt()
+                      : _cameraMgr.getActiveCamera().renderLookAtReflected(
                             getReflectionPlane());
 
     _reflectedTexture->begin(Framebuffer::defaultPolicy());

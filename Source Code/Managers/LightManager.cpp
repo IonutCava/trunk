@@ -16,8 +16,7 @@ namespace Divide {
 Time::ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager()
-    : FrameListener(),
-      _init(false),
+    : _init(false),
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
       _currentShadowCastingLight(nullptr),
@@ -59,8 +58,6 @@ void LightManager::init() {
     STUBBED("Replace light map bind slots with bindless textures! "
             "Max texture units is currently used! -Ionut!");
 
-    REGISTER_FRAME_LISTENER(&(getInstance()), 2);
-
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
     // NORMAL holds general info about the currently active
@@ -92,8 +89,6 @@ bool LightManager::clear() {
     if (!_init) {
         return true;
     }
-
-    UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
 
     bool success = true;
     for (Light::LightList& lightList : _lights) {
@@ -188,15 +183,12 @@ void LightManager::onCameraUpdate(Camera& camera) {
 /// When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire
 /// application!
-bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
+bool LightManager::generateShadowMaps() {
     if (!_shadowMapsEnabled) {
         return true;
     }
 
     Time::ScopedTimer timer(*s_shadowPassTimer);
-    // Tell the engine that we are drawing to depth maps
-    // set the current render stage to SHADOW
-    RenderStage previousRS = GFX_DEVICE.setRenderStage(RenderStage::SHADOW);
     // generate shadowmaps for each light
     for (Light::LightList& lights : _lights) {
         for (Light* light : lights) {
@@ -205,8 +197,6 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
         }
     }
 
-    // Revert back to the previous stage
-    GFX_DEVICE.setRenderStage(previousRS);
     _currentShadowCastingLight = nullptr;
     return true;
 }
@@ -275,11 +265,9 @@ void LightManager::bindShadowMaps() {
         for (Light* light : lights) {
             if (light->castsShadows()) {
                 ShadowMap* sm = light->getShadowMapInfo()->getShadowMap();
-                DIVIDE_ASSERT(sm != nullptr,
-                    "LightManager::bindShadowMaps error: Shadow casting light "
-                    "with no shadow map found!");
-                sm->bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
-
+                if (sm != nullptr){
+                    sm->bind(getShadowBindSlotOffset(light->getLightType()) + idx++);
+                }
                 if (idx >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE) {
                     break;
                 }

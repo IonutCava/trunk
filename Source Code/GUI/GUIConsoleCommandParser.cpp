@@ -226,7 +226,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
         .getKernel()
         .getCameraMgr()
         .getActiveCamera()
-        ->setHorizontalFoV(to_float(FoV));
+        .setHorizontalFoV(to_float(FoV));
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {

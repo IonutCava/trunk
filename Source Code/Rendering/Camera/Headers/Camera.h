@@ -68,7 +68,8 @@ class Camera : public Resource {
     /// This method does not calls "renderLookAt"
     /// rightEye = false => left eye's frustum+view; rightEye = true => right
     /// eye's frustum + view.
-    void setAnaglyph(bool rightEye = false);
+    void setAnaglyph(bool state);
+    bool isAnaglyph();
     /// Moves the camera by the specified offsets in each direction
     virtual void move(F32 dx, F32 dy, F32 dz);
     /// Global rotations are applied relative to the world axis, not the
@@ -375,6 +376,7 @@ class Camera : public Resource {
 
     vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _listeners;
     bool _isActive;
+    bool _anaglyphPass;
     bool _projectionDirty;
     bool _viewMatrixDirty;
     bool _viewMatrixLocked;

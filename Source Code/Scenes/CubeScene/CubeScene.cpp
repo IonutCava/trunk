@@ -78,11 +78,11 @@ void CubeScene::preRender() {
 void CubeScene::processInput(const U64 deltaTime) {}
 
 bool CubeScene::load(const stringImpl& name, GUI* const gui) {
-    GFX_DEVICE.setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
+    SceneManager::getInstance().setRenderer(RendererType::RENDERER_DEFERRED_SHADING);
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = []() {
-        GFX_DEVICE.getRenderer().toggleDebugView();
+        SceneManager::getInstance().getRenderer().toggleDebugView();
     };
     _input->addKeyMapping(Input::KeyCode::KC_T, cbks);
             

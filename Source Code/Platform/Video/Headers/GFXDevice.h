@@ -274,17 +274,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
     void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
-    void postProcessRenderTarget(RenderTarget renderTarget);
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
-    inline RenderStage setRenderStage(RenderStage stage);
     inline bool isDepthStage() const;
-
-    void setRenderer(RendererType rendererType);
-    Renderer& getRenderer() const;
 
     /// Clipping plane management. All the clipping planes are handled by shader
     /// programs only!
@@ -304,15 +299,15 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(
-        Framebuffer& cubeMap, const vec3<F32>& pos,
-        const DELEGATE_CBK<>& renderFunction, const vec2<F32>& zPlanes,
-        RenderStage renderStage = RenderStage::REFLECTION);
+    void generateCubeMap(Framebuffer& cubeMap,
+                         const vec3<F32>& pos,
+                         const vec2<F32>& zPlanes,
+                         RenderStage renderStage);
 
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
     inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode);
-
+    inline vec2<F32> getCurrentZPlanes() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
     /// routine. Use callOrder for sorting purposes
     inline void add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder);
@@ -398,6 +393,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
 
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
+
+    inline RenderStage setRenderStage(RenderStage stage);
 
   public:  // Direct API calls
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
@@ -531,18 +528,19 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
    protected:
     friend class SceneManager;
+    friend class RenderPass;
     void occlusionCull();
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
                            bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
+    void constructHIZ();
 
    private:
     GFXDevice();
     ~GFXDevice();
 
-    void constructHIZ();
     void previewDepthBuffer();
     void updateViewportInternal(const vec4<I32>& viewport);
     void processCommand(const GenericDrawCommand& cmd,
@@ -641,7 +639,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     U32 _lastNodeCount;
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
-    std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
     // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFER

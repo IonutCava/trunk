@@ -33,7 +33,6 @@
 #define _LIGHT_MANAGER_H_
 
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 namespace Divide {
 
@@ -41,7 +40,7 @@ class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
 
-DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
+DEFINE_SINGLETON(LightManager)
 
   public:
     void init();
@@ -90,9 +89,8 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     }
 
   protected:
-    /// This is inherited from FrameListener and is used to queue up reflection on
-    /// every frame start
-    bool framePreRenderEnded(const FrameEvent& evt);
+    friend class RenderPass;
+    bool generateShadowMaps();
 
     inline Light::LightList::const_iterator findLight(I64 GUID, LightType type) const {
         return std::find_if(std::begin(_lights[to_uint(type)]), std::end(_lights[to_uint(type)]),

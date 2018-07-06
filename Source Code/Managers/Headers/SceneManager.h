@@ -95,13 +95,12 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     bool init(GUI* const gui);
 
     /*Base Scene Operations*/
-    void preRender();
-    void render(RenderStage stage, const Kernel& kernel, bool frustumCull, bool refreshNodeData);
-    void postRender();
+    Renderer& getRenderer() const;
+    void setRenderer(RendererType rendererType);
 
     // generate a list of nodes to render
     void updateVisibleNodes(RenderStage stage, bool refreshNodeData);
-    void renderVisibleNodes(RenderStage stage, bool frustumCull, bool refreshNodeData);
+    void renderVisibleNodes(RenderStage stage, bool refreshNodeData);
     // cull the scenegraph against the current view frustum
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
 
@@ -168,7 +167,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                              Input::MouseButton button);
 
   protected:
-    void renderScene();
     void initPostLoadState();
     void onCameraUpdate(Camera& camera);
 
@@ -204,6 +202,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     Time::ProfileTimer* _sceneGraphCullTimer;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
+    std::unique_ptr<Renderer> _renderer;
 
 END_SINGLETON
 

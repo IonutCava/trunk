@@ -108,12 +108,6 @@ void Scene::onCameraUpdate(Camera& camera) {
     _sceneGraph->getRoot()->onCameraUpdate(camera);
 }
 
-void Scene::preRender() {
-}
-
-void Scene::postRender() {
-}
-
 void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
@@ -684,8 +678,7 @@ TerrainDescriptor* Scene::getTerrainInfo(const stringImpl& terrainName) {
 
 void Scene::debugDraw(RenderStage stage) {
 #ifdef _DEBUG
-    const SceneRenderState::GizmoState& currentGizmoState =
-        renderState().gizmoState();
+    const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
 
     GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 

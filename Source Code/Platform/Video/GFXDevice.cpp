@@ -29,7 +29,7 @@ F32 _anaglyphIOD = -0.01f;
 
 GFXDevice::GFXDevice()
     : _api(nullptr), 
-    _renderStage(RenderStage::COUNT),
+    _renderStage(RenderStage::DISPLAY),
     _prevRenderStage(RenderStage::COUNT)
 {
     // Hash values
@@ -80,10 +80,7 @@ GFXDevice::GFXDevice()
     // To allow calls to "setBaseViewport"
     
     _viewport.push(vec4<I32>(-1));
-    // Add our needed app-wide render passes. RenderPassManager is responsible
-    // for deleting these!
-    RenderPassManager::getInstance().addRenderPass("diffusePass", 1);
-    // RenderPassManager::getInstance().addRenderPass("shadowPass",2);
+
     // Red X-axis
     _axisLines.push_back(
         Line(VECTOR3_ZERO, WORLD_X_AXIS * 2, vec4<U8>(255, 0, 0, 255), 3.0f));
@@ -112,31 +109,28 @@ GFXDevice::~GFXDevice()
 }
 
 /// Generate a cube texture and store it in the provided framebuffer
-void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
-                                const DELEGATE_CBK<>& renderFunction,
+void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
+                                const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStage renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    Texture* colorAttachment =
-        cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0);
-    Texture* depthAttachment =
-        cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth);
+    Texture* colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0);
+    Texture* depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
-    // Everyone's innocent until prove guilty
+    // Everyone's innocent until proven guilty
     bool isValidFB = true;
     if (hasColor) {
         // We only need the color attachment
-        isValidFB = (colorAttachment->getTextureType() ==
-                     TextureType::TEXTURE_CUBE_MAP);
+        isValidFB = (colorAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP) ||
+                    (colorAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
     } else {
         // We don't have a color attachment, so we require a cube map depth
         // attachment
-        isValidFB = (hasDepth &&
-                     depthAttachment->getTextureType() ==
-                         TextureType::TEXTURE_CUBE_MAP);
+        isValidFB = hasDepth && (depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP ||
+                                 depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -144,11 +138,6 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
         Console::errorfn(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
         return;
     }
-    // Calling this function without a callback is a programming error and
-    // should never happen
-    DIVIDE_ASSERT(renderFunction == false,
-                  "GFXDevice error: tried to generate a cube map without a "
-                  "valid render function!");
     // No dual-paraboloid rendering here. Just draw once for each face.
     static vec3<F32> TabUp[6] = {WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS,
                                  WORLD_Z_AXIS,     WORLD_Z_NEG_AXIS,
@@ -165,7 +154,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the cube camera as the currently active one
-    kernel.getCameraMgr().pushActiveCamera(_cubeCamera, false);
+    kernel.getCameraMgr().pushActiveCamera(_cubeCamera);
     // Set the desired render stage, remembering the previous one
     RenderStage prevRenderStage = setRenderStage(renderStage);
     // Enable our render target
@@ -181,7 +170,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
         // And generated required matrices
         _cubeCamera->renderLookAt();
         // Pass our render function to the renderer
-        getRenderer().render(renderFunction, GET_ACTIVE_SCENE().renderState());
+        SceneManager::getInstance().renderVisibleNodes(renderStage, true);
     }
     // Resolve our render target
     cubeMap.end();
@@ -547,9 +536,7 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
 }
   
 bool GFXDevice::postProcessingEnabled() const {
-    return _enablePostProcessing && 
-            //HACK: postprocessing not working with deferred rendering! -Ionut
-            getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING;
+    return _enablePostProcessing;
 }
 
 void GFXDevice::onCameraUpdate(Camera& camera) {

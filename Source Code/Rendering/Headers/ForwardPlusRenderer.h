@@ -47,7 +47,7 @@ class ForwardPlusRenderer : public Renderer {
     ForwardPlusRenderer();
     ~ForwardPlusRenderer();
 
-    void preRender(const GFXDevice::GPUBlock& gpuBlock);
+    void preRender();
 
     void render(const DELEGATE_CBK<>& renderCallback,
                 const SceneRenderState& sceneRenderState);
@@ -55,7 +55,7 @@ class ForwardPlusRenderer : public Renderer {
     void updateResolution(U16 width, U16 height);
 
    protected:
-    bool buildLightGrid(const GFXDevice::GPUBlock& gpuBlock);
+    bool buildLightGrid();
     void downSampleDepthBuffer(vectorImpl<vec2<F32>>& depthRanges);
 
    private:

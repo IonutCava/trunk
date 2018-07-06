@@ -227,6 +227,11 @@ GFXDevice::getMatrix(const MATRIX_MODE& mode) {
     return _mat4Cache;
 }
 
+inline vec2<F32> 
+GFXDevice::getCurrentZPlanes() const {
+    return _gpuBlock._data._ZPlanesCombined.xy();
+}
+
 inline void 
 GFXDevice::submitRenderCommand(const GenericDrawCommand& cmd) {
     processCommand(cmd, false);
@@ -269,7 +274,7 @@ inline ShaderBuffer& GFXDevice::getNodeBuffer(U32 stageIndex) {
 
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE \
-    RenderPassManager::getInstance().getLastTotalBinSize(0)
+    RenderPassManager::getInstance().getLastTotalBinSize(RenderStage::DISPLAY)
 #define GFX_HIZ_CULL_COUNT \
     GFX_DEVICE.getLastCullCount()
 };  // namespace Divide

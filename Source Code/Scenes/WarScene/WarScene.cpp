@@ -262,7 +262,6 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     // Make the center cylinder reflective
     Material* matInstance = cylinder[0]->getChild(0, temp).getComponent<RenderingComponent>()->getMaterialInstance();
     matInstance->setReflective(true);
-    matInstance->setTexture(ShaderProgram::TextureUsage::REFLECTION, _currentSky.lock()->getNode<Sky>()->getCubemap());
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
     SceneNode* cylinderMeshNE = cylinder[2]->getNode();
@@ -444,7 +443,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         .getKernel()
         .getCameraMgr()
         .getActiveCamera()
-        ->setHorizontalFoV(110);
+        .setHorizontalFoV(110);
 
     SceneInput::PressReleaseActions cbks;
     cbks.second = DELEGATE_BIND(&WarScene::toggleCamera, this);

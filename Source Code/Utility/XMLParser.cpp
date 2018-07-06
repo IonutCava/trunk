@@ -845,7 +845,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
-            "-" + getRendererTypeName(GFX_DEVICE.getRenderer().getType()) +
+            "-" + getRendererTypeName(SceneManager::getInstance().getRenderer().getType()) +
             ".xml";
     } else {
         materialFile += ".xml";
@@ -964,7 +964,7 @@ void dumpMaterial(Material &mat) {
 
     stringImpl fileLocation(
         location + file + "-" +
-        getRendererTypeName(GFX_DEVICE.getRenderer().getType()) + ".xml");
+        getRendererTypeName(SceneManager::getInstance().getRenderer().getType()) + ".xml");
     pt_writer.clear();
     pt_writer.put("material.name", file);
     pt_writer.put("material.ambient.<xmlattr>.r",

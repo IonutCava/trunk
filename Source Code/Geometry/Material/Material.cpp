@@ -2,6 +2,7 @@
 
 #include "Rendering/Headers/Renderer.h"
 #include "Utility/Headers/Localization.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
@@ -329,7 +330,7 @@ bool Material::computeShader(RenderStage renderStage,
         }
     }
 
-    bool deferredPassShader = GFX_DEVICE.getRenderer().getType() !=
+    bool deferredPassShader = SceneManager::getInstance().getRenderer().getType() !=
                               RendererType::RENDERER_FORWARD_PLUS;
     bool depthPassShader = renderStage == RenderStage::SHADOW ||
                            renderStage == RenderStage::Z_PRE_PASS;

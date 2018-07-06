@@ -38,33 +38,21 @@
 namespace Divide {
 
 class SceneGraph;
-
-class RenderPassItem {
-   public:
-    RenderPassItem(const stringImpl& renderPassName, U8 sortKey);
-    ~RenderPassItem();
-
-    inline U8 sortKey() const { return _sortKey; }
-    inline RenderPass& renderPass() { return _renderPass; }
-    inline const RenderPass& renderPass() const { return _renderPass; }
-
-   private:
-    U8 _sortKey;
-    RenderPass _renderPass;
-};
-
 class RenderQueue;
 class SceneRenderState;
+enum class RenderStage : U32;
 DEFINE_SINGLETON(RenderPassManager)
 
   public:
     /// Call every renderqueue's render function in order
-    void render(const SceneRenderState& sceneRenderState);
-    /// Add a new pass with the specified key
-    void addRenderPass(const stringImpl& renderPassName, U8 orderKey);
+    void render(SceneRenderState& sceneRenderState, bool anaglyph = false);
+    /// Add a new pass that will run once for each of the RenderStages specified
+    RenderPass& addRenderPass(const stringImpl& renderPassName, 
+                              U8 orderKey,
+                              std::initializer_list<RenderStage> renderStages);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const stringImpl& name);
-    U16  getLastTotalBinSize(U8 renderPassID) const;
+    U16  getLastTotalBinSize(RenderStage displayStage) const;
 
     inline RenderQueue& getQueue() {
         return *_renderQueue.get();
@@ -76,7 +64,7 @@ DEFINE_SINGLETON(RenderPassManager)
 
   private:
     // Some vector implementations are not move-awarem so use STL in this case
-    vectorImpl<RenderPassItem> _renderPasses;
+    vectorImpl<RenderPass> _renderPasses;
     std::unique_ptr<RenderQueue> _renderQueue;
 
 END_SINGLETON

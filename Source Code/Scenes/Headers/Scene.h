@@ -73,6 +73,7 @@ class PhysicsSceneInterface;
 namespace Attorney {
     class SceneManager;
     class SceneGraph;
+    class SceneRenderPass;
 };
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2
@@ -81,6 +82,7 @@ namespace Attorney {
 class NOINITVTABLE Scene : public Resource {
     friend class Attorney::SceneManager;
     friend class Attorney::SceneGraph;
+    friend class Attorney::SceneRenderPass;
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
@@ -95,10 +97,6 @@ class NOINITVTABLE Scene : public Resource {
     /// Update the scene based on the inputs
     virtual void processTasks(const U64 deltaTime);
     virtual void processGUI(const U64 deltaTime);
-    /// Prepare the scene for rendering after the update
-    virtual void preRender();
-    /// Perform any post rendering operations
-    virtual void postRender();
     /// Scene is rendering, so add intensive tasks here to save CPU cycles
     bool idle();  
     /// The application has lost focus
@@ -294,13 +292,19 @@ class SceneManager {
         return scene.load(name, guiInterface);
     }
     static bool unload(Scene& scene) { return scene.unload(); }
+
+    friend class Divide::SceneManager;
+};
+
+class SceneRenderPass {
+ private:
     /// Draw debug entities
     static void debugDraw(Scene& scene, RenderStage stage) {
         scene.debugDraw(stage);
     }
-
-    friend class Divide::SceneManager;
+    friend class Divide::RenderPass;
 };
+
 
 class SceneGraph {
 private:

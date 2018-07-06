@@ -48,7 +48,7 @@ class DeferredShadingRenderer : public Renderer {
     DeferredShadingRenderer();
     ~DeferredShadingRenderer();
 
-    void preRender(const GFXDevice::GPUBlock& gpuBlock);
+    void preRender();
 
     void render(const DELEGATE_CBK<>& renderCallback,
                 const SceneRenderState& sceneRenderState);

@@ -7,8 +7,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/Headers/ForwardPlusRenderer.h"
-#include "Rendering/Headers/DeferredShadingRenderer.h"
 
 namespace Divide {
 
@@ -212,10 +210,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
-    // We start of with a forward plus renderer
-    setRenderer(RendererType::RENDERER_FORWARD_PLUS);
-    ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer",
-                                               false);
+    ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", false);
     // If render targets ready, we initialize our post processing system
     PostFX::getInstance().init(resolution);
 
@@ -262,7 +257,6 @@ void GFXDevice::closeRenderingAPI() {
     for (Framebuffer*& renderTarget : _renderTarget) {
         MemoryManager::DELETE(renderTarget);
     }
-    _renderer.reset(nullptr);
     // Close the shader manager
     ShaderManager::getInstance().destroy();
     ShaderManager::getInstance().destroyInstance();
@@ -400,26 +394,6 @@ void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
         case WindowEvent::RESIZED_EXTERNAL:{
         } break;
     };
-}
-
-Renderer& GFXDevice::getRenderer() const {
-    DIVIDE_ASSERT(_renderer != nullptr,
-                  "GFXDevice error: Renderer requested but not created!");
-    return *_renderer;
-}
-
-void GFXDevice::setRenderer(RendererType rendererType) {
-    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
-                  "GFXDevice error: Tried to create an invalid renderer!");
-
-    switch (rendererType) {
-        case RendererType::RENDERER_FORWARD_PLUS: {
-            _renderer.reset(new ForwardPlusRenderer());
-        } break;
-        case RendererType::RENDERER_DEFERRED_SHADING: {
-            _renderer.reset(new DeferredShadingRenderer());
-        } break;
-    }
 }
 
 ErrorCode GFXDevice::createAPIInstance() {

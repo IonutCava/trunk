@@ -151,11 +151,11 @@ class SceneRenderState {
     }
 
     inline Camera& getCamera() {
-        return *_cameraMgr->getActiveCamera();
+        return _cameraMgr->getActiveCamera();
     }
 
     inline const Camera& getCameraConst() const {
-        return *_cameraMgr->getActiveCamera();
+        return _cameraMgr->getActiveCamera();
     }
 
     inline bool playAnimations() const {

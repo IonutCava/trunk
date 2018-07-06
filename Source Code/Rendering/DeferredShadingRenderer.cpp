@@ -125,7 +125,7 @@ DeferredShadingRenderer::~DeferredShadingRenderer() {
     MemoryManager::DELETE(_lightTexture);
 }
 
-void DeferredShadingRenderer::preRender(const GFXDevice::GPUBlock& gpuBlock) {
+void DeferredShadingRenderer::preRender() {
 
     Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
 

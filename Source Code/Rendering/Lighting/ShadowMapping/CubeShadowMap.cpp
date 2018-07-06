@@ -53,9 +53,6 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor) {
 void CubeShadowMap::render(SceneRenderState& renderState) {
     GFX_DEVICE.generateCubeMap(*_depthMap,
                                 _light->getPosition(),
-                                []() {
-                                    SceneManager::getInstance().render(RenderStage::SHADOW, Application::getInstance().getKernel(), true, true);
-                                },
                                 vec2<F32>(0.1f, _light->getRange()),
                                 RenderStage::SHADOW);
 }

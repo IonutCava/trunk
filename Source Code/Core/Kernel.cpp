@@ -71,6 +71,11 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
     ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
 
+    // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
+    RenderPassManager::getInstance().addRenderPass("environmentPass", 0, {RenderStage::REFLECTION}).specialFlag(true);
+    RenderPassManager::getInstance().addRenderPass("shadowPass",      1, {RenderStage::SHADOW});
+    RenderPassManager::getInstance().addRenderPass("displayStage",    2, {RenderStage::Z_PRE_PASS, RenderStage::DISPLAY});
+
     s_appLoopTimer = Time::ADD_TIMER("MainLoopTimer");
 }
 
@@ -302,38 +307,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
     return presentToScreen(evt);
 }
 
-void Kernel::renderScene() {
-    bool postProcessing = _GFX.postProcessingEnabled();
-    bool anaglyph = _GFX.anaglyphEnabled();
-    U8 loopCount = anaglyph ? 2 : 1;
-
-    Framebuffer::FramebufferTarget depthPassPolicy, colorPassPolicy;
-    depthPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::DEPTH;
-    //colorPassPolicy._drawMask = Framebuffer::FramebufferTarget::BufferMask::COLOR;
-    Camera* currentCamera = _cameraMgr->getActiveCamera();
-    for (U8 renderPasses = 0; renderPasses < loopCount; ++renderPasses) {
-        if (anaglyph) {
-            currentCamera->setAnaglyph(renderPasses == 1 ? true : false);
-        }
-
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->begin(depthPassPolicy);
-            _sceneMgr.render(RenderStage::Z_PRE_PASS, *this, true, true);
-        _GFX.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->end();
-        _GFX.postProcessRenderTarget(GFXDevice::RenderTarget::DEPTH);
-
-        GFXDevice::RenderTarget eyeTarget = renderPasses == 1 ? GFXDevice::RenderTarget::ANAGLYPH
-                                                              : GFXDevice::RenderTarget::SCREEN;
-
-        _GFX.getRenderTarget(eyeTarget)->begin(colorPassPolicy);
-            _sceneMgr.render(RenderStage::DISPLAY, *this, false, false);
-        _GFX.getRenderTarget(eyeTarget)->end();
-        _GFX.postProcessRenderTarget(eyeTarget);
-    }
-
-    PostFX::getInstance().displayScene(postProcessing);
-    
-}
-
 bool Kernel::presentToScreen(FrameEvent& evt) {
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
 
@@ -343,9 +316,6 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
-
-    // Prepare scene for rendering
-    _sceneMgr.preRender();
 
     // perform time-sensitive shader tasks
     ShaderManager::getInstance().update(_timingData._currentTimeDelta);
@@ -357,7 +327,11 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         return false;
     }
 
-    renderScene();
+    RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState());
+    if (_GFX.anaglyphEnabled()) {
+        RenderPassManager::getInstance().render(_sceneMgr.getActiveScene().renderState(), true);
+    }
+    PostFX::getInstance().displayScene(_GFX.postProcessingEnabled());
 
     frameMgr.createEvent(_timingData._currentTime,
                          FrameEventType::FRAME_POSTRENDER_START, evt);
@@ -365,8 +339,6 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     if (!frameMgr.frameEvent(evt)) {
         return false;
     }
-
-    _sceneMgr.postRender();
 
     frameMgr.createEvent(_timingData._currentTime,
                          FrameEventType::FRAME_POSTRENDER_END, evt);
@@ -401,13 +373,6 @@ void Kernel::firstLoop() {
     Attorney::SceneManagerKernel::initPostLoadState();
 
     _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds();
-}
-
-void Kernel::submitRenderCall(RenderStage stage,
-                              const SceneRenderState& sceneRenderState,
-                              const DELEGATE_CBK<>& sceneRenderCallback) const {
-    _GFX.setRenderStage(stage);
-    _GFX.getRenderer().render(sceneRenderCallback, sceneRenderState);
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
@@ -475,10 +440,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // responsible for cleaning it up
     _cameraMgr->addNewCamera("defaultCamera", _mainCamera);
     _cameraMgr->pushActiveCamera(_mainCamera);
-
+    // We start of with a forward plus renderer
+    _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
     winManager.mainWindowType(WindowType::SPLASH);
     // Load and render the splash screen
-    _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", winManager.getWindowDimensions(WindowType::SPLASH)).render();
     _GFX.endFrame();

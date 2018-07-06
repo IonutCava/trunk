@@ -6,6 +6,8 @@
 #include "Core/Headers/ProfileTimer.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Rendering/Headers/ForwardPlusRenderer.h"
+#include "Rendering/Headers/DeferredShadingRenderer.h"
 
 namespace Divide {
 
@@ -36,6 +38,7 @@ SceneManager::~SceneManager()
     Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
+    _renderer.reset(nullptr);
 }
 
 bool SceneManager::init(GUI* const gui) {
@@ -105,6 +108,7 @@ void SceneManager::initPostLoadState() {
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
+    _sceneShaderData->setData(&_sceneData);
     return Attorney::SceneManager::frameStarted(*_activeScene);
 }
 
@@ -153,11 +157,6 @@ void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
                           par.getParam<bool>("rendering.enableFog") ? density : -1.0f);
 }
 
-void SceneManager::preRender() {
-    _activeScene->preRender();
-    _sceneShaderData->setData(&_sceneData);
-}
-
 const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {
     auto cullingFunction = [](const SceneGraphNode& node) -> bool {
         if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
@@ -195,13 +194,13 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData) {
 
     if (refreshNodeData) {
         queue.refresh();
-        vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
+        const vec3<F32>& eyePos = _activeScene->renderState().getCameraConst().getEye();
         for (SceneGraphNode_wptr node : visibleNodes) {
             SceneGraphNode_ptr sgn = node.lock();
             queue.addNodeToQueue(*sgn, eyePos);
         }
     }
-
+    
     queue.sort(stage);
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),
         [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
@@ -210,48 +209,49 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData) {
             return renderableA->drawOrder() < renderableB->drawOrder();
     });
 
+    if (refreshNodeData) {
+        getRenderer().preRender();
+    }
+
     GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData);
 }
 
-void SceneManager::renderScene() {
-    _renderPassManager->render(_activeScene->renderState());
-}
-
-void SceneManager::renderVisibleNodes(RenderStage stage, bool frustumCull, bool refreshNodeData) {
-    if (frustumCull) {
+void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData) {
+    if (refreshNodeData) {
         Time::ScopedTimer timer(*_sceneGraphCullTimer);
         cullSceneGraph(stage);
     }
     updateVisibleNodes(stage, refreshNodeData);
 
-    switch(stage) {
-        case RenderStage::DISPLAY:
-            GFX_DEVICE.occlusionCull();
-            break;
-        case RenderStage::Z_PRE_PASS:
-            LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
-            break;
-    };
-
-    renderScene();
+    RenderStage renderStage = GFX_DEVICE.getRenderStage();
+    SceneRenderState& renderState = _activeScene->renderState();
+    if (renderState.drawGeometry()) {
+        RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
+        U16 renderBinCount = renderQueue.getRenderQueueBinSize();
+        for (U16 i = 0; i < renderBinCount; ++i) {
+            renderQueue.getBinSorted(i)->render(renderState, renderStage);
+        }
+    }
 }
 
-void SceneManager::render(RenderStage stage, const Kernel& kernel, bool frustumCull, bool refreshNodeData) {
-    assert(_activeScene != nullptr);
-
-    _activeScene->renderState().getCamera().renderLookAt();
-
-    Attorney::KernelScene::submitRenderCall(
-        kernel, stage, _activeScene->renderState(),
-        [&, stage, frustumCull, refreshNodeData]() {
-            renderVisibleNodes(stage, frustumCull, refreshNodeData);
-        });
-
-    Attorney::SceneManager::debugDraw(*_activeScene, stage);
+Renderer& SceneManager::getRenderer() const {
+    DIVIDE_ASSERT(_renderer != nullptr,
+        "SceneManager error: Renderer requested but not created!");
+    return *_renderer;
 }
 
-void SceneManager::postRender() {
-    _activeScene->postRender();
+void SceneManager::setRenderer(RendererType rendererType) {
+    DIVIDE_ASSERT(rendererType != RendererType::COUNT,
+        "SceneManager error: Tried to create an invalid renderer!");
+
+    switch (rendererType) {
+    case RendererType::RENDERER_FORWARD_PLUS: {
+        _renderer.reset(new ForwardPlusRenderer());
+    } break;
+    case RendererType::RENDERER_DEFERRED_SHADING: {
+        _renderer.reset(new DeferredShadingRenderer());
+    } break;
+    }
 }
 
 void SceneManager::onCameraUpdate(Camera& camera) {

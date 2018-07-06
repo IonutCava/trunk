@@ -324,9 +324,12 @@ bool RenderingComponent::preDraw(const SceneRenderState& renderState,
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
-                                  RenderStage renderStage) {
+void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     
+    if (renderStage != RenderStage::DISPLAY) {
+        return;
+    }
+
     SceneNode* const node = _parentSGN.getNode();
 
 #ifdef _DEBUG

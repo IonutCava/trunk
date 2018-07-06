@@ -8,6 +8,7 @@ namespace Divide {
 Camera::Camera(const CameraType& type, const vec3<F32>& eye)
     : Resource("temp_camera"),
       _isActive(false),
+      _anaglyphPass(false),
       _isOrthoCamera(false),
       _projectionDirty(true),
       _viewMatrixDirty(true),
@@ -242,13 +243,18 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
     return _viewMatrix;
 }
 
-void Camera::setAnaglyph(bool rightEye) {
+void Camera::setAnaglyph(bool state) {
     assert(_isActive);
 
-    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV,  rightEye);
-    rightEye ? _eye.x += _camIOD / 2 : _eye.x -= _camIOD / 2;
+    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV, state);
+    state ? _eye.x += _camIOD / 2 : _eye.x -= _camIOD / 2;
+    _anaglyphPass = state;
 
     _viewMatrixDirty = true;
+}
+
+bool Camera::isAnaglyph() {
+    return _anaglyphPass;
 }
 
 /// Tell the rendering API to set up our desired PoV

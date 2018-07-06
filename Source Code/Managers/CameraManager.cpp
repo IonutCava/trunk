@@ -49,15 +49,13 @@ bool CameraManager::frameStarted(const FrameEvent& evt) {
     return true;
 }
 
-void CameraManager::setActiveCamera(Camera* cam, bool callActivate) {
-    if (_camera) _camera->onDeactivate();
-
-    _camera = cam;
-
-    if (callActivate) {
-        _camera->onActivate();
+void CameraManager::setActiveCamera(Camera* cam) {
+    if (_camera) {
+        _camera->onDeactivate();
     }
 
+    _camera = cam;
+    _camera->onActivate();
     for (const DELEGATE_CBK_PARAM<Camera&>& listener : _changeCameralisteners) {
         listener(*cam);
     }

@@ -38,20 +38,43 @@ namespace Divide {
 
 class SceneGraph;
 class SceneRenderState;
+enum class RenderStage : U32;
 
+// A RenderPass may contain multiple linked stages.
+// Usefull to avoid having multiple renderqueues per pass if 2 stages depend on one:
+// E.g.: Z_PRE_PASS + DISPLAY share the same renderqueue
 class RenderPass {
    public:
-    RenderPass(const stringImpl& name);
+    RenderPass(stringImpl name, U8 sortKey, std::initializer_list<RenderStage> passStageFlags);
     ~RenderPass();
 
-    virtual void render(const SceneRenderState& renderState);
-
+    void render(SceneRenderState& renderState, bool anaglyph = false);
+    inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& getName() const { return _name; }
 
+    inline bool hasStageFlag(RenderStage stageFlag) const {
+        return std::find_if(std::cbegin(_stageFlags), std::cend(_stageFlags),
+                            [&stageFlag](RenderStage stage) {
+                                return (stage == stageFlag);
+                            }) != std::cend(_stageFlags);
+    }
+
+    inline bool specialFlag() const { return _specialFlag; }
+    inline void specialFlag(const bool state) { _specialFlag = state; }
+
+   protected:
+    bool preRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
+    bool postRender(SceneRenderState& renderState, bool anaglyph, U32 pass);
+
    private:
+    U8 _sortKey;
+    /// Used if some renderpasses share the same passStageFlag.
+    /// Usefull to differentiate passes
+    bool _specialFlag;
     stringImpl _name;
     U16 _lastTotalBinSize;
+    vectorImpl<RenderStage> _stageFlags;
 };
 
 };  // namespace Divide

@@ -50,7 +50,7 @@ class NOINITVTABLE Renderer {
 
     virtual ~Renderer() {}
 
-    virtual void preRender(const GFXDevice::GPUBlock& gpuBlock) = 0;
+    virtual void preRender() = 0;
 
     virtual void render(const DELEGATE_CBK<>& renderCallback,
                         const SceneRenderState& sceneRenderState) = 0;

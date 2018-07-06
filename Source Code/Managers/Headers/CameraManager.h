@@ -49,9 +49,14 @@ class CameraManager : private NonCopyable, public FrameListener {
     CameraManager(Kernel* const kernelPtr);
     ~CameraManager();
 
-    inline Camera* const getActiveCamera() {
+    inline Camera& getActiveCamera() {
         assert(_camera);
-        return _camera;
+        return *_camera;
+    }
+
+    inline const Camera& getActiveCamera() const {
+        assert(_camera);
+        return *_camera;
     }
 
     void update(const U64 deltaTime);
@@ -71,21 +76,19 @@ class CameraManager : private NonCopyable, public FrameListener {
         return _camera->mouseMoved(arg);
     }
 
-    inline void pushActiveCamera(const stringImpl& name,
-                                 bool callActivate = true) {
+    inline void pushActiveCamera(const stringImpl& name) {
         _cameraStack.push(findCamera(name));
-        setActiveCamera(_cameraStack.top(), callActivate);
+        setActiveCamera(_cameraStack.top());
     }
 
-    inline void pushActiveCamera(const Camera* camera,
-                                 bool callActivate = true) {
+    inline void pushActiveCamera(const Camera* camera) {
         _cameraStack.push(findCamera(camera->getGUID()));
-        setActiveCamera(_cameraStack.top(), callActivate);
+        setActiveCamera(_cameraStack.top());
     }
 
-    inline void popActiveCamera(bool callActivate = true) {
+    inline void popActiveCamera() {
         _cameraStack.pop();
-        setActiveCamera(_cameraStack.top(), callActivate);
+        setActiveCamera(_cameraStack.top());
     }
 
    protected:
@@ -94,7 +97,7 @@ class CameraManager : private NonCopyable, public FrameListener {
     bool frameStarted(const FrameEvent& evt);
     Camera* findCamera(const stringImpl& name);
     Camera* findCamera(U64 cameraGUID);
-    void setActiveCamera(Camera* cam, bool callActivate = true);
+    void setActiveCamera(Camera* cam);
 
    private:
     bool _addNewListener;

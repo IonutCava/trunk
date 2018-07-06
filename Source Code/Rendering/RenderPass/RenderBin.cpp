@@ -168,11 +168,9 @@ void RenderBin::render(const SceneRenderState& renderState,
     gfx.flushRenderQueue();
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState,
-                           RenderStage renderStage) {
+void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage) {
     for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postDraw(*item._renderable, renderState,
-                                                 renderStage);
+        Attorney::RenderingCompRenderBin::postDraw(*item._renderable, renderState, renderStage);
     }
 }
 };
