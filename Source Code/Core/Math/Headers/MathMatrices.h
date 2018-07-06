@@ -125,17 +125,19 @@ class mat2 {
 public:
     mat2() noexcept;
     template<typename U>
+    mat2(U m) noexcept;
+    template<typename U>
     mat2(U m0, U m1,
          U m2, U m3) noexcept;
     template<typename U>
     mat2(const U *m) noexcept;
-    mat2(const mat2 &m) noexcept;
+    mat2(const mat2 &B) noexcept;
     template<typename U>
-    mat2(const mat2<U> &m) noexcept;
+    mat2(const mat2<U> &B) noexcept;
     template<typename U>
-    mat2(const mat3<U> &m) noexcept;
+    mat2(const mat3<U> &B) noexcept;
     template<typename U>
-    mat2(const mat4<U> &m) noexcept;
+    mat2(const mat4<U> &B) noexcept;
 
     mat2 &operator=(const mat2& other) noexcept;
     template<typename U>
@@ -149,22 +151,22 @@ public:
     vec4<T> operator*(const vec4<U> &v) const;
 
     template<typename U>
-    mat2 operator*(const mat2<U> &m) const;
+    mat2 operator*(const mat2<U> &B) const;
     template<typename U>
-    mat2 operator/(const mat2<U> &m) const;
+    mat2 operator/(const mat2<U> &B) const;
     template<typename U>
-    mat2 operator+(const mat2<U> &m) const;
+    mat2 operator+(const mat2<U> &B) const;
     template<typename U>
-    mat2 operator-(const mat2<U> &m) const;
+    mat2 operator-(const mat2<U> &B) const;
 
     template<typename U>
-    mat2 &operator*=(const mat2<U> &m);
+    mat2 &operator*=(const mat2<U> &B);
     template<typename U>
-    mat2 &operator/=(const mat2<U> &m);
+    mat2 &operator/=(const mat2<U> &B);
     template<typename U>
-    mat2 &operator+=(const mat2<U> &m);
+    mat2 &operator+=(const mat2<U> &B);
     template<typename U>
-    mat2 &operator-=(const mat2<U> &m);
+    mat2 &operator-=(const mat2<U> &B);
 
     template<typename U>
     mat2 operator*(U f) const;
@@ -190,6 +192,10 @@ public:
     bool operator==(const mat2<U> &B) const;
     template<typename U>
     bool operator!=(const mat2<U> &B) const;
+
+    bool compare(const mat2 &B, F32 epsilon) const;
+    template<typename U>
+    bool compare(const mat2<U> &B, F32 epsilon) const;
 
     operator T *();
     operator const T *() const;
@@ -269,18 +275,20 @@ class mat3 {
    public:
     mat3() noexcept;
     template<typename U>
+    mat3(U m) noexcept;
+    template<typename U>
     mat3(U m0, U m1, U m2,
          U m3, U m4, U m5,
          U m6, U m7, U m8) noexcept;
     template<typename U>
     mat3(const U *m) noexcept;
     template<typename U>
-    mat3(const mat2<U> &m) noexcept;
-    mat3(const mat3 &m) noexcept;
+    mat3(const mat2<U> &B) noexcept;
+    mat3(const mat3 &B) noexcept;
     template<typename U>
-    mat3(const mat3<U> &m) noexcept;
+    mat3(const mat3<U> &B) noexcept;
     template<typename U>
-    mat3(const mat4<U> &m) noexcept;
+    mat3(const mat4<U> &B) noexcept;
 
     mat3 &operator=(const mat3& other) noexcept;
     template<typename U>
@@ -294,22 +302,22 @@ class mat3 {
     vec4<U> operator*(const vec4<U> &v) const; 
 
     template<typename U>
-    mat3 operator*(const mat3<U> &m) const;
+    mat3 operator*(const mat3<U> &B) const;
     template<typename U>
-    mat3 operator/(const mat3<U> &m) const;
+    mat3 operator/(const mat3<U> &B) const;
     template<typename U>
-    mat3 operator+(const mat3<U> &m) const;
+    mat3 operator+(const mat3<U> &B) const;
     template<typename U>
-    mat3 operator-(const mat3<U> &m) const;
+    mat3 operator-(const mat3<U> &B) const;
 
     template<typename U>
-    mat3 &operator*=(const mat3<U> &m);
+    mat3 &operator*=(const mat3<U> &B);
     template<typename U>
-    mat3 &operator/=(const mat3<U> &m);
+    mat3 &operator/=(const mat3<U> &B);
     template<typename U>
-    mat3 &operator+=(const mat3<U> &m);
+    mat3 &operator+=(const mat3<U> &B);
     template<typename U>
-    mat3 &operator-=(const mat3<U> &m);
+    mat3 &operator-=(const mat3<U> &B);
 
     template<typename U>
     mat3 operator*(U f) const;
@@ -336,6 +344,10 @@ class mat3 {
     bool operator==(const mat3<U> &B) const;
     template<typename U>
     bool operator!=(const mat3<U> &B) const;
+
+    bool compare(const mat3 &B, F32 epsilon) const;
+    template<typename U>
+    bool compare(const mat3<U> &B, F32 epsilon) const;
 
     operator T *();
     operator const T *() const;
@@ -436,6 +448,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
    public:
     mat4() noexcept;
     template<typename U>
+    mat4(U m) noexcept;
+    template<typename U>
     mat4(U m0,  U m1,  U m2,  U m3,
          U m4,  U m5,  U m6,  U m7,
          U m8,  U m9,  U m10, U m11,
@@ -443,12 +457,12 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     mat4(const U *m) noexcept;
     template<typename U>
-    mat4(const mat2<U> &m) noexcept;
+    mat4(const mat2<U> &B) noexcept;
     template<typename U>
-    mat4(const mat3<U> &m) noexcept;
-    mat4(const mat4 &m) noexcept;
+    mat4(const mat3<U> &B) noexcept;
+    mat4(const mat4 &B) noexcept;
     template<typename U>
-    mat4(const mat4<U> &m) noexcept;
+    mat4(const mat4<U> &B) noexcept;
     template<typename U>
     mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept;
     template<typename U>
@@ -512,6 +526,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     bool operator==(const mat4<U>& B) const;
     template<typename U>
     bool operator!=(const mat4<U> &B) const;
+
+    bool compare(const mat4 &B, F32 epsilon) const;
+    template<typename U>
+    bool compare(const mat4<U> &B, F32 epsilon) const;
 
     operator T *();
     operator const T *() const;

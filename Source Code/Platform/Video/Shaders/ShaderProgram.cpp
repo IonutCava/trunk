@@ -327,10 +327,10 @@ void ShaderProgram::onAtomChange(const stringImpl& atomName) {
     }
 
     //Get list of shader programs that use the atom and rebuild all shaders in list;
-    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
-        for (const stringImpl& atom : it.second->_usedAtoms) {
+    for (ShaderProgramMap::value_type& program : _shaderPrograms) {
+        for (const stringImpl& atom : program.second->_usedAtoms) {
             if (atom.compare(atomName) == 0) {
-                _recompileQueue.push(it.second);
+                _recompileQueue.push(program.second);
                 break;
             }
         }

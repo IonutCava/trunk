@@ -49,8 +49,8 @@ public:
     template <typename T>
     void registerType(const char* typeName);
 
-    template <typename Ret, typename... Args >
-    void registerFunction(const DELEGATE_CBK<Ret, Args>& function, const char* functionName);
+    template <typename Func>
+    void registerFunction(const Func& function, const char* functionName);
 
     template<typename T = void>
     T eval();

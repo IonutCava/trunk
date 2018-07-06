@@ -61,14 +61,19 @@ inline void Script::registerType(const char* typeName) {
     _script.add(chaiscript::user_type<T>(), typeName);
 }
 
-template <typename Ret, typename... Args >
-inline void Script::registerFunction(const DELEGATE_CBK<Ret, Args>& function, const char* functionName) {
+template <typename Func >
+inline void Script::registerFunction(const Func& function, const char* functionName) {
     _script.add(chaiscript::fun(function), functionName);
 }
 
 template<typename T>
 inline T Script::eval() {
     return _script.eval<T>(_scriptSource);
+}
+
+template<>
+inline void Script::eval() {
+    _script.eval(_scriptSource);
 }
 
 }; //namespace Divide

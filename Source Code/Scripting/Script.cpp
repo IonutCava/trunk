@@ -3,11 +3,13 @@
 
 namespace Divide {
 Script::Script(const stringImpl& sourceCode)
-    : _scriptSource(sourceCode.c_str())
+    : _scriptSource(sourceCode.c_str()),
+     _script(chaiscript::Std_Lib::library())
 {
 }
 
 Script::Script(const stringImpl& scriptPath, FileType fileType)
+    : _script(chaiscript::Std_Lib::library())
 {
     if (!scriptPath.empty()) {
         stringImpl source;

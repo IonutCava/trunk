@@ -56,8 +56,6 @@ bool Engine::init(int argc, char** argv) {
     if (!PlatformInit(argc, argv)) {
         err = ErrorCode::PLATFORM_INIT_ERROR;
     } else {
-
-        double test = Script("5.3 + 2.1").eval<double>();
         // Start our application based on XML configuration.
         // If it fails to start, it should automatically clear up all of its data
         err = _app.start("main.xml", argc, argv);

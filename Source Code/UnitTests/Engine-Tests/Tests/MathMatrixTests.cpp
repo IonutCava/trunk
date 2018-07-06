@@ -344,11 +344,171 @@ TEST_MEMBER_FUNCTION(matN, divideOperator, scalar)
 
 TEST_MEMBER_FUNCTION(matN, multiplyOperator, matN)
 {
+    mat2<I32> inputIdentity2x2;
+    inputIdentity2x2.identity();
+
+    mat2<I32> input1A(1, 2,
+                      3, 4);
+    mat2<I32> input1B(2, 0,
+                      1, 2);
+    mat2<I32> result1A( 4, 4,
+                       10, 8);
+    mat2<I32> result1B(2,  4,
+                       7, 10);
+    CHECK_EQUAL(input1A * input1B, result1A);
+    CHECK_NOT_EQUAL(input1B * input1A, result1A);
+
+    CHECK_NOT_EQUAL(input1A * input1B, result1B);
+    CHECK_EQUAL(input1B * input1A, result1B);
+
+    CHECK_EQUAL(input1A * inputIdentity2x2, input1A);
+
+
+    mat3<I32> inputIdentity3x3;
+    inputIdentity3x3.identity();
+
+    mat3<F32> input2A( 5.0f,  2.0f,  6.0f,
+                      23.0f, 29.0f, 11.0f,
+                      64.0f,  0.0f, 32.0f);
+
+    mat3<F32> input2B(24.0f, 92.0f, 112.0f,
+                       5.0f,  0.0f,  95.0f,
+                       43.0f, 2.0f,   9.0f);
+
+    mat3<F32> result2A( 388.0f,  472.0f,  804.0f,
+                       1170.0f, 2138.0f, 5430.0f,
+                       2912.0f, 5952.0f, 7456.0f);
+
+    mat3<F32> result2B(9404.0f, 2716.0f, 4740.0f,
+                       6105.0f,   10.0f, 3070.0f,
+                        837.0f,  144.0f,  568.0f);
+
+    CHECK_EQUAL(input2A * input2B, result2A);
+    CHECK_NOT_EQUAL(input2B * input2A, result2A);
+
+    CHECK_NOT_EQUAL(input2A * input2B, result2B);
+    CHECK_EQUAL(input2B * input2A, result2B);
+
+    CHECK_EQUAL(input2A * inputIdentity3x3, input2A);
+    
+
+    mat4<I32> inputIdentity4x4;
+    inputIdentity4x4.identity();
+
+    mat4<I32> input3A( 5,  2,  6, 8,
+                      23, 29, 11, 5,
+                      64,  0, 32, 8,
+                      -2,  5,  7, 1);
+
+    mat4<I32> input3B(24, 92, 112,  4,
+                       5,  0,  95,  2,
+                      43,  2,   9,  9,
+                       5,  7,  11, 67);
+
+    mat4<I32> result3A( 428,  528,  892,  614,
+                       1195, 2173, 5485,  584,
+                       2952, 6008, 7544, 1080,
+                        283, -163,  325,  132);
+
+    mat4<I32> result3B(9396, 2736, 4768, 1552,
+                       6101,   20, 3084,  802,
+                        819,  189,  631,  435,
+                        756,  548,  928,  230);
+
+    CHECK_EQUAL(input3A * input3B, result3A);
+    CHECK_NOT_EQUAL(input3B * input3A, result3A);
+
+    CHECK_NOT_EQUAL(input3A * input3B, result3B);
+    CHECK_EQUAL(input3B * input3A, result3B);
+
+    CHECK_EQUAL(input3A * inputIdentity4x4, input3A);
+
+
+    mat4<F32> inputIdentity4x4f;
+    inputIdentity4x4f.identity();
+
+    mat4<F32> input4A(24.300f, 92.000f,  1.200f, 4.300f,
+                       5.000f,  0.000f, 95.500f, 0.200f,
+                      43.000f,  2.110f,  9.000f, 9.200f,
+                       5.000f,  7.000f, 11.000f, 6.435f);
+
+    mat4<F32> input4B( 12.500f,  2.000f,  6.000f, 8.400f,
+                       23.000f, 29.340f, 11.000f, 5.120f,
+                      -64.500f, 22.000f,  3.200f, 8.000f,
+                       -2.000f,  5.000f,  7.000f, 1.000f);
+
+    mat4<F32> result4A( 2333.750f, 2795.780f, 1191.740f, 689.060f,
+                       -6097.650f, 2112.000f,  337.000f, 806.200f,
+                         -12.870f,  391.907f,  374.410f, 453.203f,
+                        -498.869f,  489.554f,  187.243f, 172.275f);
+
+    mat4<F32> result4B(  613.750f,  1221.460f,   352.400f,  163.401f,
+                        1204.200f,  2175.050f,  2984.890f,  238.914f,
+                       -1279.750f, -5871.248f,  2140.400f, -192.032f,
+                         282.400f,  -162.230f,   549.100f,   63.235f);
+
+    // Use compare instead of == as rounding errors bellow a certain threshold aren't as important with floating point matrices
+    CHECK_TRUE(result4A.compare(input4A * input4B, 0.02f));
+    CHECK_FALSE(result4A.compare(input4B * input4A, 0.02f));
+
+    CHECK_FALSE(result4B.compare(input4A * input4B, 0.02f));
+    CHECK_TRUE(result4B.compare(input4B * input4A, 0.02f));
+
+    CHECK_TRUE(input4A.compare(input4A * inputIdentity4x4f, 0.02f));
 }
 
 TEST_MEMBER_FUNCTION(matN, inverse, NA)
 {
+    //Floating point 2x2 inversion
+    mat2<F32> input2x2(4.0f, 3.0f,
+                       3.0f, 2.0f);
+    const mat2<F32> rezult2x2(-2.0f,  3.0f,
+                               3.0f, -4.0f);
+    input2x2.inverse();
+    CHECK_EQUAL(input2x2, rezult2x2);
 
+    //Floating point 3x3 inversion
+    mat3<F32> input3x3(2.0f, 1.0f, 0.0f,
+                       0.0f, 2.0f, 0.0f,
+                       2.0f, 0.0f, 1.0f);
+    const mat3<F32> rezult3x3( 0.5f, -0.25f, 0.0f,
+                               0.0f,  0.5f,  0.0f,
+                              -1.0f,  0.5f,  1.0f);
+    input3x3.inverse();
+    CHECK_EQUAL(input3x3, rezult3x3);
+
+    //Zero determinate inversion
+    mat4<F32> zeroInput(0.0f);
+    mat4<F32> zeroResult(zeroInput);
+    zeroInput.inverse();
+
+    CHECK_EQUAL(zeroInput, zeroResult);
+
+    //Floating point 4x4 inversion
+    mat4<F32> input1(1.0f, 1.0f, 0.0f, 0.0f,
+                     1.0f, 1.0f, 1.0f, 0.0f,
+                     0.0f, 1.0f, 1.0f, 0.0f,
+                     0.0f, 0.0f, 0.0f, 1.0f);
+    const mat4<F32> result1( 0.0f,  1.0f, -1.0f, 0.0f,
+                             1.0f, -1.0f,  1.0f, 0.0f,
+                            -1.0f,  1.0f,  0.0f, 0.0f,
+                             0.0f,  0.0f,  0.0f, 1.0f);
+
+    input1.inverse();
+    CHECK_EQUAL(input1, result1);
+
+
+    //Integer 4x4 inversion
+    mat4<I32> input2(1, 1, 0, 0,
+                     1, 1, 1, 0,
+                     0, 1, 1, 0,
+                     0, 0, 0, 1);
+    const mat4<I32> result2( 0,  1, -1, 0,
+                             1, -1,  1, 0,
+                            -1,  1,  0, 0,
+                             0,  0,  0, 1);
+    input2.inverse();
+    CHECK_EQUAL(input2, result2);
 }
 
 }; //namespace Divide
