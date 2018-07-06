@@ -23,6 +23,8 @@ CameraManager::~CameraManager() {
     UNREGISTER_FRAME_LISTENER(this);
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
+    
+    WriteLock w_lock(_cameraPoolLock);
     for (CameraPool::value_type& it : _cameraPool) {
         it.second->unload();
     }
@@ -65,6 +67,7 @@ bool CameraManager::destroyCamera(Camera*& camera) {
         }
 
         if (camera->unload() ) {
+            WriteLock w_lock(_cameraPoolLock);
             _cameraPool.erase(_ID_RT(camera->getName()));
             _cameraPoolGUID.erase(camera->getGUID());
             MemoryManager::DELETE(camera);
@@ -85,6 +88,7 @@ bool CameraManager::frameStarted(const FrameEvent& evt) {
 
     if (_addNewListener) {
         Camera* cam = nullptr;
+        ReadLock r_lock(_cameraPoolLock);
         for (CameraPool::value_type& it : _cameraPool) {
             cam = it.second;
             cam->clearListeners();
@@ -122,11 +126,13 @@ void CameraManager::addNewCamera(Camera* const camera) {
         camera->addUpdateListener(listener);
     }
 
+    WriteLock w_lock(_cameraPoolLock);
     hashAlg::emplace(_cameraPool, _ID_RT(camera->getName()), camera);
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 
 Camera* CameraManager::findCamera(ULL nameHash) {
+    ReadLock r_lock(_cameraPoolLock);
     const CameraPool::const_iterator& it = _cameraPool.find(nameHash);
     if(it != std::end(_cameraPool)) {
         return it->second;

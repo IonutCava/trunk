@@ -43,6 +43,7 @@ class Sky;
 class Material;
 class GFXDevice;
 class RenderBin;
+class WaterPlane;
 class ImpostorBox;
 class ShaderProgram;
 class SceneGraphNode;
@@ -52,7 +53,6 @@ namespace Attorney {
     class RenderingCompRenderPass;
     class RenderingCompGFXDevice;
     class RenderingCompRenderBin;
-    class RenderingCompPassCuller;
     class RenderingCompSceneNode;
 };
 
@@ -65,7 +65,6 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
-    friend class Attorney::RenderingCompPassCuller;
     friend class Attorney::RenderingCompSceneNode;
 
    public:
@@ -73,6 +72,7 @@ class RenderingComponent : public SGNComponent {
     void update(const U64 deltaTime) override;
 
     void setActive(const bool state) override;
+    void postLoad() override;
 
     void renderGeometry(const bool state);
     void renderWireframe(const bool state);
@@ -148,11 +148,8 @@ class RenderingComponent : public SGNComponent {
     ~RenderingComponent();
 
    protected:
-    bool canDraw(const SceneRenderState& sceneRenderState,
-                 RenderStage renderStage);
-
-    bool preDraw(const SceneRenderState& renderState,
-                 RenderStage renderStage) const;
+    bool canDraw(RenderStage renderStage);
+    void updateLoDLevel(const SceneRenderState& sceneRenderState, RenderStage renderStage);
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -184,6 +181,8 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     Material_ptr _materialInstance;
+    std::array<ShaderProgram_ptr, to_const_uint(RenderStage::COUNT)> _customShaders;
+
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
@@ -254,8 +253,22 @@ class RenderingCompSceneNode {
             return renderable.getDrawPackage(renderStage);
         }
 
+        static void setCustomShader(RenderingComponent& renderable,
+                                    RenderStage renderStage,
+                                    const ShaderProgram_ptr& shaderProgram)  {
+            renderable._customShaders[to_uint(renderStage)] = shaderProgram;
+        }
+
+        static void setCustomShader(RenderingComponent& renderable,
+                                    const ShaderProgram_ptr& shaderProgram) {
+            for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+                renderable._customShaders[i] = shaderProgram;
+            }
+        }
+
     friend class Divide::Sky;
     friend class Divide::SubMesh;
+    friend class Divide::WaterPlane;
     friend class Divide::ParticleEmitter;
 };
 
@@ -263,18 +276,12 @@ class RenderingCompGFXDevice {
    private:
     static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
                                                     const SceneRenderState& sceneRenderState,
-                                                    RenderStage renderStage) {
-        return renderable.getDrawPackage(sceneRenderState, renderStage);
-    }
-
-    static GFXDevice::RenderPackage& getDrawPackage(RenderingComponent& renderable,
-                                                    const SceneRenderState& sceneRenderState,
                                                     RenderStage renderStage,
                                                     U32 cmdOffset,
                                                     U32 cmdIndex) {
         renderable.commandIndex(cmdIndex);
         renderable.commandOffset(cmdOffset);
-        return getDrawPackage(renderable, sceneRenderState, renderStage);
+        return renderable.getDrawPackage(sceneRenderState, renderStage);
     }
 
     friend class Divide::GFXDevice;
@@ -298,17 +305,6 @@ class RenderingCompRenderBin {
     }
 
     friend class Divide::RenderBin;
-};
-
-class RenderingCompPassCuller {
-   private:
-    static bool canDraw(RenderingComponent& renderable,
-                        const SceneRenderState& sceneRenderState,
-                        RenderStage renderStage) {
-        return renderable.canDraw(sceneRenderState, renderStage);
-    }
-
-    friend class Divide::RenderPassCuller;
 };
 
 };  // namespace Attorney

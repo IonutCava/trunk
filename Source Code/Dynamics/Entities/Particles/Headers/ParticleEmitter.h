@@ -50,8 +50,7 @@ class ParticleEmitter : public SceneNode {
     explicit ParticleEmitter(const stringImpl& name);
     ~ParticleEmitter();
 
-    /// Dummy function from SceneNode;
-    bool onRender(SceneGraphNode& sgn, RenderStage currentStage);
+    bool onRender(RenderStage currentStage) override;
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }
@@ -84,10 +83,13 @@ class ParticleEmitter : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    void initialiseDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                GenericDrawCommands& drawCommandsInOut) override;
+    void updateDrawCommands(SceneGraphNode& sgn,
+                            RenderStage renderStage,
+                            const SceneRenderState& sceneRenderState,
+                            GenericDrawCommands& drawCommandsInOut) override;
    private:
     std::shared_ptr<ParticleData> _particles;
 

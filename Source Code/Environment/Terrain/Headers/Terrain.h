@@ -126,10 +126,13 @@ class Terrain : public Object3D {
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
     
    protected:
-    bool getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    void initialiseDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                GenericDrawCommands& drawCommandsInOut) override;
+    void updateDrawCommands(SceneGraphNode& sgn,
+                            RenderStage renderStage,
+                            const SceneRenderState& sceneRenderState,
+                            GenericDrawCommands& drawCommandsInOut) override;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);

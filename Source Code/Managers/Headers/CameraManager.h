@@ -112,7 +112,9 @@ class CameraManager : private NonCopyable, public FrameListener {
     bool _addNewListener;
     Kernel* _kernelPtr;
     Camera* _camera;
+
     CameraPool _cameraPool;
+    SharedLock _cameraPoolLock;
     CameraPoolGUID _cameraPoolGUID;
     std::stack<Camera*> _cameraStack;
     vectorImpl<DELEGATE_CBK_PARAM<Camera&> > _changeCameralisteners;

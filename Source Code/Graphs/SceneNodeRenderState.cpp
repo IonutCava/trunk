@@ -6,8 +6,7 @@
 namespace Divide {
 
 SceneNodeRenderState::SceneNodeRenderState()
-  : _hasWaterReflection(true),
-    _drawState(true),
+  : _drawState(true),
     _noDefaultMaterial(false),
     _exclusionMask(0),
     _depthStateBlockHash(0),

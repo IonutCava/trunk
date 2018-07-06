@@ -242,14 +242,18 @@ class Material : public Resource {
         RenderStage renderStage,
         const bool computeOnAdd);
 
-    inline void setShaderProgram(
-        const stringImpl& shader,
-        const bool computeOnAdd) {
-        setShaderProgram(shader, RenderStage::DISPLAY, computeOnAdd);
-        setShaderProgram(shader, RenderStage::Z_PRE_PASS, computeOnAdd);
-        setShaderProgram(shader, RenderStage::SHADOW, computeOnAdd);
-        setShaderProgram(shader, RenderStage::REFLECTION, computeOnAdd);
-        setShaderProgram(shader, RenderStage::REFRACTION, computeOnAdd);
+    inline void setShaderProgram(const stringImpl& shader,
+                                 const bool computeOnAdd) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            setShaderProgram(shader, static_cast<RenderStage>(i), computeOnAdd);
+        }
+    }
+
+    inline void setRenderStateBlock(size_t renderStateBlockHash,
+                                    I32 variant = -1) {
+        for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+            setRenderStateBlock(renderStateBlockHash, static_cast<RenderStage>(i), variant);
+        }
     }
 
     inline void setRenderStateBlock(size_t renderStateBlockHash,

@@ -94,16 +94,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->castsShadows(false);
 
-    GenericDrawCommand cmd;
-    cmd.sourceBuffer(_sky->getGeometryVB());
-    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
-
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        GFXDevice::RenderPackage& pkg = 
-            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
-        pkg._drawCommands.push_back(cmd);
-    }
-
     _skybox->flushTextureState();
     TextureData skyTextureData = _skybox->getData();
     skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
@@ -121,26 +111,34 @@ void Sky::sceneUpdate(const U64 deltaTime,
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Sky::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
-    return _sky->onRender(sgn, currentStage);
+bool Sky::onRender(RenderStage currentStage) {
+    return _sky->onRender(currentStage);
 }
 
-bool Sky::getDrawCommands(SceneGraphNode& sgn,
-                          RenderStage renderStage,
-                          const SceneRenderState& sceneRenderState,
-                          vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Sky::initialiseDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 GenericDrawCommands& drawCommandsInOut) {
+    GenericDrawCommand cmd;
+    cmd.sourceBuffer(_sky->getGeometryVB());
+    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
+    drawCommandsInOut.push_back(cmd);
 
-    GenericDrawCommand& cmd = drawCommandsOut.front();
+    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+}
 
-    RenderingComponent* renderable = sgn.get<RenderingComponent>();
-    cmd.renderMask(renderable->renderMask());
+void Sky::updateDrawCommands(SceneGraphNode& sgn,
+                             RenderStage renderStage,
+                             const SceneRenderState& sceneRenderState,
+                             GenericDrawCommands& drawCommandsInOut) {
+
+    GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.stateHash(renderStage == RenderStage::REFLECTION
                               ? _skyboxRenderStateReflectedHash
                               : renderStage == RenderStage::Z_PRE_PASS
                                              ? _skyboxRenderStateHashPrePass
                                              : _skyboxRenderStateHash);
     cmd.shaderProgram(renderStage == RenderStage::Z_PRE_PASS ? _skyShaderPrePass : _skyShader);
-    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

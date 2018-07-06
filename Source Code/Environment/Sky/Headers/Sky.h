@@ -50,16 +50,19 @@ class Sky : public SceneNode {
     Sky(const stringImpl& name, U32 diameter);
     ~Sky();
 
-    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
+    bool onRender(RenderStage currentStage) override;
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColour);
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;
 
-    bool getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    void initialiseDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                GenericDrawCommands& drawCommandsInOut) override;
+    void updateDrawCommands(SceneGraphNode& sgn,
+                            RenderStage renderStage,
+                            const SceneRenderState& sceneRenderState,
+                            GenericDrawCommands& drawCommandsInOut) override;
 
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,

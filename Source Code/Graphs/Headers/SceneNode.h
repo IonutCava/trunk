@@ -103,17 +103,19 @@ class NOINITVTABLE SceneNode : public Resource {
     /// updates)
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
-    virtual bool onRender(SceneGraphNode& sgn,
-                        RenderStage currentStage) = 0;
+    virtual bool onRender(RenderStage currentStage) = 0;
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
     virtual bool getDrawState(RenderStage currentStage);
 
-    virtual bool getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    virtual void initialiseDrawCommands(SceneGraphNode& sgn,
+                                        RenderStage renderStage,
+                                        GenericDrawCommands& drawCommandsInOut);
+    virtual void updateDrawCommands(SceneGraphNode& sgn,
+                                    RenderStage renderStage,
+                                    const SceneRenderState& sceneRenderState,
+                                    GenericDrawCommands& drawCommandsInOut);
     /*//Rendering/Processing*/
 
     virtual bool unload();

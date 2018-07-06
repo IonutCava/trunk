@@ -94,7 +94,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
         U32 childCount = root.getChildCount();
         nodeList.resize(childCount);
         const Camera& camera = renderState.getCameraConst();
-        F32 cullMaxDistance = sceneState.generalVisibility();
+        F32 cullMaxDistance = renderState.generalVisibility();
         parallel_for(DELEGATE_BIND(&RenderPassCuller::frumstumPartitionCuller,
                                    this,
                                    std::placeholders::_1,

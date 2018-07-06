@@ -117,57 +117,64 @@ void Terrain::sceneUpdate(const U64 deltaTime,
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Terrain::getDrawCommands(SceneGraphNode& sgn,
-                              RenderStage renderStage,
-                              const SceneRenderState& sceneRenderState,
-                              vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
+                                     RenderStage renderStage,
+                                     GenericDrawCommands& drawCommandsInOut) {
+
+    GenericDrawCommand cmd;
+    cmd.sourceBuffer(getGeometryVB());
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
+    drawCommandsInOut.push_back(cmd);
+
+    for (U32 i = 0; i < _terrainQuadtree.getChunkCount(); ++i) {
+        drawCommandsInOut.push_back(cmd);
+    }
+    //infinite plane
+    VertexBuffer* const vb = _plane->getGeometryVB();
+    cmd.cmd().firstIndex = 0;
+    cmd.cmd().indexCount = vb->getIndexCount();
+    cmd.LoD(0);
+    cmd.sourceBuffer(vb);
+    drawCommandsInOut.push_back(cmd);
+
+    Object3D::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+}
+
+void Terrain::updateDrawCommands(SceneGraphNode& sgn,
+                                 RenderStage renderStage,
+                                 const SceneRenderState& sceneRenderState,
+                                 GenericDrawCommands& drawCommandsInOut) {
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    drawCommandsOut.resize(0);
-
-    GenericDrawCommand cmd;
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.renderMask(renderable->renderMask());
-    cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
-    cmd.shaderProgram(renderable->getDrawShader(renderStage));
-    cmd.sourceBuffer(getGeometryVB());
-        
-    cmd.shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
+    drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     vectorImpl<vec3<U32>> chunkData;
-    chunkData.reserve(_terrainQuadtree.getChunkCount());
+    size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
+    chunkData.reserve(chunkCount);
     _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
-        std::sort(std::begin(chunkData), std::end(chunkData),
-                  [](const vec3<U32>& a, const vec3<U32>& b) {
-                      // LoD comparison
-                      return a.z < b.z; 
-                  });
-        for (vec3<U32>& cmdData : chunkData) {
-            cmd.cmd().firstIndex = cmdData.x;
-            cmd.cmd().indexCount = cmdData.y;
-            cmd.LoD(to_byte(cmdData.z));
-            drawCommandsOut.push_back(cmd);
-        }
-    
+
+    std::sort(std::begin(chunkData), std::end(chunkData),
+                [](const vec3<U32>& a, const vec3<U32>& b) {
+                    // LoD comparison
+                    return a.z < b.z; 
+                });
+
+    size_t i = 0;
+    for (;i < chunkCount; ++i) {
+        vec3<U32>& cmdData = chunkData[i];
+        GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
+        cmd.cmd().firstIndex = cmdData.x;
+        cmd.cmd().indexCount = cmdData.y;
+        cmd.LoD(to_byte(cmdData.z));
+    }
 
     // draw infinite plane
-    if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY ||
-         GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS)) {
+    drawCommandsInOut[i + 1].drawCount((renderStage == RenderStage::DISPLAY ||
+                                        renderStage == RenderStage::Z_PRE_PASS) ? 1 : 0);
 
-        VertexBuffer* const vb = _plane->getGeometryVB();
-        cmd.cmd().firstIndex = 0;
-        cmd.cmd().indexCount = vb->getIndexCount();
-        cmd.LoD(0);
-        cmd.sourceBuffer(vb);
-        drawCommandsOut.push_back(cmd);
-    }
-
-    if (drawCommandsOut.empty()) {
-        return false;
-    }
-
-    return Object3D::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    Object3D::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
 }
 
 void Terrain::postRender(SceneGraphNode& sgn) const {

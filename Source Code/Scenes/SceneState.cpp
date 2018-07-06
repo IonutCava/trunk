@@ -17,7 +17,10 @@ FogDescriptor::FogDescriptor()
 
 SceneRenderState::SceneRenderState(Scene& parentScene)
     : SceneComponent(parentScene),
-      _stateMask(to_const_uint(RenderOptions::PLAY_ANIMATIONS))
+      _stateMask(to_const_uint(RenderOptions::PLAY_ANIMATIONS)),
+      _grassVisibility(1.0f),
+      _treeVisibility(1.0f),
+      _generalVisibility(1.0f)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
 

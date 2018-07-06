@@ -303,7 +303,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                 }
                 _stateRefreshIntervalBuffer -= _stateRefreshInterval;
                 _cullShader->Uniform("dvd_visibilityDistance",
-                                     sceneState.grassVisibility());
+                                     sceneState.renderState().grassVisibility());
                 _staticDataUpdated = true;
             }
         }
@@ -386,10 +386,25 @@ void Vegetation::gpuCull() {
     }
 }
 
-bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
+                                        RenderStage renderStage,
+                                        GenericDrawCommands& drawCommandsInOut) {
+
+    GenericDrawCommand cmd;
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.cmd().firstIndex = 0;
+    cmd.cmd().indexCount = 12 * 3;
+    cmd.LoD(1);
+    cmd.stateHash(_grassStateBlockHash);
+    drawCommandsInOut.push_back(cmd);
+
+    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+}
+
+void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
+                                    RenderStage renderStage,
+                                    const SceneRenderState& sceneRenderState,
+                                    GenericDrawCommands& drawCommandsOut) {
 
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
@@ -402,22 +417,14 @@ bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    drawCommandsOut.resize(1);
     GenericDrawCommand& cmd = drawCommandsOut.front();
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.cmd().firstIndex = 0;
-    cmd.cmd().indexCount = 12 * 3;
-    cmd.renderMask(renderable->renderMask());
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
-    cmd.shaderProgram(renderable->getDrawShader(renderStage));
     cmd.sourceBuffer(buffer);
-    cmd.LoD(1);
-    cmd.stateHash(_grassStateBlockHash);
 
-    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
-bool Vegetation::onRender(SceneGraphNode& sgn, RenderStage renderStage) {
+bool Vegetation::onRender(RenderStage renderStage) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _terrainChunk->getLoD() > 0 ||

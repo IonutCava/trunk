@@ -415,13 +415,13 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand.drawCount() > 1) {
             submitMultiIndirectCommand(drawCommand.commandOffset(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
-        } else {
+        } else if (drawCommand.drawCount() == 1) {
             submitIndirectCommand(drawCommand.commandOffset(), mode, internalFormat, indexBuffer);
         }
     } else {
         if (drawCommand.drawCount() > 1) {
             submitDirectMultiCommand(drawCommand.cmd(), drawCommand.drawCount(), mode, internalFormat, indexBuffer);
-        } else {
+        } else if (drawCommand.drawCount() == 1) {
             sumitDirectCommand(drawCommand.cmd(), mode, internalFormat, indexBuffer);
         }
     }

@@ -73,11 +73,6 @@ class Sphere3D : public Object3D {
         return Object3D::onRender(currentStage);
     }
 
-    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) {
-        clean();
-        return Object3D::onRender(sgn, currentStage);
-    }
-
    protected:
     void clean() {
         if (_dirty) {

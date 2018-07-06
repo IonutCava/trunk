@@ -50,9 +50,9 @@ class AnimationComponent : public SGNComponent {
         _animator = animator;
     }
 
-    bool onRender(RenderStage currentStage);
+    bool onRender(RenderStage currentStage) override;
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTime) override;
 
     /// Select an animation by name
     bool playAnimation(const stringImpl& name);

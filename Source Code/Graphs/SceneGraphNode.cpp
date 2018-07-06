@@ -234,7 +234,11 @@ bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
 }
 
 void SceneGraphNode::postLoad() {
-
+    for (SGNComponent* component : _components) {
+        if (component != nullptr) {
+            component->postLoad();
+        }
+    }
 }
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {

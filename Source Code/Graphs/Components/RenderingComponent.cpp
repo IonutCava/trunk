@@ -32,6 +32,8 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
+    _customShaders.fill(nullptr);
+
     Object3D_ptr node = parentSGN.getNode<Object3D>();
     Object3D::ObjectType type = node->getObjectType();
     SceneNodeType nodeType = node->getType();
@@ -127,6 +129,13 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
+void RenderingComponent::postLoad() {
+    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        GFXDevice::RenderPackage& pkg = _renderData[to_uint(static_cast<RenderStage>(i))];
+        _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, static_cast<RenderStage>(i), pkg._drawCommands);
+    }
+}
+
 void RenderingComponent::update(const U64 deltaTime) {
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
@@ -147,19 +156,18 @@ void RenderingComponent::update(const U64 deltaTime) {
 
 }
 
-bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
-                                 RenderStage renderStage) {
-    bool canDraw = _parentSGN.getNode()->getDrawState(renderStage);
-    if (canDraw) {
+bool RenderingComponent::canDraw(RenderStage renderStage) {
+    if (_parentSGN.getNode()->getDrawState(renderStage)) {
         const Material_ptr& mat = getMaterialInstance();
         if (mat) {
             if (!mat->canDraw(renderStage)) {
                 return false;
             }
         }
+        return true;
     }
 
-    return canDraw;
+    return false;
 }
 
 void RenderingComponent::rebuildMaterial() {
@@ -220,7 +228,7 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
         pkg._textureData.push_back(texture);
     }
 
-    return _parentSGN.getNode()->onRender(_parentSGN, currentStage);
+    return _parentSGN.getNode()->onRender(currentStage);
 }
 
 void RenderingComponent::renderGeometry(const bool state) {
@@ -360,11 +368,6 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, vec4<F
         extraPropertiesOut.x = to_float(mat->defaultReflectionTextureIndex());
         extraPropertiesOut.y = to_float(mat->defaultRefractionTextureIndex());
     }
-}
-
-bool RenderingComponent::preDraw(const SceneRenderState& renderState,
-                                 RenderStage renderStage) const {
-    return _parentSGN.prepareDraw(renderState, renderStage);
 }
 
 /// Called after the current node was rendered
@@ -507,24 +510,24 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
 ShaderProgram_ptr RenderingComponent::getDrawShader(RenderStage renderStage) {
     return (getMaterialInstance()
                 ? _materialInstance->getShaderInfo(renderStage).getProgram()
-                : nullptr);
+                : _customShaders[to_uint(renderStage)]);
 }
 
 size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
-    if (!getMaterialInstance()) {
-        return 0;
-    }
-    
     bool shadowStage = renderStage == RenderStage::SHADOW;
     bool depthPass = renderStage == RenderStage::Z_PRE_PASS || shadowStage;
     bool reflectionStage = renderStage == RenderStage::REFLECTION;
     bool refractionStage = renderStage == RenderStage::REFRACTION;
 
-    if (!_materialInstance && depthPass) {
+    if (!getMaterialInstance() && depthPass) {
         
         return shadowStage
                    ? _parentSGN.getNode()->renderState().getShadowStateBlock()
                    : _parentSGN.getNode()->renderState().getDepthStateBlock();
+    }
+
+    if (!_materialInstance) {
+        return 0;
     }
 
     RenderStage blockStage = depthPass ? (shadowStage ? RenderStage::SHADOW
@@ -546,52 +549,54 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
     
 }
 
-
-GFXDevice::RenderPackage&
-RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
-                                   RenderStage renderStage) {
-
+void RenderingComponent::updateLoDLevel(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     static const U32 SCENE_NODE_LOD0_SQ = Config::SCENE_NODE_LOD0 * Config::SCENE_NODE_LOD0;
     static const U32 SCENE_NODE_LOD1_SQ = Config::SCENE_NODE_LOD1 * Config::SCENE_NODE_LOD1;
-    
 
+    _lodLevel = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
+
+    // ToDo: Hack for lower LoD rendering in reflection and refraction passes
+    if (renderStage != RenderStage::REFLECTION && renderStage != RenderStage::REFRACTION) {
+        const vec3<F32>& eyePos = sceneRenderState.getCameraConst().getEye();
+        const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+        F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);
+
+        U8 lodLevelTemp = cameraDistanceSQ > SCENE_NODE_LOD0_SQ
+                                           ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
+                                           : 0;
+
+        _lodLevel = std::min(_lodLevel, std::max(lodLevelTemp, to_ubyte(0)));
+    }
+}
+
+GFXDevice::RenderPackage&
+RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
     pkg.isRenderable(false);
-    if (canDraw(sceneRenderState, renderStage) &&
-        preDraw(sceneRenderState, renderStage))
+    if (canDraw(renderStage) && _parentSGN.prepareDraw(sceneRenderState, renderStage))
     {
-        if (_parentSGN.getNode()->getDrawCommands(_parentSGN,
-                                                  renderStage,
-                                                  sceneRenderState,
-                                                  pkg._drawCommands)) {
-            F32 cameraDistanceSQ =
-                _parentSGN
-                    .get<BoundsComponent>()
-                    ->getBoundingSphere()
-                    .getCenter()
-                    .distanceSquared(sceneRenderState
-                                     .getCameraConst()
-                                     .getEye());
-
-            U8 lodLevelTemp = cameraDistanceSQ > SCENE_NODE_LOD0_SQ
-                                    ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
-                                    : 0;
-            U8 minLoD = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
-            _lodLevel = (renderStage == RenderStage::REFLECTION || renderStage == RenderStage::REFRACTION)
-                                    ? minLoD
-                                    : std::min(minLoD, std::max(lodLevelTemp, to_ubyte(0)));
-
-            U32 offset = commandOffset();
-            for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) ||
-                                       sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
-                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME, renderWireframe);
-                cmd.commandOffset(offset++);
-                cmd.cmd().baseInstance = commandIndex();
-                cmd.LoD(_lodLevel);
-            }
-            pkg.isRenderable(!pkg._drawCommands.empty());
+        for (GenericDrawCommand& cmd : pkg._drawCommands) {
+            cmd.renderMask(renderMask());
+            cmd.stateHash(getDrawStateHash(renderStage));
+            cmd.shaderProgram(getDrawShader(renderStage));
         }
+
+        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStage, sceneRenderState, pkg._drawCommands);
+
+        updateLoDLevel(sceneRenderState, renderStage);
+
+        U32 offset = commandOffset();
+        bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
+        for (GenericDrawCommand& cmd : pkg._drawCommands) {
+            bool renderWireframe = cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME) ||
+                                   sceneRenderWireframe;
+            cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME, renderWireframe);
+            cmd.commandOffset(offset++);
+            cmd.cmd().baseInstance = commandIndex();
+            cmd.LoD(_lodLevel);
+        }
+        
+        pkg.isRenderable(!pkg._drawCommands.empty());
     }
 
     return pkg;

@@ -43,14 +43,13 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     waterMat->dumpToFile(false);
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
-    waterMat->setShaderProgram(waterShaderProgram->getName(), RenderStage::DISPLAY,
-                               true);
+    waterMat->setShaderProgram(waterShaderProgram->getName(), true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderStage::Z_PRE_PASS, true);
 
     size_t hash = waterMat->getRenderStateBlock(RenderStage::DISPLAY);
     RenderStateBlock waterMatDesc(RenderStateBlock::get(hash));
     waterMatDesc.setCullMode(CullMode::NONE);
-    waterMat->setRenderStateBlock(waterMatDesc.getHash(), RenderStage::DISPLAY);
+    waterMat->setRenderStateBlock(waterMatDesc.getHash());
 
     return true;
 }

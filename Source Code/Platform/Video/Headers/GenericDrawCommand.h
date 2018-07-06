@@ -74,8 +74,8 @@ private:
     U32 _commandOffset;                 // 12 bytes
     U32 _renderOptions;                 // 8  bytes
     U16 _drawCount;                     // 4  bytes
-    U8 _drawToBuffer;                   // 2  bytes
-    U8 _lodIndex;                       // 1  bytes
+    U8  _drawToBuffer;                  // 2  bytes
+    U8  _lodIndex;                      // 1  bytes
 
 public:
     GenericDrawCommand();
@@ -117,6 +117,7 @@ public:
     inline const IndirectDrawCommand& cmd()    const { return _cmd; }
 };
 
+typedef vectorImpl<GenericDrawCommand> GenericDrawCommands;
 }; //namespace Divide
 
 #endif //_GENERIC_DRAW_COMMAND_H_

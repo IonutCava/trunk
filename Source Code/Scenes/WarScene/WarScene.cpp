@@ -572,7 +572,7 @@ bool WarScene::load(const stringImpl& name) {
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
     test->addUpdater(std::make_shared<ParticleBasicColourUpdater>());
     
-    state().generalVisibility(state().generalVisibility() * 2);
+    state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 
 
     for (U8 row = 0; row < 4; row++) {

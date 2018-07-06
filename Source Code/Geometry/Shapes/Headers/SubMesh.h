@@ -79,16 +79,11 @@ class SubMesh : public Object3D {
     inline Mesh* getParentMesh() { return _parentMesh; }
 
    protected:
-
-    bool getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
-
-    void postLoad(SceneGraphNode& sgn) override;
-
     void setParentMesh(Mesh* const parentMesh);
 
+    void initialiseDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                GenericDrawCommands& drawCommandsInOut) override;
    protected:
     bool _visibleToNetwork;
     bool _render;

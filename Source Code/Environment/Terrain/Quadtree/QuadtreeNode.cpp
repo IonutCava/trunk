@@ -154,7 +154,7 @@ bool QuadtreeNode::isInView(U32 options,
         const Camera& cam = sceneRenderState.getCameraConst();
         if (!BitCompare(options, to_const_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
-            F32 visibilityDistance = sceneRenderState.parentScene().state().generalVisibility() + _boundingSphere.getRadius();
+            F32 visibilityDistance = sceneRenderState.generalVisibility() + _boundingSphere.getRadius();
             if (_boundingSphere.getCenter().distance(eye) >
                 visibilityDistance) {
                 if (_boundingBox.nearestDistanceFromPointSquared(eye) -

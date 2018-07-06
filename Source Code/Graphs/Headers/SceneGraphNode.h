@@ -59,7 +59,7 @@ class SceneRoot : public SceneNode {
 
     }
 
-    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) {
+    bool onRender(RenderStage currentStage) {
         return true;
     }
 

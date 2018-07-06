@@ -186,18 +186,9 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
-    U32 indexCount = to_uint(_particles->particleGeometryIndices().size());
-    if(indexCount == 0) {
-        indexCount = to_uint(_particles->particleGeometryVertices().size());
-    }
-    GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
-    cmd.sourceBuffer(_particleGPUBuffer);
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        GFXDevice::RenderPackage& pkg = 
-            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
-            pkg._drawCommands.push_back(cmd);
-    }
-
+    Attorney::RenderingCompSceneNode::setCustomShader(*renderable, _particleShader);
+    Attorney::RenderingCompSceneNode::setCustomShader(*renderable, RenderStage::SHADOW, _particleDepthShader);
+    
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
     sgn.get<BoundsComponent>()->lockBBTransforms(true);
@@ -205,23 +196,26 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
-                                      RenderStage renderStage,
-                                      const SceneRenderState& sceneRenderState,
-                                      vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    // start a separate thread?
-    if (_needsUpdate) {
-        U32 aliveCount = getAliveParticleCount();
-        _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-        _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
-        _particleGPUBuffer->incQueue();
-        _needsUpdate = false;
+void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
+                                             RenderStage renderStage,
+                                             GenericDrawCommands& drawCommandsInOut) {
+    U32 indexCount = to_uint(_particles->particleGeometryIndices().size());
+    if (indexCount == 0) {
+        indexCount = to_uint(_particles->particleGeometryVertices().size());
     }
 
-    GenericDrawCommand& cmd = drawCommandsOut.front();
-    RenderingComponent* renderable = sgn.get<RenderingComponent>();
+    GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
+    cmd.sourceBuffer(_particleGPUBuffer);
+    drawCommandsInOut.push_back(cmd);
 
-    cmd.renderMask(renderable->renderMask());
+    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+}
+
+void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
+                                         RenderStage renderStage,
+                                         const SceneRenderState& sceneRenderState,
+                                         GenericDrawCommands& drawCommandsInOut) {
+    GenericDrawCommand& cmd = drawCommandsInOut.front();
     cmd.cmd().primCount = to_uint(_particles->_renderingPositions.size());
     cmd.stateHash(GFX_DEVICE.isDepthStage() ? _particleStateBlockHashDepth
                                             : _particleStateBlockHash);
@@ -230,12 +224,25 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
                                    ? _particleShader
                                    : _particleDepthShader);
 
-    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
 }
 
 /// The onDraw call will emit particles
-bool ParticleEmitter::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
-    return _enabled &&  getAliveParticleCount() > 0;
+bool ParticleEmitter::onRender(RenderStage currentStage) {
+    if ( _enabled &&  getAliveParticleCount() > 0) {
+        // start a separate thread?
+        if (_needsUpdate) {
+            U32 aliveCount = getAliveParticleCount();
+            _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+            _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
+            _particleGPUBuffer->incQueue();
+            _needsUpdate = false;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 

@@ -243,7 +243,7 @@ struct ShaderBufferBindCmd {
 
 struct CommandBuffer {
     TextureDataContainer _textures;
-    vectorImpl<GenericDrawCommand>  _commands;
+    GenericDrawCommands  _commands;
     vectorImpl<ShaderBufferBindCmd> _shaderBuffers;
 };
 

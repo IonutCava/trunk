@@ -21,27 +21,33 @@ Trigger::~Trigger()
 {
 }
 
-bool Trigger::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
-    if (!_drawImpostor) {
-        return true;
-    }
-
-    if (!_triggerImpostor) {
-        static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                      to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                      to_const_uint(SGNComponent::ComponentType::RENDERING);
-        ResourceDescriptor impostorDesc(_name + "_impostor");
-        _triggerImpostor = CreateResource<ImpostorSphere>(impostorDesc);
-        sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
-    }
-    /// update dummy position if it is so
-    U32 temp = 0;
-    sgn.getChild(0, temp).get<PhysicsComponent>()->setPosition(_triggerPosition);
-    _triggerImpostor->setRadius(_radius);
-    _triggerImpostor->renderState().setDrawState(true);
-    sgn.getChild(0, temp).setActive(true);
+bool Trigger::onRender(RenderStage currentStage) {
 
     return true;
+}
+
+void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+                          SceneState& sceneState) {
+    if (_drawImpostor) {
+        if (!_triggerImpostor) {
+            static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                to_const_uint(SGNComponent::ComponentType::RENDERING);
+            ResourceDescriptor impostorDesc(_name + "_impostor");
+            _triggerImpostor = CreateResource<ImpostorSphere>(impostorDesc);
+            sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+        }
+        /// update dummy position if it is so
+        U32 temp = 0;
+        sgn.getChild(0, temp).get<PhysicsComponent>()->setPosition(_triggerPosition);
+        _triggerImpostor->setRadius(_radius);
+        _triggerImpostor->renderState().setDrawState(true);
+        sgn.getChild(0, temp).setActive(true);
+    } else {
+        if (_triggerImpostor) {
+            _triggerImpostor->renderState().setDrawState(false);
+        }
+    }
 }
 
 void Trigger::setParams(Task_ptr triggeredTask,

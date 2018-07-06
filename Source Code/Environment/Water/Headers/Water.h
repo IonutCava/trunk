@@ -50,7 +50,7 @@ class WaterPlane : public SceneNode {
     /// Resource inherited "unload"
     bool unload() override;
     /// General SceneNode stuff
-    bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
+    bool onRender(RenderStage currentStage) override;
 
     bool getDrawState(RenderStage currentStage);
 
@@ -68,10 +68,13 @@ class WaterPlane : public SceneNode {
                              Plane<F32>& refractionPlane);
 
    protected:
-    bool getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    void initialiseDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                GenericDrawCommands& drawCommandsInOut) override;
+    void updateDrawCommands(SceneGraphNode& sgn,
+                            RenderStage renderStage,
+                            const SceneRenderState& sceneRenderState,
+                            GenericDrawCommands& drawCommandsInOut) override;
 
     void postLoad(SceneGraphNode& sgn) override;
 
@@ -90,7 +93,7 @@ class WaterPlane : public SceneNode {
                           const SceneRenderState& sceneRenderState,
                           RenderTarget& renderTarget,
                           U32 passIndex);
-    bool cameraUnderwater(const SceneGraphNode& sgn, const SceneRenderState& sceneRenderState);
+    bool cameraUnderwater(const SceneGraphNode& sgn, const vec3<F32>& eyePos);
 
    private:
     /// cached far plane value

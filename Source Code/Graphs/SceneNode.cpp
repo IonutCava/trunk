@@ -117,11 +117,15 @@ bool SceneNode::unload() {
     return true;
 }
 
-bool SceneNode::getDrawCommands(SceneGraphNode& sgn,
-                                RenderStage renderStage,
-                                const SceneRenderState& sceneRenderState,
-                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    return true;
+void SceneNode::initialiseDrawCommands(SceneGraphNode& sgn,
+                                       RenderStage renderStage,
+                                       GenericDrawCommands& drawCommandsInOut) {
+}
+
+void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
+                                   RenderStage renderStage,
+                                   const SceneRenderState& sceneRenderState,
+                                   GenericDrawCommands& drawCommandsInOut) {
 }
 
 void SceneNode::postRender(SceneGraphNode& sgn) const {

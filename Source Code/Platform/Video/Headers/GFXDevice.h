@@ -169,7 +169,7 @@ DEFINE_SINGLETON(GFXDevice)
 
        ShaderBufferList _shaderBuffers;
        TextureDataContainer _textureData;
-       vectorImpl<GenericDrawCommand> _drawCommands;
+       GenericDrawCommands _drawCommands;
 
        private:
            bool _isRenderable;

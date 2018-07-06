@@ -160,11 +160,23 @@ class SceneRenderState : public SceneComponent {
     inline const Camera& getCameraConst() const {
         return _cameraMgr->getActiveCamera();
     }
-    
+
+    inline void generalVisibility(F32 distance) { _generalVisibility = distance; }
+    inline F32  generalVisibility()       const { return _generalVisibility; }
+
+    inline void grassVisibility(F32 distance) { _grassVisibility = distance; }
+    inline F32  grassVisibility()       const { return _grassVisibility; }
+
+    inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
+    inline F32  treeVisibility()       const { return _treeVisibility; }
+
    protected:
     U32 _stateMask;
     GizmoState _gizmoState;
     CameraManager* _cameraMgr;
+    F32 _grassVisibility;
+    F32 _treeVisibility;
+    F32 _generalVisibility;
 };
 
 class SceneState : public SceneComponent {
@@ -188,9 +200,6 @@ class SceneState : public SceneComponent {
           _saveLoadDisabled(false),
           _waterHeight(0.0f),
           _waterDepth(0.0f),
-          _grassVisibility(1.0f),
-          _treeVisibility(1.0f),
-          _generalVisibility(1.0f),
           _windSpeed(1.0f),
           _windDirX(0.0f),
           _windDirZ(1.0f)
@@ -227,15 +236,6 @@ class SceneState : public SceneComponent {
 
     inline void windDirZ(F32 factor) { _windDirZ = factor; }
     inline F32  windDirZ()     const { return _windDirZ; }
-
-    inline void grassVisibility(F32 distance) { _grassVisibility = distance; }
-    inline F32  grassVisibility()       const { return _grassVisibility; }
-
-    inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
-    inline F32  treeVisibility()       const { return _treeVisibility; }
-
-    inline void generalVisibility(F32 distance) { _generalVisibility = distance; }
-    inline F32  generalVisibility()       const { return _generalVisibility; }
 
     inline void waterLevel(F32 level) { _waterHeight = level; }
     inline F32  waterLevel()    const { return _waterHeight; }
@@ -301,9 +301,6 @@ protected:
     /// saves all the rendering information for the scene
     /// (camera position, light info, draw states)
     SceneRenderState _renderState;
-    F32 _grassVisibility;
-    F32 _treeVisibility;
-    F32 _generalVisibility;
     F32 _windSpeed;
     F32 _windDirX;
     F32 _windDirZ;

@@ -99,35 +99,22 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-bool Object3D::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
-    return onRender(currentStage);
-}
-
 bool Object3D::onRender(RenderStage currentStage) {
     return getState() == ResourceState::RES_LOADED;
 }
 
-bool Object3D::getDrawCommands(SceneGraphNode& sgn,
-                               RenderStage renderStage,
-                               const SceneRenderState& sceneRenderState,
-                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    // If we got to this point without any draw commands, and no early-out, add a default command
-    if (isPrimitive()) {
-        drawCommandsOut.resize(1);
-        GenericDrawCommand& cmd = drawCommandsOut.front();
-
-        RenderingComponent* const renderable = sgn.get<RenderingComponent>();
+void Object3D::initialiseDrawCommands(SceneGraphNode& sgn,
+                                      RenderStage renderStage,
+                                      GenericDrawCommands& drawCommandsInOut) {
+    if (drawCommandsInOut.empty()) {
+        GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
-
-        cmd.renderMask(renderable->renderMask());
-        cmd.stateHash(renderable->getDrawStateHash(renderStage));
-        cmd.shaderProgram(renderable->getDrawShader(renderStage));
         cmd.sourceBuffer(vb);
         cmd.cmd().indexCount = to_uint(vb->getIndexCount());
+        drawCommandsInOut.push_back(cmd);
     }
 
-    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
 }
 
 // Create a list of triangles from the vertices + indices lists based on

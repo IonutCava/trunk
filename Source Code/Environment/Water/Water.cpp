@@ -78,6 +78,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                                     std::placeholders::_2,
                                                     std::placeholders::_3,
                                                     std::placeholders::_4));
+
     SceneNode::postLoad(sgn);
 }
 
@@ -120,11 +121,11 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,  SceneSta
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool WaterPlane::cameraUnderwater(const SceneGraphNode& sgn, const SceneRenderState& sceneRenderState) {
-    return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(sceneRenderState.getCameraConst().getEye());
+bool WaterPlane::cameraUnderwater(const SceneGraphNode& sgn, const vec3<F32>& eyePos) {
+    return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(eyePos);
 }
 
-bool WaterPlane::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
+bool WaterPlane::onRender(RenderStage currentStage) {
     if (currentStage == RenderStage::REFLECTION) {
         // mark ourselves as reflection target only if we do not wish to reflect
         // ourself back
@@ -137,27 +138,27 @@ bool WaterPlane::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     return _plane->onRender(currentStage);
 }
 
-bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
+                                        RenderStage renderStage,
+                                        GenericDrawCommands& drawCommandsInOut) {
+    GenericDrawCommand cmd;
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.sourceBuffer(_plane->getGeometryVB());
+    drawCommandsInOut.push_back(cmd);
+
+    SceneNode::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
+}
+
+void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
+                                    RenderStage renderStage,
+                                    const SceneRenderState& sceneRenderState,
+                                    GenericDrawCommands& drawCommandsInOut) {
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
+    renderable->getDrawShader(renderStage)->Uniform("underwater", cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye()));
 
-    const ShaderProgram_ptr& drawShader =
-        renderable->getDrawShader(GFX_DEVICE.isDepthStage() ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
-
-    drawShader->Uniform("underwater", cameraUnderwater(sgn, sceneRenderState));
-
-    GenericDrawCommand& cmd = drawCommandsOut.front();
-    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-    cmd.renderMask(renderable->renderMask());
-    cmd.stateHash(renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));
-    cmd.shaderProgram(drawShader);
-    cmd.sourceBuffer(_plane->getGeometryVB());
-
-    return SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
 }
 
 
@@ -176,7 +177,7 @@ void WaterPlane::updateRefraction(const SceneGraphNode& sgn,
                                   const SceneRenderState& sceneRenderState,
                                   RenderTarget& renderTarget,
                                   U32 passIndex) {
-    if (cameraUnderwater(sgn, sceneRenderState)) {
+    if (cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye())) {
         return;
     }
     // We need a rendering method to create refractions
@@ -220,7 +221,7 @@ void WaterPlane::updateReflection(const SceneGraphNode& sgn,
     GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, reflectionPlane);
     GFX_DEVICE.setClipPlane(ClipPlaneIndex::CLIP_PLANE_1, refractionPlane);
 
-    bool underwater = cameraUnderwater(sgn, sceneRenderState);
+    bool underwater = cameraUnderwater(sgn, sceneRenderState.getCameraConst().getEye());
     RenderStage prevRenderStage = GFX_DEVICE.setRenderStage(underwater ? RenderStage::DISPLAY : RenderStage::REFLECTION);
     GFX_DEVICE.toggleClipPlane(g_reflectionClipID, true);
 

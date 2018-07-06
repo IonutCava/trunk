@@ -70,6 +70,9 @@ class SGNComponent : private NonCopyable {
         _parentNodeActive = state;
     }
 
+    virtual void postLoad() {
+    }
+
     inline ComponentType getType() const { return _type; }
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
     

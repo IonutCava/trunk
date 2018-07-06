@@ -26,9 +26,9 @@ SubMesh::~SubMesh()
 {
 }
 
-void SubMesh::postLoad(SceneGraphNode& sgn) {
-    Object3D::postLoad(sgn);
-
+void SubMesh::initialiseDrawCommands(SceneGraphNode& sgn,
+                                     RenderStage renderStage,
+                                     GenericDrawCommands& drawCommandsInOut) {
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
@@ -38,32 +38,14 @@ void SubMesh::postLoad(SceneGraphNode& sgn) {
 
     cmd.sourceBuffer(_parentMesh->getGeometryVB());
 
-    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-        GFXDevice::RenderPackage& pkg = 
-            Attorney::RenderingCompSceneNode::getDrawPackage(*renderable, static_cast<RenderStage>(i));
-        pkg._drawCommands.push_back(cmd);
-    }
+    drawCommandsInOut.push_back(cmd);
+
+    Object3D::initialiseDrawCommands(sgn, renderStage, drawCommandsInOut);
 }
 
 void SubMesh::setParentMesh(Mesh* const parentMesh) {
     _parentMesh = parentMesh;
     setGeometryVB(_parentMesh->getGeometryVB());
-}
-
-bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
-                              RenderStage renderStage,
-                              const SceneRenderState& sceneRenderState,
-                              vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
-
-    GenericDrawCommand& cmd = drawCommandsOut.front();
-
-    cmd.renderMask(renderable->renderMask());
-    cmd.stateHash(renderable->getDrawStateHash(renderStage));
-    cmd.shaderProgram(renderable->getDrawShader(renderStage));
-    
-    return Object3D::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 };

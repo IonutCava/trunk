@@ -44,7 +44,7 @@ class GenericCommandPool {
       GenericDrawCommand& aquire();
 
   private:
-      vectorImpl<GenericDrawCommand> _commandPool;
+      GenericDrawCommands _commandPool;
 
 };
 

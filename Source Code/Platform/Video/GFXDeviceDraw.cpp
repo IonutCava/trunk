@@ -81,7 +81,7 @@ void GFXDevice::flushRenderQueues() {
             U32 queueSize = renderQueue.size();
             for (U32 idx = 0; idx < queueSize; ++idx) {
                 RenderPackage& package = renderQueue.getPackage(idx);
-                vectorImpl<GenericDrawCommand>& drawCommands = package._drawCommands;
+                GenericDrawCommands& drawCommands = package._drawCommands;
                 vectorAlg::vecSize commandCount = drawCommands.size();
                 if (commandCount > 0) {
                     CommandBuffer crtBuffer;
@@ -245,15 +245,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         SceneGraphNode_cptr nodeRef = node.second.lock();
 
         RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
-        RenderPackage& pkg = 
-            refreshNodeData ? Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
+        RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
                                                                                sceneRenderState,
                                                                                currentStage,
-                                                                               cmdCount,
-                                                                               nodeCount)
-                            : Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
-                                                                               sceneRenderState,
-                                                                               currentStage);
+                                                                               refreshNodeData ? cmdCount
+                                                                                               : renderable->commandOffset(),
+                                                                               refreshNodeData ? nodeCount
+                                                                                               : renderable->commandIndex());
 
         if (pkg.isRenderable()) {
             if (refreshNodeData) {

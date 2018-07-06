@@ -419,9 +419,9 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
         throw error.c_str();
     }
 
-    scene->state().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
-    scene->state().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
-    scene->state().generalVisibility(pt.get("options.visibility", 1000.0f));
+    scene->state().renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
+    scene->state().renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
+    scene->state().renderState().generalVisibility(pt.get("options.visibility", 1000.0f));
 
     scene->state().windDirX(pt.get("wind.windDirX", 1.0f));
     scene->state().windDirZ(pt.get("wind.windDirZ", 1.0f));

@@ -75,11 +75,8 @@ class Object3D : public SceneNode {
 
     virtual void postLoad(SceneGraphNode& sgn);
 
-    virtual bool onRender(SceneGraphNode& sgn,
-                        RenderStage currentStage);
-
     virtual bool onRender(RenderStage currentStage);
-
+                        
     inline bool getObjectFlag(ObjectFlag flag) const {
         return BitCompare(getFlagMask(), to_uint(flag));
     }
@@ -115,10 +112,9 @@ class Object3D : public SceneNode {
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
-    virtual bool getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+    virtual void initialiseDrawCommands(SceneGraphNode& sgn,
+                                        RenderStage renderStage,
+                                        GenericDrawCommands& drawCommandsInOut) override;
    protected:
     bool _update;
     bool _playAnimations;

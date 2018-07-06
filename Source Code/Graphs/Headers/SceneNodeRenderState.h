@@ -25,7 +25,6 @@ class SceneNodeRenderState {
     size_t getShadowStateBlock();
 
    protected:
-    bool _hasWaterReflection;
     bool _drawState;
     bool _noDefaultMaterial;
     U32 _exclusionMask;

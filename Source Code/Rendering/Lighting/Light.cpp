@@ -129,7 +129,7 @@ void Light::updateBoundsInternal(SceneGraphNode& sgn) {
     SceneNode::updateBoundsInternal(sgn);
 }
 
-bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
+bool Light::onRender(RenderStage currentStage) {
     if (!_drawImpostor) {
         return true;
     }
