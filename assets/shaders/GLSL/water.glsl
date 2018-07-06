@@ -24,7 +24,7 @@ in vec4 _vertexWVP;
 
 in vec3 _pixToEye;
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
@@ -75,12 +75,12 @@ void main (void)
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
 
     // add Diffuse
-    _colorOut.rgb = mix(texture(texWaterReflection, uvFinalRefract).rgb, 
+    _colourOut.rgb = mix(texture(texWaterReflection, uvFinalRefract).rgb, 
                         texture(texWaterRefraction, uvFinalReflect).rgb, 
                         vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
     // add Specular
-    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[0]._color.rgb * dvd_MatSpecular.rgb * iSpecular, vec3(0.0), vec3(1.0));
+    _colourOut.rgb = clamp(_colourOut.rgb + dvd_LightSource[0]._colour.rgb * dvd_MatSpecular.rgb * iSpecular, vec3(0.0), vec3(1.0));
 
     // add Fog
-    _colorOut = ToSRGB(applyFog(vec4(_colorOut.rgb, 1.0)));
+    _colourOut = ToSRGB(applyFog(vec4(_colourOut.rgb, 1.0)));
 }

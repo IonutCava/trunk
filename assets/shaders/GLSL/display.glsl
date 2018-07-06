@@ -18,10 +18,10 @@ void main(void)
 
 -- Fragment
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D tex;
 
 void main(void){
-    _colorOut = texture(tex, VAR._texCoord);
+    _colourOut = texture(tex, VAR._texCoord);
 }

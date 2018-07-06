@@ -37,7 +37,7 @@ ToDo:
 -- Depth of Field
 -- - No motion blur(bleah)
 --Luminance + ToneMap + Automatic adaptive exposure
--- LUT / Color correction
+-- LUT / Colour correction
 
 - Improve MSAA
 -- Resolve after "end()" call.Use as PostFX input

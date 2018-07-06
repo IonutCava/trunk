@@ -230,7 +230,7 @@ bool Scene::loadGeometry(const FileData& data) {
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
-        tempMaterial->setDiffuse(data.color);
+        tempMaterial->setDiffuse(data.colour);
         tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     }
 
@@ -326,7 +326,7 @@ void Scene::toggleFlashlight() {
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
-        tempLight->setDiffuseColor(DefaultColors::WHITE());
+        tempLight->setDiffuseColour(DefaultColours::WHITE());
         _flashLight = _sceneGraph->getRoot().addNode(tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
     }
 
@@ -566,7 +566,7 @@ bool Scene::load(const stringImpl& name) {
     _name = name;
 
     SceneManager::instance().enableFog(_sceneState->fogDescriptor()._fogDensity,
-                                       _sceneState->fogDescriptor()._fogColor);
+                                       _sceneState->fogDescriptor()._fogColour);
 
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();

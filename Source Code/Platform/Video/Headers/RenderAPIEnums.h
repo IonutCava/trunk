@@ -154,7 +154,7 @@ enum class BlendProperty : U32 {
     COUNT
 };
 
-/// Specifies how source and destination colors are combined.
+/// Specifies how source and destination colours are combined.
 enum class BlendOperation : U32 {
     /// The ADD equation is useful for antialiasing and transparency, among
     /// other things.
@@ -163,11 +163,11 @@ enum class BlendOperation : U32 {
     REV_SUBTRACT,
     /// The MIN and MAX equations are useful for applications that analyze image
     /// data
-    /// (image thresholding against a constant color, for example).
+    /// (image thresholding against a constant colour, for example).
     MIN,
     /// The MIN and MAX equations are useful for applications that analyze image
     /// data
-    /// (image thresholding against a constant color, for example).
+    /// (image thresholding against a constant colour, for example).
     MAX,
     /// Place all properties above this.
     COUNT

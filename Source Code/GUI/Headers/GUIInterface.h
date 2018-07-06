@@ -73,7 +73,7 @@ public:
     virtual GUIText* addText(ULL ID,
                              const vec2<I32>& position,
                              const stringImpl& font,
-                             const vec4<U8>& color,
+                             const vec4<U8>& colour,
                              const stringImpl& text,
                              U32 fontSize = 16);
 

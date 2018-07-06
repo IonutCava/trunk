@@ -76,7 +76,7 @@ void PostFX::init() {
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
             ShaderType::FRAGMENT, "screenNormal"));  // 3
     _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "ColorPassThrough"));  // 4
+            ShaderType::FRAGMENT, "ColourPassThrough"));  // 4
 
     _shaderFunctionSelection.resize(
         _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
@@ -220,7 +220,7 @@ void PostFX::update(const U64 deltaTime) {
 }
 
 void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<> onComplete) {
-    _postProcessingShader->Uniform("_fadeColour", Util::ToFloatColor(targetColour));
+    _postProcessingShader->Uniform("_fadeColour", Util::ToFloatColour(targetColour));
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeWaitDurationMS = waitDurationMS;

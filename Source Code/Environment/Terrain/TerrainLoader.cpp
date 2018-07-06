@@ -159,7 +159,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         CreateResource<Material>(terrainMaterialDescriptor);
 
     terrainMaterial->setDiffuse(
-        vec4<F32>(DefaultColors::WHITE().rgb() / 2, 1.0f));
+        vec4<F32>(DefaultColours::WHITE().rgb() / 2, 1.0f));
     terrainMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     terrainMaterial->setShininess(20.0f);
     terrainMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
@@ -211,7 +211,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     RenderStateBlock terrainRenderStateDepth;
     terrainRenderStateDepth.setCullMode(CullMode::CCW);
     // terrainDescDepth.setZBias(1.0f, 2.0f);
-    terrainRenderStateDepth.setColorWrites(true, true, false, false);
+    terrainRenderStateDepth.setColourWrites(true, true, false, false);
 
     Attorney::TerrainLoader::setRenderStateHashes(
         *terrain,

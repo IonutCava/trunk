@@ -41,7 +41,7 @@ SharedLock GL_API::_samplerMapLock;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
-    static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();
+    static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
 
     for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
         std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
@@ -65,7 +65,7 @@ void GL_API::clearStates() {
     setActiveTransformFeedback(0);
     
     glDisable(GL_SCISSOR_TEST);
-    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -579,9 +579,9 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
         }
     }
 
-    // Check and set color mask
-    if (oldBlock.colorWrite().i != newBlock.colorWrite().i) {
-        P32 cWrite = newBlock.colorWrite();
+    // Check and set colour mask
+    if (oldBlock.colourWrite().i != newBlock.colourWrite().i) {
+        P32 cWrite = newBlock.colourWrite();
         glColorMask(cWrite.b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
                     cWrite.b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
                     cWrite.b[2] == 1 ? GL_TRUE : GL_FALSE,   // B

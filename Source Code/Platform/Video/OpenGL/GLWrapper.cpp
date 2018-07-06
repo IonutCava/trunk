@@ -508,7 +508,7 @@ bool GL_API::initShaders() {
         ShaderType::VERTEX,
         "layout(location = " +
             to_stringImpl(to_const_uint(AttribLocation::VERTEX_COLOR)) +
-            ") in vec4 inColorData;",
+            ") in vec4 inColourData;",
         lineOffsets);
 
     appendToShaderHeader(
@@ -683,11 +683,11 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& position) {
         fonsSetSize(_fonsContext, to_float(textLabel._fontSize));
         fonsSetFont(_fonsContext, font);
 
-        fonsSetColor(_fonsContext,
-                     textLabel._color.r,
-                     textLabel._color.g,
-                     textLabel._color.b,
-                     textLabel._color.a);
+        fonsSetColour(_fonsContext,
+                     textLabel._colour.r,
+                     textLabel._colour.g,
+                     textLabel._colour.b,
+                     textLabel._colour.a);
 
       
         const vectorImpl<stringImpl>& text = textLabel.text();
@@ -786,7 +786,7 @@ IMPrimitive* GL_API::newIMP(GFXDevice& context) const {
 /// Create and return a new framebuffer. The callee is responsible for it's
 /// deletion!
 RenderTarget* GL_API::newRT(GFXDevice& context, bool multisampled) const {
-    // If MSAA is disabled, this will be a simple color / depth buffer
+    // If MSAA is disabled, this will be a simple colour / depth buffer
     // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also
     // allocate a resolve framebuffer
     // We set the resolve framebuffer as the requested framebuffer's child.

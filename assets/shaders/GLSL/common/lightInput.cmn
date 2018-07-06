@@ -12,9 +12,9 @@ const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
 
 struct Light {
-    /// rgb = color
+    /// rgb = colour
     /// w = reserved
-    vec4   _color;
+    vec4   _colour;
     /// xyz = light positon (or direction for Directional lights)
     /// w = range
     vec4   _positionWV; 

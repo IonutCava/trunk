@@ -593,7 +593,7 @@ void NavigationMesh::render() {
 
     if (_building) {
         mode = RenderMode::RENDER_NAVMESH;
-        _debugDrawInterface->overrideColor(duRGBA(255, 0, 0, 80));
+        _debugDrawInterface->overrideColour(duRGBA(255, 0, 0, 80));
     }
 
     _debugDrawInterface->beginBatch();

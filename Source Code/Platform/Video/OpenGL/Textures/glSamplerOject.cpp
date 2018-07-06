@@ -32,7 +32,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
         descriptor.wrapV() == TextureWrap::CLAMP_TO_BORDER ||
         descriptor.wrapW() == TextureWrap::CLAMP_TO_BORDER) {
         glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR,
-                             descriptor.borderColor());
+                             descriptor.borderColour());
     }
 
     if (descriptor._useRefCompare) {

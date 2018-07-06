@@ -30,7 +30,7 @@ Light::Light(const stringImpl& name, const F32 range, const LightType& type, Lig
         _shadowProperties._floatValues[i].set(-1.0f);
     }
     
-    setDiffuseColor(DefaultColors::WHITE());
+    setDiffuseColour(DefaultColours::WHITE());
     setRange(1.0f);
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
@@ -80,8 +80,8 @@ void Light::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Light::setDiffuseColor(const vec3<U8>& newDiffuseColor) {
-    _color.rgb(newDiffuseColor);
+void Light::setDiffuseColour(const vec3<U8>& newDiffuseColour) {
+    _colour.rgb(newDiffuseColour);
 }
 
 void Light::setRange(F32 range) {
@@ -143,7 +143,7 @@ bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
         _impostorSGN.lock()->setActive(true);
     }
 
-    _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColor());
+    _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColour());
 
     updateImpostor();
 

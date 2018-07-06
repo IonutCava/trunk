@@ -116,21 +116,21 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 RenderStage renderStage) {
-    // Only the first color attachment or the depth attachment is used for now
+    // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    const Texture_ptr& colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const Texture_ptr& colourAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Colour0, false);
     const Texture_ptr& depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
-    // Color attachment takes precedent over depth attachment
-    bool hasColor = (colorAttachment != nullptr);
+    // Colour attachment takes precedent over depth attachment
+    bool hasColour = (colourAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
     // Everyone's innocent until proven guilty
     bool isValidFB = true;
-    if (hasColor) {
-        // We only need the color attachment
-        isValidFB = (colorAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP) ||
-                    (colorAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
+    if (hasColour) {
+        // We only need the colour attachment
+        isValidFB = (colourAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP) ||
+                    (colourAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
     } else {
-        // We don't have a color attachment, so we require a cube map depth
+        // We don't have a colour attachment, so we require a cube map depth
         // attachment
         isValidFB = hasDepth && (depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_MAP ||
                                  depthAttachment->getTextureType() == TextureType::TEXTURE_CUBE_ARRAY);
@@ -165,7 +165,7 @@ void GFXDevice::generateCubeMap(RenderTarget& cubeMap,
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        cubeMap.drawToFace(hasColor ? TextureDescriptor::AttachmentType::Color0
+        cubeMap.drawToFace(hasColour ? TextureDescriptor::AttachmentType::Colour0
                                     : TextureDescriptor::AttachmentType::Depth,
                            i + arrayOffset);
         // Point our camera to the correct face
@@ -189,17 +189,17 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage)
 {
-    const Texture_ptr& colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const Texture_ptr& colourAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Colour0, false);
     const Texture_ptr& depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
-    // Color attachment takes precedent over depth attachment
-    bool hasColor = (colorAttachment != nullptr);
+    // Colour attachment takes precedent over depth attachment
+    bool hasColour = (colourAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
     bool isValidFB = true;
-    if (hasColor) {
-        // We only need the color attachment
-        isValidFB = colorAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
+    if (hasColour) {
+        // We only need the colour attachment
+        isValidFB = colourAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
     } else {
-        // We don't have a color attachment, so we require a cube map depth   // attachment
+        // We don't have a colour attachment, so we require a cube map depth   // attachment
         isValidFB = hasDepth && depthAttachment->getTextureType() == TextureType::TEXTURE_2D_ARRAY;
     }
     // Make sure we have a proper render target to draw to
@@ -218,7 +218,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTarget& targetBuffer,
     // Enable our render target
     targetBuffer.begin(RenderTarget::defaultPolicy());
         for (U8 i = 0; i < 2; ++i) {
-            targetBuffer.drawToLayer(hasColor ? TextureDescriptor::AttachmentType::Color0
+            targetBuffer.drawToLayer(hasColour ? TextureDescriptor::AttachmentType::Colour0
                                               : TextureDescriptor::AttachmentType::Depth,
                                      i + arrayOffset);
             // Point our camera to the correct face
@@ -638,11 +638,11 @@ void GFXDevice::constructHIZ() {
     // Bind the depth texture to the first texture unit
     screenTarget->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), TextureDescriptor::AttachmentType::Depth);
     // We use a special shader that downsamples the buffer
-    // We will use a state block that disables color writes as we will render only a depth image,
+    // We will use a state block that disables colour writes as we will render only a depth image,
     // disables depth testing but allows depth writes
     // Set the depth buffer as the currently active render target
     RenderTarget::RenderTargetDrawDescriptor depthOnlyTarget;
-    depthOnlyTarget._clearColorBuffersOnBind = false;
+    depthOnlyTarget._clearColourBuffersOnBind = false;
     depthOnlyTarget._clearDepthBufferOnBind = false;
     depthOnlyTarget._changeViewport = false;
     depthOnlyTarget._drawMask.fill(false);
@@ -701,7 +701,7 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     return tempPriv;
 }
 
-/// Extract the pixel data from the main render target's first color attachment
+/// Extract the pixel data from the main render target's first colour attachment
 /// and save it as a TGA image
 void GFXDevice::Screenshot(const stringImpl& filename) {
     // Get the screen's resolution

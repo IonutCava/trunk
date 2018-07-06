@@ -48,7 +48,7 @@ class glFramebuffer : public RenderTarget {
     void destroy();
 
     const Texture_ptr& getAttachment(
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0,
         bool flushStateOnRequest = true) override;
 
     void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
@@ -62,13 +62,13 @@ class glFramebuffer : public RenderTarget {
 
     void bind(U8 unit = 0,
               TextureDescriptor::AttachmentType slot =
-                         TextureDescriptor::AttachmentType::Color0,
+                         TextureDescriptor::AttachmentType::Colour0,
               bool flushStateOnRequest = true);
     void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void blitFrom(RenderTarget* inputFB, TextureDescriptor::AttachmentType slot =
-                                            TextureDescriptor::AttachmentType::Color0,
-                  bool blitColor = true, bool blitDepth = false);
+                                            TextureDescriptor::AttachmentType::Colour0,
+                  bool blitColour = true, bool blitDepth = false);
 
    protected:
     void resolve();
@@ -87,8 +87,8 @@ class glFramebuffer : public RenderTarget {
         return _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)] != nullptr;
     }
 
-    inline bool hasColor() const {
-        return !_colorBuffers.empty();
+    inline bool hasColour() const {
+        return !_colourBuffers.empty();
     }
 
    protected:
@@ -102,8 +102,8 @@ class glFramebuffer : public RenderTarget {
         static bool _bufferBound;
 #   endif
 
-    vectorImpl<GLenum> _colorBuffers;
-    vectorImpl<bool>   _colorBufferEnabled;
+    vectorImpl<GLenum> _colourBuffers;
+    vectorImpl<bool>   _colourBufferEnabled;
     glFramebuffer* _resolveBuffer;
 
     using AttType = TextureDescriptor::AttachmentType;

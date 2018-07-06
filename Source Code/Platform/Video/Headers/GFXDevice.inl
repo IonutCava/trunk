@@ -60,7 +60,7 @@ inline void
 GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     this->_worldMatrix.set(other._worldMatrix);
     this->_normalMatrixWV.set(other._normalMatrixWV);
-    this->_colorMatrix.set(other._colorMatrix);
+    this->_colourMatrix.set(other._colourMatrix);
     this->_properties.set(other._properties);
 }
 

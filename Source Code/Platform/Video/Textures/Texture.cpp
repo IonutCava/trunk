@@ -145,7 +145,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
             for (U16 i = start; i < end; ++i) {
                 for (I32 j = 0; j < height; ++j) {
                     if (!abort) {
-                        img.getColor(i, j, tempR, tempG, tempB, tempA);
+                        img.getColour(i, j, tempR, tempG, tempB, tempA);
                         if (tempA < 250) {
                             abort = true;
                         }
@@ -162,7 +162,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
     // Create a new Rendering API-dependent texture object
     _descriptor._type = info._type;
     _descriptor._internalFormat = GFXImageFormat::RGB8;
-    // Select the proper color space internal format
+    // Select the proper colour space internal format
     bool srgb = _descriptor._samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
     switch (img.format()) {

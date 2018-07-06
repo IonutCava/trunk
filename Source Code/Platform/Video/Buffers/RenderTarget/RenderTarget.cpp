@@ -16,7 +16,7 @@ RenderTarget::RenderTarget(GFXDevice& context, bool multiSampled)
       _depthValue(1.0),
       _framebufferHandle(0)
 {
-    _clearColors.fill(DefaultColors::WHITE());
+    _clearColours.fill(DefaultColours::WHITE());
     _attachment.fill(TextureDescriptor());
     _attachmentChanged.fill(false);
     _attachmentTexture.fill(nullptr);

@@ -91,7 +91,7 @@ void glVertexArray::destroy() {
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
 std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
-    bool useColor     = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_COLOR)];
+    bool useColour     = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_COLOR)];
     bool useNormals   = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_NORMAL)];
     bool useTangents  = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TANGENT)];
     bool useTexcoords = _useAttribute[to_const_uint(VertexAttribute::ATTRIB_TEXCOORD)];
@@ -108,7 +108,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         prevOffset += sizeof(F32);
     }
 
-    if (useColor) {
+    if (useColour) {
         _attributeOffset[to_const_uint(VertexAttribute::ATTRIB_COLOR)] = to_uint(prevOffset);
         prevOffset += sizeof(vec4<U8>);
     }
@@ -140,11 +140,11 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
             _smallData << data._tangent;
         }
 
-        if (useColor) {
-            _smallData << data._color.r;
-            _smallData << data._color.g;
-            _smallData << data._color.b;
-            _smallData << data._color.a;
+        if (useColour) {
+            _smallData << data._colour.r;
+            _smallData << data._colour.g;
+            _smallData << data._colour.b;
+            _smallData << data._colour.a;
         }
 
         if (useTexcoords) {
@@ -362,7 +362,7 @@ void glVertexArray::uploadVBAttributes(U8 vaoIndex) {
     // Bind the current VAO to save our attributes
     GL_API::setActiveVAO(_vaoCaches[vaoIndex]);
     static const U32 positionLoc = to_const_uint(AttribLocation::VERTEX_POSITION);
-    static const U32 colorLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
+    static const U32 colourLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
     static const U32 normalLoc = to_const_uint(AttribLocation::VERTEX_NORMAL);
     static const U32 texCoordLoc = to_const_uint(AttribLocation::VERTEX_TEXCOORD);
     static const U32 tangentLoc = to_const_uint(AttribLocation::VERTEX_TANGENT);
@@ -373,12 +373,12 @@ void glVertexArray::uploadVBAttributes(U8 vaoIndex) {
     glVertexAttribFormat(positionLoc, 3, GL_FLOAT, GL_FALSE, _attributeOffset[positionLoc]);
     glVertexAttribBinding(positionLoc, 0);
 
-    if (_useAttribute[colorLoc]) {
-        glEnableVertexAttribArray(colorLoc);
-        glVertexAttribFormat(colorLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[colorLoc]);
-        glVertexAttribBinding(colorLoc, 0);
+    if (_useAttribute[colourLoc]) {
+        glEnableVertexAttribArray(colourLoc);
+        glVertexAttribFormat(colourLoc, 4, GL_UNSIGNED_BYTE, GL_TRUE, _attributeOffset[colourLoc]);
+        glVertexAttribBinding(colourLoc, 0);
     } else {
-        glDisableVertexAttribArray(colorLoc);
+        glDisableVertexAttribArray(colourLoc);
     }
 
     if (_useAttribute[normalLoc]) {

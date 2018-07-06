@@ -169,7 +169,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
                                     //general purpose messages
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
-    ShaderProgram_ptr _guiShader;  //<Used to apply color for text for now
+    ShaderProgram_ptr _guiShader;  //<Used to apply colour for text for now
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;

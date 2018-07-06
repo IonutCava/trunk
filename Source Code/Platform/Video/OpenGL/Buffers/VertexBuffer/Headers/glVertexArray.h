@@ -42,7 +42,7 @@
 /// One VAO contains: one VB for data, one IB for indices and uploads to the
 /// shader vertex attribs for:
 ///- Vertex Data  bound to location Divide::VERTEX_POSITION
-///- Colors       bound to location Divide::VERTEX_COLOR
+///- Colours       bound to location Divide::VERTEX_COLOR
 ///- Normals      bound to location Divide::VERTEX_NORMAL
 ///- TexCoords    bound to location Divide::VERTEX_TEXCOORD
 ///- Tangents     bound to location Divide::VERTEX_TANGENT

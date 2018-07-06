@@ -47,7 +47,7 @@ float Gloss(in vec3 bump, in vec2 texCoord)
 }
 
 #if !defined(SKIP_TEXTURES)
-vec4 getTextureColor(in vec2 uv) {
+vec4 getTextureColour(in vec2 uv) {
     #define TEX_MODULATE 0
     #define TEX_ADD  1
     #define TEX_SUBTRACT  2
@@ -57,34 +57,34 @@ vec4 getTextureColor(in vec2 uv) {
     #define TEX_DECAL  6
     #define TEX_REPLACE  7
 
-    vec4 color = texture(texDiffuse0, uv);
+    vec4 colour = texture(texDiffuse0, uv);
 
     if (dvd_textureCount == 1) {
-        return color;
+        return colour;
     }
 
-    vec4 color2 = texture(texDiffuse1, uv);
+    vec4 colour2 = texture(texDiffuse1, uv);
 
     // Read from the texture
     switch (dvd_texOperation) {
-        default             : color = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
-        case TEX_MODULATE   : color *= color2;       break;
-        case TEX_REPLACE    : color  = color2;       break;
-        case TEX_SIGNED_ADD : color += color2 - 0.5; break;
-        case TEX_DIVIDE     : color /= color2;          break;
-        case TEX_SUBTRACT   : color -= color2;          break;
-        case TEX_DECAL      : color = vec4(mix(color.rgb, color2.rgb, color2.a), color.a); break;
+        default             : colour = vec4(0.7743, 0.3188, 0.5465, 1.0);   break; // <hot pink to easily spot it in a crowd
+        case TEX_MODULATE   : colour *= colour2;       break;
+        case TEX_REPLACE    : colour  = colour2;       break;
+        case TEX_SIGNED_ADD : colour += colour2 - 0.5; break;
+        case TEX_DIVIDE     : colour /= colour2;          break;
+        case TEX_SUBTRACT   : colour -= colour2;          break;
+        case TEX_DECAL      : colour = vec4(mix(colour.rgb, colour2.rgb, colour2.a), colour.a); break;
         case TEX_ADD        : {
-            color.rgb += color2.rgb;
-            color.a   *= color2.a;
+            colour.rgb += colour2.rgb;
+            colour.a   *= colour2.a;
         }break;
         case TEX_SMOOTH_ADD : {
-            color = (color + color2) - (color * color2);
+            colour = (colour + colour2) - (colour * colour2);
         }break;
     }
     
 
-    return saturate(color);
+    return saturate(colour);
 }
 #endif
 
@@ -95,21 +95,21 @@ float dvd_MatShininess;
 
 void parseMaterial() {
     
-    dvd_MatEmissive = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].rgb;
-    dvd_MatShininess = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[2].w;
+    dvd_MatEmissive = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].rgb;
+    dvd_MatShininess = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[2].w;
 
     #if !defined(USE_CUSTOM_ALBEDO)
         #if defined(SKIP_TEXTURES)
-            dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[0];
+            dvd_MatDiffuse = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[0];
         #else
-            dvd_MatDiffuse = getTextureColor(VAR._texCoord);
+            dvd_MatDiffuse = getTextureColour(VAR._texCoord);
         #endif
     #endif
 
     #if defined(USE_SPECULAR_MAP)
         dvd_MatSpecular = texture(texSpecularMap, VAR._texCoord).rgb;
     #else
-        dvd_MatSpecular = dvd_Matrices[VAR.dvd_drawID]._colorMatrix[1].rgb;
+        dvd_MatSpecular = dvd_Matrices[VAR.dvd_drawID]._colourMatrix[1].rgb;
     #endif
 }
 

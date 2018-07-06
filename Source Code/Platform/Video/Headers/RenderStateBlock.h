@@ -40,8 +40,8 @@ namespace Divide {
 
 class RenderStateBlock : public GUIDWrapper {
    protected:
-    /// Color Writes
-    P32 _colorWrite;
+    /// Colour Writes
+    P32 _colourWrite;
 
     // Blending
     bool _blendEnable;
@@ -109,10 +109,10 @@ class RenderStateBlock : public GUIDWrapper {
 
     void setStencilReadWriteMask(U32 read, U32 write);
 
-    void setColorWrites(bool red, bool green, bool blue, bool alpha);
+    void setColourWrites(bool red, bool green, bool blue, bool alpha);
 
-    inline P32 colorWrite() const {
-        return _colorWrite;
+    inline P32 colourWrite() const {
+        return _colourWrite;
     }
     inline bool blendEnable() const {
         return _blendEnable;

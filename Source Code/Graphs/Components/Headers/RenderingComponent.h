@@ -98,7 +98,7 @@ class RenderingComponent : public SGNComponent {
 
     size_t getDrawStateHash(RenderStage renderStage);
 
-    void getMaterialColorMatrix(mat4<F32>& matOut) const;
+    void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(vec4<F32>& propertiesOut) const;
 

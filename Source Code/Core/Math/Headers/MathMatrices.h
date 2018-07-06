@@ -21,7 +21,7 @@
  * Update 2004/08/19
  *
  * added ivec2, ivec3 & ivec4 methods
- * vec2, vec3 & vec4 data : added texture coords (s,t,p,q) and color enums
+ * vec2, vec3 & vec4 data : added texture coords (s,t,p,q) and colour enums
  *(r,g,b,a)
  * mat3 & mat4 : added multiple float constructor ad modified methods returning
  *mat3 or mat4

@@ -51,7 +51,7 @@ class Sky : public SceneNode {
     ~Sky();
 
     bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
-    void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColor);
+    void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColour);
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;

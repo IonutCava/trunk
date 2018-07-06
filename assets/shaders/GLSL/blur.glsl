@@ -18,7 +18,7 @@ void main(void)
 
 -- Fragment
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 uniform vec2 size;
@@ -31,70 +31,70 @@ subroutine uniform BlurRoutineType BlurRoutine;
 subroutine(BlurRoutineType)
 vec3 blurHorizontal(){
     vec2 pass = 1.0 / size;
-    vec3 color = vec3(0.0);
+    vec3 colour = vec3(0.0);
     vec3 value;
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
         value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0)).rgb;
         factor = kernelSize + 1 - abs(i);
-        color += value * factor;
+        colour += value * factor;
         sum += factor;
     }
-    return color / sum;
+    return colour / sum;
 }
 
 subroutine(BlurRoutineType)
 vec3 blurVertical(){
     vec2 pass = 1.0 / size;
-    vec3 color = vec3(0.0);
+    vec3 colour = vec3(0.0);
     vec3 value;
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
         value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i)).rgb;
         factor = kernelSize + 1 - abs(i);
-        color += value * factor;
+        colour += value * factor;
         sum += factor;
     }
-    return color / sum;
+    return colour / sum;
 }
 
 subroutine(BlurRoutineType)
 vec3 blurHorizontalLayered(){
     vec2 pass = 1.0 / size;
-    vec3 color = vec3(0.0);
+    vec3 colour = vec3(0.0);
     vec3 value;
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
         value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0), layer).rgb;
         factor = kernelSize + 1 - abs(i);
-        color += value * factor;
+        colour += value * factor;
         sum += factor;
     }
-    return color / sum;
+    return colour / sum;
 }
 
 subroutine(BlurRoutineType)
 vec3 blurVerticalLayered(){
     vec2 pass = 1.0 / size;
-    vec3 color = vec3(0.0);
+    vec3 colour = vec3(0.0);
     vec3 value;
     int sum = 0;
     int factor = 0;
     for (int i = -kernelSize; i <= kernelSize; i++) {
         value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i), layer).rgb;
         factor = kernelSize + 1 - abs(i);
-        color += value * factor;
+        colour += value * factor;
         sum += factor;
     }
-    return color / sum;
+    return colour / sum;
 }
 
 void main() {
 
-    _colorOut = vec4(BlurRoutine(), 1.0);
+    _colourOut = vec4(BlurRoutine(), 1.0);
 }
 
 -- Vertex.GaussBlur
@@ -209,17 +209,17 @@ void main() {
 --Fragment.GaussBlur
 
 in vec3 _blurCoords[7];
-out vec2 _outColor;
+out vec2 _outColour;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
 
 void main(void)
 {
-    _outColor  = texture(texScreen, _blurCoords[0]).rg * (1.0  / 64.0);
-    _outColor += texture(texScreen, _blurCoords[1]).rg * (6.0  / 64.0);
-    _outColor += texture(texScreen, _blurCoords[2]).rg * (15.0 / 64.0);
-    _outColor += texture(texScreen, _blurCoords[3]).rg * (20.0 / 64.0);
-    _outColor += texture(texScreen, _blurCoords[4]).rg * (15.0 / 64.0);
-    _outColor += texture(texScreen, _blurCoords[5]).rg * (6.0  / 64.0);
-    _outColor += texture(texScreen, _blurCoords[6]).rg * (1.0  / 64.0);
+    _outColour  = texture(texScreen, _blurCoords[0]).rg * (1.0  / 64.0);
+    _outColour += texture(texScreen, _blurCoords[1]).rg * (6.0  / 64.0);
+    _outColour += texture(texScreen, _blurCoords[2]).rg * (15.0 / 64.0);
+    _outColour += texture(texScreen, _blurCoords[3]).rg * (20.0 / 64.0);
+    _outColour += texture(texScreen, _blurCoords[4]).rg * (15.0 / 64.0);
+    _outColour += texture(texScreen, _blurCoords[5]).rg * (6.0  / 64.0);
+    _outColour += texture(texScreen, _blurCoords[6]).rg * (1.0  / 64.0);
 }

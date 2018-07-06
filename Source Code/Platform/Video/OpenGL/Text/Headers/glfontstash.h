@@ -72,7 +72,7 @@ static void glfons__renderUpdate(void* userPtr,
 static void glfons__renderDraw(void* userPtr,
                                const float* verts,
                                const float* tcoords,
-                               const unsigned char* colors,
+                               const unsigned char* colours,
                                int nverts) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) {
@@ -86,7 +86,7 @@ static void glfons__renderDraw(void* userPtr,
                       GL_STREAM_DRAW);
     glNamedBufferSubData(bufferID, 0, vertDataSize, (Divide::bufferPtr)verts);
     glNamedBufferSubData(bufferID, vertDataSize, vertDataSize, (Divide::bufferPtr)tcoords);
-    glNamedBufferSubData(bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, (Divide::bufferPtr)colors);
+    glNamedBufferSubData(bufferID, 2 * vertDataSize, sizeof(unsigned char) * 4 * nverts, (Divide::bufferPtr)colours);
 
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);

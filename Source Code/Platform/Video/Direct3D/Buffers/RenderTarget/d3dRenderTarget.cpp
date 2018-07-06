@@ -40,7 +40,7 @@ void d3dRenderTarget::readData(const vec4<U16>& rect,
 
 void d3dRenderTarget::blitFrom(RenderTarget* inputFB,
                                TextureDescriptor::AttachmentType slot,
-                               bool blitColor, bool blitDepth) {}
+                               bool blitColour, bool blitDepth) {}
 
 void d3dRenderTarget::clear(const RenderTargetDrawDescriptor& drawPolicy) const {}
 

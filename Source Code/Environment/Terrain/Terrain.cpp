@@ -30,13 +30,13 @@ Terrain::Terrain(const stringImpl& name)
     _albedoSampler->setWrapMode(TextureWrap::REPEAT);
     _albedoSampler->setAnisotropy(8);
     _albedoSampler->toggleMipMaps(true);
-    _albedoSampler->toggleSRGBColorSpace(true);
+    _albedoSampler->toggleSRGBColourSpace(true);
 
     _normalSampler = MemoryManager_NEW SamplerDescriptor();
     _normalSampler->setWrapMode(TextureWrap::REPEAT);
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
-    _albedoSampler->toggleSRGBColorSpace(false);
+    _albedoSampler->toggleSRGBColourSpace(false);
 
     _terrainStateHash.fill(0);
 }

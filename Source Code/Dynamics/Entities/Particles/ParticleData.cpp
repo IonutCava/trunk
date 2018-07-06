@@ -19,9 +19,9 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     _velocity.clear();
     _acceleration.clear();
     _misc.clear();
-    _color.clear();
-    _startColor.clear();
-    _endColor.clear();
+    _colour.clear();
+    _startColour.clear();
+    _endColour.clear();
 
     if (_totalCount > 0) {
         if (BitCompare(_optionsMask,
@@ -38,12 +38,12 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
         }
         if (BitCompare(_optionsMask,
                        to_const_uint(Properties::PROPERTIES_COLOR))) {
-            _color.resize(_totalCount, vec4<F32>(0.0f));
+            _colour.resize(_totalCount, vec4<F32>(0.0f));
         }
         if (BitCompare(_optionsMask,
                        to_const_uint(Properties::PROPERTIES_COLOR_TRANS))) {
-            _startColor.resize(_totalCount, vec4<F32>(0.0f));
-            _endColor.resize(_totalCount, vec4<F32>(0.0f));
+            _startColour.resize(_totalCount, vec4<F32>(0.0f));
+            _endColour.resize(_totalCount, vec4<F32>(0.0f));
         }
         _misc.resize(_totalCount, vec4<F32>(0.0f));
     }
@@ -68,7 +68,7 @@ void ParticleData::sort(bool invalidateCache) {
 
     _indices.resize(count);
     _renderingPositions.resize(count);
-    _renderingColors.resize(count);
+    _renderingColours.resize(count);
 
     for (U32 i = 0; i < count; ++i) {
         std::pair<U32, F32>& idx = _indices[i];
@@ -89,15 +89,15 @@ void ParticleData::sort(bool invalidateCache) {
         }
     };
 
-    auto parseColors = [count, this](const std::atomic_bool& stopRequested) -> void {
+    auto parseColours = [count, this](const std::atomic_bool& stopRequested) -> void {
         for (U32 i = 0; i < count; ++i) {
-            Util::ToByteColor(_color[_indices[i].first], _renderingColors[i]);
+            Util::ToByteColour(_colour[_indices[i].first], _renderingColours[i]);
         }
     };
     
     TaskHandle updateTask = CreateTask(DELEGATE_CBK_PARAM<bool>());
     updateTask.addChildTask(CreateTask(parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
-    updateTask.addChildTask(CreateTask(parseColors)._task)->startTask(Task::TaskPriority::HIGH);
+    updateTask.addChildTask(CreateTask(parseColours)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.startTask(Task::TaskPriority::HIGH);
     updateTask.wait();
 
@@ -114,11 +114,11 @@ void ParticleData::swapData(U32 indexA, U32 indexB) {
         _acceleration[indexA].set(_acceleration[indexB]);
     }
     if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_COLOR))) {
-        _color[indexA].set(_color[indexB]);
+        _colour[indexA].set(_colour[indexB]);
     }
     if (BitCompare(_optionsMask, to_const_uint(Properties::PROPERTIES_COLOR_TRANS))) {
-        _startColor[indexA].set(_startColor[indexB]);
-        _endColor[indexA].set(_endColor[indexB]);
+        _startColour[indexA].set(_startColour[indexB]);
+        _endColour[indexA].set(_endColour[indexB]);
     }
     _misc[indexA].set(_misc[indexB]);
 }

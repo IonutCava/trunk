@@ -53,7 +53,7 @@ namespace Divide {
 
 struct FogDescriptor {
     F32 _fogDensity;
-    vec3<F32> _fogColor;
+    vec3<F32> _fogColour;
 };
 
 class Scene;
@@ -217,7 +217,7 @@ class SceneState : public SceneComponent {
           _saveLoadDisabled(false)
     {
         resetMovement();
-        _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
+        _fog._fogColour = vec3<F32>(0.2f, 0.2f, 0.2f);
         _fog._fogDensity = 0.01f;
     }
 

@@ -64,7 +64,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         vec3<F32> _position;
         F32       _normal;
         F32       _tangent;
-        vec4<U8>  _color;
+        vec4<U8>  _colour;
         vec2<F32> _texcoord;
         P32       _weights;
         P32       _indices;
@@ -223,18 +223,18 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_const_uint(VertexAttribute::ATTRIB_POSITION)] = true;
     }
 
-    inline void modifyColorValue(U32 index, const vec4<U8>& newValue) {
-        modifyColorValue(index, newValue.r, newValue.g, newValue.b, newValue.a);
+    inline void modifyColourValue(U32 index, const vec4<U8>& newValue) {
+        modifyColourValue(index, newValue.r, newValue.g, newValue.b, newValue.a);
     }
 
-    inline void modifyColorValue(U32 index, U8 r, U8 g, U8 b, U8 a) {
+    inline void modifyColourValue(U32 index, U8 r, U8 g, U8 b, U8 a) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
                       (_staticBuffer == true && !_data.empty()),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
-        _data[index]._color.set(r, g, b, a);
+        _data[index]._colour.set(r, g, b, a);
         _attribDirty[to_const_uint(VertexAttribute::ATTRIB_COLOR)] = true;
     }
 

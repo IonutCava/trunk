@@ -49,12 +49,12 @@ DeferredShadingRenderer::DeferredShadingRenderer()
         gBuffer[i].setSampler(gBufferSampler);
     }
 
-    _deferredBuffer->addAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Color0);
-    _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
-    _deferredBuffer->addAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Color2);
-    _deferredBuffer->addAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Color3);
+    _deferredBuffer->addAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Colour0);
+    _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Colour1);
+    _deferredBuffer->addAttachment(gBuffer[2], TextureDescriptor::AttachmentType::Colour2);
+    _deferredBuffer->addAttachment(gBuffer[3], TextureDescriptor::AttachmentType::Colour3);
     _deferredBuffer->useAutoDepthBuffer(true);
-    _deferredBuffer->setClearColor(DefaultColors::BLACK());
+    _deferredBuffer->setClearColour(DefaultColours::BLACK());
     ResourceDescriptor mrtPreviewSmall("MRT RenderQuad SmallPreview");
     mrtPreviewSmall.setFlag(true);  // no default material
     ResourceDescriptor mrt("MRT RenderQuad");
@@ -85,22 +85,22 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     gui.addText(_ID("PositionData"),                 // Unique ID
                       vec2<I32>(60, 60),             // Position
                       Font::DIVIDE_DEFAULT,          // Font
-                      vec4<U8>(0, 64, 255, 255),     // Color
+                      vec4<U8>(0, 64, 255, 255),     // Colour
                       "POSITION DATA");              // Text
     gui.addText(_ID("NormalData"),                   // Unique ID
                       vec2<I32>(60 + width / 2, 60), // Position
                       Font::DIVIDE_DEFAULT,          // Font
-                      vec4<U8>(0, 64, 255, 255),     // Color
+                      vec4<U8>(0, 64, 255, 255),     // Colour
                       "NORMAL DATA");                // Text
     gui.addText(_ID("FinalImage"),                    // Unique ID
                       vec2<I32>(60, 60 + height / 2), // Position
                       Font::DIVIDE_DEFAULT,           // Font
-                      vec4<U8>(0, 64, 255, 255),      // Color
+                      vec4<U8>(0, 64, 255, 255),      // Colour
                       "FINAL IMAGE");                 // Text
     gui.addText(_ID("LightTexture"),                               // Unique ID
                       vec2<I32>(60 + width / 2, 60 + height / 2),  // Position
                       Font::DIVIDE_DEFAULT,                        // Font
-                      vec4<U8>(0, 64, 255, 255),                   // Color
+                      vec4<U8>(0, 64, 255, 255),                   // Colour
                       "LIGHT TEXTURE");                            // Text
 }
 
@@ -131,10 +131,10 @@ void DeferredShadingRenderer::preRender(LightPool& lightPool) {
             pixels[index + 0] = lights[i]->getPosition().x;
             pixels[index + 1] = lights[i]->getPosition().y;
             pixels[index + 2] = lights[i]->getPosition().z;
-            // Light Color
-            pixels[index + 3] = lights[i]->getDiffuseColor().r;
-            pixels[index + 4] = lights[i]->getDiffuseColor().g;
-            pixels[index + 5] = lights[i]->getDiffuseColor().b;
+            // Light Colour
+            pixels[index + 3] = lights[i]->getDiffuseColour().r;
+            pixels[index + 4] = lights[i]->getDiffuseColour().g;
+            pixels[index + 5] = lights[i]->getDiffuseColour().b;
             index += 6;
         }
     }
@@ -163,10 +163,10 @@ void DeferredShadingRenderer::secondPass(
     // textures bound to that shader
     GFX::Scoped2DRendering scoped2D(true);
 
-    _deferredBuffer->bind(0, TextureDescriptor::AttachmentType::Color0);
-    _deferredBuffer->bind(1, TextureDescriptor::AttachmentType::Color1);
-    _deferredBuffer->bind(2, TextureDescriptor::AttachmentType::Color2);
-    _deferredBuffer->bind(3, TextureDescriptor::AttachmentType::Color3);
+    _deferredBuffer->bind(0, TextureDescriptor::AttachmentType::Colour0);
+    _deferredBuffer->bind(1, TextureDescriptor::AttachmentType::Colour1);
+    _deferredBuffer->bind(2, TextureDescriptor::AttachmentType::Colour2);
+    _deferredBuffer->bind(3, TextureDescriptor::AttachmentType::Colour3);
     _lightTexture->Bind(4);
 
     GenericDrawCommand cmd;

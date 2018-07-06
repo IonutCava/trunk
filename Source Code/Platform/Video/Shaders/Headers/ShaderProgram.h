@@ -266,7 +266,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Shaders loaded from files are kept as atoms
     static AtomMap _atoms;
     /// Used to render geometry without valid materials.
-    /// Should emulate the basic fixed pipeline functions (no lights, just color and texture)
+    /// Should emulate the basic fixed pipeline functions (no lights, just colour and texture)
     static ShaderProgram_ptr _imShader;
     /// Pointer to a shader that we will perform operations on
     static ShaderProgram_ptr _nullShader;

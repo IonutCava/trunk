@@ -28,5 +28,5 @@
 	<fogStartDistance>10</fogStartDistance>
 	<fogEndDistance>1000</fogEndDistance>
 	<fogDensity>0.01</fogDensity>
-	<fogColor r="0.7" g="0.7" b="0.7"/>
+	<fogColour r="0.7" g="0.7" b="0.7"/>
 </fog>

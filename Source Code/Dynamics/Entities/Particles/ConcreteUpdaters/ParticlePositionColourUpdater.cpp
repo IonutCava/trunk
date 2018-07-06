@@ -1,0 +1,26 @@
+#include "Headers/ParticlePositionColourUpdater.h"
+
+namespace Divide {
+
+void ParticlePositionColourUpdater::update(const U64 deltaTime, ParticleData& p) {
+    const U32 endID = p.aliveCount();
+    F32 diffr = _maxPos.x - _minPos.x;
+    F32 diffg = _maxPos.y - _minPos.y;
+    F32 diffb = _maxPos.z - _minPos.z;
+
+    vec3<F32> floatColourRGB;
+    for (U32 i = 0; i < endID; ++i) {
+        p._colour[i].set(
+            (p._position[i].x - _minPos.x) /
+                diffr,  // lerp(p._startColour[i].r, p._endColour[i].r, scaler),
+            (p._position[i].y - _minPos.y) /
+                diffg,  // lerp(p._startColour[i].g, p._endColour[i].g, scaleg),
+            (p._position[i].z - _minPos.z) /
+                diffb,  // lerp(p._startColour[i].b, p._endColour[i].b,
+                         // scaleb),
+             Lerp(to_float(p._startColour[i].a) / 255.0f,
+                  to_float(p._endColour[i].a) / 255.0f,
+                  p._misc[i].y) * 255.0f);
+    }
+}
+};

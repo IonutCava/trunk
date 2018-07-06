@@ -55,7 +55,7 @@
 	<scale x="500" y="500" z="500" />
 	<position x="-250" y="0" z="-250" />
 	<orientation x="0" y="0" z="-90" />
-	<color r="0.1" g="0.4" b="0.1"/>
+	<colour r="0.1" g="0.4" b="0.1"/>
 	<version>1.0</version>
 	<staticObject>true</staticObject>
 	<castsShadows>false</castsShadows>

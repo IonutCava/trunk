@@ -476,7 +476,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Colors.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CommandParser.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />

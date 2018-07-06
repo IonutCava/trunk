@@ -41,34 +41,34 @@ in vec2 _uv1;
 
 smooth in float _waterDepth;
 
-layout(location = 0) out vec4 _colorOut;
+layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec3 _normalOut;
 //subroutine vec4 TerrainMappingType();
 
 //subroutine(TerrainMappingType) 
 vec4 computeLightInfoLOD1Frag() {
-    getColorNormal(dvd_MatDiffuse);
-    return getPixelColor(VAR._texCoord, VAR._normalWV);
+    getColourNormal(dvd_MatDiffuse);
+    return getPixelColour(VAR._texCoord, VAR._normalWV);
 }
 
 //subroutine(TerrainMappingType)
 vec4 computeLightInfoLOD0Frag() {
-    getColorAndTBNNormal(dvd_MatDiffuse, processedNormal);
-    return getPixelColor(VAR._texCoord, processedNormal);
+    getColourAndTBNNormal(dvd_MatDiffuse, processedNormal);
+    return getPixelColour(VAR._texCoord, processedNormal);
 }
 
-vec4 CausticsColor() {
+vec4 CausticsColour() {
     return (texture(texWaterCaustics, _uv1) + 
             texture(texWaterCaustics, _uv0)) * 0.5;
 }
 
-vec4 UnderwaterColor() {
-    getColorAndTBNUnderwater(dvd_MatDiffuse, processedNormal);
-    return getPixelColor(VAR._texCoord, processedNormal);
+vec4 UnderwaterColour() {
+    getColourAndTBNUnderwater(dvd_MatDiffuse, processedNormal);
+    return getPixelColour(VAR._texCoord, processedNormal);
 }
 
 vec4 UnderwaterMappingRoutine(){
-    return mix(CausticsColor(), UnderwaterColor(), _waterDepth);
+    return mix(CausticsColour(), UnderwaterColour(), _waterDepth);
 }
 
 //subroutine uniform TerrainMappingType TerrainMappingRoutine;
@@ -78,6 +78,6 @@ vec4 TerrainMappingRoutine(){ // -- HACK - Ionut
 }
 
 void main(void) {
-   _colorOut = ToSRGB(applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine()));
+   _colourOut = ToSRGB(applyFog(gl_ClipDistance[0] > 0.0 ? TerrainMappingRoutine() : UnderwaterMappingRoutine()));
    _normalOut = processedNormal;
 }

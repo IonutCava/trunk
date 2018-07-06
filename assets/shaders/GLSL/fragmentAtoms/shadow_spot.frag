@@ -3,11 +3,11 @@
 
 float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
     // Gaussian 3x3 filter
-    float vDepthMapColor = texture(depthMap, vPosInDM);
+    float vDepthMapColour = texture(depthMap, vPosInDM);
 
     float fShadow = 0.0;
-    if((vDepthMapColor+Z_TEST_SIGMA) < vPosInDM.z){
-        fShadow = vDepthMapColor * 0.25;
+    if((vDepthMapColour+Z_TEST_SIGMA) < vPosInDM.z){
+        fShadow = vDepthMapColour * 0.25;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1, -1)) * 0.0625;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1,  0)) * 0.125;
         fShadow += textureOffset(depthMap, vPosInDM, ivec2( -1,  1)) * 0.0625;

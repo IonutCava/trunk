@@ -14,15 +14,15 @@ BloomPreRenderOperator::BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTa
 {
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = GFX_DEVICE.newRT();
-        _bloomBlurBuffer[i]->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
+        _bloomBlurBuffer[i]->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
         _bloomBlurBuffer[i]->useAutoDepthBuffer(false);
-        _bloomBlurBuffer[i]->setClearColor(DefaultColors::BLACK());
+        _bloomBlurBuffer[i]->setClearColour(DefaultColours::BLACK());
     }
 
     _bloomOutput = GFX_DEVICE.newRT();
-    _bloomOutput->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
+    _bloomOutput->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
     _bloomOutput->useAutoDepthBuffer(false);
-    _bloomOutput->setClearColor(DefaultColors::BLACK());
+    _bloomOutput->setClearColour(DefaultColours::BLACK());
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
     bloomCalc.setThreadedLoading(false);
@@ -95,7 +95,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[0]->blitFrom(_hdrTarget);
     _bloomBlurBuffer[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0)); //Screen
     _bloomBlurBuffer[1]->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
-                              TextureDescriptor::AttachmentType::Color0); //Bloom
+                              TextureDescriptor::AttachmentType::Colour0); //Bloom
     _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomApply);
     _hdrTarget->end();

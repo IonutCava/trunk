@@ -139,104 +139,104 @@ void CStringRemoveChar(char* str, char charToRemove) {
     *pw = '\0';
 }
 
-void ToByteColor(const vec4<F32>& floatColor, vec4<U8>& colorOut) {
-    colorOut.set(FLOAT_TO_CHAR(floatColor.r),
-                 FLOAT_TO_CHAR(floatColor.g),
-                 FLOAT_TO_CHAR(floatColor.b),
-                 FLOAT_TO_CHAR(floatColor.a));
+void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut) {
+    colourOut.set(FLOAT_TO_CHAR(floatColour.r),
+                 FLOAT_TO_CHAR(floatColour.g),
+                 FLOAT_TO_CHAR(floatColour.b),
+                 FLOAT_TO_CHAR(floatColour.a));
 }
 
-void ToByteColor(const vec3<F32>& floatColor, vec3<U8>& colorOut) {
-    colorOut.set(FLOAT_TO_CHAR_SNORM(floatColor.r),
-                 FLOAT_TO_CHAR_SNORM(floatColor.g),
-                 FLOAT_TO_CHAR_SNORM(floatColor.b));
+void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) {
+    colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
+                 FLOAT_TO_CHAR_SNORM(floatColour.g),
+                 FLOAT_TO_CHAR_SNORM(floatColour.b));
 }
 
-void ToUIntColor(const vec4<F32>& floatColor, vec4<U32>& colorOut) {
-    colorOut.set(FLOAT_TO_CHAR_SNORM(floatColor.r),
-                 FLOAT_TO_CHAR_SNORM(floatColor.g),
-                 FLOAT_TO_CHAR_SNORM(floatColor.b),
-                 FLOAT_TO_CHAR_SNORM(floatColor.a));
+void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut) {
+    colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
+                 FLOAT_TO_CHAR_SNORM(floatColour.g),
+                 FLOAT_TO_CHAR_SNORM(floatColour.b),
+                 FLOAT_TO_CHAR_SNORM(floatColour.a));
 }
 
-void ToUIntColor(const vec3<F32>& floatColor, vec3<U32>& colorOut) {
-    colorOut.set(to_uint(FLOAT_TO_CHAR_SNORM(floatColor.r)),
-                 to_uint(FLOAT_TO_CHAR_SNORM(floatColor.g)),
-                 to_uint(FLOAT_TO_CHAR_SNORM(floatColor.b)));
+void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut) {
+    colourOut.set(to_uint(FLOAT_TO_CHAR_SNORM(floatColour.r)),
+                 to_uint(FLOAT_TO_CHAR_SNORM(floatColour.g)),
+                 to_uint(FLOAT_TO_CHAR_SNORM(floatColour.b)));
 }
 
-void ToFloatColor(const vec4<U8>& byteColor, vec4<F32>& colorOut) {
-    colorOut.set(CHAR_TO_FLOAT_SNORM(byteColor.r),
-                 CHAR_TO_FLOAT_SNORM(byteColor.g),
-                 CHAR_TO_FLOAT_SNORM(byteColor.b),
-                 CHAR_TO_FLOAT_SNORM(byteColor.a));
+void ToFloatColour(const vec4<U8>& byteColour, vec4<F32>& colourOut) {
+    colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
+                 CHAR_TO_FLOAT_SNORM(byteColour.g),
+                 CHAR_TO_FLOAT_SNORM(byteColour.b),
+                 CHAR_TO_FLOAT_SNORM(byteColour.a));
 }
 
-void ToFloatColor(const vec3<U8>& byteColor, vec3<F32>& colorOut) {
-    colorOut.set(CHAR_TO_FLOAT_SNORM(byteColor.r),
-                 CHAR_TO_FLOAT_SNORM(byteColor.g),
-                 CHAR_TO_FLOAT_SNORM(byteColor.b));
+void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut) {
+    colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
+                 CHAR_TO_FLOAT_SNORM(byteColour.g),
+                 CHAR_TO_FLOAT_SNORM(byteColour.b));
 }
 
-void ToFloatColor(const vec4<U32>& uintColor, vec4<F32>& colorOut) {
-    colorOut.set(uintColor.r / 255.0f,
-                 uintColor.g / 255.0f,
-                 uintColor.b / 255.0f,
-                 uintColor.a / 255.0f);
+void ToFloatColour(const vec4<U32>& uintColour, vec4<F32>& colourOut) {
+    colourOut.set(uintColour.r / 255.0f,
+                 uintColour.g / 255.0f,
+                 uintColour.b / 255.0f,
+                 uintColour.a / 255.0f);
 }
 
-void ToFloatColor(const vec3<U32>& uintColor, vec3<F32>& colorOut) {
-    colorOut.set(uintColor.r / 255.0f,
-                 uintColor.g / 255.0f,
-                 uintColor.b / 255.0f);
+void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut) {
+    colourOut.set(uintColour.r / 255.0f,
+                 uintColour.g / 255.0f,
+                 uintColour.b / 255.0f);
 }
 
-vec4<U8> ToByteColor(const vec4<F32>& floatColor) {
-    vec4<U8> tempColor;
-    ToByteColor(floatColor, tempColor);
-    return tempColor;
+vec4<U8> ToByteColour(const vec4<F32>& floatColour) {
+    vec4<U8> tempColour;
+    ToByteColour(floatColour, tempColour);
+    return tempColour;
 }
 
-vec3<U8>  ToByteColor(const vec3<F32>& floatColor) {
-    vec3<U8> tempColor;
-    ToByteColor(floatColor, tempColor);
-    return tempColor;
+vec3<U8>  ToByteColour(const vec3<F32>& floatColour) {
+    vec3<U8> tempColour;
+    ToByteColour(floatColour, tempColour);
+    return tempColour;
 }
 
-vec4<U32> ToUIntColor(const vec4<F32>& floatColor) {
-    vec4<U32> tempColor;
-    ToUIntColor(floatColor, tempColor);
-    return tempColor;
+vec4<U32> ToUIntColour(const vec4<F32>& floatColour) {
+    vec4<U32> tempColour;
+    ToUIntColour(floatColour, tempColour);
+    return tempColour;
 }
 
-vec3<U32> ToUIntColor(const vec3<F32>& floatColor) {
-    vec3<U32> tempColor;
-    ToUIntColor(floatColor, tempColor);
-    return tempColor;
+vec3<U32> ToUIntColour(const vec3<F32>& floatColour) {
+    vec3<U32> tempColour;
+    ToUIntColour(floatColour, tempColour);
+    return tempColour;
 }
 
-vec4<F32> ToFloatColor(const vec4<U8>& byteColor) {
-    vec4<F32> tempColor;
-    ToFloatColor(byteColor, tempColor);
-    return tempColor;
+vec4<F32> ToFloatColour(const vec4<U8>& byteColour) {
+    vec4<F32> tempColour;
+    ToFloatColour(byteColour, tempColour);
+    return tempColour;
 }
 
-vec3<F32> ToFloatColor(const vec3<U8>& byteColor) {
-    vec3<F32> tempColor;
-    ToFloatColor(byteColor, tempColor);
-    return tempColor;
+vec3<F32> ToFloatColour(const vec3<U8>& byteColour) {
+    vec3<F32> tempColour;
+    ToFloatColour(byteColour, tempColour);
+    return tempColour;
 }
 
-vec4<F32> ToFloatColor(const vec4<U32>& uintColor) {
-    vec4<F32> tempColor;
-    ToFloatColor(uintColor, tempColor);
-    return tempColor;
+vec4<F32> ToFloatColour(const vec4<U32>& uintColour) {
+    vec4<F32> tempColour;
+    ToFloatColour(uintColour, tempColour);
+    return tempColour;
 }
 
-vec3<F32> ToFloatColor(const vec3<U32>& uintColor) {
-    vec3<F32> tempColor;
-    ToFloatColor(uintColor, tempColor);
-    return tempColor;
+vec3<F32> ToFloatColour(const vec3<U32>& uintColour) {
+    vec3<F32> tempColour;
+    ToFloatColour(uintColour, tempColour);
+    return tempColour;
 }
 
 F32 PACK_VEC3(const vec3<F32>& value) {

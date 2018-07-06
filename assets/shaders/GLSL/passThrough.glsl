@@ -9,8 +9,8 @@ void main(void)
 
 -- Fragment
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 void main(void){
-    _colorOut = vec4(1.0);
+    _colourOut = vec4(1.0);
 }

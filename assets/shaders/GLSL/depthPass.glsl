@@ -49,7 +49,7 @@ layout(early_fragment_tests) in;
 #endif
 
 #if defined(SHADOW_PASS)
-out vec2 _colorOut;
+out vec2 _colourOut;
 #endif
 
 #include "nodeBufferedInput.cmn"
@@ -100,8 +100,8 @@ void main() {
 
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
-    //_colorOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
-    _colorOut = computeMoments(gl_FragCoord.z);
+    //_colourOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
+    _colourOut = computeMoments(gl_FragCoord.z);
 #endif
 
 }

@@ -97,9 +97,9 @@ class ImageData : private NonCopyable {
     inline const stringImpl& name() const { return _name; }
     /// the image format as given by STB/NV_DDS
     inline GFXImageFormat format() const { return _format; }
-    /// get the texel color at the specified offset from the origin
-    vec4<U8> getColor(I32 x, I32 y, U32 mipLevel = 0) const;
-    void getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
+    /// get the texel colour at the specified offset from the origin
+    vec4<U8> getColour(I32 x, I32 y, U32 mipLevel = 0) const;
+    void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel = 0) const;
 
     inline TextureType compressedTextureType() const {
         return _compressedTextureType;

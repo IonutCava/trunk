@@ -44,23 +44,23 @@ struct duDebugDraw
 
     /// Submit a vertex
     ///  @param pos [in] position of the verts.
-    ///  @param color [in] color of the verts.
-    virtual void vertex(const float* pos, unsigned int color) = 0;
+    ///  @param colour [in] colour of the verts.
+    virtual void vertex(const float* pos, unsigned int colour) = 0;
 
     /// Submit a vertex
     ///  @param x,y,z [in] position of the verts.
-    ///  @param color [in] color of the verts.
-    virtual void vertex(const float x, const float y, const float z, unsigned int color) = 0;
+    ///  @param colour [in] colour of the verts.
+    virtual void vertex(const float x, const float y, const float z, unsigned int colour) = 0;
 
     /// Submit a vertex
     ///  @param pos [in] position of the verts.
-    ///  @param color [in] color of the verts.
-    virtual void vertex(const float* pos, unsigned int color, const float* uv) = 0;
+    ///  @param colour [in] colour of the verts.
+    virtual void vertex(const float* pos, unsigned int colour, const float* uv) = 0;
     
     /// Submit a vertex
     ///  @param x,y,z [in] position of the verts.
-    ///  @param color [in] color of the verts.
-    virtual void vertex(const float x, const float y, const float z, unsigned int color, const float u, const float v) = 0;
+    ///  @param colour [in] colour of the verts.
+    virtual void vertex(const float x, const float y, const float z, unsigned int colour, const float u, const float v) = 0;
     
     /// End drawing primitives.
     virtual void end() = 0;
@@ -121,7 +121,7 @@ inline unsigned int duTransCol(unsigned int c, unsigned int a)
 }
 
 
-void duCalcBoxColors(unsigned int* colors, unsigned int colTop, unsigned int colSide);
+void duCalcBoxColours(unsigned int* colours, unsigned int colTop, unsigned int colSide);
 
 void duDebugDrawCylinderWire(struct duDebugDraw* dd, float minx, float miny, float minz,
                              float maxx, float maxy, float maxz, unsigned int col, const float lineWidth);
@@ -188,7 +188,7 @@ void duAppendCylinder(struct duDebugDraw* dd, float minx, float miny, float minz
 class duDisplayList : public duDebugDraw
 {
     float* m_pos;
-    unsigned int* m_color;
+    unsigned int* m_colour;
     int m_size;
     int m_cap;
 
@@ -201,8 +201,8 @@ public:
     duDisplayList(int cap = 512);
     ~duDisplayList();
     virtual void begin(duDebugDrawPrimitives prim, float size = 1.0f);
-    virtual void vertex(const float x, const float y, const float z, unsigned int color);
-    virtual void vertex(const float* pos, unsigned int color);
+    virtual void vertex(const float x, const float y, const float z, unsigned int colour);
+    virtual void vertex(const float* pos, unsigned int colour);
     virtual void end();
     void clear();
     void draw(struct duDebugDraw* dd);

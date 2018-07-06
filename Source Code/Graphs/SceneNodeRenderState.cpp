@@ -8,7 +8,7 @@ SceneNodeRenderState::~SceneNodeRenderState() {}
 size_t SceneNodeRenderState::getDepthStateBlock() {
     if (_depthStateBlockHash == 0) {
         RenderStateBlock depthDesc;
-        depthDesc.setColorWrites(false, false, false, false);
+        depthDesc.setColourWrites(false, false, false, false);
         depthDesc.setZFunc(ComparisonFunction::LESS);
         _depthStateBlockHash = depthDesc.getHash();
     }
@@ -21,7 +21,7 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
         /// Cull back faces for shadow rendering
         depthDesc.setCullMode(CullMode::CCW);
         // depthDesc.setZBias(1.0f, 2.0f);
-        depthDesc.setColorWrites(true, true, false, false);
+        depthDesc.setColourWrites(true, true, false, false);
         _shadowStateBlockHash = depthDesc.getHash();
     }
     return _shadowStateBlockHash;

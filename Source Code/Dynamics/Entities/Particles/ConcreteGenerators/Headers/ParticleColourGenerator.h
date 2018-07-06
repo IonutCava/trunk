@@ -29,13 +29,13 @@
 
  */
 
-#ifndef _PARTICLE_COLOR_GENERATOR_H_
-#define _PARTICLE_COLOR_GENERATOR_H_
+#ifndef _PARTICLE_COLOUR_GENERATOR_H_
+#define _PARTICLE_COLOUR_GENERATOR_H_
 
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleColorGenerator final : public ParticleGenerator {
+class ParticleColourGenerator final : public ParticleGenerator {
    public:
     vec4<U8> _minStartCol;
     vec4<U8> _maxStartCol;
@@ -43,7 +43,7 @@ class ParticleColorGenerator final : public ParticleGenerator {
     vec4<U8> _maxEndCol;
 
    public:
-    ParticleColorGenerator() {}
+    ParticleColourGenerator() {}
 
     void generate(TaskHandle& packagedTasksParent,
                   const U64 deltaTime,

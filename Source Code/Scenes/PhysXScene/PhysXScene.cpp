@@ -33,7 +33,7 @@ void PhysXScene::processGUI(const U64 deltaTime) {
 }
 
 void PhysXScene::processInput(const U64 deltaTime) {
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColor());
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sun.lock()->getNode<Light>()->getDiffuseColour());
 }
 
 bool PhysXScene::load(const stringImpl& name) {
@@ -113,7 +113,7 @@ void PhysXScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 20),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 64, 255, 255),  // Color
+        vec4<U8>(0, 64, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 64, 64, 255),

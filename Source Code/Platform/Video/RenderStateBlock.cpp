@@ -15,7 +15,7 @@ RenderStateBlock::RenderStateBlock()
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other)
     : GUIDWrapper(other),
      _lockHash(false),
-     _colorWrite(other._colorWrite),
+     _colourWrite(other._colourWrite),
      _blendEnable(other._blendEnable),
      _blendSrc(other._blendSrc),
      _blendDest(other._blendDest),
@@ -79,14 +79,14 @@ void RenderStateBlock::setBlend(bool enable,
     clean();
 }
 
-void RenderStateBlock::setColorWrites(bool red,
+void RenderStateBlock::setColourWrites(bool red,
                                       bool green,
                                       bool blue,
                                       bool alpha) {
-    _colorWrite.b[0] = red ? 1 : 0;
-    _colorWrite.b[1] = green ? 1 : 0;
-    _colorWrite.b[2] = blue ? 1 : 0;
-    _colorWrite.b[3] = alpha ? 1 : 0;
+    _colourWrite.b[0] = red ? 1 : 0;
+    _colourWrite.b[1] = green ? 1 : 0;
+    _colourWrite.b[2] = blue ? 1 : 0;
+    _colourWrite.b[3] = alpha ? 1 : 0;
 
     clean();
 }
@@ -137,7 +137,7 @@ void RenderStateBlock::setDefaultValues() {
     _lockHash = true;
     setZBias(0.0f, 1.0f);
     setZFunc();
-    setColorWrites(true, true, true, true);
+    setColourWrites(true, true, true, true);
     setBlend(false, BlendProperty::ONE,
              BlendProperty::ONE,
              BlendOperation::ADD);
@@ -162,7 +162,7 @@ void RenderStateBlock::clean() {
     U32 zUnits = to_uint(floor((_zUnits * 1000.0) + 0.5));
 
     _cachedHash = 0;
-    Util::Hash_combine(_cachedHash, _colorWrite.i);
+    Util::Hash_combine(_cachedHash, _colourWrite.i);
     Util::Hash_combine(_cachedHash, _blendEnable);
     Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
     Util::Hash_combine(_cachedHash, to_uint(_blendDest));

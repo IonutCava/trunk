@@ -262,7 +262,7 @@ struct DXT5AlphaBlock {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// flip a DXT1 color block
+// flip a DXT1 colour block
 void flip_blocks_dxtc1(DXTColBlock *line, unsigned int numBlocks) {
     DXTColBlock *curblock = line;
 
@@ -275,7 +275,7 @@ void flip_blocks_dxtc1(DXTColBlock *line, unsigned int numBlocks) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// flip a DXT3 color block
+// flip a DXT3 colour block
 void flip_blocks_dxtc3(DXTColBlock *line, unsigned int numBlocks) {
     DXTColBlock *curblock = line;
     DXT3AlphaBlock *alphablock;
@@ -371,7 +371,7 @@ void flip_dxt5_alpha(DXT5AlphaBlock *block) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// flip a DXT5 color block
+// flip a DXT5 colour block
 void flip_blocks_dxtc5(DXTColBlock *line, unsigned int numBlocks) {
     DXTColBlock *curblock = line;
     DXT5AlphaBlock *alphablock;

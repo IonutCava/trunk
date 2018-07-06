@@ -65,7 +65,7 @@ FXAA3 requires RGBL as input unless the following is set,
 #define FXAA_GREEN_AS_LUMA 1
 
 In which case the engine uses green in place of luma,
-and requires RGB input is in a non-linear colorspace.
+and requires RGB input is in a non-linear colourspace.
 
 RGB should be LDR (low dynamic range).
 Specifically do FXAA after tonemapping.
@@ -74,36 +74,36 @@ RGB data as returned by a texture fetch can be non-linear,
 or linear when FXAA_GREEN_AS_LUMA is not set.
 Note an "sRGB format" texture counts as linear,
 because the result of a texture fetch is linear data.
-Regular "RGBA8" textures in the sRGB colorspace are non-linear.
+Regular "RGBA8" textures in the sRGB colourspace are non-linear.
 
 If FXAA_GREEN_AS_LUMA is not set,
 luma must be stored in the alpha channel prior to running FXAA.
 This luma should be in a perceptual space (could be gamma 2.0).
 Example pass before FXAA where output is gamma 2.0 encoded,
 
-color.rgb = ToneMap(color.rgb); // linear color output
-color.rgb = sqrt(color.rgb);    // gamma 2.0 color output
-return color;
+colour.rgb = ToneMap(colour.rgb); // linear colour output
+colour.rgb = sqrt(colour.rgb);    // gamma 2.0 colour output
+return colour;
 
 To use FXAA,
 
-color.rgb = ToneMap(color.rgb);  // linear color output
-color.rgb = sqrt(color.rgb);     // gamma 2.0 color output
-color.a = dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114)); // compute luma
-return color;
+colour.rgb = ToneMap(colour.rgb);  // linear colour output
+colour.rgb = sqrt(colour.rgb);     // gamma 2.0 colour output
+colour.a = dot(colour.rgb, FxaaFloat3(0.299, 0.587, 0.114)); // compute luma
+return colour;
 
 Another example where output is linear encoded,
 say for instance writing to an sRGB formated render target,
 where the render target does the conversion back to sRGB after blending,
 
-color.rgb = ToneMap(color.rgb); // linear color output
-return color;
+colour.rgb = ToneMap(colour.rgb); // linear colour output
+return colour;
 
 To use FXAA,
 
-color.rgb = ToneMap(color.rgb); // linear color output
-color.a = sqrt(dot(color.rgb, FxaaFloat3(0.299, 0.587, 0.114))); // compute luma
-return color;
+colour.rgb = ToneMap(colour.rgb); // linear colour output
+colour.a = sqrt(dot(colour.rgb, FxaaFloat3(0.299, 0.587, 0.114))); // compute luma
+return colour;
 
 Getting luma correct is required for the algorithm to work correctly.
 
@@ -111,10 +111,10 @@ Getting luma correct is required for the algorithm to work correctly.
 ------------------------------------------------------------------------------
 BEING LINEARLY CORRECT?
 ------------------------------------------------------------------------------
-Applying FXAA to a framebuffer with linear RGB color will look worse.
+Applying FXAA to a framebuffer with linear RGB colour will look worse.
 This is very counter intuitive, but happends to be true in this case.
 The reason is because dithering artifacts will be more visiable
-in a linear colorspace.
+in a linear colourspace.
 
 
 ------------------------------------------------------------------------------
@@ -197,7 +197,7 @@ INTEGRATION KNOBS
 /*==========================================================================*/
 #ifndef FXAA_GREEN_AS_LUMA
 //
-// For those using non-linear color,
+// For those using non-linear colour,
 // and either not able to get luma in alpha, or not wanting to,
 // this enables FXAA to run using green as a proxy for luma.
 // So with this enabled, no need to pack luma in alpha.
@@ -208,7 +208,7 @@ INTEGRATION KNOBS
 // Might want to lower the settings for both,
 //    fxaaConsoleEdgeThresholdMin
 //    fxaaQualityEdgeThresholdMin
-// In order to insure AA does not get turned off on colors 
+// In order to insure AA does not get turned off on colours 
 // which contain a minor amount of green.
 //
 // 1 = On.
@@ -238,7 +238,7 @@ INTEGRATION KNOBS
 //
 // 1 = Use discard on pixels which don't need AA.
 //     For APIs which enable concurrent TEX+ROP from same surface.
-// 0 = Return unchanged color on pixels which don't need AA.
+// 0 = Return unchanged colour on pixels which don't need AA.
 //
 #define FXAA_DISCARD 0
 #endif
@@ -684,10 +684,10 @@ FxaaFloat4 FxaaPixelShader(
     // {__zw} = lower right of pixel
     FxaaFloat4 fxaaConsolePosPos,
     //
-    // Input color texture.
-    // {rgb_} = color in linear or perceptual color space
+    // Input colour texture.
+    // {rgb_} = colour in linear or perceptual colour space
     // if (FXAA_GREEN_AS_LUMA == 0)
-    //     {___a} = luma in perceptual color space (not linear)
+    //     {___a} = luma in perceptual colour space (not linear)
     FxaaTex tex,
     //
     // Only used on the optimized 360 version of FXAA Console.
@@ -770,7 +770,7 @@ FxaaFloat4 FxaaPixelShader(
     //   0.0312 - visible limit (slower)
     // Special notes when using FXAA_GREEN_AS_LUMA,
     //   Likely want to set this to zero.
-    //   As colors that are mostly not-green
+    //   As colours that are mostly not-green
     //   will appear very dark in the green channel!
     //   Tune by looking at mostly non-green content,
     //   then start at zero and increase until aliasing is a problem.
@@ -817,7 +817,7 @@ FxaaFloat4 FxaaPixelShader(
     //   0.04 - slower and less aliasing in darks
     // Special notes when using FXAA_GREEN_AS_LUMA,
     //   Likely want to set this to zero.
-    //   As colors that are mostly not-green
+    //   As colours that are mostly not-green
     //   will appear very dark in the green channel!
     //   Tune by looking at mostly non-green content,
     //   then start at zero and increase until aliasing is a problem.
@@ -1404,7 +1404,7 @@ Use the following cgc options,
 #pragma regcount 7
 #pragma disablepc all
 #pragma option O3
-#pragma option OutColorPrec=fp16
+#pragma option OutColourPrec=fp16
 #pragma texformat default RGBA8
 /*==========================================================================*/
 half4 FxaaPixelShader(
@@ -1556,7 +1556,7 @@ Will look at fixing this for FXAA 3.12.
 #pragma regcount 7
 #pragma disablepc all
 #pragma option O2
-#pragma option OutColorPrec=fp16
+#pragma option OutColourPrec=fp16
 #pragma texformat default RGBA8
 /*==========================================================================*/
 half4 FxaaPixelShader(

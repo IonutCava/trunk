@@ -47,7 +47,7 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData
     //uint  dvd_lightCountPerType[MAX_LIGHT_TYPES];
 };
 
-#define dvd_fogColor dvd_fogDetails.xyz
+#define dvd_fogColour dvd_fogDetails.xyz
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)
 #define dvd_showDebugInfo int(dvd_otherData.y)

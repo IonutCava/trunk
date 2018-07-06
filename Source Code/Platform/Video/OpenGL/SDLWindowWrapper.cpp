@@ -145,7 +145,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), _maxTextureUnits);
     
     par.setParam<I32>(_ID("rendering.maxTextureSlots"), _maxTextureUnits);
-    // Maximum number of color attachments per framebuffer
+    // Maximum number of colour attachments per framebuffer
     par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
@@ -299,8 +299,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     _GUIGLrenderer->enableExtraStateSettings(par.getParam<bool>(_ID("GUI.CEGUI.ExtraStates")));
     CEGUI::System::create(*_GUIGLrenderer);
 
-    static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();
-    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
+    glClearColor(clearColour.r, clearColour.g, clearColour.b, clearColour.a);
 
     // That's it. Everything should be ready for draw calls
     Console::printfn(Locale::get(_ID("START_OGL_API_OK")));

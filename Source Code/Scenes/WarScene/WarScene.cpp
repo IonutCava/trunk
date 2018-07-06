@@ -19,12 +19,12 @@
 #include "Platform/Video/Headers/IMPrimitive.h"
 
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColorUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColourUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleFloorUpdater.h"
 
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColorGenerator.h"
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColourGenerator.h"
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h"
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleTimeGenerator.h"
 
@@ -167,10 +167,10 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
         _sun.lock()->get<PhysicsComponent>()->setPosition(sunVector);
-        vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
+        vec4<F32> sunColour = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
-        _sun.lock()->getNode<Light>()->setDiffuseColor(sunColor);
-        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector, _sun.lock()->getNode<Light>()->getDiffuseColor());
+        _sun.lock()->getNode<Light>()->setDiffuseColour(sunColour);
+        _currentSky.lock()->getNode<Sky>()->setSunProperties(sunVector, _sun.lock()->getNode<Light>()->getDiffuseColour());
 
         _taskTimers[0] = 0.0;
     }
@@ -418,7 +418,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setDrawImpostor(false);
             light->setRange(25.0f);
             light->setCastShadows(i == 0 ? true : false);
-            light->setDiffuseColor(DefaultColors::RANDOM());
+            light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
@@ -431,7 +431,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setDrawImpostor(false);
             light->setRange(35.0f);
             light->setCastShadows(false);
-            light->setDiffuseColor(DefaultColors::RANDOM());
+            light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
@@ -444,7 +444,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setDrawImpostor(false);
             light->setRange(55.0f);
             light->setCastShadows(i == 1 ? true : false);
-            light->setDiffuseColor(DefaultColors::RANDOM());
+            light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<PhysicsComponent>()->rotateX(-20);
@@ -475,7 +475,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::BLUE());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::BLUE());
 
     _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
@@ -491,7 +491,7 @@ bool WarScene::load(const stringImpl& name) {
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::RED());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::RED());
 
     SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
@@ -503,7 +503,7 @@ bool WarScene::load(const stringImpl& name) {
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
     flagRComp = firstPersonFlag->getChild(0, temp).get<RenderingComponent>();
-    flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::GREEN());
+    flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN());
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
     
@@ -539,11 +539,11 @@ bool WarScene::load(const stringImpl& name) {
     boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
     particleSource->addGenerator(boxGenerator);
 
-    std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
-    colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.4f, 0.4f, 1.0f)));
-    colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 0.8f, 0.8f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.2f, 0.5f)));
-    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 0.5f, 0.75f)));
+    std::shared_ptr<ParticleColourGenerator> colGenerator = std::make_shared<ParticleColourGenerator>();
+    colGenerator->_minStartCol.set(Util::ToByteColour(vec4<F32>(0.7f, 0.4f, 0.4f, 1.0f)));
+    colGenerator->_maxStartCol.set(Util::ToByteColour(vec4<F32>(1.0f, 0.8f, 0.8f, 1.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColour(vec4<F32>(0.5f, 0.2f, 0.2f, 0.5f)));
+    colGenerator->_maxEndCol.set(Util::ToByteColour(vec4<F32>(0.7f, 0.5f, 0.5f, 0.75f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
@@ -572,7 +572,7 @@ bool WarScene::load(const stringImpl& name) {
     floorUpdater->_bounceFactor = 0.65f;
     test->addUpdater(floorUpdater);
     test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
-    test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
+    test->addUpdater(std::make_shared<ParticleBasicColourUpdater>());
     
     state().generalVisibility(state().generalVisibility() * 2);
 
@@ -586,7 +586,7 @@ bool WarScene::load(const stringImpl& name) {
             light->setDrawImpostor(false);
             light->setRange(20.0f);
             light->setCastShadows(false);
-            light->setDiffuseColor(DefaultColors::RANDOM());
+            light->setDiffuseColour(DefaultColours::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
@@ -714,7 +714,7 @@ void WarScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 63),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 50, 255, 255), // Color
+        vec4<U8>(0, 50, 255, 255), // Colour
         Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
     _GUI->addText(_ID("RenderBinCount"),
         vec2<I32>(60, 83),
@@ -734,7 +734,7 @@ void WarScene::postLoadMainThread() {
     _GUI->addText(_ID("scoreDisplay"),
         vec2<I32>(60, 123),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(50, 192, 50, 255),// Color
+        vec4<U8>(50, 192, 50, 255),// Colour
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
     _GUI->addText(_ID("entityState"), vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,

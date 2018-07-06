@@ -216,8 +216,8 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
     dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
-    // Get the color matrix (diffuse, specular, etc.)
-    renderable->getMaterialColorMatrix(dataOut._colorMatrix);
+    // Get the colour matrix (diffuse, specular, etc.)
+    renderable->getMaterialColourMatrix(dataOut._colourMatrix);
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
     renderable->getRenderingProperties(dataOut._properties);

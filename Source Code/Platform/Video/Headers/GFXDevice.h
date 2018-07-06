@@ -91,14 +91,14 @@ DEFINE_SINGLETON(GFXDevice)
     struct NodeData {
         mat4<F32> _worldMatrix;
         mat4<F32> _normalMatrixWV;
-        mat4<F32> _colorMatrix;
+        mat4<F32> _colourMatrix;
         vec4<F32> _properties;
 
         NodeData()
         {
             _worldMatrix.identity();
             _normalMatrixWV.identity();
-            _colorMatrix.zero();
+            _colourMatrix.zero();
         }
         void set(const NodeData& other);
     };

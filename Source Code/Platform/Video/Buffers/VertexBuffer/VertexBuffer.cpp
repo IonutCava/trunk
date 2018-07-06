@@ -160,7 +160,7 @@ bool VertexBuffer::deserialize(ByteBuffer& dataIn) {
     _data.resize(count);
     for (U32 i = 0; i < count; ++i) {
         Vertex& vert = _data[i];
-        dataIn >> vert._color;
+        dataIn >> vert._colour;
         dataIn >> vert._indices.i;
         dataIn >> vert._normal;
         dataIn >> vert._position;
@@ -195,7 +195,7 @@ bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
 
         dataOut << to_uint(_data.size());
         for (Vertex vert : _data) {
-            dataOut << vert._color;
+            dataOut << vert._colour;
             dataOut << vert._indices.i;
             dataOut << vert._normal;
             dataOut << vert._position;

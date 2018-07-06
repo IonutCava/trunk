@@ -70,10 +70,10 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _lastTotalBinSize = 0;
 
     _noDepthClear._clearDepthBufferOnBind = false;
-    _noDepthClear._clearColorBuffersOnBind = true;
+    _noDepthClear._clearColourBuffersOnBind = true;
     _noDepthClear._drawMask.fill(true);
 
-    _depthOnly._clearColorBuffersOnBind = true;
+    _depthOnly._clearColourBuffersOnBind = true;
     _depthOnly._clearDepthBufferOnBind = true;
     _depthOnly._drawMask.fill(false);
     _depthOnly._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;

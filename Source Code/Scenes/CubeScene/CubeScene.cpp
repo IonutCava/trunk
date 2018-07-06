@@ -32,7 +32,7 @@ void CubeScene::processTasks(const U64 deltaTime) {
                 F32 g = 1.0f - (row / 3.0f);
                 F32 b = col / (_lightNodes.size() / 3.0f);
 
-                _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColor(vec3<F32>(r, g, b));
+                _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColour(vec3<F32>(r, g, b));
                 _lightNodes[row * 10 + col].lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
             }
 

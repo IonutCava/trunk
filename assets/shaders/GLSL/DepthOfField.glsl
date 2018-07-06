@@ -14,7 +14,7 @@ void main(void)
 -- Fragment
 
 #define PI  3.14159265
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
@@ -134,7 +134,7 @@ float bdepth(vec2 coords) //blurring depth
 }
 
 
-vec3 color(vec2 coords,float blur) //processing the sample
+vec3 colour(vec2 coords,float blur) //processing the sample
 {
     vec3 col = vec3(0.0);
     
@@ -204,7 +204,7 @@ void main()
             { 
             p = penta(vec2(pw,ph));
             }
-            col += color(VAR._texCoord + vec2(pw*w,ph*h),blur)*mix(1.0,(float(i))/(float(rings)),bias)*p;
+            col += colour(VAR._texCoord + vec2(pw*w,ph*h),blur)*mix(1.0,(float(i))/(float(rings)),bias)*p;
             s += 1.0*mix(1.0,(float(i))/(float(rings)),bias)*p;   
         }
     }
@@ -212,7 +212,7 @@ void main()
     
     col /= s;   
     
-    _colorOut = vec4(col, 1.0);
+    _colourOut = vec4(col, 1.0);
 }
 
 -- Fragment.OLD.BROKEN.DO.NOT.USE
@@ -230,106 +230,106 @@ uniform float mask3[3];
 vec4 convolH11(){
 
     float stepX = 1.0/size.x;
-    vec4 color;
+    vec4 colour;
     int k = (11/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
+        colour += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
             
-    return color;
+    return colour;
 }
 
 vec4 convolH5(){
 
     float stepX = 1.0/size.x;
-    vec4 color;
+    vec4 colour;
     int k = (5/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
-    return color;
+        colour += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
+    return colour;
 }
 
 vec4 convolH3(){
 
     float stepX = 1.0/size.x;
-    vec4 color;
+    vec4 colour;
     int k = (3/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
-    return color;
+        colour += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(i*stepX, 0));
+    return colour;
 }
 
 vec4 convolV11(){
 
     float stepY = 1.0/size.y;
-    vec4 color;
+    vec4 colour;
     int k = (11/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
-    return color;
+        colour += mask11[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
+    return colour;
 }
 
 vec4 convolV5(){
 
     float stepY = 1.0/size.y;
-    vec4 color;
+    vec4 colour;
     int k = (5/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
-    return color;
+        colour += mask5[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
+    return colour;
 }
 
 vec4 convolV3(){
 
     float stepY = 1.0/size.y;
-    vec4 color;
+    vec4 colour;
     int k = (3/2);
     int ind = 0;
     for(int i=-k; i<=k; i++)
-        color += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
+        colour += mask3[ind++] * texture(texScreen, VAR._texCoord + vec2(0, i*stepY));
     
-    return color;
+    return colour;
 }
 
 
 
-void Pdc(inout vec4 color){
+void Pdc(inout vec4 colour){
 
     float depth = texture(texDepth, VAR._texCoord).r;
 
     if(depth > 0.997){
 
         if(bHorizontal)    {        
-            color = convolH11();
+            colour = convolH11();
         }else{
-            color = convolV11();
+            colour = convolV11();
         }
         
     }else if(depth > 0.995){
         if(bHorizontal)    {
-            color = convolH5();
+            colour = convolH5();
         }else{
-            color = convolV5();
+            colour = convolV5();
         }
         
     }else if(depth > 0.994){
         if(bHorizontal)    {
-            color = convolH3();
+            colour = convolH3();
         }else{
-            color = convolV3();
+            colour = convolV3();
         }
         
     }
     else{
-        color = texture(texScreen, VAR._texCoord);
+        colour = texture(texScreen, VAR._texCoord);
     }
 }
 
 void main(){
 
-    Pdc(_colorOut);
+    Pdc(_colourOut);
 }

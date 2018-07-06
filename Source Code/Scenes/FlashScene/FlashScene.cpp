@@ -45,7 +45,7 @@ void FlashScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 64, 255, 255),  // Color
+        vec4<U8>(0, 64, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     Scene::postLoadMainThread();

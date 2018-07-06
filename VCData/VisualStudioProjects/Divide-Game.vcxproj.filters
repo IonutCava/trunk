@@ -318,9 +318,6 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleBoxGenerator.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteGenerators</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleColorGenerator.cpp">
-      <Filter>Dynamics\Entities\Particles\ConcreteGenerators</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleRoundGenerator.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteGenerators</Filter>
     </ClCompile>
@@ -339,9 +336,6 @@
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleAttractorUpdater.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicColorUpdater.cpp">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicTimeUpdater.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
     </ClCompile>
@@ -349,12 +343,6 @@
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleFloorUpdater.cpp">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticlePositionColorUpdater.cpp">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColorUpdater.cpp">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp">
@@ -498,6 +486,18 @@
     <ClCompile Include="..\..\Source Code\Scenes\ScenePool.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleColourGenerator.cpp">
+      <Filter>Dynamics\Entities\Particles\ConcreteGenerators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicColourUpdater.cpp">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticlePositionColourUpdater.cpp">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColourUpdater.cpp">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">
@@ -587,9 +587,6 @@
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleBoxGenerator.h">
       <Filter>Dynamics\Entities\Particles\ConcreteGenerators\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColorGenerator.h">
-      <Filter>Dynamics\Entities\Particles\ConcreteGenerators\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleRoundGenerator.h">
       <Filter>Dynamics\Entities\Particles\ConcreteGenerators\Headers</Filter>
     </ClInclude>
@@ -608,9 +605,6 @@
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleAttractorUpdater.h">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicColorUpdater.h">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicTimeUpdater.h">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
     </ClInclude>
@@ -618,12 +612,6 @@
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleFloorUpdater.h">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticlePositionColorUpdater.h">
-      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColorUpdater.h">
       <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h">
@@ -758,6 +746,18 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\Headers\ScenePool.h">
       <Filter>Scenes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColourGenerator.h">
+      <Filter>Dynamics\Entities\Particles\ConcreteGenerators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicColourUpdater.h">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticlePositionColourUpdater.h">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColourUpdater.h">
+      <Filter>Dynamics\Entities\Particles\ConcreteUpdaters\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

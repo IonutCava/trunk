@@ -52,8 +52,8 @@ class SceneShaderData {
     SceneShaderData();
     ~SceneShaderData();
 
-    inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
-        _bufferData._fogDetails.set(colorR, colorG, colorB, density);
+    inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) {
+        _bufferData._fogDetails.set(colourR, colourG, colourB, density);
     }
 
     inline void fogDensity(F32 density) {

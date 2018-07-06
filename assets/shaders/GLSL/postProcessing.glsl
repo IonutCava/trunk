@@ -13,7 +13,7 @@ void main(void)
 
 -- Fragment
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
@@ -31,28 +31,28 @@ uniform float _fadeStrength = 0.0;
 uniform bool _fadeActive = false;
 uniform vec4 _fadeColour;
 
-subroutine vec4 VignetteRoutineType(in vec4 colorIn);
-subroutine vec4 NoiseRoutineType(in vec4 colorIn);
+subroutine vec4 VignetteRoutineType(in vec4 colourIn);
+subroutine vec4 NoiseRoutineType(in vec4 colourIn);
 subroutine vec4 ScreenRoutineType();
 
 layout(location = 0) subroutine uniform VignetteRoutineType VignetteRoutine;
 layout(location = 1) subroutine uniform NoiseRoutineType NoiseRoutine;
 layout(location = 2) subroutine uniform ScreenRoutineType ScreenRoutine;
 
-vec4 LevelOfGrey(in vec4 colorIn) {
-    return vec4(colorIn.r * 0.299, colorIn.g * 0.587, colorIn.b * 0.114, colorIn.a);
+vec4 LevelOfGrey(in vec4 colourIn) {
+    return vec4(colourIn.r * 0.299, colourIn.g * 0.587, colourIn.b * 0.114, colourIn.a);
 }
 
 subroutine(VignetteRoutineType)
-vec4 Vignette(in vec4 colorIn){
-    vec4 colorOut = colorIn - (vec4(1,1,1,2) - texture(texVignette, VAR._texCoord));
-    return vec4(clamp(colorOut.rgb,0.0,1.0), colorOut.a);
+vec4 Vignette(in vec4 colourIn){
+    vec4 colourOut = colourIn - (vec4(1,1,1,2) - texture(texVignette, VAR._texCoord));
+    return vec4(clamp(colourOut.rgb,0.0,1.0), colourOut.a);
 }
 
 subroutine(NoiseRoutineType)
-vec4 Noise(in vec4 colorIn){
+vec4 Noise(in vec4 colourIn){
     return mix(texture(texNoise, VAR._texCoord + vec2(randomCoeffNoise, randomCoeffNoise)),
-               vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colorIn) / 3.0;
+               vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colourIn) / 3.0;
 }
 
 subroutine(ScreenRoutineType)
@@ -77,8 +77,8 @@ vec4 screenNormal(){
 }
 
 subroutine(NoiseRoutineType, VignetteRoutineType)
-vec4 ColorPassThrough(in vec4 colorIn){
-    return colorIn;
+vec4 ColourPassThrough(in vec4 colourIn){
+    return colourIn;
 }
 
 void main(void){
@@ -86,5 +86,5 @@ void main(void){
     if (_fadeActive) {
         colour = mix(colour, _fadeColour, _fadeStrength);
     }
-    _colorOut = colour;
+    _colourOut = colour;
 }

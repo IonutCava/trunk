@@ -530,7 +530,7 @@ void duDebugDrawTileCacheLayerAreas(struct duDebugDraw* dd, const dtTileCacheLay
     const float* bmax = layer.header->bmax;
     const int idx = layer.header->tlayer;
     
-    unsigned int color = duIntToCol(idx+1, 255);
+    unsigned int colour = duIntToCol(idx+1, 255);
     
     // Layer bounds
     float lbmin[3], lbmax[3];
@@ -540,7 +540,7 @@ void duDebugDrawTileCacheLayerAreas(struct duDebugDraw* dd, const dtTileCacheLay
     lbmax[0] = bmin[0] + (layer.header->maxx+1)*cs;
     lbmax[1] = bmax[1];
     lbmax[2] = bmin[2] + (layer.header->maxy+1)*cs;
-    duDebugDrawBoxWire(dd, lbmin[0],lbmin[1],lbmin[2], lbmax[0],lbmax[1],lbmax[2], duTransCol(color,128), 2.0f);
+    duDebugDrawBoxWire(dd, lbmin[0],lbmin[1],lbmin[2], lbmax[0],lbmax[1],lbmax[2], duTransCol(colour,128), 2.0f);
     
     // Layer height
     dd->begin(DU_DRAW_QUADS);
@@ -555,11 +555,11 @@ void duDebugDrawTileCacheLayerAreas(struct duDebugDraw* dd, const dtTileCacheLay
             
             unsigned int col;
             if (area == 63)
-                col = duLerpCol(color, duRGBA(0,192,255,64), 32);
+                col = duLerpCol(colour, duRGBA(0,192,255,64), 32);
             else if (area == 0)
-                col = duLerpCol(color, duRGBA(0,0,0,64), 32);
+                col = duLerpCol(colour, duRGBA(0,0,0,64), 32);
             else
-                col = duLerpCol(color, duIntToCol(area, 255), 32);
+                col = duLerpCol(colour, duIntToCol(area, 255), 32);
             
             const float fx = bmin[0] + x*cs;
             const float fy = bmin[1] + (lh+1)*ch;
@@ -584,7 +584,7 @@ void duDebugDrawTileCacheLayerRegions(struct duDebugDraw* dd, const dtTileCacheL
     const float* bmax = layer.header->bmax;
     const int idx = layer.header->tlayer;
     
-    unsigned int color = duIntToCol(idx+1, 255);
+    unsigned int colour = duIntToCol(idx+1, 255);
     
     // Layer bounds
     float lbmin[3], lbmax[3];
@@ -594,7 +594,7 @@ void duDebugDrawTileCacheLayerRegions(struct duDebugDraw* dd, const dtTileCacheL
     lbmax[0] = bmin[0] + (layer.header->maxx+1)*cs;
     lbmax[1] = bmax[1];
     lbmax[2] = bmin[2] + (layer.header->maxy+1)*cs;
-    duDebugDrawBoxWire(dd, lbmin[0],lbmin[1],lbmin[2], lbmax[0],lbmax[1],lbmax[2], duTransCol(color,128), 2.0f);
+    duDebugDrawBoxWire(dd, lbmin[0],lbmin[1],lbmin[2], lbmax[0],lbmax[1],lbmax[2], duTransCol(colour,128), 2.0f);
     
     // Layer height
     dd->begin(DU_DRAW_QUADS);
@@ -607,7 +607,7 @@ void duDebugDrawTileCacheLayerRegions(struct duDebugDraw* dd, const dtTileCacheL
             if (lh == 0xff) continue;
             const unsigned char reg = layer.regs[lidx];
             
-            unsigned int col = duLerpCol(color, duIntToCol(reg, 255), 192);
+            unsigned int col = duLerpCol(colour, duIntToCol(reg, 255), 192);
             
             const float fx = bmin[0] + x*cs;
             const float fy = bmin[1] + (lh+1)*ch;
@@ -655,9 +655,9 @@ void duDebugDrawTileCacheContours(duDebugDraw* dd, const struct dtTileCacheConto
     for (int i = 0; i < lcset.nconts; ++i)
     {
         const dtTileCacheContour& c = lcset.conts[i];
-        unsigned int color = 0;
+        unsigned int colour = 0;
         
-        color = duIntToCol(i, a);
+        colour = duIntToCol(i, a);
         
         for (int j = 0; j < c.nverts; ++j)
         {
@@ -670,7 +670,7 @@ void duDebugDrawTileCacheContours(duDebugDraw* dd, const struct dtTileCacheConto
             const float bx = orig[0] + vb[0]*cs;
             const float by = orig[1] + (vb[1]+1+(i&1))*ch;
             const float bz = orig[2] + vb[2]*cs;
-            unsigned int col = color;
+            unsigned int col = colour;
             if ((va[3] & 0xf) != 0xf)
             {
                 // Portal segment
@@ -699,23 +699,23 @@ void duDebugDrawTileCacheContours(duDebugDraw* dd, const struct dtTileCacheConto
     for (int i = 0; i < lcset.nconts; ++i)
     {
         const dtTileCacheContour& c = lcset.conts[i];
-        unsigned int color = 0;
+        unsigned int colour = 0;
         
         for (int j = 0; j < c.nverts; ++j)
         {
             const unsigned char* va = &c.verts[j*4];
             
-            color = duDarkenCol(duIntToCol(i, a));
+            colour = duDarkenCol(duIntToCol(i, a));
             if (va[3] & 0x80)
             {
                 // Border vertex
-                color = duRGBA(255,0,0,255);
+                colour = duRGBA(255,0,0,255);
             }
             
             float fx = orig[0] + va[0]*cs;
             float fy = orig[1] + (va[1]+1+(i&1))*ch;
             float fz = orig[2] + va[2]*cs;
-            dd->vertex(fx,fy,fz, color);
+            dd->vertex(fx,fy,fz, colour);
         }
     }
     dd->end();
@@ -736,13 +736,13 @@ void duDebugDrawTileCachePolyMesh(duDebugDraw* dd, const struct dtTileCachePolyM
     {
         const unsigned short* p = &lmesh.polys[i*nvp*2];
         
-        unsigned int color;
+        unsigned int colour;
         if (lmesh.areas[i] == DT_TILECACHE_WALKABLE_AREA)
-            color = duRGBA(0,192,255,64);
+            colour = duRGBA(0,192,255,64);
         else if (lmesh.areas[i] == DT_TILECACHE_NULL_AREA)
-            color = duRGBA(0,0,0,64);
+            colour = duRGBA(0,0,0,64);
         else
-            color = duIntToCol(lmesh.areas[i], 255);
+            colour = duIntToCol(lmesh.areas[i], 255);
         
         unsigned short vi[3];
         for (int j = 2; j < nvp; ++j)
@@ -757,7 +757,7 @@ void duDebugDrawTileCachePolyMesh(duDebugDraw* dd, const struct dtTileCachePolyM
                 const float x = orig[0] + v[0]*cs;
                 const float y = orig[1] + (v[1]+1)*ch;
                 const float z = orig[2] + v[2]*cs;
-                dd->vertex(x,y,z, color);
+                dd->vertex(x,y,z, colour);
             }
         }
     }

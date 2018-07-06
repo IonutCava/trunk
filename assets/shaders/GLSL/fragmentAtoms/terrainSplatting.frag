@@ -14,7 +14,7 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 
 uniform float underwaterDiffuseScale;
 
-vec4 getFinalColor1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
+vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
     return texture(texTileMaps[index], vec3(VAR._texCoord * diffSize.r, 0)) * blendMap.r;
 }
 
@@ -22,8 +22,8 @@ vec3 getFinalTBN1(const in vec4 blendMap, const in uint index, const in vec4 nor
     return texture(texNormalMaps[index], vec3(VAR._texCoord * normSize.r, 0)).rgb * blendMap.r;
 }
 
-vec4 getFinalColor2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor1(blendMap, index, diffSize), 
+vec4 getFinalColour2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
+    return mix(getFinalColour1(blendMap, index, diffSize), 
                texture(texTileMaps[index], vec3(VAR._texCoord * diffSize.g, 1)),
                blendMap.g);
 }
@@ -34,8 +34,8 @@ vec3 getFinalTBN2(const in vec4 blendMap, const in uint index, const in vec4 nor
                blendMap.g);
 }
 
-vec4 getFinalColor3(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor2(blendMap, index, diffSize), 
+vec4 getFinalColour3(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
+    return mix(getFinalColour2(blendMap, index, diffSize), 
                texture(texTileMaps[index], vec3(VAR._texCoord * diffSize.b, 2)),
                blendMap.b);
 }
@@ -46,8 +46,8 @@ vec3 getFinalTBN3(const in vec4 blendMap, const in uint index, const in vec4 nor
                blendMap.b);
 }
 
-vec4 getFinalColor4(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
-    return mix(getFinalColor3(blendMap, index, diffSize), 
+vec4 getFinalColour4(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
+    return mix(getFinalColour3(blendMap, index, diffSize), 
                texture(texTileMaps[index], vec3(VAR._texCoord * diffSize.a, 3)),
                blendMap.a);
 }
@@ -63,26 +63,26 @@ vec3 getTBNNormal(in vec2 uv, in vec3 normal) {
     return TBN * normal;
 }
 
-void getColorNormal(inout vec4 color){
+void getColourNormal(inout vec4 colour){
     vec4 blendMap;
-    color = vec4(0.0);
+    colour = vec4(0.0);
 
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
         blendMap = texture(texBlend[i], VAR._texCoord);
 #if (CURRENT_TEXTURE_COUNT % 4) == 1
-        color += getFinalColor1(blendMap, i, diffuseScale[i]);
+        colour += getFinalColour1(blendMap, i, diffuseScale[i]);
 #elif (CURRENT_TEXTURE_COUNT % 4) == 2
-        color += getFinalColor2(blendMap, i, diffuseScale[i]);
+        colour += getFinalColour2(blendMap, i, diffuseScale[i]);
 #elif (CURRENT_TEXTURE_COUNT % 4) == 3
-        color += getFinalColor3(blendMap, i, diffuseScale[i]);
+        colour += getFinalColour3(blendMap, i, diffuseScale[i]);
 #else//(CURRENT_TEXTURE_COUNT % 4) == 0
-        color += getFinalColor4(blendMap, i, diffuseScale[i]);
+        colour += getFinalColour4(blendMap, i, diffuseScale[i]);
 #endif
     }
 }
 
-void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn) {
-    getColorNormal(color);
+void getColourAndTBNNormal(inout vec4 colour, inout vec3 tbn) {
+    getColourNormal(colour);
     vec4 blendMap = texture(texBlend[0], VAR._texCoord);
 #if (CURRENT_TEXTURE_COUNT % 4) == 1
     tbn = getFinalTBN1(blendMap, 0, detailScale[0]);
@@ -98,9 +98,9 @@ void getColorAndTBNNormal(inout vec4 color, inout vec3 tbn) {
     tbn = getTBNNormal(VAR._texCoord, tbn);
 }
 
-void getColorAndTBNUnderwater(inout vec4 color, inout vec3 tbn){
+void getColourAndTBNUnderwater(inout vec4 colour, inout vec3 tbn){
     vec2 coords = VAR._texCoord * underwaterDiffuseScale;
-    color = texture(texUnderwaterAlbedo, coords);
+    colour = texture(texUnderwaterAlbedo, coords);
     tbn = normalize(2.0 * texture(texUnderwaterDetail, coords).rgb - 1.0);
     tbn = getTBNNormal(VAR._texCoord, tbn);
 }

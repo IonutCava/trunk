@@ -20,7 +20,7 @@ void main(void)
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 uniform float lodLevel = 0;
 uniform bool linearSpace = false;
 
@@ -28,18 +28,18 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    _colorOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
+    _colourOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
     if (!linearSpace) {
-        _colorOut = ToSRGB(_colorOut);
+        _colourOut = ToSRGB(_colourOut);
     }
-    _colorOut.a = 1.0;
+    _colourOut.a = 1.0;
 }
 
 -- Fragment.LinearDepth
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
@@ -47,12 +47,12 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 void main()
 {
     float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r);
-    _colorOut = vec4(vec3(linearDepth), 1.0);
+    _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
 -- Fragment.Layered
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
@@ -60,14 +60,14 @@ uniform int layer;
 
 void main()
 {
-    _colorOut = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel);
+    _colourOut = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel);
 }
 
 -- Fragment.Layered.LinearDepth
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
@@ -77,14 +77,14 @@ uniform float lodLevel = 0;
 void main()
 {
     float linearDepth = ToLinearDepth(textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r);
-    _colorOut = vec4(vec3(linearDepth), 1.0);
+    _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Layered.LinearDepth.ESM
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform uint layer;
@@ -95,14 +95,14 @@ void main()
     float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
 	float linearDepth = ToLinearDepth(depth);
-    _colorOut = vec4(vec3(linearDepth), 1.0);
+    _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Cube.LinearDepth
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArrayShadow texDiffuse0;
 uniform uint layer;
@@ -114,14 +114,14 @@ void main()
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0);
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     float linearDepth = ToLinearDepth(depth);
-    _colorOut = vec4(vec3(linearDepth), 1.0);
+    _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Single.LinearDepth
 
 #include "utility.frag"
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArrayShadow texDiffuse0;
 uniform uint layer;
@@ -130,5 +130,5 @@ void main()
 {
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, layer, 1.0)).r;
     float linearDepth = ToLinearDepth(depth);
-    _colorOut = vec4(vec3(linearDepth), 1.0);
+    _colourOut = vec4(vec3(linearDepth), 1.0);
 }

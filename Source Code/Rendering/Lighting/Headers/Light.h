@@ -89,27 +89,27 @@ class Light : public SceneNode {
 
     void setRange(F32 range);
 
-    /// Get light diffuse color
-    inline void getDiffuseColor(vec3<F32>& colorOut) const {
-        Util::ToFloatColor(_color.rgb(), colorOut);
+    /// Get light diffuse colour
+    inline void getDiffuseColour(vec3<F32>& colourOut) const {
+        Util::ToFloatColour(_colour.rgb(), colourOut);
     }
 
-    inline vec3<F32> getDiffuseColor() const {
-        return Util::ToFloatColor(_color.rgb());
+    inline vec3<F32> getDiffuseColour() const {
+        return Util::ToFloatColour(_colour.rgb());
     }
 
-    void setDiffuseColor(const vec3<U8>& newDiffuseColor);
+    void setDiffuseColour(const vec3<U8>& newDiffuseColour);
 
-    inline void setDiffuseColor(const vec4<U8>& newDiffuseColor) {
-        setDiffuseColor(newDiffuseColor.rgb());
+    inline void setDiffuseColour(const vec4<U8>& newDiffuseColour) {
+        setDiffuseColour(newDiffuseColour.rgb());
     }
 
-    inline void setDiffuseColor(const vec4<F32>& newDiffuseColor) {
-        setDiffuseColor(newDiffuseColor.rgb());
+    inline void setDiffuseColour(const vec4<F32>& newDiffuseColour) {
+        setDiffuseColour(newDiffuseColour.rgb());
     }
 
-    inline void setDiffuseColor(const vec3<F32>& newDiffuseColor) {
-        setDiffuseColor(Util::ToByteColor(newDiffuseColor));
+    inline void setDiffuseColour(const vec3<F32>& newDiffuseColour) {
+        setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
     /// Get light position for omni and spot or direction for a directional light
@@ -134,7 +134,7 @@ class Light : public SceneNode {
 
     /// Draw a sphere at the lights position
     /// The impostor has the range of the light's effect range and the diffuse
-    /// color as the light's diffuse property
+    /// colour as the light's diffuse property
     inline void setDrawImpostor(const bool state) { _drawImpostor = state; }
 
     /// Turn the light on/off
@@ -224,7 +224,7 @@ class Light : public SceneNode {
     /// xyz - direction, w - cone angle
     vec4<F32> _spotProperties;
     /// rgb - diffuse, w - reserved
-    vec4<U8>  _color;
+    vec4<U8>  _colour;
     // does this light casts shadows?
     bool _castsShadows;
     // Shadow mapping properties

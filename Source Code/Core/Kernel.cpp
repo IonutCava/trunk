@@ -493,7 +493,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _GUI.addText(_ID("ProfileData"),                   // Unique ID
         vec2<I32>(renderResolution.width * 0.75, 100), // Position
         Font::DROID_SERIF_BOLD,          // Font
-        vec4<U8>(255,  50, 0, 255),      // Color
+        vec4<U8>(255,  50, 0, 255),      // Colour
         "PROFILE DATA",                  // Text
         12);                             // Font size
 

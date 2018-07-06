@@ -37,7 +37,7 @@ LightPool::LightPool(Scene& parentScene)
     _lightTypeState.fill(true);
     _shadowCastingLights.fill(nullptr);
     // NORMAL holds general info about the currently active
-    // lights: position, color, etc.
+    // lights: position, colour, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = nullptr;
     // SHADOWS holds info about the currently active shadow
     // casting lights:
@@ -63,7 +63,7 @@ void LightPool::init() {
 
     GFX_DEVICE.add2DRenderFunction(
         DELEGATE_BIND(&LightPool::previewShadowMaps, this, nullptr), 1);
-    // NORMAL holds general info about the currently active lights: position, color, etc.
+    // NORMAL holds general info about the currently active lights: position, colour, etc.
     _lightShaderBuffer[to_const_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
                                                                                     1,
                                                                                     true,
@@ -268,7 +268,7 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
     cullTask.startTask(Task::TaskPriority::HIGH);
     cullTask.wait();
 
-    vec3<F32> tempColor;
+    vec3<F32> tempColour;
     // Create and upload light data for current pass
     _activeLightCount.fill(0);
     _shadowCastingLights.fill(nullptr);
@@ -288,8 +288,8 @@ void LightPool::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<F32
             }
 
             LightProperties& temp = _lightProperties[typeUint][_activeLightCount[typeUint]];
-            light->getDiffuseColor(tempColor);
-            temp._diffuse.set(tempColor, light->getSpotCosOuterConeAngle());
+            light->getDiffuseColour(tempColour);
+            temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
             // Non directional lights are positioned at specific point in space
             // So we need W = 1 for a valid positional transform
             // Directional lights use position for the light direction. 

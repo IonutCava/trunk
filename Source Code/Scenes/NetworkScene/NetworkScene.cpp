@@ -9,11 +9,11 @@ namespace Divide {
 
 void NetworkScene::processInput(const U64 deltaTime) {
     Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
-    vec4<F32> vSunColor = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
+    vec4<F32> vSunColour = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
         vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
         0.25f + cosf(_sunAngle.y) * 0.75f);
 
-    light->setDiffuseColor(vSunColor);
+    light->setDiffuseColour(vSunColour);
 
     _currentSky = addSky();
 }
@@ -111,7 +111,7 @@ void NetworkScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(0, 164, 255, 255),  // Color
+        vec4<U8>(0, 164, 255, 255),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
         vec4<U8>(164, 64, 64, 255),

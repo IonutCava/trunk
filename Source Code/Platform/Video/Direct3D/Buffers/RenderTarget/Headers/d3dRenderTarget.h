@@ -55,14 +55,14 @@ class d3dRenderTarget : public RenderTarget {
 
     void bind(U8 unit = 0,
               TextureDescriptor::AttachmentType slot =
-                TextureDescriptor::AttachmentType::Color0,
+                TextureDescriptor::AttachmentType::Colour0,
               bool flushStateOnRequest = true);
     void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
                   GFXDataFormat dataType, void* outData);
     void blitFrom(RenderTarget* inputFB,
                   TextureDescriptor::AttachmentType slot =
-                      TextureDescriptor::AttachmentType::Color0,
-                  bool blitColor = true, bool blitDepth = false);
+                      TextureDescriptor::AttachmentType::Colour0,
+                  bool blitColour = true, bool blitDepth = false);
     void clear(const RenderTargetDrawDescriptor& drawPolicy) const override;
 
    protected:

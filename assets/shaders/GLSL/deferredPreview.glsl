@@ -10,11 +10,11 @@ void main(void)
 
 -- Fragment
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    _colorOut = texture(texDiffuse0, VAR._texCoord);
+    _colourOut = texture(texDiffuse0, VAR._texCoord);
 }

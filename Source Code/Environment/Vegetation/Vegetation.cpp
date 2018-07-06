@@ -105,7 +105,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
     Material_ptr vegMaterial = CreateResource<Material>(vegetationMaterial);
 
-    vegMaterial->setDiffuse(DefaultColors::WHITE());
+    vegMaterial->setDiffuse(DefaultColours::WHITE());
     vegMaterial->setSpecular(vec4<F32>(0.1f, 0.1f, 0.1f, 1.0f));
     vegMaterial->setShininess(5.0f);
     vegMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
@@ -511,8 +511,8 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
                 F32 x_fac = x / _map->dimensions().width;
                 F32 y_fac = y / _map->dimensions().height;
 
-                I32 map_color = _map->getColor((U16)x, (U16)y)[index];
-                if (map_color < 150) {
+                I32 map_colour = _map->getColour((U16)x, (U16)y)[index];
+                if (map_colour < 150) {
                     continue;
                 }
                 const vec3<F32>& P = _terrain->getPosition(x_fac, y_fac);
@@ -534,7 +534,7 @@ void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
                     //rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());
 
                     _grassPositions.push_back(vec4<F32>(P, to_float(index)));
-                    _grassScales.push_back(((map_color + 1) / 256.0f));
+                    _grassScales.push_back(((map_colour + 1) / 256.0f));
                     _instanceCountGrass++;
                 }
             }

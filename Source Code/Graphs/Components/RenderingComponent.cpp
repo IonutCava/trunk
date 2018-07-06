@@ -96,12 +96,12 @@ RenderingComponent::RenderingComponent(Material_ptr materialInstance,
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2, 1);
-    _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(_axisLines[0]._colorStart));
+    _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(_axisLines[0]._colourStart));
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : _axisLines) {
-        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(line._colorStart));
+        _axisGizmo->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(line._colourStart));
         _axisGizmo->vertex(line._startPoint);
         _axisGizmo->vertex(line._endPoint);
     }
@@ -318,7 +318,7 @@ bool RenderingComponent::receivesShadows() const {
     return _receiveShadows;
 }
 
-void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
+void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
     const Material_ptr& mat = getMaterialInstance();

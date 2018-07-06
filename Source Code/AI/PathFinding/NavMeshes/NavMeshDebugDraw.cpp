@@ -14,10 +14,10 @@ namespace AI {
 namespace Navigation {
 
 NavMeshDebugDraw::NavMeshDebugDraw()
-    : _overrideColor(false),
+    : _overrideColour(false),
       _dirty(true),
       _paused(false),
-      _color(0),
+      _colour(0),
       _primitive(nullptr),
       _primType(PrimitiveType::COUNT),
       _vertCount(0)
@@ -94,19 +94,19 @@ void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
 }
 
 void NavMeshDebugDraw::vertex(const F32 x, const F32 y, const F32 z,
-                              U32 color) {
+                              U32 colour) {
     if (!_dirty || !_primitive) {
         return;
     }
-    if (_overrideColor) {
-        color = _color;
+    if (_overrideColour) {
+        colour = _colour;
     }
 
-    vec4<U8> colorVec;
-    rcCol(color, colorVec.r, colorVec.g, colorVec.b, colorVec.a);
-    colorVec.a = 64;
+    vec4<U8> colourVec;
+    rcCol(colour, colourVec.r, colourVec.g, colourVec.b, colourVec.a);
+    colourVec.a = 64;
 
-    _primitive->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColor(colorVec));
+    _primitive->attribute4f(to_const_uint(AttribLocation::VERTEX_COLOR), Util::ToFloatColour(colourVec));
     _primitive->vertex(x, y, z);
 }
 
@@ -116,9 +116,9 @@ void NavMeshDebugDraw::end() {
     }
 }
 
-void NavMeshDebugDraw::overrideColor(U32 col) {
-    _overrideColor = true;
-    _color = col;
+void NavMeshDebugDraw::overrideColour(U32 col) {
+    _overrideColour = true;
+    _colour = col;
 }
 };  // namespace Navigation
 };  // namespace AI

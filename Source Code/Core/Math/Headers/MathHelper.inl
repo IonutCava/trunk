@@ -125,8 +125,8 @@ inline F32 CHAR_TO_FLOAT_SNORM(const U8 value) {
 inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) {
     static const D64 offset = to_double(1 << 24);
 
-    U32 packedColor = (x << 16) | (y << 8) | z;
-    return to_float(to_double(packedColor) / offset);
+    U32 packedColour = (x << 16) | (y << 8) | z;
+    return to_float(to_double(packedColour) / offset);
 }
 
 // UnPack 3 values from 1 float

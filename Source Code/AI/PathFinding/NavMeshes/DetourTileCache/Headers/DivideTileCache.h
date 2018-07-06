@@ -626,7 +626,7 @@ class DivideTileCache {
                       const struct dtTileCachePolyMesh& mesh, const F32* orig,
                       const F32 cs, const F32 ch,
                       const struct dtTileCacheLayer& regionLayers,
-                      bool colorRegions = true);
+                      bool colourRegions = true);
 
     /**
       * Inits the tilecache. Helper used by constructors.

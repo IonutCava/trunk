@@ -45,7 +45,7 @@ void main() {
 #define FxaaTexOff(t, p, o, r) textureLodOffset(t, p, 0.0, o)
 
 in  vec4 _posPos;
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 uniform float dvd_fxaaSpanMax = 8.0;
@@ -82,8 +82,8 @@ void main(){
     float lumaB = dot(rgbB, luma);
 
     
-    if((lumaB < lumaMin) || (lumaB > lumaMax)) _colorOut.rgb = rgbA;
-    else _colorOut.rgb = rgbB; 
+    if((lumaB < lumaMin) || (lumaB > lumaMax)) _colourOut.rgb = rgbA;
+    else _colourOut.rgb = rgbB; 
 
-    _colorOut.a = 1.0;
+    _colourOut.a = 1.0;
 }

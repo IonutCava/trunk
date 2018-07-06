@@ -68,7 +68,7 @@ vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
                      viewVecTBN.z));
 
     
-    return getPixelColor(vTexCoord, getTBNNormal(getBump(vTexCoord)));
+    return getPixelColour(vTexCoord, getTBNNormal(getBump(vTexCoord)));
 }
 
 vec4 ReliefMapping(in int _light, in vec2 uv){
@@ -91,7 +91,7 @@ vec4 ReliefMapping(in int _light, in vec2 uv){
 
     gl_FragDepth =((planes.x * p.z + planes.y) / -p.z);
     
-    return getPixelColor(uv + uv_offset, getTBNNormal(getBump(uv + uv_offset)));
+    return getPixelColour(uv + uv_offset, getTBNNormal(getBump(uv + uv_offset)));
 }
 
 #endif //_BUMP_MAPPING_FRAG_

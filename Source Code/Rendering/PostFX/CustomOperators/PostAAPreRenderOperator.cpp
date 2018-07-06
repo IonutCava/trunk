@@ -13,7 +13,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(RenderTarget* hdrTarget, Render
       _postAASamples(0)
 {
     _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_ldrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(_ldrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
     _samplerCopy->useAutoDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");

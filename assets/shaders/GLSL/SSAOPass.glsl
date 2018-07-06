@@ -88,10 +88,10 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
 
 uniform vec2 ssaoTexelSize;
 
-out float _colorOut;
+out float _colourOut;
 
 void main() {
-    float colorOut = 0.0;
+    float colourOut = 0.0;
     vec2 hlim = vec2(float(-BLUR_SIZE) * 0.5 + 0.5);
     for (int x = 0; x < BLUR_SIZE; ++x) {
         for (int y = 0; y < BLUR_SIZE; ++y) {
@@ -99,11 +99,11 @@ void main() {
             offset += hlim;
             offset *= ssaoTexelSize;
 
-            colorOut += texture(texSSAO, VAR._texCoord + offset).r;
+            colourOut += texture(texSSAO, VAR._texCoord + offset).r;
         }
     }
 
-    _colorOut = colorOut / float(BLUR_SIZE * BLUR_SIZE);
+    _colourOut = colourOut / float(BLUR_SIZE * BLUR_SIZE);
 }
 
 --Fragment.SSAOApply
@@ -111,9 +111,9 @@ void main() {
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texSSAO;
 
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 void main() {
-    _colorOut.rgb = texture(texScreen, VAR._texCoord).rgb * 1.0;
+    _colourOut.rgb = texture(texScreen, VAR._texCoord).rgb * 1.0;
                     //texture(texSSAO, VAR._texCoord).r;
 }

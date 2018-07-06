@@ -309,13 +309,13 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
     return true;
 }
 
-vec4<U8> ImageData::getColor(I32 x, I32 y, U32 mipLevel) const {
-    vec4<U8> returnColor;
-    getColor(x, y, returnColor.r, returnColor.g, returnColor.b, returnColor.a, mipLevel);
-    return returnColor;
+vec4<U8> ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
+    vec4<U8> returnColour;
+    getColour(x, y, returnColour.r, returnColour.g, returnColour.b, returnColour.a, mipLevel);
+    return returnColour;
 }
 
-void ImageData::getColor(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
+void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
     I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
     r = _data[mipLevel]._data[idx + 0];
     g = _data[mipLevel]._data[idx + 1];

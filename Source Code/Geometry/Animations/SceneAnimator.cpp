@@ -199,7 +199,7 @@ I32 SceneAnimator::createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
 
     if (piNode->_parent) {
         Line line;
-        line.color(255, 0, 0, 255);
+        line.colour(255, 0, 0, 255);
         line.width(2.0f);
 
         if (GFX_DEVICE.getAPI() == RenderAPI::Direct3D) {

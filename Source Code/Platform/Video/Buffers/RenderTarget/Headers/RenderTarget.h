@@ -45,12 +45,12 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
         typedef std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> FBOBufferMask;
 
         FBOBufferMask _drawMask;
-        bool _clearColorBuffersOnBind;
+        bool _clearColourBuffersOnBind;
         bool _clearDepthBufferOnBind;
         bool _changeViewport;
 
         RenderTargetDrawDescriptor()
-            : _clearColorBuffersOnBind(true),
+            : _clearColourBuffersOnBind(true),
               _clearDepthBufferOnBind(true),
               _changeViewport(true)
         {
@@ -69,12 +69,12 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
         return _defaultPolicy;
     }
 
-    inline TextureDescriptor getDescriptor(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0) {
+    inline TextureDescriptor getDescriptor(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0) {
         return _attachment[to_uint(slot)];
     }
 
     virtual const Texture_ptr& getAttachment(
-        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Colour0,
         bool flushStateOnRequest = true);
 
     void addAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType type);
@@ -117,7 +117,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
     virtual void bind(U8 unit = 0,
                       TextureDescriptor::AttachmentType
-                          slot = TextureDescriptor::AttachmentType::Color0,
+                          slot = TextureDescriptor::AttachmentType::Colour0,
                       bool flushStateOnRequest = true) = 0;
 
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat,
@@ -133,8 +133,8 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
     virtual void blitFrom(RenderTarget* inputFB,
                           TextureDescriptor::AttachmentType
-                              slot = TextureDescriptor::AttachmentType::Color0,
-                          bool blitColor = true, bool blitDepth = false) = 0;
+                              slot = TextureDescriptor::AttachmentType::Colour0,
+                          bool blitColour = true, bool blitDepth = false) = 0;
 
     // Enable/Disable the presence of a depth renderbuffer
     virtual void useAutoDepthBuffer(const bool state) {
@@ -144,14 +144,14 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
         }
     }
     
-    // Set the color the FB will clear to when drawing to it
-    inline void setClearColor(const vec4<F32>& clearColor,
+    // Set the colour the FB will clear to when drawing to it
+    inline void setClearColour(const vec4<F32>& clearColour,
                               TextureDescriptor::AttachmentType
                                  slot = TextureDescriptor::AttachmentType::COUNT) {
         if (slot == TextureDescriptor::AttachmentType::COUNT) {
-            _clearColors.fill(clearColor);
+            _clearColours.fill(clearColour);
         } else {
-            _clearColors[to_uint(slot)].set(clearColor);
+            _clearColours[to_uint(slot)].set(clearColour);
         }
     }
 
@@ -185,7 +185,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
     U16 _width, _height;
     U32 _framebufferHandle;
     F32 _depthValue;
-    std::array<vec4<F32>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _clearColors;
+    std::array<vec4<F32>, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _clearColours;
     std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
     std::array<Texture_ptr, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
     std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;

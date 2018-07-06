@@ -29,18 +29,18 @@
 
  */
 
-#ifndef _PARTICLE_BASIC_COLOR_UPDATER_H_
-#define _PARTICLE_BASIC_COLOR_UPDATER_H_
+#ifndef _PARTICLE_BASIC_COLOUR_UPDATER_H_
+#define _PARTICLE_BASIC_COLOUR_UPDATER_H_
 
 #include "Dynamics/Entities/Particles/Headers/ParticleUpdater.h"
 
 namespace Divide {
 
-class ParticleBasicColorUpdater final : public ParticleUpdater {
+class ParticleBasicColourUpdater final : public ParticleUpdater {
    public:
-    ParticleBasicColorUpdater() {}
+    ParticleBasicColourUpdater() {}
 
-    ~ParticleBasicColorUpdater() {}
+    ~ParticleBasicColourUpdater() {}
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

@@ -32,7 +32,7 @@
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 
-#include "Utility/Headers/Colors.h"
+#include "Utility/Headers/Colours.h"
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
@@ -135,10 +135,10 @@ class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper 
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,
-                 const vec4<U8>& colour = DefaultColors::WHITE);
+                 const vec4<U8>& colour = DefaultColours::WHITE);
     void fromSphere(const vec3<F32>& center,
                     F32 radius,
-                    const vec4<U8>& colour = DefaultColors::WHITE);
+                    const vec4<U8>& colour = DefaultColours::WHITE);
     void fromLines(const vectorImpl<Line>& lines);
     void fromLines(const vectorImpl<Line>& lines,
                    const vec4<I32>& viewport);

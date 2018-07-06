@@ -51,16 +51,16 @@ void duIntToCol(int i, float* col)
     col[2] = 1 - b*63.0f/255.0f;
 }
 
-void duCalcBoxColors(unsigned int* colors, unsigned int colTop, unsigned int colSide)
+void duCalcBoxColours(unsigned int* colours, unsigned int colTop, unsigned int colSide)
 {
-    if (!colors) return;
+    if (!colours) return;
     
-    colors[0] = duMultCol(colTop, 250);
-    colors[1] = duMultCol(colSide, 140);
-    colors[2] = duMultCol(colSide, 165);
-    colors[3] = duMultCol(colSide, 217);
-    colors[4] = duMultCol(colSide, 165);
-    colors[5] = duMultCol(colSide, 217);
+    colours[0] = duMultCol(colTop, 250);
+    colours[1] = duMultCol(colSide, 140);
+    colours[2] = duMultCol(colSide, 165);
+    colours[3] = duMultCol(colSide, 217);
+    colours[4] = duMultCol(colSide, 165);
+    colours[5] = duMultCol(colSide, 217);
 }
 
 void duDebugDrawCylinderWire(struct duDebugDraw* dd, float minx, float miny, float minz,
@@ -514,7 +514,7 @@ void duAppendCross(struct duDebugDraw* dd, const float x, const float y, const f
 
 duDisplayList::duDisplayList(int cap) :
     m_pos(0),
-    m_color(0),
+    m_colour(0),
     m_size(0),
     m_cap(0),
     m_prim(DU_DRAW_LINES),
@@ -528,7 +528,7 @@ duDisplayList::duDisplayList(int cap) :
 duDisplayList::~duDisplayList()
 {
     delete [] m_pos;
-    delete [] m_color;
+    delete [] m_colour;
 }
 
 void duDisplayList::resize(int cap)
@@ -539,11 +539,11 @@ void duDisplayList::resize(int cap)
     delete [] m_pos;
     m_pos = newPos;
 
-    unsigned int* newColor = new unsigned int[cap];
+    unsigned int* newColour = new unsigned int[cap];
     if (m_size)
-        memcpy(newColor, m_color, sizeof(unsigned int)*m_size);
-    delete [] m_color;
-    m_color = newColor;
+        memcpy(newColour, m_colour, sizeof(unsigned int)*m_size);
+    delete [] m_colour;
+    m_colour = newColour;
     
     m_cap = cap;
 }
@@ -560,7 +560,7 @@ void duDisplayList::begin(duDebugDrawPrimitives prim, float size)
     m_primSize = size;
 }
 
-void duDisplayList::vertex(const float x, const float y, const float z, unsigned int color)
+void duDisplayList::vertex(const float x, const float y, const float z, unsigned int colour)
 {
     if (m_size+1 >= m_cap)
         resize(m_cap*2);
@@ -568,13 +568,13 @@ void duDisplayList::vertex(const float x, const float y, const float z, unsigned
     p[0] = x;
     p[1] = y;
     p[2] = z;
-    m_color[m_size] = color;
+    m_colour[m_size] = colour;
     m_size++;
 }
 
-void duDisplayList::vertex(const float* pos, unsigned int color)
+void duDisplayList::vertex(const float* pos, unsigned int colour)
 {
-    vertex(pos[0],pos[1],pos[2],color);
+    vertex(pos[0],pos[1],pos[2],colour);
 }
 
 void duDisplayList::end()
@@ -587,6 +587,6 @@ void duDisplayList::draw(struct duDebugDraw* dd)
     if (!m_size) return;
     dd->begin(m_prim, m_primSize);
     for (int i = 0; i < m_size; ++i)
-        dd->vertex(&m_pos[i*3], m_color[i]);
+        dd->vertex(&m_pos[i*3], m_colour[i]);
     dd->end();
 }

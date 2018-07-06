@@ -35,7 +35,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _renderPolicy = MemoryManager_NEW RenderTarget::RenderTargetDrawDescriptor(RenderTarget::defaultPolicy());
     // We clear the FB on each face draw call, not on Begin()
     _renderPolicy->_clearDepthBufferOnBind = false;
-    _renderPolicy->_clearColorBuffersOnBind = false;
+    _renderPolicy->_clearColourBuffersOnBind = false;
 
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
@@ -65,8 +65,8 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     
     _blurBuffer = GFX_DEVICE.newRT(false);
     _blurBuffer->addAttachment(blurMapDescriptor,
-                               TextureDescriptor::AttachmentType::Color0);
-    _blurBuffer->setClearColor(DefaultColors::WHITE());
+                               TextureDescriptor::AttachmentType::Colour0);
+    _blurBuffer->setClearColour(DefaultColours::WHITE());
 
     _shadowMatricesBuffer = GFX_DEVICE.newSB("dvd_shadowMatrices", 1, false, false, BufferUpdateFrequency::OFTEN);
     _shadowMatricesBuffer->create(Config::Lighting::MAX_SPLITS_PER_LIGHT, sizeof(mat4<F32>));
@@ -230,7 +230,7 @@ void CascadedShadowMaps::postRender() {
     // Blur horizontally
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer->begin(RenderTarget::defaultPolicy());
-    getDepthMap()->bind(0, TextureDescriptor::AttachmentType::Color0, false);
+    getDepthMap()->bind(0, TextureDescriptor::AttachmentType::Colour0, false);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _blurDepthMapShader);
     getDepthMap()->end();
 

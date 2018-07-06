@@ -29,24 +29,35 @@
 
  */
 
-#ifndef _PARTICLE_POSITION_COLOR_UPDATER_H_
-#define _PARTICLE_POSITION_COLOR_UPDATER_H_
+#ifndef _COLOURS_H_
+#define _COLOURS_H_
 
-#include "Dynamics/Entities/Particles/Headers/ParticleUpdater.h"
+#include "Core/Math/Headers/MathVectors.h"
 
 namespace Divide {
+namespace DefaultColours {
+/// Random stuff added for convenience
+inline vec4<F32> WHITE() { return vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f); }
 
-class ParticlePositionColorUpdater final : public ParticleUpdater {
-   public:
-    vec4<F32> _minPos;
-    vec4<F32> _maxPos;
+inline vec4<F32> BLACK() { return vec4<F32>(0.0f, 0.0f, 0.0f, 1.0f); }
 
-   public:
-    ParticlePositionColorUpdater() { _maxPos.set(1.0f); }
+inline vec4<F32> RED() { return vec4<F32>(1.0f, 0.0f, 0.0f, 1.0f); }
 
-    ~ParticlePositionColorUpdater() {}
+inline vec4<F32> GREEN() { return vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f); }
 
-    void update(const U64 deltaTime, ParticleData& p) override;
-};
-};
+inline vec4<F32> BLUE() { return vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f); }
+
+inline vec4<F32> DIVIDE_BLUE() { return vec4<F32>(0.1f, 0.1f, 0.8f, 1.0f); }
+
+inline vec4<U8> RANDOM() {
+    return vec4<U8>(rand() % 256, rand() % 256, rand() % 256, 255);
+}
+
+inline vec4<F32> RANDOM_NORMALIZED() {
+    return Util::ToFloatColour(RANDOM());
+}
+
+};  // namespace DefaultColours
+};  // namespace Divide
+
 #endif

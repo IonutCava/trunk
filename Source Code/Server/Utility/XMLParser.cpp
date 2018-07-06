@@ -95,10 +95,10 @@ void loadGeometry(const stringImpl &file) {
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            /*Primitives don't use materials yet so we can define colors*/
-            model.color.r = pt.get<F32>(name + ".color.<xmlattr>.r");
-            model.color.g = pt.get<F32>(name + ".color.<xmlattr>.g");
-            model.color.b = pt.get<F32>(name + ".color.<xmlattr>.b");
+            /*Primitives don't use materials yet so we can define colours*/
+            model.colour.r = pt.get<F32>(name + ".colour.<xmlattr>.r");
+            model.colour.g = pt.get<F32>(name + ".colour.<xmlattr>.g");
+            model.colour.b = pt.get<F32>(name + ".colour.<xmlattr>.b");
             /*The data variable stores a float variable (not void*) that can
              * represent anything you want*/
             /*For Text3D, it's the line width and for Box3D it's the edge

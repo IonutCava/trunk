@@ -13,7 +13,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
 {
 
     _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
     _samplerCopy->useAutoDepthBuffer(false);
 
     U16 ssaoNoiseSize = 4;
@@ -74,11 +74,11 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
                                        GFXDataFormat::FLOAT_16);
     outputDescriptor.setSampler(screenSampler);
     
-    //Color0 holds the AO texture
-    _ssaoOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
+    //Colour0 holds the AO texture
+    _ssaoOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Colour0);
 
     _ssaoOutputBlurred = GFX_DEVICE.newRT();
-    _ssaoOutputBlurred->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _ssaoOutputBlurred->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Colour0);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
@@ -129,7 +129,7 @@ void SSAOPreRenderOperator::execute() {
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
                       TextureDescriptor::AttachmentType::Depth);  // depth
     _inputFB[0]->bind(to_const_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
-                      TextureDescriptor::AttachmentType::Color1);  // normals
+                      TextureDescriptor::AttachmentType::Colour1);  // normals
     
     _ssaoOutput->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoGenerateShader);
@@ -137,16 +137,16 @@ void SSAOPreRenderOperator::execute() {
 
 
     _ssaoOutput->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                      TextureDescriptor::AttachmentType::Color0);  // AO texture
+                      TextureDescriptor::AttachmentType::Colour0);  // AO texture
     _ssaoOutputBlurred->begin(RenderTarget::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoBlurShader);
     _ssaoOutputBlurred->end();
     
     _samplerCopy->blitFrom(_hdrTarget);
     _samplerCopy->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                       TextureDescriptor::AttachmentType::Color0);  // screen
+                       TextureDescriptor::AttachmentType::Colour0);  // screen
     _ssaoOutputBlurred->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT1),
-                             TextureDescriptor::AttachmentType::Color0);  // AO texture
+                             TextureDescriptor::AttachmentType::Colour0);  // AO texture
 
     _hdrTarget->begin(_screenOnlyDraw);
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoApplyShader);

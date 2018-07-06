@@ -298,23 +298,23 @@ void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true);
 
-vec4<U8>  ToByteColor(const vec4<F32>& floatColor);
-vec3<U8>  ToByteColor(const vec3<F32>& floatColor);
-vec4<U32> ToUIntColor(const vec4<F32>& floatColor);
-vec3<U32> ToUIntColor(const vec3<F32>& floatColor);
-vec4<F32> ToFloatColor(const vec4<U8>& byteColor);
-vec3<F32> ToFloatColor(const vec3<U8>& byteColor);
-vec4<F32> ToFloatColor(const vec4<U32>& uintColor);
-vec3<F32> ToFloatColor(const vec3<U32>& uintColor);
+vec4<U8>  ToByteColour(const vec4<F32>& floatColour);
+vec3<U8>  ToByteColour(const vec3<F32>& floatColour);
+vec4<U32> ToUIntColour(const vec4<F32>& floatColour);
+vec3<U32> ToUIntColour(const vec3<F32>& floatColour);
+vec4<F32> ToFloatColour(const vec4<U8>& byteColour);
+vec3<F32> ToFloatColour(const vec3<U8>& byteColour);
+vec4<F32> ToFloatColour(const vec4<U32>& uintColour);
+vec3<F32> ToFloatColour(const vec3<U32>& uintColour);
 
-void ToByteColor(const vec4<F32>& floatColor, vec4<U8>& colorOut);
-void ToByteColor(const vec3<F32>& floatColor, vec3<U8>& colorOut);
-void ToUIntColor(const vec4<F32>& floatColor, vec4<U32>& colorOut);
-void ToUIntColor(const vec3<F32>& floatColor, vec3<U32>& colorOut);
-void ToFloatColor(const vec4<U8>& byteColor, vec4<F32>& colorOut);
-void ToFloatColor(const vec3<U8>& byteColor, vec3<F32>& colorOut);
-void ToFloatColor(const vec4<U32>& uintColor, vec4<F32>& colorOut);
-void ToFloatColor(const vec3<U32>& uintColor, vec3<F32>& colorOut);
+void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut);
+void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut);
+void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut);
+void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut);
+void ToFloatColour(const vec4<U8>& byteColour, vec4<F32>& colourOut);
+void ToFloatColour(const vec3<U8>& byteColour, vec3<F32>& colourOut);
+void ToFloatColour(const vec4<U32>& uintColour, vec4<F32>& colourOut);
+void ToFloatColour(const vec3<U32>& uintColour, vec3<F32>& colourOut);
 
 
 inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) {

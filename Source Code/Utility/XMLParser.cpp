@@ -314,12 +314,12 @@ void loadConfig(const stringImpl &file) {
     // global fog values
     par.setParam(_ID("rendering.sceneState.fogDensity"),
                  pt.get("rendering.fogDensity", 0.01f));
-    par.setParam(_ID("rendering.sceneState.fogColor.r"),
-                 pt.get<F32>("rendering.fogColor.<xmlattr>.r", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColor.g"),
-                 pt.get<F32>("rendering.fogColor.<xmlattr>.g", 0.2f));
-    par.setParam(_ID("rendering.sceneState.fogColor.b"),
-                 pt.get<F32>("rendering.fogColor.<xmlattr>.b", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogColour.r"),
+                 pt.get<F32>("rendering.fogColour.<xmlattr>.r", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogColour.g"),
+                 pt.get<F32>("rendering.fogColour.<xmlattr>.g", 0.2f));
+    par.setParam(_ID("rendering.sceneState.fogColour.b"),
+                 pt.get<F32>("rendering.fogColour.<xmlattr>.b", 0.2f));
 }
 
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
@@ -477,20 +477,20 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
     if (boost::optional<ptree &> fog = pt.get_child_optional("fog")) {
         par.setParam(_ID("rendering.sceneState.fogDensity"),
                      pt.get("fog.fogDensity", 0.01f));
-        par.setParam(_ID("rendering.sceneState.fogColor.r"),
-                     pt.get<F32>("fog.fogColor.<xmlattr>.r", 0.2f));
-        par.setParam(_ID("rendering.sceneState.fogColor.g"),
-                     pt.get<F32>("fog.fogColor.<xmlattr>.g", 0.2f));
-        par.setParam(_ID("rendering.sceneState.fogColor.b"),
-                     pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
+        par.setParam(_ID("rendering.sceneState.fogColour.r"),
+                     pt.get<F32>("fog.fogColour.<xmlattr>.r", 0.2f));
+        par.setParam(_ID("rendering.sceneState.fogColour.g"),
+                     pt.get<F32>("fog.fogColour.<xmlattr>.g", 0.2f));
+        par.setParam(_ID("rendering.sceneState.fogColour.b"),
+                     pt.get<F32>("fog.fogColour.<xmlattr>.b", 0.2f));
     }
 
     scene->state().fogDescriptor()._fogDensity =
         par.getParam<F32>(_ID("rendering.sceneState.fogDensity")) / 1000.0f;
-    scene->state().fogDescriptor()._fogColor.set(
-        par.getParam<F32>(_ID("rendering.sceneState.fogColor.r")),
-        par.getParam<F32>(_ID("rendering.sceneState.fogColor.g")),
-        par.getParam<F32>(_ID("rendering.sceneState.fogColor.b")));
+    scene->state().fogDescriptor()._fogColour.set(
+        par.getParam<F32>(_ID("rendering.sceneState.fogColour.r")),
+        par.getParam<F32>(_ID("rendering.sceneState.fogColour.g")),
+        par.getParam<F32>(_ID("rendering.sceneState.fogColour.b")));
 
     loadTerrain((sceneLocation + "/" + pt.get("terrain", "terrain.xml")).c_str(), scene);
     loadGeometry((sceneLocation + "/" + pt.get("assets", "assets.xml")).c_str(), scene);
@@ -842,9 +842,9 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-            model.color.r = pt.get<F32>(name + ".color.<xmlattr>.r");
-            model.color.g = pt.get<F32>(name + ".color.<xmlattr>.g");
-            model.color.b = pt.get<F32>(name + ".color.<xmlattr>.b");
+            model.colour.r = pt.get<F32>(name + ".colour.<xmlattr>.r");
+            model.colour.g = pt.get<F32>(name + ".colour.<xmlattr>.g");
+            model.colour.b = pt.get<F32>(name + ".colour.<xmlattr>.b");
             /*The data variable stores a float variable (not void*) that can
              * represent anything you want*/
             /*For Text3D, it's the line width and for Box3D it's the edge

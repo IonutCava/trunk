@@ -39,12 +39,12 @@ class TextLabel {
    public:
     TextLabel(const stringImpl& string,
               const stringImpl& font,
-              const vec3<U8>& color,
+              const vec3<U8>& colour,
               U32 fontSize)
         : _width(1),
           _font(font),
           _fontSize(fontSize),
-          _color(color),
+          _colour(colour),
           _blurAmount(0.0f),
           _spacing(0.0f),
           _alignFlag(0),
@@ -69,7 +69,7 @@ class TextLabel {
     F32 _blurAmount;
     F32 _spacing;
     U32 _alignFlag;  ///< Check font-stash alignment for details
-    vec4<U8> _color;
+    vec4<U8> _colour;
     bool _bold;
     bool _italic;
 

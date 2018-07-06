@@ -56,7 +56,7 @@ void GFXDevice::previewDepthBuffer() {
         //Normals preview
         _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target
             ->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                   TextureDescriptor::AttachmentType::Color1);
+                   TextureDescriptor::AttachmentType::Colour1);
 
         GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
         _renderTargetDraw->Uniform("linearSpace", false);

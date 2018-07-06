@@ -21,7 +21,7 @@ layout(binding = 4) uniform sampler2D lightTexture;
 uniform int lightCount;
 
 in vec3 _eyePos;
-out vec4 _colorOut;
+out vec4 _colourOut;
 
 void main( void )
 {
@@ -49,13 +49,13 @@ void main( void )
       lightDir /= lightDistance;
       lightIntensity = 1 / ( 1.0 + 0.00005 * lightDistance + 0.00009 * pow(lightDistance,2));
 
-      vec3 lightColor = texture( lightTexture, vec2(0.99,i*0.99/lightCount) ).xyz;
+      vec3 lightColour = texture( lightTexture, vec2(0.99,i*0.99/lightCount) ).xyz;
       vHalfVector = normalize(lightDir+eyeDir);
 
       float localDiffuse = max(dot(normal.xyz,lightDir),0);
-      diffuse += lightColor * localDiffuse * lightIntensity;
+      diffuse += lightColour * localDiffuse * lightIntensity;
 
     }
 
-   _colorOut = vec4(diffuse,1) * albedo +   selfLighting * (albedo);
+   _colourOut = vec4(diffuse,1) * albedo +   selfLighting * (albedo);
 } 

@@ -57,9 +57,9 @@ Material::Material(const stringImpl& name)
     /// the reflection descriptor is the same as the normal descriptor
     RenderStateBlock reflectorDescriptor(stateDescriptor);
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);
-    /// the z-pre-pass descriptor does not process colors
+    /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
-    zPrePassDescriptor.setColorWrites(true, true, true, false);
+    zPrePassDescriptor.setColourWrites(true, true, true, false);
     zPrePassDescriptor.setZFunc(ComparisonFunction::LESS);
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::Z_PRE_PASS);
     /// A descriptor used for rendering to depth map
@@ -67,11 +67,11 @@ Material::Material(const stringImpl& name)
     shadowDescriptor.setCullMode(CullMode::CCW);
     /// set a polygon offset
     shadowDescriptor.setZBias(1.0f, 2.0f);
-    /// ignore half of the colors 
-    /// Some shadowing techniques require drawing to the a color buffer
-    shadowDescriptor.setColorWrites(true, true, false, false);
+    /// ignore half of the colours 
+    /// Some shadowing techniques require drawing to the a colour buffer
+    shadowDescriptor.setColourWrites(true, true, false, false);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 0);
-    zPrePassDescriptor.setColorWrites(false, false, false, false);
+    zPrePassDescriptor.setColourWrites(false, false, false, false);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 1);
     setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, 2);
 }

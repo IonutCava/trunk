@@ -123,7 +123,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _state2DRenderingHash = state2DRendering.getHash();
 
     RenderStateBlock stateDepthOnlyRendering;
-    stateDepthOnlyRendering.setColorWrites(false, false, false, false);
+    stateDepthOnlyRendering.setColourWrites(false, false, false, false);
     stateDepthOnlyRendering.setZFunc(ComparisonFunction::ALWAYS);
     _stateDepthOnlyRenderingHash = stateDepthOnlyRendering.getHash();
 
@@ -172,11 +172,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     // Add the attachments to the render targets
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Colour0);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Colour1);
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColor(DefaultColors::DIVIDE_BLUE());
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(DefaultColours::DIVIDE_BLUE());
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target->setClearColour(DefaultColours::WHITE(), TextureDescriptor::AttachmentType::Colour1);
 
     _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._target;
 
@@ -194,19 +194,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         RenderTarget*& buffer = target._target;
 
         buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Colour0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFLECTION_TARGET_RESOLUTION);
-        buffer->setClearColor(DefaultColors::WHITE());
+        buffer->setClearColour(DefaultColours::WHITE());
     }
     for (RenderTargetWrapper& target : _refractionTarget) {
         RenderTarget*& buffer = target._target;
 
         buffer = newRT(false);
-        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Color0);
+        buffer->addAttachment(environmentDescriptor, TextureDescriptor::AttachmentType::Colour0);
         buffer->useAutoDepthBuffer(true);
         buffer->create(Config::REFRACTION_TARGET_RESOLUTION);
-        buffer->setClearColor(DefaultColors::WHITE());
+        buffer->setClearColour(DefaultColours::WHITE());
     }
     
     // Initialized our HierarchicalZ construction shader (takes a depth

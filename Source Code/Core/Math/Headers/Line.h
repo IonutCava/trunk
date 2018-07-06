@@ -44,60 +44,60 @@ class Line {
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &color)
-        : Line(startPoint, endPoint, color, color)
+         const vec4<U8> &colour)
+        : Line(startPoint, endPoint, colour, colour)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &color,
+         const vec4<U8> &colour,
          F32 width)
-        : Line(startPoint, endPoint, color, color, width)
+        : Line(startPoint, endPoint, colour, colour, width)
     {
     }
 
     Line(const vec3<F32> &startPoint,
         const vec3<F32> &endPoint,
-        const vec4<U8> &colorStart,
-        const vec4<U8>& colorEnd)
-        : Line(startPoint, endPoint, colorStart, colorEnd, 1.0f)
+        const vec4<U8> &colourStart,
+        const vec4<U8>& colourEnd)
+        : Line(startPoint, endPoint, colourStart, colourEnd, 1.0f)
     {
     }
 
     Line(const vec3<F32> &startPoint,
         const vec3<F32> &endPoint,
-        const vec4<U8> &colorStart,
-        const vec4<U8>& colorEnd,
+        const vec4<U8> &colourStart,
+        const vec4<U8>& colourEnd,
         F32 width)
-        : Line(startPoint, endPoint, colorStart, colorEnd, width, width)
+        : Line(startPoint, endPoint, colourStart, colourEnd, width, width)
     {
     }
 
     Line(const vec3<F32> &startPoint,
          const vec3<F32> &endPoint,
-         const vec4<U8> &colorStart,
-         const vec4<U8>& colorEnd,
+         const vec4<U8> &colourStart,
+         const vec4<U8>& colourEnd,
          F32 widthStart,
          F32 widthEnd)
         : _startPoint(startPoint),
           _endPoint(endPoint),
-          _colorStart(colorStart),
-          _colorEnd(colorEnd),
+          _colourStart(colourStart),
+          _colourEnd(colourEnd),
           _widthStart(widthStart),
           _widthEnd(widthEnd)
     {
     }
 
-    inline void color(U8 r, U8 g, U8 b, U8 a) {
-        color(r, g, b, a,
+    inline void colour(U8 r, U8 g, U8 b, U8 a) {
+        colour(r, g, b, a,
               r, g, b, a);
     }
 
-    inline void color(U8 startR, U8 startG, U8 startB, U8 startA,
+    inline void colour(U8 startR, U8 startG, U8 startB, U8 startA,
                       U8 endR,   U8 endG,   U8 endB,   U8 endA) {
-        _colorStart.set(startR, startG, startB, startA);
-        _colorEnd.set(endR, endG, endB, endA);
+        _colourStart.set(startR, startG, startB, startA);
+        _colourEnd.set(endR, endG, endB, endA);
     }
 
     inline void width(F32 w) {
@@ -123,12 +123,12 @@ class Line {
         return _endPoint;
     }
 
-    inline const vec4<U8>& colorStart() const {
-        return _colorStart;
+    inline const vec4<U8>& colourStart() const {
+        return _colourStart;
     }
 
-    inline const vec4<U8>& colorEnd() const {
-        return _colorEnd;
+    inline const vec4<U8>& colourEnd() const {
+        return _colourEnd;
     }
 
     inline F32 widthStart() const {
@@ -142,8 +142,8 @@ class Line {
 public:
     vec3<F32> _startPoint;
     vec3<F32> _endPoint;
-    vec4<U8>  _colorStart;
-    vec4<U8>  _colorEnd;
+    vec4<U8>  _colourStart;
+    vec4<U8>  _colourEnd;
     F32       _widthStart;
     F32       _widthEnd;
 };

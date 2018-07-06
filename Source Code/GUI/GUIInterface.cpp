@@ -136,7 +136,7 @@ GUIMessageBox* GUIInterface::addMsgBox(ULL ID,
 GUIText* GUIInterface::addText(ULL ID,
                                const vec2<I32>& position,
                                const stringImpl& font,
-                               const vec4<U8>& color,
+                               const vec4<U8>& colour,
                                const stringImpl& text,
                                U32 fontSize) {
     assert(getGUIElement(ID) == nullptr);
@@ -146,7 +146,7 @@ GUIText* GUIInterface::addText(ULL ID,
                                            vec2<F32>(position.width,
                                                      position.height),
                                            font,
-                                           color,
+                                           colour,
                                            GUI::instance().rootSheet(),
                                            fontSize);
     t->initialHeightCache(to_float(getDisplayResolution().height));

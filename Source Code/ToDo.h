@@ -79,7 +79,7 @@ Sync PhysicsComponent with PhysicsAsset similar to this: https://www.raywenderli
 -- Depth of Field
 --- No motion blur (bleah)
 -- Luminance + ToneMap + Automatic adaptive exposure
--- LUT / Color correction
+-- LUT / Colour correction
 
 - Finish octree implementation
 -- Test collisions with first person weapon

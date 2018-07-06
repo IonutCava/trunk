@@ -53,7 +53,7 @@
 	<shadowDetailLevel>1</shadowDetailLevel>
 	<enableFog>true</enableFog>
 	<fogDensity>3</fogDensity>
-	<fogColor r="0.5" g="0.5" b="0.55"/>
+	<fogColour r="0.5" g="0.5" b="0.55"/>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>

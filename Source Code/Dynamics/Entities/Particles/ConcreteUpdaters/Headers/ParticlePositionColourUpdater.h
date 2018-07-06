@@ -29,22 +29,22 @@
 
  */
 
-#ifndef _PARTICLE_VELOCITY_COLOR_UPDATER_H_
-#define _PARTICLE_VELOCITY_COLOR_UPDATER_H_
+#ifndef _PARTICLE_POSITION_COLOUR_UPDATER_H_
+#define _PARTICLE_POSITION_COLOUR_UPDATER_H_
 
 #include "Dynamics/Entities/Particles/Headers/ParticleUpdater.h"
 
 namespace Divide {
 
-class ParticleVelocityColorUpdater final : public ParticleUpdater {
+class ParticlePositionColourUpdater final : public ParticleUpdater {
    public:
-    vec4<F32> _minVel;
-    vec4<F32> _maxVel;
+    vec4<F32> _minPos;
+    vec4<F32> _maxPos;
 
    public:
-    ParticleVelocityColorUpdater() { _maxVel.set(1.0f); }
+    ParticlePositionColourUpdater() { _maxPos.set(1.0f); }
 
-    ~ParticleVelocityColorUpdater() {}
+    ~ParticlePositionColourUpdater() {}
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

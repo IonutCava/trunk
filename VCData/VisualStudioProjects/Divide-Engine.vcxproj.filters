@@ -822,9 +822,6 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\RenderingComponent.h">
       <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Utility\Headers\Colors.h">
-      <Filter>Utility\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl">
       <Filter>Core\Math\Headers</Filter>
     </ClInclude>
@@ -951,6 +948,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIInterface.h">
       <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h">
+      <Filter>Utility\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

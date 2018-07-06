@@ -48,13 +48,13 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
     screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
-    screenSampler.toggleSRGBColorSpace(true);
+    screenSampler.toggleSRGBColourSpace(true);
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGBA8,
                                        GFXDataFormat::UNSIGNED_BYTE);
     outputDescriptor.setSampler(screenSampler);
-    //Color0 holds the LDR screen texture
-    _postFXOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
+    //Colour0 holds the LDR screen texture
+    _postFXOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Colour0);
 
     SamplerDescriptor lumaSampler;
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -65,13 +65,13 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
                                      GFXImageFormat::RED16F,
                                      GFXDataFormat::FLOAT_16);
     lumaDescriptor.setSampler(lumaSampler);
-    _currentLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _currentLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Colour0);
 
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaSampler.toggleMipMaps(false);
     lumaDescriptor.setSampler(lumaSampler);
-    _previousLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _previousLuminance->setClearColor(DefaultColors::BLACK());
+    _previousLuminance->addAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Colour0);
+    _previousLuminance->setClearColour(DefaultColours::BLACK());
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_const_uint(FilterSpace::FILTER_SPACE_HDR)];

@@ -34,7 +34,7 @@
 
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Utility/Headers/Colors.h"
+#include "Utility/Headers/Colours.h"
 #include "Core/Math/Headers/MathHelper.h"
 
 #include <boost/functional/hash.hpp>
@@ -65,12 +65,12 @@ class SamplerDescriptor : public PropertyDescriptor {
         setFilters(TextureFilter::LINEAR_MIPMAP_LINEAR, TextureFilter::LINEAR);
         setAnisotropy(16);
         setLOD();
-        toggleSRGBColorSpace(false);
+        toggleSRGBColourSpace(false);
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
         _mipmaps = true;
-        _borderColor.set(DefaultColors::BLACK());
+        _borderColour.set(DefaultColours::BLACK());
     }
 
     SamplerDescriptor* clone() const {
@@ -89,8 +89,8 @@ class SamplerDescriptor : public PropertyDescriptor {
         _biasLOD = biasLOD;
     }
 
-    inline void setBorderColor(const vec4<F32>& color) {
-        _borderColor.set(color);
+    inline void setBorderColour(const vec4<F32>& colour) {
+        _borderColour.set(colour);
     }
 
     inline void setWrapMode(TextureWrap wrapUVW = TextureWrap::REPEAT) {
@@ -152,7 +152,7 @@ class SamplerDescriptor : public PropertyDescriptor {
         _mipmaps = state;
     }
 
-    inline void toggleSRGBColorSpace(const bool state) { _srgb = state; }
+    inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
     inline size_t getHash() const {
         size_t hash = 0;
@@ -169,10 +169,10 @@ class SamplerDescriptor : public PropertyDescriptor {
         Util::Hash_combine(hash, _maxLOD);
         Util::Hash_combine(hash, _biasLOD);
         Util::Hash_combine(hash, _anisotropyLevel);
-        Util::Hash_combine(hash, _borderColor.r);
-        Util::Hash_combine(hash, _borderColor.g);
-        Util::Hash_combine(hash, _borderColor.b);
-        Util::Hash_combine(hash, _borderColor.a);
+        Util::Hash_combine(hash, _borderColour.r);
+        Util::Hash_combine(hash, _borderColour.g);
+        Util::Hash_combine(hash, _borderColour.b);
+        Util::Hash_combine(hash, _borderColour.a);
         return hash;
     }
     /*
@@ -196,7 +196,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline bool generateMipMaps() const { 
         return _mipmaps;
     }
-    inline vec4<F32> borderColor() const { return _borderColor; }
+    inline vec4<F32> borderColour() const { return _borderColour; }
 
    protected:
     // Sampler states
@@ -204,7 +204,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     TextureFilter _minFilter, _magFilter;
     /// Texture wrap mode (Or S-R-T)
     TextureWrap _wrapU, _wrapV, _wrapW;
-    /// Use SRGB color space
+    /// Use SRGB colour space
     bool _srgb;
     /// Use mipmapping
     bool _mipmaps;
@@ -215,9 +215,9 @@ class SamplerDescriptor : public PropertyDescriptor {
     F32 _minLOD, _maxLOD;
     /// OpenGL eg: used by TEXTURE_LOD_BIAS
     F32 _biasLOD;
-    /// Used with CLAMP_TO_BORDER as the background color outside of the texture
+    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture
     /// border
-    vec4<F32> _borderColor;
+    vec4<F32> _borderColour;
 };
 
 /// Use to define a texture with details such as type, image formats, etc
@@ -228,10 +228,10 @@ class TextureDescriptor : public PropertyDescriptor {
     /// This enum is used when creating Frame Buffers to define the channel that
     /// the texture will attach to
     enum class AttachmentType : U32 {
-        Color0 = 0,
-        Color1 = 1,
-        Color2 = 2,
-        Color3 = 3,
+        Colour0 = 0,
+        Colour1 = 1,
+        Colour2 = 2,
+        Colour3 = 3,
         Depth = 4,
         COUNT
 

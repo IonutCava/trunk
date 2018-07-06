@@ -49,18 +49,18 @@ void main()
 #include "BRDF.frag"
 
 flat in int _arrayLayer;
-layout(location = 0) out vec4 _colorOut;
+layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec3 _normalOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
-    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (color.a < ALPHA_DISCARD_THRESHOLD) {
+    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
+    if (colour.a < ALPHA_DISCARD_THRESHOLD) {
         discard;
     }
-    //color = getPixelColor(VAR._texCoord, VAR._normalWV);
-    _colorOut = ToSRGB(applyFog(color));
+    //colour = getPixelColour(VAR._texCoord, VAR._normalWV);
+    _colourOut = ToSRGB(applyFog(colour));
     _normalOut = normalize(f_in._normalWV);
 }
 
@@ -70,7 +70,7 @@ flat in int _arrayLayer;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
-out vec2 _colorOut;
+out vec2 _colourOut;
 
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
@@ -81,10 +81,10 @@ vec2 computeMoments(in float depth) {
 }
 
 void main(void){
-    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
+    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
+    if (colour.a < ALPHA_DISCARD_THRESHOLD) discard;
 
-    _colorOut = computeMoments(gl_FragCoord.z);
+    _colourOut = computeMoments(gl_FragCoord.z);
 }
 
 --Fragment.PrePass
@@ -94,7 +94,7 @@ flat in int _arrayLayer;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main(void){
-    vec4 color = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
-    if (color.a < ALPHA_DISCARD_THRESHOLD) discard;
+    vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayer));
+    if (colour.a < ALPHA_DISCARD_THRESHOLD) discard;
 
 }

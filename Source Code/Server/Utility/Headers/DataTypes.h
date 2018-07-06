@@ -19,7 +19,7 @@ class FileData {
     vec3<F32> scale;
     vec3<F32> position;
     vec3<F32> orientation;
-    vec3<F32> color;
+    vec3<F32> colour;
     GeometryType type;
     F32 data;  // general purpose
     stringImpl data2;

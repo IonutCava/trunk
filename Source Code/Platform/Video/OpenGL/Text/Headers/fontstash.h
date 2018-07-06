@@ -44,7 +44,7 @@ struct FONSparams {
     void* userPtr;
     int (*renderCreate)(void* uptr, int width, int height);
     void (*renderUpdate)(void* uptr, int* rect, const unsigned char* data);
-    void (*renderDraw)(void* uptr, const float* verts, const float* tcoords, const unsigned char* colors, int nverts);
+    void (*renderDraw)(void* uptr, const float* verts, const float* tcoords, const unsigned char* colours, int nverts);
     void (*renderDelete)(void* uptr);
 };
 
@@ -80,7 +80,7 @@ void fonsClearState(struct FONScontext* s);
 
 // State setting
 void fonsSetSize(struct FONScontext* s, float size);
-void fonsSetColor(struct FONScontext* s, unsigned char colorR, unsigned char colorG, unsigned char colorB, unsigned char colorA);
+void fonsSetColour(struct FONScontext* s, unsigned char colourR, unsigned char colourG, unsigned char colourB, unsigned char colourA);
 void fonsSetSpacing(struct FONScontext* s, float spacing);
 void fonsSetBlur(struct FONScontext* s, float blur);
 void fonsSetAlign(struct FONScontext* s, int align);
@@ -190,7 +190,7 @@ struct FONSstate
     int font;
     int align;
     float size;
-    unsigned char color[4];
+    unsigned char colour[4];
     float blur;
     float spacing;
 };
@@ -219,7 +219,7 @@ struct FONScontext
     int nfonts;
     float verts[FONS_VERTEX_COUNT*2];
     float tcoords[FONS_VERTEX_COUNT*2];
-    unsigned char colors[FONS_VERTEX_COUNT*4];
+    unsigned char colours[FONS_VERTEX_COUNT*4];
     int nverts;
     unsigned char scratch[FONS_SCRATCH_BUF_SIZE];
     int nscratch;
@@ -501,12 +501,12 @@ void fonsSetSize(struct FONScontext* stash, float size)
     fons__getState(stash)->size = size;
 }
 
-void fonsSetColor(struct FONScontext* stash, unsigned char colorR, unsigned char colorG, unsigned char colorB, unsigned char colorA)
+void fonsSetColour(struct FONScontext* stash, unsigned char colourR, unsigned char colourG, unsigned char colourB, unsigned char colourA)
 {
-    fons__getState(stash)->color[0] =  colorR;
-    fons__getState(stash)->color[1] =  colorG;
-    fons__getState(stash)->color[2] =  colorB;
-    fons__getState(stash)->color[3] =  colorA;
+    fons__getState(stash)->colour[0] =  colourR;
+    fons__getState(stash)->colour[1] =  colourG;
+    fons__getState(stash)->colour[2] =  colourB;
+    fons__getState(stash)->colour[3] =  colourA;
 }
 
 void fonsSetSpacing(struct FONScontext* stash, float spacing)
@@ -549,10 +549,10 @@ void fonsClearState(struct FONScontext* stash)
 {
     struct FONSstate* state = fons__getState(stash);
     state->size = 12.0f;
-    state->color[0] = 255;
-    state->color[1] = 255;
-    state->color[2] = 255;
-    state->color[3] = 255;
+    state->colour[0] = 255;
+    state->colour[1] = 255;
+    state->colour[2] = 255;
+    state->colour[3] = 255;
     state->font = 0;
     state->blur = 0;
     state->spacing = 0;
@@ -826,7 +826,7 @@ static struct FONSglyph* fons__getGlyph(struct FONScontext* stash, struct FONSfo
     }
 
     /*
-    // Debug code to color the glyph background
+    // Debug code to colour the glyph background
     int x,y;
     unsigned char* fdst = &stash->texData[glyph->x0 + glyph->y0 * stash->params.width];
     for (y = 0; y < gh; y++) {
@@ -921,7 +921,7 @@ static void fons__flush(struct FONScontext* stash)
     // Flush triangles
     if (stash->nverts > 0) {
         if (stash->params.renderDraw != nullptr)
-            stash->params.renderDraw(stash->params.userPtr, stash->verts, stash->tcoords, stash->colors, stash->nverts);
+            stash->params.renderDraw(stash->params.userPtr, stash->verts, stash->tcoords, stash->colours, stash->nverts);
         stash->nverts = 0;
     }
 }
@@ -932,10 +932,10 @@ static __inline void fons__vertex(struct FONScontext* stash, float x, float y, f
     stash->verts[stash->nverts*2+1] = y;
     stash->tcoords[stash->nverts*2+0] = s;
     stash->tcoords[stash->nverts*2+1] = t;
-    stash->colors[stash->nverts*4+0] = cR;
-    stash->colors[stash->nverts*4+1] = cG;
-    stash->colors[stash->nverts*4+2] = cB;
-    stash->colors[stash->nverts*4+3] = cA;
+    stash->colours[stash->nverts*4+0] = cR;
+    stash->colours[stash->nverts*4+1] = cG;
+    stash->colours[stash->nverts*4+2] = cB;
+    stash->colours[stash->nverts*4+3] = cA;
     stash->nverts++;
 }
 
@@ -1014,13 +1014,13 @@ float fonsDrawText(struct FONScontext* stash,
             if (stash->nverts+6 > FONS_VERTEX_COUNT)
                 fons__flush(stash);
 
-            fons__vertex(stash, q.x0, q.y0, q.s0, q.t0, state->color[0],state->color[1],state->color[2],state->color[3]);
-            fons__vertex(stash, q.x1, q.y1, q.s1, q.t1, state->color[0],state->color[1],state->color[2],state->color[3]);
-            fons__vertex(stash, q.x1, q.y0, q.s1, q.t0, state->color[0],state->color[1],state->color[2],state->color[3]);
+            fons__vertex(stash, q.x0, q.y0, q.s0, q.t0, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
+            fons__vertex(stash, q.x1, q.y1, q.s1, q.t1, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
+            fons__vertex(stash, q.x1, q.y0, q.s1, q.t0, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
 
-            fons__vertex(stash, q.x0, q.y0, q.s0, q.t0, state->color[0],state->color[1],state->color[2],state->color[3]);
-            fons__vertex(stash, q.x0, q.y1, q.s0, q.t1, state->color[0],state->color[1],state->color[2],state->color[3]);
-            fons__vertex(stash, q.x1, q.y1, q.s1, q.t1, state->color[0],state->color[1],state->color[2],state->color[3]);
+            fons__vertex(stash, q.x0, q.y0, q.s0, q.t0, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
+            fons__vertex(stash, q.x0, q.y1, q.s0, q.t1, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
+            fons__vertex(stash, q.x1, q.y1, q.s1, q.t1, state->colour[0],state->colour[1],state->colour[2],state->colour[3]);
         }
         prevGlyph = glyph;
     }

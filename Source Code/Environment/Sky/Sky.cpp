@@ -44,7 +44,7 @@ bool Sky::load() {
     SamplerDescriptor skyboxSampler;
     skyboxSampler.toggleMipMaps(false);
     skyboxSampler.setFilters(TextureFilter::LINEAR);
-    skyboxSampler.toggleSRGBColorSpace(true);
+    skyboxSampler.toggleSRGBColourSpace(true);
     skyboxSampler.setAnisotropy(16);
     skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
 
@@ -144,9 +144,9 @@ bool Sky::getDrawCommands(SceneGraphNode& sgn,
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,
-                           const vec4<F32>& sunColor) {
+                           const vec4<F32>& sunColour) {
     _skyShader->Uniform("sun_vector", sunVect);
-    _skyShader->Uniform("sun_color", sunColor.rgb());
+    _skyShader->Uniform("sun_colour", sunColour.rgb());
 }
 
 };

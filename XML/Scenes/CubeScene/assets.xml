@@ -74,7 +74,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="10" y="30" z="100" />
 	<orientation x="0" y="0" z="0" />
-	<color r="0.1" g="0.4" b="0.4"/>
+	<colour r="0.1" g="0.4" b="0.4"/>
 	<size>40.0</size>
 	<version>1.0</version>
 </Cutia1>
@@ -84,7 +84,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="120" y="50" z="100" />
 	<orientation x="0" y="0" z="0" />
-	<color r="0.8" g="0.4" b="0.4"/>
+	<colour r="0.8" g="0.4" b="0.4"/>
 	<radius>10.0</radius>
 	<version>1.0</version>
 </Bila>
@@ -94,7 +94,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="120" y="30" z="100" />
 	<orientation x="0" y="0" z="0" />
-	<color r="0.8" g="0.4" b="0.4"/>
+	<colour r="0.8" g="0.4" b="0.4"/>
 	<version>1.0</version>
 </QuadMic>
 
@@ -103,7 +103,7 @@
 	<scale x="0.2" y="0.2" z="0.2" />
 	<position x="120" y="-30" z="100" />
 	<orientation x="0" y="3" z="0" />
-	<color r="0.8" g="0.4" b="0.4"/>
+	<colour r="0.8" g="0.4" b="0.4"/>
 	<version>1.0</version>
 </QuadMare>
 
@@ -112,7 +112,7 @@
 	<scale x="1" y="1" z="1" />
 	<position x="-55" y="73" z="82" />
 	<orientation x="0" y="0" z="0" />
-	<color r="0.8" g="0.4" b="0.9"/>
+	<colour r="0.8" g="0.4" b="0.9"/>
 	<lineWidth>5</lineWidth>
 	<text>Hello World :D</text>
 	<fontName>Test.ttf</fontName>

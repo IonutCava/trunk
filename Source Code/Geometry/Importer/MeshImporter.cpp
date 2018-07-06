@@ -330,7 +330,7 @@ namespace Import {
         for (U32 i = 0; i < to_const_uint(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
-                textureSampler.toggleSRGBColorSpace(tex._srgbSpace);
+                textureSampler.toggleSRGBColourSpace(tex._srgbSpace);
                 textureSampler.setWrapMode(tex._wrapU, tex._wrapV, tex._wrapW);
 
                 ResourceDescriptor texture(tex._textureName);

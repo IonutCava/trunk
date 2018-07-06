@@ -11,7 +11,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(RenderTarget* hdrTarget, RenderTarget
     : PreRenderOperator(FilterType::FILTER_DEPTH_OF_FIELD, hdrTarget, ldrTarget)
 {
     _samplerCopy = GFX_DEVICE.newRT();
-    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Colour0);
     _samplerCopy->useAutoDepthBuffer(false);
 
     ResourceDescriptor dof("DepthOfField");

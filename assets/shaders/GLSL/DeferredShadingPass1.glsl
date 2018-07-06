@@ -51,13 +51,13 @@ in mat4 TBN;
 
 void main( void ){
 
-    vec4 color = dvd_MatDiffuse; //diffuse
+    vec4 colour = dvd_MatDiffuse; //diffuse
 
-    diffuseOutput = color;
+    diffuseOutput = colour;
     posOutput     = vec4(position,1);
     normOutput    = vec4(normals,1);
-    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
-    blendOutput.a = color.a;
+    blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
+    blendOutput.a = colour.a;
 }
 
 -- Fragment.Texture
@@ -74,13 +74,13 @@ out vec4 blendOutput;   // layout(location = 3)
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main( void ){
-   vec4 color = texture(texDiffuse0, VAR._texCoord);
+   vec4 colour = texture(texDiffuse0, VAR._texCoord);
 
-   diffuseOutput = color;
+   diffuseOutput = colour;
    posOutput     = vec4(position,1);
    normOutput    = vec4(normals,1);
-   blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
-   blendOutput.a = color.a;
+   blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
+   blendOutput.a = colour.a;
 }
 
 -- Fragment.Bump
@@ -98,14 +98,14 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D  texNormalMap;
 
 void main( void ){
 
-   vec4 color = texture(texDiffuse0, VAR._texCoord);
+   vec4 colour = texture(texDiffuse0, VAR._texCoord);
    
-   diffuseOutput = color;
+   diffuseOutput = colour;
    posOutput     = vec4(position,1);
    normOutput    = (texture(texNormalMap, VAR._texCoord) * 2 -
                      vec4(1,1,1,0)) * TBN;
-   blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
-   blendOutput.a = color.a;
+   blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
+   blendOutput.a = colour.a;
 
 }
 
@@ -121,11 +121,11 @@ out vec4 blendOutput;   // layout(location = 3)
 
 void main( void )
 {
-    vec4 color = dvd_MatDiffuse; //diffuse
+    vec4 colour = dvd_MatDiffuse; //diffuse
 
-    diffuseOutput    = color;
+    diffuseOutput    = colour;
     posOutput          = vec4(position,1);
     normOutput        = vec4(normals,1);
-    blendOutput.rgb = color.rgb * color.a; // Pre multiplied alpha
-    blendOutput.a   = color.a;
+    blendOutput.rgb = colour.rgb * colour.a; // Pre multiplied alpha
+    blendOutput.a   = colour.a;
 }

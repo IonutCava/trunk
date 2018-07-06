@@ -31,7 +31,7 @@ layout(early_fragment_tests) in;
     #include "bumpMapping.frag"
 #endif
 
-layout(location = 0) out vec4 _colorOut;
+layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec3 _normalOut;
 
 //subroutine vec4 MappingRoutineType();
@@ -40,14 +40,14 @@ layout(location = 1) out vec3 _normalOut;
 
 //subroutine(MappingRoutineType)
 vec4 mappingFlat(){
-    return getPixelColor(VAR._texCoord, VAR._normalWV);
+    return getPixelColour(VAR._texCoord, VAR._normalWV);
 }
 
 #if defined(COMPUTE_TBN)
 //subroutine(MappingRoutineType)
 vec4 mappingNormal(){
     vec3 bump = getBump(VAR._texCoord);
-    return mix(getPixelColor(VAR._texCoord, getTBNNormal(bump)),
+    return mix(getPixelColour(VAR._texCoord, getTBNNormal(bump)),
                mappingFlat(),
                vec4(dvd_lodLevel > 1));
 }
@@ -68,17 +68,17 @@ vec4 mappingParallax(){
 #endif
 
 void main (void){
-    //_colorOut = ToSRGB(applyFog(MappingRoutine()));
+    //_colourOut = ToSRGB(applyFog(MappingRoutine()));
 #if defined(COMPUTE_TBN)
 #    if defined(USE_PARALLAX_MAPPING)
-    _colorOut = ToSRGB(applyFog(ParallaxMapping()));
+    _colourOut = ToSRGB(applyFog(ParallaxMapping()));
 #    elif defined(USE_RELIEF_MAPPING)
-    _colorOut = ToSRGB(applyFog(ReliefMapping()));
+    _colourOut = ToSRGB(applyFog(ReliefMapping()));
 #    else
-    _colorOut = ToSRGB(applyFog(mappingNormal()));
+    _colourOut = ToSRGB(applyFog(mappingNormal()));
 #    endif
 #else
-    _colorOut = ToSRGB(applyFog(mappingFlat()));
+    _colourOut = ToSRGB(applyFog(mappingFlat()));
 #endif
 
     _normalOut = processedNormal;

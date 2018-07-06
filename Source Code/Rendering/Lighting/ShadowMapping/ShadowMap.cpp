@@ -60,8 +60,8 @@ void ShadowMap::initShadowMaps() {
                 depthMapDescriptor.setSampler(depthMapSampler);
 
                 _depthMaps[i] = GFX_DEVICE.newRT(false);
-                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Color0);
-                _depthMaps[i]->setClearColor(DefaultColors::WHITE());
+                _depthMaps[i]->addAttachment(depthMapDescriptor, TextureDescriptor::AttachmentType::Colour0);
+                _depthMaps[i]->setClearColour(DefaultColours::WHITE());
             } break;
 
             case ShadowType::CUBEMAP: {
@@ -98,7 +98,7 @@ void ShadowMap::bindShadowMaps() {
     for (U8 i = 0; i < to_const_ubyte(ShadowType::COUNT); ++i) {
         TextureDescriptor::AttachmentType attachment
             = static_cast<ShadowType>(i) == ShadowType::LAYERED
-                                          ? TextureDescriptor::AttachmentType::Color0
+                                          ? TextureDescriptor::AttachmentType::Colour0
                                           : TextureDescriptor::AttachmentType::Depth;
         _depthMaps[i]->bind(LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i)), attachment);
     }

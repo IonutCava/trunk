@@ -310,14 +310,14 @@ bool SceneManager::generateShadowMaps() {
 }
 
 /// Update fog values
-void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
+void SceneManager::enableFog(F32 density, const vec3<F32>& colour) {
     ParamHandler& par = ParamHandler::instance();
-    par.setParam(_ID("rendering.sceneState.fogColor.r"), color.r);
-    par.setParam(_ID("rendering.sceneState.fogColor.g"), color.g);
-    par.setParam(_ID("rendering.sceneState.fogColor.b"), color.b);
+    par.setParam(_ID("rendering.sceneState.fogColour.r"), colour.r);
+    par.setParam(_ID("rendering.sceneState.fogColour.g"), colour.g);
+    par.setParam(_ID("rendering.sceneState.fogColour.b"), colour.b);
     par.setParam(_ID("rendering.sceneState.fogDensity"), density);
 
-    _sceneData->fogDetails(color.r, color.g, color.b,
+    _sceneData->fogDetails(colour.r, colour.g, colour.b,
                           par.getParam<bool>(_ID("rendering.enableFog")) ? density : 0.0f);
 }
 

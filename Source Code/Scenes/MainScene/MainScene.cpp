@@ -26,13 +26,13 @@ void MainScene::updateLights() {
     if (!_updateLights) return;
 
     _sun_cosy = cosf(_sunAngle.y);
-    _sunColor =
+    _sunColour =
         Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
     _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
-    _sun.lock()->getNode<Light>()->setDiffuseColor(_sunColor);
-    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
+    _sun.lock()->getNode<Light>()->setDiffuseColour(_sunColour);
+    _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColour);
 
     _updateLights = false;
     return;
@@ -307,7 +307,7 @@ void MainScene::postLoadMainThread() {
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 60),  // Position
         Font::DIVIDE_DEFAULT,  // Font
-        vec3<F32>(0.0f, 0.2f, 1.0f),  // Color
+        vec3<F32>(0.0f, 0.2f, 1.0f),  // Colour
         Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 80), Font::DIVIDE_DEFAULT,

@@ -21,7 +21,7 @@ namespace {
     static const U32 g_particleBufferSizeFactor = 3;
     static const U32 g_particleGeometryBuffer = 0;
     static const U32 g_particlePositionBuffer = 1;
-    static const U32 g_particleColorBuffer = 2;
+    static const U32 g_particleColourBuffer = 2;
     static const bool g_usePersistentlyMappedBuffers = true;
 
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
@@ -105,7 +105,7 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 
 bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     static const U32 positionAttribLocation = 13;
-    static const U32 colorAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
+    static const U32 colourAttribLocation = to_const_uint(AttribLocation::VERTEX_COLOR);
 
     DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
 
@@ -121,7 +121,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
                                   true,
                                   true,
                                   g_usePersistentlyMappedBuffers);
-    _particleGPUBuffer->setBuffer(g_particleColorBuffer,
+    _particleGPUBuffer->setBuffer(g_particleColourBuffer,
                                   particleCount,
                                   4 * sizeof(U8),
                                   true,
@@ -133,8 +133,8 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
     _particleGPUBuffer->getDrawAttribDescriptor(positionAttribLocation)
         .set(g_particlePositionBuffer, 1, 4, false, 0, GFXDataFormat::FLOAT_32);
 
-    _particleGPUBuffer->getDrawAttribDescriptor(colorAttribLocation)
-        .set(g_particleColorBuffer, 1, 4, true, 0, GFXDataFormat::UNSIGNED_BYTE);
+    _particleGPUBuffer->getDrawAttribDescriptor(colourAttribLocation)
+        .set(g_particleColourBuffer, 1, 4, true, 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
@@ -143,7 +143,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     if (!_particles->_textureFileName.empty()) {
         SamplerDescriptor textureSampler;
-        textureSampler.toggleSRGBColorSpace(true);
+        textureSampler.toggleSRGBColourSpace(true);
 
         ResourceDescriptor texture(_particles->_textureFileName);
 
@@ -250,7 +250,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
 void ParticleEmitter::postUpdate() {
     U32 aliveCount = to_uint(_particles->_renderingPositions.size());
     _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-    _particleGPUBuffer->updateBuffer(g_particleColorBuffer, aliveCount, 0, _particles->_renderingColors.data());
+    _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
     _particleGPUBuffer->incQueue();
 }
 
