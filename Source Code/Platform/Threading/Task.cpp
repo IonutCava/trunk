@@ -19,6 +19,7 @@ Task::Task(ThreadPool& tp) : GUIDWrapper(),
     _childTaskCount = 0;
     _done = true;
     _stopRequested = false;
+    _locked = false;
 }
 
 Task::Task(const Task& old) : GUIDWrapper(old),
@@ -31,6 +32,7 @@ Task::Task(const Task& old) : GUIDWrapper(old),
     _onCompletionCbk = old._onCompletionCbk;
     _priority = old._priority;
     _childTaskCount.store(old._childTaskCount);
+    _locked.store(old._locked);
     _parentTask = old._parentTask;
     _childTasks.insert(std::cend(_childTasks), std::cbegin(old._childTasks), std::cend(old._childTasks));
 }
@@ -53,6 +55,7 @@ bool Task::reset() {
         WAIT_FOR_CONDITION(_done);
     }
     _stopRequested = false;
+    _locked = false;
     _callback = DELEGATE_CBK_PARAM<bool>();
     _onCompletionCbk = DELEGATE_CBK_PARAM<I64>();
     _jobIdentifier = -1;
@@ -108,6 +111,7 @@ void Task::run() {
 
     Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
     _done = true;
+    _locked = false;
 }
 
 };

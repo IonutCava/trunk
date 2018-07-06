@@ -287,7 +287,7 @@ void LightManager::updateAndUploadLightData(const vec3<F32>& eyePos, const mat4<
     TaskHandle cullTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
     for (Light::LightList& lights : _lights) {
         cullTask.addChildTask(kernel.AddTask(
-            [&eyePos, &lights](bool stopRequested) mutable
+            [&eyePos, &lights](const std::atomic_bool& stopRequested) mutable
             {
                 std::sort(std::begin(lights), std::end(lights),
                           [&eyePos](Light* a, Light* b) -> bool

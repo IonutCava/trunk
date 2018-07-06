@@ -210,7 +210,7 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(bool stopRequested, cdiggins::any a, CallbackParam b) {
+void MainScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b) {
     while (!stopRequested) {
         static bool switchAB = false;
         vec3<F32> pos;

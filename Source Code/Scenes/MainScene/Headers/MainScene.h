@@ -62,7 +62,7 @@ class MainScene : public Scene {
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
-    void test(bool stopRequested, cdiggins::any a, CallbackParam b);
+    void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
   
    private:
     vec2<F32> _sunAngle;

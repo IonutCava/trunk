@@ -66,6 +66,10 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
         return _done;
     }
 
+    inline bool isLocked() const {
+        return _locked;
+    }
+
     inline I64 jobIdentifier() const {
         return _jobIdentifier;
     }
@@ -87,15 +91,23 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
         task->_parentTask = this;
     }
 
+    inline void lock() {
+        _locked = true;
+    }
+
+    inline void unlock() {
+        _locked = false;
+    }
    protected:
     void run();
 
    private:
     std::atomic_bool _done;
+    std::atomic_bool _locked;
     std::atomic_bool _stopRequested;
     std::atomic<I64> _jobIdentifier;
 
-    DELEGATE_CBK_PARAM<bool> _callback;
+    DELEGATE_CBK_PARAM<const std::atomic_bool&> _callback;
     DELEGATE_CBK_PARAM<I64> _onCompletionCbk;
     
     TaskPriority _priority;
@@ -133,6 +145,7 @@ struct TaskHandle {
     Task* _task;
     I64 _jobIdentifier;
 };
+
 
 };  // namespace Divide
 

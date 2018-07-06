@@ -428,10 +428,10 @@ bool Vegetation::onRender(SceneGraphNode& sgn, RenderStage renderStage) {
               renderStage == RenderStage::SHADOW));
 }
 
-void Vegetation::generateTrees(bool stopRequested) {
+void Vegetation::generateTrees(const std::atomic_bool& stopRequested) {
 }
 
-void Vegetation::generateGrass(bool stopRequested) {
+void Vegetation::generateGrass(const std::atomic_bool& stopRequested) {
     return;
 
     const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();

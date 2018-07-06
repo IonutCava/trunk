@@ -115,7 +115,7 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
 
 bool PhysXScene::unload() { return Scene::unload(); }
 
-void PhysXScene::createStack(bool stopRequested, U32 size) {
+void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
     U32 stackSize = size;
     F32 CubeSize = 1.0f;
     F32 Spacing = 0.0001f;
@@ -142,7 +142,7 @@ void PhysXScene::createStack(bool stopRequested, U32 size) {
     s_sceneState = PhysXState::STATE_IDLE;
 }
 
-void PhysXScene::createTower(bool stopRequested, U32 size) {
+void PhysXScene::createTower(const std::atomic_bool& stopRequested, U32 size) {
     while (s_sceneState == PhysXState::STATE_ADDING_ACTORS);
         
     s_sceneState = PhysXState::STATE_ADDING_ACTORS;

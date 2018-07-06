@@ -83,13 +83,13 @@ void ParticleData::sort(bool invalidateCache) {
 
     std::sort(std::begin(_indices), std::end(_indices), sortFunc);
 
-   auto parsePositions = [count, this](bool stopRequested) -> void {
+   auto parsePositions = [count, this](const std::atomic_bool& stopRequested) -> void {
         for (U32 i = 0; i < count; ++i) {
             _renderingPositions[i].set(_position[_indices[i].first]);
         }
     };
 
-    auto parseColors = [count, this](bool stopRequested) -> void {
+    auto parseColors = [count, this](const std::atomic_bool& stopRequested) -> void {
         for (U32 i = 0; i < count; ++i) {
             Util::ToByteColor(_color[_indices[i].first], _renderingColors[i]);
         }

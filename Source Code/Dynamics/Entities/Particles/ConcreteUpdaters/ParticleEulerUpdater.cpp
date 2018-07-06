@@ -1,4 +1,5 @@
 #include "Headers/ParticleEulerUpdater.h"
+#include "Core/Headers/Kernel.h"
 
 #include <future>
 
@@ -10,13 +11,12 @@ void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
 
     const U32 endID = p.aliveCount();
 
-    auto parseRange = [&p, dt, globalA](U32 start, U32 end) -> void {
+    auto parseRange = [&p, dt, globalA](const std::atomic_bool& stopRequested, U32 start, U32 end) -> void {
         vectorImpl<vec4<F32>>& acceleration = p._acceleration;
         for (U32 i = start; i < end; ++i) {
             vec4<F32>& acc = acceleration[i];
             acc.xyz(acc + globalA);
         }
-
         vectorImpl<vec4<F32>>& velocity = p._velocity;
         for (U32 i = start; i < end; ++i) {
             vec4<F32>& vel = velocity[i];
@@ -30,15 +30,23 @@ void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
         }
     };
 
-    const U32 half = endID / 2;
-
-    std::future<void> firstHalf = 
-        std::async(std::launch::async | std::launch::deferred, parseRange, 0, half);
-
-    std::future<void> secondHalf =
-        std::async(std::launch::async | std::launch::deferred, parseRange, half, endID);
-
-    firstHalf.get();
-    secondHalf.get();
+    static const U32 partitionSize = 256;
+    U32 crtPartitionSize = std::min(partitionSize, endID);
+    U32 partitionCount = endID / crtPartitionSize;
+    U32 remainder = endID % crtPartitionSize;
+    
+    const U32 half = endID / 2u;
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle updateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    for (U32 i = 0; i < partitionCount; ++i) {
+        U32 start = i * crtPartitionSize;
+        U32 end = start + crtPartitionSize;
+        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange, std::placeholders::_1, start, end))._task);
+    }
+    if (remainder > 0) {
+        updateTask.addChildTask(kernel.AddTask(DELEGATE_BIND(parseRange, std::placeholders::_1, endID - remainder, endID))._task);
+    }
+    updateTask.startTask(Task::TaskPriority::HIGH);
+    updateTask.wait();
 }
 };

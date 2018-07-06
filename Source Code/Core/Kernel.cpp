@@ -94,6 +94,15 @@ TaskHandle Kernel::getTaskHandle(I64 taskGUID) {
     return TaskHandle(&_tasksPool.front(), -1);
 }
 
+Task& Kernel::getAvailableTask() {
+    Task* task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
+    while (task->isLocked()) {
+        task = &_tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
+    }
+    task->reset();
+    return *task;
+}
+
 TaskHandle Kernel::AddTask(const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                            const DELEGATE_CBK<>& onCompletionFunction) {
     return AddTask(-1, threadedFunction, onCompletionFunction);                            
@@ -103,10 +112,7 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
                            const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                            const DELEGATE_CBK<>& onCompletionFunction) {
 
-    Task& freeTask = _tasksPool[(++_allocatedJobs - 1u) & (Config::MAX_POOLED_TASKS - 1u)];
-    if (freeTask.reset()) {
-        _threadedCallbackFunctions.erase(freeTask.getGUID());
-    }
+    Task& freeTask = getAvailableTask();
 
     freeTask.threadedCallback(threadedFunction, jobIdentifier);
     freeTask.onCompletionCbk(DELEGATE_BIND(&Kernel::threadPoolCompleted,
@@ -117,6 +123,7 @@ TaskHandle Kernel::AddTask(I64 jobIdentifier,
         hashAlg::emplace(_threadedCallbackFunctions,
                          freeTask.getGUID(),
                          onCompletionFunction);
+        freeTask.lock();
     }
 
     return TaskHandle(&freeTask, jobIdentifier);

@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 #include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 
@@ -71,6 +72,7 @@ public:
     I64 getDebugGroup(const char* name);
 
     inline size_t debugVarCount() const  {
+        ReadLock lock(_varMutex);
         return _debugVariables.size();
     }
 protected:
@@ -81,6 +83,8 @@ protected:
         return _debugGroups;
     }
 protected:
+    mutable SharedLock _varMutex;
+    mutable SharedLock _groupMutex;
     hashMapImpl<I64, DebugVar> _debugVariables;
     hashMapImpl<I64, DebugGroup> _debugGroups;
 
@@ -113,6 +117,31 @@ namespace Attorney {
 
         static hashMapImpl<I64, DebugInterface::DebugVar>& getDebugVariables() {
             return DebugInterface::getInstance().getDebugVariables();
+        }
+
+        static void lockVars(bool write) {
+            if (write) {
+                DebugInterface::getInstance()._varMutex.lock();
+            } else {
+                DebugInterface::getInstance()._varMutex.lock_shared();
+            }
+        }
+
+        static void unlockVars() {
+            DebugInterface::getInstance()._varMutex.unlock();
+        }
+
+        static void lockGroups(bool write) {
+            if (write) {
+                DebugInterface::getInstance()._groupMutex.lock();
+            }
+            else {
+                DebugInterface::getInstance()._groupMutex.lock_shared();
+            }
+        }
+
+        static void unlockGroups() {
+            DebugInterface::getInstance()._groupMutex.unlock();
         }
 
         friend class GUI;

@@ -147,6 +147,92 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     TaskHandle AddTask(I64 jobIdentifier,
                        const DELEGATE_CBK_PARAM<bool>& threadedFunction,
                        const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+
+    /*class CountSplitter
+    {
+    public:
+        explicit CountSplitter(U32 count)
+            : _count(count)
+        {
+        }
+
+        template <typename T>
+        inline bool Split(U32 count) const
+        {
+            return (count > _count);
+        }
+
+    private:
+        U32 _count;
+    };
+
+    class DataSizeSplitter
+    {
+    public:
+        explicit DataSizeSplitter(U32 size)
+            : _size(size)
+        {
+        }
+
+        template <typename T>
+        inline bool Split(U32 count) const
+        {
+            return (count*sizeof(T) > _size);
+        }
+
+    private:
+        U32 _size;
+    };
+
+    template <typename T, typename S>
+    TaskHandle parallel_for(T* data, U32 count, void(*function)(T*, U32, U32), const S& splitter)
+    {
+        typedef parallel_for_job_data<T, S> JobData;
+        const JobData jobData(data, count, function, splitter);
+
+        return AddTask(-1, &parallel_for_job<JobData>, jobData);
+    }
+
+    template <typename T, typename S>
+    struct parallel_for_job_data
+    {
+        typedef T DataType;
+        typedef S SplitterType;
+
+        parallel_for_job_data(DataType* data, U32 count, void(*function)(DataType*, U32, U32), const SplitterType& splitter)
+            : data(data)
+            , count(count)
+            , function(function)
+            , splitter(splitter)
+        {
+        }
+
+        DataType* data;
+        U32 count;
+        void(*function)(DataType*, U32, U32);
+        SplitterType splitter;
+    };
+
+    template <typename JobData>
+    void parallel_for_job(TaskHandle& job, const void* jobData)
+    {
+        const JobData* data = static_cast<const JobData*>(jobData);
+        const JobData::SplitterType& splitter = data->splitter;
+
+        if (splitter.Split<JobData::DataType>(data->count)) {
+
+            const U32 leftCount = data->count / 2u;
+            const JobData leftData(data->data, leftCount, data->function, splitter);
+            job.addChildTask(AddTask(job, &parallel_for_job<JobData>, leftData);
+
+            const U32 rightCount = data->count - leftCount;
+            const JobData rightData(data->data + leftCount, rightCount, data->function, splitter);
+            job.addChildTask(AddTask(job, &parallel_for_job<JobData>, rightData);
+        } else {
+            (data->function)(data->data, data->count);
+        }
+    }*/
+
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
@@ -159,6 +245,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void onChangeWindowSize(U16 w, U16 h);
     void onChangeRenderResolution(U16 w, U16 h) const;
 
+    Task& getAvailableTask();
    private:
     Application& _APP;
     /// Access to the GPU

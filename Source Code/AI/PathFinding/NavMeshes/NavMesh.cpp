@@ -189,7 +189,7 @@ bool NavigationMesh::buildThreaded() {
     return true;
 }
 
-void NavigationMesh::buildInternal(bool stopRequested) {
+void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
     _building = true;
     // Create mesh
     D32 timeStart = Time::ElapsedSeconds();

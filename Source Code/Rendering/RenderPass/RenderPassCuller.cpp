@@ -113,7 +113,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
 
 /// This method performs the visibility check on the given node and all of its
 /// children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(bool stopRequested, 
+void RenderPassCuller::frustumCullNode(const std::atomic_bool&stopRequested,
                                        const SceneGraphNode& currentNode,
                                        const Camera& currentCamera,
                                        RenderStage currentStage,

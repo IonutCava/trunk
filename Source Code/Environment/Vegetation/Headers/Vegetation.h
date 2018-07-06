@@ -93,8 +93,8 @@ class Vegetation : public SceneNode {
 
    private:
     void uploadGrassData();
-    void generateTrees(bool stopRequested);
-    void generateGrass(bool stopRequested);
+    void generateTrees(const std::atomic_bool& stopRequested);
+    void generateGrass(const std::atomic_bool& stopRequested);
 
     U32 getQueryID();
 

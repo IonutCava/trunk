@@ -62,7 +62,7 @@ class PingPongScene : public Scene {
     void processGUI(const U64 deltaTime);
 
    private:
-    void test(bool stopRequested, cdiggins::any a, CallbackParam b);
+    void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
     void serveBall();
     void resetGame();
 

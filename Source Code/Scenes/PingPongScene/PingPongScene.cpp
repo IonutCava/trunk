@@ -90,7 +90,7 @@ void PingPongScene::serveBall() {
     registerTask(newGame);
 }
 
-void PingPongScene::test(bool stopRequested, cdiggins::any a, CallbackParam b) {
+void PingPongScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b) {
     while (!stopRequested) {
         bool updated = false;
         stringImpl message;

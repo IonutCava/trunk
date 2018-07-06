@@ -55,7 +55,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
     _boundingBoxesAvailable.at(animationIndex) = true;
 }
 
-void SkinnedSubMesh::buildBoundingBoxesForAnim(bool stopRequested, 
+void SkinnedSubMesh::buildBoundingBoxesForAnim(const std::atomic_bool& stopRequested,
                                                U32 animationIndex,
                                                AnimationComponent* const animComp) {
 

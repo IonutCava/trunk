@@ -74,7 +74,7 @@ class RenderPassCuller {
    protected:
 
     // return true if the node is not currently visible
-    void frustumCullNode(bool stopRequested,
+    void frustumCullNode(const std::atomic_bool& stopRequested,
                          const SceneGraphNode& node,
                          const Camera& currentCamera,
                          RenderStage currentStage,

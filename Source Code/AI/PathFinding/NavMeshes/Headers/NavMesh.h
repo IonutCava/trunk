@@ -166,7 +166,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     /// calls to this method properly!
     bool buildProcess();
     /// Used for multithreaded loading
-    void buildInternal(bool stopRequested);
+    void buildInternal(const std::atomic_bool& stopRequested);
     /// Generates a navigation mesh for the collection of objects in this
     /// mesh. Returns true if successful. Stores the created mesh in tnm.
     bool generateMesh();

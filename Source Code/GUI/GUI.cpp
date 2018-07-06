@@ -108,6 +108,9 @@ void GUI::update(const U64 deltaTime) {
     U32 debugVarEntries = to_uint(debugInterface.debugVarCount());
     if (_debugVarCacheCount != debugVarEntries) {
 
+        Attorney::DebugInterfaceGUI::lockVars(false);
+        Attorney::DebugInterfaceGUI::lockGroups(false);
+
         const hashMapImpl<I64, DebugInterface::DebugGroup>& groups
             = Attorney::DebugInterfaceGUI::getDebugGroups();
 
@@ -137,6 +140,9 @@ void GUI::update(const U64 deltaTime) {
             I64 varID = entry.second;
             // Add a clickable text field for each
         }
+
+        Attorney::DebugInterfaceGUI::unlockGroups();
+        Attorney::DebugInterfaceGUI::unlockVars();
     }
 }
 

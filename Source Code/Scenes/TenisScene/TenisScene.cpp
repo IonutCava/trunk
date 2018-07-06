@@ -114,7 +114,7 @@ void TenisScene::checkCollisions() {
 
 // Team 1: Player1 + Player2
 // Team 2: Player3 + Player4
-void TenisScene::playGame(bool stopRequested, cdiggins::any a, CallbackParam b) {
+void TenisScene::playGame(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b) {
     while (!stopRequested) {
         bool updated = false;
         stringImpl message;

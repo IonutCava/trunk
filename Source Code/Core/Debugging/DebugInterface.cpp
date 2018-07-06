@@ -25,12 +25,14 @@ I64 DebugInterface::addDebugVar(const char* file, I32 line, void* variable, Call
     temp._locationLine = static_cast<U16>(line);
     temp._group = debugGroup;
 
+    WriteLock lock(_varMutex);
     _debugVariables.insert(std::make_pair(temp.getGUID(), temp));
 
     return temp.getGUID();
 }
 
 void DebugInterface::onDebugVarTrigger(I64 guid, bool invert) {
+    WriteLock lock(_varMutex);
     hashMapImpl<I64, DebugVar>::iterator it = _debugVariables.find(guid);
     if (it != std::end(_debugVariables)) {
         DebugVar& var = it->second;
@@ -88,6 +90,8 @@ void DebugInterface::onDebugVarTrigger(I64 guid, bool invert) {
 I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
     DebugGroup temp;
     temp._name = name;
+
+    WriteLock lock(_groupMutex);
     hashMapImpl<I64, DebugGroup>::iterator it = _debugGroups.find(parentGUID);
 
     if (it != std::cend(_debugGroups)) {
@@ -101,6 +105,7 @@ I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
 }
 
 I64 DebugInterface::getDebugGroup(const char* name) {
+    ReadLock lock (_groupMutex);
     for (hashMapImpl<I64, DebugGroup>::value_type& group : _debugGroups) {
         if (group.second._name.compare(name) == 0) {
             return group.first;
