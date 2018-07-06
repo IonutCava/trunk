@@ -23,7 +23,7 @@ moodycamel::BlockingConcurrentQueue<Console::OutputEntry> Console::_outputBuffer
 void Console::printCopyrightNotice() {
     std::cout << "-------------------------------------------------------------"
                  "-----------------\n";
-    std::cout << "Copyright (c) 2016 DIVIDE-Studio\n";
+    std::cout << "Copyright (c) 2017 DIVIDE-Studio\n";
     std::cout << "Copyright (c) 2009 Ionut Cava\n\n";
     std::cout << "This file is part of DIVIDE Framework.\n\n";
     std::cout << "Permission is hereby granted, free of charge, to any person "
