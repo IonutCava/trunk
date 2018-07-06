@@ -39,6 +39,7 @@ static const char* DEFAULT_LANG = "enGB";
 namespace Divide {
 
 enum class ErrorCode : I32;
+enum class FileUpdateEvent : U8;
 
 namespace Locale {
     namespace detail {
@@ -55,7 +56,7 @@ namespace Locale {
         static vectorImpl<DELEGATE_CBK<void, const char* /*new language*/>> s_languageChangeCallbacks;
 
         /// Callback for external file changes. 
-        void onLanguageFileModify(const char* languageFile);
+        void onLanguageFileModify(const char* languageFile, FileUpdateEvent evt);
     }; //detail
 
 /// Reset everything and load the specified language file.

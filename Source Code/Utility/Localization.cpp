@@ -3,7 +3,7 @@
 #include "Core/Headers/ErrorCodes.h"
 #include <SimpleINI/include/SimpleIni.h>
 
-#include "simplefilewatcher/includes/FileWatcher.h"
+#include "Platform/File/Headers/FileUpdateMonitor.h"
 
 namespace Divide {
 namespace Locale {
@@ -15,32 +15,17 @@ namespace {
     /// External modification monitoring system
     std::unique_ptr<FW::FileWatcher> s_LanguageFileWatcher = nullptr;
 
-    class UpdateListener : public FW::FileWatchListener
-    {
-    public:
-        UpdateListener()
-        {
-        }
-
-        void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action)
-        {
-            switch (action)
-            {
-            case FW::Actions::Add: break;
-            case FW::Actions::Delete: break;
-            case FW::Actions::Modified:
-                detail::onLanguageFileModify(filename.c_str());
-                break;
-
-            default:
-                DIVIDE_UNEXPECTED_CALL("Unknown file event!");
-            }
-        };
-    } s_fileWatcherListener;
+    UpdateListener s_fileWatcherListener([](const char* languageFile, FileUpdateEvent evt) {
+        detail::onLanguageFileModify(languageFile, evt);
+    });
 };
 
 namespace detail {
-    void onLanguageFileModify(const char* languageFile) {
+    void onLanguageFileModify(const char* languageFile, FileUpdateEvent evt) {
+        if (evt == FileUpdateEvent::DELETE) {
+            return;
+        }
+
         // If we modify our currently active language, reinit the Locale system
         if (strcmp((s_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
             changeLanguage(s_localeFile);
@@ -52,6 +37,8 @@ ErrorCode init(const stringImpl& newLanguage) {
     clear();
     if (!s_LanguageFileWatcher) {
          s_LanguageFileWatcher.reset(new FW::FileWatcher());
+         s_fileWatcherListener.addIgnoredEndCharacter('~');
+         s_fileWatcherListener.addIgnoredExtension("tmp");
          s_LanguageFileWatcher->addWatch(Paths::g_localisationPath.c_str(), &s_fileWatcherListener);
     }
 

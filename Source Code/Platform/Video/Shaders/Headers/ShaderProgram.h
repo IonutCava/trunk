@@ -50,6 +50,7 @@ class Camera;
 class Material;
 class ShaderBuffer;
 class GenericDrawCommand;
+enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
@@ -266,7 +267,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();
 
-    static void onAtomChange(const stringImpl& atomName);
+    static void onAtomChange(const char* atomName, FileUpdateEvent evt);
 
     static void rebuildAllShaders();
 

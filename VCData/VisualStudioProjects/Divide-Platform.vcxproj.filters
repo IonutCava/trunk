@@ -346,6 +346,9 @@
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileManagement.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileUpdateMonitor.h">
+      <Filter>File\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -596,6 +599,18 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\File\FileManagementFunctions.cpp">
       <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcher.cpp">
+      <Filter>File\FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherLinux.cpp">
+      <Filter>File\FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherOSX.cpp">
+      <Filter>File\FileWatcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherWin32.cpp">
+      <Filter>File\FileWatcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -880,6 +895,9 @@
     </Filter>
     <Filter Include="File\Headers">
       <UniqueIdentifier>{1b5cc96f-9c4c-45df-b373-56e9f4373a01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="File\FileWatcher">
+      <UniqueIdentifier>{4496482a-d2ee-46f3-a668-a6a8551fb52f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

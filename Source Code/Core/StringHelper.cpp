@@ -29,6 +29,12 @@ stringImpl GetTrailingCharacters(const stringImpl& input, size_t count) {
     return input.substr(inputLength - count, inputLength);
 }
 
+stringImpl GetStartingCharacters(const stringImpl& input, size_t count) {
+    size_t inputLength = input.length();
+    count = std::min(inputLength, count);
+    assert(count > 0);
+    return input.substr(0, inputLength - count);
+}
 
 vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
     vectorImpl<stringImpl>& elems) {

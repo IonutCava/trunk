@@ -108,12 +108,6 @@
     <Filter Include="Utility\NV_DDS\Headers">
       <UniqueIdentifier>{6cfcf30b-6a58-468c-9902-04334a5baa8c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Utility\FileWatcher">
-      <UniqueIdentifier>{410aecb5-520b-4115-a27c-298399fea210}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Utility\FileWatcher\Headers">
-      <UniqueIdentifier>{af57902a-2095-4bf3-bbb8-5d3844f08dc8}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp">
@@ -229,18 +223,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
       <Filter>Utility\NV_DDS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcher.cpp">
-      <Filter>Utility\FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherLinux.cpp">
-      <Filter>Utility\FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherOSX.cpp">
-      <Filter>Utility\FileWatcher</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherWin32.cpp">
-      <Filter>Utility\FileWatcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -403,21 +385,6 @@
     <ClInclude Include="..\..\Source Code\config.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ErrorCodes.h">
       <Filter>Core\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcher.h">
-      <Filter>Utility\FileWatcher\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherImpl.h">
-      <Filter>Utility\FileWatcher\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherLinux.h">
-      <Filter>Utility\FileWatcher\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherOSX.h">
-      <Filter>Utility\FileWatcher\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherWin32.h">
-      <Filter>Utility\FileWatcher\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

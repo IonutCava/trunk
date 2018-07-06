@@ -71,7 +71,7 @@ namespace Paths {
         g_fontsPath = "fonts/";
         g_soundsLocation = "sounds/";
         g_localisationPath = "localisation/";
-        g_scriptsLocation = g_assetsLocation + "Scripts/";
+        g_scriptsLocation = g_assetsLocation + "scripts/";
 
         Shaders::g_cacheLocation = "shaderCache/";
         Shaders::g_cacheLocationText = Shaders::g_cacheLocation + "Text/";
@@ -108,7 +108,7 @@ namespace Paths {
         g_texturesLocation = config.defaultTextureLocation + "/";
         g_xmlDataLocation = entryData.scriptLocation + "/";
         g_scenesLocation = entryData.scenesLocation + "/";
-        g_scriptsLocation = g_assetsLocation + "Scripts/";
+        g_scriptsLocation = g_assetsLocation + "scripts/";
     }
 
 }; //namespace Paths

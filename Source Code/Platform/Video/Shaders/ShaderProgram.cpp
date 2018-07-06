@@ -6,33 +6,13 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-
-#include "simplefilewatcher/includes/FileWatcher.h"
+#include "Platform/File/Headers/FileUpdateMonitor.h"
 
 namespace Divide {
 namespace {
-    class UpdateListener : public FW::FileWatchListener
-    {
-    public:
-        UpdateListener() 
-        {
-        }
-
-        void handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action)
-        {
-            switch (action)
-            {
-                case FW::Actions::Add: break;
-                case FW::Actions::Delete: break;
-                case FW::Actions::Modified:
-                    ShaderProgram::onAtomChange(filename.c_str());
-                    break;
-
-                default:
-                    DIVIDE_UNEXPECTED_CALL("Unknown file event!");
-            }
-        };
-    } s_fileWatcherListener;
+    UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
+        ShaderProgram::onAtomChange(atomName, evt);
+    });
 };
 
 ShaderProgram_ptr ShaderProgram::_imShader;
@@ -239,6 +219,8 @@ void ShaderProgram::onStartup(ResourceCache& parentCache) {
     vectorImpl<stringImpl> atomLocations = getAllAtomLocations();
     for (const stringImpl& loc : atomLocations) {
         createDirectories(loc.c_str());
+        s_fileWatcherListener.addIgnoredEndCharacter('~');
+        s_fileWatcherListener.addIgnoredExtension("tmp");
         s_shaderFileWatcher->addWatch(loc, &s_fileWatcherListener);
     }
 
@@ -315,15 +297,18 @@ void ShaderProgram::rebuildAllShaders() {
     }
 }
 
-void ShaderProgram::onAtomChange(const stringImpl& atomName) {
+void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
+    if (evt == FileUpdateEvent::DELETE) {
+        // Do nothing if the specified file is "deleted"
+        // We do not want to break running programs
+        return;
+    }
+    // ADD and MODIFY events should get processed as usual
+
     // Clear the atom from the cache
     AtomMap::iterator it = _atoms.find(_ID_RT(atomName));
     if (it != std::cend(_atoms)) {
         it = _atoms.erase(it);
-    } else {
-        // Early return here because the _atom cache should contain ALL know atoms
-        // If the atom is not found, it may just be a temporary file
-        return;
     }
 
     //Get list of shader programs that use the atom and rebuild all shaders in list;

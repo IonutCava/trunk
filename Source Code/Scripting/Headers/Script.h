@@ -56,6 +56,7 @@ public:
     T eval();
 
 protected:
+    void bootstrap();
     static void handleOutput(const std::string& msg);
 
 protected:

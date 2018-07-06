@@ -4,6 +4,30 @@
 
 namespace Divide {
 
+class PlatformSetup
+{
+public:
+    PlatformSetup()
+    {
+        PlatformInit(0, nullptr);
+    }
+};
+
+
+namespace {
+    PlatformSetup* my_class_ptr = nullptr;
+};
+
+TEST_SETUP(PathSetup)
+{
+    my_class_ptr = new PlatformSetup();
+}
+
+TEST_TEARDOWN(PathSetup)
+{
+    delete my_class_ptr;
+}
+
 TEST(TestSimpleMath)
 {
     Script input("5.3 + 2.1");
@@ -14,8 +38,6 @@ TEST(TestSimpleMath)
 
 TEST(TestCFunctionCall)
 {
-    Paths::initPaths();
-
     Script input("var my_fun = fun(x) { return x + 2; };"
                  "something(my_fun)");
 
@@ -29,4 +51,5 @@ TEST(TestCFunctionCall)
     input.eval();
     CHECK_EQUAL(variable, 2);
 }
+
 }; //namespace Divide

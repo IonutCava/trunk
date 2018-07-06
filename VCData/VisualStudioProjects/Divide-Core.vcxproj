@@ -46,10 +46,6 @@
     <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcher.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherLinux.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherOSX.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\source\FileWatcherWin32.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
@@ -101,11 +97,6 @@
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.h" />
     <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h" />
     <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h" />
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcher.h" />
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherImpl.h" />
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherLinux.h" />
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherOSX.h" />
-    <ClInclude Include="..\..\Source Code\Libs\simplefilewatcher\includes\FileWatcherWin32.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Colours.h" />
@@ -212,7 +203,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -260,7 +251,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -301,7 +292,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\nv_dds\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\cegui-deps\include\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
