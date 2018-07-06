@@ -592,9 +592,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h">
-      <Filter>Managers\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h">
       <Filter>Geometry\Material\Headers</Filter>
     </ClInclude>
@@ -942,6 +939,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Line.h">
       <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h">
+      <Filter>Managers\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -39,7 +39,6 @@ namespace {
 
 };
 
-hashMapImpl<ULL, std::function<Scene*()> > SceneManager::g_sceneFactory;
 SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
@@ -118,12 +117,17 @@ bool SceneManager::load(const stringImpl& sceneName) {
 
 Scene* SceneManager::createScene(const stringImpl& name) {
     Scene* scene = nullptr;
+    
+    ULL nameHash = _ID_RT(name);
+    SceneFactory& test = SceneFactory::instance();
+    test.registerScene<Scene>(_ID_RT("PlaceholderScene"));
+
     if (!name.empty()) {
-        scene = g_sceneFactory[_ID_RT(name)]();
+        scene = test.getScene(nameHash);
     }
 
     if (scene != nullptr) {
-        hashAlg::emplace(_sceneMap, _ID_RT(name), scene);
+        hashAlg::emplace(_sceneMap, nameHash, scene);
     }
 
     return scene;

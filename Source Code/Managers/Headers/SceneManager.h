@@ -103,6 +103,24 @@ namespace Attorney {
     class SceneManagerKernel;
 };
 
+DEFINE_SINGLETON(SceneFactory)
+    public:
+        inline Scene* getScene(ULL sceneName) {
+            return _sceneFactory[sceneName]();
+        }
+
+        template<typename DerivedScene>
+        bool registerScene(ULL sceneName) {
+            static_assert(std::is_base_of<Scene, DerivedScene>::value, "Invalid scene factory entry");
+            _sceneFactory[sceneName] = boost::factory<DerivedScene*>();
+            return true;
+        }
+
+    protected:
+      /// Scene_Name -Scene_Factory table
+      hashMapImpl<ULL, std::function<Scene*()> > _sceneFactory;
+END_SINGLETON
+
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                       Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
@@ -168,10 +186,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);
 
-    template<typename Scene>
-    static U32 registerScene(ULL sceneName) {
-        g_sceneFactory[sceneName] = boost::factory<Scene*>();
-        return to_uint(g_sceneFactory.size());
+    template <typename T, class Factory>
+    bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) { 
+        return factory.register_creator(id, new_ptr<T>());
     }
 
   public:  /// Input
@@ -238,8 +255,6 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     std::unique_ptr<Renderer> _renderer;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
 
-    /// Scene_Name -Scene_Factory table
-    static hashMapImpl<ULL, std::function<Scene*()> > g_sceneFactory;
 END_SINGLETON
 
 namespace Attorney {

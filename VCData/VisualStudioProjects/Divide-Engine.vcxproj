@@ -425,6 +425,7 @@
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAPIWrapper.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PXDevice.h" />
@@ -485,7 +486,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h" />
-    <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h" />
