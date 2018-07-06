@@ -10,6 +10,8 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+#include "Core/Debugging/Headers/DebugInterface.h"
+
 namespace Divide {
 
 namespace {
@@ -34,6 +36,7 @@ namespace {
 
         const vec3<F32> _camPos;
     };
+
 };
 
 SceneManager::SceneManager()
@@ -51,6 +54,9 @@ SceneManager::SceneManager()
 
 {
     AI::AIManager::createInstance();
+
+    ADD_FILE_DEBUG_GROUP();
+    ADD_DEBUG_VAR_FILE(&_elapsedTime, CallbackParam::TYPE_LARGE_INTEGER);
 }
 
 SceneManager::~SceneManager()

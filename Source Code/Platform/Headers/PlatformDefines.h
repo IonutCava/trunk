@@ -72,6 +72,23 @@ typedef double D32;
 typedef void* bufferPtr;
 typedef unsigned long long ULL;
 
+enum class CallbackParam : U32 {
+    TYPE_SMALL_INTEGER = 0,
+    TYPE_MEDIUM_INTEGER,
+    TYPE_INTEGER,
+    TYPE_LARGE_INTEGER,
+    TYPE_SMALL_UNSIGNED_INTEGER,
+    TYPE_MEDIUM_UNSIGNED_INTEGER,
+    TYPE_UNSIGNED_INTEGER,
+    TYPE_LARGE_UNSIGNED_INTEGER,
+    TYPE_STRING,
+    TYPE_FLOAT,
+    TYPE_DOUBLE,
+    TYPE_CHAR,
+    TYPE_BOOL,
+    TYPE_VOID
+};
+
 }; //namespace Divide
 
 #if defined(_WIN32)

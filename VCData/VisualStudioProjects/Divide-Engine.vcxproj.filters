@@ -194,6 +194,12 @@
     <Filter Include="Utility\NV_DDS\Headers">
       <UniqueIdentifier>{6fda3074-f21e-477a-8743-cf03399bde56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Core\Debugging">
+      <UniqueIdentifier>{55113eed-d2ca-4640-9c2c-085a4d929175}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Debugging\Headers">
+      <UniqueIdentifier>{9e585dcf-3be2-4a02-a1fe-66fe32f8c4d0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -538,6 +544,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp">
       <Filter>Utility\NV_DDS</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Debugging\DebugInterface.cpp">
+      <Filter>Core\Debugging</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -945,6 +954,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h">
       <Filter>Utility\NV_DDS\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Debugging\Headers\DebugInterface.h">
+      <Filter>Core\Debugging\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

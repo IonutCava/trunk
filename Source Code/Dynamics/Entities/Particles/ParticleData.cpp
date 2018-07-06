@@ -1,6 +1,5 @@
 #include "Headers/ParticleData.h"
-
-#include <future>
+#include "Core/Headers/Kernel.h"
 
 namespace Divide {
 
@@ -84,42 +83,24 @@ void ParticleData::sort(bool invalidateCache) {
 
     std::sort(std::begin(_indices), std::end(_indices), sortFunc);
 
-   auto parsePositions = [](U32 count, 
-                             vectorImpl<vec4<F32>>& renderingPositions,
-                             const vectorImpl<vec4<F32>>& positions,
-                             const vectorImpl<std::pair<U32, F32>>& indices) -> void {
+   auto parsePositions = [count, this](bool stopRequested) -> void {
         for (U32 i = 0; i < count; ++i) {
-            renderingPositions[i].set(positions[indices[i].first]);
+            _renderingPositions[i].set(_position[_indices[i].first]);
         }
     };
 
-    auto parseColors = [](U32 count, 
-                          vectorImpl<vec4<U8>>& renderingColors,
-                          const vectorImpl<vec4<F32>>& colors,
-                          const vectorImpl<std::pair<U32, F32>>& indices) -> void {
+    auto parseColors = [count, this](bool stopRequested) -> void {
         for (U32 i = 0; i < count; ++i) {
-            Util::ToByteColor(colors[indices[i].first], renderingColors[i]);
+            Util::ToByteColor(_color[_indices[i].first], _renderingColors[i]);
         }
     };
     
-    std::future<void> positionUpdate =
-        std::async(std::launch::async | std::launch::deferred,
-                   parsePositions,
-                   count,
-                   std::ref(_renderingPositions),
-                   std::cref(_position),
-                   std::cref(_indices));
-
-    std::future<void> colorUpdate =
-        std::async(std::launch::async | std::launch::deferred,
-                   parseColors,
-                   count,
-                   std::ref(_renderingColors),
-                   std::cref(_color),
-                   std::cref(_indices));
-
-    positionUpdate.get();
-    colorUpdate.get();
+    Kernel& kernel = Application::getInstance().getKernel();
+    TaskHandle updateTask = kernel.AddTask(DELEGATE_CBK_PARAM<bool>());
+    updateTask.addChildTask(kernel.AddTask(parsePositions)._task);
+    updateTask.addChildTask(kernel.AddTask(parseColors)._task);
+    updateTask.startTask(Task::TaskPriority::HIGH);
+    updateTask.wait();
 
 }
 

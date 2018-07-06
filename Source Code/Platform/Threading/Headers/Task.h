@@ -37,19 +37,6 @@
 
 namespace Divide {
 
-enum class CallbackParam : U32 {
-    TYPE_INTEGER = 0,
-    TYPE_MEDIUM_INTEGER,
-    TYPE_SMALL_INTEGER,
-    TYPE_UNSIGNED_INTEGER,
-    TYPE_MEDIUM_UNSIGNED_INTEGER,
-    TYPE_SMALL_UNSIGNED_INTEGER,
-    TYPE_STRING,
-    TYPE_FLOAT,
-    TYPE_DOUBLE,
-    TYPE_CHAR
-};
-
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */

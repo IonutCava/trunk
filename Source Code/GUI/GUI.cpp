@@ -11,6 +11,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Core/Debugging/Headers/DebugInterface.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
@@ -30,6 +31,7 @@ GUI::GUI()
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
       _enableCEGUIRendering(false),
+      _debugVarCacheCount(0),
       _console(MemoryManager_NEW GUIConsole())
 {
     // 500ms
@@ -38,7 +40,8 @@ GUI::GUI()
     GUIEditor::createInstance();
 }
 
-GUI::~GUI() {
+GUI::~GUI()
+{
     Console::printfn(Locale::get(_ID("STOP_GUI")));
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
@@ -100,6 +103,41 @@ void GUI::update(const U64 deltaTime) {
     }
 
     GUIEditor::getInstance().update(deltaTime);
+
+    const DebugInterface& debugInterface = DebugInterface::getInstance();
+    U32 debugVarEntries = to_uint(debugInterface.debugVarCount());
+    if (_debugVarCacheCount != debugVarEntries) {
+
+        const hashMapImpl<I64, DebugInterface::DebugGroup>& groups
+            = Attorney::DebugInterfaceGUI::getDebugGroups();
+
+        const hashMapImpl<I64, DebugInterface::DebugVar>& vars 
+            = Attorney::DebugInterfaceGUI::getDebugVariables();
+
+        // Add default group (GUID == -1) entries and root entries only.
+        // Child entries should be expanded on-click
+        // SLOOOOOOOOOOW - but it shouldn't change all that often
+        _debugDisplayEntries.reserve(groups.size() + 1);
+        for (hashMapImpl<I64, DebugInterface::DebugVar>::value_type it1 : vars) {
+            if (it1.second._group == -1) {
+                _debugDisplayEntries.push_back(std::make_pair(-1, it1.first));
+            } else {
+                for (hashMapImpl<I64, DebugInterface::DebugGroup>::value_type it2 : groups) {
+                    if (it1.second._group == it2.first && it2.second._parentGroup == -1) {
+                        _debugDisplayEntries.push_back(std::make_pair(it2.first, it1.first));
+                    }
+                }
+            }
+        }
+
+        _debugVarCacheCount = debugVarEntries;
+
+        for (std::pair<I64, I64>& entry : _debugDisplayEntries) {
+            I64 groupID = entry.first;
+            I64 varID = entry.second;
+            // Add a clickable text field for each
+        }
+    }
 }
 
 bool GUI::init(const vec2<U16>& renderResolution) {

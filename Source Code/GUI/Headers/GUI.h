@@ -166,6 +166,9 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     vec2<U16> _resolutionCache;
     bool _enableCEGUIRendering;
 
+    U32 _debugVarCacheCount;
+    // GROUP, VAR
+    vectorImpl<std::pair<I64, I64>> _debugDisplayEntries;
 END_SINGLETON
 
 };  // namespace Divide
