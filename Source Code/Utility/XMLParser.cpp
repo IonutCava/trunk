@@ -35,27 +35,6 @@ const ptree& empty_ptree() {
     static ptree t;
     return t;
 }
-
-ComponentType getComponentType(const stringImpl& name) {
-    if (Util::CompareIgnoreCase(name, "Animation")) {
-        return ComponentType::ANIMATION;
-    } else if (Util::CompareIgnoreCase(name, "IK")) {
-        return ComponentType::INVERSE_KINEMATICS;
-    } else if (Util::CompareIgnoreCase(name, "Ragdoll")) {
-        return ComponentType::RAGDOLL;
-    } else if (Util::CompareIgnoreCase(name, "Navigation")) {
-        return ComponentType::NAVIGATION;
-    } else if (Util::CompareIgnoreCase(name, "Unit")) {
-        return ComponentType::UNIT;
-    } else if (Util::CompareIgnoreCase(name, "Rigidbody")) {
-        return ComponentType::RIGID_BODY;
-    } else if (Util::CompareIgnoreCase(name, "Selection")) {
-        return ComponentType::SELECTION;
-    }
-
-    return ComponentType::COUNT;
-}
-
 }
 
 void populatePressRelease(PressReleaseActions& actions, const ptree & attributes) {
@@ -143,9 +122,9 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
-        loadTerrain((sceneLocation + "/" + "terrain.xml").c_str(), scene);
-        loadGeometry((sceneLocation + "/" + "assets.xml").c_str(), scene);
-        loadMusicPlaylist((sceneLocation + "/" + "musicPlaylist.xml").c_str(), scene, config);
+        loadTerrain(sceneLocation, "terrain.xml", scene);
+        loadGeometry(sceneLocation, "assets.xml", scene);
+        loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", scene, config);
         return;
     }
 
@@ -207,12 +186,14 @@ void loadScene(const stringImpl& scenePath, const stringImpl &sceneName, Scene* 
     }
     scene->state().fogDescriptor().set(fogColour, fogDensity);
 
-    loadTerrain((sceneLocation + "/" + pt.get("terrain", "")).c_str(), scene);
-    loadGeometry((sceneLocation + "/" + pt.get("assets", "")).c_str(), scene);
-    loadMusicPlaylist((sceneLocation + "/" + pt.get("musicPlaylist", "")).c_str(), scene, config);
+    loadTerrain(sceneLocation, pt.get("terrain", ""), scene);
+    loadGeometry(sceneLocation, pt.get("assets", ""), scene);
+    loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), scene, config);
 }
 
-void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config) {
+void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene, const Configuration& config) {
+    stringImpl file = scenePath + "/" + fileName;
+
     if (!fileExists(file.c_str())) {
         return;
     }
@@ -229,7 +210,9 @@ void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configu
     }
 }
 
-void loadTerrain(const stringImpl &file, Scene *const scene) {
+void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
+    stringImpl file = scenePath + "/" + fileName;
+
     if (!fileExists(file.c_str())) {
         return;
     }
@@ -357,71 +340,48 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     Console::printfn(Locale::get(_ID("XML_TERRAIN_COUNT")), count);
 }
 
-void loadGeometry(const stringImpl &file, Scene *const scene) {
+void loadGeometry(const stringImpl& scenePath, const stringImpl& fileName, Scene *const scene) {
+    stringImpl file = scenePath + "/" + fileName;
     if (!fileExists(file.c_str())) {
         return;
     }
 
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
-    vector<stringImpl> nodes;
+    std::function<void(const ptree::value_type& rootNode, SceneNode& graphOut)> readNode;
+
+    readNode = [&readNode](const ptree::value_type& rootNode, SceneNode& graphOut) {
+        const ptree& attributes = rootNode.second.get_child("<xmlattr>", empty_ptree());
+        for (const ptree::value_type& attribute : attributes) {
+            if (attribute.first == "name") {
+                graphOut.name = attribute.second.data();
+            } else if (attribute.first == "type") {
+                graphOut.type = attribute.second.data();
+            }
+        }
+        
+        const ptree& children = rootNode.second.get_child("");
+        for (const ptree::value_type& child : children) {
+            if (child.first == "node") {
+                graphOut.children.emplace_back();
+                readNode(child, graphOut.children.back());
+            }
+        }
+    };
 
     ptree pt;
     read_xml(file.c_str(), pt);
 
-    for (const ptree::value_type & entityLists : pt.get_child("entities", empty_ptree())){
-        for (const ptree::value_type & sceneGraphLists : entityLists.second.get_child("node", empty_ptree())) {
-            for (const ptree::value_type & nodeList : sceneGraphLists.second.get_child("node", empty_ptree())) {
-                std::string a = nodeList.first;
-                ptree b = nodeList.second;
-            }
-        }
+    vector<SceneNode> sceneGraph;
+    for (const ptree::value_type & sceneGraphList : pt.get_child("entities", empty_ptree())){
+        sceneGraph.emplace_back();
+        readNode(sceneGraphList, sceneGraph.back());
     }
 
-    for (const stringImpl& name : nodes) {
-        FileData model = {};
-        model.ItemName = name.c_str();
-        model.ModelName = pt.get<stringImpl>(name + ".model");
-        model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x", 1);
-        model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y", 1);
-        model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z", 1);
-        model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x", 0.0f);
-        model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y", 0.0f);
-        model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z", 0.0f);
-        model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
-        model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
-        model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
-        if (boost::optional<ptree &> child = pt.get_child_optional(name + ".colour")) {
-            model.colour.r = pt.get<F32>(name + ".colour.<xmlattr>.r", 0.8f);
-            model.colour.g = pt.get<F32>(name + ".colour.<xmlattr>.g", 0.3f);
-            model.colour.b = pt.get<F32>(name + ".colour.<xmlattr>.b", 1.0f);
-        }
-
-        if (boost::optional<ptree &> child = pt.get_child_optional(name + ".static")) {
-            model.staticUsage = pt.get<bool>(name + ".static", false);
-        } else {
-            model.staticUsage = false;
-        }
-
-        if (Util::CompareIgnoreCase(model.ModelName, "Box3D")) {
-            model.data = pt.get<F32>(name + ".size");
-        } else if (Util::CompareIgnoreCase(model.ModelName, "Sphere3D")) {
-            model.data = pt.get<F32>(name + ".radius");
-        }
-
-        if (boost::optional<ptree &> child = pt.get_child_optional(name + ".components")) {
-            stringImpl componentList = pt.get<stringImpl>(name + ".components", "");
-            vector<stringImpl> components;
-            Util::Split<vector<stringImpl>, stringImpl>(componentList.c_str(), ',', components);
-            for (const stringImpl& comp : components) {
-                ComponentType compType = getComponentType(comp);
-                if (compType != ComponentType::COUNT) {
-                    model.componentMask |= to_base(compType);
-                }
-            }
-        }
-
-        scene->addModel(model);
+    for (const SceneNode& rootNode : sceneGraph) {
+        // This may not be needed;
+        assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
+        scene->addSceneGraph(rootNode);
     }
 }
 

@@ -18,6 +18,6 @@
         <doubleSided>false</doubleSided>
         <bumpMethod>NONE</bumpMethod>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <parallaxFactor>1</parallaxFactor>
+        <parallaxFactor>0.00999999978</parallaxFactor>
     </Material>
 </RENDERING>

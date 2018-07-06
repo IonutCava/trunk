@@ -59,6 +59,9 @@ enum class ComponentType : U32 {
     COUNT = 12
 };
 
+const char* getComponentTypeName(ComponentType type);
+ComponentType getComponentTypeByName(const char* name);
+
 struct EntityOnUpdate;
 struct EntityActiveStateChange;
 

@@ -37,7 +37,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct FileData;
+struct FileData {
+
+};
 
 struct PatchData {
     stringImpl sceneName;

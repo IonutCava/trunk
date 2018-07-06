@@ -48,7 +48,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
     if (!updated) {
         WorldPacket r(OPCodesEx::SMSG_GEOMETRY_APPEND);
 
-        vector<FileData> PatchData = Patch::instance().updateClient();
+/*        vector<FileData> PatchData = Patch::instance().updateClient();
         r << PatchData.size();
         for (vector<FileData>::iterator _iter = std::begin(PatchData);
              _iter != std::end(PatchData); _iter++) {
@@ -64,7 +64,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
             r << (*_iter).scale.y;
             r << (*_iter).scale.z;
         }
-        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(PatchData.size()) + " models to update").c_str());
+        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(PatchData.size()) + " models to update").c_str());*/
         sendPacket(r);
         Patch::instance().reset();
     }

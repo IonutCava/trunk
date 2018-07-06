@@ -104,6 +104,7 @@ namespace Divide {
         virtual void loadFromXML(const boost::property_tree::ptree& pt);
 
         void saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const;
+        void loadFieldFromXML(const EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
         const stringImpl _name;

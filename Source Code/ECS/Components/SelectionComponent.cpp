@@ -5,7 +5,7 @@
 namespace Divide {
 
     SelectionComponent::SelectionComponent(SceneGraphNode& parentSGN)
-        : SGNComponent(parentSGN, "SELECTION")
+        : SGNComponent(parentSGN, getComponentTypeName(ComponentType::SELECTION))
     {
     }
 

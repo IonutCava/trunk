@@ -64,7 +64,6 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
     void handleShaderRecompileCommand(const stringImpl& args);
     void handleFOVCommand(const stringImpl& args);
     void handleInvalidCommand(const stringImpl& args);
-    void handleAddObject(const stringImpl& args /*type or name,size or scale*/);
 
    private:
     ResourceCache& _resCache;

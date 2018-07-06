@@ -32,7 +32,6 @@ GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, Resou
     _commandMap[_ID("createnavmesh")] = [this](const stringImpl& args) { handleNavMeshCommand(args); };
     _commandMap[_ID("setfov")] = [this](const stringImpl& args) { handleFOVCommand(args); };
     _commandMap[_ID("invalidcommand")] = [this](const stringImpl& args) { handleInvalidCommand(args); };
-    _commandMap[_ID("addobject")] = [this](const stringImpl& args) { handleAddObject(args); };
     _commandMap[_ID("recompileshader")] = [this](const stringImpl& args) { handleShaderRecompileCommand(args); };
 
     _commandHelp[_ID("say")] = Locale::get(_ID("CONSOLE_SAY_COMMAND_HELP"));
@@ -207,37 +206,6 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     CLAMP<I32>(FoV, 40, 140);
 
     Attorney::SceneManagerCameraAccessor::playerCamera(_context.gfx().parent().sceneManager())->setHorizontalFoV(Angle::DEGREES<F32>(FoV));
-}
-
-void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
-    std::istringstream ss(args.c_str());
-    stringImpl args1, args2;
-    std::getline(ss, args1, ',');
-    std::getline(ss, args2, ',');
-
-    Camera* cam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.gfx().parent().sceneManager());
-
-    float scale = 1.0f;
-    if (!Util::IsNumber(args2.c_str())) {
-        Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_NUMBER")));
-    } else {
-        scale = to_F32(atof(args2.c_str()));
-    }
-    stringImpl assetLocation(Paths::g_assetsLocation);
-
-    FileData model;
-    model.ItemName = args1 + "_console" + args;
-    model.ModelName = 
-        ((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
-             ? ""
-             : assetLocation) +
-        args1;
-    model.position = cam->getEye();
-    model.data = 1.0f;
-    model.scale = vec3<F32>(scale);
-    model.orientation = cam->getEuler();
-    model.staticUsage = false;
-    _context.gui().activeScene()->addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {

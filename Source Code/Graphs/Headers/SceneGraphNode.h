@@ -296,6 +296,9 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return _sceneGraph;
     }
 
+    void saveToXML(const stringImpl& sceneLocation) const;
+    void loadFromXML(const boost::property_tree::ptree& pt);
+
    protected:
     friend class RenderPassCuller;
     // Returns true if the node should be culled (is not visible for the current stage)
@@ -375,9 +378,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         return _relationshipCache;
     }
     void invalidateRelationshipCache();
-
-    void saveToXML(const stringImpl& sceneLocation) const;
-    void loadFromXML(const stringImpl& sceneLocation);
 
    private:
     // An SGN doesn't exist outside of a scene graph

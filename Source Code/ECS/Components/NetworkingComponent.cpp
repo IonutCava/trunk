@@ -10,7 +10,7 @@ namespace Divide {
 hashMap<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
 
 NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient)
-    : SGNComponent(parentSGN, "NETWORKING"),
+    : SGNComponent(parentSGN, getComponentTypeName(ComponentType::NETWORKING)),
      _parentClient(parentClient),
      _resendRequired(true)
 {

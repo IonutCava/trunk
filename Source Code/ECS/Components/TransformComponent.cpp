@@ -6,7 +6,7 @@
 
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
-      : SGNComponent(parentSGN, "TRANSFORM"),
+      : SGNComponent(parentSGN, getComponentTypeName(ComponentType::TRANSFORM)),
         _uniformScaled(false),
         _parentUsageContext(parentSGN.usageContext())
     {

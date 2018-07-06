@@ -36,6 +36,52 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+    inline const char* getComponentTypeName(ComponentType type) {
+        switch (type) {
+            case ComponentType::ANIMATION: return "ANIMATION";
+            case ComponentType::INVERSE_KINEMATICS: return "INVERSE_KINEMATICS";
+            case ComponentType::RAGDOLL: return "RAGDOLL";
+            case ComponentType::NAVIGATION: return "NAVIGATION";
+            case ComponentType::TRANSFORM: return "TRANSFORM";
+            case ComponentType::BOUNDS: return "BOUNDS";
+            case ComponentType::RENDERING: return "RENDERING";
+            case ComponentType::NETWORKING: return "NETWORKING";
+            case ComponentType::UNIT: return "UNIT";
+            case ComponentType::RIGID_BODY: return "RIGID_BODY";
+            case ComponentType::SELECTION: return "SELECTION";
+        };
+
+        return "";
+    }
+
+    inline ComponentType getComponentTypeByName(const char* name) {
+        if (Util::CompareIgnoreCase(name, "ANIMATION")) {
+            return ComponentType::ANIMATION;
+        } else if (Util::CompareIgnoreCase(name, "INVERSE_KINEMATICS")) {
+            return ComponentType::INVERSE_KINEMATICS;
+        } else if (Util::CompareIgnoreCase(name, "RAGDOLL")) {
+            return ComponentType::RAGDOLL;
+        } else if (Util::CompareIgnoreCase(name, "NAVIGATION")) {
+            return ComponentType::NAVIGATION;
+        } else if (Util::CompareIgnoreCase(name, "TRANSFORM")) {
+            return ComponentType::TRANSFORM;
+        } else if (Util::CompareIgnoreCase(name, "BOUNDS")) {
+            return ComponentType::BOUNDS;
+        } else if (Util::CompareIgnoreCase(name, "RENDERING")) {
+            return ComponentType::RENDERING;
+        } else if (Util::CompareIgnoreCase(name, "NETWORKING")) {
+            return ComponentType::NETWORKING;
+        } else if (Util::CompareIgnoreCase(name, "UNIT")) {
+            return ComponentType::UNIT;
+        } else if(Util::CompareIgnoreCase(name, "RIGID_BODY")) {
+            return ComponentType::RIGID_BODY;
+        } else if (Util::CompareIgnoreCase(name, "SELECTION")) {
+            return ComponentType::SELECTION;
+        }
+
+        return ComponentType::COUNT;
+    }
+
     template<typename T>
     SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
         : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),

@@ -1,103 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <entities>
-    <item>Soldier1</item>
-    <item>Soldier2</item>
-    <item>Soldier3</item>
-    <item>cylinderNE</item>
-    <item>cylinderNW</item>
-    <item>cylinderSE</item>
-    <item>cylinderSW</item>
-    <item>cylinderC</item>
-    <item>flag</item>
-    <item>Ground_placeholder</item>
+    <node name="ROOT" type="ROOT">
+        <node name="Ground_placeholder" type="QUAD_3D"/>
+        <node name="flag" type="MESH">
+            <node name="flag_0" type="SUBMESH"/>
+            <node name="flag_1" type="SUBMESH"/>
+            <node name="flag_2" type="SUBMESH"/>
+            <node name="flag_3" type="SUBMESH"/>
+            <node name="flag_4" type="SUBMESH"/>
+        </node>
+        <node name="cylinderC" type="MESH">
+            <node name="cylinderC_0" type="SUBMESH"/>
+        </node>
+        <node name="cylinderSW" type="MESH">
+            <node name="cylinderSW_0" type="SUBMESH"/>
+        </node>
+        <node name="cylinderSE" type="MESH">
+            <node name="cylinderSE_0" type="SUBMESH"/>
+        </node>
+        <node name="cylinderNW" type="MESH">
+            <node name="cylinderNW_0" type="SUBMESH"/>
+        </node>
+        <node name="cylinderNE" type="MESH">
+            <node name="cylinderNE_0" type="SUBMESH"/>
+        </node>
+        <node name="Soldier3" type="MESH">
+            <node name="Soldier3_0" type="SUBMESH"/>
+            <node name="Soldier3_1" type="SUBMESH"/>
+            <node name="Soldier3_2" type="SUBMESH"/>
+            <node name="Soldier3_3" type="SUBMESH"/>
+            <node name="Soldier3_4" type="SUBMESH"/>
+            <node name="Soldier3_5" type="SUBMESH"/>
+        </node>
+        <node name="Soldier2" type="MESH">
+            <node name="Soldier2_0" type="SUBMESH"/>
+        </node>
+        <node name="Soldier1" type="MESH">
+            <node name="Soldier1_0" type="SUBMESH"/>
+            <node name="Soldier1_1" type="SUBMESH"/>
+        </node>
+        <node name="WarScene_directional_light 0_SGN_1960" type="LIGHT"/>
+        <node name="Default Sky_SGN_2029" type="SKY">
+            <node name="SkyBox_SGN_2082" type="SPHERE_3D"/>
+        </node>
+    </node>
 </entities>
-<Soldier1>
-    <model>models/dwarf.x</model>
-    <position x="0" y="0" z="-7"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="0.0500000007" y="0.0500000007" z="0.0500000007"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Unit</components>
-</Soldier1>
-<Soldier2>
-    <model>models/Testwuson.X</model>
-    <position x="-3.5" y="0" z="7.5"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="2" y="2" z="2"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Unit</components>
-</Soldier2>
-<Soldier3>
-    <model>models/Bob.md5mesh</model>
-    <position x="4.5" y="0" z="5.5"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="0.100000001" y="0.100000001" z="0.100000001"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Unit</components>
-</Soldier3>
-<cylinderNE>
-    <model>models/cylinder.obj</model>
-    <position x="-100" y="0" z="-100"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="2" y="2" z="2"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Navigation,Selection</components>
-</cylinderNE>
-<cylinderNW>
-    <model>models/cylinder.obj</model>
-    <position x="100" y="0" z="-100"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="3" y="3" z="3"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Navigation,Selection</components>
-</cylinderNW>
-<cylinderSE>
-    <model>models/cylinder.obj</model>
-    <position x="-100" y="0" z="100"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="2" y="2" z="2"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Navigation,Selection</components>
-</cylinderSE>
-<cylinderSW>
-    <model>models/cylinder.obj</model>
-    <position x="100" y="0" z="100"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="2.5" y="2.5" z="2.5"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Navigation,Selection</components>
-</cylinderSW>
-<cylinderC>
-    <model>models/cylinder.obj</model>
-    <position x="0" y="0" z="0"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="4" y="4" z="4"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components>Navigation</components>
-</cylinderC>
-<flag>
-    <model>models/flag_obj.obj</model>
-    <position x="0" y="0" z="0"/>
-    <orientation x="0" y="0" z="0"/>
-    <scale x="0.00999999978" y="0.00999999978" z="0.00999999978"/>
-    <colour r="0" g="0" b="0"/>
-    <static>true</static>
-    <components/>
-</flag>
-<Ground_placeholder>
-    <model>Quad3D</model>
-    <position x="-250" y="0" z="-250"/>
-    <orientation x="0" y="0" z="-90"/>
-    <scale x="500" y="500" z="500"/>
-    <colour r="0.100000001" g="0.400000006" b="0.100000001"/>
-    <static>true</static>
-    <components>Navigation,Selection</components>
-</Ground_placeholder>

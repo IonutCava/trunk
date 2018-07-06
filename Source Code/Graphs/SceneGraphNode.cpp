@@ -743,8 +743,8 @@ void SceneGraphNode::saveToXML(const stringImpl& sceneLocation) const {
     write_xml((sceneLocation + "/nodes/" + name() + ".xml").c_str(), pt, std::locale(), settings);
 }
 
-void SceneGraphNode::loadFromXML(const stringImpl& sceneLocation) {
-    boost::property_tree::ptree pt;
+void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
+    usageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
 
     for (EditorComponent* editorComponent : _editorComponents) {
         Attorney::EditorComponentSceneGraphNode::loadFromXML(*editorComponent, pt);

@@ -91,11 +91,18 @@ bool saveToXML(const IXMLSerializable& object, const char* file);
 /// Child Functions
 void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 
+
+struct SceneNode {
+    std::string name;
+    std::string type;
+    vector<SceneNode> children;
+};
+
 void loadScene(const stringImpl& scenePath, const stringImpl& sceneName, Scene* scene, const Configuration& config);
 
-void loadGeometry(const stringImpl& file, Scene* const scene);
-void loadTerrain(const stringImpl& file, Scene* const scene);
-void loadMusicPlaylist(const stringImpl& file, Scene* const scene, const Configuration& config);
+void loadGeometry(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
+void loadTerrain(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene);
+void loadMusicPlaylist(const stringImpl& scenePath, const stringImpl& fileName, Scene* const scene, const Configuration& config);
 
 };  // namespace XML
 };  // namespace Divide

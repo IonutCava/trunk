@@ -96,7 +96,51 @@ namespace Divide {
     }
 
     void EditorComponent::loadFromXML(const boost::property_tree::ptree& pt) {
+        if (!pt.get(_name, "").empty()) {
+            for (const EditorComponentField& field : _fields) {
+                stringImpl entryName = _name + "." + field._name;
 
+                switch (field._type) {
+                    case EditorComponentFieldType::PUSH_TYPE: {
+                        loadFieldFromXML(field, pt);
+                    } break;
+                    case EditorComponentFieldType::TRANSFORM: {
+                        Transform* transform = static_cast<Transform*>(field._data);
+
+                        vec3<F32> scale;
+                        vec3<F32> position;
+                        vec3<Angle::RADIANS<F32>> orientationEuler;
+
+                        position.set(pt.get<F32>(entryName + ".position.<xmlattr>.x", 0.0f),
+                                     pt.get<F32>(entryName + ".position.<xmlattr>.y", 0.0f),
+                                     pt.get<F32>(entryName + ".position.<xmlattr>.z", 0.0f));
+
+                        orientationEuler.set(pt.get<F32>(entryName + ".orientation.<xmlattr>.x", 0.0f),
+                                             pt.get<F32>(entryName + ".orientation.<xmlattr>.y", 0.0f),
+                                             pt.get<F32>(entryName + ".orientation.<xmlattr>.z", 0.0f));
+
+                        scale.set(pt.get<F32>(entryName + ".scale.<xmlattr>.x", 1.0f),
+                                  pt.get<F32>(entryName + ".scale.<xmlattr>.y", 1.0f),
+                                  pt.get<F32>(entryName + ".scale.<xmlattr>.z", 1.0f));
+
+                        Quaternion<F32> rotation;
+                        rotation.fromEuler(orientationEuler);
+                        transform->setScale(scale);
+                        transform->setRotation(rotation);
+                        transform->setPosition(position);
+                    }break;
+                    case EditorComponentFieldType::MATERIAL: {
+                        Material* mat = static_cast<Material*>(field._data);
+                        mat->loadFromXML(entryName, pt);
+                    }break;
+                    default:
+                    case EditorComponentFieldType::BOUNDING_BOX:
+                    case EditorComponentFieldType::BOUNDING_SPHERE: {
+                        //Skip
+                    }break;
+                };
+            }
+        }
     }
 
     void EditorComponent::saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const {
@@ -342,7 +386,9 @@ namespace Divide {
                 pt.put((entryName + ".<xmlattr>.33").c_str(), data.m[3][3]);
             } break;
         }
+    }
 
-        
+    void EditorComponent::loadFieldFromXML(const EditorComponentField& field, const boost::property_tree::ptree& pt) {
+
     }
 }; //namespace Divide

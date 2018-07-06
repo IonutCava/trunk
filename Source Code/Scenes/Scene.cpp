@@ -245,11 +245,9 @@ void Scene::saveToXML() {
 void Scene::loadFromXML() {
     constexpr bool terrainThreadedLoading = true;
 
-    while (!_modelDataArray.empty()) {
-        loadAsset(_modelDataArray.top(), true);
-        ++_loadingTasks;
-
-        _modelDataArray.pop();
+    while (!_xmlSceneGraph.empty()) {
+        loadAsset(_xmlSceneGraph.top(), true);
+        _xmlSceneGraph.pop();
     }
 
     auto registerTerrain = [this](Resource_wptr res) {
@@ -290,12 +288,11 @@ void Scene::loadFromXML() {
 
 bool isPrimitive(const stringImpl& modelName) {
     static const stringImpl pritimiveNames[] = {
-        "Box3D",
-        //"Patch3D", <- Internal
-        "Quad3D",
-        "Sphere3D"
+        "BOX_3D",
+        //"PATCH_3D", <- Internal
+        "QUAD_3D",
+        "SPHERE_3D"
     };
-
     for (const stringImpl& it : pritimiveNames) {
         if (Util::CompareIgnoreCase(modelName, it)) {
             return true;
@@ -305,7 +302,7 @@ bool isPrimitive(const stringImpl& modelName) {
     return false;
 }
 
-Object3D_ptr Scene::createPrimitive(const FileData& data) {
+Object3D_ptr Scene::createPrimitive(const stringImpl& nodeName, const boost::property_tree::ptree& pt) {
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         --_loadingTasks;
@@ -313,18 +310,18 @@ Object3D_ptr Scene::createPrimitive(const FileData& data) {
 
     Object3D_ptr ret = nullptr;
 
-    ResourceDescriptor item(data.ItemName);
+    stringImpl modelName = pt.get("model", "");
+
+    ResourceDescriptor item(nodeName);
     item.setOnLoadCallback(loadModelComplete);
-    item.setResourceLocation(data.ModelName);
-    if (Util::CompareIgnoreCase(data.ModelName, "Box3D")) {
-        item.setPropertyList(Util::StringFormat("%2.2f", data.data));
+    item.setResourceLocation(modelName);
+    if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
+        item.setPropertyList(Util::StringFormat("%2.2f", pt.get("size", 1.0f)));
         ret = CreateResource<Box3D>(_resCache, item);
-    } else if (Util::CompareIgnoreCase(data.ModelName, "Sphere3D")) {
+    } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
         ret = CreateResource<Sphere3D>(_resCache, item);
-        static_cast<Sphere3D*>(ret.get())->setRadius(data.data);
-    } else if (Util::CompareIgnoreCase(data.ModelName, "Quad3D")) {
-        vec3<F32> scale = data.scale;
-        vec3<F32> position = data.position;
+        static_cast<Sphere3D*>(ret.get())->setRadius(pt.get("radius", 1.0f));
+    } else if (Util::CompareIgnoreCase(modelName, "QUAD_3D")) {
         P32 quadMask;
         quadMask.i = 0;
         quadMask.b[0] = 1;
@@ -335,13 +332,33 @@ Object3D_ptr Scene::createPrimitive(const FileData& data) {
         static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
         static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), data.ModelName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), nodeName.c_str());
     }
 
     return ret;
 }
 
-Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
+Object3D_ptr Scene::loadAsset(const XML::SceneNode& sceneNode, bool addToSceneGraph) {
+    for (const XML::SceneNode& node : sceneNode.children) {
+        loadAsset(node, addToSceneGraph);
+    }
+
+    if (sceneNode.type == "ROOT" ||
+        sceneNode.type == "SUBMESH" ||
+        sceneNode.type == "SKY" ||
+        sceneNode.type == "LIGHT")
+    {
+        return nullptr;
+    }
+
+    const stringImpl& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    std::string sceneLocation(scenePath + "/" + name().c_str());
+    std::string nodePath = sceneLocation + "/nodes/" + sceneNode.name + ".xml";
+
+    if (!fileExists(nodePath.c_str())) {
+        return nullptr;
+    }
+
     constexpr bool modelThreadedLoading = true;
 
     static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
@@ -351,10 +368,14 @@ Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
 
     Object3D_ptr ret = nullptr;
 
-    if (isPrimitive(data.ModelName)) {
-        ret = createPrimitive(data);
+    ++_loadingTasks;
+    boost::property_tree::ptree nodeTree;
+    read_xml(nodePath, nodeTree);
 
-        ResourceDescriptor materialDescriptor(data.ItemName + "_material");
+    if (isPrimitive(sceneNode.type)) {
+        ret = createPrimitive(sceneNode.name, nodeTree);
+
+        ResourceDescriptor materialDescriptor(sceneNode.name + "_material");
         Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
         tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
         ret->setMaterialTpl(tempMaterial);
@@ -364,37 +385,35 @@ Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
             --_loadingTasks;
         };
 
-        ResourceDescriptor model(data.ModelName);
-        model.setResourceLocation(Paths::g_assetsLocation + data.ModelName);
-        model.setFlag(true);
-        model.setThreadedLoading(modelThreadedLoading);
-        model.setOnLoadCallback(loadModelComplete);
-        ret = std::static_pointer_cast<Object3D>(CreateResource<Mesh>(_resCache, model));
+        stringImpl modelName = nodeTree.get("model", "");
+        if (!modelName.empty()) {
+            ResourceDescriptor model(modelName);
+            model.setResourceLocation(Paths::g_assetsLocation + modelName);
+            model.setFlag(true);
+            model.setThreadedLoading(modelThreadedLoading);
+            model.setOnLoadCallback(loadModelComplete);
+            ret = std::static_pointer_cast<Object3D>(CreateResource<Mesh>(_resCache, model));
+        }
     }
 
     if (!ret) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), sceneNode.name.c_str());
     } else {
         if (addToSceneGraph) {
             SceneGraphNodeDescriptor nodeDescriptor;
             nodeDescriptor._node = ret;
-            nodeDescriptor._name = data.ItemName;
-            nodeDescriptor._componentMask = normalMask | data.componentMask;
+            nodeDescriptor._name = sceneNode.name;
+            nodeDescriptor._componentMask = normalMask;
+            
+            for (U8 i = 0; i < to_U8(ComponentType::COUNT); ++i) {
+                ComponentType type = static_cast<ComponentType>(1 << i);
+                if (!nodeTree.get(getComponentTypeName(type), "").empty()) {
+                    nodeDescriptor._componentMask |= to_base(type);
+                }
+            }
 
             SceneGraphNode* node = _sceneGraph->getRoot().addNode(nodeDescriptor);
-            node->get<TransformComponent>()->setScale(data.scale);
-            node->get<TransformComponent>()->setRotation(data.orientation);
-            node->get<TransformComponent>()->setPosition(data.position);
-
-            if (BitCompare(data.componentMask, ComponentType::RIGID_BODY)) {
-                node->get<RigidBodyComponent>()->physicsGroup(data.staticUsage ? PhysicsGroup::GROUP_STATIC : PhysicsGroup::GROUP_DYNAMIC);
-            }
-
-            if (BitCompare(data.componentMask, ComponentType::NAVIGATION)){
-                node->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-            }
-
-            node->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(data.colour);
+            node->loadFromXML(nodeTree);
         }
     }
 
@@ -1052,8 +1071,8 @@ U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
 }
 
 void Scene::clearObjects() {
-    while (!_modelDataArray.empty()) {
-        _modelDataArray.pop();
+    while (!_xmlSceneGraph.empty()) {
+        _xmlSceneGraph.pop();
     }
 
     _flashLight.clear();

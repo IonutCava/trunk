@@ -62,6 +62,8 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/SceneGUIElements.h"
 
+#include "Utility/Headers/XMLParser.h"
+
 #include <ArenaAllocator/arena_allocator.h>
 
 namespace Divide {
@@ -98,7 +100,6 @@ class Scene : public Resource, public PlatformContextComponent {
     friend class Attorney::SceneInput;
 
    protected:
-    typedef std::stack<FileData, vector<FileData> > FileDataStack;
     static bool onStartup();
     static bool onShutdown();
 
@@ -137,7 +138,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void clearTasks();
     void removeTask(TaskHandle& task);
 
-    inline void addModel(FileData& model) { _modelDataArray.push(model); }
+    inline void addSceneGraph(const XML::SceneNode& sceneGraph) { _xmlSceneGraph.push(sceneGraph); }
     inline void addTerrain(const std::shared_ptr<TerrainDescriptor>& ter) { _terrainInfoArray.push_back(ter); }
     void addMusic(MusicType type, const stringImpl& name, const stringImpl& srcFile);
 
@@ -197,8 +198,8 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool saveToCache(const stringImpl& name);
 
     virtual bool load(const stringImpl& name);
-    Object3D_ptr createPrimitive(const FileData& data);
-    Object3D_ptr loadAsset(const FileData& data, bool addToSceneGraph);
+    Object3D_ptr createPrimitive(const stringImpl& nodeName, const boost::property_tree::ptree& pt);
+    Object3D_ptr loadAsset(const XML::SceneNode& sceneNode, bool addToSceneGraph);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)
@@ -264,7 +265,7 @@ class Scene : public Resource, public PlatformContextComponent {
        vector<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
-       FileDataStack _modelDataArray;
+       std::stack<XML::SceneNode> _xmlSceneGraph;
 
        vector<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;

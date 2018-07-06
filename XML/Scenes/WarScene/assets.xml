@@ -39,9 +39,9 @@
             <node name="Soldier1_0" type="SUBMESH"/>
             <node name="Soldier1_1" type="SUBMESH"/>
         </node>
-        <node name="WarScene_directional_light 0_SGN_1960" type="LIGHT"/>
-        <node name="Default Sky_SGN_2029" type="SKY">
-            <node name="SkyBox_SGN_2082" type="SPHERE_3D"/>
+        <node name="WarScene_directional_light 0_SGN_1951" type="LIGHT"/>
+        <node name="Default Sky_SGN_2020" type="SKY">
+            <node name="SkyBox_SGN_2072" type="SPHERE_3D"/>
         </node>
     </node>
 </entities>

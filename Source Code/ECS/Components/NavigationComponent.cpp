@@ -6,7 +6,7 @@
 namespace Divide {
 
 NavigationComponent::NavigationComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(parentSGN, "NAVIGATION"),
+    : SGNComponent(parentSGN, getComponentTypeName(ComponentType::NAVIGATION)),
       _overrideNavMeshDetail(false),
       _navigationContext(NavigationContext::NODE_IGNORE)
 {

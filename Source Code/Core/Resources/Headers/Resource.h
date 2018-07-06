@@ -142,19 +142,6 @@ protected:
     mutable SharedLock _callbackLock;
 };
 
-struct FileData {
-    stringImpl ItemName;
-    stringImpl ModelName;
-    vec3<F32> scale;
-    vec3<F32> position;
-    vec3<F32> orientation;
-    vec3<F32> colour;
-    F32 data = -1.0f;  ///< general purpose
-    U32 componentMask = 0;
-    /// Used to determine if it's a static object or dynamic. Affects lighting, navigation, etc.
-    bool staticUsage = false;
-};
-
 struct TerrainInfo {
     TerrainInfo() noexcept { position.set(0, 0, 0); }
     /// "variables" contains the various strings needed for each terrain such as
