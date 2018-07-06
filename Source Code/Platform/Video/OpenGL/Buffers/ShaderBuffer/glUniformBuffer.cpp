@@ -11,7 +11,8 @@ namespace Divide {
 
 namespace {
     I32 g_targetDataAlignment[2] = {-1, -1};
-    vec4<U32> g_currentBindConfig(Config::PRIMITIVE_RESTART_INDEX_L);
+    typedef std::array<vec3<U32>, to_const_uint(ShaderBufferLocation::COUNT)> BindConfig;
+    BindConfig g_currentBindConfig;
 
     I32 getTargetDataAlignment(bool unbound = false) {
         return g_targetDataAlignment[unbound ? 0 : 1];
@@ -21,11 +22,13 @@ namespace {
                                  U32 bindIndex,
                                  U32 offsetElementCount,
                                  U32 rangeElementCount) {
-        if (g_currentBindConfig.x != UBOid ||
-            g_currentBindConfig.y != bindIndex ||
-            g_currentBindConfig.z != offsetElementCount ||
-            g_currentBindConfig.w != rangeElementCount) {
-            g_currentBindConfig.set(UBOid, bindIndex, offsetElementCount, rangeElementCount);
+
+        vec3<U32>& crtConfig = g_currentBindConfig[bindIndex];
+
+        if (crtConfig.x != UBOid ||
+            crtConfig.y != offsetElementCount ||
+            crtConfig.z != rangeElementCount) {
+            crtConfig.set(UBOid, offsetElementCount, rangeElementCount);
             return true;
         }
 

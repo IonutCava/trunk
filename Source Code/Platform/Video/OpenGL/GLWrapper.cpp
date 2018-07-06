@@ -77,6 +77,8 @@ GL_API::GL_API()
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
+    _samplerBoundMap.fill(-1);
+    _textureBoundMap.fill(std::make_pair(0, GL_NONE));
 }
 
 GL_API::~GL_API()
@@ -202,7 +204,7 @@ bool GL_API::initShaders() {
     ShaderOffsetArray lineOffsets = {0};
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);

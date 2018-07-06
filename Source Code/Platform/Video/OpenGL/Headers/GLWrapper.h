@@ -48,6 +48,8 @@ namespace CEGUI {
 };
 
 namespace Divide {
+    static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
+
     enum class WindowType : U32;
 
 class glHardwareQuery : public HardwareQuery {
@@ -355,10 +357,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// FontStash's context
     FONScontext* _fonsContext;
     /// /*texture slot*/ /*<texture handle , texture type>*/
-    typedef hashMapImpl<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
+    typedef std::array<std::pair<GLuint, GLenum>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
     static textureBoundMapDef _textureBoundMap;
     /// /*texture slot*/ /*sampler hash value*/
-    typedef hashMapImpl<GLushort, size_t> samplerBoundMapDef;
+    typedef std::array<size_t, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
     static samplerBoundMapDef _samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;

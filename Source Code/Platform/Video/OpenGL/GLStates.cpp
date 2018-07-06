@@ -43,8 +43,9 @@ void GL_API::clearStates(const bool skipTextures,
                          const bool skipScissor) {
 
     if (!skipTextures) {
-        for (textureBoundMapDef::value_type& it : _textureBoundMap) {
-            GL_API::bindTexture(it.first, 0, it.second.second);
+        for(U32 i = 0; i < GL_API::_maxTextureUnits; ++i) {
+            std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
+            GL_API::bindTexture(i, 0, it.second);
         }
 
         setActiveTextureUnit(0);
@@ -200,7 +201,7 @@ bool GL_API::bindSamplers(GLushort unitOffset,
 
         if (!samplerHandles) {
             for (GLushort i = 0; i < samplerCount; ++i) {
-                _samplerBoundMap.erase(_samplerBoundMap.find(offset + i));
+               _samplerBoundMap[offset + i] = 0;
             }
         } else {
             for (GLushort i = 0; i < samplerCount; ++i) {
@@ -217,24 +218,17 @@ bool GL_API::bindSamplers(GLushort unitOffset,
 /// Bind the sampler object described by the hash value to the specified unit
 bool GL_API::bindSampler(GLushort unit, size_t samplerHash) {
 
-    samplerBoundMapDef::iterator it = _samplerBoundMap.find(unit);
-    if (it == std::end(_samplerBoundMap)) {
-        hashAlg::emplace(_samplerBoundMap, static_cast<GLushort>(unit),
-                         samplerHash);
-    } else {
-        // Prevent double bind
-        if (it->second == samplerHash) {
-            return false;
-        } else {
-            // Remember the new binding state for future reference
-            it->second = samplerHash;
-        }
-    }
-    // Get the sampler object defined by the hash value and bind it to the
-    // specified unit (0 is a valid sampler object)
-    glBindSampler(unit, getSamplerHandle(samplerHash));
+    size_t& sampler = _samplerBoundMap[unit];
 
-    return true;
+    if (sampler != samplerHash) {
+        // Get the sampler object defined by the hash value and bind it to the
+        // specified unit (0 is a valid sampler object)
+        glBindSampler(unit, getSamplerHandle(samplerHash));
+        sampler = samplerHash;
+        return true;
+    }
+
+    return false;
 }
 
 bool GL_API::bindTextures(GLushort unitOffset,
@@ -251,7 +245,7 @@ bool GL_API::bindTextures(GLushort unitOffset,
 
         if (!textureHandles) {
             for (GLushort i = 0; i < textureCount; ++i) {
-                _textureBoundMap.erase(_textureBoundMap.find(offset + i));
+                _textureBoundMap[offset + i].first = 0;
             }
         } else {
             for (GLushort i = 0; i < textureCount; ++i) {

@@ -53,7 +53,8 @@ enum class ShaderBufferLocation : U32 {
     LIGHT_SHADOW = 2,
     NODE_INFO = 3,
     BONE_TRANSFORMS = 4,
-    UNIFORMS = 5
+    UNIFORMS = 5,
+    COUNT
 };
 
 /// Fixed pipeline functionality should be avoided. Both D3D and OGL should have
