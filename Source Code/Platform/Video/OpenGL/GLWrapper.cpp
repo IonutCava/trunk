@@ -135,6 +135,14 @@ GLuint64 GL_API::getFrameDurationGPU() {
     return FRAME_DURATION_GPU;
 }
 
+void GL_API::pushDebugMessage(const char* message, I32 id) {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
+}
+
+void GL_API::popDebugMessage() {
+    glPopDebugGroup();
+}
+
 void GL_API::appendToShaderHeader(ShaderType type, const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
     GLuint index = to_uint(type);
@@ -657,8 +665,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
     if (Config::ENABLE_GPU_VALIDATION) {
-        constexpr char* groupLabel = "OpenGL render text start!";
-        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 2, -1, groupLabel);
+        pushDebugMessage("OpenGL render text start!", 2);
     }
 
     fonsClearState(_fonsContext);
@@ -702,7 +709,7 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
     }
 
     if (Config::ENABLE_GPU_VALIDATION) {
-        glPopDebugGroup();
+        popDebugMessage();
     }
 }
 

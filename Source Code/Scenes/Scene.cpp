@@ -632,7 +632,7 @@ void Scene::loadBaseCamera() {
     
 
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + "options.cameraStartPositionOverride").c_str()))) {
+    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + ".options.cameraStartPositionOverride").c_str()))) {
         _baseCamera->setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
@@ -850,7 +850,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
     }
 
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID("options.autoCookPhysicsAssets"), true)) {
+    if (_paramHandler.getParam<bool>(_ID((getName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
     return true;

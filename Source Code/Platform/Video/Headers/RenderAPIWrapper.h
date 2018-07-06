@@ -84,7 +84,6 @@ typedef struct {
 } VideoModes;
 // FWD DECLARE CLASSES
 
-
 class RingBuffer {
     public:
         explicit RingBuffer(U32 queueLength) : 
@@ -152,6 +151,10 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual void closeRenderingAPI() = 0;
 
     virtual void drawText(const vectorImpl<GUITextBatchEntry>& batch) = 0;
+
+    // a debug message is a marker that should show up in external profiling tools such as RenderDoc or PerfStudio /NSight
+    virtual void pushDebugMessage(const char* message, I32 id) = 0;
+    virtual void popDebugMessage() = 0;
 
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;

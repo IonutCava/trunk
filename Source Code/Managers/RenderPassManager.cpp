@@ -1,12 +1,30 @@
 #include "Headers/RenderPassManager.h"
 
 #include "Core/Headers/TaskPool.h"
+#include "Core/Headers/StringHelper.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
+
+namespace {
+    const char* getStageName(RenderStage stage) {
+        switch (stage) {
+            case RenderStage::DISPLAY: 
+                return "DISPLAY";
+            case RenderStage::REFLECTION:
+                return "REFLECTION";
+            case RenderStage::REFRACTION:
+                return "REFRACTION";
+            case RenderStage::SHADOW:
+                return "SHADOW";
+        };
+
+        return "error";
+    }
+};
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
@@ -168,6 +186,8 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     }
 
     if (params.doPrePass) {
+        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", getStageName(params.stage)).c_str(), 0);
+
         _context.setPrePass(true);
         _context.setRenderStage(RenderStage::Z_PRE_PASS);
 
@@ -202,6 +222,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         }
     }
 
+    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", getStageName(params.stage)).c_str(), 1);
     _context.setPrePass(false);
     // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
     _context.setRenderStage(params.stage);

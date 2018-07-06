@@ -355,6 +355,18 @@ public:  // Direct API calls
         return _api->getFrameDurationGPU();
     }
 
+    inline void pushDebugMessage(const char* message, I32 id) {
+        if (Config::ENABLE_GPU_VALIDATION) {
+            _api->pushDebugMessage(message, id);
+        }
+    }
+
+    inline void popDebugMessage() {
+        if (Config::ENABLE_GPU_VALIDATION) {
+            _api->popDebugMessage();
+        }
+    }
+
 protected:
     inline void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
         if (beginSync) {

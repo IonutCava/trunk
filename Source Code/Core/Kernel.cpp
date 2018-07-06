@@ -541,13 +541,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
+    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
+    _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
+    _timingData._keepAlive = true;
+
     if (false) {
         static const U8 warmupLoopCount = 3;
         U8 loopCount = 0;
-
-        Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-        _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
-        _timingData._keepAlive = true;
 
         RenderDetailLevel shadowLevel = _platformContext->gfx().shadowDetailLevel();
         ParamHandler::instance().setParam(_ID("freezeLoopTime"), true);
@@ -566,9 +566,9 @@ void Kernel::warmup() {
             onLoop();
         }
 
-        ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     }
 
+    ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
     _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds(true);

@@ -26,5 +26,16 @@ ScopedViewport::~ScopedViewport()
     _context.restoreViewport();
 }
 
+ScopedDebugMessage::ScopedDebugMessage(GFXDevice& context, const char* message, I32 id)
+    : _context(context)
+{
+    _context.pushDebugMessage(message, id);
+}
+
+ScopedDebugMessage::~ScopedDebugMessage()
+{
+    _context.popDebugMessage();
+}
+
 };  // namespace GFX
 };  // namespace Divide

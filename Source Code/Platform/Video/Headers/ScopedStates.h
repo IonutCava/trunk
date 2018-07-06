@@ -63,6 +63,15 @@ class ScopedViewport : private NonCopyable {
      GFXDevice& _context;
 };
 
+class ScopedDebugMessage : private NonCopyable {
+public:
+    explicit ScopedDebugMessage(GFXDevice& context, const char* message, I32 id);
+    ~ScopedDebugMessage();
+
+private:
+    GFXDevice& _context;
+};
+
 };  // namespace GFX
 };  // namespace Divide
 

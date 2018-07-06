@@ -67,6 +67,10 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
         Console::toggleTimeStamps(true);
         Console::togglethreadID(true);
         Console::printfn(Locale::get(_ID("START_APPLICATION")));
+        for (U8 i = 1; i < argc; ++i) {
+            Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
+            Console::printfn(" -- %s", argv[i]);
+        }
         // Create a new kernel
         assert(_kernel == nullptr);
         _kernel = MemoryManager_NEW Kernel(argc, argv, this->instance());

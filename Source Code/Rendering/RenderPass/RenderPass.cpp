@@ -146,6 +146,8 @@ void RenderPass::render(SceneRenderState& renderState) {
 
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
+            GFX::ScopedDebugMessage msg(_context, "Display Render Stage", 0);
+
             const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
@@ -161,6 +163,8 @@ void RenderPass::render(SceneRenderState& renderState) {
 
         } break;
         case RenderStage::SHADOW: {
+            GFX::ScopedDebugMessage msg(_context, "Shadow Render Stage", 1);
+
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager());
         } break;
         case RenderStage::REFLECTION: {
@@ -169,38 +173,45 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
             params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
-            //Part 1 - update envirnoment maps:
-            /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
-            const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
-            for (EnvironmentProbe_ptr& probe : probes) {
-                probe->refresh();
+            {
+                GFX::ScopedDebugMessage msg(_context, "Cube Reflection Stage", 2);
+                //Part 1 - update envirnoment maps:
+                /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
+                const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
+                for (EnvironmentProbe_ptr& probe : probes) {
+                    probe->refresh();
+                }
+                RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
+                for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
+                    SceneGraphNode* nodePtr = node.second;
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
+                }*/
             }
-            RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
-            for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
-                SceneGraphNode* nodePtr = node.second;
-                RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
-                Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
-            }*/
+            {
+                GFX::ScopedDebugMessage msg(_context, "Planar Reflection Stage", 3);
 
-            //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
-            //Get list of reflective nodes from the scene manager
-            const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedReflectiveNodes();
+                //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
+                //Get list of reflective nodes from the scene manager
+                const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedReflectiveNodes();
 
-            // While in budget, update reflections
-            ReflectionUtil::resetBudget();
-            for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                const SceneGraphNode* nodePtr = node.second;
-                RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
-                if (ReflectionUtil::isInBudget()) {
-                    if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
-                                                                            ReflectionUtil::currentEntry(),
-                                                                            params.camera,
-                                                                            renderState)) {
+                // While in budget, update reflections
+                ReflectionUtil::resetBudget();
+                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
+                    const SceneGraphNode* nodePtr = node.second;
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    if (ReflectionUtil::isInBudget()) {
+                        if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
+                                                                                 ReflectionUtil::currentEntry(),
+                                                                                 params.camera,
+                                                                                 renderState)) {
 
-                        ReflectionUtil::updateBudget();
-                     }
-                } else {
-                    Attorney::RenderingCompRenderPass::clearReflection(*rComp);
+                            ReflectionUtil::updateBudget();
+                        }
+                    }
+                    else {
+                        Attorney::RenderingCompRenderPass::clearReflection(*rComp);
+                    }
                 }
             }
         } break;
@@ -211,26 +222,31 @@ void RenderPass::render(SceneRenderState& renderState) {
             params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
             params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
 
-            const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
-            // While in budget, update refractions
-            RefractionUtil::resetBudget();
-            for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                const SceneGraphNode* nodePtr = node.second;
-                RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
-                if (RefractionUtil::isInBudget()) {
-                    if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
-                                                                            RefractionUtil::currentEntry(),
-                                                                            params.camera,
-                                                                            renderState))
-                    {
-                        RefractionUtil::updateBudget();
+            {
+                GFX::ScopedDebugMessage msg(_context, "Cube Refraction Stage", 4);
+            }
+            {
+                GFX::ScopedDebugMessage msg(_context, "Planar Refraction Stage", 5);
+                const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
+                // While in budget, update refractions
+                RefractionUtil::resetBudget();
+                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
+                    const SceneGraphNode* nodePtr = node.second;
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    if (RefractionUtil::isInBudget()) {
+                        if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
+                                                                                RefractionUtil::currentEntry(),
+                                                                                params.camera,
+                                                                                renderState))
+                        {
+                            RefractionUtil::updateBudget();
+                        }
+                    }
+                    else {
+                        Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
                     }
                 }
-                else {
-                    Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
-                }
             }
-
         } break;
     };
 }

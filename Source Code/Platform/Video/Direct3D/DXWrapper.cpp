@@ -24,22 +24,47 @@ void DX_API::closeRenderingAPI() {}
 
 void DX_API::changeViewport(const vec4<I32>& newViewport) const {}
 
-void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {}
+void DX_API::registerCommandBuffer(const ShaderBuffer& commandBuffer) const {
+    ACKNOWLEDGE_UNUSED(commandBuffer);
+}
 
 void DX_API::beginFrame() {}
 
-void DX_API::endFrame(bool swapBuffers) {}
+void DX_API::endFrame(bool swapBuffers) {
+    ACKNOWLEDGE_UNUSED(swapBuffers);
+}
 
 void DX_API::updateClipPlanes() {}
 
-void DX_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {}
+void DX_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
+    ACKNOWLEDGE_UNUSED(batch);
+}
 
-bool DX_API::draw(const GenericDrawCommand& cmd) { return false; }
+bool DX_API::draw(const GenericDrawCommand& cmd) { 
+    ACKNOWLEDGE_UNUSED(cmd);
+    return false;
+}
 
-void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {}
+void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
+    ACKNOWLEDGE_UNUSED(commandBuffer);
+}
 
-void DX_API::syncToThread(const std::thread::id& threadID) {}
+void DX_API::syncToThread(const std::thread::id& threadID) {
+    ACKNOWLEDGE_UNUSED(threadID);
+}
 
-size_t DX_API::setStateBlock(size_t stateBlockHash) { return 0; }
+size_t DX_API::setStateBlock(size_t stateBlockHash) {
+    ACKNOWLEDGE_UNUSED(stateBlockHash);
+    return 0;
+}
+
+void DX_API::pushDebugMessage(const char* message, I32 id) {
+    ACKNOWLEDGE_UNUSED(message);
+    ACKNOWLEDGE_UNUSED(id);
+}
+
+void DX_API::popDebugMessage() {
+
+}
 
 };

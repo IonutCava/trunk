@@ -112,6 +112,8 @@ protected:
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     GLuint64 getFrameDurationGPU() override;
+    void pushDebugMessage(const char* message, I32 id) override;
+    void popDebugMessage() override;
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
         return s_activeFBID[to_uint(usage)];
