@@ -195,18 +195,14 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     if (!_textures[slot]) {
         if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_PLANAR &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR) {
+            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_PLANAR &&
+            textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
+            textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION_CUBE) {
             // if we add a new type of texture recompute shaders
             computeShaders = true;
         }
     }
-    if (!_textures[slot]) {
-        if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE &&
-            textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION_CUBE) {
-            // if we add a new type of texture recompute shaders
-            computeShaders = true;
-        }
-    }
+
     _textures[slot] = texture;
 
     if (computeShaders) {
@@ -629,7 +625,7 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     if (_doubleSided) {
         for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
             for (U32 index = 0; index < to_const_uint(RenderStage::COUNT); ++index) {
-                for (U8 variant = 0; variant < to_ubyte(_defaultRenderStates[index].size()); ++variant) {
+                for (U8 variant = 0; variant < to_ubyte(_defaultRenderStates[pass][index].size()); ++variant) {
                     size_t hash = _defaultRenderStates[pass][index][variant];
                     RenderStateBlock descriptor(RenderStateBlock::get(hash));
                     descriptor.setCullMode(CullMode::NONE);

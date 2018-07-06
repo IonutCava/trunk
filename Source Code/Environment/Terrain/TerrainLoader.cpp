@@ -15,6 +15,7 @@ namespace Divide {
 bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
+                                bool threadedLoading,
                                 const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback ) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
@@ -25,6 +26,18 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     blendMapSampler.setWrapMode(TextureWrap::CLAMP);
     blendMapSampler.setAnisotropy(0);
     blendMapSampler.toggleMipMaps(false);
+
+    SamplerDescriptor albedoSampler;
+    albedoSampler.setWrapMode(TextureWrap::REPEAT);
+    albedoSampler.setAnisotropy(8);
+    albedoSampler.toggleMipMaps(true);
+    albedoSampler.toggleSRGBColourSpace(true);
+
+    SamplerDescriptor normalSampler;
+    normalSampler.setWrapMode(TextureWrap::REPEAT);
+    normalSampler.setAnisotropy(8);
+    normalSampler.toggleMipMaps(true);
+    normalSampler.toggleSRGBColourSpace(false);
 
     TerrainTextureLayer* textureLayer = nullptr;
     stringImpl layerOffsetStr;
@@ -100,8 +113,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureTileMaps.setID(textureCountAlbedo);
         textureTileMaps.setResourceLocation(terrainMapLocation);
         textureTileMaps.setResourceName(arrayLocation);
-        textureTileMaps.setPropertyDescriptor(
-            Attorney::TerrainLoader::getAlbedoSampler(*terrain));
+        textureTileMaps.setPropertyDescriptor(albedoSampler);
         textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
 
         arrayLocation.clear();
@@ -152,8 +164,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         textureNormalMaps.setID(textureCountDetail);
         textureNormalMaps.setResourceLocation(terrainMapLocation);
         textureNormalMaps.setResourceName(arrayLocation);
-        textureNormalMaps.setPropertyDescriptor(
-            Attorney::TerrainLoader::getNormalSampler(*terrain));
+        textureNormalMaps.setPropertyDescriptor(normalSampler);
         textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
 
         Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
@@ -181,21 +192,21 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
     textureWaterCaustics.setResourceName(terrainDescriptor->getVariable("waterCaustics"));
-    textureWaterCaustics.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
+    textureWaterCaustics.setPropertyDescriptor(albedoSampler);
     textureWaterCaustics.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.setResourceLocation(terrainMapLocation);
     underwaterAlbedoTexture.setResourceName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
-    underwaterAlbedoTexture.setPropertyDescriptor(Attorney::TerrainLoader::getAlbedoSampler(*terrain));
+    underwaterAlbedoTexture.setPropertyDescriptor(albedoSampler);
     underwaterAlbedoTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.setResourceLocation(terrainMapLocation);
     underwaterDetailTexture.setResourceName(terrainDescriptor->getVariable("underwaterDetailTexture"));
-    underwaterDetailTexture.setPropertyDescriptor(Attorney::TerrainLoader::getNormalSampler(*terrain));
+    underwaterDetailTexture.setPropertyDescriptor(albedoSampler);
     underwaterDetailTexture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
@@ -219,7 +230,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
-    return context.gfx().loadInContext(CurrentContext::GFX_RENDERING_CTX,
+    return context.gfx().loadInContext(threadedLoading ? CurrentContext::GFX_LOADING_CTX : CurrentContext::GFX_RENDERING_CTX,
                                        [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
                                             loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
                                        });

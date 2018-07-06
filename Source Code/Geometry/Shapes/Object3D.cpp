@@ -33,7 +33,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, const stringI
     _geometryFlagMask(flagMask),
     _geometryPartitionID(0U)
 {
-    if (!BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
+    if (!getObjectFlag(ObjectFlag::OBJECT_FLAG_NO_VB)) {
         _buffer = context.newVB();
     }
 

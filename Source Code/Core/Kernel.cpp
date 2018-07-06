@@ -721,10 +721,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
+    WaitForAllTasks(_taskPool, true, true, true);
     SceneManager::onShutdown();
     Script::onShutdown();
     _sceneManager.reset();
-    WaitForAllTasks(_taskPool, true, true, true);
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     _platformContext->gui().destroy();  /// Deactivate GUI 
@@ -739,6 +739,7 @@ void Kernel::shutdown() {
     _platformContext->sfx().closeAudioAPI();
     _platformContext->gfx().closeRenderingAPI();
     _platformContext->input().terminate();
+    _platformContext->terminate();
     _resCache->clear();
     FrameListenerManager::destroyInstance();
     Camera::destroyPool();

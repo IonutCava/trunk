@@ -75,6 +75,7 @@ class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;
 
+FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Player);
 
 namespace Attorney {
@@ -158,9 +159,7 @@ class Scene : public Resource {
                                           std::shared_ptr<ParticleData> data,
                                           SceneGraphNode& parentNode);
 
-    inline vectorImpl<FileData>& getVegetationDataArray() {
-        return _vegetationDataArray;
-    }
+    inline vectorImpl<Mesh_ptr>& getVegetationDataArray() { return _vegetationDataArray; }
 
     inline AI::AIManager& aiManager() { return *_aiManager; }
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
@@ -194,15 +193,14 @@ class Scene : public Resource {
     virtual bool loadResources(bool continueOnErrors);
     virtual bool loadTasks(bool continueOnErrors) { return true; }
     virtual bool loadPhysics(bool continueOnErrors);
-    /// if singleStep is true, only the first model from the modelArray will be
-    /// loaded.
+    /// if singleStep is true, only the first model from the modelArray will be loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
     virtual void loadBaseCamera();
 
     virtual bool load(const stringImpl& name);
-    bool loadModel(const FileData& data);
-    bool loadGeometry(const FileData& data);
+    Mesh_ptr loadModel(const FileData& data, bool addToSceneGraph);
+    Object3D_ptr loadGeometry(const FileData& data, bool addToSceneGraph);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading
@@ -279,7 +277,6 @@ class Scene : public Resource {
        SceneGUIElements* _GUI;
        Camera* _baseCamera;
 
-
        vectorImpl<SceneGraphNode_wptr> _terrains;
        vectorImpl<SceneGraphNode_wptr> _waterPlanes;
        SceneGraphNode_wptr _sun;
@@ -289,8 +286,9 @@ class Scene : public Resource {
        vectorImpl<D64> _taskTimers;
        vectorImpl<D64> _guiTimers;
        /// Datablocks for models,vegetation,terrains,tasks etc
+       std::atomic_uint _loadingTasks;
        FileDataStack _modelDataArray;
-       vectorImpl<FileData> _vegetationDataArray;
+       vectorImpl<Mesh_ptr> _vegetationDataArray;
 
        vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;

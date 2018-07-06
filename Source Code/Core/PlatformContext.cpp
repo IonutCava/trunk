@@ -34,6 +34,17 @@ PlatformContext::~PlatformContext()
 {
 }
 
+void PlatformContext::terminate() {
+    _gfx.reset();
+    _sfx.reset();
+    _pfx.reset();
+    _gui.reset();
+    _input.reset();
+    _entryData.reset();
+    _config.reset();
+    _client.reset();
+}
+
 void PlatformContext::idle() {
     _gfx->idle();
     //_sfx->idle();

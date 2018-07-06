@@ -22,7 +22,6 @@ namespace {
 
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
     : Object3D(context, parentCache, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
-      _alphaTexturePresent(false),
       _plane(nullptr),
       _drawBBoxes(false),
       _underwaterDiffuseScale(100.0f),
@@ -30,24 +29,10 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImp
       _waterHeight(0.0f)
 {
     getGeometryVB()->useLargeIndices(true);  //<32bit indices
-
-    _albedoSampler = MemoryManager_NEW SamplerDescriptor();
-    _albedoSampler->setWrapMode(TextureWrap::REPEAT);
-    _albedoSampler->setAnisotropy(8);
-    _albedoSampler->toggleMipMaps(true);
-    _albedoSampler->toggleSRGBColourSpace(true);
-
-    _normalSampler = MemoryManager_NEW SamplerDescriptor();
-    _normalSampler->setWrapMode(TextureWrap::REPEAT);
-    _normalSampler->setAnisotropy(8);
-    _normalSampler->toggleMipMaps(true);
-    _albedoSampler->toggleSRGBColourSpace(false);
 }
 
 Terrain::~Terrain()
 {
-    MemoryManager::DELETE(_albedoSampler);
-    MemoryManager::DELETE(_normalSampler);
 }
 
 bool Terrain::unload() {

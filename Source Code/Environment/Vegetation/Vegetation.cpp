@@ -54,9 +54,19 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, const Veg
 
     _instanceRoutineIdx.fill(0);
 
+    auto setShaderData = [this](Resource_ptr res) {
+        ShaderProgram_ptr shader = std::dynamic_pointer_cast<ShaderProgram>(res);
+
+        shader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
+        _instanceRoutineIdx[to_const_uint(CullType::PASS_THROUGH)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "PassThrough");
+        _instanceRoutineIdx[to_const_uint(CullType::INSTANCE_CLOUD_REDUCTION)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "InstanceCloudReduction");
+        _instanceRoutineIdx[to_const_uint(CullType::HI_Z_CULL)] = shader->GetSubroutineIndex(ShaderType::VERTEX, "HiZOcclusionCull");
+    };
+
     ResourceDescriptor instanceCullShader("instanceCull");
-    instanceCullShader.setThreadedLoading(false);
+    instanceCullShader.setThreadedLoading(true);
     instanceCullShader.setID(3);
+    instanceCullShader.setOnLoadCallback(setShaderData);
     _cullShader = CreateResource<ShaderProgram>(parentCache, instanceCullShader);
 }
 
@@ -82,15 +92,6 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     assert(_map->data() != nullptr);
 
     _terrainChunk = terrainChunk;
-
-    _cullShader->Uniform("ObjectExtent", vec3<F32>(1.0f, 1.0f, 1.0f));
-    _instanceRoutineIdx[to_const_uint(CullType::PASS_THROUGH)] = _cullShader->GetSubroutineIndex(
-        ShaderType::VERTEX, "PassThrough");
-    _instanceRoutineIdx[to_const_uint(CullType::INSTANCE_CLOUD_REDUCTION)] =
-        _cullShader->GetSubroutineIndex(ShaderType::VERTEX,
-                                        "InstanceCloudReduction");
-    _instanceRoutineIdx[to_const_uint(CullType::HI_Z_CULL)] = _cullShader->GetSubroutineIndex(
-        ShaderType::VERTEX, "HiZOcclusionCull");
 
     RenderStateBlock transparentRenderState;
     transparentRenderState.setCullMode(CullMode::CW);

@@ -40,7 +40,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache,
 {
     _tempBB.set(-VECTOR3_UNIT, VECTOR3_UNIT);
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT) - 1; ++j) {
+        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
             _particleGPUBuffers[i][j] = _context.newGVD(g_particleBufferSizeFactor);
         }
     }
@@ -65,7 +65,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     const vectorImpl<U32>& indices = particleData->particleGeometryIndices();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT) - 1; ++j) {
+        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.create(3);
@@ -119,7 +119,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
     U32 particleCount = _particles->totalCount();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
-        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT) - 1; ++j) {
+        for (U8 j = 0; j < to_const_uint(RenderStage::COUNT); ++j) {
             GenericVertexData& buffer = getDataBuffer(static_cast<RenderStage>(j), i);
 
             buffer.setBuffer(g_particlePositionBuffer,

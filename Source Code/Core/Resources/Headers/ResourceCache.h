@@ -64,6 +64,10 @@ public:
                 /// validate it's integrity and add it to the cache
                 add(ptr);
             }
+        } else {
+            if (descriptor.onLoadCallback()) {
+                descriptor.onLoadCallback()(ptr);
+            }
         }
 
         return ptr;

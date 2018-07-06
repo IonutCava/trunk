@@ -71,16 +71,26 @@ class Object3D : public SceneNode {
 
     virtual VertexBuffer* const getGeometryVB() const;
     inline ObjectType getObjectType() const { return _geometryType; }
-    inline U32 getFlagMask() const { return _geometryFlagMask; }
+
+    inline void setObjectFlag(ObjectFlag flag) {
+        SetBit(_geometryFlagMask, to_uint(flag));
+    }
+    inline void clearObjectFlag(ObjectFlag flag) {
+        ClearBit(_geometryFlagMask, to_uint(flag));
+    }
+
+    inline bool getObjectFlag(ObjectFlag flag) {
+        return BitCompare(_geometryFlagMask, to_uint(flag));
+    }
+
+    inline U32 getObjectFlagMask() const {
+        return _geometryFlagMask;
+    }
 
     virtual void postLoad(SceneGraphNode& sgn);
 
     virtual bool onRender(const RenderStagePass& renderStagePass);
                         
-    inline bool getObjectFlag(ObjectFlag flag) const {
-        return BitCompare(getFlagMask(), to_uint(flag));
-    }
-
     virtual void updateAnimations(SceneGraphNode& sgn) { }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
@@ -97,10 +107,15 @@ class Object3D : public SceneNode {
     inline void reserveTriangleCount(U32 size) {
         _geometryTriangles.reserve(size);
     }
-    inline void addTriangle(const vec3<U32>& tri) {
-        _geometryTriangles.push_back(tri);
+    inline void addTriangle(const vec3<U32>& triangle) {
+        _geometryTriangles.push_back(triangle);
     }
-
+    inline void addTriangles(const vectorImpl<vec3<U32>>& triangles) {
+        reserveTriangleCount(to_uint(triangles.size() + _geometryTriangles.size()));
+        _geometryTriangles.insert(std::end(_geometryTriangles),
+                                  std::begin(triangles),
+                                  std::end(triangles));
+    }
     // Create a list of triangles from the vertices + indices lists based on
     // primitive type
     bool computeTriangleList(bool force = false);

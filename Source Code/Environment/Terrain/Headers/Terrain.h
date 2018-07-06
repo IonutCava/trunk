@@ -91,7 +91,6 @@ struct TerrainTextureLayer {
 class Quadtree;
 class Transform;
 class VertexBuffer;
-class SamplerDescriptor;
 class TerrainDescriptor;
 
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
@@ -142,22 +141,18 @@ class Terrain : public Object3D {
    protected:
     VegetationDetails _vegDetails;
 
-    vec2<U16> _terrainDimensions;
     U32 _chunkSize;
+    vec2<U16> _terrainDimensions;
     Quadtree _terrainQuadtree;
 
-    vec2<F32> _terrainScaleFactor;
     F32 _waterHeight;
-    bool _alphaTexturePresent;
     bool _drawBBoxes;
-    SceneGraphNode_wptr _vegetationGrassNode;
     Quad3D_ptr _plane;
     F32 _underwaterDiffuseScale;
-    vectorImpl<TerrainTextureLayer*> _terrainTextures;
-    SamplerDescriptor* _albedoSampler;
-    SamplerDescriptor* _normalSampler;
-
+    vec2<F32> _terrainScaleFactor;
+    SceneGraphNode_wptr _vegetationGrassNode;
     vectorImpl<TerrainChunk*> _terrainChunks;
+    vectorImpl<TerrainTextureLayer*> _terrainTextures;
 };
 
 namespace Attorney {
@@ -183,13 +178,7 @@ class TerrainLoader {
     static void setUnderwaterDiffuseScale(Terrain& terrain, F32 diffuseScale) {
         terrain._underwaterDiffuseScale = diffuseScale;
     }
-    /// Per terrain albedo sampler
-    static const SamplerDescriptor& getAlbedoSampler(Terrain& terrain) {
-        return *terrain._albedoSampler;
-    }
-    static const SamplerDescriptor& getNormalSampler(Terrain& terrain) {
-        return *terrain._normalSampler;
-    }
+
     static void addTextureLayer(Terrain& terrain,
                                 TerrainTextureLayer* textureLayer) {
         terrain._terrainTextures.push_back(textureLayer);

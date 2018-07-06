@@ -411,8 +411,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
 
-    for (itTerrain = std::begin(pt.get_child("terrainList"));
-         itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
+    for (itTerrain = std::begin(pt.get_child("terrainList")); itTerrain != std::end(pt.get_child("terrainList")); ++itTerrain) {
         // The actual terrain name
         std::string name = itTerrain->second.data();
         // The <name> tag for valid terrains or <xmlcomment> for comments
@@ -539,8 +538,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     ptree::iterator it;
 
     if (boost::optional<ptree &> geometry = pt.get_child_optional("geometry")) {
-        for (it = std::begin(pt.get_child("geometry"));
-             it != std::end(pt.get_child("geometry")); ++it) {
+        for (it = std::begin(pt.get_child("geometry")); it != std::end(pt.get_child("geometry")); ++it) {
             std::string name(it->second.data());
             std::string format(it->first.data());
             if (format.find("<xmlcomment>") != stringImpl::npos) {
@@ -608,10 +606,8 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
         }
     }
 
-    if (boost::optional<ptree &> vegetation =
-            pt.get_child_optional("vegetation")) {
-        for (it = std::begin(pt.get_child("vegetation"));
-             it != std::end(pt.get_child("vegetation")); ++it) {
+    if (boost::optional<ptree &> vegetation = pt.get_child_optional("vegetation")) {
+        for (it = std::begin(pt.get_child("vegetation")); it != std::end(pt.get_child("vegetation")); ++it) {
             std::string name = it->second.data();
             std::string format = it->first.data();
             if (format.find("<xmlcomment>") != stringImpl::npos) {
@@ -623,55 +619,45 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
             model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
-            model.orientation.x =
-                pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y =
-                pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z =
-                pt.get<F32>(name + ".orientation.<xmlattr>.z");
+            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
             model.type = GeometryType::VEGETATION;
             model.version = pt.get<F32>(name + ".version");
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".castsShadows")) {
-                model.castsShadows =
-                    pt.get<bool>(name + ".castsShadows", false);
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                model.castsShadows = pt.get<bool>(name + ".castsShadows", false);
             } else {
                 model.castsShadows = true;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".receivesShadows")) {
-                model.receivesShadows =
-                    pt.get<bool>(name + ".receivesShadows", false);
+
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows", false);
             } else {
                 model.receivesShadows = true;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".staticObject")) {
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
                 model.staticUsage = pt.get<bool>(name + ".staticObject", false);
             } else {
                 model.staticUsage = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".addToNavigation")) {
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
                 model.navigationUsage =
                     pt.get<bool>(name + ".addToNavigation", false);
             } else {
                 model.navigationUsage = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".useHighNavigationDetail")) {
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
                 model.useHighDetailNavMesh =
                     pt.get<bool>(name + ".useHighNavigationDetail", false);
             } else {
                 model.useHighDetailNavMesh = false;
             }
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".addToPhysics")) {
-                model.physicsUsage =
-                    pt.get<bool>(name + ".addToPhysics", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToPhysics")) {
+                model.physicsUsage = pt.get<bool>(name + ".addToPhysics", false);
             } else {
                 model.physicsUsage = false;
             }
@@ -679,10 +665,8 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
         }
     }
 
-    if (boost::optional<ptree &> primitives =
-            pt.get_child_optional("primitives")) {
-        for (it = std::begin(pt.get_child("primitives"));
-             it != std::end(pt.get_child("primitives")); ++it) {
+    if (boost::optional<ptree &> primitives = pt.get_child_optional("primitives")) {
+        for (it = std::begin(pt.get_child("primitives")); it != std::end(pt.get_child("primitives")); ++it) {
             std::string name(it->second.data());
             std::string format(it->first.data());
             if (format.find("<xmlcomment>") != stringImpl::npos) {
@@ -694,12 +678,9 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
             model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
-            model.orientation.x =
-                pt.get<F32>(name + ".orientation.<xmlattr>.x");
-            model.orientation.y =
-                pt.get<F32>(name + ".orientation.<xmlattr>.y");
-            model.orientation.z =
-                pt.get<F32>(name + ".orientation.<xmlattr>.z");
+            model.orientation.x = pt.get<F32>(name + ".orientation.<xmlattr>.x");
+            model.orientation.y = pt.get<F32>(name + ".orientation.<xmlattr>.y");
+            model.orientation.z = pt.get<F32>(name + ".orientation.<xmlattr>.z");
             model.scale.x = pt.get<F32>(name + ".scale.<xmlattr>.x");
             model.scale.y = pt.get<F32>(name + ".scale.<xmlattr>.y");
             model.scale.z = pt.get<F32>(name + ".scale.<xmlattr>.z");
@@ -725,41 +706,32 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
             model.type = GeometryType::PRIMITIVE;
             model.version = pt.get<F32>(name + ".version");
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".castsShadows")) {
-                model.castsShadows =
-                    pt.get<bool>(name + ".castsShadows", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".castsShadows")) {
+                model.castsShadows = pt.get<bool>(name + ".castsShadows", false);
             } else {
                 model.castsShadows = true;
             }
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".receivesShadows")) {
-                model.receivesShadows =
-                    pt.get<bool>(name + ".receivesShadows", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".receivesShadows")) {
+                model.receivesShadows = pt.get<bool>(name + ".receivesShadows", false);
             } else {
                 model.receivesShadows = true;
             }
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".staticObject")) {
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".staticObject")) {
                 model.staticUsage = pt.get<bool>(name + ".staticObject", false);
             } else {
                 model.staticUsage = false;
             }
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".addToNavigation")) {
-                model.navigationUsage =
-                    pt.get<bool>(name + ".addToNavigation", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".addToNavigation")) {
+                model.navigationUsage = pt.get<bool>(name + ".addToNavigation", false);
             } else {
                 model.navigationUsage = false;
             }
 
-            if (boost::optional<ptree &> child =
-                    pt.get_child_optional(name + ".useHighNavigationDetail")) {
-                model.useHighDetailNavMesh =
-                    pt.get<bool>(name + ".useHighNavigationDetail", false);
+            if (boost::optional<ptree &> child = pt.get_child_optional(name + ".useHighNavigationDetail")) {
+                model.useHighDetailNavMesh = pt.get<bool>(name + ".useHighNavigationDetail", false);
             } else {
                 model.useHighDetailNavMesh = false;
             }

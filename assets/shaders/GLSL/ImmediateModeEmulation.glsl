@@ -70,7 +70,7 @@ void main(void) {
 #include "velocityCalc.frag"
 
 uniform uint dvd_LayerIndex;
-layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
+layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 
 layout(location = 0) out vec4 _colourOut;
 layout(location = 1) out vec2 _normalOut;

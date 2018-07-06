@@ -136,14 +136,15 @@ namespace Divide {
     FWD_DECLARE_MANAGED_CLASS(Mesh);
     FWD_DECLARE_MANAGED_CLASS(Material);
 
-    DEFINE_SINGLETON(MeshImporter)
+    class MeshImporter
+    {
         public:
-            bool loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut);
-            Mesh_ptr loadMesh(PlatformContext& context, ResourceCache& cache, const stringImpl& name, const Import::ImportData& dataIn);
+            static bool loadMeshDataFromFile(PlatformContext& context, ResourceCache& cache, Import::ImportData& dataOut);
+            static bool loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache& cache, const Import::ImportData& dataIn);
 
         protected:
-            Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned);
-    END_SINGLETON
+            static Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache& cache, const Import::MaterialData& importData, bool skinned);
+    };
 
 };  // namespace Divide
 

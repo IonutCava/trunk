@@ -80,6 +80,8 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
 
+    _loadingTasks = 0;
+
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
         _linesPrimitive = _context.gfx().newIMP();
@@ -177,75 +179,136 @@ void Scene::addPatch(vectorImpl<FileData>& data) {
 }
 
 void Scene::loadXMLAssets(bool singleStep) {
-    while (!_modelDataArray.empty()) {
-        const FileData& it = _modelDataArray.top();
-        // vegetation is loaded elsewhere
-        if (it.type == GeometryType::VEGETATION) {
-            _vegetationDataArray.push_back(it);
-        } else  if (it.type == GeometryType::PRIMITIVE) {
-            loadGeometry(it);
-        } else {
-            loadModel(it);
-        }
-        _modelDataArray.pop();
+    constexpr bool terrainThreadedLoading = true;
 
-        if (singleStep) {
-            break;
-        }
-    }
-}
-
-bool Scene::loadModel(const FileData& data) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                   to_const_uint(SGNComponent::ComponentType::NETWORKING);
+
+    while (!_modelDataArray.empty()) {
+        const FileData& it = _modelDataArray.top();
+        if (it.type == GeometryType::VEGETATION) {
+            _vegetationDataArray.push_back(loadModel(it, false));
+        } else  if (it.type == GeometryType::PRIMITIVE) {
+            loadGeometry(it, true);
+        } else {
+            loadModel(it, true);
+        }
+        _loadingTasks++;
+
+        _modelDataArray.pop();
+
+        if (singleStep) {
+            return;
+        }
+    }
+
+    auto registerTerrain = [this](Resource_ptr res) {
+        SceneGraphNode& root = _sceneGraph->getRoot();
+        SceneGraphNode_ptr terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res), normalMask, PhysicsGroup::GROUP_STATIC);
+        terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+
+        NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
+        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName(), true).lock());
+        assert(terrainNode != nullptr);
+        if (terrainNode->isActive()) {
+            //tempTerrain->toggleBoundingBoxes();
+            _terrains.push_back(terrainNode);
+        }
+        _loadingTasks--;
+    };
+
+    // Add terrain from XML
+    while(!_terrainInfoArray.empty()) {
+        const std::shared_ptr<TerrainDescriptor>& terrainInfo = _terrainInfoArray.back();
+        ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
+        terrain.setPropertyDescriptor(*terrainInfo);
+        terrain.setThreadedLoading(terrainThreadedLoading);
+        terrain.setOnLoadCallback(registerTerrain);
+        terrain.setFlag(terrainInfo->getActive());
+        CreateResource<Terrain>(_resCache, terrain);
+        _loadingTasks++;
+        _terrainInfoArray.pop_back();
+
+        if (singleStep) {
+            return;
+        }
+    }
+}
+
+Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
+    constexpr bool modelThreadedLoading = true;
+
+    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
+                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
+                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
+                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
+                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
+
+    auto loadModelComplete = [this](Resource_ptr res) {
+        ACKNOWLEDGE_UNUSED(res);
+        _loadingTasks--;
+    };
 
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);
+    model.setThreadedLoading(modelThreadedLoading);
+    model.setOnLoadCallback(loadModelComplete);
     Mesh_ptr thisObj = CreateResource<Mesh>(_resCache, model);
+
     if (!thisObj) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")),
-                         data.ModelName.c_str());
-        return false;
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
+    } else {
+        if (addToSceneGraph) {
+            SceneGraphNode_ptr meshNode =
+                _sceneGraph->getRoot().addNode(thisObj,
+                                               data.isUnit ? normalMask | to_const_uint(SGNComponent::ComponentType::UNIT) : normalMask,
+                                               data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                                      : PhysicsGroup::GROUP_DYNAMIC
+                                                                 : PhysicsGroup::GROUP_IGNORE,
+                                               data.ItemName);
+            meshNode->get<RenderingComponent>()->castsShadows(data.castsShadows);
+            meshNode->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
+            meshNode->get<PhysicsComponent>()->setScale(data.scale);
+            meshNode->get<PhysicsComponent>()->setRotation(data.orientation);
+            meshNode->get<PhysicsComponent>()->setPosition(data.position);
+
+            if (data.staticUsage) {
+                meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+            }
+            if (data.navigationUsage) {
+                meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+            }
+
+            if (data.useHighDetailNavMesh) {
+                meshNode->get<NavigationComponent>()->navigationDetailOverride(true);
+            }
+        }
     }
 
-    SceneGraphNode_ptr meshNode =
-        _sceneGraph->getRoot().addNode(thisObj,
-                                       data.isUnit ? normalMask | to_const_uint(SGNComponent::ComponentType::UNIT) : normalMask,
-                                       data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                              : PhysicsGroup::GROUP_DYNAMIC
-                                                         : PhysicsGroup::GROUP_IGNORE,
-                                       data.ItemName);
-    meshNode->get<RenderingComponent>()->castsShadows(data.castsShadows);
-    meshNode->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
-    meshNode->get<PhysicsComponent>()->setScale(data.scale);
-    meshNode->get<PhysicsComponent>()->setRotation(data.orientation);
-    meshNode->get<PhysicsComponent>()->setPosition(data.position);
-    if (data.staticUsage) {
-        meshNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-    }
-    if (data.navigationUsage) {
-        meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-    }
-
-    if (data.useHighDetailNavMesh) {
-        meshNode->get<NavigationComponent>()->navigationDetailOverride(true);
-    }
-    return true;
+    return thisObj;
 }
 
-bool Scene::loadGeometry(const FileData& data) {
+Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                   to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
+    auto loadModelComplete = [this](Resource_ptr res) {
+        ACKNOWLEDGE_UNUSED(res);
+        _loadingTasks--;
+    };
+
     std::shared_ptr<Object3D> thisObj;
     ResourceDescriptor item(data.ItemName);
+    item.setOnLoadCallback(loadModelComplete);
     item.setResourceLocation(data.ModelName);
     if (data.ModelName.compare("Box3D") == 0) {
         item.setPropertyList(Util::StringFormat("%2.2f", data.data));
@@ -261,14 +324,10 @@ bool Scene::loadGeometry(const FileData& data) {
         quadMask.b[0] = 1;
         item.setBoolMask(quadMask);
         thisObj = CreateResource<Quad3D>(_resCache, item);
-        static_cast<Quad3D*>(thisObj.get())
-            ->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
-        static_cast<Quad3D*>(thisObj.get())
-            ->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
-        static_cast<Quad3D*>(thisObj.get())
-            ->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
-        static_cast<Quad3D*>(thisObj.get())
-            ->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
+        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
+        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
+        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
     } else if (data.ModelName.compare("Text3D") == 0) {
         /// set font file
         item.setResourceLocation(data.data3);
@@ -290,27 +349,31 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot().addNode(thisObj,
-                                                                   normalMask,
-                                                                   data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                                                          : PhysicsGroup::GROUP_DYNAMIC
-                                                                                     : PhysicsGroup::GROUP_IGNORE);
-    thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
-    thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
-    thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
-    thisObjSGN->get<RenderingComponent>()->castsShadows(data.castsShadows);
-    thisObjSGN->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
-    if (data.staticUsage) {
-        thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-    }
-    if (data.navigationUsage) {
-        thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+    if (addToSceneGraph) {
+        SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot().addNode(thisObj,
+                                                                       normalMask,
+                                                                       data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                                                              : PhysicsGroup::GROUP_DYNAMIC
+                                                                                         : PhysicsGroup::GROUP_IGNORE);
+        thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
+        thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
+        thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
+        thisObjSGN->get<RenderingComponent>()->castsShadows(data.castsShadows);
+        thisObjSGN->get<RenderingComponent>()->receivesShadows(data.receivesShadows);
+        if (data.staticUsage) {
+            thisObjSGN->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+        }
+        if (data.navigationUsage) {
+            thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+        }
+
+        if (data.useHighDetailNavMesh) {
+            thisObjSGN->get<NavigationComponent>()->navigationDetailOverride(true);
+        }
     }
 
-    if (data.useHighDetailNavMesh) {
-        thisObjSGN->get<NavigationComponent>()->navigationDetailOverride(true);
-    }
-    return true;
+    return thisObj;
 }
 
 SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
@@ -652,58 +715,16 @@ void Scene::loadBaseCamera() {
 }
 
 bool Scene::load(const stringImpl& name) {
-    constexpr bool terrainThreadedLoading = true;
-
     setState(ResourceState::RES_LOADING);
-
-    static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_const_uint(SGNComponent::ComponentType::PHYSICS) |
-                                  to_const_uint(SGNComponent::ComponentType::BOUNDS) |
-                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
-                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
     STUBBED("ToDo: load skyboxes from XML")
     _name = name;
 
     loadBaseCamera();
     loadXMLAssets();
-
-    auto registerTerrain = [this](Resource_ptr res) {
-        SceneGraphNode& root = _sceneGraph->getRoot();
-        SceneGraphNode_ptr terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res), normalMask, PhysicsGroup::GROUP_STATIC);
-        terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-
-        for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
-            if (res->getName().compare(terrainInfo->getVariable("terrainName"))) {
-                terrainTemp->setActive(terrainInfo->getActive());
-                break;
-            }
-        }
-
-        NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
-        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName(), true).lock());
-        assert(terrainNode != nullptr);
-        if (terrainNode->isActive()) {
-            //tempTerrain->toggleBoundingBoxes();
-            _terrains.push_back(terrainNode);
-        }
-    };
-
-     // Add terrain from XML
-    if (!_terrainInfoArray.empty()) {
-        for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
-            ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
-            terrain.setPropertyDescriptor(*terrainInfo);
-            terrain.setThreadedLoading(terrainThreadedLoading);
-            terrain.setOnLoadCallback(registerTerrain);
-            std::shared_ptr<Terrain> temp = CreateResource<Terrain>(_resCache, terrain);
-        }
-    }
-    _terrainInfoArray.clear();
-
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this));
+
+    WAIT_FOR_CONDITION(_loadingTasks == 0);
 
     _loadComplete = true;
     return _loadComplete;

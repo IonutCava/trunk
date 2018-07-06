@@ -30,45 +30,49 @@ namespace Import {
 
         ByteBuffer tempBuffer;
         assert(_vertexBuffer != nullptr);
-        tempBuffer << stringImpl("BufferEntryPoint");
+        tempBuffer << _ID("BufferEntryPoint");
         tempBuffer << _modelName;
         tempBuffer << _modelPath;
-        _vertexBuffer->serialize(tempBuffer);
-        tempBuffer << to_uint(_subMeshData.size());
-        for (const SubMeshData& subMesh : _subMeshData) {
-            if (!subMesh.serialize(tempBuffer)) {
-                //handle error
+        if (_vertexBuffer->serialize(tempBuffer)) {
+            tempBuffer << to_uint(_subMeshData.size());
+            for (const SubMeshData& subMesh : _subMeshData) {
+                if (!subMesh.serialize(tempBuffer)) {
+                    //handle error
+                }
             }
+            tempBuffer << _hasAnimations;
+            // Animations are handled by the SceneAnimator I/O
+            return tempBuffer.dumpToFile(fileName + "." + g_parsedAssetGeometryExt);
         }
-        tempBuffer << _hasAnimations;
-        // Animations are handled by the SceneAnimator I/O
-        return tempBuffer.dumpToFile(fileName + "." + g_parsedAssetGeometryExt);
+
+        return false;
     }
 
     bool ImportData::loadFromFile(PlatformContext& context, const stringImpl& fileName) {
         ByteBuffer tempBuffer;
         if (tempBuffer.loadFromFile(fileName + "." + g_parsedAssetGeometryExt)) {
-            stringImpl signature;
+            U64 signature;
             tempBuffer >> signature;
-            if (signature.compare("BufferEntryPoint") != 0) {
+            if (signature != _ID("BufferEntryPoint")) {
                 return false;
             }
             tempBuffer >> _modelName;
             tempBuffer >> _modelPath;
             _vertexBuffer = context.gfx().newVB();
-            _vertexBuffer->deserialize(tempBuffer);
-            U32 subMeshCount = 0;
-            tempBuffer >> subMeshCount;
-            _subMeshData.resize(subMeshCount);
-            for (SubMeshData& subMesh : _subMeshData) {
-                if (!subMesh.deserialize(tempBuffer)) {
-                    //handle error
-                    DIVIDE_UNEXPECTED_CALL();
+            if (_vertexBuffer->deserialize(tempBuffer)) {
+                U32 subMeshCount = 0;
+                tempBuffer >> subMeshCount;
+                _subMeshData.resize(subMeshCount);
+                for (SubMeshData& subMesh : _subMeshData) {
+                    if (!subMesh.deserialize(tempBuffer)) {
+                        //handle error
+                        DIVIDE_UNEXPECTED_CALL();
+                    }
                 }
+                tempBuffer >> _hasAnimations;
+                _loadedFromFile = true;
+                return true;
             }
-            tempBuffer >> _hasAnimations;
-            _loadedFromFile = true;
-            return true;
         }
         return false;
     }
@@ -199,12 +203,14 @@ namespace Import {
         return success;
     }
 
-    Mesh_ptr MeshImporter::loadMesh(PlatformContext& context, ResourceCache& cache, const stringImpl& name, const Import::ImportData& dataIn) {
+    bool MeshImporter::loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache& cache, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
         std::shared_ptr<SceneAnimator> animator;
         if (dataIn._hasAnimations) {
+            mesh->setObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+
             ByteBuffer tempBuffer;
             animator.reset(new SceneAnimator());
             if (tempBuffer.loadFromFile(dataIn._modelPath + "/" + 
@@ -229,18 +235,6 @@ namespace Import {
                     DIVIDE_UNEXPECTED_CALL();
                 }
             }
-        }
-
-        Mesh_ptr mesh(MemoryManager_NEW Mesh(context.gfx(),
-                                             cache,
-                                             name,
-                                             dataIn._modelName,
-                                             dataIn._modelPath,
-                                             dataIn._hasAnimations
-                                                 ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
-                                                 : Object3D::ObjectFlag::OBJECT_FLAG_NONE),
-                                DeleteResource(cache));
-        if (dataIn._hasAnimations) {
             mesh->setAnimator(animator);
             animator = nullptr;
         }
@@ -264,9 +258,7 @@ namespace Import {
             }
             // it may already be loaded
             if (!tempSubMesh->getParentMesh()) {
-                for (const vec3<U32>& triangle : subMeshData._triangles) {
-                    tempSubMesh->addTriangle(triangle);
-                }
+                tempSubMesh->addTriangles(subMeshData._triangles);
                 tempSubMesh->setGeometryPartitionID(subMeshData._partitionOffset);
                 Attorney::SubMeshMeshImporter::setGeometryLimits(*tempSubMesh,
                                                                  subMeshData._minPos,
@@ -287,7 +279,7 @@ namespace Import {
                            dataIn._modelName.c_str(),
                            Time::MillisecondsToSeconds(importTimer.get()));
 
-        return mesh;
+        return true;
     }
 
     /// Load the material for the current SubMesh

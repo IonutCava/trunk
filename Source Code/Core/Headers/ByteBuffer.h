@@ -64,23 +64,23 @@ class ByteBuffer {
     void clear();
 
     template <typename T>
-    void put(size_t pos, T value);
+    void put(size_t pos, const T& value);
 
     template <typename T>
-    ByteBuffer& operator<<(T value);
+    ByteBuffer& operator<<(const T& value);
+    template<>
+    ByteBuffer& operator<<(const bool& value);
     template <> 
-    ByteBuffer& operator<<(const stringImpl &value);
-    template<>
-    ByteBuffer& operator<<(const char *str);
+    ByteBuffer& operator<<(const stringImpl& value);
 
     template <typename T>
-    ByteBuffer& operator>>(T &value);
+    ByteBuffer& operator>>(T& value);
     template<>
-    ByteBuffer& operator>>(bool &value);
+    ByteBuffer& operator>>(bool& value);
     template<>
     ByteBuffer& operator>>(stringImpl& value);
     template <typename T>
-    ByteBuffer& operator>>(Unused<T> const &);
+    ByteBuffer& operator>>(const Unused<T>& value);
 
     template <typename T>
     void read_skip();
@@ -123,7 +123,7 @@ class ByteBuffer {
     /// limited for internal use because can "append" any unexpected type (like
     /// pointer and etc) with hard detection problem
     template <typename T>
-    void append(const T value);
+    void append(const T& value);
 
    private:
     friend class boost::serialization::access;

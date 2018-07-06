@@ -48,7 +48,10 @@ class NOINITVTABLE PropertyDescriptor {
         DESCRIPTOR_COUNT
     };
 
-    explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}
+    explicit PropertyDescriptor(const DescriptorType& type) : _type(type)
+    {
+    }
+
     virtual ~PropertyDescriptor()
     {
     }
@@ -70,10 +73,11 @@ class ResourceDescriptor {
    public:
     explicit ResourceDescriptor(const stringImpl& resourceName);
 
-    virtual ~ResourceDescriptor();
+    ~ResourceDescriptor();
 
     ResourceDescriptor(const ResourceDescriptor& old);
     ResourceDescriptor& operator=(ResourceDescriptor const& old);
+    ResourceDescriptor(ResourceDescriptor&& old) noexcept;
 
     inline const stringImpl& getPropertyListString() const {
         return _properties;

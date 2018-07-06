@@ -53,4 +53,22 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
 
     return *this;
 }
+
+ResourceDescriptor::ResourceDescriptor(ResourceDescriptor&& old) noexcept 
+    :  _name(std::move(old._name)),
+       _resourceName(std::move(old._resourceName)),
+       _resourceLocation(std::move(old._resourceLocation)),
+       _properties(std::move(old._properties)),
+       _flag(std::move(old._flag)),
+       _threaded(std::move(old._threaded)),
+       _ID(std::move(old._ID)),
+       _mask(std::move(old._mask)),
+       _enumValue(std::move(old._enumValue)),
+       _userPtr(std::move(old._userPtr)),
+       _onLoadCallback(std::move(old._onLoadCallback)),
+       _propertyDescriptor(std::move(old._propertyDescriptor))
+{
+    old._propertyDescriptor = nullptr;
+}
+
 };

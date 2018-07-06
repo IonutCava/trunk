@@ -43,6 +43,7 @@ class TerrainLoader : private NonCopyable {
     static bool loadTerrain(std::shared_ptr<Terrain> terrain,
                             const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                             PlatformContext& context,
+                            bool threadedLoading,
                             const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback);
 
    protected:

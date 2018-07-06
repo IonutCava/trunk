@@ -61,6 +61,7 @@ public:
     ~PlatformContext();
 
     void idle();
+    void terminate();
 
     inline GFXDevice& gfx() { return *_gfx; }
     inline const GFXDevice& gfx() const { return *_gfx; }

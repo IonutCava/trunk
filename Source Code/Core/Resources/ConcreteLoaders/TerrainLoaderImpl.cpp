@@ -21,7 +21,7 @@ Resource_ptr ImplResourceLoader<Terrain>::operator()() {
         ptr->setState(ResourceState::RES_LOADING);
     }
 
-    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.onLoadCallback())) {
+    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.getThreaded(), _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), _descriptor.getName().c_str());
         ptr.reset();
     }

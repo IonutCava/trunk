@@ -22,40 +22,39 @@
 namespace Divide {
 
 template <typename T>
-inline void ByteBuffer::put(size_t pos, T value) {
+inline void ByteBuffer::put(size_t pos, const T& value) {
     //EndianConvert(value);
     put(pos, (Byte *)&value, sizeof(value));
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator<<(T value) {
+inline ByteBuffer& ByteBuffer::operator<<(const T& value) {
     append<T>(value);
+    return *this;
+}
+
+template<>
+inline ByteBuffer& ByteBuffer::operator<<(const bool& value) {
+    append(value ? to_byte(1) : to_byte(0));
     return *this;
 }
 
 template <>
 inline ByteBuffer& ByteBuffer::operator<<(const stringImpl &value) {
-    append((Byte const *)value.c_str(), value.length());
-    append((U8)0);
-    return *this;
-}
-
-template<>
-inline ByteBuffer& ByteBuffer::operator<<(const char *str) {
-    append((Byte const *)str, str ? strlen(str) : 0);
+    append(value.c_str(), value.length());
     append((U8)0);
     return *this;
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator>>(T &value) {
+inline ByteBuffer& ByteBuffer::operator>>(T& value) {
     value = read<T>();
     return *this;
 }
 
 template<>
-inline ByteBuffer& ByteBuffer::operator>>(bool &value) {
-    value = read<char>() > 0 ? true : false;
+inline ByteBuffer& ByteBuffer::operator>>(bool& value) {
+    value = (read<I8>() == to_byte(1));
     return *this;
 }
 
@@ -63,17 +62,20 @@ template<>
 inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
     value.clear();
     // prevent crash at wrong string format in packet
-    while (rpos() < size())
-    {
+    while (rpos() < size()) {
         char c = read<char>();
-        if (c == 0) break;
+        if (c == to_ubyte(0)) {
+            break;
+        }
         value += c;
     }
     return *this;
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator>>(Unused<T> const &) {
+inline ByteBuffer& ByteBuffer::operator>>(const Unused<T>& unused) {
+    ACKNOWLEDGE_UNUSED(unused);
+
     read_skip<T>();
     return *this;
 }
@@ -100,8 +102,9 @@ inline void ByteBuffer::read_skip<stringImpl>() {
 }
 
 inline void ByteBuffer::read_skip(size_t skip) {
-    if (_rpos + skip > size())
+    if (_rpos + skip > size()) {
         throw ByteBufferException(false, _rpos, skip, size());
+    }
     _rpos += skip;
 }
 
@@ -251,7 +254,7 @@ inline void ByteBuffer::put(size_t pos, const Byte *src, size_t cnt) {
 
 //private:
 template <typename T>
-inline void ByteBuffer::append(const T value) {
+inline void ByteBuffer::append(const T& value) {
     //EndianConvert(value);
     append((Byte *)&value, sizeof(value));
 }
@@ -315,7 +318,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
 }
 
 template <typename T, size_t N>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::array<T, N> const &v) {
+inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<T, N>& v) {
     b << static_cast<U64>(N);
     b.append(v.data(), N);
 
@@ -323,11 +326,33 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::array<T, N> const &v) {
 }
 
 template <typename T, size_t N>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N> &v) {
+inline ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N>& a) {
     U64 size;
     b >> size;
     assert(size == static_cast<U64>(N));
-    b.read((Byte*)v.data(), size * sizeof(T));
+    b.read((Byte*)a.data(), N * sizeof(T));
+
+    return b;
+}
+
+template <size_t N>
+inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<stringImpl, N>& a) {
+    b << static_cast<U64>(N);
+    for (const stringImpl& str : a) {
+        b << str;
+    }
+
+    return b;
+}
+
+template <size_t N>
+inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
+    U64 size;
+    b >> size;
+    assert(size == static_cast<U64>(N));
+    for (stringImpl& str : a) {
+        b >> str;
+    }
 
     return b;
 }
@@ -349,6 +374,26 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vectorImpl<T> &v) {
     return b;
 }
 
+template <>
+inline ByteBuffer &operator<<(ByteBuffer &b, vectorImpl<stringImpl> const &v) {
+    b << to_uint(v.size());
+    for (const stringImpl& str : v) {
+        b << str;
+    }
+
+    return b;
+}
+
+template <>
+inline ByteBuffer &operator>>(ByteBuffer &b, vectorImpl<stringImpl> &v) {
+    U32 vsize;
+    b >> vsize;
+    v.resize(vsize);
+    for (stringImpl& str : v) {
+        b >> str;
+    }
+    return b;
+}
 template <typename T>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
     b << to_uint(v.size());
