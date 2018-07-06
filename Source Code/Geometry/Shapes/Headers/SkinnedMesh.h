@@ -36,13 +36,6 @@ public:
     inline void playAnimation(const bool state)       {_playAnimation = state;}
     inline bool playAnimation()                 const {return _playAnimation;}
 
-    /// Select next available animation
-    bool playNextAnimation();
-    /// Select an animation by index
-    bool playAnimation(I32 index);
-    /// Select an animation by name
-    bool playAnimation(const std::string& animationName);
-
 protected:
     bool _playAnimation;
 };

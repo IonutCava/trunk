@@ -52,21 +52,25 @@ public:
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     virtual void postLoad(SceneGraphNode* const sgn);
-    virtual	void onDraw(const RenderStage& currentStage);
     inline  void render(SceneGraphNode* const sgn){};
-    virtual void preFrameDrawEnd() {}
 
     inline const BoundingBox& getMaxBoundingBox() const { return _maxBoundingBox; }
 
     virtual void  addSubMesh(SubMesh* const subMesh);
 
-    void refModifyCallback(bool increase);
+    /// Use playAnimations() to toggle animation playback for the current mesh (and all submeshes) on or off
+    inline void playAnimations(const bool state)       { _playAnimations = state; }
+    inline bool playAnimations()                 const { return _playAnimations; }
 
 protected:
+    
+
     typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;
     typedef Unordered_map<U32, SubMesh*> subMeshRefMap;
 
     bool _visibleToNetwork;
+    bool _playAnimations;
+    bool _playAnimationsCurrent;
 
     vectorImpl<std::string > _subMeshes;
     subMeshRefMap            _subMeshRefMap;

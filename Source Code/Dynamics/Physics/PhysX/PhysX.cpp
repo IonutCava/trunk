@@ -4,7 +4,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Shapes/Headers/SkinnedMesh.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 #include <Samples/PxToolkit/include/PxToolkit.h>

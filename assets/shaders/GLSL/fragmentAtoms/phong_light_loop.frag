@@ -136,7 +136,7 @@ void phong_loop(in vec2 texCoord, in vec3 normal, inout MaterialProperties mater
 #endif
 #if MAX_LIGHT_COUNT > 8
     ///Apply the rest of the lights
-    for(int i = 8; i =< MAX_LIGHT_COUNT; i++){
+    for(int i = 8; i <= MAX_LIGHT_COUNT; i++){
         if(currentLightCount == i) return;
         L = normalize(_lightDirection[i]);
         R = normalize(-reflect(L,normal)); 

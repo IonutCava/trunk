@@ -722,9 +722,6 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedMesh.cpp">
-      <Filter>Geometry\Shapes</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SkinnedSubMesh.cpp">
       <Filter>Geometry\Shapes</Filter>
     </ClCompile>
@@ -856,6 +853,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp">
       <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationComponent.cpp">
+      <Filter>Geometry\Animations</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1199,9 +1199,6 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedMesh.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h">
       <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
@@ -1369,6 +1366,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h">
       <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationComponent.h">
+      <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

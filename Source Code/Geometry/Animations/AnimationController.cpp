@@ -1,10 +1,12 @@
 #include "Headers/AnimationController.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Headers/AnimationUtils.h"
+
+#include <assimp/scene.h>
+
 using namespace boost;
 
 void SceneAnimator::Release(){// this should clean everything up
-    _currentAnimIndex = -1;
     FOR_EACH(pointCollection::value_type& it, _pointsA){
         FOR_EACH(pointMap::value_type& it2, it.second){
             it2.second.clear();
@@ -35,8 +37,8 @@ void SceneAnimator::Release(){// this should clean everything up
     SAFE_DELETE(_skeleton);
 }
 
-void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
-    if(!pScene->HasAnimations()) return;
+bool SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
+    if(!pScene->HasAnimations()) return false;
     Release();
 
     _skeleton = CreateBoneTree( pScene->mRootNode, nullptr);
@@ -70,11 +72,10 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
     mat4<F32> rotationmat;
     vectorImpl<mat4<F32> > vec;
     for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
-        SetAnimIndex((I32)i);
         D32 dt = 0;
         for(D32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
             dt +=timestep;
-            Calculate(dt);
+            Calculate((I32)i, dt);
             _animations[i]._transforms.push_back(vec);
             vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
             if(GFX_DEVICE.getApi() == Direct3D){
@@ -92,6 +93,7 @@ void SceneAnimator::Init(const aiScene* pScene, U8 meshPointer){// this will bui
     }
 
     D_PRINT_FN(Locale::get("LOAD_ANIMATIONS_END"), _bones.size());
+    return !_transforms.empty();
 }
 
 void SceneAnimator::ExtractAnimations(const aiScene* pScene){
@@ -106,35 +108,13 @@ void SceneAnimator::ExtractAnimations(const aiScene* pScene){
     FOR_EACH(AnimEvaluator& animation, _animations){
         _animationNameToId.insert(Unordered_map<std::string, U32>::value_type(animation._name, i++));
     }
-    _currentAnimIndex=0;
-    SetAnimation("Idle");
-}
-
-bool SceneAnimator::SetAnimation(const std::string& name){
-    Unordered_map<std::string, U32>::iterator itr = _animationNameToId.find(name);
-    I32 oldindex = _currentAnimIndex;
-    if(itr !=_animationNameToId.end()) _currentAnimIndex = itr->second;
-    return oldindex != _currentAnimIndex;
-}
-
-bool SceneAnimator::SetAnimIndex( I32  pAnimIndex){
-    if(pAnimIndex >= (I32)_animations.size()) return false;// no change, or the animations data is out of bounds
-    I32 oldindex = _currentAnimIndex;
-    _currentAnimIndex = pAnimIndex;// only set this after the checks for good data and the object was actually inserted
-    return oldindex != _currentAnimIndex;
-}
-
-bool SceneAnimator::SetNextAnimation() {
-    I32 oldindex = _currentAnimIndex;
-    _currentAnimIndex = ++_currentAnimIndex % _animations.size();
-    return oldindex != _currentAnimIndex;
 }
 
 // ------------------------------------------------------------------------------------------------
 // Calculates the node transformations for the scene.
-void SceneAnimator::Calculate(const D32 pTime){
-    if( (_currentAnimIndex < 0) || (_currentAnimIndex >= (I32)_animations.size()) ) return;// invalid animation
-    _animations[_currentAnimIndex].Evaluate( pTime, _bonesByName);
+void SceneAnimator::Calculate(I32 animationIndex, const D32 pTime){
+    if ((animationIndex < 0) || (animationIndex >= (I32)_animations.size())) return;// invalid animation
+    _animations[animationIndex].Evaluate(pTime, _bonesByName);
     UpdateTransforms(_skeleton);
 }
 
@@ -206,35 +186,35 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 }
 
 ///Renders the current skeleton pose at time index dt
-I32 SceneAnimator::RenderSkeleton(const D32 dt){
-    U32 frameIndex = _animations[_currentAnimIndex].GetFrameIndexAt(dt);
+I32 SceneAnimator::RenderSkeleton(I32 animationIndex, const D32 dt){
+    U32 frameIndex = _animations[animationIndex].GetFrameIndexAt(dt);
 
-    if(_pointsA.find(_currentAnimIndex) == _pointsA.end()){
+    if (_pointsA.find(animationIndex) == _pointsA.end()){
         pointMap pointsA;
         pointMap pointsB;
         colorMap colors;
-        _pointsA.insert(std::make_pair(_currentAnimIndex, pointsA));
-        _pointsB.insert(std::make_pair(_currentAnimIndex, pointsB));
-        _colors.insert(std::make_pair(_currentAnimIndex, colors));
+        _pointsA.insert(std::make_pair(animationIndex, pointsA));
+        _pointsB.insert(std::make_pair(animationIndex, pointsB));
+        _colors.insert(std::make_pair(animationIndex, colors));
     }
 
-    if(_pointsA[_currentAnimIndex][frameIndex].empty()){
+    if (_pointsA[animationIndex][frameIndex].empty()){
         // create all the needed points
-        vectorImpl<vec3<F32> >& pA = _pointsA[_currentAnimIndex][frameIndex];
-        vectorImpl<vec3<F32> >& pB = _pointsB[_currentAnimIndex][frameIndex];
-        vectorImpl<vec4<U8> >& cl = _colors[_currentAnimIndex][frameIndex];
+        vectorImpl<vec3<F32> >& pA = _pointsA[animationIndex][frameIndex];
+        vectorImpl<vec3<F32> >& pB = _pointsB[animationIndex][frameIndex];
+        vectorImpl<vec4<U8> >& cl = _colors[animationIndex][frameIndex];
         pA.reserve(_bones.size());
         pB.reserve(_bones.size());
         cl.reserve(_bones.size());
         // Construct skeleton
-        Calculate(dt);
+        Calculate(animationIndex, dt);
         // Prepare global transform
         aiMatrix4x4 rootTransform;
         AnimUtils::TransformMatrix(rootTransform,_rootTransformRender);
         CreateSkeleton(_skeleton, rootTransform, pA, pB, cl);
     }
     // Submit skeleton to gpu
-    return SubmitSkeletonToGPU(frameIndex);
+    return SubmitSkeletonToGPU(animationIndex, frameIndex);
 }
 
 /// Create animation skeleton
@@ -260,10 +240,10 @@ I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vecto
     return 1;
 }
 
-I32 SceneAnimator::SubmitSkeletonToGPU(U32 frameIndex){
-    GFX_DEVICE.drawLines(_pointsA[_currentAnimIndex][frameIndex],
-                         _pointsB[_currentAnimIndex][frameIndex],
-                         _colors[_currentAnimIndex][frameIndex],
+I32 SceneAnimator::SubmitSkeletonToGPU(I32 animationIndex, U32 frameIndex){
+    GFX_DEVICE.drawLines(_pointsA[animationIndex][frameIndex],
+                         _pointsB[animationIndex][frameIndex],
+                         _colors[animationIndex][frameIndex],
                          _rootTransformRender,
                          false,
                          true);

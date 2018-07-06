@@ -22,7 +22,7 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) ///<Defaulting to OpenGL if no api has been defined
+GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()) //<Defaulting to OpenGL if no api has been defined
 {
    _prevShaderId = 0;
    _prevTextureId = 0;
@@ -139,7 +139,7 @@ void GFXDevice::closeRenderingApi(){
     }
     _stateBlockMap.clear();
     Frustum::destroyInstance();
-    ///Destroy all rendering Passes
+    //Destroy all rendering Passes
     RenderPassManager::getInstance().destroyInstance();
     SAFE_DELETE(_depthBuffer);
     SAFE_DELETE(_screenBuffer[0]);
@@ -191,8 +191,7 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     Transform* prevTransform = instance->prevTransform();
     if(transform) {
         if(_interpolationFactor < 0.99 && prevTransform) {
-            Transform* prevTransform = instance->prevTransform();
-            pushWorldMatrix(transform->interpolate(prevTransform, _interpolationFactor), transform->isUniformScaled());
+            pushWorldMatrix(transform->interpolate(instance->prevTransform(), _interpolationFactor), transform->isUniformScaled());
         }else{
             pushWorldMatrix(transform->getGlobalMatrix(), transform->isUniformScaled());
         }
@@ -286,7 +285,7 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
         WORLD_Y_NEG_AXIS
     };
 
-    ///Get the center and up vectors for each cube face
+    //Get the center and up vectors for each cube face
     vec3<F32> TabCenter[6] = {
         vec3<F32>(pos.x+1.0f,	pos.y,		pos.z),
         vec3<F32>(pos.x-1.0f,	pos.y,		pos.z),

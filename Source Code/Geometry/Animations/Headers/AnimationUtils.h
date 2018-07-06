@@ -30,8 +30,9 @@
 #define ANIMATION_TICKS_PER_SECOND 20.0f
 #define MAXBONESPERMESH 60
 
-#include "core.h"
-#include <assimp/scene.h>
+#include "Core/Math/Headers/MathClasses.h"
+#include <assimp/types.h>
+
 namespace AnimUtils {
 	void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in);
 	void TransformMatrix(aiMatrix4x4& out,const mat4<F32>& in);

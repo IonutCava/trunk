@@ -180,11 +180,13 @@ namespace Util {
         return true;
     }
 
+    static std::stringstream _ssBuffer;
+
     template<class T>
     inline std::string toString(const T& data){
-        std::stringstream s;
-        s << data;
-        return s.str();
+        _ssBuffer.clear();
+        _ssBuffer << data;
+        return _ssBuffer.str();
     }
 
     //U = to data type, T = from data type

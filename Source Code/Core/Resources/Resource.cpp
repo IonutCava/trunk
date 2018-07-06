@@ -27,17 +27,16 @@ void log_new(size_t t ,char* zFile, I32 nLine){
     }
 
     sprintf(Divide::Memory::outputLogBuffer,
-            "[ %9.2f ] : New allocation [ %d ] in: \"%s\" at line: %d.\n\t Max allocation: [ %d ] in file \"%s\" at line: %d\n\n",
+            "[ %9.2f ] : New allocation [ %ud ] in: \"%s\" at line: %d.\n\t Max allocation: [ %d ] in file \"%s\" at line: %d\n\n",
             GETTIME(), t, zFile, nLine, Divide::Memory::maxAlloc, Divide::Memory::zMaxFile, Divide::Memory::nMaxLine);
 
     Application::getInstance().logMemoryOperation(true, Divide::Memory::outputLogBuffer, t);
 }
 
-
 void log_delete(size_t t,char* zFile, I32 nLine){
 
     sprintf(Divide::Memory::outputLogBuffer,
-            "[ %9.2f ] : New deallocation [ %d ] in: \"%s\" at line: %d.\n\n",
+            "[ %9.2f ] : New deallocation [ %ud ] in: \"%s\" at line: %d.\n\n",
             GETTIME(), t, zFile, nLine);
     Application::getInstance().logMemoryOperation(false, Divide::Memory::outputLogBuffer, t);
 }

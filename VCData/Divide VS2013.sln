@@ -21,6 +21,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Hardware", "VisualStudioProjects\Divide-Hardware.vcxproj", "{CE681ABE-38E0-4445-92A0-0F17EE225473}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Client", "VisualStudioProjects\DIVIDE_VS2013.vcxproj", "{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1ED21303-434E-46DA-8050-2DF2684BE74E} = {1ED21303-434E-46DA-8050-2DF2684BE74E}
+		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C} = {9D7BBBC8-E5CF-475D-8531-4520B605833C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -95,5 +100,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

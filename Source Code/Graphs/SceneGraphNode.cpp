@@ -1,5 +1,4 @@
 #include "Headers/SceneGraph.h"
-#include "Headers/SceneGraphNode.h"
 
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Math/Headers/Transform.h"
@@ -16,11 +15,13 @@
 #pragma message("               - premultiply positions AND normals AND tangents AND bitangets to avoid artifacts")
 #pragma message("               - Ionut")
 
-SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
+SceneGraphNode::SceneGraphNode(SceneNode* const node) : GUIDWrapper(),
+                                                  _node(node),
                                                   _elapsedTime(0ULL),
                                                   _parent(nullptr),
                                                   _transform(nullptr),
                                                   _transformPrevious(nullptr),
+                                                  _animationComponent(nullptr),
                                                   _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
@@ -42,15 +43,12 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _navigationContext(NODE_IGNORE),
                                                   _physicsCollisionGroup(NODE_COLLIDE_IGNORE)
 {
-    _animationTransforms.clear();
-    _animationTransforms.reserve(40);
     assert(_node != nullptr);
 }
 
 ///If we are destroyng the current graph node
 SceneGraphNode::~SceneGraphNode(){
-    if(_loaded)
-        unload();
+    unload();
 
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     //delete children nodes recursively
@@ -60,6 +58,7 @@ SceneGraphNode::~SceneGraphNode(){
 
     //and delete the transform bound to this node
     SAFE_DELETE(_transform);
+    SAFE_DELETE(_animationComponent);
     _children.clear();
 }
 
@@ -92,6 +91,8 @@ const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {
 
 ///When unloading the current graph node
 bool SceneGraphNode::unload(){
+    if (!_loaded) return true;
+
     //Unload every sub node recursively
     FOR_EACH(NodeChildren::value_type& it, _children){
         it.second->unload();
@@ -283,20 +284,6 @@ void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<Sc
     }
 }
 
-const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
-    assert(_node != nullptr);
-
-    if(getNode<Object3D>()->getType() != Object3D::SUBMESH ||
-       (getNode<Object3D>()->getType() == Object3D::SUBMESH &&
-        getNode<Object3D>()->getFlag() != Object3D::OBJECT_FLAG_SKINNED) ||
-       _animationTransforms.empty()){
-        assert(getTransform());
-        return getTransform()->getMatrix();
-    }
-
-    return getNode<SkinnedSubMesh>()->getCurrentBoneTransform(this, name);
-}
-
 //This updates the SceneGraphNode's transform by deleting the old one first
 void SceneGraphNode::setTransform(Transform* const t) {
     SAFE_UPDATE(_transform,t);
@@ -380,4 +367,30 @@ void  SceneGraphNode::cookCollisionMesh(const std::string& sceneName) {
                                _usageContext == NODE_STATIC ? MASK_RIGID_STATIC : MASK_RIGID_DYNAMIC, 
                                _physicsCollisionGroup == NODE_COLLIDE_IGNORE ? GROUP_NON_COLLIDABLE : 
                                 (_physicsCollisionGroup == NODE_COLLIDE_NO_PUSH ? GROUP_COLLIDABLE_NON_PUSHABLE : GROUP_COLLIDABLE_PUSHABLE));
+}
+
+const mat4<F32>& SceneGraphNode::getBoneTransform(const std::string& name) {
+    assert(_node != nullptr);
+
+    if (getNode<Object3D>()->getType() != Object3D::SUBMESH ||
+        (getNode<Object3D>()->getType() == Object3D::SUBMESH &&  getNode<Object3D>()->getFlag() != Object3D::OBJECT_FLAG_SKINNED) ||
+        !_animationComponent || (_animationComponent && _animationComponent->animationTransforms().empty())){
+        assert(getTransform());
+        return getTransform()->getMatrix();
+    }
+
+    return _animationComponent->currentBoneTransform(name);
+}
+
+// update possible animations
+void SceneGraphNode::updateAnimations(){
+    if (!_animationComponent) return;
+
+    _animationComponent->updateAnimations(getElapsedTime());
+    getSceneNode()->updateAnimations(this);
+}
+
+void SceneGraphNode::setAnimationComponent(SceneAnimator* sceneAnimator) { 
+    SAFE_UPDATE(_animationComponent, New AnimationComponent(sceneAnimator, this));
+    _animationComponent->playAnimation(0); //<play the first animation
 }

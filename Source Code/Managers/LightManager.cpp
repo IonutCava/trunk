@@ -301,7 +301,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
     // create the light buffer for the specified node
     size_t maxLights = _tempLightsPerNode.size();
     CLAMP<size_t>(maxLights, 0, Config::MAX_LIGHTS_PER_SCENE_NODE);
-    for(U8 i = 0; i < maxLights; i++){
+    for(i = 0; i < maxLights; i++){
         _currLightsPerNode.push_back(_tempLightsPerNode[i]);
         _currLightTypes.push_back(_tempLightsPerNode[i]->getLightType());
         _currLightIndices.push_back(_tempLightsPerNode[i]->getSlot());

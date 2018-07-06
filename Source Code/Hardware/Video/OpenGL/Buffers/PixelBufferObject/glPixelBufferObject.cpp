@@ -135,8 +135,8 @@ bool glPixelBufferObject::Create(GLushort width, GLushort height,GLushort depth,
     void *pixels = nullptr;
 
     switch(_dataType){
+        default: pixels = New GLubyte[size]; break;
         case GL_FLOAT: pixels = New GLfloat[size]; break;
-        case GL_UNSIGNED_BYTE: pixels = New GLubyte[size]; break;
         case GL_UNSIGNED_INT: pixels = New GLuint[size]; break;
         case GL_UNSIGNED_SHORT: pixels = New GLushort[size]; break;
         case GL_BYTE: pixels = New GLbyte[size]; break;

@@ -26,10 +26,9 @@ out vec4 _skyColor;
 
 uniform bool enable_sun;
 uniform vec3 sun_vector;
-
+uniform vec3 sun_color;
 uniform samplerCube texSky;
 
-#include "lightInput.cmn"
 
 void main (void){
 
@@ -44,7 +43,7 @@ void main (void){
         float day_factor = max(-sun.y, 0.0);
         
         float dotv = max(dot(vert, -sun), 0.0);
-        vec3 sun_color = clamp(dvd_LightSource[0]._diffuse.rgb*1.5, 0.0, 1.0);
+        vec3 sun_color = clamp(sun_color*1.5, 0.0, 1.0);
     
         float pow_factor = day_factor * 175.0 + 25.0;
         float sun_factor = clamp(pow(dotv, pow_factor), 0.0, 1.0);

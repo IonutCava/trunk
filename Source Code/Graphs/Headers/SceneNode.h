@@ -114,6 +114,7 @@ protected:
     inline I8   getReferenceCount() const {return _sgnReferenceCount;}
     inline void incReferenceCount()       {_sgnReferenceCount++;}
     inline void decReferenceCount()       {_sgnReferenceCount--;}
+    virtual void updateAnimations(SceneGraphNode* const sgn) {}
 
 protected:
     ShaderProgram*        _customShader;

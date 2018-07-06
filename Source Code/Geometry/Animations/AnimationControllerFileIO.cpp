@@ -118,7 +118,7 @@ void SceneAnimator::Load(std::ifstream& file){
 	for(uint32_t i(0); i< _animations.size(); i++){// get all the animation names so I can reference them by name and get the correct id
 		_animationNameToId.insert(Unordered_map<std::string, uint32_t>::value_type(_animations[i]._name, i));
 	}
-	if(_animations.size() >0) _currentAnimIndex =0;// set it to the first animation if there are any
+
 	char bname[250];
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(uint32_t));// the number of bones
 	_bones.resize(nsize);
@@ -136,12 +136,11 @@ void SceneAnimator::Load(std::ifstream& file){
 	_transforms.resize( _bones.size());
 	F32 timestep = 1.0f/(F32)ANIMATION_TICKS_PER_SECOND;// 25.0f per second
 	for(size_t i(0); i< _animations.size(); i++){// pre calculate the animations
-		SetAnimIndex((I32)i);
 		F32 dt = 0;
 		mat4<F32> rotationmat;
 		for(F32 ticks = 0; ticks < _animations[i]._duration; ticks += _animations[i]._ticksPerSecond/ANIMATION_TICKS_PER_SECOND){
 			dt +=timestep;
-			Calculate(dt);
+            Calculate((I32)i, dt);
 			_animations[i]._transforms.push_back(vectorImpl<mat4<F32> >());
 			vectorImpl<mat4<F32> >& trans = _animations[i]._transforms.back();
 			for( size_t a = 0; a < _transforms.size(); ++a){

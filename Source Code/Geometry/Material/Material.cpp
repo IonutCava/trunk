@@ -51,23 +51,12 @@ Material::Material() : Resource(),
    stateDescriptor.setColorWrites(true,true,false,false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(stateDescriptor)));
    
-
     assert(_defaultRenderStates[FINAL_STAGE] != nullptr);
     assert(_defaultRenderStates[Z_PRE_PASS_STAGE] != nullptr);
     assert(_defaultRenderStates[SHADOW_STAGE] != nullptr);
     assert(_defaultRenderStates[REFLECTION_STAGE] != nullptr);
 
-    _shaderRef[FINAL_STAGE] = nullptr;
-    _shaderRef[Z_PRE_PASS_STAGE] = nullptr;
-    _shaderRef[SHADOW_STAGE] = nullptr;
-
-    _computedShader[0] = false;
-    _computedShader[1] = false;
-    _computedShader[2] = false;
     _computedShaderTextures = false;
-    _matId[0].i = 0;
-    _matId[1].i = 0;
-    _matId[2].i = 0;
 }
 
 Material::~Material(){
@@ -101,7 +90,7 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
         }
     }else{
         //if we add a new type of texture
-        _computedShader[0] = false; //recompute shaders on texture change
+        _shaderInfo[FINAL_STAGE]._computedShader = false; //recompute shaders on texture change
     }
     _textures[textureUsageSlot] = texture;
 
@@ -120,26 +109,25 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
 
 //Here we set the shader's name
 ShaderProgram* Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
-    ShaderProgram* shaderReference = _shaderRef[renderStage];
-    U8 id = (renderStage == FINAL_STAGE ? 0 : (renderStage == Z_PRE_PASS_STAGE ? 1 : 2));
+    ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
-    if(!_shader[id].empty()){
+    if (!_shaderInfo[renderStage]._shader.empty()){
         //and we are trying to assing the same one again, return.
-        shaderReference = FindResourceImpl<ShaderProgram>(_shader[id]);
-        if(_shader[id].compare(shader) == 0){
+        shaderReference = FindResourceImpl<ShaderProgram>(_shaderInfo[renderStage]._shader);
+        if (_shaderInfo[renderStage]._shader.compare(shader) == 0){
             return shaderReference;
         }else{
-            PRINT_FN(Locale::get("REPLACE_SHADER"),_shader[id].c_str(),shader.c_str());
+            PRINT_FN(Locale::get("REPLACE_SHADER"), _shaderInfo[renderStage]._shader.c_str(), shader.c_str());
             RemoveResource(shaderReference);
         }
     }
 
-    (!shader.empty()) ? _shader[id] = shader : _shader[id] = "NULL_SHADER";
+    (!shader.empty()) ? _shaderInfo[renderStage]._shader = shader : _shaderInfo[renderStage]._shader = "NULL_SHADER";
 
-    ResourceDescriptor shaderDescriptor(_shader[id]);
+    ResourceDescriptor shaderDescriptor(_shaderInfo[renderStage]._shader);
     std::stringstream ss;
-    if(!_shaderDefines[id].empty()){
-        FOR_EACH(std::string& shaderDefine, _shaderDefines[id]){
+    if (!_shaderInfo[renderStage]._shaderDefines.empty()){
+        FOR_EACH(std::string& shaderDefine, _shaderInfo[renderStage]._shaderDefines){
             ss << shaderDefine;
             ss << ",";
         }
@@ -150,9 +138,9 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
     shaderReference = CreateResource<ShaderProgram>(shaderDescriptor);
     
     _dirty = true;
-    _computedShader[id] = true;
+    _shaderInfo[renderStage]._computedShader = true;
     _computedShaderTextures = true;
-    _shaderRef[renderStage] = shaderReference;
+    _shaderInfo[renderStage]._shaderRef = shaderReference;
 
     return shaderReference;
 }
@@ -160,9 +148,9 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 void Material::clean() {
     if(_dirty){
         isTranslucent();
-        _matId[0].i = (_shaderRef[FINAL_STAGE] != nullptr ?  _shaderRef[FINAL_STAGE]->getId() : 0);
-        _matId[1].i = (_shaderRef[Z_PRE_PASS_STAGE] != nullptr ?  _shaderRef[Z_PRE_PASS_STAGE]->getId() : 0);
-        _matId[2].i = (_shaderRef[SHADOW_STAGE] != nullptr ?  _shaderRef[SHADOW_STAGE]->getId() : 0);
+        _shaderInfo[FINAL_STAGE]._matId.i = (_shaderInfo[FINAL_STAGE]._shaderRef != nullptr ? _shaderInfo[FINAL_STAGE]._shaderRef->getId() : 0);
+        _shaderInfo[Z_PRE_PASS_STAGE]._matId.i = (_shaderInfo[Z_PRE_PASS_STAGE]._shaderRef != nullptr ? _shaderInfo[Z_PRE_PASS_STAGE]._shaderRef->getId() : 0);
+        _shaderInfo[SHADOW_STAGE]._matId.i = (_shaderInfo[SHADOW_STAGE]._shaderRef != nullptr ? _shaderInfo[SHADOW_STAGE]._shaderRef->getId() : 0);
         dumpToXML();
        _dirty = false;
     }
@@ -175,9 +163,8 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
     bool depthPassShader = renderStage == SHADOW_STAGE || renderStage == Z_PRE_PASS_STAGE;
     //bool forwardPassShader = !deferredPassShader && !depthPassShader;
 
-    U8 id = (renderStage == FINAL_STAGE ? 0 : (renderStage == Z_PRE_PASS_STAGE ? 1 : 2));
-    if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
-    if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
+    if(_shaderInfo[renderStage]._computedShader && !force && (renderStage == FINAL_STAGE && _computedShaderTextures)) return;
+    if(_shaderInfo[renderStage]._shader.empty() || (renderStage == FINAL_STAGE && !_computedShaderTextures)){
         //the base shader is either for a Deferred Renderer or a Forward  one ...
         std::string shader = (deferredPassShader ? "DeferredShadingPass1" : (depthPassShader ? "depthPass" : "lighting"));
 
@@ -188,14 +175,14 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
         if(_textures[TEXTURE_UNIT0]){
             //Bump mapping?
             if(_textures[TEXTURE_NORMALMAP] && _bumpMethod != BUMP_NONE){
-                addShaderDefines(id, "COMPUTE_TBN");
+                addShaderDefines(renderStage, "COMPUTE_TBN");
                 shader += ".Bump"; //Normal Mapping
                 if(_bumpMethod == 2){ //Parallax Mapping
                     shader += ".Parallax";
-                    addShaderDefines(id, "USE_PARALLAX_MAPPING");
+                    addShaderDefines(renderStage, "USE_PARALLAX_MAPPING");
                 }else if(_bumpMethod == 3){ //Relief Mapping
                     shader += ".Relief";
-                    addShaderDefines(id, "USE_RELIEF_MAPPING");
+                    addShaderDefines(renderStage, "USE_RELIEF_MAPPING");
                 }
             }else{
                 // Or simple texture mapping?
@@ -207,42 +194,42 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             switch(_translucencySource){
                 case TRANSLUCENT_DIFFUSE :{
                     shader += ".OpacityDiffuse";
-                    addShaderDefines(id, "USE_OPACITY_DIFFUSE");
+                    addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE");
                 }break;
                 case TRANSLUCENT_OPACITY :{
                     shader += ".Opacity";
-                    addShaderDefines(id, "USE_OPACITY");
+                    addShaderDefines(renderStage, "USE_OPACITY");
                 }break;
                 case TRANSLUCENT_OPACITY_MAP :{
                     shader += ".OpacityMap";
-                    addShaderDefines(id, "USE_OPACITY_MAP");
+                    addShaderDefines(renderStage, "USE_OPACITY_MAP");
                 }break;
                 case TRANSLUCENT_DIFFUSE_MAP :{
                     shader += ".OpacityDiffuseMap";
-                    addShaderDefines(id, "USE_OPACITY_DIFFUSE_MAP");
+                    addShaderDefines(renderStage, "USE_OPACITY_DIFFUSE_MAP");
                 }break;
             }
         }
 
         if(_textures[TEXTURE_SPECULAR]){
             shader += ".Specular";
-            addShaderDefines(id, "USE_SPECULAR_MAP");
+            addShaderDefines(renderStage, "USE_SPECULAR_MAP");
         }
         //if this is true, geometry shader will take a triangle strip as input, else it will use triangles
         if(_gsInputType == GS_TRIANGLES){
             shader += ".Triangles";
-            addShaderDefines(id, "USE_GEOMETRY_TRIANGLE_INPUT");
+            addShaderDefines(renderStage, "USE_GEOMETRY_TRIANGLE_INPUT");
         }else if(_gsInputType == GS_LINES){
             shader += ".Lines";
-            addShaderDefines(id, "USE_GEOMETRY_LINE_INPUT");
+            addShaderDefines(renderStage, "USE_GEOMETRY_LINE_INPUT");
         }else{
             shader += ".Points";
-            addShaderDefines(id, "USE_GEOMETRY_POINT_INPUT");
+            addShaderDefines(renderStage, "USE_GEOMETRY_POINT_INPUT");
         }
 
         //Add the GPU skinnig module to the vertex shader?
         if(_hardwareSkinning){
-            addShaderDefines(id, "USE_GPU_SKINNING");
+            addShaderDefines(renderStage, "USE_GPU_SKINNING");
             shader += ",Skinned"; //<Use "," instead of "." will add a Vertex only property
         }
 
@@ -257,7 +244,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 }
 
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
-    ShaderProgram* shaderPtr = _shaderRef[renderStage];
+    ShaderProgram* shaderPtr = _shaderInfo[renderStage]._shaderRef;
     return shaderPtr == nullptr ? ShaderManager::getInstance().getDefaultShader() : shaderPtr;
 }
 
@@ -272,7 +259,7 @@ void Material::setBumpMethod(U32 newBumpMethod,bool force){
         _bumpMethod = BUMP_RELIEF;
     }
     if(force){
-        _shader[FINAL_STAGE].clear();
+        _shaderInfo[FINAL_STAGE]._shader.clear();
         computeShader(true);
     }
 }
@@ -280,28 +267,8 @@ void Material::setBumpMethod(U32 newBumpMethod,bool force){
 void Material::setBumpMethod(const BumpMethod& newBumpMethod,const bool force){
     _bumpMethod = newBumpMethod;
     if(force){
-        _shader[FINAL_STAGE].clear();
+        _shaderInfo[FINAL_STAGE]._shader.clear();
         computeShader(true);
-    }
-}
-
-void Material::addShaderModifier(const std::string& shaderModifier,bool force) {
-    _shaderModifier = shaderModifier;
-    if(force){
-        _shader[FINAL_STAGE].clear();
-        computeShader(true);
-    }
-}
-
-void Material::addShaderDefines(U8 shaderId, const std::string& shaderDefines, bool force) {
-    _shaderDefines[shaderId].push_back(shaderDefines);
-    if(force){
-        _shader[FINAL_STAGE].clear();
-        _shader[SHADOW_STAGE].clear();
-        _shader[Z_PRE_PASS_STAGE].clear();
-        computeShader(true);
-        computeShader(true,SHADOW_STAGE);
-        computeShader(true,Z_PRE_PASS_STAGE);
     }
 }
 
@@ -372,8 +339,4 @@ bool Material::isTranslucent(U8 index) {
         _translucencyCheck = true;
     }
     return state;
-}
-
-P32 Material::getMaterialId(const RenderStage& renderStage){
-    return _matId[renderStage == FINAL_STAGE ? 0 : 1];
 }

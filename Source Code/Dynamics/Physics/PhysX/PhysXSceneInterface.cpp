@@ -23,7 +23,7 @@ bool PhysXSceneInterface::init(){
     }
 
     PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());
-    sceneDesc.gravity = PxVec3(0.0f, -9.8f, 0.0f);
+    sceneDesc.gravity = PxVec3(DEFAULT_GRAVITY.x, DEFAULT_GRAVITY.y, DEFAULT_GRAVITY.z);
     if(!sceneDesc.cpuDispatcher) {
         _cpuDispatcher = PxDefaultCpuDispatcherCreate(3);
         if(!_cpuDispatcher){
@@ -109,7 +109,9 @@ void PhysXSceneInterface::update(const U64 deltaTime){
 }
 
 #pragma message("ToDo: Add a better synchronization method between SGN's transform and PhysXActor's pose!! -Ionut")
-
+namespace {
+    PxShape* g_shapes[2048];// = New PxShape*[nShapes];
+}
 void PhysXSceneInterface::updateActor(const PhysXActor& actor){
     if(actor._transform->isPhysicsDirty()){
 
@@ -124,12 +126,11 @@ void PhysXSceneInterface::updateActor(const PhysXActor& actor){
     }else{
 
         PxU32 nShapes = actor._actor->getNbShapes();
-        PxShape* shapes[2048];// = New PxShape*[nShapes];
         assert(nShapes < 2048);
-        actor._actor->getShapes(shapes, nShapes);
+        actor._actor->getShapes(g_shapes, nShapes);
 
         while(nShapes--)  
-            updateShape(shapes[nShapes], actor);
+            updateShape(g_shapes[nShapes], actor);
         
         //SAFE_DELETE_ARRAY(shapes);
     }

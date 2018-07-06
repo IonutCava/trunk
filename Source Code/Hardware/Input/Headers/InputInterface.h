@@ -315,9 +315,7 @@ public:
         OIS::ParamList pl;
 #if defined OIS_WIN32_PLATFORM
       // Create OIS input manager
-        std::ostringstream wnd;
-        wnd << windowId;
-        pl.insert(std::make_pair(std::string("WINDOW"), wnd.str() ));
+        pl.insert(std::make_pair(std::string("WINDOW"), Util::toString(windowId)));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
         pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
         pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND")));

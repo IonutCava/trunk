@@ -45,12 +45,13 @@ public:
 
 namespace Util
 {
-	template<class T>
-	string toString(T data)
-	{
-		stringstream s;
-		s << data;
-		return s.str();
-	}
+    static std::stringstream _tempStream;
+    template<class T>
+    string toString(T data)
+    {
+        _tempStream.clear();
+        s << data;
+        return s.str();
+    }
 }
 #endif

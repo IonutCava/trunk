@@ -37,6 +37,7 @@ enum RenderStage;
 enum BlendProperty;
 class Material : public Resource {
 public:
+    /// ShaderData stores information needed by the shader code to properly shade objects
     struct ShaderData{
         vec4<F32> _diffuse;  /* diffuse component */
         vec4<F32> _ambient;  /* ambient component */
@@ -47,105 +48,123 @@ public:
         I32 _textureCount;
 
         ShaderData() : _textureCount(0),
-                       _ambient(vec4<F32>(vec3<F32>(1.0f)/5.0f,1)),
-                       _diffuse(vec4<F32>(vec3<F32>(1.0f)/1.5f,1)),
-                       _specular(0.8f,0.8f,0.8f,1.0f),
-                       _emissive(0.6f,0.6f,0.6f,1.0f),
-                       _shininess(5),
-                       _opacity(1.0f) {}
+            _ambient(vec4<F32>(vec3<F32>(1.0f) / 5.0f, 1)),
+            _diffuse(vec4<F32>(vec3<F32>(1.0f) / 1.5f, 1)),
+            _specular(0.8f, 0.8f, 0.8f, 1.0f),
+            _emissive(0.6f, 0.6f, 0.6f, 1.0f),
+            _shininess(5),
+            _opacity(1.0f) {}
     };
 
-  enum BumpMethod {
-      BUMP_NONE = 0,   //<Use phong
-      BUMP_NORMAL = 1, //<Normal mapping
-      BUMP_PARALLAX = 2,
-      BUMP_RELIEF = 3,
-      BUMP_PLACEHOLDER = 4
-  };
+    /// ShaderInfo stores information about the shader programs used by this material
+    struct ShaderInfo {
+        ShaderProgram* _shaderRef;
+        std::string _shader;
+        bool _computedShader;
+        vectorImpl<std::string> _shaderDefines;
+        P32 _matId;
 
-  enum TextureUsage {
-      TEXTURE_NORMALMAP = 0,
-      TEXTURE_OPACITY = 1,
-      TEXTURE_SPECULAR = 2,
-      TEXTURE_UNIT0 = 3
-  };
+        ShaderInfo()
+        {
+            _shaderRef = nullptr;
+            _shader = "";
+            _computedShader = false;
+            _matId.i = 0;
+        }
+    };
 
-  /// How should each texture be added
-  enum TextureOperation {
-    TextureOperation_Multiply    = 0x0,
-    TextureOperation_Add         = 0x1,
-    TextureOperation_Subtract    = 0x2,
-    TextureOperation_Divide      = 0x3,
-    TextureOperation_SmoothAdd   = 0x4,
-    TextureOperation_SignedAdd   = 0x5,
-    TextureOperation_Combine     = 0x6,
-    TextureOperation_Decal       = 0x7,
-    TextureOperation_Blend       = 0x8,
-    TextureOperation_Replace     = 0x9,
-    TextureOperation_PLACEHOLDER = 0x10
-  };
+    enum BumpMethod {
+        BUMP_NONE = 0,   //<Use phong
+        BUMP_NORMAL = 1, //<Normal mapping
+        BUMP_PARALLAX = 2,
+        BUMP_RELIEF = 3,
+        BUMP_PLACEHOLDER = 4
+    };
 
-  enum GeometryShaderType {
-      GS_TRIANGLES = 0,
-      GS_LINES,
-      GS_POINTS
-  };
+    enum TextureUsage {
+        TEXTURE_NORMALMAP = 0,
+        TEXTURE_OPACITY = 1,
+        TEXTURE_SPECULAR = 2,
+        TEXTURE_UNIT0 = 3
+    };
 
-  enum TranslucencySource {
-      TRANSLUCENT_DIFFUSE = 0,
-      TRANSLUCENT_OPACITY,
-      TRANSLUCENT_OPACITY_MAP,
-      TRANSLUCENT_DIFFUSE_MAP,
-      TRANSLUCENT_NONE
-  };
-  /// Not used yet but implemented for shading model selection in shaders
-  /// This enum matches the ASSIMP one on a 1-to-1 basis
-  enum ShadingMode {
-    SHADING_FLAT          = 0x1,
-    SHADING_GOURAUD       = 0x2,
-    SHADING_PHONG         = 0x3,
-    SHADING_BLINN         = 0x4,
-    SHADING_TOON          = 0x5,
-    SHADING_OREN_NAYAR    = 0x6,
-    SHADING_MINNAERT      = 0x7,
-    SHADING_COOK_TORRANCE = 0x8,
-    SHADING_NONE          = 0x9,
-    SHADING_FRESNEL       = 0xa
-  };
+    /// How should each texture be added
+    enum TextureOperation {
+        TextureOperation_Multiply = 0x0,
+        TextureOperation_Add = 0x1,
+        TextureOperation_Subtract = 0x2,
+        TextureOperation_Divide = 0x3,
+        TextureOperation_SmoothAdd = 0x4,
+        TextureOperation_SignedAdd = 0x5,
+        TextureOperation_Combine = 0x6,
+        TextureOperation_Decal = 0x7,
+        TextureOperation_Blend = 0x8,
+        TextureOperation_Replace = 0x9,
+        TextureOperation_PLACEHOLDER = 0x10
+    };
+
+    enum GeometryShaderType {
+        GS_TRIANGLES = 0,
+        GS_LINES,
+        GS_POINTS
+    };
+
+    enum TranslucencySource {
+        TRANSLUCENT_DIFFUSE = 0,
+        TRANSLUCENT_OPACITY,
+        TRANSLUCENT_OPACITY_MAP,
+        TRANSLUCENT_DIFFUSE_MAP,
+        TRANSLUCENT_NONE
+    };
+    /// Not used yet but implemented for shading model selection in shaders
+    /// This enum matches the ASSIMP one on a 1-to-1 basis
+    enum ShadingMode {
+        SHADING_FLAT = 0x1,
+        SHADING_GOURAUD = 0x2,
+        SHADING_PHONG = 0x3,
+        SHADING_BLINN = 0x4,
+        SHADING_TOON = 0x5,
+        SHADING_OREN_NAYAR = 0x6,
+        SHADING_MINNAERT = 0x7,
+        SHADING_COOK_TORRANCE = 0x8,
+        SHADING_NONE = 0x9,
+        SHADING_FRESNEL = 0xa,
+        ShadingMode_PLACEHOLDER = 0xb
+    };
 
 public:
     Material();
     ~Material();
 
     bool unload();
-    
-    inline void setAmbient(const vec4<F32>& value, U8 index = 0)  {_dirty = true; _shaderData[index]._ambient = value;  _materialMatrix[index].setCol(0,value);}
-    inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  {_dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1,value);}
-    inline void setSpecular(const vec4<F32>& value, U8 index = 0) {_dirty = true; _shaderData[index]._specular = value; _materialMatrix[index].setCol(2,value);}
-    inline void setEmissive(const vec3<F32>& value, U8 index = 0) {_dirty = true; _shaderData[index]._emissive = value; _materialMatrix[index].setCol(3,vec4<F32>(_shaderData[index]._shininess,value.x,value.y,value.z));}
 
-    inline void setGeometryInputType(GeometryShaderType gsType)   {_dirty = true; _gsInputType = gsType;}
-    inline void setHardwareSkinning(const bool state) {_dirty = true; _hardwareSkinning = state;}
-    inline void setOpacity(F32 value, U8 index = 0)   {_dirty = true; _shaderData[index]._opacity = value;}
+    inline void setAmbient(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._ambient = value;  _materialMatrix[index].setCol(0, value); }
+    inline void setDiffuse(const vec4<F32>& value, U8 index = 0)  { _dirty = true; _shaderData[index]._diffuse = value;  _materialMatrix[index].setCol(1, value); }
+    inline void setSpecular(const vec4<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._specular = value; _materialMatrix[index].setCol(2, value); }
+    inline void setEmissive(const vec3<F32>& value, U8 index = 0) { _dirty = true; _shaderData[index]._emissive = value; _materialMatrix[index].setCol(3, vec4<F32>(_shaderData[index]._shininess, value.x, value.y, value.z)); }
+
+    inline void setGeometryInputType(GeometryShaderType gsType)   { _dirty = true; _gsInputType = gsType; }
+    inline void setHardwareSkinning(const bool state) { _dirty = true; _hardwareSkinning = state; }
+    inline void setOpacity(F32 value, U8 index = 0)   { _dirty = true; _shaderData[index]._opacity = value; }
     inline void setShininess(F32 value, U8 index = 0) {
         _dirty = true;
         _shaderData[index]._shininess = value;
-        _materialMatrix[index].setCol(3,vec4<F32>(value, _shaderData[index]._emissive.x,
-                                                         _shaderData[index]._emissive.y,
-                                                         _shaderData[index]._emissive.z));
+        _materialMatrix[index].setCol(3, vec4<F32>(value, _shaderData[index]._emissive.x,
+            _shaderData[index]._emissive.y,
+            _shaderData[index]._emissive.z));
     }
-    
-    inline void useAlphaTest(const bool state)          {_useAlphaTest = state;}
-    inline void setShadingMode(const ShadingMode& mode) {_shadingMode = mode;}
+
+    inline void useAlphaTest(const bool state)          { _useAlphaTest = state; }
+    inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state);
     void setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
     ///Set the desired bump mapping method. If force == true, the shader is updated immediately
-    void setBumpMethod(const BumpMethod& newBumpMethod,const bool force = false);
-    void setBumpMethod(U32 newBumpMethod,const bool force = false);
+    void setBumpMethod(const BumpMethod& newBumpMethod, const bool force = false);
+    void setBumpMethod(U32 newBumpMethod, const bool force = false);
     ///Shader modifiers add tokens to the end of the shader name.
     ///Add as many tokens as needed but separate them with a ".". i.e: "Tree.NoWind.Glow"
-    void addShaderModifier(const std::string& shaderModifier,const bool force = false);
+    inline void addShaderModifier(const std::string& shaderModifier) { _shaderModifier = shaderModifier; }
     ///Shader defines, separated by commas, are added to the generated shader
     ///The shader generator appends "#define " to the start of each define
     ///For example, to define max light count and max shadow casters add this string:
@@ -153,10 +172,13 @@ public:
     ///The above strings becomes, in the shader:
     ///#define MAX_LIGHT_COUNT 4
     ///#define MAX_SHADOW_CASTERS 2
-    void addShaderDefines(U8 shaderId, const std::string& shaderDefines,const bool force = false);
-    inline void addShaderDefines(const std::string& shaderDefines,const bool force = false)	{
-        addShaderDefines(0, shaderDefines,force);
-        addShaderDefines(1, shaderDefines,force);
+    inline void addShaderDefines(RenderStage renderStage, const std::string& shaderDefines) {
+        _shaderInfo[renderStage]._shaderDefines.push_back(shaderDefines);
+    }
+    inline void addShaderDefines(const std::string& shaderDefines)	{
+        addShaderDefines(FINAL_STAGE, shaderDefines);
+        addShaderDefines(Z_PRE_PASS_STAGE, shaderDefines);
+        addShaderDefines(SHADOW_STAGE, shaderDefines);
     }
 
     ///toggle multi-threaded shader loading on or off for this material
@@ -164,7 +186,7 @@ public:
     ShaderProgram*    setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
     RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
 
-    P32 getMaterialId(const RenderStage& renderStage = FINAL_STAGE);
+    inline P32 getMaterialId(const RenderStage& renderStage = FINAL_STAGE) { return _shaderInfo[renderStage]._matId; }
 
     inline const mat4<F32>& getMaterialMatrix(U8 index = 0)  const {return _materialMatrix[index];}
                
@@ -200,20 +222,16 @@ private:
     ShadingMode _shadingMode;
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
     TranslucencySource _translucencySource;
-    vectorImpl<std::string > _shaderDefines[3]; //<Add shader preprocessor defines;
     bool _dirty;
     bool _translucencyCheck;
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
     bool _hardwareSkinning;     ///< Use shaders that have bone transforms implemented
     GeometryShaderType _gsInputType;        ///< Use triangles, lines or points as geometry shader input
-    Unordered_map<RenderStage, ShaderProgram* > _shaderRef;
-    ///Unordered maps have a lot of overhead, so use _shader[0] for final_stage, _shader[1] for z pre pass, _shader[2] for shadow stage, etc
-    std::string _shader[3]; /*shader name*/
+    Unordered_map<RenderStage, ShaderInfo > _shaderInfo;
+
     bool        _shaderThreadedLoad;
-    bool        _computedShader[3];
     bool        _computedShaderTextures;//<if we should recompute only fragment shader on texture change
-    P32         _matId[3];
     /// use this map to add more render states mapped to a specific state
     /// 3 render state's: Normal, reflection and shadow
     Unordered_map<RenderStage, RenderStateBlock* > _defaultRenderStates;

@@ -367,7 +367,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     _queryBackBuffer = 0;
     _queryFrontBuffer = 1;
     for(U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i)
-        for(U8 j = 0; PERFORMANCE_COUNTERS < 1; ++j)
+        for(U8 j = 0; j < PERFORMANCE_COUNTERS; ++j)
             _queryID[i][j] = 0;
 
     GLCheck(glGenQueries(PERFORMANCE_COUNTERS, _queryID[_queryBackBuffer]));

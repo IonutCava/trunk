@@ -33,26 +33,26 @@ void CubeScene::processTasks(const U64 deltaTime){
     Scene::processTasks(deltaTime);
 }
 
-I8 j = 1;
-F32 i = 0;
+I8 g_j = 1;
+F32 g_i = 0;
 bool _switch = false;
 void CubeScene::preRender() {
-    if(i >= 360) _switch = true;
-    else if(i <= 0) _switch = false;
+    if(g_i >= 360) _switch = true;
+    else if(g_i <= 0) _switch = false;
 
-    if(!_switch) i += 0.1f;
-    else i -= 0.1f;
+    if(!_switch) g_i += 0.1f;
+    else g_i -= 0.1f;
 
-    i >= 180 ? j = -1 : j = 1;
+    g_i >= 180 ? g_j = -1 : g_j = 1;
 
     SceneGraphNode* cutia1 = _sceneGraph->findNode("Cutia1");
     SceneGraphNode* hellotext = _sceneGraph->findNode("HelloText");
     SceneGraphNode* bila = _sceneGraph->findNode("Bila");
     SceneGraphNode* dwarf = _sceneGraph->findNode("dwarf");
-    cutia1->getTransform()->rotateEuler(vec3<F32>(0.3f*i, 0.6f*i,0));
-    hellotext->getTransform()->rotate(vec3<F32>(0.6f,0.2f,0.4f),i);
-    bila->getTransform()->translateY(j*0.25f);
-    dwarf->getTransform()->rotate(vec3<F32>(0,1,0),i);
+    cutia1->getTransform()->rotateEuler(vec3<F32>(0.3f*g_i, 0.6f*g_i,0));
+    hellotext->getTransform()->rotate(vec3<F32>(0.6f,0.2f,0.4f),g_i);
+    bila->getTransform()->translateY(g_j*0.25f);
+    dwarf->getTransform()->rotate(vec3<F32>(0,1,0),g_i);
 }
 
 void CubeScene::processInput(const U64 deltaTime){

@@ -9,6 +9,7 @@ vec3<F32> WORLD_Z_AXIS = vec3<F32>(0.0f,0.0f,1.0f);
 vec3<F32> WORLD_X_NEG_AXIS = vec3<F32>(-1.0f,0.0f,0.0f);
 vec3<F32> WORLD_Y_NEG_AXIS = vec3<F32>(0.0f,-1.0f,0.0f);
 vec3<F32> WORLD_Z_NEG_AXIS = vec3<F32>(0.0f,0.0f,-1.0f);
+vec3<F32> DEFAULT_GRAVITY = vec3<F32>(0.0f, -9.81f, 0.0f);
 
 vec2<I32> iVECTOR2_ZERO = vec2<I32>(0);
 vec3<I32> iVECTOR3_ZERO = vec3<I32>(0);

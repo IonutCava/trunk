@@ -27,6 +27,7 @@
 
 #include "SceneNode.h"
 #include <boost/atomic.hpp>
+#include "Geometry/Animations/Headers/AnimationComponent.h"
 
 class Transform;
 class SceneGraph;
@@ -64,7 +65,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 };
 
-class SceneGraphNode : private boost::noncopyable {
+class SceneGraphNode : public GUIDWrapper, private boost::noncopyable{
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 
@@ -155,10 +156,6 @@ public:
     inline     void  silentDispose(const bool state)       {_silentDispose = state;}
     inline     void  useDefaultTransform(const bool state) {_noDefaultTransform = !state;}
 
-    // Animations (if needed)
-    const mat4<F32>& getBoneTransform(const std::string& name);
-    inline void animationTransforms(const vectorImpl<mat4<F32> >& animationTransforms)       {_animationTransforms = animationTransforms;}
-    inline const vectorImpl<mat4<F32> >& animationTransforms()                         const {return _animationTransforms;}
     /*Transform management*/
 
     /*Node State*/
@@ -194,6 +191,13 @@ public:
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}
 
     inline U64 getElapsedTime() const {return _elapsedTime;}
+
+    /// Animation calls
+    void updateAnimations();
+    void setAnimationComponent(SceneAnimator* animator);
+
+    inline AnimationComponent* const getAnimationComponent() const { return _animationComponent; }
+    const mat4<F32>& getBoneTransform(const std::string& name);
 
 private:
     inline void setName(const std::string& name){_name = name;}
@@ -241,9 +245,8 @@ private:
     UsageContext _usageContext;
     NavigationContext _navigationContext;
     bool              _overrideNavMeshDetail;
-    ///Animations (current and previous for interpolation)
-    vectorImpl<mat4<F32> > _animationTransforms;
-    vectorImpl<mat4<F32> > _animationTransformsPrev;
+
+    AnimationComponent* _animationComponent;
 };
 
 #endif

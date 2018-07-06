@@ -93,6 +93,7 @@ void Sky::prepareMaterial(SceneGraphNode* const sgn) {
         SET_STATE_BLOCK(_skyboxRenderState);
         _skyShader->Uniform("dvd_isReflection", true);
     }
+    _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
 }
 
 void Sky::releaseMaterial(){

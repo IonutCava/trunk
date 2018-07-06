@@ -40,10 +40,11 @@ public:
 
 namespace Util
 {
+    static std::stringstream _tempStream;
 	template<class T>
 	string toString(T data)
 	{
-		stringstream s;
+        _tempStream.clear();
 		s << data;
 		return s.str();
 	}

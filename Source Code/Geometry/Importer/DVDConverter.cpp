@@ -8,9 +8,10 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/SkinnedMesh.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
+#include "Geometry/Animations/Headers/AnimationController.h"
 
 DVDConverter::DVDConverter() : _loadcount(0), _init(false){
 }
@@ -118,7 +119,7 @@ Mesh* DVDConverter::load(const std::string& file){
             }//else the Resource manager created a copy of the material
             
             if(!tempMesh){
-                tempMesh = (skinnedSubMesh ? New SkinnedMesh() : New Mesh());
+                tempMesh = New Mesh(skinnedSubMesh ? Object3D::OBJECT_FLAG_SKINNED : Object3D::OBJECT_FLAG_NONE);
                 tempMesh->setName(_modelName);
                 tempMesh->setResourceLocation(_fileLocation);
             }
@@ -235,7 +236,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 
     if(_aiScenePointer->HasAnimations() && skinned){
         // create animator from current scene and current submesh pointer in that scene
-        dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->createAnimatorFromScene(_aiScenePointer,count);
+        dynamic_cast<SkinnedSubMesh*>(tempSubMesh)->getAnimator()->Init(_aiScenePointer, count);
     }
 
     if(source->mTextureCoords[0] != nullptr){

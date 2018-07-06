@@ -36,10 +36,17 @@ struct aiScene;
 class SceneAnimator{
 public:
 
-    SceneAnimator(): _skeleton(0), _currentAnimIndex(-1){}
-    ~SceneAnimator(){ Release(); }
+    SceneAnimator(): _skeleton(0)
+    {
+    }
+
+    ~SceneAnimator()
+    {
+        Release(); 
+    }
+
     /// this must be called to fill the SceneAnimator with valid data
-    void Init(const aiScene* pScene, U8 meshPointer);
+    bool Init(const aiScene* pScene, U8 meshPointer);
     ///Only called if the SceneGraph detected a transformation change
     inline void setGlobalMatrix(const mat4<F32>& matrix) {	_rootTransformRender = matrix; } // update root matrix for mesh;
     /// frees all memory and initializes everything to a default state
@@ -48,30 +55,40 @@ public:
     void Load(std::ifstream& file);
     /// lets the caller know if there is a skeleton present
     inline bool HasSkeleton() const { return !_bones.empty(); }
-    /// the set animation returns whether the animation changed or is still the same.
-    bool SetAnimIndex(I32 pAnimIndex);// this takes an index to set the current animation to
-    bool SetNextAnimation(); // loops through all available animations wrapping around if needed
-    bool SetAnimation(const std::string& name);// this takes a string to set the animation to, i.e. SetAnimation("Idle");
     /// the next two functions are good if you want to change the direction of the current animation. You could use a forward walking animation and reverse it to get a walking backwards
-    inline void PlayAnimationForward() { _animations[_currentAnimIndex]._playAnimationForward = true; }
-    inline void PlayAnimationBackward() { _animations[_currentAnimIndex]._playAnimationForward = false; }
+    inline void PlayAnimationForward(I32 animationIndex) { _animations[animationIndex]._playAnimationForward = true; }
+    inline void PlayAnimationBackward(I32 animationIndex) { _animations[animationIndex]._playAnimationForward = false; }
     ///this function will adjust the current animations speed by a percentage. So, passing 100, would do nothing, passing 50, would decrease the speed by half, and 150 increase it by 50%
-    inline void AdjustAnimationSpeedBy(const D32 percent) { _animations[_currentAnimIndex]._ticksPerSecond*=percent/100.0f; }
+    inline void AdjustAnimationSpeedBy(I32 animationIndex, const D32 percent) { _animations[animationIndex]._ticksPerSecond *= percent / 100.0f; }
     ///This will set the animation speed
-    inline void AdjustAnimationSpeedTo(const D32 tickspersecond) { _animations[_currentAnimIndex]._ticksPerSecond=tickspersecond; }
+    inline void AdjustAnimationSpeedTo(I32 animationIndex, const D32 tickspersecond) { _animations[animationIndex]._ticksPerSecond = tickspersecond; }
     /// get the animationspeed... in ticks per second
-    inline F32 GetAnimationSpeed() const { return _animations[_currentAnimIndex]._ticksPerSecond; }
+    inline F32 GetAnimationSpeed(I32 animationIndex) const { return _animations[animationIndex]._ticksPerSecond; }
     /// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
-    inline vectorImpl<mat4<F32> >& GetTransforms(const D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
-    inline vectorImpl<mat4<F32> >& GetTransformsByIndex(U32 index){ return _animations[_currentAnimIndex]._transforms[index]; }
-    inline U32 GetFrameIndex() const { return _animations[_currentAnimIndex].GetFrameIndex(); }
-    inline U32 GetFrameCount() const {return _animations[_currentAnimIndex].GetFrameCount(); }
-    inline U32 GetAnimationIndex() const { return _currentAnimIndex; }
-    inline std::string GetAnimationName() const { return _animations[_currentAnimIndex]._name;  }
+    inline vectorImpl<mat4<F32> >& GetTransforms(I32 animationIndex, const D32 dt){ return _animations[animationIndex].GetTransforms(dt); }
+    inline vectorImpl<mat4<F32> >& GetTransformsByIndex(I32 animationIndex, U32 index){ return _animations[animationIndex]._transforms[index]; }
+    inline U32 GetFrameIndex(I32 animationIndex) const { return _animations[animationIndex].GetFrameIndex(); }
+    inline U32 GetFrameCount(I32 animationIndex) const { return _animations[animationIndex].GetFrameCount(); }
+    inline const vectorImpl<AnimEvaluator>& GetAnimations() const { return _animations; }
+    inline const std::string& GetAnimationName(I32 animationIndex) const { return _animations[animationIndex]._name; }
+    inline bool GetAnimationID(const std::string& animationName, U32& id){
+        Unordered_map<std::string, U32>::iterator itr = _animationNameToId.find(animationName);
+        if (itr != _animationNameToId.end()) {
+            id = itr->second;
+            return true;
+        }
+        return false;
+    }
     ///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
-    inline const mat4<F32>& GetBoneTransform(const D32 dt,  const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return _cacheIdentity; return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, const std::string& bname) { 
+        I32 bindex = GetBoneIndex(bname);
+        if (bindex == -1) 
+            return _cacheIdentity;
+        return _animations[animationIndex].GetTransforms(dt)[bindex]; 
+    }
+
     /// same as above, except takes the index
-    inline const mat4<F32>& GetBoneTransform(const D32 dt,  U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+    inline const mat4<F32>& GetBoneTransform(I32 animationIndex, const D32 dt, U32 bindex) { return _animations[animationIndex].GetTransforms(dt)[bindex]; }
 	/// get the bone's global transform
 	inline const mat4<F32>& GetBoneOffsetTransform(const std::string& bname) {
 		I32 bindex=GetBoneIndex(bname);
@@ -85,7 +102,7 @@ public:
     Bone* GetBoneByName(const std::string& name) const;
 	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
     I32 GetBoneIndex(const std::string& bname) const;
-    I32 RenderSkeleton(const D32 dt);
+    I32 RenderSkeleton(I32 animationIndex, const D32 dt);
 
 private:
 
@@ -94,7 +111,7 @@ private:
     Bone* LoadSkeleton(std::ifstream& file, Bone* pNode);
 
     void UpdateTransforms(Bone* pNode);
-    void Calculate(const D32 pTime);
+    void Calculate(I32 animationIndex, const D32 pTime);
     void CalcBoneMatrices();
     /// Calculates the global transformation matrix for the given internal node
     void CalculateBoneToWorldTransform(Bone* pInternalNode);
@@ -102,11 +119,10 @@ private:
     /// Recursively creates an internal node structure matching the current scene and animation.
     Bone* CreateBoneTree( aiNode* pNode, Bone* parent);
 
-    I32 SubmitSkeletonToGPU(U32 frameIndex);
+    I32 SubmitSkeletonToGPU(I32 animationIndex, U32 frameIndex);
     I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vectorImpl<vec3<F32> >& pointsA, vectorImpl<vec3<F32> >& pointsB, vectorImpl<vec4<U8> >& colors);
 
 private:
-    I32 _currentAnimIndex;/** Current animation index */
     Bone* _skeleton;/** Root node of the internal scene structure */
 
     Unordered_map<std::string, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
@@ -117,9 +133,9 @@ private:
     vectorImpl<aiMatrix4x4 > _transforms;// temp array of transforms
 
     typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec3<F32> >> pointMap;
-    typedef Unordered_map<U32 /*animationId*/, pointMap > pointCollection;
+    typedef Unordered_map<U32/*animationId*/, pointMap > pointCollection;
     typedef Unordered_map<U32/*frameIndex*/, vectorImpl<vec4<U8> >> colorMap;
-    typedef Unordered_map<U32 /*animationId*/, colorMap > colorCollection;
+    typedef Unordered_map<U32/*animationId*/, colorMap > colorCollection;
     pointCollection _pointsA;
     pointCollection _pointsB;
     colorCollection _colors;

@@ -29,6 +29,7 @@
 
 #include "Bone.h"
 #include <assimp/anim.h>
+#include "Utility/Headers/UnorderedMap.h"
 
 class AnimationChannel{
 public:

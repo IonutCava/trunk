@@ -84,9 +84,9 @@ private:
     std::string _fileLocation;
     std::string _modelName;
     bool _init;
-    TextureWrap                aiTextureMapModeTable[4];
-    Material::ShadingMode      aiShadingModeInternalTable[10];
-    Material::TextureOperation aiTextureOperationTable[8];
+    TextureWrap                aiTextureMapModeTable[TextureWrap_PLACEHOLDER];
+    Material::ShadingMode      aiShadingModeInternalTable[Material::ShadingMode_PLACEHOLDER];
+    Material::TextureOperation aiTextureOperationTable[Material::TextureOperation_PLACEHOLDER];
 END_SINGLETON
 
 #endif

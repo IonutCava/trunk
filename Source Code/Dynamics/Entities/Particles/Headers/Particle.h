@@ -32,8 +32,8 @@ public:
     vec3<F32> pos, speed;
     vec4<U8> rgba;
     F32 size, angle, weight;
-    F32 life; // Remaining life of the particle. if < 0 : dead and unused.
-    F32 distanceToCamera;
+    F32 life; //< Remaining life of the particle. if < 0 : dead and unused.
+    F32 distanceToCamera; //< Distance squared
     bool operator<(ParticleDescriptor& that){
         // Sort in reverse order : far particles drawn first.
         return this->distanceToCamera > that.distanceToCamera;

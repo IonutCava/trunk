@@ -39,6 +39,8 @@ void Object3D::render(SceneGraphNode* const sgn){
 }
 
 void Object3D::onDraw(const RenderStage& currentStage){
+    if (getState() != RES_LOADED) return;
+
     SceneNode::onDraw(currentStage);
 
     //check if we need to update vbo shader

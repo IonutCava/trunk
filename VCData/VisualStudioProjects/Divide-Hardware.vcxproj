@@ -108,6 +108,7 @@
     <IntDir>$(Configuration)_Hardware\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)</OutDir>
@@ -171,7 +172,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
@@ -228,7 +229,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
@@ -281,7 +282,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code/Libs\src\GLIM;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost\;$(EngineLibraries)\;$(EngineLibraries)\glfw\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\glm;$(SolutionDir)..\Source Code;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>

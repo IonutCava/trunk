@@ -382,6 +382,7 @@ extern vec3<F32> WORLD_Z_AXIS;
 extern vec3<F32> WORLD_X_NEG_AXIS;
 extern vec3<F32> WORLD_Y_NEG_AXIS;
 extern vec3<F32> WORLD_Z_NEG_AXIS;
+extern vec3<F32> DEFAULT_GRAVITY;
 
 extern vec2<I32> iVECTOR2_ZERO;
 extern vec3<I32> iVECTOR3_ZERO;

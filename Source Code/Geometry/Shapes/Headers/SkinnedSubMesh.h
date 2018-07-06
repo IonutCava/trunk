@@ -24,56 +24,29 @@
 #define _SKINNED_SUBMESH_H_
 
 #include "SubMesh.h"
-class Bone;
-class SceneAnimator;
+class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
 public:
-    SkinnedSubMesh(const std::string& name) : SubMesh(name,Object3D::OBJECT_FLAG_SKINNED),
-                                              _skeletonAvailable(false),
-                                              _softwareSkinning(false),
-                                              _playAnimation(true),
-                                              _currentAnimationID(0),
-                                              _currentFrameIndex(0),
-                                              _animator(nullptr)
-    {
-    }
-
+    SkinnedSubMesh(const std::string& name);
     ~SkinnedSubMesh();
 
 public:
-    bool createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer);
-    void renderSkeleton(SceneGraphNode* const sgn);
     void updateBBatCurrentFrame(SceneGraphNode* const sgn);
-    /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
-    void updateAnimations(const U64 timeIndex, SceneGraphNode* const sgn);
     void postLoad(SceneGraphNode* const sgn);
-    void preFrameDrawEnd(SceneGraphNode* const sgn);
-    SceneAnimator* const getAnimator() {return _animator;}
-    const mat4<F32>& getCurrentBoneTransform(SceneGraphNode* const sgn, const std::string& name);
-    Bone* getBoneByName(const std::string& bname) const;
-    
-    inline void playAnimation(bool state) {_playAnimation = state;}
 
-    /// Select next available animation
-    bool playNextAnimation();
-    /// Select an animation by index
-    bool playAnimation(I32 index);
-    /// Select an animation by name
-    bool playAnimation(const std::string& animationName);
+    inline SceneAnimator* getAnimator() { return _animator; }
+
+protected:
+    void updateAnimations(SceneGraphNode* const sgn);
 
 private:
-    /// Animation player to animate the mesh if necessary
-    SceneAnimator* _animator;
     vectorImpl<vec3<F32> > _origVerts;
     vectorImpl<vec3<F32> > _origNorms;
-    bool _skeletonAvailable; ///<Does the mesh have a valid skeleton?
     bool _softwareSkinning;
-    bool _playAnimation;
-    /// Current animation ID
-    U32 _currentAnimationID;
-    /// Current animation frame wrapped in animation time [0 ... 1]
-    U32 _currentFrameIndex;
+
+    /// Animation player to animate the mesh if necessary
+    SceneAnimator* _animator;
+
     ///BoundingBoxes for every frame
     typedef Unordered_map<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
     boundingBoxPerFrame _bbsPerFrame;

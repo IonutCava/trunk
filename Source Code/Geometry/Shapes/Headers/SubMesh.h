@@ -42,7 +42,6 @@ and a name.
 #include "Hardware/Video/Buffers/VertexBufferObject/Headers/VertexBufferObject.h"
 
 class Mesh;
-struct aiScene;
 class SubMesh : public Object3D {
 public:
 	SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE) :
@@ -50,7 +49,8 @@ public:
 									   _visibleToNetwork(true),
 									   _render(true),
 									   _id(0),
-									   _parentMesh(nullptr)
+									   _parentMesh(nullptr),
+                                       _parentMeshSGN(nullptr)
 	{
 	}
 
@@ -68,7 +68,6 @@ public:
 	inline Mesh* getParentMesh() {return _parentMesh;}
 
 	virtual void onDraw(const RenderStage& currentStage);
-	virtual void preFrameDrawEnd(SceneGraphNode* const sgn) {/*nothing yet*/}
 	/// Called from SceneGraph "sceneUpdate"
 	virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
@@ -77,14 +76,17 @@ public:
 protected:
 	friend class Mesh;
 	inline void setParentMesh(Mesh* const parentMesh) {_parentMesh = parentMesh;}
+    inline void setParentMeshSGN(SceneGraphNode* const meshSGN) { _parentMeshSGN = meshSGN; }
+
 	friend class DVDConverter;
 	mat4<F32> _sceneRootMatrix;
-
-private:
+    
+protected:
 	bool _visibleToNetwork;
 	bool _render;
 	U32 _id;
 	Mesh* _parentMesh;
+    SceneGraphNode* _parentMeshSGN;
 };
 
 #endif

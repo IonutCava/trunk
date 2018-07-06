@@ -6,7 +6,9 @@
 #include "Core/Math/Headers/Transform.h"
 
 Mesh::Mesh(ObjectFlag flag) : Object3D(MESH,TRIANGLES,flag),
-                              _visibleToNetwork(true)
+                              _visibleToNetwork(true),
+                              _playAnimations(true),
+                              _playAnimationsCurrent(false)
 {
     setState(RES_LOADING);
 }
@@ -45,21 +47,26 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         // Find the SubMesh resource
         SubMesh* s = FindResourceImpl<SubMesh>(it);
         // Add the SubMesh resource as a child
-        if(s) 
-            sgn->addNode(s,sgn->getName()+"_"+it);
+        if (s) {
+            sgn->addNode(s, sgn->getName() + "_" + it);
+            s->setParentMeshSGN(sgn);
+        }
     }
     Object3D::postLoad(sgn);
 }
 
-void Mesh::onDraw(const RenderStage& currentStage){
-    if(getState() != RES_LOADED) return;
-    Object3D::onDraw(currentStage);
-}
-
 /// Called from SceneGraph "sceneUpdate"
-void Mesh::sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState){
-    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
-}
+void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
 
-void Mesh::refModifyCallback(bool increase) {
+    if (getFlag() == OBJECT_FLAG_SKINNED) {
+        bool playAnimation = (_playAnimations && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
+        if (playAnimation != _playAnimationsCurrent) {
+            FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getChildren()){
+                it.second->getAnimationComponent()->playAnimation(playAnimation);
+            }
+            _playAnimationsCurrent = playAnimation;
+        }
+    }
+
+    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }

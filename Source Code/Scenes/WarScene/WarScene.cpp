@@ -4,8 +4,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/SkinnedMesh.h"
-#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/Camera/Headers/ThirdPersonCamera.h"
@@ -68,20 +68,20 @@ void WarScene::processTasks(const U64 deltaTime){
     }
     if(_taskTimers[1] >= BobTimer){
         if(_bobNode)
-            _bobNode->getNode<SkinnedMesh>()->playNextAnimation();
+            _bobNode->getAnimationComponent()->playNextAnimation();
 
         _taskTimers[1] = 0.0;
     }
     if(_taskTimers[2] >= DwarfTimer){
         SceneGraphNode* dwarf = _sceneGraph->findNode("Soldier1");
          if(dwarf)
-            dwarf->getNode<SkinnedMesh>()->playNextAnimation();
+             dwarf->getAnimationComponent()->playNextAnimation();
         _taskTimers[2] = 0.0;
     }
     if(_taskTimers[3] >= BullTimer){
         SceneGraphNode* bull = _sceneGraph->findNode("Soldier2");
          if(bull)
-            bull->getNode<SkinnedMesh>()->playNextAnimation();
+             bull->getAnimationComponent()->playNextAnimation();
         _taskTimers[3] = 0.0;
     }
     Scene::processTasks(deltaTime);

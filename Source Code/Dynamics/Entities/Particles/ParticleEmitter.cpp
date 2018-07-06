@@ -45,9 +45,13 @@ ParticleEmitter::~ParticleEmitter()
 }
 
 bool ParticleEmitter::initData(){
+    // assert if double init!
+    assert(_particleGPUBuffer != nullptr);
+
     _particleGPUBuffer = GFX_DEVICE.newGVD();
     _particleGPUBuffer->Create(3);
     
+    // Not using Quad3D to improve performance
     static F32 particleQuad[] = {
         -0.5f, -0.5f, 0.0f,
          0.5f, -0.5f, 0.0f,
@@ -141,8 +145,8 @@ void ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     SET_STATE_BLOCK(_particleStateBlock);
     _particleDepthShader->bind();
     GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
-    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[0][1], _viewMatrixCache.m[0][2]));
-    _particleDepthShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[1][0], _viewMatrixCache.m[1][1], _viewMatrixCache.m[1][2]));
+    _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[1][0], _viewMatrixCache.m[2][0]));
+    _particleDepthShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[0][1], _viewMatrixCache.m[1][1], _viewMatrixCache.m[2][1]));
 }
 
 void ParticleEmitter::releaseDepthMaterial(){
@@ -158,8 +162,8 @@ void ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     _particleShader->bind();
     GFX_DEVICE.getMatrix(VIEW_MATRIX, _viewMatrixCache);
     _particleShader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
-    _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[0][1], _viewMatrixCache.m[0][2]));
-    _particleShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[1][0], _viewMatrixCache.m[1][1], _viewMatrixCache.m[1][2]));
+    _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(_viewMatrixCache.m[0][0], _viewMatrixCache.m[1][0], _viewMatrixCache.m[2][0]));
+    _particleShader->Uniform("CameraUp_worldspace", vec3<F32>(_viewMatrixCache.m[0][1], _viewMatrixCache.m[1][1], _viewMatrixCache.m[2][1]));
     _particleTexture->Bind(Material::TEXTURE_UNIT0);
     GFX_DEVICE.getDepthBuffer()->Bind(1, TextureDescriptor::Depth);
 }
@@ -263,8 +267,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     vec3<F32> mainDir = orientation * vec3<F32>(0, (_descriptor._velocity + random(-_descriptor._velocityVariance, _descriptor._velocityVariance)), 0);
     
     for(I32 i = 0; i < newParticles; ++i){
-        I32 particleIndex = findUnusedParticle();
-        ParticleDescriptor& currentParticle = _particles[particleIndex];
+        ParticleDescriptor& currentParticle = _particles[findUnusedParticle()];
         currentParticle.life = _descriptor._lifetime + getMsToSec(random(-_descriptor._lifetimeVariance, _descriptor._lifetimeVariance));
         currentParticle.pos.set(origin);
         // Very bad way to generate a random direction;
@@ -280,15 +283,15 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
 
     // Simulate all particles
     I32 particlesCount = 0;
-    for(U32 i = 0; i < _particles.size(); ++i){
-        ParticleDescriptor& p = _particles[i]; // shortcut
+    vec3<F32> half_gravity = DEFAULT_GRAVITY * delta * 0.5f;
+    for (ParticleDescriptor& p : _particles){
         if(p.life > 0.0f){
             // Decrease life
             p.life -= delta;
             if (p.life > 0.0f){
  
                 // Simulate simple physics : gravity only, no collisions
-                p.speed += vec3<F32>(0.0f,-9.81f, 0.0f) * delta * 0.5f;
+                p.speed += half_gravity;
                 p.pos += p.speed * delta;
                 p.distanceToCamera = p.pos.distanceSquared(eyePos);
  
@@ -318,14 +321,14 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
 I32 ParticleEmitter::findUnusedParticle(){
  
     for(U32 i = _lastUsedParticle; i < _particles.size(); ++i){
-        if (_particles[i].life < 0){
+        if (_particles[i].life < 0.0f){
             _lastUsedParticle = i;
             return i;
         }
     }
  
     for(I32 i = 0; i < _lastUsedParticle; ++i){
-        if (_particles[i].life < 0){
+        if (_particles[i].life < 0.0f){
             _lastUsedParticle = i;
             return i;
         }

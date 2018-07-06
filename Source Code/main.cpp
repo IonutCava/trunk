@@ -3,6 +3,7 @@
 #include "Core/Headers/Application.h"
 
 I32 main(I32 argc, char **argv){
+
 	freopen(OUTPUT_LOG_FILE, "w", stdout);
 	freopen(ERROR_LOG_FILE, "w", stderr);
 	//Initialize our application based on XML configuration. Error codes are always less than 0
