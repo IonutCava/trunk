@@ -28,7 +28,7 @@ public:
 	int  drawGround(bool drawInReflexion) const;
 	void draw() const;
 	int  drawObjects() const;
-	void terrainSetParameters(vec3& pos, vec2& scale);
+	void terrainSetParameters(const vec3& pos,const vec2& scale);
 
 	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;
 	vec3  getNormal(F32 x_clampf, F32 z_clampf) const;
@@ -47,7 +47,7 @@ public:
 	void addVegetation(Vegetation* veg, string grassShader){_veg = veg; _grassShader = grassShader;} 
 	void initializeVegetation() { _veg->initialize(_grassShader);}
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
-	void toggleRenderingParams(bool state,vec4& ambientcolor){_drawInReflexion = state; _ambientColor = ambientcolor; }
+	void toggleRenderingParams(bool drawInReflexion,bool drawDepthMap,vec4& ambientcolor){_drawInReflexion = drawInReflexion; _drawDepthMap = drawDepthMap, _ambientColor = ambientcolor; }
 	bool postLoad();
 	bool isPostLoaded() {return _postLoaded;}
 private:
@@ -60,7 +60,7 @@ private:
 	VertexBufferObject*		m_pGroundVBO;
 	
 	F32 terrainScaleFactor, terrainHeightScaleFactor;
-	bool	m_bShowDetail, _loaded,_wasLoaded,_drawInReflexion,_postLoaded;
+	bool	m_bShowDetail, _loaded,_wasLoaded,_drawInReflexion,_postLoaded,_drawDepthMap;
 	int detailId;
 
 

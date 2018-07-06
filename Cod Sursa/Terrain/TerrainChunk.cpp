@@ -1,4 +1,3 @@
-//#include "Hardware/Video/OpenGL/glResources.h"
 #include "TerrainChunk.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
@@ -26,9 +25,9 @@ void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 	{
 		t->getName() = DA[i].ModelName;
 		t->addShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
-		t->getOrientation() = vec3(0,rotation,0);
-		t->setScale(scale*DA[i].scale);
-		t->setPosition(pos);
+		t->getTransform()->scale(scale*DA[i].scale);
+		t->getTransform()->rotateEuler(vec3(0,rotation,0));
+		t->getTransform()->translate(pos);
 	}
 
 	m_tTrees.push_back(*t);
@@ -87,7 +86,7 @@ void TerrainChunk::Destroy()
 }
 
 
-int TerrainChunk::DrawObjects(U32 lod)
+int TerrainChunk::DrawObjects(U32 lod,bool drawDepthMap)
 {
 	assert(lod < TERRAIN_CHUNKS_LOD);
     RenderState s(true,true,true,true);
@@ -99,10 +98,10 @@ int TerrainChunk::DrawObjects(U32 lod)
 	return (int)m_tObject.size();
 }
 
-void TerrainChunk::DrawTrees(U32 lod, F32 d)
+void TerrainChunk::DrawTrees(U32 lod, F32 d,bool drawDepthMap)
 {
 	F32 treeVisibility = SceneManager::getInstance().getTerrainManager()->getTreeVisibility();
-	if(d > treeVisibility) return;
+	if(d > treeVisibility && !drawDepthMap) return;
 
 	F32 _windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	F32 _windZ = SceneManager::getInstance().getTerrainManager()->getWindDirX();
@@ -117,13 +116,15 @@ void TerrainChunk::DrawTrees(U32 lod, F32 d)
 		
 	RenderState s(true,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
+	F32 time = GETTIME();
 
 	if(indices_count > 0)
+
 	for(int i=0; i < indices_count; i++)
 	{
 		m_tTrees[i].getShaders()[0]->bind();
-			m_tTrees[i].getShaders()[0]->Uniform("time", GETTIME());
-			m_tTrees[i].getShaders()[0]->Uniform("scale", m_tTrees[i].getScale().y);
+			m_tTrees[i].getShaders()[0]->Uniform("time", time);
+			m_tTrees[i].getShaders()[0]->Uniform("scale", m_tTrees[i].getTransform()->getScale().y);
 			m_tTrees[i].getShaders()[0]->Uniform("windDirectionX", _windX);
 			m_tTrees[i].getShaders()[0]->Uniform("windDirectionZ", _windZ);
 			m_tTrees[i].getShaders()[0]->Uniform("windSpeed", _windS);
@@ -140,19 +141,18 @@ int TerrainChunk::DrawGround(U32 lod)
 	if(lod>0) lod--;
 
 	for(U32 j=0; j<(U32)m_tIndOffsetH[lod]; j++)
-		//glDrawElements(GL_TRIANGLE_STRIP, (GLsizei)m_tIndOffsetW[lod], GL_UNSIGNED_INT, &(m_tIndice[lod][j*m_tIndOffsetW[lod]]) );
 		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,m_tIndOffsetW[lod],&(m_tIndice[lod][j*m_tIndOffsetW[lod]]));
 
 	return 1;
 }
 
-void  TerrainChunk::DrawGrass(U32 lod, F32 d)
+void  TerrainChunk::DrawGrass(U32 lod, F32 d,bool drawDepthMap)
 {
 	
 	F32 grassVisibility = SceneManager::getInstance().getTerrainManager()->getGrassVisibility();
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
-	if(d > grassVisibility) return;
+	if(d > grassVisibility && !drawDepthMap) return;
 	RenderState s(false,true,true,true);
 	GFXDevice::getInstance().setRenderState(s);
 

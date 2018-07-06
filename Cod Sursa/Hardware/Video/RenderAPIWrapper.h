@@ -105,9 +105,9 @@ protected:
 	virtual void initDevice() = 0;
 
 	/*Geometry transformations*/
-	virtual void translate(vec3& pos) = 0;
-	virtual void rotate(F32 angle, vec3& weights) = 0;
-    virtual void scale(vec3& scale) = 0;
+	virtual void translate(const vec3& pos) = 0;
+	virtual void rotate(F32 angle,const vec3& weights) = 0;
+    virtual void scale(const vec3& scale) = 0;
 	/*Geometry transformations*/
 
 	/*Rendering States*/
@@ -143,8 +143,8 @@ protected:
 
 	/*Color Management*/
 	virtual void setMaterial(Material& mat) = 0;
-	virtual void setColor(vec4& v) = 0;
-	virtual void setColor(vec3& v) = 0;
+	virtual void setColor(const vec4& v) = 0;
+	virtual void setColor(const vec3& v) = 0;
 	/*Color Management*/
 
 	virtual void setLight(U32 slot, tr1::unordered_map<string,vec4>& properties) = 0;

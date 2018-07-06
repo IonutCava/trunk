@@ -95,10 +95,10 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	bool updated = false;
 	string mesaj;
 
-	vec3 pozitieMinge = _minge->getPosition();
-	vec3& pozitiePaleta = ModelArray["paleta"]->getPosition();
-	vec3& pozitieMasa  = ModelArray["masa"]->getPosition();
-	vec3 pozitieAdversar = ModelArray["perete"]->getPosition();
+	vec3 pozitieMinge = _minge->getTransform()->getPosition();
+	vec3 pozitiePaleta = ModelArray["paleta"]->getTransform()->getPosition();
+	vec3 pozitieMasa  = ModelArray["masa"]->getTransform()->getPosition();
+	vec3 pozitieAdversar = ModelArray["perete"]->getTransform()->getPosition();
 	//Miscare minge si detectie coliziuni
 
 	if(pozitieMinge.y + 0.75f < ModelArray["masa"]->getBoundingBox().max.y)
@@ -136,9 +136,9 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	//Mingea se deplaseaza spre stanga sau spre dreapta?
 	pozitieMinge.x += _miscareLaterala*0.15f;
 	if(pozitieAdversar.x != pozitieMinge.x)
-		ModelArray["perete"]->translateX(pozitieMinge.x - pozitieAdversar.x);
+		ModelArray["perete"]->getTransform()->translateX(pozitieMinge.x - pozitieAdversar.x);
 
-	_minge->setPosition(pozitieMinge);
+	_minge->getTransform()->translate(pozitieMinge);
 
 
 	//Am lovit masa? Ricosam
@@ -188,11 +188,11 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	if(random(30) != 2)
 	if(_minge->getBoundingBox().Collision(ModelArray["perete"]->getBoundingBox()))
 	{
-		_miscareLaterala = pozitieMinge.x - ModelArray["perete"]->getPosition().x;
+		_miscareLaterala = pozitieMinge.x - ModelArray["perete"]->getTransform()->getPosition().x;
 		_directieAdversar = false;
 	}
 	//Rotim mingea doar de efect ...
-	_minge->getOrientation() = vec3(pozitieMinge.z,1,1);
+	_minge->getTransform()->rotateEuler(vec3(pozitieMinge.z,1,1));
 	if(updated)
 	{
 		if(_pierdut)
@@ -238,19 +238,19 @@ void PingPongScene::processInput()
 	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
 
-	vec3 pos = ModelArray["paleta"]->getPosition();
+	vec3 pos = ModelArray["paleta"]->getTransform()->getPosition();
 	//Miscarea pe ambele directii de deplasare este limitata in intervalul [-3,3] cu exceptia coborarii pe Y;
 	if(moveFB)
 	{
 		if((moveFB > 0 && pos.y >= 3) || (moveFB < 0 && pos.y <= 0.5f)) return;
-		ModelArray["paleta"]->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
+		ModelArray["paleta"]->getTransform()->translateY((moveFB * Framerate::getInstance().getSpeedfactor())/6);
 		
 	}
 	if(moveLR)
 	{
 		//Miscarea stanga dreapta necesita inversarea directiei de deplasare.
 		if((moveLR < 0 && pos.x >= 3) || (moveLR > 0 && pos.x <= -3)) return;
-		ModelArray["paleta"]->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
+		ModelArray["paleta"]->getTransform()->translateX((-moveLR * Framerate::getInstance().getSpeedfactor())/6);
 	}
 
 	
@@ -269,7 +269,7 @@ bool PingPongScene::load(const string& name)
 
 	//Cream o minge
 	_minge = new Minge(0.1f,16);
-	_minge->getPosition() = vec3(0, 2 ,2);
+	_minge->getTransform()->translate(vec3(0, 2 ,2));
 	_minge->getColor() = vec3(1,0.2f,0.2f);
 	_minge->computeBoundingBox();
 	_minge->getName() = "Minge";

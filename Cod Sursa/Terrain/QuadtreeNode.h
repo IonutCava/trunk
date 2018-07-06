@@ -13,7 +13,7 @@
 
 #define CHUNK_BIT_TESTCHILDREN		0x1
 #define CHUNK_BIT_WATERREFLECTION	0x2
-
+#define CHUNK_BIT_DEPTHMAP			0x3
 
 
 class Frustum;
@@ -27,9 +27,9 @@ public:
 	void Destroy();
 
 	int  DrawGround(int options);
-	void DrawGrass(bool drawInReflexion);
-	int  DrawObjects(bool drawInReflexion);
-	void DrawTrees(bool drawInReflexion);
+	void DrawGrass(bool drawInReflexion,bool drawDepthMap);
+	int  DrawObjects(bool drawInReflexion,bool drawDepthMap);
+	void DrawTrees(bool drawInReflexion,bool drawDepthMap);
 	void DrawBBox(bool bTest);
 
 	inline bool isALeaf() const							{return m_pChildren==0;}

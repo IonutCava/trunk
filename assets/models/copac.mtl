@@ -51,4 +51,4 @@ newmtl Leaves
 	Kd 0.0196 0.4392 0.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\elmleaf.tga
+	map_Kd ..\texturi\elmleaf.png

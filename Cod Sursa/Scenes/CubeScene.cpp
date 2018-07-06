@@ -22,7 +22,8 @@ bool _switch = false;
 void CubeScene::preRender()
 {
 	if(i >= 360) _switch = true;
-	if(i <= 0) _switch = false;
+	else if(i <= 0) _switch = false;
+
 	if(!_switch) i += 0.1f;
 	else i -= 0.1f;
 
@@ -31,13 +32,14 @@ void CubeScene::preRender()
 	for(unordered_map<string,Object3D*>::iterator iter = GeometryArray.begin(); iter != GeometryArray.end(); iter++)
 	{
 		if((iter->second)->getName().compare("Cutia1") == 0)
-			(iter->second)->getOrientation() = vec3(0.3f*i, 0.6f*i,0);
+			(iter->second)->getTransform()->rotateEuler(vec3(0.3f*i, 0.6f*i,0));
 		if((iter->second)->getName().compare("HelloText") == 0)
-			(iter->second)->getOrientation() = vec3(0.6f*i,0.2f,0.4f*i);
+			(iter->second)->getTransform()->rotateEuler(vec3(0.6f*i,0.2f,0.4f*i));
 		if((iter->second)->getName().compare("Bila") == 0)
-			(iter->second)->getPosition().y = j*i;
+			(iter->second)->getTransform()->translateY(j*i);
 	}
-}
+	ModelArray["dwarf"]->getTransform()->rotate(vec3(0,1,0),i);
+} 
 
 void CubeScene::processInput()
 {

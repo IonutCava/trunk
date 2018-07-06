@@ -165,17 +165,17 @@ mat4 GL_API::getModelViewMatrix()
 	return modelview;
 }
 
-void GL_API::translate(vec3& pos)
+void GL_API::translate(const vec3& pos)
 {
 	glTranslatef(pos.x,pos.y,pos.z);
 }
 
-void GL_API::rotate(F32 angle, vec3& weights)
+void GL_API::rotate(F32 angle, const vec3& weights)
 {
 	glRotatef(angle,weights.x,weights.y,weights.z);
 }
 
-void GL_API::scale(vec3& scale)
+void GL_API::scale(const vec3& scale)
 {
 	glScalef(scale.x,scale.y,scale.z);
 }
@@ -395,14 +395,18 @@ void GL_API::drawBox3D(vec3 min, vec3 max)
 void GL_API::drawBox3D(Box3D* const box)
 {
 	//beginRenderStateProcessing();
+	vec3 axis(0,0,0);
+	F32 angle = 0;
+	Quaternion orientation = box->getTransform()->getOrientation();
+	orientation.getAxisAngle(&axis,&angle,true);
 
 	pushMatrix();
+	translate(box->getTransform()->getPosition());	
+	scale(box->getTransform()->getScale());
+	rotate(angle,axis);
+	
 
-	translate(box->getPosition());
-	rotate(box->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	rotate(box->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	rotate(box->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	scale(box->getScale());
+	//glMultMatrixf(box->getTransform()->getMatrix().mat);
 	setColor(box->getColor());
 	if(box->getTexture()) box->getTexture()->Bind(0);
 	
@@ -424,13 +428,17 @@ void GL_API::drawBox3D(Box3D* const box)
 void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
 	//beginRenderStateProcessing();
-	pushMatrix();
+	vec3 axis(0,0,0);
+	F32 angle = 0;
+	Quaternion orientation = sphere->getTransform()->getOrientation();
+	orientation.getAxisAngle(&axis,&angle,true);
 
-	translate(sphere->getPosition());
-	rotate(sphere->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	rotate(sphere->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	rotate(sphere->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	scale(sphere->getScale());
+	pushMatrix();
+	translate(sphere->getTransform()->getPosition());	
+	scale(sphere->getTransform()->getScale());
+	rotate(angle,axis);
+
+	//glMultMatrixf(sphere->getTransform()->getMatrix().mat);
 	setColor(sphere->getColor());
 	if(sphere->getTexture()) sphere->getTexture()->Bind(0);
 	if(sphere->getShader()) 
@@ -453,13 +461,18 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 {
 	//beginRenderStateProcessing();
 
+	vec3 axis(0,0,0);
+	F32 angle = 0;
+	Quaternion orientation = quad->getTransform()->getOrientation();
+	orientation.getAxisAngle(&axis,&angle,true);
+
 	pushMatrix();
 
-	translate(quad->getPosition());
-	rotate(quad->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	rotate(quad->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	rotate(quad->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	scale(quad->getScale());
+	translate(quad->getTransform()->getPosition());	
+	scale(quad->getTransform()->getScale());
+	rotate(angle,axis);
+
+	//glMultMatrixf(quad->getTransform()->getMatrix().mat);
 	setColor(quad->getColor());
 
 	if(quad->getTexture()) quad->getTexture()->Bind(0);
@@ -489,13 +502,18 @@ void GL_API::drawText3D(Text3D* const text)
 {
 	//beginRenderStateProcessing();
 
-	pushMatrix();
+	vec3 axis(0,0,0);
+	F32 angle = 0;
+	Quaternion orientation = text->getTransform()->getOrientation();
+	orientation.getAxisAngle(&axis,&angle,true);
 
-	translate(text->getPosition());
-	rotate(text->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	rotate(text->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	rotate(text->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	scale(text->getScale());
+	pushMatrix();
+	translate(text->getTransform()->getPosition());	
+	scale(text->getTransform()->getScale());
+	rotate(angle,axis);
+	
+
+	//glMultMatrixf(text->getTransform()->getMatrix().mat);
 	setColor(text->getColor());
 	if(text->getTexture()) text->getTexture()->Bind(0);
 	if(text->getShader()) 
@@ -555,13 +573,16 @@ void GL_API::renderModel(DVDFile* const model)
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
+	vec3 axis(0,0,0);
+	F32 angle = 0;
+	Quaternion orientation = model->getTransform()->getOrientation();
+	orientation.getAxisAngle(&axis,&angle,true);
+	
 	pushMatrix();
-
-	translate(model->getPosition());
-	rotate(model->getOrientation().x,vec3(1.0f,0.0f,0.0f));
-	rotate(model->getOrientation().y,vec3(0.0f,1.0f,0.0f));
-	rotate(model->getOrientation().z,vec3(0.0f,0.0f,1.0f));
-	scale(model->getScale());
+	translate(model->getTransform()->getPosition());	
+	scale(model->getTransform()->getScale());
+	rotate(angle,axis);
+	
 
 	for(U8 n = 0; n < model->getShaders().size(); n++)
 	{
@@ -647,12 +668,12 @@ void GL_API::setMaterial(Material& mat)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,mat.emmissive);
 }
 
-void GL_API::setColor(vec4& color)
+void GL_API::setColor(const vec4& color)
 {
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 }
 
-void GL_API::setColor(vec3& color)
+void GL_API::setColor(const vec3& color)
 {
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, color);
 }

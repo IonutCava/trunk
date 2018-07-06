@@ -59,7 +59,7 @@ void Engine::DrawScene()
 	_GFX.enable_MODELVIEW();
 	_GFX.loadIdentityMatrix();
 	_camera.RenderLookAt();
-	
+	_scene.updateTransformations();
 	_px.GetPhysicsResults();
 	if(_px.getScene() != NULL)
 	{

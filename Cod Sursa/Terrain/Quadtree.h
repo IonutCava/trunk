@@ -13,10 +13,10 @@ public:
 	void ComputeBoundingBox(const vec3* vertices);
 	void Destroy();
 
-	int  DrawGround(bool drawInReflexion);
-	void DrawGrass(bool drawInReflexion);
-	int  DrawObjects(bool drawInReflexion);
-	void DrawTrees(bool drawInReflexion);
+	int  DrawGround(bool drawInReflexion,bool drawDepthMap);
+	void DrawGrass(bool drawInReflexion,bool drawDepthMap);
+	int  DrawObjects(bool drawInReflexion,bool drawDepthMap);
+	void DrawTrees(bool drawInReflexion,bool drawDepthMap);
 	void DrawBBox();
 
 	QuadtreeNode*	FindLeaf(vec2& pos);

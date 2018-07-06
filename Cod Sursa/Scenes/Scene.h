@@ -27,7 +27,7 @@ public:
 		  _white = vec4(1.0f,1.0f,1.0f,1.0f);
 		  _black = vec4(0.0f,0.0f,0.0f,0.0f);
 	  };
-
+	void updateTransformations();
 	virtual void render() = 0;
 	virtual void preRender() = 0;
 	virtual bool load(const string& name) = 0;

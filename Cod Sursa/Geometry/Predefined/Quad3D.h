@@ -6,12 +6,13 @@ class Shader;
 class Quad3D : public Object3D
 {
 public:
-	Quad3D(vec3& topLeft, vec3& topRight, vec3& bottomLeft, vec3& bottomRight) : _tl(topLeft),
-																				 _tr(topRight),
-																				 _bl(bottomLeft),
-																				 _br(bottomRight),
-																				 _texture(NULL),
-																				 _shader(NULL){};
+	Quad3D(const vec3& topLeft,const  vec3& topRight,
+		   const  vec3& bottomLeft,const  vec3& bottomRight) : _tl(topLeft),
+		    												   _tr(topRight),
+															   _bl(bottomLeft),
+															   _br(bottomRight),
+															   _texture(NULL),
+															   _shader(NULL){};
 	~Quad3D(){};
 	bool load(const std::string &name) {return true;}
 	bool unload() {return true;}

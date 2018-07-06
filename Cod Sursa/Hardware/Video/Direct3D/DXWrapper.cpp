@@ -32,16 +32,16 @@ mat4 DX_API::getProjectionMatrix()
 	return mat;
 }
 
-void DX_API::translate(vec3& pos)
+void DX_API::translate(const vec3& pos)
 {
 }
 
-void DX_API::rotate(F32 angle, vec3& weights)
+void DX_API::rotate(F32 angle,const vec3& weights)
 {
 }
 
 
-void DX_API::scale(vec3& scale)
+void DX_API::scale(const vec3& scale)
 {
 }
 
@@ -123,7 +123,7 @@ void DX_API::renderModel(DVDFile* const model)
 		_subMeshIterator++)
 	{
 		s = (*_subMeshIterator);
-		s->getGeometryVBO()->Enable();
+		//s->getGeometryVBO()->Enable();
 		//s->getMaterial().texture->Bind(0);
 			for(U8 n = 0; n < model->getShaders().size(); n++)
 				model->getShaders()[n]->UniformTexture("texDiffuse",0);
@@ -131,7 +131,7 @@ void DX_API::renderModel(DVDFile* const model)
 	//		glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
 
 		//s->getMaterial().texture->Unbind(0);
-		s->getGeometryVBO()->Disable();
+		//s->getGeometryVBO()->Disable();
 		
 	}
 	for(U8 n = 0; n < model->getShaders().size(); n++)
@@ -147,11 +147,11 @@ void DX_API::setMaterial(Material& mat)
 {
 }
 
-void DX_API::setColor(vec4& color)
+void DX_API::setColor(const vec4& color)
 {
 }
 
-void DX_API::setColor(vec3& color)
+void DX_API::setColor(const vec3& color)
 {
 }
 

@@ -1,49 +1,60 @@
-#ifndef _OBJECT_3D_H
-#define _OBJECT_3D_H
+#ifndef _OBJECT_3D_H_
+#define _OBJECT_3D_H_
+
 #include "resource.h"
 #include "Utility/Headers/BaseClasses.h"
+#include "Utility/Headers/Transform.h"
+#include "Utility/Headers/BoundingBox.h"
+#include "Hardware/Video/GFXDevice.h"
 
 class Object3D : public Resource
 {
 public:
-	~Object3D(){}
-	Object3D() : _position(0,0,0),
-		         _scale(1,1,1),
-				 _orientation(0,0,-1),
-				 _color(0.0f,0.0f,0.0f),
+	Object3D() : _color(0.0f,0.0f,0.0f),
 				 _selected(false),
 				 _update(false),
-				 _name("default"){};
+				 _name("default")
+	{
+		Quaternion rotation; rotation.FromEuler(0,0,-1);
+		_transform = new Transform(rotation, vec3(0,0,0),vec3(1,1,1));
+	};
 
 	Object3D(const std::string& name) : _name(name),
-										_position(0,0,0),
-										_scale(1,1,1),
-										_orientation(0,0,-1),
 										_color(0.0f,0.0f,0.0f),
 										_selected(false),
-										_update(false){}
+										_update(false)
+	{
+		Quaternion rotation; rotation.FromEuler(0,0,-1);
+		_transform = new Transform(rotation, vec3(0,0,0),vec3(1,1,1));
+	}
 
-	Object3D(vec3& position, vec3& scale, vec3& orientation, vec3& color) : _position(position),
-															   _scale(scale),
-															   _orientation(orientation),
-															   _color(color),
-															   _selected(false),
-															   _name("default") {}
+	Object3D(const vec3& position,const vec3& scale,const vec3& orientation,const vec3& color) : _color(color),
+																								 _selected(false),
+																								 _name("default")
+	{
+		Quaternion rotation; rotation.FromEuler(orientation);
+		_transform = new Transform(rotation, position,scale);
+	}
 
-	vec3&						getPosition(){return _position;}
-	vec3&						getOrientation(){return _orientation;}
-	vec3&						getScale(){return _scale;}
-	vec3&						getColor(){return _color;}
-	string&						getName(){return _name;}
-	void                        setSelected(bool state) {_selected = state;	if(_selected) cout << "Selected: " << getName() << endl;}
-	bool                        isSelected() {return _selected;}
-	virtual void                computeBoundingBox(){}
-	std::string& getItemName() {return _itemName;}
+	~Object3D() {delete _transform;}
+
+	inline	vec3&						getColor()			{return _color;}
+	inline	string&						getName()			{return _name;}
+	inline	string&						getItemName()		{return _itemName;}
+	inline	Transform*                  getTransform()		{return _transform;}
+	inline	BoundingBox&				getBoundingBox()	{return _bb;}
+	inline	bool                        isSelected()		{return _selected;}
+
+	void			setSelected(bool state) {_selected = state;	if(_selected) cout << "Selected: " << getName() << endl;}
+	
+	virtual void    computeBoundingBox(){}
+
 protected:
-	vec3 _position, _orientation, _scale,_color;
-	bool _selected,_update;
-	string _name;
-	string _itemName;
+	Transform*					 _transform;
+	vec3						 _color;
+	bool						 _selected,_update;
+	string					     _name, _itemName;
+	BoundingBox			         _bb;
 };
 
 #endif

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="Divide"
 	ProjectGUID="{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
 	RootNamespace="Grafica"
@@ -44,7 +44,7 @@
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
-				RuntimeLibrary="3"
+				RuntimeLibrary="1"
 				OpenMP="false"
 				WarningLevel="3"
 				DebugInformationFormat="4"
@@ -409,6 +409,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Utility\Quaternion.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Utility\XMLParser.cpp"
 				>
 			</File>
@@ -448,11 +452,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Utility\Headers\Quaternion.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Utility\Headers\Ray.h"
 					>
 				</File>
 				<File
 					RelativePath="..\Utility\Headers\Singleton.h"
+					>
+				</File>
+				<File
+					RelativePath="..\Utility\Headers\Transform.h"
 					>
 				</File>
 				<File
@@ -722,6 +734,10 @@
 			</File>
 			<File
 				RelativePath="..\Geometry\Mesh.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Geometry\Object3D.cpp"
 				>
 			</File>
 			<File

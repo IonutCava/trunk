@@ -14,9 +14,9 @@ class TerrainChunk
 public:
 	void Destroy();
 	int  DrawGround(U32 lod);
-	void DrawGrass(U32 lod, F32 d);
-	void DrawTrees(U32 lod, F32 d);
-	int  DrawObjects(U32 lod);
+	void DrawGrass(U32 lod, F32 d,bool drawDepthMap);
+	void DrawTrees(U32 lod, F32 d,bool drawDepthMap);
+	int  DrawObjects(U32 lod,bool drawDepthMap);
 	void Load(U32 depth, ivec2 pos, ivec2 HMsize);
 
 	inline vector<U32>&				getIndiceArray(U32 lod)	{return m_tIndice[lod];}

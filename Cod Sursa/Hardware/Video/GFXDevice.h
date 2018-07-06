@@ -31,11 +31,11 @@ public:
 	Shader* newShader(const char *vsFile, const char *fsFile){return _api.newShader(vsFile,fsFile); }
 	Shader* newShader(){return _api.newShader(); }
 
-	void translate(vec3& pos){_api.translate(pos);}
-	void rotate(F32 angle, vec3& weights){_api.rotate(angle,weights);}
-	void scale(vec3& scale){_api.scale(scale);}
+	void translate(const vec3& pos){_api.translate(pos);}
+	void rotate(F32 angle,const vec3& weights){_api.rotate(angle,weights);}
+	void scale(const vec3& scale){_api.scale(scale);}
 
-	void rotate(vec3& rot)
+	void rotate(const vec3& rot)
 	{
 		_api.rotate(rot.x,vec3(1.0f,0.0f,0.0f)); 
 		_api.rotate(rot.y,vec3(0.0f,1.0f,0.0f));
@@ -66,8 +66,8 @@ public:
 	void renderElements(unordered_map<string,DVDFile*>&  geometryArray);
 	
 	void setMaterial(Material& mat){_api.setMaterial(mat);}
-	void setColor(vec4& v){_api.setColor(v);}
-	void setColor(vec3& v){_api.setColor(v);}
+	void setColor(const vec4& v){_api.setColor(v);}
+	void setColor(const vec3& v){_api.setColor(v);}
 
 	void setLight(U32 slot, unordered_map<string,vec4>& properties){_api.setLight(slot,properties);}
 	void createLight(U32 slot){_api.createLight(slot);}

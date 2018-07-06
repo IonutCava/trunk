@@ -98,12 +98,12 @@ void GUI::clickReleaseCheck()
 	
 }
 
-void GUI::addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback)
+void GUI::addButton(string id, string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback)
 {
 	_button[id] = new Button(id,text,position,dimensions,color,callback);
 }
 
-void GUI::addText(string id, vec3 &position, Font font, vec3 &color, char* format, ...)
+void GUI::addText(string id,const vec3 &position, Font font,const vec3 &color, char* format, ...)
 {
 	va_list args;
 	string fmt_text;

@@ -28,9 +28,9 @@ private:
 	Shader* newShader(const char *vsFile, const char *fsFile){return /*new dxShader();*/ NULL;}
 	Shader* newShader(){return /*new dxShader();*/ NULL;}
 	
-	void translate(vec3& pos);
-	void rotate(F32 angle, vec3& weights);
-	void scale (vec3& scale);
+	void translate(const vec3& pos);
+	void rotate(F32 angle,const vec3& weights);
+	void scale (const vec3& scale);
 
 
 	void clearBuffers(int buffer_mask);
@@ -56,8 +56,8 @@ private:
 	void renderElements(Type t, U32 count, const void* first_element);
 
 	void setMaterial(Material& mat);
-	void setColor(vec4& color);
-	void setColor(vec3& color);
+	void setColor(const vec4& color);
+	void setColor(const vec3& color);
 
 	friend class GFXDevice;
 	typedef void (*callback)();

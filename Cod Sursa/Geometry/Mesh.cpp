@@ -2,14 +2,15 @@
 #include "Managers/ResourceManager.h"
 #include "Rendering/Frustum.h"
 #include "Managers/SceneManager.h"
+#include "Utility/Headers/Quaternion.h"
 
 bool Mesh::isVisible()
 {
-	if(!_render || !isInView() || _subMeshes.empty())
+	/*if(!_render || !isInView() || _subMeshes.empty())
 		return false;
 	if(!_computedLightShaders) computeLightShaders();
 
-	_bb.setVisibility(_selected); 
+	_bb.setVisibility(_selected); */
 	DrawBBox();
 	return true;
 
@@ -20,9 +21,6 @@ void Mesh::computeLightShaders()
 	{
 		vector<Light*>& lights = SceneManager::getInstance().getActiveScene().getLights();
 		for(U8 i = 0; i < lights.size(); i++)
-		/*if(lights[i]->getPosition().w == 0.0f)
-			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
-		else*/
 			_shaders.push_back(ResourceManager::getInstance().LoadResource<Shader>("lighting"));
 	}
 	_computedLightShaders = true;
@@ -30,10 +28,16 @@ void Mesh::computeLightShaders()
 
 void Mesh::DrawBBox()
 {
-	if(!_render || !_bb.getVisibility()) return;
+	//if(!_render || !_bb.getVisibility()) return;
 	if(!_bb.isComputed()) computeBoundingBox();
 
 	GFXDevice::getInstance().drawBox3D(_bb.min,_bb.max);
+}
+
+void Mesh::updateBBox()
+{
+	if(!_bb.isComputed()) computeBoundingBox();
+	_bb.transform(getTransform());
 }
 
 bool Mesh::isInView()
@@ -63,32 +67,7 @@ bool Mesh::isInView()
 	return true;
 }
 
-void Mesh::setPosition(vec3 position)
-{
-	if(getPosition() == position) return;
-	if(!_bb.isComputed()) computeBoundingBox();
-	_bb.Translate(getPosition()+position);
-	getPosition() = position;
-}
 
-void Mesh::translate(vec3 position)
-{
-	getPosition() += position;
-	if(!_bb.isComputed()) computeBoundingBox();
-	_bb.Translate(position);
-}
-
-void Mesh::setScale(vec3 scale)
-{
-	getScale() = scale;
-	if(!_bb.isComputed()) computeBoundingBox();
-	_bb.Multiply(scale);
-}
-
-BoundingBox& Mesh::getBoundingBox()
-{
-	return _bb;
-}
 
 void Mesh::computeBoundingBox()
 {
@@ -111,3 +90,27 @@ SubMesh*  Mesh::getSubMesh(const string& name)
 			return (*_subMeshIterator);
 	return NULL;
 }
+
+bool Mesh::optimizeSubMeshes()
+{
+	
+	VertexBufferObject* newVBO = GFXDevice::getInstance().newVBO();
+	vector<U32> positionOffsets,normalsOffsets,texcoordOffsets;
+	positionOffsets.push_back(0); //First VBO offsets
+	normalsOffsets.push_back(0);
+	texcoordOffsets.push_back(0);
+
+	for(_subMeshIterator =  _subMeshes.begin(); _subMeshIterator != _subMeshes.end(); _subMeshIterator++)
+	{
+		newVBO->getPosition().insert(newVBO->getPosition().end(), (*_subMeshIterator)->getGeometryVBO()->getPosition().begin(), (*_subMeshIterator)->getGeometryVBO()->getPosition().end());
+		positionOffsets.push_back((*_subMeshIterator)->getGeometryVBO()->getPosition().size()-1);
+
+		newVBO->getNormal().insert(newVBO->getNormal().end(), (*_subMeshIterator)->getGeometryVBO()->getNormal().begin(), (*_subMeshIterator)->getGeometryVBO()->getNormal().end());
+		normalsOffsets.push_back((*_subMeshIterator)->getGeometryVBO()->getNormal().size()-1);
+
+		newVBO->getTexcoord().insert(newVBO->getTexcoord().end(), (*_subMeshIterator)->getGeometryVBO()->getTexcoord().begin(), (*_subMeshIterator)->getGeometryVBO()->getTexcoord().end());
+		texcoordOffsets.push_back((*_subMeshIterator)->getGeometryVBO()->getTexcoord().size()-1);
+	}
+	return true;
+}
+

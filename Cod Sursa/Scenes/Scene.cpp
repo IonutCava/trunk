@@ -8,6 +8,7 @@ void Scene::clean() //Called when application is idle
 	if(ModelArray.empty() && GeometryArray.empty()) return;
 
 	for(unordered_map<string,DVDFile*>::iterator iter = ModelArray.begin(); iter != ModelArray.end(); iter++)
+	{
 		if((iter->second)->clean())
 		{
 			delete (iter->second);
@@ -15,7 +16,7 @@ void Scene::clean() //Called when application is idle
 			ModelArray.erase(iter);
 			break;
 		}
-
+	}
 	bool _updated = false;
 
 	for(vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); iter++)
@@ -114,11 +115,12 @@ bool Scene::loadModel(FileData& data)
 		return false;
 	}
 	thisObj->getItemName() = data.ItemName;	
-	thisObj->getOrientation() = data.orientation;
+	
+	
+	thisObj->getTransform()->scale(data.scale);
+	thisObj->getTransform()->rotateEuler(data.orientation);
+	thisObj->getTransform()->translate(data.position);
 
-	thisObj->setScale(data.scale);
-	thisObj->setPosition(data.position);
-		
 	pair<unordered_map<string,DVDFile*>::iterator,bool> _result;
 	_result = ModelArray.insert(pair<string,DVDFile*>(data.ItemName,thisObj));
 	if(!_result.second) (_result.first)->second = thisObj;
@@ -140,9 +142,9 @@ bool Scene::loadGeometry(FileData& data)
 
 			((Box3D*)thisObj)->getSize() = data.data;
 			((Box3D*)thisObj)->getColor() = data.color;
-			((Box3D*)thisObj)->getScale() = data.scale;
-			((Box3D*)thisObj)->getPosition() = data.position;
-			((Box3D*)thisObj)->getOrientation() = data.orientation;
+			((Box3D*)thisObj)->getTransform()->scale(data.scale);
+			((Box3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
+			((Box3D*)thisObj)->getTransform()->translate(data.position);
 			((Box3D*)thisObj)->getName() = data.ItemName;
 			type = "Box3D";
 
@@ -150,9 +152,9 @@ bool Scene::loadGeometry(FileData& data)
 			
 			((Sphere3D*)thisObj)->getSize() = data.data;
 			((Sphere3D*)thisObj)->getColor() = data.color;
-			((Sphere3D*)thisObj)->getScale() = data.scale;
-			((Sphere3D*)thisObj)->getPosition() = data.position;
-			((Sphere3D*)thisObj)->getOrientation() = data.orientation;
+			((Sphere3D*)thisObj)->getTransform()->scale(data.scale);
+			((Sphere3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
+			((Sphere3D*)thisObj)->getTransform()->translate(data.position);
 			((Sphere3D*)thisObj)->getName() = data.ItemName;
 			type = "Sphere3D";
 
@@ -161,9 +163,9 @@ bool Scene::loadGeometry(FileData& data)
 			vec3& position = data.position;
 
 			((Quad3D*)thisObj)->getColor() = data.color;
-			((Quad3D*)thisObj)->getScale() = scale;
-			((Quad3D*)thisObj)->getPosition() = position;
-			((Quad3D*)thisObj)->getOrientation() = data.orientation;
+			((Quad3D*)thisObj)->getTransform()->scale(data.scale);
+			((Quad3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
+			((Quad3D*)thisObj)->getTransform()->translate(data.position);
 			((Quad3D*)thisObj)->getName() = data.ItemName;
 
 			((Quad3D*)thisObj)->_tl = vec3(scale.x/2-position.x,scale.y/2+position.y, scale.z/2 + position.z);
@@ -176,9 +178,9 @@ bool Scene::loadGeometry(FileData& data)
 
 			((Text3D*)thisObj)->getWidth() = data.data;
 			((Text3D*)thisObj)->getColor() = data.color;
-			((Text3D*)thisObj)->getScale() = data.scale;
-			((Text3D*)thisObj)->getPosition() = data.position;
-			((Text3D*)thisObj)->getOrientation() = data.orientation;
+			((Text3D*)thisObj)->getTransform()->scale(data.scale);
+			((Text3D*)thisObj)->getTransform()->rotateEuler(data.orientation);
+			((Text3D*)thisObj)->getTransform()->translate(data.position);
 			((Text3D*)thisObj)->getName() = data.ItemName;
 			((Text3D*)thisObj)->getText() = data.data2;
 			type = "Text3D";
@@ -213,5 +215,20 @@ bool Scene::addDefaultLight()
 	_lights.push_back(_defaultLight);
 	if(_lights.size() > oldSize) return true;	
 	else return false;
+
+}
+
+void Scene::updateTransformations()
+{
+	for(unordered_map<string,DVDFile*>::iterator iter = ModelArray.begin(); iter != ModelArray.end(); iter++)
+	{
+		if((iter->second)->getTransform()->isDirty())
+			(iter->second)->getTransform()->applyTransforms();
+	}
+	for(unordered_map<string,Object3D*>::iterator iter2 = GeometryArray.begin(); iter2 != GeometryArray.end(); iter2++)
+	{
+		if((iter2->second)->getTransform()->isDirty())
+			(iter2->second)->getTransform()->applyTransforms();
+	}
 
 }

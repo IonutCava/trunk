@@ -28,7 +28,7 @@ private:
 
 private:
 	
-	FrameBufferObject*     _skyFBO;
+	FrameBufferObject*     _skyFBO,*_depthMap[2];
 	vec2 _sunAngle;
 	vec4 _sunVector;
 	F32  _sun_cosy;

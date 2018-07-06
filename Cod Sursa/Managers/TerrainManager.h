@@ -14,7 +14,7 @@ public:
 	~TerrainManager();
 
 	void createTerrains(vector<TerrainInfo>& terrains);
-	void drawTerrains(bool drawInactive = false, bool drawInReflexion = false,vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));
+	void drawTerrains(bool drawInactive = false, bool drawInReflexion = false,bool drawDepthMap = false,vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));
 	void joinThread(){if(_thrd) _thrd->join();}
 	void detachThread(){if(_thrd) _thrd->detach();}
 	void lockMutex(){boost::mutex::scoped_lock lock(_io_mutex);}
@@ -32,6 +32,8 @@ public:
 	F32& getWindDirZ(){return _windDirZ;}
 
 	Terrain* getTerrain(int index) {return ((Terrain*)_resDB.begin()->second);}
+
+	void setDepthMap(int index, FrameBufferObject* depthMap);
 private:
 
 	F32           _minHeight,_maxHeight,
@@ -46,7 +48,7 @@ private:
 	WaterPlane*  _water;
 
 	void createThreadedTerrains(vector<TerrainInfo>& terrains);
-	void drawTerrain(bool drawInactive = false, bool drawInReflexion = false,vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));
+	void drawTerrain(bool drawInactive = false, bool drawInReflexion = false,bool drawDepthMap = false, vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));
 };
 
 #endif

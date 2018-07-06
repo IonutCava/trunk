@@ -12,7 +12,7 @@ class Text
 {
 friend class GUI;
 public:
-	Text(string& id,string& text,vec3& position, void* font, vec3& color) :
+	Text(string& id,string& text,const vec3& position, void* font,const vec3& color) :
 	  _text(text),
 	  _position(position),
 	  _font(font),
@@ -29,7 +29,7 @@ class Button
 
 friend class GUI;
 public:
-	Button(string& id,string& text,vec2& position, vec2& dimensions, vec3& color/*, Texture2D& image*/,ButtonCallback callback) :
+	Button(string& id,string& text,const vec2& position,const vec2& dimensions,const vec3& color/*, Texture2D& image*/,ButtonCallback callback) :
 		_text(text),
 		_position(position),
 		_dimensions(dimensions),
@@ -73,8 +73,8 @@ SINGLETON_BEGIN( GUI )
 public:
 	void draw();
 	void close();
-	void addText(string id, vec3& position, Font font, vec3& color, char* format, ...);
-	void addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback);
+	void addText(string id,const vec3& position, Font font,const vec3& color, char* format, ...);
+	void addButton(string id, string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback);
 	void modifyText(string id, char* format, ...);
 	void resize(int newWidth, int newHeight);
 	void clickCheck();

@@ -14,6 +14,7 @@ public:
 	void setActiveScene(Scene* scene) {_scene = scene;}
 
 	/*Base Scene Operations*/
+	void updateTransformations(){_scene->updateTransformations();}
 	void render() {_scene->render();}
 	void preRender() {_scene->preRender();}
 	bool load(const string& name) {_scene->setInitialData(); return _scene->load(name);}

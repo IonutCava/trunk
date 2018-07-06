@@ -17,8 +17,6 @@ and a name.
 
 #include "resource.h"
 #include "Hardware/Video/VertexBufferObject.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Utility/Headers/BoundingBox.h"
 #include "Utility/Headers/DataTypes.h"
 
 class SubMesh : public Object3D
@@ -44,6 +42,7 @@ private:
 	BoundingBox			_boundingBox;
 	Material		    _material;
 	vector<U32>         _indices;
+	U32                 _vboPositionOffset;
 };
 
 #endif

@@ -51,7 +51,7 @@
 #define DegToRad(a)	(a)*=M_PIDIV180
 #define RadToDeg(a)	(a)*=M_180DIVPI
 #define RADIANS(a)	((a)*M_PIDIV180)
-#define DEGRES(a)	((a)*M_180DIVPI)
+#define DEGREES(a)	((a)*M_180DIVPI)
 
 
 const float INV_RAND_MAX = 1.0 / (RAND_MAX + 1);
@@ -248,6 +248,7 @@ public:
 		struct {float x,y,z;};
 		struct {float s,t,p;};
 		struct {float r,g,b;};
+		struct {float pitch,yaw,roll;};
 		float v[3];
 	};
 	
@@ -631,6 +632,22 @@ public:
 					this->mat[2] * m[12] + this->mat[6] * m[13] + this->mat[10] * m[14] + this->mat[14] * m[15],
 					this->mat[3] * m[12] + this->mat[7] * m[13] + this->mat[11] * m[14] + this->mat[15] * m[15]);
 	}
+
+	// premultiply the matrix by the given matrix
+	void multmatrix(const mat4& m) {
+		float tmp[4];
+		for (int j=0; j<4; j++) {
+			tmp[0] = mat[j];
+			tmp[1] = mat[4+j];
+			tmp[2] = mat[8+j]; 
+			tmp[3] = mat[12+j];
+			for (int i=0; i<4; i++) {
+				mat[4*i+j] = m[4*i]*tmp[0] + m[4*i+1]*tmp[1] +
+				m[4*i+2]*tmp[2] + m[4*i+3]*tmp[3]; 
+			}
+		} 
+	}
+
 	mat4 operator+(const mat4 &m) const {
 		return mat4(this->mat[0]  + m[0],  this->mat[1]  + m[1],  this->mat[2]  + m[2],  this->mat[3]  + m[3],
 					this->mat[4]  + m[4],  this->mat[5]  + m[5],  this->mat[6]  + m[6],  this->mat[7]  + m[7],
@@ -684,7 +701,6 @@ public:
 	}
 	
 	void inverse(mat4& ret) {
-//		mat4 *ret = new mat4();
 		float idet = 1.0f / det();
 		ret[0]  =  (this->mat[5] * this->mat[10] - this->mat[9] * this->mat[6]) * idet;
 		ret[1]  = -(this->mat[1] * this->mat[10] - this->mat[9] * this->mat[2]) * idet;
@@ -702,41 +718,8 @@ public:
 		ret[13] = -(this->mat[12] * (ret)[1] + this->mat[13] * (ret)[5] + this->mat[14] * (ret)[9]);
 		ret[14] = -(this->mat[12] * (ret)[2] + this->mat[13] * (ret)[6] + this->mat[14] * (ret)[10]);
 		ret[15] = 1.0;
-//		return *ret;
 	}
-/*	
-// MATINVERSE BY FRANKOI
-void mat_inverse (float *in, float *out)
-{
-    float det, oneOverDet;
 
-  det = in[0] * ((in[5] * in[10]) - (in[6] * in[9]))
-    + in[1] * ((in[6] * in[8]) - (in[4] * in[10]))
-    + in[2] * ((in[4] * in[9]) - (in[5] * in[8]));
-
-  oneOverDet = 1.0f / det;
-
-  out[0] = ((in[5] * in[10])- (in[6] * in[9])) * oneOverDet;
-  out[1] = ((in[2] * in[9]) - (in[1] * in[10]))* oneOverDet;
-  out[2] = ((in[1] * in[6]) - (in[2] * in[5])) * oneOverDet;
-  out[3] = 0.0f;
-
-  out[4] = ((in[6] * in[8]) - (in[4] * in[10]))* oneOverDet;
-  out[5] = ((in[0] * in[10])- (in[2] * in[8])) * oneOverDet;
-  out[6] = ((in[2] * in[4]) - (in[0] * in[6])) * oneOverDet;
-  out[7] = 0.0f;
-
-  out[8] = ((in[4] * in[9]) - (in[5] * in[8])) * oneOverDet;
-  out[9] = ((in[1] * in[8]) - (in[0] * in[9])) * oneOverDet;
-  out[10]= ((in[0] * in[5]) - (in[1] * in[4])) * oneOverDet;
-  out[11]= 0.0f;
-
-  out[12] = 0.0f;
-  out[13] = 0.0f;
-  out[14] = 0.0f;
-  out[15] = 1.0f;
-}
-*/
 	void zero(void) {
 		this->mat[0] = 0.0; this->mat[4] = 0.0; this->mat[8] = 0.0; this->mat[12] = 0.0;
 		this->mat[1] = 0.0; this->mat[5] = 0.0; this->mat[9] = 0.0; this->mat[13] = 0.0;
@@ -764,55 +747,51 @@ void mat_inverse (float *in, float *out)
 		float xs = v.x * s;
 		float ys = v.y * s;
 		float zs = v.z * s;
-		this->mat[0] = (1.0f - c) * xx + c;  this->mat[4] = (1.0f - c) * xy - zs; this->mat[8] = (1.0f - c) * zx + ys; this->mat[12] = 0.0;
-		this->mat[1] = (1.0f - c) * xy + zs; this->mat[5] = (1.0f - c) * yy + c;  this->mat[9] = (1.0f - c) * yz - xs; this->mat[13] = 0.0;
-		this->mat[2] = (1.0f - c) * zx - ys; this->mat[6] = (1.0f - c) * yz + xs; this->mat[10] = (1.0f - c) * zz + c; this->mat[14] = 0.0;
-		this->mat[3] = 0.0;                  this->mat[7] = 0.0;                  this->mat[11] = 0.0;                 this->mat[15] = 1.0;
+		mat[0] = (1.0f - c) * xx + c;  mat[4] = (1.0f - c) * xy - zs; mat[8] = (1.0f - c) * zx + ys;
+		mat[1] = (1.0f - c) * xy + zs; mat[5] = (1.0f - c) * yy + c;  mat[9] = (1.0f - c) * yz - xs; 
+		mat[2] = (1.0f - c) * zx - ys; mat[6] = (1.0f - c) * yz + xs; mat[10] = (1.0f - c) * zz + c;
 	}
+
 	void rotate(float x,float y,float z,float angle) {
 		rotate(vec3(x,y,z),angle);
 	}
+
 	void rotate_x(float angle) {
 		DegToRad(angle);
 		float c = (float)cos(angle);
 		float s = (float)sin(angle);
-		this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-		this->mat[1] = 0.0; this->mat[5] =  c;  this->mat[9]  = -s;  this->mat[13] = 0.0;
-		this->mat[2] = 0.0; this->mat[6] =  s;  this->mat[10] =  c;  this->mat[14] = 0.0;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		mat[5] =  c;  mat[9]  = -s; 
+		mat[6] =  s;  mat[10] =  c;
 	}
 	void rotate_y(float angle) {
 		DegToRad(angle);
 		float c = (float)cos(angle);
 		float s = (float)sin(angle);
-		this->mat[0] =  c;  this->mat[4] = 0.0; this->mat[8]  =  s;  this->mat[12] = 0.0;
-		this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-		this->mat[2] = -s;  this->mat[6] = 0.0; this->mat[10] =  c;  this->mat[14] = 0.0;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		mat[0] =  c; mat[8]  =  s;
+		mat[2] = -s; mat[10] =  c;
 	}
 	void rotate_z(float angle) {
 		DegToRad(angle);
 		float c = (float)cos(angle);
 		float s = (float)sin(angle);
-		this->mat[0] =  c;  this->mat[4] = -s;  this->mat[8]  = 0.0; this->mat[12] = 0.0;
-		this->mat[1] =  s;  this->mat[5] =  c;  this->mat[9]  = 0.0; this->mat[13] = 0.0;
-		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		mat[0] =  c;  mat[4] = -s;  
+		mat[1] =  s;  mat[5] =  c;
+		
 	}
+
 	void scale(const vec3 &v) {
-		this->mat[0] = v.x; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
-		this->mat[1] = 0.0; this->mat[5] = v.y; this->mat[9]  = 0.0; this->mat[13] = 0.0;
-		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = v.z; this->mat[14] = 0.0;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		mat[0] = v.x; 
+	    mat[5] = v.y; 
+		mat[10] = v.z; 
 	}
+
 	void scale(float x,float y,float z) {
 		scale(vec3(x,y,z));
 	}
 	void translate(const vec3 &v) {
-		this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = v.x;
-		this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = v.y;
-		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = v.z;
-		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
+		this->mat[12] = v.x;
+		this->mat[13] = v.y;
+		this->mat[14] = v.z;
 	}
 	void translate(float x,float y,float z) {
 		translate(vec3(x,y,z));

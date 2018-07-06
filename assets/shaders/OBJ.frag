@@ -14,14 +14,13 @@ void main (void)
 	{
 		cBase = texture2D(texDiffuse0, gl_TexCoord[0].st);
 		if(textureCount == 2) cBase *= texture2D(texDiffuse1, gl_TexCoord[0].st);
-		if(cBase.a < 0.4) discard;
 		outColor = cAmbient * cBase + cDiffuse * cBase; 
 	}
 	else
 	{
 		outColor = cAmbient + cDiffuse;
 	}
-
+	if(outColor.a < 0.2) discard;
 
 	gl_FragColor = outColor ;
 

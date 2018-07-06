@@ -71,7 +71,21 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 	_loaded = true;
 }
 
-void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
+void TerrainManager::setDepthMap(int index, FrameBufferObject* depthMap)
+{
+	if(!_loaded) return;
+	if(_resDB.size() > 0)
+	{
+		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
+		{
+			_terrain = (Terrain*)_resDBiter->second;
+			_terrain->m_fboDepthMapFromLight[index] = depthMap;
+		}	
+	}
+	else return;
+}
+
+void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion, bool drawDepthMap, vec4& ambientColor)
 {
 	if(!_loaded) return;
 	if(_resDB.size() > 1)
@@ -79,24 +93,24 @@ void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion,vec4& 
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			_terrain = (Terrain*)_resDBiter->second;
-			drawTerrain(drawInactive,drawInReflexion,ambientColor);
+			drawTerrain(drawInactive,drawInReflexion,drawDepthMap,ambientColor);
 			
 		}
 	}
 	else if(_resDB.size() == 1)
 	{
 		_terrain = (Terrain*)_resDB.begin()->second;
-		drawTerrain(drawInactive,drawInReflexion);
+		drawTerrain(drawInactive,drawInReflexion,drawDepthMap,ambientColor);
 	}
 	else return;
 }
 
-void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
+void TerrainManager::drawTerrain(bool drawInactive, bool drawInReflexion,bool drawDepthMap,vec4& ambientColor)
 {
 	if(drawInactive) _terrain->setLoaded(true);
 	else _terrain->restoreLoaded();
 
-	_terrain->toggleRenderingParams(drawInReflexion,ambientColor);
+	_terrain->toggleRenderingParams(drawInReflexion,drawDepthMap,ambientColor);
 	_terrain->draw();
 }
 

@@ -61,11 +61,11 @@ char* glShader::shaderFileRead(const std::string &fn) {
 
 int glShader::shaderFileWrite(char *fn, char *s) {
 
-	FILE *fp;
+	FILE *fp = NULL;
 	int status = 0;
 
 	if (fn != NULL) {
-		fp = fopen(fn,"w");
+		fopen_s(&fp,fn,"w");
 
 		if (fp != NULL) {
 			

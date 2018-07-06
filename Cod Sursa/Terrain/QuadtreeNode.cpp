@@ -69,10 +69,10 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 			if(vertex.y < terrain_BBox.min.y)	terrain_BBox.min.y = vertex.y;
 		}
 
-		for(U32 i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
+		/*for(U32 i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
 			DVDFile& obj = m_pTerrainChunk->getTreeArray()[ i ];
 			terrain_BBox.Add( obj.getBoundingBox() );
-		}
+		}*/
 	}
 
 
@@ -97,12 +97,12 @@ void QuadtreeNode::Destroy()
 	}
 }
 
-void QuadtreeNode::DrawGrass(bool drawInReflexion)
+void QuadtreeNode::DrawGrass(bool drawInReflexion,bool drawDepthMap)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawGrass( (U32)m_nLOD, m_fDistance );
+			m_pTerrainChunk->DrawGrass( (U32)m_nLOD, m_fDistance, drawDepthMap );
 		else
 			return;
 	}
@@ -110,17 +110,17 @@ void QuadtreeNode::DrawGrass(bool drawInReflexion)
 		int ret = 0;
 		if( m_nLOD>=0 )
 			for(int i=0; i<4; i++)
-				m_pChildren[i].DrawGrass(drawInReflexion);
+				m_pChildren[i].DrawGrass(drawInReflexion, drawDepthMap);
 		return;		
 	}
 }
 
-void QuadtreeNode::DrawTrees(bool drawInReflexion)
+void QuadtreeNode::DrawTrees(bool drawInReflexion,bool drawDepthMap)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD , m_fDistance );
+			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD , m_fDistance,drawDepthMap );
 		else
 			return;
 	}
@@ -128,17 +128,17 @@ void QuadtreeNode::DrawTrees(bool drawInReflexion)
 		int ret = 0;
 		if( m_nLOD>=0 )
 			for(int i=0; i<4; i++)
-				m_pChildren[i].DrawTrees(drawInReflexion);
+				m_pChildren[i].DrawTrees(drawInReflexion, drawDepthMap);
 		return;		
 	}
 }
 
-int QuadtreeNode::DrawObjects(bool drawInReflexion)
+int QuadtreeNode::DrawObjects(bool drawInReflexion,bool drawDepthMap)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			return m_pTerrainChunk->DrawObjects(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD );
+			return m_pTerrainChunk->DrawObjects(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD,drawDepthMap );
 		else
 			return 0;
 	}
@@ -146,7 +146,7 @@ int QuadtreeNode::DrawObjects(bool drawInReflexion)
 		int ret = 0;
 		if( m_nLOD>=0 )
 			for(int i=0; i<4; i++)
-				ret += m_pChildren[i].DrawObjects(drawInReflexion);
+				ret += m_pChildren[i].DrawObjects(drawInReflexion,drawDepthMap);
 		return ret;		
 	}
 }

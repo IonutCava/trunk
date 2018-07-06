@@ -2,6 +2,7 @@
 #define BOUNDINGBOX_H_
 #include "MathClasses.h"
 #include "Utility/Headers/Ray.h"
+#include "Utility/Headers/Transform.h"
 //ToDo: -Add BoundingSphere -Ionut
 class BoundingBox
 {
@@ -29,7 +30,7 @@ public:
 
 	// Optimized method
 	inline bool intersect(const Ray &r, F32 t0, F32 t1) const {
-		float tmin, tmax, tymin, tymax, tzmin, tzmax;
+		F32 tmin, tmax, tymin, tymax, tzmin, tzmax;
 		vec3 bounds[2];
 		bounds[0] = min; bounds[1] = max;
 
@@ -90,6 +91,7 @@ public:
 		max.y *= v.y;
 		max.z *= v.z;
 	}
+
 	inline void MultiplyMax(const vec3& v){
 		max.x *= v.x;
 		max.y *= v.y;
@@ -101,18 +103,21 @@ public:
 		min.z *= v.z;
 	}
 
-	void transform(const mat4 &mat)
+	void transform(Transform* t)
 	{
-		float av, bv;
-		int   i, j;
-		float m[4][4];
-	    m[0][0] = mat[0]; m[1][0] = mat[1]; m[2][0] = mat[2];  m[3][0] = mat[3];
-		m[0][1] = mat[4]; m[1][1] = mat[5]; m[2][1] = mat[6];  m[3][1] = mat[7];
-		m[0][2] = mat[8]; m[1][2] = mat[9]; m[2][2] = mat[10]; m[3][2] = mat[11];
-		m[0][3] = mat[12]; m[1][3] = mat[13]; m[2][3] = mat[14]; m[3][3] = mat[15];
-			
-		BoundingBox new_box(vec3(mat[12], mat[13], mat[14]),vec3(mat[12], mat[13], mat[14]));
+		if(!t->isDirty()) return;
+		const mat4& mat = t->getMatrix();
+		F32 av, bv;
+		U32   i, j;
+		F32 m[4][4];
+	    m[0][0] = mat[0];  m[0][1] = mat[4];  m[0][2] = mat[8];  m[0][3] = mat[12];
+		m[1][0] = mat[1];  m[1][1] = mat[5];  m[1][2] = mat[9];  m[1][3] = mat[13];
+		m[2][0] = mat[2];  m[2][1] = mat[6];  m[2][2] = mat[10]; m[2][3] = mat[14];
+		m[3][0] = mat[3];  m[3][1] = mat[7];  m[3][2] = mat[11]; m[3][3] = mat[15];
+		BoundingBox new_box;
 		for (i = 0; i < 3; i++)
+		{
+			new_box.min[i] = new_box.max[i] = 0;
 			for (j = 0; j < 3; j++)
 			{
 				av = m[i][j] * min[j];
@@ -122,13 +127,17 @@ public:
 					new_box.min[i] += av;
 					new_box.max[i] += bv;
 				} else {
+
 					new_box.min[i] += bv;
 					new_box.max[i] += av;
 				}
 			}
-
-		min = new_box.min;		
+		}
+		cout << "OLD BB: "  << min.x  << " , " << min.y  << " , " <<  min.z << " || " << max.x  << " , " <<  max.y   << " , " << max.z << endl;
+		min = new_box.min;
 		max = new_box.max;
+		cout << "NEW BB: "  << min.x  << " , " << min.y  << " , " <<  min.z << " || " << max.x  << " , " <<  max.y   << " , " << max.z << endl;
+
 	}
 
 	

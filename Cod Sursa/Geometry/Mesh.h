@@ -27,24 +27,18 @@ public:
 
 	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
 	
+	bool optimizeSubMeshes();
 
 	
 	inline vector<SubMesh*>&   getSubMeshes()   {return _subMeshes;}
-	inline BoundingBox&        getBoundingBox();
 	inline vector<Shader* >&   getShaders()      {return _shaders; }
 	inline SubMesh*            getSubMesh(const string& name);
 
 	void                addShader(Shader* s) {_shaders.push_back(s);}
-	void                setPosition(vec3 position);
-	void				setScale(vec3 scale);
 	void                setVisibility(bool state) {_render = state;}
 	bool isVisible();
-	
-	void                translate(vec3 position);
-	void                translateX(F32 distance) {translate(vec3(distance,0,0));}
-	void                translateY(F32 distance) {translate(vec3(0,distance,0));}
-	void                translateZ(F32 distance) {translate(vec3(0,0,distance));}
 
+	void				updateBBox();
 protected:
 	bool isInView();
 	void computeBoundingBox();
@@ -57,7 +51,6 @@ protected:
 	vector<SubMesh* >			 _subMeshes;
 	vector<SubMesh* >::iterator  _subMeshIterator;
 	vector<Shader*>				 _shaders;
-	BoundingBox			         _bb;
 };
 
 #endif

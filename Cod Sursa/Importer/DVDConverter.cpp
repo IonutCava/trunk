@@ -104,7 +104,6 @@ bool DVDFile::load(const string& file)
 		index = getSubMeshes().size();
 		addSubMesh(new SubMesh(temp));
 		temp.clear();
-
 		for(U32 j = 0; j < scene->mMeshes[n]->mNumVertices; j++)
 		{
 			getSubMeshes()[index]->getGeometryVBO()->getPosition().push_back(vec3(scene->mMeshes[n]->mVertices[j].x,
@@ -180,9 +179,9 @@ bool DVDFile::load(const string& file)
 		max = 1;
 		aiReturn ret2 = aiGetMaterialFloatArray( mat, AI_MATKEY_SHININESS_STRENGTH, &strength, &max);
 		if((ret1 == AI_SUCCESS) && (ret2 == AI_SUCCESS))
-			 getSubMeshes()[index]->getMaterial().shininess = shininess * strength;
+			getSubMeshes()[index]->getMaterial().shininess = shininess * strength;
 		else
-				getSubMeshes()[index]->getMaterial().shininess = 0.0f;
+			getSubMeshes()[index]->getMaterial().shininess = 0.0f;
 
 		while(result == AI_SUCCESS)
 		{
@@ -213,7 +212,6 @@ bool DVDFile::load(const string& file)
 			}
 		}
 	}
-
 	_render = true;
 	return _render;
 }

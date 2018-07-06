@@ -27,7 +27,7 @@ public:
 
 	void initialize(string grassShader);
 	void toggleRendering(bool state){_render = state;}
-	void draw(bool drawInReflexion);
+	void draw(bool drawInReflexion,bool drawDepthMap);
 
 private:
 	//variables
@@ -52,8 +52,8 @@ private:
 	vector<U32>	_grassIndice;
 	
 		
-	void DrawGrass(int index,bool drawInReflexion);
-	void DrawTrees(bool drawInReflexion);
+	void DrawGrass(int index,bool drawInReflexion,bool drawDepthMap);
+	void DrawTrees(bool drawInReflexion,bool drawDepthMap);
 };
 
 #endif

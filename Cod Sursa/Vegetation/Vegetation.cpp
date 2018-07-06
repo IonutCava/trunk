@@ -22,7 +22,7 @@ void Vegetation::initialize(string grassShader)
 
 }
 
-void Vegetation::draw(bool drawInReflexion)
+void Vegetation::draw(bool drawInReflexion,bool drawDepthMap)
 {
 	if(!_render || !_success) return;
 	_grassShader->bind();
@@ -39,14 +39,14 @@ void Vegetation::draw(bool drawInReflexion)
 		_grassShader->Uniform("windDirectionZ",_windZ);
 		_grassShader->Uniform("windSpeed", _windS);
 		_grassShader->Uniform("scale", _grassScale);
-			DrawGrass(index,drawInReflexion);
+			DrawGrass(index,drawInReflexion,drawDepthMap);
 		_grassBillboards[index]->Unbind(0);
 		
 		
 	}
 	_grassShader->unbind();
 
-	DrawTrees(drawInReflexion);
+	DrawTrees(drawInReflexion,drawDepthMap);
 }
 
 
@@ -174,17 +174,17 @@ bool Vegetation::generateTrees()
 	return true;
 }
 
-void Vegetation::DrawTrees(bool drawInReflexion)
+void Vegetation::DrawTrees(bool drawInReflexion,bool drawDepthMap)
 {
-	_terrain.getQuadtree().DrawTrees(drawInReflexion);
+	_terrain.getQuadtree().DrawTrees(drawInReflexion,drawDepthMap);
 }
 
-void Vegetation::DrawGrass(int index,bool drawInReflexion)
+void Vegetation::DrawGrass(int index,bool drawInReflexion,bool drawDepthMap)
 {
 	if(_grassVBO[index])
 	{
 		_grassVBO[index]->Enable();
-			_terrain.getQuadtree().DrawGrass(drawInReflexion);
+			_terrain.getQuadtree().DrawGrass(drawInReflexion,drawDepthMap);
 		_grassVBO[index]->Disable();
 	}
 }

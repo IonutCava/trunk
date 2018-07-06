@@ -48,9 +48,8 @@ void Terrain::destroy()
 	}
 }
 
-void Terrain::terrainSetParameters(vec3& pos, vec2& scale)
+void Terrain::terrainSetParameters(const vec3& pos,const vec2& scale)
 {
-	if(pos.y == 0) pos.y = 0.01f;
 	terrainHeightScaleFactor = scale.y;
 	terrainScaleFactor = scale.x;
 	//Terrain dimensions:
@@ -251,7 +250,7 @@ vec3 Terrain::getTangent(F32 x_clampf, F32 z_clampf) const
 
 int Terrain::drawObjects() const
 {
-		int ret = terrain_Quadtree->DrawObjects(_drawInReflexion);
+	int ret = terrain_Quadtree->DrawObjects(_drawInReflexion,_drawDepthMap);
 
 	return ret;
 }
@@ -260,7 +259,7 @@ void Terrain::draw() const
 {
 	if(!_loaded) return;
 
-	_veg->draw(_drawInReflexion);
+	_veg->draw(_drawInReflexion,_drawDepthMap);
 
 	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, _ambientColor);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, vec4(1.0f, 1.0f, 1.0f, 1.0f));
@@ -274,10 +273,14 @@ void Terrain::draw() const
 		for(U32 i=0; i<m_tTextures.size(); i++)
 			m_tTextures[i]->Bind(idx++);
 		m_pTerrainDiffuseMap->Bind(idx++);
+		if(!_drawDepthMap) {
+			for(GLuint i=0; i<2; i++)
+				m_fboDepthMapFromLight[i]->Bind(idx++);
+		}
 		terrainShader->bind();
 		{
-			terrainShader->Uniform("detail_scale", 120.0f);
-			terrainShader->Uniform("diffuse_scale", 70.0f);
+			terrainShader->Uniform("detail_scale", 200.0f);
+			terrainShader->Uniform("diffuse_scale", 200.0f);
 
 			terrainShader->Uniform("water_height", 1);
 			terrainShader->Uniform("water_reflection_rendering", _drawInReflexion);
@@ -290,6 +293,8 @@ void Terrain::draw() const
 			terrainShader->UniformTexture("texDiffuse2", 3);
 			terrainShader->UniformTexture("texWaterCaustics", 4);
 			terrainShader->UniformTexture("texDiffuseMap", 5);
+			terrainShader->UniformTexture("texDepthMapFromLight0", 6);
+			terrainShader->UniformTexture("texDepthMapFromLight1", 7);
 			terrainShader->Uniform("bbox_min", terrain_BBox.min);
 			terrainShader->Uniform("bbox_max", terrain_BBox.max);
 			terrainShader->Uniform("fog_color", vec3(0.7f, 0.7f, 0.9f));
@@ -297,7 +302,10 @@ void Terrain::draw() const
 			drawGround(_drawInReflexion);
 		}
 		terrainShader->unbind();
-
+		if(!_drawDepthMap) {
+			for(GLint i=2-1; i>=0; i--)
+				m_fboDepthMapFromLight[i]->Unbind(--idx);
+		}
 		m_pTerrainDiffuseMap->Unbind(--idx);
 		for(int i=(GLint)m_tTextures.size()-1; i>=0; i--)
 			m_tTextures[i]->Unbind(--idx);
@@ -310,7 +318,7 @@ int Terrain::drawGround(bool drawInReflexion) const
 	assert(m_pGroundVBO);
 
 	m_pGroundVBO->Enable();
-		int ret = terrain_Quadtree->DrawGround(drawInReflexion);
+		int ret = terrain_Quadtree->DrawGround(drawInReflexion,_drawDepthMap);
 	m_pGroundVBO->Disable();
 
 	return ret;

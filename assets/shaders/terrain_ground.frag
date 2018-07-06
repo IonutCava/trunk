@@ -1,3 +1,5 @@
+
+
 varying vec4 vPixToLightTBN;	// Vecteur du pixel courant à la lumière
 varying vec3 vPixToEyeTBN;		// Vecteur du pixel courant à l'oeil
 varying vec3 vPosition;
@@ -9,7 +11,6 @@ uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
 uniform sampler2D texDiffuse2;
 uniform sampler2D texWaterCaustics;
-//uniform sampler2D shadowMap;
 
 uniform float parallax_factor;
 uniform float detail_scale;
@@ -24,7 +25,15 @@ uniform float time;
 uniform vec3 bbox_min;
 uniform vec3 bbox_max;
 
+// SHADOW MAPPING //
+uniform int depth_map_size;
+uniform sampler2DShadow texDepthMapFromLight0;
+uniform sampler2DShadow texDepthMapFromLight1;
+#define Z_TEST_SIGMA 0.0001
+////////////////////
 
+
+float ShadowMapping(vec4 vVertexFromLightView);
 vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParallax);
 vec4 ReliefMapping(vec2 uv);
 vec4 CausticsColor();
@@ -115,15 +124,109 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 		iSpecular = pow(clamp(dot(reflect(-lightVecTBN.xyz, normalTBN), viewVecTBN), 0.0, 1.0), gl_FrontMaterial.shininess )/2.0;
 	
 	
-
+	/////////////////////////
+	// SHADOW MAPS
+	float distance_max = 200.0;
+	float shadow = 1.0;
+	float distance = length(vPixToEyeTBN);
+	if(distance < distance_max) {
+		shadow = ShadowMapping(gl_TexCoord[1]);
+		shadow = 1.0 - (1.0-shadow) * (distance_max-distance) / distance_max;
+	}
+	/////////////////////////
+	
 	
 	vec4 cAmbient = gl_LightSource[0].ambient * gl_FrontMaterial.ambient;
-	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse;	
-	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;	
+	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse * shadow;	
+	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular * shadow;	
 
-	
 	return cAmbient * cBase + cDiffuse * cBase + cSpecular;
 }
+
+
+
+float ShadowMapping(vec4 vVertexFromLightView)
+{
+	float fShadow = 0.0;
+/*			
+	vec2 tOffset[3*3];
+	tOffset[0] = vec2(-1.0, -1.0); tOffset[1] = vec2(0.0, -1.0); tOffset[2] = vec2(1.0, -1.0);
+	tOffset[3] = vec2(-1.0,  0.0); tOffset[4] = vec2(0.0,  0.0); tOffset[5] = vec2(1.0,  0.0);
+	tOffset[6] = vec2(-1.0,  1.0); tOffset[7] = vec2(0.0,  1.0); tOffset[8] = vec2(1.0,  1.0);
+*/
+	float tOrtho[2];
+	tOrtho[0] = 20.0;
+	tOrtho[1] = 100.0;
+	
+
+	bool ok = false;
+	int id = 0;
+	vec3 vPixPosInDepthMap;
+	
+	for(int i=0; i<2; i++) 
+	{
+		if(!ok)
+		{
+			vPixPosInDepthMap = vec3(vVertexFromLightView.xy/tOrtho[i], vVertexFromLightView.z) / (vVertexFromLightView.w);
+			vPixPosInDepthMap = (vPixPosInDepthMap + 1.0) * 0.5;					// de l'intervale [-1 1] à [0 1]
+			
+			if(vPixPosInDepthMap.x >= 0.0 && vPixPosInDepthMap.y >= 0.0 && vPixPosInDepthMap.x <= 1.0 && vPixPosInDepthMap.y <= 1.0)
+			{
+				id = i;
+				ok = true;
+			}
+		}
+	}
+	
+	if(ok)
+	{
+		vec4 vDepthMapColor = vec4(0.0, 0.0, 0.0, 1.0);
+		if(id == 0)	vDepthMapColor = shadow2D(texDepthMapFromLight0, vPixPosInDepthMap);
+		else		vDepthMapColor = shadow2D(texDepthMapFromLight1, vPixPosInDepthMap);
+		
+
+		if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z)
+		{
+			fShadow = clamp((vPixPosInDepthMap.z - vDepthMapColor.z)*10.0, 0.0, 1.0);
+			
+			/*
+			// Soft Shadow pour les fragments proches
+			if( id == 0 )
+			{
+				float fMaxShadow = fShadow;
+				fShadow = 0.0;
+
+				for(int i=0; i<9; i++)
+				{
+					vec2 offset = tOffset[i] / (float(depth_map_size));
+					// Couleur du pixel sur la depth map
+					vec4 vDepthMapColor = shadow2D(texDepthMapFromLight0, vPixPosInDepthMap + vec3(offset.s, offset.t, 0.0));
+			
+					if((vDepthMapColor.z+Z_TEST_SIGMA) < vPixPosInDepthMap.z) {
+						fShadow += 0.0;
+					}
+					else {
+						fShadow += fMaxShadow / 9.0;
+					}
+				}
+			}*/
+		}
+		else
+		{
+			fShadow = 1.0;
+		}
+
+
+		fShadow = clamp(fShadow, 0.0, 1.0);
+	}
+	else fShadow = 1.0;
+	
+	return fShadow;
+}
+
+
+
+
 
 
 
