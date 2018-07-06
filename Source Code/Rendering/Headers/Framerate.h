@@ -79,8 +79,8 @@ private:
     boost::atomic<F32> _fps;
 public:
 
-    void Init(U8 targetFrameRate);
-    void SetSpeedFactor();
+    void init(U8 targetFrameRate);
+    void update();
 
     inline void benchmark(bool state)  {_benchmark = state;}
     inline bool benchmark()      const {return _benchmark;}
@@ -90,7 +90,7 @@ public:
 
     inline D32 getElapsedTime(){ //in milliseconds
         if(!_init)
-            return 0;
+            return 0.0;
 
         QueryPerformanceCounter(&_currentTicks);
         return (_currentTicks.QuadPart-_startupTicks.QuadPart) / static_cast<D32>(_ticksPerMillisecond);
@@ -121,6 +121,8 @@ public:
     void stop();
     void print() const;
 
+    void reset();
+
     inline const char* name() const {return _name;}
     inline D32         get()  const {return _timer;}
     inline bool        init() const {return _init;}
@@ -128,8 +130,8 @@ public:
 protected:
     const char*        _name;
     boost::atomic_bool _init;
-    D32 _timer;
-    D32 _timerAverage;
+    boost::atomic<D32> _timer;
+    boost::atomic<D32> _timerAverage;
     boost::atomic_int  _timerCounter;
 };
 

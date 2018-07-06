@@ -4,7 +4,7 @@
 #include "Utility/Headers/Localization.h"
 
 #if defined(_DEBUG) || defined(_PROFILE)
-ProfileTimer::ProfileTimer() : _init(false), _timer(0.0), _timerAverage(0.0)
+ProfileTimer::ProfileTimer() : _init(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
 {
 }
 
@@ -14,19 +14,23 @@ ProfileTimer::~ProfileTimer()
     SAFE_DELETE(_name);
 }
 
+void ProfileTimer::reset() {
+    _timerAverage = 0.0;
+    _timerCounter = 0;
+}
+
 void ProfileTimer::start(){
-    _timerAverage = _timerAverage + _timer;
-    _timerCounter++;
     _timer = Framerate::getInstance().getElapsedTime();
 }
 
 void ProfileTimer::stop(){
     _timer = Framerate::getInstance().getElapsedTime() - _timer;
+    _timerAverage = _timerAverage + _timer;
+    _timerCounter++;
 }
 
 void ProfileTimer::create(const char* name){
-    if(_init)
-        return;
+    if(_init) return;
 
     _name = strdup(name);
     _init = true;
@@ -53,7 +57,7 @@ void Framerate::removeTimer(ProfileTimer* const timer) {
 #endif
 
 ///No need for init to be threadsafe
-void Framerate::Init(U8 targetFrameRate) {
+void Framerate::init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init
 
     _targetFrameRate = static_cast<F32>(targetFrameRate);
@@ -73,7 +77,16 @@ void Framerate::Init(U8 targetFrameRate) {
     _init = true;
 }
 
-void Framerate::SetSpeedFactor(){
+namespace {
+    static U32 count = 0;
+    static U32 averageCount = 0;
+    static F32 maxFps = std::numeric_limits<F32>::min();
+    static F32 minFps = std::numeric_limits<F32>::max();
+    static F32 averageFps = 0.0f;
+    static F32 averageFpsTotal = 0.0f;
+};
+
+void Framerate::update(){
     LI currentTicks;
 
 #if defined( OS_WINDOWS )
@@ -95,22 +108,10 @@ void Framerate::SetSpeedFactor(){
     _fps = _targetFrameRate / _speedfactor;
     _frameTime = 1000.0f / _fps;
 
-    benchmarkInternal();
+    if(_benchmark) benchmarkInternal();
 }
 
-namespace {
-    static U32 count = 0;
-    static U32 averageCount = 0;
-    static F32 maxFps = std::numeric_limits<F32>::min();
-    static F32 minFps = std::numeric_limits<F32>::max();
-    static F32 averageFps = 0.0f;
-    static F32 averageFpsTotal = 0.0f;
-};
-
 void Framerate::benchmarkInternal(){
-    if(!_benchmark)
-        return;
-
     //Average FPS
     averageFps += _fps;
     averageCount++;
@@ -123,12 +124,14 @@ void Framerate::benchmarkInternal(){
 
     //Every 10 seconds (targeted)
     if(count > _targetFrameRate * 10){
+        averageFpsTotal += averageFps;
+
         F32 avgFPS = averageFpsTotal / averageCount;
         PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, maxFps, minFps, 1000.0f / avgFPS);
-        averageFpsTotal += averageFps;
 #if defined(_DEBUG) || defined(_PROFILE)
         for(vectorImpl<ProfileTimer* >::iterator it = _profileTimers.begin(); it != _profileTimers.end(); ++it){
             (*it)->print();
+            (*it)->reset();
         }
 #endif
         averageFps = 0;

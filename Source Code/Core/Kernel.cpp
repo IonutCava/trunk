@@ -104,7 +104,7 @@ void Kernel::mainLoopApp(){
     //Restore GPU to default state: clear buffers and set default render state
     GFX_DEVICE.beginFrame();
     //Get current frame-to-application speed factor
-    Framerate::getInstance().SetSpeedFactor();
+    Framerate::getInstance().update();
     //Launch the FRAME_STARTED event
     FrameEvent evt;
     frameMgr.createEvent(FRAME_EVENT_STARTED,evt);
@@ -126,23 +126,29 @@ void Kernel::mainLoopApp(){
 }
 
 void Kernel::firstLoop(){
+    static bool first = true;
+    
     ParamHandler& par = ParamHandler::getInstance();
-    bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
-    par.setParam("rendering.enableShadows",false);
+    static bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
     //Skip one frame so all resources can be built while the splash screen is displayed
-    mainLoopApp();
-    Kernel::_applicationReady = true;
-#ifdef _DEBUG
-    Framerate::getInstance().benchmark(true);
+    if(first){
+        par.setParam("rendering.enableShadows",false);
+        mainLoopApp();
+        Kernel::_applicationReady = true;
+        //Hide splash screen
+        GFX_DEVICE.changeResolution(par.getParam<U16>("runtime.resolutionWidth"),
+                                    par.getParam<U16>("runtime.resolutionHeight"));
+        GFX_DEVICE.setWindowPos(10,50);
+        first = false;
+    }else{// skip another frame so all buffers and shaders are refreshed
+        par.setParam("rendering.enableShadows", shadowMappingEnabled);
+        mainLoopApp();
+        _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
+#if defined(_DEBUG) || defined(_PROFILE)
+        Framerate::getInstance().benchmark(true);
 #endif
-    //Hide splash screen
-    GFX_DEVICE.changeResolution(par.getParam<U16>("runtime.resolutionWidth"),
-                                par.getParam<U16>("runtime.resolutionHeight"));
-    GFX_DEVICE.setWindowPos(10,50);
-    //Bind main render loop
-    _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
+    }
     _currentTime =  GETMSTIME();
-    par.setParam("rendering.enableShadows", shadowMappingEnabled);
 }
 
 static const I32 SKIP_TICKS = 1000 / Config::TICKS_PER_SECOND;
@@ -216,7 +222,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     _GFX.setApi(OpenGL);
 
     //Target FPS is usually 60. So all movement is capped around that value
-    Framerate::getInstance().Init(Config::TARGET_FRAME_RATE);
+    Framerate::getInstance().init(Config::TARGET_FRAME_RATE);
 
     //Load info from XML files
     std::string startupScene = XML::loadScripts(entryPoint);
