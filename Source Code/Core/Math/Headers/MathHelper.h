@@ -284,7 +284,7 @@ stringImpl  Trim(const stringImpl& s);
 //http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 stringImpl StringFormat(const stringImpl fmt_str, ...);
 void CStringRemoveChar(char* str, char charToRemove);
-
+bool FileExists(const char* filePath);
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.
 @details The normalise uses a wrap around,

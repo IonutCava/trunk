@@ -106,7 +106,6 @@ namespace Attorney {
 DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
-
   public:
     static bool initStaticData();
 
@@ -206,8 +205,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     Scene* load(stringImpl name);
     bool   unloadScene(Scene*& scene);
 
-    Scene* findLoadedScene(const stringImpl& name) const;
-
   protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -248,7 +245,54 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
 
-    std::pair<stringImpl, bool> _sceneSwitchTarget;
+    struct SwitchSceneTarget {
+        SwitchSceneTarget()
+            : _targetSceneName(""),
+              _unloadPreviousScene(true),
+              _loadInSeparateThread(true),
+              _isSet(false)
+        {
+        }
+
+        inline void reset() {
+            _targetSceneName = "";
+            _unloadPreviousScene = true;
+            _loadInSeparateThread = true;
+            _isSet = false;
+        }
+
+        inline bool isSet() const {
+            return _isSet;
+        }
+
+        inline void set(const stringImpl& targetSceneName,
+                        bool unloadPreviousScene,
+                        bool loadInSeparateThread) {
+            _targetSceneName = targetSceneName;
+            _unloadPreviousScene = unloadPreviousScene;
+            _loadInSeparateThread = loadInSeparateThread;
+            _isSet = true;
+        }
+
+        inline const stringImpl& targetSceneName() const {
+            return _targetSceneName;
+        }
+
+        inline bool unloadPreviousScene() const {
+            return _unloadPreviousScene;
+        }
+
+        inline bool loadInSeparateThread() const {
+            return _loadInSeparateThread;
+        }
+
+     private:
+        stringImpl _targetSceneName;
+        bool _unloadPreviousScene;
+        bool _loadInSeparateThread;
+        bool _isSet;
+    } _sceneSwitchTarget;
+
 END_SINGLETON
 
 namespace Attorney {

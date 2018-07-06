@@ -341,5 +341,10 @@ void PlotFloatEvents(const char* eventName,
         }
     }
 }
+
+bool FileExists(const char* filePath) {
+    return std::ifstream(filePath).good();
+}
+
 };  // namespace Util
 };  // namespace Divide

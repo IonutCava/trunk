@@ -229,6 +229,18 @@
     <Filter Include="GUI\Headers">
       <UniqueIdentifier>{32875ac5-aea9-45bf-8f5f-4caad227e673}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\ShadowScene">
+      <UniqueIdentifier>{581f3320-5bf0-4809-a507-466fdba52c9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\ReflectionScene">
+      <UniqueIdentifier>{928ef2e0-f585-4cd9-8d61-ea48de8b2eed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\ShadowScene\Headers">
+      <UniqueIdentifier>{98a41b22-1305-48ad-9a8f-311e6cabb040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\ReflectionScene\Headers">
+      <UniqueIdentifier>{ff852d32-4bb2-42cb-bafe-14a73e79f572}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -473,6 +485,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\SceneGUIElements.cpp">
       <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\ShadowScene\ShadowScene.cpp">
+      <Filter>Scenes\ShadowScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\ReflectionScene\ReflectionScene.cpp">
+      <Filter>Scenes\ReflectionScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -722,6 +740,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\SceneGUIElements.h">
       <Filter>GUI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\ShadowScene\Headers\ShadowScene.h">
+      <Filter>Scenes\ShadowScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\ReflectionScene\Headers\ReflectionScene.h">
+      <Filter>Scenes\ReflectionScene\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

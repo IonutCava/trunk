@@ -381,7 +381,7 @@ void GFXDevice::drawPoints(U32 numPoints, size_t stateHash, const ShaderProgram_
     static const char* msgUnderflow = Locale::get(_ID("ERROR_GFX_POINTS_UNDERFLOW"));
     static const char* msgOverflow = Locale::get(_ID("ERROR_GFX_POINTS_OVERFLOW"));
     // We need a valid amount of points. Check lower limit
-    DIVIDE_ASSERT(numPoints != 0, msgUnderflow);
+    DIVIDE_ASSERT(numPoints > 0, msgUnderflow);
     // Also check upper limit
     DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, msgOverflow);
 

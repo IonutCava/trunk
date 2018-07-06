@@ -101,8 +101,10 @@ SceneManager::~SceneManager()
 }
 
 void SceneManager::idle() {
-    if (!_sceneSwitchTarget.first.empty()) {
-        switchScene(_sceneSwitchTarget.first, _sceneSwitchTarget.second);
+    if (_sceneSwitchTarget.isSet()) {
+        switchScene(_sceneSwitchTarget.targetSceneName(),
+                    _sceneSwitchTarget.unloadPreviousScene(),
+                    _sceneSwitchTarget.loadInSeparateThread());
         WaitForAllTasks(true, true);
     } else {
         _activeScene->idle();
@@ -134,57 +136,51 @@ bool SceneManager::init(GUI* const gui) {
     return true;
 }
 
-Scene* SceneManager::findLoadedScene(const stringImpl& name) const {
-    for (Scene* scene : _loadedScenes) {
-        if (scene->getName().compare(name) == 0) {
-            return scene;
+Scene* SceneManager::load(stringImpl sceneName) {
+    Scene* loadingScene = nullptr;
+    if (sceneName.empty()) {
+        sceneName = Scene::g_DefaultSceneName;
+    } else {
+        for (Scene* scene : _loadedScenes) {
+            if (scene->getName().compare(sceneName) == 0) {
+                loadingScene = scene;
+                break;
+            }
         }
     }
 
-    return nullptr;
-}
-
-Scene* SceneManager::load(stringImpl sceneName) {
-    bool loadDefaultScene = sceneName.empty();
-    if (sceneName.empty()) {
-        sceneName = "DefaultScene";
-    }
-
-    Scene* loadingScene = findLoadedScene(sceneName);
-
-    bool isAlreadyLoaded = loadingScene != nullptr;
-    if (!isAlreadyLoaded) {
-        if (loadDefaultScene) {
+    if (loadingScene == nullptr) {
+        if (sceneName.compare(Scene::g_DefaultSceneName) == 0) {
             loadingScene = _defaultScene;
         } else {
             loadingScene = createScene(sceneName);
         }
     }
 
-    ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
     if (!loadingScene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
     }
 
-    bool state = true;
-    if (!isAlreadyLoaded) {
-        if (!loadDefaultScene) {
-            XML::loadScene(sceneName, loadingScene);
-        }
+    bool sceneInCache = loadingScene->getState() == ResourceState::RES_LOADED;
 
+    ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
+
+    bool state = true;
+    if (!sceneInCache) {
+        XML::loadScene(sceneName, loadingScene);
         state = Attorney::SceneManager::load(*loadingScene, sceneName);
     }
 
-    if (state && !loadDefaultScene) {
+    if (state) {
         state = LoadSave::loadScene(*loadingScene);
     }
 
-    if (state && !isAlreadyLoaded) {
+    if (state && !sceneInCache) {
         Attorney::SceneManager::postLoad(*loadingScene);
     }
 
-    if (state && !isAlreadyLoaded && !loadDefaultScene) {
+    if (state && !sceneInCache && loadingScene->getGUID() != _defaultScene->getGUID()) {
         _loadedScenes.push_back(loadingScene);
     }
 
@@ -199,13 +195,15 @@ bool SceneManager::unloadScene(Scene*& scene) {
 
     bool state = Attorney::SceneManager::deinitializeAI(*scene);
     if (state) {
-        _loadedScenes.erase(
-            std::find_if(std::cbegin(_loadedScenes),
-                std::cend(_loadedScenes),
-                [&targetGUID](Scene* scene) -> bool
-                {
-                    return scene->getGUID() == targetGUID;
-                }));
+        if (!isDefaultScene) {
+            _loadedScenes.erase(
+                std::find_if(std::cbegin(_loadedScenes),
+                    std::cend(_loadedScenes),
+                    [&targetGUID](Scene* scene) -> bool
+                    {
+                        return scene->getGUID() == targetGUID;
+                    }));
+        }
 
         _GUI->onUnloadScene(scene);
         state = Attorney::SceneManager::unload(*scene);
@@ -240,16 +238,16 @@ void SceneManager::setActiveScene(Scene& scene) {
 }
 
 bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
-    if (unloadPrevious) {
-        _activeScene = nullptr;
-    }
+    Scene* sceneToUnload = _activeScene;
+    // We always need an active scene. Default is a decent placeholder
+    _activeScene = _defaultScene;
 
     CreateTask(
-        [this, name, unloadPrevious](const std::atomic_bool& stopRequested)
+        [this, name, unloadPrevious, &sceneToUnload](const std::atomic_bool& stopRequested)
         {
-            if (unloadPrevious && _activeScene) {
-                Attorney::SceneManager::onRemoveActive(*_activeScene);
-                unloadScene(_activeScene);
+            if (unloadPrevious && sceneToUnload) {
+                Attorney::SceneManager::onRemoveActive(*sceneToUnload);
+                unloadScene(sceneToUnload);
             }
 
             _loadedScene = load(name);
@@ -257,21 +255,21 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
         [this]()
         {
             if (_loadedScene != nullptr) {
-                if (_loadedScene->getState() == ResourceState::RES_LOADING) {
+                if(_loadedScene->getState() == ResourceState::RES_LOADING) {
                     Attorney::SceneManager::postLoadMainThread(*_loadedScene);
-                    if (_loadedScene->getGUID() != _defaultScene->getGUID())
-                    {
-                        SceneGUIElements* gui = Attorney::SceneManager::gui(*_loadedScene);
-                        gui->addButton(_ID_RT("Back"),
-                            "Back",
-                            vec2<I32>(15, 15),
-                            vec2<U32>(50, 25),
-                            [this](I64 btnGUID)
+                        if (_loadedScene->getGUID() != _defaultScene->getGUID())
                         {
-                            _sceneSwitchTarget.first = "DefaultScene";
-                            _sceneSwitchTarget.second = true;
-                        });
-                    }
+                            SceneGUIElements* gui = Attorney::SceneManager::gui(*_loadedScene);
+                            gui->addButton(_ID_RT("Back"),
+                                "Back",
+                                vec2<I32>(15, 15),
+                                vec2<U32>(50, 25),
+                                [this](I64 btnGUID)
+                            {
+                                _sceneSwitchTarget.set(Scene::g_DefaultSceneName, true, false);
+                            });
+                        }
+                    assert(_loadedScene->getState() == ResourceState::RES_LOADED);
                 }
                 SceneManager::instance().setActiveScene(*_loadedScene);
 
@@ -284,7 +282,8 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                                      : Task::TaskPriority::REALTIME_WITH_CALLBACK,
                             to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
 
-    _sceneSwitchTarget.first = "";
+    _sceneSwitchTarget.reset();
+
     return true;
 }
 
@@ -293,6 +292,7 @@ vectorImpl<stringImpl> SceneManager::sceneNameList() const {
     for (SceneFactory::value_type it : g_sceneFactory) {
         scenes.push_back(it.first);
     }
+    std::sort(std::begin(scenes), std::end(scenes));
     return scenes;
 }
 
@@ -328,7 +328,8 @@ void SceneManager::onCameraUpdate(Camera& camera) {
 }
 
 void SceneManager::updateSceneState(const U64 deltaTime) {
-    if (_activeScene && _activeScene->getState() == ResourceState::RES_LOADED) {
+    if (_activeScene) {
+        assert(_activeScene->getState() == ResourceState::RES_LOADED);
         // Update internal timers
         _elapsedTime += deltaTime;
         _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
@@ -691,8 +692,7 @@ bool LoadSave::saveScene(const Scene& activeScene) {
 
     ByteBuffer save;
     if (Attorney::SceneLoadSave::save(activeScene, save)) {
-        save.dumpToFile(savePath);
-        return true;
+        return save.dumpToFile(savePath);
     }
 
     return false;

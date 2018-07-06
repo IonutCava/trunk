@@ -44,7 +44,8 @@
 #include "Scenes/TenisScene/Headers/TenisScene.h"
 #include "Scenes/PhysXScene/Headers/PhysXScene.h"
 #include "Scenes/WarScene/Headers/WarScene.h"
-
+#include "Scenes/ShadowScene/Headers/ShadowScene.h"
+#include "Scenes/ReflectionScene/Headers/ReflectionScene.h"
 
 #include <boost/functional/factory.hpp>
 #include <boost/preprocessor/cat.hpp>
@@ -79,6 +80,8 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {                     \
     REGISTER_SCENE(FlashScene)\
     REGISTER_SCENE(TenisScene)\
     REGISTER_SCENE(PhysXScene)\
-    REGISTER_SCENE(WarScene)
+    REGISTER_SCENE(WarScene)\
+    REGISTER_SCENE(ShadowScene)\
+    REGISTER_SCENE(ReflectionScene)
 
 #endif

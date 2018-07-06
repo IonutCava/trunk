@@ -45,6 +45,8 @@ struct selectionQueueDistanceFrontToBack {
 };
 };
 
+const char* Scene::g_DefaultSceneName = "DefaultScene";
+
 Scene::Scene(const stringImpl& name)
     : Resource(name),
       _GFX(GFX_DEVICE),
@@ -936,14 +938,16 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
 }
 
 bool Scene::load(ByteBuffer& inputBuffer) {
-    vec3<F32> camPos;
-    vec3<F32> camEuler;
+    if (!inputBuffer.empty()) {
+        vec3<F32> camPos;
+        vec3<F32> camEuler;
 
-    inputBuffer >> camPos >> camEuler;
+        inputBuffer >> camPos >> camEuler;
 
-    Camera& cam = state().renderState().getCamera();
-    cam.setEye(camPos);
-    cam.setGlobalRotation(-camEuler);
+        Camera& cam = state().renderState().getCamera();
+        cam.setEye(camPos);
+        cam.setGlobalRotation(-camEuler);
+    }
 
     return true;
 }

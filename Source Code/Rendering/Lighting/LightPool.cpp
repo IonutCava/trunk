@@ -345,11 +345,11 @@ void LightPool::drawLightImpostors() const {
     const U32 directionalLightCount = _activeLightCount[to_const_uint(LightType::DIRECTIONAL)];
     const U32 pointLightCount = _activeLightCount[to_const_uint(LightType::POINT)];
     const U32 spotLightCount = _activeLightCount[to_const_uint(LightType::SPOT)];
-
-    _lightIconsTexture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    GFX_DEVICE.drawPoints(directionalLightCount + pointLightCount + spotLightCount,
-                          GFX_DEVICE.getDefaultStateBlock(false),
-                          _lightImpostorShader);
+    const U32 totalLightCount = directionalLightCount + pointLightCount + spotLightCount;
+    if (totalLightCount > 0) {
+        _lightIconsTexture->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        GFX_DEVICE.drawPoints(totalLightCount, GFX_DEVICE.getDefaultStateBlock(false), _lightImpostorShader);
+    }
 }
 
 };

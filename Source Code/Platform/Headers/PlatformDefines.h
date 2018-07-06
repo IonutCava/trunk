@@ -163,7 +163,7 @@ FORCE_INLINE ULL _ID_RT(const stringImpl& str) {
     return _ID_RT(str.c_str());
 }
 
-inline bufferPtr bufferOffset(size_t offset) {
+FORCE_INLINE bufferPtr bufferOffset(size_t offset) {
     return ((char *)NULL + (offset));
 }
 

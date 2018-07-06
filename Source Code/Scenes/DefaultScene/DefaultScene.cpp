@@ -6,7 +6,7 @@
 
 namespace Divide {
 DefaultScene::DefaultScene() 
-    : Scene("DefaultScene")
+    : Scene(Scene::g_DefaultSceneName)
 {
 }
 

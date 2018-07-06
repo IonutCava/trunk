@@ -86,10 +86,12 @@
     <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\ReflectionScene\ReflectionScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInput.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneInputActions.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\SceneState.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\ShadowScene\ShadowScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\TenisScene\TenisSceneAIProcessor.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\AESOPActions\WarSceneActions.cpp" />
@@ -176,6 +178,8 @@
     <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Network\Headers\OPCodesImpl.h" />
     <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\ReflectionScene\Headers\ReflectionScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\ShadowScene\Headers\ShadowScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisScene.h" />
     <ClInclude Include="..\..\Source Code\Scenes\TenisScene\Headers\TenisSceneAIProcessor.h" />
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\AESOPActions\Headers\WarSceneActions.h" />

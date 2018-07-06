@@ -406,11 +406,18 @@ void loadScene(const stringImpl &sceneName, Scene* scene) {
     std::string sceneLocation(
         par.getParam<std::string>(_ID("scriptLocation")) + "/" +
         par.getParam<std::string>(_ID("scenesLocation")) + "/" + sceneName.c_str());
+    std::string sceneDataFile(sceneLocation + ".xml");
+
+    // A scene does not necessarily need external data files
+    // Data can be added in code for simple scenes
+    if (!Util::FileExists(sceneDataFile.c_str())) {
+        return;
+    }
+
     try {
-        read_xml(sceneLocation + ".xml", pt);
+        read_xml(sceneDataFile.c_str(), pt);
     } catch (boost::property_tree::xml_parser_error &e) {
-        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")),
-                         sceneName.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")), sceneName.c_str());
         stringImpl error(e.what());
         error += " [check error log!]";
         throw error.c_str();
