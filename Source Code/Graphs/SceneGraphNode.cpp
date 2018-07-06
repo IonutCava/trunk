@@ -158,6 +158,7 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     
     Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
     
+    WriteLock w_lock(_childLock);
     if (_childCount == _children.size()) {
         _children.push_back(node);
     } else {
@@ -202,16 +203,22 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
 
 bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
     U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        if (getChild(i, childCount).getGUID() == node.getGUID()) {
-            _children[i].reset();
-            _childCount = _childCount - 1;
-            std::swap(_children[_childCount], _children[i]);
-            invalidateRelationshipCache();
-            return true;
+
+    {
+        for (U32 i = 0; i < childCount; ++i) {
+            if (getChild(i, childCount).getGUID() == node.getGUID()) {
+                {
+                    WriteLock w_lock(_childLock);
+                    _children[i].reset();
+                    _childCount = _childCount - 1;
+                    std::swap(_children[_childCount], _children[i]);
+                }
+                invalidateRelationshipCache();
+                return true;
+            }
         }
     }
-    
+
     if (recursive) {
         for (U32 i = 0; i < childCount; ++i) {
             if (getChild(i, childCount).removeNode(node)) {

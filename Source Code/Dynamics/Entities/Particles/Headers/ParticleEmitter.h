@@ -107,6 +107,7 @@ class ParticleEmitter : public SceneNode {
     U64 _lastUpdateTimer;
 
     std::atomic_bool _updating;
+    std::atomic_bool _needsUpdate;
     ShaderProgram_ptr _particleShader;
     ShaderProgram_ptr _particleDepthShader;
     Texture_ptr _particleTexture;

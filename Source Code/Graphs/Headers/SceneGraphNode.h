@@ -198,16 +198,18 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     inline SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) {
-        assert(idx < _childCount);
+        ReadLock r_lock(_childLock);
         updatedChildCount = getChildCount();
-        SceneGraphNode_ptr child = _children.at(idx);
+        assert(idx < updatedChildCount);
+        const SceneGraphNode_ptr& child = _children.at(idx);
         assert(child);
         return *child;
     }
 
     inline const SceneGraphNode& getChild(U32 idx, U32& updatedChildCount) const {
-        assert(idx < _childCount);
+        ReadLock r_lock(_childLock);
         updatedChildCount = getChildCount();
+        assert(idx < updatedChildCount);
         assert(_children.at(idx));
         return *_children.at(idx);
     }

@@ -36,7 +36,8 @@ ParticleEmitter::ParticleEmitter(const stringImpl& name)
       _enabled(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
-      _particleDepthShader(nullptr)
+      _particleDepthShader(nullptr),
+      _needsUpdate(false)
 {
     _updating = false;
     _particleGPUBuffer = GFX_DEVICE.newGVD(g_particleBufferSizeFactor);
@@ -225,6 +226,15 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
         _particleDepthShader->Uniform("CameraRight_worldspace", right);
     }
 
+    // start a separate thread?
+    if (_needsUpdate) {
+        U32 aliveCount = getAliveParticleCount();
+        _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
+        _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
+        _particleGPUBuffer->incQueue();
+        _needsUpdate = false;
+    }
+
     GenericDrawCommand& cmd = drawCommandsOut.front();
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
@@ -310,11 +320,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                         }
                         setFlag(UpdateFlag::BOUNDS_CHANGED);
                         _updating = false;
-                    },
-                    [this, aliveCount](){
-                        _particleGPUBuffer->updateBuffer(g_particlePositionBuffer, aliveCount, 0, _particles->_renderingPositions.data());
-                        _particleGPUBuffer->updateBuffer(g_particleColourBuffer, aliveCount, 0, _particles->_renderingColours.data());
-                        _particleGPUBuffer->incQueue();
+                        _needsUpdate = true;
                     })._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
             }
         }
