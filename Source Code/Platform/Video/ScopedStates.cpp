@@ -17,17 +17,6 @@ Scoped2DRendering::~Scoped2DRendering()
     _context.toggle2D(false);
 }
 
-ScopedViewport::ScopedViewport(GFXDevice& context, const vec4<I32>& viewport)
-    : _context(context)
-{
-    _context.setViewport(viewport);
-}
-
-ScopedViewport::~ScopedViewport()
-{
-    _context.restoreViewport();
-}
-
 ScopedDebugMessage::ScopedDebugMessage(GFXDevice& context, const stringImpl& message, I32 id)
     : _context(context)
 {

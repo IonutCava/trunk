@@ -43,9 +43,6 @@ class IMPrimitive;
 class ShaderProgram;
 class ImpostorSphere;
 
-struct RenderSubPassCmd;
-typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
-
 FWD_DECLARE_MANAGED_CLASS(EnvironmentProbe);
 class EnvironmentProbe : public GUIDWrapper {
 public:

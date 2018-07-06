@@ -40,7 +40,7 @@ namespace Divide {
 class GFXDevice;
 class IMPrimitive;
 class RenderStateBlock;
-class GenericCommandBuffer;
+class CommandBuffer;
 namespace AI {
 namespace Navigation {
 
@@ -85,7 +85,7 @@ class NavMeshDebugDraw : public duDebugDraw {
         vertex(x, y, z, colour);
     }
 
-    GenericCommandBuffer toDrawCommands() const;
+    CommandBuffer toDrawCommands() const;
 
    private:
     GFXDevice& _context;

@@ -42,7 +42,9 @@
 namespace Divide {
 
 class Texture;
-class GenericCommandBuffer;
+namespace GFX {
+    class CommandBuffer;
+};
 enum class PrimitiveType : U32;
 
 FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
@@ -128,7 +130,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 #       endif
     }
 
-    virtual GenericCommandBuffer toDrawCommands() const = 0;
+    virtual GFX::CommandBuffer toDrawCommands() const = 0;
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,

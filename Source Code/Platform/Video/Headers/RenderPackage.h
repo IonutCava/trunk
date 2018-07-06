@@ -32,14 +32,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDER_PACKAGE_H_
 #define _RENDER_PACKAGE_H_
 
-#include "RenderDrawCommands.h"
+#include "CommandBuffer.h"
 
 namespace Divide {
 
 class RenderPackage {
 public:
-    RenderPackage() : _isRenderable(false),
-        _isOcclusionCullable(true)
+    RenderPackage() 
+        : _isRenderable(false),
+          _isOcclusionCullable(true)
     {
     }
 
@@ -48,27 +49,15 @@ public:
     void clear();
     void set(const RenderPackage& other);
 
-    inline bool isRenderable() const {
-        return  _isRenderable;
-    }
+    inline void isRenderable(bool state) { _isRenderable = state; }
+    inline bool isRenderable() const { return  _isRenderable; }
 
-    inline bool isOcclusionCullable() const {
-        return  _isOcclusionCullable;
-    }
-
-    inline void isRenderable(bool state) {
-        _isRenderable = state;
-    }
-
-    inline void isOcclusionCullable(bool state) {
-        _isOcclusionCullable = state;
-    }
+    inline void isOcclusionCullable(bool state) { _isOcclusionCullable = state; }
+    inline bool isOcclusionCullable() const { return  _isOcclusionCullable; }
 
     size_t getSortKeyHash() const;
 
-    ShaderBufferList _shaderBuffers;
-    TextureDataContainer _textureData;
-    GenericCommandBuffer _commands;
+    GFX::CommandBuffer _commands;
 
 private:
     bool _isRenderable;

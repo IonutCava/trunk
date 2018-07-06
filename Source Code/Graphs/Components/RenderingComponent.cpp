@@ -173,13 +173,16 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
     pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
 
-    BindPipelineCommand pipelineCommand;
+    GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    pkg._commands.add(pipelineCommand);
+    GFX::BindPipeline(pkg._commands, pipelineCommand);
 
-    SendPushConstantsCommand pushConstantsCommand;
+    GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _globalPushConstants;
-    pkg._commands.add(pushConstantsCommand);
+    GFX::SendPushConstants(pkg._commands, pushConstantsCommand);
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
+    GFX::BindDescripotSets(pkg._commands, bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, pkg);
 }
@@ -245,16 +248,19 @@ bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
     RenderPackage& pkg = renderData(renderStagePass);
-
-    pkg._textureData.clear(false);
+    DescriptorSet& set = *pkg._commands.getDescriptorSets().front();
+    
+    set._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        mat->getTextureData(pkg._textureData);
+        mat->getTextureData(set._textureData);
     }
 
     for (const TextureData& texture : _textureDependencies.textures()) {
-        pkg._textureData.addTexture(texture);
+        set._textureData.addTexture(texture);
     }
+
+    set._shaderBuffers = _shaderBuffers;
 
     return _parentSGN.getNode()->onRender(renderStagePass);
 }
@@ -287,7 +293,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
+void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, GFX::CommandBuffer& bufferInOut) {
     
     if (renderStagePass.stage() != RenderStage::DISPLAY || renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         return;
@@ -385,15 +391,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         }
     }
 
-    RenderSubPassCmd& subPassInOut = subPassesInOut.back();
-    subPassInOut._commands.add(_boundingBoxPrimitive[0]->toDrawCommands());
-    subPassInOut._commands.add(_boundingBoxPrimitive[1]->toDrawCommands());
-    subPassInOut._commands.add(_boundingSpherePrimitive->toDrawCommands());
+    bufferInOut.add(_boundingBoxPrimitive[0]->toDrawCommands());
+    bufferInOut.add(_boundingBoxPrimitive[1]->toDrawCommands());
+    bufferInOut.add(_boundingSpherePrimitive->toDrawCommands());
     if (_skeletonPrimitive) {
-        subPassInOut._commands.add(_skeletonPrimitive->toDrawCommands());
+        bufferInOut.add(_skeletonPrimitive->toDrawCommands());
     }
     if (Config::Build::IS_DEBUG_BUILD) {
-        subPassInOut._commands.add(_axisGizmo->toDrawCommands());
+        bufferInOut.add(_axisGizmo->toDrawCommands());
     }
 }
 
@@ -403,13 +408,14 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
     ShaderBufferList::iterator it;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
-            ShaderBufferList::iterator itEnd = std::end(pkg._shaderBuffers);
-            it = std::find_if(std::begin(pkg._shaderBuffers), itEnd,
+
+            ShaderBufferList::iterator itEnd = std::end(_shaderBuffers);
+            it = std::find_if(std::begin(_shaderBuffers), itEnd,
                 [slot](const ShaderBufferBinding& binding)
                         -> bool { return binding._binding == slot; });
 
             if (it == itEnd) {
-               vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
+               vectorAlg::emplace_back(_shaderBuffers, slot, &shaderBuffer, bindRange);
             } else {
                 it->set(slot, &shaderBuffer, bindRange);
             }
@@ -420,11 +426,11 @@ void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         for (RenderPackage& pkg : _renderData[pass]) {
-            pkg._shaderBuffers.erase(
-                std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
+            _shaderBuffers.erase(
+                std::remove_if(std::begin(_shaderBuffers), std::end(_shaderBuffers),
                     [&slot](const ShaderBufferBinding& binding)
                     -> bool { return binding._binding == slot; }),
-                std::end(pkg._shaderBuffers));
+                std::end(_shaderBuffers));
         }
     }
 }

@@ -168,7 +168,7 @@ class RenderingComponent : public SGNComponent {
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
                     const RenderStagePass& renderStagePass,
-                    RenderSubPassCmds& subPassesInOut);
+                    GFX::CommandBuffer& bufferInOut);
 
     void rebuildDrawCommands(const RenderStagePass& stagePass);
 
@@ -217,6 +217,8 @@ class RenderingComponent : public SGNComponent {
     
     bool _renderPackagesDirty;
     PushConstants _globalPushConstants;
+
+    ShaderBufferList _shaderBuffers;
 
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
@@ -309,8 +311,8 @@ class RenderingCompRenderBin {
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
                            const RenderStagePass& renderStagePass,
-                           RenderSubPassCmds& subPassesInOut) {
-        renderable.postRender(sceneRenderState, renderStagePass, subPassesInOut);
+                           GFX::CommandBuffer& bufferInOut) {
+        renderable.postRender(sceneRenderState, renderStagePass, bufferInOut);
     }
 
     friend class Divide::RenderBin;

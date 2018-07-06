@@ -106,6 +106,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\BlendingProperties.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\DescriptorSets.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericCommandPool.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
@@ -119,7 +120,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstants.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderPackage.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStateBlock.h" />
@@ -209,6 +209,7 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\GenericBuffer\GenericVertexData.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\CommandBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\PixelBuffer\d3dPixelBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\RenderTarget\d3dRenderTarget.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Direct3D\Buffers\ShaderBuffer\d3dConstantBuffer.cpp" />
@@ -352,6 +353,7 @@
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
     <None Include="..\..\Source Code\Platform\File\Headers\FileManagement.inl" />
     <None Include="..\..\Source Code\Platform\Headers\DisplayWindow.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\GFXShaderData.inl" />

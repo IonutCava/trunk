@@ -33,6 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _PIPELINE_H_
 
 #include "PushConstants.h"
+#include "DescriptorSets.h"
+#include "Utility/Headers/TextLabel.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {

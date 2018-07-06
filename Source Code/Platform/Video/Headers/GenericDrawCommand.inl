@@ -54,52 +54,5 @@ inline PrimitiveType GenericDrawCommand::primitiveType()       const { return _t
 inline VertexDataInterface* GenericDrawCommand::sourceBuffer() const { return _sourceBuffer; }
 inline const IndirectDrawCommand& GenericDrawCommand::cmd()    const { return _cmd; }
 
-template<typename T>
-inline void GenericCommandBuffer::add(const T& command) {
-    static_assert(std::is_base_of<Command, T>::value,"GenericCommandBuffer error: Unknown command type!");
-
-    _data.emplace_back(std::make_unique<T>(command));
-    rebuildCaches();
-}
-
-inline void GenericCommandBuffer::add(const GenericCommandBuffer& other) {
-    _data.insert(std::end(_data),
-                 std::cbegin(other._data),
-                 std::cend(other._data));
-
-    rebuildCaches();
-}
-
-inline vectorImpl<std::shared_ptr<Command>>& GenericCommandBuffer::operator()() {
-    return _data;
-}
-
-inline const vectorImpl<std::shared_ptr<Command>>& GenericCommandBuffer::operator()() const {
-    return _data;
-}
-
-inline const vectorImpl<Pipeline*>& GenericCommandBuffer::getPipelines() const {
-    return _pipelineCache;
-}
-
-inline const vectorImpl<PushConstants*>& GenericCommandBuffer::getPushConstants() const {
-    return _pushConstantsCache;
-}
-
-inline const vectorImpl<GenericDrawCommand*>& GenericCommandBuffer::getDrawCommands() const {
-    return _drawCommandsCache;
-}
-
-inline void GenericCommandBuffer::clear() {
-    _data.clear();
-    _pipelineCache.clear();
-    _pushConstantsCache.clear();
-    _drawCommandsCache.clear();
-}
-
-inline bool GenericCommandBuffer::empty() const {
-    return _data.empty();
-}
-
 }; //namespace Divide
 #endif //_GENERIC_DRAW_COMMAND_INL

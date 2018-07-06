@@ -184,9 +184,9 @@ protected:
     bool frameEnded(const FrameEvent& evt) override;
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
-    void preRender(const Camera& camera, RenderTarget& target);
-    void postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut);
-    void debugDraw(const Camera& camera, RenderSubPassCmds& subPassesInOut);
+    void preRender(const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
+    void postRender(const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut);
     bool generateShadowMaps();
     bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
     Camera* getActiveCamera() const;
@@ -298,16 +298,16 @@ class SceneManagerRenderPass {
         return mgr.populateRenderQueue(camera, doCulling, passIndex);
     }
 
-    static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target) {
-        mgr.preRender(camera, target);
+    static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
+        mgr.preRender(camera, target, bufferInOut);
     }
 
-    static void postRender(Divide::SceneManager& mgr, const Camera& camera, RenderSubPassCmds& subPassesInOut) {
-        mgr.postRender(camera, subPassesInOut);
+    static void postRender(Divide::SceneManager& mgr, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+        mgr.postRender(camera, bufferInOut);
     }
 
-    static void debugDraw(Divide::SceneManager& mgr, const Camera& camera, RenderSubPassCmds& subPassesInOut) {
-        mgr.debugDraw(camera, subPassesInOut);
+    static void debugDraw(Divide::SceneManager& mgr, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+        mgr.debugDraw(camera, bufferInOut);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {

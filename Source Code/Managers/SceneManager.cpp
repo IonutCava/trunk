@@ -467,32 +467,32 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     }
 }
 
-void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
+void SceneManager::preRender(const Camera& camera, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     const GFXDevice& gfx = _platformContext->gfx();
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
-    gfx.getRenderer().preRender(target, *lightPool);
+    gfx.getRenderer().preRender(target, *lightPool, bufferInOut);
 
     if (gfx.getRenderStage().stage() == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx);
     }
 }
 
-void SceneManager::postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut) {
+void SceneManager::postRender(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
     const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
 
-    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, subPassesInOut);
+    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
-void SceneManager::debugDraw(const Camera& camera, RenderSubPassCmds& subPassesInOut) {
+void SceneManager::debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
     const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
-    Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, subPassesInOut);
+    Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, bufferInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
-    _platformContext->gfx().debugDraw(activeSceneRenderState, camera, subPassesInOut);
+    _platformContext->gfx().debugDraw(activeSceneRenderState, camera, bufferInOut);
 }
 
 bool SceneManager::generateShadowMaps() {

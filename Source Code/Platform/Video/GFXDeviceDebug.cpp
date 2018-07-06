@@ -20,6 +20,7 @@ namespace Divide {
 
 void GFXDevice::renderDebugViews() {
     static DebugView* HiZPtr;
+    static GFX::CommandBuffer buffer;
 
     // As this is touched once per frame, we'll only enable it in debug builds
     if (Config::Build::IS_DEBUG_BUILD) {
@@ -114,19 +115,37 @@ void GFXDevice::renderDebugViews() {
 
         vectorImplFast <std::pair<stringImpl, vec4<I32>>> labelStack;
 
+        vec4<I32> crtViewport = getCurrentViewport();
+        GFX::SetViewportCommand setViewport;
+        GFX::SendPushConstantsCommand pushConstants;
+        GFX::BindPipelineCommand bindPipeline;
+        GFX::BindDescriptorSetsCommand bindDescriptorSets;
+        GFX::DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(triangleCmd);
+
         I32 viewIndex = 0;
         for (U8 i = 0; i < rowCount; ++i) {
             for (U8 j = 0; j < columnCount; ++j) {
                 DebugView& view = *_debugViews[viewIndex];
                 pipelineDesc._shaderProgram = view._shader;
-                Pipeline pipeline = newPipeline(pipelineDesc);
-                view._texture->bind(view._textureBindSlot);
-                {
-                    GFX::ScopedViewport sView(*this, viewport);
-                    draw(triangleCmd, pipeline, view._shaderData);
-                    if (!view._name.empty()) {
-                        labelStack.emplace_back(view._name, viewport);
-                    }
+                TextureData textureData = view._texture->getData();
+                textureData.setBinding(view._textureBindSlot);
+
+                bindPipeline._pipeline = newPipeline(pipelineDesc);
+                pushConstants._constants = view._shaderData;
+                GFX::BindPipeline(buffer, bindPipeline);
+
+                setViewport._viewport.set(viewport);
+                GFX::SetViewPort(buffer, setViewport);
+
+                bindDescriptorSets._set._textureData.clear();
+                bindDescriptorSets._set._textureData.addTexture(textureData);
+                GFX::BindDescripotSets(buffer, bindDescriptorSets);
+
+                GFX::AddDrawCommands(buffer, drawCommand);
+
+                if (!view._name.empty()) {
+                    labelStack.emplace_back(view._name, viewport);
                 }
 
                 viewport.x -= viewportWidth;
@@ -141,11 +160,15 @@ void GFXDevice::renderDebugViews() {
         TextLabel label("", Font::DROID_SERIF_BOLD, vec4<U8>(255), 96);
         TextElement text(&label, vec2<F32>(10.0f));
         for (const std::pair<stringImpl, vec4<I32>>& entry : labelStack) {
-            GFX::ScopedViewport sView(*this, entry.second);
+            setViewport._viewport.set(entry.second);
+            GFX::SetViewPort(buffer, setViewport);
+
             text._position.y = entry.second.sizeY - 10.0f;
             label.text(entry.first);
-            drawText(text);
+            drawText(text, buffer);
         }
+
+        flushCommandBuffer(buffer);
     }
 }
 
@@ -162,7 +185,7 @@ void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
                });
 }
 
-void GFXDevice::drawDebugFrustum(RenderSubPassCmds& subPassesInOut) {
+void GFXDevice::drawDebugFrustum(GFX::CommandBuffer& bufferInOut) {
     if (_debugFrustum != nullptr) {
         static const vec4<U8> redColour(Util::ToByteColour(DefaultColours::RED()));
         static const vec4<U8> greenColour(Util::ToByteColour(DefaultColours::GREEN()));
@@ -181,15 +204,15 @@ void GFXDevice::drawDebugFrustum(RenderSubPassCmds& subPassesInOut) {
         }
 
         _debugFrustumPrimitive->fromLines(lines);
-        subPassesInOut.back()._commands.add(_debugFrustumPrimitive->toDrawCommands());
+        bufferInOut.add(_debugFrustumPrimitive->toDrawCommands());
     }
 }
 
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
-void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut) {
+void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
     if (Config::Build::IS_DEBUG_BUILD) {
-        drawDebugFrustum(subPassesInOut);
+        drawDebugFrustum(bufferInOut);
 
         // Debug axis form the axis arrow gizmo in the corner of the screen
         // This is togglable, so check if it's actually requested
@@ -208,7 +231,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             _axisGizmo->worldMatrix(mat4<F32>(-activeCamera.getForwardDir() * 2,
                                                VECTOR3_ZERO,
                                                activeCamera.getUpDir()) * getMatrix(MATRIX::VIEW_INV));
-            subPassesInOut.back()._commands.add(_axisGizmo->toDrawCommands());
+            bufferInOut.add(_axisGizmo->toDrawCommands());
         }
     }
 }

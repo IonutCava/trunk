@@ -32,7 +32,8 @@
 #ifndef _RENDER_API_H_
 #define _RENDER_API_H_
 
-#include "RenderDrawCommands.h"
+#include "CommandBuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace std {
     class thread::id;
@@ -61,6 +62,22 @@ struct VideoModes {
     I32 BlueBits;
 };
 
+struct ClipPlaneList {
+    ClipPlaneList(U32 size, const Plane<F32>& defaultValue)
+        : _planes(size, defaultValue),
+        _active(size, false)
+    {
+    }
+
+    void resize(U32 size, const Plane<F32>& defaultValue) {
+        _planes.resize(size, defaultValue);
+        _active.resize(size, false);
+    }
+
+    PlaneList _planes;
+    vectorImpl<bool> _active;
+};
+
 typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
 /// Renderer Programming Interface
@@ -76,8 +93,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    virtual void drawText(const TextElementBatch& batch, const Pipeline& pipeline, const PushConstants& pushConstants) = 0;
-
     // a debug message is a marker that should show up in external profiling tools such as RenderDoc or PerfStudio /NSight
     virtual void pushDebugMessage(const char* message, I32 id) = 0;
     virtual void popDebugMessage() = 0;
@@ -89,11 +104,8 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
     virtual U32 getFrameDurationGPU() = 0;
 
     virtual size_t setStateBlock(size_t stateBlockHash) = 0;
-    virtual bool draw(const GenericDrawCommand& cmd, 
-                      const Pipeline& pipeline,
-                      const PushConstants& pushConstants) = 0;
 
-    virtual void flushCommandBuffer(CommandBuffer& commandBuffer) = 0;
+    virtual void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) = 0;
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;

@@ -304,9 +304,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderDrawCommands.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\TextureData.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -378,6 +375,9 @@
       <Filter>Video\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\PushConstants.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\DescriptorSets.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -670,6 +670,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQueryPool.cpp">
       <Filter>Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\CommandBuffer.cpp">
+      <Filter>Video</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1159,6 +1162,9 @@
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
     <None Include="..\..\Source Code\Platform\Video\Headers\GenericDrawCommand.inl">
+      <Filter>Video\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\CommandBuffer.inl">
       <Filter>Video\Headers</Filter>
     </None>
   </ItemGroup>

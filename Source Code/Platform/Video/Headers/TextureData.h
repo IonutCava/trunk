@@ -72,6 +72,14 @@ public:
         _samplerHash = other._samplerHash;
     }
 
+    inline void setID(U32 handle) {
+        setHandleHigh(handle);
+    }
+
+    inline void setBinding(U32 binding) {
+        setHandleLow(binding);
+    }
+
     /// ID
     inline void setHandleHigh(U32 handle) {
         _textureHandle = (U64)handle << 32 | getHandleLow();

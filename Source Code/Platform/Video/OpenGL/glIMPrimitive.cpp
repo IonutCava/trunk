@@ -99,8 +99,8 @@ void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
     resetStates();
 }
 
-GenericCommandBuffer glIMPrimitive::toDrawCommands() const {
-    GenericCommandBuffer buffer;
+GFX::CommandBuffer glIMPrimitive::toDrawCommands() const {
+    GFX::CommandBuffer buffer;
     if (!paused()) {
         DIVIDE_ASSERT(_pipeline.shaderProgram() != nullptr,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
@@ -114,17 +114,17 @@ GenericCommandBuffer glIMPrimitive::toDrawCommands() const {
         // Upload the primitive's world matrix to the shader
         pushConstants.set("dvd_WorldMatrix", PushConstantType::MAT4, worldMatrix());
 
-        BindPipelineCommand pipelineCommand;
+        GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _pipeline;
-        buffer.add(pipelineCommand);
+        GFX::BindPipeline(buffer, pipelineCommand);
         
-        SendPushConstantsCommand pushConstantsCommand;
+        GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants = pushConstants;
-        buffer.add(pushConstantsCommand);
+        GFX::SendPushConstants(buffer, pushConstantsCommand);
 
-        DrawCommand drawCommand;
+        GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        buffer.add(drawCommand);
+        GFX::AddDrawCommands(buffer, drawCommand);
     }
 
     return buffer;

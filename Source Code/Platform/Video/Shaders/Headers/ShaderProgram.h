@@ -97,6 +97,12 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         COUNT
     };
 
+    struct ComputeParams {
+        MemoryBarrierType _barrierType = MemoryBarrierType::COUNT;
+        vec3<U32> _groupSize;
+    };
+
+    public:
     explicit ShaderProgram(GFXDevice& context,
                            size_t descriptorHash,
                            const stringImpl& name,

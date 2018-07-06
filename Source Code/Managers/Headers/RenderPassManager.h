@@ -99,10 +99,9 @@ public:
 
 private:
 
-    RenderPassCmd prePass(const PassParams& params, const RenderTarget& target);
-    RenderPassCmd mainPass(const PassParams& params, RenderTarget& target);
-    std::pair<RenderPassCmd /*Accumulation*/, RenderPassCmd/*Composition*/>
-        woitPass(const PassParams& params, const RenderTarget& target);
+    GFX::CommandBuffer prePass(const PassParams& params, const RenderTarget& target);
+    GFX::CommandBuffer mainPass(const PassParams& params, RenderTarget& target);
+    GFX::CommandBuffer woitPass(const PassParams& params, const RenderTarget& target);
 
     RenderPass* getPassForStage(RenderStage renderStage) const;
 

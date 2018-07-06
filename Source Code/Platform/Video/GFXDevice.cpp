@@ -489,10 +489,6 @@ void GFXDevice::updateViewportInternal(const vec4<I32>& viewport) {
     _gpuBlock._needsUpload = true;
 }
 
-void GFXDevice::updateViewportInternal(I32 x, I32 y, I32 width, I32 height) {
-    updateViewportInternal(vec4<I32>(x, y, width, height));
-}
-
 void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
     GFXShaderData::GPUData& data = _gpuBlock._data;
     data._ZPlanesCombined.zw(zPlanes);
@@ -627,7 +623,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
+void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut) {
     static bool firstRun = true;
     static RTDrawDescriptor depthOnlyTarget;
     static PipelineDescriptor pipelineDesc;
@@ -657,8 +653,6 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);
         pipeline = newPipeline(pipelineDesc);
-
-        constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(0));
         firstRun = false;
     }
 
@@ -682,21 +676,48 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
         return;
     }
 
-    depth->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
+    TextureData texData = depth->getData();
+    texData.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
 
-    _rtPool->drawToTargetBegin(depthBuffer, depthOnlyTarget);
+    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    beginRenderPassCmd._target = depthBuffer;
+    beginRenderPassCmd._descriptor = depthOnlyTarget;
+    GFX::BeginRenderPass(cmdBufferInOut, beginRenderPassCmd);
+
+    GFX::BindPipelineCommand pipelineCmd;
+    pipelineCmd._pipeline = pipeline;
+    GFX::BindPipeline(cmdBufferInOut, pipelineCmd);
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    descriptorSetCmd._set._textureData.addTexture(texData);
+    GFX::BindDescripotSets(cmdBufferInOut, descriptorSetCmd);
+
+    GFX::SetViewportCommand viewportCommand;
+    GFX::SendPushConstantsCommand pushConstantsCommand;
+    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd;
+    GFX::EndRenderSubPassCommand endRenderSubPassCmd;
     // We skip the first level as that's our full resolution image
-
     while (dim) {
         if (level) {
             twidth = twidth < 1 ? 1 : twidth;
             theight = theight < 1 ? 1 : theight;
+
             // Update the viewport with the new resolution
-            updateViewportInternal(0, 0, twidth, theight);
+            viewportCommand._viewport.set(0, 0, twidth, theight);
+            GFX::SetViewPort(cmdBufferInOut, viewportCommand);
+
             // Bind next mip level for rendering but first restrict fetches only to previous level
-            screenTarget.setMipLevel(level);
-            constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+            beginRenderSubPassCmd._mipWriteLevel = level;
+            GFX::BeginRenderSubPass(cmdBufferInOut, beginRenderSubPassCmd);
+
+            pushConstantsCommand._constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+            GFX::SendPushConstants(cmdBufferInOut, pushConstantsCommand);
+
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
+            GFX::DrawCommand drawCmd;
+            drawCmd._drawCommands.push_back(triangleCmd);
+            GFX::AddDrawCommands(cmdBufferInOut, drawCmd);
+            
             draw(triangleCmd, pipeline, constants);
         }
 
@@ -709,8 +730,12 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer) {
     }
 
     updateViewportInternal(previousViewport);
+    viewportCommand._viewport.set(previousViewport);
+    GFX::SetViewPort(cmdBufferInOut, viewportCommand);
+
     // Unbind the render target
-    _rtPool->drawToTargetEnd();
+    GFX::EndRenderPassCommand endRenderPassCmd;
+    GFX::EndRenderPass(cmdBufferInOut, endRenderPassCmd);
 }
 
 Renderer& GFXDevice::getRenderer() const {

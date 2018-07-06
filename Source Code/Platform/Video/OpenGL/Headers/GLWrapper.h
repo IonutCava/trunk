@@ -109,18 +109,14 @@ protected:
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
-    void drawText(const TextElementBatch& batch,
-                  const Pipeline& pipeline,
-                  const PushConstants& pushConstants) override;
+    void drawText(const TextElementBatch& batch);
+
     bool draw(const GenericDrawCommand& cmd);
-    bool draw(const GenericDrawCommand& cmd,
-              const Pipeline& pipeline,
-              const PushConstants& pushConstants) override;
 
     /// Sets the current state block to the one passed as a param
     size_t setStateBlock(size_t stateBlockHash) override;
 
-    void flushCommandBuffer(CommandBuffer& commandBuffer) override;
+    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
@@ -228,6 +224,7 @@ private:
 
     bool bindPipeline(const Pipeline& pipeline);
     void sendPushConstants(const PushConstants& pushConstants);
+    void dispatchCompute(const ShaderProgram::ComputeParams& computeParams);
 
     ErrorCode createGLContext(const DisplayWindow& window);
     ErrorCode destroyGLContext();
@@ -278,6 +275,7 @@ private:
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
     static Pipeline const* s_activePipeline;
+    static RenderTarget* s_activeRenderTarget;
     /// Current active vertex array object's handle
     static GLuint s_activeVAOID;
     /// 0 - current framebuffer, 1 - current read only framebuffer, 2 - current write only framebuffer

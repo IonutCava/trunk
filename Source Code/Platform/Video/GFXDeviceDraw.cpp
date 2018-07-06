@@ -34,7 +34,7 @@ void GFXDevice::uploadGPUBlock() {
     }
 }
 
-void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& subPassCmd) {
+void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& subPassCmd) {
     RenderPackageQueue& renderQueue = _renderQueues[queueType._to_integral()];
 
     assert(renderQueue.locked() == false);
@@ -56,7 +56,7 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd
     }
 }
 
-void GFXDevice::flushCommandBuffer(CommandBuffer& commandBuffer) {
+void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     uploadGPUBlock();
     _api->flushCommandBuffer(commandBuffer);
     commandBuffer.resize(0);
@@ -219,27 +219,44 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
     }
 }
 
-void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer) {
+void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
+                              const Texture_ptr& depthBuffer,
+                              GFX::CommandBuffer& bufferInOut) {
     static const U32 GROUP_SIZE_AABB = 64;
 
-    uploadGPUBlock();
+    GFX::BindPipelineCommand bindPipelineCmd;
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._shaderProgram = _HIZCullProgram;
+    bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
+    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
-    bufferData._cmdBuffer->bind(ShaderBufferLocation::GPU_COMMANDS);
-    bufferData._cmdBuffer->bindAtomicCounter();
+    ShaderBufferBinding shaderBuffer;
+    shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
+    shaderBuffer._range.set(0, bufferData._cmdBuffer->getPrimitiveCount());
+    shaderBuffer._atomicCounter.first = true;
+    
+    TextureData data = depthBuffer->getData();
+    data.setBinding(to_U32(ShaderProgram::TextureUsage::DEPTH));
 
-    depthBuffer->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
+    bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
+    bindDescriptorSetsCmd._set._textureData.addTexture(data);
+    GFX::BindDescripotSets(bufferInOut, bindDescriptorSetsCmd);
+    
     U32 cmdCount = bufferData._lastCommandCount;
 
+    GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstant constant;
     constant._type = PushConstantType::UINT;
     constant._binding = "dvd_numEntities";
     constant._values = { cmdCount };
+    sendPushConstantsCmd._constants = PushConstants(constant);
+    GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
 
-    PushConstants constants(constant);
-
-    _HIZCullProgram->bind();
-    _HIZCullProgram->DispatchCompute((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1, constants);
-    _HIZCullProgram->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::COUNTER);
+    GFX::DispatchComputeCommand computeCmd;
+    computeCmd._params._barrierType = ShaderProgram::MemoryBarrierType::COUNTER;
+    computeCmd._params._groupSize = vec3<U32>((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
+    GFX::AddComputeCommand(bufferInOut, computeCmd);
 }
 
 U32 GFXDevice::getLastCullCount() const {
@@ -252,33 +269,23 @@ U32 GFXDevice::getLastCullCount() const {
     return cullCount;
 }
 
+void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
+    static GFX::BindPipelineCommand bindPipelineCmd(_textRenderPipeline);
+    static GFX::SendPushConstantsCommand pushConstantsCommand(_textRenderConstants);
+    static GFX::DrawTextCommand drawTextCommand;
+
+    drawTextCommand._batch = batch;
+
+    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::AddDrawTextCommand(bufferInOut, drawTextCommand);
+}
+
 void GFXDevice::drawText(const TextElementBatch& batch) {
-    uploadGPUBlock();
-    _api->drawText(batch, _textRenderPipeline, _textRenderConstants);
+    static GFX::CommandBuffer buffer;
+    drawText(batch, buffer);
+    flushCommandBuffer(buffer);
 }
-
-bool GFXDevice::draw(const GenericDrawCommand& cmd,
-                     const Pipeline& pipeline) {
-    return draw(cmd, pipeline, PushConstants());
-}
-
-bool GFXDevice::draw(const GenericDrawCommand& cmd,
-                     const Pipeline& pipeline,
-                     const PushConstants& pushConstants) {
-    uploadGPUBlock();
-    if (_api->draw(cmd, pipeline, pushConstants)) {
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-            registerDrawCall();
-        }
-        if (cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-            registerDrawCall();
-        }
-        return true;
-    }
-
-    return false;
-}
-
 
 void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     PipelineDescriptor pipelineDescriptor;

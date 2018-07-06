@@ -198,20 +198,14 @@ public:  // GPU interface
     /// Returns true if the state was changed or false if it was already set
     bool toggle2D(bool state);
 
-    void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut);
-
-    bool draw(const GenericDrawCommand& cmd,
-              const Pipeline& pipeline);
-    bool draw(const GenericDrawCommand& cmd,
-              const Pipeline& pipeline,
-              const PushConstants& pushConstants);
+    void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
 
     void lockQueue(RenderBinType type);
     void unlockQueue(RenderBinType type);
     U32  renderQueueSize(RenderBinType queueType);
     void addToRenderQueue(RenderBinType queueType, const RenderPackage& package);
-    void renderQueueToSubPasses(RenderBinType queueType, RenderSubPassCmd& commandsInOut);
-    void flushCommandBuffer(CommandBuffer& commandBuffer);
+    void renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuffer& commandsInOut);
+    void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
 
     /// Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
@@ -398,10 +392,11 @@ public:  // Direct API calls
 protected:
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor) const;
 
-    void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
+    void drawDebugFrustum(GFX::CommandBuffer& bufferInOut);
 
     void setBaseViewport(const vec4<I32>& viewport);
 
+    void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut);
     void drawText(const TextElementBatch& batch);
 
     void onChangeResolution(U16 w, U16 h);
@@ -421,21 +416,23 @@ protected:
     friend class RenderPass;
     friend class RenderPassManager;
 
-    void occlusionCull(const RenderPass::BufferData& bufferData, const Texture_ptr& depthBuffer);
+    void occlusionCull(const RenderPass::BufferData& bufferData,
+                       const Texture_ptr& depthBuffer,
+                       GFX::CommandBuffer& bufferInOut);
 
     void buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                            SceneRenderState& sceneRenderState,
                            RenderPass::BufferData& bufferData,
                            bool refreshNodeData);
 
-    void constructHIZ(RenderTargetID depthBuffer);
+    void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut);
 
     RenderAPIWrapper& getAPIImpl() { return *_api; }
     const RenderAPIWrapper& getAPIImpl() const { return *_api; }
 
 private:
     void updateViewportInternal(const vec4<I32>& viewport);
-    void updateViewportInternal(I32 x, I32 y, I32 width, I32 height);
+
     /// Upload draw related data to the GPU (view & projection matrices, viewport settings, etc)
     void uploadGPUBlock();
 
@@ -517,7 +514,9 @@ protected:
 
     GFXShaderData _gpuBlock;
 
+    typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;
     DrawCommandList _drawCommandsCache;
+
     std::array<NodeData, Config::MAX_VISIBLE_NODES> _matricesData;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastCommandCount;
     std::array<U32, to_base(RenderStage::COUNT) - 1> _lastNodeCount;
@@ -613,7 +612,7 @@ namespace Attorney {
 
     class GFXDeviceAPI {
         private:
-        static void onRenderSubPass(GFXDevice& device) {
+        static void uploadGPUBlock(GFXDevice& device) {
             device.uploadGPUBlock();
         }
 

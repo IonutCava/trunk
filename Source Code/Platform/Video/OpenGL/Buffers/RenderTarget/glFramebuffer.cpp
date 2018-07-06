@@ -444,6 +444,8 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     /// Memorize the current draw policy to speed up later calls
     _previousPolicy = drawPolicy;
+
+    GL_API::s_activeRenderTarget = this;
 }
 
 void glFramebuffer::end() {
@@ -462,6 +464,8 @@ void glFramebuffer::end() {
         glFramebuffer::_bufferBound = false;
         _context.popDebugMessage();
     }
+
+    GL_API::s_activeRenderTarget = nullptr;
 }
 
 void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy, const vectorImpl<RTAttachment_ptr>& activeAttachments) const {

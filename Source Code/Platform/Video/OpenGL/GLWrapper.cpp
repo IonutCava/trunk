@@ -790,10 +790,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
-void GL_API::drawText(const TextElementBatch& batch,
-                      const Pipeline& pipeline,
-                      const PushConstants& pushConstants) {
-
+void GL_API::drawText(const TextElementBatch& batch) {
     static vec4<U8> textBlendColour(Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
 
     static BlendingProperties textBlendProperties{
@@ -803,53 +800,49 @@ void GL_API::drawText(const TextElementBatch& batch,
 
     GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
 
-    if (bindPipeline(pipeline)) {
-        sendPushConstants(pushConstants);
-
-        GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
+    GL_API::setBlending(0, true, textBlendProperties, textBlendColour);
     
-        I32 height = _context.getCurrentViewport().sizeY;
+    I32 height = _context.getCurrentViewport().sizeY;
         
-        vectorAlg::vecSize drawCount = 0;
+    vectorAlg::vecSize drawCount = 0;
 
-        fonsClearState(_fonsContext);
-        for (const TextElement& entry : batch())
-        {
-            const TextLabel& textLabel = *entry._textLabel;
-            // Retrieve the font from the font cache
-            I32 font = getFont(textLabel._font);
-            // The font may be invalid, so skip this text label
-            if (font != FONS_INVALID) {
-                fonsSetFont(_fonsContext, font);
-                fonsSetBlur(_fonsContext, textLabel._blurAmount);
-                fonsSetBlur(_fonsContext, textLabel._spacing);
-                fonsSetAlign(_fonsContext, textLabel._alignFlag);
-                fonsSetSize(_fonsContext, to_F32(textLabel._fontSize));
-                fonsSetColour(_fonsContext,
-                              textLabel._colour.r,
-                              textLabel._colour.g,
-                              textLabel._colour.b,
-                              textLabel._colour.a);
+    fonsClearState(_fonsContext);
+    for (const TextElement& entry : batch())
+    {
+        const TextLabel& textLabel = *entry._textLabel;
+        // Retrieve the font from the font cache
+        I32 font = getFont(textLabel._font);
+        // The font may be invalid, so skip this text label
+        if (font != FONS_INVALID) {
+            fonsSetFont(_fonsContext, font);
+            fonsSetBlur(_fonsContext, textLabel._blurAmount);
+            fonsSetBlur(_fonsContext, textLabel._spacing);
+            fonsSetAlign(_fonsContext, textLabel._alignFlag);
+            fonsSetSize(_fonsContext, to_F32(textLabel._fontSize));
+            fonsSetColour(_fonsContext,
+                            textLabel._colour.r,
+                            textLabel._colour.g,
+                            textLabel._colour.b,
+                            textLabel._colour.a);
 
-                F32 textX = entry._position.x;
-                F32 textY = height - entry._position.y;
-                F32 lh = 0;
-                fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
+            F32 textX = entry._position.x;
+            F32 textY = height - entry._position.y;
+            F32 lh = 0;
+            fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
 
-                const vectorImpl<stringImpl>& text = textLabel.text();
-                vectorAlg::vecSize lineCount = text.size();
-                for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
-                    fonsDrawText(_fonsContext,
-                                 textX,
-                                 textY - (lh * i),
-                                 text[i].c_str(),
-                                 nullptr);
-                }
-                drawCount += lineCount;
+            const vectorImpl<stringImpl>& text = textLabel.text();
+            vectorAlg::vecSize lineCount = text.size();
+            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+                fonsDrawText(_fonsContext,
+                                textX,
+                                textY - (lh * i),
+                                text[i].c_str(),
+                                nullptr);
             }
-            // Register each label rendered as a draw call
-            _context.registerDrawCalls(to_U32(drawCount));
+            drawCount += lineCount;
         }
+        // Register each label rendered as a draw call
+        _context.registerDrawCalls(to_U32(drawCount));
     }
 }
 
@@ -874,6 +867,16 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     program->UploadPushConstants(pushConstants);
 }
 
+void GL_API::dispatchCompute(const ShaderProgram::ComputeParams& computeParams) {
+    assert(s_activePipeline != nullptr);
+
+    glShaderProgram* program = static_cast<glShaderProgram*>(s_activePipeline->shaderProgram());
+    program->DispatchCompute(computeParams._groupSize.x,
+                             computeParams._groupSize.y,
+                             computeParams._groupSize.z);
+    program->SetMemoryBarrier(computeParams._barrierType);
+}
+
 bool GL_API::draw(const GenericDrawCommand& cmd) {
     if (cmd.sourceBuffer() == nullptr) {
         GL_API::setActiveVAO(s_dummyVAO);
@@ -893,60 +896,71 @@ bool GL_API::draw(const GenericDrawCommand& cmd) {
     return true;
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd,
-                  const Pipeline& pipeline,
-                  const PushConstants& pushConstants) {
-    if (bindPipeline(pipeline)) {
-        sendPushConstants(pushConstants);
-        return draw(cmd);
-    }
-
-    return false;
-}
-
-void GL_API::flushCommandBuffer(CommandBuffer& commandBuffer) {
+void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
-    for (const RenderPassCmd& pass : commandBuffer) {
-        _context.renderTargetPool().drawToTargetBegin(pass._renderTarget, pass._renderTargetDescriptor);
+    for (const std::shared_ptr<GFX::Command>& cmd : commandBuffer()) {
+        switch (cmd->_type) {
+            case GFX::CommandType::BEGIN_RENDER_PASS: {
+                GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());
+                _context.renderTargetPool().drawToTargetBegin(crtCmd->_target, crtCmd->_descriptor);
+            }break;
+            case GFX::CommandType::END_RENDER_PASS: {
+                _context.renderTargetPool().drawToTargetEnd();
+            }break;
+            case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
+                assert(s_activeRenderTarget != nullptr);
+                GFX::BeginRenderSubPassCommand* crtCmd = static_cast<GFX::BeginRenderSubPassCommand*>(cmd.get());
+                s_activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
+            }break;
+            case GFX::CommandType::END_RENDER_SUB_PASS: {
+            }break;
+            case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+                GFX::BindDescriptorSetsCommand* crtCmd = static_cast<GFX::BindDescriptorSetsCommand*>(cmd.get());
+                const DescriptorSet& set = crtCmd->_set;
 
-        for (const RenderSubPassCmd& subPass : pass._subPassCmds) {
-            makeTexturesResident(subPass._textures);
-            for (const ShaderBufferBinding& shaderBufCmd : subPass._shaderBuffers) {
-                shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
-                                                shaderBufCmd._range.x,
-                                                shaderBufCmd._range.y);
-            }
-            Attorney::GFXDeviceAPI::onRenderSubPass(_context);
+                makeTexturesResident(set._textureData);
+                for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
+                    shaderBufCmd._buffer->bindRange(shaderBufCmd._binding,
+                                                    shaderBufCmd._range.x,
+                                                    shaderBufCmd._range.y);
+                    if (shaderBufCmd._atomicCounter.first) {
+                        shaderBufCmd._buffer->bindAtomicCounter(shaderBufCmd._atomicCounter.second.x,
+                                                                shaderBufCmd._atomicCounter.second.y);
+                    }
+                }
+            }break;
+            case GFX::CommandType::BIND_PIPELINE: {
+                bindPipeline(static_cast<GFX::BindPipelineCommand*>(cmd.get())->_pipeline);
+            } break;
+            case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+                sendPushConstants(static_cast<GFX::SendPushConstantsCommand*>(cmd.get())->_constants);
+            } break;
+            case GFX::CommandType::SET_SCISSOR: {
+                assert(false && "ToDo");
+            }break;
+            case GFX::CommandType::SET_VIEWPORT: {
+                _context.setViewport(static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport);
+            }break;
+            case GFX::CommandType::DRAW_COMMANDS : {
+                Attorney::GFXDeviceAPI::uploadGPUBlock(_context);
 
-            for (const std::shared_ptr<Command>& cmd : subPass._commands()) {
-                switch (cmd->_type) {
-                    case CommandType::BIND_PIPELINE: {
-                        bindPipeline(std::dynamic_pointer_cast<BindPipelineCommand>(cmd)->_pipeline);
-                    } break;
-                    case CommandType::SEND_PUSH_CONSTANTS: {
-                        sendPushConstants(std::dynamic_pointer_cast<SendPushConstantsCommand>(cmd)->_constants);
-                    } break;
-                    case CommandType::SET_VIEWPORT: {
-                        assert(false && "ToDo");
-                    }break;
-                    case CommandType::DRAW_COMMANDS : {
-                        const vectorImpl<GenericDrawCommand>& drawCommands = std::dynamic_pointer_cast<DrawCommand>(cmd)->_drawCommands;
-                        for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                            if (draw(currentDrawCommand)) {
-                                if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
-                                    drawCallCount++;
-                                }
-                                if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
-                                    drawCallCount++;
-                                }
-                            }
+                const vectorImpl<GenericDrawCommand>& drawCommands = static_cast<GFX::DrawCommand*>(cmd.get())->_drawCommands;
+                for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
+                    if (draw(currentDrawCommand)) {
+                        if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY)) {
+                            drawCallCount++;
                         }
-                    }break;
-                };
-            }
-        }
-
-        _context.renderTargetPool().drawToTargetEnd();
+                        if (currentDrawCommand.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME)) {
+                            drawCallCount++;
+                        }
+                    }
+                }
+            }break;
+            case GFX::CommandType::DISPATCH_COMPUTE: {
+                GFX::DispatchComputeCommand* crtCmd = static_cast<GFX::DispatchComputeCommand*>(cmd.get());
+                dispatchCompute(crtCmd->_params);
+            }break;
+        };
     }
 
     _context.registerDrawCalls(drawCallCount);

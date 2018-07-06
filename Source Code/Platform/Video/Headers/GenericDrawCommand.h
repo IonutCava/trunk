@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GENERIC_DRAW_COMMAND_H_
 
 #include "Pipeline.h"
-
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -127,97 +126,6 @@ public:
     inline const IndirectDrawCommand& cmd() const;
 };
 
-enum class CommandType : U8 {
-    BIND_PIPELINE = 0,
-    SEND_PUSH_CONSTANTS,
-    DRAW_COMMANDS,
-    SET_VIEWPORT
-};
-
-struct Command {
-    explicit Command(CommandType type)
-        : _type(type)
-    {
-    }
-
-    virtual void execute() = 0;
-
-    CommandType _type;
-};
-
-struct BindPipelineCommand : Command {
-    BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
-    {
-    }
-
-    void execute() override {};
-
-    Pipeline _pipeline;
-};
-
-struct SendPushConstantsCommand : Command {
-    SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
-    {
-    }
-
-    void execute() override {};
-
-    PushConstants _constants;
-};
-
-struct DrawCommand : Command {
-    DrawCommand() : Command(CommandType::DRAW_COMMANDS)
-    {
-    }
-
-    void execute() override {};
-
-    vectorImpl<GenericDrawCommand> _drawCommands;
-};
-
-struct SetViewportCommand : Command {
-    SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
-    {
-    }
-
-    void execute() override {};
-
-    vec4<I32> _viewport;
-};
-
-class GenericCommandBuffer {
-public:
-    GenericCommandBuffer();
-
-    template<typename T>
-    inline void add(const T& command);
-
-    inline void add(const GenericCommandBuffer& other);
-
-    void clean();
-
-    inline void batch();
-
-    inline vectorImpl<std::shared_ptr<Command>>& operator()();
-    inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
-
-    inline const vectorImpl<Pipeline*>& getPipelines() const;
-    inline const vectorImpl<PushConstants*>& getPushConstants() const;
-    inline const vectorImpl<GenericDrawCommand*>& getDrawCommands() const;
-
-    inline vectorAlg::vecSize size() const { return _data.size(); }
-    inline void clear();
-    inline bool empty() const;
-
-protected:
-    void rebuildCaches();
-
-protected:
-    vectorImpl<std::shared_ptr<Command>> _data;
-    vectorImpl<Pipeline*> _pipelineCache;
-    vectorImpl<PushConstants*> _pushConstantsCache;
-    vectorImpl<GenericDrawCommand*> _drawCommandsCache;
-};
 }; //namespace Divide
 
 #endif //_GENERIC_DRAW_COMMAND_H_
