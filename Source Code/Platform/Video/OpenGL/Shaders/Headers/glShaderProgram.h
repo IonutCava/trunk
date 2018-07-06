@@ -36,9 +36,13 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
-
+class GL_API;
+namespace Attorney {
+    class GLAPIShaderProgram;
+};
 /// OpenGL implementation of the Shader entity
 class glShaderProgram : public ShaderProgram {
+    friend class Attorney::GLAPIShaderProgram;
    public:
     glShaderProgram(const bool optimise = false);
     ~glShaderProgram();
@@ -185,17 +189,31 @@ class glShaderProgram : public ShaderProgram {
     ShaderVarMat4Map _shaderVarsMat4;
 
     ShaderVarMap _shaderVarLocation;
-    std::atomic_bool _validationQueued;
+    bool _validationQueued;
     GLenum _binaryFormat;
     bool _validated;
     bool _loadedFromBinary;
-    Shader* _shaderStage[to_const_uint(ShaderType::COUNT)];
-    GLenum _shaderStageTable[to_const_uint(ShaderType::COUNT)];
     GLuint _shaderProgramIDTemp;
     static stringImpl _lastPathPrefix;
     static stringImpl _lastPathSuffix;
+    static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
+    std::array<Shader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
+    std::array<GLenum, to_const_uint(ShaderType::COUNT)> _shaderStageTable;
 };
 
+namespace Attorney {
+    class GLAPIShaderProgram {
+    private:
+        static void setGlobalLineOffset(U32 offset) {
+            glShaderProgram::_lineOffset.fill(offset);
+        }
+        static void addLineOffset(ShaderType stage, U32 offset) {
+            glShaderProgram::_lineOffset[to_uint(stage)] += offset;
+        }
+
+        friend class Divide::GL_API;
+    };
+};  // namespace Attorney
 };  // namespace Divide
 
 #endif  //_PLATFORM_VIDEO_OPENGLS_PROGRAM_H_

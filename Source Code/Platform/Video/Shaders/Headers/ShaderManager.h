@@ -88,7 +88,7 @@ DEFINE_SINGLETON(ShaderManager)
     const stringImpl& shaderFileRead(const stringImpl& atomName,
                                      const stringImpl& location);
     /// Save a shader to file
-    I8 shaderFileWrite(char* atomName, const char* s);
+    I8 shaderFileWrite(const stringImpl& atomName, const stringImpl& sourceCode);
     /// Bind the null shader
     bool unbind();
     /// Return a default shader if we try to render something with a material that

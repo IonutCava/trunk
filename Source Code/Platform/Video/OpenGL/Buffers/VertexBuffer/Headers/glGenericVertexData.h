@@ -108,7 +108,6 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _indexBuffer;
     GLuint _transformFeedback;
     GLuint _numQueries;
-    GLuint _vertexArray[to_const_uint(GVDUsage::COUNT)];
     bool* _bufferSet;
     bool* _bufferPersistent;
     GLuint* _elementCount;
@@ -117,13 +116,14 @@ class glGenericVertexData : public GenericVertexData {
     size_t* _elementSize;
     GLUtil::bufferPtr* _bufferPersistentData;
     GLuint* _prevResult;
-    GLuint* _feedbackQueries[2];
-    bool* _resultAvailable[2];
+    std::array<GLuint*, 2> _feedbackQueries;
+    std::array<bool*, 2> _resultAvailable;
     GLuint _currentWriteQuery;
     GLuint _currentReadQuery;
     size_t* _startDestOffset;
     vectorImpl<U32> _fdbkBindPoints;
-    
+
+    std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
     std::unique_ptr<glBufferLockManager> _lockManager;
 };
 

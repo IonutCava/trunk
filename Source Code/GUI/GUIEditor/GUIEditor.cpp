@@ -26,17 +26,23 @@ GUIEditor::GUIEditor()
     U32 controlFieldCount =
         to_uint(ControlFields::COUNT);
 
-    memset(_toggleButtons, 0,
-           sizeof(_toggleButtons[0]) *
-               to_uint(ToggleButtons::COUNT));
-    memset(_currentValues, 0,
-           sizeof(_currentValues[0][0]) * transFieldCount * controlFieldCount);
-    memset(_valuesField, NULL,
-           sizeof(_valuesField[0][0]) * transFieldCount * controlFieldCount);
-    memset(_transformButtonsInc, NULL, sizeof(_transformButtonsInc[0][0 ]) *
-                                           transFieldCount * controlFieldCount);
-    memset(_transformButtonsDec, NULL, sizeof(_transformButtonsDec[0][0]) *
-                                           transFieldCount * controlFieldCount);
+    _toggleButtons.fill(0);
+
+    for (auto& internalArray : _currentValues) {
+        internalArray.fill(0.0f);
+    }
+
+    for (auto& internalArray : _valuesField) {
+        internalArray.fill(nullptr);
+    }
+
+    for (auto& internalArray : _transformButtonsInc) {
+        internalArray.fill(nullptr);
+    }
+
+    for (auto& internalArray : _transformButtonsDec) {
+        internalArray.fill(nullptr);
+    }
 
     for (U32 i = 0; i < transFieldCount; ++i) {
         _currentValues[i][to_uint(

@@ -147,8 +147,7 @@ class Material : public Resource {
             _shader = "";
             _shaderCompStage = ShaderCompilationStage::UNHANDLED;
             for (U32 i = 0; i < to_uint(ShaderType::COUNT); ++i) {
-                memset(_shadingFunction[i], 0,
-                       to_uint(BumpMethod::COUNT) * sizeof(U32));
+                _shadingFunction[i].fill(0);
             }
         }
 
@@ -168,8 +167,8 @@ class Material : public Resource {
             return *this;
         }
 
-        U32 _shadingFunction[to_const_uint(ShaderType::COUNT)]
-                            [to_const_uint(BumpMethod::COUNT)];
+        std::array<std::array<U32, to_const_uint(BumpMethod::COUNT)>,
+                   to_const_uint(ShaderType::COUNT)> _shadingFunction;
 
        protected:
         StateTracker<bool> _trackedBools;
@@ -401,8 +400,8 @@ class Material : public Resource {
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
-    ShaderInfo _shaderInfo[to_const_uint(RenderStage::COUNT)];
-    size_t _defaultRenderStates[to_const_uint(RenderStage::COUNT)];
+    std::array<ShaderInfo, to_const_uint(RenderStage::COUNT)> _shaderInfo;
+    std::array<size_t, to_const_uint(RenderStage::COUNT)> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
 

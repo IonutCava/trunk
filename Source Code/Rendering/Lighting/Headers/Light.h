@@ -267,7 +267,7 @@ class Light : public SceneNode {
 
     LightType _type;
     LightMode _mode;
-    bool _dirty[to_const_uint(PropertyType::COUNT)];
+    std::array<bool, to_const_uint(PropertyType::COUNT)> _dirty;
 
    private:
     U8 _resolutionFactor;

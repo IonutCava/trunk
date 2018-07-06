@@ -54,7 +54,7 @@ bool glShader::load(const stringImpl& source) {
     stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
     Util::trim(parsedSource);
 
-#ifdef NDEBUG
+#if !defined(_DEBUG)
 
     if ((_type == ShaderType::FRAGMENT || _type == ShaderType::VERTEX) &&
         _optimise) {
@@ -81,9 +81,9 @@ bool glShader::load(const stringImpl& source) {
     const char* src = parsedSource.c_str();
     GLsizei sourceLength = (GLsizei)parsedSource.length();
     glShaderSource(_shader, 1, &src, &sourceLength);
-#ifndef NDEBUG
+#if defined(_DEBUG)
     ShaderManager::getInstance().shaderFileWrite(
-        (char*)(stringImpl("shaderCache/Text/" + getName()).c_str()), src);
+        "shaderCache/Text/" + getName(), parsedSource);
 #endif
     return true;
 }
@@ -172,9 +172,9 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
             }
             output << stringAlg::fromBase(preprocessIncludes(
                           include_string, include_file, level + 1))
-                   << std::endl;
+                   << "\n";
         } else {
-            output << line << std::endl;
+            output << line << "\n";
         }
         ++line_number;
     }

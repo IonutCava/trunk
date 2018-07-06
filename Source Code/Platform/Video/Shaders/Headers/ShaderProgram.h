@@ -263,7 +263,6 @@ class ShaderProgram : public HardwareResource {
     const vectorImpl<U32>& getAvailableFunctions(ShaderType type) const;
 
    protected:
-    bool _refreshStage[to_const_uint(ShaderType::COUNT)];
     bool _optimise;
     bool _dirty;
     std::atomic_bool _bound;
@@ -278,13 +277,14 @@ class ShaderProgram : public HardwareResource {
     /// ID<->shaders pair
     typedef hashMapImpl<U32, Shader*> ShaderIDMap;
     ShaderIDMap _shaderIDMap;
-
+    std::array<bool, to_const_uint(ShaderType::COUNT)> _refreshStage;
    private:
     bool _sceneDataDirty;
 
-    vectorImpl<U32> _functionIndex[to_const_uint(
-        ShaderType::COUNT)][Config::SCENE_NODE_LOD];
-    vectorImpl<U32> _availableFunctionIndex[to_const_uint(ShaderType::COUNT)];
+    std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>,
+               to_const_uint(ShaderType::COUNT)> _functionIndex;
+    std::array<vectorImpl<U32>, to_const_uint(ShaderType::COUNT)>
+        _availableFunctionIndex;
 };
 
 };  // namespace Divide

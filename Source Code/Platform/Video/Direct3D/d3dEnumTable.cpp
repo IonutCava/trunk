@@ -2,8 +2,7 @@
 
 namespace Divide {
 
-U32 d3dTextureTypeTable[to_const_uint(
-    TextureType::COUNT)];
+std::array<U32, to_const_uint(TextureType::COUNT)> d3dTextureTypeTable;
 
 void fillEnumTables() {
     d3dTextureTypeTable[to_uint(TextureType::TEXTURE_1D)] = 0;

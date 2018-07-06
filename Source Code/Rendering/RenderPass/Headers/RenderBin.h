@@ -93,7 +93,8 @@ class RenderBin {
         COUNT
     };
 
-    stringImpl renderBinTypeToNameMap[to_const_uint(RenderBinType::COUNT) + 1];
+    std::array<stringImpl, to_const_uint(RenderBinType::COUNT) + 1>
+        renderBinTypeToNameMap;
 
     friend class RenderQueue;
 

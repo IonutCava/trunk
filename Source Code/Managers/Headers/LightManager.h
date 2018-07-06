@@ -135,8 +135,8 @@ DEFINE_SINGLETON_EXT1(LightManager, FrameListener)
     vectorImpl<LightProperties> _lightProperties;
     vectorImpl<LightShadowProperties> _lightShadowProperties;
 
-    ShaderBuffer* _lightShaderBuffer[to_const_uint(
-        ShaderBufferType::COUNT)];
+    std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>
+        _lightShaderBuffer;
 
     U8 _normShadowLocation;
     U8 _cubeShadowLocation;

@@ -39,8 +39,7 @@ namespace Divide {
 
 void fillEnumTables();
 
-extern U32 d3dTextureTypeTable[to_const_uint(
-    TextureType::COUNT)];
+extern std::array<U32, to_const_uint(TextureType::COUNT)> d3dTextureTypeTable;
 
 };  // namespace Divide
 #endif

@@ -66,13 +66,12 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraChange));
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
-    // update/rendering thread
-    // so how many threads do we allocate for tasks? That's up to the programmer
-    // to decide for each app
-    // we add the A.I. thread in the same pool as it's a task. ReCast should
-    // also use this ...
-    _mainTaskPool = MemoryManager_NEW boost::threadpool::pool(
-        Config::THREAD_LIMIT + 1 /*A.I.*/);
+    // update/rendering thread so how many threads do we allocate for tasks?
+    // That's up to the programmer to decide for each app.
+    // We add the A.I. thread in the same pool as it's a task. 
+    // ReCast should also use this thread.
+    _mainTaskPool =
+        MemoryManager_NEW boost::threadpool::pool(HARDWARE_THREAD_COUNT() + 1);
 
     ParamHandler::getInstance().setParam<stringImpl>("language",
                                                      Locale::currentLanguage());
@@ -105,6 +104,7 @@ Task* Kernel::AddTask(U64 tickInterval, I32 numberOfTicks,
 }
 
 void Kernel::idle() {
+    Console::flush();
     GFX_DEVICE.idle();
     PHYSICS_DEVICE.idle();
     SceneManager::getInstance().idle();
@@ -572,7 +572,7 @@ void Kernel::shutdown() {
     _mainTaskPool->clear();
     while (_mainTaskPool->active() > 0) {
     }
-        Time::REMOVE_TIMER(s_appLoopTimer);
+    Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h) {

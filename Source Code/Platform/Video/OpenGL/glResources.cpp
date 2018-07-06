@@ -48,19 +48,20 @@ void glfw_focus_callback(GLFWwindow* window, I32 focusState) {
     Application::getInstance().hasFocus(focusState != 0);
 }
 
-GLenum glBlendTable[to_const_uint(BlendProperty::COUNT)];
-GLenum glBlendOpTable[to_const_uint(BlendOperation::COUNT)];
-GLenum glCompareFuncTable[to_const_uint(ComparisonFunction::COUNT)];
-GLenum glStencilOpTable[to_const_uint(StencilOperation::COUNT)];
-GLenum glCullModeTable[to_const_uint(CullMode::COUNT) - 1];
-GLenum glFillModeTable[to_const_uint(FillMode::COUNT)];
-GLenum glTextureTypeTable[to_const_uint(TextureType::COUNT)];
-GLenum glImageFormatTable[to_const_uint(GFXImageFormat::COUNT)];
-GLenum glPrimitiveTypeTable[to_const_uint(PrimitiveType::COUNT)];
-GLenum glDataFormat[to_const_uint(GFXDataFormat::COUNT)];
-GLenum glWrapTable[to_const_uint(TextureWrap::COUNT)];
-GLenum glTextureFilterTable[to_const_uint(TextureFilter::COUNT)];
-NS_GLIM::GLIM_ENUM glimPrimitiveType[to_const_uint(PrimitiveType::COUNT)];
+std::array<GLenum, to_const_uint(BlendProperty::COUNT)> glBlendTable;
+std::array<GLenum, to_const_uint(BlendOperation::COUNT)> glBlendOpTable;
+std::array<GLenum, to_const_uint(ComparisonFunction::COUNT)> glCompareFuncTable;
+std::array<GLenum, to_const_uint(StencilOperation::COUNT)> glStencilOpTable;
+std::array<GLenum, to_const_uint(CullMode::COUNT)> glCullModeTable;
+std::array<GLenum, to_const_uint(FillMode::COUNT)> glFillModeTable;
+std::array<GLenum, to_const_uint(TextureType::COUNT)> glTextureTypeTable;
+std::array<GLenum, to_const_uint(GFXImageFormat::COUNT)> glImageFormatTable;
+std::array<GLenum, to_const_uint(PrimitiveType::COUNT)> glPrimitiveTypeTable;
+std::array<GLenum, to_const_uint(GFXDataFormat::COUNT)> glDataFormat;
+std::array<GLenum, to_const_uint(TextureWrap::COUNT)> glWrapTable;
+std::array<GLenum, to_const_uint(TextureFilter::COUNT)> glTextureFilterTable;
+std::array<NS_GLIM::GLIM_ENUM, to_const_uint(PrimitiveType::COUNT)>
+    glimPrimitiveType;
 
 void fillEnumTables() {
     glBlendTable[to_const_uint(BlendProperty::ZERO)] = GL_ZERO;
@@ -108,6 +109,7 @@ void fillEnumTables() {
     glCullModeTable[to_const_uint(CullMode::CW)] = GL_BACK;
     glCullModeTable[to_const_uint(CullMode::CCW)] = GL_FRONT;
     glCullModeTable[to_const_uint(CullMode::ALL)] = GL_FRONT_AND_BACK;
+    glCullModeTable[to_const_uint(CullMode::NONE)] = GL_NONE;
 
     glFillModeTable[to_const_uint(FillMode::POINT)] = GL_POINT;
     glFillModeTable[to_const_uint(FillMode::WIREFRAME)] = GL_LINE;

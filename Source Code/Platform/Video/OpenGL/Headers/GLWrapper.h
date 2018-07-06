@@ -255,6 +255,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void createFonsContext();
     /// FontStash library deinitialization
     void deleteFonsContext();
+    /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to
+    /// all stages
+    typedef std::array<GLint, to_const_uint(ShaderType::COUNT) + 1> ShaderOffsetArray;
+    void appendToShaderHeader(ShaderType type, const stringImpl& entry,
+                              ShaderOffsetArray& inOutOffset);
 
   private:
     /// The previous Text3D node's font face size

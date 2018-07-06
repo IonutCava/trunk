@@ -149,6 +149,7 @@ void ShaderManager::refreshSceneData() {
 /// code
 const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
                                                 const stringImpl& location) {
+    static std::ifstream inFile;
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomName);
     // If that's the case, return the code from cache
@@ -157,52 +158,41 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
     }
     // If we forgot to specify an atom location, we have nothing to return
     assert(!location.empty());
-
+    
     // Open the atom file
     stringImpl file = location + "/" + atomName;
-    FILE* fp = nullptr;
-    fopen_s(&fp, file.c_str(), "r");
-    assert(fp != nullptr);
+    stringImpl code;
 
-    // Read the contents
-    fseek(fp, 0, SEEK_END);
-    I32 count = ftell(fp);
-    rewind(fp);
-    assert(count > 0);
+    inFile.open(file);
+    inFile.seekg(0, std::ios::end);   
+    code.reserve(inFile.tellg());
+    inFile.seekg(0, std::ios::beg);
 
-    char* content = MemoryManager_NEW char[count + 1];
-    count = (I32)(fread(content, sizeof(char), count, fp));
-    content[count] = '\0';
-    fclose(fp);
-
+    code.assign((std::istreambuf_iterator<char>(inFile)),
+                 std::istreambuf_iterator<char>());
+    inFile.close();
+    assert(inFile.good());
     // Add the code to the atom cache for future reference
     hashAlg::pair<AtomMap::iterator, bool> result =
-        hashAlg::emplace(_atoms, atomName, stringImpl(content));
+        hashAlg::emplace(_atoms, atomName, code);
     assert(result.second);
-    MemoryManager::DELETE_ARRAY(content);
 
     // Return the source code
     return result.first->second;
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
-I8 ShaderManager::shaderFileWrite(char* atomName, const char* s) {
-    I8 status = 0;
+I8 ShaderManager::shaderFileWrite(const stringImpl& atomName,
+                                  const stringImpl& sourceCode) {
+    static std::ofstream outputFile;
 
-    if (atomName != nullptr) {
-        // Create the target file (or open it for writing)
-        FILE* fp = nullptr;
-        fopen_s(&fp, atomName, "w");
-        if (fp != nullptr) {
-            // Dump the source code
-            if (fwrite(s, sizeof(char), strlen(s), fp) == strlen(s)) {
-                status = 1;
-            }
-            // Close the file
-            fclose(fp);
-        }
+    if (!atomName.empty() && !sourceCode.empty()) {
+        outputFile.open(atomName);
+        outputFile << sourceCode;
+        outputFile.close();
     }
-    return status;
+
+    return outputFile.good();
 }
 
 /// Remove a shader entity. The shader is deleted only if it isn't referenced by

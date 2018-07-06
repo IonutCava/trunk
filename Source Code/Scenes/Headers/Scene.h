@@ -303,7 +303,7 @@ class Scene : public Resource, public Input::InputAggregatorInterface {
     vec2<I32> _previousMousePos;
     bool _mousePressed[8];
 #ifdef _DEBUG
-    vectorImpl<Line> _lines[to_const_uint(DebugLines::COUNT)];
+    std::array<vectorImpl<Line>, to_const_uint(DebugLines::COUNT)> _lines;
 #endif
 };
 

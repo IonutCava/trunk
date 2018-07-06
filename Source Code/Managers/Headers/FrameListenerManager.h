@@ -67,8 +67,8 @@ DEFINE_SINGLETON(FrameListenerManager)
 
    private:
     vectorImpl<FrameListener*> _listeners;
-    EventTimeMap
-        _eventTimers[to_const_uint(FrameEventType::FRAME_EVENT_ENDED) + 1];
+    std::array<EventTimeMap, to_const_uint(FrameEventType::FRAME_EVENT_ENDED) +
+                                 1> _eventTimers;
 
 END_SINGLETON
 

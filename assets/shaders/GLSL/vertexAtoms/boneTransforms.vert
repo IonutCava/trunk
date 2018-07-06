@@ -29,7 +29,7 @@ void applyBoneTransforms(inout vec4 position, inout vec3 normal, in int lod){
     vec4 tempVec = vec4(normal, 0.0);
     normal = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 
                   transformMatrix[2] * tempVec + transformMatrix[3] * tempVec).xyz;
-				  
+
 #if defined(COMPUTE_TBN)
     tempVec = vec4(tangnet, 0.0);
     tangnet = vec4(transformMatrix[0] * tempVec + transformMatrix[1] * tempVec + 

@@ -150,11 +150,14 @@ class Framebuffer : private NonCopyable, public GUIDWrapper {
     U16 _width, _height;
     U32 _framebufferHandle;
     vec4<F32> _clearColor;
-    TextureDescriptor _attachment[to_const_uint(TextureDescriptor::AttachmentType::COUNT)];
-    Texture* _attachmentTexture[to_const_uint(
-        TextureDescriptor::AttachmentType::COUNT)];
-    bool _attachmentDirty[to_const_uint(
-        TextureDescriptor::AttachmentType::COUNT)];
+    std::array<TextureDescriptor,
+               to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
+        _attachment;
+    std::array<Texture*,
+               to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
+        _attachmentTexture;
+    std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)>
+        _attachmentDirty;
 };
 
 };  // namespace Divide

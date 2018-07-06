@@ -499,8 +499,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GPUVendor _GPUVendor;
     GPUState _state;
     /* Rendering buffers*/
-    Framebuffer* _renderTarget[to_const_uint(
-        RenderTarget::COUNT)];
+    std::array<Framebuffer*, to_const_uint(RenderTarget::COUNT)> _renderTarget;
     /*State management */
     RenderStateMap _stateBlockMap;
     bool _stateBlockByDescription;
@@ -555,7 +554,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     RenderQueue _renderQueue;
     Time::ProfileTimer* _commandBuildTimer;
     //0 = gfxDataBuffer, 1 = nodeBuffer, 3 = command buffer
-    bool _buffersDirty[to_const_uint(GPUBuffer::COUNT)];
+    std::array<bool, to_const_uint(GPUBuffer::COUNT)> _buffersDirty;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;

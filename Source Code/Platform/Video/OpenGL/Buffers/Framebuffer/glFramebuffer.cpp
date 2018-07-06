@@ -38,7 +38,7 @@ glFramebuffer::glFramebuffer(bool useResolveBuffer)
       _resolved(false),
       _isLayeredDepth(false)
 {
-    memset(_attOffset, 0, to_uint(TextureDescriptor::AttachmentType::COUNT) * sizeof(GLint));
+    _attOffset.fill(0);
 }
 
 glFramebuffer::~glFramebuffer() {

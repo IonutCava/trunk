@@ -8,7 +8,7 @@
 namespace Divide {
 
 void ASIOImpl::handlePacket(WorldPacket& p) {
-    switch (p.getOpcode()) {
+    switch (p.opcode()) {
         case OPCodes::MSG_HEARTBEAT:
             HandleHeartBeatOpCode(p);
             break;
@@ -24,7 +24,7 @@ void ASIOImpl::handlePacket(WorldPacket& p) {
         default:
             ParamHandler::getInstance().setParam(
                 "serverResponse",
-                "Unknown OpCode: [ 0x" + std::to_string(p.getOpcode()) + " ]");
+                "Unknown OpCode: [ 0x" + std::to_string(p.opcode()) + " ]");
             break;
     };
 }

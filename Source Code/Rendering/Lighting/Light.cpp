@@ -45,8 +45,7 @@ Light::Light(const F32 range, const LightType& type)
     _properties._attenuation =
         vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f);  // constAtt, linearAtt, quadAtt
 
-    memset(_dirty, true,
-           to_uint(PropertyType::COUNT) * sizeof(bool));
+    _dirty.fill(true);
     _enabled = true;
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
     _renderState.addToDrawExclusionMask(RenderStage::Z_PRE_PASS);

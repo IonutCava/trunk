@@ -13,47 +13,41 @@ char Console::_textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE];
 Console::consolePrintCallback Console::_guiConsoleCallback;
 
 //! Do not remove the following license without express permission granted bu
-//DIVIDE-Studio
+// DIVIDE-Studio
 void Console::printCopyrightNotice() {
     std::cout << "-------------------------------------------------------------"
-                 "-----------------" << std::endl;
-    std::cout << "Copyright (c) 2015 DIVIDE-Studio" << std::endl;
-    std::cout << "Copyright (c) 2009 Ionut Cava" << std::endl;
-    std::cout << std::endl;
-    std::cout << "This file is part of DIVIDE Framework." << std::endl;
-    std::cout << std::endl;
+                 "-----------------\n";
+    std::cout << "Copyright (c) 2015 DIVIDE-Studio\n";
+    std::cout << "Copyright (c) 2009 Ionut Cava\n\n";
+    std::cout << "This file is part of DIVIDE Framework.\n\n";
     std::cout << "Permission is hereby granted, free of charge, to any person "
-                 "obtaining a copy of this software" << std::endl;
+                 "obtaining a copy of this software\n";
     std::cout << "and associated documentation files (the 'Software'), to deal "
-                 "in the Software without restriction," << std::endl;
+                 "in the Software without restriction,\n";
     std::cout << "including without limitation the rights to use, copy, "
-                 "modify, merge, publish, distribute, sublicense," << std::endl;
+                 "modify, merge, publish, distribute, sublicense,\n";
     std::cout << "and/or sell copies of the Software, and to permit persons to "
-                 "whom the Software is furnished to do so," << std::endl;
-    std::cout << "subject to the following conditions:" << std::endl;
-    std::cout << std::endl;
+                 "whom the Software is furnished to do so,\n";
+    std::cout << "subject to the following conditions:\n\n";
     std::cout << "The above copyright notice and this permission notice shall "
                  "be included in all copies or substantial portions of the "
-                 "Software." << std::endl;
-    std::cout << std::endl;
+                 "Software.\n\n";
     std::cout << "THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY "
-                 "KIND, EXPRESS OR IMPLIED," << std::endl;
+                 "KIND, EXPRESS OR IMPLIED,\n";
     std::cout << "INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF "
                  "MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND "
-                 "NONINFRINGEMENT." << std::endl;
+                 "NONINFRINGEMENT.\n";
     std::cout << "IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE "
-                 "FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY," << std::endl;
+                 "FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,\n";
     std::cout << "WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING "
-                 "FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE" << std::endl;
-    std::cout << "OR THE USE OR OTHER DEALINGS IN THE SOFTWARE." << std::endl;
-    std::cout << std::endl;
+                 "FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE\n";
+    std::cout << "OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n";
     std::cout << "For any problems or licensing issues I may have overlooked, "
-                 "please contact: " << std::endl;
-    std::cout << "E-mail: ionut.cava@divide-studio.com | Website: "
-                 "http://wwww.divide-studio.com" << std::endl;
+                 "please contact: \n";
+    std::cout << "E-mail: ionut.cava@divide-studio.com | Website: \n"
+                 "http://wwww.divide-studio.com\n";
     std::cout << "-------------------------------------------------------------"
-                 "------------------" << std::endl;
-    std::cout << std::endl;
+                 "------------------\n\n";
 }
 
 const char* Console::d_printfn(const char* format, ...) {
@@ -156,6 +150,11 @@ const char* Console::errorf(const char* format, ...) {
     return output(_textBuffer, true);
 }
 
+void Console::flush() {
+    std::cerr << std::flush;
+    std::cout << std::flush;
+}
+
 const char* Console::output(const char* output, const bool error) {
     if (_guiConsoleCallback) {
         if (error) {
@@ -180,7 +179,7 @@ const char* Console::output(const char* output, const bool error) {
         outputStream << " Error: ";
     }
 
-    outputStream << output << std::flush;
+    outputStream << output/* << std::flush*/;
 
     return output;
 }

@@ -27,11 +27,8 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped)
     _currentWriteQuery = 0;
     _vertexArray[to_uint(GVDUsage::DRAW)] = 0;
     _vertexArray[to_uint(GVDUsage::FDBCK)] = 0;
-
-    for (U8 i = 0; i < 2; ++i) {
-        _feedbackQueries[i] = nullptr;
-        _resultAvailable[i] = nullptr;
-    }
+    _feedbackQueries.fill(nullptr);
+    _resultAvailable.fill(nullptr);
 }
 
 glGenericVertexData::~glGenericVertexData() {
@@ -301,13 +298,13 @@ void glGenericVertexData::SetBuffer(U32 buffer,
     if (persistentMapped) {
         // If we requested a persistently mapped buffer, we use glBufferStorage
         // to pin it in memory
-        MapBufferUsageMask usageMask =
+        BufferStorageMask storageMask =
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         BufferAccessMask accessMask =
             GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
 
         _bufferPersistentData[buffer] = GLUtil::allocPersistentBuffer(
-            currentBuffer, bufferSize * sizeFactor, usageMask, accessMask);
+            currentBuffer, bufferSize * sizeFactor, storageMask, accessMask);
 
         DIVIDE_ASSERT(data != nullptr,
                       "glGenericVertexData error: persistent mapping failed "

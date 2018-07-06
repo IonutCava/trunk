@@ -8,15 +8,15 @@ namespace GLUtil {
 
 bufferPtr allocPersistentBuffer(GLuint bufferId,
                                 GLsizeiptr bufferSize,
-                                MapBufferUsageMask usageMask,
+                                BufferStorageMask storageMask,
                                 BufferAccessMask accessMask,
                                 const bufferPtr data) {
     STUBBED("Remove this hack when proper OpenGL4.5 support is available!")
 #ifdef GL_VERSION_4_5
-    glNamedBufferStorage(bufferId, bufferSize, data, usageMask);
+    glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
     bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
 #else
-    gl44ext::glNamedBufferStorageEXT(bufferId, bufferSize, data, usageMask);
+    gl44ext::glNamedBufferStorageEXT(bufferId, bufferSize, data, storageMask);
     bufferPtr ptr =
         gl44ext::glMapNamedBufferRangeEXT(bufferId, 0, bufferSize, accessMask);
 #endif
@@ -26,7 +26,7 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
 }
 
 bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
-                                         MapBufferUsageMask usageMask,
+                                         BufferStorageMask storageMask,
                                          BufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data) {
@@ -35,7 +35,7 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
         bufferIdOut != 0,
         "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
-    return allocPersistentBuffer(bufferIdOut, bufferSize, usageMask, accessMask,
+    return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask,
                                  data);
 }
 

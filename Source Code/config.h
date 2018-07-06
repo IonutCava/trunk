@@ -91,10 +91,6 @@ const unsigned int SCENE_NODE_LOD = 3;
 const unsigned int SCENE_NODE_LOD0 = 100;
 /// Relative distance for LOD0->LOD2 selection
 const unsigned int SCENE_NODE_LOD1 = 180;
-/// Edit the maximum number of concurrent threads that this application may
-/// start excluding tasks.
-/// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
-const unsigned int THREAD_LIMIT = 2;
 /// Use "precompiled" shaders if possible
 const bool USE_SHADER_BINARY = true;
 /// Use HW AA'ed lines

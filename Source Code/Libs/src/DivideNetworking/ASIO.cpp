@@ -24,19 +24,25 @@
 
 namespace Divide {
 
-ASIO::ASIO() : _connected(false), _debugOutput(true), _localClient(nullptr) {}
+ASIO::ASIO() : _connected(false),
+               _debugOutput(true),
+               _localClient(nullptr)
+{
+}
 
-ASIO::~ASIO() {
+ASIO::~ASIO()
+{
     _work.reset();
     _thread->join();
     _localClient->stop();
     io_service_.stop();
     delete _localClient;
-    _localClient = nullptr;
 }
 
 void ASIO::disconnect() {
-    if (!_connected) return;
+    if (!_connected) {
+        return;
+    }
     WorldPacket p(OPCodes::CMSG_REQUEST_DISCONNECT);
     p << _localClient->getSocket().local_endpoint().address().to_string();
     sendPacket(p);
@@ -75,13 +81,14 @@ void ASIO::close() {
 }
 
 void ASIO::sendPacket(WorldPacket& p) const {
-    if (!_connected) return;
-
+    if (!_connected) {
+        return;
+    }
     _localClient->sendPacket(p);
 
     if (_debugOutput) {
         std::cout << "ASIO: sent opcode [ 0x"
-                  << std::to_string(p.getOpcode()) << "]" << std::endl;
+                  << std::to_string(p.opcode()) << "]" << std::endl;
     }
 }
 

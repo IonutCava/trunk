@@ -55,6 +55,7 @@ Application::~Application() {
     ParamHandler::destroyInstance();
     Time::ApplicationTimer::destroyInstance();
     Locale::clear();
+    Console::flush();
 }
 
 ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,

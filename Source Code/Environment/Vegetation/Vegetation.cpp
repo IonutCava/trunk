@@ -54,7 +54,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _renderDrawCommand =
         GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 12 * 3);
 
-    memset(_instanceRoutineIdx, 0, to_uint(CullType::COUNT) * sizeof(U32));
+    _instanceRoutineIdx.fill(0);
 
     ResourceDescriptor instanceCullShader("instanceCull");
     instanceCullShader.setThreadedLoading(false);

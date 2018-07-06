@@ -315,8 +315,8 @@ class SceneGraphNode : public GUIDWrapper, private NonCopyable {
     stringImpl _name;
 
     UsageContext _usageContext;
-    std::unique_ptr<SGNComponent> _components[to_const_uint(
-        SGNComponent::ComponentType::COUNT)];
+    std::array<std::unique_ptr<SGNComponent>,
+               to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
     vectorImpl<DELEGATE_CBK<>> _deletionCallbacks;
     bool _firstDraw;
 

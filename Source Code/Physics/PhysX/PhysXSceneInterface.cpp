@@ -115,8 +115,9 @@ void PhysXSceneInterface::update(const U64 deltaTime) {
 }
 
 namespace {
-PxShape* g_shapes[2048];  // = MemoryManager_NEW PxShape*[nShapes];
+std::array<PxShape*, 2048> g_shapes;  // = MemoryManager_NEW PxShape*[nShapes];
 }
+
 void PhysXSceneInterface::updateActor(PhysXActor& actor) {
     STUBBED(
         "ToDo: Add a better synchronization method between SGN's transform and "
@@ -135,8 +136,8 @@ void PhysXSceneInterface::updateActor(PhysXActor& actor) {
 
     } else {
         PxU32 nShapes = actor._actor->getNbShapes();
-        assert(nShapes < 2048);
-        actor._actor->getShapes(g_shapes, nShapes);
+        assert(nShapes < g_shapes.size());
+        actor._actor->getShapes(g_shapes.data(), nShapes);
 
         while (nShapes--) {
             updateShape(g_shapes[nShapes], actor);

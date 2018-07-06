@@ -24,8 +24,7 @@ ShaderProgram::ShaderProgram(const bool optimise)
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
     // Start with clean refresh flags
-    memset(_refreshStage, false,
-           to_uint(ShaderType::COUNT) * sizeof(bool));
+    _refreshStage.fill(false);
     // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
 }

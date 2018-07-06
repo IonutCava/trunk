@@ -90,42 +90,42 @@ class LightGrid {
     /**
     * Access to grid wide properties, set at last call to 'build'.
     */
-    const vec2<U16>& getTileSize() const { return m_tileSize; }
+    const vec2<U16>& getTileSize() const { return _tileSize; }
 
-    const vec2<U16>& getGridDim() const { return m_gridDim; }
+    const vec2<U16>& getGridDim() const { return _gridDim; }
 
-    U32 getMaxTileLightCount() const { return m_maxTileLightCount; }
+    U32 getMaxTileLightCount() const { return _maxTileLightCount; }
 
     U32 getTotalTileLightIndexListLength() const {
-        return U32(m_tileLightIndexLists.size());
+        return U32(_tileLightIndexLists.size());
     }
 
     /**
     * tile accessor functions, returns data for an individual tile.
     */
     I32 tileLightCount(U32 x, U32 y) const {
-        return m_gridCounts[x + y * Config::Lighting::LIGHT_GRID_MAX_DIM_X];
+        return _gridCounts[x + y * Config::Lighting::LIGHT_GRID_MAX_DIM_X];
     }
 
     const I32* tileLightIndexList(U32 x, U32 y) const {
-        return &m_tileLightIndexLists
-            [m_gridOffsets[x + y * Config::Lighting::LIGHT_GRID_MAX_DIM_X]];
+        return &_tileLightIndexLists
+            [_gridOffsets[x + y * Config::Lighting::LIGHT_GRID_MAX_DIM_X]];
     }
 
     const vec2<F32> getTileMinMax(U32 x, U32 y) const {
-        return m_minMaxGridValid ? m_gridMinMaxZ[x + y * m_gridDim.x]
+        return _minMaxGridValid ? _gridMinMaxZ[x + y * _gridDim.x]
                                  : vec2<F32>(0.0f, 0.0f);
     }
 
     /**
     * Grid data pointer accessors, used for uploading to GPU.
     */
-    const I32* tileDataPtr() const { return m_gridOffsets; }
+    const I32* tileDataPtr() const { return _gridOffsets.data(); }
 
-    const I32* tileCountsDataPtr() const { return m_gridCounts; }
+    const I32* tileCountsDataPtr() const { return _gridCounts.data(); }
 
     const I32* tileLightIndexListsPtr() const {
-        return &m_tileLightIndexLists[0];
+        return &_tileLightIndexLists[0];
     }
     /**
     * Returns the list of lights, transformed to view space, that are present in
@@ -134,16 +134,16 @@ class LightGrid {
     * lists index
     * into this list.
     */
-    const Lights& getViewSpaceLights() const { return m_viewSpaceLights; }
+    const Lights& getViewSpaceLights() const { return _viewSpaceLights; }
     /**
     * Indicated whether there are any lights visible, i.e. with on-screen rects.
     */
-    bool empty() const { return m_screenRects.empty(); }
+    bool empty() const { return _screenRects.empty(); }
     /**
     * if true, then the contents of the min/max grid is valid,
     * i.e. the pointer was not 0 last time build was called.
     */
-    bool minMaxGridValid() const { return m_minMaxGridValid; }
+    bool minMaxGridValid() const { return _minMaxGridValid; }
 
     static ScreenRect findScreenSpaceBounds(const mat4<F32>& projection,
                                             const vec3<F32>& pt, F32 rad,
@@ -160,20 +160,20 @@ class LightGrid {
                     F32 nearPlane);
 
    protected:
-    vec2<U16> m_tileSize;
-    vec2<U16> m_gridDim;
+    vec2<U16> _tileSize;
+    vec2<U16> _gridDim;
 
-    vectorImpl<vec2<F32> > m_gridMinMaxZ;
-    I32 m_gridOffsets[Config::Lighting::LIGHT_GRID_MAX_DIM_X *
-                      Config::Lighting::LIGHT_GRID_MAX_DIM_Y];
-    I32 m_gridCounts[Config::Lighting::LIGHT_GRID_MAX_DIM_X *
-                     Config::Lighting::LIGHT_GRID_MAX_DIM_Y];
-    vectorImpl<I32> m_tileLightIndexLists;
-    U32 m_maxTileLightCount;
-    bool m_minMaxGridValid;
+    vectorImpl<vec2<F32> > _gridMinMaxZ;
+    std::array<I32, Config::Lighting::LIGHT_GRID_MAX_DIM_X *
+                        Config::Lighting::LIGHT_GRID_MAX_DIM_Y> _gridOffsets;
+    std::array<I32, Config::Lighting::LIGHT_GRID_MAX_DIM_X *
+                        Config::Lighting::LIGHT_GRID_MAX_DIM_Y> _gridCounts;
+    vectorImpl<I32> _tileLightIndexLists;
+    U32 _maxTileLightCount;
+    bool _minMaxGridValid;
 
-    Lights m_viewSpaceLights;
-    ScreenRects m_screenRects;
+    Lights _viewSpaceLights;
+    ScreenRects _screenRects;
 };
 
 };  // namespace Divide

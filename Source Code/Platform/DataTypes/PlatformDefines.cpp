@@ -25,6 +25,10 @@ void log_delete(void* p) {
 }
 };  // namespace MemoryManager
 
+U32 HARDWARE_THREAD_COUNT() {
+    return std::max(std::thread::hardware_concurrency(), 2u);
+}
+
 bool preAssert(const bool expression, const char* failMessage) {
     if (expression) {
         return false;

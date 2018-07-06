@@ -128,7 +128,7 @@ void tcp_session_tpl::start_write() {
     buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
     buffers.push_back(buf.data());
     // Start an asynchronous operation to send a message.
-    if (p.getOpcode() == OPCodes::SMSG_SEND_FILE) {
+    if (p.opcode() == OPCodes::SMSG_SEND_FILE) {
         boost::asio::async_write(
             socket_, buffers,
             _strand.wrap(boost::bind(&tcp_session_tpl::handle_write_file,

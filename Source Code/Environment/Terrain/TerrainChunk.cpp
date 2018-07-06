@@ -20,8 +20,8 @@ TerrainChunk::TerrainChunk(Terrain* const parentTerrain,
     _chunkID++;
     _xOffset = _yOffset = _sizeX = _sizeY = 0;
     _chunkIndOffset = 0;
-    memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
-    memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+    _lodIndOffset.fill(0);
+    _lodIndCount.fill(0);
 
     _terrainVB = parentTerrain->getGeometryVB();
 
@@ -40,8 +40,8 @@ TerrainChunk::~TerrainChunk() {
         _indice[i].clear();
     }
 
-    memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
-    memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+    _lodIndOffset.fill(0);
+    _lodIndCount.fill(0);
     _chunkIndOffset = 0;
     _terrainVB = nullptr;
 }

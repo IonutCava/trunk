@@ -118,10 +118,7 @@ void WarSceneAISceneImpl::initInternal() {
 
 void WarSceneAISceneImpl::requestOrders() {
     const vectorImpl<Order*>& orders = _entity->getTeam()->requestOrders();
-    U8 priority[to_const_uint(WarSceneOrder::WarOrder::COUNT)];
-    memset(priority, 0,
-           sizeof(U8) *
-               to_const_uint(WarSceneOrder::WarOrder::COUNT));
+    std::array<U8, to_const_uint(WarSceneOrder::WarOrder::COUNT)> priority = { 0 };
 
     resetActiveGoals();
     printWorkingMemory();

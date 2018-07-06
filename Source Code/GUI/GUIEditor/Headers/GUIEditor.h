@@ -181,20 +181,19 @@ private:
         _editorWindow;  //< This will be a pointer to the EditorRoot window.
     CEGUI::Window *_saveSelectionButton;
     CEGUI::Window *_deleteSelectionButton;
-    CEGUI::ToggleButton *_toggleButtons[to_const_uint(
-        ToggleButtons::COUNT)];
-    CEGUI::Window *_transformButtonsInc
-        [to_const_uint(TransformFields::COUNT)]
-        [to_const_uint(ControlFields::COUNT)];
-    CEGUI::Window *_transformButtonsDec
-        [to_const_uint(TransformFields::COUNT)]
-        [to_const_uint(ControlFields::COUNT)];
-    CEGUI::Editbox *_valuesField
-        [to_const_uint(TransformFields::COUNT)]
-        [to_const_uint(ControlFields::COUNT)];
-    F32 _currentValues
-        [to_const_uint(TransformFields::COUNT)]
-        [to_const_uint(ControlFields::COUNT)];
+    std::array<CEGUI::ToggleButton *, to_const_uint(ToggleButtons::COUNT)>
+        _toggleButtons;
+    std::array<
+        std::array<CEGUI::Window *, to_const_uint(ControlFields::COUNT)>,
+        to_const_uint(TransformFields::COUNT)> _transformButtonsInc;
+    std::array<
+        std::array<CEGUI::Window *, to_const_uint(ControlFields::COUNT)>,
+        to_const_uint(TransformFields::COUNT)> _transformButtonsDec;
+    std::array<
+        std::array<CEGUI::Editbox *, to_const_uint(ControlFields::COUNT)>,
+        to_const_uint(TransformFields::COUNT)> _valuesField;
+    std::array<std::array<F32, to_const_uint(ControlFields::COUNT)>,
+               to_const_uint(TransformFields::COUNT)> _currentValues;
 
 END_SINGLETON
 

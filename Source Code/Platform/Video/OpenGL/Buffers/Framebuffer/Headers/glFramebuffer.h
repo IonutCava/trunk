@@ -87,10 +87,9 @@ class glFramebuffer : public Framebuffer {
     bool _depthMaskChanged;
     const std::unique_ptr<glFramebuffer> _resolveBuffer;
 
-    GLint _attOffset[to_const_uint(
-        TextureDescriptor::AttachmentType::COUNT)];
-    vec2<GLushort> _mipMapLevel[to_const_uint(
-        TextureDescriptor::AttachmentType::COUNT)];
+    using AttType = TextureDescriptor::AttachmentType;
+    std::array<GLint, to_const_uint(AttType::COUNT)> _attOffset;
+    std::array<vec2<GLushort>, to_const_uint(AttType::COUNT)> _mipMapLevel;
 };
 
 };  // namespace Divide

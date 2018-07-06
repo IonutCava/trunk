@@ -351,8 +351,8 @@ class VertexBuffer : public VertexDataInterface {
         _boneWeights.clear();
         _hardwareIndicesL.clear();
         _hardwareIndicesS.clear();
-        memset(_attribDirty, true, to_uint(VertexAttribute::COUNT) * sizeof(bool));
-        memset(_VBoffset, 0, to_uint(VertexAttribute::COUNT) * sizeof(ptrdiff_t));
+        _attribDirty.fill(true);
+        _VBoffset.fill(0);
         _minPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::max()));
         _maxPosition.resize(1, vec3<F32>(std::numeric_limits<F32>::min()));
     }
@@ -386,7 +386,7 @@ class VertexBuffer : public VertexDataInterface {
     GFXDataFormat _format;
     /// An index value that separates objects (OGL: primitive restart index)
     U32 _indexDelimiter;
-    ptrdiff_t _VBoffset[to_const_uint(VertexAttribute::COUNT)];
+    std::array<ptrdiff_t, to_const_uint(VertexAttribute::COUNT)> _VBoffset;
 
     // first: offset, second: count
     vectorImpl<vectorAlg::pair<U32, U32> > _partitions;
@@ -405,7 +405,7 @@ class VertexBuffer : public VertexDataInterface {
     vectorImpl<vec3<F32> > _minPosition;
     vectorImpl<vec3<F32> > _maxPosition;
     /// Cache system to update only required data
-    bool _attribDirty[to_const_uint(VertexAttribute::COUNT)];
+    std::array<bool, to_const_uint(VertexAttribute::COUNT)> _attribDirty;
     bool _primitiveRestartEnabled;
     /// Was the data submitted to the GPU?
     bool _created;

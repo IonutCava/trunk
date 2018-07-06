@@ -10,12 +10,23 @@ namespace Divide {
 class WorldPacket : public ByteBuffer {
    public:
     // just container for later use
-    WorldPacket() : ByteBuffer(0), m_opcode(OPCodes::MSG_NOP) {}
-    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200)
-        : ByteBuffer(res), m_opcode(opcode) {}
+    WorldPacket() : WorldPacket(OPCodes::MSG_NOP, 0)
+    {
+    }
+
+    explicit WorldPacket(OPCodes::ValueType opcode, 
+                         size_t res = 200)
+        : ByteBuffer(res),
+          m_opcode(opcode)
+    {
+    }
+
     // copy constructor
     WorldPacket(const WorldPacket& packet)
-        : ByteBuffer(packet), m_opcode(packet.m_opcode) {}
+        : ByteBuffer(packet),
+          m_opcode(packet.m_opcode)
+    {
+    }
 
     void Initialize(U16 opcode, size_t newres = 200) {
         clear();
@@ -23,17 +34,16 @@ class WorldPacket : public ByteBuffer {
         m_opcode = opcode;
     }
 
-    OPCodes::ValueType getOpcode() const { return m_opcode; }
-
-    void SetOpcode(OPCodes::ValueType opcode) { m_opcode = opcode; }
+    OPCodes::ValueType opcode() const { return m_opcode; }
+    void opcode(OPCodes::ValueType opcode) { m_opcode = opcode; }
 
    private:
     friend class boost::serialization::access;
 
     template <typename Archive>
     void serialize(Archive& ar, const unsigned int version) {
-        /*ar & boost::serialization::base_object<ByteBuffer>(*this);
-        ar & m_opcode;*/
+        ar & boost::serialization::base_object<ByteBuffer>(*this);
+        ar & m_opcode;
     }
 
    protected:

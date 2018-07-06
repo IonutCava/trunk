@@ -80,7 +80,8 @@ class RenderPassCuller {
         const std::function<bool(SceneGraphNode*)>& cullingFunction);
     VisibleNodeCache& getNodeCache(RenderStage stage);
    protected:
-    VisibleNodeCache _visibleNodes[to_const_uint(RenderStage::COUNT)];
+    std::array<VisibleNodeCache, to_const_uint(RenderStage::COUNT)>
+        _visibleNodes;
     bool _visibleNodesSorted;
 };
 

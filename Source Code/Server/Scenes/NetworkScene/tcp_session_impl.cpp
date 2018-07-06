@@ -12,7 +12,7 @@ tcp_session_impl::tcp_session_impl(boost::asio::io_service& io_service,
     : tcp_session_tpl(io_service, ch) {}
 
 void tcp_session_impl::handlePacket(WorldPacket& p) {
-    switch (p.getOpcode()) {
+    switch (p.opcode()) {
         case OPCodesEx::MSG_HEARTBEAT:
             std::cout << "Received [ MSG_HEARTBEAT ]" << std::endl;
             HandleHeartBeatOpCode(p);
@@ -31,7 +31,7 @@ void tcp_session_impl::handlePacket(WorldPacket& p) {
             HandleRequestGeometry(p);
             break;
         default:
-            std::cout << "Received unknow OPCode [ 0x" << p.getOpcode() << " ]"
+            std::cout << "Received unknow OPCode [ 0x" << p.opcode() << " ]"
                       << std::endl;
             break;
     };

@@ -82,8 +82,8 @@ class TerrainChunk {
 
    private:
     vectorImpl<U32> _indice[Config::TERRAIN_CHUNKS_LOD];
-    U32 _lodIndOffset[Config::TERRAIN_CHUNKS_LOD];
-    U32 _lodIndCount[Config::TERRAIN_CHUNKS_LOD];
+    std::array<U32, Config::TERRAIN_CHUNKS_LOD> _lodIndOffset;
+    std::array<U32, Config::TERRAIN_CHUNKS_LOD> _lodIndCount;
     U32 _chunkIndOffset;
     F32 _xOffset;
     F32 _yOffset;

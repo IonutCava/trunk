@@ -20,7 +20,8 @@
 
 namespace Divide {
 
-void Client::sendPacket(WorldPacket& p) {
+void Client::sendPacket(WorldPacket& p)
+{
     _packetQueue.push_back(p);
     heartbeat_timer_.expires_at(boost::posix_time::neg_infin);
 }
@@ -53,7 +54,9 @@ void Client::start_read() {
 
 void Client::handle_read_body(const boost::system::error_code& ec,
                               size_t bytes_transfered) {
-    if (stopped_) return;
+    if (stopped_) {
+        return;
+    }
 
     if (!ec) {
         deadline_.expires_from_now(boost::posix_time::seconds(30));
@@ -68,15 +71,16 @@ void Client::handle_read_body(const boost::system::error_code& ec,
 
 void Client::handle_read_packet(const boost::system::error_code& ec,
                                 size_t bytes_transfered) {
-    if (stopped_) return;
-
+    if (stopped_) {
+        return;
+    }
     if (!ec) {
         input_buffer_.commit(header);
         std::istream is(&input_buffer_);
         WorldPacket packet;
         try {
             boost::archive::text_iarchive ar(is);
-            ar& packet;
+            ar & packet;
         } catch (std::exception& e) {
             if (_debugOutput) {
                 std::cout << e.what() << std::endl;
@@ -84,7 +88,7 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
             }
         }
 
-        if (packet.getOpcode() == OPCodes::SMSG_SEND_FILE) {
+        if (packet.opcode() == OPCodes::SMSG_SEND_FILE) {
             boost::asio::async_read_until(
                 socket_, request_buf, "\n\n",
                 boost::bind(&Client::handle_read_file, this,
@@ -166,7 +170,7 @@ void Client::start_write() {
     boost::asio::streambuf buf;
     std::ostream os(&buf);
     boost::archive::text_oarchive ar(os);
-    ar& p;
+    ar & p;
 
     size_t header = buf.size();
     std::vector<boost::asio::const_buffer> buffers;
@@ -177,7 +181,9 @@ void Client::start_write() {
 }
 
 void Client::handle_write(const boost::system::error_code& ec) {
-    if (stopped_) return;
+    if (stopped_) {
+        return;
+    }
 
     if (!ec) {
         _packetQueue.pop_front();
@@ -192,8 +198,9 @@ void Client::handle_write(const boost::system::error_code& ec) {
 }
 
 void Client::check_deadline() {
-    if (stopped_) return;
-
+    if (stopped_) {
+        return;
+    }
     // Check whether the deadline has passed. We compare the deadline against
     // the current time since a new asynchronous operation may have moved the
     // deadline before this actor had a chance to run.
@@ -214,9 +221,9 @@ void Client::check_deadline() {
 
 void Client::start_connect(tcp::resolver::iterator endpoint_iter) {
     if (endpoint_iter != tcp::resolver::iterator()) {
-        if (_debugOutput)
+        if (_debugOutput) {
             std::cout << "Trying " << endpoint_iter->endpoint() << "...\n";
-
+        }
         // Set a deadline for the connect operation.
         deadline_.expires_from_now(boost::posix_time::seconds(60));
 
@@ -232,23 +239,25 @@ void Client::start_connect(tcp::resolver::iterator endpoint_iter) {
 
 void Client::handle_connect(const boost::system::error_code& ec,
                             tcp::resolver::iterator endpoint_iter) {
-    if (stopped_) return;
-
+    if (stopped_) {
+        return;
+    }
     // The async_connect() function automatically opens the socket at the start
     // of the asynchronous operation. If the socket is closed at this time then
     // the timeout handler must have run first.
     if (!socket_.is_open()) {
-        if (_debugOutput) std::cout << "Connect timed out\n";
-
+        if (_debugOutput) {
+            std::cout << "Connect timed out\n";
+        }
         // Try the next available endpoint.
         start_connect(++endpoint_iter);
     }
 
     // Check if the connect operation failed before the deadline expired.
     else if (ec) {
-        if (_debugOutput)
+        if (_debugOutput) {
             std::cout << "Connect error: " << ec.message() << "\n";
-
+        }
         // We need to close the socket used in the previous connection attempt
         // before starting a new one.
         socket_.close();
@@ -259,9 +268,9 @@ void Client::handle_connect(const boost::system::error_code& ec,
 
     // Otherwise we have successfully established a connection.
     else {
-        if (_debugOutput)
+        if (_debugOutput) {
             std::cout << "Connected to " << endpoint_iter->endpoint() << "\n";
-
+        }
         // Start the input actor.
         start_read();
 

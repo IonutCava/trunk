@@ -51,7 +51,7 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
     ShaderBuffer::Create(primitiveCount, primitiveSize);
 
     if (_persistentMapped) {
-        MapBufferUsageMask usage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
+        BufferStorageMask storage = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                    GL_MAP_COHERENT_BIT;
         BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                   GL_MAP_COHERENT_BIT;
@@ -64,7 +64,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
             _bufferSize = _primitiveCount * _primitiveSize;
         }
 
-        _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(_bufferSize, usage, access, _UBOid);
+        _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(
+            _bufferSize, storage, access, _UBOid);
 
         DIVIDE_ASSERT(_mappedBuffer != nullptr,
                         "glUniformBuffer::Create error: "

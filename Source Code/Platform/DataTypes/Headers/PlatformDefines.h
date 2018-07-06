@@ -41,6 +41,7 @@
 #include <functional>
 #include <atomic>
 #include <type_traits>
+#include <array>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #if defined(OS_WINDOWS)
@@ -322,6 +323,9 @@ auto DELEGATE_CREF(Args&&... args)
 
 template <typename T = void>
 using DELEGATE_CBK = std::function<T()>;
+
+
+U32 HARDWARE_THREAD_COUNT();
 
 };  // namespace Divide
 

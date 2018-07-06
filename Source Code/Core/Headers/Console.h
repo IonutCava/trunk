@@ -45,6 +45,7 @@ class Console : private NonCopyable {
     typedef std::function<void(const char*, bool)> consolePrintCallback;
 
    public:
+    static void flush();
     static void printCopyrightNotice();
     static const char* printfn(const char* format, ...);
     static const char* printf(const char* format, ...);
