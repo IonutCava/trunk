@@ -43,7 +43,7 @@ class TaskPool {
     ~TaskPool();
 
     bool init();
-    void idle();
+    void flushCallbackQueue();
 
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();
@@ -54,7 +54,9 @@ class TaskPool {
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend class Task;
     void taskCompleted(I64 onExitTaskID);
-
+    inline ThreadPool& threadPool() {
+        return _mainTaskPool;
+    }
   private:
     ThreadPool _mainTaskPool;
 

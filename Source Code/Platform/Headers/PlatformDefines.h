@@ -42,6 +42,8 @@
 #include "Core/Headers/Singleton.h"
 #include "Core/Headers/NonCopyable.h"
 
+#include "ConditionalWait.h"
+
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
@@ -407,8 +409,6 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
 #define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
 #endif
 
-#define WAIT_FOR_CONDITION(p) {while (!(p)) {}}
-
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
@@ -670,6 +670,11 @@ template <typename P1, typename P2, typename T = void>
 using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
 
 U32 HARDWARE_THREAD_COUNT();
+
+template<typename T, typename U>
+constexpr void assert_type(const U& value) {
+    static_assert(std::is_same<U, T>::value, "value type not satisfied");
+}
 
 };  // namespace Divide
 

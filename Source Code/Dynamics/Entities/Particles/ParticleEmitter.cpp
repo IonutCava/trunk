@@ -6,6 +6,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Core/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
@@ -242,7 +243,14 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
     if (_enabled) {
-        WAIT_FOR_CONDITION(!_updating);
+        
+        WAIT_FOR_CONDITION_TIMEOUT(!_updating,
+                                   Time::MicrosecondsToMilliseconds<D32>(Config::SKIP_TICKS));
+        // timeout expired
+        if (_updating) {
+            return;
+        }
+
         _updating = true;
         U32 aliveCount = getAliveParticleCount();
         bool validCount = aliveCount > 0;
@@ -298,7 +306,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
                 }
 
                 _updating = false;
-            })._task->startTask(Task::TaskPriority::REALTIME);
+            })._task->startTask(Task::TaskPriority::HIGH);
     }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);

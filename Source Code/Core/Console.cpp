@@ -101,7 +101,8 @@ void Console::output(const char* text, const bool newline, const bool error) {
     entry._text = outStream.str();
 
     //moodycamel::ProducerToken ptok(_outputBuffer);
-    WAIT_FOR_CONDITION(_outputBuffer.enqueue(/*ptok, */entry));
+    WAIT_FOR_CONDITION_TIMEOUT(_outputBuffer.enqueue(/*ptok, */entry),
+                               Time::SecondsToMilliseconds(1.0));
 }
 
 void Console::outThread() {

@@ -9,7 +9,7 @@ TaskPool::TaskPool()
     _allocatedJobs = 0;
 
     for (Task& task : _tasksPool) {
-        task.setOwningPool(_mainTaskPool);
+        task.setOwningPool(*this);
         hashAlg::emplace(_taskStates, task.getGUID(), false);
     }
 }
@@ -37,7 +37,7 @@ bool TaskPool::init() {
     return true;
 }
 
-void TaskPool::idle()
+void TaskPool::flushCallbackQueue()
 {
     I64 taskGUID = -1;
     while (_threadedCallbackBuffer.pop(taskGUID)) {
@@ -89,7 +89,6 @@ Task& TaskPool::getAvailableTask() {
 
     *state = true;
     task->reset();
-    task->onCompletionCbk(DELEGATE_BIND(&TaskPool::taskCompleted, this, std::placeholders::_1));
 
     return *task;
 }

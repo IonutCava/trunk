@@ -115,7 +115,7 @@ void Kernel::idle() {
         Locale::changeLanguage(pendingLanguage);
     }
 
-    _taskPool.idle();
+    _taskPool.flushCallbackQueue();
 }
 
 void Kernel::onLoop() {
@@ -220,6 +220,8 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
         }
 
         if (!_timingData._freezeLoopTime) {
+            // Flush any pending threaded callbacks
+            _taskPool.flushCallbackQueue();
             // Update scene based on input
             _sceneMgr.processInput(deltaTime);
             // process all scene events

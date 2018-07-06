@@ -59,7 +59,7 @@ bool BoundingSphere::containsPoint(const vec3<F32>& point) const {
 }
 
 bool BoundingSphere::collision(const BoundingSphere& sphere2) const {
-    I32 radiusSq = _radius + sphere2._radius;
+    F32 radiusSq = _radius + sphere2._radius;
     radiusSq *= radiusSq;
     return _center.distanceSquared(sphere2._center) <= radiusSq;
 }

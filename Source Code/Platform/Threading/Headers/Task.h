@@ -37,6 +37,7 @@
 
 namespace Divide {
 
+class TaskPool;
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
@@ -63,7 +64,7 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
 
     void reset();
 
-    inline void setOwningPool(ThreadPool& pool) {
+    inline void setOwningPool(TaskPool& pool) {
         _tp = &pool;
     }
 
@@ -103,7 +104,7 @@ class Task : public GUIDWrapper, private NonCopyable, public std::enable_shared_
     DELEGATE_CBK_PARAM<const std::atomic_bool&> _callback;
     
     TaskPriority _priority;
-    ThreadPool* _tp;
+    TaskPool* _tp;
 
     Task* _parentTask;
     vectorImpl<Task*> _childTasks;

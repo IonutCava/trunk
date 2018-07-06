@@ -43,6 +43,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Compute\Headers\OpenCLInterface.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ByteBuffer.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\ByteConverter.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Headers\ConditionalWait.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\DisplayWindow.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefines.h" />
     <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformDefinesApple.h" />
