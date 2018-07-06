@@ -36,19 +36,6 @@
 
 namespace Divide {
 
-enum class PhysicsCollisionGroup : U32 {
-    GROUP_NON_COLLIDABLE = 0,
-    GROUP_COLLIDABLE_NON_PUSHABLE,
-    GROUP_COLLIDABLE_PUSHABLE,
-    GROUP_COUNT
-};
-
-enum class PhysicsActorMask : U32 {
-    MASK_RIGID_STATIC = 0,
-    MASK_RIGID_DYNAMIC,
-    MASK_COUNT
-};
-
 enum class RigidBodyShape : U32 {
     SHAPE_SPHERE = 0,
     SHAPE_PLANE,
@@ -81,9 +68,7 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;
 
-    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node,
-                                           PhysicsActorMask mask,
-                                           PhysicsCollisionGroup group) = 0;
+    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node) = 0;
 };
 
 };  // namespace Divide

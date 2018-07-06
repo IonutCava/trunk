@@ -47,6 +47,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMesh* submesh : _subMeshList) {
         sgn.addNode(*submesh,
                     submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
+                    PhysicsGroup::GROUP_IGNORE,
                     Util::StringFormat("%s_%d",
                                         sgn.getName().c_str(),
                                         submesh->getID()));

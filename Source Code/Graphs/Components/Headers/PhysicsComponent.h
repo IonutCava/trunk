@@ -42,14 +42,19 @@ namespace Divide {
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
+
+enum class PhysicsGroup : U32 {
+    GROUP_STATIC = 0,
+    GROUP_DYNAMIC,
+    GROUP_KINEMATIC,
+    GROUP_RAGDOL,
+    GROUP_VEHICLE,
+    GROUP_IGNORE,
+    GROUP_COUNT
+};
+
 class PhysicsComponent : public SGNComponent, public TransformInterface {
   public:
-    enum class PhysicsGroup : U32 {
-        NODE_COLLIDE_IGNORE = 0,
-        NODE_COLLIDE_NO_PUSH,
-        NODE_COLLIDE
-    };
-
     enum class TransformType : U32 {
         TRANSLATION = 0,
         SCALE,
@@ -136,9 +141,6 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
         return _physicsCollisionGroup;
     }
 
-    inline void physicsGroup(const PhysicsGroup& newGroup) {
-        _physicsCollisionGroup = newGroup;
-    }
 
     void cookCollisionMesh(const stringImpl& sceneName);
 
@@ -233,7 +235,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
 
    protected:
     friend class SceneGraphNode;
-    PhysicsComponent(SceneGraphNode& parentSGN, bool isRigidBody);
+    PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup);
     ~PhysicsComponent();
 
     inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {
@@ -248,10 +250,11 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     Transform* getTransform() const;
     PhysicsAsset* getPhysicsAsset() const;
 
+    bool physicsDriven() const;
+
    protected:
 
     std::unique_ptr<TransformInterface> _transformInterface;
-    bool _physicsDriven;
 
     IgnoreViewSettings _ignoreViewSettings;
     PhysicsGroup _physicsCollisionGroup;

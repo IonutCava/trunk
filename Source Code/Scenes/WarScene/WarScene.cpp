@@ -397,13 +397,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             locationFlag = 3;
         }
 
-        SceneGraphNode_ptr crtNode = _sceneGraph.getRoot().addNode(*currentMesh, normalMask, currentName);
+        SceneGraphNode_ptr crtNode = _sceneGraph.getRoot().addNode(*currentMesh, normalMask, baseNode->get<PhysicsComponent>()->physicsGroup(), currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
         PhysicsComponent* pComp = crtNode->get<PhysicsComponent>();
         NavigationComponent* nComp = crtNode->get<NavigationComponent>();
-        pComp->physicsGroup(
-            baseNode->get<PhysicsComponent>()->physicsGroup());
         nComp->navigationContext(
             baseNode->get<NavigationComponent>()->navigationContext());
         nComp->navigationDetailOverride(
@@ -422,7 +420,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setRange(25.0f);
             light->setCastShadows(i == 0 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask);
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
@@ -434,7 +432,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setRange(35.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask);
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
@@ -446,7 +444,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setRange(55.0f);
             light->setCastShadows(i == 1 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask);
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<PhysicsComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
@@ -462,7 +460,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag->setActive(false);
     SceneNode* flagNode = flag->getNode();
 
-    _flag[0] = _sceneGraph.getRoot().addNode(*flagNode, normalMask, "Team1Flag");
+    _flag[0] = _sceneGraph.getRoot().addNode(*flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team1Flag");
 
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
@@ -471,8 +469,6 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     NavigationComponent* flagNComp = flag0->get<NavigationComponent>();
     RenderingComponent* flagRComp = flag0->getChild(0, temp).get<RenderingComponent>();
 
-    flagPComp->physicsGroup(
-        flag->get<PhysicsComponent>()->physicsGroup());
     flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
@@ -480,7 +476,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::BLUE());
 
-    _flag[1] = _sceneGraph.getRoot().addNode(*flagNode, normalMask, "Team2Flag");
+    _flag[1] = _sceneGraph.getRoot().addNode(*flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
@@ -489,9 +485,6 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagNComp = flag1->get<NavigationComponent>();
     flagRComp = flag1->getChild(0, temp).get<RenderingComponent>();
 
-    flagPComp->physicsGroup(
-        flag->get<PhysicsComponent>()->physicsGroup());
-
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
     flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
 
@@ -499,7 +492,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::RED());
 
-    SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, normalMask, "FirstPersonFlag");
+    SceneGraphNode_ptr firstPersonFlag = _sceneGraph.getRoot().addNode(*flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
     firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
@@ -592,7 +585,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setRange(20.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask);
+            SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }

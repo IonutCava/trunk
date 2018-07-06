@@ -80,10 +80,8 @@ PhysicsSceneInterface* PXDevice::NewSceneInterface(Scene* scene) {
     return _api->NewSceneInterface(scene);
 }
 
-PhysicsAsset* PXDevice::createRigidActor(const SceneGraphNode& node,
-                                         PhysicsActorMask mask,
-                                         PhysicsCollisionGroup group) {
-    return _api->createRigidActor(node, mask, group);
+PhysicsAsset* PXDevice::createRigidActor(const SceneGraphNode& node) {
+    return _api->createRigidActor(node);
 }
 
 }; //namespace Divide

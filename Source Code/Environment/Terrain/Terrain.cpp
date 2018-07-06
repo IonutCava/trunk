@@ -57,7 +57,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane, normalMask));
+    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
     /*for (TerrainChunk* chunk : _terrainChunks) {
         SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);

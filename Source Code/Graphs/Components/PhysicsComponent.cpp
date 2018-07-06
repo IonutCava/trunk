@@ -10,28 +10,18 @@
 
 namespace Divide {
 
-PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, bool isRigidBody)
+PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup)
     : SGNComponent(SGNComponent::ComponentType::PHYSICS, parentSGN),
       TransformInterface(),
-      _physicsCollisionGroup(PhysicsGroup::NODE_COLLIDE_IGNORE),
+      _physicsCollisionGroup(physicsGroup),
       _dirty(true),
       _dirtyInterp(true),
       _parentDirty(true),
-      _physicsDriven(isRigidBody),
       _isUniformScaled(true),
       _prevInterpValue(0.0)
 {
-
-    if (_physicsDriven) {
-        PhysicsActorMask mask = _parentSGN.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC
-                                                           ? PhysicsActorMask::MASK_RIGID_STATIC
-                                                           : PhysicsActorMask::MASK_RIGID_DYNAMIC;
-        PhysicsCollisionGroup group = _physicsCollisionGroup == PhysicsGroup::NODE_COLLIDE_IGNORE
-                                                              ? PhysicsCollisionGroup::GROUP_NON_COLLIDABLE
-                                                              : (_physicsCollisionGroup == PhysicsGroup::NODE_COLLIDE_NO_PUSH
-                                                                                         ? PhysicsCollisionGroup::GROUP_COLLIDABLE_NON_PUSHABLE
-                                                                                         : PhysicsCollisionGroup::GROUP_COLLIDABLE_PUSHABLE);
-        _transformInterface.reset(PHYSICS_DEVICE.createRigidActor(parentSGN, mask, group));
+    if (physicsDriven()) {
+        _transformInterface.reset(PHYSICS_DEVICE.createRigidActor(parentSGN));
     } else {
         _transformInterface.reset(MemoryManager_NEW Transform());
     }
@@ -44,7 +34,7 @@ PhysicsComponent::~PhysicsComponent()
 }
 
 void PhysicsComponent::update(const U64 deltaTime) {
-    if (!_physicsDriven) {
+    if (!physicsDriven()) {
         _prevTransformValues = getTransform()->getValues();
     }
 
@@ -232,13 +222,13 @@ void PhysicsComponent::setPositionZ(const F32 positionZ) {
 }
 
 void PhysicsComponent::pushTransforms() {
-    if (!_physicsDriven) {
+    if (!physicsDriven()) {
         _transformStack.push(getTransform()->getValues());
     }
 }
 
 bool PhysicsComponent::popTransforms() {
-    if (!_physicsDriven && !_transformStack.empty()) {
+    if (!physicsDriven() && !_transformStack.empty()) {
         _prevTransformValues = _transformStack.top();
         getTransform()->setValues(_prevTransformValues);
         _transformStack.pop();
@@ -350,7 +340,7 @@ vec3<F32> PhysicsComponent::getPosition(D64 interpolationFactor) const {
 }
 
 vec3<F32> PhysicsComponent::getLocalPosition(D64 interpolationFactor) const {
-    if (_physicsDriven) {
+    if (physicsDriven()) {
         return getLocalPosition();
     }
 
@@ -387,7 +377,7 @@ vec3<F32> PhysicsComponent::getScale(D64 interpolationFactor) const {
 }
 
 vec3<F32> PhysicsComponent::getLocalScale(D64 interpolationFactor) const {
-    if (_physicsDriven) {
+    if (physicsDriven()) {
         return getLocalScale();
     }
 
@@ -425,7 +415,7 @@ Quaternion<F32> PhysicsComponent::getOrientation(D64 interpolationFactor) const 
 }
 
 Quaternion<F32> PhysicsComponent::getLocalOrientation(D64 interpolationFactor) const {
-    if (_physicsDriven) {
+    if (physicsDriven()) {
         return getLocalOrientation();
     }
 
@@ -439,13 +429,18 @@ bool PhysicsComponent::isUniformScaled() const {
 }
 
 Transform* PhysicsComponent::getTransform() const {
-    assert(!_physicsDriven);
+    assert(!physicsDriven());
     return static_cast<Transform*>(_transformInterface.get());
 }
 
 PhysicsAsset* PhysicsComponent::getPhysicsAsset() const {
-    assert(_physicsDriven);
+    assert(physicsDriven());
     return static_cast<PhysicsAsset*>(_transformInterface.get());
+}
+
+bool PhysicsComponent::physicsDriven() const {
+    return (_physicsCollisionGroup != PhysicsGroup::GROUP_IGNORE &&
+            _physicsCollisionGroup != PhysicsGroup::GROUP_COUNT);
 }
 
 };

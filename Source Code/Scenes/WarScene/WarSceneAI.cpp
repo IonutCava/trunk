@@ -326,7 +326,7 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode_ptr currentNode = root.addNode(*currentMesh, normalMask, currentName);
+            SceneGraphNode_ptr currentNode = root.addNode(*currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
             currentNode->setSelectable(true);
 
             PhysicsComponent* pComp =

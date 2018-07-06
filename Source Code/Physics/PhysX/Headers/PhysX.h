@@ -89,9 +89,7 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
     void initScene();
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node,
-                                   PhysicsActorMask mask,
-                                   PhysicsCollisionGroup group) override;
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
   protected:
     physx::PxProfileZone* getOrCreateProfileZone(physx::PxFoundation& inFoundation);
 

@@ -134,7 +134,7 @@ class SceneGraphNode : public GUIDWrapper,
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode_ptr addNode(SceneNode& node, U32 componentMask, const stringImpl& name = "");
+    SceneGraphNode_ptr addNode(SceneNode& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
     SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
     void removeNode(const stringImpl& nodeName, bool recursive = true);
     inline void removeNode(const SceneGraphNode& node, bool recursive = true) {
@@ -247,6 +247,7 @@ class SceneGraphNode : public GUIDWrapper,
     friend class SceneGraph;
     friend class std::shared_ptr<SceneGraphNode> ;*/
     explicit SceneGraphNode(SceneGraph& sceneGraph,
+                            PhysicsGroup physicsGroup,
                             SceneNode& node,
                             const stringImpl& name,
                             U32 componentMask);

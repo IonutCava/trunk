@@ -149,7 +149,12 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph.getRoot().addNode(*thisObj, normalMask, data.ItemName);
+        _sceneGraph.getRoot().addNode(*thisObj,
+                                      normalMask,
+                                      data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                             : PhysicsGroup::GROUP_DYNAMIC
+                                                        : PhysicsGroup::GROUP_IGNORE,
+                                      data.ItemName);
     meshNode->get<RenderingComponent>()->castsShadows(
         data.castsShadows);
     meshNode->get<RenderingComponent>()->receivesShadows(
@@ -164,11 +169,7 @@ bool Scene::loadModel(const FileData& data) {
         meshNode->get<NavigationComponent>()->navigationContext(
             NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
-    if (data.physicsUsage) {
-        meshNode->get<PhysicsComponent>()->physicsGroup(
-            data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
-                                 : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
-    }
+
     if (data.useHighDetailNavMesh) {
         meshNode->get<NavigationComponent>()->navigationDetailOverride(
             true);
@@ -229,7 +230,11 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj, normalMask);
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph.getRoot().addNode(*thisObj,
+                                                                  normalMask,
+                                                                  data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
+                                                                                                         : PhysicsGroup::GROUP_DYNAMIC
+                                                                                    : PhysicsGroup::GROUP_IGNORE);
     thisObjSGN->get<PhysicsComponent>()->setScale(data.scale);
     thisObjSGN->get<PhysicsComponent>()->setRotation(data.orientation);
     thisObjSGN->get<PhysicsComponent>()->setPosition(data.position);
@@ -244,11 +249,7 @@ bool Scene::loadGeometry(const FileData& data) {
         thisObjSGN->get<NavigationComponent>()->navigationContext(
             NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
-    if (data.physicsUsage) {
-        thisObjSGN->get<PhysicsComponent>()->physicsGroup(
-            data.physicsPushable ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE
-                                 : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH);
-    }
+
     if (data.useHighDetailNavMesh) {
         thisObjSGN->get<NavigationComponent>()
             ->navigationDetailOverride(true);
@@ -273,7 +274,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
 
     emitter->initData(data);
 
-    return parentNode.addNode(*emitter, particleMask);
+    return parentNode.addNode(*emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
 }
 
 
@@ -305,7 +306,7 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
-    return parentNode.addNode(*light, lightMask);
+    return parentNode.addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
 }
 
 void Scene::toggleFlashlight() {
@@ -322,7 +323,7 @@ void Scene::toggleFlashlight() {
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
-        _flashLight = _sceneGraph.getRoot().addNode(*tempLight, lightMask);
+        _flashLight = _sceneGraph.getRoot().addNode(*tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
     }
 
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
@@ -340,7 +341,7 @@ SceneGraphNode_ptr Scene::addSky(Sky& skyItem) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem, normalMask);
+     SceneGraphNode_ptr skyNode = _sceneGraph.getRoot().addNode(skyItem, normalMask, PhysicsGroup::GROUP_IGNORE);
      skyNode->lockVisibility(true);
      return skyNode;
 }
@@ -365,19 +366,13 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
-            SceneGraphNode_ptr terrainTemp = root.addNode(*temp, normalMask);
+            SceneGraphNode_ptr terrainTemp = root.addNode(*temp, normalMask, PhysicsGroup::GROUP_STATIC);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
 
             NavigationComponent* nComp =
                 terrainTemp->get<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-
-            PhysicsComponent* pComp =
-                terrainTemp->get<PhysicsComponent>();
-            pComp->physicsGroup(terrainInfo->getCreatePXActor()
-                                    ? PhysicsComponent::PhysicsGroup::NODE_COLLIDE_NO_PUSH
-                                    : PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
         }
     }
     // Camera position is overridden in the scene's XML configuration file

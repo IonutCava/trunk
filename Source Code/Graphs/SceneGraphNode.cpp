@@ -14,7 +14,8 @@
 
 namespace Divide {
 
-SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, 
+SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
+                               PhysicsGroup physicsGroup,
                                SceneNode& node,
                                const stringImpl& name,
                                U32 componentMask)
@@ -53,25 +54,9 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         setComponent(SGNComponent::ComponentType::NAVIGATION, new NavigationComponent(*this));
     }
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::PHYSICS))) {
-        bool isRigidBody = false;
-
-        STUBBED("Due to the way that physics libs work in world transforms only, a classical scene graph type system does not "
-            "fit the physics model well. Thus, for now, only first-tier nodes are physically simulated!");
-        // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
-        // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
-        if (getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType crtType = getNode<Object3D>()->getObjectType();
-            if (crtType != Object3D::ObjectType::TEXT_3D &&
-                crtType != Object3D::ObjectType::SUBMESH &&
-                crtType != Object3D::ObjectType::FLYWEIGHT) {
-                SceneGraphNode_ptr grandParent = getParent().lock();
-                isRigidBody = grandParent->getNode()->getType() == SceneNodeType::TYPE_ROOT;
-            }
-        }
         STUBBED("Rigid body physics disabled for now - Ionut");
-        isRigidBody = false;
-
-        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, isRigidBody));
+        physicsGroup = PhysicsGroup::GROUP_IGNORE;
+        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, physicsGroup));
 
         PhysicsComponent* pComp = get<PhysicsComponent>();
         pComp->addTransformUpdateCbk(DELEGATE_BIND(&Attorney::SceneGraphSGN::onNodeTransform, std::ref(_sceneGraph), std::ref(*this)));
@@ -91,7 +76,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         }
         setComponent(SGNComponent::ComponentType::RENDERING, new RenderingComponent(materialInst, *this));
     }
-   
 }
 
 void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
@@ -178,17 +162,17 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
 }
 
 /// Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, const stringImpl& name) {
+SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name) {
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
     SceneGraphNode_ptr sceneGraphNode = 
         std::make_shared<SceneGraphNode>(_sceneGraph, 
+                                         physicsGroup,
                                          node,
                                          name.empty() ? node.getName()
                                                       : name,
                                          componentMask);
-
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
     if (node.getState() == ResourceState::RES_LOADED) {

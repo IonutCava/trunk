@@ -403,7 +403,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f));
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
-    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, normalMask, "TenisBallSGN");
+    _ballSGN = _sceneGraph.getRoot().addNode(*_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "TenisBallSGN");
     _ballSGN.lock()->get<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);

@@ -10,6 +10,25 @@
 
 namespace Divide {
 
+namespace {
+    bool isRigidBody(SceneNode& node) {
+        STUBBED("Due to the way that physics libs work in world transforms only, a classical scene graph type system does not "
+            "fit the physics model well. Thus, for now, only first-tier nodes are physically simulated!");
+        // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
+        // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
+        if (node.getType() == SceneNodeType::TYPE_OBJECT3D) {
+            Object3D::ObjectType crtType = static_cast<Object3D&>(node).getObjectType();
+            if (crtType != Object3D::ObjectType::TEXT_3D &&
+                crtType != Object3D::ObjectType::SUBMESH &&
+                crtType != Object3D::ObjectType::FLYWEIGHT) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+};
+
 SceneNode::SceneNode(const stringImpl& name, const SceneNodeType& type)
     : SceneNode(name, "", type)
 {

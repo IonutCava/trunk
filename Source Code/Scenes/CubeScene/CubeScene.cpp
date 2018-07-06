@@ -105,7 +105,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _lightNodes.push_back(_sceneGraph.getRoot().addNode(*light, normalMask));
+            _lightNodes.push_back(_sceneGraph.getRoot().addNode(*light, normalMask, PhysicsGroup::GROUP_IGNORE));
         }
     }
 

@@ -98,8 +98,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     }
 
     _sky->renderState().setDrawState(false);
-    sgn.addNode(*_sky, normalMask)->get<PhysicsComponent>()->physicsGroup(
-        PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
+    sgn.addNode(*_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->castsShadows(false);

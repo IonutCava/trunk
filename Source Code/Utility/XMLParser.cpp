@@ -575,7 +575,6 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
             pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
         ter->setActive(pt.get<bool>(name + ".active", true));
         ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize", 256));
-        ter->setCreatePXActor(pt.get<bool>(name + ".addToPhysics", false));
 
         scene->addTerrain(ter);
         count++;
@@ -657,8 +656,8 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
                     pt.get_child_optional(name + ".addToPhysics")) {
                 model.physicsUsage =
                     pt.get<bool>(name + ".addToPhysics", false);
-                model.physicsPushable =
-                    pt.get<bool>(name + ".addToPhysicsGroupPushable", false);
+                model.physicsStatic =
+                    !pt.get<bool>(name + ".addToPhysicsGroupPushable", false);
             } else {
                 model.physicsUsage = false;
             }

@@ -24,7 +24,7 @@ SceneGraph::SceneGraph() : FrameListener(),
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT", rootMask);
+    _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, *_rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
     _rootNode->postLoad(*_root);
 

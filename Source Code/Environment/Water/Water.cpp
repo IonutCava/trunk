@@ -82,7 +82,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    sgn.addNode(*_plane, normalMask);
+    sgn.addNode(*_plane, normalMask, PhysicsGroup::GROUP_STATIC);
 
     bool reflectorBuilt = Reflector::build();
     DIVIDE_ASSERT(reflectorBuilt, Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));

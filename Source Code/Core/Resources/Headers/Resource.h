@@ -133,7 +133,7 @@ struct FileData {
     /// If physicsUsage is true, this determines if the node can be pushed
     /// around by other actors
     /// or if it is a static(fixed in space) actor
-    bool physicsPushable;
+    bool physicsStatic;
     /// Used to force a geometry level parsing for nav mesh creation instead of
     /// the default
     /// bounding-box level

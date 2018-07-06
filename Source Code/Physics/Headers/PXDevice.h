@@ -67,9 +67,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
     PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node,
-                                   PhysicsActorMask mask,
-                                   PhysicsCollisionGroup group) override;
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node) override;
 
   private:
     PXDevice();

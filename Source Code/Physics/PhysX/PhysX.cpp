@@ -330,9 +330,7 @@ void PhysX::initScene() {
 };
 */
 
-PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node,
-                                      PhysicsActorMask mask,
-                                      PhysicsCollisionGroup group)
+PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node)
 {
     PhysicsComponent* pComp = node.get<PhysicsComponent>();
     assert(pComp != nullptr);

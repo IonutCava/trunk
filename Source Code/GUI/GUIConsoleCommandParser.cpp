@@ -259,7 +259,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.navigationUsage = true;
     model.useHighDetailNavMesh = true;
     model.physicsUsage = true;
-    model.physicsPushable = true;
+    model.physicsStatic = true;
     GET_ACTIVE_SCENE().addModel(model);
 }
 

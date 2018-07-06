@@ -41,7 +41,6 @@ class TerrainDescriptor : public Resource {
     explicit TerrainDescriptor(const stringImpl& name)
         : Resource(name),
           _active(false),
-          _addToPhysics(false),
           _is16Bit(false),
           _grassDensity(0.0f),
           _chunkSize(0),
@@ -72,7 +71,6 @@ class TerrainDescriptor : public Resource {
     void setGrassScale(F32 grassScale) { _grassScale = grassScale; }
     void setTreeScale(F32 treeScale) { _treeScale = treeScale; }
     void setActive(bool active) { _active = active; }
-    void setCreatePXActor(bool create) { _addToPhysics = create; }
     void setChunkSize(U32 size) { _chunkSize = size; }
     void set16Bit(bool state) { _is16Bit = state; }
 
@@ -82,7 +80,6 @@ class TerrainDescriptor : public Resource {
     F32 getGrassScale() const { return _grassScale; }
     F32 getTreeScale() const { return _treeScale; }
     bool getActive() const { return _active; }
-    bool getCreatePXActor() const { return _addToPhysics; }
     U32 getChunkSize() const { return _chunkSize; }
     bool is16Bit() const { return _is16Bit; }
 
@@ -119,7 +116,6 @@ class TerrainDescriptor : public Resource {
     F32 _treeScale;
     bool _is16Bit;
     bool _active;
-    bool _addToPhysics;
     U8 _textureLayers;
     vec3<F32> _position;
     vec2<F32> _scale;
