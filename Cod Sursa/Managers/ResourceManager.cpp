@@ -2,8 +2,6 @@
 #include "Utility/Headers/Guardian.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Terrain/Terrain.h"
-#include "TextureManager/Texture2D.h"
-#include "TextureManager/TextureCubemap.h"
 #include "Importer/DVDConverter.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Utility/Headers/BaseClasses.h"
@@ -46,7 +44,7 @@ void operator delete(void *pxData)
 }
 
 template<class T>
-T* ResourceManager::LoadResource(const std::string& name)
+T* ResourceManager::LoadResource(const std::string& name,bool flag)
 {
 	Resource* ptr = LoadResource(name);
 	if(!ptr)
@@ -63,57 +61,37 @@ T* ResourceManager::LoadResource(const std::string& name)
 }
 
 template<>
-Texture2DFlipped* ResourceManager::LoadResource<Texture2DFlipped>(const string& name)
+Texture* ResourceManager::LoadResource<Texture>(const string& name,bool flag)
 {
 	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{	
-		ptr = new Texture2D();
-
-		((Texture2D*)ptr)->loadFlipedVertically(name);
-
-		if(!ptr) return NULL;
-
-		_resDB[name] = ptr;
-	}
-
-	return (Texture2DFlipped*)ptr;
-}
-
-template<>
-Texture2D* ResourceManager::LoadResource<Texture2D>(const string& name)
-{
-	Resource* ptr = LoadResource(name);
-	if(!ptr)
-	{
-		ptr = new Texture2D();
-		((Texture2D*)ptr)->load(name);
-
-		if(!ptr) return NULL;
-
-		_resDB[name] = ptr;
-	}
-	return (Texture2D*)ptr;
-}
-
-template<>
-TextureCubemap* ResourceManager::LoadResource<TextureCubemap>(const string& name)
-{
-	Resource* ptr = LoadResource(name);
+	std::stringstream ss( name );
+	std::string it;
+	int i = 0;
+	while(std::getline(ss, it, ' ')) i++;
 
 	if(!ptr)
 	{
-		ptr = new TextureCubemap();
-		((TextureCubemap*)ptr)->load(name);
+		if(i == 6)
+			ptr = GFXDevice::getInstance().newTextureCubemap(flag);
+		else if (i == 1)
+			ptr = GFXDevice::getInstance().newTexture2D(flag);
+		else
+		{
+			std::cout << "TextureManager ERROR: wrong number of files for cubemap texture: " << name << std::endl;
+			return NULL;
+		}
+
+		((Texture*)ptr)->load(name);
+
 		if(!ptr) return NULL;
-	
+
 		_resDB[name] = ptr;
 	}
-	return (TextureCubemap*)ptr;
+	return (Texture*)ptr;
 }
 
 template<>
-Shader* ResourceManager::LoadResource<Shader>(const string& name)
+Shader* ResourceManager::LoadResource<Shader>(const string& name,bool flag)
 {
 	Resource* ptr = LoadResource(name);
 	if(!ptr)
@@ -131,7 +109,7 @@ Shader* ResourceManager::LoadResource<Shader>(const string& name)
 }
 
 template<>
-DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name)
+DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name,bool flag)
 {
 
 	Resource* ptr = LoadResource(name);

@@ -4,14 +4,13 @@
 #include "resource.h"
 #include "Utility/Headers/MathClasses.h"
 
-
 namespace ImageTools
 {
 	class ImageData {
 	public:
-		GLubyte*	data;
+		U8*	data;
 		U32 w, h, d;
-		GLenum type;
+		U32 type;
 		string name;
 		bool _flip;
 		ivec3	getColor(U32 x, U32 y) const;

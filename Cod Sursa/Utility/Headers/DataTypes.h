@@ -10,7 +10,6 @@
 
 #define F32 float
 #define D32 double
-#define UBYTE unsigned char
 
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
@@ -28,7 +27,10 @@ class simpletriangle{public:   U32 Vertex[3]; };
 
 /* Material: Structure that defines a material in a model. 
  */
-class Texture2D;
+class Texture;
+typedef Texture Texture2D;
+typedef Texture TextureCubemap;
+
 class Material
 {
 public:

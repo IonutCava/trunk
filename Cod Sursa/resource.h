@@ -7,13 +7,17 @@
 
 #pragma warning(disable:4244)
  
-#define GETTIME() ((F32)glutGet(GLUT_ELAPSED_TIME)/1000.0f)
-#define GETMSTIME() ((F32)glutGet(GLUT_ELAPSED_TIME))
+#define GETTIME()   GFXDevice::getInstance().getTime()
+#define GETMSTIME() GFXDevice::getInstance().getMSTime()
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
 
+#ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -25,8 +29,6 @@
 #include <memory.h>
 #include <malloc.h>
 #include <map>
-#include <gl/glew.h>
-#include <gl/freeglut.h> 
 #include <math.h>
 #include <vector>
 #include <deque>

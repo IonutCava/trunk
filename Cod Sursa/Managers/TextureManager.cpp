@@ -24,10 +24,10 @@ void TextureManager::Destroy (void) {
 int TextureManager::tgaSave(	char 		*filename, 
 		short int	width, 
 		short int	height, 
-		UBYTE	pixelDepth,
-		UBYTE	*imageData) {
+		U8	pixelDepth,
+		U8	*imageData) {
 
-	UBYTE cGarbage = 0, type,mode,aux;
+	U8 cGarbage = 0, type,mode,aux;
 	short int iGarbage = 0;
 	int i;
 	FILE *file;
@@ -46,22 +46,22 @@ int TextureManager::tgaSave(	char 		*filename,
 		type = 3;
 
 // write the header
-	fwrite(&cGarbage, sizeof(UBYTE), 1, file);
-	fwrite(&cGarbage, sizeof(UBYTE), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
 
-	fwrite(&type, sizeof(UBYTE), 1, file);
+	fwrite(&type, sizeof(U8), 1, file);
 
 	fwrite(&iGarbage, sizeof(short int), 1, file);
 	fwrite(&iGarbage, sizeof(short int), 1, file);
-	fwrite(&cGarbage, sizeof(UBYTE), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
 	fwrite(&iGarbage, sizeof(short int), 1, file);
 	fwrite(&iGarbage, sizeof(short int), 1, file);
 
 	fwrite(&width, sizeof(short int), 1, file);
 	fwrite(&height, sizeof(short int), 1, file);
-	fwrite(&pixelDepth, sizeof(UBYTE), 1, file);
+	fwrite(&pixelDepth, sizeof(U8), 1, file);
 
-	fwrite(&cGarbage, sizeof(UBYTE), 1, file);
+	fwrite(&cGarbage, sizeof(U8), 1, file);
 
 // convert the image data from RGB(a) to BGR(A)
 	if (mode >= 3)
@@ -72,7 +72,7 @@ int TextureManager::tgaSave(	char 		*filename,
 	}
 
 // save the image data
-	fwrite(imageData, sizeof(UBYTE), 
+	fwrite(imageData, sizeof(U8), 
 			width * height * mode, file);
 	fclose(file);
 // release the memory
@@ -85,8 +85,8 @@ int TextureManager::tgaSave(	char 		*filename,
 int TextureManager::SaveSeries(char		*filename, 
 			 short int		width, 
 			 short int		height, 
-			 UBYTE	pixelDepth,
-			 UBYTE	*imageData) {
+			 U8	pixelDepth,
+			 U8	*imageData) {
 	static int savedImages=0;
 	char *newFilename;
 	int status;

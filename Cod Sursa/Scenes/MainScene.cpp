@@ -1,5 +1,6 @@
-#include "MainScene.h"
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
 
+#include "MainScene.h"
 
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
@@ -22,7 +23,7 @@ void MainScene::preRender()
 
 	_skyFBO->Begin();
 
-	_GFX.clearBuffers(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	_GFX.clearBuffers(0x00004000/*GL_COLOR_BUFFER_BIT*/ | 0x00000100/*GL_DEPTH_BUFFER_BIT*/);
 
 	vec3 zeros(0.0f, 0.0f, 0.0f);
 	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
@@ -56,7 +57,7 @@ void MainScene::render()
 	Sky &sky = Sky::getInstance();
 	GUI &gui = GUI::getInstance();
 	Camera& cam = Camera::getInstance();
-	
+	Frustum::getInstance().Extract(cam.getEye());
 	vec4 zeros(0.0f, 0.0f, 0.0f,0.0f);
 	vec4 white(1.0f, 1.0f, 1.0f, 1.0f);
 	vec4 black(0.0f, 0.0f, 0.0f, 1.0f);
@@ -207,13 +208,13 @@ bool MainScene::loadResources(bool continueOnErrors)
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f;
 	gui.addText("fpsDisplay",           //Unique ID
 		                       vec3(60,60,0),          //Position
-							   GLUT_BITMAP_8_BY_13,    //Font
+							   BITMAP_8_BY_13,    //Font
 							   vec3(0.0f,0.2f, 1.0f),  //Color
 							   "HELLO! FPS: %s",0);    //Text and arguments
 
 	gui.addText("timeDisplay",
 								vec3(60,70,0),
-								GLUT_BITMAP_8_BY_13,
+								BITMAP_8_BY_13,
 								vec3(0.6f,0.2f,0.2f),
 								"Elapsed time: %5.0f",GETTIME());
 	_eventTimers.push_back(0.0f); //Sun

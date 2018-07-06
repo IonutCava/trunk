@@ -46,12 +46,12 @@ private:
 
 	bool generateTrees();			   //True = Everything OK, False = Error. Check _errorCode
 	bool generateGrass(int index);     //index = current grass type (billboard, vbo etc)
-	inline vector<GLuint>&		getGrassIndiceArray()		{return _grassIndice;}
+	inline vector<U32>&		getGrassIndiceArray()		{return _grassIndice;}
 
 	vector<string>     _treeNames;
 	
 	vector<VertexBufferObject*>	_grassVBO;
-	vector<GLuint>	_grassIndice;
+	vector<U32>	_grassIndice;
 	
 		
 	void DrawGrass(int index,bool drawInReflexion);

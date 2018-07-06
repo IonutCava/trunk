@@ -58,8 +58,8 @@ void Init();
 static void Mouse(int button, int state, int x, int y);
 static void Motion(int x, int y);
 static void MouseMove(int x, int y);
-void Keyboard(UBYTE Key,int x,int y);
-void KeyboardUp(UBYTE Key,int x,int y);
+void Keyboard(U8 Key,int x,int y);
+void KeyboardUp(U8 Key,int x,int y);
 
 }
 #endif

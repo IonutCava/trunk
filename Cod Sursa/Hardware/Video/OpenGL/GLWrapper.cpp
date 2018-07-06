@@ -1,11 +1,23 @@
+#include "glResources.h"
+
 #include "GLWrapper.h"
 #include "Utility/Headers/DataTypes.h"
 #include "Rendering/common.h"
 #include "Utility/Headers/Guardian.h"
 #include "GUI/GUI.h"
-#include "TextureManager/Texture2D.h"
+#include "Utility/Headers/ParamHandler.h"
+
+#include "Geometry/Predefined/Box3D.h"
+#include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Quad3D.h"
+#include "Geometry/Predefined/Text3D.h"
 
 #define USE_FREEGLUT
+
+void resizeWindowCallback(int w, int h)
+{
+	GFXDevice::getInstance().resizeWindow(w,h);
+}
 
 void GL_API::initHardware()
 {
@@ -52,13 +64,80 @@ void GL_API::initHardware()
 	glDisable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glutCloseFunc(Guardian::getInstance().TerminateApplication);
+	glutReshapeFunc(resizeWindowCallback);
 	cout << "OpenGL rendering system initialized!" << endl;
 	
 }
+
 void GL_API::closeRenderingApi()
 {
 	glutLeaveMainLoop();
 	glutDestroyWindow(Engine::getInstance().getMainWindowId());
+}
+
+void GL_API::resizeWindow(U32 w, U32 h)
+{
+	D32 _zNear  = 0.01f;
+	D32 _zFar   = 7000.0f;
+	F32 x=0.0f,y=1.75f,z=5.0f;
+	F32 lx=0.0f,ly=0.0f,lz=-1.0f;
+
+	ParamHandler::getInstance().setParam("zNear",_zNear);
+	ParamHandler::getInstance().setParam("zFar",_zFar);
+
+	F32 ratio = 1.0f * w / h;
+	// Reset the coordinate system before modifying
+	glMatrixMode( GL_PROJECTION );
+	glLoadIdentity();
+	
+	// Set the viewport to be the entire window
+    glViewport(0, 0, w, h);
+
+	// Set the clipping volume
+	gluPerspective(60,ratio,_zNear,_zFar);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	gluLookAt(x, y, z, 
+		  	x + lx,y + ly,z + lz,
+			0.0f,1.0f,0.0f);
+}
+
+void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up)
+{
+		gluLookAt(	eye.x,		eye.y,		eye.z,
+					center.x,	center.y,	center.z,
+					up.x,		up.y,		up.z	);
+}
+
+void GL_API::idle()
+{
+	glutSetWindow(Engine::getInstance().getMainWindowId()); 
+	glutPostRedisplay();
+}
+
+F32 GL_API::getTime()  
+{
+	return (F32)(glutGet(GLUT_ELAPSED_TIME)/1000.0f);
+}
+
+F32 GL_API::getMSTime()
+{
+	return (F32)glutGet(GLUT_ELAPSED_TIME);
+} 
+
+mat4 GL_API::getProjectionMatrix()
+{
+	mat4 projection;
+	glGetFloatv( GL_PROJECTION_MATRIX, projection.mat );	
+	return projection;
+}
+
+mat4 GL_API::getModelViewMatrix()
+{
+	mat4 modelview;
+	glGetFloatv( GL_MODELVIEW_MATRIX, modelview.mat );	
+	return modelview;
 }
 
 void GL_API::translate(vec3& pos)
@@ -129,7 +208,7 @@ void GL_API::drawTextToScreen(Text* text)
 		glRasterPos2f(text->_position.x,text->_position.y);
 		
 #ifdef USE_FREEGLUT
-		glutBitmapString(text->_font, (UBYTE *)(text->_text.c_str()));
+		glutBitmapString(text->_font, (U8*)(text->_text.c_str()));
 #else
 		//nothing yet
 #endif
@@ -203,7 +282,7 @@ void GL_API::drawButton(Button* b)
 		glEnd();
 
 		glLineWidth(1);
-		fontx = b->_position.x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(UBYTE*)b->_text.c_str())) / 2 ;
+		fontx = b->_position.x + (b->_dimensions.x - glutBitmapLength(GLUT_BITMAP_HELVETICA_10,(U8*)b->_text.c_str())) / 2 ;
 		fonty = b->_position.y + (b->_dimensions.y+10)/2;
 
 		/*
@@ -234,8 +313,64 @@ void GL_API::drawButton(Button* b)
 
 }
 
+void GL_API::beginRenderStateProcessing()
+{
+	//ToDo: Enable these and fix texturing issues -Ionut
+		glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LIGHTING_BIT);
+		if(_state.isEnabled())
+		{
+			if( !_state.blendingEnabled()) glDisable(GL_BLEND);
+			//else glEnable(GL_BLEND);
+			if(!_state.cullingEnabled() ) glDisable(GL_CULL_FACE);
+			//else glEnable(GL_CULL_FACE);
+			if(!_state.lightingEnabled()) glDisable(GL_LIGHTING);
+			//else glEnable(GL_LIGHTING);
+			if(!_state.texturesEnabled()) glDisable(GL_TEXTURE_2D);
+			//else glEnable(GL_TEXTURE_2D);
+		}
+}
+
+void GL_API::endRenderStateProcessing()
+{
+		glPopAttrib();
+}
+
+void GL_API::drawBox3D(vec3 min, vec3 max)
+{
+	//beginRenderStateProcessing();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f( min.x, min.y, min.z );
+		glVertex3f( max.x, min.y, min.z );
+		glVertex3f( max.x, min.y, max.z );
+		glVertex3f( min.x, min.y, max.z );
+	glEnd();
+
+	glBegin(GL_LINE_LOOP);
+		glVertex3f( min.x, max.y, min.z );
+		glVertex3f( max.x, max.y, min.z );
+		glVertex3f( max.x, max.y, max.z );
+		glVertex3f( min.x, max.y, max.z );
+	glEnd();
+
+	glBegin(GL_LINES);
+		glVertex3f( min.x, min.y, min.z );
+		glVertex3f( min.x, max.y, min.z );
+		glVertex3f( max.x, min.y, min.z );
+		glVertex3f( max.x, max.y, min.z );
+		glVertex3f( max.x, min.y, max.z );
+		glVertex3f( max.x, max.y, max.z );
+		glVertex3f( min.x, min.y, max.z );
+		glVertex3f( min.x, max.y, max.z );
+	glEnd();
+
+	//endRenderStateProcessing();
+}
+
 void GL_API::drawBox3D(Box3D* const box)
 {
+	//beginRenderStateProcessing();
+
 	pushMatrix();
 	translate(box->getPosition());
 	rotate(box->getOrientation().x,vec3(1.0f,0.0f,0.0f));
@@ -253,10 +388,14 @@ void GL_API::drawBox3D(Box3D* const box)
 	if(box->getShader())  box->getShader()->unbind();
 	if(box->getTexture()) box->getTexture()->Unbind(0);
 	popMatrix();
+
+	//endRenderStateProcessing();
 }
 
 void GL_API::drawSphere3D(Sphere3D* const sphere)
 {
+	//beginRenderStateProcessing();
+
 	pushMatrix();
 	translate(sphere->getPosition());
 	rotate(sphere->getOrientation().x,vec3(1.0f,0.0f,0.0f));
@@ -274,11 +413,15 @@ void GL_API::drawSphere3D(Sphere3D* const sphere)
 	if(sphere->getShader())  sphere->getShader()->unbind();
 	if(sphere->getTexture()) sphere->getTexture()->Unbind(0);
 	popMatrix();
+
+	//endRenderStateProcessing();
 	
 }
 
 void GL_API::drawQuad3D(Quad3D* const quad)
 {
+	//beginRenderStateProcessing();
+
 	pushMatrix();
 	translate(quad->getPosition());
 	rotate(quad->getOrientation().x,vec3(1.0f,0.0f,0.0f));
@@ -306,10 +449,14 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 	if(quad->getTexture()) quad->getTexture()->Unbind(0);
 	
 	popMatrix();
+
+	//endRenderStateProcessing();
 }
 
 void GL_API::drawText3D(Text3D* const text)
 {
+	//beginRenderStateProcessing();
+
 	pushMatrix();
 	translate(text->getPosition());
 	rotate(text->getOrientation().x,vec3(1.0f,0.0f,0.0f));
@@ -333,40 +480,46 @@ void GL_API::drawText3D(Text3D* const text)
 	if(text->getShader())  text->getShader()->unbind();
 	if(text->getTexture()) text->getTexture()->Unbind(0);
 	popMatrix();
+
+	//endRenderStateProcessing();
 }
 
-void GL_API::toggle2D3D(bool _3D)
+void GL_API::toggle2D(bool _2D)
 {
 	
-	if(!_3D)
+	if(_2D)
 	{
 		F32 width = Engine::getInstance().getWindowWidth();
 		F32 height = Engine::getInstance().getWindowHeight();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0,width,height,0,-1,1);
-		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_LIGHTING);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix(); //1
+		glLoadIdentity();
+		glOrtho(0,width,height,0,-1,1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix(); //2
+		glLoadIdentity();
+
+
 	}
 	else
 	{
-		ParamHandler& par = ParamHandler::getInstance();
+		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-
-		glEnable(GL_DEPTH_TEST);
+		glPopMatrix(); //1
 		glEnable(GL_LIGHTING);
+		glEnable(GL_DEPTH_TEST);
 	}
 }
 
 void GL_API::renderModel(DVDFile* const model)
 {
 	if(!model->isVisible()) return;
-	
+
+	//beginRenderStateProcessing();
+
 	SubMesh *s;
 	vector<SubMesh* >::iterator _subMeshIterator;
 	
@@ -395,6 +548,17 @@ void GL_API::renderModel(DVDFile* const model)
 	}
 	model->getShader()->unbind();
 	popMatrix();
+
+	//endRenderStateProcessing();
+}
+
+void GL_API::renderElements(Type t, U32 count, const void* first_element)
+{
+	//beginRenderStateProcessing();
+
+	glDrawElements(t, count, GL_UNSIGNED_INT, first_element );
+
+	//endRenderStateProcessing();
 }
 
 void GL_API::setColor(vec4& color)

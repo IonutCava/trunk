@@ -1,6 +1,7 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "Terrain.h"
 #include "Managers/TextureManager.h"
-#include "TextureManager/Texture2D.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
 #include "Quadtree.h"
@@ -174,7 +175,7 @@ bool Terrain::load(const string& heightmap)
 
 bool Terrain::postLoad()
 {
-	_postLoaded = m_pGroundVBO->Create(GL_STATIC_DRAW);
+	_postLoaded = m_pGroundVBO->Create();
 	cout << "Generating lightmap!" << endl;
 	m_fboDepthMapFromLight[0]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
 	m_fboDepthMapFromLight[1]->Create(FrameBufferObject::FBO_2D_DEPTH, 2048, 2048);
@@ -265,7 +266,9 @@ void Terrain::draw() const
 	glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 50.0f);
-
+	
+	RenderState s(true,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
 	
 		U32 idx=0;
 		for(U32 i=0; i<m_tTextures.size(); i++)

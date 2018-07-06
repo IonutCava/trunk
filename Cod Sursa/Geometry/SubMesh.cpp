@@ -1,4 +1,5 @@
 #include "SubMesh.h"
+#include "Managers/ResourceManager.h"
 
 void SubMesh::computeBoundingBox()
 {
@@ -11,4 +12,14 @@ void SubMesh::computeBoundingBox()
 	{
 		_boundingBox.Add( tPosition[i] );
 	}
+}
+
+
+bool SubMesh::unload()
+{
+	ResourceManager::getInstance().remove(_material.texture->getName());
+	getGeometryVBO()->Destroy();
+	getIndices().clear(); 
+	return true;
+
 }

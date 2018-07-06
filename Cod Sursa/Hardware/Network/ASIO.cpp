@@ -98,6 +98,7 @@
 		{
 			FileData d;
 			int type = -1;
+			p >> d.ItemName;
 			p >> d.ModelName;
 			p >> d.orientation.x;
 			p >> d.orientation.y;

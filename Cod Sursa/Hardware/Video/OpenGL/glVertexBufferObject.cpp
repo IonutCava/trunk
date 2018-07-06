@@ -1,3 +1,4 @@
+#include "glResources.h"
 #include "resource.h"
 #include "glVertexBufferObject.h"
 
@@ -20,6 +21,8 @@ void glVertexBufferObject::Destroy()
 	_dataTangent.clear();
 }
 
+
+bool glVertexBufferObject::Create(){	return Create(GL_STATIC_DRAW);  }
 
 bool glVertexBufferObject::Create(U32 usage)
 {
@@ -124,7 +127,7 @@ void glVertexBufferObject::Enable_VA()
 
 void glVertexBufferObject::Enable_VBO()
 {
-	if(!_created) Create(GL_STATIC_DRAW);
+	if(!_created) Create();
 	U32 slot = 0;
 	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 

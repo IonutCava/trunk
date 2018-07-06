@@ -7,13 +7,24 @@
 SINGLETON_BEGIN_EXT1(DX_API,RenderAPI)
 
 private:
+	DX_API() : RenderAPI() {}
+
 	void initHardware();
 	void closeRenderingApi();
 	void initDevice();
 	void resizeWindow(U32 w, U32 h) {}
+	void lookAt(const vec3& eye,const vec3& center,const vec3& up);
+	void idle();
+
+	F32 getTime()   {return (F32)(1000.0f/1000.0f);}
+	F32 getMSTime() {return (F32)1000.0f;} 
+	mat4 getModelViewMatrix();
+	mat4 getProjectionMatrix();
 
 	FrameBufferObject* newFBO(){return /*new dxFrameBufferObject();*/ NULL; }
 	VertexBufferObject* newVBO(){return /*new dxVertexBufferObject();*/ NULL; }
+	Texture2D*          newTexture2D(bool flipped = false){return /*new dxTexture2D();*/ NULL;}
+	TextureCubemap*     newTextureCubemap(bool flipped = false){return /*new dxTextureCubemap();*/ NULL;}
 	Shader* newShader(const char *vsFile, const char *fsFile){return /*new dxShader();*/ NULL;}
 	Shader* newShader(){return /*new dxShader();*/ NULL;}
 	
@@ -26,23 +37,24 @@ private:
 	void swapBuffers();
 	void enableFog(F32 density, F32* color);
 
-	void pushMatrix();
-	void popMatrix();
 	void enable_MODELVIEW();
 
 	void loadIdentityMatrix();
-	void toggle2D3D(bool _3D);
+	void toggle2D(bool _2D);
 
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
 	void drawButton(Button*);
+
+	void drawBox3D(vec3 min, vec3 max);
 	void drawBox3D(Box3D* const box);
 	void drawSphere3D(Sphere3D* const sphere);
 	void drawQuad3D(Quad3D* const quad);
 	void drawText3D(Text3D* const text);
 
 	void renderModel(DVDFile* const model);
-	
+	void renderElements(Type t, U32 count, const void* first_element);
+
 	void setColor(vec4& color);
 	void setColor(vec3& color);
 

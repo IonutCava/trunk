@@ -3,7 +3,6 @@
 #include <assimp.hpp>      // C++ importer interface
 #include <aiPostProcess.h> // Post processing flags
 #include "Managers/ResourceManager.h"
-#include "TextureManager/Texture2D.h"
 
 DVDFile::DVDFile()
 {
@@ -25,11 +24,11 @@ DVDFile::DVDFile()
 
 DVDFile::~DVDFile()
 {
-	unload();
 }
 
 bool DVDFile::unload()
 {
+	ResourceManager::getInstance().remove(getName());
 	for(_subMeshIterator = getSubMeshes().begin(); _subMeshIterator != getSubMeshes().end(); _subMeshIterator++)
 	{
 		SubMesh* s = (*_subMeshIterator);
@@ -41,11 +40,22 @@ bool DVDFile::unload()
 		else return false;
 	}
 	getSubMeshes().clear();
-	if(getShader()) delete getShader();
+	if(getShader())
+	{
+		ResourceManager::getInstance().remove(getShader()->getName());
+		delete getShader();
+	}
 	else return false;
-
 	return true;
 }
+
+bool DVDFile::clean()
+{
+	if(_shouldDelete)
+		return unload();
+	else return false;
+}
+
 bool DVDFile::load(const string& file)
 {
 	bool removeLinesAndPoints = true;
@@ -102,7 +112,7 @@ bool DVDFile::load(const string& file)
 		  for(U32 m = 0; m < scene->mMeshes[n]->mFaces[k].mNumIndices; m++)
 			getSubMeshes()[index]->getIndices().push_back(scene->mMeshes[n]->mFaces[k].mIndices[m]);
 		  
-		getSubMeshes()[index]->getGeometryVBO()->Create(GL_STATIC_DRAW);
+		getSubMeshes()[index]->getGeometryVBO()->Create();
 	 
 		aiMaterial *mat = scene->mMaterials[scene->mMeshes[n]->mMaterialIndex];
 		aiReturn result;  aiString tName; aiTextureMapping mapping; unsigned int uvInd;
@@ -114,7 +124,8 @@ bool DVDFile::load(const string& file)
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = file.substr( 0, file.rfind("/")+1 );
-		getSubMeshes()[index]->getMaterial().texture = ResourceManager::getInstance().LoadResource<Texture2DFlipped>(pathName + "../texturi/"  + img_name);
+		//Switch to flipped;
+		getSubMeshes()[index]->getMaterial().texture = ResourceManager::getInstance().LoadResource<Texture2D>(pathName + "../texturi/"  + img_name,true);
 	}
 	_render = true;
 	return _render;

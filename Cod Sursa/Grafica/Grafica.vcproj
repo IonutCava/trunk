@@ -472,30 +472,6 @@
 				RelativePath="..\TextureManager\ImageTools.h"
 				>
 			</File>
-			<File
-				RelativePath="..\TextureManager\Texture.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\TextureManager\Texture.h"
-				>
-			</File>
-			<File
-				RelativePath="..\TextureManager\Texture2D.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\TextureManager\Texture2D.h"
-				>
-			</File>
-			<File
-				RelativePath="..\TextureManager\TextureCubemap.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\TextureManager\TextureCubemap.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Assets"
@@ -592,6 +568,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Hardware\Video\Texture.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\Hardware\Video\Texture.h"
+					>
+				</File>
+				<File
 					RelativePath="..\Hardware\Video\VertexBufferObject.h"
 					>
 				</File>
@@ -607,11 +591,23 @@
 						>
 					</File>
 					<File
+						RelativePath="..\Hardware\Video\OpenGL\glResources.h"
+						>
+					</File>
+					<File
 						RelativePath="..\Hardware\Video\OpenGL\glShader.cpp"
 						>
 					</File>
 					<File
 						RelativePath="..\Hardware\Video\OpenGL\glShader.h"
+						>
+					</File>
+					<File
+						RelativePath="..\Hardware\Video\OpenGL\glTexture.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\Hardware\Video\OpenGL\glTexture.h"
 						>
 					</File>
 					<File

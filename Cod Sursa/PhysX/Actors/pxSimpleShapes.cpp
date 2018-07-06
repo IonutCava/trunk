@@ -1,3 +1,5 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "PhysX/PhysX.h"
 #include "Rendering/Frustum.h"
 #include "Utility/Headers/BoundingBox.h"
@@ -80,41 +82,41 @@ void PhysX::CreateTower(int size)
 
 void PhysX::DrawLowPlane(NxShape *plane)
 {
-	GFXDevice::getInstance().pushMatrix();
+	//GFXDevice::getInstance().pushMatrix();
 	NxMat34 pose = plane->getActor().getGlobalPose();
 	F32 *orient = new F32[16];
 	pose.M.getColumnMajorStride4(orient);
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
-    glMultMatrixf(&(orient[0]));
-    glScaled(8192,0,8192);
-    GFXDevice::getInstance().popMatrix();
+    //glMultMatrixf(&(orient[0]));
+    //glScaled(8192,0,8192);
+    //GFXDevice::getInstance().popMatrix();
 	delete orient;
 }
 
 void PhysX::DrawSphere(NxShape *sphere)
 {
 
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	//glPushAttrib(GL_ALL_ATTRIB_BITS);
 	NxMat34 pose = sphere->getActor().getGlobalPose();
 	NxReal r = sphere->isSphere()->getRadius();
-	GFXDevice::getInstance().pushMatrix();
+	//GFXDevice::getInstance().pushMatrix();
 	F32 *orient = new F32[16];
 	pose.M.getColumnMajorStride4(orient);
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
-    glMultMatrixf(&(orient[0]));
-    glScaled(r,r,r);
+    //glMultMatrixf(&(orient[0]));
+    //glScaled(r,r,r);
     GLUquadricObj * quadObj = gluNewQuadric ();
     gluQuadricDrawStyle (quadObj, GLU_FILL);
     gluQuadricNormals (quadObj, GLU_SMOOTH); 
     gluQuadricOrientation(quadObj,GLU_OUTSIDE);
     gluSphere(quadObj, 1.0f, 9, 7);        //unit sphere
     gluDeleteQuadric(quadObj);
-    GFXDevice::getInstance().popMatrix();
-	glPopAttrib();
+    //GFXDevice::getInstance().popMatrix();
+	//glPopAttrib();
 	delete orient;
 }
 
@@ -126,7 +128,7 @@ void PhysX::DrawBox(NxShape *box)
 	GFXDevice::getInstance().setColor(vec3(0.3f,0.3f,0.8f));
 	BoundingBox *cube = (BoundingBox*)box->getActor().userData;
 	/*if(!Frustum::getInstance().ContainsBoundingBox(*cube)) return;*/
-	GFXDevice::getInstance().pushMatrix();
+	//GFXDevice::getInstance().pushMatrix();
 	pose.M.getColumnMajorStride4(orient);
 	//glEnable(GL_COLOR_MATERIAL);
 	//F32 color[4] = { 0.3f, 0.3f, 0.3f, 1.0f };
@@ -135,11 +137,11 @@ void PhysX::DrawBox(NxShape *box)
 	vec3(pose.t.x,pose.t.y,pose.t.z).get(&(orient[12]));
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
-    glMultMatrixf(&(orient[0]));
+    //glMultMatrixf(&(orient[0]));
 	cube->Translate(vec3(pose.t.x,pose.t.y,pose.t.z));
 	glutSolidCube(/*cube->size**/2.0f);
 	//glDisable(GL_COLOR_MATERIAL);
-	GFXDevice::getInstance().popMatrix();
+	//GFXDevice::getInstance().popMatrix();
 	GFXDevice::getInstance().setColor(vec3(1.0f,1.0f,1.0f));
     glPopAttrib();	
 	delete orient;

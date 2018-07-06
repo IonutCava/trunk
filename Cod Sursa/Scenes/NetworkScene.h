@@ -24,10 +24,10 @@ private:
 	void checkPatches();
 
 private:
+	vec2 _sunAngle;
+	vec4 _sunVector,_white,_black;
 	vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
-	Box3D *_box;
-
 };
 
 #endif

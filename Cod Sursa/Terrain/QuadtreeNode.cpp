@@ -63,16 +63,16 @@ void QuadtreeNode::ComputeBoundingBox(const vec3* vertices)
 	terrain_BBox.max.y = -100000.0f;
 
 	if(m_pTerrainChunk) {
-		std::vector<GLuint>& tIndices = m_pTerrainChunk->getIndiceArray(0);
+		std::vector<U32>& tIndices = m_pTerrainChunk->getIndiceArray(0);
 
-		for(GLuint i=0; i<tIndices.size(); i++) {
+		for(U32 i=0; i<tIndices.size(); i++) {
 			vec3 vertex = vertices[ tIndices[i] ];
 
 			if(vertex.y > terrain_BBox.max.y)	terrain_BBox.max.y = vertex.y;
 			if(vertex.y < terrain_BBox.min.y)	terrain_BBox.min.y = vertex.y;
 		}
 
-		for(GLuint i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
+		for(U32 i=0; i<m_pTerrainChunk->getTreeArray().size(); i++) {
 			DVDFile& obj = m_pTerrainChunk->getTreeArray()[ i ];
 			terrain_BBox.Add( obj.getBoundingBox() );
 		}
@@ -105,7 +105,7 @@ void QuadtreeNode::DrawGrass(bool drawInReflexion)
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawGrass( (GLuint)m_nLOD, m_fDistance );
+			m_pTerrainChunk->DrawGrass( (U32)m_nLOD, m_fDistance );
 		else
 			return;
 	}
@@ -123,7 +123,7 @@ void QuadtreeNode::DrawTrees(bool drawInReflexion)
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (GLuint)m_nLOD , m_fDistance );
+			m_pTerrainChunk->DrawTrees(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD , m_fDistance );
 		else
 			return;
 	}
@@ -141,7 +141,7 @@ int QuadtreeNode::DrawObjects(bool drawInReflexion)
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
 		if( m_nLOD>=0 )
-			return m_pTerrainChunk->DrawObjects(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (GLuint)m_nLOD );
+			return m_pTerrainChunk->DrawObjects(drawInReflexion ? TERRAIN_CHUNKS_LOD-1 : (U32)m_nLOD );
 		else
 			return 0;
 	}
@@ -162,32 +162,7 @@ void QuadtreeNode::DrawBBox(bool bTest)
 {
 	if(!m_pChildren) {
 		assert(m_pTerrainChunk);
-
-		glBegin(GL_LINE_LOOP);
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.min.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.min.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.min.y, terrain_BBox.max.z );
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.min.y, terrain_BBox.max.z );
-		glEnd();
-
-		glBegin(GL_LINE_LOOP);
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.max.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.max.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.max.y, terrain_BBox.max.z );
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.max.y, terrain_BBox.max.z );
-		glEnd();
-
-		glBegin(GL_LINES);
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.min.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.max.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.min.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.max.y, terrain_BBox.min.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.min.y, terrain_BBox.max.z );
-		glVertex3f( terrain_BBox.max.x, terrain_BBox.max.y, terrain_BBox.max.z );
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.min.y, terrain_BBox.max.z );
-		glVertex3f( terrain_BBox.min.x, terrain_BBox.max.y, terrain_BBox.max.z );
-		glEnd();
-		
+			GFXDevice::getInstance().drawBox3D(terrain_BBox.min,terrain_BBox.max);
 	}
 	else {
 		if( m_nLOD>=0 )
@@ -239,7 +214,7 @@ int QuadtreeNode::DrawGround(Frustum* pFrust, int options)
 			
 			vec3 vEyeToChunk = this->getBoundingBox().getCenter() - pFrust->getEyePos();
 			m_fDistance = vEyeToChunk.length();
-			GLuint lod = 0;
+			U32 lod = 0;
 			if(m_fDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(m_fDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			m_nLOD = lod;

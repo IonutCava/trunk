@@ -6,10 +6,11 @@
 #include "Importer/DVDConverter.h"
 #include "Terrain/Sky.h"
 
-Shader *s;
 void CubeScene::render()
 {
-	
+	RenderState s(true,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
+
 	GFXDevice::getInstance().drawBox3D(_box);
 	GFXDevice::getInstance().drawText3D(_text3D);
 	GFXDevice::getInstance().drawQuad3D(_innerQuad);

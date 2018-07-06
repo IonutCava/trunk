@@ -10,6 +10,7 @@ using namespace std;
 class VertexBufferObject
 {
 public:
+	virtual bool Create() = 0;
 	virtual bool Create(U32 usage) = 0;
 	virtual void Destroy() = 0;
 	

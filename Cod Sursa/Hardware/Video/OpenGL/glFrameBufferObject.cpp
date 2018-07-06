@@ -1,5 +1,7 @@
+#include "glResources.h"
 #include "resource.h"
 #include "glFrameBufferObject.h"
+#include "Hardware/Video/GFXDevice.h"
 
 glFrameBufferObject::glFrameBufferObject()
 {
@@ -10,8 +12,17 @@ glFrameBufferObject::glFrameBufferObject()
 		glFramebufferTexture2D = GLEW_GET_FUN(__glewFramebufferTexture2DEXT);
 		glGenFramebuffers   = GLEW_GET_FUN(__glewGenFramebuffersEXT);
 		glCheckFramebufferStatus = GLEW_GET_FUN(__glewCheckFramebufferStatusEXT);
-
 	}
+
+	if(!glewIsSupported("glBindRenderbuffer"))
+	{
+		glDeleteRenderbuffers = GLEW_GET_FUN(__glewDeleteRenderbuffersEXT);
+		glGenRenderbuffers = GLEW_GET_FUN(__glewGenRenderbuffersEXT);
+		glBindRenderbuffer = GLEW_GET_FUN(__glewBindRenderbufferEXT);
+		glRenderbufferStorage = GLEW_GET_FUN(__glewRenderbufferStorageEXT);
+		glFramebufferRenderbuffer = GLEW_GET_FUN(__glewFramebufferRenderbufferEXT);
+	}
+
 	_frameBufferHandle=0;
 	_depthBufferHandle=0;
 	_textureId = 0;
@@ -65,13 +76,21 @@ void glFrameBufferObject::End(U32 nFace) const
         glCopyTexSubImage2D(_textureType, 0, 0, 0, 0, 0, _width, _height);
         glBindTexture(_textureType, 0);
 
-        glPopAttrib();	
+        glPopAttrib();	//Color and Pixel Mode bits
 	}
-	glPopAttrib();
+	glPopAttrib();//Viewport Bit
 }
 
 void glFrameBufferObject::Bind(int unit) const
 {
+	RenderState& s = GFXDevice::getInstance().getActiveRenderState();
+	glPushAttrib(GL_ENABLE_BIT);
+
+	if(!s.blendingEnabled()) glDisable(GL_BLEND);
+	if(!s.cullingEnabled())  glDisable(GL_CULL_FACE);
+	if(!s.lightingEnabled()) glDisable(GL_LIGHTING);
+	if(!s.texturesEnabled()) glDisable(GL_TEXTURE_2D);
+
 	glActiveTexture(GL_TEXTURE0 + unit);
 	glEnable(_textureType);
 	glBindTexture(_textureType, _textureId);
@@ -82,6 +101,7 @@ void glFrameBufferObject::Unbind(int unit) const
 	glActiveTexture(GL_TEXTURE0 + unit);
 	glBindTexture( _textureType, 0 );
 	glDisable(_textureType);
+	glPopAttrib();//RenderState
 }
 
 
@@ -106,10 +126,6 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U32 width, U32 height)
 	glTexParameterf(_textureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(_textureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-
-//	if(type==FBO_2D_DEPTH)
-//		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
-
 	U32 eTarget;
 	U32 nFrames;
 	if(type!=FBO_CUBE_COLOR) {
@@ -128,8 +144,6 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U32 width, U32 height)
 		else
 			glTexImage2D(eTarget+i, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	}
-
-
 
 	if(_useFBO)
 	{

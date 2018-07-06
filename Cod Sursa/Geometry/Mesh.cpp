@@ -1,5 +1,4 @@
 #include "Mesh.h"
-#include "TextureManager/Texture2D.h"
 #include "Managers/ResourceManager.h"
 #include "Rendering/Frustum.h"
 #include "Managers/SceneManager.h"
@@ -18,30 +17,8 @@ void Mesh::DrawBBox()
 {
 	if(!_render || !_bb.getVisibility()) return;
 	if(!_bb.isComputed()) computeBoundingBox();
-	glBegin(GL_LINE_LOOP);
-		glVertex3f( _bb.min.x, _bb.min.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.min.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.min.y, _bb.max.z );
-		glVertex3f( _bb.min.x, _bb.min.y, _bb.max.z );
-	glEnd();
 
-	glBegin(GL_LINE_LOOP);
-		glVertex3f( _bb.min.x, _bb.max.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.max.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.max.y, _bb.max.z );
-		glVertex3f( _bb.min.x, _bb.max.y, _bb.max.z );
-	glEnd();
-
-	glBegin(GL_LINES);
-		glVertex3f( _bb.min.x, _bb.min.y, _bb.min.z );
-		glVertex3f( _bb.min.x, _bb.max.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.min.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.max.y, _bb.min.z );
-		glVertex3f( _bb.max.x, _bb.min.y, _bb.max.z );
-		glVertex3f( _bb.max.x, _bb.max.y, _bb.max.z );
-		glVertex3f( _bb.min.x, _bb.min.y, _bb.max.z );
-		glVertex3f( _bb.min.x, _bb.max.y, _bb.max.z );
-	glEnd();
+	GFXDevice::getInstance().drawBox3D(_bb.min,_bb.max);
 }
 
 bool Mesh::isInView()
@@ -50,7 +27,7 @@ bool Mesh::isInView()
 	if(!_bb.isComputed()) computeBoundingBox();
 
 	// Bellow code is still buggy. ToDo: FIX THIS!!!!!!!
-	return true; 
+	//return true; 
 	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 	//if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
 	// END BUGGY CODE :P

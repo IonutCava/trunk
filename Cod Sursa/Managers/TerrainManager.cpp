@@ -3,8 +3,6 @@
 #include "Managers/ResourceManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
-#include "TextureManager/Texture2D.h"
-
 
 TerrainManager::TerrainManager()
 {
@@ -128,16 +126,17 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 	ParamHandler&  par = ParamHandler::getInstance();
 	if(!_computedMinHeight)
 	{
-		_minHeight = -1;_maxHeight = 1; F32 temp = 0;
+		_minHeight = 1000;_maxHeight = 1; F32 temp = 0;
 		for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
 		{
 			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().min.y;
 			if(temp < _minHeight)
 			{
-				_minHeight = temp - 10.5f;
+				_minHeight = temp;
 				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().max.y;
 			}
 		}
+		_minHeight -= 100;
 		par.setParam("minHeight",_minHeight);
 		_computedMinHeight = true;
 	}

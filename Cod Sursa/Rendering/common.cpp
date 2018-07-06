@@ -1,3 +1,5 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "common.h"
 
 #include "GUI/GLUIManager.h"
@@ -5,6 +7,7 @@
 #include "Managers/TextureManager.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
+#include "Managers/SceneManager.h"
 #include "Terrain/Sky.h"
 #include "Camera.h"
 #include "Hardware/Video/ShaderHandler.h"
@@ -19,8 +22,7 @@
 void Engine::Idle()
 {
 	SceneManager::getInstance().clean();
-	glutSetWindow(Engine::getInstance().getMainWindowId()); 
-	glutPostRedisplay();
+	GFXDevice::getInstance().idle();
 }
 
 Engine::Engine() : 
@@ -122,10 +124,10 @@ void Engine::Screenshot(char *filename, int xmin,int ymin, int xmax, int ymax)
 	int h = ymax - ymin;
 
 // allocate memory for the pixels
-	UBYTE *imageData = new UBYTE[w * h * 4];
+   U8 *imageData = new U8[w * h * 4];
 
 // read the pixels from the frame buffer
-	glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
+   //glReadPixels(xmin,ymin,xmax,ymax,GL_RGBA,GL_UNSIGNED_BYTE, (void*)imageData);
 
 // save the image 
 	TextureManager::getInstance().SaveSeries(filename,w,h,32,imageData);

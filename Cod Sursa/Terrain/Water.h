@@ -8,7 +8,6 @@
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Utility/Headers/ParamHandler.h"
 
-class Texture2D;
 class Shader;
 class WaterPlane : public Object3D
 {

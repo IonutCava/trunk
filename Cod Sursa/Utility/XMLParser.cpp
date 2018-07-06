@@ -140,6 +140,7 @@ namespace XML
 			string format = it->first.data();
 			if(format.find("<xmlcomment>") != string::npos) continue;
 			FileData model;
+			model.ItemName = name;
 			model.ModelName  = assetLocation + pt.get<string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
@@ -160,6 +161,7 @@ namespace XML
 			string format = it->first.data();
 			if(format.find("<xmlcomment>") != string::npos) continue;
 			FileData model;
+			model.ItemName = name;
 			model.ModelName  = assetLocation + pt.get<string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");

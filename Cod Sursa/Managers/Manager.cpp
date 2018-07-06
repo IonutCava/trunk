@@ -21,7 +21,7 @@ Resource* Manager::find(const string& name)
 	if(_resDB.find(name) != _resDB.end())
 		return _resDB[name];
 	else
-		return _resDB.begin()->second;
+		return NULL;
 }
 
 Resource* Manager::add(Resource* data, const std::string& name)

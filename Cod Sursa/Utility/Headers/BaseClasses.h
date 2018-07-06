@@ -25,6 +25,7 @@ enum GEOMETRY_TYPE
 class FileData
 {
 public:
+	string ItemName;
 	string ModelName;
 	vec3 scale;
 	vec3 position;

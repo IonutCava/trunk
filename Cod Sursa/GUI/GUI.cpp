@@ -1,4 +1,5 @@
 #include "GUI.h"
+#include <stdarg.h>
 #include "Hardware/Video/GFXDevice.h"
 
 bool ButtonClickTest(Button* b,int x,int y) 
@@ -17,14 +18,14 @@ bool ButtonClickTest(Button* b,int x,int y)
 
 void GUI::draw()
 {
-	GFXDevice::getInstance().toggle2D3D(false);
+	GFXDevice::getInstance().toggle2D(true);
 	
     //------------------------------------------------------------------------
 		drawText();
 		drawButtons();
 	//------------------------------------------------------------------------
 
-	GFXDevice::getInstance().toggle2D3D(true);
+	GFXDevice::getInstance().toggle2D(false);
 		
 }
 
@@ -99,7 +100,7 @@ void GUI::addButton(string id, string text, vec2& position, vec2& dimensions, ve
 	_button[id] = new Button(id,text,position,dimensions,color,callback);
 }
 
-void GUI::addText(string id, vec3 &position, void *font, vec3 &color, char* format, ...)
+void GUI::addText(string id, vec3 &position, Font font, vec3 &color, char* format, ...)
 {
 	va_list args;
 	string fmt_text;
@@ -113,7 +114,7 @@ void GUI::addText(string id, vec3 &position, void *font, vec3 &color, char* form
 	text = NULL;
     va_end(args);
 
-	Text *t = new Text(id,fmt_text,position,font,color);
+	Text *t = new Text(id,fmt_text,position,(void*)font,color);
 	_resultText = _text.insert(pair<string,Text*>(id,t));
 	if(!_resultText.second) (_resultText.first)->second = t;
 	fmt_text.empty();

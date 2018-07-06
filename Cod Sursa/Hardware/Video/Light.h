@@ -11,6 +11,7 @@ public:
 	Light(U32 slot);
 	void update();
 	void setLightProperties(const string& name, vec4 values);
+	vec4 getDiffuseColor() {return _lightProperties["diffuse"];}
 
 private:
 	tr1::unordered_map<string,vec4> _lightProperties;

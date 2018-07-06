@@ -1,5 +1,6 @@
 #include "Frustum.h"
 #include "resource.h"
+#include "Hardware/Video/GFXDevice.h"
 
 bool Frustum::ContainsPoint(const vec3& point) const
 {
@@ -82,11 +83,10 @@ void Frustum::Extract(const vec3& eye)
 	m_EyePos = eye;
 
 
-	glGetFloatv( GL_MODELVIEW_MATRIX, m_mtxMV.mat );	
+	m_mtxMV = GFXDevice::getInstance().getModelViewMatrix();
+	m_mtxProj = GFXDevice::getInstance().getProjectionMatrix();
 	m_mtxMV.inverse(m_mtxMVinv);						
-	glGetFloatv( GL_PROJECTION_MATRIX, m_mtxProj.mat );	
-
-
+	
 	F32 t;
 
 	

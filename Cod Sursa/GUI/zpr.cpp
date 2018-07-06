@@ -1,3 +1,5 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "zpr.h"
 #include "GUI.h"
 
@@ -12,13 +14,6 @@ namespace ZPR
 {
 ParamHandler &par = ParamHandler::getInstance();
 static F32 ReferencePoint[4] = { 0,0,0,0};
-
-D32 _left   = 0.0;
-D32 _right  = 0.0;
-D32 _bottom = 0.0;
-D32 _top    = 0.0;
-D32 _zNear  = 0.01f;
-D32 _zFar   = 7000.0f;
 
 static int		gMouseX = 0;
 static int		gMouseY = 0;
@@ -36,8 +31,6 @@ static D32 _dragPosX  = 0.0;
 static D32 _dragPosY  = 0.0;
 static D32 _dragPosZ  = 0.0;
 static F32 ratio;
-F32 x=0.0f,y=1.75f,z=5.0f;
-F32 lx=0.0f,ly=0.0f,lz=-1.0f;
 
 void Init()
 {
@@ -46,39 +39,15 @@ void Init()
 	glutKeyboardFunc(Keyboard);
 	glutKeyboardUpFunc(KeyboardUp);
     glutMouseFunc(Mouse);
-    glutReshapeFunc(Reshape);
+	
 	glutIgnoreKeyRepeat(1);
 	glutSpecialFunc(SpecialKeyboard);
 	glutSpecialUpFunc(SpecialUpKeyboard);
-	par.setParam("zNear",_zNear);
-	par.setParam("zFar",_zFar);
 }
 
 void Reshape(int w,int h)
 {
-	Engine::getInstance().setWindowWidth(w);
-    Engine::getInstance().setWindowHeight(h);
-    _top    =  1.0;
-    _bottom = -1.0;
-    _left   = -(D32)w/(D32)h;
-    _right  = -_left;
-
-	ratio = 1.0f * w / h;
-	// Reset the coordinate system before modifying
-	glMatrixMode( GL_PROJECTION );
-	glLoadIdentity();
 	
-	// Set the viewport to be the entire window
-    glViewport(0, 0, w, h);
-
-	// Set the clipping volume
-	gluPerspective(60,ratio,_zNear,_zFar);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	gluLookAt(x, y, z, 
-		  	x + lx,y + ly,z + lz,
-			0.0f,1.0f,0.0f);
 }
 
 static void Mouse(int button, int state, int x, int y)

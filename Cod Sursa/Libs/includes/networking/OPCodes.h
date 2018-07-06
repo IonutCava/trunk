@@ -7,10 +7,11 @@ enum Opcodes
     CMSG_PING						         = 0x001,
 	SMSG_PONG								 = 0x002,
 	CMSG_REQUEST_DISCONNECT					 = 0x003,
-	CMSG_GEOMERTY_LIST                       = 0x004,
+	CMSG_GEOMETRY_LIST                       = 0x004,
 	SMSG_GEOMETRY_APPEND					 = 0x005,
-	SMSG_DISCONNECT							 = 0x006,
-	NUM_MSG_TYPES							 = 0x007
+	CMSG_REQUEST_GEOMETRY					 = 0x006,
+	SMSG_DISCONNECT							 = 0x007,
+	NUM_MSG_TYPES							 = 0x008
 };
 
 #endif;

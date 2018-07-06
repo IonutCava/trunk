@@ -13,16 +13,16 @@ class TerrainChunk
 {
 public:
 	void Destroy();
-	int  DrawGround(GLuint lod);
-	void DrawGrass(GLuint lod, F32 d);
-	void DrawTrees(GLuint lod, F32 d);
-	int  DrawObjects(GLuint lod);
+	int  DrawGround(U32 lod);
+	void DrawGrass(U32 lod, F32 d);
+	void DrawTrees(U32 lod, F32 d);
+	int  DrawObjects(U32 lod);
 	void Load(U32 depth, ivec2 pos, ivec2 HMsize);
 
-	inline vector<GLuint>&				getIndiceArray(GLuint lod)	{return m_tIndice[lod];}
-	inline vector<GLuint>&				getGrassIndiceArray()		{return m_tGrassIndice;}
-	inline vector<DVDFile*>&	     	getObjectsArray()			{return m_tObject;}
-	inline vector<DVDFile >&            getTreeArray()              {return m_tTrees;}
+	inline vector<U32>&				getIndiceArray(U32 lod)	{return m_tIndice[lod];}
+	inline vector<U32>&				getGrassIndiceArray()		{return m_tGrassIndice;}
+	inline vector<DVDFile*>&	   	getObjectsArray()			{return m_tObject;}
+	inline vector<DVDFile >&        getTreeArray()              {return m_tTrees;}
 	void								addObject(DVDFile* obj);
 	void								addTree(vec3 pos, F32 rotation, F32 scale);
 	TerrainChunk() {}

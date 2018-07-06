@@ -1,6 +1,5 @@
 #include "Water.h"
 #include "Managers/ResourceManager.h"
-#include "TextureManager/Texture2D.h"
 #include "Rendering/common.h"
 #include "Hardware/Video/GFXDevice.h"
 
@@ -25,11 +24,8 @@ bool WaterPlane::unload()
 
 void WaterPlane::draw(FrameBufferObject& _fbo)
 {
-	//ToDo:  Remove OpenGL commands:
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
+	RenderState s(false,true,true,true);
+	GFXDevice::getInstance().setRenderState(s);
 
 
 	_fbo.Bind(0);
@@ -47,9 +43,8 @@ void WaterPlane::draw(FrameBufferObject& _fbo)
 		_shader->Uniform("bbox_max",_plane->_br);
 
 	GFXDevice::getInstance().drawQuad3D(_plane);
+
 	_shader->unbind();
 	_texture->Unbind(1);
 	_fbo.Unbind(0);
-
-	glPopAttrib();
 }

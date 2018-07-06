@@ -43,11 +43,16 @@ public:
    inline vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
 
+   inline vector<Light*>& getLights() {return _lights;}
+   inline vector<Event*>& getEvents() {return _events;}
+
    void addModel(FileData& model) {ModelDataArray.push_back(model);}
    void addTerrain(const TerrainInfo& ter) {TerrainInfoArray.push_back(ter);}
    void addPatch(vector<FileData>& data);
    void clean();
+
 protected:
+
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
 
@@ -55,7 +60,7 @@ protected:
 	vector<DVDFile*>::iterator ModelIterator;
 
 	//Datablocks for models,vegetation and terrains
-	vector<FileData> ModelDataArray;
+	vector<FileData> ModelDataArray, PendingDataArray;
 	vector<FileData> VegetationDataArray;
 	vector<TerrainInfo> TerrainInfoArray;
 	
@@ -76,7 +81,7 @@ protected:
 	void clearEvents(){/*foreach(_events as event) event.end()*/_events.empty();}
 	void clearObjects(){/*foreach(_ModelArray as model) model.unload();*/ ModelArray.empty();}
 
-	void loadModel(FileData& data);
+	bool loadModel(FileData& data);
 
 };
 

@@ -9,14 +9,13 @@
 #include "PhysX/PhysX.h"
 #include "Managers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "TextureManager/Texture2D.h"
 
 void Vegetation::initialize(string grassShader)
 {
 	_grassShader  = _res.LoadResource<Shader>(grassShader);
 	_grassDensity = _grassDensity/_billboardCount;
 	
-	for(U32 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
+	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
 
 	_render = true;
@@ -26,7 +25,6 @@ void Vegetation::initialize(string grassShader)
 void Vegetation::draw(bool drawInReflexion)
 {
 	if(!_render || !_success) return;
-	glEnable(GL_BLEND);
 	_grassShader->bind();
 	_windX = SceneManager::getInstance().getTerrainManager()->getWindDirX();
 	_windZ = SceneManager::getInstance().getTerrainManager()->getWindDirZ();
@@ -34,22 +32,19 @@ void Vegetation::draw(bool drawInReflexion)
 	_time = GETTIME();
 	for(int index = 0; index < _billboardCount; index++)
 	{
-			_grassBillboards[index]->Bind(0);
-			_grassShader->UniformTexture("texDiffuse", 0);
-			_grassShader->Uniform("depth_map_size", 1024);
-			_grassShader->Uniform("time", _time);
-			_grassShader->Uniform("windDirectionX",_windX);
-			_grassShader->Uniform("windDirectionZ",_windZ);
-			_grassShader->Uniform("windSpeed", _windS);
-			_grassShader->Uniform("lod_metric", 1000.0f);
-			_grassShader->Uniform("scale", _grassScale);
-				DrawGrass(index,drawInReflexion);
-			_grassBillboards[index]->Unbind(0);
+		_grassBillboards[index]->Bind(0);
+		_grassShader->UniformTexture("texDiffuse", 0);
+		_grassShader->Uniform("time", _time);
+		_grassShader->Uniform("windDirectionX",_windX);
+		_grassShader->Uniform("windDirectionZ",_windZ);
+		_grassShader->Uniform("windSpeed", _windS);
+		_grassShader->Uniform("scale", _grassScale);
+			DrawGrass(index,drawInReflexion);
+		_grassBillboards[index]->Unbind(0);
 		
 		
 	}
 	_grassShader->unbind();
-	glDisable(GL_BLEND);
 
 	DrawTrees(drawInReflexion);
 }
@@ -108,7 +103,7 @@ bool Vegetation::generateGrass(int index)
 			mat3 matRot;
 			matRot.rotate_z(random(360.0f));
 
-			U32 idx = (GLuint)_grassVBO[index]->getPosition().size();
+			U32 idx = (U32)_grassVBO[index]->getPosition().size();
 
 			QuadtreeNode* node = _terrain.getQuadtree().FindLeaf(vec2(P.x, P.z));
 			assert(node);
@@ -133,7 +128,12 @@ bool Vegetation::generateGrass(int index)
 		}
 	}
 
-	bool ret = _grassVBO[index]->Create(GL_STATIC_DRAW);
+	bool ret = _grassVBO[index]->Create();
+
+	_grassShader->bind();
+		_grassShader->Uniform("depth_map_size", 1024);
+		_grassShader->Uniform("lod_metric", 1000.0f);
+	_grassShader->unbind();
 
 	std::cout << "Generating Grass OK" << std::endl;
 	return ret;
@@ -154,7 +154,7 @@ bool Vegetation::generateTrees()
 		int map_x = (int)(x * _map.w);
 		int map_y = (int)(y * _map.h);
 		ivec3 map_color = _map.getColor(map_x, map_y);
-		if(map_color.green < 25) {
+		if(map_color.green < 55) {
 			k--;
 			continue;
 		}
@@ -183,12 +183,9 @@ void Vegetation::DrawGrass(int index,bool drawInReflexion)
 {
 	if(_grassVBO[index])
 	{
-		glPushAttrib(GL_POLYGON_BIT);
-		glDisable(GL_CULL_FACE);
 		_grassVBO[index]->Enable();
 			_terrain.getQuadtree().DrawGrass(drawInReflexion);
 		_grassVBO[index]->Disable();
-		glPopAttrib();
 	}
 }
 

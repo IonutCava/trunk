@@ -11,7 +11,7 @@ public:
 	Resource* LoadResource(const string& name);
 
 	template<class T>
-	T* LoadResource(const string& name);
+	T* LoadResource(const string& name,bool flag = false);
 
 protected:
 	~ResourceManager() {destroy();}

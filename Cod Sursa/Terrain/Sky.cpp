@@ -1,7 +1,10 @@
+//#include "Hardware/Video/OpenGL/glResources.h"
+
 #include "Sky.h"
 
 #include "Utility/Headers/ParamHandler.h"
 #include "Managers/ResourceManager.h"
+#include "Managers/SceneManager.h"
 #include "Rendering/Camera.h"
 #include "Hardware/Video/GFXDevice.h"
 
@@ -19,6 +22,7 @@ Sky::Sky()
 				location+"skybox_6.jpg "+ 
 				location+"skybox_3.jpg "+
 				location+"skybox_4.jpg");
+
 	_skyShader = ResourceManager::getInstance().LoadResource<Shader>("sky");
 	assert(_skyShader);
 	_init = true;
@@ -57,8 +61,9 @@ void Sky::drawSkyAndSun() const
 	else
 		_sky->getScale() = vec3(1.0f, 1.0f, 1.0f);
 
+	RenderState s(false,true,false,true);
+	GFXDevice::getInstance().setRenderState(s);
 
-	glPushAttrib(GL_ENABLE_BIT);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -67,15 +72,13 @@ void Sky::drawSkyAndSun() const
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
 		_skyShader->Uniform("view_vector", Camera::getInstance().getViewDir());
-
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_LIGHTING);
+	
 		GFXDevice::getInstance().drawSphere3D(_sky);
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
-	glPopAttrib();
-	glClear(GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_DEPTH_BUFFER_BIT);
+	GFXDevice::getInstance().clearBuffers(0x00000100);
 }
 
 void Sky::drawSky() const
@@ -88,7 +91,8 @@ void Sky::drawSky() const
 	else
 		_sky->getScale() = vec3(1.0f,  1.0f, 1.0f);
 
-	glPushAttrib(GL_ENABLE_BIT);
+	RenderState s(false,true,false,true);
+	GFXDevice::getInstance().setRenderState(s);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -97,14 +101,11 @@ void Sky::drawSky() const
 		_skyShader->Uniform("enable_sun", false);
 		_skyShader->Uniform("view_vector", Camera::getInstance().getViewDir());
 
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_LIGHTING);
 		GFXDevice::getInstance().drawSphere3D(_sky);
 	}
 	_skyShader->unbind();
 	_skybox->Unbind(0);
-	glPopAttrib();
-	glClear(GL_DEPTH_BUFFER_BIT);
+//	glClear(GL_DEPTH_BUFFER_BIT);
 
 }
 
@@ -113,18 +114,18 @@ void Sky::drawSun() const
 	if(!_init) return;
 	
 	vec4 color;
-	glGetLightfv(GL_LIGHT0, GL_DIFFUSE, color);
+	color = SceneManager::getInstance().getActiveScene().getLights()[0]->getDiffuseColor();
 	_sun->getColor() = vec3(color.r, color.g, color.b);
 	_sun->getPosition() = vec3(_eyePos.x,_eyePos.y,_eyePos.z);
 
 	GFXDevice::getInstance().enable_MODELVIEW();
+	RenderState s(true,true,false,false);
+	GFXDevice::getInstance().setRenderState(s);
 	_sun->getPosition() = vec3(-_sunVect.x, -_sunVect.y, -_sunVect.z);
-	glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
-		GFXDevice::getInstance().drawSphere3D(_sun);
-		glPopAttrib();
-	glClear(GL_DEPTH_BUFFER_BIT);
+	
+	GFXDevice::getInstance().drawSphere3D(_sun);
+
+//	glClear(GL_DEPTH_BUFFER_BIT);
 
 }
 

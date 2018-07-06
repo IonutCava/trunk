@@ -55,12 +55,26 @@ friend class GUI;
 public:
 	InputText(){}
 };
+
+enum Font
+{
+	STROKE_ROMAN            =   0x0000,
+    STROKE_MONO_ROMAN       =   0x0001,
+    BITMAP_9_BY_15          =   0x0002,
+    BITMAP_8_BY_13          =   0x0003,
+    BITMAP_TIMES_ROMAN_10   =   0x0004,
+    BITMAP_TIMES_ROMAN_24   =   0x0005,
+    BITMAP_HELVETICA_10     =   0x0006,
+    BITMAP_HELVETICA_12     =   0x0007,
+    BITMAP_HELVETICA_18     =   0x0008
+};
+
 SINGLETON_BEGIN( GUI )
 
 public:
 	void draw();
 	void close();
-	void addText(string id, vec3& position, void* font, vec3& color, char* format, ...);
+	void addText(string id, vec3& position, Font font, vec3& color, char* format, ...);
 	void addButton(string id, string text, vec2& position, vec2& dimensions, vec3& color,ButtonCallback callback);
 	void modifyText(string id, char* format, ...);
 

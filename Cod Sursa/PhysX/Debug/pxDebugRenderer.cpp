@@ -1,3 +1,5 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "pxDebugRenderer.h"
 #include "NxDebugRenderable.h"
 #include "resource.h"

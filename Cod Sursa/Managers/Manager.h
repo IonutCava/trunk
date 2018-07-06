@@ -17,7 +17,8 @@ public:
 	void add(const string& name, Resource* res);
 	Resource* add(Resource* data, const std::string& name);
 	Resource* find(const string& name);
-	void remove(const string& name) {_resDB.erase(name);}
+	//ToDo: Fix the following memmory leak -Ionut
+	void remove(const string& name) {/*delete find(name);*/ _resDB.erase(name);}
 	void destroy();
 };
 

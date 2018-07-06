@@ -38,6 +38,8 @@ public:
 	void addPatch(vector<FileData>& data){_scene->addPatch(data);}
 	
 	void findSelection(int x, int y);
+	void deleteSelection();
+
 	void clean(){_scene->clean();}
 private:
 
@@ -46,10 +48,12 @@ private:
 		_scenes.insert(make_pair("MainScene", New MainScene()));
 		_scenes.insert(make_pair("CubeScene", New CubeScene()));
 		_scenes.insert(make_pair("NetworkScene", New NetworkScene()));
+		_currentSelection = NULL;
 	}
 	Scene* _scene;
 	map<string, Scene*> _scenes;
 	map<string, Scene*>::iterator _sceneIter;
+    DVDFile* _currentSelection;
 
 SINGLETON_END()
 

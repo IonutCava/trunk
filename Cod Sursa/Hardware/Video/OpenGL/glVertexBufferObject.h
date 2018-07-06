@@ -7,8 +7,9 @@ class glVertexBufferObject : public VertexBufferObject
 {
 
 public:
-
+	bool        Create();
 	bool		Create(U32 usage);
+
 	void		Destroy();
 
 	

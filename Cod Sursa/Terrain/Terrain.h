@@ -10,7 +10,6 @@
 
 class Shader;
 class Quadtree;
-class Texture2D;
 class VertexBufferObject;
 
 class Terrain : public GraphicResource

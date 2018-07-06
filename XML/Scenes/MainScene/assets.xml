@@ -13,7 +13,7 @@
 
 <pin>
 	<model>models/pin.obj</model>
-	<scale x="1" y="1" z="1" />
+	<scale x="0.3" y="0.3" z="0.3" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>

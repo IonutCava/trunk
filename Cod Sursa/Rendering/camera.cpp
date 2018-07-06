@@ -75,16 +75,16 @@ void Camera::Refresh()
 
 void Camera::RenderLookAt(bool inverty, F32 planey) {
 
-	if(inverty)
-		gluLookAt(	vEye.x,		2.0f*planey-vEye.y,		vEye.z,
-					vCenter.x,	2.0f*planey-vCenter.y,	vCenter.z,
-					-vUp.x,		-vUp.y,					-vUp.z	);
-	else
-
-		gluLookAt(	vEye.x,		vEye.y,		vEye.z,
-					vCenter.x,	vCenter.y,	vCenter.z,
-					vUp.x,		vUp.y,		vUp.z	);
+	vec3 eye = vEye, center = vCenter, up = vUp;
 	
+	if(inverty)
+	{
+		eye.y = 2.0f*planey-vEye.y;
+		center.y = 2.0f*planey-vCenter.y;
+		vUp *= -1;
+	}
+	GFXDevice::getInstance().lookAt(eye,center,up);
+
 	Frustum::getInstance().Extract(vEye);
 }
 
@@ -149,11 +149,7 @@ void Camera::RenderLookAtToCubeMap(const vec3& eye, U32 nFace)
 
 	GFXDevice::getInstance().enable_MODELVIEW();
 	GFXDevice::getInstance().loadIdentityMatrix();
-
-	gluLookAt(	eye.x,						eye.y,						eye.z,
-				TabCenter[nFace].x,	TabCenter[nFace].y,	TabCenter[nFace].z,
-				TabUp[nFace].x,				TabUp[nFace].y,				TabUp[nFace].z		);
-
+	GFXDevice::getInstance().lookAt(eye,TabCenter[nFace],TabUp[nFace]);
 	Frustum::getInstance().Extract(eye);
 }
 

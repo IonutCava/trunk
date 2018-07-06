@@ -57,7 +57,7 @@
 <dwarf>
 	<model>models/dwarf.x</model>
 	<scale x="1" y="1" z="1" />
-	<position x="-120" y="-10" z="20" />
+	<position x="0" y="0" z="-10" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 </dwarf>

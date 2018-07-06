@@ -11,6 +11,27 @@ void DX_API::initHardware()
 void DX_API::closeRenderingApi()
 {
 }
+
+void DX_API::lookAt(const vec3& eye,const vec3& center,const vec3& up)
+{
+}
+
+void DX_API::idle()
+{
+}
+
+mat4 DX_API::getModelViewMatrix()
+{
+	mat4 mat;
+	return mat;
+}
+
+mat4 DX_API::getProjectionMatrix()
+{
+	mat4 mat;
+	return mat;
+}
+
 void DX_API::translate(vec3& pos)
 {
 }
@@ -37,14 +58,6 @@ void DX_API::enableFog(F32 density, F32* color)
 {
 }
 
-void DX_API::pushMatrix()
-{
-}
-
-void DX_API::popMatrix()
-{
-}
-
 void DX_API::enable_MODELVIEW()
 {
 }
@@ -53,7 +66,7 @@ void DX_API::loadIdentityMatrix()
 {
 }
 
-void DX_API::toggle2D3D(bool _3D)
+void DX_API::toggle2D(bool _2D)
 {
 }
 
@@ -66,6 +79,10 @@ void DX_API::drawCharacterToScreen(void* ,char)
 }
 
 void DX_API::drawButton(Button* button)
+{
+}
+
+void DX_API::drawBox3D(vec3 min, vec3 max)
 {
 }
 
@@ -117,6 +134,10 @@ void DX_API::renderModel(DVDFile* const model)
 	}
 	model->getShader()->unbind();
 	//popMatrix();
+}
+
+void DX_API::renderElements(Type t, U32 count, const void* first_element)
+{
 }
 
 void DX_API::setColor(vec4& color)

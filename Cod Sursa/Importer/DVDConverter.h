@@ -16,7 +16,7 @@ public:
 	bool unload();
 	void scheduleDeletion(){_shouldDelete = true;}
 	void cancelDeletion(){_shouldDelete = false;}
-	void clean(){if(_shouldDelete) unload(); delete this;};
+	bool clean();
 private:
 	bool load_threaded();
 

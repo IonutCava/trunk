@@ -4,7 +4,6 @@
 #include "resource.h"
 #include "Utility/Headers/Singleton.h"
 #include "Utility/Headers/MathClasses.h"
-#include "TextureManager/TextureCubemap.h"
 #include "Hardware/Video/ShaderHandler.h"
 #include "Managers/ResourceManager.h"
 #include "Geometry/Predefined/Sphere3D.h"

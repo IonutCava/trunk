@@ -5,7 +5,7 @@
 class Text3D : public Object3D
 {
 public:
-	Text3D(string text) : _text(text),_texture(NULL),_shader(NULL),_font(GLUT_STROKE_ROMAN){}
+	Text3D(string text) : _text(text),_texture(NULL),_shader(NULL),_font(((void *)0x0000)/*GLUT_STROKE_ROMAN*/){}
 	~Text3D(){};
 	bool load(const std::string &name) {_text = name; return true;}
 	bool unload() {_text.clear(); return true;}

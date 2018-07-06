@@ -14,7 +14,7 @@ unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d,
 
 	char head[70];
 	int i,j;
-	GLubyte * img = NULL;
+	U8 * img = NULL;
 
 	FILE * f = fopen(filename.c_str(), "rb");
 
@@ -41,13 +41,13 @@ unsigned char* OpenImagePPM(const std::string& filename, U32& w, U32& h, U32& d,
 				i += sscanf(head, "%d", &d);
 		}
 
-		img = new GLubyte[(size_t)(w) * (size_t)(h) * 3];
+		img = new U8[(size_t)(w) * (size_t)(h) * 3];
 		if(img==NULL) {
 			fclose(f);
 			return 0; 
 		}
 
-		fread(img, sizeof(GLubyte), (size_t)w*(size_t)h*3,f);
+		fread(img, sizeof(U8), (size_t)w*(size_t)h*3,f);
 		fclose(f);
 	}
 	else{
@@ -93,7 +93,7 @@ unsigned char* OpenImageDevIL(const std::string& filename, U32& w, U32& h, U32& 
 	if(d==4) ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
 
    
-    const UBYTE* Pixels = ilGetData();
+    const U8* Pixels = ilGetData();
 
 	unsigned char* img = new unsigned char[(size_t)(w) * (size_t)(h) * (size_t)(d)];
 	memcpy(img, Pixels, (size_t)(w) * (size_t)(h) * (size_t)(d));

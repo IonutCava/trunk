@@ -4,9 +4,7 @@
 #include "resource.h"
 #include "GUI/zpr.h"
 #include "Utility/Headers/Singleton.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Vegetation/Vegetation.h"
-#include "Managers/SceneManager.h"
+//#include "Hardware/Video/GFXDevice.h"
 
 using namespace std;
 
@@ -15,6 +13,7 @@ class Camera;
 class SceneManager;
 class GUI;
 class Terrain;
+class GFXDevice;
 
 SINGLETON_BEGIN( Engine )
 
@@ -42,7 +41,7 @@ public:
    void LoadControls();
    //rendering functions
    void Initialize(int w, int h); //Set up the rendering platform
-   static void Pick(GLint name){}
+   static void Pick(int name){}
    static void DrawSceneStatic();
    void DrawScene();
    void RefreshMetrics();

@@ -2,8 +2,8 @@
 <assets>assets.xml</assets>
 
 <vegetation>
-	<grassVisibility>4000</grassVisibility>
-	<treeVisibility>4000</treeVisibility>
+	<grassVisibility>400</grassVisibility>
+	<treeVisibility>400</treeVisibility>
 </vegetation>
 
 <wind>
@@ -13,5 +13,5 @@
 </wind>
 
 <options>
-	<visibility>200000</visibility>
+	<visibility>1000</visibility>
 </options>

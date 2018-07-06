@@ -1,3 +1,5 @@
+#include "Hardware/Video/OpenGL/glResources.h" //ToDo: Remove this from here -Ionut
+
 #include "Utility/Headers/Guardian.h"
 #include "Keyboard.h"
 #include "PhysX/PhysX.h"
@@ -9,7 +11,7 @@
 
 namespace ZPR
 {
-	UBYTE prevKey;
+	U8 prevKey;
 	static F32 speedFactor = 3;
 
 	void SpecialUpKeyboard(int Key,int x, int y)
@@ -48,10 +50,13 @@ namespace ZPR
 					Engine::getInstance().angleUD = 0.007f + speedFactor/100;
 					Engine::getInstance().tip  += 5.0f;
 					break;
+				case GLUT_KEY_END:
+					SceneManager::getInstance().deleteSelection();
+					break;
 			}
 	}
 
-	void KeyboardUp(UBYTE Key, int x, int y)
+	void KeyboardUp(U8 Key, int x, int y)
 	{
 		if(prevKey != Key)	prevKey = Key;
 		switch( Key)
@@ -71,7 +76,7 @@ namespace ZPR
 		}
 	}
 
-	void Keyboard(UBYTE Key, int x, int y)
+	void Keyboard(U8 Key, int x, int y)
 	{
 		ParamHandler &par = ParamHandler::getInstance();
 		//Acest simplu check verifica daca am apasat o alta tasta fata de cea precedenta
