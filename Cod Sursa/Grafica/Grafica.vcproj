@@ -672,6 +672,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\Hardware\Network\Session.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\Hardware\Network\Session.h"
 					>
 				</File>

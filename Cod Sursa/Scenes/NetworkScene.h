@@ -16,8 +16,12 @@ public:
 
 	void processEvents(F32 time);
 	void processInput();
+private: 
+	void test();
+
 private:
 	vector<F32> _eventTimers;
+
 };
 
 #endif

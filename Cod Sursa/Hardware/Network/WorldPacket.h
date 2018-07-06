@@ -1,12 +1,11 @@
 #ifndef MANGOSSERVER_WORLDPACKET_H
 #define MANGOSSERVER_WORLDPACKET_H
 
-//#include "Common.h"
 #include "ByteBuffer.h"
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
 
-
-// Note: m_opcode and size stored in platfom dependent format
-// ignore endianess until send, and converted at receive
 class WorldPacket : public ByteBuffer
 {
     public:
@@ -27,10 +26,19 @@ class WorldPacket : public ByteBuffer
             m_opcode = opcode;
         }
 
-        U16 GetOpcode() const { return m_opcode; }
+        U16 getOpcode() const { return m_opcode; }
+
         void SetOpcode(U16 opcode) { m_opcode = opcode; }
 
-    protected:
+ 		template <class Archive>
+		void serialize(Archive& ar,  unsigned int version  )
+		{
+			ar & _rpos;
+			ar & _wpos;
+			ar & m_opcode;
+			ar & _storage;
+		}
+   protected:
         U16 m_opcode;
 };
 

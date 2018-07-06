@@ -3,8 +3,11 @@
 #include "resource.h"
 #include <unordered_map>
 #include "Utility/Headers/Singleton.h"
+#include <boost/function.hpp>
 
-typedef void (*ButtonCallback)();
+//typedef void (*ButtonCallback)();
+typedef boost::function0<void> ButtonCallback;
+
 
 class Text 
 {

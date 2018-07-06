@@ -19,7 +19,6 @@
 #ifndef _BYTEBUFFER_H
 #define _BYTEBUFFER_H
 
-//#include "Common.h"
 #include "ByteConverter.h"
 
 class ByteBufferException
@@ -33,8 +32,6 @@ class ByteBufferException
 
         void PrintPosError() const
         {
-           // sLog.outError("Attempted to %s in ByteBuffer (pos: " SIZEFMTD " size: "SIZEFMTD") value with size: " SIZEFMTD,
-           //     (add ? "put" : "get"), pos, size, esize);
         }
     private:
         bool add;

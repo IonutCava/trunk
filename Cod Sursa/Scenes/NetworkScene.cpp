@@ -40,8 +40,8 @@ void NetworkScene::processEvents(F32 time)
 
 	if (time - _eventTimers[2] >= ServerPing)
 	{
-		GUI::getInstance().modifyText("serverMessage","Server says: %s",ASIO::getInstance().getData().c_str());
 		GUI::getInstance().modifyText("statusText", (char*)par.getParam<string>("asioStatus").c_str());
+		GUI::getInstance().modifyText("serverMessage",(char*)par.getParam<string>("serverResponse").c_str());
 		_eventTimers[2] += ServerPing;
 	}
 
@@ -55,14 +55,19 @@ bool NetworkScene::unload()
 bool NetworkScene::load(const string& name)
 {
 	GFXDevice::getInstance().resizeWindow(640,384);
+	ASIO& asio = ASIO::getInstance();
+	ParamHandler::getInstance().setParam("serverResponse",string("waiting"));
 	bool state = loadResources(true);
 	return state;
 }
 
-void test()
+void NetworkScene::test()
 {
-	cout << "CLICKED :D " << endl;
+	WorldPacket p(CMSG_PING);
+	p << (U32)GETTIME();
+	ASIO::getInstance().sendPacket(p);
 }
+
 bool NetworkScene::loadResources(bool continueOnErrors)
 {
 	GUI& gui = GUI::getInstance();
@@ -95,7 +100,8 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								"");
 
 	gui.addButton("getPing", "ping me", vec2(60 , Engine::getInstance().getWindowHeight()/1.1f),
-									    vec2(100,25),vec3(0.6f,0.2f,0.4f), test);
+										vec2(100,25),vec3(0.6f,0.2f,0.4f),
+										boost::bind(&NetworkScene::test,this));
 
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time

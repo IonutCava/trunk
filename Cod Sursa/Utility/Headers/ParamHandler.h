@@ -21,6 +21,7 @@
 #include "resource.h"
 #include "Utility/Headers/Singleton.h"
 #include <boost/any.hpp>
+#include <boost/thread/thread.hpp>
 #include <unordered_map>
 
 using namespace std;
@@ -28,17 +29,12 @@ using boost::any_cast;
 
 SINGLETON_BEGIN (ParamHandler)
 
-private:
-	bool _logState;
-	tr1::unordered_map<string, boost::any> _params;
-	typedef std::tr1::unordered_map<string, boost::any> params;
-	pair<tr1::unordered_map<string, boost::any>::iterator, bool> _result;
-
 public:
 
 	template <class T>	
 	T getParam(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 			return it->second;
@@ -49,6 +45,7 @@ public:
 	template<>
 	F32 getParam<F32>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -67,6 +64,7 @@ public:
 	template<>
 	D32 getParam<D32>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -85,6 +83,7 @@ public:
 	template<>
 	U32 getParam<U32>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -104,6 +103,7 @@ public:
 	template<>
 	int getParam<int>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -122,6 +122,7 @@ public:
 	template<>
 	bool getParam<bool>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -140,6 +141,7 @@ public:
 	template<>
 	const char* getParam<const char*>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -158,6 +160,7 @@ public:
 	template<>
 	string getParam<string>(string name)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		params::iterator it = _params.find(name);
 		if(it != _params.end())
 		{
@@ -175,6 +178,7 @@ public:
 
 	void setParam(string name, const boost::any& value)
 	{
+		boost::mutex::scoped_lock  lock(mutex_);
 		_result = _params.insert(pair<string,boost::any>(name,value));
 		if(!_result.second) (_result.first)->second = value;
 		if (_logState) printOutput(name,value,_result.second);
@@ -207,7 +211,12 @@ private:
 		else cout << "unconvertible" << value.type().name();
 		cout << endl;
 	}
-
+private:
+	bool _logState;
+	tr1::unordered_map<string, boost::any> _params;
+	typedef std::tr1::unordered_map<string, boost::any> params;
+	pair<tr1::unordered_map<string, boost::any>::iterator, bool> _result;
+	boost::mutex mutex_;
  
 SINGLETON_END()
 
