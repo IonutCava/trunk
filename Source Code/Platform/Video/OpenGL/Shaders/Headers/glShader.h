@@ -106,7 +106,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     bool _skipIncludes;
     /// The API dependent object handle. Not thread-safe!
     U32 _shader;
-    std::atomic_bool _compiled;
+    std::atomic_flag _compiled = ATOMIC_FLAG_INIT;
     vector<stringImpl> _usedAtoms;
 
     //extra entry for "common" location

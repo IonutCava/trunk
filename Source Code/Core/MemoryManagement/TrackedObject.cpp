@@ -4,8 +4,11 @@
 
 namespace Divide {
 
-TrackedObject::TrackedObject() : GUIDWrapper(), _refCount(1) {
+TrackedObject::TrackedObject() 
+    : GUIDWrapper()
+{
     /// On creation, it only has a reference count of 1
+    _refCount.store(1);
 }
 
 TrackedObject::~TrackedObject() {
@@ -26,11 +29,11 @@ void TrackedObject::AddRef() {
     }
 
     /// increase our ref count
-    ++_refCount;
+    _refCount.fetch_add(1u);
 }
 
 bool TrackedObject::SubRef() {
-    assert(_refCount > 0);
+    assert(_refCount.load() > 0);
 
     /// For each object in our dependency map
     std::list<TrackedObject*>::iterator it;
@@ -47,8 +50,7 @@ bool TrackedObject::SubRef() {
         }
     }
 
-    --_refCount;
-    return (_refCount <= 0);
+    return _refCount.fetch_sub(1u) <= 1;
 }
 
 void TrackedObject::REGISTER_TRACKED_DEPENDENCY(TrackedObject* const obj) {

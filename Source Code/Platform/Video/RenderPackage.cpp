@@ -159,6 +159,11 @@ const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
     return _descriptorSets[index]._set;
 }
 
+DescriptorSet& RenderPackage::descriptorSet(I32 index) {
+    DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
+    return _descriptorSets[index]._set;
+}
+
 void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     _descriptorSets[index]._set = descriptorSets;
@@ -175,23 +180,23 @@ void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsComman
 }
 
 void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
-    const vectorEASTL<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
-    for (const std::shared_ptr<GFX::Command>& cmd : commands) {
-        switch (cmd->_type) {
+   const vectorEASTL<GFX::CommandBuffer::CommandEntry>& commands = commandBuffer();
+    for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
+        switch (cmd.first) {
             case GFX::CommandType::DRAW_COMMANDS: {
-                addDrawCommand(static_cast<GFX::DrawCommand&>(*cmd.get()));
+                addDrawCommand(static_cast<const GFX::DrawCommand&>(commandBuffer.getCommand(cmd)));
             } break;
             case GFX::CommandType::BIND_PIPELINE: {
-                addPipelineCommand(static_cast<GFX::BindPipelineCommand&>(*cmd.get()));
+                addPipelineCommand(static_cast<const GFX::BindPipelineCommand&>(commandBuffer.getCommand(cmd)));
             } break;
             case GFX::CommandType::SET_CLIP_PLANES: {
-                addClipPlanesCommand(static_cast<GFX::SetClipPlanesCommand&>(*cmd.get()));
+                addClipPlanesCommand(static_cast<const GFX::SetClipPlanesCommand&>(commandBuffer.getCommand(cmd)));
             } break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                addPushConstantsCommand(static_cast<GFX::SendPushConstantsCommand&>(*cmd.get()));
+                addPushConstantsCommand(static_cast<const GFX::SendPushConstantsCommand&>(commandBuffer.getCommand(cmd)));
             } break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                addDescriptorSetsCommand(static_cast<GFX::BindDescriptorSetsCommand&>(*cmd.get()));
+                addDescriptorSetsCommand(static_cast<const GFX::BindDescriptorSetsCommand&>(commandBuffer.getCommand(cmd)));
             } break;
             default:
             case GFX::CommandType::COUNT: {

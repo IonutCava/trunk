@@ -54,7 +54,7 @@ inline bool TransformValues::operator!=(const TransformValues& other) const {
 
 /// Set the local X,Y and Z position
 inline void Transform::setPosition(const vec3<F32>& position) {
-    _dirty = true;
+    _notDirty.clear();
     _transformValues._translation.set(position);
 }
 /// Set the object's position on the X axis
@@ -79,8 +79,8 @@ inline void Transform::setPositionZ(const F32 positionZ) {
 
 /// Set the local X,Y and Z scale factors
 inline void Transform::setScale(const vec3<F32>& scale) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
     _transformValues._scale.set(scale);
 }
 
@@ -98,22 +98,22 @@ inline void Transform::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32
 
 /// Set the local orientation so that it matches the specified quaternion.
 inline void Transform::setRotation(const Quaternion<F32>& quat) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
     _transformValues._orientation.set(quat);
     _transformValues._orientation.normalize();
 }
 
 /// Add the specified translation factors to the current local position
 inline void Transform::translate(const vec3<F32>& axisFactors) {
-    _dirty = true;
+    _notDirty.clear();
     _transformValues._translation += axisFactors;
 }
 
 /// Add the specified scale factors to the current local position
 inline void Transform::scale(const vec3<F32>& axisFactors) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
     _transformValues._scale *= axisFactors;
 }
 
@@ -138,8 +138,8 @@ inline void Transform::rotate(const Quaternion<F32>& quat) {
 
 /// Perform a SLERP rotation towards the specified quaternion
 inline void Transform::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
     _transformValues._orientation.slerp(quat, to_F32(deltaTime));
     _transformValues._orientation.normalize();
 }
@@ -229,8 +229,8 @@ inline bool Transform::isUniformScale() const {
 }
 
 inline void Transform::clone(Transform* const transform) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
 
     transform->getValues(_transformValues);
 }
@@ -241,8 +241,8 @@ inline void Transform::getValues(TransformValues& valuesOut) const {
 
 /// Set position, scale and rotation based on the specified transform values
 inline void Transform::setValues(const TransformValues& values) {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
 
     _transformValues._scale.set(values._scale);
     _transformValues._translation.set(values._translation);

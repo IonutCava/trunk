@@ -203,14 +203,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
-    inline TaskPool& taskPool() {
-        return _taskPool;
-    }
-
-    inline const TaskPool& taskPool() const {
-        return _taskPool;
-    }
-
     ResourceCache& resourceCache() {
         assert(_resCache != nullptr);
         return *_resCache;
@@ -279,8 +271,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     std::unique_ptr<SceneManager>      _sceneManager;
     std::unique_ptr<RenderPassManager> _renderPassManager;
     LoopTimingData _timingData;
-
-    TaskPool _taskPool;
 
     Time::ProfileTimer& _appLoopTimer;
     Time::ProfileTimer& _frameTimer;

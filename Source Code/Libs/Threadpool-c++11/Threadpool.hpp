@@ -91,10 +91,11 @@ namespace ctpl {
 
         // number of idle threads
         inline size_t n_idle() const { return ma_n_idle; }
-
+        inline size_t n_pending() { return this->m_nPending; }
         // get a specific thread
         inline std::thread & get_thread(size_t i) { return *m_threads.at(i); }
 
+        inline bool idle() { return m_queue.empty(); }
 
         // restart the pool
         void restart();
@@ -118,6 +119,7 @@ namespace ctpl {
                     );
                 auto _f = new std::function<void(size_t id)>([pck](size_t id) { (*pck)(id); });
 
+                ++this->m_nPending;
                 m_queue.push(_f);
                 std::unique_lock<std::mutex> lock(m_mutex);
                 m_cond.notify_one();
@@ -135,6 +137,7 @@ namespace ctpl {
                 auto pck = std::make_shared<std::packaged_task< decltype(f(0)) (size_t) >>(std::forward<F>(f));
                 auto _f = new std::function<void(size_t id)>([pck](size_t id) { (*pck)(id); });
 
+                ++this->m_nPending;
                 m_queue.push(_f);
                 std::unique_lock<std::mutex> lock(m_mutex);
                 m_cond.notify_one();
@@ -172,7 +175,7 @@ namespace ctpl {
         std::atomic<bool>    ma_interrupt, ma_kill;
         std::atomic<size_t>  ma_n_idle;
         std::atomic<size_t>  m_nThreads;
-
+        std::atomic<size_t>  m_nPending;  // how many tasks are waiting
         std::mutex               m_mutex;
         std::condition_variable  m_cond;
     };

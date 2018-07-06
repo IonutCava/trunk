@@ -254,8 +254,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
     if (_shaderProgramID == GLUtil::_invalidObjectID) {
         if (Config::USE_SEPARATE_SHADER_OBJECTS) {
             glCreateProgramPipelines(1, &_shaderProgramIDTemp);
-        }
-        else {
+        } else {
             _shaderProgramIDTemp = glCreateProgram();
         }
 
@@ -286,7 +285,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
             glUseProgramStages(_shaderProgramIDTemp, _stageMask, _shaderProgramIDTemp);
         }
         // Link the program
-        link();
+        _linked = link();
     }
 
     // This was once an atomic swap. Might still be in the future
@@ -304,7 +303,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 }
 
 /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
-void glShaderProgram::link() {
+bool glShaderProgram::link() {
     Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), name().c_str(), _shaderProgramIDTemp);
 
     // Link the program
@@ -326,12 +325,14 @@ void glShaderProgram::link() {
         MemoryManager::SAFE_DELETE(_lockManager);
     } else {
         Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), name().c_str(), getLog().c_str());
-        // The linked flag is set to true only if linking succeeded
-        _linked = true;
         if (Config::ENABLE_GPU_VALIDATION) {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, name().c_str());
         }
+        // The linked flag is set to true only if linking succeeded
+        return true;
     }
+
+    return false;
 }
 
 bool glShaderProgram::loadFromBinary() {
@@ -682,7 +683,7 @@ I32 glShaderProgram::cachedValueUpdate(const GFX::PushConstant& constant) {
     return binding;
 }
 
-void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vector<char>& values, bool flag) const {
+void glShaderProgram::Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const {
     GLsizei byteCount = (GLsizei)values.size();
     switch (type) {
         case GFX::PushConstantType::BOOL:

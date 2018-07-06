@@ -78,6 +78,7 @@ struct Command {
         : _type(type)
     {
     }
+    virtual ~Command() = default;
 
     CommandType _type = CommandType::COUNT;
 };
@@ -103,7 +104,7 @@ struct DrawCommand : Command {
     {
     }
 
-    vector<GenericDrawCommand> _drawCommands;
+    vectorEASTL<GenericDrawCommand> _drawCommands;
 };
 
 struct SetViewportCommand : Command {

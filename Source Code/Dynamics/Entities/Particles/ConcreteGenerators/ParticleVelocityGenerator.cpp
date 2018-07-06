@@ -12,7 +12,7 @@ void ParticleVelocityGenerator::generate(TaskHandle& packagedTasksParent,
     vec3<F32> min = _sourceOrientation * _minStartVel.xyz();
     vec3<F32> max = _sourceOrientation * _maxStartVel.xyz();
     
-    TaskPool& tp = packagedTasksParent._task->getOwningPool();
+    TaskPool& tp = packagedTasksParent.getOwningPool();
 
     typedef decltype(std::begin(p._velocity)) iter_t;
     for_each_interval<iter_t>(std::begin(p._velocity) + startIndex,
@@ -20,14 +20,15 @@ void ParticleVelocityGenerator::generate(TaskHandle& packagedTasksParent,
                               ParticleData::g_threadPartitionSize,
                               [&](iter_t from, iter_t to)
     {
-        packagedTasksParent.addChildTask(CreateTask(tp,
+        CreateTask(tp,
+            &packagedTasksParent,
             [from, to, min, max](const Task& parentTask) mutable
             {
                 std::for_each(from, to, [&](iter_t::value_type& velocity)
                 {
                     velocity.set(Random(min, max));
                 });
-            }))->startTask(Task::TaskPriority::HIGH);
+            }).startTask();
         });
 }
 };

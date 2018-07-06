@@ -36,16 +36,17 @@ bool PipelineDescriptor::operator!=(const PipelineDescriptor &other) const {
 }
 
 Pipeline::Pipeline(const PipelineDescriptor& descriptor)
-    : _descriptor(descriptor)
+    : _descriptor(descriptor),
+      _cachedHash(descriptor.getHash())
 {
 }
 
 bool Pipeline::operator==(const Pipeline &other) const {
-    return _descriptor == other._descriptor;
+    return _cachedHash == other._cachedHash;
 }
 
 bool Pipeline::operator!=(const Pipeline &other) const {
-    return _descriptor != other._descriptor;
+    return _cachedHash != other._cachedHash;
 }
 
 }; //namespace Divide

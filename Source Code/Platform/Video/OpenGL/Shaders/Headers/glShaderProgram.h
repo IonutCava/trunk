@@ -121,7 +121,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     /// Linking a shader program also sets up all pre-link properties for the
     /// shader (varying locations, attrib bindings, etc)
-    void link();
+    bool link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
@@ -141,7 +141,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void reuploadUniforms();
 
     I32 cachedValueUpdate(const GFX::PushConstant& constant);
-    void Uniform(I32 binding, GFX::PushConstantType type, const vector<char>& values, bool flag) const;
+    void Uniform(I32 binding, GFX::PushConstantType type, const vectorEASTL<char>& values, bool flag) const;
 
     /// This is used to set all of the subroutine indices for the specified
     /// shader stage for this program
@@ -155,7 +155,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     bool isBound() const;
 
     template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* castData(const vector<char>& values) const;
+    const T_out* castData(const vectorEASTL<char>& values) const;
 
    private:
 

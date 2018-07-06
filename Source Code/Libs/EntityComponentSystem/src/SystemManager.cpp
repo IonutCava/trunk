@@ -84,6 +84,16 @@ namespace ECS
 			}
 		}
 	}
+    void SystemManager::OnUpdateLoop()
+    {
+        for (ISystem* system : this->m_SystemWorkOrder)
+        {
+            if (system->m_Enabled == true)
+            {
+                system->OnUpdateLoop();
+            }
+        }
+    }
 
 	void SystemManager::UpdateSystemWorkOrder()
 	{

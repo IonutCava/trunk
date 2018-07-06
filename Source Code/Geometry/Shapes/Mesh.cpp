@@ -55,7 +55,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     SceneGraphNodeDescriptor subMeshDescriptor;
     subMeshDescriptor._isSelectable = true;
     subMeshDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-    subMeshDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    subMeshDescriptor._usageContext = sgn.usageContext();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
         subMeshDescriptor._node = submesh;

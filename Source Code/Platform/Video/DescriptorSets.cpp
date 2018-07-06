@@ -82,8 +82,8 @@ namespace Divide {
         auto ourTextureData = _textureData.textures();
         auto otherTextureData = other._textureData.textures();
 
-        for (const std::pair<TextureData, U8>& ourTexture : ourTextureData) {
-            for (const std::pair<TextureData, U8>& otherTexture : otherTextureData) {
+        for (const eastl::pair<TextureData, U8>& ourTexture : ourTextureData) {
+            for (const eastl::pair<TextureData, U8>& otherTexture : otherTextureData) {
                 // Make sure the bindings are different
                 if (ourTexture.second == otherTexture.second && ourTexture.first != otherTexture.first) {
                     return false;
@@ -92,9 +92,9 @@ namespace Divide {
         }
 
         // Merge stage
-        _shaderBuffers.insert(std::cend(_shaderBuffers),
-            std::cbegin(other._shaderBuffers),
-            std::cend(other._shaderBuffers));
+        _shaderBuffers.insert(eastl::cend(_shaderBuffers),
+            eastl::cbegin(other._shaderBuffers),
+            eastl::cend(other._shaderBuffers));
 
         // The incoming texture data is either identical or new at this point, so only insert unique items
         insert_unique(_textureData.textures(), other._textureData.textures());

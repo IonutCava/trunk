@@ -34,13 +34,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_H_
 
 #include "Commands.h"
+#include <boost/poly_collection/base_collection.hpp>
 
 namespace Divide {
 
 namespace GFX {
 
-class CommandBuffer {
+class CommandBuffer : protected NonCopyable {
     friend class CommandBufferPool;
+
+  public:
+    typedef std::pair<GFX::CommandType, vec_size> CommandEntry;
 
   public:
     CommandBuffer();
@@ -52,7 +56,7 @@ class CommandBuffer {
 
     bool validate() const;
 
-    inline void add(const CommandBuffer& other);
+    void add(const CommandBuffer& other);
 
     void clean();
 
@@ -60,10 +64,13 @@ class CommandBuffer {
 
     // Return true if merge is successful
     bool tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const;
-    inline vectorEASTL<std::shared_ptr<Command>>& operator()();
-    inline const vectorEASTL<std::shared_ptr<Command>>& operator()() const;
 
-    inline vec_size size() const { return _data.size(); }
+    const GFX::Command& getCommand(const CommandEntry& commandEntry) const;
+
+    inline vectorEASTL<CommandEntry>& operator()();
+    inline const vectorEASTL<CommandEntry>& operator()() const;
+
+    inline vec_size size() const { return _commandOrder.size(); }
     inline void clear();
     inline bool empty() const;
 
@@ -71,14 +78,15 @@ class CommandBuffer {
     stringImpl toString() const;
 
   protected:
-    void toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const;
+    void toString(const GFX::Command& cmd, I32& crtIndent, stringImpl& out) const;
     bool resetMerge(GFX::CommandType type) const;
-  protected:
-    /*std::array<vectorFast<std::shared_ptr<Command>>, to_base(GFX::CommandType::COUNT)> _commands;
-    vectorFast<std::pair<GFX::CommandType, vec_size>> _commandOrder;*/
 
-    typedef vectorEASTL<std::shared_ptr<Command>> CommandData;
-    CommandData _data;
+    const std::type_info& getType(GFX::CommandType type) const;
+    GFX::Command* getCommandInternal(const CommandEntry& commandEntry);
+    const GFX::Command* getCommandInternal(const CommandEntry& commandEntry) const;
+  protected:
+      vectorEASTL<CommandEntry> _commandOrder;
+      boost::base_collection<GFX::Command> _commands;
 };
 
 void BeginRenderPass(CommandBuffer& buffer, const BeginRenderPassCommand& cmd);

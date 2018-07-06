@@ -87,6 +87,11 @@ namespace Divide {
     void SGNComponent<T>::PostUpdate(const U64 deltaTime) {
         ACKNOWLEDGE_UNUSED(deltaTime);
     }
+
+    template<typename T>
+    void SGNComponent<T>::OnUpdateLoop() {
+
+    }
 };//namespace Divide
 
 #endif

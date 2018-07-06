@@ -84,7 +84,7 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
     mat4<F32> getMatrix() override;
-
+  
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified matrix
     void setTransforms(const mat4<F32>& transform);
@@ -112,10 +112,10 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     mat4<F32> _worldMatrix;
     /// _dirty is set to true whenever a translation, rotation or scale is
     /// applied
-    std::atomic_bool _dirty;
+    std::atomic_flag _notDirty = ATOMIC_FLAG_INIT;
     /// _rebuildMatrix is true when a rotation or scale is applied to avoid
     /// rebuilding matrices on translation
-    std::atomic_bool _rebuildMatrix;
+    std::atomic_flag _dontRebuildMatrix = ATOMIC_FLAG_INIT;
 };
 
 };  // namespace Divide

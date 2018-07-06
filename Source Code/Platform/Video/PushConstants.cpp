@@ -13,7 +13,7 @@ PushConstants::PushConstants(const GFX::PushConstant& constant)
 {
 }
 
-PushConstants::PushConstants(const vector<GFX::PushConstant>& data)
+PushConstants::PushConstants(const vectorEASTL<GFX::PushConstant>& data)
     : _data(data)
 {
 }
@@ -49,8 +49,8 @@ void PushConstants::clear() {
 }
 
 bool PushConstants::merge(const PushConstants& other) {
-    const vector<GFX::PushConstant>& ourConstants = _data;
-    const vector<GFX::PushConstant>& otherConstants = other._data;
+    const vectorEASTL<GFX::PushConstant>& ourConstants = _data;
+    const vectorEASTL<GFX::PushConstant>& otherConstants = other._data;
 
     // Check stage
     for (const GFX::PushConstant& ourConstant : ourConstants) {

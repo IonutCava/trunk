@@ -4,6 +4,7 @@
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -290,8 +291,8 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     };
 
     // Sort all lights (Sort in parallel by type)
-    _lightUpdateTask = CreateTask(_context.parent().taskPool(), lightUpdate);
-    _lightUpdateTask.startTask(Task::TaskPriority::LOW, 0);
+    _lightUpdateTask = CreateTask(_context.context().taskPool(), lightUpdate);
+    _lightUpdateTask.startTask();
 }
 
 void LightPool::uploadLightData(ShaderBufferLocation lightDataLocation,

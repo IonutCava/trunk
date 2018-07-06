@@ -70,6 +70,7 @@ namespace ECS
         void Update(f32 dt_ms);
 		void PostUpdate(f32 dt_ms);
 
+        void OnUpdateLoop();
 	public:
 
 		SystemManager();

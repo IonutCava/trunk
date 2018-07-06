@@ -98,7 +98,7 @@ namespace ctpl {
     }
 
     // reset all flags
-    void thread_pool::init() { ma_n_idle = 0; ma_kill = false; ma_interrupt = false; }
+    void thread_pool::init() { this->m_nPending = 0; ma_n_idle = 0; ma_kill = false; ma_interrupt = false; }
 
     // each thread pops jobs from the queue until:
     //  - the queue is empty, then it waits (idle)
@@ -119,6 +119,7 @@ namespace ctpl {
             {
                 while (more_tasks) // if there is anything in the queue
                 {
+                    --this->m_nPending;
                     // at return, delete the function even if an exception occurred
                     std::unique_ptr<std::function<void(size_t id)>> func(_f);
                     (*_f)(i);

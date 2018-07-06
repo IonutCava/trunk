@@ -97,13 +97,14 @@ public:
     }
 
     inline size_t getHash() const {
-        return _descriptor.getHash();
+        return _cachedHash;
     }
 
     bool operator==(const Pipeline &other) const;
     bool operator!=(const Pipeline &other) const;
 
 private: //data
+    size_t _cachedHash = 0;
     PipelineDescriptor _descriptor;
     
 

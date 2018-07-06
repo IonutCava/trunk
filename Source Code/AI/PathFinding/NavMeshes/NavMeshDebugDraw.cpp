@@ -122,7 +122,7 @@ void NavMeshDebugDraw::end() {
     }
 }
 
-GFX::CommandBuffer NavMeshDebugDraw::toCommandBuffer() const {
+GFX::CommandBuffer& NavMeshDebugDraw::toCommandBuffer() const {
     return _primitive->toCommandBuffer();
 }
 

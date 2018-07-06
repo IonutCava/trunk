@@ -9,9 +9,9 @@ namespace Divide {
 
 BoundsComponent::BoundsComponent(SceneGraphNode& sgn)
     : SGNComponent(sgn, "BOUNDS"),
-     _boundingBoxDirty(true),
      _ignoreTransform(false)
 {
+    _boundingBoxNotDirty.clear();
     RegisterEventCallback(&BoundsComponent::onTransformUpdated);
     _editorComponent.registerField("BoundingBox", &_boundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
     _editorComponent.registerField("Ref BoundingBox", &_refBoundingBox, EditorComponentFieldType::BOUNDING_BOX, true);
@@ -24,7 +24,7 @@ BoundsComponent::~BoundsComponent()
 }
 
 void BoundsComponent::flagBoundingBoxDirty() {
-    _boundingBoxDirty = true;
+    _boundingBoxNotDirty.clear();
     SceneGraphNode* parent = _parentSGN.getParent();
     if (parent != nullptr) {
         BoundsComponent* bounds = parent->get<BoundsComponent>();
@@ -48,7 +48,7 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
 }
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
-    if (_boundingBoxDirty) {
+    if (!_boundingBoxNotDirty.test_and_set()) {
         _boundingBox.set(_refBoundingBox);
 
         _parentSGN.forEachChild([this](const SceneGraphNode& child) {
@@ -64,8 +64,8 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 
         _boundingSphere.fromBoundingBox(_boundingBox);
         _parentSGN.SendEvent<BoundsUpdated>(GetOwner());
-        _boundingBoxDirty = false;
     }
+
     return _boundingBox;
 }
 

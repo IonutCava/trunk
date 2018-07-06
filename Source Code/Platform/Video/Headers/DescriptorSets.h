@@ -67,7 +67,7 @@ namespace Divide {
         bool operator!=(const ShaderBufferBinding& other) const;
     };
 
-    typedef vector<ShaderBufferBinding> ShaderBufferList;
+    typedef vectorEASTL<ShaderBufferBinding> ShaderBufferList;
 
 
     struct DescriptorSet {

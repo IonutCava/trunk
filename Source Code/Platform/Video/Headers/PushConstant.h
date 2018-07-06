@@ -82,7 +82,7 @@ namespace GFX {
         template<typename T>
         PushConstant(const stringImplFast& binding,
                      PushConstantType type,
-                     const vector<T>& values,
+                     const vectorEASTL<T>& values,
                      bool flag = false)
             : _binding(binding),
               _bindingHash(_ID_RT(binding.c_str())),
@@ -99,7 +99,7 @@ namespace GFX {
         template<>
         PushConstant(const stringImplFast& binding,
                      PushConstantType type,
-                     const vector<bool>& values,
+                     const vectorEASTL<bool>& values,
                      bool flag)
             : _binding(binding),
               _bindingHash(_ID_RT(binding.c_str())),
@@ -109,9 +109,9 @@ namespace GFX {
         {
             _buffer.reserve(values.size());
             if (!_buffer.empty()) {
-                std::transform(std::cbegin(values), std::cend(values),
-                               std::back_inserter(_buffer),
-                               [](bool e) {return to_byte(e ? 1 : 0);});
+                eastl::transform(eastl::cbegin(values), eastl::cend(values),
+                                 eastl::back_inserter(_buffer),
+                                 [](bool e) {return to_byte(e ? 1 : 0);});
             }
         }
 
@@ -145,9 +145,9 @@ namespace GFX {
         {
             _buffer.reserve(N);
             if (!_buffer.empty()) {
-                std::transform(std::cbegin(values), std::cend(values),
-                               std::back_inserter(_buffer),
-                               [](bool e) {return to_byte(e ? 1 : 0);});
+                eastl::transform(std::cbegin(values), std::cend(values),
+                                 eastl::back_inserter(_buffer),
+                                 [](bool e) {return to_byte(e ? 1 : 0);});
             }
         }
 
@@ -177,7 +177,7 @@ namespace GFX {
         U64              _bindingHash;
         stringImplFast   _binding;
         PushConstantType _type = PushConstantType::COUNT;
-        vector<char> _buffer;
+        vectorEASTL<char> _buffer;
         union {
             bool _flag = false;
             bool _transpose;

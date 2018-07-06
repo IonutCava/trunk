@@ -62,10 +62,10 @@ class TaskPool {
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    TaskHandle getTaskHandle(I64 taskGUID);
-    Task& getAvailableTask();
-    void setTaskCallback(const TaskHandle& handle,
-                         const DELEGATE_CBK<void>& callback);
+    Task* createTask(Task* parentTask,
+                     I64 jobIdentifier,
+                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                     const DELEGATE_CBK<void>& onCompletionFunction);
 
     inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -74,8 +74,9 @@ class TaskPool {
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend class Task;
-    void taskStarted(U32 poolIndex, Task::TaskPriority priority);
-    void taskCompleted(U32 poolIndex, Task::TaskPriority priority);
+    friend struct TaskHandle;
+    void taskStarted(size_t poolIndex);
+    void taskCompleted(size_t poolIndex, bool runCallback);
     
     inline ThreadPool& threadPool() {
         assert(_mainTaskPool != nullptr);
@@ -83,12 +84,13 @@ class TaskPool {
     }
 
     void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
-    void runCbkAndClearTask(U32 taskIndex);
+    void runCbkAndClearTask(size_t taskIndex);
 
-    TaskState state(U32 index) const;
+    TaskState state(size_t index) const;
+
   private:
     std::unique_ptr<ThreadPool> _mainTaskPool;
-    boost::lockfree::queue<U32> _threadedCallbackBuffer;
+    boost::lockfree::queue<size_t> _threadedCallbackBuffer;
 
     vector<Task> _tasksPool;
     vector<TaskState> _taskStates;
@@ -101,25 +103,31 @@ class TaskPool {
     U32 _workerThreadCount;
 };
 
-//The following calls are identical to the ones above, but use the specified pool
-//to schedule tasks
-TaskHandle GetTaskHandle(TaskPool& pool,
-                         I64 taskGUID);
+TaskHandle CreateTask(TaskPool& pool,
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 TaskHandle CreateTask(TaskPool& pool,
-                   const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                   const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+                      TaskHandle* parentTask,
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 TaskHandle CreateTask(TaskPool& pool,
-                   I64 jobIdentifier,
-                   const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                   const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+                     I64 jobIdentifier,
+                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                     const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+
+TaskHandle CreateTask(TaskPool& pool,
+                      TaskHandle* parentTask,
+                      I64 jobIdentifier,
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 TaskHandle parallel_for(TaskPool& pool,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        Task::TaskPriority priority = Task::TaskPriority::HIGH,
+                        Task::TaskPriority priority = Task::TaskPriority::DONT_CARE,
                         U32 taskFlags = 0);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);

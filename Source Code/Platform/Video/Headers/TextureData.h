@@ -116,12 +116,12 @@ class TextureDataContainer {
 
       bool set(const TextureDataContainer& other);
       bool addTexture(const TextureData& data, U8 binding);
-      bool addTexture(const std::pair<TextureData, U8 /*binding*/>& textureEntry);
+      bool addTexture(const eastl::pair<TextureData, U8 /*binding*/>& textureEntry);
       bool removeTexture(U8 binding);
       bool removeTexture(const TextureData& data);
 
-      vectorFast<std::pair<TextureData, U8>>& textures();
-      const vectorFast<std::pair<TextureData, U8>>& textures() const;
+      vectorEASTL<eastl::pair<TextureData, U8>>& textures();
+      const vectorEASTL<eastl::pair<TextureData, U8>>& textures() const;
       void clear(bool clearMemory = false);
 
       inline bool operator==(const TextureDataContainer &other) const {
@@ -133,7 +133,7 @@ class TextureDataContainer {
       }
 
     private:
-      vectorFast<std::pair<TextureData, U8 /*binding*/>> _textures;
+      vectorEASTL<eastl::pair<TextureData, U8 /*binding*/>> _textures;
 };
 
 }; //namespace Divide

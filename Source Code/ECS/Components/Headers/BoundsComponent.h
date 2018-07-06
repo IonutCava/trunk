@@ -68,7 +68,7 @@ namespace Divide {
     private:
         std::atomic_bool _boundsChanged;
         std::atomic_bool _ignoreTransform;
-        std::atomic_bool _boundingBoxDirty;
+        std::atomic_flag _boundingBoxNotDirty = ATOMIC_FLAG_INIT;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;

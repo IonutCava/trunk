@@ -33,28 +33,25 @@
 #define _TRIGGER_H_
 
 #include "Graphs/Headers/SceneNode.h"
+#include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
 
 class Unit;
-class Task;
 class ImpostorSphere;
 /// When a unit touches the circle described by
 class Trigger : public SceneNode {
-    typedef std::shared_ptr<Task> Task_ptr;
-
    public:
     explicit Trigger(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Trigger();
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                     SceneState& sceneState) override;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
 
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
     bool check(Unit* const unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
     /// Sets a new Task for this trigger
-    void updateTriggeredTask(Task_ptr triggeredTask);
+    void updateTriggeredTask(TaskHandle& triggeredTask);
     /// Trigger's the Task regardless of position
     bool trigger();
     /// Draw a sphere at the trigger's position
@@ -63,10 +60,9 @@ class Trigger : public SceneNode {
     /// Enable or disable the trigger
     inline void setEnabled(bool state) { _enabled = state; }
     /// Set the callback, the position and the radius of the trigger
-    void setParams(Task_ptr triggeredTask, const vec3<F32>& triggerPosition,
-                   F32 radius);
+    void setParams(TaskHandle& triggeredTask, const vec3<F32>& triggerPosition, F32 radius);
     /// Just update the callback
-    inline void setParams(Task_ptr triggeredTask) {
+    inline void setParams(TaskHandle& triggeredTask) {
         setParams(triggeredTask, _triggerPosition, _radius);
     }
 
@@ -75,7 +71,7 @@ class Trigger : public SceneNode {
 
    private:
     /// The Task to be launched when triggered
-    Task_ptr _triggeredTask;
+    TaskHandle _triggeredTask;
     /// The trigger circle's center position
     vec3<F32> _triggerPosition;
     /// The trigger's radius

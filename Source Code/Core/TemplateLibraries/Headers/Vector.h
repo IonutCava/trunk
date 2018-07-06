@@ -88,6 +88,25 @@ void insert_unique(vector<T, A>& target, const vector<T, A>& source)
         });
 }
 
+
+template<typename T>
+void insert_unique(vectorEASTL<T>& target, const T& item)
+{
+    if (eastl::find(eastl::cbegin(target), eastl::cend(target), item) != eastl::cend(target))
+    {
+        target.push_back(item);
+    }
+
+}
+template<typename T>
+void insert_unique(vectorEASTL<T>& target, const vectorEASTL<T>& source)
+{
+    eastl::for_each(eastl::cbegin(source), eastl::cend(source),
+        [&target](T const& item) {
+        insert_unique(target, item);
+    });
+}
+
 template<typename T, typename A>
 void pop_front(vector<T, A>& vec)
 {

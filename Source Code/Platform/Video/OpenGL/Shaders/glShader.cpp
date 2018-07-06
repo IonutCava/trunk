@@ -47,7 +47,7 @@ glShader::glShader(GFXDevice& context,
      _name(name),
      _type(type)
 {
-    _compiled = false;
+    _compiled.clear();
 
     switch (type) {
         default:
@@ -101,21 +101,20 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
         ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, name(), src);
     }
 
-    _compiled = false;
+    _compiled.clear();
     return true;
 }
 
 bool glShader::compile() {
-    if (_compiled) {
-        return true;
+    if (!_compiled.test_and_set()) {
+        glCompileShader(_shader);
+        if (Config::ENABLE_GPU_VALIDATION) {
+            glObjectLabel(GL_SHADER, _shader, -1, name().c_str());
+        }
+        return validate();
     }
 
-    glCompileShader(_shader);
-    _compiled = true;
-    if (Config::ENABLE_GPU_VALIDATION) {
-        glObjectLabel(GL_SHADER, _shader, -1, name().c_str());
-    }
-    return validate();
+    return true;
 }
 
 bool glShader::validate() {

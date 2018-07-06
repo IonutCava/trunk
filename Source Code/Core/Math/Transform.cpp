@@ -23,8 +23,8 @@ Transform::Transform() noexcept
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation, const vec3<F32>& scale) noexcept
 {
-    _dirty = true;
-    _rebuildMatrix = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
@@ -35,26 +35,25 @@ Transform::~Transform()
 }
 
 mat4<F32> Transform::getMatrix() {
-    if (_dirty) {
-        if (_rebuildMatrix) {
+    if (!_notDirty.test_and_set()) {
+        if (!_dontRebuildMatrix.test_and_set()) {
             // Ordering - a la Ogre:
             _worldMatrix.identity();
             //    1. Scale
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
             _worldMatrix *= mat4<F32>(GetMatrix(_transformValues._orientation), false);
-            _rebuildMatrix = false;
         }
         //    3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
-        _dirty = false;
     }
 
     return _worldMatrix;
 }
 
 void Transform::setTransforms(const mat4<F32>& transform) {
-    _rebuildMatrix = _dirty = true;
+    _notDirty.clear();
+    _dontRebuildMatrix.clear();
 
     Quaternion<F32>& rotation = _transformValues._orientation;
     vec3<F32>& position = _transformValues._translation;
@@ -98,7 +97,8 @@ void Transform::identity() {
     _transformValues._translation.reset();
     _transformValues._orientation.identity();
     _worldMatrix.identity();
-    _rebuildMatrix = _dirty = false;
+    _notDirty.test_and_set();
+    _dontRebuildMatrix.test_and_set();
 }
 
 };  // namespace Divide

@@ -188,8 +188,6 @@ void glTexture::reserveStorage() {
         default:
             return;
     };
-    
-    _allocatedStorage = true;
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
@@ -216,9 +214,11 @@ void glTexture::loadData(const TextureLoadInfo& info,
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
-    if (!_allocatedStorage) {
+    bool expected = false;
+    if (_allocatedStorage.compare_exchange_strong(expected, true)) {
         reserveStorage();
     }
+
     assert(_allocatedStorage);
 
     loadDataUncompressed(info, data);
@@ -249,7 +249,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
             "glTexture error: Invalid dimensions for texture array layer");
     }
 
-    if (!_allocatedStorage) {
+    bool expected = false;
+    if (_allocatedStorage.compare_exchange_strong(expected, true)) {
         reserveStorage();
     }
     assert(_allocatedStorage);

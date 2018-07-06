@@ -501,7 +501,7 @@ bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
                 rComp->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS, data.first, *data.second);
             }
         }
-        rComp->onRender(sceneRenderState, renderStagePass);
+        rComp->onRender(renderStagePass);
     }
     return _node->onRender(*this, sceneRenderState, renderStagePass);
 }

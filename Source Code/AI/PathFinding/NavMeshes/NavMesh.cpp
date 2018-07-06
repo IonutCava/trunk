@@ -75,12 +75,9 @@ bool NavigationMesh::unload() {
 
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
-        TaskHandle buildThread = GetTaskHandle(_context, _buildJobGUID);
-        assert(buildThread._task);
-        if (buildThread._task->jobIdentifier() == getGUID()) {
-            buildThread._task->stopTask();
-            buildThread.wait();
-        }
+        assert(_buildTask._task);
+        _buildTask._task->stopTask();
+        _buildTask.wait();
     }
 }
 
@@ -189,11 +186,11 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
 bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
-    CreateTask(_context,
+    _buildTask = CreateTask(_context,
                getGUID(),
                [this](const Task& parentTask) {
                    buildInternal(parentTask);
-               }).startTask(Task::TaskPriority::HIGH);
+               }).startTask();
 
     return true;
 }
@@ -585,7 +582,7 @@ void NavigationMesh::update(const U64 deltaTimeUS) {
     _debugDrawInterface->paused(!_debugDraw);
 }
 
-GFX::CommandBuffer NavigationMesh::draw() {
+GFX::CommandBuffer& NavigationMesh::draw() {
     RenderMode mode = _renderMode;
 
     if (_building) {

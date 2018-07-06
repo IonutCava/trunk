@@ -259,7 +259,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
         _buffersDirty[to_U32(renderStagePass.stage())] = true;
     });
 
-    _bufferUpdate.startTask(Task::TaskPriority::HIGH);
+    _bufferUpdate.startTask();
 }
 
 /// The onRender call will emit particles
@@ -327,7 +327,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             }
         };
 
-        parallel_for(_context.parent().platformContext(), updateSize, aliveCount, s_particlesPerThread, Task::TaskPriority::HIGH);
+        parallel_for(_context.parent().platformContext(), updateSize, aliveCount, s_particlesPerThread);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
@@ -345,7 +345,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
             }
             setBoundsChanged();
         });
-        _bbUpdate.startTask(Task::TaskPriority::HIGH);
+        _bbUpdate.startTask();
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);

@@ -119,8 +119,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
                                 SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
-    void onRender(const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass);
+    void onRender(const RenderStagePass& renderStagePass);
 
     void Update(const U64 deltaTimeUS) override;
 
@@ -237,7 +236,6 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     size_t _shadowStateBlockHash;
 
     ReflectorType _reflectorType;
-    TextureDataContainer _textureCache;
     ShaderBufferList _shaderBuffersCache;
 
     ShaderProgram_ptr _previewRenderTargetColour;

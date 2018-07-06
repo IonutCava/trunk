@@ -97,6 +97,17 @@ namespace Divide {
         //_postUpdateTask.startTask().wait();
     }
 
+    void TransformSystem::OnUpdateLoop() {
+        vector<TransformComponent*> transforms;
+        auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
+        auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
+        for (; transform != transformEnd; ++transform)
+        {
+            //transforms.push_back(transform.operator->());
+            transform->OnUpdateLoop();
+        }
+    }
+
     bool TransformSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
         if (tComp != nullptr && !tComp->save(outputBuffer)) {

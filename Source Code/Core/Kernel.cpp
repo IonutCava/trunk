@@ -55,7 +55,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _viewportDirty(false),
       _splashScreenUpdating(false),
       _platformContext(std::make_unique<PlatformContext>(parentApp, *this)),
-      _taskPool(Config::MAX_POOLED_TASKS),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
       _appIdleTimer(Time::ADD_TIMER("Loop Idle Timer")),
@@ -98,11 +97,11 @@ Kernel::~Kernel()
 }
 
 void Kernel::startSplashScreen() {
-    if (_splashScreenUpdating) {
+    bool expected = false;
+    if (!_splashScreenUpdating.compare_exchange_strong(expected, true)) {
         return;
     }
 
-    _splashScreenUpdating = true;
     Configuration& config = _platformContext->config();
     GUISplash splash(*_resCache, "divideLogo.jpg", config.runtime.splashScreen);
 
@@ -122,7 +121,7 @@ void Kernel::startSplashScreen() {
             break;
         }
     });
-    _splashTask._task->startTask(Task::TaskPriority::REALTIME/*HIGH*/);
+    _splashTask.startTask(Task::TaskPriority::REALTIME/*HIGH*/);
 }
 
 void Kernel::stopSplashScreen() {
@@ -131,8 +130,6 @@ void Kernel::stopSplashScreen() {
 }
 
 void Kernel::idle() {
-    _taskPool.flushCallbackQueue();
-
     _platformContext->idle();
     if (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcherManager::idle();
@@ -305,17 +302,19 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
 
         U32 playerCount = _sceneManager->getActivePlayerCount();
 
-        bool firstRun = true;
+        U8 loopCount = 0;
         while (_timingData.runUpdateLoop()) {
 
-            if (firstRun) {
+            if (loopCount == 0) {
                 _sceneUpdateLoopTimer.start();
             }
+            _sceneManager->onStartUpdateLoop(loopCount);
 
             _sceneManager->processGUI(deltaTimeUS);
 
             // Flush any pending threaded callbacks
-            _taskPool.flushCallbackQueue();
+            _platformContext->taskPool().flushCallbackQueue();
+
             // Update scene based on input
             for (U8 i = 0; i < playerCount; ++i) {
                 _sceneManager->processInput(i, deltaTimeUS);
@@ -327,12 +326,12 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
             // Update visual effect timers as well
             PostFX::instance().update(deltaTimeUS);
 
-            if (firstRun) {
+            if (loopCount == 0) {
                 _sceneUpdateLoopTimer.stop();
-                firstRun = false;
             }
 
             _timingData.endUpdateLoop(deltaTimeUS);
+            ++loopCount;
         }  // while
     }
 
@@ -606,7 +605,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We have an A.I. thread, a networking thread, a PhysX thread, the main
     // update/rendering thread so how many threads do we allocate for tasks?
     // That's up to the programmer to decide for each app.
-    if (!_taskPool.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::PRIORITY_QUEUE, "DIVIDE_WORKER_THREAD_")) {
+    U32 hardwareThreads = HARDWARE_THREAD_COUNT();
+    if (!_platformContext->taskPool().init(
+        std::max(hardwareThreads, 5u) - 3, //at least two worker threads
+        TaskPool::TaskPoolType::DONT_CARE,
+        "DIVIDE_WORKER_THREAD_"))
+    {
         return ErrorCode::CPU_NOT_SUPPORTED;
     }
 
@@ -744,7 +748,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
-    WaitForAllTasks(_taskPool, true, true, true);
+    WaitForAllTasks(_platformContext->taskPool(), true, true, true);
     if (Config::Build::ENABLE_EDITOR) {
         _platformContext->editor().toggle(false);
     }
@@ -757,7 +761,6 @@ void Kernel::shutdown() {
     OpenCLInterface::instance().deinit();
     _renderPassManager.reset();
 
-    _taskPool.shutdown();
     Camera::destroyPool();
     _platformContext->terminate();
     _resCache->clear();

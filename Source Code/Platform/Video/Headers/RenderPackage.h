@@ -112,6 +112,7 @@ protected:
     // Return true if the command buffer was reconstructed
     bool buildCommandBuffer();
     GFX::DrawCommand& drawCommand(I32 cmdIdx);
+    DescriptorSet& descriptorSet(I32 index);
 
 private:
     GFXDevice& _context;
@@ -119,15 +120,15 @@ private:
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
 
-    vector<GFX::DrawCommand> _drawCommands;
-    vector<GFX::BindPipelineCommand> _pipelines;
-    vector<GFX::SetClipPlanesCommand> _clipPlanes;
-    vector<GFX::SendPushConstantsCommand> _pushConstants;
-    vector<GFX::BindDescriptorSetsCommand> _descriptorSets;
+    vectorEASTL<GFX::DrawCommand> _drawCommands;
+    vectorEASTL<GFX::BindPipelineCommand> _pipelines;
+    vectorEASTL<GFX::SetClipPlanesCommand> _clipPlanes;
+    vectorEASTL<GFX::SendPushConstantsCommand> _pushConstants;
+    vectorEASTL<GFX::BindDescriptorSetsCommand> _descriptorSets;
 
 protected:
     U32 _dirtyFlags = 0;
-    vector<CommandEntry> _commandOrdering;
+    vectorEASTL<CommandEntry> _commandOrdering;
     // Cached command buffer
     bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;
@@ -138,6 +139,10 @@ namespace Attorney {
         private:
         static GFX::CommandBuffer* commands(const RenderPackage& pkg) {
             return pkg._commands;
+        }
+
+        static DescriptorSet& descriptorSet(RenderPackage& pkg, I32 index) {
+            return pkg.descriptorSet(index);
         }
 
         // Return true if the command buffer was reconstructed

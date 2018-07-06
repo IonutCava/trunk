@@ -38,10 +38,13 @@
 
 namespace Divide {
 
-class Application;
-
+class Task;
 class TaskPool;
-
+struct TaskDescriptor {
+    size_t index = 0;
+    Task* parentTask = nullptr;
+    DELEGATE_CBK<void, const Task&> cbk;
+};
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
@@ -51,12 +54,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
 
        enum class TaskPriority : U8 {
            DONT_CARE = 0,
-           LOW = 1,
-           MEDIUM = 2,
-           HIGH = 3,
-           MAX = 4,
-           REALTIME = 5, //<= not threaded
-           REALTIME_WITH_CALLBACK = 6, //<= not threaded
+           REALTIME = 1, //<= not threaded
            COUNT
        };
 
@@ -66,104 +64,67 @@ class Task : public GUIDWrapper, protected NonCopyable {
       };
 
     Task();
+    Task(const TaskDescriptor& descriptor);
     ~Task();
 
-    void startTask(TaskPriority priority = TaskPriority::DONT_CARE,
-                   U32 taskFlags = 0);
+    void startTask(TaskPool& pool, TaskPriority priority, U32 taskFlags);
 
     void stopTask();
 
-    void reset();
+    bool finished() const;
 
-    bool isRunning() const;
-
-    inline TaskPool& getOwningPool() noexcept {
-        assert(_tp != nullptr);
-        return *_tp;
-    }
-
-    inline I64 jobIdentifier() const noexcept {
-        return _jobIdentifier;
-    }
-
-    inline U32 poolIndex() const noexcept {
+    inline size_t poolIndex() const noexcept {
         return _poolIndex;
     }
 
     inline bool stopRequested() const noexcept {
-        return _stopRequested;
+        if (_parent != nullptr) {
+            return _stopRequested.load() || _parent->stopRequested();
+        }
+        return _stopRequested.load();
     }
-
-    inline void threadedCallback(const DELEGATE_CBK<void, const Task&>& cbk, I64 jobIdentifier) {
-        _callback = cbk;
-        _jobIdentifier = jobIdentifier;
-    }
-
-    Task* addChildTask(Task* task);
 
     void wait();
 
    protected:
-    friend class TaskPool;
-    inline void setPoolIndex(TaskPool* const pool, U32 index) noexcept {
-        _tp = pool;
-        _poolIndex = index;
-    }
-   protected:
     void run();
     void runTaskWithDebugInfo();
-    vec_size childTaskCount() const;
-    void removeChildTask(const Task& child);
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
 
    private:
-    mutable std::mutex _taskDoneMutex;
-    std::condition_variable _taskDoneCV;
-
-    I64 _jobIdentifier;
+    size_t _poolIndex;
+    Task* _parent;
+    std::atomic_size_t _unfinishedJobs;
 
     std::atomic_bool _stopRequested;
 
     DELEGATE_CBK<void, const Task&> _callback;
-    
-    TaskPriority _priority;
-    TaskPool* _tp;
-    U32 _poolIndex;
+    DELEGATE_CBK<void, size_t> _onFinish;
 
-    Task* _parentTask;
-
-    mutable std::mutex _childTaskMutex;
-    std::condition_variable _childTaskCV;
-
-    vector<Task*> _childTasks;
     std::atomic<std::thread::id> _taskThread;
+
+    std::mutex _taskDoneMutex;
+    std::condition_variable _taskDoneCV;
+
+    std::mutex _childTaskMutex;
+    std::condition_variable _childTaskCV;
 };
 
 // A task object may be used for multiple jobs
 struct TaskHandle {
     explicit TaskHandle() noexcept
-        : TaskHandle(nullptr, -1)
+        : TaskHandle(nullptr, nullptr, -1)
     {
     }
 
-    explicit TaskHandle(Task* task, I64 id)  noexcept
+    explicit TaskHandle(Task* task, TaskPool* tp, I64 id)  noexcept
         : _task(task),
+          _tp(tp),
           _jobIdentifier(id)
     {
     }
 
-    inline TaskHandle& startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE,
-                                 U32 taskFlags = 0) {
-        assert(_task != nullptr);
-        _task->startTask(prio, taskFlags);
-        return *this;
-    }
-
-    inline Task* addChildTask(const TaskHandle& taskHandle) {
-        Task* task = taskHandle._task;
-        assert(_task != nullptr);
-        return _task->addChildTask(task);
-    }
+    TaskHandle& startTask(Task::TaskPriority prio = Task::TaskPriority::DONT_CARE, U32 taskFlags = 0);
 
     inline TaskHandle& wait() {
         if (_task != nullptr) {
@@ -172,7 +133,16 @@ struct TaskHandle {
         return *this;
     }
 
+    inline I64 jobIdentifier() const {
+        return _jobIdentifier;
+    }
+
+    inline TaskPool& getOwningPool() {
+        return *_tp;
+    }
+
     Task* _task;
+    TaskPool* _tp;
     I64 _jobIdentifier;
 };
 

@@ -129,6 +129,8 @@ void ShaderProgram::idle() {
         if (!s_recompileQueue.top()->recompile()) {
             // error
         }
+        //Re-register because the handle is probably different by now
+        registerShaderProgram(s_recompileQueue.top());
         s_recompileQueue.pop();
     }
 }
@@ -140,14 +142,14 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
     ReadLock r_lock(s_programLock);
 
     // Find the shader program
-    for (const ShaderProgram_wptr& shader : s_shaderPrograms) {
-        assert(!shader.expired());
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        assert(!std::get<0>(shader).expired());
         
-        const stringImpl& shaderName = shader.lock()->name();
+        const stringImpl& shaderName = std::get<0>(shader).lock()->name();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
-            s_recompileQueue.push(shader.lock());
+            s_recompileQueue.push(std::get<0>(shader).lock());
             // Mark as found
             state = true;
         }
@@ -265,8 +267,8 @@ void ShaderProgram::onShutdown() {
 bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     ReadLock r_lock(s_programLock);
     // Pass the update call to all registered programs
-    for (ShaderProgram_wptr& shader : s_shaderPrograms) {
-        if (!shader.lock()->update(deltaTimeUS)) {
+    for (ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        if (!std::get<0>(shader).lock()->update(deltaTimeUS)) {
             // If an update call fails, stop updating
             return false;
         }
@@ -280,7 +282,7 @@ void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram
     unregisterShaderProgram(shaderHash);
 
     WriteLock w_lock(s_programLock);
-    s_shaderPrograms.push_back(shaderProgram);
+    s_shaderPrograms.push_back({ shaderProgram, shaderProgram->getID(), shaderHash });
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
@@ -293,8 +295,8 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 
     ShaderProgramMap::const_iterator it = std::find_if(std::cbegin(s_shaderPrograms),
         std::cend(s_shaderPrograms),
-        [shaderHash](const ShaderProgram_wptr& item) {
-            return item.expired() || item.lock()->getDescriptorHash() == shaderHash;
+        [shaderHash](const ShaderProgramMapEntry& item) {
+            return std::get<2>(item) == shaderHash;
         });
 
     if (it != std::cend(s_shaderPrograms)) {
@@ -307,10 +309,10 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
-    for (const ShaderProgram_wptr& shader : s_shaderPrograms) {
-        assert(!shader.expired());
-        if (shader.lock()->getID() == shaderHandle) {
-            return shader;
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        assert(!std::get<0>(shader).expired());
+        if (std::get<1>(shader) == shaderHandle) {
+            return std::get<0>(shader);
         }
     }
 
@@ -318,10 +320,10 @@ ShaderProgram_wptr ShaderProgram::findShaderProgram(U32 shaderHandle) {
 }
 
 ShaderProgram_wptr ShaderProgram::findShaderProgram(size_t shaderHash) {
-    for (const ShaderProgram_wptr& shader : s_shaderPrograms) {
-        assert(!shader.expired());
-        if (shader.lock()->getDescriptorHash() == shaderHash) {
-            return shader;
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        assert(!std::get<0>(shader).expired());
+        if (std::get<2>(shader) == shaderHash) {
+            return std::get<0>(shader);
         }
     }
 
@@ -338,8 +340,8 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 
 void ShaderProgram::rebuildAllShaders() {
     ReadLock r_lock(s_programLock);
-    for (const ShaderProgram_wptr& shader : s_shaderPrograms) {
-        s_recompileQueue.push(shader.lock());
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        s_recompileQueue.push(std::get<0>(shader).lock());
     }
 }
 
@@ -362,8 +364,8 @@ void ShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
     }
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     ReadLock r_lock(s_programLock);
-    for (const ShaderProgram_wptr& shader : s_shaderPrograms) {
-        const ShaderProgram_ptr& shaderProgram = shader.lock();
+    for (const ShaderProgramMapEntry& shader : s_shaderPrograms) {
+        const ShaderProgram_ptr& shaderProgram = std::get<0>(shader).lock();
         for (const stringImpl& atom : shaderProgram->_usedAtoms) {
             if (Util::CompareIgnoreCase(atom, atomName)) {
                 s_recompileQueue.push(shaderProgram);

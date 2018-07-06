@@ -140,11 +140,11 @@ class AIManager : public SceneComponent
     TaskPool& _parentPool;
     Task* _activeTask;
     U64 _deltaTimeUS, _currentTimeUS, _previousTimeUS;
-    std::atomic<bool> _navMeshDebugDraw;
-    std::atomic<bool> _pauseUpdate;
-    std::atomic<bool> _updating;
-    std::atomic<bool> _shouldStop;
-    std::atomic<bool> _running;
+    std::atomic_bool _navMeshDebugDraw;
+    std::atomic_bool _pauseUpdate;
+    std::atomic_bool _updating;
+    std::atomic_bool _shouldStop;
+    std::atomic_bool _running;
     NavMeshMap _navMeshes;
     AITeamMap _aiTeams;
     mutable SharedLock _updateMutex;

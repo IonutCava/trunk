@@ -187,6 +187,7 @@ void QuadtreeNode::drawBBox(GFXDevice& context, RenderPackage& packageOut) {
         RenderStateBlock primitiveRenderState;
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = primitiveRenderState.getHash();
+        pipeDesc._stateHash = ShaderProgram::defaultShader()->getID();
         _bbPrimitive->pipeline(context.newPipeline(pipeDesc));
     }
 

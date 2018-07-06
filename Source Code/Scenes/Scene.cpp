@@ -81,13 +81,13 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
     _sceneState = MemoryManager_NEW SceneState(*this);
     _input = MemoryManager_NEW SceneInput(*this, _context);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
-    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.kernel().taskPool());
+    _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool());
     _lightPool = MemoryManager_NEW LightPool(*this, _context.gfx());
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
     _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
 
-    _loadingTasks = 0;
+    _loadingTasks.store(0);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
@@ -161,7 +161,7 @@ bool Scene::idle() {  // Called when application is idle
 
     WriteLock w_lock(_tasksMutex);
     _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
-                 [](const TaskHandle& handle) -> bool { return !handle._task->isRunning(); }),
+                 [](const TaskHandle& handle) -> bool { return !handle._task->finished(); }),
         std::end(_tasks));
 
     return true;
@@ -204,7 +204,7 @@ void Scene::loadXMLAssets(bool singleStep) {
         } else {
             loadModel(it, true);
         }
-        _loadingTasks++;
+        ++_loadingTasks;
 
         _modelDataArray.pop();
 
@@ -232,7 +232,7 @@ void Scene::loadXMLAssets(bool singleStep) {
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
 
-        _loadingTasks--;
+        --_loadingTasks;
     };
 
     // Add terrain from XML
@@ -244,7 +244,7 @@ void Scene::loadXMLAssets(bool singleStep) {
         terrain.setOnLoadCallback(registerTerrain);
         terrain.setFlag(terrainInfo->getActive());
         CreateResource<Terrain>(_resCache, terrain);
-        _loadingTasks++;
+        ++_loadingTasks;
         _terrainInfoArray.pop_back();
 
         if (singleStep) {
@@ -265,7 +265,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
-        _loadingTasks--;
+        --_loadingTasks;
     };
 
     ResourceDescriptor model(data.ModelName);
@@ -302,9 +302,6 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
             meshNode->get<TransformComponent>()->setRotation(data.orientation);
             meshNode->get<TransformComponent>()->setPosition(data.position);
 
-            if (data.staticUsage) {
-                meshNode->usageContext(NodeUsageContext::NODE_STATIC);
-            }
             if (data.navigationUsage) {
                 meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
             }
@@ -321,7 +318,7 @@ Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
 Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
-        _loadingTasks--;
+        --_loadingTasks;
     };
 
     std::shared_ptr<Object3D> thisObj;
@@ -390,9 +387,7 @@ Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
         thisObjSGN->get<TransformComponent>()->setPosition(data.position);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
         thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
-        if (data.staticUsage) {
-            thisObjSGN->usageContext(NodeUsageContext::NODE_STATIC);
-        }
+
         if (data.navigationUsage) {
             thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
         }
@@ -812,11 +807,13 @@ bool Scene::load(const stringImpl& name) {
         _context.gui().selectionChangeCallback(this, pIndex, node);
     });
 
-    U32 totalLoadingTasks = _loadingTasks;
+    U32 totalLoadingTasks = _loadingTasks.load();
     Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
+
     while (totalLoadingTasks > 0) {
-        if (totalLoadingTasks != _loadingTasks) {
-            totalLoadingTasks = _loadingTasks;
+        U32 actualTasks = _loadingTasks.load();
+        if (totalLoadingTasks != actualTasks) {
+            totalLoadingTasks = actualTasks;
             Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
         }
         idle();
@@ -832,10 +829,11 @@ bool Scene::unload() {
         return false;
     }
 
-    U32 totalLoadingTasks = _loadingTasks;
+    U32 totalLoadingTasks = _loadingTasks.load();
     while (totalLoadingTasks > 0) {
-        if (totalLoadingTasks != _loadingTasks) {
-            totalLoadingTasks = _loadingTasks;
+        U32 actualTasks = _loadingTasks.load();
+        if (totalLoadingTasks != actualTasks) {
+            totalLoadingTasks = actualTasks;
             Console::d_printfn(Locale::get(_ID("SCENE_LOAD_TASKS")), totalLoadingTasks);
         }
         std::this_thread::yield();
@@ -1117,6 +1115,10 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
     _hoverUpdateQueue.clear();
 }
 
+void Scene::onStartUpdateLoop(const U8 loopNumber) {
+    _sceneGraph->onStartUpdateLoop(loopNumber);
+}
+
 void Scene::onLostFocus() {
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         state().playerState(_scenePlayers[i]->index()).resetMovement();
@@ -1139,10 +1141,8 @@ void Scene::clearTasks() {
     // Performance shouldn't be an issue here
     WriteLock w_lock(_tasksMutex);
     for (TaskHandle& task : _tasks) {
-        if (task._task->jobIdentifier() == task._jobIdentifier) {
-            task._task->stopTask();
-            task.wait();
-        }
+        task._task->stopTask();
+        task.wait();
     }
 
     _tasks.clear();
@@ -1152,7 +1152,7 @@ void Scene::removeTask(I64 jobIdentifier) {
     WriteLock w_lock(_tasksMutex);
     vector<TaskHandle>::iterator it;
     for (it = std::begin(_tasks); it != std::end(_tasks); ++it) {
-        if ((*it)._task->jobIdentifier() == jobIdentifier) {
+        if ((*it).jobIdentifier() == jobIdentifier) {
             (*it)._task->stopTask();
             _tasks.erase(it);
             (*it).wait();

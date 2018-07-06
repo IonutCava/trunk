@@ -116,7 +116,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     CreateTask(_context.parent().platformContext(),
                 [this](const Task& parentTask) { generateGrass(parentTask); },
                 [this]() {uploadGrassData();}
-    ).startTask(Task::TaskPriority::LOW);
+    ).startTask();
 
     setState(ResourceState::RES_LOADED);
 }

@@ -6,6 +6,7 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -154,29 +155,27 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
 }
 
 void RenderQueue::sort() {
-    // How many elements should a renderbin contain before we decide that sorting 
-    // should happen on a separate thread
-    static const U16 threadBias = 16;
+    // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
+    static const U16 threadBias = 32;
 
-    TaskPool& pool = _context.parent().taskPool();
+    TaskPool& pool = _context.context().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {
             RenderingOrder::List sortOrder = getSortOrder(renderBin->getType());
 
             if (renderBin->getBinSize() > threadBias) {
-                Task* child = sortTask.addChildTask(CreateTask(pool,
-                                                               [renderBin, sortOrder](const Task& parentTask) {
-                    renderBin->sort(sortOrder, parentTask);
-                }));
-
-                child->startTask(Task::TaskPriority::HIGH);
+                CreateTask(pool,
+                           &sortTask,
+                            [renderBin, sortOrder](const Task& parentTask) {
+                                renderBin->sort(sortOrder, parentTask);
+                            }).startTask();
             } else {
                 renderBin->sort(sortOrder);
             }
         }
     }
-    sortTask.startTask(Task::TaskPriority::MAX).wait();
+    sortTask.startTask().wait();
 }
 
 void RenderQueue::refresh() {

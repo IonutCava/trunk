@@ -180,8 +180,14 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
             [this]() mutable
             {
                 _octreeUpdating = false;
-            })._task->startTask(Task::TaskPriority::REALTIME_WITH_CALLBACK);
+            }).startTask(Task::TaskPriority::REALTIME);
     }
+}
+
+void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
+    ACKNOWLEDGE_UNUSED(loopNumber);
+
+    GetECSEngine().OnUpdateLoop();
 }
 
 void SceneGraph::onCameraUpdate(const Camera& camera) {

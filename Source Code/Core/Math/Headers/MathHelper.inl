@@ -332,7 +332,6 @@ constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept {
     return ((bitMask & checkMask) != 0);
 }
 
-
 constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept {
     return ((bitMask & bit) == bit);
 }
@@ -345,6 +344,44 @@ constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept {
     bitMask &= ~(bit);
 }
 constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept {
+    bitMask ^= 1 << bit;
+}
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const std::atomic_uint bitMask, const Type bit) {
+    return BitCompare(bitmask, to_base(bit));
+}
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+SetBit(std::atomic_uint& bitMask, const Type bit) {
+    SetBit(bitMask, to_base(bit));
+}
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ClearBit(std::atomic_uint& bitMask, const Type bit) {
+    ClearBit(bitMask, to_base(bit));
+}
+
+inline bool AnyCompare(const std::atomic_uint bitMask, const U32 checkMask) noexcept {
+    return ((bitMask & checkMask) != 0);
+}
+
+inline bool BitCompare(const std::atomic_uint bitMask, const U32 bit) noexcept {
+    return ((bitMask & bit) == bit);
+}
+
+inline void SetBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
+    bitMask |= bit;
+}
+
+inline void ClearBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
+    bitMask &= ~(bit);
+}
+
+inline void ToggleBit(std::atomic_uint& bitMask, const U32 bit) noexcept {
     bitMask ^= 1 << bit;
 }
 

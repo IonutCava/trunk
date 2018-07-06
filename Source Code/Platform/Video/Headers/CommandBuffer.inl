@@ -38,42 +38,26 @@ namespace GFX {
 template<typename T>
 inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
 CommandBuffer::add(const T& command) {
-    //std::shared_ptr<Command> commandPtr = std::make_unique<Command>(command);
-    //GFX::CommandType type = commandPtr->_type;
-    //vectorAlg::emplace_back(_data, commandPtr);
-    _data.emplace_back(std::make_unique<T>(command));
-    /*vector<std::share_ptr<Command>>& commands = _commands[to_base(type)];
-
-    vectorAlg::emplace_back(_commandOrder, std::make_pair(type, commands.size()));
-    vectorAlg::emplace_back(commands, _data.back()));*/
+    GFX::CommandType type = command._type;
+    _commands.insert(command);
+    _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
 }
 
-inline void CommandBuffer::add(const CommandBuffer& other) {
-    if (!other.empty()) {
-        _data.insert(std::end(_data),
-                     std::cbegin(other._data),
-                     std::cend(other._data));
-
-        /*for (const std::shared_ptr<Command>& cmd : _data) {
-            add(*cmd);
-        }*/
-    }
+inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
+    return _commandOrder;
 }
 
-inline vectorEASTL<std::shared_ptr<Command>>& CommandBuffer::operator()() {
-    return _data;
-}
-
-inline const vectorEASTL<std::shared_ptr<Command>>& CommandBuffer::operator()() const {
-    return _data;
+inline const vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() const {
+    return _commandOrder;
 }
 
 inline void CommandBuffer::clear() {
-    _data.clear();
+    _commandOrder.resize(0);
+    _commands.clear();
 }
 
 inline bool CommandBuffer::empty() const {
-    return _data.empty();
+    return _commandOrder.empty();
 }
 
 }; //namespace GFX

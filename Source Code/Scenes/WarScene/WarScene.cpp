@@ -491,7 +491,7 @@ bool WarScene::load(const stringImpl& name) {
     flag->setActive(false);
     std::shared_ptr<SceneNode> flagNode = flag->getNode();
 
-    sceneryNodeDescriptor._usageContext = flag->usageContext();
+    sceneryNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     sceneryNodeDescriptor._node = flagNode;
     sceneryNodeDescriptor._physicsGroup = flag->get<RigidBodyComponent>()->physicsGroup();
     sceneryNodeDescriptor._name = "Team1Flag";
@@ -529,7 +529,6 @@ bool WarScene::load(const stringImpl& name) {
 
     sceneryNodeDescriptor._name = "FirstPersonFlag";
     sceneryNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-    sceneryNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     sceneryNodeDescriptor._isSelectable = false;
     SceneGraphNode* firstPersonFlag = _sceneGraph->getRoot().addNode(sceneryNodeDescriptor);
     firstPersonFlag->lockVisibility(true);

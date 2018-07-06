@@ -120,6 +120,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     /// Update animations, network data, sounds, triggers etc.
     void updateSceneState(const U64 deltaTimeUS);
+    void onStartUpdateLoop(const U8 loopNumber);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
     inline SceneState& state() { return *_sceneState; }
@@ -130,7 +131,7 @@ class Scene : public Resource, public PlatformContextComponent {
     inline const SceneInput& input() const { return *_input; }
 
     inline SceneGraph& sceneGraph() { return *_sceneGraph; }
-    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, Task::TaskPriority priority = Task::TaskPriority::HIGH);
+    I64 registerTask(const TaskHandle& taskItem, bool start = true, U32 flags = 0, Task::TaskPriority priority = Task::TaskPriority::DONT_CARE);
     void clearTasks();
     void removeTask(I64 jobIdentifier);
 

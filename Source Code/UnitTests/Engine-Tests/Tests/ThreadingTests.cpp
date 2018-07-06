@@ -23,14 +23,17 @@ TEST(TaskPoolContructionTest)
         }
 
         TaskPool test(g_TestTaskPoolSize);
+        // Not enough workers
         bool init = test.init(0, static_cast<TaskPool::TaskPoolType>(i));
         CHECK_FALSE(init);
 
+        // Valid
         init = test.init(1, static_cast<TaskPool::TaskPoolType>(i));
-        CHECK_FALSE(init);
-
-        init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
         CHECK_TRUE(init);
+
+        // Double init
+        init = test.init(HARDWARE_THREAD_COUNT(), static_cast<TaskPool::TaskPoolType>(i));
+        CHECK_FALSE(init);
     }
 }
 
@@ -183,7 +186,7 @@ TEST(TaskPriorityTest)
         };
 
         TaskHandle job = CreateTask(test, testFunction, callback);
-        job.startTask(Task::TaskPriority::MAX);
+        job.startTask();
         job.wait();
         CHECK_EQUAL(callbackValue, 1u);
         test.flushCallbackQueue();
@@ -194,10 +197,9 @@ TEST(TaskPriorityTest)
         CHECK_EQUAL(callbackValue, 3u);
         test.flushCallbackQueue();
         CHECK_EQUAL(callbackValue, 3u);
-        test.setTaskCallback(job, callback);
-        job.startTask(Task::TaskPriority::REALTIME_WITH_CALLBACK);
+        job.startTask(Task::TaskPriority::REALTIME);
         job.wait();
-        CHECK_EQUAL(callbackValue, 5u);
+        CHECK_EQUAL(callbackValue, 4u);
         test.flushCallbackQueue();
         CHECK_EQUAL(callbackValue, 5u);
     }

@@ -92,6 +92,8 @@ namespace ECS
 		virtual void PostUpdate(f32 dt) override
 		{}
 
+        virtual void OnUpdateLoop() override
+        {}
 	}; // class System<T>
 
 	template<class T>

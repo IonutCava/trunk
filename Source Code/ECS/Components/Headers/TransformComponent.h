@@ -158,12 +158,20 @@ namespace Divide {
          void PreUpdate(const U64 deltaTimeUS) override;
          void Update(const U64 deltaTimeUS) override;
          void PostUpdate(const U64 deltaTimeUS) override;
+         void OnUpdateLoop() override;
 
          void onParentTransformDirty(U32 transformMask);
          void onParentUsageChanged(NodeUsageContext context);
 
          mat4<F32> getMatrix() override;
+
          mat4<F32> getMatrix(D64 interpolationFactor) const;
+
+         //A simple lock-unlock and mutex-free matrix calculation system //
+         vec3<F32> getLocalPositionLocked(D64 interpolationFactor) const;
+         vec3<F32> getLocalScaleLocked(D64 interpolationFactor) const;
+         Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
+         //
 
          const mat4<F32>& updateWorldMatrix();
 
@@ -177,16 +185,15 @@ namespace Divide {
 
         typedef std::stack<TransformValues> TransformStack;
 
-        U32             _transformUpdatedMask;
-        TransformValues _prevTransformValues;
-        TransformStack  _transformStack;
-        Transform       _transformInterface;
+        std::atomic_uint _transformUpdatedMask;
+        TransformValues  _prevTransformValues;
+        TransformStack   _transformStack;
+        Transform        _transformInterface;
 
         NodeUsageContext _parentUsageContext;
 
         bool _uniformScaled;
-        std::atomic_bool _worldMatrixDirty;
-        std::atomic_bool _worldMatrixInterpDirty;
+        std::atomic_flag _worldMatrixUpToDate = ATOMIC_FLAG_INIT;
         mat4<F32> _worldMatrix;
         
         mutable SharedLock _lock;

@@ -92,7 +92,10 @@ void DefaultScene::postLoadMainThread() {
                                              buttonSize);
 
             btn->setEventCallback(GUIButton::Event::MouseClick,
-                                  DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
+                                  [this](I64 btnGUID) {
+                                      loadScene(btnGUID);
+
+                                  });
 
             _buttonToSceneMap[btn->getGUID()] = scene;
             i++;

@@ -263,48 +263,23 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
     _textureDependencies.removeTexture(additionalTexture);
 }
 
-void RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
-                                  const RenderStagePass& renderStagePass) {
+void RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
+    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
+    DescriptorSet& set = Attorney::RenderPackageRenderingComponent::descriptorSet(*pkg, 0);
+    TextureDataContainer& textures = set._textureData;
 
-    ACKNOWLEDGE_UNUSED(sceneRenderState);
-
-    _textureCache.clear();
-
-    // Call any pre-draw operations on the SceneNode (refresh VB, update materials, get list of textures, etc)
+    textures.clear();
     for (auto texture : _textureDependencies.textures()) {
-        _textureCache.addTexture(texture);
+        textures.addTexture(texture);
     }
+
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        mat->getTextureData(_textureCache);
+        mat->getTextureData(textures);
     }
 
-    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    DescriptorSet set = pkg->descriptorSet(0);
-
-    bool bufferDirty = set._textureData.set(_textureCache);
-    
-    auto compareBuffers = [](const ShaderBufferList& a,
-                             const ShaderBufferList& b) -> bool {
-        if (a.size() != b.size()) {
-            return false;
-        }
-        for (vec_size i = 0; i < a.size(); ++i) {
-            if (a[i] != b[i]) {
-                return false;
-            }
-        }
-
-        return true;
-    };
-
-    if (!compareBuffers(set._shaderBuffers, _shaderBuffersCache)) {
+    if (set._shaderBuffers != _shaderBuffersCache) {
         set._shaderBuffers = _shaderBuffersCache;
-        bufferDirty = true;
-    }
-
-    if (bufferDirty) {
-        pkg->descriptorSet(0, set);
     }
 }
 

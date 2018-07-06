@@ -61,7 +61,7 @@ void ThreadPoolC11::stopAll() {
 }
 
 void ThreadPoolC11::waitAll() {
-    while (_pool.n_idle() != _pool.size()) {
+    while (_pool.n_pending() > 0 && !_pool.idle() && _pool.n_idle() != _pool.size()) {
         std::this_thread::yield();
     }
 }

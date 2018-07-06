@@ -276,7 +276,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
 
             Time::ApplicationTimer::instance().resetFPSCounter();
             
-        })._task->startTask(threaded ? Task::TaskPriority::HIGH : Task::TaskPriority::REALTIME_WITH_CALLBACK);
+        }).startTask(threaded ? Task::TaskPriority::DONT_CARE : Task::TaskPriority::REALTIME);
 
     _sceneSwitchTarget.reset();
 
@@ -513,6 +513,10 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
 }
 
 Camera* SceneManager::playerCamera(PlayerIndex idx) const {
+    if (getActivePlayerCount() <= idx) {
+        return nullptr;
+    }
+
     Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
         overrideCamera = &_players[idx]->getCamera();

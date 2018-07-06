@@ -134,7 +134,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// Called once per frame with the time diff between this and the last frame
     void update(const U64 deltaTimeUS);
     /// Render the debug mesh if debug drawing is enabled
-    GFX::CommandBuffer draw();
+    GFX::CommandBuffer& draw();
     inline void debugDraw(bool state) { _debugDraw = state; }
     inline bool debugDraw() const { return _debugDraw; }
 
@@ -208,7 +208,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// A mutex for accessing our actual NavigationMesh.
     std::mutex _navigationMeshLock;
     /// A simple flag to say we are building.
-    std::atomic<bool> _building;
+    std::atomic_bool _building;
     /// A callback function to call after building is complete
     CreationCallback _loadCompleteClbk;
     /// Data file to store this nav mesh in.
@@ -222,11 +222,13 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     dtNavMeshQuery* _navQuery;
     /// SceneGraphNode from which to build
     SceneGraphNode* _sgn;
-    std::atomic<bool> _debugDraw;
+    std::atomic_bool _debugDraw;
     bool _renderConnections;
     RenderMode _renderMode;
     /// DebugDraw interface
     NavMeshDebugDraw* _debugDrawInterface;
+
+    TaskHandle _buildTask;
 };
 
 namespace Attorney {

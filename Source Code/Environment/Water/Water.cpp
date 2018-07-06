@@ -72,14 +72,14 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(waterNodeDescriptor);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
-    renderable->setReflectionCallback(DELEGATE_BIND(&WaterPlane::updateReflection,
-                                                    this,
-                                                    std::placeholders::_1,
-                                                    std::placeholders::_2));
-    renderable->setRefractionCallback(DELEGATE_BIND(&WaterPlane::updateRefraction,
-                                                    this,
-                                                    std::placeholders::_1,
-                                                    std::placeholders::_2));
+
+    renderable->setReflectionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
+        updateReflection(params, commandsInOut);
+    });
+
+    renderable->setRefractionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
+        updateRefraction(params, commandsInOut);
+    });
 
     renderable->setReflectionAndRefractionType(ReflectorType::PLANAR_REFLECTOR);
 

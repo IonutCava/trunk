@@ -83,16 +83,17 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
 
     TaskHandle updateTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
-        updateTask.addChildTask(CreateTask(parentPool,
-                                [entity, deltaTimeUS](const Task& parentTask)
-                                {
-                                    if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
-                                        //print error;
-                                    }
-                                }))->startTask(Task::TaskPriority::HIGH);
+        CreateTask(parentPool,
+                   &updateTask,
+                   [entity, deltaTimeUS](const Task& parentTask)
+                   {
+                       if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
+                           //print error;
+                       }
+                   }).startTask();
     }
 
-    updateTask.startTask(Task::TaskPriority::MAX).wait();
+    updateTask.startTask().wait();
 
     return true;
 }
@@ -102,16 +103,17 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
 
    TaskHandle inputTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
-        inputTask.addChildTask(CreateTask(parentPool,
-                               [entity, deltaTimeUS](const Task& parentTask)
-                               {
-                                   if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTimeUS)) {
-                                       //print error;
-                                   }
-                               }))->startTask(Task::TaskPriority::HIGH);
+        CreateTask(parentPool,
+                   &inputTask,
+                   [entity, deltaTimeUS](const Task& parentTask)
+                   {
+                       if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTimeUS)) {
+                           //print error;
+                       }
+                   }).startTask();
     }
 
-    inputTask.startTask(Task::TaskPriority::MAX).wait();
+    inputTask.startTask().wait();
 
     return true;
 }
@@ -121,16 +123,17 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
 
     TaskHandle dataTask = CreateTask(parentPool, DELEGATE_CBK<void, const Task&>());
     for (AIEntity* entity : entities) {
-        dataTask.addChildTask(CreateTask(parentPool,
-                              [entity, deltaTimeUS](const Task& parentTask)
-                              {
-                                  if (!Attorney::AIEntityAITeam::processData(*entity, deltaTimeUS)) {
-                                      //print error;
-                                  }
-                              }))->startTask(Task::TaskPriority::HIGH);
+        CreateTask(parentPool,
+                   &dataTask,
+                   [entity, deltaTimeUS](const Task& parentTask)
+                   {
+                       if (!Attorney::AIEntityAITeam::processData(*entity, deltaTimeUS)) {
+                           //print error;
+                       }
+                   }).startTask();
     }
 
-    dataTask.startTask(Task::TaskPriority::MAX).wait();
+    dataTask.startTask().wait();
 
     return true;
 }

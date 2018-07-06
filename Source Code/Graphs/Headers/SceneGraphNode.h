@@ -429,8 +429,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     SceneGraphNode* _parent;
     vector<SceneGraphNode*> _children;
     mutable SharedLock _childLock;
-    std::atomic<bool> _active;
-    std::atomic<bool> _visibilityLocked;
+    std::atomic_bool _active;
+    std::atomic_bool _visibilityLocked;
 
     mutable SharedLock _updateFlagLock;
     U32 _updateFlags;

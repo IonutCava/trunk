@@ -4,6 +4,7 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
@@ -114,11 +115,11 @@ void ParticleData::sort(bool invalidateCache) {
         }
     };
     
-    TaskPool& pool = _context.parent().taskPool();
+    TaskPool& pool = _context.context().taskPool();
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
-    updateTask.addChildTask(CreateTask(pool, parsePositions))->startTask(Task::TaskPriority::HIGH);
-    updateTask.addChildTask(CreateTask(pool, parseColours))->startTask(Task::TaskPriority::HIGH);
-    updateTask.startTask(Task::TaskPriority::HIGH).wait();
+    CreateTask(pool, &updateTask, parsePositions).startTask();
+    CreateTask(pool, &updateTask, parseColours).startTask();
+    updateTask.startTask().wait();
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {

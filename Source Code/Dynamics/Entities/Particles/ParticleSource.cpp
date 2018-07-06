@@ -34,7 +34,7 @@ void ParticleSource::emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p
     for (std::shared_ptr<ParticleGenerator>& gen : _particleGenerators) {
         gen->generate(generateTask, deltaTimeUS, data, startID, endID);
     }
-    generateTask.startTask(Task::TaskPriority::HIGH).wait();
+    generateTask.startTask().wait();
 
     for (U32 i = startID; i < endID; ++i) {
         p->wake(i);

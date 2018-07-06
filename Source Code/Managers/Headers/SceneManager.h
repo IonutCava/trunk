@@ -137,7 +137,9 @@ public:
     inline void processGUI(const U64 deltaTimeUS) {
         getActiveScene().processGUI(deltaTimeUS);
     }
-
+    inline void onStartUpdateLoop(const U8 loopNumber) {
+        getActiveScene().onStartUpdateLoop(loopNumber);
+    }
     void onSizeChange(const SizeChangeParams& params);
 
     RenderPassCuller::VisibleNodeList& getVisibleNodesCache(RenderStage stage);

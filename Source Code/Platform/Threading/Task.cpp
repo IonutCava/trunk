@@ -16,17 +16,36 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
+TaskHandle& TaskHandle::startTask(Task::TaskPriority prio, U32 taskFlags) {
+    if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
+        if (prio != Task::TaskPriority::REALTIME) {
+            prio = Task::TaskPriority::REALTIME;
+        }
+    }
+
+    assert(_tp != nullptr && _task != nullptr);
+    _tp->taskStarted(_task->poolIndex());
+    _task->startTask(*_tp, prio, taskFlags);
+    return *this;
+}
 
 Task::Task()
-    : GUIDWrapper(),
-    _tp(nullptr),
-    _poolIndex(0),
-    _jobIdentifier(-1),
-    _priority(TaskPriority::DONT_CARE)
+    : Task(TaskDescriptor())
 {
-    _parentTask = nullptr;
-    _stopRequested = false;
-    _childTasks.reserve(MAX_CHILD_TASKS);
+    _unfinishedJobs.fetch_sub(1);
+}
+
+Task::Task(const TaskDescriptor& descriptor)
+   : GUIDWrapper(),
+    _parent(descriptor.parentTask),
+    _poolIndex(descriptor.index),
+    _callback(descriptor.cbk),
+    _unfinishedJobs{ 1 } //1 == this task
+{
+    _stopRequested.store(false);
+    if (_parent != nullptr) {
+        _parent->_unfinishedJobs.fetch_add(1);
+    }
 }
 
 Task::~Task()
@@ -34,43 +53,6 @@ Task::~Task()
     stopTask();
     wait();
 }
-
-bool Task::isRunning() const {
-    if (_tp) {
-        return _tp->state(poolIndex()) != TaskPool::TaskState::TASK_FREE;
-    }
-
-    return false;
-}
-
-void Task::reset() {
-    if (_tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
-        stopTask();
-        wait();
-    }
-
-    _stopRequested = false;
-    _callback = nullptr;
-    _jobIdentifier = -1;
-    _priority = TaskPriority::DONT_CARE;
-    _parentTask = nullptr;
-    _taskThread = std::thread::id();
-    _childTasks.resize(0);
-}
-
-Task* Task::addChildTask(Task* task) {
-    DIVIDE_ASSERT(_tp->state(poolIndex()) == TaskPool::TaskState::TASK_ALLOCATED,
-                  "Task::addChildTask error: Can't add child tasks to running or free tasks!");
-
-    assert(childTaskCount() < MAX_CHILD_TASKS && task->_parentTask == nullptr);
-    task->_parentTask = this; 
-
-    UniqueLock u_lock(_childTaskMutex);
-    _childTasks.push_back(task);
-
-    return _childTasks.back();
-}
-
 
 void Task::runTaskWithDebugInfo() {
     Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
@@ -80,38 +62,26 @@ void Task::runTaskWithDebugInfo() {
 
 PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
     if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
-	    return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
+         return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
     }
 
     return PoolTask(to_base(priority), [this]() { run(); });
 }
 
-void Task::startTask(TaskPriority priority, U32 taskFlags) {
-    if (_tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
-        return;
-    }
-
+void Task::startTask(TaskPool& pool, TaskPriority priority, U32 taskFlags) {
     if (g_DebugTaskStartStop) {
         SetBit(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO));
     }
 
-    if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
-        if (priority != TaskPriority::REALTIME &&
-            priority != TaskPriority::REALTIME_WITH_CALLBACK) {
-            priority = TaskPriority::REALTIME_WITH_CALLBACK;
-        }
-    }
+    bool runCallback = priority == TaskPriority::REALTIME;
+    _onFinish = [&pool, runCallback](size_t index) {
+        pool.taskCompleted(index, runCallback);
+    };
 
-    _priority = priority;
-
-    if (priority != TaskPriority::REALTIME && 
-        priority != TaskPriority::REALTIME_WITH_CALLBACK &&
-        _tp != nullptr && _tp->workerThreadCount() > 0)
+    if (priority != TaskPriority::REALTIME)
     {
         PoolTask task(getRunTask(priority, taskFlags));
-        ThreadPool& pool = _tp->threadPool();
-
-        while (!pool.enqueue(task)) {
+        while (!pool.threadPool().enqueue(task)) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         }
     } else {
@@ -120,84 +90,37 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 }
 
 void Task::stopTask() {
-    {
-        UniqueLock u_lock(_childTaskMutex);
-        for (Task* child : _childTasks) {
-            child->stopTask();
-        }
-    }
-
-    if (Config::Build::IS_DEBUG_BUILD) {
-        if (_tp && _tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
-            Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
-        }
-    }
-
-    _stopRequested = true;
-}
-
-vec_size Task::childTaskCount() const {
-    UniqueLock u_lock(_childTaskMutex);
-    return _childTasks.size();
-}
-
-void Task::removeChildTask(const Task& child) {
-    I64 targetGUID = child.getGUID();
-
-    {
-        UniqueLock lk(_childTaskMutex);
-        _childTasks.erase(
-            std::remove_if(std::begin(_childTasks),
-                           std::end(_childTasks),
-                           [&targetGUID](Task* const childTask) -> bool {
-                               return childTask->getGUID() == targetGUID;
-                           }),
-            std::end(_childTasks));
-    }
-    _childTaskCV.notify_one();
+    _stopRequested.store(true);
 }
 
 void Task::wait() {
     UniqueLock lk(_taskDoneMutex);
-    _taskDoneCV.wait(lk,
-                     [this]() -> bool {
-                        if (_tp) {
-                            return _tp->state(poolIndex()) == TaskPool::TaskState::TASK_FREE;
-                        }
-                        return true;
-                     });
+    _taskDoneCV.wait(lk, [this]() -> bool { return finished(); });
 }
 
 void Task::run() {
     _taskThread = std::this_thread::get_id();
-
     {
         UniqueLock lk(_childTaskMutex);
-        _childTaskCV.wait(lk,
-                         [this]() -> bool {
-                            return _childTasks.empty();
-                        });
-    }
-
-    {
-        UniqueLock lk(_taskDoneMutex);
-        _tp->taskStarted(poolIndex(), _priority);
+        _childTaskCV.wait(lk, [this]() -> bool { return _unfinishedJobs.load() == 1; });
     }
 
     if (_callback) {
         _callback(*this);
     }
 
-    if (_parentTask != nullptr) {
-        _parentTask->removeChildTask(*this);
-    }
+    _onFinish(_poolIndex);
 
-    // task finished. Everything else is bookkeeping
-    {
-        UniqueLock lk(_taskDoneMutex);
-        _tp->taskCompleted(poolIndex(), _priority);
+    if (_parent != nullptr) {
+        _parent->_unfinishedJobs.fetch_sub(1);
     }
+    _unfinishedJobs.fetch_sub(1);
+
     _taskDoneCV.notify_one();
+}
+
+bool Task::finished() const {
+    return _unfinishedJobs.load() == 0;
 }
 
 };

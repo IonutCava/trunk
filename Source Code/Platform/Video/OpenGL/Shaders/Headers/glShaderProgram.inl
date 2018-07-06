@@ -35,7 +35,7 @@
 
 namespace Divide {
     template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* glShaderProgram::castData(const vector<char>& values) const {
+    const T_out* glShaderProgram::castData(const vectorEASTL<char>& values) const {
         static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
 
         return reinterpret_cast<const T_out*>(values.data());

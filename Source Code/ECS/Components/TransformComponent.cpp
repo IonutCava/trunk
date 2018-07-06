@@ -8,9 +8,12 @@ namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
       : SGNComponent(parentSGN, "TRANSFORM"),
         _uniformScaled(false),
-        _transformUpdatedMask(to_base(TransformType::ALL)),
         _parentUsageContext(parentSGN.usageContext())
     {
+        _worldMatrixUpToDate.clear();
+
+        _transformUpdatedMask.store(to_base(TransformType::ALL));
+
         _editorComponent.registerField("Transform",
                                        &_transformInterface,
                                        EditorComponentFieldType::TRANSFORM,
@@ -38,7 +41,7 @@ namespace Divide {
 
     void TransformComponent::onParentTransformDirty(U32 transformMask) {
         if (transformMask != to_base(TransformType::NONE)) {
-            _worldMatrixDirty = true;
+            _worldMatrixUpToDate.clear();
         }
     }
 
@@ -55,16 +58,14 @@ namespace Divide {
             _transformStack.pop();
         }
         
-        _worldMatrixDirty = true;
+        _worldMatrixUpToDate.clear();
 
-        WriteLock r_lock(_lock);
-        SetBit(_transformUpdatedMask, TransformType::ALL);
+        _transformUpdatedMask.store(to_base(TransformType::ALL));
     }
 
     void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
         // If we have dirty transforms, inform everybody
-        UpgradableReadLock r_lock(_lock);
-        if (_transformUpdatedMask != to_base(TransformType::NONE))
+        if (_transformUpdatedMask.load() != to_base(TransformType::NONE))
         {
             Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, _transformUpdatedMask);
         }
@@ -74,13 +75,9 @@ namespace Divide {
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
         // Cleanup our dirty transforms
-        UpgradableReadLock r_lock(_lock);
-        if (_transformUpdatedMask != to_base(TransformType::NONE))
+        if (_transformUpdatedMask.exchange(to_U32(TransformType::NONE) != to_U32(TransformType::NONE)))
         {
-            UpgradeToWriteLock w_lock(r_lock);
-            _transformInterface.getValues(_prevTransformValues);
-            _transformUpdatedMask = to_base(TransformType::NONE);
-            _worldMatrixDirty = true;
+            _worldMatrixUpToDate.clear();
         }
 
         SGNComponent<TransformComponent>::Update(deltaTimeUS);
@@ -89,6 +86,11 @@ namespace Divide {
     void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
         updateWorldMatrix();
         SGNComponent<TransformComponent>::PostUpdate(deltaTimeUS);
+    }
+
+    void TransformComponent::OnUpdateLoop() {
+        ReadLock r_lock(_lock);
+        _transformInterface.getValues(_prevTransformValues);
     }
 
     void TransformComponent::setOffset(bool state, const mat4<F32>& offset) {
@@ -373,14 +375,18 @@ namespace Divide {
     }
     
     void TransformComponent::setTransform(const TransformValues& values) {
-        WriteLock r_lock(_lock);
-        _transformInterface.setValues(values);
+        {
+            WriteLock r_lock(_lock);
+            _transformInterface.setValues(values);
+        }
         setTransformDirty(TransformType::ALL);
     }
 
     void TransformComponent::setTransforms(const mat4<F32>& transform) {
-        WriteLock r_lock(_lock);
-        _transformInterface.setTransforms(transform);
+        {
+            WriteLock r_lock(_lock);
+            _transformInterface.setTransforms(transform);
+        }
         setTransformDirty(TransformType::ALL);
     }
 
@@ -391,6 +397,7 @@ namespace Divide {
 
     mat4<F32> TransformComponent::getMatrix() {
         ReadLock r_lock(_lock);
+        
         if (_transformOffset.first) {
             return _transformInterface.getMatrix() * _transformOffset.second;
         } 
@@ -398,9 +405,10 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getMatrix(D64 interpolationFactor) const {
-        mat4<F32> worldMatrixInterp(getLocalPosition(interpolationFactor),
-                                    getLocalScale(interpolationFactor),
-                                    GetMatrix(getLocalOrientation(interpolationFactor)));
+        ReadLock r_lock(_lock);
+        mat4<F32> worldMatrixInterp(getLocalPositionLocked(interpolationFactor),
+                                    getLocalScaleLocked(interpolationFactor),
+                                    GetMatrix(getLocalOrientationLocked(interpolationFactor)));
 
         if (_transformOffset.first) {
             return worldMatrixInterp * _transformOffset.second;
@@ -409,8 +417,26 @@ namespace Divide {
         return worldMatrixInterp;
     }
 
+    vec3<F32> TransformComponent::getLocalPositionLocked(D64 interpolationFactor) const {
+        vec3<F32> pos;
+        _transformInterface.getPosition(pos);
+        return Lerp(_prevTransformValues._translation, pos, to_F32(interpolationFactor));
+    }
+
+    vec3<F32> TransformComponent::getLocalScaleLocked(D64 interpolationFactor) const {
+        vec3<F32> scale;
+        _transformInterface.getScale(scale);
+        return Lerp(_prevTransformValues._scale, scale, to_F32(interpolationFactor));
+    }
+
+    Quaternion<F32> TransformComponent::getLocalOrientationLocked(D64 interpolationFactor) const {
+        Quaternion<F32> quat;
+        _transformInterface.getOrientation(quat);
+        return Slerp(_prevTransformValues._orientation, quat, to_F32(interpolationFactor));
+    }
+
     const mat4<F32>& TransformComponent::updateWorldMatrix() {
-        if (_worldMatrixDirty) {
+        if (!_worldMatrixUpToDate.test_and_set()) {
             _worldMatrix.set(getMatrix());
             
             SceneGraphNode* grandParentPtr = _parentSGN.getParent();
@@ -419,7 +445,6 @@ namespace Divide {
             }
 
             _parentSGN.SendEvent<TransformUpdated>(GetOwner());
-            _worldMatrixDirty = false;
         }
 
         return _worldMatrix;
@@ -430,7 +455,7 @@ namespace Divide {
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
-        if (interpolationFactor == 1.0 || _parentUsageContext == NodeUsageContext::NODE_STATIC) {
+        if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor == 1.0) {
             return getWorldMatrix();
         }
 

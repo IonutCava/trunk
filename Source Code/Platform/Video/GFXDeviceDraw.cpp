@@ -171,37 +171,33 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
     U32 cmdCount = 0;
 
     for (const vector<SceneGraphNode*>& queue : sortedNodes) {
-        std::for_each(std::begin(queue), std::end(queue),
-            [&](SceneGraphNode* node) -> void
-            {
-                RenderingComponent& renderable = *node->get<RenderingComponent>();
-                Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, camera, sceneRenderState, currentStage);
-            });
+        for (SceneGraphNode* node : queue) {
+            RenderingComponent& renderable = *node->get<RenderingComponent>();
+            Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, camera, sceneRenderState, currentStage);
+        }
 
-        std::for_each(std::begin(queue), std::end(queue),
-            [&](SceneGraphNode* node) -> void
-            {
-                RenderingComponent& renderable = *node->get<RenderingComponent>();
+        for (SceneGraphNode* node : queue) {
+            RenderingComponent& renderable = *node->get<RenderingComponent>();
 
-                const RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(renderable, currentStage);
-                if (pkg.isRenderable()) {
-                    if (refreshNodeData) {
-                        Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, currentStage, cmdCount, nodeCount);
+            const RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(renderable, currentStage);
+            if (pkg.isRenderable()) {
+                if (refreshNodeData) {
+                    Attorney::RenderingCompGFXDevice::setDrawIDs(renderable, currentStage, cmdCount, nodeCount);
 
-                        processVisibleNode(*node, nodeCount, camera, pkg.isOcclusionCullable());
+                    processVisibleNode(*node, nodeCount, camera, pkg.isOcclusionCullable());
 
-                        for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
-                            const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
-                            for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
-                                for (U32 i = 0; i < drawCmd.drawCount(); ++i) {
-                                    _drawCommandsCache[cmdCount++].set(drawCmd.cmd());
-                                }
+                    for (I32 cmdIdx = 0; cmdIdx < pkg.drawCommandCount(); ++cmdIdx) {
+                        const GFX::DrawCommand& cmd = pkg.drawCommand(cmdIdx);
+                        for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
+                            for (U32 i = 0; i < drawCmd.drawCount(); ++i) {
+                                _drawCommandsCache[cmdCount++].set(drawCmd.cmd());
                             }
                         }
                     }
-                    nodeCount++;
                 }
-            });
+                nodeCount++;
+            }
+        }
     }
 
     if (refreshNodeData) {

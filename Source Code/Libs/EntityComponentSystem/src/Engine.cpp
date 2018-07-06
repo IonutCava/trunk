@@ -68,6 +68,12 @@ namespace ECS
 		ECS_EventHandler->DispatchEvents();
 	}
 
+    void ECSEngine::OnUpdateLoop()
+    {
+        ECS_SystemManager->OnUpdateLoop();
+        ECS_EventHandler->DispatchEvents();
+    }
+
 	void ECSEngine::UnsubscribeEvent(Event::Internal::IEventDelegate* eventDelegate)
 	{
 		ECS_EventHandler->RemoveEventCallback(eventDelegate);

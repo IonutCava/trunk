@@ -121,10 +121,29 @@ template<typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(U32& bitMask, const Type bit);
 
+constexpr bool AnyCompare(const U32 bitMask, const U32 checkMask) noexcept;
 constexpr bool BitCompare(const U32 bitMask, const U32 bit) noexcept;
 constexpr void SetBit(U32& bitMask, const U32 bit) noexcept;
 constexpr void ClearBit(U32& bitMask, const U32 bit) noexcept;
 constexpr void ToggleBit(U32& bitMask, const U32 bit) noexcept;
+
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const std::atomic_uint bitMask, const Type bit);
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+SetBit(std::atomic_uint& bitMask, const Type bit);
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ClearBit(std::atomic_uint& bitMask, const Type bit);
+
+bool BitCompare(const std::atomic_uint bitMask, const U32 bit) noexcept;
+void SetBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
+void ClearBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
+void ToggleBit(std::atomic_uint& bitMask, const U32 bit) noexcept;
 
 /// Clamps value n between min and max
 template <typename T>

@@ -97,7 +97,7 @@ class SceneGraph : private NonCopyable,
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
-
+    void onStartUpdateLoop(const U8 loopNumber);
     void idle();
 
     void intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& selectionHits) const;

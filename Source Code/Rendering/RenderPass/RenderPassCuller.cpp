@@ -13,7 +13,7 @@
 namespace Divide {
 
 namespace {
-    static const U32 g_nodesPerCullingPartition = Config::MAX_VISIBLE_NODES / 128u;
+    static const U32 g_nodesPerCullingPartition = 64u;
 
     template <typename T>
     constexpr T&&
@@ -97,8 +97,7 @@ void RenderPassCuller::frustumCull(PlatformContext& context,
         parallel_for(context,
                      cullIterFunction,
                      childCount,
-                     g_nodesPerCullingPartition,
-                     Task::TaskPriority::MAX);
+                     g_nodesPerCullingPartition);
 
         VisibleNodeList& nodeCache = getNodeCache(stage);
         nodeCache.resize(0);

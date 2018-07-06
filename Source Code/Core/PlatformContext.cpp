@@ -4,6 +4,7 @@
 #include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"
 
+#include "Core/Headers/TaskPool.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
@@ -29,6 +30,7 @@ PlatformContext::~PlatformContext()
 }
 
 void PlatformContext::init() {
+    _taskPool = std::make_unique<TaskPool>(Config::MAX_POOLED_TASKS);
     _gfx = std::make_unique<GFXDevice>(_kernel);        // Video
     _sfx = std::make_unique<SFXDevice>(_kernel);        // Audio
     _pfx = std::make_unique<PXDevice>(_kernel);         // Physics
@@ -43,7 +45,8 @@ void PlatformContext::init() {
 }
 
 void PlatformContext::terminate() {
-
+    _taskPool->shutdown();
+    _taskPool.reset();
     _editor.reset();
     _entryData.reset();
     _config.reset();
@@ -71,6 +74,8 @@ void PlatformContext::beginFrame() {
 }
 
 void PlatformContext::idle() {
+    _taskPool->flushCallbackQueue();
+
     _app.idle();
     _gfx->idle();
     //_sfx->idle();
