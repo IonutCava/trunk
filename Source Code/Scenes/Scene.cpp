@@ -31,8 +31,7 @@ struct selectionQueueDistanceFrontToBack {
     selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos)
         : _eyePos(eyePos) {}
 
-    bool operator()(std::weak_ptr<SceneGraphNode> a, 
-                    std::weak_ptr<SceneGraphNode> b) const {
+    bool operator()(SceneGraphNode_wptr a, SceneGraphNode_wptr b) const {
         F32 dist_a =
             a.lock()->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
         F32 dist_b =

@@ -136,7 +136,7 @@ class NOINITVTABLE Scene : public Resource {
     SceneGraphNode_ptr addSky(Sky& skyItem);
 
     /// Object picking
-    inline std::weak_ptr<SceneGraphNode> getCurrentSelection() const {
+    inline SceneGraphNode_wptr getCurrentSelection() const {
         return _currentSelection;
     }
     void findSelection();
@@ -174,8 +174,8 @@ class NOINITVTABLE Scene : public Resource {
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;
     F32 _LRSpeedFactor;
     /// Current selection
-    std::weak_ptr<SceneGraphNode> _currentSelection;
-    std::weak_ptr<SceneGraphNode> _currentSky;
+    SceneGraphNode_wptr _currentSelection;
+    SceneGraphNode_wptr _currentSky;
 
     /// Scene::load must be called by every scene. Add a load flag to make sure!
     bool _loadComplete;
@@ -193,7 +193,7 @@ class NOINITVTABLE Scene : public Resource {
     /// ranges, etc)
     SceneState _sceneState;
     vectorImpl<DELEGATE_CBK<> > _selectionChangeCallbacks;
-    vectorImpl<std::weak_ptr<SceneGraphNode>> _sceneSelectionCandidates;
+    vectorImpl<SceneGraphNode_wptr> _sceneSelectionCandidates;
 
    protected:
     void resetSelection();

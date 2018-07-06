@@ -49,9 +49,10 @@ void calculateBoneToWorldTransform(Bone* pInternalNode);
 class ByteBuffer;
 class SceneAnimator {
    public:
-    typedef hashMapImpl<I32 /*frameIndex*/, vectorAlg::vecSize /*vectorIntex*/>
-        LineMap;
-    typedef hashMapImpl<I32 /*animationID*/, LineMap> LineCollection;
+    // index = frameIndex; entry = vectorIndex;
+    typedef vectorImpl<I32> LineMap;
+    // index = animationID;
+    typedef vectorImpl<LineMap> LineCollection;
 
     SceneAnimator();
     ~SceneAnimator();

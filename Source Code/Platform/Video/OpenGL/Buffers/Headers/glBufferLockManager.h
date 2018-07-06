@@ -55,7 +55,6 @@ struct BufferRange {
 struct BufferLock {
     BufferRange _range;
     GLsync _syncObj;
-    GLenum _status;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -64,17 +63,12 @@ class glBufferLockManager : public glLockManager {
     glBufferLockManager(bool cpuUpdates);
     ~glBufferLockManager();
 
-    void WaitForLockedRange();
-    void WaitForLockedRange(size_t _lockBeginBytes, size_t _lockLength);
-    void LockRange(size_t _lockBeginBytes, size_t _lockLength);
+    void WaitForLockedRange(size_t lockBeginBytes, size_t lockLength);
+    void LockRange(size_t lockBeginBytes, size_t lockLength);
 
    private:
-    void cleanup(BufferLock* _bufferLock);
-
+    void cleanup(BufferLock* bufferLock);
     vectorImpl<BufferLock> _bufferLocks;
-
-    size_t _lastLockOffset;
-    size_t _lastLockRange;
 };
 
 };  // namespace Divide

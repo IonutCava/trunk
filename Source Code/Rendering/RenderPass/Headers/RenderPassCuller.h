@@ -72,9 +72,6 @@ class RenderPassCuller {
     VisibleNodeCache& frustumCull(
         SceneGraphNode& currentNode, SceneState& sceneState,
         const std::function<bool(const SceneGraphNode&)>& cullingFunction);
-    VisibleNodeCache& cullSpecial(
-        RenderPassCuller::VisibleNodeCache& inputNodes,
-        const std::function<bool(const RenderableNode&)>& cullingFunction);
     void refresh();
 
    protected:

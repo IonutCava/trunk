@@ -123,7 +123,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     ShaderBuffer* newSB(const stringImpl& bufferName, 
                         const U32 sizeFactor = 1,
                         const bool unbound = false,
-                        const bool persistentMapped = true) const override;
+                        const bool persistentMapped = true,
+                        BufferUpdateFrequency frequency =
+                            BufferUpdateFrequency::ONCE) const override;
     /// Create and return a new texture array (optionally, flipped vertically). The
     /// callee is responsible for it's deletion!
     Texture* newTextureArray() const override;

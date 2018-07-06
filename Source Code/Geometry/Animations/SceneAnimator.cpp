@@ -15,7 +15,7 @@ void calculateBoneToWorldTransform(Bone* child) {
     // This will climb the nodes up along through the parents concatenating all
     // the matrices to get the Object to World transform,
     // or in this case, the Bone To World transform
-    if (Config::USE_OPENGL_RENDERING == true) {
+    if (Config::USE_OPENGL_RENDERING) {
         while (parent) {
             child->_globalTransform =  parent->_localTransform * child->_globalTransform;
             // get the parent of the bone we are working on
@@ -66,9 +66,11 @@ bool SceneAnimator::init() {
     D32 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     mat4<F32> rotationmat;
     vectorImpl<mat4<F32> > vec;
+    vectorAlg::vecSize animationCount = _animations.size();
+    _skeletonLines.resize(animationCount);
 
     // pre-calculate the animations
-    for (vectorAlg::vecSize i(0); i < _animations.size(); ++i) {
+    for (vectorAlg::vecSize i(0); i < animationCount; ++i) {
         std::shared_ptr<AnimEvaluator> crtAnimation = _animations[i];
         D32 duration = crtAnimation->duration();
         D32 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
@@ -94,6 +96,8 @@ bool SceneAnimator::init() {
                 }
             }
         }
+
+        _skeletonLines[i].resize(crtAnimation->frameCount(), -1);
         _maximumAnimationFrames = std::max(crtAnimation->frameCount(), _maximumAnimationFrames);
     }
 
@@ -164,21 +168,16 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 /// Renders the current skeleton pose at time index dt
 const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
                                                      const D32 dt) {
-    I32 frameIndex = _animations[animationIndex]->frameIndexAt(dt);
-    LineMap& lineMap = _skeletonLines[animationIndex];
-    LineMap::iterator it = lineMap.find(std::max(frameIndex - 2, 0));
+    I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
+    I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
-    if (it == std::end(lineMap)) {
-        vectorAlg::vecSize lineEntry =
-            static_cast<vectorAlg::vecSize>(_skeletonLinesContainer.size());
-        it = hashAlg::insert(lineMap,
-                             std::make_pair(frameIndex, lineEntry)).first;
-
+    if (vecIndex == -1) {
+        vecIndex = to_int(_skeletonLinesContainer.size());
         _skeletonLinesContainer.push_back(vectorImpl<Line>());
     }
 
     // create all the needed points
-    vectorImpl<Line>& lines = _skeletonLinesContainer[it->second];
+    vectorImpl<Line>& lines = _skeletonLinesContainer.at(vecIndex);
     if (lines.empty()) {
         lines.reserve(vectorAlg::vecSize(boneCount()));
         // Construct skeleton

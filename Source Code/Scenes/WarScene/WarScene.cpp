@@ -252,13 +252,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
-            std::begin(cylinder[i]->getChildren())
-            ->second->getComponent<RenderingComponent>();
+            cylinder[i]->getChildren().front()->getComponent<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
-        std::begin(cylinder[i]->getChildren())
-            ->second->getNode()
-            ->getMaterialTpl()
-            ->setDoubleSided(true);
+        cylinder[i]->getChildren().front()->getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
@@ -323,9 +319,9 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     SceneGraphNode_ptr flag;
     flag = _sceneGraph->findNode("flag").lock();
-    RenderingComponent* const renderable = std::begin(flag->getChildren())->second->getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = flag->getChildren().front()->getComponent<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
-    Material* mat = std::begin(flag->getChildren())->second->getNode()->getMaterialTpl();
+    Material* mat = flag->getChildren().front()->getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     mat->setAmbient(vec4<F32>(0.01f));
     flag->setActive(false);
@@ -340,7 +336,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     NavigationComponent* flagNComp =
         flag0->getComponent<NavigationComponent>();
     RenderingComponent* flagRComp =
-        std::begin(flag0->getChildren())->second->getComponent<RenderingComponent>();
+        flag0->getChildren().front()->getComponent<RenderingComponent>();
 
     flagPComp->physicsGroup(
         flag->getComponent<PhysicsComponent>()->physicsGroup());
@@ -358,7 +354,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagPComp = flag1->getComponent<PhysicsComponent>();
     flagNComp = flag1->getComponent<NavigationComponent>();
-    flagRComp = std::begin(flag1->getChildren())->second->getComponent<RenderingComponent>();
+    flagRComp = flag1->getChildren().front()->getComponent<RenderingComponent>();
 
     flagPComp->physicsGroup(
         flag->getComponent<PhysicsComponent>()->physicsGroup());

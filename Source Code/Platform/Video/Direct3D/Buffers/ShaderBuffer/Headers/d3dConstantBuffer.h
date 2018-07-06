@@ -41,7 +41,8 @@ class d3dConstantBuffer final : public ShaderBuffer {
     d3dConstantBuffer(const stringImpl& bufferName,
                       const U32 sizeFactor,
                       bool unbound,
-                      bool persistentMapped);
+                      bool persistentMapped,
+                      BufferUpdateFrequency frequency);
     ~d3dConstantBuffer();
 
     void Destroy();

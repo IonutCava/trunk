@@ -55,8 +55,7 @@ class SceneGraph : private NonCopyable {
         return _root;
     }
 
-    inline std::weak_ptr<SceneGraphNode> findNode(const stringImpl& name,
-                                                  bool sceneNodeName = false) {
+    inline SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false) {
         return _root->findNode(name, sceneNodeName);
     }
 
@@ -65,17 +64,16 @@ class SceneGraph : private NonCopyable {
 
     void idle();
 
-    void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits);
+    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits);
 
-    void deleteNode(std::weak_ptr<SceneGraphNode> node, bool deleteOnAdd);
+    void deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd);
 
    protected:
     void onNodeDestroy(SceneGraphNode& oldNode);
 
    private:
     SceneGraphNode_ptr _root;
-    vectorImpl<std::weak_ptr<SceneGraphNode>> _pendingDeletionNodes;
+    vectorImpl<SceneGraphNode_wptr> _pendingDeletionNodes;
 };
 
 namespace Attorney {

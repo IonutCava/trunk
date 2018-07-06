@@ -35,8 +35,9 @@ namespace {
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
                                  const U32 sizeFactor,
                                  bool unbound,
-                                 bool persistentMapped)
-    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped),
+                                 bool persistentMapped,
+                                 BufferUpdateFrequency frequency)
+    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped, frequency),
       _UBOid(0),
       _mappedBuffer(nullptr),
       _alignmentPadding(0),
@@ -86,8 +87,13 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                         "Can't mapped persistent buffer!");
         
     } else {
+        GLenum _usage = _frequency == BufferUpdateFrequency::ONCE 
+                                    ? GL_STATIC_DRAW
+                                    : _frequency == BufferUpdateFrequency::OCASSIONAL
+                                                  ? GL_DYNAMIC_DRAW
+                                                  : GL_STREAM_DRAW;
         GLUtil::createAndAllocBuffer((_bufferSize + _alignmentPadding) * queueLength(), 
-                                     GL_DYNAMIC_DRAW,
+                                      _usage,
                                      _UBOid);
     }
 }
@@ -113,12 +119,9 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range);
-        bufferPtr dst = (U8*)(_mappedBuffer) + offset;
-        memcpy(dst, data, range);
+        memcpy((U8*)(_mappedBuffer) + offset, data, range);
     } else {
-        /*
-        glInvalidateBufferSubData(_UBOid, offset, range);
-        */
+        //glInvalidateBufferSubData(_UBOid, offset, range);
         glNamedBufferSubData(_UBOid, offset, range, data);
     }
 }
@@ -162,7 +165,7 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,
     }
 
     if (_persistentMapped) {
-        _lockManager->WaitForLockedRange();
+        _lockManager->WaitForLockedRange(0, _bufferSize);
     }
 
     // Fetch uniform block name:

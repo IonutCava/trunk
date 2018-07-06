@@ -82,11 +82,13 @@ class SceneTransform : public SceneNode {
 
 
 typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+
 class SceneGraphNode : public GUIDWrapper,
                        private NonCopyable,
                        public std::enable_shared_from_this<SceneGraphNode> {
    public:
-    typedef hashMapImpl<stringImpl, SceneGraphNode_ptr > NodeChildren;
+    typedef vectorImpl<SceneGraphNode_ptr> NodeChildren;
 
     /// Usage context affects lighting, navigation, physics, etc
     enum class UsageContext : U32 {
@@ -130,14 +132,15 @@ class SceneGraphNode : public GUIDWrapper,
     inline void removeNode(SceneGraphNode_ptr node, bool recursive = true) {
         removeNode(node->getName(), recursive);
     }    
-     /// Find a node in the graph based on the SceneGraphNode's name
+    
+    /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the
     /// SceneNode's name
-    std::weak_ptr<SceneGraphNode> findNode(const stringImpl& name,
-                                           bool sceneNodeName = false);
+    SceneGraphNode_wptr findNode(const stringImpl& name, bool sceneNodeName = false);
+    /// Find a child Node using the given name (either SGN name or SceneNode name)
+    SceneGraphNode_wptr findChild(const stringImpl& name, bool sceneNodeName = false);
     /// Find the graph nodes whom's bounding boxes intersects the given ray
-    void intersect(const Ray& ray, F32 start, F32 end,
-                   vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits);
+    void intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits);
 
     /// Selection helper functions
     void setSelected(const bool state);
@@ -149,7 +152,7 @@ class SceneGraphNode : public GUIDWrapper,
     /*Node Management*/
 
     /*Parent <-> Children*/
-    inline std::weak_ptr<SceneGraphNode> getParent() const {
+    inline SceneGraphNode_wptr getParent() const {
         return _parent;
     }
 

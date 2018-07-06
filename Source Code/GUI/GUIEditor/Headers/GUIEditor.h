@@ -46,6 +46,7 @@ class ToggleButton;
 namespace Divide {
 
 class SceneGraphNode;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 /// Our world editor interface
 DEFINE_SINGLETON(GUIEditor)
   public:
@@ -53,7 +54,7 @@ DEFINE_SINGLETON(GUIEditor)
     void setVisible(bool visible);  //< Hide or show the editor
     bool isVisible();  //< Return true if editor is visible, false if is hidden
     bool update(const U64 deltaTime);  //< Used to update time dependent elements
-    bool Handle_ChangeSelection(std::weak_ptr<SceneGraphNode> newNode);
+    bool Handle_ChangeSelection(SceneGraphNode_wptr newNode);
 
     /// Returns true if the last click was in one of the editor's windows
     inline bool wasControlClick() { return _wasControlClick; }
@@ -176,7 +177,7 @@ private:
     bool _wasControlClick;
     bool _createNavMeshQueued;
     bool _pauseSelectionTracking;
-    std::weak_ptr<SceneGraphNode> _currentSelection;
+    SceneGraphNode_wptr _currentSelection;
     CEGUI::Window *
         _editorWindow;  //< This will be a pointer to the EditorRoot window.
     CEGUI::Window *_saveSelectionButton;

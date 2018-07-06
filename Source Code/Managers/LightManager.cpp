@@ -64,11 +64,19 @@ void LightManager::init() {
         DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
     // NORMAL holds general info about the currently active
     // lights: position, color, etc.
-    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock", 1, true, false);
+    _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)] = GFX_DEVICE.newSB("dvd_LightBlock",
+                                                                             1,
+                                                                             true,
+                                                                             false,
+                                                                             BufferUpdateFrequency::OCASSIONAL);
     // SHADOWS holds info about the currently active shadow
     // casting lights:
     // ViewProjection Matrices, View Space Position, etc
-    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock", 1, false, false);
+    _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)] = GFX_DEVICE.newSB("dvd_ShadowBlock",
+                                                                             1,
+                                                                             false,
+                                                                             false,
+                                                                             BufferUpdateFrequency::OCASSIONAL);
 
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->Create(
         Config::Lighting::MAX_LIGHTS_IN_VIEW, sizeof(LightProperties));

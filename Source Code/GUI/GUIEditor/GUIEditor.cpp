@@ -91,7 +91,7 @@ bool GUIEditor::init() {
     return true;
 }
 
-bool GUIEditor::Handle_ChangeSelection(std::weak_ptr<SceneGraphNode> newNode) {
+bool GUIEditor::Handle_ChangeSelection(SceneGraphNode_wptr newNode) {
     _currentSelection = newNode;
     if (isVisible()) {
         UpdateControls();

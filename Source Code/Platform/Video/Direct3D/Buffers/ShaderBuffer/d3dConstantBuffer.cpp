@@ -5,8 +5,9 @@ namespace Divide {
 d3dConstantBuffer::d3dConstantBuffer(const stringImpl& bufferName,
                                      const U32 sizeFactor, 
                                      bool unbound,
-                                     bool persistentMapped)
-    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped)
+                                     bool persistentMapped,
+                                     BufferUpdateFrequency frequency)
+    : ShaderBuffer(bufferName, sizeFactor, unbound, persistentMapped, frequency)
 
 {
 }

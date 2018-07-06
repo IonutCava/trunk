@@ -43,6 +43,8 @@ struct dtCrowdAgent;
 namespace Divide {
 
 class SceneGraphNode;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+
 class NPC;
 namespace AI {
 class AITeam;

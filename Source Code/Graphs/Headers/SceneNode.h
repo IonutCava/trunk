@@ -64,6 +64,8 @@ class ShaderProgram;
 class SceneGraphNode;
 enum class RenderStage : U32;
 
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+
 namespace Attorney {
     class SceneNodeSceneGraph;
 };

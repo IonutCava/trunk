@@ -131,8 +131,8 @@ void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount) {
     m_State = GLIM_BATCH_STATE::STATE_EMPTY;
 
     m_Attributes.clear();
-    m_PositionData.clear();
-
+    m_PositionData.resize(0);
+    
     m_IndexBuffer_Points.clear();
     m_IndexBuffer_Lines.clear();
     m_IndexBuffer_Triangles.clear();
@@ -371,7 +371,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
             iAttributeArray = it2->second;
         } else {
             iAttributeArray = it->first;
-            hashAlg::insert(attribs, std::make_pair(uiCurrentProgram, iAttributeArray));
+            hashAlg::emplace(attribs, uiCurrentProgram, iAttributeArray);
         }
 
         if (iAttributeArray < 0) {

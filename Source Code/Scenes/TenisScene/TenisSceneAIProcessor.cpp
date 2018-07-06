@@ -11,7 +11,7 @@ namespace Divide {
 
 using namespace AI;
 
-TenisSceneAIProcessor::TenisSceneAIProcessor(std::weak_ptr<SceneGraphNode> target)
+TenisSceneAIProcessor::TenisSceneAIProcessor(SceneGraphNode_wptr target)
     : AIProcessor(),
       _target(target),
       _attackBall(false),

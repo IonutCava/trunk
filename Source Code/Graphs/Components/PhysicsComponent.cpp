@@ -57,9 +57,8 @@ void PhysicsComponent::useDefaultTransform(const bool state) {
 void PhysicsComponent::cookCollisionMesh(const stringImpl& sceneName) {
     STUBBED("ToDo: add terrain height field and water cooking support! -Ionut")
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(
-            sceneName);
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        child->getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
     }
 
     if (_parentSGN.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {

@@ -219,7 +219,7 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     ///  Query object used for this mesh
     dtNavMeshQuery* _navQuery;
     /// SceneGraphNode from which to build
-    std::weak_ptr<SceneGraphNode> _sgn;
+    SceneGraphNode_wptr _sgn;
     std::atomic<bool> _debugDraw;
     bool _renderConnections;
     RenderMode _renderMode;

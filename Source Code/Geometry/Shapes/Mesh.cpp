@@ -23,12 +23,10 @@ Mesh::~Mesh()
 
 /// Mesh bounding box is built from all the SubMesh bounding boxes
 bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
-    typedef SceneGraphNode::NodeChildren::value_type value_type;
     BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
-    for (value_type it : sgn.getChildren()) {
-        SceneGraphNode_ptr child = it.second;
+    for (SceneGraphNode_ptr child : sgn.getChildren()) {
         if (isSubMesh(child)) {
             bb.Add(child->getInitialBoundingBox());
         } else {
@@ -69,12 +67,10 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 /// Called from SceneGraph "sceneUpdate"
 void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                        SceneState& sceneState) {
-    typedef SceneGraphNode::NodeChildren::value_type value_type;
-
     if (hasFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
-        for (value_type it : sgn.getChildren()) {
-            AnimationComponent* comp = it.second->getComponent<AnimationComponent>();
+        for (SceneGraphNode_ptr child : sgn.getChildren()) {
+            AnimationComponent* comp = child->getComponent<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (comp) {
                 comp->playAnimations(playAnimations && comp->playAnimations());

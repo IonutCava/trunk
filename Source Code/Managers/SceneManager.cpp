@@ -176,7 +176,11 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         }
     }
 
-    _renderPassCuller->cullSpecial(nodes, meshCullingFunction);
+    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
+    visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
+                                      std::end(visibleNodes),
+                                      meshCullingFunction),
+                      std::end(visibleNodes));
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),

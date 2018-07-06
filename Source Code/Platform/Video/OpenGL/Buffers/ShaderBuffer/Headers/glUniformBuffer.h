@@ -45,7 +45,8 @@ class glUniformBuffer final : public ShaderBuffer {
      glUniformBuffer(const stringImpl &bufferName,
                      const U32 sizeFactor, 
                      bool unbound,
-                     bool persistentMapped);
+                     bool persistentMapped,
+                     BufferUpdateFrequency frequency);
     ~glUniformBuffer();
 
     void Destroy();

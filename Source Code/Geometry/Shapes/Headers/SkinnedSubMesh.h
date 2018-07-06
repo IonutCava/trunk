@@ -38,11 +38,9 @@ namespace Divide {
 
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
-    typedef vectorImpl<BoundingBox> boundingBoxPerFrame;
-    typedef hashMapImpl<U32 /*animation ID*/, boundingBoxPerFrame>
-        boundingBoxPerAnimation;
-    typedef hashMapImpl<U32 /*animation ID*/, std::atomic_bool /*computed BBs*/>
-        boundingBoxPerAnimationStatus;
+    typedef vectorImpl<BoundingBox> BoundingBoxPerFrame;
+    typedef vectorImpl<BoundingBoxPerFrame> BoundingBoxPerAnimation;
+    typedef vectorImpl<AtomicWrapper<bool>>  BoundingBoxPerAnimationStatus;
 
    public:
     SkinnedSubMesh(const stringImpl& name);
@@ -64,13 +62,13 @@ class SkinnedSubMesh : public SubMesh {
     vectorImpl<Task_weak_ptr> _bbBuildTasks;
     SceneAnimator* _parentAnimatorPtr;
     /// Build status of bounding boxes for each animation (true if BBs are available)
-    boundingBoxPerAnimationStatus _boundingBoxesAvailable;
+    BoundingBoxPerAnimationStatus _boundingBoxesAvailable;
     /// Build status of bounding boxes for each animation (true if BBs are being computed)
-    boundingBoxPerAnimationStatus _boundingBoxesComputing;
+    BoundingBoxPerAnimationStatus _boundingBoxesComputing;
     /// BoundingBoxes for every frame
-    boundingBoxPerFrame _bbsPerFrame;
+    BoundingBoxPerFrame _bbsPerFrame;
     /// store a map of bounding boxes for every animation at every frame
-    boundingBoxPerAnimation _boundingBoxes;
+    BoundingBoxPerAnimation _boundingBoxes;
 };
 
 };  // namespace Divide

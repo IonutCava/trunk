@@ -36,7 +36,7 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 void SceneGraph::idle()
 {
     if (!_pendingDeletionNodes.empty()) {
-        for (std::weak_ptr<SceneGraphNode> node : _pendingDeletionNodes) {
+        for (SceneGraphNode_wptr node : _pendingDeletionNodes) {
             deleteNode(node, true);
         }
       
@@ -44,7 +44,7 @@ void SceneGraph::idle()
     }
 }
 
-void SceneGraph::deleteNode(std::weak_ptr<SceneGraphNode> node, bool deleteOnAdd) {
+void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
     SceneGraphNode_ptr sgn = node.lock();
     if (!sgn) {
         return;
@@ -66,8 +66,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end,
-                           vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits) {
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode_wptr>& selectionHits) {
     _root->intersect(ray, start, end, selectionHits);
 }
 

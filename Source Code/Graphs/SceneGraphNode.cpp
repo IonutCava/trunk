@@ -15,12 +15,10 @@
 namespace Divide {
 
 bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
-    typedef SceneGraphNode::NodeChildren::value_type value_type;
     BoundingBox& bb = sgn.getBoundingBox();
 
     bb.reset();
-    for (value_type it : sgn.getChildren()) {
-        SceneGraphNode_ptr child = it.second;
+    for (SceneGraphNode_ptr child : sgn.getChildren()) {
         bb.Add(child->getBoundingBoxConst());
     }
     return SceneNode::computeBoundingBox(sgn);
@@ -76,8 +74,8 @@ SceneGraphNode::~SceneGraphNode()
 
     // delete child nodes recursively
     WriteLock w_lock(_childrenLock);
-    for (NodeChildren::value_type& iter : _children) {
-        DIVIDE_ASSERT(iter.second.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
+    for (const SceneGraphNode_ptr& child : _children) {
+        DIVIDE_ASSERT(child.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
     }
     _children.clear();
     
@@ -124,16 +122,15 @@ void SceneGraphNode::setParent(SceneGraphNode_ptr parent) {
 }
 
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
-    // Time to add it to the children map
-    std::pair<NodeChildren::iterator, bool> result;
-    // Try and add it to the map
-    WriteLock w_lock(_childrenLock);
-    result = hashAlg::insert(_children, std::make_pair(node->getName(), node));
-    // If we had a collision (same name?)
-    if (!result.second) {
-        /// delete the old SceneGraphNode and add this one instead
-        (result.first)->second = node;
+    // Time to add it to the children vector
+    SceneGraphNode_ptr child = findChild(node->getName()).lock();
+
+    if (child) {
+        removeNode(child, true);
     }
+
+    WriteLock w_lock(_childrenLock);
+    _children.push_back(node);
 
     return node;
 }
@@ -155,8 +152,9 @@ SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl&
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
-    SceneGraphNode_ptr sceneGraphNode = std::make_shared<SceneGraphNode>(
-        node, name.empty() ? node.getName() : name);
+    SceneGraphNode_ptr sceneGraphNode = 
+        std::make_shared<SceneGraphNode>(node, name.empty() ? node.getName()
+                                                            : name);
 
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(shared_from_this());
@@ -172,15 +170,20 @@ SceneGraphNode_ptr SceneGraphNode::createNode(SceneNode& node, const stringImpl&
 void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
     UpgradableReadLock url(_childrenLock);
     // find the node in the children map
-    NodeChildren::iterator it = _children.find(nodeName);
+    NodeChildren::const_iterator childIt = std::find_if(std::cbegin(_children),
+                                                        std::cend(_children),
+                                                        [&nodeName](const SceneGraphNode_ptr& child) {
+                                                            return child->getName().compare(nodeName) == 0;
+                                                        });
     // If we found the node we are looking for
-    if (it != std::end(_children)) {
+    if (childIt != std::cend(_children)) {
         UpgradeToWriteLock uwl(url);
         // Remove it from the map
-        _children.erase(it);
+        _children.erase(childIt);
     } else {
         if (recursive) {
-            for (U8 i = 0; i < _children.size(); ++i) {
+            size_t childCount = _children.size();
+            for (size_t i = 0; i < childCount; ++i) {
                 removeNode(nodeName);
             }
         }
@@ -189,30 +192,47 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
     // Call delete on the SceneGraphNode's pointer to do that
 }
 
-// Finding a node based on the name of the SceneGraphNode or the SceneNode it
-// holds
-// Switching is done by setting sceneNodeName to false if we pass a
-// SceneGraphNode name
+SceneGraphNode_wptr SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName) {
+    // The current node isn't the one we want,
+    // so recursively check all children
+    ReadLock r_lock(_childrenLock);
+    for (SceneGraphNode_ptr child : _children) {
+        if (sceneNodeName ? child->getNode()->getName().compare(name) == 0
+                          : child->getName().compare(name) == 0) {
+            return child;
+        }
+    }
+
+    // no children's name matches or there are no more children
+    // so return nullptr, indicating that the node was not found yet
+    return SceneGraphNode_wptr();
+}
+
+// Finding a node based on the name of the SceneGraphNode or the SceneNode it holds
+// Switching is done by setting sceneNodeName to false if we pass a SceneGraphNode name
 // or to true if we search by a SceneNode's name
-std::weak_ptr<SceneGraphNode> SceneGraphNode::findNode(const stringImpl& name,
-                                                       bool sceneNodeName) {
+SceneGraphNode_wptr SceneGraphNode::findNode(const stringImpl& name,  bool sceneNodeName) {
     // Make sure a name exists
     if (!name.empty()) {
         // check if it is the name we are looking for
-        if ((sceneNodeName && _node->getName().compare(name) == 0) ||
-            getName().compare(name) == 0) {
+        if (sceneNodeName ? _node->getName().compare(name) == 0
+                          : getName().compare(name) == 0) {
             // We got the node!
             return shared_from_this();
         }
 
-        // The current node isn't the one we want,
-        // so recursively check all children
+        // The current node isn't the one we want, so check children
+        SceneGraphNode_wptr child = findChild(name, sceneNodeName);
+        if (!child.expired()) {
+            return child;
+        }
+
+        // The node we want isn't one of the children, so recursively check each of them
         ReadLock r_lock(_childrenLock);
-        for (const NodeChildren::value_type& it : _children) {
-            std::weak_ptr<SceneGraphNode> returnValue = it.second->findNode(name);
-            // if it is not nullptr it is the node we are looking for so just
-            // pass it through
-            if (returnValue.lock()) {
+        for (SceneGraphNode_ptr crtChild : _children) {
+            SceneGraphNode_wptr returnValue = crtChild->findNode(name, sceneNodeName);
+            // if it is not nullptr it is the node we are looking for so just pass it through
+            if (!returnValue.expired()) {
                 return returnValue;
             }
         }
@@ -220,28 +240,28 @@ std::weak_ptr<SceneGraphNode> SceneGraphNode::findNode(const stringImpl& name,
 
     // no children's name matches or there are no more children
     // so return nullptr, indicating that the node was not found yet
-    return std::weak_ptr<SceneGraphNode>();
+    return SceneGraphNode_wptr();
 }
 
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
-                               vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits) {
+                               vectorImpl<SceneGraphNode_wptr>& selectionHits) {
     if (isSelectable() && _boundingBox.Intersect(ray, start, end)) {
         selectionHits.push_back(shared_from_this());
     }
 
     ReadLock r_lock(_childrenLock);
-    for (const NodeChildren::value_type& it : _children) {
-        it.second->intersect(ray, start, end, selectionHits);
+    for (SceneGraphNode_ptr child : _children) {
+        child->intersect(ray, start, end, selectionHits);
     }
 }
 
 void SceneGraphNode::setSelected(const bool state) {
     _selected = state;
     ReadLock r_lock(_childrenLock);
-    for (NodeChildren::value_type& it : _children) {
-        it.second->setSelected(_selected);
+    for (SceneGraphNode_ptr child : _children) {
+        child->setSelected(_selected);
     }
 }
 
@@ -255,8 +275,8 @@ void SceneGraphNode::setActive(const bool state) {
     }
 
     ReadLock r_lock(_childrenLock);
-    for (NodeChildren::value_type& it : _children) {
-        it.second->setActive(state);
+    for (SceneGraphNode_ptr child : _children) {
+        child->setActive(state);
     }
 }
 
@@ -293,8 +313,8 @@ void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox
 
 void SceneGraphNode::onCameraUpdate(Camera& camera) {
     ReadLock r_lock(_childrenLock);
-    for (NodeChildren::value_type& it : _children) {
-        it.second->onCameraUpdate(camera);
+    for (SceneGraphNode_ptr child : _children) {
+        child->onCameraUpdate(camera);
     }
     r_lock.unlock();
 
@@ -307,9 +327,9 @@ void SceneGraphNode::onCameraUpdate(Camera& camera) {
 void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     // Compute from leaf to root to ensure proper calculations
     ReadLock r_lock(_childrenLock);
-    for (NodeChildren::value_type& it : _children) {
-        assert(it.second);
-        it.second->sceneUpdate(deltaTime, sceneState);
+    for (SceneGraphNode_ptr child : _children) {
+        assert(child);
+        child->sceneUpdate(deltaTime, sceneState);
     }
     r_lock.unlock();
 
@@ -328,8 +348,8 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     if (transformUpdateMask.hasSetFlags()) {
         _boundingBoxDirty = true;
         r_lock.lock();
-        for (NodeChildren::value_type& it : _children) {
-            it.second->getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
+        for (SceneGraphNode_ptr child : _children) {
+            child->getComponent<PhysicsComponent>()->transformUpdateMask().setFlags(transformUpdateMask);
         }
         r_lock.unlock();
         pComp->transformUpdateMask().clearAllFlags();

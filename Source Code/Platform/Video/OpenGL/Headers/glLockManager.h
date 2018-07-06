@@ -44,13 +44,12 @@ class glLockManager {
     void Lock();
 
    protected:
-    GLenum wait(GLsync* _syncObj, GLenum response);
+    void wait(GLsync* syncObj);
 
    protected:
-    GLsync _defaultSync;
-    std::atomic<GLenum> _defaultSyncState;
     // Whether it's the CPU (true) that updates, or the GPU (false)
     bool _CPUUpdates;
+    GLsync _defaultSync;
 };
 
 };  // namespace Divide

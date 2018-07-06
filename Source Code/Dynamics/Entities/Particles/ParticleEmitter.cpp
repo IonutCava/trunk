@@ -203,13 +203,21 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
 }
 
 void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
+
     vec3<F32> up(camera.getUpDir());
     vec3<F32> right(camera.getRightDir());
 
-    _particleShader->Uniform("CameraRight_worldspace", right);
-    _particleShader->Uniform("CameraUp_worldspace", up);
-    _particleDepthShader->Uniform("CameraRight_worldspace", right);
-    _particleDepthShader->Uniform("CameraUp_worldspace", up);
+    if (_camUp != up ) {
+        _camUp.set(up);
+        _particleShader->Uniform("CameraUp_worldspace", up);
+        _particleDepthShader->Uniform("CameraUp_worldspace", up);
+    }
+
+    if (_camRight != right) {
+        _camRight.set(right);
+        _particleShader->Uniform("CameraRight_worldspace", right);
+        _particleDepthShader->Uniform("CameraRight_worldspace", right);
+    }
 }
 
 bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,

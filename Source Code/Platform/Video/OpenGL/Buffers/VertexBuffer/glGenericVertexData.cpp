@@ -422,7 +422,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
     } else {
         // Wait for the target part of the buffer to become available for
         // writing
-        _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
+        _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], dataCurrentSize);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
         bufferPtr dst = (U8*)_bufferPersistentData[buffer] + _startDestOffset[buffer] + offset;

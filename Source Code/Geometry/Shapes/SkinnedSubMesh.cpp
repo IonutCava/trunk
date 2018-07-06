@@ -32,6 +32,13 @@ SkinnedSubMesh::~SkinnedSubMesh()
 void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
     if (_parentAnimatorPtr == nullptr) {
         _parentAnimatorPtr = _parentMesh->getAnimator();
+        vectorAlg::vecSize animationCount = _parentAnimatorPtr->animations().size();
+        _boundingBoxesAvailable.resize(animationCount);
+        _boundingBoxesComputing.resize(animationCount);
+        _boundingBoxes.resize(animationCount);
+        for (vectorAlg::vecSize idx = 0; idx < animationCount; ++idx) {
+            _boundingBoxes.at(idx).resize(_parentAnimatorPtr->frameCount(to_int(idx)));
+        }
     }
 
     sgn.setComponent(
@@ -49,36 +56,28 @@ bool SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnimCompleted(U32 animationIndex) {
-    boundingBoxPerAnimationStatus::iterator it1 = _boundingBoxesAvailable.find(animationIndex);
-    boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
-    it1->second = true;
-    it2->second = false;
+    _boundingBoxesComputing.at(animationIndex) = false;
+    _boundingBoxesAvailable.at(animationIndex) = true;
 }
 
-void SkinnedSubMesh::buildBoundingBoxesForAnim(
-    U32 animationIndex, AnimationComponent* const animComp) {
+void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComponent* const animComp) {
 
-    boundingBoxPerAnimationStatus::iterator it = _boundingBoxesComputing.find(animationIndex);
-    if (it != std::end(_boundingBoxesComputing) && it->second == true) {
+    if (_boundingBoxesComputing.at(animationIndex) == true) {
         return;
     }
-    
-    std::atomic_bool& currentBBStatus = _boundingBoxesAvailable[animationIndex];
-    std::atomic_bool& currentBBComputing = _boundingBoxesComputing[animationIndex];
-    currentBBComputing = true;
-    currentBBStatus = false;
+
+    _boundingBoxesComputing.at(animationIndex) = true;
+    _boundingBoxesAvailable.at(animationIndex) = false;
 
     const vectorImpl<vectorImpl<mat4<F32>>>& currentAnimation = 
         animComp->getAnimationByIndex(animationIndex)->transforms();
 
-    boundingBoxPerFrame& currentBBs = _boundingBoxes[animationIndex];
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
-
     U32 partitionOffset = parentVB->getPartitionOffset(_geometryPartitionID);
     U32 partitionCount = parentVB->getPartitionIndexCount(_geometryPartitionID);
-    currentBBs.resize(animComp->frameCount(animationIndex));
 
     U32 i = 0;
+    BoundingBoxPerFrame& currentBBs = _boundingBoxes.at(animationIndex);
     for (BoundingBox& bb : currentBBs) {
         bb.reset();
         const vectorImpl<mat4<F32> >& transforms = currentAnimation[i++];
@@ -108,12 +107,8 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     // Attempt to get the map of BBs for the current animation
     U32 animationIndex = animComp->animationIndex();
 
-    boundingBoxPerAnimationStatus::iterator it1 = _boundingBoxesAvailable.find(animationIndex);
-    bool bbAvailable = !(it1 == std::end(_boundingBoxesAvailable) || it1->second == false);
-    
-    if (!bbAvailable) {
-        boundingBoxPerAnimationStatus::iterator it2 = _boundingBoxesComputing.find(animationIndex);
-        if (it2 == std::end(_boundingBoxesComputing) || it2->second == false) {
+    if (_boundingBoxesAvailable.at(animationIndex) == false) {
+        if (_boundingBoxesComputing.at(animationIndex) == false) {
             DELEGATE_CBK<> buildBB = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnim,
                                                    this, animationIndex, animComp);
             DELEGATE_CBK<> builBBComplete = DELEGATE_BIND(&SkinnedSubMesh::buildBoundingBoxesForAnimCompleted,
@@ -127,11 +122,8 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
         return true;
     }
 
-    boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
-    // If the BBs are computed, set the BB for the current frame as the node BB
-    if (it3 != std::end(_boundingBoxes)) {
-        sgn.setInitialBoundingBox(it3->second.at(std::max(animComp->frameIndex(), 0)));
-    }
+    BoundingBox& bb = _boundingBoxes.at(animationIndex).at(std::max(animComp->frameIndex(), 0));
+    sgn.setInitialBoundingBox(bb);
 
     return true;
 }

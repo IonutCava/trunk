@@ -25,7 +25,7 @@ void MainScene::updateLights() {
     _sun->setDirection(_sunvector);
     _sun->setDiffuseColor(_sunColor);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
-    for (std::weak_ptr<SceneGraphNode> ter : _visibleTerrains) {
+    for (SceneGraphNode_wptr ter : _visibleTerrains) {
         ter.lock()->getComponent<RenderingComponent>()
             ->getMaterialInstance()
             ->setAmbient(_sunColor);
@@ -43,7 +43,7 @@ void MainScene::processInput(const U64 deltaTime) {
         if (!_freeflyCamera) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            for (std::weak_ptr<SceneGraphNode> terrainNode : _visibleTerrains) {
+            for (SceneGraphNode_wptr terrainNode : _visibleTerrains) {
                 Terrain* ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
@@ -192,7 +192,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
 
     _input->addKeyMapping(Input::KeyCode::KC_F, cbks);
     cbks.second = [this]() {
-        for (std::weak_ptr<SceneGraphNode> ter : _visibleTerrains) {
+        for (SceneGraphNode_wptr ter : _visibleTerrains) {
             ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
     };

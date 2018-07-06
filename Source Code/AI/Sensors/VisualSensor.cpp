@@ -23,8 +23,7 @@ VisualSensor::~VisualSensor()
     _nodePositionsMap.clear();
 }
 
-void VisualSensor::followSceneGraphNode(U32 containerID,
-                                        std::weak_ptr<SceneGraphNode> node) {
+void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode_wptr node) {
 
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
@@ -84,7 +83,7 @@ void VisualSensor::update(const U64 deltaTime) {
     }
 }
 
-std::weak_ptr<SceneGraphNode> VisualSensor::getClosestNode(U32 containerID) {
+SceneGraphNode_wptr VisualSensor::getClosestNode(U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];
@@ -110,7 +109,7 @@ std::weak_ptr<SceneGraphNode> VisualSensor::getClosestNode(U32 containerID) {
         }
     }
 
-    return std::weak_ptr<SceneGraphNode>();
+    return SceneGraphNode_wptr();
 }
 
 F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {

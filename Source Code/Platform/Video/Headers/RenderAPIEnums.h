@@ -360,6 +360,12 @@ enum class GPUVendor : U32 {
     COUNT
 };
 
+enum class BufferUpdateFrequency : U32 {
+    ONCE = 0,       //STATIC
+    OCASSIONAL = 1, //DYNAMIC
+    OFTEN = 2,      //STREAM
+    COUNT
+};
 };  // namespace Divide
 
 #endif

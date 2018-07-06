@@ -16,6 +16,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
       _lodLevel(0),
       _drawOrder(0),
+      _shadowMappingEnabled(false),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -114,6 +115,8 @@ void RenderingComponent::update(const U64 deltaTime) {
         _skeletonPrimitive->paused(true);
     }
 
+    _shadowMappingEnabled = LightManager::getInstance().shadowMappingEnabled();
+
     if (_impostorDirty) {
         std::array<vec3<F32>, 8> points;
         const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
@@ -210,9 +213,8 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
 void RenderingComponent::renderGeometry(const bool state) {
     _renderGeometry = state;
 
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderGeometry(state);
         }
@@ -222,9 +224,8 @@ void RenderingComponent::renderGeometry(const bool state) {
 void RenderingComponent::renderWireframe(const bool state) {
     _renderWireframe = state;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderWireframe(state);
         }
@@ -236,9 +237,8 @@ void RenderingComponent::renderBoundingBox(const bool state) {
     if (!state) {
         _boundingBoxPrimitive->paused(true);
     }
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderBoundingBox(state);
         }
@@ -250,9 +250,8 @@ void RenderingComponent::renderSkeleton(const bool state) {
     if (!state && _skeletonPrimitive) {
         _skeletonPrimitive->paused(true);
     }
-    for (SceneGraphNode::NodeChildren::value_type it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->renderSkeleton(state);
         }
@@ -262,9 +261,8 @@ void RenderingComponent::renderSkeleton(const bool state) {
 void RenderingComponent::castsShadows(const bool state) {
     _castsShadows = state;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->castsShadows(_castsShadows);
         }
@@ -274,9 +272,8 @@ void RenderingComponent::castsShadows(const bool state) {
 void RenderingComponent::receivesShadows(const bool state) {
     _receiveShadows = state;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        RenderingComponent* const renderable =
-            it.second->getComponent<RenderingComponent>();
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        RenderingComponent* const renderable = child->getComponent<RenderingComponent>();
         if (renderable) {
             renderable->receivesShadows(_receiveShadows);
         }
@@ -284,12 +281,11 @@ void RenderingComponent::receivesShadows(const bool state) {
 }
 
 bool RenderingComponent::castsShadows() const {
-    return _castsShadows && LightManager::getInstance().shadowMappingEnabled();
+    return _castsShadows && _shadowMappingEnabled;
 }
 
 bool RenderingComponent::receivesShadows() const {
-    return _receiveShadows &&
-           LightManager::getInstance().shadowMappingEnabled();
+    return _receiveShadows && _shadowMappingEnabled;
 }
 
 bool RenderingComponent::preDraw(const SceneRenderState& renderState,

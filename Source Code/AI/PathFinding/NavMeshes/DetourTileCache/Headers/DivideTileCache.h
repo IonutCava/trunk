@@ -642,7 +642,7 @@ class DivideTileCache {
       * It also stored the convex temp obstacles. (will be gone in the future)
       * In the future this variable will probably disappear.
       **/
-    std::weak_ptr<SceneGraphNode> m_geom;
+    SceneGraphNode_wptr m_geom;
     // TODO maybe in the future I don't want to store inputgeom anymore, at the
     // moment it's only used for adding convex shapes
     // (what really should be done from compressed tiles instead of rebuilding

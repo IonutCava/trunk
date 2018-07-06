@@ -416,7 +416,9 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual ShaderBuffer* newSB(const stringImpl& bufferName,
                                 const U32 sizeFactor = 1,
                                 const bool unbound = false,
-                                const bool persistentMapped = true) const = 0;
+                                const bool persistentMapped = true,
+                                BufferUpdateFrequency frequency =
+                                    BufferUpdateFrequency::ONCE) const = 0;
     virtual GenericVertexData* newGVD(const bool persistentMapped = false) const = 0;
     virtual PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
     virtual Texture* newTextureArray() const = 0;

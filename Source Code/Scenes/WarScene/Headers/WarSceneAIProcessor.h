@@ -103,7 +103,7 @@ class WorkingMemoryFact {
 };
 
 typedef WorkingMemoryFact<AIEntity*, FactType::AI_NODE> AINodeFact;
-typedef WorkingMemoryFact<std::weak_ptr<SceneGraphNode>, FactType::SGN_NODE> SGNNodeFact;
+typedef WorkingMemoryFact<SceneGraphNode_wptr, FactType::SGN_NODE> SGNNodeFact;
 typedef WorkingMemoryFact<vec3<F32>, FactType::POSITION> PositionFact;
 typedef WorkingMemoryFact<U8, FactType::COUNTER_SMALL> SmallCounterFact;
 typedef WorkingMemoryFact<U16, FactType::COUNTER_MEDIUM> MediumCounterFact;
@@ -114,8 +114,8 @@ class GlobalWorkingMemory {
 public:
     GlobalWorkingMemory()
     {
-        _flags[0].value(std::weak_ptr<SceneGraphNode>());
-        _flags[1].value(std::weak_ptr<SceneGraphNode>());
+        _flags[0].value(SceneGraphNode_wptr());
+        _flags[1].value(SceneGraphNode_wptr());
         _flagCarriers[0].value(nullptr);
         _flagCarriers[1].value(nullptr);
         _flagsAtBase[0].value(true);
@@ -138,7 +138,7 @@ class LocalWorkingMemory {
         _hasEnemyFlag.value(false);
         _enemyHasFlag.value(false);
        _isFlagRetriever.value(false);
-       _currentTarget.value(std::weak_ptr<SceneGraphNode>());
+       _currentTarget.value(SceneGraphNode_wptr());
     }
 
     SGNNodeFact _currentTarget;
@@ -199,8 +199,7 @@ class WarSceneAIProcessor : public AIProcessor {
     bool update(const U64 deltaTime, NPC* unitRef = nullptr);
     void processMessage(AIEntity& sender, AIMsg msg, const cdiggins::any& msg_content);
 
-    static void registerFlags(std::weak_ptr<SceneGraphNode> flag1,
-                              std::weak_ptr<SceneGraphNode> flag2) {
+    static void registerFlags(SceneGraphNode_wptr flag1, SceneGraphNode_wptr flag2) {
         _globalWorkingMemory._flags[0].value(flag1);
         _globalWorkingMemory._flags[1].value(flag2);
     }
@@ -242,7 +241,7 @@ class WarSceneAIProcessor : public AIProcessor {
     void printWorkingMemory();
     void initInternal();
     void beginPlan(const GOAPGoal& currentGoal);
-    AIEntity* getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const;
+    AIEntity* getUnitForNode(U32 teamID, SceneGraphNode_wptr node) const;
 
     template <typename... T>
     void PRINT(const char* format, T&&... args) const;

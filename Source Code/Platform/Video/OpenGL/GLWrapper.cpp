@@ -734,12 +734,14 @@ GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
 ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, 
                             const U32 sizeFactor,
                             const bool unbound,
-                            const bool persistentMapped) const {
+                            const bool persistentMapped,
+                            BufferUpdateFrequency frequency) const {
     // The shader buffer can also be persistently mapped, if requested
     return MemoryManager_NEW glUniformBuffer(bufferName, 
                                              sizeFactor,
                                              unbound,
-                                             persistentMapped);
+                                             persistentMapped,
+                                             frequency);
 }
 
 /// Create and return a new texture array (optionally, flipped vertically). The

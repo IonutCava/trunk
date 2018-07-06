@@ -68,14 +68,14 @@ void WarSceneAIProcessor::invalidateCurrentPlan() {
     worldState().setVariable(GOAPFact(Fact::ENEMY_HAS_FLAG), GOAPValue(_globalWorkingMemory._flagCarriers[enemyTeamID].value() != nullptr));
     worldState().setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(_globalWorkingMemory._flagCarriers[ownTeamID].value() != nullptr));
     worldState().setVariable(GOAPFact(Fact::IDLING), GOAPValue(false));
-    _localWorkingMemory._currentTarget.value(std::weak_ptr<SceneGraphNode>());
+    _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
     AIProcessor::invalidateCurrentPlan();
 }
 
 void WarSceneAIProcessor::reset()
 {
-    _globalWorkingMemory._flags[0].value(std::weak_ptr<SceneGraphNode>());
-    _globalWorkingMemory._flags[1].value(std::weak_ptr<SceneGraphNode>());
+    _globalWorkingMemory._flags[0].value(SceneGraphNode_wptr());
+    _globalWorkingMemory._flags[1].value(SceneGraphNode_wptr());
     _globalWorkingMemory._flagCarriers[0].value(nullptr);
     _globalWorkingMemory._flagCarriers[1].value(nullptr);
     _globalWorkingMemory._flagsAtBase[0].value(true);
@@ -102,14 +102,14 @@ void WarSceneAIProcessor::initInternal() {
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
-        std::weak_ptr<SceneGraphNode> node = member.second->getUnitRef()->getBoundNode();
+        SceneGraphNode_wptr node = member.second->getUnitRef()->getBoundNode();
         hashAlg::insert(_nodeToUnitMap[g_myTeamContainer],
                         std::make_pair(node.lock()->getGUID(), member.second));
         _visualSensor->followSceneGraphNode(g_myTeamContainer, node);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-        std::weak_ptr<SceneGraphNode> node = enemy.second->getUnitRef()->getBoundNode();
+        SceneGraphNode_wptr node = enemy.second->getUnitRef()->getBoundNode();
         hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer],
                         std::make_pair(node.lock()->getGUID(), enemy.second));
         _visualSensor->followSceneGraphNode(g_enemyTeamContainer, node);
@@ -192,7 +192,7 @@ bool WarSceneAIProcessor::DIE() {
     return true;
 }
 
-AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const {
+AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, SceneGraphNode_wptr node) const {
     SceneGraphNode_ptr sgnNode(node.lock());
     if (sgnNode) {
         NodeToUnitMap::const_iterator it =
@@ -389,7 +389,7 @@ bool WarSceneAIProcessor::preAction(ActionType type,
                 _globalWorkingMemory._teamAliveCount[enemyTeamID].value() > 0) {
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
-                    std::weak_ptr<SceneGraphNode> enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
+                    SceneGraphNode_wptr enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
                     _entity->updateDestination(enemy.lock()->getComponent<PhysicsComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 } else {
@@ -397,7 +397,7 @@ bool WarSceneAIProcessor::preAction(ActionType type,
                         invalidateCurrentPlan();
                         return false;
                     }
-                    std::weak_ptr<SceneGraphNode> enemy =
+                    SceneGraphNode_wptr enemy =
                         _globalWorkingMemory._flagCarriers[enemyTeamID]
                             .value()
                             ->getUnitRef()
@@ -463,7 +463,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
 
             // Attach flag to entity
             {
-                std::weak_ptr<SceneGraphNode> targetNode = _entity->getUnitRef()->getBoundNode();
+                SceneGraphNode_wptr targetNode = _entity->getUnitRef()->getBoundNode();
                 SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
                 PhysicsComponent* pComp = flag->getComponent<PhysicsComponent>();
                 PhysicsComponent* parentPComp = targetNode.lock()->getComponent<PhysicsComponent>();
@@ -499,7 +499,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
         } break;
         case ActionType::ATTACK_ENEMY: {
             PRINT("Attack enemy action over");
-            _localWorkingMemory._currentTarget.value(std::weak_ptr<SceneGraphNode>());
+            _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
         } break;
         case ActionType::RECOVER_FLAG: {
             PRINT("Recover flag action over");
@@ -644,7 +644,7 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
             SceneGraphNode_ptr target(_localWorkingMemory._currentTarget.value().lock());
             if (target &&
                 target->getGUID() == senderNode->getGUID()) {
-                _localWorkingMemory._currentTarget.value(std::weak_ptr<SceneGraphNode>());
+                _localWorkingMemory._currentTarget.value(SceneGraphNode_wptr());
                 invalidateCurrentPlan();
             }
         } break;

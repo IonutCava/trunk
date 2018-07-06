@@ -74,11 +74,14 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     inline ShaderBuffer* newSB(const stringImpl& bufferName,
                                const U32 sizeFactor = 1,
                                const bool unbound = false,
-                               const bool persistentMapped = true) const override {
+                               const bool persistentMapped = true,
+                               BufferUpdateFrequency frequency =
+                                   BufferUpdateFrequency::ONCE) const override {
         return MemoryManager_NEW d3dConstantBuffer(bufferName, 
                                                    sizeFactor,
                                                    unbound,
-                                                   persistentMapped);
+                                                   persistentMapped,
+                                                   frequency);
     }
 
     inline IMPrimitive* newIMP() const override { return nullptr; }

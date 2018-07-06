@@ -91,9 +91,9 @@ class TenisScene : public Scene {
    private:
     vec3<F32> _sunvector;
     Sphere3D* _ball;
-    std::weak_ptr<SceneGraphNode> _ballSGN;
-    std::weak_ptr<SceneGraphNode> _net;
-    std::weak_ptr<SceneGraphNode> _floor;
+    SceneGraphNode_wptr _ballSGN;
+    SceneGraphNode_wptr _net;
+    SceneGraphNode_wptr _floor;
     DirectionalLight* _sun;
 
    private:  // Game stuff

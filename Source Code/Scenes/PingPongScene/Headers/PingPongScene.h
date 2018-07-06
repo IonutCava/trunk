@@ -72,7 +72,7 @@ class PingPongScene : public Scene {
     vectorImpl<stringImpl> _quotes;
     vec3<F32> _sunvector;
     Sphere3D* _ball;
-    std::weak_ptr<SceneGraphNode> _ballSGN;
+    SceneGraphNode_wptr _ballSGN;
     Camera* _freeFlyCam;
     Camera* _paddleCam;
     DirectionalLight* _sun;

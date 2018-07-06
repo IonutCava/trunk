@@ -86,6 +86,7 @@ GFXDevice::RenderPackage::set(const GFXDevice::RenderPackage& other) {
     _shaderBuffers = other._shaderBuffers;
     _textureData = other._textureData;
     _drawCommands = other._drawCommands;
+
 #endif
 }
 

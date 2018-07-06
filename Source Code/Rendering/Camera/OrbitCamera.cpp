@@ -19,8 +19,7 @@ OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye)
     setMouseSensitivity(0.5f);
 }
 
-void OrbitCamera::setTarget(std::weak_ptr<SceneGraphNode> sgn,
-                            const vec3<F32>& offsetDirection) {
+void OrbitCamera::setTarget(SceneGraphNode_wptr sgn, const vec3<F32>& offsetDirection) {
     _targetNode = sgn;
     _offsetDir = offsetDirection;
     _offsetDir.normalize();

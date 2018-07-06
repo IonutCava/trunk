@@ -39,7 +39,9 @@
 namespace Divide {
 
 class SceneGraphNode;
+typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
 typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
 /// Unit interface
 class Unit : public FrameListener {
    public:
@@ -103,7 +105,7 @@ class Unit : public FrameListener {
     /// Get unit type
     inline UnitType getUnitType() const { return _type; }
     /// Get bound node
-    inline std::weak_ptr<SceneGraphNode> getBoundNode() const {
+    inline SceneGraphNode_wptr getBoundNode() const {
         return _node;
     }
     /// Just before we render the frame
@@ -127,7 +129,7 @@ class Unit : public FrameListener {
     vec3<F32> _currentPosition;
     /// Current destination point cached
     vec3<F32> _currentTargetPosition;
-    std::weak_ptr<SceneGraphNode> _node;
+    SceneGraphNode_wptr _node;
     AttributeMap _attributes;
     mutable SharedLock _unitUpdateMutex;
 };

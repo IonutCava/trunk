@@ -155,6 +155,8 @@ class RenderingComponent : public SGNComponent {
     /// (SceneNode::isInView(...));
     U8 _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;
+    /// System level check for shadowing
+    bool _shadowMappingEnabled;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;

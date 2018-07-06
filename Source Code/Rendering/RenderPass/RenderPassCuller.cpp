@@ -91,20 +91,9 @@ void RenderPassCuller::cullSceneGraphCPU(VisibleNodeCache& nodes,
     }
 
     // Process children if we did not early-out of the culling loop
-    for (SceneGraphNode::NodeChildren::value_type& it : currentNode.getChildren()) {
-        cullSceneGraphCPU(nodes, *it.second, sceneRenderState, cullingFunction);
+    for (SceneGraphNode_ptr child : currentNode.getChildren()) {
+        cullSceneGraphCPU(nodes, *child, sceneRenderState, cullingFunction);
     }
-}
-
-RenderPassCuller::VisibleNodeCache& RenderPassCuller::cullSpecial(
-    RenderPassCuller::VisibleNodeCache& inputNodes,
-    const std::function<bool(const RenderableNode&)>& cullingFunction) {
-    VisibleNodeList& nodes = inputNodes._visibleNodes;
-    nodes.erase(std::remove_if(std::begin(nodes),
-                               std::end(nodes),
-                               cullingFunction),
-                std::end(nodes));
-    return inputNodes;
 }
 
 };

@@ -73,10 +73,10 @@ class MainScene : public Scene {
     bool _freeflyCamera;
     bool _updateLights;
     AudioDescriptor* _beep;
-    vectorImpl<std::weak_ptr<SceneGraphNode>> _visibleTerrains;
+    vectorImpl<SceneGraphNode_wptr> _visibleTerrains;
     WaterPlane* _water;
     DirectionalLight* _sun;
-    std::weak_ptr<SceneGraphNode> _waterGraphNode;
+    SceneGraphNode_wptr _waterGraphNode;
 };
 
 };  // namespace Divide

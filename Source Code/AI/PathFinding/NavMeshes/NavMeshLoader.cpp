@@ -321,7 +321,7 @@ void addTriangle(NavModelData* modelData,
 }
 
 const vec3<F32> borderOffset(BORDER_PADDING);
-bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGraphNode> sgn) {
+bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode_wptr sgn) {
     SceneGraphNode_ptr nodeSGN(sgn.lock());
     assert(nodeSGN != nullptr);
 
@@ -394,7 +394,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGra
 
         // I should remove this hack - Ionut
         if (nodeType == SceneNodeType::TYPE_WATER) {
-            nodeSGN = nodeSGN->getChildren()["waterPlane"];
+            nodeSGN = nodeSGN->findChild("waterPlane").lock();
         }
 
         Console::d_printfn(Locale::get("NAV_MESH_CURRENT_NODE"),
@@ -470,8 +470,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, std::weak_ptr<SceneGra
 // follow -Ionut
 next:
     ;
-    for (SceneGraphNode::NodeChildren::value_type& it : nodeSGN->getChildren()) {
-        if (!parse(it.second->getBoundingBoxConst(), outData, it.second)) {
+    for (SceneGraphNode_ptr child : nodeSGN->getChildren()) {
+        if (!parse(child->getBoundingBoxConst(), outData, child)) {
             return false;
         }
     }

@@ -4,12 +4,15 @@ namespace Divide {
     ShaderBuffer::ShaderBuffer(const stringImpl& bufferName,
                                const U32 sizeFactor,
                                bool unbound,
-                               bool persistentMapped) : RingBuffer(sizeFactor),
+                               bool persistentMapped,
+                               BufferUpdateFrequency frequency)
+                                                      : RingBuffer(sizeFactor),
                                                         GUIDWrapper(),
                                                         _bufferSize(0),
                                                         _primitiveSize(0),
                                                         _primitiveCount(0),
                                                         _alignmentRequirement(0),
+                                                        _frequency(frequency),
                                                         _unbound(unbound),
                                                         _persistentMapped(persistentMapped &&
                                                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)

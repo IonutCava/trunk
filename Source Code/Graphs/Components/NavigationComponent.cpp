@@ -16,18 +16,16 @@ void NavigationComponent::navigationContext(
     const NavigationContext& newContext) {
     _navigationContext = newContext;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        it.second->getComponent<NavigationComponent>()->navigationContext(
-            _navigationContext);
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        child->getComponent<NavigationComponent>()->navigationContext(_navigationContext);
     }
 }
 
 void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
     _overrideNavMeshDetail = detailOverride;
     
-    for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
-        it.second->getComponent<NavigationComponent>()
-            ->navigationDetailOverride(detailOverride);
+    for (SceneGraphNode_ptr child : _parentSGN.getChildren()) {
+        child->getComponent<NavigationComponent>()->navigationDetailOverride(detailOverride);
     }
 }
 };

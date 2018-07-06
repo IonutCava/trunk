@@ -40,7 +40,11 @@ namespace Divide {
 class ShaderProgram;
 class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public GUIDWrapper {
    public:
-    explicit ShaderBuffer(const stringImpl& bufferName, const U32 sizeFactor, bool unbound, bool persistentMapped);
+    explicit ShaderBuffer(const stringImpl& bufferName,
+                          const U32 sizeFactor,
+                          bool unbound,
+                          bool persistentMapped,
+                          BufferUpdateFrequency frequency);
 
     virtual ~ShaderBuffer();
 
@@ -85,6 +89,7 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
 
     const bool _unbound;
     const bool _persistentMapped;
+    const BufferUpdateFrequency _frequency;
 };
 
 };  // namespace Divide

@@ -287,9 +287,9 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     //------------------------ Load up game elements
     //-----------------------------///
     _net = _sceneGraph->findNode("Net");
-    // for(SceneGraphNode::NodeChildren::value_type& it : _net->getChildren()){
-    // it.second->setReceivesShadows(false);
-    //}
+    // for(SceneGraphNode_ptr child : _net->getChildren()) {
+    //     child->setReceivesShadows(false);
+    // }
     _floor = _sceneGraph->findNode("Floor");
     _floor.lock()->getComponent<RenderingComponent>()->castsShadows(false);
 

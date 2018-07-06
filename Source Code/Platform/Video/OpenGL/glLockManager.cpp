@@ -6,24 +6,18 @@ namespace Divide {
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
 
 glLockManager::glLockManager(bool cpuUpdates) : _CPUUpdates(cpuUpdates),
-                                                _defaultSync(nullptr),
-                                                _defaultSyncState(GL_UNSIGNALED)
-
+                                                _defaultSync(nullptr)
 {
 }
 
 glLockManager::~glLockManager()
 {
-    if (_defaultSync != nullptr) {
-        glDeleteSync(_defaultSync);
-        _defaultSync = nullptr;
-        _defaultSyncState = GL_UNSIGNALED;
-    }
+    Wait();
 }
 
 void glLockManager::Wait() {
-    if (_defaultSync != nullptr && _defaultSyncState == GL_SIGNALED) {
-        _defaultSyncState = wait(&_defaultSync, _defaultSyncState);
+    if (_defaultSync != nullptr) {
+        wait(&_defaultSync);
         glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
     }
@@ -31,44 +25,30 @@ void glLockManager::Wait() {
  
 void glLockManager::Lock() {
     assert(_defaultSync == nullptr);
-
-    if (_defaultSyncState != GL_SIGNALED) {
-        _defaultSync =
-            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 
-                        UnusedMask::GL_UNUSED_BIT);
-
-        _defaultSyncState = GL_SIGNALED;
-    }
+    _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
 }
 
-GLenum glLockManager::wait(GLsync* syncObj, GLenum response) {
+void glLockManager::wait(GLsync* syncObj) {
     if (_CPUUpdates) {
+        SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
         GLuint64 waitDuration = 0;
         while (true) {
-            DIVIDE_ASSERT(response != GL_ALREADY_SIGNALED,
-                          "Not sure what to do here. Probably raise an "
-                          "exception or something.");
-
-            response = glClientWaitSync(*syncObj,
-                                        GL_SYNC_FLUSH_COMMANDS_BIT,
-                                        waitDuration);
-            if (response == GL_CONDITION_SATISFIED ||
-                response == GL_ALREADY_SIGNALED ||
-                response == GL_ZERO) {
-                return response;
+            GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, waitDuration);
+            if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
+                return;
             }
-
-            DIVIDE_ASSERT(response != GL_WAIT_FAILED,
+            
+            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED,
                           "Not sure what to do here. Probably raise an "
                           "exception or something.");
+
+            // After the first time, need to start flushing, and wait for a looong time.
+            waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
         }
     } else {
         glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
-        response = GL_UNSIGNALED;
     }
-
-    return response;
 }
 
 };//namespace Divide
