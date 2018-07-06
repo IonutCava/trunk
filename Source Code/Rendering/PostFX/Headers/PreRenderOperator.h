@@ -4,6 +4,8 @@
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 enum RenderStage;
 class Quad3D;
 class Texture;
@@ -59,4 +61,5 @@ private:
 	PostFXRenderStage _stage;
 };
 
+}; //namespace Divide
 #endif

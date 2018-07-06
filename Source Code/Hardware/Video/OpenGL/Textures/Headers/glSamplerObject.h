@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 
+namespace Divide {
+
 class SamplerDescriptor;
 
 class glSamplerObject {
@@ -37,4 +39,6 @@ public:
 private:
     GLuint _samplerID;
 };
+
+}; //namespace Divide
 #endif

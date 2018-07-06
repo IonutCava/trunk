@@ -1,5 +1,7 @@
 #include "Headers/d3dRenderTarget.h"
 
+namespace Divide {
+
 d3dRenderTarget::d3dRenderTarget(bool multisampled) : Framebuffer(multisampled)
 {
 }
@@ -53,3 +55,5 @@ void d3dRenderTarget::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat
 void d3dRenderTarget::BlitFrom(Framebuffer* inputFB, TextureDescriptor::AttachmentType slot, bool blitColor, bool blitDepth)
 {
 }
+
+};

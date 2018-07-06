@@ -150,12 +150,13 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4127;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -198,12 +199,13 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_WIN32_WINNT=0x0601;BOOST_EXCEPTION_DISABLE;_SECURE_SCL=0;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -248,13 +250,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_SECURE_SCL=0;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4127</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

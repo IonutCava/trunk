@@ -37,11 +37,11 @@
 #define MAX_PATHPOLY      256 // max number of polygons in a path
 #define MAX_PATHVERT      512 // most verts in a path
 
-namespace AI {
-// Extra padding added to the border size of tiles (together with agent radius)
-const F32 BORDER_PADDING = -3;
-
-namespace Navigation {
+namespace Divide {
+    namespace AI {
+    // Extra padding added to the border size of tiles (together with agent radius)
+    const F32 BORDER_PADDING = -3;
+        namespace Navigation {
         /// These are just sample areas to use consistent values across the samples.
     /// The use should specify these base on his needs.
     enum SamplePolyAreas
@@ -84,7 +84,8 @@ namespace Navigation {
         PATH_ERROR_NO_STRAIGHT_PATH_CREATE = -5,
         PATH_ERROR_NO_STRAIGHT_PATH_FIND   = -6
     };
-};
+        }; //namespace Navigation
+    }; //namespace AI
+}; //namespace Divide
 
-}; //namespace AI
 #endif

@@ -8,6 +8,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
+namespace Divide {
+
 bool SceneRoot::computeBoundingBox(SceneGraphNode* const sgn) {
     BoundingBox& bb = sgn->getBoundingBox();
     bb.reset();
@@ -250,7 +252,7 @@ void SceneGraphNode::isInViewCallback(){
 void SceneGraphNode::drawDebugAxis() {
     const Transform* transform = getComponent<PhysicsComponent>()->getConstTransform();
     if (transform) {
-        mat4<F32> tempOffset(::getMatrix(transform->getOrientation()));
+        mat4<F32> tempOffset(getMatrix(transform->getOrientation()));
         tempOffset.setTranslation(transform->getPosition());
         _axisGizmo->worldMatrix(tempOffset);
     } else {
@@ -259,3 +261,5 @@ void SceneGraphNode::drawDebugAxis() {
     _axisGizmo->paused(false);
 }
 #endif
+
+};

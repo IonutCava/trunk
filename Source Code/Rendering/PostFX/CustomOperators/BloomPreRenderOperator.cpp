@@ -6,6 +6,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
+namespace Divide {
+
 BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
                                                const vec2<U16>& resolution,
                                                SamplerDescriptor* const sampler) : PreRenderOperator(BLOOM_STAGE,resolution,sampler),
@@ -187,3 +189,5 @@ void BloomPreRenderOperator::toneMapScreen()
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _bright);
     _bright->Uniform("toneMap", false);
 }
+
+};

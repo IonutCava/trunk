@@ -6,6 +6,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+namespace Divide {
+
 RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneGraphNode* const node) : _node(node),
                                                                                                         _sortKeyA( sortKeyA ),
                                                                                                         _sortKeyB( sortKeyB ),
@@ -117,7 +119,7 @@ void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos)
     if(nodeMaterial){
         nodeMaterial->getSortKeys(keyA, keyB);
     }
-    _renderBinStack.push_back(RenderBinItem(keyA, keyB, distToCam, sgn));
+    _renderBinStack.emplace_back(keyA, keyB, distToCam, sgn);
 }
 
 void RenderBin::preRender(const RenderStage& currentRenderStage){
@@ -134,3 +136,5 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
 void RenderBin::postRender(const RenderStage& currentRenderStage){
 
 }
+
+};

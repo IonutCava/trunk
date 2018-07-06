@@ -29,10 +29,12 @@
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
 
-class NPC;
 struct dtCrowdAgent;
-class SceneGraphNode;
 
+namespace Divide {
+
+class SceneGraphNode;
+class NPC;
 namespace AI {
 class AITeam;
 class AISceneImpl;
@@ -54,7 +56,7 @@ public:
         AgentRadius_PLACEHOLDER = 4
     };
 
-    AIEntity(const vec3<F32>& currentPosition, const ::std::string& name);
+    AIEntity(const vec3<F32>& currentPosition, const std::string& name);
     ~AIEntity();
 
     void load(const vec3<F32>& position);
@@ -69,7 +71,7 @@ public:
 
     inline AITeam* getTeam()   const { return _teamPtr; }
            I32     getTeamID() const;
-    const ::std::string& getName() const {return _name;}
+    const std::string& getName() const {return _name;}
 
            void addUnitRef(NPC* const npc);
     inline NPC* getUnitRef()                {return _unitRef;}
@@ -156,7 +158,7 @@ protected:
     void init();
 
 private:
-    ::std::string         _name;
+    std::string           _name;
     AITeam*               _teamPtr;
     AISceneImpl*          _AISceneImpl;
 
@@ -191,5 +193,6 @@ private:
     bool _stopped;
 };
 
-};//namespace AI
+    };//namespace AI
+}; //namespace Divide
 #endif

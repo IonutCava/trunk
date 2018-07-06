@@ -5,6 +5,10 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "core.h"
 
+#include <iomanip> 
+
+namespace Divide {
+
 glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped) : ShaderBuffer(unbound, persistentMapped), 
                                                                         _mappedBuffer(nullptr),
                                                                         _lockManager(nullptr),
@@ -87,7 +91,7 @@ void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const void *d
     }
 }
 
-bool glUniformBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
+bool glUniformBuffer::BindRange(ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
     glBindBufferRange(_target, bindIndex, _UBOid, _primitiveSize * offsetElementCount, _primitiveSize * rangeElementCount);
@@ -95,7 +99,7 @@ bool glUniformBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offs
     return true;
 }
 
-bool glUniformBuffer::Bind(Divide::ShaderBufferLocation bindIndex) const {
+bool glUniformBuffer::Bind(ShaderBufferLocation bindIndex) const {
     DIVIDE_ASSERT(_UBOid != 0, "glUniformBuffer error: Tried to bind an uninitialized UBO");
 
     glBindBufferBase(_target, bindIndex, _UBOid);
@@ -103,7 +107,7 @@ bool glUniformBuffer::Bind(Divide::ShaderBufferLocation bindIndex) const {
     return true;
 }
 
-void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex) {
+void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBufferLocation bindIndex) {
     GLuint prog = shaderProgram->getId();
     GLuint block_index = bindIndex;
 
@@ -176,3 +180,5 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::Shad
         PRINT_FN("%s", (*detail).c_str());
     }
 }
+
+}; //namespace Divide

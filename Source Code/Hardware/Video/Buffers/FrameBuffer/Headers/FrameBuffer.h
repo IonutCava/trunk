@@ -23,12 +23,11 @@
 #ifndef _FRAME_BUFFER_H_
 #define _FRAME_BUFFER_H_
 
-#include "core.h"
-
 #include "Utility/Headers/GUIDWrapper.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 #include <boost/noncopyable.hpp>
+
+namespace Divide {
 
 class Texture;
 class Framebuffer : private boost::noncopyable, public GUIDWrapper {
@@ -117,4 +116,5 @@ protected:
     bool              _attachmentDirty[5];
 };
 
+}; //namespace Divide
 #endif

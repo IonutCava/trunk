@@ -11,6 +11,8 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
+namespace Divide {
+
 Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    SceneNode(TYPE_LIGHT),
                                                    _type(type),
@@ -244,3 +246,5 @@ void Light::generateShadowMaps(SceneRenderState& sceneRenderState){
 void Light::setLightMode(const LightMode& mode) {
     _mode = mode;
 }
+
+};

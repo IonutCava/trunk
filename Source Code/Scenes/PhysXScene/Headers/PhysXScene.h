@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class PhysXScene : public Scene {
 public:
     PhysXScene() : Scene()
@@ -39,9 +41,9 @@ public:
     void processInput(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
-    bool onKeyUp(const OIS::KeyEvent& key);
-    bool mouseMoved(const OIS::MouseEvent& key);
-    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool onKeyUp(const Input::KeyEvent& key);
+    bool mouseMoved(const Input::MouseEvent& key);
+    bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
 
 private:
     void createStack(U32 size = 10);
@@ -50,5 +52,7 @@ private:
 private:
     vec3<F32> _sunvector;
 };
+
+}; //namespace Divide
 
 #endif

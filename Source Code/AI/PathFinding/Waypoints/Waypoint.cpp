@@ -1,4 +1,6 @@
 #include "Headers/Waypoint.h"
+
+namespace Divide {
 namespace Navigation {
     
 	Waypoint::Waypoint(){
@@ -8,4 +10,5 @@ namespace Navigation {
 
 	Waypoint::~Waypoint(){
 	}
+};
 };

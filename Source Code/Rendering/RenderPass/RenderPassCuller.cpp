@@ -6,6 +6,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 RenderPassCuller::RenderPassCuller()
 {
     _visibleNodes.reserve(Config::MAX_VISIBLE_NODES);
@@ -147,3 +149,5 @@ void RenderPassCuller::refresh() {
     refreshNodeList();
     RenderQueue::getInstance().refresh(true);
 }
+
+};

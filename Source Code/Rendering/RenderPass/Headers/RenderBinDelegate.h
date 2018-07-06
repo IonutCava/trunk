@@ -24,6 +24,9 @@
 #define _RENDER_BIN_DELEGATE_H_
 
 #include "RenderBin.h"
+
+namespace Divide {
+
 ///This particular Rendering Bin handles all engine assets that have their own rendering function.
 ///This bin delegates the rendering to the asset itself
 class RenderBinDelegate : public RenderBin {
@@ -31,5 +34,7 @@ public:
 	RenderBinDelegate(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
 	~RenderBinDelegate();
 };
+
+}; //namespace Divide
 
 #endif

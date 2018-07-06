@@ -31,7 +31,9 @@
 #define _CORE_MATH_PLANE_H_
 
 #include "MathVectors.h"
-#include "Utility/Headers/Vector.h"
+
+namespace Divide {
+
 ///This class defines a 3D plane defined as Ax + By + Cz + D = 0
 ///This class is equivalent to a vector, the plane's normal,
 ///whose x, y and z components equate to the coefficients A, B and C respectively
@@ -118,5 +120,7 @@ protected:
 };
 
 typedef vectorImpl<Plane<F32> > PlaneList;
+
+}; //namespace Divide
 
 #endif

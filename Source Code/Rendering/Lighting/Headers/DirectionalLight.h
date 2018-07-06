@@ -26,6 +26,8 @@
 #include "Light.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 class DirectionalLight : public Light {
 public:
 	DirectionalLight(U8 slot);
@@ -53,5 +55,7 @@ protected:
     ///Try to stabilize shadow maps by using a bounding sphere for the frustum. If false, a bounding box is used instead
     bool _csmStabilize;
 };
+
+}; //namespace Divide
 
 #endif

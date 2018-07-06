@@ -9,6 +9,7 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+namespace Divide {
 namespace XML {
     using boost::property_tree::ptree;
     ptree pt;
@@ -812,4 +813,5 @@ namespace XML {
         fclose(xml);
         write_xml(fileLocation, pt_writer,std::locale(),settings);
     }
-}
+}; //namespace XML
+}; //namespace Divide

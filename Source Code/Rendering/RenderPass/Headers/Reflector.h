@@ -25,6 +25,8 @@
 
 #include "Managers/Headers/FrameListenerManager.h"
 
+namespace Divide {
+
 enum ReflectorType{
     TYPE_MIRROR,
     TYPE_WATER_SURFACE,
@@ -90,5 +92,7 @@ protected:
     /// does the reflector plane need updating?
     bool _planeDirty;
 };
+
+}; //namespace Divide
 
 #endif

@@ -372,9 +372,9 @@ namespace NS_GLIM
         if (!m_bUploadedToGPU)
             return;
 
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
-        GL_API::setActiveVAO(0);
+        Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
+        Divide::GL_API::setActiveVAO(0);
     }
 
     void glimBatchData::BindOGL (unsigned int uiCurrentProgram)
@@ -382,9 +382,9 @@ namespace NS_GLIM
         if (!m_bUploadedToGPU)
             return;
 
-        GL_API::setActiveVAO(m_VertexArrayObjectID);
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
-        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        Divide::GL_API::setActiveVAO(m_VertexArrayObjectID);
+        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
+        Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         std::map<std::string, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
@@ -396,7 +396,7 @@ namespace NS_GLIM
             if (iAttributeArray < 0)
                 continue;
 
-            assert(m_VertAttribLocation != (U32)iAttributeArray);
+            assert(m_VertAttribLocation != (GLuint)iAttributeArray);
             assert(BUFFER_OFFSET (it->second.m_uiBufferOffset) != BUFFER_OFFSET(0));
 
             glEnableVertexAttribArray (iAttributeArray);
@@ -463,7 +463,7 @@ namespace NS_GLIM
             glGenBuffers (1, &m_uiElementBufferID_Wireframe);
         }
             
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
+        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
         glBufferData (GL_ARRAY_BUFFER, uiVertices * uiVertexDataSize, NULL, GL_STREAM_DRAW);
 
         // first upload the position data
@@ -497,7 +497,7 @@ namespace NS_GLIM
             // increase the buffer offset
             uiOffset += uiAttributeSize;
         }
-        GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
+        Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
 
         m_uiWireframeElements = (unsigned int) m_IndexBuffer_Wireframe.size();
         m_uiPointElements = (unsigned int) m_IndexBuffer_Points.size ();
@@ -530,5 +530,3 @@ namespace NS_GLIM
     }
 #endif
 }
-
-

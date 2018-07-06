@@ -28,6 +28,8 @@
 #error "No physics library implemented!"
 #endif
 
+namespace Divide {
+
 DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
 
 public:
@@ -70,4 +72,7 @@ private:
 END_SINGLETON
 
 #define PHYSICS_DEVICE PXDevice::getInstance()
+
+}; //namespace Divide
+
 #endif

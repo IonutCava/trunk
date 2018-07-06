@@ -4,6 +4,8 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 
+namespace Divide {
+
 REGISTER_SCENE(NetworkScene);
 
 void NetworkScene::preRender(){
@@ -146,3 +148,5 @@ bool NetworkScene::loadResources(bool continueOnErrors)
     _guiTimers.push_back(0.0f); //Server Ping
     return true;
 }
+
+};

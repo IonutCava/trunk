@@ -25,13 +25,17 @@
 
 #include "OrbitCamera.h"
 
+namespace Divide {
+
 /// A camera that always looks at a given target and orbits around it. It's position / direction can be changed by user input
 class ThirdPersonCamera : public OrbitCamera {
 public:
     ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg);
     void onActivate();
 };
+
+}; //namespace Divide
 
 #endif

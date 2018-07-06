@@ -26,6 +26,8 @@
 #include "ResourceLoader.h"
 #include "Hardware/Platform/Headers/Thread.h"
 
+namespace Divide {
+
 ///Resource Cache responsibilities:
 /// - keep track of already loaded resources
 /// - load new resources using apropriate resource loader and store them in cache
@@ -80,11 +82,12 @@ END_SINGLETON
 template<typename T>
 inline void RemoveResource(T*& resource, bool force = false){
     DIVIDE_ASSERT(ResourceCache::hasInstance(), "ResourceCache error: RemoveResource called without a valid ResourceCache available!");
-    try {
-        if (ResourceCache::getInstance().remove(dynamic_cast<Resource*>(resource), force)) {
+    Resource* res = dynamic_cast<Resource*>(resource);
+    if (res != nullptr) {
+        if (ResourceCache::getInstance().remove(res, force)) {
             resource = nullptr;
         }
-	} catch (const std::bad_cast& ) {
+	} else {
 		ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
 	}
 }
@@ -98,5 +101,7 @@ template<typename T>
 inline T* const FindResourceImpl(const std::string& name){
     return static_cast<T*>(ResourceCache::getInstance().find(name));
 }
+
+}; //namespace Divide
 
 #endif

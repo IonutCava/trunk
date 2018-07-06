@@ -5,6 +5,8 @@
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
+namespace Divide {
+
 Trigger::Trigger() : SceneNode(TYPE_TRIGGER), _drawImpostor(false), _triggerImpostor(nullptr),
                                               _enabled(true),		_impostorSGN(nullptr)
 {
@@ -85,3 +87,5 @@ bool Trigger::trigger(){
     _triggeredTask.get()->startTask();
     return true;
 }
+
+};

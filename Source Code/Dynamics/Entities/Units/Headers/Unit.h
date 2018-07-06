@@ -27,6 +27,8 @@
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Rendering/Headers/FrameListener.h"
 
+namespace Divide {
+
 class SceneGraphNode;
 ///Unit interface
 class Unit  : public FrameListener {
@@ -92,5 +94,7 @@ protected:
     SceneGraphNode* _node;
     mutable SharedLock _unitUpdateMutex;
 };
+
+}; //namespace Divide
 
 #endif

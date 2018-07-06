@@ -1,6 +1,8 @@
 #include "Headers/AnimationUtils.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 namespace AnimUtils {
 	/// there is some type of alignment issue with my mat4 and the aimatrix4x4 class, so the copy must be done manually
 	void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out){
@@ -49,3 +51,5 @@ namespace AnimUtils {
 		out.d4 = in.element(3,3,colMaj);
 	}
 }
+
+};

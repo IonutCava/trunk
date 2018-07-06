@@ -7,6 +7,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+namespace Divide {
+
 REGISTER_SCENE(PingPongScene);
 
 //begin copy-paste
@@ -300,11 +302,11 @@ bool PingPongScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
+bool PingPongScene::onKeyUp(const Input::KeyEvent& key){
     bool keyState = Scene::onKeyUp(key);
-    switch(key.key)	{
+    switch(key._key)	{
         default: break;
-        case OIS::KC_F: {
+        case Input::KeyCode::KC_F: {
             _freeFly = !_freeFly;
             if (!_freeFly)
                 renderState().getCameraMgr().pushActiveCamera(_paddleCam);
@@ -319,11 +321,13 @@ bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
 
 
 
-bool PingPongScene::joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis){
+bool PingPongScene::joystickAxisMoved(const Input::JoystickEvent& key,I8 axis){
     return Scene::joystickAxisMoved(key,axis);
 }
 
-bool PingPongScene::joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button){
-    if(button == 0 && key.device->getID() != InputInterface::JOY_1)  serveBall();
+bool PingPongScene::joystickButtonReleased(const Input::JoystickEvent& key, I8 button){
+    if(button == 0 && key.device->getID() != Input::JOYSTICK_1)  serveBall();
     return Scene::joystickButtonReleased(key, button);
 }
+
+};

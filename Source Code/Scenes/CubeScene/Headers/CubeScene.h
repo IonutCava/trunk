@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class CubeScene : public Scene {
 public:
 	CubeScene() : Scene()
@@ -37,7 +39,9 @@ public:
 	void processInput(const U64 deltaTime);
 	void processTasks(const U64 deltaTime);
 
-	bool onKeyUp(const OIS::KeyEvent& key);
+	bool onKeyUp(const Input::KeyEvent& key);
 };
+
+}; //namespace Divide
 
 #endif

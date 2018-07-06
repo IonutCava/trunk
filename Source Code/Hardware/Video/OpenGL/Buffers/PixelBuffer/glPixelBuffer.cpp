@@ -3,6 +3,8 @@
 #include "Headers/glPixelBuffer.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 size_t glPixelBuffer::sizeOf(GLenum dataType) const{
     switch(_dataType){
         case GL_FLOAT: return sizeof(GLfloat);
@@ -93,9 +95,9 @@ void glPixelBuffer::Bind(GLubyte unit) const {
 }
 
 bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {
-    _internalFormat = Divide::GLUtil::GL_ENUM_TABLE::glImageFormatTable[internalFormatEnum];
-    _format         = Divide::GLUtil::GL_ENUM_TABLE::glImageFormatTable[formatEnum];
-    _dataType       = Divide::GLUtil::GL_ENUM_TABLE::glDataFormat[dataTypeEnum];
+    _internalFormat = GLUtil::GL_ENUM_TABLE::glImageFormatTable[internalFormatEnum];
+    _format         = GLUtil::GL_ENUM_TABLE::glImageFormatTable[formatEnum];
+    _dataType       = GLUtil::GL_ENUM_TABLE::glDataFormat[dataTypeEnum];
 
     Destroy();
     PRINT_FN(Locale::get("GL_PB_GEN"),width,height);
@@ -185,3 +187,5 @@ void glPixelBuffer::updatePixels(const GLfloat * const pixels) {
 
     GL_API::setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
+
+};

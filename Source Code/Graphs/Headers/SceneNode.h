@@ -28,6 +28,10 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
+namespace Divide {
+class Scene;
+class Material;
+
 enum SceneNodeType {
     TYPE_ROOT             = toBit(1), //< root node
     TYPE_OBJECT3D         = toBit(2), //< 3d objects in the scene
@@ -43,8 +47,6 @@ enum SceneNodeType {
     TYPE_PLACEHOLDER      = toBit(11)
 };
 
-class Scene;
-class Material;
 class SceneState;
 class SceneRenderState;
 class ShaderProgram;
@@ -128,4 +130,5 @@ private:
     SceneNodeType _type;
 };
 
+}; //namespace Divide
 #endif

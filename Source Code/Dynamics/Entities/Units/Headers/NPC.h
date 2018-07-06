@@ -24,6 +24,9 @@
 #define _NON_PLAYER_CHARACTER_H_
 
 #include "Character.h"
+
+namespace Divide {
+
 namespace AI {
     class AIEntity;
 };
@@ -39,5 +42,7 @@ public:
 protected:
     AI::AIEntity* _aiUnit;
 };
+
+}; //namespace Divide
 
 #endif

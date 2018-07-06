@@ -27,6 +27,7 @@
 
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
+
 /// Force the use of dedicated nVidia GPUs on Optimus enabled systems 
 /// (e.g. laptops with Intel integrated graphics and a dedicated nVidia GPU)
 #ifdef FORCE_NV_OPTIMUS_HIGHPERFORMANCE
@@ -34,6 +35,8 @@ extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 }
 #endif
+
+namespace Divide {
 
 namespace {
     /// Used for anaglyph rendering
@@ -139,7 +142,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     cmd.shaderProgram()->Uniform("dvd_lodLevel", (I32)cmd.LoD());
     // In an ideal world, we bind the entire buffer once and just index into it in the shader with the drawID
     // This doesn't seem to work properly, for some reason now (08/2014)    
-    _nodeBuffer->BindRange(Divide::SHADER_BUFFER_NODE_INFO, std::max(cmd.drawID(), 0), 1);
+    _nodeBuffer->BindRange(SHADER_BUFFER_NODE_INFO, std::max(cmd.drawID(), 0), 1);
     // Finally, set the proper render states
     setStateBlock(cmd.stateHash());
     // Continue with the draw call
@@ -459,7 +462,7 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 asp
         static const D32 screenZ = 10.0;
 
         // Sets top of frustum based on FoV-Y and near clipping plane
-        F32 top = zPlanes.x * tan(DTR * verticalFoV * 0.5f);
+        F32 top = zPlanes.x * std::tan(DTR * verticalFoV * 0.5f);
         F32 right = aspectRatio * top;
         // Sets right of frustum based on aspect ratio
         F32 frustumshift = (camIOD / 2) * zPlanes.x / screenZ;
@@ -576,24 +579,23 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
     if (visibleNodes.empty()) {
         return;
     }
+    size_t nodeCount = visibleNodes.size();
     // Pass the list of nodes to the renderer for a pre-render pass
     getRenderer()->processVisibleNodes(visibleNodes, _gpuBlock);
     // Generate and upload all lighting data
     LightManager::getInstance().updateAndUploadLightData(_gpuBlock._ViewMatrix);
     // Clear previous node data
     _sgnToDrawIDMap.clear();
-    _matricesData.clear();
     // Allocate sufficient space in the buffers
-    _sgnToDrawIDMap.reserve(visibleNodes.size() + 1);
-    _matricesData.reserve(visibleNodes.size() + 1);
-    // Temporary variable storing data for each node per loop
-    NodeData temp; 
+    _sgnToDrawIDMap.reserve(nodeCount + 1);
     // The first entry has identity values (e.g. for rendering points)
-    _matricesData.push_back(temp);
+    _matricesData.resize(nodeCount + 1);
     // Non SGN entries point to the identity values in the buffer
     _sgnToDrawIDMap[0] = 0;
     // Loop over the list of nodes
-    for (SceneGraphNode* const crtNode : visibleNodes) {
+    for (size_t i = 0; i < nodeCount; ++i) {
+        SceneGraphNode* const crtNode = visibleNodes[i];
+        NodeData& temp = _matricesData[i + 1];
         // Extract transform data
         const Transform* transform = crtNode->getComponent<PhysicsComponent>()->getConstTransform();
         // If we have valid transform data ...
@@ -615,19 +617,17 @@ void GFXDevice::processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleN
             temp._matrix[1].identity();
         }
         // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-        temp._matrix[1].element(3,2,true) = (F32)LightManager::getInstance().getLights().size();
-        temp._matrix[1].element(3,3,true) = (F32)(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
+        temp._matrix[1].element(3,2,true) = static_cast<F32>(LightManager::getInstance().getLights().size());
+        temp._matrix[1].element(3,3,true) = static_cast<F32>(crtNode->getComponent<AnimationComponent>() ? crtNode->getComponent<AnimationComponent>()->boneCount() : 0);
         // Get the color matrix (diffuse, ambient, specular, etc.)
         temp._matrix[2].set(crtNode->getMaterialColorMatrix());
         // Get the material property matrix (alpha test, texture count, texture operation, etc.)
         temp._matrix[3].set(crtNode->getMaterialPropertyMatrix());
-        // Add the node data to the CPU-side buffer
-        _matricesData.push_back(temp);
         // Register the node in the GUID<->Data map
-        _sgnToDrawIDMap[crtNode->getGUID()] = (I32)_matricesData.size() - 1;
+        _sgnToDrawIDMap[crtNode->getGUID()] = static_cast<I32>(i + 1);
     }
     // Once the CPU-side buffer is filled, upload the buffer to the GPU, flushing the old data
-    _nodeBuffer->UpdateData(0,  _matricesData.size() * sizeof(NodeData), _matricesData.data(), true);
+    _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData), _matricesData.data(), true);
 }
 
 /// Depending on the context, either immediately call the function, or pass it to the loading thread via a queue
@@ -809,3 +809,5 @@ void GFXDevice::Screenshot(char* filename){
     // Delete local buffers
     SAFE_DELETE_ARRAY(imageData);
 }
+
+};

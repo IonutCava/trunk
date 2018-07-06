@@ -34,6 +34,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
+namespace Divide {
+
 class Scene;
 class Texture;
 class Material;
@@ -52,7 +54,8 @@ namespace XML {
 	void dumpMaterial(Material& mat);
 
 	Material* loadMaterialXML(const std::string& location, bool rendererDependent = true);
-}
+}; //namespace XML
+}; //namespace Divide
 
 #if defined(_MSC_VER)
 #	pragma warning( pop )

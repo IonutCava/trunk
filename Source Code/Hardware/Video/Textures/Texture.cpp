@@ -4,6 +4,8 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 Texture::Texture(TextureType type, const bool flipped) : HardwareResource("temp_texture"),
                                                         _textureType(type),
                                                         _flipped(flipped),
@@ -98,25 +100,29 @@ bool Texture::LoadFile(U32 target, const std::string& name) {
     // If we have an alpha channel, we must check for translucency
     if (img.alpha()) {
         // Each pixel is independent so this is a brilliant place to parallelize work
+        bool abort = false;
         #pragma omp parallel for
         for (I32 i = 0; i < width; i++) {
-            // We process one column per thread
-            for (I32 j = 0; j < height; j++) {
-                // Check alpha value
-                if (img.getColor(i, j).a < 250) {
-                    // If the pixel is transparent, toggle translucency flag
-                    #pragma omp critical
-                    {
-                        // Should be thread-safe
-                        _hasTransparency = true;
-                        goto foundAlpha;
+            #pragma omp flush (abort)
+            if (!abort) {
+                // We process one column per thread
+                for (I32 j = 0; j < height; j++) {
+                    // Check alpha value
+                    if (img.getColor(i, j).a < 250) {
+                        // If the pixel is transparent, toggle translucency flag
+                        #pragma omp critical
+                        {
+                            // Should be thread-safe
+                            _hasTransparency = true;
+                            abort = true;
+                            #pragma omp flush (abort)
+                        }
                     }
                 }
             }
         }
     }
 
-    foundAlpha:
     // Create a new Rendering API-dependent texture object    
     GFXImageFormat internalFormat = RGB8;
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
@@ -134,3 +140,5 @@ bool Texture::LoadFile(U32 target, const std::string& name) {
     // We will always return true because we load the "missing_texture.jpg" in case of errors
     return true;
 }
+
+};

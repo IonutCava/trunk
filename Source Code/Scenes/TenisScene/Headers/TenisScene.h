@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 namespace AI {
     class AIEntity;
     class AITeam;
@@ -70,9 +72,9 @@ public:
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
-    bool onKeyUp(const OIS::KeyEvent& key);
-    bool mouseMoved(const OIS::MouseEvent& key);
-    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool onKeyUp(const Input::KeyEvent& key);
+    bool mouseMoved(const Input::MouseEvent& key);
+    bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
 
 private:
     //ToDo: replace with Physics system collision detection
@@ -114,4 +116,7 @@ private: //Game stuff
     ///Team's are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam *_team1, *_team2;
 };
+
+}; //namespace Divide
+
 #endif

@@ -10,6 +10,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
 
+namespace Divide {
+
 U32 TerrainChunk::_chunkID = 0;
 
 TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _parentTerrain(parentTerrain),
@@ -83,8 +85,8 @@ void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec
 void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
-    U32 offset = (U32)pow(2.0f, (F32)(lod));
-    U32 div = (U32)pow(2.0f, (F32)(depth+lod));
+    U32 offset = (U32)std::pow(2.0f, (F32)(lod));
+    U32 div = (U32)std::pow(2.0f, (F32)(depth+lod));
     vec2<U32> heightmapDataSize = heightMapSize/(div);
 
     U32 nHMWidth   = heightmapDataSize.x + 1;
@@ -134,3 +136,5 @@ void TerrainChunk::CreateDrawCommand(I8 lod) {
 U8 TerrainChunk::getLoD() const { 
     return _parentNode->getLoD();
  }
+
+};

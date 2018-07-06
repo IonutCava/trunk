@@ -18,6 +18,8 @@
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+namespace Divide {
+
 U64 Kernel::_previousTime = 0ULL;
 U64 Kernel::_currentTime = 0ULL;
 U64 Kernel::_currentTimeFrozen = 0ULL;
@@ -45,7 +47,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _GFX(GFXDevice::getOrCreateInstance()), //Video
                     _SFX(SFXDevice::getOrCreateInstance()), //Audio
                     _PFX(PXDevice::getOrCreateInstance()),  //Physics
-                    _input(InputInterface::getOrCreateInstance()), //Input
+                    _input(Input::InputInterface::getOrCreateInstance()), //Input
                     _GUI(GUI::getOrCreateInstance()),       //Graphical User Interface
                     _sceneMgr(SceneManager::getOrCreateInstance()) //Scene Manager
                     
@@ -213,7 +215,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
 #endif
     
     // Get input events
-    _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
+    /*_APP.hasFocus() ?*/ _input.update(deltaTime) /*: _sceneMgr.onLostFocus()*/;
 
     // Call this to avoid interpolating 60 bone matrices per entity every render call
     // Update the scene state based on current time (e.g. animation matrices)
@@ -428,7 +430,7 @@ ErrorCode Kernel::initialize(const std::string& entryPoint) {
     }
 
     //Bind the kernel with the input interface
-    InputInterface::getInstance().init(this, par.getParam<std::string>("appTitle"));
+    Input::InputInterface::getInstance().init(this, par.getParam<std::string>("appTitle"));
 
     //Initialize GUI with our current resolution
     _GUI.init(resolution);
@@ -497,7 +499,7 @@ void Kernel::shutdown() {
     _SFX.closeAudioApi();
     _GFX.closeRenderingApi();
     _mainTaskPool->wait();
-    InputInterface::destroyInstance();
+    Input::InputInterface::destroyInstance();
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
     Locale::clear();
@@ -511,7 +513,7 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
     Application& APP = Application::getInstance();
     APP.setResolution(w, h);
     // Update internal resolution tracking (used for joysticks and mouse)
-    InputInterface::getInstance().updateResolution(w,h);
+    Input::InputInterface::getInstance().updateResolution(w,h);
     //Update the graphical user interface
     vec2<U16> newResolution(w, h);
     GUI::getInstance().onResize(newResolution);
@@ -534,14 +536,14 @@ bool Kernel::setCursorPosition(U16 x, U16 y) const {
     return true;
 }
 
-bool Kernel::onKeyDown(const OIS::KeyEvent& key) {
+bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if(_GUI.onKeyDown(key)) {
         return _sceneMgr.onKeyDown(key); 
     }
     return true; //< InputInterface needs to know when this is completed
 }
 
-bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
+bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     if(_GUI.onKeyUp(key)) {
         return _sceneMgr.onKeyUp(key); 
     }
@@ -549,7 +551,7 @@ bool Kernel::onKeyUp(const OIS::KeyEvent& key) {
     return false;
 }
 
-bool Kernel::mouseMoved(const OIS::MouseEvent& arg) {
+bool Kernel::mouseMoved(const Input::MouseEvent& arg) {
     _cameraMgr->mouseMoved(arg);
     if(_GUI.mouseMoved(arg)) {
         return _sceneMgr.mouseMoved(arg); 
@@ -558,7 +560,7 @@ bool Kernel::mouseMoved(const OIS::MouseEvent& arg) {
     return false;
 }
 
-bool Kernel::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool Kernel::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
     if(_GUI.mouseButtonPressed(arg, button)) {
         return _sceneMgr.mouseButtonPressed(arg,button); 
     }
@@ -566,7 +568,7 @@ bool Kernel::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID b
     return false;
 }
 
-bool Kernel::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool Kernel::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
     if(_GUI.mouseButtonReleased(arg, button)) {
         return _sceneMgr.mouseButtonReleased(arg,button); 
     }
@@ -574,7 +576,7 @@ bool Kernel::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID 
     return false;
 }
 
-bool Kernel::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
+bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     if(_GUI.joystickAxisMoved(arg,axis)) {
         return _sceneMgr.joystickAxisMoved(arg,axis); 
     }
@@ -582,7 +584,7 @@ bool Kernel::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
     return false;
 }
 
-bool Kernel::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
+bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov){
     if(_GUI.joystickPovMoved(arg,pov)) {
         return _sceneMgr.joystickPovMoved(arg,pov); 
     }
@@ -590,7 +592,7 @@ bool Kernel::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
     return false;
 }
 
-bool Kernel::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
+bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button){
     if(_GUI.joystickButtonPressed(arg,button)) {
         return _sceneMgr.joystickButtonPressed(arg,button); 
     }
@@ -598,7 +600,7 @@ bool Kernel::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
     return false;
 }
 
-bool Kernel::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
+bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button){
     if(_GUI.joystickButtonReleased(arg,button)) {
         return _sceneMgr.joystickButtonReleased(arg,button); 
     }
@@ -606,7 +608,7 @@ bool Kernel::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
     return false;
 }
 
-bool Kernel::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool Kernel::joystickSliderMoved( const Input::JoystickEvent &arg, I8 index){
     if(_GUI.joystickSliderMoved(arg,index)) {
         return _sceneMgr.joystickSliderMoved(arg,index); 
     }
@@ -614,10 +616,12 @@ bool Kernel::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
     return false;
 }
 
-bool Kernel::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool Kernel::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
     if(_GUI.joystickVector3DMoved(arg,index)) {
         return _sceneMgr.joystickVector3DMoved(arg,index); 
     }
     // InputInterface needs to know when this is completed
     return false;
 }
+
+};

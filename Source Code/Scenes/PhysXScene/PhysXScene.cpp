@@ -3,6 +3,9 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Core/Headers/ParamHandler.h"
+
+namespace Divide {
+
 REGISTER_SCENE(PhysXScene);
 
 enum PhysXStateEnum{
@@ -108,29 +111,29 @@ void PhysXScene::createTower(U32 size){
 }
 
 
-bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
-    switch(key.key)	{
+bool PhysXScene::onKeyUp(const Input::KeyEvent& key){
+    switch(key._key)	{
         default: break;
-        case OIS::KC_5:{
+        case Input::KeyCode::KC_5:{
             _paramHandler.setParam("simSpeed", IS_ZERO(_paramHandler.getParam<F32>("simSpeed")) ? 1.0f : 0.0f);
             PHYSICS_DEVICE.updateTimeStep();
             }break;
-        case OIS::KC_1:{
+        case Input::KeyCode::KC_1:{
             static bool hasGroundPlane = false;
             if(!hasGroundPlane){
                 PHYSICS_DEVICE.createPlane(vec3<F32>(0,0,0),random(100.0f, 200.0f));
                 hasGroundPlane = true;
             }
             }break;
-        case OIS::KC_2:
+        case Input::KeyCode::KC_2:
             PHYSICS_DEVICE.createBox(vec3<F32>(0,random(10,30),0),random(0.5f,2.0f));
             break;
-        case OIS::KC_3:{
+        case Input::KeyCode::KC_3:{
             Kernel* kernel = Application::getInstance().getKernel();
             Task_ptr e(kernel->AddTask(0, true, true, DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
             addTask(e);
             }break;
-        case OIS::KC_4:{
+        case Input::KeyCode::KC_4:{
             Kernel* kernel = Application::getInstance().getKernel();
             Task_ptr e(kernel->AddTask(0, true, true, DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
             addTask(e);
@@ -139,7 +142,7 @@ bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
     return Scene::onKeyUp(key);
 }
 
-bool PhysXScene::mouseMoved(const OIS::MouseEvent& key){
+bool PhysXScene::mouseMoved(const Input::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -153,11 +156,13 @@ bool PhysXScene::mouseMoved(const OIS::MouseEvent& key){
     return Scene::mouseMoved(key);
 }
 
-bool PhysXScene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool PhysXScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
     bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[OIS::MB_Right]){
+    if(!_mousePressed[Input::MouseButton::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
     return keyState;
 }
+
+};

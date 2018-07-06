@@ -1,6 +1,8 @@
 #include "Headers/RenderStateBlock.h"
 #include <boost/functional/hash.hpp>
 
+namespace Divide {
+
 RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
                                                            _cachedHash(0),
                                                            _lockHash(false)
@@ -177,3 +179,5 @@ void RenderStateBlockDescriptor::clean() {
     boost::hash_combine(_cachedHash, _stencilFunc);
     boost::hash_combine(_cachedHash, _fillMode);
 }
+
+};

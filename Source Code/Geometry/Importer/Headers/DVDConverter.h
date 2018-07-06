@@ -46,8 +46,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Geometry/Material/Headers/Material.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
-class  Mesh;
-class  SubMesh;
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
@@ -59,6 +57,10 @@ namespace Assimp {
     class Importer;
 };
 
+namespace Divide {
+
+class  Mesh;
+class  SubMesh;
 DEFINE_SINGLETON( DVDConverter )
 
 public:
@@ -89,5 +91,7 @@ private:
     Material::ShadingMode      aiShadingModeInternalTable[Material::ShadingMode_PLACEHOLDER];
     Material::TextureOperation aiTextureOperationTable[Material::TextureOperation_PLACEHOLDER];
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

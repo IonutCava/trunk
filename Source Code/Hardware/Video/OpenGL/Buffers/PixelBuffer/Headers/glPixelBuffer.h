@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 
+namespace Divide {
+
 class glPixelBuffer : public PixelBuffer {
 public:
 
@@ -53,5 +55,7 @@ private:
 	GLenum _format;
 	GLenum _internalFormat;
 };
+
+}; //namespace Divide
 
 #endif

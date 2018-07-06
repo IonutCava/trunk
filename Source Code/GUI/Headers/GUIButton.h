@@ -26,11 +26,13 @@
 #include "GUIElement.h"
 #include "GUIText.h"
 
-namespace CEGUI{
+namespace CEGUI {
     class Window;
     class Font;
     class EventArgs;
 };
+
+namespace Divide {
 
 class GUIButton : public GUIElement {
 typedef DELEGATE_CBK ButtonCallback;
@@ -59,4 +61,7 @@ protected:
     ButtonCallback _callbackFunction;	/* A pointer to a function to call if the button is pressed */
     CEGUI::Window *_btnWindow;
 };
+
+}; //namespace Divide
+
 #endif

@@ -6,6 +6,8 @@
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
+namespace Divide {
+
 SceneManager::SceneManager() : FrameListener(),
                                _GUI(nullptr),
                                _activeScene(nullptr),
@@ -95,15 +97,21 @@ bool SceneManager::deinitializeAI(bool continueOnErrors)  {
     return state;
 }
 
+bool SceneManager::frameStarted(const FrameEvent& evt) {
+    return _activeScene->frameStarted();
+}
+
 bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
     return true;
 }
 
 bool SceneManager::frameEnded(const FrameEvent& evt){
     _renderPassCuller->refresh();
-    if(_loadPreRenderComplete)
+
+    if (_loadPreRenderComplete) {
         Material::unlockShaderQueue();
-    return true;
+    }
+    return _activeScene->frameEnded();
 }
 
 void SceneManager::preRender() {
@@ -146,14 +154,14 @@ void SceneManager::onCameraChange(){
 
 ///--------------------------Input Management-------------------------------------///
 
-bool SceneManager::onKeyDown(const OIS::KeyEvent& key) {
+bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
     if (!_processInput) {
         return false;
     }
     return  _activeScene->onKeyDown(key);
 }
 
-bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
+bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
     if (!_processInput) {
         return false;
     }
@@ -161,7 +169,7 @@ bool SceneManager::onKeyUp(const OIS::KeyEvent& key) {
     return _activeScene->onKeyUp(key);
 }
 
-bool SceneManager::mouseMoved(const OIS::MouseEvent& arg) {
+bool SceneManager::mouseMoved(const Input::MouseEvent& arg) {
     if (!_processInput) {
         return false;
     }
@@ -169,14 +177,14 @@ bool SceneManager::mouseMoved(const OIS::MouseEvent& arg) {
     return _activeScene->mouseMoved(arg);
 }
 
-bool SceneManager::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool SceneManager::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
     if (!_processInput) {
         return false;
     }
     return _activeScene->mouseButtonPressed(arg,button);
 }
 
-bool SceneManager::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool SceneManager::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
     if (!_processInput) {
         return false;
     }
@@ -184,44 +192,46 @@ bool SceneManager::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseBut
     return _activeScene->mouseButtonReleased(arg,button);
 }
 
-bool SceneManager::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
+bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickAxisMoved(arg,axis);
 }
 
-bool SceneManager::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
+bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov){
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickPovMoved(arg,pov);
 }
 
-bool SceneManager::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
+bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button){
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickButtonPressed(arg,button);
 }
 
-bool SceneManager::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
+bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button){
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickButtonReleased(arg,button);
 }
 
-bool SceneManager::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool SceneManager::joystickSliderMoved( const Input::JoystickEvent &arg, I8 index){
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickSliderMoved(arg,index);
 }
 
-bool SceneManager::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool SceneManager::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
     if (!_processInput) {
         return false;
     }
     return _activeScene->joystickVector3DMoved(arg,index);
 }
+
+};

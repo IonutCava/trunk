@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Dynamics/Entities/Particles/Headers/ParticleEmitter.h"
 
+namespace Divide {
+
 ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
     ParticleEmitter* ptr = New ParticleEmitter();
 
@@ -18,3 +20,5 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(ParticleEmitter)
+
+};

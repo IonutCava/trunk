@@ -5,6 +5,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameListener(),
                                                                      _type(type),
                                                                      _resolution(resolution),
@@ -95,3 +97,5 @@ bool Reflector::previewReflection() {
 #   endif
     return true;
 }
+
+};

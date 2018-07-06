@@ -14,6 +14,8 @@
 #include "Geometry/Animations/Headers/AnimationUtils.h"
 #include "Geometry/Animations/Headers/AnimationController.h"
 
+namespace Divide {
+
 namespace {
     size_t GetMatchingFormat(const Assimp::Exporter& exporter, const std::string& extension)
     {
@@ -315,7 +317,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source, Mesh* parentMes
     }
 
     tempSubMesh->setGeometryPartitionId(vb->partitionBuffer(idxCount));
-
+    vb->shrinkToFit();
     if(baseMeshLoading)	return tempSubMesh;
     else  		        return nullptr;
 }
@@ -576,3 +578,5 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned, const aiMaterial* sour
 
     return tempMaterial;
 }
+
+};

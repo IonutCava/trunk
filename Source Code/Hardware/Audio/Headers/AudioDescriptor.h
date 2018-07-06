@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Core/Resources/Headers/Resource.h"
 
+namespace Divide {
+
 class AudioDescriptor : public Resource{
 public:
 	AudioDescriptor(const std::string& audioFile) : Resource(audioFile), 
@@ -60,4 +62,7 @@ private:
 	I8  _bitDepth, _channelId,_volume;
 	std::string _audioFile;
 };
+
+}; //namespace Divide
+
 #endif

@@ -24,16 +24,16 @@
 #define _AUTO_KEY_REPEAT_H_
 
 //Adapted from: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Auto+Repeat+Key+Input
-#include <OIS.h>
-
+#include "Hardware/Input/Headers/InputAggregatorInterface.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+namespace Divide {
+    namespace Input {
 /// A class that repeatedly calls "repeatKey" between "begin" and "end" calls at specified intervals
 class AutoRepeatKey {
 private:
 
-    I32 _key;
-    U32 _char;
+    Input::KeyEvent _key;
 
     D32 _elapsed;
     D32 _delay;
@@ -49,9 +49,9 @@ public:
     ///Default constructor
     AutoRepeatKey(D32 repeatDelay = 0.035, D32 initialDelay = 0.300);
     ///Called when a key is pressed
-    void begin(const OIS::KeyEvent &evt);
+    void begin(const Input::KeyEvent &evt);
     ///Called when a key is released
-    void end(const OIS::KeyEvent &evt);
+    void end(const Input::KeyEvent &evt);
     ///Update the internal time interval between frames (microseconds)
     void update(const U64 deltaTime);
     ///Adjust delay between key injections
@@ -59,5 +59,6 @@ public:
     ///Adjust the initial delay before we start injecting key repeats
     inline void setInitialDelay(F32 initialDelay) {_initialDelay = initialDelay;}
 };
-
+    }; //namespace Input
+}; //namespace Divide
 #endif

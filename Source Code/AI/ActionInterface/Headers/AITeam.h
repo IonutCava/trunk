@@ -25,7 +25,8 @@
 
 #include "AI/Headers/AIEntity.h"
 
-namespace AI {
+namespace Divide {
+    namespace AI {
 
 namespace Navigation{
     class DivideDtCrowd;
@@ -150,5 +151,7 @@ private:
     vectorImpl<Order* > _orders;
 };
 
-};
+}; //namespace AI
+}; //namespace Divide
+
 #endif

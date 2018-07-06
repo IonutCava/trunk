@@ -25,6 +25,7 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
 class TextLabel {
 
 public:
@@ -56,5 +57,7 @@ public:
     bool        _italic;
 
 };
+
+}; //namespace Divide
 
 #endif

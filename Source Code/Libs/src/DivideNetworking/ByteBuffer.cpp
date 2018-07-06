@@ -1,6 +1,8 @@
 #include <ByteBuffer.h>
 #include <cassert>
 
+namespace Divide {
+
 void ByteBuffer::append(const U8 *src, size_t cnt){
     if (!cnt)	return;
 
@@ -11,3 +13,5 @@ void ByteBuffer::append(const U8 *src, size_t cnt){
     memcpy(&_storage[_wpos], src, cnt);
     _wpos += cnt;
 }
+
+}; //namespace Divide

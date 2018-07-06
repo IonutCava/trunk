@@ -26,5 +26,4 @@
 //#include <D3D11.h>
 //#include <CEGUI/RendererModules/Direct3D11/Renderer.h>
 
-
 #endif

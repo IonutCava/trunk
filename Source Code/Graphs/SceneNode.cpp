@@ -8,6 +8,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
+namespace Divide {
+
 SceneNode::SceneNode(const SceneNodeType& type) : SceneNode("default", type)
 {
 }
@@ -158,3 +160,5 @@ void SceneNode::drawBoundingBox(SceneGraphNode* const sgn) const {
     const BoundingBox& bb = sgn->getBoundingBoxConst();
     GFX_DEVICE.drawBox3D(bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 }
+
+};

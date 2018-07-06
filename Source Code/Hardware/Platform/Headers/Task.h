@@ -28,8 +28,9 @@
 #include <boost/enable_shared_from_this.hpp>
 #include "Utility/Headers/GUIDWrapper.h"
 
-enum CallbackParam
-{
+namespace Divide {
+
+enum CallbackParam {
     TYPE_INTEGER,
     TYPE_MEDIUM_INTEGER,
     TYPE_SMALL_INTEGER,
@@ -88,5 +89,7 @@ protected:
 };
 
 typedef std::shared_ptr<Task> Task_ptr;
+
+}; //namespace Divide
 
 #endif

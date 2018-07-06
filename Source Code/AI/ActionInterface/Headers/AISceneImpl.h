@@ -29,8 +29,9 @@
 #include <boost/noncopyable.hpp>
 #include <boost/atomic.hpp>
 
-class Texture;
-namespace AI {
+namespace Divide {
+    class Texture;
+    namespace AI {
 
 enum AIMsg;
 /// Provides a scene-level AI implementation
@@ -200,6 +201,7 @@ private:
     vectorImpl<GOAPGoal* > _activeGoals;
 };
 
-};
+    }; //namespace AI
+}; //namespace Divide
 
 #endif

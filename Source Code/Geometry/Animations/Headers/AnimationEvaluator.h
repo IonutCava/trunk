@@ -31,7 +31,11 @@
 #include <assimp/anim.h>
 #include "Utility/Headers/UnorderedMap.h"
 
-class AnimationChannel{
+struct aiAnimation;
+
+namespace Divide {
+
+class AnimationChannel {
 public:
 	std::string _name;
 	vectorImpl<aiVectorKey > _positionKeys;
@@ -43,7 +47,7 @@ public:
 	U32 _numScalingKeys;
 };
 
-struct aiAnimation;
+
 class AnimEvaluator{
 public:
 
@@ -90,5 +94,7 @@ private:
 	///vector that holds all bone channels
 	vectorImpl<AnimationChannel> _channels;
 };
+
+}; //namespace Divide
 
 #endif

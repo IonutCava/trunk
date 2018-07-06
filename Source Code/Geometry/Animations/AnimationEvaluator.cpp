@@ -2,6 +2,8 @@
 #include "Headers/AnimationUtils.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
 AnimEvaluator::AnimEvaluator( const aiAnimation* pAnim) {
@@ -148,3 +150,5 @@ void AnimEvaluator::Evaluate(const D32 dt, Unordered_map<std::string, Bone*>& bo
 	}
 	_lastTime = time;
 }
+
+};

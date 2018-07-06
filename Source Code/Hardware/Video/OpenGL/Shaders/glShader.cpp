@@ -8,6 +8,8 @@
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 
+namespace Divide {
+
 #define _COMPILE_SHADER_OUTPUT_IN_RELEASE
 
 glShader::glShader(const std::string& name, const ShaderType& type, const bool optimise) : Shader(name, type, optimise)
@@ -142,3 +144,5 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
     }
     return output.str();
 }
+
+};

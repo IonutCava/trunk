@@ -13,6 +13,8 @@
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 bool Vegetation::_staticDataUpdated = false;
 
 Vegetation::Vegetation(const VegetationDetails& details) : SceneNode(details.name, TYPE_VEGETATION_GRASS),
@@ -407,3 +409,5 @@ void Vegetation::generateGrass(){
 
     PRINT_FN(Locale::get("CREATE_GRASS_END"));
 }
+
+};

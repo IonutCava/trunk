@@ -3,6 +3,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 
+namespace Divide {
+
 ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye) : OrbitCamera(THIRD_PERSON, eye)
 {
 }
@@ -12,7 +14,7 @@ void ThirdPersonCamera::onActivate() {
     OrbitCamera::onActivate();
 }
 
-bool ThirdPersonCamera::mouseMoved(const OIS::MouseEvent& arg) {
+bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
     static vec2<F32> mousePos;
     static const F32 rotationLimitRollLower = M_PI * 0.30f - RADIANS(1);
     static const F32 rotationLimitRollUpper = M_PI * 0.175f - RADIANS(1);
@@ -48,3 +50,5 @@ bool ThirdPersonCamera::mouseMoved(const OIS::MouseEvent& arg) {
 
     return OrbitCamera::mouseMoved(arg);
 }
+
+};

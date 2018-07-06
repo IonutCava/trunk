@@ -1,6 +1,7 @@
 #include "Headers/DivideRecast.h"
 #include "Waypoints/Headers/WaypointGraph.h"
 
+namespace Divide {
 namespace AI {
 namespace Navigation {
     static const U8  DT_TILECACHE_NULL_AREA     = 0;
@@ -172,3 +173,4 @@ namespace Navigation {
     }
 }; //namespace Navigation
 }; //namespace AI
+}; //namespace Divide

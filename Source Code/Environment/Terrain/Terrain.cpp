@@ -17,6 +17,8 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 Terrain::Terrain() : Object3D(TERRAIN),
     _alphaTexturePresent(false),
     _terrainWidth(0),
@@ -264,3 +266,5 @@ TerrainTextureLayer::~TerrainTextureLayer()
     RemoveResource(_blendMap);
     RemoveResource(_tileMaps);
 }
+
+};

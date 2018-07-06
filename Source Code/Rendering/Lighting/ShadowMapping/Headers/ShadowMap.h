@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
+namespace Divide {
+
 enum ShadowType{
     SHADOW_TYPE_NONE = -1,
     SHADOW_TYPE_Single,
@@ -100,5 +102,7 @@ private:
     ShadowMap* _shadowMap;
     Light*     _light;
 };
+
+}; //namespace Divide
 
 #endif

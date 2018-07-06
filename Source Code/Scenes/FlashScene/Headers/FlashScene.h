@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class FlashScene : public Scene {
 public:
 	FlashScene() : Scene() {}
@@ -43,5 +45,7 @@ private:
 	F32 update_time;
 	vec4<F32> _vSunColor;
 };
+
+}; //namespace Divide
 
 #endif

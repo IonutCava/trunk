@@ -2,6 +2,8 @@
 
 #include "Core\Math\Headers\MathHelper.h"
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
+
+namespace Divide {
 namespace AI {
 
 const char* GOAPFactName(GOAPFact fact) {
@@ -34,3 +36,4 @@ const GOAPPlan& GOAPGoal::getCurrentPlan() const {
 }
 
 }; //namespace AI
+}; //namespace Divide

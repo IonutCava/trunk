@@ -4,7 +4,9 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Managers/Headers/SceneManager.h"
 
-void Scene::onLostFocus(){
+namespace Divide {
+
+void Scene::onLostFocus() {
    state().resetMovement();
 #ifndef _DEBUG
    _paramHandler.setParam("freezeLoopTime", true);
@@ -49,7 +51,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
         // set it's state to selected
         _currentSelection->setSelected(true);
 #ifdef _DEBUG
-        _lines[DEBUG_LINE_RAY_PICK].push_back(Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
+        _lines[DEBUG_LINE_RAY_PICK].emplace_back(startRay, endRay, vec4<U8>(0, 255, 0, 255));
 #endif
     }
 
@@ -58,83 +60,85 @@ void Scene::findSelection(F32 mouseX, F32 mouseY) {
     }
 }
 
-bool Scene::mouseButtonPressed(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::mouseButtonPressed(const Input::MouseEvent& key, Input::MouseButton button){
     _mousePressed[button] = true;
     switch (button){
         default:       return false;
 
-        case OIS::MB_Left:    break;
-        case OIS::MB_Right:   break;
-        case OIS::MB_Middle:  break;
-        case OIS::MB_Button3: break;
-        case OIS::MB_Button4: break;
-        case OIS::MB_Button5: break;
-        case OIS::MB_Button6: break;
-        case OIS::MB_Button7: break;
+        case Input::MouseButton::MB_Left:    break;
+        case Input::MouseButton::MB_Right:   break;
+        case Input::MouseButton::MB_Middle:  break;
+        case Input::MouseButton::MB_Button3: break;
+        case Input::MouseButton::MB_Button4: break;
+        case Input::MouseButton::MB_Button5: break;
+        case Input::MouseButton::MB_Button6: break;
+        case Input::MouseButton::MB_Button7: break;
     }
     return true;
 }
 
-bool Scene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool Scene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
     _mousePressed[button] = false;
     switch (button){
         default:       return false;
 
-        case OIS::MB_Left:    findSelection(key.state.X.abs, key.state.Y.abs); break;
-        case OIS::MB_Right:   break;
-        case OIS::MB_Middle:  break;
-        case OIS::MB_Button3: break;
-        case OIS::MB_Button4: break;
-        case OIS::MB_Button5: break;
-        case OIS::MB_Button6: break;
-        case OIS::MB_Button7: break;
+        case Input::MouseButton::MB_Left:    findSelection(key.state.X.abs, key.state.Y.abs); break;
+        case Input::MouseButton::MB_Right:   break;
+        case Input::MouseButton::MB_Middle:  break;
+        case Input::MouseButton::MB_Button3: break;
+        case Input::MouseButton::MB_Button4: break;
+        case Input::MouseButton::MB_Button5: break;
+        case Input::MouseButton::MB_Button6: break;
+        case Input::MouseButton::MB_Button7: break;
     }
     return true;
 }
   
-bool Scene::mouseMoved(const OIS::MouseEvent& key){ 
+bool Scene::mouseMoved(const Input::MouseEvent& key){ 
+    state()._mouseXDelta = _previousMousePos.x - key.state.X.abs;
+    state()._mouseYDelta = _previousMousePos.y - key.state.Y.abs;
     _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
     return true;
 }
 
-void Scene::defaultCameraKeys(OIS::KeyCode code, bool upState){
-
+using namespace Input;
+void Scene::defaultCameraKeys(KeyCode code, bool upState){
     if (upState){
         switch (code){
-            case OIS::KC_W: state()._moveFB = 0; break;
-            case OIS::KC_S: state()._moveFB = 0; break;
-            case OIS::KC_A: state()._moveLR = 0; break;
-            case OIS::KC_D:	state()._moveLR = 0; break;
-            case OIS::KC_Q: state()._roll = 0;   break;
-            case OIS::KC_E: state()._roll = 0;   break;
-            case OIS::KC_LEFT:  state()._angleLR = 0; break;
-            case OIS::KC_RIGHT: state()._angleLR = 0; break;
-            case OIS::KC_UP:    state()._angleUD = 0; break;
-            case OIS::KC_DOWN:  state()._angleUD = 0; break;
+            case KeyCode::KC_W: state()._moveFB = 0; break;
+            case KeyCode::KC_S: state()._moveFB = 0; break;
+            case KeyCode::KC_A: state()._moveLR = 0; break;
+            case KeyCode::KC_D:	state()._moveLR = 0; break;
+            case KeyCode::KC_Q: state()._roll = 0;   break;
+            case KeyCode::KC_E: state()._roll = 0;   break;
+            case KeyCode::KC_LEFT:  state()._angleLR = 0; break;
+            case KeyCode::KC_RIGHT: state()._angleLR = 0; break;
+            case KeyCode::KC_UP:    state()._angleUD = 0; break;
+            case KeyCode::KC_DOWN:  state()._angleUD = 0; break;
         }
-    }else{
+    } else {
         switch (code){
-            case OIS::KC_W: state()._moveFB =  1; break;
-            case OIS::KC_S: state()._moveFB = -1; break;
-            case OIS::KC_A: state()._moveLR = -1; break;
-            case OIS::KC_D: state()._moveLR =  1; break;
-            case OIS::KC_Q: state()._roll = -1;   break;
-            case OIS::KC_E: state()._roll =  1;   break;
-            case OIS::KC_LEFT:  state()._angleLR = -1; break;
-            case OIS::KC_RIGHT: state()._angleLR =  1; break;
-            case OIS::KC_UP:    state()._angleUD = -1; break;
-            case OIS::KC_DOWN:  state()._angleUD =  1; break;
+            case KeyCode::KC_W: state()._moveFB =  1; break;
+            case KeyCode::KC_S: state()._moveFB = -1; break;
+            case KeyCode::KC_A: state()._moveLR = -1; break;
+            case KeyCode::KC_D: state()._moveLR =  1; break;
+            case KeyCode::KC_Q: state()._roll = -1;   break;
+            case KeyCode::KC_E: state()._roll =  1;   break;
+            case KeyCode::KC_LEFT:  state()._angleLR = -1; break;
+            case KeyCode::KC_RIGHT: state()._angleLR =  1; break;
+            case KeyCode::KC_UP:    state()._angleUD = -1; break;
+            case KeyCode::KC_DOWN:  state()._angleUD =  1; break;
         }
     }
 }
 
-bool Scene::onKeyDown(const OIS::KeyEvent& key){
-    defaultCameraKeys(key.key, false);
+bool Scene::onKeyDown(const Input::KeyEvent& key){
+    defaultCameraKeys(key._key, false);
 
-    switch(key.key){
+    switch(key._key){
         default:             return false;
-        case OIS::KC_END   : deleteSelection(); break;
-        case OIS::KC_ADD   : {
+        case KeyCode::KC_END   : deleteSelection(); break;
+        case KeyCode::KC_ADD   : {
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
             if (currentCamMoveSpeedFactor < 50){
@@ -142,7 +146,7 @@ bool Scene::onKeyDown(const OIS::KeyEvent& key){
                 cam.setTurnSpeedFactor( cam.getTurnSpeedFactor()  + 1.0f);
             }
         }break;
-        case OIS::KC_SUBTRACT :	{
+        case KeyCode::KC_SUBTRACT :	{
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
             if (currentCamMoveSpeedFactor > 1.0f){
@@ -155,42 +159,42 @@ bool Scene::onKeyDown(const OIS::KeyEvent& key){
     return true;
 }
 
-bool Scene::onKeyUp(const OIS::KeyEvent& key){
-    defaultCameraKeys(key.key, true);
+bool Scene::onKeyUp(const Input::KeyEvent& key){
+    defaultCameraKeys(key._key, true);
 
-    switch( key.key ){
-        case OIS::KC_P: 
+    switch( key._key ){
+        case KeyCode::KC_P: 
             _paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false)); 
             break;
-        case OIS::KC_F2:
+        case KeyCode::KC_F2:
             renderState().toggleSkeletons();
             break;
-        case OIS::KC_F3:
+        case KeyCode::KC_F3:
             _paramHandler.setParam("postProcessing.enableDepthOfField", !_paramHandler.getParam<bool>("postProcessing.enableDepthOfField"));
             break;
-        case OIS::KC_F4:
+        case KeyCode::KC_F4:
             _paramHandler.setParam("postProcessing.enableBloom", !_paramHandler.getParam<bool>("postProcessing.enableBloom"));
             break;
-        case OIS::KC_F5:
+        case KeyCode::KC_F5:
             renderState().toggleAxisLines();
             break;
-        case OIS::KC_B:{
+        case KeyCode::KC_B:{
             renderState().toggleBoundingBoxes();
             }break;
-        case OIS::KC_F8:
+        case KeyCode::KC_F8:
             renderState().drawDebugLines(!renderState()._debugDrawLines);
             break;
-        case OIS::KC_F9:{
+        case KeyCode::KC_F9:{
 #ifdef _DEBUG
             for(U8 i = 0; i < DEBUG_LINE_PLACEHOLDER; ++i)
                 _lines[i].clear();
 #endif
             }break;
-        case OIS::KC_F10:
+        case KeyCode::KC_F10:
             LightManager::getInstance().togglePreviewShadowMaps();
             GFX_DEVICE.togglePreviewDepthBuffer();
             break;
-        case OIS::KC_F7:
+        case KeyCode::KC_F7:
             GFX_DEVICE.Screenshot("screenshot_");
             break;
         default:
@@ -202,9 +206,9 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
 
 static I32 axisDeadZone = 256;
 
-bool Scene::joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis) {
+bool Scene::joystickAxisMoved(const Input::JoystickEvent& key,I8 axis) {
     STUBBED("ToDo: Store input from multiple joysticks in scene state! - Ionut");
-    if (key.device->getID() != InputInterface::JOY_1) {
+    if (key.device->getID() != Input::JOYSTICK_1) {
         return false;
     }
     I32 axisABS = key.state.mAxes[axis].abs;
@@ -251,7 +255,7 @@ bool Scene::joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis) {
     return true;
 }
 
-bool Scene::joystickPovMoved(const OIS::JoyStickEvent& key, I8 pov){
+bool Scene::joystickPovMoved(const Input::JoystickEvent& key, I8 pov){
     if (key.state.mPOV[pov].direction & OIS::Pov::North) { //Going up
         state()._moveFB = 1;
     } else if (key.state.mPOV[pov].direction & OIS::Pov::South) {//Going down
@@ -266,3 +270,5 @@ bool Scene::joystickPovMoved(const OIS::JoyStickEvent& key, I8 pov){
     }
     return true;
 }
+
+};

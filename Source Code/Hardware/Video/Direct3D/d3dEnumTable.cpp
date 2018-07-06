@@ -1,4 +1,7 @@
 #include "Headers/d3dEnumTable.h"
+
+namespace Divide {
+
 unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
 
 namespace D3D_ENUM_TABLE {
@@ -13,3 +16,5 @@ namespace D3D_ENUM_TABLE {
 		d3dTextureTypeTable[TEXTURE_2D_ARRAY_MS] = 7;
 	}
 }
+
+};

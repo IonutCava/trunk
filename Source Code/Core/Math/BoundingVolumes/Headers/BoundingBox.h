@@ -28,6 +28,8 @@
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 class BoundingBox : public GUIDWrapper {
 public:
     BoundingBox() : GUIDWrapper(),
@@ -365,5 +367,7 @@ private:
     mutable vec3<F32> _cacheVector;
     //mutable SharedLock _lock;
 };
+
+}; //namespace Divide
 
 #endif

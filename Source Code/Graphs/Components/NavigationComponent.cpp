@@ -1,6 +1,7 @@
 #include "Headers/NavigationComponent.h"
-
 #include "Graphs/Headers/SceneGraphNode.h"
+
+namespace Divide {
 
 NavigationComponent::NavigationComponent(SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_NAVIGATION, parentSGN),
                                                                             _overrideNavMeshDetail(false),
@@ -27,3 +28,5 @@ void  NavigationComponent::navigationDetailOverride(const bool detailOverride){
         it.second->getComponent<NavigationComponent>()->navigationDetailOverride(detailOverride);
     }
 }
+
+};

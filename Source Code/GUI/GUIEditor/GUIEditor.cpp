@@ -9,6 +9,8 @@
 #include "Managers/Headers/AIManager.h"
 #include "Managers/Headers/SceneManager.h"
 
+namespace Divide {
+
 GUIEditor::GUIEditor() : _init(false), 
                          _wasControlClick(false),
                          _createNavMeshQueued(false),
@@ -936,3 +938,5 @@ bool GUIEditor::Handle_DecrementScaleGranularity(const CEGUI::EventArgs &e) {
     _valuesField[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]->setText(CEGUI::PropertyHelper<F32>::toString(_currentValues[TRANSFORM_SCALE][CONTROL_FIELD_GRANULARITY]));
     return true;
 }
+
+}; //namespace Divide

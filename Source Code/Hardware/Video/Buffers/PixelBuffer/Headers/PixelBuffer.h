@@ -26,6 +26,8 @@
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
+namespace Divide {
+
 class PixelBuffer {
 public:
 
@@ -64,4 +66,5 @@ protected:
 	U32		    _textureType;
 };
 
+}; //namespace Divide
 #endif

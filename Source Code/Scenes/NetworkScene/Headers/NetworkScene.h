@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class NetworkScene : public Scene {
 public:
 	NetworkScene() : Scene() {}
@@ -47,5 +49,8 @@ private:
 	vec2<F32> _sunAngle;
 	vec3<F32> _sunvector;
 };
+
+
+}; //namespace Divide
 
 #endif

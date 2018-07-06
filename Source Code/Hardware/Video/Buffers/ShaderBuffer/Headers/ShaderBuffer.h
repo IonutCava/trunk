@@ -27,6 +27,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Utility/Headers/GUIDWrapper.h"
 #include <boost/noncopyable.hpp>
 
+namespace Divide {
+
 class ShaderProgram;
 class ShaderBuffer : private boost::noncopyable, public GUIDWrapper {
 public:
@@ -51,9 +53,9 @@ public:
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const = 0;
     inline  void SetData(const void *data) { UpdateData(0, _bufferSize, data, true); }
 
-    virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const = 0;
-    virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const = 0;
-    virtual void PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex) = 0;
+    virtual bool BindRange(ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const = 0;
+    virtual bool Bind(ShaderBufferLocation bindIndex) const = 0;
+    virtual void PrintInfo(const ShaderProgram* shaderProgram, ShaderBufferLocation bindIndex) = 0;
 
     inline size_t getPrimitiveSize()  const { return _primitiveSize; }
     inline U32    getPrimitiveCount() const { return _primitiveCount; }
@@ -66,4 +68,5 @@ protected:
     U32    _primitiveCount;
 };
 
+}; //namespace Divide
 #endif

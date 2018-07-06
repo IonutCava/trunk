@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 enum RendererType {
     RENDERER_FORWARD_PLUS     = 0,
     RENDERER_DEFERRED_SHADING = 1,
@@ -54,5 +56,7 @@ protected:
     bool _debugView;
     RendererType _type;
 };
+
+}; //namespace Divide
 
 #endif

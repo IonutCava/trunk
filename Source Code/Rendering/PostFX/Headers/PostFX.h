@@ -25,6 +25,8 @@
 
 #include "core.h"
 
+namespace Divide {
+
 class Quad3D;
 class Camera;
 class GFXDevice;
@@ -99,5 +101,7 @@ private:
     vectorImpl<U32> _shaderFunctionSelection;
     vectorImpl<I32> _shaderFunctionList;
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

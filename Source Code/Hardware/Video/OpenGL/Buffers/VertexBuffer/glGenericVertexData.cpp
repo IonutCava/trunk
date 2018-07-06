@@ -1,6 +1,8 @@
 #include "Headers/glGenericVertexData.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexData(persistentMapped),
                                                                   _prevResult(nullptr),
                                                                   _bufferSet(nullptr),
@@ -202,14 +204,14 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     // Activate transform feedback if needed
     if (feedbackActive) {
        GL_API::setActiveTransformFeedback(_transformFeedback);
-       glBeginTransformFeedback(Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()]);
+       glBeginTransformFeedback(GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()]);
        // Count the number of primitives written to the buffer
        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _feedbackQueries[_currentWriteQuery][command.queryID()]);
     }
     
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        GLenum type = command.renderWireframe() ? GL_LINE_LOOP : Divide::GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
+        GLenum type = command.renderWireframe() ? GL_LINE_LOOP : GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
         glDrawArraysIndirect(type, &cmd);
     }
     // Deactivate transform feedback if needed
@@ -331,7 +333,7 @@ void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor) 
     // Update the attribute data
     glVertexAttribPointer(descriptor.attribIndex(), 
                           descriptor.componentsPerElement(), 
-                          Divide::GLUtil::GL_ENUM_TABLE::glDataFormat[descriptor.dataType()],
+                          GLUtil::GL_ENUM_TABLE::glDataFormat[descriptor.dataType()],
                           descriptor.normalized() ? GL_TRUE : GL_FALSE,
                           (GLsizei)descriptor.stride(),
                           (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
@@ -358,3 +360,5 @@ U32 glGenericVertexData::GetFeedbackPrimitiveCount(U8 queryID) {
     // Return either the previous value or the current one depending on the previous check
     return _prevResult[queryID];
 }
+
+};

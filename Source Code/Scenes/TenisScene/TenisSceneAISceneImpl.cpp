@@ -7,6 +7,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+namespace Divide {
+
 using namespace AI;
 
 TenisSceneAISceneImpl::TenisSceneAISceneImpl(SceneGraphNode* target) : AISceneImpl(),
@@ -34,10 +36,12 @@ void TenisSceneAISceneImpl::processMessage(AIEntity* sender, AIMsg msg, const cd
                 updatePositions();
                 _entity->sendMessage(sender, RECEIVE_DISTANCE_TO_TARGET, distanceToBall(_initialPosition,_ballPosition));
             break;
-        case RECEIVE_DISTANCE_TO_TARGET:
+        case RECEIVE_DISTANCE_TO_TARGET: {
             assert(_entity->getTeam());
-            _entity->getTeam()->getMemberVariable()[sender] = msg_content.constant_cast<F32>();
-            break;
+            bool success = false;
+            _entity->getTeam()->getMemberVariable()[sender] = msg_content.constant_cast<F32>(success);
+            assert(success);
+            }break;
         case ATTACK_BALL:
             currentTeam = _entity->getTeam();
             assert(currentTeam);
@@ -132,5 +136,7 @@ void TenisSceneAISceneImpl::update(const U64 deltaTime, NPC* unitRef){
 }
 
 F32 TenisSceneAISceneImpl::distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition) {
-    return entityPosition.distance(ballPosition);//abs(ballPosition.x - entityPosition.x);
+    return entityPosition.distance(ballPosition);//std::abs(ballPosition.x - entityPosition.x);
 }
+
+};

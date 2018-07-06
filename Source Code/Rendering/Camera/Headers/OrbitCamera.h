@@ -25,6 +25,9 @@
 
 #include "Camera.h"
 
+namespace Divide {
+
+class SceneGraphNode;
 /// A camera that always looks at a given target and orbits around it. It's position / direction can't be changed by user input
 class OrbitCamera : public Camera {
 public:
@@ -44,7 +47,7 @@ public:
     virtual void update(const U64 deltaTime);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
-    virtual bool mouseMoved(const OIS::MouseEvent& arg);
+    virtual bool mouseMoved(const Input::MouseEvent& arg);
     virtual void onActivate();
     virtual void onDeactivate();
 
@@ -64,5 +67,7 @@ protected:
     SceneGraphNode* _targetNode;
     
 };
+
+}; //namespace Divide
 
 #endif

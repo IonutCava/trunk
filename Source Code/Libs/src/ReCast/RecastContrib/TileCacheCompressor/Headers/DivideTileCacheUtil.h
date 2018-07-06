@@ -23,6 +23,8 @@
 #ifndef _DIVIDE_TILE_CACHE_COMPRESSOR_H_
 #define _DIVIDE_TILE_CACHE_COMPRESSOR_H_
 
+namespace Divide {
+
 #include "DetourTileCache/Include/DetourTileCache.h"
 #include "DetourTileCache/Include/DetourTileCacheBuilder.h"
 #include "Detour/Include/DetourCommon.h"
@@ -94,5 +96,7 @@ struct DivideTileCacheConvexObstacle
     unsigned char npending;
     DivideTileCacheConvexObstacle* next;    // Single linked list
 };
+
+}; //namespace Divide
 
 #endif

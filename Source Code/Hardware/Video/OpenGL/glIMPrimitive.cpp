@@ -6,10 +6,12 @@
 #include "core.h"
 #include <glim.h>
 
+namespace Divide {
+
 glIMPrimitive::glIMPrimitive() : IMPrimitive()
 {
     _imInterface = New NS_GLIM::GLIM_BATCH();
-    _imInterface->SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
+    _imInterface->SetVertexAttribLocation(VERTEX_POSITION_LOCATION);
 }
 
 glIMPrimitive::~glIMPrimitive()
@@ -23,7 +25,7 @@ void glIMPrimitive::beginBatch() {
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {
-    _imInterface->Begin(Divide::GLUtil::GL_ENUM_TABLE::glimPrimitiveType[type]);
+    _imInterface->Begin(GLUtil::GL_ENUM_TABLE::glimPrimitiveType[type]);
 }
 
 void glIMPrimitive::vertex(const vec3<F32>& vert) {
@@ -65,3 +67,5 @@ void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     }
     GFX_DEVICE.registerDrawCall();
 }
+
+};

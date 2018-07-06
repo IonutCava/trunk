@@ -23,6 +23,8 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 
+namespace Divide {
+
 inline void GFXDevice::setApi(const RenderAPI& api){
     _api.setId(api);
     switch (api)	{
@@ -59,7 +61,7 @@ inline void GFXDevice::toggleRasterization(bool state) {
 
 /// Register a function to be called in the 2D rendering fase of the GFX Flush routine. Use callOrder for sorting purposes 
 inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder) {
-    _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
+    _2dRenderQueue.emplace_back(callOrder, callback);
 
     std::sort(_2dRenderQueue.begin(), 
               _2dRenderQueue.end(), 
@@ -70,5 +72,7 @@ inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK& callback, U32 cal
 
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
+
+}; //namespace Divide
 
 #endif

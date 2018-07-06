@@ -5,6 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+namespace Divide {
 using namespace AI;
 
 VisualSensor::VisualSensor(AIEntity* const parentEntity) : Sensor(parentEntity, VISUAL_SENSOR) 
@@ -86,3 +87,5 @@ NodeContainerMap::iterator VisualSensor::findContainer(U32 container)  {
 NodeContainer::const_iterator VisualSensor::findNodeEntry(NodeContainerMap::const_iterator containerIt, U64 GUID) const {
     return containerIt->second.find(GUID);
 }
+
+}; //namespace Divide

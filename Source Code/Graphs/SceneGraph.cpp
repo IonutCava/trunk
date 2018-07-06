@@ -4,7 +4,9 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Geometry/Material/Headers/Material.h"
 
-SceneGraph::SceneGraph(){
+namespace Divide {
+
+SceneGraph::SceneGraph() : _nodeCount(0) {
     SceneNode* root = New SceneRoot();
     _root = New SceneGraphNode(this, root);
     _root->castsShadows(false);
@@ -12,6 +14,13 @@ SceneGraph::SceneGraph(){
     root->postLoad(_root);
     _root->setBBExclusionMask(TYPE_SKY | TYPE_LIGHT | TYPE_TRIGGER |TYPE_PARTICLE_EMITTER|TYPE_VEGETATION_GRASS|TYPE_VEGETATION_TREES);
     _updateRunning = false;
+}
+
+SceneGraph::~SceneGraph() {
+    D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
+    _root->unload(); //< Should recursively call unload on the entire scene graph
+    //Should recursively call delete on the entire scene graph
+    SAFE_DELETE(_root);
 }
 
 void SceneGraph::idle(){
@@ -91,3 +100,5 @@ void SceneGraph::printInternal(SceneGraphNode* const sgn){
         printInternal(it.second);
     }
 }
+
+};

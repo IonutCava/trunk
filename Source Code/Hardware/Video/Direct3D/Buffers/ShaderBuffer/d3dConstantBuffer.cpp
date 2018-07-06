@@ -1,5 +1,6 @@
 #include "Headers/d3dConstantBuffer.h"
 
+namespace Divide {
 
 d3dConstantBuffer::d3dConstantBuffer(bool unbound, bool persistentMapped) : ShaderBuffer(unbound, persistentMapped)
 {
@@ -24,14 +25,16 @@ void d3dConstantBuffer::UpdateData(ptrdiff_t offset, ptrdiff_t size, const void 
 }
 
 
-bool d3dConstantBuffer::BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
+bool d3dConstantBuffer::BindRange(ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const {
     return true;
 }
 
-bool d3dConstantBuffer::Bind(Divide::ShaderBufferLocation bindIndex) const {
+bool d3dConstantBuffer::Bind(ShaderBufferLocation bindIndex) const {
     return true;
 }
 
-void d3dConstantBuffer::PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex)
+void d3dConstantBuffer::PrintInfo(const ShaderProgram* shaderProgram, ShaderBufferLocation bindIndex)
 {
 }
+
+};

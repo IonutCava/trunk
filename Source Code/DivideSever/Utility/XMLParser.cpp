@@ -2,6 +2,7 @@
 #include "Headers/Patch.h"
 #include <iostream>
 
+namespace Divide {
 namespace XML
 {
 	using boost::property_tree::ptree;
@@ -23,12 +24,12 @@ namespace XML
 		ptree::iterator it;
 		for (it = pt.get_child("geometry").begin(); it != pt.get_child("geometry").end(); ++it )
 		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 			FileData model;
 			model.ItemName = name;
-			model.ModelName  = "Assets/" + pt.get<string>(name + ".model");
+			model.ModelName  = "Assets/" + pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -44,12 +45,12 @@ namespace XML
 		}
 		for (it = pt.get_child("vegetation").begin(); it != pt.get_child("vegetation").end(); ++it )
 		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 			FileData model;
 			model.ItemName = name;
-			model.ModelName  = "Assets/" + pt.get<string>(name + ".model");
+			model.ModelName  = "Assets/" + pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -67,13 +68,13 @@ namespace XML
 		if(boost::optional<ptree &> primitives = pt.get_child_optional("primitives"))
 		for (it = pt.get_child("primitives").begin(); it != pt.get_child("primitives").end(); ++it )
 		{
-			string name = it->second.data();
-			string format = it->first.data();
-			if(format.find("<xmlcomment>") != string::npos) continue;
+			std::string name = it->second.data();
+			std::string format = it->first.data();
+			if(format.find("<xmlcomment>") != std::string::npos) continue;
 
 			FileData model;
 			model.ItemName = name;
-			model.ModelName = pt.get<string>(name + ".model");
+			model.ModelName = pt.get<std::string>(name + ".model");
 			model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
 			model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
 			model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -92,7 +93,7 @@ namespace XML
 			if(model.ModelName.compare("Text3D") == 0)
 			{
 				model.data = pt.get<F32>(name + ".lineWidth");
-				model.data2 = pt.get<string>(name + ".text");
+				model.data2 = pt.get<std::string>(name + ".text");
 			}
 			else if(model.ModelName.compare("Box3D") == 0)
 				model.data = pt.get<F32>(name + ".size");
@@ -108,3 +109,5 @@ namespace XML
 		}
 	}
 }
+
+}; //namespace Divide

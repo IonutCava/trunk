@@ -25,6 +25,10 @@
 
 #include "JoystickInterface.h"
 
+
+namespace Divide {
+    namespace Input {
+
 void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
 void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect);
 
@@ -67,5 +71,6 @@ public:
         }
     }
 };
-
+    }; //namespace Input
+}; //namespace Divide
 #endif

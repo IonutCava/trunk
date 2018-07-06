@@ -27,6 +27,8 @@
 #include "Hardware/Audio/SDL_mixer/Headers/SDLWrapper.h"
 #include "Hardware/Audio/openAl/Headers/ALWrapper.h"
 
+namespace Divide {
+
 DEFINE_SINGLETON_EXT1(SFXDevice,AudioAPIWrapper)
 
 public:
@@ -54,4 +56,7 @@ private:
 END_SINGLETON
 
 #define SFX_DEVICE SFXDevice::getInstance()
+
+}; //namespace Divide
+
 #endif

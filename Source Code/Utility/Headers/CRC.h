@@ -28,6 +28,7 @@
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+namespace Divide {
 namespace Util {
 	class CRC32	{
 	public:
@@ -58,6 +59,7 @@ namespace Util {
 		// internal support
 		static U32          Reflect(U32 v,I32 bits);
 	};
-};
+}; //namespace Util
+}; //namespace Divide
 
 #endif

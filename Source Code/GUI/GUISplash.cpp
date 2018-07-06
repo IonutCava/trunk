@@ -5,6 +5,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 GUISplash::GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions)
 {
     SamplerDescriptor splashSampler;
@@ -35,3 +37,5 @@ void GUISplash::render(){
     _splashImage->Bind(ShaderProgram::TEXTURE_UNIT0);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _splashShader);
 }
+
+};

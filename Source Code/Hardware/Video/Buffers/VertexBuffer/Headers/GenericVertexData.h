@@ -29,6 +29,8 @@
 /// Use this class to create precise VB data with specific usage (such as particle systems)
 /// Use IMPrimitive for on-the-fly geometry creation
 
+namespace Divide {
+
 class GenericVertexData : public VertexDataInterface {
 public:
 
@@ -102,8 +104,9 @@ public:
     virtual void Draw(const GenericDrawCommand& command, bool skipBind = false) = 0;
     
     inline void Draw(const vectorImpl<GenericDrawCommand>& commands, bool skipBind = false) {
-        for(const GenericDrawCommand& cmd : commands)
+        for (const GenericDrawCommand& cmd : commands) {
             Draw(cmd, skipBind);
+        }
     }
     
     /// When reading and writing to the same buffer, we use a round-robin approach and offset the reading and writing to multiple copies of the data
@@ -139,5 +142,7 @@ protected:
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
 };
+
+}; //namespace Divide
 
 #endif

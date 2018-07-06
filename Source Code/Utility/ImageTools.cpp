@@ -6,6 +6,7 @@
 #include <IL/il.h>
 #include <IL/ilu.h>
 
+namespace Divide {
 namespace ImageTools {
 	inline GFXImageFormat textureFormatDevIL(ILint format)
 	{
@@ -210,4 +211,5 @@ namespace ImageTools {
 
 		return status;
 	}
-} ///namespace ImageTools
+}; //namespace ImageTools
+}; //namespace Divide

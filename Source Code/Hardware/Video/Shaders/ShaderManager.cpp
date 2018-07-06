@@ -6,6 +6,8 @@
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 ShaderManager::ShaderManager() :  _init(false),
                                   _imShader(nullptr),
                                   _nullShader(nullptr)
@@ -253,3 +255,5 @@ bool ShaderManager::unbind() {
     _nullShader->bind();
     return true;
 }
+
+};

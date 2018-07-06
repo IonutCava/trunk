@@ -25,6 +25,8 @@
 
 #include "ResourceDescriptor.h"
 
+namespace Divide {
+
 class Resource;
 class HardwareResource;
 class ResourceLoader : private boost::noncopyable {
@@ -58,4 +60,6 @@ protected:
                                     res->setState(RES_LOADING); \
                                     return ResourceCache::getInstance().loadHW(res, name);\
                                   }
+}; //namespace Divide
+
 #endif

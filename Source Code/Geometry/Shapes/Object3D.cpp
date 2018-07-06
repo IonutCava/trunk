@@ -4,6 +4,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 Object3D::Object3D(const ObjectType& type, U32 flag) : Object3D("", type, flag)
 
 {
@@ -209,3 +211,5 @@ bool Object3D::computeTriangleList(bool force){
     DIVIDE_ASSERT(!_geometryTriangles.empty(), "Object3D error: computeTriangleList() failed to generate any triangles!");
     return true;
 }
+
+};

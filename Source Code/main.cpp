@@ -1,23 +1,26 @@
 #include "core.h"
-
 #include "Core/Headers/Application.h"
 
-I32 main(I32 argc, char **argv){
+#ifdef HIDE_DEBUG_CONSOLE
+    #pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+#endif
+
+int main(int argc, char **argv) {
 
     FILE* output = nullptr;
     output = freopen(OUTPUT_LOG_FILE, "w", stdout);
 	output = freopen(ERROR_LOG_FILE, "w", stderr);
 	//Initialize our application based on XML configuration. Error codes are always less than 0
-	ErrorCode returnCode = Application::getOrCreateInstance().initialize("main.xml",argc,argv);
-	if(returnCode != NO_ERR){
+	Divide::ErrorCode returnCode = Divide::Application::getOrCreateInstance().initialize("main.xml",argc,argv);
+	if(returnCode != Divide::NO_ERR){
 		//If any error occurred, close the application as details should already be logged
-        ERROR_FN("System failed to initialize properly. Error [ %s ] ", getErrorCodeName(returnCode));
+        Divide::ERROR_FN("System failed to initialize properly. Error [ %s ] ", getErrorCodeName(returnCode));
 		return returnCode;
 	}
-	Application::getInstance().run();
+	Divide::Application::getInstance().run();
 	//Stop our application
-	Application::getInstance().deinitialize();
+	Divide::Application::getInstance().deinitialize();
 	//When the application is deleted, the last kernel used gets deleted as well
-	Application::getInstance().destroyInstance();
-	return NO_ERR;
+	Divide::Application::getInstance().destroyInstance();
+	return Divide::NO_ERR;
 }

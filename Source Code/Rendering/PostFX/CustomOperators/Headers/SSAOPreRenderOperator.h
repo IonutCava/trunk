@@ -29,6 +29,8 @@
 ///The intermediate FB is then passed as a 2D sampler in the second stage shader, processed and produces a full screen texure as a result
 ///The result FB contains AO ambient values that should be added to the final fragment's ambient lighting value
 
+namespace Divide {
+
 class SSAOPreRenderOperator : public PreRenderOperator {
 public:
 	SSAOPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
@@ -41,5 +43,7 @@ private:
 	ShaderProgram* _ssaoShader;
 	Framebuffer*   _outputFB;
 };
+
+}; //namespace Divide
 
 #endif

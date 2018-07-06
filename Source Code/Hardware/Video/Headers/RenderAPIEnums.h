@@ -23,31 +23,26 @@
 #ifndef _GFX_ENUMS_H
 #define _GFX_ENUMS_H
 
-/// no need to include the entire resource header for one define
-#ifndef toBit
-#define toBit(X) (1 << (X))
-#endif
-
 namespace Divide {
-    ///State the various attribute locations to use in shaders with VAO/VB's
-    enum AttribLocation {
-         VERTEX_POSITION_LOCATION    = 0,
-         VERTEX_COLOR_LOCATION       = 1,
-         VERTEX_NORMAL_LOCATION      = 2,
-         VERTEX_TEXCOORD_LOCATION    = 3,
-         VERTEX_TANGENT_LOCATION     = 4,
-         VERTEX_BITANGENT_LOCATION   = 5,
-         VERTEX_BONE_WEIGHT_LOCATION = 6,
-         VERTEX_BONE_INDICE_LOCATION = 7
-    };
 
-    enum ShaderBufferLocation {
-        SHADER_BUFFER_GPU_BLOCK       = 0,
-        SHADER_BUFFER_LIGHT_NORMAL    = 1,
-        SHADER_BUFFER_LIGHT_SHADOW    = 2,
-        SHADER_BUFFER_NODE_INFO       = 3,
-        SHADER_BUFFER_BONE_TRANSFORMS = 4
-    };
+///State the various attribute locations to use in shaders with VAO/VB's
+enum AttribLocation {
+    VERTEX_POSITION_LOCATION    = 0,
+    VERTEX_COLOR_LOCATION       = 1,
+    VERTEX_NORMAL_LOCATION      = 2,
+    VERTEX_TEXCOORD_LOCATION    = 3,
+    VERTEX_TANGENT_LOCATION     = 4,
+    VERTEX_BITANGENT_LOCATION   = 5,
+    VERTEX_BONE_WEIGHT_LOCATION = 6,
+    VERTEX_BONE_INDICE_LOCATION = 7
+};
+
+enum ShaderBufferLocation {
+    SHADER_BUFFER_GPU_BLOCK       = 0,
+    SHADER_BUFFER_LIGHT_NORMAL    = 1,
+    SHADER_BUFFER_LIGHT_SHADOW    = 2,
+    SHADER_BUFFER_NODE_INFO       = 3,
+    SHADER_BUFFER_BONE_TRANSFORMS = 4
 };
 
 ///Fixed pipeline functionality should be avoided. Both D3D and OGL should have these matrices
@@ -70,13 +65,13 @@ enum CurrentContext {
 };
 
 enum RenderStage {
-    DEFERRED_STAGE			   = toBit(1),
-    SHADOW_STAGE			   = toBit(2),
-    REFLECTION_STAGE		   = toBit(3),
-    FINAL_STAGE				   = toBit(4),
-    Z_PRE_PASS_STAGE           = toBit(5),
+    DEFERRED_STAGE			   = 1 << (1),
+    SHADOW_STAGE			   = 1 << (2),
+    REFLECTION_STAGE		   = 1 << (3),
+    FINAL_STAGE				   = 1 << (4),
+    Z_PRE_PASS_STAGE           = 1 << (5),
     //Place all stages above this
-    INVALID_STAGE		       = toBit(6),
+    INVALID_STAGE		       = 1 << (6),
     //Special composite stages go here
     DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
     DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE
@@ -279,7 +274,7 @@ enum TextureWrap {
     TextureWrap_PLACEHOLDER = 0x6
 };
 
-enum GFXImageFormat{
+enum GFXImageFormat {
     LUMINANCE = 0,
     LUMINANCE_ALPHA,
     LUMINANCE_ALPHA16F,
@@ -340,5 +335,7 @@ enum GPUVendor {
     GPU_VENDOR_OTHER,
     GPU_VENDOR_PLACEHOLDER
 };
+
+}; //namespace Divide
 
 #endif

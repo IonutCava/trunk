@@ -25,6 +25,8 @@
 
 #include "Character.h"
 
+namespace Divide {
+
 /// User controlled Unit
 class Player : public Character {
 public:
@@ -37,5 +39,7 @@ public:
 private:
     bool _lockedControls;
 };
+
+}; //namespace Divide
 
 #endif

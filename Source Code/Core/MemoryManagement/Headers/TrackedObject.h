@@ -32,6 +32,8 @@
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
+namespace Divide {
+
 ///A tracked object takes car of it's own reference counting and knows it's own size
 ///It also schedules it's own deletion (a pompous name for a smart pointer)
 class TrackedObject : private boost::noncopyable, public GUIDWrapper {
@@ -65,5 +67,7 @@ class TrackedObject : private boost::noncopyable, public GUIDWrapper {
 ///Registering a dependency
 #define REGISTER_TRACKED_DEPENDENCY(X)   this->addDependency(X);
 #define UNREGISTER_TRACKED_DEPENDENCY(X) this->removeDependency(X);
+
+}; //namespace Divide
 
 #endif

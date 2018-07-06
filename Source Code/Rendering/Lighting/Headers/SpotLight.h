@@ -26,10 +26,14 @@
 #include "Light.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 class SpotLight : public Light{
 public:
 	SpotLight(U8 slot, F32 range = 2);
 
 };
+
+}; //namespace Divide
 
 #endif

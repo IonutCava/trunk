@@ -1,6 +1,8 @@
 #include "Headers/SGNComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
+namespace Divide {
+
 SGNComponent::SGNComponent(ComponentType type, SceneGraphNode* const parentSGN) : _type(type),
                                                                                   _parentSGN(parentSGN),
                                                                                   _elapsedTime(0ULL),
@@ -13,3 +15,5 @@ SGNComponent::~SGNComponent()
 {
 
 }
+
+};

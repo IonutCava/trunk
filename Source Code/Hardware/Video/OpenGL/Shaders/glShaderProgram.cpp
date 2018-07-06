@@ -7,6 +7,8 @@
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
+namespace Divide {
+
 glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _validationQueued(false),
                                                         _loadedFromBinary(false),
@@ -14,7 +16,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _shaderProgramIDTemp(0)
 {
     // each API has it's own invalid id. This is OpenGL's
-    _shaderProgramId = Divide::GLUtil::_invalidObjectID;
+    _shaderProgramId = GLUtil::_invalidObjectID;
     // some basic translation tables for shade types
     _shaderStageTable[VERTEX_SHADER]           = GL_VERTEX_SHADER;
     _shaderStageTable[FRAGMENT_SHADER]         = GL_FRAGMENT_SHADER;
@@ -38,7 +40,7 @@ glShaderProgram::~glShaderProgram()
         detachShader(it.second);
     }
     // delete shader program
-    if(_shaderProgramId > 0 && _shaderProgramId != Divide::GLUtil::_invalidObjectID) {
+    if(_shaderProgramId > 0 && _shaderProgramId != GLUtil::_invalidObjectID) {
         glDeleteProgram(_shaderProgramId);
     }
 }
@@ -174,7 +176,7 @@ void glShaderProgram::threadedLoad(const std::string& name) {
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object 
         // If we try to refresh the program, we already have a handle
-        if (_shaderProgramId == Divide::GLUtil::_invalidObjectID) {
+        if (_shaderProgramId == GLUtil::_invalidObjectID) {
             _shaderProgramIDTemp = glCreateProgram();
         }
         // For every possible stage that the program might use
@@ -425,7 +427,7 @@ bool glShaderProgram::isValid() const {
     return isHWInitComplete() && 
            _linked &&
            _shaderProgramId != 0 &&
-           _shaderProgramId != Divide::GLUtil::_invalidObjectID;
+           _shaderProgramId != GLUtil::_invalidObjectID;
 }
 
 /// Cache uniform/attribute locations for shader programs
@@ -494,7 +496,7 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& ind
     // The shader must be bound before calling this!
     DIVIDE_ASSERT(_bound && isValid(), "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
     // Validate data and send to GPU
-    if (!indices.empty() && indices[0] != Divide::GLUtil::_invalidObjectID) {
+    if (!indices.empty() && indices[0] != GLUtil::_invalidObjectID) {
         glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), indices.data());
     }
     
@@ -504,7 +506,7 @@ void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& ind
 void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
     DIVIDE_ASSERT(_bound && isValid(), "glShaderProgram error: tried to set subroutines on an unbound or unlinked program!");
 
-    if (index != Divide::GLUtil::_invalidObjectID) {
+    if (index != GLUtil::_invalidObjectID) {
         U32 value[] = {index};
         glUniformSubroutinesuiv(_shaderStageTable[type], 1, value);
     }
@@ -826,3 +828,5 @@ bool glShaderProgram::checkSlotUsage(GLint location, GLushort slot) {
     return true;
 #endif
 }
+
+};

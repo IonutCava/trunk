@@ -28,11 +28,12 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 
-class Shader;
+namespace Divide {
+
 class Camera;
 class Material;
+class Shader;
 struct GenericDrawCommand;
-enum MATRIX_MODE;
 
 class ShaderProgram : public HardwareResource {
 public:
@@ -218,4 +219,5 @@ private:
     vectorImpl<U32> _availableFunctionIndex[ShaderType_PLACEHOLDER];
 };
 
+}; //namespace Divide
 #endif

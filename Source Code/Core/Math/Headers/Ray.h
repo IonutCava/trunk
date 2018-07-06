@@ -35,6 +35,8 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 class Ray {
 	public:
 		Ray(const vec3<F32> &o, const vec3<F32> &d) {
@@ -58,5 +60,7 @@ class Ray {
 		vec3<F32> inv_direction;
 		I32 sign[3];
 };
+
+}; //namespace Divide
 
 #endif

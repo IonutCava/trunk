@@ -26,6 +26,10 @@
 #include "Thread.h"
 #include <boost/interprocess/sync/interprocess_semaphore.hpp>
 
+namespace Divide {
+
 typedef boost::mutex SimpleMutex;
+
+}; //namespace Divide
 
 #endif

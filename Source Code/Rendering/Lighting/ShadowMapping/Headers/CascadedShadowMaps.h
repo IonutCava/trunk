@@ -24,6 +24,7 @@
 #define _C_SM_H_
 
 #include "ShadowMap.h"
+namespace Divide {
 
 class Quad3D;
 class Camera;
@@ -31,6 +32,7 @@ class GFXDevice;
 class IMPrimitive;
 class ShaderProgram;
 class SceneGraphNode;
+
 class DirectionalLight;
 ///Directional lights can't deliver good quality shadows using a single shadow map. This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
@@ -71,7 +73,7 @@ protected:
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
     vectorImpl<F32 >       _splitDepths;
-    
-
 };
+
+}; //namespace Divide
 #endif 

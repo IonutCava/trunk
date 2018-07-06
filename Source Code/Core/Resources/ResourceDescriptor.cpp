@@ -1,5 +1,7 @@
 #include "Headers/ResourceDescriptor.h"
 
+namespace Divide {
+
 ResourceDescriptor::ResourceDescriptor(const std::string& name,
                                        const std::string& resourceLocation,
                                        bool flag, U32 id, U8 enumValue) : _propertyDescriptor(nullptr),
@@ -46,3 +48,5 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old) : _propert
 
       return *this;
 }
+
+};

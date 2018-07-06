@@ -24,7 +24,8 @@
 #define JOYSTICK_MANAGER_H_
 
 #include "InputVariables.h"
-
+namespace Divide {
+    namespace Input {
 //////////// Joystick manager class ////////////////////////////////////////////////////////
 class EventHandler;
 class JoystickInterface {
@@ -169,4 +170,6 @@ public:
     }
 };
 
+    }; //namespace Input
+}; //namespace Divide
 #endif

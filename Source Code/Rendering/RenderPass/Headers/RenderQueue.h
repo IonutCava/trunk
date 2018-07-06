@@ -27,6 +27,8 @@
 #include "Core/Headers/Singleton.h"
 #include "Utility/Headers/UnorderedMap.h"
 
+namespace Divide {
+
 class SceneNode;
 
 ///This class manages all of the RenderBins and renders them in the correct order
@@ -68,5 +70,7 @@ private:
     bool _isSorted;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

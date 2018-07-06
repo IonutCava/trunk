@@ -27,6 +27,8 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include "Utility/Headers/GUIDWrapper.h"
 
+namespace Divide {
+
 class Texture;
 class ShaderProgram;
 enum PrimitiveType;
@@ -133,5 +135,7 @@ private:
     mat4<F32> _worldMatrix;
    
 };
+
+}; //namespace Divide
 
 #endif

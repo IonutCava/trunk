@@ -23,6 +23,8 @@
 #include <glsl/glsl_optimizer.h>
 #include <CEGUI/CEGUI.h>
 
+namespace Divide {
+
 GL_API::GL_API() : RenderAPIWrapper(),
                    _prevWidthNode(0),
                    _prevWidthString(0),
@@ -89,7 +91,7 @@ void GL_API::endFrame() {
         CEGUI::System::getSingleton().renderAllGUIContexts();
     }
     // Swap buffers
-    glfwSwapBuffers(Divide::GLUtil::_mainWindow);
+    glfwSwapBuffers(GLUtil::_mainWindow);
     // Poll for new events
     glfwPollEvents();
     // End the timing query started in beginFrame() in debug builds
@@ -141,14 +143,14 @@ bool GL_API::initShaders() {
     glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
     glswAddDirectiveToken("", std::string("const uint MAX_SPLITS_PER_LIGHT = " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";").c_str());
     glswAddDirectiveToken("", std::string("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(Divide::SHADER_BUFFER_GPU_BLOCK)).c_str());
-    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(Divide::SHADER_BUFFER_NODE_INFO)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(SHADER_BUFFER_LIGHT_NORMAL)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(SHADER_BUFFER_GPU_BLOCK)).c_str());
+    glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(SHADER_BUFFER_NODE_INFO)).c_str());
     glswAddDirectiveToken("", "const float Z_TEST_SIGMA = 0.0001;");
     glswAddDirectiveToken("", "const float ALPHA_DISCARD_THRESHOLD = 0.25;");
     
     glswAddDirectiveToken("Fragment", std::string("#define VARYING in").c_str()); 
-    glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(SHADER_BUFFER_LIGHT_SHADOW)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define MAX_TEXTURE_SLOTS " + Util::toString(GFX_DEVICE.getMaxTextureSlots())).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(ShaderProgram::TEXTURE_UNIT0)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(ShaderProgram::TEXTURE_UNIT1)).c_str());
@@ -164,16 +166,16 @@ bool GL_API::initShaders() {
     // GLSL <-> VBO intercommunication 
     glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
     glswAddDirectiveToken("Vertex", std::string("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
-    glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
+    glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
     // Vertex data has a fixed format
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TEXCOORD_LOCATION)    + ") in vec2  inTexCoordData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TANGENT_LOCATION)     + ") in vec3  inTangentData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_TEXCOORD_LOCATION)    + ") in vec2  inTexCoordData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_TANGENT_LOCATION)     + ") in vec3  inTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
     // GPU specific data, such as GFXDevice's main uniform block and clipping planes are defined in an external file included in every shader
     glswAddDirectiveToken("", std::string("#include \"nodeDataInput.cmn\"").c_str());
     // After we finish with all of the defines, add all of the custom uniform variables defined by each material
@@ -353,3 +355,5 @@ ShaderProgram* GL_API::newShaderProgram(const bool optimise) const {
 Shader* GL_API::newShader(const std::string& name, const ShaderType& type, const bool optimise) const {
     return New glShader(name,type,optimise);
 }
+
+};

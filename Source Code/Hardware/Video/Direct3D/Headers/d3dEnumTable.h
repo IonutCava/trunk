@@ -26,9 +26,13 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "d3dResources.h"
 
+namespace Divide {
+
 namespace D3D_ENUM_TABLE
 {
    void fill();
 };
 extern unsigned int d3dTextureTypeTable[TextureType_PLACEHOLDER];
+
+}; //namespace Divide
 #endif

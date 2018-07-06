@@ -29,6 +29,8 @@
 #include <boost/atomic.hpp>
 #include <boost/lockfree/stack.hpp>
 
+namespace Divide {
+
 class Scene;
 class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface {
@@ -73,5 +75,7 @@ private:
     boost::atomic<U32> _rigidCount;
     mutable SharedLock _queueLock;
 };
+
+}; //namespace Divide
 
 #endif

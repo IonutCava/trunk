@@ -24,13 +24,14 @@
 #define _PARAM_HANDLER_H_
 
 #include "Console.h"
-#include <typeinfo>
 #include "cdigginsAny.h"
 #include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Localization.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <boost/atomic.hpp>
+
+namespace Divide {
 
 DEFINE_SINGLETON (ParamHandler)
 typedef Unordered_map<std::string, cdiggins::any> ParamMap;
@@ -39,42 +40,43 @@ typedef Unordered_map<std::string, const char* >  ParamTypeMap;
 public:
 
 	template <class T>
-
-#ifndef _DEBUG
-	inline
-#endif
-
-	const T& getParam(const std::string& name, const T& defaultValue = T()) const {
+	inline const T& getParam(const std::string& name, const T& defaultValue = T()) const {
 		ReadLock r_lock(_mutex);
 		ParamMap::const_iterator it = _params.find(name);
 		if(it != _params.end()) {
-#ifdef _DEBUG
-		try	{
-			return it->second.constant_cast<T>();
+            bool success = false;
+		    const T& ret = it->second.constant_cast<T>(success);
+#           ifdef _DEBUG		
+		        if (!success) {
+			        ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
+		        } else {
+#           endif
+
+		    return ret;
+
+#           ifdef _DEBUG	
+                }
+#           endif
 		}
-		catch(cdiggins::anyimpl::bad_any_cast ) {
-			ERROR_FN(Locale::get("ERROR_PARAM_CAST"),name.c_str(),typeid(T).name());
-		}
-#else
-		return it->second.constant_cast<T>();
-#endif
-		}
-		return defaultValue; //integrals will be 0, string will be empty, etc;
+	    return defaultValue; //integrals will be 0, string will be empty, etc;
 	}
 
 	void setParam(const std::string& name, const cdiggins::any& value) {
 		WriteLock w_lock(_mutex);
 		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
-		if(!result.second)
+		if (!result.second) {
 			(result.first)->second = value;
+        }
 	}
 
 	inline void delParam(const std::string& name) {
-		if(isParam(name)){
+		if (isParam(name)) {
 			WriteLock w_lock(_mutex);
 			_params.erase(name);
-			if(_logState) PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
-		}else{
+			if (_logState) {
+                PRINT_FN(Locale::get("PARAM_REMOVE"), name.c_str());
+            }
+		} else {
 			ERROR_FN(Locale::get("ERROR_PARAM_REMOVE"),name.c_str());
 		}
 	}
@@ -99,5 +101,7 @@ private:
 	mutable SharedLock _mutex;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

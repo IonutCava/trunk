@@ -12,6 +12,7 @@
 #include "resource.h"
 
 //------------------------------------------------------------------------------
+namespace Divide {
 
 template <class charT, class traits = std::char_traits<charT> >
 class basic_teebuf : public std::basic_streambuf<charT, traits>
@@ -116,6 +117,7 @@ struct scoped_basic_streambuf_assignment
 typedef scoped_basic_streambuf_assignment<char>    scoped_streambuf_assignment;
 typedef scoped_basic_streambuf_assignment<wchar_t> scoped_wstreambuf_assignment;
 
+}; //namespace Divide
 #if defined(_MSC_VER)
 #	pragma warning( pop )
 #elif defined(__GNUC__)

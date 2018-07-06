@@ -4,6 +4,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+namespace Divide {
+
 Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
     Sphere3D* ptr = New Sphere3D(1,32);
 
@@ -23,3 +25,5 @@ Sphere3D* ImplResourceLoader<Sphere3D>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Sphere3D)
+
+};

@@ -9,6 +9,8 @@
 #include "Rendering/Headers/ForwardPlusRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
+namespace Divide {
+
 /// Create a display context using the selected API and create all of the needed primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
     // Initialize the rendering API
@@ -26,7 +28,7 @@ ErrorCode GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, cha
     // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping. (Many small updates with BufferSubData are recommended with the target usage of the buffer)
     _gfxDataBuffer = newSB(false, false);
     _gfxDataBuffer->Create(1, sizeof(GPUBlock)); 
-    _gfxDataBuffer->Bind(Divide::SHADER_BUFFER_GPU_BLOCK);
+    _gfxDataBuffer->Bind(SHADER_BUFFER_GPU_BLOCK);
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     _nodeBuffer = newSB(true);
@@ -221,3 +223,5 @@ void GFXDevice::setRenderer(Renderer* const renderer) {
     DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
     SAFE_UPDATE(_renderer, renderer);
 }
+
+};

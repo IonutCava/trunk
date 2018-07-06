@@ -32,8 +32,8 @@
 #ifndef _CONFIG_HEADER_
 #define _CONFIG_HEADER_
 
-namespace Config
-{
+namespace Divide {
+namespace Config {
     /// How many textures to store per material. bump(0) + opacity(1) + spec(2) + tex[3..MAX_TEXTURE_STORAGE - 1]
     const unsigned int MAX_TEXTURE_STORAGE = 6;
     /// Application desired framerate for physics simulations
@@ -113,7 +113,8 @@ namespace Config
         // this is 64kb, but AMD only seem to allow 2048 lights...
         const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
     };
-}
+}; //namespace Config
+}; //namespace Divide
 
 /// if this is 0, a variable timestep will be used for the game loop
 #define USE_FIXED_TIMESTEP 1

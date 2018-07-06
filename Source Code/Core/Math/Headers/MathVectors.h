@@ -47,6 +47,8 @@
 
 #include "MathHelper.h"
 
+namespace Divide {
+
 template<typename T>
 class Plane;
 template<typename T>
@@ -116,9 +118,9 @@ public:
     /// return the vector's length
     inline T    length()             const { return std::sqrt(this->x * this->x + this->y * this->y); }
     /// return the angle defined by the 2 components
-    inline T    angle()              const { return (T)atan2(this->y,this->x); }
+    inline T    angle()              const { return (T)std::atan2(this->y,this->x); }
     /// return the angle defined by the 2 components
-    inline T    angle(const vec2 &v) const { return (T)atan2(v.y-this->y,v.x-this->x); }
+    inline T    angle(const vec2 &v) const { return (T)std::atan2(v.y-this->y,v.x-this->x); }
     /// convert the vector to unit length
     inline T    normalize();
     /// round both values
@@ -441,6 +443,8 @@ extern vec3<I32> iWORLD_Z_AXIS;
 extern vec3<I32> iWORLD_X_NEG_AXIS;
 extern vec3<I32> iWORLD_Y_NEG_AXIS;
 extern vec3<I32> iWORLD_Z_NEG_AXIS;
+
+}; //namespace Divide
 
 //Inline definitions
 #include "MathVectors-Inl.h"

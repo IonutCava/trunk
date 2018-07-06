@@ -194,16 +194,14 @@ public:
 
     /// Cast operator. You can only cast to the original type.
     template<typename T>
-    const T& constant_cast() const {
-        if (policy != anyimpl::get_policy<T>())
-            throw anyimpl::bad_any_cast();
+    const T& constant_cast(bool& success) const {
+        success = (policy == anyimpl::get_policy<T>());
         return *(reinterpret_cast<const T*>(policy->get_value_const(&object)));
     }
 
     template<typename T>
-    T& cast() {
-        if (policy != anyimpl::get_policy<T>())
-            throw anyimpl::bad_any_cast();
+    T& cast(bool& success) {
+        success = (policy == anyimpl::get_policy<T>());
         return *(reinterpret_cast<T*>(policy->get_value(&object)));
     }
 

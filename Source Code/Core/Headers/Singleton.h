@@ -23,6 +23,8 @@
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
 
+namespace Divide {
+
 template <class T>
 class Singleton {
 public :
@@ -90,5 +92,7 @@ template <class T> T* Singleton<T>::_instance = 0;
         friend class Singleton<class_name>;
 
 #define END_SINGLETON };
+
+}; //namespace Divide
 
 #endif // SINGLETON_H

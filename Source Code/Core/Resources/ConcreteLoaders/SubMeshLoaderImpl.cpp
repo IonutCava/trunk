@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
 
+namespace Divide {
+
 SubMesh* ImplResourceLoader<SubMesh>::operator()(){
     SubMesh* ptr = nullptr;
 
@@ -24,3 +26,5 @@ SubMesh* ImplResourceLoader<SubMesh>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(SubMesh)
+
+};

@@ -29,6 +29,8 @@
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 struct TerrainTextureLayer {
     TerrainTextureLayer()
     {
@@ -143,5 +145,7 @@ protected:
     ///Reflection rendering state
     size_t _terrainReflectionRenderStateHash;
 };
+
+}; //namespace Divide
 
 #endif

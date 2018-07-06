@@ -17,6 +17,8 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CSM)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
@@ -149,7 +151,7 @@ void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
     _splitDepths[0] = nearPlane;
     _splitDepths[_numSplits] = farPlane;
     for (I32 i = 1; i < (I32)_numSplits; ++i)
-        _splitDepths[i] = _splitLogFactor * nearPlane * (F32)pow(farPlane / nearPlane, i / N) + (1.0f - _splitLogFactor) * ((nearPlane + (i / N)) * (farPlane - nearPlane));
+        _splitDepths[i] = _splitLogFactor * nearPlane * (F32)std::pow(farPlane / nearPlane, i / N) + (1.0f - _splitLogFactor) * ((nearPlane + (i / N)) * (farPlane - nearPlane));
     for (U8 i = 0; i < _numSplits; ++i)
         _light->setShadowFloatValue(i, 0.5f*(-_splitDepths[i + 1] * projMatrixCache.mat[10] + projMatrixCache.mat[14]) / _splitDepths[i + 1] + 0.5f);
 }
@@ -270,3 +272,5 @@ void CascadedShadowMaps::previewShadowMaps() {
                                                                      _previewDepthMapShader));
     }
 }
+
+};

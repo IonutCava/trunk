@@ -4,7 +4,7 @@
 #include <string>
 #include "Core/Math/Headers/MathVectors.h"
 
-using namespace std;
+namespace Divide {
 
 enum GEOMETRY_TYPE
 {
@@ -17,15 +17,15 @@ enum GEOMETRY_TYPE
 class FileData
 {
 public:
-	string ItemName;
-	string ModelName;
+	std::string ItemName;
+	std::string ModelName;
 	vec3<F32> scale;
 	vec3<F32> position;
 	vec3<F32> orientation;
 	vec3<F32> color;
 	GEOMETRY_TYPE type;
 	F32 data; //general purpose
-	string data2;
+	std::string data2;
 	F32 version;
 };
 
@@ -33,11 +33,13 @@ namespace Util
 {
     static std::stringstream _tempStream;
     template<typename T>
-    string toString(T data)
+    std::string toString(T data)
     {
         _tempStream.str(std::string());
         _tempStream << data;
         return _tempStream.str();
     }
 }
+
+}; //namespace Divide
 #endif

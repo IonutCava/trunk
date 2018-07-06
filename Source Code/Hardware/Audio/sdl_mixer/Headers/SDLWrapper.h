@@ -26,6 +26,8 @@
 #include "SDL_mixer.h"
 #include "Hardware/Audio/Headers/AudioAPIWrapper.h"
 
+namespace Divide {
+
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
@@ -47,5 +49,8 @@ private:
 	Mix_Chunk *_chunk;
 
 END_SINGLETON
+
+
+}; //namespace Divide
 
 #endif

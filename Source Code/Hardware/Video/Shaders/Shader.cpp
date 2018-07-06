@@ -3,6 +3,8 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
+namespace Divide {
+
 Shader::Shader(const std::string& name, const ShaderType& type,const bool optimise) : _shader(std::numeric_limits<U32>::max()),
                                                                                       _name(name),
                                                                                       _type(type),
@@ -46,3 +48,5 @@ void Shader::removeParentProgram(ShaderProgram* const shaderProgram) {
     // actually unregister the shader
     _parentShaderPrograms.erase(it);
 }
+
+};

@@ -26,6 +26,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class BoundingBox;
 
 class Object3D : public SceneNode {
@@ -54,9 +56,9 @@ public:
 
     virtual ~Object3D();
 
-    virtual VertexBuffer*   const getGeometryVB()   const;
-    inline  ObjectType            getObjectType()   const {return _geometryType;}
-    inline  U32                   getFlagMask()     const {return _geometryFlagMask;}
+    virtual VertexBuffer* const getGeometryVB() const;
+    inline  ObjectType          getObjectType() const {return _geometryType;}
+    inline  U32                 getFlagMask()   const {return _geometryFlagMask;}
 
     ///Draw Command
     inline void  addDrawCommand(const GenericDrawCommand& drawCommand)      { _drawCommands.push_back(drawCommand);}
@@ -97,4 +99,5 @@ protected:
     vectorImpl<GenericDrawCommand > _drawCommands;
 };
 
+}; //namespace Divide
 #endif

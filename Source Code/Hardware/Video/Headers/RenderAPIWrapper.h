@@ -27,6 +27,24 @@
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
+class Kernel;
+class Light;
+class SubMesh;
+
+class Material;
+class Object3D;
+class TextLabel;
+class Transform;
+class GUIElement;
+class SceneRenderState;
+enum ErrorCode;
+
+template<typename T> class Plane;
+typedef vectorImpl<Plane<F32> > PlaneList;
+class SceneGraph;
+
 class ShaderProgram;
 
 typedef struct {
@@ -105,35 +123,17 @@ public:
     }
 };
 
-class Light;
+enum ShaderType;
 class Shader;
-class Kernel;
-class SubMesh;
 class Texture;
-class Material;
-class Object3D;
-class TextLabel;
-class Transform;
-class SceneGraph;
-class GUIElement;
 class IMPrimitive;
 class PixelBuffer;
 class Framebuffer;
 class VertexBuffer;
 class ShaderBuffer;
 class ShaderProgram;
-class SceneGraphNode;
-class SceneRenderState;
 class RenderStateBlock;
 class GenericVertexData;
-
-///FWD DECLARE ENUMS
-enum ShaderType;
-enum ErrorCode;
-
-template<typename T> class Plane;
-typedef vectorImpl<Plane<F32> > PlaneList;
-///FWD DECLARE STRUCTS
 class RenderStateBlockDescriptor;
 
 ///Renderer Programming Interface
@@ -148,11 +148,11 @@ protected:
 
     friend class GFXDevice;
 
-    inline void setId(const RenderAPI& apiId)                       {_apiId = apiId;}
-    inline void setGPUVendor(const GPUVendor& gpuvendor)            {_GPUVendor = gpuvendor;}
+    inline void setId(const RenderAPI& apiId)            { _apiId = apiId; }
+    inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
 
-    inline const RenderAPI&        getId()        const { return _apiId;}
-    inline const GPUVendor&        getGPUVendor() const { return _GPUVendor;}
+    inline const RenderAPI& getId()        const { return _apiId;}
+    inline const GPUVendor& getGPUVendor() const { return _GPUVendor;}
 
     /*Application display frame*/
     ///Clear buffers, set default states, etc
@@ -207,4 +207,5 @@ private:
     GPUVendor        _GPUVendor;
 };
 
+}; //namespace Divide
 #endif

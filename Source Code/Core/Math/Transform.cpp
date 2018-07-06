@@ -1,5 +1,6 @@
 #include "Headers/Transform.h"
 
+namespace Divide {
 Transform::Transform() : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
 {
 }
@@ -31,7 +32,7 @@ const mat4<F32>& Transform::applyTransforms() {
             //    1. Scale
             _worldMatrix.setScale(_transformValues._scale);
             //    2. Rotate
-            _worldMatrix *= ::getMatrix(_transformValues._orientation);
+            _worldMatrix *= Divide::getMatrix(_transformValues._orientation);
         }
         //    3. Translate
         _worldMatrix.setTranslation(_transformValues._translation);
@@ -46,7 +47,7 @@ mat4<F32> Transform::interpolate(const TransformValues& prevTransforms, const D3
    if (factor < 0.90) {
         _worldMatrixInterp.identity();
         _worldMatrixInterp.setScale(lerp(prevTransforms._scale, getLocalScale(), (F32)factor));
-        _worldMatrixInterp *= ::getMatrix(slerp(prevTransforms._orientation, getLocalOrientation(), (F32)factor));
+        _worldMatrixInterp *= Divide::getMatrix(slerp(prevTransforms._orientation, getLocalOrientation(), (F32)factor));
         _worldMatrixInterp.setTranslation(lerp(prevTransforms._translation, getLocalPosition(), (F32)factor));
 
         return _worldMatrixInterp * getParentMatrix();
@@ -76,3 +77,5 @@ void Transform::identity() {
     _worldMatrix.identity();
     clean();
 }
+
+}; //namespace Divide

@@ -30,6 +30,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
+namespace Divide {
+
 class Bone;
 class ShaderBuffer;
 class SceneAnimator;
@@ -106,4 +108,5 @@ protected:
     U32 _writeBuffer;
 };
 
+}; //namespace Divide
 #endif

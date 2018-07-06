@@ -27,6 +27,8 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
+namespace Divide {
+
 class ShaderBuffer;
 class SceneGraphNode;
 class SceneRenderState;
@@ -124,4 +126,5 @@ private:
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

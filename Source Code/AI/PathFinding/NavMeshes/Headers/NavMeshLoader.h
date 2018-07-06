@@ -48,8 +48,10 @@
 #include "Graphs/Headers/SceneNode.h"
 #include <functional>
 
-namespace AI {
-namespace Navigation {
+namespace Divide {
+    namespace AI {
+        namespace Navigation {
+
     // This struct contains the vertices and triangles in recast coords
     class NavModelData {
     public:
@@ -132,7 +134,8 @@ namespace Navigation {
         char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
         I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
     };
-};
+        }; //namespace Navigation
+    }; //namespace AI
+}; //namespace Divide
 
-}; //namespace AI
 #endif

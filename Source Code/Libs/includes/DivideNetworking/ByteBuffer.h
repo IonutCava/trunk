@@ -24,7 +24,9 @@
 #include <list>
 #include <map>
 
-namespace DivideNetworking{
+namespace Divide {
+
+namespace Networking{
     class vector3 {
     public:
         vector3(F32 x, F32 y, F32 z) : _x(x), _y(y), _z(z) {}
@@ -428,7 +430,7 @@ class ByteBuffer
 };
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, DivideNetworking::vector3 const& v)
+inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3 const& v)
 {
    b << v.x;
    b << v.y;
@@ -437,7 +439,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, DivideNetworking::vector3 const& v)
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, DivideNetworking::vector3 &v)
+inline ByteBuffer &operator>>(ByteBuffer &b,Networking::vector3 &v)
 {
     b >> v.x;
     b >> v.y;
@@ -542,4 +544,6 @@ inline void ByteBuffer::read_skip<std::string>()
 {
     read_skip<char*>();
 }
+
+}; //namespace Divide
 #endif

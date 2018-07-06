@@ -28,6 +28,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 class SceneGraphNode;
 class NavigationComponent : public SGNComponent {
 public:
@@ -50,4 +52,5 @@ protected:
     bool              _overrideNavMeshDetail;
 };
 
+}; //namespace Divide
 #endif

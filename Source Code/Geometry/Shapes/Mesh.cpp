@@ -5,6 +5,8 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 
+namespace Divide {
+
 Mesh::Mesh(ObjectFlag flag) : Object3D(MESH,flag),
                               _visibleToNetwork(true),
                               _playAnimations(true),
@@ -72,3 +74,5 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneStat
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
+
+};

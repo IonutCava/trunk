@@ -24,6 +24,8 @@
 #define _OCCLUSION_QUERY_H
 #include "core.h"
 
+namespace Divide {
+
 class OcclusionQuery {
 public:
 	OcclusionQuery(){}
@@ -44,5 +46,7 @@ public:
 	///Called after the geometry is drawn to process the query and prepare the result
 	virtual end() = 0;
 };
+
+}; //namespace Divide
 
 #endif

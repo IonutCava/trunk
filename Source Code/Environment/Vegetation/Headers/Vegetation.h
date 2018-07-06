@@ -28,6 +28,8 @@
 #include "Hardware/Platform/Headers/Task.h"
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 
+namespace Divide {
+
 class Terrain;
 class Texture;
 class Transform;
@@ -123,5 +125,7 @@ private:
     GenericDrawCommand     _cullDrawCommand;
     GenericDrawCommand     _renderDrawCommand;
 };
+
+}; //namespace Divide
 
 #endif

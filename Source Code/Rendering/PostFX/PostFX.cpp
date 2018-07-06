@@ -12,6 +12,8 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
+namespace Divide {
+
 PostFX::PostFX(): _underwaterTexture(nullptr),
     _anaglyphShader(nullptr),
     _postProcessingShader(nullptr),
@@ -308,3 +310,5 @@ void PostFX::idle(){
     _shaderFunctionSelection[4] = _underwater     ? _shaderFunctionList[4] : _shaderFunctionList[5];
     _shaderFunctionSelection[5] = _depthPreview   ? _shaderFunctionList[8] : _shaderFunctionList[7];
 }
+
+};

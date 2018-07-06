@@ -25,6 +25,8 @@
 
 #include "ShadowMap.h"
 
+namespace Divide {
+
 class CubeShadowMap : public ShadowMap {
 public:
     CubeShadowMap(Light* light, Camera* shadowCamera);
@@ -36,5 +38,7 @@ public:
 	void previewShadowMaps() {}
     void init(ShadowMapInfo* const smi);
 };
+
+}; //namespace Divide
 
 #endif

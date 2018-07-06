@@ -24,6 +24,9 @@
 #define _HW_RESOURCE_H_
 
 #include "Resource.h"
+
+namespace Divide {
+
 ///Hardware resources are resource elements that need a
 ///singlethreaded hardware initialization (textures, shaders, etc)
 class HardwareResource : public Resource {
@@ -43,4 +46,7 @@ public:
 private:
 	boost::atomic_bool _hardwareInitComplete;
 };
+
+}; //namespace Divide
+
 #endif

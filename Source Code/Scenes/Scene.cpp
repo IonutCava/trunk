@@ -25,6 +25,8 @@
 
 #include "Dynamics/Physics/Headers/PhysicsSceneInterface.h"
 
+namespace Divide {
+
 Scene::Scene() :  Resource("temp_scene"),
                  _GFX(GFX_DEVICE),
                  _LRSpeedFactor(5.0f),
@@ -47,6 +49,47 @@ Scene::Scene() :  Resource("temp_scene"),
 
 Scene::~Scene()
 {
+}
+
+bool Scene::frameStarted() {
+    Input::InputInterface& input = Input::InputInterface::getInstance();
+    if (state()._moveFB != 0) {
+        if (!input.isKeyDown(Input::KeyCode::KC_W) &&
+            !input.isKeyDown(Input::KeyCode::KC_S)) {
+            state()._moveFB = 0;
+        }
+    }
+    if (state()._moveLR != 0) {
+        if (!input.isKeyDown(Input::KeyCode::KC_A) &&
+            !input.isKeyDown(Input::KeyCode::KC_D)) {
+            state()._moveLR = 0;
+        }
+    }
+    if (state()._roll != 0) {
+        if (!input.isKeyDown(Input::KeyCode::KC_Q) &&
+            !input.isKeyDown(Input::KeyCode::KC_E)) {
+            state()._roll = 0;
+        }
+    }
+    if (!_mousePressed[Input::MouseButton::MB_Right]) {
+        if (state()._angleLR != 0) {
+            if (!input.isKeyDown(Input::KeyCode::KC_LEFT) &&
+                !input.isKeyDown(Input::KeyCode::KC_RIGHT)) {
+                state()._angleLR = 0;
+            }
+        }
+        if (state()._angleUD != 0) {
+            if (!input.isKeyDown(Input::KeyCode::KC_UP) &&
+                !input.isKeyDown(Input::KeyCode::KC_DOWN)) {
+                state()._angleUD = 0;
+            }
+        }
+    }
+    return true;
+}
+
+bool Scene::frameEnded() {
+    return true;
 }
 
 bool Scene::idle(){ //Called when application is idle
@@ -379,16 +422,26 @@ void Scene::clearLights(){
 }
 
 bool Scene::updateCameraControls(){
-
+    
     Camera& cam = renderState().getCamera();
     switch (cam.getType()){
         default:
         case Camera::FREE_FLY:{
-            if (state()._angleLR) cam.rotateYaw(state()._angleLR);
-            if (state()._angleUD) cam.rotatePitch(state()._angleUD);
-            if (state()._roll)    cam.rotateRoll(state()._roll);
-            if (state()._moveFB)  cam.moveForward(state()._moveFB);
-            if (state()._moveLR)  cam.moveStrafe(state()._moveLR);
+            if (state()._angleLR) {
+                cam.rotateYaw(CLAMPED<I32>(state()._angleLR, -1, 1));
+            }
+            if (state()._angleUD) {
+                cam.rotatePitch(CLAMPED<I32>(state()._angleUD, -1, 1));
+            }
+            if (state()._roll) {
+                cam.rotateRoll(CLAMPED<I32>(state()._roll, -1, 1));
+            }
+            if (state()._moveFB) {
+                cam.moveForward(CLAMPED<I32>(state()._moveFB, -1, 1));
+            }
+            if (state()._moveLR)  {
+                cam.moveStrafe(CLAMPED<I32>(state()._moveLR, -1, 1));
+            }
         }break;
     }
 
@@ -479,3 +532,5 @@ void Scene::debugDraw(const RenderStage& stage) {
         AI::AIManager::getInstance().debugDraw(false);
     }
 }
+
+};

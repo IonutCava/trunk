@@ -30,9 +30,9 @@
 #define _MATH_HELPER_H_
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Utility/Headers/Vector.h"
 #include <string>
 #include <sstream>
-#include "Utility/Headers/Vector.h"
 
 #define M_PIDIV2			1.570796326794896619231321691639f		//  PI / 2
 #define M_2PI				6.283185307179586476925286766559f		//  2 * PI
@@ -40,6 +40,8 @@
 #define M_PIDIV180			0.01745329251994329576923690768488f		//  PI / 180
 #define M_180DIVPI			57.295779513082320876798154814105f		//  180 / PI
 #define M_PIDIV360          0.00872664625997164788461845384244f     //  PI / 180 / 2 - PI / 360
+
+namespace Divide {
 
 template<typename T>
 inline void DegToRad(T& a) { a*=M_PIDIV180; }
@@ -112,7 +114,10 @@ template <typename T>
 inline void CLAMP(T& n, T min, T max){
     n = std::min(std::max(n, min), max);
 }
-
+template <typename T>
+inline T CLAMPED(const T& n, T min, T max){
+    return std::min(std::max(n, min), max);
+}
 // bit manipulation
 #define ToBit(posn)      (1 << posn)
 #define BitSet(arg,posn) (arg |=  1 << posn)
@@ -197,11 +202,11 @@ namespace Util {
     }
 
     inline F32 xfov_to_yfov(F32 xfov, F32 aspect) {
-        return DEGREES(2.0f * atan(tan(RADIANS(xfov) * 0.5f) / aspect));
+        return DEGREES(2.0f * std::atan(tan(RADIANS(xfov) * 0.5f) / aspect));
     }
 
     inline F32 yfov_to_xfov(F32 yfov, F32 aspect) {
-        return DEGREES(2.0f * atan(tan(RADIANS(yfov) * 0.5f) * aspect));
+        return DEGREES(2.0f * std::atan(tan(RADIANS(yfov) * 0.5f) * aspect));
     }
 
     /** Ogre3D
@@ -287,5 +292,7 @@ namespace Util {
         }
     };
 };
+
+}; //namespace Divide
 
 #endif

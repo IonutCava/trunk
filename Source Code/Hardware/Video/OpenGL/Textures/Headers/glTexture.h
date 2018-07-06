@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
+namespace Divide {
+
 class glTexture : public Texture {
 public:
     glTexture(TextureType type, bool flipped = false);
@@ -57,5 +59,7 @@ private:
     GLushort _mipMaxLevel;
     GLushort _mipMinLevel;
 };
+
+}; //namespace Divide
 
 #endif

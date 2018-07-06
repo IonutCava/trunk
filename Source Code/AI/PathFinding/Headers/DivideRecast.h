@@ -61,9 +61,9 @@
 #include "core.h"
 #include "../NavMeshes/Headers/NavMesh.h"
 
-namespace AI {
-
-namespace Navigation {
+namespace Divide {
+    namespace AI {
+        namespace Navigation {
 
     DEFINE_SINGLETON( DivideRecast )
         protected:
@@ -132,7 +132,8 @@ namespace Navigation {
 
     END_SINGLETON
 
-};
+        }; //namespace Navigation
+    }; //namespace AI
+}; //namespace Divide
 
-};
 #endif 

@@ -8,6 +8,8 @@
 using namespace boost::asio;
 using namespace boost::asio::ip;
 
+namespace Divide {
+
 #ifndef OPCODE_ENUM
 #error "Please include 'OPCodesTpl' and define custom OPcodes before using the networking library!"
 #endif
@@ -50,4 +52,5 @@ protected:
 	std::string _address,_port;
 };
 
+}; //namespace Divide
 #endif

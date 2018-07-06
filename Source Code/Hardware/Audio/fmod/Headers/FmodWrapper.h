@@ -23,13 +23,15 @@
 #ifndef _WRAPPER_FMOD_H_
 #define _WRAPPER_FMOD_H_
 
+#include "Hardware/Audio/Headers/AudioAPIWrapper.h"
+
+namespace Divide {
+
 /*****************************************************************************************/
 /*				ATENTION! FMOD is not free for commercial use!!!						 */
 /*	Do not include it in commercial products unless you own a license for it.            */
 /*	Visit: http://www.fmod.org/index.php/sales  for more details -Ionut					 */
 /*****************************************************************************************/
-
-#include "Hardware/Audio/Headers/AudioAPIWrapper.h"
 
 DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 
@@ -50,5 +52,8 @@ public:
 	void setMusicVolume(I8 value){}
 	void setSoundVolume(I8 value){}
 END_SINGLETON
+
+
+}; //namespace Divide
 
 #endif

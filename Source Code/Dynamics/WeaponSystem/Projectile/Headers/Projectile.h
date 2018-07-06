@@ -24,6 +24,8 @@
 #define _PROJECTILE_H_
 #include "core.h"
 
+namespace Divide {
+
 /// Defines a projectile object (usually bullets or rockets)
 class Projectile {
 public:
@@ -56,5 +58,7 @@ private:
 	ProjectileType _type;
 	U8 _properyMask; ///< weapon properties
 };
+
+}; //namespace Divide
 
 #endif

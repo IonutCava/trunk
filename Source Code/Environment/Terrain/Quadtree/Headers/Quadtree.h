@@ -25,6 +25,8 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 class Terrain;
 class Transform;
 class SceneState;
@@ -57,5 +59,7 @@ private:
     QuadtreeNode*	_root;
     VertexBuffer*   _parentVB; //<Pointer to the terrain VB
 };
+
+}; //namespace Divide
 
 #endif

@@ -1,5 +1,6 @@
 #include "Utility/Headers/CRC.h"
 
+namespace Divide {
 namespace Util {
 	//=====================================================
 	U32 CRC32::mTable[0x100] = {
@@ -65,4 +66,5 @@ namespace Util {
 		for(i = 0; i < siz; ++i)
 			mCrc = (mCrc >> 8) ^ mTable[ (mCrc & 0xFF) ^ p[i] ];
 	}
+};
 };

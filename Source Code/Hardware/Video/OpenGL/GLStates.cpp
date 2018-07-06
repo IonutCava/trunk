@@ -7,24 +7,26 @@
 #include "Hardware/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Hardware/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
+namespace Divide {
+
 /// The following static variables are used to remember the current OpenGL state
 GLint  GL_API::_activePackUnpackAlignments[] = {1, 1};
 GLint  GL_API::_activePackUnpackRowLength[]  = {0, 0};
 GLint  GL_API::_activePackUnpackSkipPixels[] = {0, 0};
 GLint  GL_API::_activePackUnpackSkipRows[]   = {0, 0};
-GLuint GL_API::_activeVAOId = Divide::GLUtil::_invalidObjectID;
-GLuint GL_API::_activeTextureUnit = Divide::GLUtil::_invalidObjectID;
-GLuint GL_API::_activeTransformFeedback = Divide::GLUtil::_invalidObjectID;
-GLuint GL_API::_activeFBId[] = { Divide::GLUtil::_invalidObjectID,
-                                 Divide::GLUtil::_invalidObjectID,
-                                 Divide::GLUtil::_invalidObjectID };
-GLuint GL_API::_activeBufferId[] = { Divide::GLUtil::_invalidObjectID, 
-                                     Divide::GLUtil::_invalidObjectID, 
-                                     Divide::GLUtil::_invalidObjectID, 
-                                     Divide::GLUtil::_invalidObjectID,
-                                     Divide::GLUtil::_invalidObjectID,
-                                     Divide::GLUtil::_invalidObjectID,
-                                     Divide::GLUtil::_invalidObjectID };
+GLuint GL_API::_activeVAOId = GLUtil::_invalidObjectID;
+GLuint GL_API::_activeTextureUnit = GLUtil::_invalidObjectID;
+GLuint GL_API::_activeTransformFeedback = GLUtil::_invalidObjectID;
+GLuint GL_API::_activeFBId[] = { GLUtil::_invalidObjectID,
+                                 GLUtil::_invalidObjectID,
+                                 GLUtil::_invalidObjectID };
+GLuint GL_API::_activeBufferId[] = { GLUtil::_invalidObjectID, 
+                                     GLUtil::_invalidObjectID, 
+                                     GLUtil::_invalidObjectID, 
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID,
+                                     GLUtil::_invalidObjectID };
 
 bool GL_API::_lastRestartIndexSmall   = true;
 bool GL_API::_primitiveRestartEnabled = false;
@@ -213,7 +215,7 @@ bool GL_API::setActiveFB(GLuint id, Framebuffer::FramebufferUsage usage) {
     
     // We may query the active framebuffer handle and get an invalid handle in return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle will just reset the buffer binding
-    if (id == Divide::GLUtil::_invalidObjectID) {
+    if (id == GLUtil::_invalidObjectID) {
         id = 0;
     }
     // Prevent double bind
@@ -368,24 +370,24 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     TOGGLE_WITH_CHECK(_zEnable,       GL_DEPTH_TEST);
     // Check separate blend functions
     if (SHOULD_TOGGLE_2(_blendSrc, _blendDest)) {
-        glBlendFuncSeparate(Divide::GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendSrc], 
-                            Divide::GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendDest], GL_ONE, GL_ZERO);
+        glBlendFuncSeparate(GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendSrc], 
+                            GLUtil::GL_ENUM_TABLE::glBlendTable[newDescriptor._blendDest], GL_ONE, GL_ZERO);
     }
     // Check the blend equation
     if (SHOULD_TOGGLE(_blendOp)) {
-        glBlendEquation(Divide::GLUtil::GL_ENUM_TABLE::glBlendOpTable[newDescriptor._blendOp]);
+        glBlendEquation(GLUtil::GL_ENUM_TABLE::glBlendOpTable[newDescriptor._blendOp]);
     }
     // Check culling mode (back (CW) / front (CCW) by default) 
     if (SHOULD_TOGGLE(_cullMode)) {
-        glCullFace(Divide::GLUtil::GL_ENUM_TABLE::glCullModeTable[newDescriptor._cullMode]);
+        glCullFace(GLUtil::GL_ENUM_TABLE::glCullModeTable[newDescriptor._cullMode]);
     }
     // Check rasterization mode
     if (SHOULD_TOGGLE(_fillMode)) {
-        glPolygonMode(GL_FRONT_AND_BACK, Divide::GLUtil::GL_ENUM_TABLE::glFillModeTable[newDescriptor._fillMode]);
+        glPolygonMode(GL_FRONT_AND_BACK, GLUtil::GL_ENUM_TABLE::glFillModeTable[newDescriptor._fillMode]);
     }
     // Check the depth function
     if (SHOULD_TOGGLE(_zFunc)) {
-        glDepthFunc(Divide::GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._zFunc]);
+        glDepthFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._zFunc]);
     }
     // Check if we need to toggle the depth mask
     if (SHOULD_TOGGLE(_zWriteEnable)) {
@@ -397,13 +399,13 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
     }
     // Stencil function is dependent on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFunc, _stencilRef, _stencilMask)) {
-        glStencilFunc(Divide::GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._stencilFunc], newDescriptor._stencilRef, newDescriptor._stencilMask);
+        glStencilFunc(GLUtil::GL_ENUM_TABLE::glCompareFuncTable[newDescriptor._stencilFunc], newDescriptor._stencilRef, newDescriptor._stencilMask);
     }
     // Stencil operation is also dependent  on 3 state parameters set together
     if (SHOULD_TOGGLE_3(_stencilFailOp, _stencilZFailOp, _stencilPassOp)) {
-        glStencilOp(Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilFailOp], 
-                    Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilZFailOp], 
-                    Divide::GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilPassOp]);
+        glStencilOp(GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilFailOp], 
+                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilZFailOp], 
+                    GLUtil::GL_ENUM_TABLE::glStencilOpTable[newDescriptor._stencilPassOp]);
     }
     // Check and set polygon offset
     if (SHOULD_TOGGLE(_zBias)) {
@@ -422,3 +424,5 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
                     newDescriptor._colorWrite.b.b3 == GL_TRUE);// A
     }
 }
+
+};

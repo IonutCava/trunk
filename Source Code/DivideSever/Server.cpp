@@ -1,6 +1,9 @@
 #include "Server.h"
 
 using namespace boost::asio;
+
+namespace Divide {
+
 Server::Server()
 {
 }
@@ -44,3 +47,5 @@ void Server::handle_accept(tcp_session_ptr session, const boost::system::error_c
         std::cout << "ERROR: " << ec << std::endl;
     }
 }
+
+}; //namespace Divide

@@ -4,6 +4,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"
 
+namespace Divide {
+
 PointLight::PointLight(U8 slot, F32 range) : Light(slot,range,LIGHT_TYPE_POINT) 
 {
 	_properties._position = vec4<F32>(0,0,0,1.0f);
@@ -21,3 +23,5 @@ PointLight::PointLight(U8 slot, F32 range) : Light(slot,range,LIGHT_TYPE_POINT)
     _direction[5] = vec3<F32>( 0.0f, -1.0f,  0.0f);
     
 }
+
+};

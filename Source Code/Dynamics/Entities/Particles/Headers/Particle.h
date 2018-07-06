@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
+namespace Divide {
+
 /// Descriptor used to build particles
 class ParticleDescriptor {
 public:
@@ -43,5 +45,7 @@ public:
     ParticleDescriptor();
    ~ParticleDescriptor();
 };
+
+}; //namespace Divide
 
 #endif

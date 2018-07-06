@@ -23,14 +23,14 @@
 #ifndef _TEXTURE_DESCRIPTOR_H_
 #define _TEXTURE_DESCRIPTOR_H_
 
-#include "core.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include <boost/functional/hash.hpp>
 
+namespace Divide {
 ///This class is used to define all of the sampler settings needed to use a texture
 ///Apply a sampler descriptor to either a texture's ResourceDescriptor or to a TextureDescriptor to use it
-///We do not definy copy constructors as we must define descriptors only with POD
+///We do not define copy constructors as we must define descriptors only with POD
 class SamplerDescriptor : public PropertyDescriptor {
 public:
     ///The constructer specifies the type so it can be used later for downcasting if needed
@@ -227,4 +227,5 @@ public:
     SamplerDescriptor _samplerDescriptor;
 };
 
+}; //namespace Divide
 #endif

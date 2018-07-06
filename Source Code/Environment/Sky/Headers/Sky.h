@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
+namespace Divide {
+
 class Texture;
 class Sphere3D;
 class ShaderProgram;
@@ -62,5 +64,7 @@ private:
     size_t          _skyboxRenderStateHash;
 	size_t          _skyboxRenderStateReflectedHash;
 };
+
+}; //namespace Divide
 
 #endif

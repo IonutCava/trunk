@@ -9,6 +9,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
+namespace Divide {
+
 ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type) : _init(false),
                                                                             _light(light),
                                                                             _shadowCamera(shadowCamera),
@@ -89,3 +91,5 @@ U16  ShadowMap::resolution(){
 
 void ShadowMap::postRender(){
 }
+
+};

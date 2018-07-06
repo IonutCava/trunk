@@ -5,6 +5,8 @@
 #include "Utility/Headers/Localization.h"
 #include <boost/thread.hpp>
 
+namespace Divide {
+
 Task::Task(boost::threadpool::pool* tp, U64 tickIntervalMS, bool startOnCreate, bool runOnce, const DELEGATE_CBK& f) : Task(tp, tickIntervalMS, startOnCreate, runOnce ? 0 : -1, f)
 {
 }
@@ -77,3 +79,5 @@ void Task::run(){
     _completionSignal(getGUID());
     _done = true;
 }
+
+};

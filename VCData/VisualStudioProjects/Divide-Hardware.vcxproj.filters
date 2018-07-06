@@ -64,9 +64,6 @@
     <Filter Include="Video\Direct3D\Textures\Headers">
       <UniqueIdentifier>{00853069-c47b-47ed-bab3-238e3aa3100c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Video\Null">
-      <UniqueIdentifier>{5507af29-8ce2-47b7-a504-cc9373076484}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Video\Headers">
       <UniqueIdentifier>{40268802-c939-4745-bc9c-e824ead68851}</UniqueIdentifier>
     </Filter>

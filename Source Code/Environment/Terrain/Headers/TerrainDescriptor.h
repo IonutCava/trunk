@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Core/Resources/Headers/Resource.h"
 
+namespace Divide {
+
 class TerrainDescriptor : public Resource {
 public:
     TerrainDescriptor() :  Resource("temp_terrain_descriptor"),
@@ -118,5 +120,7 @@ private:
 
 template<typename T>
 inline T TER_COORD(T x, T y, T w) { return ((y)*(w)+(x)); }
+
+}; //namespace Divide
 
 #endif

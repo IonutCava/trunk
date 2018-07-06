@@ -25,6 +25,8 @@
 
 #include "Thread.h"
 
+namespace Divide {
+
 ///Thread safety optimised for multiple-reades, single write
 typedef boost::shared_mutex SharedLock;
 typedef boost::unique_lock< SharedLock > WriteLock;
@@ -49,5 +51,7 @@ private:
   T value;
   SharedLock mutex;
 };
+
+}; //namespace Divide
 
 #endif

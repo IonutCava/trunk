@@ -25,6 +25,8 @@
 
 #include "SceneGraphNode.h"
 
+namespace Divide {
+
 class SpatialGraph  {
 public:
 	SpatialGraph(){
@@ -49,4 +51,7 @@ private:
 	SceneGraphNode* _root;
 	//SpatialHierarchyTree _spatialTree; ///< For HSR
 };
+
+}; //namespace Divide
+
 #endif

@@ -24,6 +24,9 @@
 #define _AMMUNITION_H_
 
 #include "core.h"
+
+namespace Divide {
+
 ///Base class for ammunition
 class Ammunition {
 public:
@@ -43,5 +46,7 @@ public:
 private:
 	AmmunitionType _type;
 };
+
+}; //namespace Divide
 
 #endif

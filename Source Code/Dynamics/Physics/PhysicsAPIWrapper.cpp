@@ -2,6 +2,8 @@
 
 #include "Graphs/Components/Headers/PhysicsComponent.h"
 
+namespace Divide {
+
 PhysicsAsset::PhysicsAsset() : _resetTransforms(true),
                                _parentComponent(nullptr)
 {
@@ -17,3 +19,5 @@ void PhysicsAsset::setParent(PhysicsComponent* parent) {
     }
     _parentComponent = parent;
 }
+
+};

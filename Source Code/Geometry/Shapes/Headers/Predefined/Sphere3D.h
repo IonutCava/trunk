@@ -26,6 +26,8 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class Sphere3D : public Object3D {
 public:
     ///Change resolution to affect the spacing between vertices
@@ -85,10 +87,10 @@ private:
 
         for (i = 0; i < stacks; i++) {
             F32 rho  = i * drho;
-            F32 srho = sin(rho);
-            F32 crho = cos(rho);
-            F32 srhodrho = sin(rho + drho);
-            F32 crhodrho = cos(rho + drho);
+            F32 srho = std::sin(rho);
+            F32 crho = std::cos(rho);
+            F32 srhodrho = std::sin(rho + drho);
+            F32 crhodrho = std::cos(rho + drho);
 
             // Many sources of OpenGL sphere drawing code uses a triangle fan
             // for the caps of the sphere. This however introduces texturing
@@ -96,8 +98,8 @@ private:
             s = 0.0f;
             for ( j = 0; j <= slices; j++) {
                 F32 theta  = (j == slices) ? 0.0f : j * dtheta;
-                F32 stheta = -sin(theta);
-                F32 ctheta = cos(theta);
+                F32 stheta = -std::sin(theta);
+                F32 ctheta = std::cos(theta);
 
                 F32 x = stheta * srho;
                 F32 y = ctheta * srho;
@@ -137,5 +139,7 @@ protected:
     U32 _vertexCount;
     bool _dirty;
 };
+
+}; //namespace Divide
 
 #endif

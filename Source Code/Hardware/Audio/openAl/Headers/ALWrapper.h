@@ -25,6 +25,8 @@
 
 #include "Hardware/Audio/Headers/AudioAPIWrapper.h"
 
+namespace Divide {
+
 DEFINE_SINGLETON_EXT1(OpenAL_API, AudioAPIWrapper)
 
 public:
@@ -45,5 +47,8 @@ private:
     U32 buffers[MAX_SOUND_BUFFERS];   
  
 END_SINGLETON
+
+
+}; //namespace Divide
 
 #endif

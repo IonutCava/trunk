@@ -1,6 +1,7 @@
 #include "Headers/AnimationController.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
-using namespace boost;
+
+namespace Divide {
 
 void AnimEvaluator::Save(std::ofstream& file){
 	uint32_t nsize = static_cast<uint32_t>(_name.size());
@@ -188,3 +189,5 @@ Bone* SceneAnimator::LoadSkeleton(std::ifstream& file, Bone* parent){
 	}
 	return internalNode;
 }
+
+};

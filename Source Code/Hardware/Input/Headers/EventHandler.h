@@ -23,15 +23,19 @@
 #ifndef _INPUT_EVENT_HANDLER_H_
 #define _INPUT_EVENT_HANDLER_H_
 //'index' and 'arg' in OISJoyStick.h and 'n' in OISMultiTouch.h are unreferenced
-#include <OIS.h>
-
 #include "InputAggregatorInterface.h"
 #include "Hardware/Platform/Headers/SharedMutex.h"
+
+
+namespace Divide {
+
+class Kernel;
+
+    namespace Input {
 
 class InputInterface;
 class JoystickInterface;
 class EffectManager;
-class Kernel;
 
 class EventHandler : public OIS::KeyListener,
                      public OIS::JoyStickListener,
@@ -51,67 +55,64 @@ class EventHandler : public OIS::KeyListener,
     
   protected:
     /// Key pressed - Engine
-    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyDown(const KeyEvent& arg );
     /// Key pressed - OIS
-    inline bool keyPressed( const OIS::KeyEvent &arg ) {
-        return onKeyDown(arg);
-    }
+    bool keyPressed( const OIS::KeyEvent &arg );
     /// Key released - Engine
-    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onKeyUp(const KeyEvent& arg );
     /// Key released - OIS
-    inline bool keyReleased( const OIS::KeyEvent &arg ) {
-        return onKeyUp(arg);
-    }
+    bool keyReleased( const OIS::KeyEvent &arg );
     /// Joystick button pressed - Engine
-    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const JoystickEvent& arg,I8 button);
     /// Joystick button pressed - OIS
     inline bool buttonPressed( const OIS::JoyStickEvent &arg, I8 button) {
         return joystickButtonPressed(arg, button);
     }
     /// Joystick button released - Engine
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
+    bool joystickButtonReleased(const JoystickEvent& arg, I8 button);
     /// Joystick button released - OIS
     inline bool buttonReleased( const OIS::JoyStickEvent &arg, I8 button) {
         return joystickButtonReleased(arg, button);
     }
     /// Joystick axis change - Engine
-    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
+    bool joystickAxisMoved(const JoystickEvent& arg,I8 axis);
     /// Joystick axis change - OIS
     inline bool axisMoved( const OIS::JoyStickEvent &arg, I8 axis) {
         return joystickAxisMoved(arg, axis);
     }
     /// Joystick direction change - Engine
-    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const JoystickEvent& arg,I8 pov);
     /// Joystick direction change - OIS
     inline bool povMoved( const OIS::JoyStickEvent &arg, I8 pov) {
         return joystickPovMoved(arg, pov);
     }
     /// Joystick slider change - Engine
-    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickSliderMoved( const JoystickEvent &arg, I8 index);
     /// Joystick slider change - OIS
     inline bool sliderMoved( const OIS::JoyStickEvent &arg, I8 index) {
         return joystickSliderMoved(arg, index);
     }
     /// Joystick 3D vector changed - Engine
-    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const JoystickEvent &arg, I8 index);
     /// Joystick 3D vector changed - OIS
     inline bool vector3DMoved( const OIS::JoyStickEvent &arg, I8 index) {
         return joystickVector3DMoved(arg, index);
     }
     /// Mouse moved - Engine & OIS
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const MouseEvent& arg);
     /// Mouse button pressed - Engine
-    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const MouseEvent& arg, MouseButton button);
     /// Mouse button pressed - OIS
-    inline bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+    inline bool mousePressed( const MouseEvent &arg, OIS::MouseButtonID id ) {
         return mouseButtonPressed(arg, id);
     }
     /// Mouse button released - Engine
-    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const MouseEvent& arg, MouseButton button);
     /// Mouse button released - OIS
-    inline bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+    inline bool mouseReleased( const MouseEvent &arg, OIS::MouseButtonID id ) {
         return mouseButtonReleased(arg, id);
     }
 };
-
+    }; //namespace Input
+}; //namespace Divide;
 #endif

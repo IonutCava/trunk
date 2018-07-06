@@ -3,6 +3,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 Quadtree::Quadtree() : _root(nullptr),
                        _parentVB(nullptr)
 {
@@ -87,3 +89,5 @@ BoundingBox& Quadtree::computeBoundingBox(){
      _root->computeBoundingBox();
      return _root->getBoundingBox();
 }
+
+};

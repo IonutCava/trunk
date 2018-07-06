@@ -65,7 +65,9 @@
 #include <RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h>
 #include <RecastContrib/TileCacheCompressor/Headers/DivideTileCacheCompressor.h>
 
-namespace Navigation {
+
+namespace Divide {
+    namespace Navigation {
     /**
       * Maximum layers (floor levels) that 2D navmeshes can have in the tilecache.
       * This determines the domain size of the tilecache pages, as their dimensions
@@ -626,6 +628,7 @@ namespace Navigation {
                I32 dataSize;
         };
     };
-};
+    }; //namespace Navigation
+}; //namespace Divide
 
 #endif

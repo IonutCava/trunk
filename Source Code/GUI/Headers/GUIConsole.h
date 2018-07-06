@@ -39,9 +39,13 @@
 #else
 #   define _CEGUI_MAX_CONSOLE_ENTRIES  512
 #endif
+
 namespace CEGUI {
     class FormattedListboxTextItem;
 };
+
+namespace Divide {
+
 class GUIConsoleCommandParser;
 ///GUIConsole implementation, CEGUI based, as in the practical tutorial series
 class GUIConsole{
@@ -83,5 +87,7 @@ class GUIConsole{
         SharedLock _outputLock;
         boost::circular_buffer<std::pair<std::string, bool >> _outputBuffer;
 };
+
+}; //namespace Divide
 
 #endif

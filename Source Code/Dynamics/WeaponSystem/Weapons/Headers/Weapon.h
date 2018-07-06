@@ -24,6 +24,8 @@
 #define _WEAPON_H_
 #include "core.h"
 
+namespace Divide {
+
 ///Base class for defining a weapon
 class Weapon {
 public:
@@ -56,4 +58,7 @@ private:
 	WeaponType _type;
 	U8 _properyMask; ///< weapon properties
 };
+
+}; //namespace Divide
+
 #endif

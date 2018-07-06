@@ -26,6 +26,7 @@
 #include "DetourTileCache/Include/DetourTileCache.h"
 #include "RecastContrib/fastlz/fastlz.h"
 
+namespace Divide {
 /**
   * FastLZ implementation of detour tile cache tile compressor.
   * You can define a custom implementation if you wish to use
@@ -59,4 +60,5 @@ struct DivideTileCacheCompressor : public dtTileCacheCompressor
         }
 };
 
+}; //namespace Divide
 #endif

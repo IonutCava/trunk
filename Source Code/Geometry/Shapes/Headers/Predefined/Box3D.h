@@ -26,6 +26,8 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class Box3D : public Object3D
 {
 public:
@@ -92,5 +94,7 @@ public:
 private:
     F32 _size;
 };
+
+}; //namespace Divide
 
 #endif

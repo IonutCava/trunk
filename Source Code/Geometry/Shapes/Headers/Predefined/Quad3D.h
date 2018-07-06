@@ -26,6 +26,8 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class ShaderProgram;
 class Quad3D : public Object3D {
 public:
@@ -137,5 +139,7 @@ public:
         return SceneNode::computeBoundingBox(sgn);
     }
 };
+
+}; //namespace Divide
 
 #endif

@@ -37,6 +37,8 @@
 //Code from http://www.gamedev.net/reference/articles/article1382.asp
 //Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
+namespace Divide {
+
 DEFINE_SINGLETON(ApplicationTimer)
 
 #if defined( OS_WINDOWS )
@@ -152,4 +154,7 @@ protected:
 #endif //_DEBUG
 
     inline void REMOVE_TIMER(ProfileTimer*& timer) { SAFE_DELETE(timer);  }
+
+}; //namespace Divide
+
 #endif //_FRAMERATE_H_

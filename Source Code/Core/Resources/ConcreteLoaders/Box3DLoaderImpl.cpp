@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 
+namespace Divide {
+
 template<>
 Box3D* ImplResourceLoader<Box3D>::operator()(){
     F32 size = 1.0f;
@@ -24,3 +26,5 @@ Box3D* ImplResourceLoader<Box3D>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Box3D)
+
+};

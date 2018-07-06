@@ -30,7 +30,8 @@
 
 #include <boost/noncopyable.hpp>
 
-class GUI;
+namespace Divide {
+
 class Scene;
 class PXDevice;
 class GFXDevice;
@@ -46,6 +47,7 @@ class FrameListenerManager;
 enum RenderStage;
 
 struct FrameEvent;
+class GUI;
 
 ///The kernel is the main interface to our engine components:
 ///-video
@@ -53,7 +55,7 @@ struct FrameEvent;
 ///-physx
 ///-scene manager
 ///-etc
-class Kernel : public InputAggregatorInterface, private boost::noncopyable {
+class Kernel : public Input::InputAggregatorInterface, private boost::noncopyable {
 public:
     Kernel(I32 argc, char **argv, Application& parentApp);
     ~Kernel();
@@ -82,25 +84,25 @@ public:
 
     bool setCursorPosition(U16 x, U16 y) const;
     ///Key pressed
-    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key);
     ///Key released
-    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key);
     ///Joystick axis change
-    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg,I8 button);
     ///Joystick button released
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
-    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, I8 button);
+    bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index);
     ///Mouse moved
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg);
     ///Mouse button pressed
-    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
     ///Mouse button released
-    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
     inline Task* AddTask(U64 tickIntervalMS, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
          Task* taskPtr = New Task(getThreadPool(), tickIntervalMS, startOnCreate, numberOfTicks, threadedFunction);
@@ -142,9 +144,9 @@ private:
     ///Access to the physics system
     PXDevice&		_PFX;
     ///The graphical user interface
-    GUI&			_GUI;
+    GUI&	     	_GUI;
     ///The input interface
-    InputInterface& _input;
+    Input::InputInterface& _input;
     ///The SceneManager/ Scene Pool
     SceneManager&	_sceneMgr;
     ///Keep track of all active cameras used by the engine
@@ -155,20 +157,21 @@ private:
     static bool   _freezeLoopTime;
     static bool   _freezeGUITime;
     boost::threadpool::pool* _mainTaskPool;
-   // both are in ms
-   static U64 _currentTime;
-   static U64 _currentTimeFrozen;
-   static U64 _currentTimeDelta;
-   static U64 _previousTime;
-   static D32 _nextGameTick;
+    // both are in ms
+    static U64 _currentTime;
+    static U64 _currentTimeFrozen;
+    static U64 _currentTimeDelta;
+    static U64 _previousTime;
+    static D32 _nextGameTick;
 
-   static SharedLock _threadedCallbackLock;
-   static vectorImpl<U64 >  _threadedCallbackBuffer;
-   static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
+    static SharedLock _threadedCallbackLock;
+    static vectorImpl<U64 >  _threadedCallbackBuffer;
+    static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
 
-   //Command line arguments
-   I32    _argc;
-   char **_argv;
+    //Command line arguments
+    I32    _argc;
+    char **_argv;
 };
 
+}; //namespace Divide
 #endif

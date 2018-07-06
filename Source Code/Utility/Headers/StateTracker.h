@@ -25,6 +25,8 @@
 
 #include "Vector.h"
 
+namespace Divide {
+
 template<typename T>
 class StateTracker {
 public:
@@ -70,5 +72,7 @@ protected:
     vectorImpl<optionalValue > _trackedValues;
 
 };
+
+}; //namespace Divide
 
 #endif

@@ -1,5 +1,8 @@
 #include "Headers/EffectManager.h"
 
+namespace Divide {
+    namespace Input {
+
 EffectManager::EffectManager(JoystickInterface* pJoystickInterface, U32 nUpdateFreq) : _pJoystickInterface(pJoystickInterface),
                                                                                        _nUpdateFreq(nUpdateFreq),
                                                                                        _nCurrEffectInd(-1)
@@ -169,3 +172,6 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         _pJoystickInterface->getCurrentFFDevice()->upload(_vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect());
     }
 }
+
+    }; //namespace Input
+}; //namespace Divide

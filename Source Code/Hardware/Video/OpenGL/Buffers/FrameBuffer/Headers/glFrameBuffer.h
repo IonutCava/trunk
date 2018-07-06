@@ -26,6 +26,8 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
+namespace Divide {
+
 class glFramebuffer : public Framebuffer {
 public:
     /// if resolveBuffer is not null, we add all of our attachments to it and initialize it with this buffer
@@ -67,5 +69,7 @@ protected:
     GLint           _attOffset[TextureDescriptor::AttachmentType_PLACEHOLDER];
     vec2<GLushort > _mipMapLevel[TextureDescriptor::AttachmentType_PLACEHOLDER];
 };
+
+}; //namespace Divide
 
 #endif

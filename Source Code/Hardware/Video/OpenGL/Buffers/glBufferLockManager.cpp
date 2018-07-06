@@ -1,5 +1,6 @@
 #include "Headers/glBufferLockManager.h"
 
+namespace Divide {
 
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
 
@@ -81,3 +82,5 @@ void glBufferLockManager::cleanup(BufferLock* _bufferLock)
 {
     glDeleteSync(_bufferLock->mSyncObj);
 }
+
+};

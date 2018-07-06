@@ -25,7 +25,9 @@
 
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 
-class d3dShader : public Shader{
+namespace Divide {
+
+class d3dShader : public Shader {
 public:
 	d3dShader(const std::string& name,const ShaderType& type, const bool optimise = false) : Shader(name,type,optimise) {}
 	~d3dShader(){}
@@ -35,4 +37,5 @@ public:
 	void validate(){}
 };
 
+}; //namespace Divide
 #endif

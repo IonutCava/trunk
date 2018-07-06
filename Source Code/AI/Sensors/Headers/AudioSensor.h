@@ -24,7 +24,9 @@
 #define _AI_AUDIO_SENSOR_H_
 
 #include "Sensor.h"
-namespace AI {
+
+namespace Divide {
+    namespace AI {
 
 class AudioSensor : public Sensor {
 public: 
@@ -34,5 +36,7 @@ protected:
     friend class AIEntity;
     AudioSensor(AIEntity* const parentEntity);
 };
-}; //namespace AI
+    }; //namespace AI
+}; //namespace Divide
+
 #endif

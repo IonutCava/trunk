@@ -26,6 +26,8 @@
 #include <limits.h>
 #include <boost/function.hpp>
 
+namespace Divide {
+
 ///Data Types
 typedef uint8_t  U8;
 typedef uint16_t U16; 
@@ -39,6 +41,7 @@ typedef __int64 _I64;
 typedef float    F32;
 typedef double   D32;
 
+void log_delete(size_t t,char* zFile, I32 nLine);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 
@@ -157,21 +160,16 @@ inline void DIVIDE_ASSERT(const bool expression, const char* failMessage){
     assert(expression && failMessage);
 }
 
-#if defined(NDEBUG)
-#   define New new
-#   define Del delete
-#else
-    void* operator new[]( size_t t,char* zFile, int nLine );
-    void* operator new(size_t t ,char* zFile, int nLine);
-    void  operator delete( void *p, char* zFile, int nLine);
-    void  operator delete[]( void *p,char* zFile, int nLine );
+typedef struct packed_int {
+    U8 b0; U8 b1; U8 b2; U8 b3;
+} packed_int;
 
-#   define New new(__FILE__, __LINE__)
-#   define Del delete
-#endif
+typedef union {
+    U32 i;
+    packed_int b;
+} P32;
 
 #ifdef _DEBUG
-void log_delete(size_t t,char* zFile, I32 nLine);
 #define LOG(X)                     log_delete(sizeof(X),__FILE__, __LINE__)
 #else
 #define LOG(X)
@@ -187,15 +185,20 @@ void log_delete(size_t t,char* zFile, I32 nLine);
 #define DELEGATE_REF  boost::ref
 #define DELEGATE_CBK  boost::function0<void>
 
-typedef struct packed_int {
-    U8 b0; U8 b1; U8 b2; U8 b3;
-} packed_int;
+}; //namespace Divide
 
-typedef union {
-    U32 i;
-    packed_int b;
-} P32;
+#if defined(NDEBUG)
+#   define New new
+#   define Del delete
+#else
+    void* operator new[]( size_t t,char* zFile, int nLine );
+    void* operator new(size_t t ,char* zFile, int nLine);
+    void  operator delete( void *p, char* zFile, int nLine);
+    void  operator delete[]( void *p,char* zFile, int nLine );
 
+#   define New new(__FILE__, __LINE__)
+#   define Del delete
+#endif
 
 #if defined(_MSC_VER)
 

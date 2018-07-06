@@ -24,6 +24,9 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "core.h"
+
+namespace Divide {
+
 class SceneGraph;
 
 class RenderPass;
@@ -73,5 +76,7 @@ private:
     bool _renderPassesResetQueued;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

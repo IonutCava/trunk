@@ -60,6 +60,8 @@
 #include "Unit.h"
 #include <boost/atomic.hpp>
 
+namespace Divide {
+
 /// Basic character class.
 /// Use the internally calculated position to update the attached node's transform!
 class Character : public Unit {
@@ -116,4 +118,7 @@ private:
     boost::atomic_bool _positionDirty;
     boost::atomic_bool _velocityDirty;
 };
+
+}; //namespace Divide
+
 #endif

@@ -7,6 +7,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+namespace Divide {
+
 ErrorCode DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
     PRINT_FN(Locale::get("START_D3D_API"));
     D3D_ENUM_TABLE::fill();
@@ -94,3 +96,5 @@ void DX_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
 {
 
 }
+
+};

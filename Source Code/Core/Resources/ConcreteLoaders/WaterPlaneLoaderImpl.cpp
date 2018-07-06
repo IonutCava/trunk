@@ -4,6 +4,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 WaterPlane* ImplResourceLoader<WaterPlane>::operator()(){
     WaterPlane* ptr = New WaterPlane();
 
@@ -52,3 +54,5 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res, const std::stri
 
     return true;
 }
+
+};

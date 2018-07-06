@@ -5,6 +5,8 @@
 #include "UnorderedMap.h"
 #include <boost/function.hpp>
 
+namespace Divide {
+
 ///A utility class used to process a string input
 class CommandParser {
 public:
@@ -15,6 +17,8 @@ public:
 
 protected:
 	Unordered_map<std::string/*command name*/, boost::function1<void, std::string /*args*/ > > _commandMap;
+};
+
 };
 
 #endif

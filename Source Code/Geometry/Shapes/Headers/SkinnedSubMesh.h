@@ -25,6 +25,8 @@
 
 #include "SubMesh.h"
 
+namespace Divide {
+
 class AnimationComponent;
 class SkinnedSubMesh : public SubMesh {
 public:
@@ -48,4 +50,7 @@ private:
     /// Animation player to animate the mesh if necessary
     SceneAnimator* _animator;
 };
+
+}; //namespace Divide
+
 #endif

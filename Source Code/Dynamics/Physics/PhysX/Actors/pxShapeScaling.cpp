@@ -1,6 +1,9 @@
 #include "Headers/pxShapeScaling.h"
 
 using namespace physx;
+
+namespace Divide {
+
 // Scales the given shape as precisely as possible.
 void Scale(physx::PxShape &shape, const physx::PxVec3 &scaling)
 {
@@ -103,7 +106,7 @@ void Scale(physx::PxBoxGeometry &geometry, physx::PxTransform &pose, const physx
 void Scale(physx::PxSphereGeometry &geometry, physx::PxTransform &pose, const physx::PxVec3 &scaling)
 {
 	// Omnidirectional approximation
-	geometry.radius *= pow( abs(scaling.x * scaling.y * scaling.z), 1.0f / 3.0f );
+	geometry.radius *= std::pow( std::abs(scaling.x * scaling.y * scaling.z), 1.0f / 3.0f );
 
 	pose.p = pose.p.multiply(scaling);
 }
@@ -161,3 +164,5 @@ void Scale(physx::PxTriangleMeshGeometry &geometry, physx::PxTransform &pose, co
 */
 	pose.p = pose.p.multiply(scaling);
 }
+
+};

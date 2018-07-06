@@ -1,5 +1,7 @@
 #include "Headers/Vehicle.h"
 
+namespace Divide {
+
 Vehicle::Vehicle(SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_VEHICLE, node)
 {
 	_playerControlled = false;
@@ -17,3 +19,5 @@ void Vehicle::setVehicleTypeMask(U8 mask){
 bool Vehicle::checkVehicleMask(VehicleType type) const {
 	return (_vehicleTypeMask & type) == type ? false : true;
 }
+
+};

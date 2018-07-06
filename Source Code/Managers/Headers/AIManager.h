@@ -28,6 +28,8 @@
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include <boost/atomic.hpp>
 
+namespace Divide {
+
 namespace AI {
 DEFINE_SINGLETON(AIManager)
 public:
@@ -111,5 +113,5 @@ private:
 END_SINGLETON
 
 }; //namespace AI
-
+}; //namespace Divide
 #endif

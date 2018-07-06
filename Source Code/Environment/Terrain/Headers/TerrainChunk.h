@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class Mesh;
 class Terrain;
 class Transform;
@@ -72,5 +74,7 @@ private:
     Vegetation*         _vegetation;
     static U32          _chunkID;
 };
+
+}; //namespace Divide
 
 #endif

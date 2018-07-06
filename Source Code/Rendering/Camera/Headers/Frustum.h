@@ -26,6 +26,8 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/Math/Headers/Plane.h"
 
+namespace Divide {
+
 class Camera;
 class BoundingBox;
 class Frustum {
@@ -64,5 +66,7 @@ private:
     mat4<F32>  _viewProjectionMatrixCacheOld;
 
 };
+
+}; //namespace Divide
 
 #endif

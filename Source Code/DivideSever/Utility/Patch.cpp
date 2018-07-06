@@ -1,6 +1,8 @@
 #include "Headers/Patch.h"
 #include "Headers/XMLParser.h"
 
+namespace Divide {
+
 void Patch::addGeometry(const FileData& data)
 {
 	ModelData.push_back(data);
@@ -10,7 +12,7 @@ bool Patch::compareData(const PatchData& data)
 {
 	bool updated = true;
 	XML::loadScene(data.sceneName);
-	for(vector<FileData>::iterator _iter = ModelData.begin(); _iter != ModelData.end(); _iter++)
+	for(vectorImpl<FileData>::iterator _iter = ModelData.begin(); _iter != ModelData.end(); _iter++)
 		for(U32 i = 0; i < data.size; i++)
 		{
 			if(data.name[i] == (*_iter).ItemName) // for each item in the scene
@@ -28,7 +30,9 @@ bool Patch::compareData(const PatchData& data)
 	return updated;
 }
 
-const vector<FileData>& Patch::updateClient()
+const vectorImpl<FileData>& Patch::updateClient()
 {
 	return ModelData;
 }
+
+}; //namespace Divide

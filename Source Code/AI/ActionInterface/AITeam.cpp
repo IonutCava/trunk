@@ -5,6 +5,7 @@
 #include "Managers/Headers/AIManager.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+namespace Divide {
 using namespace AI;
 
 AITeam::AITeam(U32 id) : GUIDWrapper(), 
@@ -124,3 +125,4 @@ bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
     return false;
 }
 
+}; //namespace Divide

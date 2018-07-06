@@ -5,6 +5,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 
+namespace Divide {
+
 OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(type, eye),
                                                                          _currentRotationX(0.0),
                                                                          _currentRotationY(0.0),
@@ -42,9 +44,10 @@ bool OrbitCamera::updateViewMatrix() {
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
-    if(!_targetNode)
+    if(!_targetNode) {
         return;
-    
+    }
+
     const Transform* trans = _targetNode->getComponent<PhysicsComponent>()->getConstTransform();
 
     static vec3<F32> newTargetOrientation;
@@ -62,7 +65,7 @@ void OrbitCamera::update(const U64 deltaTime) {
     _viewMatrixDirty = true;
 }
 
-bool OrbitCamera::mouseMoved(const OIS::MouseEvent& arg) {
+bool OrbitCamera::mouseMoved(const Input::MouseEvent& arg) {
     I32 zoom = arg.state.Z.rel;
     if (zoom != 0)
         curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
@@ -75,3 +78,5 @@ void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {
 
 void OrbitCamera::rotate(F32 yaw, F32 pitch, F32 roll) {
 }
+
+}; //namespace Divide

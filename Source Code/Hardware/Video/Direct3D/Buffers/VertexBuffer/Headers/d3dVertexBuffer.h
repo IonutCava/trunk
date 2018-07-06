@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
+namespace Divide {
+
 class d3dVertexBuffer : public VertexBuffer {
 public:
     bool Create(bool staticDraw = true) {return true;}
@@ -45,5 +47,8 @@ private:
     bool Refresh() {return true;}
     void checkStatus() {}
 };
+
+}; //namespace Divide
+
 
 #endif

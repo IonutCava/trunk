@@ -7,6 +7,8 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CubeMap)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
@@ -53,3 +55,5 @@ void CubeShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sc
 
     GFX_DEVICE.generateCubeMap(*_depthMap, _light->getPosition(), sceneRenderFunction, SHADOW_STAGE);
 }
+
+};

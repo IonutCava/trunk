@@ -23,20 +23,12 @@
 #ifndef CORE_H_
 #define CORE_H_
 
-#ifdef HIDE_DEBUG_CONSOLE
-    #pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
 #include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
 #include <memory>
 #include <malloc.h>
-#include <typeinfo.h>
 #include <time.h>
 
 #include "Hardware/Platform/Headers/PlatformDefines.h" //For data types
@@ -47,6 +39,8 @@
 #include "Utility/Headers/Localization.h"      //For language parsing
 #include "Utility/Headers/UnorderedMap.h"
 #include "Utility/Headers/Vector.h"
+
+namespace Divide {
 
 inline U64 GETUSTIME() {
     return ApplicationTimer::getInstance().getElapsedTime();
@@ -72,7 +66,6 @@ inline D32 GETTIME(bool state) {
 inline D32 GETMSTIME(bool state) {
     return getUsToMs(GETUSTIME(state));
 }
-
 
 #ifdef _DEBUG
 #define STUBBED(x) \
@@ -215,5 +208,7 @@ namespace DefaultColors {
         return vec4<F32>(0.1f,0.1f,0.8f,1.0f);
     }
 };
+
+}; //namespace Divide
 
 #endif

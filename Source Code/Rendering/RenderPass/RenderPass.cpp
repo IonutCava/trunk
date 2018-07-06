@@ -7,6 +7,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
+namespace Divide {
+
 RenderPass::RenderPass(const std::string& name) : _name(name)
 {
     _lastTotalBinSize = 0;
@@ -52,3 +54,5 @@ void RenderPass::render(const SceneRenderState& renderState, SceneGraph* activeS
 
     renderQueue.refresh();
 }
+
+};

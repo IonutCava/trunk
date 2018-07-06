@@ -23,6 +23,8 @@
 #include "Headers/LightGrid.h"
 #include "Rendering/Headers/ClipRegion.h"
 
+namespace Divide {
+
 LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(const mat4<F32>& projection, const vec3<F32>& pt, F32 rad, I32 width, I32 height, F32 nearPlane) {
     vec4<F32> reg = computeClipRegion(pt, rad, nearPlane, projection);
     reg = -reg;
@@ -229,7 +231,10 @@ void LightGrid::pruneFarOnly(F32 aNear, const vectorImpl<vec2<F32> >& gridMinMax
 void LightGrid::buildRects(const vec2<U16>& resolution, const Lights& lights, const mat4<F32>& modelView, const mat4<F32>& projection, F32 nearPlane) {
 
     m_viewSpaceLights.clear();
+    m_viewSpaceLights.reserve(lights.size());
+
     m_screenRects.clear();
+    m_screenRects.reserve(lights.size());
 
     for(U32 i = 0; i < lights.size(); ++i) {
         const LightInternal &l = lights[i];
@@ -244,3 +249,5 @@ void LightGrid::buildRects(const vec2<U16>& resolution, const Lights& lights, co
         }
     }
 }
+
+}; //namespace Divide

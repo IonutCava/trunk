@@ -10,6 +10,8 @@
 
 using namespace physx;
 
+namespace Divide {
+
 enum PhysXSceneInterfaceState {
     STATE_LOADING_ACTORS
 };
@@ -259,3 +261,5 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor, SceneGraphNode* outNode)
 
     PhysicsSceneInterface::addToScene(actor, outNode);
 }
+
+};

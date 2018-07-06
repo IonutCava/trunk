@@ -1,6 +1,8 @@
 #include "Headers/FlashScene.h"
 #include "Managers/Headers/SceneManager.h"
 
+namespace Divide {
+
 REGISTER_SCENE(FlashScene);
 
 void FlashScene::render(){
@@ -48,3 +50,5 @@ bool FlashScene::loadResources(bool continueOnErrors){
     i = 0;
     return true;
 }
+
+};

@@ -28,6 +28,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
@@ -119,4 +121,6 @@ protected:
     bool _noDefaultTransform;
     bool _transformUpdated;
 };
+
+}; //namespace Divide
 #endif

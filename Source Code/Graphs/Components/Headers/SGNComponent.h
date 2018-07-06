@@ -25,6 +25,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <boost/noncopyable.hpp>
 
+namespace Divide {
+
 /// A generic component for the SceneGraphNode class
 enum RenderStage;
 class SceneGraphNode;
@@ -63,4 +65,5 @@ protected:
     U64 _deltaTime;
 };
 
+}; //namespace Divide
 #endif

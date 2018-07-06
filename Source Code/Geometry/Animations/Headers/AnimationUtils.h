@@ -33,9 +33,13 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include <assimp/types.h>
 
+namespace Divide {
+
 namespace AnimUtils {
 	void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out);
 	void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out);
 };
+
+}; //namespace Divide
 
 #endif

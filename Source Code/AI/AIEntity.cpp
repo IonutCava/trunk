@@ -12,6 +12,7 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Managers/Headers/AIManager.h"
 
+namespace Divide {
 using namespace AI;
 
 static const D32 DESTINATION_RADIUS = 3 * 3;
@@ -236,7 +237,7 @@ void AIEntity::updatePosition(const U64 deltaTime){
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
 
         // if we are walking but did not change distance
-        if(abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS){
+        if(std::abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS){
             _moveWaitTimer += deltaTime;
             if(getUsToSec(_moveWaitTimer) > 5){
                 _moveWaitTimer = 0;
@@ -262,7 +263,7 @@ bool AIEntity::updateDestination(const vec3<F32>& destination, bool updatePrevio
     }
     vec3<F32> result;
     // Find position on navmesh
-    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 30)) {
+    if(!_detourCrowd->getNavMesh().getRandomPositionInCircle(destination, DESTINATION_RADIUS, vec3<F32>(5), result, 10)) {
         if (!_detourCrowd->getNavMesh().getClosestPosition(destination, vec3<F32>(5), DESTINATION_RADIUS, result)) {
             return false;
         }
@@ -349,3 +350,5 @@ D32 AIEntity::getMaxSpeed(){
 D32 AIEntity::getMaxAcceleration(){
     return (isAgentLoaded()  ? getAgent()->params.maxAcceleration : 0.0);
 }
+
+}; //namespace Divide

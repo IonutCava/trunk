@@ -27,6 +27,8 @@
 #include "Utility/Headers/Vector.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+namespace Divide {
+
 class Quad3D;
 class Framebuffer;
 class PixelBuffer;
@@ -54,5 +56,7 @@ private:
 	ShaderProgram*  _previewDeferredShader;
 	PixelBuffer*    _lightTexture;
 };
+
+}; //namespace Divide
 
 #endif

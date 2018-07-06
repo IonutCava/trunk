@@ -24,31 +24,63 @@
 #define _INPUT_AGGREGATOR_INIT_H_
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+#include <OIS.h>
 
-namespace OIS {
-    class KeyEvent;
-    class MouseEvent;
-    class JoyStickEvent;
-    enum MouseButtonID;
-}
+namespace Divide {
+    namespace Input {
+    ///Points to the position of said joystick in the vector
+    enum Joystick {
+        JOYSTICK_1 = 0,
+        JOYSTICK_2,
+        JOYSTICK_3,
+        JOYSTICK_4,
+        JOYSTICK_5,
+        JOYSTICK_6,
+        JOYSTICK_7,
+        JOYSTICK_8
+    };
 
-class InputAggregatorInterface {
+    typedef OIS::KeyCode            KeyCode;
+    typedef OIS::Keyboard::Modifier KeyModifier;
+    
+    typedef OIS::MouseEvent    MouseEvent;
+    typedef OIS::MouseButtonID MouseButton;
 
-public :
-    ///Keyboard
-    virtual bool onKeyDown( const OIS::KeyEvent &arg ) = 0;
-    virtual bool onKeyUp( const OIS::KeyEvent &arg ) = 0;
-    ///Joystick or Gamepad
-    virtual bool joystickButtonPressed( const OIS::JoyStickEvent &arg, I8 button) = 0;
-    virtual bool joystickButtonReleased( const OIS::JoyStickEvent &arg, I8 button) = 0;
-    virtual bool joystickAxisMoved( const OIS::JoyStickEvent &arg, I8 axis) = 0;
-    virtual bool joystickPovMoved( const OIS::JoyStickEvent &arg, I8 pov) = 0;
-    virtual bool joystickSliderMoved( const OIS::JoyStickEvent &, I8 index) = 0;
-    virtual bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index) = 0;
-    ///Mouse
-    virtual bool mouseMoved( const OIS::MouseEvent &arg ) = 0;
-    virtual bool mouseButtonPressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) = 0;
-    virtual bool mouseButtonReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) = 0;
-};
+    typedef OIS::JoyStickEvent JoystickEvent;
+    
+    static const U32 KeyCode_PLACEHOLDER = 0xEE;
 
+    struct KeyEvent {
+        KeyCode _key;
+        bool _pressed;
+        U32  _text;
+
+        KeyEvent() : _key(static_cast<KeyCode>(0)),
+                     _pressed(false),
+                     _text(0)
+        {
+        }
+    };
+
+    class InputAggregatorInterface {
+
+    public :
+        ///Keyboard
+        virtual bool onKeyDown( const KeyEvent& arg ) = 0;
+        virtual bool onKeyUp( const KeyEvent& arg ) = 0;
+        ///Joystick or Gamepad
+        virtual bool joystickButtonPressed( const JoystickEvent &arg, I8 button) = 0;
+        virtual bool joystickButtonReleased( const JoystickEvent &arg, I8 button) = 0;
+        virtual bool joystickAxisMoved( const JoystickEvent &arg, I8 axis) = 0;
+        virtual bool joystickPovMoved( const JoystickEvent &arg, I8 pov) = 0;
+        virtual bool joystickSliderMoved( const JoystickEvent &, I8 index) = 0;
+        virtual bool joystickVector3DMoved( const JoystickEvent &arg, I8 index) = 0;
+        ///Mouse
+        virtual bool mouseMoved( const MouseEvent &arg ) = 0;
+        virtual bool mouseButtonPressed( const MouseEvent &arg, MouseButton id ) = 0;
+        virtual bool mouseButtonReleased( const MouseEvent &arg, MouseButton id ) = 0;
+    };
+
+    }; //namespace Input
+}; //namespace Divide
 #endif

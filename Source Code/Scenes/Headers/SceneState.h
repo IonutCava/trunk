@@ -34,6 +34,9 @@
 ///BB and Skeleton visibility, fog info, etc
 
 ///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
+
+namespace Divide {
+
 struct FogDescriptor{
     F32 _fogDensity;
     vec3<F32> _fogColor;
@@ -171,7 +174,8 @@ public:
         _angleLR = 0;
         _roll = 0;
     }
-
+    F32 _mouseXDelta;
+    F32 _mouseYDelta;
     I32 _moveFB;  ///< forward-back move change detected
     I32 _moveLR;  ///< left-right move change detected
     I32 _angleUD; ///< up-down angle change detected
@@ -200,4 +204,5 @@ protected:
     F32  _windDirZ;
 };
 
+}; //namespace Divide
 #endif

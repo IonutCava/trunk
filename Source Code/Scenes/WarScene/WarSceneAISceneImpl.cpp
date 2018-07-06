@@ -7,6 +7,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
+namespace Divide {
 using namespace AI;
 
 static const D32 ATTACK_RADIUS = 5;
@@ -369,3 +370,5 @@ bool WarSceneAISceneImpl::performActionStep(GOAPAction::operationsIterator step)
     worldState().setVariable(crtFact, newVal);
     return true;
 }
+
+};

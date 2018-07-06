@@ -2,6 +2,7 @@
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
+namespace Divide {
 
 RenderPassManager::RenderPassManager() : _renderPassesLocked(false), _renderPassesResetQueued(false)
 {
@@ -69,3 +70,5 @@ U16 RenderPassManager::getLastTotalBinSize(U8 renderPassId) const {
     
     return 0;
 }
+
+};

@@ -23,7 +23,10 @@
 #ifndef _WAYPOINT_GRAPH_H_
 #define _WAYPOINT_GRAPH_H_
 #include "Waypoint.h"
-namespace Navigation {
+
+namespace Divide {
+    namespace Navigation {
+
 	class WaypointGraph {
 		typedef Unordered_map<I32, Waypoint*> WaypointMap;
 		//typedef Unordered_map<I32, WaypointPath> PathMap;
@@ -51,6 +54,8 @@ namespace Navigation {
 		vectorImpl<Quaternion<F32> >   _rotations;
 		vectorImpl<U32>                _times;
 	};
-};
+
+    }; //namespace Navigation
+}; //namespace Divide
 
 #endif

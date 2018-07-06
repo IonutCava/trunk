@@ -23,6 +23,11 @@
 #ifndef _PHYSICS_API_WRAPPER_H_
 #define _PHYSICS_API_WRAPPER_H_
 
+#include "core.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+
+namespace Divide {
+
 enum PhysicsCollisionGroup{
     GROUP_NON_COLLIDABLE,
     GROUP_COLLIDABLE_NON_PUSHABLE,
@@ -43,8 +48,7 @@ enum PhysicsAPI {
 
 class Scene;
 class SceneGraphNode;
-#include "core.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 
 class PhysicsAsset {
 public:
@@ -90,5 +94,7 @@ protected:
  private:
     PhysicsAPI _apiId;
 };
+
+}; //namespace Divide
 
 #endif

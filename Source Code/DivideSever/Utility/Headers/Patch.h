@@ -2,14 +2,17 @@
 #define _PATCH_H_
 
 #include "Core/Headers/Singleton.h"
+#include "Utility/Headers/Vector.h"
 #include "DataTypes.h"
+
+namespace Divide {
 
 struct PatchData
 {
-	string sceneName;
+	std::string sceneName;
 	U32 size;
-	std::vector<string> name, modelName;
-	std::vector<F32> version;
+	vectorImpl<std::string> name, modelName;
+	vectorImpl<F32> version;
 };
 
 DEFINE_SINGLETON(Patch)
@@ -17,12 +20,14 @@ DEFINE_SINGLETON(Patch)
 public:
 	bool compareData(const PatchData& data);
 	void addGeometry(const FileData& data);
-	const vector<FileData>& updateClient();
+	const vectorImpl<FileData>& updateClient();
 	void reset() {ModelData.clear();};
 
 private:
-	vector<FileData> ModelData;
+	vectorImpl<FileData> ModelData;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

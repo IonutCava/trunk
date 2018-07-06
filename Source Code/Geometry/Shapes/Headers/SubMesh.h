@@ -41,6 +41,8 @@ and a name.
 #include "core.h"
 #include "Mesh.h"
 
+namespace Divide {
+
 class SubMesh : public Object3D {
 public:
     SubMesh(const std::string& name, ObjectFlag flag = OBJECT_FLAG_NONE);
@@ -76,9 +78,11 @@ protected:
     bool _render;
     U32 _id;
     Mesh* _parentMesh;
-    SceneGraphNode* _parentMeshSGN;
     BoundingBox     _importBB;
+    SceneGraphNode* _parentMeshSGN;
     GenericDrawCommand _drawCmd;
 };
+
+}; //namespace Divide
 
 #endif

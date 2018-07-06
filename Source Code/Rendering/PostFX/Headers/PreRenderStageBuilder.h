@@ -9,6 +9,8 @@
 ///inspired by ImageFilters in Pshyce http://www.codinglabs.net/psyche.aspx
 ///actual implementation and roll differ
 
+namespace Divide {
+
 class ShaderProgram;
 class Quad3D;
 class PreRenderStage;
@@ -40,4 +42,5 @@ private:
 	SamplerDescriptor* _screenSampler;
 END_SINGLETON
 
+}; //namespace Divide
 #endif

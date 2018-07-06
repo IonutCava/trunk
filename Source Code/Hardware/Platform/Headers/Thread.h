@@ -23,6 +23,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
+#include <exception>
 #include <threadpool.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>

@@ -29,6 +29,13 @@
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"
 
+namespace CEGUI {
+    class Renderer;
+};
+
+
+namespace Divide {
+
 namespace Font {
     const static std::string	DIVIDE_DEFAULT ("DroidSerif-Regular.ttf"/*"Test.ttf"*/);
     const static std::string	BATANG ("Batang.ttf");
@@ -43,19 +50,17 @@ class GUIElement;
 class ShaderProgram;
 class RenderStateBlock;
 
-namespace CEGUI{
-    class Renderer;
-};
-
 #define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 
-class Scene;
 class GUIText;
 class GUIFlash;
 class GUIButton;
 class GUIMessageBox;
-/// Grafical User Interface
-DEFINE_SINGLETON_EXT1( GUI, InputAggregatorInterface )
+class Scene;
+
+/// Graphical User Interface
+
+DEFINE_SINGLETON_EXT1( GUI, Input::InputAggregatorInterface )
     typedef Unordered_map<std::string, GUIElement*> guiMap;
     typedef DELEGATE_CBK ButtonCallback;
 
@@ -90,25 +95,25 @@ public:
     /// Mouse cursor forced to a certain position
     void setCursorPosition(U16 x, U16 y) const;
     ///Key pressed
-    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key);
     ///Key released
-    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key);
     ///Joystick axis change
-    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg,I8 button);
     ///Joystick button released
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
-    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, I8 button);
+    bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index);
     ///Mouse moved
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg);
     ///Mouse button pressed
-    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
     ///Mouse button released
-    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 private:
     GUI();               //< Constructor
     ~GUI();              //< Destructor
@@ -127,4 +132,6 @@ private:
     ShaderProgram* _guiShader;//<Used to apply color for text for now
 
 END_SINGLETON
+
+}; //namespace Divide
 #endif

@@ -6,6 +6,8 @@
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
 
+namespace Divide {
+
 PhysicsComponent::PhysicsComponent(SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_PHYSICS, parentSGN),
                                                                        _physicsCollisionGroup(NODE_COLLIDE_IGNORE),
                                                                        _noDefaultTransform(false),
@@ -316,3 +318,5 @@ void PhysicsComponent::setPositionZ(const F32 positionZ) {
         setTransformDirty();
     }
 }
+
+};

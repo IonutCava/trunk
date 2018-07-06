@@ -3,6 +3,8 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
+namespace Divide {
+
 using namespace AI;
 
 AIManager::AIManager() : _navMeshDebugDraw(false),
@@ -178,3 +180,5 @@ void AIManager::debugDraw(bool forceAll) {
         }
     }
 }
+
+}; //namespace Divide

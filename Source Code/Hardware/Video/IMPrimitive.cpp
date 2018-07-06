@@ -1,6 +1,8 @@
 #include "Headers/IMPrimitive.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
+namespace Divide {
+
 IMPrimitive::IMPrimitive() : GUIDWrapper(),
                              _inUse(false),
                              _hasLines(false),
@@ -19,3 +21,5 @@ IMPrimitive::~IMPrimitive()
 {
     clear();
 }
+
+};

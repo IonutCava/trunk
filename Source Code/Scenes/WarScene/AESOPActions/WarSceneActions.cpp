@@ -3,6 +3,7 @@
 #include "Core/Headers/Console.h"
 #include "Scenes/WarScene/Headers/WarSceneAISceneImpl.h"
 
+namespace Divide {
 namespace AI {
 
     WarSceneAction::WarSceneAction(ActionType type, const std::string& name, F32 cost) : GOAPAction(name, cost)
@@ -34,4 +35,5 @@ namespace AI {
     {
     }
 
-};
+}; //namespace AI
+}; //namespace Divide

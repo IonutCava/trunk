@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
+namespace Divide {
+
 class Unit;
 class Task;
 class Impostor;
@@ -84,5 +86,7 @@ private:
     SceneGraphNode *_triggerSGN, *_impostorSGN;
     bool _enabled;
 };
+
+}; //namespace Divide
 
 #endif

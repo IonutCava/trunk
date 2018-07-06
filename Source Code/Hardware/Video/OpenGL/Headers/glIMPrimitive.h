@@ -31,6 +31,8 @@ namespace NS_GLIM {
     enum GLIM_ENUM;
 };
 
+namespace Divide {
+
 /// An Implementation of the NS_GLIM library.
 class glIMPrimitive : public IMPrimitive {
 
@@ -66,4 +68,5 @@ protected:
     NS_GLIM::GLIM_BATCH*  _imInterface;
 };
 
+}; //namespace Divide
 #endif

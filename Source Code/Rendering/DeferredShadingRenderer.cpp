@@ -14,6 +14,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Managers/Headers/RenderPassManager.h"
 
+namespace Divide {
+
 DeferredShadingRenderer::DeferredShadingRenderer() : Renderer(RENDERER_DEFERRED_SHADING),
                                                     _cachedLightCount(0)
 {
@@ -224,3 +226,5 @@ void DeferredShadingRenderer::updateResolution(U16 width, U16 height){
     //Using a separate, smaller render quad for debug view because it's faster than resizing a quad back and forth -Ionut
     _renderQuads[4]->setDimensions(vec4<F32>(0, 0, width / 2, height / 2));
 }
+
+};

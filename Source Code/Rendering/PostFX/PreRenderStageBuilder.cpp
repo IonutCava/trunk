@@ -4,6 +4,8 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
+namespace Divide {
+
 PreRenderStageBuilder::PreRenderStageBuilder(){
 	_renderStage = New PreRenderStage();
 	_screenSampler = New SamplerDescriptor;
@@ -23,3 +25,5 @@ PreRenderOperator* PreRenderStageBuilder::addToStage(PreRenderOperator* op, bool
 	_renderStage->addRenderOperator(op);
 	return op;
 }
+
+};

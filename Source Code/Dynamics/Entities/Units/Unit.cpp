@@ -4,6 +4,8 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
+namespace Divide {
+
 Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
                                                         _type(type),
                                                         _node(node),
@@ -46,7 +48,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = min(_moveSpeed * (getMsToSec(timeDif)), 0.0f);
+    F32 moveDistance = std::min((F32)(_moveSpeed * (getMsToSec(timeDif))), 0.0f);
 
     bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
     if (!returnValue) {
@@ -71,12 +73,12 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
                 interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
             } else if( IS_ZERO( zDelta ) ){
                 interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
-            } else if( fabs( xDelta ) > fabs( zDelta ) ) {
-                F32 value = fabs( zDelta / xDelta ) * moveDistance;
+            } else if( std::fabs( xDelta ) > std::fabs( zDelta ) ) {
+                F32 value = std::fabs( zDelta / xDelta ) * moveDistance;
                 interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -value : value );
                 interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -moveDistance : moveDistance );
             } else {
-                F32 value = fabs( xDelta / zDelta ) * moveDistance;
+                F32 value = std::fabs( xDelta / zDelta ) * moveDistance;
                 interpPosition.x = ( _currentPosition.x > _currentTargetPosition.x ? -value : value );
                 interpPosition.z = ( _currentPosition.z > _currentTargetPosition.z ? -moveDistance : moveDistance );
             }
@@ -151,3 +153,5 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
 
     return false; ///< no
 }
+
+};

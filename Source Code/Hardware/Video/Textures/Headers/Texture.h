@@ -25,7 +25,8 @@
 
 #include "TextureDescriptor.h"
 #include "Core/Resources/Headers/HardwareResource.h"
-#include "Hardware/Video/Headers/RenderAPIEnums.h"
+
+namespace Divide {
 
 /// An API-independent representation of a texture
 class Texture : public HardwareResource {
@@ -33,6 +34,7 @@ class Texture : public HardwareResource {
     friend class ResourceLoader;
     template<typename X>
     friend class ImplResourceLoader;
+
 public:
     /// Bind the texture to the specified texture unit
     virtual void Bind(U16 slot) = 0;
@@ -98,4 +100,5 @@ protected:
     SamplerDescriptor _samplerDescriptor;
 };
 
+}; //namespace Divide
 #endif

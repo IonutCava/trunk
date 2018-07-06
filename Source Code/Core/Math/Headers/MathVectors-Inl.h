@@ -22,6 +22,7 @@
 #ifndef _CORE_MATH_MATH_VECTORS_H_
 #define _CORE_MATH_MATH_VECTORS_H_
 
+namespace Divide {
 /*
 *  useful vector functions
 */
@@ -85,8 +86,9 @@ template<typename T>
 inline T vec2<T>::normalize() {
     T l = this->length();
 
-    if(l < EPSILON)
+    if (l < EPSILON) {
         return 0;
+    }
 
     T inv = 1.0f / l;
     this->x *= inv;
@@ -226,7 +228,7 @@ inline void vec3<T>::cross(const vec3 &v2) {
 /// calculate the dot product between this vector and the specified one
 template<typename T>
 inline T vec3<T>::dot(const vec3 &v) const {
-    return ::dot(*this, v);
+    return Divide::dot(*this, v);
 }
 
 /// compute the vector's distance to another specified vector
@@ -244,11 +246,11 @@ inline T vec3<T>::distanceSquared(const vec3 &v) const {
 /// returns the angle in radians between '*this' and 'v'
 template<typename T>
 inline T vec3<T>::angle(vec3 &v) const {
-    T angle = (T)fabs(acos(this->dot(v)/(this->length()*v.length())));
+    T angle = (T)std::fabs(std::acos(this->dot(v)/(this->length()*v.length())));
 
-    if(angle < EPSILON)
+    if (angle < EPSILON) {
         return 0;
-
+    }
     return angle;
 }
 
@@ -282,22 +284,22 @@ inline void vec3<T>::lerp(const vec3 &v,const vec3& factor) {
 /// rotate this vector on the X axis
 template<typename T>
 inline void vec3<T>::rotateX(D32 radians){
-    this->y = (T)( cos(radians)*this->y + sin(radians)*this->z);
-    this->z = (T)(-sin(radians)*this->y + cos(radians)*this->z);
+    this->y = (T)( std::cos(radians)*this->y + std::sin(radians)*this->z);
+    this->z = (T)(-std::sin(radians)*this->y + std::cos(radians)*this->z);
 }
 
 /// rotate this vector on the Y axis
 template<typename T>
 inline void vec3<T>::rotateY(D32 radians){
-    this->x = (T)(cos(radians)*this->x - sin(radians)*this->z);
-    this->z = (T)(sin(radians)*this->x + cos(radians)*this->z);
+    this->x = (T)(std::cos(radians)*this->x - std::sin(radians)*this->z);
+    this->z = (T)(std::sin(radians)*this->x + std::cos(radians)*this->z);
 }
 
 /// rotate this vector on the Z axis
 template<typename T>
 inline void vec3<T>::rotateZ(D32 radians){
-    this->x = (T)( cos(radians)*this->x + sin(radians)*this->y);
-    this->y = (T)(-sin(radians)*this->x + cos(radians)*this->y);
+    this->x = (T)( std::cos(radians)*this->x + std::sin(radians)*this->y);
+    this->y = (T)(-std::sin(radians)*this->x + std::cos(radians)*this->y);
 }
 
 /// round all three values
@@ -422,7 +424,7 @@ inline T dot(const vec4<T>& a, const vec4<T>& b) {
 /// calculate the dot product between this vector and the specified one
 template<typename T>
 inline T vec4<T>::dot(const vec4 &v) const {
-    return ::dot(*this, v);
+    return Divide::dot(*this, v);
 }
 
 /// return the squared distance of the vector
@@ -459,4 +461,5 @@ inline vec4<T> lerp(const vec4<T>  &u, const vec4<T> &v, const vec4<T> & factor)
                      (u.w * (1 - factor.w)) + (v.w * factor.w)));
 }
 
+}; //namespace Divide
 #endif

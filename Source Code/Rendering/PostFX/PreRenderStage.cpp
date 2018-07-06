@@ -1,6 +1,8 @@
 #include "Headers/PreRenderStage.h"
 #include "Headers/PreRenderOperator.h"
 
+namespace Divide {
+
 PreRenderStage::~PreRenderStage(){
 	for(PreRenderOperator*& op : _operators){
 		SAFE_DELETE(op);
@@ -18,3 +20,5 @@ void PreRenderStage::reshape(I32 width, I32 height){
 		op->reshape(width,height);
 	}
 }
+
+};

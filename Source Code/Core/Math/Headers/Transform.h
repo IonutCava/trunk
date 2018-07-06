@@ -28,6 +28,8 @@
 #include "Quaternion.h"
 #include "Utility/Headers/GUIDWrapper.h"
    
+namespace Divide {
+
 struct TransformValues {
     ///The object's position in the world as a 3 component vector
     vec3<F32> _translation;
@@ -396,5 +398,7 @@ private:
     mutable SharedLock _lock;
     mutable SharedLock _parentLock;
 };
+
+}; //namespace Divide
 
 #endif

@@ -31,11 +31,12 @@
 #include <string>
 #include <stack>
 
+namespace Divide {
+
 class Kernel;
 class Shader;
 class ShaderProgram;
 enum  ShaderType;
-enum  MATRIX_MODE;
 
 DEFINE_SINGLETON(ShaderManager)
 
@@ -101,4 +102,5 @@ private:
 
 END_SINGLETON
 
+};
 #endif

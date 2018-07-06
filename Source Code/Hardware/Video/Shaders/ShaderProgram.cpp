@@ -10,6 +10,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
+namespace Divide {
+
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
                                                     _optimise(optimise),
                                                     _dirty(true),
@@ -209,3 +211,5 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool
         bind();
     }
 }
+
+};

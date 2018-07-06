@@ -77,6 +77,8 @@
 
 #define MAX_ACTOR_QUEUE 30
 
+namespace Divide {
+
 class Transform;
 class PhysXActor : public PhysicsAsset {
 public:
@@ -170,4 +172,7 @@ private:
 
 END_SINGLETON
 #endif
+
+}; //namespace Divide
+
 #endif

@@ -14,6 +14,8 @@
 
 using namespace physx;
 
+namespace Divide {
+
 physx::PxDefaultAllocator     PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 
@@ -268,4 +270,6 @@ bool PhysX::createActor(SceneGraphNode* const node, const std::string& sceneName
     tempActor->_actor->createShape(*geometry, *_gPhysicsSDK->createMaterial(0.7f, 0.7f, 1.0f));
 
     return true;
+};
+
 };

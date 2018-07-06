@@ -27,6 +27,8 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
 
+namespace Divide {
+
 ///When "CreateResource" is called, the resource is in "RES_UNKNOWN" state. Once it has been instantiated it will move to the "RES_CREATED" state.
 ///Calling "load" on a non-created resource will fail. After "load" is called, the resource is move to the "RES_LOADING" state
 ///Nothing can be done to the resource when it's in "RES_LOADING" state!
@@ -126,5 +128,7 @@ struct TerrainInfo {
     vec2<F32>   scale;
     bool   active;
 };
+
+}; //namespace Divide
 
 #endif

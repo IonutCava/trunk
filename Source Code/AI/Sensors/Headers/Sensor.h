@@ -25,7 +25,9 @@
 
 #include "Core/Math/Headers/MathVectors.h"
 
-namespace AI {
+namespace Divide {
+    namespace AI {
+
 enum SensorType {
 	NONE = 0,
 	VISUAL_SENSOR = 1,
@@ -51,5 +53,7 @@ protected:
 	SensorType _type;
     AIEntity*  _parentEntity;
 };
-}; //namespace AI
+    }; //namespace AI
+}; //namespace Divide
+
 #endif 

@@ -6,6 +6,8 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
+namespace Divide {
+
 class WorldPacket : public ByteBuffer
 {
     public:
@@ -42,8 +44,11 @@ class WorldPacket : public ByteBuffer
    protected:
         U16 m_opcode;
 };
+
+}; //namespace Divide
+
 //Remove Archive header / Warning: no more version updates ... hmmm
-BOOST_CLASS_IMPLEMENTATION(WorldPacket, boost::serialization::object_serializable);
+BOOST_CLASS_IMPLEMENTATION(Divide::WorldPacket, boost::serialization::object_serializable);
 //Remove pointer tracking and duplication checking. Leave it up to me, why not? 8-|
-BOOST_CLASS_TRACKING(WorldPacket, boost::serialization::track_never)
+BOOST_CLASS_TRACKING(Divide::WorldPacket, boost::serialization::track_never)
 #endif

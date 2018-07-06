@@ -28,6 +28,8 @@
 #include "Graphs/Headers/SceneNode.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 
+namespace Divide {
+
 /// Basic definitions used by the particle emitter
 /// By default , every PE node is inert until you pass it a descriptor
 struct ParticleEmitterDescriptor {
@@ -128,5 +130,7 @@ private:
 
     GenericDrawCommand        _drawCommand;
 };
+
+}; //namespace Divide
 
 #endif

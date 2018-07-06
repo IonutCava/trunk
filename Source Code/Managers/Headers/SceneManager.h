@@ -27,10 +27,12 @@
 #include "Scenes/Headers/Scene.h"
 #include <boost/functional/factory.hpp>
 
+namespace Divide {
+
 enum RenderStage;
 class RenderPassCuller;
 
-DEFINE_SINGLETON_EXT2(SceneManager, FrameListener, InputAggregatorInterface)
+DEFINE_SINGLETON_EXT2(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
 public:
     ///Lookup the factory methods table and return the pointer to a newly constructed scene bound to that name
@@ -77,25 +79,25 @@ public:
    
 public: ///Input
     ///Key pressed
-    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key);
     ///Key released
-    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key);
     ///Joystic axis change
-    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg,I8 button);
     ///Joystick button released
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
-    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, I8 button);
+    bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index);
     ///Mouse moved
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg);
     ///Mouse button pressed
-    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
     ///Mouse button released
-    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
 
 protected:
@@ -106,6 +108,7 @@ protected:
 protected:
     ///This is inherited from FrameListener and is used to setup cameras before rendering the frame
     bool framePreRenderStarted(const FrameEvent& evt);
+    bool frameStarted(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 
 private:
@@ -142,4 +145,7 @@ inline Scene* GET_ACTIVE_SCENE() {
 inline SceneGraph* GET_ACTIVE_SCENEGRAPH() {
     return GET_ACTIVE_SCENE()->getSceneGraph();
 }
+
+}; //namespace Divide
+
 #endif

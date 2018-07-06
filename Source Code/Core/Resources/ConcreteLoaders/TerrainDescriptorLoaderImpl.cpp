@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+namespace Divide {
+
 TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){
     TerrainDescriptor* ptr = New TerrainDescriptor();
     if(!load(ptr,_descriptor.getName())){
@@ -12,3 +14,5 @@ TerrainDescriptor* ImplResourceLoader<TerrainDescriptor>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(TerrainDescriptor)
+
+};

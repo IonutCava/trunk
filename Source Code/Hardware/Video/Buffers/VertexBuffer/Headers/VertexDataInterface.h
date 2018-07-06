@@ -28,6 +28,8 @@
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
+namespace Divide {
+
 class VertexDataInterface : public FrameListener, public GUIDWrapper, private boost::noncopyable {
 public:
     VertexDataInterface() : FrameListener(), GUIDWrapper() 
@@ -47,4 +49,5 @@ public:
     virtual bool frameStarted(const FrameEvent& evt) { return true; }
 };
  
+}; //namespace Divide
 #endif

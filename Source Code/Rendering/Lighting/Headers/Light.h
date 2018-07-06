@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Graphs/Headers/SceneNode.h"
 
+namespace Divide {
+
 ///The different types of lights supported
 enum LightType{
     LIGHT_TYPE_DIRECTIONAL = 0,
@@ -200,5 +202,7 @@ protected:
     ShadowMapInfo* _shadowMapInfo;
     ParamHandler& _par;
 };
+
+}; //namespace Divide
 
 #endif

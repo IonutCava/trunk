@@ -29,6 +29,8 @@ Quaternion class based on code from " OpenGL:Tutorials:Using Quaternions to repr
 */
 #include "core.h"
 
+namespace Divide {
+
 template<typename T>
 class Quaternion
 {
@@ -67,10 +69,10 @@ public:
     inline T magnituteSq()              const { return _elements.lengthSquared(); }
 
     inline bool compare(const Quaternion& rq, F32 tolerance = 1e-3f) const {
-        T angleRad = RADIANS((T)acos((D32)dot(rq)));
+        T angleRad = RADIANS((T)std::acos((D32)dot(rq)));
         F32 toleranceRad = RADIANS(tolerance);
 
-        return (abs(angleRad) <= toleranceRad) || FLOAT_COMPARE_TOLERANCE(angleRad, M_PI, toleranceRad);
+        return (std::abs(angleRad) <= toleranceRad) || FLOAT_COMPARE_TOLERANCE(angleRad, M_PI, toleranceRad);
     }
 
     inline void set(const vec4<T>& values) { _elements.set(values); }
@@ -106,8 +108,8 @@ public:
     //! Multiplying a quaternion q with a vector v applies the q-rotation to v
     vec3<T> operator* (const vec3<T>& vec) const {
         // nVidia SDK implementation
-        vec3<T> uv(::cross(_elements.xyz(),vec));
-        return vec + (uv * (2.0f * W())) + (::cross(_elements.xyz(),uv) * 2.0f);
+        vec3<T> uv(cross(_elements.xyz(),vec));
+        return vec + (uv * (2.0f * W())) + (cross(_elements.xyz(),uv) * 2.0f);
     }
 
     bool operator==(const Quaternion& rq) const { return compare(rq); }
@@ -170,10 +172,10 @@ public:
             q._elements.set(q1._elements);
         }
         if(1.0 - cosomega > 1e-6) {
-            F32 omega = (F32)acos(cosomega);
-            F32 sinomega = (F32)sin(omega);
-            k0 = (F32)sin((1.0f - t) * omega) / sinomega;
-            k1 = (F32)sin(t * omega) / sinomega;
+            F32 omega = (F32)std::acos(cosomega);
+            F32 sinomega = (F32)std::sin(omega);
+            k0 = (F32)std::sin((1.0f - t) * omega) / sinomega;
+            k1 = (F32)std::sin(t * omega) / sinomega;
         } else {
             k0 = 1.0f - t;
             k1 = t;
@@ -190,7 +192,7 @@ public:
         vec3<T> vn(v);
         vn.normalize();
 
-        _elements.set(vn * sin(angle), cos(angle));
+        _elements.set(vn * std::sin(angle), std::cos(angle));
      }
 
     inline void fromEuler(const vec3<T>& v, bool inDegrees = true) {
@@ -204,12 +206,12 @@ public:
         T heading  = inDegrees ? RADIANS(yaw)   : yaw;
         T bank     = inDegrees ? RADIANS(roll)  : roll;
 
-        D32 c1 = cos(heading  * 0.5);
-        D32 s1 = sin(heading  * 0.5);
-        D32 c2 = cos(attitude * 0.5);
-        D32 s2 = sin(attitude * 0.5);
-        D32 c3 = cos(bank * 0.5);
-        D32 s3 = sin(bank * 0.5);
+        D32 c1 = std::cos(heading  * 0.5);
+        D32 s1 = std::sin(heading  * 0.5);
+        D32 c2 = std::cos(attitude * 0.5);
+        D32 s2 = std::sin(attitude * 0.5);
+        D32 c3 = std::cos(bank * 0.5);
+        D32 s3 = std::sin(bank * 0.5);
 
         D32 c1c2 = c1*c2;
         D32 s1s2 = s1*s2;
@@ -289,7 +291,7 @@ public:
     //! Convert to Axis/Angles
     void getAxisAngle(vec3<T> *axis, T *angle,bool inDegrees) const {
         axis->set(_elements / _elements.xyz().length());
-        *angle = inDegrees ? DEGREES(acos(W()) * 2.0f) : acos(W()) * 2.0f;
+        *angle = inDegrees ? DEGREES(std::acos(W()) * 2.0f) : std::acos(W()) * 2.0f;
     }
 
     void getEuler(vec3<T> *euler, bool toDegrees = false) const {
@@ -306,20 +308,20 @@ public:
         T unit = sqx + sqy + sqz + sqw; // if normalized is one, otherwise is correction factor
 
         if(test > (0.5f - EPSILON_F32) * unit) { // singularity at north pole
-            heading  = 2 * atan2(x , w);
+            heading  = 2 * std::atan2(x , w);
             attitude = M_PIDIV2;
             bank     = 0;
         }else if (test < -(0.5f - EPSILON_F32) * unit) { // singularity at south pole
-            heading  = -2 * atan2(x , w);
+            heading  = -2 * std::atan2(x , w);
             attitude = -M_PIDIV2;
             bank     = 0;
         }else{
             T x2   = 2 * x;
             T y2   = 2 * y;
 
-            heading  = atan2(y2 * w - x2 * z , sqx - sqy - sqz + sqw);
-            attitude = asin(2 * test / unit);
-            bank     = atan2(x2 * w - y2 * z ,-sqx + sqy - sqz + sqw);
+            heading  = std::atan2(y2 * w - x2 * z , sqx - sqy - sqz + sqw);
+            attitude = std::asin(2 * test / unit);
+            bank     = std::atan2(x2 * w - y2 * z ,-sqx + sqy - sqz + sqw);
         }
         //Convert back from Z = pitch to Z = roll
         if(toDegrees){
@@ -385,7 +387,7 @@ inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u, const 
         F32 s = std::sqrtf( (1+d)*2 );
         F32 invs = 1 / s;
  
-        vec3<T> c(::cross(v0, v1) * invs);
+        vec3<T> c(cross(v0, v1) * invs);
         q.set(c.x, c.y, c.z, s * 0.5f);
         q.normalize();
     }
@@ -404,5 +406,7 @@ inline mat4<T> getMatrix(const Quaternion<T>& q) {
     mat4<T> temp; q.getMatrix(temp);
     return temp;
 }
+
+}; //namespace Divide
 
 #endif

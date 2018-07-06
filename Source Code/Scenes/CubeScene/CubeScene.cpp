@@ -5,6 +5,8 @@
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "Core/Math/Headers/Transform.h"
 
+namespace Divide {
+
 REGISTER_SCENE(CubeScene);
 
 void CubeScene::render(){
@@ -87,13 +89,15 @@ bool CubeScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool CubeScene::onKeyUp(const OIS::KeyEvent& key)
+bool CubeScene::onKeyUp(const Input::KeyEvent& key)
 {
     bool keyState = Scene::onKeyUp(key);
-    switch(key.key)
+    switch(key._key)
     {
-        case OIS::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
+        case Input::KeyCode::KC_T:	_GFX.getRenderer()->toggleDebugView(); break;
         default: break;
     }
     return keyState;
 }
+
+};

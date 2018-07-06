@@ -25,6 +25,8 @@
 #include "GUIElement.h"
 #include "Utility/Headers/TextLabel.h"
    
+namespace Divide {
+
 class GUIText : public GUIElement, public TextLabel {
 friend class GUI;
 public:
@@ -48,5 +50,7 @@ public:
     bool onKeyDown(const GUIEvent &event);
 */
 };
+
+}; //namespace Divide
 
 #endif

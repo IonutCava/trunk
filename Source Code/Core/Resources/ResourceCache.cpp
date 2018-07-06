@@ -5,6 +5,8 @@
 #include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
 
+namespace Divide {
+
 ResourceCache::ResourceCache(){
     //_loadingPool = New boost::threadpool::pool(3);
     DVDConverter::createInstance();
@@ -138,3 +140,5 @@ bool ResourceCache::loadHW(Resource* const res, const std::string& name){
     }
     return false;
 }
+
+};

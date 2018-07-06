@@ -30,6 +30,8 @@
 #include "Rendering/RenderPass/Headers/Reflector.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
+namespace Divide {
+
 class Texture;
 class CameraManager;
 class ShaderProgram;
@@ -95,5 +97,7 @@ private:
     bool            _cameraUnderWater;
     CameraManager&  _cameraMgr;
 };
+
+}; //namespace Divide
 
 #endif

@@ -1,5 +1,7 @@
 #include "Headers/Projectile.h"
 
+namespace Divide {
+
 Projectile::Projectile(ProjectileType type) : _type(type)
 {
 	/// no placeholders please
@@ -15,3 +17,5 @@ bool Projectile::addProperties(U8 propertyMask){
 	_properyMask |= static_cast<ProjectileProperty>(propertyMask);
 	return true;
 }
+
+};

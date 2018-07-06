@@ -6,6 +6,8 @@
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+namespace Divide {
+
 bool Material::_shaderQueueLocked = false;
 bool Material::_serializeShaderLoad = false;
 
@@ -387,3 +389,5 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderKey  = (it != _shaderInfo.end() && it->second._shaderRef) ? it->second._shaderRef->getId() : GFXDevice::SORT_NO_VALUE;
     textureKey = _textures[ShaderProgram::TEXTURE_UNIT0] ? _textures[ShaderProgram::TEXTURE_UNIT0]->getHandle() : GFXDevice::SORT_NO_VALUE;
 }
+
+};

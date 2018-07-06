@@ -4,6 +4,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
+namespace Divide {
+
 Frustum::Frustum(Camera& parentCamera) : _pointsDirty(true), _parentCamera(parentCamera)
 {
 }
@@ -21,8 +23,13 @@ Frustum::FrustCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 rad
     for (const Plane<F32>& frustumPlane : _frustumPlanes){
         distance = frustumPlane.getDistance(center);
 
-        if (distance < -radius)      return FRUSTUM_OUT;
-        if (fabs(distance) < radius) return FRUSTUM_INTERSECT;
+        if (distance < -radius) {     
+            return FRUSTUM_OUT;
+        }
+
+        if (std::fabs(distance) < radius) {
+            return FRUSTUM_INTERSECT;
+        }
     }
 
     return FRUSTUM_IN;
@@ -125,3 +132,5 @@ void Frustum::getCornersViewSpace(vectorImpl<vec3<F32> >& cornersVS){
     for (U8 i = 0; i < 8; ++i)
         cornersVS[i].set(viewMatrix.transform(_frustumPoints[i]));
 }
+
+};

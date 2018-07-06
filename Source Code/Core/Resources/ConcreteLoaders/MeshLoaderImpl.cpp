@@ -3,6 +3,8 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
+namespace Divide {
+
 Mesh* ImplResourceLoader<Mesh>::operator()(){
     Mesh* ptr = DVDConverter::getInstance().load(_descriptor.getResourceLocation());
 
@@ -20,3 +22,5 @@ Mesh* ImplResourceLoader<Mesh>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Mesh)
+
+};

@@ -27,6 +27,7 @@
 
 #include "UnorderedMap.h"
 
+namespace Divide {
 namespace Locale {
 	///Each string key in the map matches a key in the language ini file
 	///each string value in the map matches the value in the ini file for the given key
@@ -48,6 +49,7 @@ namespace Locale {
 	///usage: Locale::get("A_B_C") or Locale::get("A_B_C","X") where "A_B_C" is the language key we want
 	///and "X" is a default string in case the key does not exist in the INI file
 	char* get(const std::string& key,const std::string& defaultValue = std::string("String not found!"));
-};
+}; //namespace Locale
+}; //namespace Divide
 
 #endif

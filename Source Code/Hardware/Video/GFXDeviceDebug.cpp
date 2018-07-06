@@ -5,6 +5,8 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+namespace Divide {
+
 /// Show the contents of the depth buffer in a small rectangle in the bottom right of the screen
 void GFXDevice::previewDepthBuffer() {
     // As this is touched once per frame, we'll only enable it in debug builds
@@ -101,3 +103,5 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     // Submit the draw command, rendering it in a tiny viewport in the lower right corner
     drawLines(_axisLines, offset * _gpuBlock._ViewMatrix.getInverse(), vec4<I32>(_renderTarget[RENDER_TARGET_SCREEN]->getWidth() - 128, 0, 128, 128), true, true);
 }
+
+};

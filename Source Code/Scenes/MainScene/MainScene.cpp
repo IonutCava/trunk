@@ -9,6 +9,8 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+namespace Divide {
+
 REGISTER_SCENE(MainScene);
 
 void MainScene::updateLights(){
@@ -233,11 +235,11 @@ bool MainScene::loadResources(bool continueOnErrors){
 }
 
 bool _playMusic = false;
-bool MainScene::onKeyUp(const OIS::KeyEvent& key){
-    switch(key.key)	{
+bool MainScene::onKeyUp(const Input::KeyEvent& key){
+    switch(key._key)	{
         default: break;
-        case OIS::KC_X:	SFX_DEVICE.playSound(_beep); break;
-        case OIS::KC_M:{
+        case Input::KeyCode::KC_X:	SFX_DEVICE.playSound(_beep); break;
+        case Input::KeyCode::KC_M:{
             _playMusic = !_playMusic;
             if(_playMusic){
                 SFX_DEVICE.playMusic(state()._backgroundMusic["generalTheme"]);
@@ -245,14 +247,14 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
                 SFX_DEVICE.stopMusic();
             }
             }break;
-        case OIS::KC_R:{
+        case Input::KeyCode::KC_R:{
             _water->togglePreviewReflection();
             }break;
-        case OIS::KC_F:{
+        case Input::KeyCode::KC_F:{
             _freeflyCamera = !_freeflyCamera;
             renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
             }break;
-        case OIS::KC_T:
+        case Input::KeyCode::KC_T:
             for(Terrain* ter : _visibleTerrains){
                 ter->toggleBoundingBoxes();
             }
@@ -261,25 +263,22 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
     return Scene::onKeyUp(key);
 }
 
-bool MainScene::mouseMoved(const OIS::MouseEvent& key){
-    if(_mousePressed[OIS::MB_Right]){
-        if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
-        else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
-        else			                                     state()._angleLR =  0;
-
-        if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
-        else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
-        else 			                                     state()._angleUD =  0;
+bool MainScene::mouseMoved(const Input::MouseEvent& key){
+    if(_mousePressed[Input::MouseButton::MB_Right]){
+        state()._angleLR = -state()._mouseXDelta;
+        state()._angleUD = -state()._mouseYDelta;
     }
 
     return Scene::mouseMoved(key);
 }
 
-bool MainScene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool MainScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
     bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[OIS::MB_Right]){
+    if(!_mousePressed[Input::MouseButton::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
     return keyState;
 }
+
+};

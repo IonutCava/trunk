@@ -42,64 +42,13 @@ LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
    void checkMacEvents();
 #endif
 
+namespace Divide {
+    namespace Input {
 //////////// Event handler class declaration ////////////////////////////////////////////////
-class InputInterface;
-
 DEFINE_SINGLETON( InputInterface )
 
-  protected:
-
-    OIS::InputManager* _pInputInterface;
-    EventHandler*      _pEventHdlr;
-    OIS::Keyboard*     _pKeyboard;
-    OIS::Mouse*        _pMouse;
-    ///multiple joystick support
-    vectorImpl<OIS::JoyStick* >	   _pJoysticks;
-
-    JoystickInterface* _pJoystickInterface;
-    EffectManager*     _pEffectMgr;
-
-    bool               _bMustStop;
-    bool               _bIsInitialized;
-
-    I16 _nStatus;
-
-    // App. heart beat frequency.
-    static const U8 _nHartBeatFreq = 30; // Hz
-
-    // Effects update frequency (Hz) : Needs to be quite lower than app. hart beat frequency,
-    // if we want to be able to calmly study effect changes ...
-    static const U8 _nEffectUpdateFreq = 5; // Hz
-
-    InputInterface() : _pInputInterface(nullptr),
-                       _pEventHdlr(nullptr),
-                       _pKeyboard(nullptr),
-                       _pJoystickInterface(nullptr),
-                       _pMouse(nullptr),
-                       _pEffectMgr(nullptr),
-                       _bMustStop(false),
-                       _bIsInitialized(false),
-                       _nStatus(0)
-    {
-    }
-
-    ~InputInterface()
-    {
-        terminate();
-    }
-
-public:
-    ///Points to the position of said joystick in the vector
-    enum Joysticks{
-        JOY_1 = 0,
-        JOY_2,
-        JOY_3,
-        JOY_4,
-        JOY_5,
-        JOY_6,
-        JOY_7,
-        JOY_8
-    };
+ public:
+  
 
     U8 init(Kernel* const kernel, const std::string& windowTitle);
 
@@ -130,6 +79,79 @@ public:
     inline OIS::Keyboard* getKeyboard() const { return _pKeyboard; }
     inline OIS::Mouse*    getMouse()    const { return _pMouse; }
 
-END_SINGLETON
 
+    inline bool isKeyDown(Input::KeyCode keyCode) const {
+        if (!_pKeyboard) {
+            return false;
+        }
+        return _pKeyboard->isKeyDown(keyCode);
+    }
+
+    inline bool isModifierDown(KeyModifier keyModifier) const {
+        if (!_pKeyboard) {
+            return false;
+        }
+        return _pKeyboard->isModifierDown(keyModifier);
+    }
+
+    inline const KeyEvent& getKey(KeyCode keyCode) const {
+        return _keys[static_cast<U32>(keyCode)];
+    }
+
+protected:
+    friend class EventHandler;
+    inline KeyEvent& getKeyRef(U32 index) {
+        return _keys[index];
+    }
+ 
+  private:
+    InputInterface() : _pInputInterface(nullptr),
+                       _pEventHdlr(nullptr),
+                       _pKeyboard(nullptr),
+                       _pJoystickInterface(nullptr),
+                       _pMouse(nullptr),
+                       _pEffectMgr(nullptr),
+                       _bMustStop(false),
+                       _bIsInitialized(false),
+                       _nStatus(0)
+    {
+        for(U8 i = 0; i < KeyCode_PLACEHOLDER; ++i){
+            _keys[i]._key = static_cast<KeyCode>(i);
+        }
+    }
+
+    ~InputInterface()
+    {
+        terminate();
+    }
+
+ protected:
+
+    OIS::InputManager* _pInputInterface;
+    EventHandler*      _pEventHdlr;
+    OIS::Keyboard*     _pKeyboard;
+    OIS::Mouse*        _pMouse;
+    ///multiple joystick support
+    vectorImpl<OIS::JoyStick* >	   _pJoysticks;
+
+    JoystickInterface* _pJoystickInterface;
+    EffectManager*     _pEffectMgr;
+
+    bool               _bMustStop;
+    bool               _bIsInitialized;
+
+    I16 _nStatus;
+
+    // App. heart beat frequency.
+    static const U8 _nHartBeatFreq = 30; // Hz
+
+    // Effects update frequency (Hz) : Needs to be quite lower than app. hart beat frequency,
+    // if we want to be able to calmly study effect changes ...
+    static const U8 _nEffectUpdateFreq = 5; // Hz
+
+    KeyEvent _keys[KeyCode_PLACEHOLDER];
+
+END_SINGLETON
+    }; //namespace Input
+}; //namespace Divide
 #endif

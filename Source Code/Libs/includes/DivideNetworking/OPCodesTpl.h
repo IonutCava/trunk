@@ -5,6 +5,7 @@
 #define OPCODE_ENUM
 #endif
 
+namespace Divide {
 ///Packet handling requires OPCodes to be defined. Use the following enum structure to define them in each app:
 enum OPCodes
 {
@@ -33,4 +34,5 @@ typedef InheritEnum< OPCodesEx, OPCodes > OPCodesImpl;
 And use OPCodesImpl for switch statements and packet handling
 */
 
+}; //namespace Divide
 #endif

@@ -36,6 +36,8 @@
 ///- Bone weights bound to location Divide::VERTEX_BONE_WEIGHT_LOCATION
 ///- Bone indices bound to location Divide::VERTEX_BONE_INDICE_LOCATION
 
+namespace Divide {
+
 class glVertexArray : public VertexBuffer {
 public:
     glVertexArray();
@@ -81,5 +83,7 @@ protected:
     GLsizei _prevSize[VertexAttribute_PLACEHOLDER];
     GLsizei _prevSizeIndices;
 };
+
+}; //namespace Divide
 
 #endif

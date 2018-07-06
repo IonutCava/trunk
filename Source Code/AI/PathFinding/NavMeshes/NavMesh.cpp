@@ -10,6 +10,7 @@
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>
 
+namespace Divide {
 namespace AI {
 namespace Navigation {
 
@@ -654,5 +655,5 @@ namespace Navigation {
         return Navigation::DivideRecast::getInstance().getRandomPointAroundCircle(*this, center, radius, extents, result, maxIters);
     }
 }; //namespace Navigation
-
 }; //namespace AI
+}; //namespace Divide

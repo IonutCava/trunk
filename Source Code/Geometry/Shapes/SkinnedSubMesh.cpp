@@ -8,6 +8,8 @@
 #include "Geometry/Animations/Headers/AnimationController.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 
+namespace Divide {
+
 SkinnedSubMesh::SkinnedSubMesh(const std::string& name) : SubMesh(name, Object3D::OBJECT_FLAG_SKINNED)
 {
    _animator =  New SceneAnimator();
@@ -77,3 +79,5 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
     sgn->setInitialBoundingBox(animBB[animComp->frameIndex()]);
     return true;
 }
+
+};

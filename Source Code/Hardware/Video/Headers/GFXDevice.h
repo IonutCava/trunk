@@ -29,6 +29,11 @@
 #include "Managers/Headers/RenderPassManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
+#include <boost/lockfree/spsc_queue.hpp>
+#include <stack>
+
+namespace Divide {
+
 enum RenderStage;
 enum SceneNodeType;
 
@@ -40,6 +45,7 @@ class Object3D;
 class Renderer;
 class ApplicationTimer;
 class SceneRenderState;
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
     typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
@@ -106,8 +112,8 @@ public:
 
     void idle();
 
-    inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
-    inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
+    inline void      registerKernel(Kernel* const kernel)       {_kernel = kernel;}
+    inline void      setWindowPos(U16 w, U16 h)           const {_api.setWindowPos(w,h);}
            void      changeResolution(U16 w, U16 h);
     inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
 
@@ -153,7 +159,7 @@ public:
 
     void debugDraw(const SceneRenderState& sceneRenderState);
     void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const vec4<U8>& color);
-    void drawLines(const vectorImpl<Line >& lines,
+    void drawLines(const ::vectorImpl<Line >& lines,
                    const mat4<F32>& globalOffset,
                    const vec4<I32>& viewport, //<only for ortho mode
                    const bool inViewport = false,
@@ -162,7 +168,7 @@ public:
     void drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram);
     void drawGUIElement(GUIElement* guiElement);
     void submitRenderCommand(VertexDataInterface* const buffer, const GenericDrawCommand& cmd);
-    void submitRenderCommand(VertexDataInterface* const buffer, const vectorImpl<GenericDrawCommand>& cmds);
+    void submitRenderCommand(VertexDataInterface* const buffer, const ::vectorImpl<GenericDrawCommand>& cmds);
     /// returns false if there was an invalid state detected that could prevent rendering
     bool setBufferData(const GenericDrawCommand& cmd);
 
@@ -276,7 +282,7 @@ public:
 
     void ConstructHIZ();
 
-    void processVisibleNodes(const vectorImpl<SceneGraphNode* >& visibleNodes);
+    void processVisibleNodes(const ::vectorImpl<SceneGraphNode* >& visibleNodes);
 
     inline U32  getFrameCount()       const { return FRAME_COUNT; }
     inline I32  getDrawCallCount()    const { return FRAME_DRAW_CALLS_PREV; }
@@ -362,8 +368,8 @@ private:
     boost::thread *_loaderThread;
     ShaderProgram* _activeShaderProgram;
      
-    vectorImpl<Line > _axisLines;
-    vectorImpl<Line > _axisLinesTrasnformed;
+    ::vectorImpl<Line > _axisLines;
+    ::vectorImpl<Line > _axisLinesTrasnformed;
 
 protected:
     Renderer* _renderer;
@@ -419,8 +425,8 @@ protected:
 
     GPUBlock                _gpuBlock;
 
-    vectorImpl<NodeData >     _matricesData;
-    vectorImpl<GPUVideoMode > _supportedDislpayModes;
+    ::vectorImpl<NodeData >     _matricesData;
+    ::vectorImpl<GPUVideoMode > _supportedDislpayModes;
     Unordered_map<I64, I32>   _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
@@ -429,6 +435,8 @@ protected:
     GenericDrawCommand _defaultDrawCmd;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #include "GFXDevice-Inl.h"
 

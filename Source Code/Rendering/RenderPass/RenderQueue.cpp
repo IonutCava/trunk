@@ -9,6 +9,8 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 struct RenderBinCallOrder{
     bool operator()(RenderBin* a, RenderBin* b) const {
         return a->getSortOrder() < b->getSortOrder();
@@ -179,3 +181,5 @@ void RenderQueue::unlock(bool resetNodes){
 
     if (resetNodes) refresh();
 }
+
+};

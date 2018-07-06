@@ -24,6 +24,9 @@
 #define _SINGLE_SHADOW_MAP_H_
 
 #include "ShadowMap.h"
+
+namespace Divide {
+
 class Quad3D;
 class ShaderProgram;
 ///A single shadow map system. Used, for example, by spot lights.
@@ -43,5 +46,7 @@ protected:
 private:
     ShaderProgram* _previewDepthMapShader;
 };
+
+}; //namespace Divide
 
 #endif

@@ -3,6 +3,8 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit::UNIT_TYPE_CHARACTER, node),
                                                                        _type(type),
                                                                        _positionDirty(false),
@@ -85,3 +87,5 @@ void Character::lookAt(const vec3<F32>& targetPos) {
     _velocityDirty = true;
 }
 
+
+};

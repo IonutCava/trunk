@@ -5,6 +5,8 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
+namespace Divide {
+
 CameraManager::CameraManager(Kernel* const kernelPtr) : FrameListener(), _kernelPtr(kernelPtr), _camera(nullptr), _addNewListener(false)
 {
     REGISTER_FRAME_LISTENER(this, 0);
@@ -80,3 +82,5 @@ Camera* CameraManager::findCamera(U64 cameraGUID) {
 
     return it->second;
 }
+
+};

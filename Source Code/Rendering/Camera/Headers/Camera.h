@@ -28,13 +28,10 @@
 #include "Frustum.h"
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
+#include "Hardware/Input/Headers/EventHandler.h"
 
-namespace OIS {
-    class MouseEvent;
-    enum MouseButtonID;
-}
+namespace Divide {
 
-class SceneGraphNode;
 class Camera : public Resource {
 public:
     enum CameraType {
@@ -159,7 +156,7 @@ public:
     ///Clear all listeners from the current camera
     virtual void clearListeners() { _listeners.clear(); }
     ///Inject mouse events
-    virtual bool mouseMoved(const OIS::MouseEvent& arg) {return true;}
+    virtual bool mouseMoved(const Input::MouseEvent& arg) {return true;}
     ///Called when the camera becomes active
     virtual void onActivate();
     ///Called when the camera becomes inactive
@@ -229,4 +226,5 @@ protected:
     Frustum*        _frustum;
 };
 
+}; //namespace Divide
 #endif

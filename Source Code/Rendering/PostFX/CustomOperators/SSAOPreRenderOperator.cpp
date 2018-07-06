@@ -6,6 +6,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,resolution,sampler),
@@ -39,3 +41,5 @@ void SSAOPreRenderOperator::operation(){
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _ssaoShader);
     _outputFB->End();
 }
+
+};

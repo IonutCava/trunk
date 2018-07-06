@@ -1,5 +1,7 @@
 #include "Headers/Weapon.h"
 
+namespace Divide {
+
 Weapon::Weapon(WeaponType type) : _type(type)
 {
 	/// no placeholders please
@@ -15,3 +17,5 @@ bool Weapon::addProperties(U8 propertyMask){
 	_properyMask |= static_cast<WeaponType>(propertyMask);
 	return true;
 }
+
+};

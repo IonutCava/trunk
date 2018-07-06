@@ -27,6 +27,8 @@
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
 #include "Scenes/WarScene/AESOPActions/Headers/WarSceneActions.h"
 
+namespace Divide {
+
 namespace AI {
 enum AIMsg {
     HAVE_FLAG = 0
@@ -163,4 +165,6 @@ private:
 };
 
 }; //namespace AI
+}; //namespace Divide
+
 #endif

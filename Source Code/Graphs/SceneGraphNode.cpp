@@ -10,6 +10,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
+namespace Divide {
+
 SceneGraphNode::SceneGraphNode(SceneGraph* const sg, SceneNode* const node) : GUIDWrapper(),
                                                   _sceneGraph(sg),
                                                   _node(node),
@@ -183,7 +185,8 @@ void SceneGraphNode::setParent(SceneGraphNode* const parent) {
 }
 
 ///Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string& name){
+SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string& name) {
+    assert(node);
     //Create a new SceneGraphNode with the SceneNode's info
     SceneGraphNode* sceneGraphNode = New SceneGraphNode(_sceneGraph, node);
     //Validate it to be safe
@@ -208,12 +211,14 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     //Do all the post load operations on the SceneNode
     //Pass a reference to the newly created SceneGraphNode in case we need transforms or bounding boxes
     node->postLoad(sceneGraphNode);
+    _sceneGraph->incNodeCount();
     //return the newly created node
     return sceneGraphNode;
 }
 
 //Remove a child node from this Node
-void SceneGraphNode::removeNode(SceneGraphNode* node){
+void SceneGraphNode::removeNode(SceneGraphNode* node) {
+    _sceneGraph->decNodeCount();
     //find the node in the children map
     NodeChildren::iterator it = _children.find(node->getName());
     //If we found the node we are looking for
@@ -246,8 +251,9 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
         FOR_EACH(NodeChildren::value_type& it, _children){
             returnValue = it.second->findNode(name);
             // if it is not nullptr it is the node we are looking for so just pass it through
-            if(returnValue != nullptr)
+            if (returnValue != nullptr) {
                 return returnValue;
+            }
         }
     }
 
@@ -258,11 +264,13 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 
 void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
 
-    if (isSelectable() && _boundingBox.Intersect(ray, start, end))
+    if (isSelectable() && _boundingBox.Intersect(ray, start, end)) {
         selectionHits.push_back(this);
+    }
 
-    FOR_EACH(NodeChildren::value_type& it, _children)
+    FOR_EACH(NodeChildren::value_type& it, _children) {
         it.second->Intersect(ray,start,end,selectionHits);
+    }
 }
 
 const mat4<F32>& SceneGraphNode::getWorldMatrix(D32 interpolationFactor){
@@ -278,3 +286,5 @@ const mat4<F32>& SceneGraphNode::getWorldMatrix(D32 interpolationFactor){
 
     return _worldMatrixInterp;
 }
+
+};

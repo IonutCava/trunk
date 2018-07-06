@@ -9,9 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Header Files\Utility">
-      <UniqueIdentifier>{f040bc6a-ced9-4a1e-b0a1-c7141dad394a}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Libs\src\DivideNetworking\ASIO.cpp">
@@ -42,9 +39,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\WorldPacket.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\Thread.h">
-      <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\OPCodesTpl.h">
       <Filter>Header Files</Filter>

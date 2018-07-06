@@ -25,6 +25,8 @@
 
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+namespace Divide {
+
 class Scene;
 class Transform;
 class PhysicsAsset;
@@ -54,5 +56,7 @@ public:
 protected:
     Scene* _parentScene;
 };
+
+}; //namespace Divide
 
 #endif

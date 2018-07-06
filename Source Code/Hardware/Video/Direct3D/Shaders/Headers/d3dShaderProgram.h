@@ -25,10 +25,17 @@
 
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
+namespace Divide {
+
 class d3dShaderProgram : public ShaderProgram {
 public:
-    d3dShaderProgram(const bool optimise = false) : ShaderProgram(optimise) {};
-    ~d3dShaderProgram(){};
+    d3dShaderProgram(const bool optimise = false) : ShaderProgram(optimise) 
+    {
+    }
+
+    ~d3dShaderProgram()
+    {
+    }
 
     bool unload(){unbind(); return true;}
     bool bind(){return false;}
@@ -81,4 +88,5 @@ protected:
     inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
 };
 
+}; //namespace Divide
 #endif

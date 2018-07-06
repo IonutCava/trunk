@@ -25,6 +25,7 @@
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
+namespace Divide {
 
 class DoFPreRenderOperator : public PreRenderOperator {
 public:
@@ -39,5 +40,7 @@ private:
 	Framebuffer*   _outputFB;
 	Framebuffer*   _samplerCopy;
 };
+
+}; //namespace Divide
 
 #endif

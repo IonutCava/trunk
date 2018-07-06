@@ -5,6 +5,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 TerrainLoader::TerrainLoader() : Singleton()
 {
     _textureSampler = New SamplerDescriptor();
@@ -408,3 +410,5 @@ bool TerrainLoader::Save(const char* fileName){
 bool TerrainLoader::Load(const char* filename){
     return true;
 }
+
+};

@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class Terrain;
 class WaterPlane;
 
@@ -51,9 +53,9 @@ private:
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
     void test(cdiggins::any a, CallbackParam b);
-    bool onKeyUp(const OIS::KeyEvent& key);
-    bool mouseMoved(const OIS::MouseEvent& key);
-    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool onKeyUp(const Input::KeyEvent& key);
+    bool mouseMoved(const Input::MouseEvent& key);
+    bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
 
 private:
 
@@ -67,5 +69,7 @@ private:
     WaterPlane* _water;
     SceneGraphNode* _waterGraphNode;
 };
+
+}; //namespace Divide
 
 #endif;

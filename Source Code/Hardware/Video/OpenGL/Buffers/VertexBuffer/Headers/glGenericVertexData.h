@@ -29,6 +29,8 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 
+namespace Divide {
+
 class glGenericVertexData : public GenericVertexData {
     enum GVDUsage {
         GVD_USAGE_DRAW  = 0,
@@ -106,4 +108,6 @@ private:
     vectorImpl<U32 > _fdbkBindPoints;
     glBufferLockManager* _lockManager;
 };
+
+}; //namespace Divide
 #endif

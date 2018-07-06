@@ -27,11 +27,6 @@
 #include "Core/Headers/cdigginsAny.h"
 #include "Hardware/Platform/Headers/Task.h"
 
-class Sky;
-class Light;
-class Object3D;
-class TerrainDescriptor;
-
 /*All these includes are useful for a scene, so instead of forward declaring the classes, we include the headers
   to make them available in every scene source file. To reduce compile times, forward declare the "Scene" class instead
 */
@@ -55,11 +50,17 @@ class TerrainDescriptor;
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIElement.h"
 
+namespace Divide {
+    class Sky;
+    class Light;
+    class Object3D;
+    class TerrainDescriptor;
+    class ParticleEmitter;
+    struct ParticleEmitterDescriptor;
+    class PhysicsSceneInterface;
+
 ///The scene is a resource (to enforce load/unload and setName) and it has a 2 states: one for game information and one for rendering information
-class ParticleEmitter;
-struct ParticleEmitterDescriptor;
-class PhysicsSceneInterface;
-class Scene : public Resource, public InputAggregatorInterface {
+class Scene : public Resource, public Input::InputAggregatorInterface {
 protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
 #ifdef _DEBUG
@@ -175,6 +176,8 @@ private:
 protected:
 
     friend class SceneManager;
+    virtual bool frameStarted();
+    virtual bool frameEnded();
     /**Begin loading and unloading logic*/
     virtual bool preLoad();
     ///Description in SceneManager
@@ -232,28 +235,30 @@ protected:
         return true;
     }
 
-    void defaultCameraKeys(OIS::KeyCode code, bool upState);
+    void defaultCameraKeys(Input::KeyCode code, bool upState);
 
 public: //Input
-    virtual bool onKeyDown(const OIS::KeyEvent& key);
-    virtual bool onKeyUp(const OIS::KeyEvent& key);
-    virtual bool joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis);
-    virtual bool joystickPovMoved(const OIS::JoyStickEvent& key, I8 pov);
-    virtual bool joystickButtonPressed(const OIS::JoyStickEvent& key,I8 button){ return true;}
-    virtual bool joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button) { return true; }
-    virtual bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index) { return true; }
-    virtual bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){ return true; }
-    virtual bool mouseMoved(const OIS::MouseEvent& key);
-    virtual bool mouseButtonPressed(const OIS::MouseEvent& key,OIS::MouseButtonID button);
-    virtual bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    virtual bool onKeyDown(const Input::KeyEvent& key);
+    virtual bool onKeyUp(const Input::KeyEvent& key);
+    virtual bool joystickAxisMoved(const Input::JoystickEvent& key,I8 axis);
+    virtual bool joystickPovMoved(const Input::JoystickEvent& key, I8 pov);
+    virtual bool joystickButtonPressed(const Input::JoystickEvent& key,I8 button){ return true;}
+    virtual bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button) { return true; }
+    virtual bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index) { return true; }
+    virtual bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){ return true; }
+    virtual bool mouseMoved(const Input::MouseEvent& key);
+    virtual bool mouseButtonPressed(const Input::MouseEvent& key, Input::MouseButton button);
+    virtual bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
 
 protected: //Input
-    vec2<F32> _previousMousePos;
+    vec2<I32> _previousMousePos;
     bool _mousePressed[8];
 #ifdef _DEBUG
     vectorImpl<Line > _lines[DEBUG_LINE_PLACEHOLDER];
 #endif
 };
+
+}; //namespace Divide
 
 ///usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
 ///									  -B is the name used to refer to that scene in the XML files

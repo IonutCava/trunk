@@ -27,11 +27,12 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
-class IMPrimitive;
-class RenderStateBlock;
+namespace Divide {
+    class IMPrimitive;
+    class RenderStateBlock;
+    namespace AI {
+        namespace Navigation {
 
-namespace AI {
-namespace Navigation {
     /// Convert a Rcast color integer to RGBA components.
     inline void rcCol(U32 col, U8 &r, U8 &g, U8 &b, U8 &a) {
         r = col % 256; col /= 256;
@@ -76,6 +77,8 @@ namespace Navigation {
             bool _dirty;
             bool _paused;
     };
-};
-}; //namespace AI
+        }; //namespace Navigation
+    }; //namespace AI
+}; //namespace Divide
+
 #endif

@@ -7,6 +7,8 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 SubMesh::SubMesh(const std::string& name, ObjectFlag flag) : Object3D(name, SUBMESH, flag | OBJECT_FLAG_NO_VB),
                                                              _visibleToNetwork(true),
                                                              _render(true),
@@ -56,3 +58,5 @@ void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
 
     GFX_DEVICE.submitRenderCommand(_parentMesh->getGeometryVB(), _drawCmd);
 }
+
+};

@@ -3,6 +3,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 
+namespace Divide {
+
 Material* ImplResourceLoader<Material>::operator()(){
     Material* ptr = New Material();
     assert(ptr != nullptr);
@@ -21,3 +23,5 @@ Material* ImplResourceLoader<Material>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Material)
+
+};

@@ -7,6 +7,7 @@
 #include <string>
 
 //----------------------------------------------------------------------
+namespace Divide {
 
 DEFINE_SINGLETON(Server)
 
@@ -26,4 +27,5 @@ private:
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

@@ -27,6 +27,8 @@
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
+namespace Divide {
+
 class FXAAPreRenderOperator : public PreRenderOperator {
 public:
 	FXAAPreRenderOperator(Framebuffer* result, const vec2<U16>& resolution, SamplerDescriptor* const sampler);
@@ -41,5 +43,7 @@ private:
 	Framebuffer*   _outputFB;
 	Framebuffer*   _samplerCopy;
 };
+
+}; //namespace Divide
 
 #endif

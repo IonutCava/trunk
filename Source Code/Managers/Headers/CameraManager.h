@@ -28,6 +28,8 @@
 #include "Managers/Headers/FrameListenerManager.h"
 #include <stack>
 
+namespace Divide {
+
 class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
@@ -46,7 +48,7 @@ public:
     void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
     void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f); _addNewListener = true;}
 
-    inline bool mouseMoved(const OIS::MouseEvent& arg) { return _camera->mouseMoved(arg); }
+    inline bool mouseMoved(const Input::MouseEvent& arg) { return _camera->mouseMoved(arg); }
 
     inline void pushActiveCamera(const std::string& name, bool callActivate = true) { 
         _cameraStack.push(findCamera(name));
@@ -80,5 +82,7 @@ private:
     vectorImpl<DELEGATE_CBK > _changeCameralisteners;
     vectorImpl<DELEGATE_CBK > _updateCameralisteners;
 };
+
+}; //namespace Divide
 
 #endif

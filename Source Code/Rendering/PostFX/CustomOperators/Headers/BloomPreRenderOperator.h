@@ -25,6 +25,8 @@
 
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
+namespace Divide {
+
 class Quad3D;
 class Texture;
 class Framebuffer;
@@ -53,5 +55,7 @@ private:
     U32 _horizBlur;
     U32 _vertBlur;
 };
+
+}; //namespace Divide
 
 #endif

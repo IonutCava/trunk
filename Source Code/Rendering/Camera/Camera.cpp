@@ -3,6 +3,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 
+namespace Divide {
+
 Camera::Camera(const CameraType& type, const vec3<F32>& eye) :
                                          Resource("temp_camera"),
                                          _isActive(false),
@@ -169,7 +171,9 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
-    if(_movementLocked) return;
+    if (_movementLocked) {
+        return;
+    }
 
     _eye += _xAxis * dx * _cameraMoveSpeed;
     _eye += WORLD_Y_AXIS * dy * _cameraMoveSpeed;
@@ -355,3 +359,5 @@ vec3<F32> Camera::unProject(const vec3<F32>& winCoords, const vec4<I32>& viewpor
 
     return temp.xyz();
 }
+
+};

@@ -7,6 +7,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
 
 bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_viewportChanged = false;
@@ -122,7 +123,7 @@ void glFramebuffer::InitAttachment(TextureDescriptor::AttachmentType type, const
     _mipMapLevel[slot].set(texDescriptor._mipMinLevel,
                            texDescriptor._mipMaxLevel > 0 ? texDescriptor._mipMaxLevel : 1 + (I16)floorf(log2f(fmaxf((F32)_width, (F32)_height))));
     
-    tex->loadData(isLayeredTexture ? 0 : Divide::GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], texDescriptor._internalFormat, texDescriptor._internalFormat);
+    tex->loadData(isLayeredTexture ? 0 : GLUtil::GL_ENUM_TABLE::glTextureTypeTable[currentType], NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], texDescriptor._internalFormat, texDescriptor._internalFormat);
     tex->refreshMipMaps();
     tex->Bind(0); 
 
@@ -386,7 +387,7 @@ void glFramebuffer::End() {
 }
 
 void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth) {
-    GLuint textureType = Divide::GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
+    GLuint textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY && 
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY && 
@@ -421,7 +422,7 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
 }
 
 void glFramebuffer::SetMipLevel(GLushort mipLevel,  GLushort mipMaxLevel, GLushort writeLevel, TextureDescriptor::AttachmentType slot) {
-    GLuint textureType = Divide::GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
+    GLuint textureType = GLUtil::GL_ENUM_TABLE::glTextureTypeTable[_attachmentTexture[slot]->getTextureType()];
     // Only 2D texture support for now
     DIVIDE_ASSERT(textureType == GL_TEXTURE_2D, "glFramebuffer error: Changing mip level is only available for 2D textures!");
     _attachmentTexture[slot]->setMipMapRange(mipLevel, mipLevel);
@@ -441,8 +442,8 @@ void glFramebuffer::ReadData(const vec4<U16>& rect, GFXImageFormat imageFormat, 
         _resolveBuffer->ReadData(rect, imageFormat, dataType, outData);
     } else {
         GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_READ_ONLY);
-        glReadPixels(rect.x, rect.y, rect.z, rect.w, Divide::GLUtil::GL_ENUM_TABLE::glImageFormatTable[imageFormat], 
-                                                     Divide::GLUtil::GL_ENUM_TABLE::glDataFormat[dataType], outData);
+        glReadPixels(rect.x, rect.y, rect.z, rect.w, GLUtil::GL_ENUM_TABLE::glImageFormatTable[imageFormat], 
+                                                     GLUtil::GL_ENUM_TABLE::glDataFormat[dataType], outData);
     }
 }
 
@@ -494,3 +495,5 @@ bool glFramebuffer::checkStatus() const {
         }
     };
 }
+
+}; //namespace Divide

@@ -33,6 +33,9 @@
 
 struct aiNode;
 struct aiScene;
+
+namespace Divide {
+
 class SceneAnimator{
 public:
     typedef Unordered_map<U32/*frameIndex*/, vectorImpl<Line >> LineMap;
@@ -136,5 +139,7 @@ private:
     LineCollection _skeletonLines;
     mat4<F32>      _cacheIdentity;
 };
+
+}; //namespace Divide
 
 #endif

@@ -66,6 +66,6 @@ protected:
     ///! Tracks target area for rendering so we can reformat when needed
     mutable Sizef d_formattingAreaSize;
 };
-}
 
+}; //namespace CEGUI
 #endif

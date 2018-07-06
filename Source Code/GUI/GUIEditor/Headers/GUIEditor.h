@@ -23,6 +23,9 @@
 #ifndef _GUI_EDITOR_H_
 #define _GUI_EDITOR_H_
 
+#include "Core/Headers/Singleton.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
+
 namespace CEGUI {
     class Font;
     class Window;
@@ -31,8 +34,8 @@ namespace CEGUI {
     class ToggleButton;
 };
 
-#include "Core/Headers/Singleton.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+namespace Divide {
+
 class SceneGraphNode;
 ///Our world editor interface
 DEFINE_SINGLETON( GUIEditor )
@@ -148,4 +151,5 @@ DEFINE_SINGLETON( GUIEditor )
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

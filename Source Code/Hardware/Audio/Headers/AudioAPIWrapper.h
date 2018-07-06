@@ -25,8 +25,9 @@
 
 #include "AudioDescriptor.h"
 
-class AudioState
-{
+namespace Divide {
+
+class AudioState {
 public:
 	AudioState(bool enableA,
 		        bool enableB,
@@ -80,5 +81,7 @@ private:
 protected:
 	AudioState _state;
 };
+
+}; //namespace Divide
 
 #endif

@@ -13,6 +13,8 @@
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUI.h"
 
+namespace Divide {
+
 REGISTER_SCENE(TenisScene);
 
 static boost::atomic_bool s_gameStarted;
@@ -396,11 +398,11 @@ bool TenisScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool TenisScene::onKeyUp(const OIS::KeyEvent& key){
+bool TenisScene::onKeyUp(const Input::KeyEvent& key){
     return Scene::onKeyUp(key);
 }
 
-bool TenisScene::mouseMoved(const OIS::MouseEvent& key){
+bool TenisScene::mouseMoved(const Input::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
         if(_previousMousePos.x - key.state.X.abs > 1 )		 state()._angleLR = -1;
         else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
@@ -414,11 +416,13 @@ bool TenisScene::mouseMoved(const OIS::MouseEvent& key){
     return Scene::mouseMoved(key);
 }
 
-bool TenisScene::mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button){
+bool TenisScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
     bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[OIS::MB_Right]){
+    if(!_mousePressed[Input::MouseButton::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
     return keyState;
 }
+
+};

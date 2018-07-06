@@ -18,6 +18,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
 
+namespace Divide {
+
 REGISTER_SCENE(WarScene);
 
 WarScene::WarScene() : Scene(),
@@ -581,16 +583,16 @@ bool WarScene::loadResources(bool continueOnErrors){
     return true;
 }
 
-bool WarScene::onKeyUp(const OIS::KeyEvent& key){
+bool WarScene::onKeyUp(const Input::KeyEvent& key){
     static bool fpsCameraActive = false;
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
     bool keyState = Scene::onKeyUp(key);
-    switch(key.key)	{
+    switch(key._key)	{
         default: break;
 
-        case OIS::KC_TAB:{
+        case Input::KeyCode::KC_TAB:{
             if(_currentSelection != nullptr){
                 /*if(flyCameraActive){
                     renderState().getCameraMgr().pushActiveCamera("fpsCamera");
@@ -614,29 +616,26 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
     return keyState;
 }
 
-bool WarScene::mouseMoved(const OIS::MouseEvent& key){
+bool WarScene::mouseMoved(const Input::MouseEvent& key){
     if(_mousePressed[OIS::MB_Right]){
-        if(_previousMousePos.x - key.state.X.abs > 1 )   	 state()._angleLR = -1;
-        else if(_previousMousePos.x - key.state.X.abs < -1 ) state()._angleLR =  1;
-        else 			                                     state()._angleLR =  0;
-
-        if(_previousMousePos.y - key.state.Y.abs > 1 )		 state()._angleUD = -1;
-        else if(_previousMousePos.y - key.state.Y.abs < -1 ) state()._angleUD =  1;
-        else 	                                             state()._angleUD =  0;
+        state()._angleLR = -state()._mouseXDelta;
+        state()._angleUD = -state()._mouseYDelta;
     }
 
     return Scene::mouseMoved(key);
 }
 
-bool WarScene::mouseButtonPressed(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+bool WarScene::mouseButtonPressed(const Input::MouseEvent& key, Input::MouseButton button){
     return Scene::mouseButtonPressed(key,button);
 }
 
-bool WarScene::mouseButtonReleased(const OIS::MouseEvent& key, OIS::MouseButtonID button){
+bool WarScene::mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button){
     bool keyState = Scene::mouseButtonReleased(key,button);
-    if(!_mousePressed[OIS::MB_Right]){
+    if(!_mousePressed[Input::MouseButton::MB_Right]){
         state()._angleUD = 0;
         state()._angleLR = 0;
     }
     return keyState;
 }
+
+};

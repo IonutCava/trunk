@@ -28,6 +28,8 @@
 #	pragma GCC diagnostic pop
 #endif
 
+namespace Divide {
+
 GUIConsole::GUIConsole() : _init(false),
                            _closing(false),
                            _editBox(nullptr),
@@ -211,3 +213,5 @@ void GUIConsole::update(const U64 deltaTime){
         _lastMsg.clear();
     }
 }
+
+};

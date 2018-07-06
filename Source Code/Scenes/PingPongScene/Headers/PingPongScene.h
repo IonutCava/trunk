@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class Sphere3D;
 
 class PingPongScene : public Scene {
@@ -51,9 +53,9 @@ public:
 	void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
 
-	bool onKeyUp(const OIS::KeyEvent& key);
-	bool joystickAxisMoved(const OIS::JoyStickEvent& key,I8 axis);
-	bool joystickButtonReleased(const OIS::JoyStickEvent& key, I8 button);
+	bool onKeyUp(const Input::KeyEvent& key);
+	bool joystickAxisMoved(const Input::JoystickEvent& key,I8 axis);
+	bool joystickButtonReleased(const Input::JoystickEvent& key, I8 button);
 
 private:
 	void test(cdiggins::any a, CallbackParam b);
@@ -78,5 +80,7 @@ private: //Game stuff:
     bool _wasInFreeFly;
 	F32 _sideDrift;
 };
+
+}; //namespace Divide
 
 #endif

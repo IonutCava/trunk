@@ -7,6 +7,8 @@
 //									 TCP											 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
+namespace Divide {
+
 tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& ch) :  start_time(time(nullptr)),
                                          channel_(ch),
                                          socket_(io_service),
@@ -259,3 +261,5 @@ void udp_broadcaster::sendPacket(const WorldPacket& p)
     boost::system::error_code ignored_ec;
     socket_.send(buffers, 0, ignored_ec);
 }
+
+}; //namespace Divide

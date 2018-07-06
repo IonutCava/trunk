@@ -1,5 +1,7 @@
 #include "Headers/TrackedObject.h"
 
+namespace Divide {
+
 TrackedObject::TrackedObject() : GUIDWrapper(), _refCount(1)
 {
     ///On creation, it only has a reference count of 1
@@ -50,7 +52,7 @@ bool TrackedObject::SubRef(bool recursive) {
 }
 
 void TrackedObject::addDependency(TrackedObject* const obj){
-    ///Some dependecies may be loaded later, so add null ones as well
+    ///Some dependencies may be loaded later, so add null ones as well
     _dependencyList.push_back(obj);
 }
 
@@ -68,3 +70,5 @@ void TrackedObject::removeDependency(TrackedObject* const obj){
 
 void TrackedObject::refModifyCallback(bool increase){
 }
+
+}; //namespace Divide

@@ -9,6 +9,8 @@
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 #include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+namespace Divide {
+
 ProfileTimer* s_shadowPassTimer = nullptr;
 
 LightManager::LightManager() : FrameListener(),
@@ -46,10 +48,10 @@ void LightManager::init(){
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
     _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
-    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(Divide::SHADER_BUFFER_LIGHT_NORMAL);
+    _lightShaderBuffer[SHADER_BUFFER_NORMAL]->Bind(SHADER_BUFFER_LIGHT_NORMAL);
 
     _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Create(Config::Lighting::MAX_LIGHTS_PER_SCENE, sizeof(LightShadowProperties));
-    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(Divide::SHADER_BUFFER_LIGHT_SHADOW);
+    _lightShaderBuffer[SHADER_BUFFER_SHADOW]->Bind(SHADER_BUFFER_LIGHT_SHADOW);
 
     _cachedResolution.set(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
     _init = true;
@@ -256,10 +258,10 @@ Light* LightManager::getLight(U32 slot) {
 }
 
 void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix){
-    _lightProperties.resize(0);
+    _lightProperties.clear();
     _lightProperties.reserve(_lights.size());
 
-    _lightShadowProperties.resize(0);
+    _lightShadowProperties.clear();
     _lightShadowProperties.reserve(_lights.size());
 
     FOR_EACH(Light::LightMap::value_type& lightIt, _lights){
@@ -289,3 +291,5 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix){
     if(!_lightShadowProperties.empty())
         _lightShaderBuffer[SHADER_BUFFER_SHADOW]->UpdateData(0, _lightShadowProperties.size() * sizeof(LightShadowProperties), _lightShadowProperties.data(), true);
 }
+
+};

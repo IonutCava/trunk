@@ -27,6 +27,8 @@
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
+namespace Divide {
+
 enum ChildPosition{
     CHILD_NW = 0,
     CHILD_NE = 1,
@@ -86,5 +88,7 @@ private:
     QuadtreeNode* 	_children[4];		///< Node children
     TerrainChunk*	_terrainChunk;		///< Terrain Chunk contained in node
 };
+
+}; //namespace Divide
 
 #endif

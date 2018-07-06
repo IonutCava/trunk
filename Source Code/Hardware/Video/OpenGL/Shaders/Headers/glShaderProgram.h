@@ -26,6 +26,8 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
+namespace Divide {
+
 /// OpenGL implementation of the Shader entity
 class glShaderProgram : public ShaderProgram {
 public:
@@ -117,5 +119,7 @@ private:
     GLuint  _shaderProgramIDTemp;
     GLenum  _shaderStageTable[6];
 };
+
+}; //namespace Divide
 
 #endif

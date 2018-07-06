@@ -9,6 +9,7 @@
 
 #include <fstream>
 
+namespace Divide {
 namespace AI {
 namespace Navigation {
     namespace NavigationMeshLoader{
@@ -389,3 +390,4 @@ namespace Navigation {
     };
 }; //namespace Navigation
 }; //namespace AI
+}; //namespace Divide

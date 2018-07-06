@@ -25,8 +25,10 @@
 
 #include "Sensor.h"
 #include "Utility/Headers/UnorderedMap.h"
-class SceneGraphNode;
-namespace AI {
+
+namespace Divide {
+    class SceneGraphNode;
+    namespace AI {
 
 /// SGN GUID, SGN pointer
 typedef Unordered_map<U64, SceneGraphNode* > NodeContainer;
@@ -56,5 +58,7 @@ protected:
     NodeContainerMap _nodeContainerMap;
     NodePositionsMap _nodePositionsMap;
 };
-}; //namespace AI
+    }; //namespace AI
+}; //namespace Divide
+
 #endif

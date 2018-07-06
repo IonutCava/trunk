@@ -1,5 +1,7 @@
 #include "Headers/FrameListenerManager.h"
 
+namespace Divide {
+
 ///Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder) {
     //Check if the listener has a name or we should assign an id
@@ -144,3 +146,5 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
     times.erase(times.begin(), it);
     return (times.back() - times.front()) / getSecToMs(times.size() - 1);
 }
+
+};

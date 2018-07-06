@@ -2,6 +2,7 @@
 #define _SCENE_NODE_RENDER_STATE_H_
 
 #include "Hardware/Video/Headers/RenderStateBlock.h"
+namespace Divide {
 
 class SceneNodeRenderState {
 public:
@@ -37,5 +38,7 @@ protected:
     size_t _depthStateBlockHash;
     size_t _shadowStateBlockHash;
 };
+
+}; //namespace Divide
 
 #endif

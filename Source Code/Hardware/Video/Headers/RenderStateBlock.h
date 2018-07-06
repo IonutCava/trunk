@@ -27,6 +27,8 @@
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Utility/Headers/CRC.h"
 
+namespace Divide {
+
 class RenderStateBlockDescriptor : public GUIDWrapper {
 
 protected:
@@ -142,4 +144,5 @@ protected:
     RenderStateBlockDescriptor _descriptor;
 };
 
+}; //namespace Divide
 #endif

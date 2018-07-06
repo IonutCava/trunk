@@ -24,6 +24,7 @@
 #define D3D_UNIFORM_BUFFER_OBJECT_H_
 
 #include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+namespace Divide {
 
 ///Base class for shader constant buffers
 class d3dConstantBuffer : public ShaderBuffer {
@@ -36,8 +37,10 @@ public:
     virtual void DiscardAllData();
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
     virtual void UpdateData(ptrdiff_t offset, ptrdiff_t size, const void *data, const bool invalidateBuffer = false) const;
-    virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
-    virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;
-    virtual void PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex);
+    virtual bool BindRange(ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
+    virtual bool Bind(ShaderBufferLocation bindIndex) const;
+    virtual void PrintInfo(const ShaderProgram* shaderProgram, ShaderBufferLocation bindIndex);
 };
+
+}; //namespace Divide
 #endif

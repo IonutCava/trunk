@@ -26,6 +26,8 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+namespace Divide {
+
 ///Base class for shader uniform blocks
 class glBufferLockManager;
 class glUniformBuffer : public ShaderBuffer {
@@ -38,10 +40,10 @@ public:
     virtual void DiscardAllData();
     virtual void DiscardSubData(ptrdiff_t offset, ptrdiff_t size);
     virtual void UpdateData(GLintptr offset, GLsizeiptr size, const void *data, const bool invalidateBuffer = false) const;
-    virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
-    virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;
+    virtual bool BindRange(ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
+    virtual bool Bind(ShaderBufferLocation bindIndex) const;
 
-    void PrintInfo(const ShaderProgram* shaderProgram, Divide::ShaderBufferLocation bindIndex);
+    void PrintInfo(const ShaderProgram* shaderProgram, ShaderBufferLocation bindIndex);
 
 protected:
     GLuint _UBOid;
@@ -49,4 +51,7 @@ protected:
     void*  _mappedBuffer;
     glBufferLockManager* _lockManager;
 };
+
+}; //namespace Divide
+
 #endif

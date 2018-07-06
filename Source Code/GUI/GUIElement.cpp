@@ -2,6 +2,8 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 GUIElement::GUIElement(CEGUI::Window*const  parent,const GUIType& type,const vec2<I32>& position) :
                            _guiType(type),
                            _parent(parent),
@@ -22,3 +24,5 @@ GUIElement::GUIElement(CEGUI::Window*const  parent,const GUIType& type,const vec
 GUIElement::~GUIElement()
 {
 }
+
+};

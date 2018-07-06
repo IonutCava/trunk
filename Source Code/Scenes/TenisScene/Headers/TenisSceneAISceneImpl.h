@@ -25,7 +25,9 @@
 
 #include "AI/ActionInterface/Headers/AISceneImpl.h"
 
-namespace AI {
+namespace Divide {
+    namespace AI {
+
 enum AIMsg {
 	REQUEST_DISTANCE_TO_TARGET = 0,
 	RECEIVE_DISTANCE_TO_TARGET = 1,
@@ -56,6 +58,7 @@ private:
 	U16 _tickCount;
 };
 
-}; //namespace AI
+    }; //namespace AI
+}; //namespace Divide
 
 #endif

@@ -3,6 +3,8 @@
 #include <al.h>
 #include <alc.h>
 
+namespace Divide {
+
 ErrorCode OpenAL_API::initAudioApi() { 
     // Initialization
     ALCdevice* device = alcOpenDevice(NULL); // select the "preferred device"
@@ -48,3 +50,5 @@ void OpenAL_API::setMusicVolume(I8 value) {
 
 void OpenAL_API::setSoundVolume(I8 value) {
 }
+
+};

@@ -2,6 +2,7 @@
 
 #include "core.h"
 
+namespace Divide {
 namespace AI {
 namespace Navigation {
     void rcContextDivide::doLog(const rcLogCategory category, const char* msg, const I32 len){
@@ -39,3 +40,4 @@ namespace Navigation {
     }
 };
 }; //namespace AI
+}; //namespace Divide

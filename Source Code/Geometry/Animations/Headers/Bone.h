@@ -29,6 +29,8 @@
 
 #include "AnimationUtils.h"
 
+namespace Divide {
+
 class Bone {
 public:
 
@@ -47,5 +49,7 @@ public:
     Bone() : _parent(0){ }
     ~Bone(){SAFE_DELETE_vector(_children); }
 };
+
+}; //namespace Divide
 
 #endif

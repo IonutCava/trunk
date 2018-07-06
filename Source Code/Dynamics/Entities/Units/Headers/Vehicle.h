@@ -25,6 +25,8 @@
 
 #include "Unit.h"
 
+namespace Divide {
+
 /// Basic vehicle class
 class Vehicle : public Unit {
 public:
@@ -55,5 +57,7 @@ public:
 	bool _playerControlled;
 	U8   _vehicleTypeMask;
 };
+
+}; //namespace Divide
 
 #endif

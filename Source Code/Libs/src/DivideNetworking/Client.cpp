@@ -15,6 +15,8 @@
 #include "ASIO.h"
 #include "OPCodesTpl.h"
 
+namespace Divide {
+
 void Client::sendPacket(WorldPacket& p){
     _packetQueue.push_back(p);
     heartbeat_timer_.expires_at(boost::posix_time::neg_infin);
@@ -275,6 +277,7 @@ void Client::handle_connect(const boost::system::error_code& ec, tcp::resolver::
     }
 }
 
+}; //namespace Divide
 #if defined(_MSC_VER)
 #	pragma warning( pop )
 #elif defined(__GNUC__)

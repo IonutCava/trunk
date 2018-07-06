@@ -1,6 +1,8 @@
 #include "Headers/SDLWrapper.h"
 #include <stdexcept>
 
+namespace Divide {
+
 ErrorCode SDL_API::initAudioApi() {
     I32 flags = MIX_INIT_OGG | MIX_INIT_MP3;
     I32 ret = Mix_Init(flags);
@@ -68,3 +70,5 @@ void SDL_API::playSound(AudioDescriptor* sound){
         ERROR_FN(Locale::get("ERROR_SDL_CANT_PLAY") ,sound->getName().c_str(),Mix_GetError());
     }
 }
+
+};

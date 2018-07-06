@@ -26,6 +26,9 @@
 #ifndef _GUID_WRAPPER_H_
 #define _GUID_WRAPPER_H_
 #include "Hardware/Platform/Headers/PlatformDefines.h"
+
+namespace Divide {
+
 ///Utility class that adds basic GUID management to objects
 class GUIDWrapper {
 public:
@@ -56,5 +59,7 @@ protected:
 private:
     static I64 _idGenerator;
 };
+
+}; //namespace Divide
 
 #endif

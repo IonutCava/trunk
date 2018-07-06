@@ -29,11 +29,12 @@
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
 
-enum  RenderStage;
-class SceneGraphNode;
-
 #include "Utility/Headers/Vector.h"
 #include "Core/Math/Headers/MathClasses.h"
+
+namespace Divide {
+enum  RenderStage;
+class SceneGraphNode;
 
 struct RenderBinItem{
     SceneGraphNode  *_node;
@@ -111,4 +112,5 @@ private:
     RenderingOrder::List _renderOrder;
 };
 
+}; //namespace Divide
 #endif

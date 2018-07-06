@@ -4,6 +4,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* result,
                                            const vec2<U16>& resolution,
                                            SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,resolution,sampler),
@@ -48,3 +50,5 @@ void DoFPreRenderOperator::operation(){
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _dofShader);
     _outputFB->End();
 }
+
+};

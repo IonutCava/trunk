@@ -6,6 +6,8 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
+namespace Divide {
+
 QuadtreeNode::QuadtreeNode()
 {
     _children[CHILD_NW] = nullptr;
@@ -30,7 +32,7 @@ QuadtreeNode::~QuadtreeNode()
 void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, SceneGraphNode* const parentTerrainSGN, U32& chunkCount){
     _LOD = 0;
     _minHMSize = minHMSize;
-    U32 div = (U32)pow(2.0f, (F32)depth);
+    U32 div = (U32)std::pow(2.0f, (F32)depth);
     vec2<U32> nodesize = HMsize/(div);
     if(nodesize.x%2==0) nodesize.x++;
     if(nodesize.y%2==0) nodesize.y++;
@@ -164,3 +166,5 @@ void QuadtreeNode::CreateDrawCommand(U32 options, const SceneRenderState& sceneR
         _children[CHILD_SE]->CreateDrawCommand(options, sceneRenderState);
     }
 }
+
+};

@@ -17,6 +17,8 @@
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+namespace Divide {
+
 GUI::GUI() : _init(false),
              _rootSheet(nullptr),
              _console(New GUIConsole()),
@@ -66,7 +68,7 @@ void GUI::draw2D() {
     FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack) {
         gfx.drawGUIElement(guiStackIterator.second);
     }
-    const OIS::MouseState& mouseState = InputInterface::getInstance().getMouse()->getMouseState();
+    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 }
 
@@ -141,7 +143,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
 
     GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
-    const OIS::MouseState& mouseState = InputInterface::getInstance().getMouse()->getMouseState();
+    const OIS::MouseState& mouseState = Input::InputInterface::getInstance().getMouse()->getMouseState();
     setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
     _init = true;
     return true;
@@ -155,7 +157,7 @@ void GUI::setCursorPosition(U16 x, U16 y) const {
     CEGUI_DEFAULT_CONTEXT.injectMousePosition(x, y);
 }
 
-bool GUI::onKeyDown(const OIS::KeyEvent& key) {
+bool GUI::onKeyDown(const Input::KeyEvent& key) {
     if (!_init) {
         return true;
     }
@@ -167,17 +169,17 @@ bool GUI::onKeyDown(const OIS::KeyEvent& key) {
     return false;
 }
 
-bool GUI::onKeyUp(const OIS::KeyEvent& key) {
+bool GUI::onKeyUp(const Input::KeyEvent& key) {
     if (!_init) {
         return true;
     }
 
-    if (key.key == OIS::KC_GRAVE) {
+    if (key._key == Input::KeyCode::KC_GRAVE) {
         _console->setVisible(!_console->isVisible());
     }
 
 #   ifdef _DEBUG
-        if (key.key == OIS::KC_F11) {
+        if (key._key == Input::KeyCode::KC_F11) {
             GUIEditor::getInstance().setVisible(!GUIEditor::getInstance().isVisible());
         }
 #   endif
@@ -189,7 +191,7 @@ bool GUI::onKeyUp(const OIS::KeyEvent& key) {
     return false;
 }
 
-bool GUI::mouseMoved(const OIS::MouseEvent& arg) {
+bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     if (!_init) { 
         return true;
     }
@@ -205,13 +207,13 @@ bool GUI::mouseMoved(const OIS::MouseEvent& arg) {
     return _ceguiInput.mouseMoved(arg);
 }
 
-bool GUI::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool GUI::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
     if (!_init) {
         return true;
     }
 
     if (_ceguiInput.mouseButtonPressed(arg, button) ) {
-        if (button == OIS::MB_Left) {
+        if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 0;
             FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
@@ -223,12 +225,12 @@ bool GUI::mouseButtonPressed(const OIS::MouseEvent& arg, OIS::MouseButtonID butt
     return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
-bool GUI::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID button) {
+bool GUI::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button) {
     if (!_init) {
         return true;
     }
     if (_ceguiInput.mouseButtonReleased(arg, button) ) {
-        if (button == OIS::MB_Left) {
+        if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
             event.mouseClickCount = 1;
             FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack) {
@@ -240,27 +242,27 @@ bool GUI::mouseButtonReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID but
     return !_console->isVisible() && !GUIEditor::getInstance().wasControlClick();
 }
 
-bool GUI::joystickAxisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
+bool GUI::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
     return _ceguiInput.joystickAxisMoved(arg, axis);
 }
 
-bool GUI::joystickPovMoved(const OIS::JoyStickEvent& arg, I8 pov){
+bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov){
     return _ceguiInput.joystickPovMoved(arg, pov);
 }
 
-bool GUI::joystickButtonPressed(const OIS::JoyStickEvent& arg, I8 button){
+bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg, I8 button){
     return _ceguiInput.joystickButtonPressed(arg, button);
 }
 
-bool GUI::joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button){
+bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg, I8 button){
     return _ceguiInput.joystickButtonReleased(arg, button);
 }
 
-bool GUI::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool GUI::joystickSliderMoved( const Input::JoystickEvent &arg, I8 index){
     return _ceguiInput.joystickSliderMoved(arg, index);
 }
 
-bool GUI::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index){
+bool GUI::joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index){
     return _ceguiInput.joystickVector3DMoved(arg, index);
 }
 
@@ -355,3 +357,5 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
     fmt_text.empty();
     return textElement;
 }
+
+};

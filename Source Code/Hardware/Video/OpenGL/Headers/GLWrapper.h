@@ -31,16 +31,14 @@
 #include "Hardware/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Hardware/Video/OpenGL/Textures/Headers/glTexture.h"
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
-#include <boost/lockfree/spsc_queue.hpp>
 
-class Text3D;
 struct glslopt_ctx;
+struct FONScontext;
+
+namespace Divide {
 
 /// OpenGL implementation of the RenderAPIWrapper
 DEFINE_SINGLETON_EXT1(GL_API, RenderAPIWrapper)
-
-    typedef void (*callback)();	void glCommand(callback f){f();}
-
     friend class glShader;
     friend class glTexture;
     friend class glIMPrimitive;
@@ -232,7 +230,7 @@ private:
     /// Duration in nanoseconds to render a frane
     GLuint64 FRAME_DURATION_GPU;
     /// FontStash's context
-    struct FONScontext* _fonsContext;
+    FONScontext* _fonsContext;
     /// /*texture slot*/ /*<texture handle , texture type>*/
     typedef Unordered_map<GLushort, std::pair<GLuint, GLenum> > textureBoundMapDef;
     static textureBoundMapDef _textureBoundMap;
@@ -245,4 +243,5 @@ private:
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

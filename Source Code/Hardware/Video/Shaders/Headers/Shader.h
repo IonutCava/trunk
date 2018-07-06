@@ -28,6 +28,7 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Utility/Headers/Vector.h"
 
+namespace Divide {
 
 class ShaderProgram;
 /// Shader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
@@ -36,7 +37,7 @@ class Shader : public TrackedObject {
 public:
 
     /// The shader's name is the period-separated list of properties, type is the render stage this shader is used for
-    Shader(const std::string& name,const ShaderType& type, const bool optimise = false);
+    Shader(const std::string& name, const ShaderType& type, const bool optimise = false);
     /// The shader is deleted only by the ShaderManager when no shader programs are referencing it
     virtual ~Shader();
 
@@ -70,4 +71,5 @@ protected:
     vectorImpl<ShaderProgram* > _parentShaderPrograms;
 };
 
+}; //namespace Divide
 #endif

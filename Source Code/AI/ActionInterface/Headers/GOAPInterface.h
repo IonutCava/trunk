@@ -29,9 +29,10 @@
 #include <CPPGOAP/Action.h>
 #include <CPPGoap/WorldState.h>
 
-namespace AI {
+namespace Divide {
+    namespace AI {
 
-    typedef int                     GOAPFact;
+    typedef I32                     GOAPFact;
     typedef bool                    GOAPValue;
     typedef goap::Action            GOAPAction;
     typedef vectorImpl<GOAPAction*> GOAPActionSet;
@@ -65,5 +66,7 @@ namespace AI {
             GOAPPlan    _currentPlan;
     };
 };
+
+}; //namespace Divide
 
 #endif

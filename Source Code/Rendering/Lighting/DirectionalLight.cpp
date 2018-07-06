@@ -4,6 +4,8 @@
 #include "ShadowMapping/Headers/ShadowMap.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+namespace Divide {
+
 DirectionalLight::DirectionalLight(U8 slot) : Light(slot,-1,LIGHT_TYPE_DIRECTIONAL),
                                               _csmSplitCount(3),
                                               _csmSplitLogFactor(0.95f),
@@ -17,3 +19,5 @@ DirectionalLight::DirectionalLight(U8 slot) : Light(slot,-1,LIGHT_TYPE_DIRECTION
 DirectionalLight::~DirectionalLight()
 {
 }
+
+};

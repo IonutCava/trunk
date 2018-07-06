@@ -4,6 +4,7 @@
 #include "Core/Headers/Application.h"
 #include <SimpleIni.h>
 
+namespace Divide {
 namespace Locale {
     char* get(const std::string& key, const std::string& defaultValue) {
         //When we ask for a string for the given key, we check our language cache first
@@ -39,4 +40,5 @@ namespace Locale {
         //Return our desired value now
         return (char*)_languageTable[key].c_str();
     }
-};
+}; //namespace Locale
+}; //namespace Divide

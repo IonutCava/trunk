@@ -27,6 +27,7 @@
 
 /// This class performs all the necessary visibility checks on the scene's scenegraph to decide what get's rendered and what not
 /// All node's that should be rendered, will be added to the RenderQueue
+namespace Divide {
 class SceneState;
 class SceneRenderState;
 class SceneGraphNode;
@@ -55,4 +56,5 @@ protected:
 
 };
 
+}; //namespace Divide
 #endif

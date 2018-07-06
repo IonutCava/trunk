@@ -26,6 +26,8 @@ for cross platform where they have different endians.
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <algorithm>
 
+namespace Divide {
+
 namespace ByteConverter
 {
     template<size_t T>
@@ -61,4 +63,5 @@ inline void EndianConvert(I8&) { }
 inline void EndianConvertReverse(U8&) { }
 inline void EndianConvertReverse(I8&) { }
 
+}; //namespace Divide
 #endif

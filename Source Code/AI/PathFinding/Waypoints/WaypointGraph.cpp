@@ -1,4 +1,6 @@
 #include "Headers/WaypointGraph.h"
+
+namespace Divide {
 namespace Navigation {
 	WaypointGraph::WaypointGraph(){
 		_id = 0xFFFFFFFF;
@@ -35,4 +37,5 @@ namespace Navigation {
 		  _times.push_back((waypoint.second)->_time);
 	   }
 	}
+};
 };

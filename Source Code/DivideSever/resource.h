@@ -20,11 +20,9 @@
 #include <list>
 #include <map>
 #include <algorithm>
-#include <cstdlib>
 #include <deque>
 #include <set>
 
-using namespace std;
 #include "Utility/Headers/DataTypes.h"
 
 #if defined(_MSC_VER)

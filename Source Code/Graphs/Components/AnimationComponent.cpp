@@ -4,6 +4,8 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Animations/Headers/AnimationController.h"
 
+namespace Divide {
+
 AnimationComponent::AnimationComponent(SceneAnimator* animator, SceneGraphNode* const parentSGN) : SGNComponent(SGNComponent::SGN_COMP_ANIMATION, parentSGN),
                                                                   _animator(animator),
                                                                   _skeletonAvailable(false),
@@ -107,7 +109,7 @@ void AnimationComponent::onDraw(RenderStage currentStage) {
 
     _boneTransformBuffer[_writeBuffer]->UpdateData(0, _animationTransforms.size() * sizeof(mat4<F32>),
                                                    _animationTransforms.data(), true);
-    _boneTransformBuffer[_readBuffer]->Bind(Divide::SHADER_BUFFER_BONE_TRANSFORMS);
+    _boneTransformBuffer[_readBuffer]->Bind(SHADER_BUFFER_BONE_TRANSFORMS);
 
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE) || !_playAnimations || _currentTimeStamp < 0.0)
         return;
@@ -158,3 +160,5 @@ const mat4<F32>& AnimationComponent::currentBoneTransform(const std::string& nam
 Bone* AnimationComponent::getBoneByName(const std::string& bname) const {
     return _animator ? _animator->GetBoneByName(bname) : nullptr;
 }
+
+};

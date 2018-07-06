@@ -5,6 +5,8 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Rendering/PostFX/Headers/PreRenderStageBuilder.h"
 
+namespace Divide {
+
 FXAAPreRenderOperator::FXAAPreRenderOperator(Framebuffer* result,
                                              const vec2<U16>& resolution,
                                              SamplerDescriptor* const sampler) : PreRenderOperator(FXAA_STAGE,resolution,sampler),
@@ -53,3 +55,5 @@ void FXAAPreRenderOperator::operation(){
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _fxaa);
     _outputFB->End();
 }
+
+};

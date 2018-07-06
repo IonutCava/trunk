@@ -6,6 +6,7 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
 
 WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,vec2<U16>(1024,1024)),
                            _plane(nullptr), _node(nullptr), _planeSGN(nullptr), _waterLevel(0), _waterDepth(0), _refractionPlaneID(ClipPlaneIndex_PLACEHOLDER), 
@@ -226,3 +227,5 @@ bool WaterPlane::previewReflection(){
 #   endif
     return Reflector::previewReflection();
 }
+
+};

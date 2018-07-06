@@ -4,6 +4,8 @@
 #include "Rendering/Lighting/Headers/SpotLight.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 
+namespace Divide {
+
 Light* ImplResourceLoader<Light>::operator()(){
     Light* ptr = nullptr;
     //descriptor ID is not the same as light ID. This is the light's slot!!
@@ -33,3 +35,5 @@ Light* ImplResourceLoader<Light>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Light)
+
+};

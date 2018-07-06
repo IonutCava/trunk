@@ -2,11 +2,13 @@
 #include "Headers/InputInterface.h"
 #include "Core/Headers/Kernel.h"
 
-EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) :
-												   _kernel(kernel),
-												   _pApplication(pApp),
-												   _pJoystickInterface(nullptr),
-												   _pEffectMgr(nullptr)
+namespace Divide {
+    namespace Input {
+
+EventHandler::EventHandler(InputInterface* pApp, Kernel* const kernel) : _kernel(kernel),
+										                                 _pApplication(pApp),
+										                                 _pJoystickInterface(nullptr),
+										                                 _pEffectMgr(nullptr)
 {
 	DIVIDE_ASSERT(kernel != nullptr, "EventHandler error: INVALID KERNEL PASSED ON HANDLER CREATION");
 }
@@ -17,48 +19,62 @@ void EventHandler::initialize(JoystickInterface* pJoystickInterface, EffectManag
 }
 
 /// Input events are either handled by the kernel
-bool EventHandler::onKeyDown( const OIS::KeyEvent &arg ) {
+bool EventHandler::onKeyDown( const KeyEvent &arg ) {
     return _kernel->onKeyDown(arg); 
 }
 
-bool EventHandler::onKeyUp( const OIS::KeyEvent &arg ) {
+bool EventHandler::onKeyUp( const KeyEvent &arg ) {
     return _kernel->onKeyUp(arg); 
 }
 
-bool EventHandler::joystickButtonPressed( const OIS::JoyStickEvent &arg, I8 button ) {
+bool EventHandler::joystickButtonPressed( const JoystickEvent &arg, I8 button ) {
     return _kernel->joystickButtonPressed(arg,button); 
 }
 
-bool EventHandler::joystickButtonReleased( const OIS::JoyStickEvent &arg, I8 button ) {
+bool EventHandler::joystickButtonReleased( const JoystickEvent &arg, I8 button ) {
     return _kernel->joystickButtonReleased(arg,button); 
 }
 
-bool EventHandler::joystickAxisMoved( const OIS::JoyStickEvent &arg, I8 axis) {
+bool EventHandler::joystickAxisMoved( const JoystickEvent &arg, I8 axis) {
     return _kernel->joystickAxisMoved(arg,axis); 
 }
 
-bool EventHandler::joystickPovMoved( const OIS::JoyStickEvent &arg, I8 pov ) {
+bool EventHandler::joystickPovMoved( const JoystickEvent &arg, I8 pov ) {
     return _kernel->joystickPovMoved(arg,pov); 
 }
 
-bool EventHandler::joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index) {
+bool EventHandler::joystickSliderMoved( const JoystickEvent &arg, I8 index) {
     return _kernel->joystickSliderMoved(arg,index); 
 }
 
-bool EventHandler::joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index) {
+bool EventHandler::joystickVector3DMoved( const JoystickEvent &arg, I8 index) {
     return _kernel->joystickVector3DMoved(arg,index); 
 }
 
-bool EventHandler::mouseMoved( const OIS::MouseEvent &arg ) {
+bool EventHandler::mouseMoved( const MouseEvent &arg ) {
     return _kernel->mouseMoved(arg);
 }
 
-bool EventHandler::mouseButtonPressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+bool EventHandler::mouseButtonPressed( const MouseEvent &arg, MouseButton id ) {
     return _kernel->mouseButtonPressed(arg,id); 
 }
 
-bool EventHandler::mouseButtonReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id ) {
+bool EventHandler::mouseButtonReleased( const MouseEvent &arg, MouseButton id ) {
     return _kernel->mouseButtonReleased(arg,id); 
+}
+
+bool EventHandler::keyPressed( const OIS::KeyEvent &arg ) {
+    KeyEvent& key = InputInterface::getInstance().getKeyRef(static_cast<U32>(arg.key));
+    key._text = arg.text;
+    key._pressed = true;
+    return onKeyDown(key);
+}
+
+bool EventHandler::keyReleased( const OIS::KeyEvent &arg ) {
+    KeyEvent& key = InputInterface::getInstance().getKeyRef(static_cast<U32>(arg.key));
+    key._text = arg.text;
+    key._pressed = false;
+    return onKeyUp(key);
 }
 
 //////////// Effect variables applier functions /////////////////////////////////////////////
@@ -73,8 +89,8 @@ void forceVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
 
   OIS::ConstantEffect* pConstForce = dynamic_cast<OIS::ConstantEffect*>(pEffect->getForceEffect());
   pConstForce->level = (I16)dForce;
-  pConstForce->envelope.attackLevel = (U16)fabs(dForce*dAttackFactor);
-  pConstForce->envelope.fadeLevel = (U16)fabs(dForce); // Fade never reached, in fact.
+  pConstForce->envelope.attackLevel = (U16)std::fabs(dForce*dAttackFactor);
+  pConstForce->envelope.fadeLevel = (U16)std::fabs(dForce); // Fade never reached, in fact.
 }
 
 // Variable "Period" on an OIS::PeriodicEffect
@@ -86,3 +102,6 @@ void periodVariableApplier(MapVariables& mapVars, OIS::Effect* pEffect){
 }
 
 LRESULT DlgProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam ){	return FALSE; }
+
+    }; //namespace Input
+}; //namespace Divide

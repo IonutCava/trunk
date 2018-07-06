@@ -25,8 +25,9 @@
 
 #include "Hardware/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
-class d3dRenderTarget : public Framebuffer
-{
+namespace Divide {
+
+class d3dRenderTarget : public Framebuffer {
 public:
 
     d3dRenderTarget(bool multisampled);
@@ -49,4 +50,5 @@ protected:
     bool checkStatus() const;
 };
 
+}; //namespace Divide
 #endif

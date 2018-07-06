@@ -3,6 +3,8 @@
 #include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+namespace Divide {
+
 ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
 {
     _opaqueGrid = New LightGrid();
@@ -57,7 +59,7 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
 bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     const Light::LightMap& lights = LightManager::getInstance().getLights();
 
-    _omniLightList.resize(0);
+    _omniLightList.clear();
     _omniLightList.reserve(lights.size());
 
     FOR_EACH(const Light::LightMap::value_type& it, lights) {
@@ -104,3 +106,5 @@ void ForwardPlusRenderer::downSampleDepthBuffer(vectorImpl<vec2<F32>> &depthRang
     }
     _depthRanges->End();
 }
+
+};

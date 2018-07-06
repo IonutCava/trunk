@@ -25,6 +25,8 @@
 
 #include "Scenes/Headers/Scene.h"
 
+namespace Divide {
+
 class SkinnedSubMesh;
 class NPC;
 
@@ -49,10 +51,10 @@ public:
     void processGUI(const U64 deltaTime);
     void updateSceneStateInternal(const U64 deltaTime);
 
-    bool onKeyUp(const OIS::KeyEvent& key);
-    bool mouseMoved(const OIS::MouseEvent& key);
-    bool mouseButtonPressed(const OIS::MouseEvent& key, OIS::MouseButtonID button);
-    bool mouseButtonReleased(const OIS::MouseEvent& key,OIS::MouseButtonID button);
+    bool onKeyUp(const Input::KeyEvent& key);
+    bool mouseMoved(const Input::MouseEvent& key);
+    bool mouseButtonPressed(const Input::MouseEvent& key, Input::MouseButton button);
+    bool mouseButtonReleased(const Input::MouseEvent& key, Input::MouseButton button);
 
 private:
     void startSimulation();
@@ -83,5 +85,7 @@ private: //Game
     SceneGraphNode *_lampTransformNode;
     SceneNode      *_lampTransform;
 };
+
+}; //namespace Divide
 
 #endif

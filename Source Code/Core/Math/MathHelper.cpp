@@ -1,6 +1,7 @@
 #include "Headers/MathClasses.h"
 #include "Headers/Quaternion.h"
 
+namespace Divide {
 namespace Util {
     void normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw, bool normPitch, bool normRoll) {
         if(normYaw)
@@ -71,3 +72,4 @@ namespace Util {
         }
     }
 }
+}; //namespace Divide

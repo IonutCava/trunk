@@ -4,6 +4,8 @@
 #include "Core/Math/Headers/MathHelper.h"
 #include "Managers/Headers/SceneManager.h"
 
+namespace Divide {
+
 void ASIOImpl::handlePacket(WorldPacket& p){
 	switch(p.getOpcode()){
 		case MSG_HEARTBEAT:
@@ -73,3 +75,5 @@ void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p){
 void ASIOImpl::HandleHeartBeatOpCode(WorldPacket& p){
 	///nothing. Heartbeats keep us alive \:D/
 }
+
+};

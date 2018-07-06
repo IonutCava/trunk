@@ -27,6 +27,8 @@
 #include <string>
 
 
+namespace Divide {
+
 template<typename T>
 class vec2;
 class Texture;
@@ -42,5 +44,7 @@ private:
     Texture*       _splashImage;
     ShaderProgram* _splashShader;
 };
+
+}; //namespace Divide
 
 #endif

@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
 
+namespace Divide {
+
 class d3dGenericVertexData : public GenericVertexData {
 
 public:
@@ -58,4 +60,7 @@ public:
         return 0;
     }
 };
+
+}; //namespace Divide
+
 #endif

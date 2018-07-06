@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#include <stack>
 #ifndef GLEW_STATIC
 #define GLEW_STATIC
 #define GLEW_MX
@@ -40,11 +39,9 @@
 #endif
 
 #include <GL/glfw3.h>
-#include "Utility/Headers/Vector.h"
 #include "Hardware/Video/Headers/RenderAPIWrapper.h"
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
-#include <boost/thread/tss.hpp>
 
 #if defined(_MSC_VER)
 #	pragma warning( push )
@@ -54,6 +51,7 @@
 #	pragma GCC diagnostic push
 #		//pragma GCC diagnostic ignored "-Wall"
 #endif
+
 namespace NS_GLIM {
     class GLIM_BATCH;
     enum GLIM_ENUM;
@@ -104,9 +102,9 @@ namespace Divide {
             extern GLenum glWrapTable[TextureWrap_PLACEHOLDER];
             extern GLenum glTextureFilterTable[TextureFilter_PLACEHOLDER];
             extern NS_GLIM::GLIM_ENUM glimPrimitiveType[PrimitiveType_PLACEHOLDER];
-        }
-    }
-}
+        };
+    };
+}; //namespace Divide
 
 /* ARB_vertex_type_2_10_10_10_rev */
 #define P10(f) ((I32)((f) * 0x1FF))

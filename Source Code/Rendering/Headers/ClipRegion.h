@@ -46,6 +46,8 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace Divide {
+
 //--------------------------------------------------------------------------------------
 // Bounds computation utilities, similar to PointLightBounds.cpp
 void updateClipRegionRoot(F32 nc,          // Tangent plane x/y normal coordinate (view space)
@@ -110,4 +112,5 @@ vec4<F32> computeClipRegion(const vec3<F32>& lightPosView, F32 lightRadius, F32 
     return clipRegion;
 }
 
+};
 #endif // _ClipRegion_h_

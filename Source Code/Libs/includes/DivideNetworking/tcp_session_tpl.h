@@ -23,6 +23,7 @@ using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
 using boost::asio::ip::udp;
 
+namespace Divide {
 //----------------------------------------------------------------------
 
 class subscriber
@@ -134,4 +135,5 @@ private:
   udp::socket socket_;
 };
 
+}; //namespace Divide
 #endif

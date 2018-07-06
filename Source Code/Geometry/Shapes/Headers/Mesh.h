@@ -39,6 +39,8 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 #include "Object3D.h"
 #include <assimp/anim.h>
 
+namespace Divide {
+
 class SubMesh;
 class Mesh : public Object3D {
 public:
@@ -75,5 +77,7 @@ protected:
     subMeshRefMap            _subMeshRefMap;
     BoundingBox              _maxBoundingBox;
 };
+
+}; //namespace Divide
 
 #endif

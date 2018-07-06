@@ -4,6 +4,8 @@
 #include <boost/archive/text_oarchive.hpp>
 #include "Utility/Headers/Patch.h"
 
+namespace Divide {
+
 tcp_session_impl::tcp_session_impl(boost::asio::io_service& io_service, channel& ch) : tcp_session_tpl(io_service,ch)
 {
 }
@@ -13,11 +15,11 @@ void tcp_session_impl::handlePacket(WorldPacket& p)
 	switch(p.getOpcode())
 	{
 		case MSG_HEARTBEAT:
-			cout << "Received [ MSG_HEARTBEAT ]" << endl;
+			std::cout << "Received [ MSG_HEARTBEAT ]" << std::endl;
 			HandleHeartBeatOpCode(p);
 			break;
 		case CMSG_PING:
-			cout << "Received [ CMSG_PING ]" << endl;
+			std::cout << "Received [ CMSG_PING ]" << std::endl;
 			HandlePingOpCode(p);
 			break;
 		case CMSG_REQUEST_DISCONNECT:
@@ -30,14 +32,14 @@ void tcp_session_impl::handlePacket(WorldPacket& p)
 			HandleRequestGeometry(p);
 			break;
 		default:
-			cout << "Received unknow OPCode [ 0x" << p.getOpcode() << " ]" << endl;
+			std::cout << "Received unknow OPCode [ 0x" << p.getOpcode() << " ]" << std::endl;
 			break;
 	};
 }
 void tcp_session_impl::HandleHeartBeatOpCode(WorldPacket& p)
 {
 	WorldPacket r(MSG_HEARTBEAT);
-	cout << "Sending  [ MSG_HEARTBEAT]" << endl;
+	std::cout << "Sending  [ MSG_HEARTBEAT]" << std::endl;
 	r << (I8)0;
 	sendPacket(r);
 }
@@ -46,7 +48,7 @@ void tcp_session_impl::HandlePingOpCode(WorldPacket& p)
 {
 	F32 time = 0;
 	p >> time;
-	cout << "Sending  [ SMSG_PONG ] with data: " << time << endl;
+	std::cout << "Sending  [ SMSG_PONG ] with data: " << time << std::endl;
 	WorldPacket r(SMSG_PONG);
 	r << time;
 	sendPacket(r);
@@ -54,9 +56,9 @@ void tcp_session_impl::HandlePingOpCode(WorldPacket& p)
 
 void tcp_session_impl::HandleDisconnectOpCode(WorldPacket& p)
 {
-	string client;
+	std::string client;
 	p >> client;
-	cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client << " ]" << endl;
+	std::cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client << " ]" << std::endl;
 	WorldPacket r(SMSG_DISCONNECT);
 	r << (U8)0; //this will be the error code returned after safely saving client
 	sendPacket(r);
@@ -67,10 +69,10 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 	PatchData data;
 	p >> data.sceneName;
 	p >> data.size;
-	cout << "Received [ CMSG_GEOMERTY_LIST ] with : " << data.size << " models" << endl;
+	std::cout << "Received [ CMSG_GEOMERTY_LIST ] with : " << data.size << " models" << std::endl;
 	for(U32 i = 0; i < data.size; i++)
 	{
-		string name, modelname;
+		std::string name, modelname;
 		U32 version = 0;
 		p >> name;
 		p >> modelname;
@@ -85,9 +87,9 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 	{
 		WorldPacket r(SMSG_GEOMETRY_APPEND);
 
-		vector<FileData> PatchData = Patch::getInstance().updateClient();
+		vectorImpl<FileData> PatchData = Patch::getInstance().updateClient();
 		r << PatchData.size();
-		for(vector<FileData>::iterator _iter = PatchData.begin(); _iter != PatchData.end(); _iter++)
+		for(vectorImpl<FileData>::iterator _iter = PatchData.begin(); _iter != PatchData.end(); _iter++)
 		{
 			r << (*_iter).ItemName;
 			r << (*_iter).ModelName;
@@ -108,7 +110,7 @@ void tcp_session_impl::HandleGeometryListOpCode(WorldPacket& p)
 				r << 2;
 			r << (*_iter).version;
 		}
-		cout << "Sending [SMSG_GEOMETRY_APPEND] with : " << PatchData.size() << " models to update" << endl;
+		std::cout << "Sending [SMSG_GEOMETRY_APPEND] with : " << PatchData.size() << " models to update" << std::endl;
 		sendPacket(r);
 		Patch::getInstance().reset();
 	}
@@ -119,9 +121,11 @@ void tcp_session_impl::HandleRequestGeometry(WorldPacket& p)
 	std::string file;
 	p >> file;
 
-	cout << "Sending SMSG_SEND_FILE with item: " << file << endl;
+	std::cout << "Sending SMSG_SEND_FILE with item: " << file << std::endl;
 	WorldPacket r(SMSG_SEND_FILE);
 	r << (U8)0;
 	sendPacket(r);
 	sendFile(file);
 }
+
+}; //namespace Divide

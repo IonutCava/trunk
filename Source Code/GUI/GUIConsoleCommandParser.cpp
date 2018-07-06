@@ -12,6 +12,8 @@
 
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
+namespace Divide {
+
 GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr)
 {
     _commandMap.insert(std::make_pair("say",DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand,this,_1)));
@@ -219,3 +221,5 @@ void GUIConsoleCommandParser::handleAddObject(const std::string& args){
 void GUIConsoleCommandParser::handleInvalidCommand(const std::string& args){
     ERROR_FN(Locale::get("CONSOLE_INVALID_COMMAND"),args.c_str());
 }
+
+};

@@ -27,6 +27,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
 
+namespace Divide {
+
 class Texture;
 class SceneGraphNode;
 class SamplerDescriptor;
@@ -52,5 +54,7 @@ private:
     SamplerDescriptor* _textureSampler;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

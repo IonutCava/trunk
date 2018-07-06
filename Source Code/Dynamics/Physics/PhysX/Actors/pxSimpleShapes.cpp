@@ -6,6 +6,8 @@
 
 using namespace physx;
 
+namespace Divide {
+
 bool PhysX::createPlane(const vec3<F32>& position, U32 size){
     assert(_targetScene != nullptr);
 
@@ -55,3 +57,5 @@ bool PhysX::createBox(const vec3<F32>& position, F32 size){
     static_cast<PhysXSceneInterface* >(_targetScene)->addRigidActor(actorWrapper);
     return true;
 }
+
+};

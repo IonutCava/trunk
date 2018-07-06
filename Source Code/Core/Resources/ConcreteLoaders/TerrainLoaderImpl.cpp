@@ -5,6 +5,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainLoader.h"
 
+namespace Divide {
+
 Terrain* ImplResourceLoader<Terrain>::operator()() {
     Terrain* ptr = New Terrain();
     if(!load(ptr,_descriptor.getName())){
@@ -30,3 +32,5 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res, const std::string& na
 
     return loadState;
 }
+
+};

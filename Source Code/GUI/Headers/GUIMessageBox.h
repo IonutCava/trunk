@@ -26,11 +26,13 @@
 #include "GUIElement.h"
 #include "GUIText.h"
 
-namespace CEGUI{
+namespace CEGUI {
     class Window;
     class Font;
     class EventArgs;
 };
+
+namespace Divide {
 
 class GUIMessageBox : public GUIElement {
 
@@ -66,4 +68,7 @@ protected:
     vec2<I32> _offsetFromCentre;
     CEGUI::Window *_msgBoxWindow;
 };
+
+}; //namespace Divide
+
 #endif

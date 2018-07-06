@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Audio/Headers/AudioDescriptor.h"
 
+namespace Divide {
+
 template<>
 AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
     AudioDescriptor* ptr = New AudioDescriptor(_descriptor.getResourceLocation());
@@ -17,3 +19,5 @@ AudioDescriptor* ImplResourceLoader<AudioDescriptor>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(AudioDescriptor)
+
+};

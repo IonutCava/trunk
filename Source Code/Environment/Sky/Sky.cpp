@@ -9,6 +9,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
+namespace Divide {
+
 Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
@@ -99,3 +101,5 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
 void Sky::setSunVector(const vec3<F32>& sunVect) {
     _skyShader->Uniform("sun_vector", sunVect);
 }
+
+};

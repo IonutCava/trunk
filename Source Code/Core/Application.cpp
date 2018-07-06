@@ -3,6 +3,8 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 Application::Application() : _kernel(nullptr),
                              _totalMemoryOcuppied(0),
                              _requestShutdown(false),
@@ -60,3 +62,5 @@ void Application::logMemoryOperation(bool allocation, const char* logMsg, size_t
 
     _totalMemoryOcuppied += size * (allocation ? 1 : -1);
 }
+
+};

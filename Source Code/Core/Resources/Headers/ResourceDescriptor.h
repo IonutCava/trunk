@@ -26,16 +26,18 @@
 #include "core.h"
 #include <boost/shared_ptr.hpp>
 
+namespace Divide {
+
 ///Dummy class so that resource loaders can have fast access to extra information in a general format
 class PropertyDescriptor {
 public:
 
-    enum descriptorType{
+    enum DescriptorType{
         DESCRIPTOR_TEXTURE = 0,
         DESCRIPTOR_SAMPLER = 1
     };
 
-    PropertyDescriptor(const descriptorType& type) : _type(type) {}
+    PropertyDescriptor(const DescriptorType& type) : _type(type) {}
 
 protected:
     friend class ResourceDescriptor;
@@ -46,7 +48,7 @@ protected:
 
 protected:
     ///usefull for switch statements
-    descriptorType _type;
+    DescriptorType _type;
 };
 
 class ResourceDescriptor{
@@ -102,5 +104,7 @@ private:
 
     PropertyDescriptor* _propertyDescriptor; ///< Use for extra resource properties: textures, samplers, terrain etc.
 };
+
+}; //namespace Divide
 
 #endif

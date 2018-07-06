@@ -25,7 +25,8 @@
 
 #include "VertexDataInterface.h"
 
-enum GFXDataFormat;
+namespace Divide {
+
 class ShaderProgram;
 /// Vertex Buffer interface class to allow API-independent implementation of data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
@@ -212,11 +213,22 @@ public:
         _attribDirty[ATTRIB_BITANGENT] = true;
     }
 
+    inline void shrinkToFit() {
+        _dataPosition.shrink_to_fit();
+        _dataColor.shrink_to_fit();
+        _dataNormal.shrink_to_fit();
+        _dataTexcoord.shrink_to_fit();
+        _dataTangent.shrink_to_fit();
+        _dataBiTangent.shrink_to_fit();
+        _boneWeights.shrink_to_fit();
+        _boneIndices.shrink_to_fit();
+    }
+
     inline size_t partitionBuffer(U32 currentIndexCount){
-        _partitions.push_back(std::make_pair(getIndexCount() - currentIndexCount, currentIndexCount));
+        _partitions.emplace_back(getIndexCount() - currentIndexCount, currentIndexCount);
         _currentPartitionIndex = (U32)_partitions.size();
-        _minPosition.push_back(vec3<F32>(std::numeric_limits<F32>::max()));
-        _maxPosition.push_back(vec3<F32>(std::numeric_limits<F32>::min()));
+        _minPosition.emplace_back(std::numeric_limits<F32>::max());
+        _maxPosition.emplace_back(std::numeric_limits<F32>::min());
         return _currentPartitionIndex - 1;
     }
 
@@ -322,4 +334,5 @@ private:
     U32 _currentPartitionIndex;
 };
 
+}; //namespace Divide
 #endif

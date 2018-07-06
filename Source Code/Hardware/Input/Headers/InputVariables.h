@@ -25,7 +25,8 @@
 
 #include "core.h"
 #include "EventHandler.h"
-
+namespace Divide {
+    namespace Input {
 //////////// Variable classes ////////////////////////////////////////////////////////
 
 class Variable
@@ -204,4 +205,6 @@ class VariableEffect
     }
 };
 
+    }; //namespace Input
+}; //namespace Divide
 #endif

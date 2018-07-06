@@ -31,6 +31,8 @@
 #include <fstream>
 #include <boost/atomic.hpp>
 
+namespace Divide {
+
 class Kernel;
 enum ErrorCode;
 ///Lightweight singleton class that manages our application's kernel and window information
@@ -109,5 +111,7 @@ private:
     boost::thread::id _threadId;
 
 END_SINGLETON
+
+}; //namespace Divide
 
 #endif

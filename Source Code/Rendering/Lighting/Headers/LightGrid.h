@@ -31,6 +31,8 @@
 * (see Config.h).
 */
 
+namespace Divide {
+
 class LightGrid
 {
 public:
@@ -143,5 +145,6 @@ protected:
     ScreenRects m_screenRects;
 };
 
+}; //namespace Divide
 
 #endif // _LightGrid_h_

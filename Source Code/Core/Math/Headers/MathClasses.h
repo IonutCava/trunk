@@ -100,7 +100,8 @@
 #endif
 
 #include "Plane.h"
-#include "MathVectors.h"
+
+namespace Divide {
 
 /******************************//**
 /* mat3
@@ -273,11 +274,14 @@ public:
             DegToRad(angle);
         }
 
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         T l = (T)std::sqrt((D32)(x * x + y * y + z * z));
-        if (l < EPSILON) l = 1;
-        else l = 1 / l;
+        if (l < EPSILON) {
+            l = 1;
+        } else {
+            l = 1 / l;
+        }
         x *= l;
         y *= l;
         z *= l;
@@ -294,30 +298,33 @@ public:
     }
 
     inline void rotate_x(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
-
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        if (inDegrees) {
+            DegToRad(angle);
+        }
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         mat[0] = 1; mat[3] = 0; mat[6] = 0;
         mat[1] = 0; mat[4] = c; mat[7] = -s;
         mat[2] = 0; mat[5] = s; mat[8] = c;
     }
 
     inline void rotate_y(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
-
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        if(inDegrees) {
+            DegToRad(angle);
+        }
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         mat[0] = c;  mat[3] = 0; mat[6] = s;
         mat[1] = 0;  mat[4] = 1; mat[7] = 0;
         mat[2] = -s; mat[5] = 0; mat[8] = c;
     }
 
     inline void rotate_z(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
-
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        if(inDegrees) {
+            DegToRad(angle);
+        }
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         mat[0] = c; mat[3] = -s; mat[6] = 0;
         mat[1] = s; mat[4] = c;  mat[7] = 0;
         mat[2] = 0; mat[5] = 0;  mat[8] = 1;
@@ -649,10 +656,12 @@ public:
     inline void rotate(const vec3<T> &axis, T angle, bool inDegrees = true) { rotate(axis.x, axis.y, axis.z, angle, inDegrees); }
 
     inline void rotate(T x,T y,T z,T angle, bool inDegrees = true) {
-        if (inDegrees) DegToRad(angle);
+        if (inDegrees) {
+            DegToRad(angle);
+        }
 
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         vec3<T> v(x,y,z);
         v.normalize();
         T xx = v.x * v.x;
@@ -670,28 +679,32 @@ public:
     }
 
     inline void rotate_x(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
-
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        if(inDegrees) {
+            DegToRad(angle);
+        }
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         this->mat[5] =  c;  this->mat[9]  = -s;
         this->mat[6] =  s;  this->mat[10] =  c;
     }
 
     inline void rotate_y(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
-
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        if(inDegrees) {
+            DegToRad(angle);
+        }
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         this->mat[0] =  c; this->mat[8]  =  s;
         this->mat[2] = -s; this->mat[10] =  c;
     }
 
     inline void rotate_z(T angle, bool inDegrees = true) {
-        if(inDegrees) DegToRad(angle);
+        if (inDegrees) {
+            DegToRad(angle);
+        }
 
-        T c = (T)cos(angle);
-        T s = (T)sin(angle);
+        T c = (T)std::cos(angle);
+        T s = (T)std::sin(angle);
         this->mat[0] =  c;  this->mat[4] = -s;
         this->mat[1] =  s;  this->mat[5] =  c;
     }
@@ -776,7 +789,7 @@ public:
         assert(!IS_ZERO(aspect));
         assert(zFar > zNear);
 
-        T tanHalfFovy = tan(fovyRad / static_cast<T>(2));
+        T tanHalfFovy = std::tan(fovyRad / static_cast<T>(2));
 
         zero();
 
@@ -928,5 +941,8 @@ namespace Util{
         }
     };//Mat4
 };//Util
+
+}; //namespace Divide
+
 #endif
 

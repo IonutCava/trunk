@@ -10,6 +10,7 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
+namespace Divide {
 namespace AI {
 namespace Navigation {
     NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(nullptr)
@@ -99,3 +100,4 @@ namespace Navigation {
     }
 }; //namespace Navigation
 }; //namespace AI
+}; //namespace Divide

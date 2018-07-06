@@ -7,6 +7,8 @@ using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
 using boost::asio::ip::udp;
 
+namespace Divide {
+
 class tcp_session_impl : public tcp_session_tpl
 {
 public:
@@ -23,4 +25,5 @@ private:
 	void HandlePingOpCode(WorldPacket& p);
 };
 
+}; //namespace Divide
 #endif

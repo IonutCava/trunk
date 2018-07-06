@@ -28,7 +28,8 @@
 
 /*Code from: http://www.ogre3d.org/forums/viewtopic.php?f=11&t=69781&sid=2439989b4c0208780a353e4c90f9864b */
 
-namespace AI {
+namespace Divide {
+    namespace AI {
 
 class NavigationMeshConfig {
 
@@ -392,6 +393,7 @@ private:
     F32 _base_detailSampleMaxError;
 };
 
-}; //namespace AI
+    }; //namespace AI
+}; //namespace Divide
 
 #endif

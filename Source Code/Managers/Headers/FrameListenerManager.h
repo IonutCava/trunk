@@ -27,6 +27,8 @@
 ///Add this include here so that any FrameListner derived class only needs to include the manager
 #include "Rendering/Headers/FrameListener.h"
 
+namespace Divide {
+
 DEFINE_SINGLETON(FrameListenerManager)
 
 typedef vectorImpl<D32> EventTimeMap;
@@ -68,5 +70,7 @@ inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder){
 inline void UNREGISTER_FRAME_LISTENER(FrameListener* listener){
     FrameListenerManager::getInstance().removeFrameListener(listener);
 }
+
+}; //namespace Divide
 
 #endif

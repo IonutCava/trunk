@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 Quad3D* ImplResourceLoader<Quad3D>::operator()(){
     Quad3D* ptr = New Quad3D(_descriptor.getMask().b.b0 == 0);
 
@@ -18,3 +20,5 @@ Quad3D* ImplResourceLoader<Quad3D>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Quad3D)
+
+};

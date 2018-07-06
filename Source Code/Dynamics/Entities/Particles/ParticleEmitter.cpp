@@ -9,6 +9,8 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 ParticleEmitterDescriptor::ParticleEmitterDescriptor() {
    _particleCount = 1000;
    _spread = 1.5f;
@@ -61,7 +63,7 @@ bool ParticleEmitter::initData(){
     };
 
     _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false, false);
-    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_POSITION_LOCATION).set(0, 0, 3, false, 0, 0, FLOAT_32);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_POSITION_LOCATION).set(0, 0, 3, false, 0, 0, FLOAT_32);
 
     //Generate a render state
     RenderStateBlockDescriptor particleStateDesc;
@@ -161,7 +163,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
     _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 3, 4 * sizeof(U8),  1, NULL, true, true, /*true*/false);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
-    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, 0, UNSIGNED_BYTE);
 
     _particles.resize(descriptor._particleCount);
     _particlePositionData.resize(descriptor._particleCount * 4);
@@ -201,7 +203,7 @@ void ParticleEmitter::uploadToGPU(){
     _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, writeOffset, &_particleColorData[0]);
         
     _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, readOffset, FLOAT_32);
-    _particleGPUBuffer->getDrawAttribDescriptor(Divide::VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, readOffset, UNSIGNED_BYTE);
+    _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true,  0, readOffset, UNSIGNED_BYTE);
 
     _writeOffset = (_writeOffset + 1) % 3;
     _readOffset  = (_readOffset + 1) % 3;
@@ -313,3 +315,5 @@ I32 ParticleEmitter::findUnusedParticle(){
  
     return 0; // All particles are taken, override the first one
 }
+
+};

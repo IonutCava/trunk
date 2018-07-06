@@ -2,6 +2,8 @@
 
 #include <CEGUI/CEGUI.h>
 
+namespace Divide {
+
 GUIMessageBox::GUIMessageBox(const std::string& id,  
                              const std::string& title, 
                              const std::string& message,
@@ -72,3 +74,5 @@ void GUIMessageBox::setMessageType(MessageType type) {
         } break;
     }
 }
+
+};

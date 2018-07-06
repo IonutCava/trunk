@@ -36,7 +36,9 @@
 #include "Hardware/Video/Direct3D/Textures/Headers/d3dTexture.h"
 #include "Hardware/Video/Direct3D/Headers/d3dEnumTable.h"
 
-DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
+namespace Divide {
+
+DEFINE_SINGLETON_EXT1(DX_API, RenderAPIWrapper)
 
 protected:
     DX_API() : RenderAPIWrapper() {}
@@ -90,4 +92,5 @@ protected:
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

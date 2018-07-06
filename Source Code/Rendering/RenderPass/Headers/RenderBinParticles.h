@@ -24,11 +24,16 @@
 #define _RENDER_BIN_PARTICLES_H_
 
 #include "RenderBin.h"
+
+namespace Divide {
+
 ///This particular Rendering Bin handles the rendering of particles from the particle emitters it contains in the stack
 class RenderBinParticles : public RenderBin {
 public:
 	RenderBinParticles(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
 	~RenderBinParticles();
 };
+
+}; //namespace Divide
 
 #endif

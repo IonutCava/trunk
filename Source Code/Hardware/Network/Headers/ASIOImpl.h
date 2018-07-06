@@ -5,12 +5,19 @@
 #include "OPCodesImpl.h"
 #include <DivideNetworking\ASIO.h>
 
+namespace Divide {
+
 DEFINE_SINGLETON_EXT1(ASIOImpl, ASIO)
 
 private:
 	///Singleton class: Constructor/Destructor private
-	ASIOImpl() : ASIO() {}
-	~ASIOImpl() {}
+	ASIOImpl() : ASIO()
+    {
+    }
+
+	~ASIOImpl() 
+    {
+    }
 
 	///Define this functions to implement various packet handling (a switch statement for example)
 	///switch(p.getOpcode()) { case SMSG_XXXXX: bla bla bla break; case MSG_HEARTBEAT: break;}
@@ -23,4 +30,5 @@ private:
 
 END_SINGLETON
 
+}; //namespace Divide
 #endif

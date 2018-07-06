@@ -1,6 +1,8 @@
 #include "Headers/SceneNodeRenderState.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
+namespace Divide {
+
 SceneNodeRenderState::~SceneNodeRenderState()
 {
 }
@@ -39,3 +41,5 @@ void SceneNodeRenderState::addToDrawExclusionMask(U32 stageMask) {
 bool SceneNodeRenderState::getDrawState(const RenderStage& currentStage)  const {
     return _drawState && !bitCompare(_exclusionMask, currentStage);
 }
+
+};

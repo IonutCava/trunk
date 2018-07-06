@@ -26,6 +26,8 @@
 #include "core.h"
 #include "Hardware/Video/Textures/Headers/Texture.h"
 
+namespace Divide {
+
 class d3dTexture : public Texture {
 public:
     d3dTexture(TextureType type, bool flipped = false);
@@ -45,4 +47,5 @@ private:
     U32 _type;
 };
 
+}; //namespace Divide
 #endif

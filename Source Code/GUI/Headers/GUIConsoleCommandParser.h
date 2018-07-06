@@ -25,6 +25,9 @@
 
 #include "Utility/Headers/CommandParser.h"
 ///Handle console commands that start with a forward slash
+
+namespace Divide {
+
 class AudioDescriptor;
 class GUIConsoleCommandParser : public CommandParser {
 public:
@@ -53,5 +56,7 @@ private:
     ///used for sound playback
     AudioDescriptor* _sound;
 };
+
+}; //namespace Divide
 
 #endif

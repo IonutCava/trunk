@@ -25,7 +25,9 @@
 #include "Hardware/Video/OpenGL/Headers/glResources.h"
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 
-class glShader : public Shader{
+namespace Divide {
+
+class glShader : public Shader {
 public:
 	glShader(const std::string& name,const ShaderType& type,const bool optimise = false);
 	~glShader();
@@ -37,5 +39,7 @@ public:
 private:
 	std::string preprocessIncludes(const std::string& source, const std::string& filename, GLint level /*= 0 */ );
 };
+
+}; //namespace Divide
 
 #endif

@@ -6,6 +6,8 @@
 #pragma message("DIVIDE Framework uses U64 (unsigned long long) data types for timing with microsecond resolution!")
 #pragma message("Use apropriate conversion in time sensitive code (see core.h)")
 
+namespace Divide {
+
 #if defined(_DEBUG) || defined(_PROFILE)
 ProfileTimer::ProfileTimer() : _init(false), _paused(false), _timer(0.0), _timerAverage(0.0), _timerCounter(0)
 {
@@ -161,3 +163,5 @@ void ApplicationTimer::benchmarkInternal(U32 frameCount){
         averageFps = 0;
     }
 }
+
+};

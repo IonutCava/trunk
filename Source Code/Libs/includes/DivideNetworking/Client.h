@@ -20,6 +20,8 @@
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
 
+namespace Divide {
+
 enum OPCodes;
 class ASIO;
 
@@ -93,4 +95,5 @@ private:
   ASIO* _asioPointer;
 };
 
+}; //namespace Divide
 #endif

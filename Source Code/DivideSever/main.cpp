@@ -1,12 +1,14 @@
 #include "Server.h"
 #include "Utility/Headers/OutputBuffer.h"
 
+using namespace Divide;
+
 int main()
 {
     /*Console output redirect*/
-    ofstream myfile("console_server.log");
-    outbuf obuf(myfile.rdbuf(), cout.rdbuf());
-    scoped_streambuf_assignment ssa(cout, &obuf);
+    std::ofstream myfile("console_server.log");
+    outbuf obuf(myfile.rdbuf(), std::cout.rdbuf());
+    scoped_streambuf_assignment ssa(std::cout, &obuf);
     /*Console output redirect*/
     std::string address = "127.0.0.1";
 

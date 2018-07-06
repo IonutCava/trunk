@@ -24,11 +24,16 @@
 #define _RENDER_BIN_MESH_H_
 
 #include "RenderBin.h"
+
+namespace Divide {
+
 ///This particular Rendering Bin handles imported geometry, be it skinned or otherwise
 class RenderBinMesh : public RenderBin {
 public:
 	RenderBinMesh(const RenderBinType& rbType,const RenderingOrder::List& renderOrder, D32 drawKey);
 	~RenderBinMesh();
 };
+
+}; //namespace Divide
 
 #endif

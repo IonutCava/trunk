@@ -9,6 +9,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
+namespace Divide {
+
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
@@ -78,3 +80,5 @@ void SingleShadowMap::previewShadowMaps(){
     _depthMap->Bind(ShaderProgram::TEXTURE_UNIT0);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _previewDepthMapShader);
 }
+
+};

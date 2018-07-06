@@ -25,8 +25,10 @@
 
 #include "core.h"
 
-enum GFXImageFormat;
-namespace ImageTools {
+namespace Divide {
+    enum GFXImageFormat;
+    namespace ImageTools {
+
     class ImageData {
         public:
             ImageData()  : _flip(false),
@@ -120,6 +122,8 @@ namespace ImageTools {
 
     /// used to lock DevIL in a sequential operating mode in a multithreaded environment
     static SharedLock _loadingMutex;
-}
+
+    }; //namespace ImageTools
+}; //namespace Divide
 
 #endif

@@ -2,6 +2,8 @@
 
 #include <CEGUI/CEGUI.h>
 
+namespace Divide {
+
 GUIButton::GUIButton(const std::string& id, const std::string& text,const std::string& guiScheme,
                      const vec2<I32>& position, const vec2<U32>& dimensions,
                      const vec3<F32>& color, CEGUI::Window* parent,
@@ -51,3 +53,5 @@ bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/){
     }
     return false;
 }
+
+};

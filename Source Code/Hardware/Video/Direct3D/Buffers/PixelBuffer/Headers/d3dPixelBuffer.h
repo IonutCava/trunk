@@ -25,6 +25,8 @@
 
 #include "Hardware/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 
+namespace Divide {
+
 class d3dPixelBuffer : public PixelBuffer {
 public:
 
@@ -49,4 +51,5 @@ private:
 	bool checkStatus() {return true;}
 };
 
+}; //namespace Divide
 #endif

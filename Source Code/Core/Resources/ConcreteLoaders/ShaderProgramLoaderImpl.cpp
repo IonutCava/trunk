@@ -7,6 +7,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+namespace Divide {
+
 ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
     ParamHandler& par = ParamHandler::getInstance();
     ShaderProgram* ptr = GFX_DEVICE.newShaderProgram();
@@ -42,3 +44,5 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
 }
 
 DEFAULT_HW_LOADER_IMPL(ShaderProgram)
+
+};

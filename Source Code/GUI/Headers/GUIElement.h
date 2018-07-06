@@ -25,6 +25,12 @@
 
 #include "Core/Math/Headers/MathClasses.h"
 
+namespace CEGUI {
+    class Window;
+};
+
+namespace Divide {
+
 enum GUIType
 {
     GUI_TEXT			= 0,
@@ -42,10 +48,6 @@ struct GUIEvent {
    U16                  keyCode;          ///< for unprintables, 'tab', 'return', ...
    vec2<F32>            mousePoint;       ///< for mouse events
    U8                   mouseClickCount;
-};
-
-namespace CEGUI{
-    class Window;
 };
 
 class RenderStateBlock;
@@ -94,5 +96,7 @@ private:
     bool	    _visible;
     bool		_active;
 };
+
+}; //namespace Divide
 
 #endif

@@ -3,6 +3,8 @@
 
 #include "core.h"
 
+namespace Divide {
+
 //PreRenderStage is a class specialized in applying certain shaders and generating FB results
 //
 class PreRenderOperator;
@@ -10,7 +12,10 @@ class PreRenderStage{
 public:
 	PreRenderStage(){}
 	~PreRenderStage();
-	bool addRenderOperator(PreRenderOperator* op) {_operators.push_back(op); return true;}
+	inline bool addRenderOperator(PreRenderOperator* op) {
+        _operators.push_back(op); 
+        return true;
+    }
 	void execute();
 	void reshape(I32 width, I32 height);
 
@@ -19,4 +24,5 @@ private:
 	bool							_isValid;		//True if the filter is valid
 };
 
+}; //namespace Divide
 #endif

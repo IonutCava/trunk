@@ -2,6 +2,8 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 
+namespace Divide {
+
 Trigger* ImplResourceLoader<Trigger>::operator()(){
     Trigger* ptr = New Trigger();
 
@@ -16,3 +18,5 @@ Trigger* ImplResourceLoader<Trigger>::operator()(){
 }
 
 DEFAULT_LOADER_IMPL(Trigger)
+
+};

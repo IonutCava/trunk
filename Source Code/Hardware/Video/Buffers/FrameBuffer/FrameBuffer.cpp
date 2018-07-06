@@ -3,6 +3,8 @@
 
 #include "Core/Resources/Headers/ResourceCache.h"
 
+namespace Divide {
+
 Framebuffer::Framebuffer(bool multiSampled) : GUIDWrapper(),
                                               _multisampled(multiSampled),
                                               _framebufferHandle(0),
@@ -14,7 +16,7 @@ Framebuffer::Framebuffer(bool multiSampled) : GUIDWrapper(),
                                               _layeredRendering(false)
 {
     _clearColor.set(DefaultColors::WHITE());
-    for(U8 i = 0; i < 5; ++i){
+    for (U8 i = 0; i < 5; ++i) {
         _attachmentDirty[i] = false;
         _attachmentTexture[i] = nullptr;
     }
@@ -25,8 +27,10 @@ Framebuffer::~Framebuffer()
     
 }
 
-bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType slot){
+bool Framebuffer::AddAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType slot) {
     _attachmentDirty[slot] = true;
     _attachment[slot] = descriptor;
     return true;
 }
+
+};

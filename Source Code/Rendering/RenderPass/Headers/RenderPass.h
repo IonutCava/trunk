@@ -26,6 +26,8 @@
 #include <string>
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 
+namespace Divide {
+
 class SceneGraph;
 class SceneRenderState;
 
@@ -42,5 +44,7 @@ private:
 	std::string _name;
 	U16 _lastTotalBinSize;
 };
+
+}; //namespace Divide
 
 #endif

@@ -8,14 +8,16 @@
 
 #include <CEGUI/CEGUI.h>
 
+namespace Divide {
+
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
-    Divide::GLUtil::GL_ENUM_TABLE::fill();
+    GLUtil::GL_ENUM_TABLE::fill();
     // Most runtime variables are stored in the ParamHandler, including initialization settings retrieved from XML
     ParamHandler& par = ParamHandler::getInstance();
     // Setup error callback function before window creation  to make sure any GLFW init errors are handled.
-    glfwSetErrorCallback(Divide::GLUtil::glfw_error_callback);
+    glfwSetErrorCallback(GLUtil::glfw_error_callback);
     // Attempt to init GLFW
     if (!glfwInit()) {
     	return GLFW_INIT_ERROR;
@@ -57,22 +59,22 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     glfwWindowHint(GLFW_DEPTH_BITS,  24);
     
     // Open an OpenGL window; resolution and windowed mode is specified in the external XML files
-    Divide::GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height, par.getParam<std::string>("appTitle").c_str(),
-                                                   par.getParam<bool>("runtime.windowedMode", true) ? nullptr : glfwGetPrimaryMonitor(), nullptr);
+    GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height, par.getParam<std::string>("appTitle").c_str(),
+                                           par.getParam<bool>("runtime.windowedMode", true) ? nullptr : glfwGetPrimaryMonitor(), nullptr);
     // Check if we have a valid window
-    if (!Divide::GLUtil::_mainWindow) {
+    if (!GLUtil::_mainWindow) {
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
     }
 
     // The application window will hold the main rendering context
-    glfwMakeContextCurrent(Divide::GLUtil::_mainWindow);
+    glfwMakeContextCurrent(GLUtil::_mainWindow);
     // Init glew for main context
-    Divide::GLUtil::initGlew();
+    GLUtil::initGlew();
     // Bind the window close request received from GLFW with our custom callback
-    glfwSetWindowCloseCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_close_callback);
+    glfwSetWindowCloseCallback(GLUtil::_mainWindow, GLUtil::glfw_close_callback);
     // Bind our focus change callback to GLFW's internal wiring
-    glfwSetWindowFocusCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_focus_callback);
+    glfwSetWindowFocusCallback(GLUtil::_mainWindow, GLUtil::glfw_focus_callback);
     // Geometry shaders became core in version 3.3, shader storage buffers in 4.3, buffer storage in 4.4 so fail if we are missing the required version
     if ((Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_3) || (!Config::Profile::DISABLE_PERSISTENT_BUFFER && !GLEW_VERSION_4_4)) {
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
@@ -82,9 +84,9 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // We also create a loader thread in the background with its own GL context. To do this with GLFW, we'll create a second, invisible, window
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
     // The loader window will share context lists with the main window
-    Divide::GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr, Divide::GLUtil::_mainWindow);
+    GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr, GLUtil::_mainWindow);
     // The loader window is essential to the engine structure, so fail if we can't create it
-    if (!Divide::GLUtil::_loaderWindow) {
+    if (!GLUtil::_loaderWindow) {
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
     }
@@ -92,14 +94,14 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // Get the current display mode used by the focused monitor
     const GLFWvidmode* return_struct = glfwGetVideoMode(glfwGetPrimaryMonitor());
     // Attempt to position the window in the center of the screen. Useful for the splash screen
-    glfwSetWindowPos(Divide::GLUtil::_mainWindow, (return_struct->width - resolution.width) * 0.5f, (return_struct->height - resolution.height) * 0.5f);
+    glfwSetWindowPos(GLUtil::_mainWindow, (return_struct->width - resolution.width) * 0.5f, (return_struct->height - resolution.height) * 0.5f);
 
     // OpenGL has a nifty error callback system, available in every build configuration if required
 #if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
     // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     // hardwire our debug callback function with OpenGL's implementation
-    glDebugMessageCallback(&Divide::GLUtil::DebugCallback, NULL);
+    glDebugMessageCallback(&GLUtil::DebugCallback, NULL);
     // nVidia flushes a lot of useful info about buffer allocations and shader recompiles due to state and what now,
     // but those aren't needed until that's what's actually causing the bottlenecks
     U32 nvidiaBufferErrors[] = {131185, 131218};
@@ -113,9 +115,9 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    GFX_DEVICE.setMaxTextureSlots(Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
+    GFX_DEVICE.setMaxTextureSlots(GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS));
     // Maximum number of color attachments per framebuffer
-    GFX_DEVICE.setMaxRenderTargetOutputs(Divide::GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
+    GFX_DEVICE.setMaxRenderTargetOutputs(GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
     std::string gpuVendorByte(reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
     if (!gpuVendorByte.empty()) {
@@ -129,10 +131,10 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     }
 
     // Cap max anisotropic level to what the hardware supports
-    par.setParam("rendering.anisotropicFilteringLevel", std::min(Divide::GLUtil::getIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT), 
+    par.setParam("rendering.anisotropicFilteringLevel", std::min(GLUtil::getIntegerv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT), 
                                                                  par.getParam<GLint>("rendering.anisotropicFilteringLevel", 1)));
     // OpenGL major version ( we do not support OpenGL versions lower than 4.x )
-    if (Divide::GLUtil::getIntegerv(GL_MAJOR_VERSION) < 4) {
+    if (GLUtil::getIntegerv(GL_MAJOR_VERSION) < 4) {
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"), Locale::get("ERROR_GL_OLD_VERSION"));
         return GLEW_OLD_HARDWARE;
     } else {
@@ -140,8 +142,8 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     }
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
-    GLint samplerBuffers = Divide::GLUtil::getIntegerv(GL_SAMPLES);
-    GLint sampleCount =  Divide::GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
+    GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
+    GLint sampleCount =  GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
     PRINT_FN(Locale::get("GL_MULTI_SAMPLE_INFO"), sampleCount, samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
     U8 msaaSamples = par.getParam<I32>("rendering.MSAAsampless", 0);
@@ -151,15 +153,15 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     GFX_DEVICE.initAA(par.getParam<I32>("rendering.FXAAsamples", 0), msaaSamples);
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
-    PRINT_FN(Locale::get("GL_MAX_UNIFORM"), Divide::GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
+    PRINT_FN(Locale::get("GL_MAX_UNIFORM"), GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
     // How many varying floats can we use inside a shader program
-    PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"), Divide::GLUtil::getIntegerv(GL_MAX_VARYING_FLOATS));
+    PRINT_FN(Locale::get("GL_MAX_FRAG_VARYING"), GLUtil::getIntegerv(GL_MAX_VARYING_FLOATS));
     // How many uniforms can we send to vertex shaders
-    PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),Divide::GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
+    PRINT_FN(Locale::get("GL_MAX_VERT_UNIFORM"),GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
     // How many attributes can we send to a vertex shader
-    PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),Divide::GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
+    PRINT_FN(Locale::get("GL_MAX_VERT_ATTRIB"),GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-    PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), Divide::GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), GFX_DEVICE.getMaxTextureSlots());
+    PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"), GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS), GFX_DEVICE.getMaxTextureSlots());
     // Query shading language version support
     PRINT_FN(Locale::get("GL_GLSL_SUPPORT"), glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
@@ -167,20 +169,20 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     // In order: Maximum number of uniform buffer binding points, 
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
-    PRINT_FN(Locale::get("GL_UBO_INFO"), Divide::GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS), 
-                                         Divide::GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024, 
-                                         Divide::GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
+    PRINT_FN(Locale::get("GL_UBO_INFO"), GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS), 
+                                         GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024, 
+                                         GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
 
     // In order: Maximum number of shader storage buffer binding points, maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may be accessed by all active shaders and 
     //           minimum required alignment for shader storage buffer sizes and offset.
-    PRINT_FN(Locale::get("GL_SSBO_INFO"), Divide::GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
-                                         (Divide::GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024, 
-                                          Divide::GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS), 
-                                          Divide::GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT));
+    PRINT_FN(Locale::get("GL_SSBO_INFO"), GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
+                                         (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024, 
+                                          GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS), 
+                                          GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT));
 
     // Maximum number of subroutines and maximum number of subroutine uniform locations usable in a shader
-    PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), Divide::GLUtil::getIntegerv(GL_MAX_SUBROUTINES), Divide::GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
+    PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), GLUtil::getIntegerv(GL_MAX_SUBROUTINES), GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
         
     // Set the clear color to the blue color used since the initial OBJ loader days
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
@@ -231,7 +233,7 @@ ErrorCode GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc,
     }
 
     // Prepare immediate mode emulation rendering
-    NS_GLIM::glim.SetVertexAttribLocation(Divide::VERTEX_POSITION_LOCATION);
+    NS_GLIM::glim.SetVertexAttribLocation(VERTEX_POSITION_LOCATION);
 
     // We need a dummy VAO object for point rendering
     glGenVertexArrays(1, &_pointDummyVAO);
@@ -286,41 +288,41 @@ void GL_API::closeRenderingApi(){
     _fonts.clear();
 
     // Destroy application windows and close GLFW
-    glfwDestroyWindow(Divide::GLUtil::_loaderWindow);
-    glfwDestroyWindow(Divide::GLUtil::_mainWindow);
+    glfwDestroyWindow(GLUtil::_loaderWindow);
+    glfwDestroyWindow(GLUtil::_mainWindow);
     glfwTerminate();
 }
 
 /// changeResolutionInternal is simply asking GLFW to do the resizing and updating the resolution cache
 void GL_API::changeResolutionInternal(GLushort w, GLushort h) {
-    glfwSetWindowSize(Divide::GLUtil::_mainWindow, w, h);
+    glfwSetWindowSize(GLUtil::_mainWindow, w, h);
     _cachedResolution.set(w, h);
 }
 
 /// Window positioning is handled by GLFW
 void GL_API::setWindowPos(GLushort w, GLushort h) const {
-    glfwSetWindowPos(Divide::GLUtil::_mainWindow, w, h);
+    glfwSetWindowPos(GLUtil::_mainWindow, w, h);
 }
 
 /// Mouse positioning is handled by GLFW
 void GL_API::setCursorPosition(GLushort x, GLushort y) const {
-    glfwSetCursorPos(Divide::GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
+    glfwSetCursorPos(GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
 }
 
 /// This functions should be run in a separate, consumer thread.
 /// The main app thread, the producer, adds tasks via a lock-free queue that is checked every 20 ms
 void GL_API::createLoaderThread() {
     // We need a valid OpenGL context to make current in this thread
-    assert(Divide::GLUtil::_loaderWindow != nullptr);
-    glfwMakeContextCurrent(Divide::GLUtil::_loaderWindow);
+    assert(GLUtil::_loaderWindow != nullptr);
+    glfwMakeContextCurrent(GLUtil::_loaderWindow);
 
 #   ifdef GLEW_MX
-        Divide::GLUtil::initGlew();
+        GLUtil::initGlew();
         // Enable OpenGL debug callbacks for this context as well
 #       if defined(_DEBUG) || defined(_PROFILE) || defined(_GLDEBUG_IN_RELEASE)
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
             // Debug callback in a separate thread requires a flag to distinguish it from the main thread's callbacks
-            glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (void*)(1));
+            glDebugMessageCallback(&GLUtil::DebugCallback, (void*)(1));
 #      endif
 #   endif
 
@@ -346,3 +348,5 @@ void GL_API::createLoaderThread() {
     // If we close the loading thread, update our atomic bool to make sure the application isn't using it anymore
     GFX_DEVICE.loadingThreadAvailable(false);
 }
+
+};

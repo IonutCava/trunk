@@ -4,7 +4,7 @@
 
 #include <assimp/scene.h>
 
-using namespace boost;
+namespace Divide {
 
 void SceneAnimator::Release(){// this should clean everything up
     FOR_EACH(LineCollection::value_type& it, _skeletonLines){
@@ -210,3 +210,5 @@ I32 SceneAnimator::CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, vecto
 
     return 1;
 }
+
+};

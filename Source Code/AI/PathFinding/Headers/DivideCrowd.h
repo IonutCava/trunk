@@ -72,9 +72,10 @@
   * This class is largely based on the CrowdTool used in the original RecastNavigation
   * demo.
   **/
-namespace AI {
 
-namespace Navigation {
+namespace Divide {
+    namespace AI {
+        namespace Navigation {
 
     class NavigationMesh;
 
@@ -220,7 +221,8 @@ namespace Navigation {
         /// Number of (active) agents in the crowd.
         I32 _activeAgents;
     }; // DivideDtCrowd
-}; // Navigation
 
-}; //namespace AI
+        }; // Navigation
+    }; //namespace AI
+}; //namespace Divide
 #endif

@@ -19,6 +19,8 @@
 #include "Core\Math\Headers\MathHelper.h"
 #include <boost/archive/text_iarchive.hpp>
 
+namespace Divide {
+
 ASIO::ASIO() : _connected(false), _debugOutput(true), _localClient(nullptr)
 {
 }
@@ -88,6 +90,8 @@ void ASIO::toggleDebugOutput(const bool debugOutput){
 	_debugOutput = debugOutput;
 	_localClient->toggleDebugOutput(_debugOutput);
 }
+
+}; //namespace Divide
 
 #if defined(_MSC_VER)
 #	pragma warning( pop )

@@ -26,6 +26,9 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 ///For now, the name of the Text3D object is the text itself
+
+namespace Divide {
+
 class Text3D : public Object3D
 {
 public:
@@ -58,5 +61,7 @@ private:
     F32   _width;
     U32   _height;
 };
+
+}; //namespace Divide
 
 #endif

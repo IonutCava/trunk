@@ -5,6 +5,8 @@
 #include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
+namespace Divide {
+
 Texture* ImplResourceLoader<Texture>::operator()(){
     Texture* ptr = nullptr;
 
@@ -35,3 +37,5 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 }
 
 DEFAULT_HW_LOADER_IMPL(Texture)
+
+};

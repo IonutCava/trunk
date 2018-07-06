@@ -25,34 +25,37 @@
 #include "Hardware/Input/Headers/AutoKeyRepeat.h"
 #include "Hardware/Input/Headers/InputAggregatorInterface.h"
 
+namespace Divide {
+
 ///This class defines AutoRepeatKey::repeatKey(...) as CEGUI key inputs
-class CEGUIInput : public InputAggregatorInterface, public AutoRepeatKey {
+class CEGUIInput : public Input::InputAggregatorInterface, public Input::AutoRepeatKey {
 public:
     ///Key pressed
-    bool onKeyDown(const OIS::KeyEvent& key);
+    bool onKeyDown(const Input::KeyEvent& key);
     ///Key released
-    bool onKeyUp(const OIS::KeyEvent& key);
+    bool onKeyUp(const Input::KeyEvent& key);
     ///Joystick axis change
-    bool joystickAxisMoved(const OIS::JoyStickEvent& arg,I8 axis);
+    bool joystickAxisMoved(const Input::JoystickEvent& arg,I8 axis);
     ///Joystick direction change
-    bool joystickPovMoved(const OIS::JoyStickEvent& arg,I8 pov);
+    bool joystickPovMoved(const Input::JoystickEvent& arg,I8 pov);
     ///Joystick button pressed
-    bool joystickButtonPressed(const OIS::JoyStickEvent& arg,I8 button);
+    bool joystickButtonPressed(const Input::JoystickEvent& arg,I8 button);
     ///Joystick button released
-    bool joystickButtonReleased(const OIS::JoyStickEvent& arg, I8 button);
-    bool joystickSliderMoved( const OIS::JoyStickEvent &arg, I8 index);
-    bool joystickVector3DMoved( const OIS::JoyStickEvent &arg, I8 index);
+    bool joystickButtonReleased(const Input::JoystickEvent& arg, I8 button);
+    bool joystickSliderMoved( const Input::JoystickEvent &arg, I8 index);
+    bool joystickVector3DMoved( const Input::JoystickEvent &arg, I8 index);
     ///Mouse moved
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const Input::MouseEvent& arg);
     ///Mouse button pressed
-    bool mouseButtonPressed(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button);
     ///Mouse button released
-    bool mouseButtonReleased(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
+    bool mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButton button);
 
 protected:
     ///Called on key events
-    bool injectOISKey(bool pressed,const OIS::KeyEvent& inKey);
-   void repeatKey(I32 inKey, U32 Char);
+    bool injectOISKey(bool pressed, const Input::KeyEvent& inKey);
+    void repeatKey(I32 inKey, U32 Char);
 };
 
+}; //namespace Divide
 #endif

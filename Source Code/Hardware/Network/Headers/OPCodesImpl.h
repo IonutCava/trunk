@@ -26,6 +26,8 @@
 #include <DivideNetworking/OPCodesTpl.h>
 #include <DivideNetworking/Utility/InheritEnum.h>
 
+namespace Divide {
+
 enum OPCodesEx {
 	CMSG_GEOMETRY_LIST                       = OPCODE_ID(1),
 	SMSG_GEOMETRY_APPEND					 = OPCODE_ID(2),
@@ -36,5 +38,7 @@ enum OPCodesEx {
 };
 
 typedef InheritEnum< OPCodesEx, OPCodes > OPCodesImpl;
+
+}; //namespace Divide
 
 #endif;

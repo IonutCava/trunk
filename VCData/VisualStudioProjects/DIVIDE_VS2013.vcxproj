@@ -200,7 +200,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;NOMINMAX;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -215,6 +215,8 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>NDEBUG</UndefinePreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ShowIncludes>false</ShowIncludes>
     </ClCompile>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
@@ -278,7 +280,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;NOMINMAX;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -355,7 +357,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\src\ReCast\RecastContrib\fastlz;$(SolutionDir)..\Source Code\Libs\src\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\src\ReCast\ReCast\Include;$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\;$(EngineLibraries)\boost;$(EngineLibraries)\glm;$(EngineLibraries)\sdl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\cegui-deps\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;__SECURE_SCL=0;NOMINMAX;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -640,6 +642,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ClipRegion.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardPlusRenderer.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\FrameListener.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />

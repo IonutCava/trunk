@@ -26,7 +26,9 @@
 #include "Core/Math/Headers/Ray.h"
 #include "Core/Math/Headers/Quaternion.h"
 
-namespace Navigation {
+namespace Divide {
+    namespace Navigation {
+
 	/// A point in space that AI units can navigate to
 	class Waypoint {
 	public:
@@ -59,6 +61,8 @@ namespace Navigation {
 		/// ray used for collision detection
 		Ray _collisionRay;
 	};
-};
+
+    }; //namespace Navigation
+}; //namespace Divide
 
 #endif

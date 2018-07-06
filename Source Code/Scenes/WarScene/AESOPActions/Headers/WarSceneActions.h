@@ -24,7 +24,9 @@
 
 #include "AI/ActionInterface/Headers/GOAPInterface.h"
 
-namespace AI {
+namespace Divide {
+    namespace AI {
+
     // Some useful predicates
     enum Fact {
         EnemyVisible = 0,
@@ -98,5 +100,8 @@ namespace AI {
             {
             }
     };
-};
+
+    }; //namespace AI
+}; //namespace Divide
+
 #endif

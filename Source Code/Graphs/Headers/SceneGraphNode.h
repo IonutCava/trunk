@@ -33,12 +33,14 @@
 #include "Graphs/Components/Headers/AnimationComponent.h"
 #include "Graphs/Components/Headers/NavigationComponent.h"
 
+namespace Divide {
+
 class Transform;
 class SceneGraph;
 class SceneState;
 struct TransformValues;
 // This is the scene root node. All scene node's are added to it as child nodes
-class SceneRoot : public SceneNode{
+class SceneRoot : public SceneNode {
 public:
     SceneRoot() : SceneNode("root",TYPE_ROOT)
     {
@@ -46,14 +48,14 @@ public:
         setState(RES_LOADED);
     }
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage)       { return true; }
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
 protected:
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) {}
-    void postLoad(SceneGraphNode* const sgn)           { SceneNode::postLoad(sgn); }
+    void postLoad(SceneGraphNode* const sgn)  { SceneNode::postLoad(sgn); }
 };
 
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode to create complex transforms in the scene
@@ -66,8 +68,9 @@ public:
     }
     
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage) {}
+    bool onDraw(const RenderStage& currentStage) {return true;}
+
     void postLoad(SceneGraphNode* const sgn)           {return;}
-    bool onDraw(const RenderStage& currentStage)       {return true;}
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
@@ -279,4 +282,5 @@ private:
 #endif
 };
 
+}; //namespace Divide
 #endif

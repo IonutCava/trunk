@@ -25,11 +25,15 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
+namespace Divide {
+
 /// Renders a sphere at the parent node's position using the desired radius;
 class Impostor : public Sphere3D {
 public:
 	Impostor(const std::string& name, F32 radius = 1.0f);
 	~Impostor();
 };
+
+}; //namespace Divide
 
 #endif

@@ -6,6 +6,8 @@
 #include <iomanip>
 #include <stdarg.h>
 
+namespace Divide {
+
 static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
 
 Console::Console() : Singleton()
@@ -149,3 +151,5 @@ const char* Console::output(const char* output, const bool error) const {
 
     return output;
 }
+
+};

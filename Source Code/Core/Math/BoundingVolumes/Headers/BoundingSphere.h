@@ -24,6 +24,8 @@
 #define BOUNDINGSPHERE_H_
 #include "Core/Math/Headers/Ray.h"
 
+namespace Divide {
+
 class BoundingSphere {
 public:
 	BoundingSphere() : _computed(false),
@@ -142,5 +144,7 @@ private:
 	F32 _radius;
 	mutable SharedLock _lock;
 };
+
+}; //namespace Divide
 
 #endif

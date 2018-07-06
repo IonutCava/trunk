@@ -27,22 +27,18 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
+namespace Divide {
 class Ray;
 class Scene;
 class SceneState;
+
 class SceneGraph  {
 public:
 
     SceneGraph();
+    ~SceneGraph();
 
-    ~SceneGraph(){
-        D_PRINT_FN(Locale::get("DELETE_SCENEGRAPH"));
-        _root->unload(); //< Should recursively call unload on the entire scene graph
-        //Should recursively call delete on the entire scene graph
-        SAFE_DELETE(_root);
-    }
-
-    inline  SceneGraphNode* getRoot() const {return _root;}
+    inline  SceneGraphNode* getRoot() const { return _root;}
 
     inline vectorImpl<BoundingBox >& getBBoxes(){
         _boundingBoxes.clear();
@@ -61,22 +57,32 @@ public:
     void idle();
 
     void Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits);
-    void addToDeletionQueue(SceneGraphNode* node) {_pendingDeletionNodes.push_back(node);}
+    inline void addToDeletionQueue(SceneGraphNode* node) {
+        _pendingDeletionNodes.push_back(node);
+    }
 
     inline void getShadowCastersAndReceivers(vectorImpl<const SceneGraphNode* >& casters, vectorImpl<const SceneGraphNode* >& receivers, bool visibleOnly = false) const {
         casters.clear();
         receivers.clear();
+        casters.reserve(_nodeCount);
+        receivers.reserve(_nodeCount);
         _root->getShadowCastersAndReceivers(casters, receivers, visibleOnly);
     }
 
 protected:
+    friend class SceneGraphNode;
+    inline void incNodeCount() { _nodeCount++; }
+    inline void decNodeCount() { _nodeCount--; }
     void printInternal(SceneGraphNode* const sgn);
 
 private:
+    I32             _nodeCount;
     boost::mutex    _rootAccessMutex;
     SceneGraphNode* _root;
     bool            _updateRunning;
     vectorImpl<BoundingBox>        _boundingBoxes;
     vectorImpl<SceneGraphNode* >   _pendingDeletionNodes;
 };
+
+}; //namespace Divide
 #endif

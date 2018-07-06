@@ -5,6 +5,8 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Material/Headers/Material.h"
 
+namespace Divide {
+
 Impostor::Impostor(const std::string& name, F32 radius) : Sphere3D(radius, 8)
 {
     getSceneNodeRenderState().setDrawState(false);
@@ -19,3 +21,5 @@ Impostor::Impostor(const std::string& name, F32 radius) : Sphere3D(radius, 8)
 Impostor::~Impostor(){
 
 }
+
+};

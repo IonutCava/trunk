@@ -24,10 +24,15 @@
 #define _FREE_FLY_CAMERA_H_
 
 #include "Camera.h"
+
+namespace Divide {
+
 // A "god-mode" camera. It can move freely around the world
 class FreeFlyCamera : public Camera {
 public:
 	FreeFlyCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
+
+}; //namespace Divide
 
 #endif
