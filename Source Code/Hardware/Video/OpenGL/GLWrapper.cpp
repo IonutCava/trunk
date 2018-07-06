@@ -569,6 +569,7 @@ void GL_API::renderModel(Object3D* const model){
 		
 		case BOX_3D:
 		case SUBMESH:
+		case GENERIC:
 			type = TRIANGLES;
 			break;
 		case QUAD_3D:

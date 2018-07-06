@@ -1,6 +1,8 @@
 #include "Headers/AIEntity.h"
 #include "ActionInterface/Headers/ActionList.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "PathFinding/Headers/WaypointGraph.h"  ///< For waypoint movement
+#include "PathFinding/Headers/NavigationMesh.h" ///< For NavMesh movement
 
 AIEntity::AIEntity(const std::string& name) : _name(name),
 											  _coordination(New AICoordination()),

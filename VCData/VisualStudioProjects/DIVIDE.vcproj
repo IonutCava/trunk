@@ -991,6 +991,66 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="Resources"
+					>
+					<Filter
+						Name="Entities"
+						>
+						<Filter
+							Name="Headers"
+							>
+						</Filter>
+						<Filter
+							Name="Vehicles"
+							>
+							<Filter
+								Name="Headers"
+								>
+							</Filter>
+						</Filter>
+						<Filter
+							Name="Units"
+							>
+							<Filter
+								Name="Headers"
+								>
+							</Filter>
+						</Filter>
+						<Filter
+							Name="Weapons"
+							>
+							<Filter
+								Name="Headers"
+								>
+							</Filter>
+						</Filter>
+					</Filter>
+					<Filter
+						Name="Support"
+						>
+						<Filter
+							Name="Headers"
+							>
+						</Filter>
+						<Filter
+							Name="Goals"
+							>
+							<Filter
+								Name="Headers"
+								>
+							</Filter>
+						</Filter>
+						<Filter
+							Name="Army"
+							>
+							<Filter
+								Name="Headers"
+								>
+							</Filter>
+						</Filter>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -1472,6 +1532,10 @@
 				Name="Shapes"
 				>
 				<File
+					RelativePath="..\..\Source Code\Geometry\Shapes\GenericShape.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Geometry\Shapes\Mesh.cpp"
 					>
 				</File>
@@ -1486,6 +1550,10 @@
 				<Filter
 					Name="Headers"
 					>
+					<File
+						RelativePath="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h"
+						>
+					</File>
 					<File
 						RelativePath="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h"
 						>
@@ -1747,6 +1815,234 @@
 					RelativePath="..\..\Source Code\AI\Headers\AIEntity.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="PathFinding"
+				>
+				<File
+					RelativePath="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\PathFinding\NavigationPath.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\PathFinding\Waypoint.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="ReCast"
+					>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="Detour"
+					>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
+				<Filter
+					Name="DetourCrowd"
+					>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp"
+						>
+					</File>
+					<Filter
+						Name="Headers"
+						>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<File

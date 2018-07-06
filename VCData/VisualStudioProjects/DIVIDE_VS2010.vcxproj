@@ -112,6 +112,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
@@ -130,6 +157,7 @@
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.cpp" />
@@ -224,6 +252,28 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
@@ -243,6 +293,7 @@
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.h" />

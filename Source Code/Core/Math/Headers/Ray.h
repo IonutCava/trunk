@@ -40,6 +40,7 @@ class Ray {
 			sign[1] = (inv_direction.y < 0);
 			sign[2] = (inv_direction.z < 0);
 		}
+
 		Ray(const Ray &r) {
 			origin = r.origin;
 			direction = r.direction;

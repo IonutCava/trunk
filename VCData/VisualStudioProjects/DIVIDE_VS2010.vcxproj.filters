@@ -338,6 +338,75 @@
     <Filter Include="Scenes\WarScene\Headers">
       <UniqueIdentifier>{cad67937-abca-410d-90d5-b6144e943546}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\PathFinding">
+      <UniqueIdentifier>{03c3909f-c64d-42d0-a027-d7e4edbde7aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Headers">
+      <UniqueIdentifier>{cede592b-1b70-416e-baf9-223e356e30fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Detour">
+      <UniqueIdentifier>{60783ae9-51c3-4023-8711-cee8a8bfe5ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\Detour\Headers">
+      <UniqueIdentifier>{44dba906-f6e5-43c3-915a-e29c15fc1173}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\ReCast">
+      <UniqueIdentifier>{c2572417-20cd-4fd6-acab-136f3e3884ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\ReCast\Headers">
+      <UniqueIdentifier>{c5539767-06fb-41ed-8a8e-44d44ad25cfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\DetourCrowd">
+      <UniqueIdentifier>{3b32240f-845c-4658-a8dc-338a81b3b2da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\DetourCrowd\Headers">
+      <UniqueIdentifier>{05d3d8be-6991-41ed-9120-5d27e0d879b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources">
+      <UniqueIdentifier>{49715622-a5ce-4611-aa69-f4076cbfca75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities">
+      <UniqueIdentifier>{825d9dcf-873e-494e-a1cb-fed707e7f1ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support">
+      <UniqueIdentifier>{e3f29b6e-5761-4955-a82a-69b74668e382}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Headers">
+      <UniqueIdentifier>{e656a93d-6746-4860-b495-7e9a74e108f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Units">
+      <UniqueIdentifier>{df17d634-72f5-454f-91cb-8d6b8275b5d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Vehicles">
+      <UniqueIdentifier>{038dda70-b0b2-4fc3-83f0-e15da723ff5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Weapons">
+      <UniqueIdentifier>{1070c8e0-8349-434c-b6b3-a14965da2739}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Weapons\Headers">
+      <UniqueIdentifier>{3651a800-c28f-41b0-b071-a9277961ce5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Vehicles\Headers">
+      <UniqueIdentifier>{2f251fe1-80ea-42fa-95aa-6db1935ac112}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Entities\Units\Headers">
+      <UniqueIdentifier>{284a6a30-bd00-4a69-bd64-4585244194bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support\Headers">
+      <UniqueIdentifier>{a4a25bb5-bb0f-49f7-81b4-0a542b3bb0db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support\Army">
+      <UniqueIdentifier>{3fdca3bf-247c-41e1-88a7-7c5f6cced118}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support\Goals">
+      <UniqueIdentifier>{37697f3d-2bca-4dd5-920e-14808e92cf62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support\Goals\Headers">
+      <UniqueIdentifier>{6157aad0-ab25-45fb-976f-b36b18ed32ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Resources\Support\Army\Headers">
+      <UniqueIdentifier>{16411be4-155d-4c7a-8b60-ad55a7eb3ed2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -667,6 +736,90 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp">
       <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMesh.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationMeshLoader.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp">
+      <Filter>AI\PathFinding</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourAlloc.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourCommon.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMesh.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNavMeshQuery.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\Detour\DetourNode.cpp">
+      <Filter>AI\PathFinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\Recast.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastAlloc.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastArea.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastContour.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastFilter.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastLayers.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMesh.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastMeshDetail.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRasterization.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp">
+      <Filter>AI\PathFinding\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourCrowd.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourLocalBoundary.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourObstacleAvoidance.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathCorridor.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourPathQueue.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\DetourCrowd\DetourProximityGrid.cpp">
+      <Filter>AI\PathFinding\DetourCrowd</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp">
+      <Filter>Geometry\Shapes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1108,6 +1261,75 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h">
       <Filter>Scenes\WarScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMesh.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationMeshLoader.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\Waypoint.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\WaypointGraph.h">
+      <Filter>AI\PathFinding\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAlloc.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourAssert.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourCommon.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMesh.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshBuilder.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNavMeshQuery.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourNode.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\Detour\Headers\DetourStatus.h">
+      <Filter>AI\PathFinding\Detour\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\Recast.h">
+      <Filter>AI\PathFinding\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAlloc.h">
+      <Filter>AI\PathFinding\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\ReCast\Headers\RecastAssert.h">
+      <Filter>AI\PathFinding\ReCast\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourCrowd.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourLocalBoundary.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourObstacleAvoidance.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathCorridor.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourPathQueue.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\DetourCrowd\Headers\DetourProximityGrid.h">
+      <Filter>AI\PathFinding\DetourCrowd\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

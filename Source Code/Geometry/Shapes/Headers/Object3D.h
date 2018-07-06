@@ -32,6 +32,7 @@ enum PrimitiveType
 	TEXT_3D,
 	MESH,
 	SUBMESH,
+	GENERIC,
 	OBJECT_3D_FLYWEIGHT
 };
 

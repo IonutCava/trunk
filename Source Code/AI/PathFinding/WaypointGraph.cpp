@@ -1,0 +1,43 @@
+#include "Headers/WaypointGraph.h"
+namespace Navigation {
+
+	WaypointGraph::WaypointGraph(){
+		_id = 0xFFFFFFFF;
+		_loop = true;
+	}
+
+	WaypointGraph::~WaypointGraph(){
+		_waypoints.clear();
+	}
+
+	void WaypointGraph::addWaypoint(Waypoint* wp){
+		if(_waypoints.find(wp->getID()) != _waypoints.end()) return;
+		_waypoints.insert(std::make_pair(wp->getID(),wp));
+		updateGraph();
+	}
+
+	void WaypointGraph::removeWaypoint(Waypoint* wp){
+		if(_waypoints.find(wp->getID()) != _waypoints.end()){
+			_waypoints.erase(wp->getID());
+			updateGraph();
+		}else{
+			PRINT_FN("WARNING! Waypoint [ %d ] not found in graph [ %d ]",wp->getID(), getID());
+		}
+		
+	}
+
+	void WaypointGraph::updateGraph(){
+
+	   typedef unordered_map<U32, Waypoint*> wp;
+	   _positions.clear();
+	   _rotations.clear();
+	   _times.clear();
+	   for_each(wp::value_type waypoint, _waypoints){
+		  _positions.push_back((waypoint.second)->_position);
+		  _rotations.push_back((waypoint.second)->_orientation);
+		  _times.push_back((waypoint.second)->_time);
+	   }
+	}
+};
+
+
