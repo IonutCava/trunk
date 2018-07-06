@@ -13,6 +13,10 @@
 
 #define JITTER_SIZE  16
 
+#pragma message("TODO (Prio 1): - Experiment with possible replacement for current ARRAY approach:")
+#pragma message("               - Use larger rez texture (4kx4k) as the first map and use mipmaps for the rest. Just upload a single(better) texture.")
+#pragma message("               - Ionut")
+
 PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light, SHADOW_TYPE_PSSM)
 {
     _maxResolution = 0;

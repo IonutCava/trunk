@@ -33,8 +33,8 @@ class SamplerDescriptor;
 class Texture : public HardwareResource {
 /*Abstract interface*/
 public:
-    virtual void Bind(U16 slot);
-    virtual void Unbind(U16 slot);
+    virtual void Bind(U16 slot, bool force = false) = 0;
+    virtual void Unbind(U16 slot, bool force = false) = 0;
     virtual void Destroy() = 0;
     virtual void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format) = 0;
     virtual void setMipMapRange(U32 base = 0, U32 max = 1000) = 0;
@@ -61,7 +61,6 @@ protected:
 
 protected:
     Texture(const bool flipped = false);
-    static bool checkBinding(U16 unit, U32 handle);
 
 protected:
     boost::atomic<U32>	_handle;
@@ -71,7 +70,6 @@ protected:
     bool _hasTransparency;
     mat4<F32>  _transformMatrix;
     SamplerDescriptor _samplerDescriptor;
-    static Unordered_map<U8/*slot*/, U32/*textureHandle*/> textureBoundMap;
 };
 
 #endif

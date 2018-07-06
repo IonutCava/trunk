@@ -51,6 +51,7 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 #endif
+
 vec4 NormalMapping(in vec2 uv){
     //Normal mapping in TBN space
     return Phong(uv, normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0));

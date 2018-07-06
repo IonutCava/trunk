@@ -19,13 +19,16 @@ Material::Material() : Resource(),
                        _bumpMethod(BUMP_NONE),
                        _translucencySource(TRANSLUCENT_NONE)
 {
-   _materialMatrix.setCol(0,_shaderData._ambient);
-   _materialMatrix.setCol(1,_shaderData._diffuse);
-   _materialMatrix.setCol(2,_shaderData._specular);
-   _materialMatrix.setCol(3,vec4<F32>(_shaderData._shininess,
-                                      _shaderData._emissive.x,
-                                      _shaderData._emissive.y,
-                                      _shaderData._emissive.z));
+   _materialMatrix.resize(1, mat4<F32>());
+   _shaderData.resize(1, ShaderData());
+
+   _materialMatrix[0].setCol(0,_shaderData[0]._ambient);
+   _materialMatrix[0].setCol(1,_shaderData[0]._diffuse);
+   _materialMatrix[0].setCol(2,_shaderData[0]._specular);
+   _materialMatrix[0].setCol(3,vec4<F32>(_shaderData[0]._shininess,
+                                         _shaderData[0]._emissive.x,
+                                         _shaderData[0]._emissive.y,
+                                         _shaderData[0]._emissive.z));
 
    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
        _textures[i] = NULL;
@@ -87,7 +90,7 @@ RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op) {
+void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op, U8 index) {
     if(_textures[textureUsageSlot]){
         UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
         RemoveResource(_textures[textureUsageSlot]);
@@ -104,7 +107,7 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
         _operations[textureUsageSlot - TEXTURE_UNIT0] = op;
 
     if(textureUsageSlot >= TEXTURE_UNIT0){
-        texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
+        texture ? _shaderData[index]._textureCount++ : _shaderData[index]._textureCount--;
     }
 
     if(texture){
@@ -345,12 +348,12 @@ void Material::setDoubleSided(bool state) {
     _dirty = true;
 }
 
-bool Material::isTranslucent() {
+bool Material::isTranslucent(U8 index) {
     bool state = false;
 
     // In order of importance (less to more)!
     // diffuse channel alpha
-    if(_materialMatrix.getCol(1).a < 0.98f) {
+    if(_materialMatrix[index].getCol(1).a < 0.98f) {
         state = true;
         _translucencySource = TRANSLUCENT_DIFFUSE;
         _useAlphaTest = (getOpacityValue() < 0.15f);

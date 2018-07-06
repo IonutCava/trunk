@@ -31,8 +31,6 @@ void main(void){
 out vec4 _colorOut;
 
 void main (void){
-    gl_FragDepth = gl_FragCoord.z;
-
     vec4 color = Phong(_texCoord, _normalWV);
 
     applyFog(color);
@@ -47,8 +45,6 @@ void main (void){
 out vec4 _colorOut;
 
 void main (void){
-    gl_FragDepth = gl_FragCoord.z;
-
     vec4 color = Phong(_texCoord, _normalWV);
 
     applyFog(color);
@@ -67,11 +63,14 @@ out vec4 _colorOut;
 void main (void){
    
 #if defined(USE_PARALLAX_MAPPING)
-    gl_FragDepth = gl_FragCoord.z;
-    vec4 color = ParallaxMapping(_texCoord, _lightDirection[bumpMapLightId]);
+    vec4 color;
+    if(lodLevel == 0) color = ParallaxMapping(_texCoord, _lightDirection[bumpMapLightId]);
+    else              color = NormalMapping(_texCoord);
 #elif defined(USE_RELIEF_MAPPING)
     gl_FragDepth = gl_FragCoord.z;
-    vec4 color = ReliefMapping(bumpMapLightId,_texCoord);
+    vec4 color;
+    if(lodLevel == 0) color = ReliefMapping(bumpMapLightId,_texCoord);
+    else              color = NormalMapping(_texCoord);
 #else
     vec4 color = NormalMapping(_texCoord);
 #endif

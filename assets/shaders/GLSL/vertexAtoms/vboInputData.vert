@@ -18,6 +18,7 @@ out float gl_ClipDistance[MAX_CLIP_PLANES];
 #endif
 
 uniform int dvd_clip_plane_count;
+uniform int lodLevel = 0;
 
 in vec3  inVertexData;
 in vec3  inNormalData;
@@ -100,11 +101,6 @@ void setClipPlanes(){
 #endif //skip clip planes
 }
 
-void computeBoneData(){
-    dvd_BoneWeight = inBoneWeightData;
-    dvd_BoneIndice = inBoneIndiceData;
-}
-
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
@@ -117,6 +113,8 @@ void computeData(){
     dvd_BiTangent  = inBiTangentData;
 
     #if defined(USE_GPU_SKINNING)
+    dvd_BoneWeight = inBoneWeightData;
+    dvd_BoneIndice = inBoneIndiceData;
     applyBoneTransforms(dvd_Vertex, dvd_Normal);
     #endif
 

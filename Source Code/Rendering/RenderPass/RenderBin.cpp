@@ -63,8 +63,8 @@ struct RenderQueueKeyCompare{
 struct RenderQueueDistanceBacktoFront{
     bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
         const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
-        F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
+        F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPointSquared(eye);
+        F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPointSquared(eye);
         return dist_a < dist_b;
     }
 };
@@ -72,8 +72,8 @@ struct RenderQueueDistanceBacktoFront{
 struct RenderQueueDistanceFrontToBack{
     bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
         const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPoint(eye);
-        F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPoint(eye);
+        F32 dist_a = a._node->getBoundingBox().nearestDistanceFromPointSquared(eye);
+        F32 dist_b = b._node->getBoundingBox().nearestDistanceFromPointSquared(eye);
         return dist_a > dist_b;
     }
 };

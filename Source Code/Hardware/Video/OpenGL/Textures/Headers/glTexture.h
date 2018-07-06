@@ -29,34 +29,40 @@
 
 class glTexture : public Texture {
 public:
-	glTexture(GLuint type, bool flipped = false);
-	~glTexture();
+    glTexture(GLuint type, bool flipped = false);
+    ~glTexture();
 
-	bool unload() {Destroy(); return true;}
+    bool unload() {Destroy(); return true;}
 
-	void Bind(GLushort unit);
-	void Unbind(GLushort unit);
-	void setMipMapRange(U32 base = 0, U32 max = 1000);
-	void loadData(GLuint target, const GLubyte* const ptr, const vec2<U16>& dimensions, GLubyte bpp, GFXImageFormat format);
+    void Bind(GLushort unit, bool force = false);
+    void Unbind(GLushort unit, bool force = false);
+    void setMipMapRange(U32 base = 0, U32 max = 1000);
+    void loadData(GLuint target, const GLubyte* const ptr, const vec2<U16>& dimensions, GLubyte bpp, GFXImageFormat format);
 
 protected:
-	bool generateHWResource(const std::string& name);
-	void threadedLoad(const std::string& name);
+    bool generateHWResource(const std::string& name);
+    void threadedLoad(const std::string& name);
+
+    friend class GL_API;
+    typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
+    static textureBoundMapDef textureBoundMap;
 
 private:
-	void Destroy();
-	void reserveStorage(GLint w, GLint h);
-	void createSampler();
+    void Destroy();
+    void reserveStorage(GLint w, GLint h);
+    void createSampler();
+    inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
 
 private:
-	GLenum _format;
-	GLenum _internalFormat;
-	GLenum _type;
-	bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
-	GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
+    GLenum _format;
+    GLenum _internalFormat;
+    GLenum _type;
+    bool  _reservedStorage;   ///<Used glTexStorage2D for this texture
+    GLboolean  _canReserveStorage; ///<Can use glTexStorage2D
 
-	///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
-	glSamplerObject  _sampler;
+    ///We currently only use one sampler per texture. When the texture is destroyed, the sampler is destroyed!!!!
+    glSamplerObject  _sampler;
+
 };
 
 #endif

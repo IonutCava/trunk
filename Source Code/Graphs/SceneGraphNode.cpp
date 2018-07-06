@@ -11,6 +11,11 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Hardware/Video/Shaders/Headers/ShaderProgram.h"
 
+#pragma message("TODO (Prio 1): - Bake transforms inside vbos for STATIC nodes")
+#pragma message("               - assert if 'getTransform()' is called for such nodes. Use default identity matrix for static nodes")
+#pragma message("               - premultiply positions AND normals AND tangents AND bitangets to avoid artifacts")
+#pragma message("               - Ionut")
+
 SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _elapsedTime(0ULL),
                                                   _parent(NULL),
@@ -36,7 +41,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _physicsCollisionGroup(NODE_COLLIDE_IGNORE)
 {
     _animationTransforms.clear();
-    _animationTransforms.reserve(60);
+    _animationTransforms.reserve(40);
     assert(_node != NULL);
 }
 

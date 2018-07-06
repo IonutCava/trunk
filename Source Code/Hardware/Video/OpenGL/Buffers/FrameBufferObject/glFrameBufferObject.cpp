@@ -71,9 +71,9 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
         GLCheck(glGenTextures( 1, &_textureId[slot] ));
         GLCheck(glBindTexture(_textureType, _textureId[slot]));
 
-		if(currentType == TEXTURE_2D_MS){
-			_textureType = GL_TEXTURE_2D;
-		}
+        if(currentType == TEXTURE_2D_MS){
+            _textureType = GL_TEXTURE_2D;
+        }
 
         //generate a new texture attachement
         //anisotrophic filtering is only added to color attachements
@@ -103,9 +103,9 @@ void glFrameBufferObject::InitAttachement(TextureDescriptor::AttachmentType type
             GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_R, glWrapTable[sampler.wrapW()]));
         }
 
-		if(currentType == TEXTURE_2D_MS){
-			_textureType = GL_TEXTURE_2D_MULTISAMPLE;
-		}
+        if(currentType == TEXTURE_2D_MS){
+            _textureType = GL_TEXTURE_2D_MULTISAMPLE;
+        }
         //generate empty texture data using each texture type's specific function
         switch(_textureType){
             case GL_TEXTURE_1D:{
@@ -278,6 +278,7 @@ void glFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) {
 void glFrameBufferObject::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) const {
     FrameBufferObject::Bind(unit, slot);
     GL_API::setActiveTextureUnit(unit);
+    glSamplerObject::Unbind(unit);
     GLCheck(glBindTexture(_textureType, _textureId[slot]));
 }
 

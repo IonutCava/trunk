@@ -84,7 +84,8 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
     if(!_currentEnemyTarget){
         AICoordination::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
         AICoordination::teamMap::const_iterator it = enemyTeam.begin();
-        for(U32 i = 0; i++ < _indexInMap; ++it){ }
+        I32 i = 0; 
+        while(i < _indexInMap){++i; ++it;}
         _currentEnemyTarget = (*it).second;
 
     }
@@ -92,8 +93,9 @@ void WarSceneAIActionList::processInput(const U64 deltaTime){
     if(currentTeam->getTeamID() == 2 && _deltaTime > getUsToMs(250)){
         AICoordination::teamMap& enemyTeam = _entity->getTeam()->getEnemyTeam().getTeam();
         AICoordination::teamMap::const_iterator it = enemyTeam.begin();
-        
-        for(U32 i = 0; i++ < _indexInMap; ++it){ }
+
+        I32 i = 0; 
+        while(i < _indexInMap){++i; ++it;}
 
         _entity->updateDestination(_currentEnemyTarget->getPosition());
 

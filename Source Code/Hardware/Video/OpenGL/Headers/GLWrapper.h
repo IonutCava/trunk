@@ -163,9 +163,9 @@ protected:
 
 public:
 
-    static void setActiveTextureUnit(GLuint unit,const bool force = false);
-    static void setActiveVAO(GLuint id,const bool force = false);
-    static void setActiveProgram(glShaderProgram* const program,const bool force = false);
+    static bool setActiveTextureUnit(GLuint unit,const bool force = false);
+    static bool setActiveVAO(GLuint id,const bool force = false);
+    static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
 private:

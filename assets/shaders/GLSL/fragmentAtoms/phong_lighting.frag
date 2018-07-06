@@ -5,6 +5,7 @@ uniform mat4  material;
 uniform float opacity = 1.0;
 uniform int   isSelected = 0;
 uniform bool  useAlphaTest = false;
+uniform int   lodLevel = 0;
 
 #include "lightInput.cmn"
 
@@ -15,7 +16,8 @@ uniform bool  useAlphaTest = false;
 #include "phong_light_loop.frag"
 
 vec4 Phong(in vec2 texCoord, in vec3 normal){
-    
+    gl_FragDepth = gl_FragCoord.z;
+
 #ifndef SKIP_TEXTURES
     //this shader is generated only for nodes with at least 1 texture
     vec4 tBase;

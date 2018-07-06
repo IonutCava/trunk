@@ -6,6 +6,11 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
+// possibly keep per submesh vbos and use them only for data manipulation and not for rendering
+#pragma message("TODO (Prio 1): - Use only 1 VBO per mesh and use per submesh offset to said VBO")
+#pragma message("               - Use texture atlas to store all textures in one (or a few) files in the Mesh class")
+#pragma message("               - Ionut")
+
 SubMesh::~SubMesh(){
 }
 

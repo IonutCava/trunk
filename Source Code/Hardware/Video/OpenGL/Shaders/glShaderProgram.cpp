@@ -474,16 +474,19 @@ void glShaderProgram::Attribute(const std::string& ext, GLdouble value){
     if(location == -1) return;
     GLCheck(glVertexAttrib1d(location,value));
 }
+
 void glShaderProgram::Attribute(const std::string& ext, GLfloat value){
     GLint location = cachedLoc(ext,false);
     if(location == -1) return;
     GLCheck(glVertexAttrib1f(location,value));
 }
+
 void glShaderProgram::Attribute(const std::string& ext, const vec2<GLfloat>& value){
     GLint location = cachedLoc(ext,false);
     if(location == -1) return;
     GLCheck(glVertexAttrib2fv(location,value));
 }
+
 void glShaderProgram::Attribute(const std::string& ext, const vec3<GLfloat>& value){
     GLint location = cachedLoc(ext,false);
     if(location == -1) return;

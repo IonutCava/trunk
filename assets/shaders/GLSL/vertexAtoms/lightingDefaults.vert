@@ -23,22 +23,7 @@ uniform mat4 dvd_TestViewMatrix;
 
 const float pidiv180 = 0.0174532777777778; //3.14159 / 180.0; // 36 degrees
 
-void computeLightVectors(){
-    _vertexWV = dvd_ViewMatrix * _vertexW; 	      //<ModelView Vertex  
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
-
-#if defined(COMPUTE_TBN)
-    vec3 T = normalize(dvd_NormalMatrix * dvd_Tangent);
-    vec3 B = cross(_normalWV, T);
-
-    if(length(dvd_Tangent) > 0){
-        _normalWV = B;
-    }
-
-    _viewDirection  = vec3(dot(-_vertexWV.xyz, T), dot(-_vertexWV.xyz, B), dot(-_vertexWV.xyz, _normalWV));
-#else
-    _viewDirection = -_vertexWV.xyz;
-#endif
+void loopNormalLOD(in vec3 T, in vec3 B) {
 
     vec3 lightDirection; 
     vec3 lightPos;
@@ -48,8 +33,10 @@ void computeLightVectors(){
     float lightTypeInit = 0.0;
     Light currentLight;
 
+    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1)));
+
     for(int i = 0; i < MAX_LIGHT_COUNT; i++){
-        if(dvd_lightCount == i) break;
+        if(currentLightCount == i) break;
 
         currentLight = dvd_LightSource[dvd_lightIndex[i]];
 
@@ -60,12 +47,6 @@ void computeLightVectors(){
 
         //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
         lightDirection = mix(-lightPos, normalize(_vertexWV.xyz - lightPos), lightType);
-
-#if defined(COMPUTE_TBN)
-        _lightDirection[i] = vec3(dot(lightDirection, T), dot(lightDirection, B), dot(lightDirection, _normalWV));
-#else
-        _lightDirection[i] = lightDirection;
-#endif
 
         distance = length(lightDirection);
         //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
@@ -84,7 +65,85 @@ void computeLightVectors(){
                 _attenuation[i] = _attenuation[i] * pow(clampedCosine, currentLight._direction.w);
             }
         }
+
+#if defined(COMPUTE_TBN)
+        _lightDirection[i] = vec3(dot(lightDirection, T), dot(lightDirection, B), dot(lightDirection, _normalWV));
+#else
+        _lightDirection[i] = lightDirection;
+#endif
     }
+}
+
+void loopLowLOD() {
+    vec3 lightDirection; 
+    vec3 lightPos;
+
+    float distance = 1.0;
+    float lightType = 0.0;
+    float lightTypeInit = 0.0;
+    Light currentLight;
+
+    int currentLightCount = int(ceil(dvd_lightCount / (lodLevel+1)));
+
+    for(int i = 0; i < MAX_LIGHT_COUNT; i++){
+        if(currentLightCount == i) break;
+
+        currentLight = dvd_LightSource[dvd_lightIndex[i]];
+
+        //Directional light => lightType == 0; Spot or Omni => lightType == 1
+        lightTypeInit = currentLight._position.w;
+        lightType = clamp(lightTypeInit, 0.0, 1.0);
+        lightPos  = currentLight._position.xyz;
+
+        //lightPosMV.w will be 0 for Directional Lights and 1 for Spot or Omni, so this avoids an "if/else"
+        lightDirection = mix(-lightPos, normalize(_vertexWV.xyz - lightPos), lightType);
+
+        distance = length(lightDirection);
+        //either _attenuation == 1 if light is directional or we compute the actual value for omni and spot
+        _attenuation[i] = mix(1.0,max(1.0/(currentLight._attenuation.x + 
+                                           currentLight._attenuation.y * distance + 
+                                           currentLight._attenuation.z * distance * distance),
+                                      0.0),//max
+                              lightType);//mix
+
+        // spotlight
+        if (lightTypeInit > 1.5){
+            float clampedCosine = max(0.0, dot(-lightDirection, normalize(currentLight._direction.rgb)));
+            if (clampedCosine < cos(currentLight._attenuation.w * pidiv180)){ // outside of spotlight cone
+                _attenuation[i] = 0.0;
+            }else{
+                _attenuation[i] = _attenuation[i] * pow(clampedCosine, currentLight._direction.w);
+            }
+        }
+
+        _lightDirection[i] = lightDirection;
+    }
+}
+
+void computeLightVectors(){
+    _vertexWV = dvd_ViewMatrix * _vertexW; 	      //<ModelView Vertex  
+    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal); //<ModelView Normal 
+
+    #if defined(COMPUTE_TBN)
+        if (lodLevel == 0) {
+            vec3 T = normalize(dvd_NormalMatrix * dvd_Tangent);
+            vec3 B = cross(_normalWV, T);
+
+            if(length(dvd_Tangent) > 0){
+                _normalWV = B;
+            }
+
+            _viewDirection  = vec3(dot(-_vertexWV.xyz, T), dot(-_vertexWV.xyz, B), dot(-_vertexWV.xyz, _normalWV));
+            loopNormalLOD(T, B);
+        }else{
+            _viewDirection = -_vertexWV.xyz;
+            loopLowLOD();
+        }
+    #else
+        _viewDirection = -_vertexWV.xyz;
+        loopLowLOD();
+    #endif
+   
 
     if(dvd_enableShadowMapping) {
         for(int i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){

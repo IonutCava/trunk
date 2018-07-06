@@ -7,8 +7,8 @@
 struct selectionQueueDistanceFrontToBack{
     bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
         const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a->getBoundingBoxConst().nearestDistanceFromPoint(eye);
-        F32 dist_b = b->getBoundingBoxConst().nearestDistanceFromPoint(eye);
+        F32 dist_a = a->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
+        F32 dist_b = b->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
         return dist_a > dist_b;
     }
 };

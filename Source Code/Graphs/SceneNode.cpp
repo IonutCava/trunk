@@ -77,13 +77,14 @@ void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn){
 bool SceneNode::isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck){
     Frustum& frust = Frustum::getInstance();
 
+    const vec3<F32>& eye = frust.getEyePos();
     const vec3<F32>& center  = sphere.getCenter();
-    vec3<F32> eyeToNode      = center - frust.getEyePos();
-    F32       cameraDistance = eyeToNode.length();
-
-    if(distanceCheck &&
-       cameraDistance + boundingBox.getHalfExtent().length() > GET_ACTIVE_SCENE()->state().getGeneralVisibility())
+    F32  cameraDistance = center.distanceSquared(eye);
+    F32 visibilityDistance = pow(GET_ACTIVE_SCENE()->state().getGeneralVisibility(),2);
+    if(distanceCheck && cameraDistance > visibilityDistance){
+        if(boundingBox.nearestDistanceFromPointSquared(eye) > visibilityDistance)
             return false;
+    }
 
     if(!boundingBox.ContainsPoint(frust.getEyePos())){
         switch(frust.ContainsSphere(center, sphere.getRadius())) {
@@ -181,6 +182,8 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
 
+    s->Uniform("lodLevel", (I32)getCurrentLOD());
+
     if(lightMgr.shadowMappingEnabled()){
         s->Uniform("worldHalfExtent", lightMgr.getLigthOrthoHalfExtent());
         s->Uniform("dvd_lightProjectionMatrices",lightMgr.getLightProjectionMatricesCache());
@@ -253,6 +256,8 @@ void SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     }else{
         s->Uniform("hasAnimations", false);
     }
+
+    s->Uniform("lodLevel", (I32)getCurrentLOD());
 }
 
 void SceneNode::releaseDepthMaterial(){

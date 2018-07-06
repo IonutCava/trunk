@@ -30,6 +30,14 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
     }
 
     if(!skipTextures || forceAll){
+        for_each(glTexture::textureBoundMapDef::value_type& it, glTexture::textureBoundMap){
+            if(it.second.second != GL_NONE){
+                setActiveTextureUnit(it.first);
+                glSamplerObject::Unbind(it.first);
+                GLCheck(glBindTexture(it.second.second, 0));
+                glTexture::textureBoundMap[it.first] = std::make_pair(0, GL_NONE);
+            }
+        }
         setActiveTextureUnit(0,forceAll);
     }
 
@@ -37,10 +45,11 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
         setActiveVAO(0,forceAll);
         GLCheck(glBindBuffer(GL_ARRAY_BUFFER, 0));
         GLCheck(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+        glUniformBufferObject::unbind();
     }
 
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
-    glUniformBufferObject::unbind();
+    
 }
 
 void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
@@ -238,33 +247,38 @@ void GL_API::updateClipPlanes(){
     }
 }
 
-void GL_API::setActiveTextureUnit(GLuint unit,const bool force){
+bool GL_API::setActiveTextureUnit(GLuint unit,const bool force){
     if(_activeTextureUnit == unit && !force)
-        return; //< prevent double bind
+        return false; //< prevent double bind
 
     _activeTextureUnit = unit;
     GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+
+    return true;
 }
 
-void GL_API::setActiveVAO(GLuint id,const bool force){
+bool GL_API::setActiveVAO(GLuint id,const bool force){
     if(_activeVAOId == id && !force)
-        return; //<prevent double bind
+        return false; //<prevent double bind
         
     _activeVAOId = id;
     GLCheck(glBindVertexArray(id));
+
+    return true;
 }
 
-void GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
+bool GL_API::setActiveProgram(glShaderProgram* const program,const bool force){
     GLuint newProgramId = (program != NULL) ? program->getId() : 0;
     GLuint oldProgramId = (_activeShaderProgram != NULL) ? _activeShaderProgram->getId() : 0;
     if(oldProgramId == newProgramId && !force)
-        return; //<prevent double bind
+        return false; //<prevent double bind
 
     if(_activeShaderProgram != NULL) _activeShaderProgram->unbind(false);
 
     _activeShaderProgram = program;
 
     GLCheck(glUseProgram(newProgramId));
+    return true;
 }
 
 void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, bool force){

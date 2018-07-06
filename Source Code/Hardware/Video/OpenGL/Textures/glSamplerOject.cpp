@@ -45,7 +45,7 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
         GLCheck(glSamplerParameteri(_samplerID, GL_TEXTURE_COMPARE_FUNC,  glCompareFuncTable[descriptor._cmpFunc]));
     }
 
-	if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps() && GL_API::_anisotropySupported) {
+    if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps() && GL_API::_anisotropySupported) {
          U8 anisoLevel = std::min<I32>((I32)descriptor.anisotropyLevel(), ParamHandler::getInstance().getParam<U8>("rendering.anisotropicFilteringLevel"));
          GLCheck(glSamplerParameterf(_samplerID, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoLevel));
     }
@@ -57,7 +57,7 @@ void glSamplerObject::Bind(GLuint textureUnit) const{
     GLCheck(glBindSampler(textureUnit, _samplerID));
 }
 
-void glSamplerObject::Unbind(GLuint textureUnit) const{
+void glSamplerObject::Unbind(GLuint textureUnit){
     GLCheck(glBindSampler(textureUnit, 0));
 }
 
@@ -65,6 +65,6 @@ void glSamplerObject::Bind() const{
     GLCheck(glBindSampler(GL_API::getActiveTextureUnit(), _samplerID));
 }
 
-void glSamplerObject::Unbind() const{
+void glSamplerObject::Unbind(){
     GLCheck(glBindSampler(GL_API::getActiveTextureUnit(), 0));
 }

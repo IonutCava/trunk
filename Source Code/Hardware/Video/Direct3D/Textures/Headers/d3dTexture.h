@@ -34,8 +34,8 @@ public:
 	bool generateHWResource(const std::string& name){return true;}
 	bool unload() {Destroy(); return true;}
 
-	void Bind(U16 unit){}
-	void Unbind(U16 unit){}
+	void Bind(U16 unit, bool force = false){}
+	void Unbind(U16 unit, bool force = false){}
 	void setMipMapRange(U32 base = 0, U32 max = 1000){}
 	void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format){}
 

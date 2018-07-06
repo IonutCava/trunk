@@ -4,20 +4,11 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-Unordered_map<U8, U32> Texture::textureBoundMap;
-
 Texture::Texture(const bool flipped) : HardwareResource(),
                                        _flipped(flipped),
                                        _handle(0),
                                        _hasTransparency(false)
 {
-    if(textureBoundMap.empty()){
-        textureBoundMap.reserve(15);
-        for(U8 i = 0; i < 15; i++){
-            //Set all 16 texture slots to 0
-            textureBoundMap.insert(std::make_pair(i,0));
-        }
-    }
 }
 
 /// Use DevIL to load a file intro a Texture Object
@@ -57,15 +48,3 @@ void Texture::resize(U16 width, U16 height){
     //_img.resize(width,height);
 }
 
-bool Texture::checkBinding(U16 unit, U32 handle){
-    //double bind
-    return textureBoundMap[unit] != handle;
-}
-
-void Texture::Bind(U16 unit)  {
-    textureBoundMap[unit] = _handle;
-}
-
-void Texture::Unbind(U16 unit) {
-    textureBoundMap[unit] = 0;
-}
