@@ -157,23 +157,19 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
                 GL_TRUE);
         } break;
         case TextureType::TEXTURE_3D:
-        case TextureType::TEXTURE_2D_ARRAY: {
+        case TextureType::TEXTURE_2D_ARRAY:
+        case TextureType::TEXTURE_CUBE_ARRAY: {
             glTextureStorage3D(
                 _textureData.getHandleHigh(),
                 _mipMaxLevel,
                 glInternalFormat,
                 _width,
                 _height,
-                _numLayers);
-        } break;
-        case TextureType::TEXTURE_CUBE_ARRAY: {
-            glTextureStorage3D(
-                _textureData.getHandleHigh(), 
-                _mipMaxLevel,
-                glInternalFormat,
-                _width,
-                _height,
-                _numLayers * 6);
+                _numLayers * 
+                 (_textureData._textureType  == 
+                    TextureType::TEXTURE_CUBE_ARRAY 
+                                            ? 6 
+                                            : 1));
         } break;
         default:
             return;

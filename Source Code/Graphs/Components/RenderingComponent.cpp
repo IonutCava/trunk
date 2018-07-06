@@ -22,6 +22,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _renderGeometry(true),
       _renderBoundingBox(false),
       _renderSkeleton(false),
+      _impostorDirty(false),
       _materialInstance(materialInstance),
       _skeletonPrimitive(nullptr)
 {
@@ -111,6 +112,22 @@ void RenderingComponent::update(const U64 deltaTime) {
         parentStates.setTrackedValue(
             StateTracker<bool>::State::SKELETON_RENDERED, false);
         _skeletonPrimitive->paused(true);
+    }
+
+    if (_impostorDirty) {
+        std::array<vec3<F32>, 8> points;
+        const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
+        points[0].set(bbPoints[1]);
+        points[1].set(bbPoints[5]);
+        points[2].set(bbPoints[3]);
+        points[3].set(bbPoints[7]);
+        points[4].set(bbPoints[0]);
+        points[5].set(bbPoints[4]);
+        points[6].set(bbPoints[2]);
+        points[7].set(bbPoints[6]);
+
+        _impostor->fromPoints(points, _parentSGN.getInitialBoundingBox().getHalfExtent());
+        _impostorDirty = false;
     }
 }
 
@@ -470,19 +487,7 @@ void RenderingComponent::inViewCallback() {
 }
 
 void RenderingComponent::boundingBoxUpdatedCallback() {
-    static std::array<vec3<F32>, 8> points;
-
-    const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
-    points[0].set(bbPoints[1]);
-    points[1].set(bbPoints[5]);
-    points[2].set(bbPoints[3]);
-    points[3].set(bbPoints[7]);
-    points[4].set(bbPoints[0]);
-    points[5].set(bbPoints[4]);
-    points[6].set(bbPoints[2]);
-    points[7].set(bbPoints[6]);
-
-    _impostor->fromPoints(points, _parentSGN.getInitialBoundingBox().getHalfExtent());
+    _impostorDirty = true;
 }
 
 void RenderingComponent::setActive(const bool state) {

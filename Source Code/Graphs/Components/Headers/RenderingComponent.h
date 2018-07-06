@@ -163,6 +163,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderSkeleton;
     bool _nodeSkinned;
     bool _isSubMesh;
+    bool _impostorDirty;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
     TextureDataContainer _textureDependencies;

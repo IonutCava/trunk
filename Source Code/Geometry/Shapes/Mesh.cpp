@@ -48,21 +48,29 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
     return SceneNode::computeBoundingBox(sgn);
 }
 
+bool Mesh::isSubMesh(const SceneGraphNode_ptr& node) {
+    I64 targetGUID = node->getNode()->getGUID();
+    return std::find_if(std::begin(_subMeshList),
+                        std::end(_subMeshList),
+                        [&targetGUID](SubMesh* const submesh) {
+                            return (submesh && submesh->getGUID() == targetGUID);
+                        }) != std::cend(_subMeshList);
+}
+
 void Mesh::addSubMesh(SubMesh* const subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
-    hashAlg::emplace(_subMeshRefMap, subMesh->getID(), subMesh);
+    _subMeshList.push_back(subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
-    _subMeshNameMap.push_back(subMesh->getName());
     _maxBoundingBox.reset();
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
-    for (SubMeshRefMap::value_type it : _subMeshRefMap) {
-        sgn.addNode(*(it.second),
-                     Util::StringFormat("%s_%d",
+    for (SubMesh* submesh : _subMeshList) {
+        sgn.addNode(*submesh,
+                    Util::StringFormat("%s_%d",
                                         sgn.getName().c_str(),
-                                        it.first));
+                                        submesh->getID()));
     }
 
     Object3D::postLoad(sgn);
