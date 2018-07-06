@@ -233,6 +233,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
     _axisGizmo->stateHash(primitiveDescriptor.getHash());
 
+    _debugFrustumPrimitive = newIMP();
+    _debugFrustumPrimitive->name("DebugFrustum");
+    _debugFrustumPrimitive->stateHash(primitiveDescriptor.getHash());
+
     ResourceDescriptor previewNormalsShader("fbPreview");
     previewNormalsShader.setThreadedLoading(false);
     _renderTargetDraw = CreateResource<ShaderProgram>(previewNormalsShader);
@@ -255,6 +259,8 @@ void GFXDevice::closeRenderingAPI() {
     assert(_api != nullptr && "GFXDevice error: closeRenderingAPI called without init!");
 
     MemoryManager::DELETE(_axisGizmo);
+    MemoryManager::DELETE(_debugFrustumPrimitive);
+
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();

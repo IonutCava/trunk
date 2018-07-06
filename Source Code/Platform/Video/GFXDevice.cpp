@@ -41,6 +41,8 @@ GFXDevice::GFXDevice()
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
     _activeRenderTarget = nullptr;
+    _debugFrustum = nullptr;
+    _debugFrustumPrimitive = nullptr;
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
@@ -54,7 +56,6 @@ GFXDevice::GFXDevice()
     _dualParaboloidCamera = nullptr;
     // Booleans
     _2DRendering = false;
-    _drawDebugAxis = false;
     _viewportUpdate = false;
     _isPrePassStage = false;
     // Enumerated Types
@@ -484,17 +485,7 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
 }
 
 void GFXDevice::onCameraUpdate(Camera& camera) {
-    if (drawDebugAxis()) {
-        // We need to transform the gizmo so that it always remains axis aligned
-        // Create a world matrix using a look at function with the eye position
-        // backed up from the camera's view direction
-        _axisGizmo->worldMatrix(
-            mat4<F32>(-camera.getForwardDir() * 2, VECTOR3_ZERO, camera.getUpDir()) *
-            _gpuBlock._data._ViewMatrix.getInverse());
-        _axisGizmo->paused(false);
-    } else {
-        _axisGizmo->paused(true);
-    }
+    ACKNOWLEDGE_UNUSED(camera);
 }
 
 void GFXDevice::onCameraChange(Camera& camera) {

@@ -106,6 +106,13 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sc
     _positionAndRange.xyz(_lightSGN->get<PhysicsComponent>()->getPosition());
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
+    /*if (_type == LightType::DIRECTIONAL) {
+        if (sceneState.overrideCamera() == nullptr) {
+            sceneState.overrideCamera(_shadowCamera);
+            GFX_DEVICE.debugDrawFrustum(&Camera::findCamera(Camera::DefaultCameraHash)->getFrustum());
+        }
+    }*/
+
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 

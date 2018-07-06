@@ -192,7 +192,7 @@ DEFINE_SINGLETON(GFXDevice)
     /// (Perspective) rendering
     void toggle2D(bool state);
 
-    void debugDraw(const SceneRenderState& sceneRenderState, RenderSubPassCmds& subPassesInOut);
+    void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut);
 
     bool draw(const GenericDrawCommand& cmd);
 
@@ -275,9 +275,7 @@ DEFINE_SINGLETON(GFXDevice)
     inline void setGPURenderer(GPURenderer gpurenderer) { _GPURenderer = gpurenderer; }
     inline GPURenderer getGPURenderer() const { return _GPURenderer; }
 
-    inline void drawDebugAxis(const bool state) { _drawDebugAxis = state; }
-
-    inline bool drawDebugAxis() const { return _drawDebugAxis; }
+    inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
 
     inline RenderStage getRenderStage() const { return isPrePass() ? RenderStage::Z_PRE_PASS : _renderStage; }
 
@@ -340,6 +338,7 @@ DEFINE_SINGLETON(GFXDevice)
 
     static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
     static void computeFrustumPlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
+
   public:
       IMPrimitive*       newIMP() const;
       VertexBuffer*      newVB() const;
@@ -372,6 +371,8 @@ DEFINE_SINGLETON(GFXDevice)
 
   protected:
     RenderTarget* newRT(const stringImpl& name) const;
+
+    void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
 
     void setBaseViewport(const vec4<I32>& viewport);
 
@@ -439,11 +440,13 @@ DEFINE_SINGLETON(GFXDevice)
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
-    bool _drawDebugAxis;
     bool _viewportUpdate;
     vectorImpl<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
     vectorImpl<Line> _axisLinesTransformed;
+
+    Frustum         *_debugFrustum;
+    IMPrimitive     *_debugFrustumPrimitive;
 
     RenderTargetHandle _previousDepthBuffer;
   protected:

@@ -835,16 +835,16 @@ void Scene::processTasks(const U64 deltaTime) {
     }
 }
 
-void Scene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-    if (stage != RenderStage::DISPLAY || GFX_DEVICE.isPrePass()) {
+void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+    GFXDevice& gfx = GFX_DEVICE;
+
+    if (stage != RenderStage::DISPLAY || gfx.isPrePass()) {
         return;
     }
 
     RenderSubPassCmd& subPass = subPassesInOut.back();
     if (Config::Build::IS_DEBUG_BUILD) {
         const SceneRenderState::GizmoState& currentGizmoState = renderState().gizmoState();
-
-        GFX_DEVICE.drawDebugAxis(currentGizmoState != SceneRenderState::GizmoState::NO_GIZMO);
 
         if (currentGizmoState == SceneRenderState::GizmoState::SELECTED_GIZMO) {
             SceneGraphNode_ptr selection(_currentSelection.lock());
@@ -857,8 +857,6 @@ void Scene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
             for (IMPrimitive* prim : _octreePrimitives) {
                 prim->paused(true);
             }
-
-            GFXDevice& gfx = GFX_DEVICE;
 
             _octreeBoundingBoxes.resize(0);
             sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
@@ -883,8 +881,6 @@ void Scene::debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut) {
     }
 
     subPass._commands.push_back(_linesPrimitive->toDrawCommand());
-    // Draw bounding boxes, skeletons, axis gizmo, etc.
-    GFX_DEVICE.debugDraw(renderState(), subPassesInOut);
     // Show NavMeshes
     _aiManager->debugDraw(subPassesInOut, false);
     _lightPool->drawLightImpostors(subPassesInOut);

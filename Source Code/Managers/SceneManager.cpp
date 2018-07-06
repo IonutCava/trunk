@@ -338,9 +338,14 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
 }
 
 void SceneManager::postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+    Scene& activeScene = getActiveScene();
+    SceneRenderState& activeSceneRenderState = activeScene.renderState();
     RenderPassManager& passMgr = RenderPassManager::instance();
-    passMgr.getQueue().postRender(getActiveScene().renderState(), stage, subPassesInOut);
-    Attorney::SceneManager::debugDraw(getActiveScene(), stage, subPassesInOut);
+
+    passMgr.getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
+    Attorney::SceneManager::debugDraw(activeScene, camera, stage, subPassesInOut);
+    // Draw bounding boxes, skeletons, axis gizmo, etc.
+    GFX_DEVICE.debugDraw(activeSceneRenderState, camera, subPassesInOut);
 }
 
 bool SceneManager::generateShadowMaps() {

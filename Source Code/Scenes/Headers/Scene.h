@@ -206,7 +206,7 @@ class Scene : public Resource {
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls();
     /// Draw debug entities
-    virtual void debugDraw(RenderStage stage, RenderSubPassCmds& subPassesInOut);
+    virtual void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
 
     /// simple function to load the scene elements.
     inline bool SCENE_LOAD(const stringImpl& name,
@@ -306,8 +306,8 @@ class SceneManager {
     }
 
     /// Draw debug entities
-    static void debugDraw(Scene& scene, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-        scene.debugDraw(stage, subPassesInOut);
+    static void debugDraw(Scene& scene, const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+        scene.debugDraw(activeCamera, stage, subPassesInOut);
     }
 
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }

@@ -2,8 +2,6 @@
 
 #include "Core/Headers/ParamHandler.h"
 
-#include "Scenes/Headers/SceneState.h"
-
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"

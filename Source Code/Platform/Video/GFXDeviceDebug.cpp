@@ -5,6 +5,7 @@
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -86,21 +87,59 @@ void GFXDevice::previewDepthBuffer() {
     }
 }
 
+void GFXDevice::drawDebugFrustum(RenderSubPassCmds& subPassesInOut) {
+    if (_debugFrustum != nullptr) {
+        static const vec4<U8> redColour(Util::ToByteColour(DefaultColours::RED()));
+        static const vec4<U8> greenColour(Util::ToByteColour(DefaultColours::GREEN()));
+
+        vectorImpl<vec3<F32>> corners;
+        _debugFrustum->getCornersViewSpace(corners);
+
+        vectorImpl<Line> lines;
+        for (U8 i = 0; i < 4; ++i) {
+            // Draw Near Plane
+            lines.emplace_back(corners[i], corners[(i + 1) % 4], redColour);
+            // Draw Far Plane
+            lines.emplace_back(corners[i + 4], corners[(i + 4 + 1) % 4], redColour);
+            // Connect Near Plane with Far Plane
+            lines.emplace_back(corners[i], corners[(i + 4) % 8], greenColour);
+        }
+
+        _debugFrustumPrimitive->fromLines(lines);
+        subPassesInOut.back()._commands.push_back(_debugFrustumPrimitive->toDrawCommand());
+    }
+}
+
 /// Render all of our immediate mode primitives. This isn't very optimised and
 /// most are recreated per frame!
-void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, RenderSubPassCmds& subPassesInOut) {
-    // Debug axis form the axis arrow gizmo in the corner of the screen
-    // This is togglable, so check if it's actually requested
-    if (!drawDebugAxis()) {
-        return;
-    }
+void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, RenderSubPassCmds& subPassesInOut) {
+    if (Config::Build::IS_DEBUG_BUILD) {
+        drawDebugFrustum(subPassesInOut);
 
-    // Apply the inverse view matrix so that it cancels out in the shader
-    // Submit the draw command, rendering it in a tiny viewport in the lower
-    // right corner
-    U16 windowWidth = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
-    _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
-    subPassesInOut.back()._commands.push_back(_axisGizmo->toDrawCommand());
+        // Debug axis form the axis arrow gizmo in the corner of the screen
+        // This is togglable, so check if it's actually requested
+        if (BitCompare(to_uint(sceneRenderState.gizmoState()),
+                       to_const_uint(SceneRenderState::GizmoState::SCENE_GIZMO))) {
+
+            // Apply the inverse view matrix so that it cancels out in the shader
+            // Submit the draw command, rendering it in a tiny viewport in the lower
+            // right corner
+            U16 windowWidth = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getWidth();
+            _axisGizmo->fromLines(_axisLines, vec4<I32>(windowWidth - 120, 8, 128, 128));
+        
+            // We need to transform the gizmo so that it always remains axis aligned
+            // Create a world matrix using a look at function with the eye position
+            // backed up from the camera's view direction
+            _axisGizmo->worldMatrix(
+                    mat4<F32>(-activeCamera.getForwardDir() * 2, VECTOR3_ZERO, activeCamera.getUpDir()) *
+                    getMatrix(MATRIX::VIEW_INV));
+            _axisGizmo->paused(false);
+        
+            subPassesInOut.back()._commands.push_back(_axisGizmo->toDrawCommand());
+        } else {
+            _axisGizmo->paused(true);
+        }
+    }
 }
 
 };
