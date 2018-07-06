@@ -332,18 +332,29 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
                                        to_uint(ParticleData::Properties::PROPERTIES_ACC) | 
                                        to_uint(ParticleData::Properties::PROPERTIES_COLOR) |
                                        to_uint(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
+    particles->_textureFileName = "particle.DDS";
 
     std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
+
     std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
+    boxGenerator->_maxStartPosOffset.set(2.0f, 2.0f, 2.0f, 1.0f);
     particleSource->addGenerator(boxGenerator);
 
     std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
+    colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.7f, 0.7f, 1.0f)));
+    colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 1.0f, 1.0f, 1.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.0f, 0.6f, 0.0f)));
+    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 1.0f, 0.0f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
+    velGenerator->_minStartVel.set(-0.05f, 0.22f, -0.05f, 0.0f);
+    velGenerator->_maxStartVel.set(0.05f, 0.45f, 0.05f, 0.0f);
     particleSource->addGenerator(velGenerator);
 
     std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
+    timeGenerator->_minTime = 2.5f;
+    timeGenerator->_maxTime = 5.5f;
     particleSource->addGenerator(timeGenerator);
 
     SceneGraphNode_ptr testSGN = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
@@ -353,6 +364,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
+    boxGenerator->_pos.set(testSGN->getComponent<PhysicsComponent>()->getPosition());
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
     eulerUpdater->_globalAcceleration.set(0.0f, -15.0f, 0.0f, 0.0f);

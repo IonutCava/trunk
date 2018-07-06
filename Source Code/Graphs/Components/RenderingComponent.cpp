@@ -176,6 +176,10 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
         mat->getTextureData(_renderData._textureData);
     }
 
+    for (const TextureData& texture : _textureDependencies) {
+        _renderData._textureData.push_back(texture);
+    }
+
     return _parentSGN.getNode()->onDraw(_parentSGN, currentStage);
 }
 

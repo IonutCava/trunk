@@ -27,7 +27,9 @@ ParticleEmitter::ParticleEmitter()
     _writeOffset = 2;
 }
 
-ParticleEmitter::~ParticleEmitter() { unload(); }
+ParticleEmitter::~ParticleEmitter() { 
+    unload(); 
+}
 
 bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
     // assert if double init!
@@ -39,8 +41,10 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 
     // Not using Quad3D to improve performance
     static F32 particleQuad[] = {
-        -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f,
-        -0.5f, 0.5f,  0.0f, 0.5f, 0.5f,  0.0f,
+        -0.5f, -0.5f, 0.0f, 
+         0.5f, -0.5f, 0.0f,
+        -0.5f,  0.5f, 0.0f,
+         0.5f,  0.5f, 0.0f,
     };
 
     _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false,
@@ -61,12 +65,14 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
 
     ResourceDescriptor particleShaderDescriptor("particles");
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-    _particleShader->Uniform("depthBuffer", ShaderProgram::TextureUsage::UNIT1);
+    _particleShader->Uniform("hasTexture", _particleTexture != nullptr);
+    _particleShader->Uniform("spriteSize", 1.0f);
     REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader =
         CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
+    _particleDepthShader->Uniform("spriteSize", 1.0f);
     REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
 
     _impostor =
@@ -101,7 +107,7 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     for (U32 i = 0; i < particleCount; ++i) {
         // Distance to camera (squared)
-        _particles->_misc[i].w = -1.0f;
+        _particles->_position[i].w = -1.0f;
         _particles->_alive[i] = false;
     }
 
@@ -154,6 +160,20 @@ bool ParticleEmitter::unload() {
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(*_impostor)->setActive(false);
+
+    
+    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
+    Texture* depthTexture = depthBuffer->GetAttachment(TextureDescriptor::AttachmentType::Depth);
+    TextureData depthBufferData = depthTexture->getData();
+    depthBufferData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
+    sgn.getComponent<RenderingComponent>()->registerTextureDependency(depthBufferData);
+
+    if (_particleTexture) {
+        TextureData particleTextureData = _particleTexture->getData();
+        particleTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
+        sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
+    }
+
     SceneNode::postLoad(sgn);
 }
 
@@ -175,19 +195,23 @@ void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
         GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW);
     _particleShader->Uniform(
         "CameraRight_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0],
+        vec3<F32>(viewMatrixCache.m[0][0],
+                  viewMatrixCache.m[1][0],
                   viewMatrixCache.m[2][0]));
     _particleShader->Uniform(
         "CameraUp_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1],
+        vec3<F32>(viewMatrixCache.m[0][1],
+                  viewMatrixCache.m[1][1],
                   viewMatrixCache.m[2][1]));
     _particleDepthShader->Uniform(
         "CameraRight_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0],
+        vec3<F32>(viewMatrixCache.m[0][0],
+                  viewMatrixCache.m[1][0],
                   viewMatrixCache.m[2][0]));
     _particleDepthShader->Uniform(
         "CameraUp_worldspace",
-        vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1],
+        vec3<F32>(viewMatrixCache.m[0][1],
+                  viewMatrixCache.m[1][1],
                   viewMatrixCache.m[2][1]));
 }
 
@@ -249,23 +273,6 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
     _particles->sort();
     uploadToGPU();
 
-
-    U32 particleCount = getAliveParticleCount();
-    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
-    Texture* depthTexture = depthBuffer->GetAttachment(TextureDescriptor::AttachmentType::Depth);
-    TextureData depthBufferData = depthTexture->getData();
-    depthBufferData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
-    sgn.getComponent<RenderingComponent>()->registerTextureDependency(depthBufferData);
-
-    if (_particleTexture) {
-        TextureData particleTextureData = _particleTexture->getData();
-        particleTextureData.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT0));
-        sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
-    }
- 
-   
-
-    renderState().setDrawState(true);
     return true;
 }
 
@@ -295,8 +302,8 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     U32 count = _particles->totalCount();
     U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
     for (U32 i = 0; i < count; ++i) {
-        _particles->_misc[i].w =
-            _particles->_position[i].xyz().distanceSquared(eyePos);
+        _particles->_position[i].w =
+            _particles->_position[i].xyz().distance(eyePos);
         _particles->_acceleration[i].set(0.0f);
         _particles->lodLevel(lodLevel);
     }

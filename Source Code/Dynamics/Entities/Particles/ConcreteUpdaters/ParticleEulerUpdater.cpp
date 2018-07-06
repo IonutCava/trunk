@@ -3,7 +3,7 @@
 namespace Divide {
 
 void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData *p) {
-    F32 const dt = Time::MicrosecondsToMilliseconds<F32>(deltaTime);
+    F32 const dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
     const vec4<F32> globalA(dt * _globalAcceleration.xyz(), 0.0);
 
     const U32 endID = p->aliveCount();

@@ -580,18 +580,18 @@ inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) {
 }
 
 template <typename Type>
-inline vec2<Type> Random(vec2<Type> min, vec2<Type> max) {
+inline vec2<Type> Random(const vec2<Type>& min, const vec2<Type>& max) {
     return vec2<Type>(Random(min.x, max.x), Random(min.y, max.y));
 }
 
 template <typename Type>
-inline vec3<Type> Random(vec3<Type> min, vec3<Type> max) {
+inline vec3<Type> Random(const vec3<Type>& min, const vec3<Type>& max) {
     return vec3<Type>(Random(min.x, max.x), Random(min.y, max.y),
                       Random(min.z, max.z));
 }
 
 template <typename Type>
-inline vec4<Type> Random(vec4<Type> min, vec4<Type> max) {
+inline vec4<Type> Random(const vec4<Type>& min, const vec4<Type>& max) {
     return vec4<Type>(Random(min.x, max.x), Random(min.y, max.y),
                       Random(min.z, max.z), Random(min.w, max.w));
 }

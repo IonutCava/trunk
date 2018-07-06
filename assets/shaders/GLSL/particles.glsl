@@ -4,24 +4,25 @@ layout(location = 13) in vec4 particleNormalData;
 // Output data ; will be interpolated for each fragment.
 out vec2 texCoord;
 out vec4 vertexVP;
-out flat uvec4 particleColor;
+out vec4 particleColor;
 
 // Values that stay constant for the whole mesh.
 uniform vec3 CameraRight_worldspace;
 uniform vec3 CameraUp_worldspace;
+uniform float spriteSize = 1.0f;
 
 void main()
 {
-    float particleSize = particleNormalData.w; // because we encoded it this way.
-    vec3 vertexPosition_worldspace = particleNormalData.xyz + CameraRight_worldspace * inVertexData.x * particleSize
-                                                            + CameraUp_worldspace * inVertexData.y * particleSize;
+    vec3 vertexPosition_worldspace = particleNormalData.xyz + 
+                                     (CameraRight_worldspace * (inVertexData.x * spriteSize)) +
+                                     (CameraUp_worldspace * (inVertexData.y * spriteSize));
     // Output position of the vertex
     vertexVP = dvd_ViewProjectionMatrix * vec4(vertexPosition_worldspace, 1.0f);
     gl_Position = vertexVP;
     
     // UV of the vertex. No special space for this one.
     texCoord = inVertexData.xy + vec2(0.5, 0.5);
-    particleColor = inColorData;
+    particleColor = inColorData  / vec4(255.0);
 }
 
 
@@ -45,7 +46,8 @@ void main(){
 // Interpolated values from the vertex shaders
 in vec2 texCoord;
 in vec4 vertexVP;
-in flat uvec4 particleColor;
+in vec4 particleColor;
+uniform bool hasTexture = false;
 
 // Ouput data
 out vec4 color;
@@ -58,7 +60,11 @@ void main(){
     float d = texture(depthBuffer, gl_FragCoord.xy * ivec2(dvd_ViewPort.z, dvd_ViewPort.w)).r  - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
     softness = max(0.1, 1.0 - pow(softness, 2.0));
+        
+    color = particleColor;
+    if (hasTexture) {
+        color *= texture(texDiffuse0, texCoord);
+    }
 
-    color = texture(texDiffuse0, texCoord) * particleColor;
     color.a *= softness;
 }

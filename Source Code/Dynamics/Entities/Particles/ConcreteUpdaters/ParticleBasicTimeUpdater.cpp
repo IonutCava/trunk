@@ -4,7 +4,7 @@ namespace Divide {
 
 void ParticleBasicTimeUpdater::update(const U64 deltaTime, ParticleData *p) {
     U32 endID = p->aliveCount();
-    const F32 localDT = Time::MicrosecondsToMilliseconds<F32>(deltaTime);
+    const F32 localDT = Time::MicrosecondsToSeconds<F32>(deltaTime);
 
     if (endID == 0) {
         return;
