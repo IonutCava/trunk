@@ -23,7 +23,8 @@ GUI::GUI()
     : _init(false),
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
-      _console(MemoryManager_NEW GUIConsole()) {
+      _console(MemoryManager_NEW GUIConsole())
+{
     // 500ms
     _textRenderInterval = Time::MillisecondsToMicroseconds(10);
     _ceguiInput.setInitialDelay(0.500f);

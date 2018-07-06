@@ -42,6 +42,7 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 #include <stack>
+#include <future>
 
 namespace Divide {
 
@@ -77,6 +78,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
             _matrix[1].identity();
             _matrix[2].zero();
             _matrix[3].zero();
+        }
+
+        inline void set(const NodeData& other) {
+            for (U8 i = 0; i < 4; ++i) {
+                _matrix[i].set(other._matrix[i]);
+            }
         }
     };
 
@@ -472,9 +479,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
-    void processVisibleNode(RenderPassCuller::RenderableNode& node,
-                            SceneRenderState& sceneRenderState,
-                            NodeData& dataOut);
+    NodeData processVisibleNode(const RenderPassCuller::RenderableNode& node);
+
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
@@ -542,6 +548,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// (e.g.: Z_PRE_PASS is unsorted, DISPLAY is sorted).
     /// Batching unsorted commands does not work
     vectorImpl<NodeData> _matricesData;
+    vectorImpl<std::future<NodeData>> _matricesDataContainers;
     vectorImpl<IndirectDrawCommand> _drawCommandsCache;
     typedef vectorImpl<RenderPackage> RenderQueue;
     RenderQueue _renderQueue;

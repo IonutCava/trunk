@@ -21,7 +21,6 @@ SceneManager::SceneManager()
       _init(false)
 
 {
-    DVDConverter::createInstance();
     AI::AIManager::createInstance();
 }
 
@@ -50,7 +49,7 @@ bool SceneManager::init(GUI* const gui) {
 
     _GUI = gui;
     _renderPassCuller = MemoryManager_NEW RenderPassCuller();
-    _renderPassManager = &RenderPassManager::getOrCreateInstance();
+    _renderPassManager = &RenderPassManager::getInstance();
     _init = true;
     return true;
 }

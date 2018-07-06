@@ -96,7 +96,7 @@ const unsigned int SCENE_NODE_LOD1 = 180;
 /// Default 2 without: Rendering + Update + A.I. + Networking + PhysX
 const unsigned int THREAD_LIMIT = 2;
 /// Use "precompiled" shaders if possible
-const bool USE_SHADER_BINARYUSE_BINARY = true;
+const bool USE_SHADER_BINARY = true;
 /// Use HW AA'ed lines
 const bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.

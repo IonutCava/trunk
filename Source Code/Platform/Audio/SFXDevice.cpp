@@ -25,13 +25,13 @@ ErrorCode SFXDevice::initAudioAPI() {
 
     switch (_API_ID) {
         case AudioAPI::FMOD: {
-            _api = &FMOD_API::getOrCreateInstance();
+            _api = &FMOD_API::getInstance();
         } break;
         case AudioAPI::OpenAL: {
-            _api = &OpenAL_API::getOrCreateInstance();
+            _api = &OpenAL_API::getInstance();
         } break;
         case AudioAPI::SDL: {
-            _api = &SDL_API::getOrCreateInstance();
+            _api = &SDL_API::getInstance();
         } break;
         default: {
             Console::errorfn(Locale::get("ERROR_SFX_DEVICE_API"));

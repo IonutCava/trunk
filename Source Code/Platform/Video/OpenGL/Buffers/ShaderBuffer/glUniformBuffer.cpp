@@ -22,8 +22,11 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
 
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
 {
-    if (ShaderBuffer::_targetDataAlignment == -1) {
-        ShaderBuffer::_targetDataAlignment = ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);
+   if (ShaderBuffer::_targetDataAlignment[0] == -1) {
+        ShaderBuffer::_targetDataAlignment[0] = ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);
+    }
+    if (ShaderBuffer::_targetDataAlignment[1] == -1) {
+        ShaderBuffer::_targetDataAlignment[1] = ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 256);
     }
 }
 
@@ -53,10 +56,10 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
         BufferAccessMask access = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT |
                                   GL_MAP_COHERENT_BIT;
 
-        I32 remainder = _bufferSize % ShaderBuffer::_targetDataAlignment;
+        I32 remainder = _bufferSize % ShaderBuffer::getTargetDataAlignment(_unbound);
         if (remainder > 0) {
             _primitiveCount += static_cast<U32>(
-                (ShaderBuffer::_targetDataAlignment - remainder) /
+                (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder) /
                 _primitiveSize);
             _bufferSize = _primitiveCount * _primitiveSize;
         }
@@ -126,11 +129,11 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount,
 
         if (rangeElementCount != 0) {
             size_t range = _primitiveSize * rangeElementCount;
-            I32 remainder = range % ShaderBuffer::_targetDataAlignment;
+            I32 remainder = range % ShaderBuffer::getTargetDataAlignment(_unbound);
 
             glBindBufferRange(
                 _target, bindIndex, _UBOid, _primitiveSize * offsetElementCount,
-                remainder ? range + (ShaderBuffer::_targetDataAlignment - remainder)
+                remainder ? range + (ShaderBuffer::getTargetDataAlignment(_unbound) - remainder)
                           : range);
         }
 

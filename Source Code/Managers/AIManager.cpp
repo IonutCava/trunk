@@ -15,7 +15,8 @@ AIManager::AIManager()
       _updating(false),
       _deltaTime(0ULL),
       _currentTime(0ULL),
-      _previousTime(0ULL) {
+      _previousTime(0ULL)
+{
     Navigation::DivideRecast::createInstance();
 }
 

@@ -44,12 +44,12 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _APP(parentApp),
-      _GFX(GFXDevice::getOrCreateInstance()),                // Video
-      _SFX(SFXDevice::getOrCreateInstance()),                // Audio
-      _PFX(PXDevice::getOrCreateInstance()),                 // Physics
-      _input(Input::InputInterface::getOrCreateInstance()),  // Input
-      _GUI(GUI::getOrCreateInstance()),  // Graphical User Interface
-      _sceneMgr(SceneManager::getOrCreateInstance())  // Scene Manager
+      _GFX(GFXDevice::getInstance()),                // Video
+      _SFX(SFXDevice::getInstance()),                // Audio
+      _PFX(PXDevice::getInstance()),                 // Physics
+      _input(Input::InputInterface::getInstance()),  // Input
+      _GUI(GUI::getInstance()),  // Graphical User Interface
+      _sceneMgr(SceneManager::getInstance())  // Scene Manager
 
 {
     ResourceCache::createInstance();

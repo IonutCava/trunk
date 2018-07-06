@@ -17,7 +17,9 @@ RenderPassItem& RenderPassItem::operator=(RenderPassItem&& other) {
     return *this;
 }
 
-RenderPassItem::~RenderPassItem() {}
+RenderPassItem::~RenderPassItem()
+{
+}
 
 RenderPassManager::RenderPassManager()
 {

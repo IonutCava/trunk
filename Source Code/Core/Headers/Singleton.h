@@ -37,29 +37,18 @@ namespace Divide {
 template <typename T>
 class Singleton {
    public:
-    inline static T& getOrCreateInstance() {
-        if (!_instance) {
-            _instance = new T;
-        }
 
-        return *_instance;
+    inline static T& createInstance() {
+        return getInstance();
     }
 
-    inline static bool hasInstance() { return _instance != nullptr; }
-
-    inline static T& getInstance() { return *_instance; }
-
-    inline static void createInstance() {
-        if (!_instance) {
-            _instance = new T;
-        }
+    inline static T& getInstance() { 
+        static T instance;
+        return instance; 
     }
 
     inline static void destroyInstance() {
-        if (_instance) {
-            delete _instance;
-            _instance = nullptr;
-        }
+        getInstance().~T();
     }
 
    protected:
@@ -70,18 +59,7 @@ class Singleton {
    private:
     Singleton(Singleton&) = delete;
     void operator=(Singleton&) = delete;
-
-   private:
-    /// C++11 standard assures a static instance should be thread safe:
-    /// "if control enters the declaration concurrently while the variable is
-    /// being initialized,
-    /// the concurrent execution shall wait for completion of the
-    /// initialization."
-    static T* _instance;
 };
-
-template <typename T>
-T* Singleton<T>::_instance = 0;
 
 #define DEFINE_SINGLETON_W_SPECIFIER(class_name, specifier)     \
     class class_name specifier : public Singleton<class_name> { \

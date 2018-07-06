@@ -344,11 +344,11 @@ class SceneManager {
 /// Call this function after each scene declaration
 #define REGISTER_SCENE_W_NAME(scene, sceneName) \
     bool scene##_registered =                   \
-        SceneManager::getOrCreateInstance().registerScene<scene>(#sceneName);
+        SceneManager::getInstance().registerScene<scene>(#sceneName);
 /// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be
 /// the same as the class name
 #define REGISTER_SCENE(scene) \
     bool scene##_registered = \
-        SceneManager::getOrCreateInstance().registerScene<scene>(#scene);
+        SceneManager::getInstance().registerScene<scene>(#scene);
 
 #endif

@@ -96,9 +96,6 @@ inline bool RemoveResource(T*& resource) {
     DIVIDE_ASSERT(std::is_base_of<Resource, T>::value,
                   Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
 
-    DIVIDE_ASSERT(ResourceCache::hasInstance(),
-                  Locale::get("RESOURCE_CACHE_NOT_AVAILABLE"));
-
     if (ResourceCache::getInstance().remove(resource)) {
         resource = nullptr;
         return true;

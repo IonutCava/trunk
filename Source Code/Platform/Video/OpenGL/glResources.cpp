@@ -374,6 +374,7 @@ static GLhalf ftoh(GLfloat val) {
     return h.bits;
 }
 
+//Use this: https://github.com/preshing/cpp11-on-multicore/blob/master/common/bitfield.h
 static U32 VecTo_UNSIGNED_INT_2_10_10_10_REV(const vec4<U32>& values) {
     U32 returnValue = 0;
     returnValue = returnValue | (values.a << 30);

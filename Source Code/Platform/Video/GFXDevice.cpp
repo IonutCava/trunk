@@ -86,7 +86,7 @@ GFXDevice::GFXDevice()
     }
     // Add our needed app-wide render passes. RenderPassManager is responsible
     // for deleting these!
-    RenderPassManager::getOrCreateInstance().addRenderPass("diffusePass", 1);
+    RenderPassManager::getInstance().addRenderPass("diffusePass", 1);
     // RenderPassManager::getInstance().addRenderPass("shadowPass",2);
     // Red X-axis
     _axisLines.push_back(

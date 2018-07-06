@@ -25,7 +25,7 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
         return hardwareState;
     }
     // Initialize the shader manager
-    ShaderManager::getOrCreateInstance().init();
+    ShaderManager::getInstance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
     _imShader = ShaderManager::getInstance().getDefaultShader();
@@ -50,6 +50,8 @@ ErrorCode GFXDevice::initRenderingAPI(const vec2<U16>& resolution, I32 argc,
     // and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
+    _matricesData.resize(Config::MAX_VISIBLE_NODES + 1);
+    _matricesDataContainers.reserve(Config::MAX_VISIBLE_NODES);
     // Resize our window to the target resolution (usually, the splash screen
     // resolution)
     changeResolution(resolution.width, resolution.height);
@@ -322,10 +324,10 @@ ErrorCode GFXDevice::createAPIInstance() {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            _api = &GL_API::getOrCreateInstance();
+            _api = &GL_API::getInstance();
         } break;
         case RenderAPI::Direct3D: {
-            _api = &DX_API::getOrCreateInstance();
+            _api = &DX_API::getInstance();
             Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;

@@ -232,11 +232,12 @@ ErrorCode GL_API::initRenderingAPI(const vec2<GLushort>& resolution, GLint argc,
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
+    GLint uboffset = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
     Console::printfn(Locale::get("GL_UBO_INFO"),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE) / 1024,
-                     GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT));
-
+                     uboffset);
+    par.setParam<I32>("rendering.UBOAligment", uboffset);
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may

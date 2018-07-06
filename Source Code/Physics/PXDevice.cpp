@@ -19,7 +19,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
                 "PXDevice error: initPhysicsAPI called twice!");
     switch (_API_ID) {
         case PhysicsAPI::PhysX: {
-            _api = &PhysX::getOrCreateInstance();
+            _api = &PhysX::getInstance();
         } break;
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 

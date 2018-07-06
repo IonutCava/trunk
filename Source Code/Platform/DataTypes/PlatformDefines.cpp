@@ -33,15 +33,12 @@ bool preAssert(const bool expression, const char* failMessage) {
         Console::errorfn("Assert: %s", failMessage);
     }
     if (Config::Assert::SHOW_MESSAGE_BOX) {
-        if (GUI::hasInstance()) {
-            GUIMessageBox* const msgBox =
-                GUI::getInstance().getDefaultMessageBox();
-            if (msgBox) {
-                msgBox->setTitle("Assertion Failed!");
-                msgBox->setMessage(stringImpl("Assert: ") + failMessage);
-                msgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
-                msgBox->show();
-            }
+        GUIMessageBox* const msgBox = GUI::getInstance().getDefaultMessageBox();
+        if (msgBox) {
+            msgBox->setTitle("Assertion Failed!");
+            msgBox->setMessage(stringImpl("Assert: ") + failMessage);
+            msgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
+            msgBox->show();
         }
     }
 

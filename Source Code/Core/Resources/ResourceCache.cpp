@@ -7,7 +7,8 @@
 
 namespace Divide {
 
-ResourceCache::ResourceCache() {
+ResourceCache::ResourceCache()
+{
     //_loadingPool = MemoryManager_NEW boost::threadpool::pool(3);
     DVDConverter::createInstance();
 }

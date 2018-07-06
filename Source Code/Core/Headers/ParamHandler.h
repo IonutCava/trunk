@@ -49,6 +49,8 @@ DEFINE_SINGLETON(ParamHandler)
     /// A special map for boolean types (small perf. optimization for add/retrieve)
     /// Used a lot as option toggles
     typedef hashMapImpl<stringImpl, bool> ParamBoolMap;
+    /// Floats are also used often
+    typedef hashMapImpl<stringImpl, F32> ParamFloatMap;
 
   public:
     void setDebugOutput(bool logState);
@@ -100,10 +102,23 @@ DEFINE_SINGLETON(ParamHandler)
     template <>
     bool isParam<bool>(const stringImpl& param) const;
 
+    template <>
+    F32 getParam(const stringImpl& name, F32 defaultValue) const;
+
+    template <>
+    void setParam(const stringImpl& name, const F32& value);
+
+    template <>
+    void delParam<F32>(const stringImpl& name);
+
+    template <>
+    bool isParam<F32>(const stringImpl& param) const;
+
   private:
     ParamMap _params;
     ParamBoolMap _paramBool;
     ParamStringMap _paramsStr;
+    ParamFloatMap _paramsFloat;
     mutable SharedLock _mutex;
     std::atomic_bool _logState;
 

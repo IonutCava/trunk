@@ -117,10 +117,12 @@ class ShaderBuffer : private NonCopyable, public GUIDWrapper {
     inline size_t getPrimitiveSize() const { return _primitiveSize; }
     inline U32 getPrimitiveCount() const { return _primitiveCount; }
 
-    static I32 getTargetDataAlignment() { return _targetDataAlignment; }
+    static I32 getTargetDataAlignment(bool unbound = false) {
+        return _targetDataAlignment[unbound ? 0 : 1];
+    }
 
    protected:
-    static I32 _targetDataAlignment;
+    static I32 _targetDataAlignment[2];
 
     size_t _bufferSize;
     size_t _primitiveSize;

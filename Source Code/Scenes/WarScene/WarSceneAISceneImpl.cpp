@@ -87,8 +87,7 @@ void WarSceneAISceneImpl::initInternal() {
     // audio sensor found for current AI entity!");
 
     AITeam* currentTeam = _entity->getTeam();
-    AITeam* enemyTeam =
-        AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
+    AITeam* enemyTeam = AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
     const AITeam::TeamMap& teamAgents = currentTeam->getTeamMembers();
     const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
 
@@ -314,8 +313,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 _entity->sendMessage(member.second, AIMsg::HAVE_FLAG, _entity);
             }
             const AITeam* const enemyTeam =
-                AIManager::getInstance().getTeamByID(
-                    currentTeam->getEnemyTeamID(0));
+                AIManager::getInstance().getTeamByID(currentTeam->getEnemyTeamID(0));
             for (const AITeam::TeamMap::value_type& enemy :
                  enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(enemy.second, AIMsg::ENEMY_HAS_FLAG,
