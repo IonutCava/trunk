@@ -4,12 +4,15 @@
 #include "Manager.h"
 #include "Terrain/Terrain.h"
 #include "Utility/Headers/Singleton.h"
+#include "Terrain/Water.h"
 #include <boost/thread.hpp>
 
 class TerrainManager : public Manager
 {
 public:
-	void initialize();
+	TerrainManager();
+	~TerrainManager();
+
 	void createTerrains(vector<TerrainInfo>& terrains);
 	void drawTerrains(bool drawInactive = false, bool drawInReflexion = false,vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));
 	void joinThread(){if(_thrd) _thrd->join();}
@@ -36,12 +39,11 @@ private:
 				  _windSpeed,_windDirX, _windDirZ;
 
 	bool	      _computedMinHeight,_loaded;
-	Shader*       _waterShader;
-	Texture2D*    _texWater;
 	Terrain*      _terrain; //temp terrain file;
 	boost::thread *_thrd;
 	boost::mutex   _io_mutex;
 	boost::thread_specific_ptr<int> ptr;
+	WaterPlane*  _water;
 
 	void createThreadedTerrains(vector<TerrainInfo>& terrains);
 	void drawTerrain(bool drawInactive = false, bool drawInReflexion = false,vec4& ambientColor = vec4(0.5f,0.5f,0.5f,0.5f));

@@ -48,11 +48,10 @@ bool Mesh::isInView()
 {
 	if(!_render) return false;
 	if(!_bb.isComputed()) computeBoundingBox();
-	//return true; 
-
-	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 
 	// Bellow code is still buggy. ToDo: FIX THIS!!!!!!!
+	return true; 
+	vec3 vEyeToChunk = getBoundingBox().getCenter() - Frustum::getInstance().getEyePos();
 	//if(vEyeToChunk.length() > SceneManager::getInstance().getTerrainManager()->getGeneralVisibility()) return false;
 	// END BUGGY CODE :P
 

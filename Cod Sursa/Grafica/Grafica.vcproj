@@ -384,6 +384,14 @@
 				RelativePath="..\Terrain\TerrainChunk.h"
 				>
 			</File>
+			<File
+				RelativePath="..\Terrain\Water.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Terrain\Water.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Utility"

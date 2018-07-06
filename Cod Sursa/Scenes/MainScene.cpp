@@ -120,7 +120,7 @@ void MainScene::processInput()
 
 void MainScene::processEvents(F32 time)
 {
-	F32 SunDisplay = 0.01f;
+	F32 SunDisplay = 0.10f;
 	F32 FpsDisplay = 0.3f;
 	F32 TimeDisplay = 0.01f;
 	if (time - _eventTimers[0] >= SunDisplay)

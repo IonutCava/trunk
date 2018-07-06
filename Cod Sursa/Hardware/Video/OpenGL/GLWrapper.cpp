@@ -243,7 +243,15 @@ void GL_API::drawBox3D(Box3D* const box)
 	rotate(box->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	scale(box->getScale());
 	setColor(box->getColor());
+	if(box->getTexture()) box->getTexture()->Bind(0);
+	if(box->getShader()) 
+	{
+		box->getShader()->bind();
+		box->getShader()->UniformTexture("texDiffuse",0);
+	}
 	glutSolidCube(box->getSize());
+	if(box->getShader())  box->getShader()->unbind();
+	if(box->getTexture()) box->getTexture()->Unbind(0);
 	popMatrix();
 }
 
@@ -256,7 +264,15 @@ void GL_API::drawSphere3D(Sphere3D* const sphere)
 	rotate(sphere->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	scale(sphere->getScale());
 	setColor(sphere->getColor());
+	if(sphere->getTexture()) sphere->getTexture()->Bind(0);
+	if(sphere->getShader()) 
+	{
+		sphere->getShader()->bind();
+		sphere->getShader()->UniformTexture("texDiffuse",0);
+	}
 	glutSolidSphere(sphere->getSize(),sphere->getResolution(),sphere->getResolution());
+	if(sphere->getShader())  sphere->getShader()->unbind();
+	if(sphere->getTexture()) sphere->getTexture()->Unbind(0);
 	popMatrix();
 	
 }
@@ -270,6 +286,13 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 	rotate(quad->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	scale(quad->getScale());
 	setColor(quad->getColor());
+
+	if(quad->getTexture()) quad->getTexture()->Bind(0);
+	if(quad->getShader()) 
+	{
+		quad->getShader()->bind();
+		quad->getShader()->UniformTexture("texDiffuse",0);
+	}
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
 		glNormal3f(0.0f, 1.0f, 0.0f);
@@ -279,6 +302,9 @@ void GL_API::drawQuad3D(Quad3D* const quad)
 		glVertex3f(quad->_bl.x, quad->_bl.y, quad->_bl.z);
 		glVertex3f(quad->_br.x, quad->_br.y, quad->_br.z);
 	glEnd();
+	if(quad->getShader())  quad->getShader()->unbind();
+	if(quad->getTexture()) quad->getTexture()->Unbind(0);
+	
 	popMatrix();
 }
 
@@ -291,6 +317,12 @@ void GL_API::drawText3D(Text3D* const text)
 	rotate(text->getOrientation().z,vec3(0.0f,0.0f,1.0f));
 	scale(text->getScale());
 	setColor(text->getColor());
+	if(text->getTexture()) text->getTexture()->Bind(0);
+	if(text->getShader()) 
+	{
+		text->getShader()->bind();
+		text->getShader()->UniformTexture("texDiffuse",0);
+	}
 	glPushAttrib(GL_ENABLE_BIT);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_BLEND);
@@ -298,6 +330,8 @@ void GL_API::drawText3D(Text3D* const text)
 	glLineWidth(text->getWidth());
 	glutStrokeString(text->getFont(), (const unsigned char*)text->getText().c_str());
 	glPopAttrib();
+	if(text->getShader())  text->getShader()->unbind();
+	if(text->getTexture()) text->getTexture()->Unbind(0);
 	popMatrix();
 }
 

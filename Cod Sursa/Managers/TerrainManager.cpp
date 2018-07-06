@@ -5,9 +5,26 @@
 #include "Rendering/common.h"
 #include "TextureManager/Texture2D.h"
 
-void TerrainManager::createTerrains(vector<TerrainInfo>& terrains)
+
+TerrainManager::TerrainManager()
 {
 	_loaded = false;
+	_computedMinHeight = false;
+}
+
+TerrainManager::~TerrainManager()
+{
+	delete _water;
+	for(_resDBiter = _resDB.begin(); _resDBiter != _resDB.end(); _resDBiter++)
+	{
+		delete ((Terrain*)_resDBiter->second);
+		_resDB.erase(_resDBiter);
+	}
+}
+
+void TerrainManager::createTerrains(vector<TerrainInfo>& terrains)
+{
+	
 	//_thrd = new boost::thread(&TerrainManager::createThreadedTerrains,this,terrains);
 	createThreadedTerrains(terrains);
 }
@@ -52,7 +69,8 @@ void TerrainManager::createThreadedTerrains(vector<TerrainInfo>& terrains)
 	}
 	terrains.clear();
 	//joinThread();
-	initialize();	
+	_water = new WaterPlane();
+	_loaded = true;
 }
 
 void TerrainManager::drawTerrains(bool drawInactive, bool drawInReflexion,vec4& ambientColor)
@@ -101,14 +119,6 @@ void TerrainManager::generateVegetation(const string& name)
 		((Terrain*)_resDB[name])->initializeVegetation();
 	}
 }
-void TerrainManager::initialize()
-{
-	 ResourceManager& res = ResourceManager::getInstance();
-	_waterShader = res.LoadResource<Shader>("water");
-	_texWater = res.LoadResource<Texture2D>(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
-	_computedMinHeight = false;
-	_loaded = true;
-}
 
 void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 {
@@ -124,7 +134,7 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 			temp = ((Terrain*)_resDBiter->second)->getBoundingBox().min.y;
 			if(temp < _minHeight)
 			{
-				_minHeight = temp;
+				_minHeight = temp - 10.5f;
 				_maxHeight = ((Terrain*)_resDBiter->second)->getBoundingBox().max.y;
 			}
 		}
@@ -132,36 +142,15 @@ void TerrainManager::drawInfinitePlane(F32 max_distance,FrameBufferObject& _fbo)
 		_computedMinHeight = true;
 	}
 
-	
-	glPushAttrib(GL_ENABLE_BIT);
+	_water->getQuad()->_tl = vec3(eye.x - max_distance, _minHeight, eye.z - max_distance);
+	_water->getQuad()->_tr = vec3(eye.x + max_distance, _minHeight, eye.z - max_distance);
+	_water->getQuad()->_bl = vec3(eye.x - max_distance, _minHeight, eye.z + max_distance);
+	_water->getQuad()->_br = vec3(eye.x + max_distance, _minHeight, eye.z + max_distance);
 
-	glDisable(GL_CULL_FACE);
-	glEnable(GL_BLEND);
+	//glVertex3f(eye.x - max_distance, _minHeight, eye.z - max_distance);
+	//glVertex3f(eye.x - max_distance, _minHeight, eye.z + max_distance);
+	//glVertex3f(eye.x + max_distance, _minHeight, eye.z + max_distance);
+	//glVertex3f(eye.x + max_distance, _minHeight, eye.z - max_distance);
 
-	_fbo.Bind(0);
-	_texWater->Bind(1);
-	_waterShader->bind();
-		_waterShader->UniformTexture("texWaterReflection", 0);
-		_waterShader->UniformTexture("texWaterNoiseNM", 1);
-		_waterShader->Uniform("bbox_min",vec3(eye.x - max_distance,_minHeight,eye.z-max_distance));
-		_waterShader->Uniform("bbox_max",vec3(eye.x + max_distance,_maxHeight,eye.z+max_distance));
-		_waterShader->Uniform("win_width",  Engine::getInstance().getWindowWidth());
-		_waterShader->Uniform("win_height", Engine::getInstance().getWindowHeight());
-		_waterShader->Uniform("noise_tile", 10.0f);
-		_waterShader->Uniform("noise_factor", 0.1f);
-		_waterShader->Uniform("time", GETTIME());
-		_waterShader->Uniform("water_shininess", 50.0f);
-		glBegin(GL_QUADS);
-			glNormal3f(0.0f, 1.0f, 0.0f);
-			glTexCoord3f(1.0f, 0.0f, 0.0f);
-			glVertex3f(eye.x - max_distance, _minHeight, eye.z - max_distance);
-			glVertex3f(eye.x - max_distance, _minHeight, eye.z + max_distance);
-			glVertex3f(eye.x + max_distance, _minHeight, eye.z + max_distance);
-			glVertex3f(eye.x + max_distance, _minHeight, eye.z - max_distance);
-		glEnd();
-	_waterShader->unbind();
-	_texWater->Unbind(1);
-	_fbo.Unbind(0);
-
-	glPopAttrib();
+	_water->draw(_fbo);
 }
