@@ -135,15 +135,7 @@ void Terrain::onCameraUpdate(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 
-    _cameraUpdated[to_base(_context.getRenderStage().index())] = true;
-}
-
-void Terrain::onCameraChange(SceneGraphNode& sgn,
-                             const Camera& cam) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(cam);
-
-    _cameraUpdated[to_base(_context.getRenderStage().index())] = true;
+    _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
 }
 
 void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
@@ -183,7 +175,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
 
     Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 
-    _cameraUpdated[to_base(renderStagePass.index())] = true;
+    _cameraUpdated[to_base(renderStagePass.stage())] = true;
 }
 
 void Terrain::updateDrawCommands(SceneGraphNode& sgn,
@@ -192,7 +184,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  GenericDrawCommands& drawCommandsInOut) {
     _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
 
-    const U8 stageIndex = to_U8(renderStagePass.index());
+    const U8 stageIndex = to_U8(renderStagePass.stage());
     bool& cameraUpdated = _cameraUpdated[stageIndex];
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 

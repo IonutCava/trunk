@@ -34,7 +34,7 @@
 namespace Divide {
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const U32& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const U32& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -56,7 +56,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const U32& v
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const I32& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const I32& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -78,7 +78,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const I32& v
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const F32& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const F32& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -87,7 +87,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const F32& v
 
     UniformsByName::ShaderVarF32Map::iterator it = _uniformsByName._shaderVarsF32.find(location);
     if (it != std::end(_uniformsByName._shaderVarsF32)) {
-        if (it->second == value) {
+        if (COMPARE(it->second, value)) {
             return -1;
         } else {
             it->second = value;
@@ -100,7 +100,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const F32& v
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<F32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec2<F32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -122,7 +122,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<F
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<I32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec2<I32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -144,7 +144,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<I
 }
  
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<F32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec3<F32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -166,7 +166,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<F
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<I32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec3<I32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -188,7 +188,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<I
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<F32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec4<F32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -210,7 +210,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<F
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<I32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vec4<I32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -232,7 +232,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<I
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat3<F32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const mat3<F32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -254,7 +254,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat3<F
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat4<F32>& value) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const mat4<F32>& value) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -276,7 +276,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat4<F
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<I32>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<I32>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -298,7 +298,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<F32>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<F32>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -320,7 +320,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec2<F32>>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec2<F32>>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -342,7 +342,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec3<F32>>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec3<F32>>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -364,7 +364,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec4<F32>>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<vec4<F32>>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -388,7 +388,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<mat3<F32>>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<mat3<F32>>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {
@@ -410,7 +410,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vector
 }
 
 template <>
-inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<mat4<F32>>& values) {
+inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, const vectorImpl<mat4<F32>>& values) {
     I32 binding = getUniformLocation(location);
 
     if (binding == -1 || _shaderProgramID == 0) {

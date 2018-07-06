@@ -43,7 +43,7 @@ vec3 getLightDirection() {
 
     return mix(dvd_private_light._positionWV.xyz - VAR._vertexWV.xyz,
                -dvd_private_light._positionWV.xyz,
-               lightType == LIGHT_DIRECTIONAL);
+               vec3(lightType == LIGHT_DIRECTIONAL));
 
 }
 

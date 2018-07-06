@@ -143,9 +143,6 @@ class Terrain : public Object3D {
                         const I64 cameraGUID,
                         const vec3<F32>& posOffset,
                         const mat4<F32>& rotationOffset);
-    void onCameraChange(SceneGraphNode& sgn,
-                        const Camera& cam);
-
     void buildQuadtree();
     void postLoad(SceneGraphNode& sgn);
 
@@ -158,8 +155,8 @@ class Terrain : public Object3D {
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
-    typedef std::array<TerrainTessellator, to_base(RenderStagePass::count())> TessellatorArray;
-    typedef std::array<bool, to_base(RenderStagePass::count())> CameraUpdateFlagArray;
+    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
+    typedef std::array<bool, to_base(RenderStage::COUNT)> CameraUpdateFlagArray;
 
     U32 _chunkSize;
     vec3<F32> _offsetPosition;

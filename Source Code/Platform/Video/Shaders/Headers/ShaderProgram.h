@@ -114,30 +114,30 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
-    virtual void Uniform(const char* location, U32 value) = 0;
-    virtual void Uniform(const char* location, I32 value) = 0;
-    virtual void Uniform(const char* location, F32 value) = 0;
-    virtual void Uniform(const char* location, const vec2<F32>& value) = 0;
-    virtual void Uniform(const char* location, const vec2<I32>& value) = 0;
-    virtual void Uniform(const char* location, const vec3<F32>& value) = 0;
-    virtual void Uniform(const char* location, const vec3<I32>& value) = 0;
-    virtual void Uniform(const char* location, const vec4<F32>& value) = 0;
-    virtual void Uniform(const char* location, const vec4<I32>& value) = 0;
-    virtual void Uniform(const char* location, const mat3<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const char* location, const mat4<F32>& value, bool rowMajor = false) = 0;
-    virtual void Uniform(const char* location, const vectorImpl<I32>& values) = 0;
-    virtual void Uniform(const char* location, const vectorImpl<F32>& values) = 0;
-    virtual void Uniform(const char* location, const vectorImpl<vec2<F32> >& values) = 0;
-    virtual void Uniform(const char* location, const vectorImpl<vec3<F32> >& values) = 0;
-    virtual void Uniform(const char* location, const vectorImplBest<vec4<F32> >& values) = 0;
-    virtual void Uniform(const char* location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) = 0;
-    virtual void Uniform(const char* location, const vectorImplBest<mat4<F32> >& values, bool rowMajor = false) = 0;
+    virtual void Uniform(const stringImplFast& location, U32 value) = 0;
+    virtual void Uniform(const stringImplFast& location, I32 value) = 0;
+    virtual void Uniform(const stringImplFast& location, F32 value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec2<F32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec2<I32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec3<F32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec3<I32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec4<F32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const vec4<I32>& value) = 0;
+    virtual void Uniform(const stringImplFast& location, const mat3<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(const stringImplFast& location, const mat4<F32>& value, bool rowMajor = false) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32> >& values) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32> >& values) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32> >& values) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) = 0;
+    virtual void Uniform(const stringImplFast& location, const vectorImplBest<mat4<F32> >& values, bool rowMajor = false) = 0;
 
-    inline void Uniform(const char* location, TextureUsage slot) {
+    inline void Uniform(const stringImplFast& location, TextureUsage slot) {
         Uniform(location, to_I32(slot));
     }
         
-    inline void Uniform(const char* location, bool value) {
+    inline void Uniform(const stringImplFast& location, bool value) {
         Uniform(location, value ? 1 : 0);
     }
 

@@ -65,30 +65,30 @@ class d3dShaderProgram final : public ShaderProgram {
 
     U32 GetSubroutineUniformCount(ShaderType type) const override;
     // Uniforms
-    void Uniform(const char* location, U32 value) override;
-    void Uniform(const char* location, I32 value) override;
-    void Uniform(const char* location, F32 value) override;
-    void Uniform(const char* location, const vec2<F32>& value) override;
-    void Uniform(const char* location, const vec2<I32>& value) override;
-    void Uniform(const char* location, const vec3<F32>& value) override;
-    void Uniform(const char* location, const vec3<I32>& value) override;
-    void Uniform(const char* location, const vec4<F32>& value) override;
-    void Uniform(const char* location, const vec4<I32>& value) override;
-    void Uniform(const char* location,
+    void Uniform(const stringImplFast& location, U32 value) override;
+    void Uniform(const stringImplFast& location, I32 value) override;
+    void Uniform(const stringImplFast& location, F32 value) override;
+    void Uniform(const stringImplFast& location, const vec2<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec2<I32>& value) override;
+    void Uniform(const stringImplFast& location, const vec3<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec3<I32>& value) override;
+    void Uniform(const stringImplFast& location, const vec4<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec4<I32>& value) override;
+    void Uniform(const stringImplFast& location,
                  const mat3<F32>& value,
                  bool transpose = false) override;
-    void Uniform(const char* location,
+    void Uniform(const stringImplFast& location,
                  const mat4<F32>& value,
                  bool transpose = false) override;
-    void Uniform(const char* location, const vectorImpl<I32>& values) override;
-    void Uniform(const char* location, const vectorImpl<F32>& values) override;
-    void Uniform(const char* location, const vectorImpl<vec2<F32> >& values) override;
-    void Uniform(const char* location, const vectorImpl<vec3<F32> >& values) override;
-    void Uniform(const char* location, const vectorImplBest<vec4<F32> >& values) override;
-    void Uniform(const char* location,
+    void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32> >& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32> >& values) override;
+    void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32> >& values) override;
+    void Uniform(const stringImplFast& location,
                  const vectorImpl<mat3<F32> >& values,
                  bool transpose = false) override;
-    void Uniform(const char* location,
+    void Uniform(const stringImplFast& location,
                  const vectorImplBest<mat4<F32> >& values,
                  bool transpose = false) override;
 

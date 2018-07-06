@@ -132,10 +132,13 @@ void GFXDevice::renderDebugViews() {
 
 void GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     _debugViews.push_back(view);
+    if (_debugViews.back()->_sortIndex == -1) {
+        _debugViews.back()->_sortIndex = to_I16(_debugViews.size());
+    }
     std::sort(std::begin(_debugViews),
               std::end(_debugViews),
               [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b)-> bool {
-                  return a->_shader->getGUID() < b->_shader->getGUID();
+                  return a->_sortIndex < b->_sortIndex;
                });
 }
 

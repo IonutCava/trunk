@@ -536,21 +536,21 @@ bool glShaderProgram::isBound() const {
 /// queried the location before
 /// If we didn't, ask the GPU to give us the variables address and save it for
 /// later use
-I32 glShaderProgram::getUniformLocation(const char* name) {
+I32 glShaderProgram::getUniformLocation(const stringImplFast& name) {
     // If the shader can't be used for rendering, just return an invalid address
     if (_shaderProgramID == 0 || !isValid()) {
         return -1;
     }
 
     // Check the cache for the location
-    U64 nameHash = _ID_RT(name);
+    U64 nameHash = _ID_RT(name.c_str());
     ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;
     }
 
     // Cache miss. Query OpenGL for the location
-    GLint location = glGetUniformLocation(_shaderProgramID, name);
+    GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
 
     // Save it for later reference
     hashAlg::emplace(_shaderVarLocation, nameHash, location);
@@ -648,7 +648,7 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, U32 value) {
+void glShaderProgram::Uniform(const stringImplFast& location, U32 value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -657,7 +657,7 @@ void glShaderProgram::Uniform(const char* location, U32 value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, I32 value) {
+void glShaderProgram::Uniform(const stringImplFast& location, I32 value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -666,16 +666,16 @@ void glShaderProgram::Uniform(const char* location, I32 value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, F32 value) {
+void glShaderProgram::Uniform(const stringImplFast& location, F32 value) {
     I32 binding = cachedValueUpdate(location, value);
 
-    if (cachedValueUpdate(location, value)) {
+    if (binding != -1) {
         glProgramUniform1f(_shaderProgramID, binding, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vec2<F32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec2<F32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -684,7 +684,7 @@ void glShaderProgram::Uniform(const char* location, const vec2<F32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vec2<I32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec2<I32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -693,7 +693,7 @@ void glShaderProgram::Uniform(const char* location, const vec2<I32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vec3<F32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec3<F32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -701,7 +701,7 @@ void glShaderProgram::Uniform(const char* location, const vec3<F32>& value) {
     }
 }
 
-void glShaderProgram::Uniform(const char* location, const vec3<I32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec3<I32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -710,7 +710,7 @@ void glShaderProgram::Uniform(const char* location, const vec3<I32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vec4<F32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec4<F32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -718,7 +718,7 @@ void glShaderProgram::Uniform(const char* location, const vec4<F32>& value) {
     }
 }
 
-void glShaderProgram::Uniform(const char* location, const vec4<I32>& value) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vec4<I32>& value) {
     I32 binding = cachedValueUpdate(location, value);
 
     if (binding != -1) {
@@ -727,7 +727,7 @@ void glShaderProgram::Uniform(const char* location, const vec4<I32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const mat3<F32>& value,
+void glShaderProgram::Uniform(const stringImplFast& location, const mat3<F32>& value,
                               bool transpose) {
     I32 binding = cachedValueUpdate(location, value);
 
@@ -738,7 +738,7 @@ void glShaderProgram::Uniform(const char* location, const mat3<F32>& value,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const mat4<F32>& value,
+void glShaderProgram::Uniform(const stringImplFast& location, const mat4<F32>& value,
                               bool transpose) {
     I32 binding = cachedValueUpdate(location, value);
 
@@ -749,7 +749,7 @@ void glShaderProgram::Uniform(const char* location, const mat4<F32>& value,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vectorImpl<I32>& values) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<I32>& values) {
     I32 binding = cachedValueUpdate(location, values);
 
     if (values.empty() || binding == -1) {
@@ -761,7 +761,7 @@ void glShaderProgram::Uniform(const char* location, const vectorImpl<I32>& value
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location, const vectorImpl<F32>& values) {
+void glShaderProgram::Uniform(const stringImplFast& location, const vectorImpl<F32>& values) {
     I32 binding = cachedValueUpdate(location, values);
 
     if (values.empty() || binding == -1) {
@@ -773,7 +773,7 @@ void glShaderProgram::Uniform(const char* location, const vectorImpl<F32>& value
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location,
+void glShaderProgram::Uniform(const stringImplFast& location,
                               const vectorImpl<vec2<F32> >& values) {
     I32 binding = cachedValueUpdate(location, values);
 
@@ -786,7 +786,7 @@ void glShaderProgram::Uniform(const char* location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location,
+void glShaderProgram::Uniform(const stringImplFast& location,
                               const vectorImpl<vec3<F32> >& values) {
     I32 binding = cachedValueUpdate(location, values);
 
@@ -799,7 +799,7 @@ void glShaderProgram::Uniform(const char* location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location,
+void glShaderProgram::Uniform(const stringImplFast& location,
                               const vectorImplBest<vec4<F32> >& values) {
     I32 binding = cachedValueUpdate(location, values);
 
@@ -812,7 +812,7 @@ void glShaderProgram::Uniform(const char* location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location,
+void glShaderProgram::Uniform(const stringImplFast& location,
                               const vectorImpl<mat3<F32> >& values,
                               bool transpose) {
     I32 binding = cachedValueUpdate(location, values);
@@ -828,7 +828,7 @@ void glShaderProgram::Uniform(const char* location,
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(const char* location,
+void glShaderProgram::Uniform(const stringImplFast& location,
                               const vectorImplBest<mat4<F32> >& values,
                               bool transpose) {
     I32 binding = cachedValueUpdate(location, values);

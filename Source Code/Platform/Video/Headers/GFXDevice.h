@@ -147,6 +147,13 @@ public:
     struct DebugView {
         DebugView()
             : _textureBindSlot(0)
+            , _sortIndex(-1)
+        {
+        }
+
+        DebugView(U16 sortIndex)
+            : _textureBindSlot(0)
+            , _sortIndex(sortIndex)
         {
         }
 
@@ -159,6 +166,8 @@ public:
             vectorImpl<std::pair<stringImpl, F32>>  _floatValues;
             vectorImpl<std::pair<stringImpl, bool>> _boolValues;
         } _shaderData;
+
+        I16 _sortIndex;
     };
     FWD_DECLARE_MANAGED_CLASS(DebugView);
 

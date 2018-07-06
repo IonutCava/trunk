@@ -118,7 +118,7 @@ class glShaderProgram final : public ShaderProgram {
     };
 
     typedef hashMapImpl<U64, I32> ShaderVarMap;
-    typedef UniformCache<const char*> UniformsByName;
+    typedef UniformCache<stringImplFast> UniformsByName;
 
    public:
     explicit glShaderProgram(GFXDevice& context,
@@ -156,24 +156,24 @@ class glShaderProgram final : public ShaderProgram {
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
     /// Set an uniform value
-    void Uniform(const char* location, U32 value) override;
-    void Uniform(const char* location, I32 value) override;
-    void Uniform(const char* location, F32 value) override;
-    void Uniform(const char* location, const vec2<F32>& value) override;
-    void Uniform(const char* location, const vec2<I32>& value) override;
-    void Uniform(const char* location, const vec3<F32>& value) override;
-    void Uniform(const char* location, const vec3<I32>& value) override;
-    void Uniform(const char* location, const vec4<F32>& value) override;
-    void Uniform(const char* location, const vec4<I32>& value) override;
-    void Uniform(const char* location, const mat3<F32>& value, bool transpose = false) override;
-    void Uniform(const char* location, const mat4<F32>& value, bool transpose = false) override;
-    void Uniform(const char* location, const vectorImpl<I32>& values) override;
-    void Uniform(const char* location, const vectorImpl<F32>& values) override;
-    void Uniform(const char* location, const vectorImpl<vec2<F32>>& values) override;
-    void Uniform(const char* location, const vectorImpl<vec3<F32>>& values) override;
-    void Uniform(const char* location, const vectorImplBest<vec4<F32>>& values) override;
-    void Uniform(const char* location, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
-    void Uniform(const char* location, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
+    void Uniform(const stringImplFast& location, U32 value) override;
+    void Uniform(const stringImplFast& location, I32 value) override;
+    void Uniform(const stringImplFast& location, F32 value) override;
+    void Uniform(const stringImplFast& location, const vec2<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec2<I32>& value) override;
+    void Uniform(const stringImplFast& location, const vec3<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec3<I32>& value) override;
+    void Uniform(const stringImplFast& location, const vec4<F32>& value) override;
+    void Uniform(const stringImplFast& location, const vec4<I32>& value) override;
+    void Uniform(const stringImplFast& location, const mat3<F32>& value, bool transpose = false) override;
+    void Uniform(const stringImplFast& location, const mat4<F32>& value, bool transpose = false) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<I32>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<F32>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<vec2<F32>>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<vec3<F32>>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImplBest<vec4<F32>>& values) override;
+    void Uniform(const stringImplFast& location, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
+    void Uniform(const stringImplFast& location, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 
@@ -198,11 +198,11 @@ class glShaderProgram final : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
     /// Cache uniform/attribute locations for shader programs
-    I32 getUniformLocation(const char* name);
+    I32 getUniformLocation(const stringImplFast& name);
 
     struct fake_dependency: public std::false_type {};
     template <typename T>
-    I32 cachedValueUpdate(const char* location, const T& value) {
+    I32 cachedValueUpdate(const stringImplFast& location, const T& value) {
         static_assert(
                 fake_dependency::value,
             "glShaderProgram::cachedValue error: unsupported data type!");
