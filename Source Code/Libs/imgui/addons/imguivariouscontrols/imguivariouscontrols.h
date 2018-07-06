@@ -321,7 +321,7 @@ IMGUI_API bool ImageZoomAndPan(ImTextureID user_texture_id, const ImVec2& size,f
                 const void* ptr_id = &myTreeNodeIsOpen;
                 const float curPosX = ImGui::GetCursorPosX();   // used for clipping
                 ImGui::BeginGroup();    // Not sure grouping is strictly necessary here
-                myTreeNodeIsOpen = ImGui::TreeNodeEx(ptr_id,ImGuiTreeNodeFlags_CollapsingHeader|ImGuiTreeNodeFlags_AllowOverlapMode,"Collapsable %d",1);
+                myTreeNodeIsOpen = ImGui::TreeNodeEx(ptr_id,(ImGuiTreeNodeFlags_CollapsingHeader & (~ImGuiTreeNodeFlags_NoTreePushOnOpen))|ImGuiTreeNodeFlags_AllowOverlapMode,"Collapsable %d",1);
                 //if (ImGui::IsItemHovered()) // optional condition if we want buttons to appear only when the collapsable header is hovered
                 {
                     ImGui::AppendTreeNodeHeaderButtons(ptr_id,curPosX,

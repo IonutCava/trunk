@@ -269,7 +269,7 @@ namespace Divide {
                     }
                     ImGui::PopItemWidth();
                     if (ImGui::IsItemHovered()) {
-                        if (styleEnumNum == ImGuiStyle_Default)      ImGui::SetTooltip("%s", "\"Default\"\nThis is the default\nclassic ImGui theme");
+                        if (styleEnumNum == ImGuiStyle_DefaultClassic)      ImGui::SetTooltip("%s", "\"Default\"\nThis is the default\nclassic ImGui theme");
                         else if (styleEnumNum == ImGuiStyle_DefaultDark)      ImGui::SetTooltip("%s", "\"DefaultDark\"\nThis is the default\ndark ImGui theme");
                         else if (styleEnumNum == ImGuiStyle_Gray)   ImGui::SetTooltip("%s", "\"Gray\"\nThis is the default theme of first demo");
                         else if (styleEnumNum == ImGuiStyle_OSX)   ImGui::SetTooltip("%s", "\"OSX\"\nPosted by @itamago here:\nhttps://github.com/ocornut/imgui/pull/511\n(hope I can use it)");

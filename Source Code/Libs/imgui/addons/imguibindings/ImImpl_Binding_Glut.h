@@ -216,7 +216,7 @@ static void GlutDrawGL()    {
             glutSetCursor(GLUT_CURSOR_NONE);
             //glfwSetInputMode(window, GLFW_CURSOR, io.MouseDrawCursor ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
             oldMustHideCursor = io.MouseDrawCursor;
-            oldCursor = ImGuiMouseCursor_Count_;
+            oldCursor = ImGuiMouseCursor_COUNT;
         }
         if (!io.MouseDrawCursor) {
             if (oldCursor!=ImGui::GetMouseCursor()) {
@@ -231,13 +231,13 @@ static void GlutDrawGL()    {
                     GLUT_CURSOR_BOTTOM_RIGHT_CORNER, //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
                     GLUT_CURSOR_INHERIT        //,ImGuiMouseCursor_Arrow
                 };
-                IM_ASSERT(sizeof(glutCursors)/sizeof(glutCursors[0])==ImGuiMouseCursor_Count_+1);
+                IM_ASSERT(sizeof(glutCursors)/sizeof(glutCursors[0])==ImGuiMouseCursor_COUNT+1);
                 glutSetCursor(glutCursors[oldCursor]);
             }
         }
 
-        if (io.WantMoveMouse)  {
-            // Set mouse position if requested by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
+        if (io.WantSetMousePos)  {
+            // Set mouse position if requested by io.WantSetMousePos flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
             glutWarpPointer((int)io.MousePos.x, (int)io.MousePos.y);;
         }
         /*else    {
@@ -261,7 +261,7 @@ static void GlutDrawGL()    {
     static const int numFramesDelay = 12;
     static int curFramesDelay = -1;
     if (!gImGuiPaused)	{
-        gImGuiWereOutsideImGui = !ImGui::IsMouseHoveringAnyWindow() && !ImGui::IsAnyItemActive();
+        gImGuiWereOutsideImGui = !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemActive();
         const bool imguiNeedsInputNow = !gImGuiWereOutsideImGui && (io.WantTextInput || io.MouseDelta.x!=0 || io.MouseDelta.y!=0 || io.MouseWheel!=0);// || io.MouseDownOwned[0] || io.MouseDownOwned[1] || io.MouseDownOwned[2]);
         if (gImGuiCapturesInput != imguiNeedsInputNow) {
             gImGuiCapturesInput = imguiNeedsInputNow;
@@ -275,6 +275,7 @@ static void GlutDrawGL()    {
 
         // Rendering
         ImGui::Render();
+        ImImpl_RenderDrawLists(ImGui::GetDrawData());
     }
     else {gImGuiWereOutsideImGui=true;curFramesDelay = -1;}
 
@@ -320,6 +321,9 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.DeltaTime = 1.0f/60.0f;                          // Time elapsed since last frame, in seconds (in this sample app we'll override this every frame because our timestep is variable)
     //io.PixelCenterOffset = 0.0f;                        // Align OpenGL texels
 
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;   // We can honor GetMouseCursor() values
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;    // We can honor io.WantSetMousePos requests (optional, rarely used)
+
     // Set up ImGui
     io.KeyMap[ImGuiKey_Tab] = 9;    // tab (ascii)
 
@@ -347,7 +351,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.KeyMap[ImGuiKey_Y] = 25;
     io.KeyMap[ImGuiKey_Z] = 26;
 
-    io.RenderDrawListsFn = ImImpl_RenderDrawLists;
+    //io.RenderDrawListsFn = ImImpl_RenderDrawLists;
 #ifndef _WIN32
     //io.SetClipboardTextFn = ImImpl_SetClipboardTextFn;
     //io.GetClipboardTextFn = ImImpl_GetClipboardTextFn;
@@ -488,6 +492,7 @@ static void ImImplMainLoopFrame()	{
 int ImImpl_Main(const ImImpl_InitParams* pOptionalInitParams,int argc, char** argv)
 {
     if (!InitBinding(pOptionalInitParams,argc,argv)) return -1;	
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     InitImGui(pOptionalInitParams);
     ImGuiIO& io = ImGui::GetIO();        

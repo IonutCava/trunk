@@ -265,7 +265,7 @@ struct DockContext
         m_docks.clear();
     }
 
-    Dock& getDock(const char* label, bool opened, const ImVec2& default_size)
+    Dock& getDock(const char* label, bool opened, const ImVec2& default_size, const ImVec2& default_pos)
     {
         ImU32 id = ImHash(label, 0);
 	for (int i = 0,iSz = m_docks.size(); i < iSz; ++i)
@@ -281,7 +281,7 @@ struct DockContext
         new_dock->id = id;
         new_dock->setActive();
         new_dock->status = (m_docks.size() == 1)?Status_Docked:Status_Float;
-        new_dock->pos = ImVec2(0, 0);
+        new_dock->pos = default_pos;
 	//new_dock->size = GetIO().DisplaySize;
 	new_dock->size.x = default_size.x < 0 ? GetIO().DisplaySize.x : default_size.x;
 	new_dock->size.y = default_size.y < 0 ? GetIO().DisplaySize.y : default_size.y;
@@ -449,15 +449,14 @@ struct DockContext
 
     static ImRect getDockedRect(const ImRect& rect, ImGuiDockSlot dock_slot)
     {
-        ImVec2 half_size = rect.GetSize() * 0.5f;
+	ImVec2 size = rect.GetSize();
         switch (dock_slot)
         {
         default: return rect;
-	//case ImGuiDockSlot_Top: return ImRect(rect.Min, ImVec2(rect.Max.x, rect.Min.y + half_size.y));	  //  original
-	case ImGuiDockSlot_Top: return ImRect(rect.Min, rect.Min + ImVec2(rect.Max.x - rect.Min.x, half_size.y)); //  @r-lyeh
-        case ImGuiDockSlot_Right: return ImRect(rect.Min + ImVec2(half_size.x, 0), rect.Max);
-        case ImGuiDockSlot_Bottom: return ImRect(rect.Min + ImVec2(0, half_size.y), rect.Max);
-        case ImGuiDockSlot_Left: return ImRect(rect.Min, ImVec2(rect.Min.x + half_size.x, rect.Max.y));
+	case ImGuiDockSlot_Top: return ImRect(rect.Min, rect.Min + ImVec2(size.x, size.y * 0.5f));
+	case ImGuiDockSlot_Right: return ImRect(rect.Min + ImVec2(size.x * 0.5f, 0), rect.Max);
+	case ImGuiDockSlot_Bottom: return ImRect(rect.Min + ImVec2(0, size.y * 0.5f), rect.Max);
+	case ImGuiDockSlot_Left: return ImRect(rect.Min, rect.Min + ImVec2(size.x * 0.5f, rect.GetSize().y));
         }
     }
 
@@ -593,10 +592,9 @@ struct DockContext
     {
         Dock* dest_dock = getDockAt(GetIO().MousePos);
 
+	SetNextWindowBgAlpha(0.0f);
 	Begin("##Overlay",
               NULL,
-	      ImVec2(0, 0),
-	      0.f,
               ImGuiWindowFlags_Tooltip | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove |
               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
               ImGuiWindowFlags_AlwaysAutoResize);
@@ -1083,11 +1081,11 @@ struct DockContext
 	}
     }
 
-    bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size)
+    bool begin(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& default_pos)
     {
 	IM_ASSERT(!m_is_begin_open);
 	m_is_begin_open = true;
-	Dock& dock = getDock(label, !opened || *opened, default_size);
+	Dock& dock = getDock(label, !opened || *opened, default_size, default_pos);
 	if (dock.last_frame != 0 && m_last_frame != ImGui::GetFrameCount())
 	{
 	    cleanDocks();
@@ -1287,35 +1285,27 @@ struct DockContext
 };
 
 
-static DockContext g_default_dock;
-static DockContext *g_dock = &g_default_dock;
+
+static DockContext *g_dock = NULL;
 
 DockContext* CreateDockContext()
 {
-    return new DockContext;
+    //return new DockContext; // Original code
+    DockContext* ptr = (DockContext*) ImGui::MemAlloc(sizeof(DockContext));IM_PLACEMENT_NEW (ptr) DockContext();return ptr; // Alternative
 }
 
 void DestroyDockContext(DockContext* dock)
 {
-    if (dock == &g_default_dock)
-    {
-        // No-op.
+    if (dock==g_dock) g_dock=NULL;
+    if (dock!=NULL) {
+	//delete dock;					// Original code
+	dock->~DockContext();ImGui::MemFree(dock);      // Alternative
     }
-    else
-    {
-        if (dock == g_dock)
-            SetCurrentDockContext(NULL);
 
-        delete dock;
-        dock = NULL;
-    }
 }
 
 void SetCurrentDockContext(DockContext* dock)
 {
-    if (!dock)
-        g_dock = &g_default_dock;
-    else
         g_dock = dock;
 }
 
@@ -1326,14 +1316,17 @@ DockContext* GetCurrentDockContext()
 
 void ShutdownDock()
 {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     g_dock->Shutdown();
 }
 
 void SetNextDock(ImGuiDockSlot slot) {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     g_dock->m_next_dock_slot = slot;
 }
 
 void BeginDockspace() {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoScrollbar;
     BeginChild("###workspace", ImVec2(0,0), false, flags);
     g_dock->m_workspace_pos = GetWindowPos();
@@ -1346,23 +1339,27 @@ void EndDockspace() {
 
 void SetDockActive()
 {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     g_dock->setDockActive();
 }
 
 
-bool BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size)
+bool BeginDock(const char* label, bool* opened, ImGuiWindowFlags extra_flags, const ImVec2& default_size, const ImVec2& default_pos)
 {
-    return g_dock->begin(label, opened, extra_flags, default_size);
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
+    return g_dock->begin(label, opened, extra_flags, default_size, default_pos);
 }
 
 
 void EndDock()
 {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     g_dock->end();
 }
 
 void DockDebugWindow()
 {
+    IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
     g_dock->debugWindow();
 }
 
@@ -1371,6 +1368,9 @@ void DockDebugWindow()
 #   ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
     bool SaveDock(ImGuiHelper::Serializer& s)	{
 	if (!s.isValid()) return false;
+
+	IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
+
 	DockContext& myDock = *g_dock;
 	ImVector<DockContext::Dock*>& m_docks = myDock.m_docks;
 
@@ -1455,6 +1455,9 @@ void DockDebugWindow()
     bool LoadDock(ImGuiHelper::Deserializer& d,const char ** pOptionalBufferStart)  {
 	if (!d.isValid()) return false;
 	const char* amount = pOptionalBufferStart ? (*pOptionalBufferStart) : 0;
+
+	IM_ASSERT(g_dock != NULL && "No current context. Did you call ImGui::CreateDockContext() or ImGui::SetCurrentDockContext()?");
+
 	DockContext& myDock = *g_dock;
 	ImVector<DockContext::Dock*>& m_docks = myDock.m_docks;
 	// clear

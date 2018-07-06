@@ -471,7 +471,9 @@ bool ColorChooser(bool* open,ImVec4 *pColorOut,bool supportsAlpha)   {
 
     if (open) ImGui::SetNextWindowFocus();
     //if (ImGui::BeginPopupModal("Color Chooser##myColorChoserPrivate",open,WindowFlags))
-    if (ImGui::Begin("Color Chooser##myColorChoserPrivate",open,windowSize,-1.f,WindowFlags))
+    //if (ImGui::Begin("Color Chooser##myColorChoserPrivate",open,windowSize,-1.f,WindowFlags)) // Old API
+    ImGui::SetNextWindowSize(windowSize, ImGuiCond_FirstUseEver);
+    if (ImGui::Begin("Color Chooser##myColorChoserPrivate",open,WindowFlags))
     {
         colorSelected = ColorChooserInternal(pColorOut,supportsAlpha,true);
 
@@ -1442,11 +1444,12 @@ inline static bool GlyphButton(ImGuiID id, const ImVec2& pos,const ImVec2& halfS
     bool hovered=false, held=false;
     bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held,ImGuiButtonFlags_PressedOnRelease);
     if (pHovered) *pHovered = hovered;
-    const bool isACheckedToggleButton = (toggleButtonState && *toggleButtonState);
-    const bool useNormalButtonStyle = (text && text[0]!='\0' && !isACheckedToggleButton);   // Otherwise use CloseButtonStyle
+    //const bool isACheckedToggleButton = (toggleButtonState && *toggleButtonState);
+    //const bool useNormalButtonStyle = (text && text[0]!='\0' && !isACheckedToggleButton);   // Otherwise use CloseButtonStyle
 
     // Render    
-    ImU32 col = GetColorU32((held && hovered) ? (useNormalButtonStyle ? ImGuiCol_ButtonActive : ImGuiCol_ButtonActive) : hovered ? (useNormalButtonStyle ? ImGuiCol_ButtonHovered : ImGuiCol_ButtonHovered) : (useNormalButtonStyle ? ImGuiCol_Button : ImGuiCol_Button));
+    //ImU32 col = GetColorU32((held && hovered) ? (useNormalButtonStyle ? ImGuiCol_ButtonActive : ImGuiCol_CloseButtonActive) : hovered ? (useNormalButtonStyle ? ImGuiCol_ButtonHovered : ImGuiCol_CloseButtonHovered) : (useNormalButtonStyle ? ImGuiCol_Button : ImGuiCol_CloseButton));
+    ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
     ImU32 textCol = GetColorU32(ImGuiCol_Text);
     if (!hovered) {
         col = (((col>>24)/2)<<24)|(col&0x00FFFFFF);
@@ -2306,7 +2309,11 @@ bool InputTextWithAutoCompletion(const char* label, char* buf, size_t buf_size, 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding,0);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding,ImVec2(0,0));
 
-            if (ImGui::Begin("##TooltipAutocomplete", NULL,ttWindowSize,InputTextWithAutoCompletionData::Opacity,ImGuiWindowFlags_Tooltip|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))  {
+            //if (ImGui::Begin("##TooltipAutocomplete", NULL,ttWindowSize,InputTextWithAutoCompletionData::Opacity,ImGuiWindowFlags_Tooltip|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))  // Old API
+            ImGui::SetNextWindowSize(ttWindowSize, ImGuiCond_FirstUseEver);
+            if (InputTextWithAutoCompletionData::Opacity>=0.f) ImGui::SetNextWindowBgAlpha(InputTextWithAutoCompletionData::Opacity);
+            if (ImGui::Begin("##TooltipAutocomplete", NULL,ImGuiWindowFlags_Tooltip|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))
+            {
                 // We must always use newCursorScreenPos when mnually drawing inside this window
                 if (!window) window = ImGui::GetCurrentWindowRead();
                 for (int i=firstTTItemIndex,iSz=firstTTItemIndex+numTTItems;i<iSz;i++) {
@@ -4064,12 +4071,12 @@ bool CheckboxStyled(const char* label, bool* v,const ImU32* pOptionalEightColors
     if (t>0) {
 	ImU32 fillColor0 = pOptionalEightColors ? ((held || hovered) ? pOptionalEightColors[5] : pOptionalEightColors[4]) :
 	    (GetColorU32((held || hovered) ? ImGuiCol_ButtonHovered : ImGuiCol_Button));
-        window->DrawList->AddRectFilled(innerFrame0.Min, innerFrame0.Max, fillColor0, rounding, t<1 ? 9 : 15);
+        window->DrawList->AddRectFilled(innerFrame0.Min, innerFrame0.Max, fillColor0, rounding, t<1 ? ImDrawCornerFlags_Left : ImDrawCornerFlags_All/*9 : 15*/);
     }
     if (t<1) {
 	ImU32 fillColor1 = pOptionalEightColors ? ((held || hovered) ? pOptionalEightColors[7] : pOptionalEightColors[6]) :
             (GetColorU32((held || hovered) ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg));
-        window->DrawList->AddRectFilled(innerFrame1.Min, innerFrame1.Max, fillColor1, rounding, t>0 ? 6 : 15);
+        window->DrawList->AddRectFilled(innerFrame1.Min, innerFrame1.Max, fillColor1, rounding, t>0 ?  ImDrawCornerFlags_Right : ImDrawCornerFlags_All/*6 : 15*/);
     }
     if (style.FrameBorderSize)   {
         ImRect innerFrame(innerFrame0.Min,innerFrame1.Max);

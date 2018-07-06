@@ -139,11 +139,26 @@ The TED / SID support is based on tedplay (c) 2012 Attila Grosz, used under Unli
 //#include <stdlib.h> // rand
 //#include <math.h> // sin
 
+#ifdef SOLOUD_NO_ASSERTS
+#define SOLOUD_ASSERT(x)
+#else
+#ifdef _MSC_VER
+#include <stdio.h> // for sprintf in asserts
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h> // only needed for OutputDebugStringA, should be solved somehow.
+#define SOLOUD_ASSERT(x) if (!(x)) { char temp[200]; sprintf(temp, "%s(%d): assert(%s) failed.\n", __FILE__, __LINE__, #x); OutputDebugStringA(temp); __debugbreak(); }
+#else
+#include <assert.h> // assert
+#define SOLOUD_ASSERT(x) assert(x)
+#endif
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265359
 #endif
 
-#ifdef _MSC_VER
+#if defined(_WIN32)||defined(_WIN64)
 #define WINDOWS_VERSION
 #endif
 
@@ -153,7 +168,7 @@ The TED / SID support is based on tedplay (c) 2012 Attila Grosz, used under Unli
 #endif
 #endif
 
-#define SOLOUD_VERSION 111
+#define SOLOUD_VERSION 201800
 
 /////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////
@@ -206,6 +221,17 @@ namespace SoLoud
 		// dtor
 		~AlignedFloatBuffer();
 	};
+
+    // Lightweight class that handles small aligned buffer to support vectorized operations
+    class TinyAlignedFloatBuffer
+    {
+    public:
+        float *mData; // aligned pointer
+        unsigned char mActualData[sizeof(float) * 16 + 16];
+
+        // ctor
+        TinyAlignedFloatBuffer();
+    };
 };
 
 //----soloud_filter.h-----------------------------------------------------------------------------------------
@@ -408,6 +434,8 @@ namespace SoLoud
 		float mOverallRelativePlaySpeed;
 		// How long this stream has played, in seconds.
 		time mStreamTime;
+        // Position of this stream, in seconds.
+        time mStreamPosition;
 		// Fader for the audio panning
 		Fader mPanFader;
 		// Fader for the audio volume
@@ -438,13 +466,15 @@ namespace SoLoud
 		unsigned int mLeftoverSamples;
 		// Number of samples to delay streaming
 		unsigned int mDelaySamples;
+        // When looping, start playing from this time
+        time mLoopPoint;
 
-		// Get N samples from the stream to the buffer
-		virtual void getAudio(float *aBuffer, unsigned int aSamples) = 0;
+        // Get N samples from the stream to the buffer. Report samples written.
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize) = 0;
 		// Has the stream ended?
 		virtual bool hasEnded() = 0;
 		// Seek to certain place in the stream. Base implementation is generic "tape" seek (and slow).
-		virtual void seek(time aSeconds, float *mScratch, unsigned int mScratchSize);
+        virtual result seek(time aSeconds, float *mScratch, unsigned int mScratchSize);
 		// Rewind stream. Base implementation returns NOT_IMPLEMENTED, meaning it can't rewind.
 		virtual result rewind();
 		// Get information. Returns 0 by default.
@@ -518,6 +548,8 @@ namespace SoLoud
 		AudioAttenuator *mAttenuator;
 		// User data related to audio collider
 		int mColliderData;
+        // When looping, start playing from this time
+        time mLoopPoint;
 
 		// CTor
 		AudioSource();
@@ -549,6 +581,11 @@ namespace SoLoud
 		// Set behavior for inaudible sounds
 		void setInaudibleBehavior(bool aMustTick, bool aKill);
 
+        // Set time to jump to when looping
+        void setLoopPoint(time aLoopPoint);
+        // Get current loop point value
+        time getLoopPoint();
+
 		// Set filter. Set to NULL to clear the filter.
 		virtual void setFilter(unsigned int aFilterId, Filter *aFilter);
 		// DTor
@@ -575,7 +612,7 @@ namespace SoLoud
 		float mVisualizationWaveData[256];
 
 		BusInstance(Bus *aParent);
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual bool hasEnded();
 		virtual ~BusInstance();
 	};
@@ -645,6 +682,8 @@ namespace SoLoud
 		void * mBackendData;
 		// Pointer for the audio thread mutex.
 		void * mAudioThreadMutex;
+        // Flag for when we're inside the mutex, used for debugging.
+        bool mInsideAudioThreadMutex;
 		// Called by SoLoud to shut down the back-end. If NULL, not called. Should be set by back-end.
 		soloudCallFunction mBackendCleanupFunc;
 
@@ -765,7 +804,11 @@ namespace SoLoud
 		unsigned int getMaxActiveVoiceCount() const;
 		// Query whether a voice is set to loop.
 		bool getLooping(handle aVoiceHandle);
+        // Get voice loop point value
+        time getLoopPoint(handle aVoiceHandle);
 		
+        // Set voice loop point value
+        void setLoopPoint(handle aVoiceHandle, time aLoopPoint);
 		// Set voice's loop state
 		void setLooping(handle aVoiceHandle, bool aLooping);
 		// Set current maximum active voice setting
@@ -893,7 +936,7 @@ namespace SoLoud
 		// Update list of active voices
 		void calcActiveVoices();
 		// Perform mixing for a specific bus
-		void mixBus(float *aBuffer, unsigned int aSamples, float *aScratch, unsigned int aBus, float aSamplerate, unsigned int aChannels);
+        void mixBus(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize, float *aScratch, unsigned int aBus, float aSamplerate, unsigned int aChannels);
 		// Max. number of active voices. Busses and tickable inaudibles also count against this.
 		unsigned int mMaxActiveVoices;
 		// Highest voice in use so far
@@ -1341,6 +1384,7 @@ namespace SoLoud
 {
 	class Wav;
 	class File;
+    class MemoryFile;
 
 	class WavInstance : public AudioSourceInstance
 	{
@@ -1348,16 +1392,16 @@ namespace SoLoud
 		unsigned int mOffset;
 	public:
 		WavInstance(Wav *aParent);
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual result rewind();
 		virtual bool hasEnded();
 	};
 
 	class Wav : public AudioSource
 	{
-		result loadwav(File *aReader);
-		result loadogg(stb_vorbis *aVorbis);
-		result testAndLoadFile(File *aReader);
+        result loadwav(MemoryFile *aReader);
+        result loadogg(MemoryFile *aReader);
+        result testAndLoadFile(MemoryFile *aReader);
 	public:
 		float *mData;
 		unsigned int mSampleCount;
@@ -1367,6 +1411,9 @@ namespace SoLoud
 		result load(const char *aFilename);
 		result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
 		result loadFile(File *aFile);
+        result loadRawWave(unsigned char *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1);
+        result loadRawWave(short *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1);
+        result loadRawWave(float *aMem, unsigned int aLength, float aSamplerate = 44100.0f, unsigned int aChannels = 1, bool aCopy = false, bool aTakeOwnership = true);
 		
 		virtual AudioSourceInstance *createInstance();
 		time getLength();
@@ -1392,7 +1439,7 @@ namespace SoLoud
 		float **mOggOutputs;
 	public:
 		WavStreamInstance(WavStream *aParent);
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual result rewind();
 		virtual bool hasEnded();
 		virtual ~WavStreamInstance();
@@ -1420,6 +1467,7 @@ namespace SoLoud
 		result loadFileToMem(File *aFile);		
 		virtual AudioSourceInstance *createInstance();
 		time getLength();
+
 	public:
 		result parse(File *aFile);
 	};
@@ -1438,7 +1486,7 @@ namespace SoLoud
         int mOffset;
     public:
         BasicwaveInstance(Basicwave *aParent);
-        virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
         virtual bool hasEnded();
     };
 
@@ -1447,7 +1495,7 @@ namespace SoLoud
     public:
         enum WAVEFORMS
         {
-            SINE = 0,
+            SINE,
             TRIANGLE,
             SQUARE,
             SAW,
@@ -1566,10 +1614,10 @@ public:
 	~resonator();
 };
 //----../src/audiosource/speech/klatt.h------------------------------------------------------------------------------
-#define KLATT_H
 #define CASCADE_PARALLEL      1
 #define ALL_PARALLEL          2
 #define NPAR                 40
+
 class klatt_frame
 {
 public:
@@ -1632,6 +1680,17 @@ public:
 };
 
 
+enum KLATT_WAVEFORM
+{
+    KW_SAW,
+    KW_TRIANGLE,
+    KW_SIN,
+    KW_SQUARE,
+    KW_PULSE,
+    KW_NOISE,
+    KW_WARBLE
+};
+
 class klatt
 {
 	// resonators
@@ -1640,6 +1699,11 @@ class klatt
 		      mParallelResoNasalPole, mNasalPole, mNasalZero, 
 			  mCritDampedGlotLowPassFilter, mDownSampLowPassFilter, mOutputLowPassFilter;
 public:
+    int mBaseF0;
+    float mBaseSpeed;
+    float mBaseDeclination;
+    int mBaseWaveform;
+
 	int mF0Flutter;
 	int mSampleRate;
 	int mNspFr;
@@ -1663,9 +1727,6 @@ public:
 	// State variables of sound sources
 
 	int mSkew;                  // Alternating jitter, in half-period units  
-	float mNatglotA;           // Makes waveshape of glottal pulse when open  
-	float mNatglotB;           // Makes waveshape of glottal pulse when open  
-	float mVWave;               // Ditto, but before multiplication by mVoicingAmpdb  
 	float mVLast;               // Previous output of voice  
 	float mNLast;               // Previous output of random number generator  
 	float mGlotLast;            // Previous value of glotout  
@@ -1675,17 +1736,17 @@ public:
 
 	float natural_source(int aNper);
 
-	void frame_init(klatt_frame *frame);
-	void flutter(klatt_frame *pars);
-	void pitch_synch_par_reset(klatt_frame *frame, int ns);
-	void parwave(klatt_frame *frame, short int *jwave);
-	void init();
+    void frame_init();
+    void flutter();
+    void pitch_synch_par_reset(int ns);
+    void parwave(short int *jwave);
+    void init(int aBaseFrequency = 1330, float aBaseSpeed = 10.0f, float aBaseDeclination = 0.5f, int aBaseWaveform = KW_SAW);
 	static int phone_to_elm(char *aPhoneme, int aCount, darray *aElement);
 
 	int mElementCount;
 	unsigned char *mElement;
 	int mElementIndex;
-	klatt_frame mKlattFramePars;
+    klatt_frame mFrame;
 	Element * mLastElement;
 	int mTStress;
 	int mNTStress;
@@ -1706,10 +1767,15 @@ namespace SoLoud
 	class Speech : public AudioSource
 	{
 	public:
+        int mBaseFrequency;
+        float mBaseSpeed;
+        float mBaseDeclination;
+        int mBaseWaveform;
 		int mFrames;
 		darray mElement;
 		Speech();
 		result setText(const char *aText);
+        result setParams(unsigned int aBaseFrequency = 1330, float aBaseSpeed = 10.0f, float aBaseDeclination = 0.5f, int aBaseWaveform = KW_TRIANGLE);
 		virtual ~Speech();
 		virtual AudioSourceInstance *createInstance();
 	};
@@ -1724,7 +1790,7 @@ namespace SoLoud
 	public:
 		SpeechInstance(Speech *aParent);
         virtual ~SpeechInstance();
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual result rewind();
 		virtual bool hasEnded();
 	};
@@ -1747,7 +1813,7 @@ namespace SoLoud
 	public:
 		ModplugInstance(Modplug *aParent);
 		virtual ~ModplugInstance();
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual bool hasEnded();
 	};
 
@@ -1822,7 +1888,7 @@ namespace SoLoud
 		int mRowTick;
 
 		MonotoneInstance(Monotone *aParent);
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamples, unsigned int aBufferSize);
 		virtual bool hasEnded();
 	};
 
@@ -1960,7 +2026,7 @@ namespace SoLoud
 
 	public:
 		SfxrInstance(Sfxr *aParent);
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual bool hasEnded();
 	};
 
@@ -2021,7 +2087,7 @@ namespace SoLoud
 
 		TedSidInstance(TedSid *aParent);
 		~TedSidInstance();
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual void tick();
 		virtual bool hasEnded();
 		virtual float getInfo(unsigned int aInfoKey);
@@ -2070,7 +2136,7 @@ namespace SoLoud
 		VicInstance(Vic *aParent);
 		~VicInstance();
 
-		virtual void getAudio(float *aBuffer, unsigned int aSamples);
+        virtual unsigned int getAudio(float *aBuffer, unsigned int aSamplesToRead, unsigned int aBufferSize);
 		virtual bool hasEnded();
 
 	private:
@@ -2138,7 +2204,7 @@ protected:
     };
 public:
     BasicPiano();
-    ~BasicPiano() {}
+    ~BasicPiano();
     inline bool isInited() const {return inited;}
     void init(SoLoud::Soloud& gSoloud,const int* pOptional18KeysOverrideFromFDiesisToB=NULL);
     void play();
@@ -2148,6 +2214,7 @@ protected:
     SoLoud::Bus gBus;
     int bushandle;
     static int DefaultKeys[18];     // From F# to B [by default, with each char casted to int: "1q2w3er5t6yu8i9o0p"]
+    static bool DefaultKeysDown[18];
 
     SoLoud::Basicwave gWave;		// Simple wave audio source
 

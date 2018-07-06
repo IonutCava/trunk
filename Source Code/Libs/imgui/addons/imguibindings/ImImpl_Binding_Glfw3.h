@@ -14,7 +14,7 @@
 #endif //IMGUI_GLFW_NO_NATIVE_CURSORS
 
 #ifdef GLFW_HAS_MOUSE_CURSOR_SUPPORT
-    static const int glfwCursorIds[ImGuiMouseCursor_Count_+1] = {
+    static const int glfwCursorIds[ImGuiMouseCursor_COUNT+1] = {
         GLFW_ARROW_CURSOR,
         GLFW_IBEAM_CURSOR,
         GLFW_HAND_CURSOR,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_ResizeAll,                  // Unused by ImGui
@@ -24,14 +24,14 @@
         GLFW_CROSSHAIR_CURSOR,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
         GLFW_ARROW_CURSOR         //,ImGuiMouseCursor_Arrow
     };
-    static GLFWcursor* glfwCursors[ImGuiMouseCursor_Count_+1];
+    static GLFWcursor* glfwCursors[ImGuiMouseCursor_COUNT+1];
 
 #else //GLFW_HAS_MOUSE_CURSOR_SUPPORT
 #ifndef IMGUI_GLFW_NO_NATIVE_CURSORS
 #   ifdef _WIN32
 #       define IMGUI_USE_WIN32_CURSORS     // Optional, but needs at window creation: wc.hCursor = LoadCursor( NULL, NULL); // Now the window class is inside glfw3... Not sure how I can access it...
 #       ifdef IMGUI_USE_WIN32_CURSORS
-    static const LPCTSTR win32CursorIds[ImGuiMouseCursor_Count_+1] = {
+    static const LPCTSTR win32CursorIds[ImGuiMouseCursor_COUNT+1] = {
         IDC_ARROW,
         IDC_IBEAM,
         IDC_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_Move,                  // Unused by ImGui
@@ -41,7 +41,7 @@
         IDC_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
         IDC_ARROW         //,ImGuiMouseCursor_Arrow
     };
-    static HCURSOR win32Cursors[ImGuiMouseCursor_Count_+1];
+    static HCURSOR win32Cursors[ImGuiMouseCursor_COUNT+1];
 #       endif //IMGUI_USE_WIN32_CURSORS
 #   else //_WIN32
 #       define IMGUI_USE_X11_CURSORS      // Optional (feel free to comment it out if you don't have X11)
@@ -53,7 +53,7 @@
 #           include <GLFW/glfw3native.h>        // GLFWAPI Display* glfwGetX11Display(void); //GLFWAPI Window glfwGetX11Window(GLFWwindow* window);
 #           include <X11/cursorfont.h>
     // 52 (closed hand)   58 (hand with forefinger) 124 (spray)   86  (pencil)  150 (wait)
-    static const unsigned int x11CursorIds[ImGuiMouseCursor_Count_+1] = {
+    static const unsigned int x11CursorIds[ImGuiMouseCursor_COUNT+1] = {
         2,//SDL_SYSTEM_CURSOR_ARROW,
         152,//SDL_SYSTEM_CURSOR_IBEAM,
         30,//SDL_SYSTEM_CURSOR_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_Move,                  // Unused by ImGui
@@ -63,7 +63,7 @@
         15,//SDL_SYSTEM_CURSOR_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
         2//SDL_SYSTEM_CURSOR_ARROW         //,ImGuiMouseCursor_Arrow
     };
-    static Cursor x11Cursors[ImGuiMouseCursor_Count_+1];
+    static Cursor x11Cursors[ImGuiMouseCursor_COUNT+1];
 #       endif //IMGUI_USE_X11_CURSORS
 #   endif //_WIN32
 #endif //IMGUI_GLFW_NO_NATIVE_CURSORS
@@ -215,6 +215,10 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.DisplaySize = ImVec2((float)fb_w, (float)fb_h);  // Display size, in pixels. For clamping windows positions.
     io.DeltaTime = 1.0f/60.0f;                          // Time elapsed since last frame, in seconds (in this sample app we'll override this every frame because our timestep is variable)
     //io.PixelCenterOffset = 0.0f;                        // Align OpenGL texels
+
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;   // We can honor GetMouseCursor() values
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;    // We can honor io.WantSetMousePos requests (optional, rarely used)
+
     io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;             // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
     io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
@@ -237,7 +241,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Y] = GLFW_KEY_Y;
     io.KeyMap[ImGuiKey_Z] = GLFW_KEY_Z;
 
-    io.RenderDrawListsFn = ImImpl_RenderDrawLists;
+    //io.RenderDrawListsFn = ImImpl_RenderDrawLists;
     io.SetClipboardTextFn = ImImpl_SetClipboardTextFn;
     io.GetClipboardTextFn = ImImpl_GetClipboardTextFn;
 #ifdef _WIN32
@@ -248,7 +252,6 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     InitImGuiFontTexture(pOptionalInitParams);
     InitImGuiProgram();
     InitImGuiBuffer();
-
 }
 
 
@@ -409,7 +412,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
         if (oldMustHideCursor!=io.MouseDrawCursor) {
             glfwSetInputMode(window, GLFW_CURSOR, io.MouseDrawCursor ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
             oldMustHideCursor = io.MouseDrawCursor;
-            oldCursor = ImGuiMouseCursor_Count_;
+            oldCursor = ImGuiMouseCursor_COUNT;
         }
         if (!io.MouseDrawCursor) {
             if (oldCursor!=ImGui::GetMouseCursor()) {
@@ -545,6 +548,8 @@ static void ImImplMainLoopFrame(void* userPtr)	{
             }
 #           undef MAP_BUTTON
 #           undef MAP_ANALOG
+            if (axes_count > 0 && buttons_count > 0) io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+            else io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
             }
             else {
                 // gEmulateGamepadWithKeyboard
@@ -581,6 +586,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 #               undef MAP_BUTTON_PRESSED
 #               undef MAP_BUTTON_DOWN
 #               undef MAP_ANALOG
+                io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
             }
         //------------------------------------------------------------------------
         }
@@ -600,8 +606,8 @@ static void ImImplMainLoopFrame(void* userPtr)	{
             g_MousePressed[i] = false;
         }
         if (!gImGuiPaused) {
-            if (io.WantMoveMouse)  {
-                // Set mouse position if requested by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
+            if (io.WantSetMousePos)  {
+                // Set mouse position if requested by io.WantSetMousePos flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
                 glfwSetCursorPos(window, (double)io.MousePos.x, (double)io.MousePos.y);
             }
             /*else    {
@@ -625,7 +631,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 
 
     if (!gImGuiPaused)	{
-        gImGuiWereOutsideImGui = !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive();
+        gImGuiWereOutsideImGui = !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemActive();
         const bool imguiNeedsInputNow = !gImGuiWereOutsideImGui && (io.WantTextInput || io.MouseDelta.x!=0 || io.MouseDelta.y!=0 || io.MouseWheel!=0  || io.MouseWheelH!=0);// || io.MouseDownOwned[0] || io.MouseDownOwned[1] || io.MouseDownOwned[2]);
         if (gImGuiCapturesInput != imguiNeedsInputNow) {
             gImGuiCapturesInput = imguiNeedsInputNow;
@@ -639,6 +645,7 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 
         // Rendering
         ImGui::Render();
+        ImImpl_RenderDrawLists(ImGui::GetDrawData());
     }
     else {gImGuiWereOutsideImGui=true;curFramesDelay = -1;}
 
@@ -668,21 +675,22 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 int ImImpl_Main(const ImImpl_InitParams* pOptionalInitParams,int argc, char** argv)
 {
     if (!InitBinding(pOptionalInitParams,argc,argv)) return -1;
+    IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     InitImGui(pOptionalInitParams);
-    ImGuiIO& io = ImGui::GetIO();        
+    ImGuiIO& io = ImGui::GetIO();
 
 ImImplMainLoopFrameStruct mainLoopFrameStruct;
     // New: create cursors-------------------------------------------
 #ifdef GLFW_HAS_MOUSE_CURSOR_SUPPORT
-        for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+        for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
             glfwCursors[i] = glfwCreateStandardCursor(glfwCursorIds[i]);
             if (i==0) glfwSetCursor(window,glfwCursors[i]);
         }
 #else //GLFW_HAS_MOUSE_CURSOR_SUPPORT
 #   ifndef IMGUI_GLFW_NO_NATIVE_CURSORS
 #       ifdef IMGUI_USE_WIN32_CURSORS
-        for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+        for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
             win32Cursors[i] = LoadCursor(NULL,(LPCTSTR) win32CursorIds[i]);
             if (i==0) SetCursor(win32Cursors[i]);
         }
@@ -691,7 +699,7 @@ ImImplMainLoopFrameStruct mainLoopFrameStruct;
         mainLoopFrameStruct.x11Window = glfwGetX11Window(window);
         //XColor white;white.red=white.green=white.blue=255;
         //XColor black;black.red=black.green=black.blue=0;
-        for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+        for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
             x11Cursors[i] = XCreateFontCursor(mainLoopFrameStruct.x11Display,x11CursorIds[i]);
             //XRecolorCursor(x11Display, x11Cursors[i], &white,&black);
             if (i==0) XDefineCursor(mainLoopFrameStruct.x11Display,mainLoopFrameStruct.x11Window,x11Cursors[i]);
@@ -727,7 +735,7 @@ ImImplMainLoopFrameStruct mainLoopFrameStruct;
 
     // New: delete cursors-------------------------------------------
 #   ifdef  GLFW_HAS_MOUSE_CURSOR_SUPPORT
-    for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+    for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
         glfwDestroyCursor(glfwCursors[i]);
     }
 #   else   //GLFW_HAS_MOUSE_CURSOR_SUPPORT
@@ -736,7 +744,7 @@ ImImplMainLoopFrameStruct mainLoopFrameStruct;
                 // Nothing to do
 #           elif defined IMGUI_USE_X11_CURSORS
                 XUndefineCursor(mainLoopFrameStruct.x11Display,mainLoopFrameStruct.x11Window);
-                for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+                for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
                     XFreeCursor(mainLoopFrameStruct.x11Display,x11Cursors[i]);
                 }
 #           endif

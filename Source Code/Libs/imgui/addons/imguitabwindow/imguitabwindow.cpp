@@ -438,7 +438,7 @@ void RenderTextVertical(const ImFont* font,ImDrawList* draw_list, float size, Im
                 while (s < text_end)
                 {
                     const char c = *s;
-                    if (ImCharIsSpace(c)) { s++; } else if (c == '\n') { s++; break; } else { break; }
+                    if (ImCharIsBlankA(c)) { s++; } else if (c == '\n') { s++; break; } else { break; }
                 }
                 continue;
             }
@@ -3318,8 +3318,14 @@ static bool TabButtonVertical(bool rotateCCW,const char *label, bool selected, b
     if (!drawListOverride) drawListOverride = window->DrawList;
 
     // Canvas
-    if (rotateCCW) ImGui::DrawListHelper::ImDrawListAddRectWithHorizontalGradient(drawListOverride,bb.Min, bb.Max,col,(selected || hovered || held)?tabStyle.fillColorGradientDeltaIn0_05:(-tabStyle.fillColorGradientDeltaIn0_05),tabStyle.colors[selected ? TabLabelStyle::Col_TabLabelSelectedBorder : TabLabelStyle::Col_TabLabelBorder],tabStyle.rounding,invertRounding ? (2|4) : (1|8),tabStyle.borderWidth);
-    else ImGui::DrawListHelper::ImDrawListAddRectWithHorizontalGradient(drawListOverride,bb.Min, bb.Max,col,(selected || hovered || held)?(-tabStyle.fillColorGradientDeltaIn0_05):tabStyle.fillColorGradientDeltaIn0_05,tabStyle.colors[selected ? TabLabelStyle::Col_TabLabelSelectedBorder : TabLabelStyle::Col_TabLabelBorder],tabStyle.rounding,invertRounding ? (1|8) : (2|4),tabStyle.borderWidth);
+    /*
+    ImDrawCornerFlags_TopLeft   = 1 << 0, // 0x1
+    ImDrawCornerFlags_TopRight  = 1 << 1, // 0x2
+    ImDrawCornerFlags_BotLeft   = 1 << 2, // 0x4
+    ImDrawCornerFlags_BotRight  = 1 << 3, // 0x8
+    */
+    if (rotateCCW) ImGui::DrawListHelper::ImDrawListAddRectWithHorizontalGradient(drawListOverride,bb.Min, bb.Max,col,(selected || hovered || held)?tabStyle.fillColorGradientDeltaIn0_05:(-tabStyle.fillColorGradientDeltaIn0_05),tabStyle.colors[selected ? TabLabelStyle::Col_TabLabelSelectedBorder : TabLabelStyle::Col_TabLabelBorder],tabStyle.rounding,invertRounding ? (2|8) : (1|4),tabStyle.borderWidth);
+    else ImGui::DrawListHelper::ImDrawListAddRectWithHorizontalGradient(drawListOverride,bb.Min, bb.Max,col,(selected || hovered || held)?(-tabStyle.fillColorGradientDeltaIn0_05):tabStyle.fillColorGradientDeltaIn0_05,tabStyle.colors[selected ? TabLabelStyle::Col_TabLabelSelectedBorder : TabLabelStyle::Col_TabLabelBorder],tabStyle.rounding,invertRounding ? (1|4) : (2|8),tabStyle.borderWidth);
 
     // Text
     ImGui::PushStyleColor(ImGuiCol_Text,ImGui::ColorConvertU32ToFloat4(colText));

@@ -11,7 +11,7 @@
 static HWND window = NULL;
 static ImVec2 mousePosScale(1.0f, 1.0f);
 
-static const LPCTSTR win32CursorIds[ImGuiMouseCursor_Count_+1] = {
+static const LPCTSTR win32CursorIds[ImGuiMouseCursor_COUNT+1] = {
     IDC_ARROW,
     IDC_IBEAM,
     IDC_SIZEALL,      //SDL_SYSTEM_CURSOR_HAND,    // or SDL_SYSTEM_CURSOR_SIZEALL  //ImGuiMouseCursor_ResizeAll,                  // Unused by ImGui
@@ -21,7 +21,7 @@ static const LPCTSTR win32CursorIds[ImGuiMouseCursor_Count_+1] = {
     IDC_SIZENWSE,     //ImGuiMouseCursor_ResizeNWSE,          // Unused by ImGui
     IDC_ARROW         //,ImGuiMouseCursor_Arrow
 };
-static HCURSOR win32Cursors[ImGuiMouseCursor_Count_+1];
+static HCURSOR win32Cursors[ImGuiMouseCursor_COUNT+1];
 
 
 // Notify OS Input Method Editor of text input position (e.g. when using Japanese/Chinese inputs, otherwise this isn't needed)
@@ -191,6 +191,9 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.DeltaTime = 1.0f/60.0f;                          // Time elapsed since last frame, in seconds (in this sample app we'll override this every frame because our timestep is variable)
     //io.PixelCenterOffset = 0.0f;                        // Align OpenGL texels
 
+    io.BackendFlags |= ImGuiBackendFlags_HasMouseCursors;   // We can honor GetMouseCursor() values
+    io.BackendFlags |= ImGuiBackendFlags_HasSetMousePos;    // We can honor io.WantSetMousePos requests (optional, rarely used)
+
     io.KeyMap[ImGuiKey_Tab] = VK_TAB;             // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
     io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
@@ -214,7 +217,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_Y] = 'Y';
     io.KeyMap[ImGuiKey_Z] = 'Z';
 
-    io.RenderDrawListsFn = ImImpl_RenderDrawLists;
+    //io.RenderDrawListsFn = ImImpl_RenderDrawLists;
     io.ImeSetInputScreenPosFn = ImImpl_ImeSetInputScreenPosFn;
 
     // 3 common init steps
@@ -229,6 +232,9 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
 // Application code
 int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInstance, HINSTANCE hPrevInstance,LPSTR lpCmdLine, int iCmdShow)
 {
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
     WNDCLASS wc;
     HWND hWnd;
     HDC hDC;
@@ -289,7 +295,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
     //----------------------------------------------------------------------------------
 
     // New: create cursors-------------------------------------------
-    for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+    for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
         win32Cursors[i] = LoadCursor(NULL,(LPCTSTR) win32CursorIds[i]);
         if (i==0) SetCursor(win32Cursors[i]);
     }
@@ -334,7 +340,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
     gImGuiInverseFPSClampOutsideImGui = pOptionalInitParams ? ((pOptionalInitParams->gFpsClampOutsideImGui!=0) ? (1.0f/pOptionalInitParams->gFpsClampOutsideImGui) : 1.0f) : -1.0f;
     gImGuiDynamicFPSInsideImGui = pOptionalInitParams ? pOptionalInitParams->gFpsDynamicInsideImGui : false;
 
-    ImGui::CreateContext();
+
     InitImGui(pOptionalInitParams);
     InitGL();
     if (gImGuiPostInitGLCallback) gImGuiPostInitGLCallback();
@@ -403,8 +409,8 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
             }
 
             if (!gImGuiPaused)	{
-                // Set OS mouse position if requested last frame by io.WantMoveMouse flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
-                if (io.WantMoveMouse)   {
+                // Set OS mouse position if requested last frame by io.WantSetMousePos flag (used when io.NavMovesTrue is enabled by user and using directional navigation)
+                if (io.WantSetMousePos)   {
                     POINT pos = { (int)io.MousePos.x, (int)io.MousePos.y };
                     ClientToScreen(hWnd, &pos);
                     SetCursorPos(pos.x, pos.y);
@@ -415,7 +421,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
                 if (oldMustHideCursor!=io.MouseDrawCursor) {
                     ShowCursor(!io.MouseDrawCursor);
                     oldMustHideCursor = io.MouseDrawCursor;
-                    oldCursor = ImGuiMouseCursor_Count_;
+                    oldCursor = ImGuiMouseCursor_COUNT;
                 }
                 if (!io.MouseDrawCursor) {
                     if (oldCursor!=ImGui::GetMouseCursor()) {
@@ -440,7 +446,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
         static const int numFramesDelay = 12;
         static int curFramesDelay = -1;
         if (!gImGuiPaused)	{
-            gImGuiWereOutsideImGui = !ImGui::IsMouseHoveringAnyWindow() && !ImGui::IsAnyItemActive();
+            gImGuiWereOutsideImGui = !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow) && !ImGui::IsAnyItemActive();
             const bool imguiNeedsInputNow = !gImGuiWereOutsideImGui && (io.WantTextInput || io.MouseDelta.x!=0 || io.MouseDelta.y!=0 || io.MouseWheel!=0);// || io.MouseDownOwned[0] || io.MouseDownOwned[1] || io.MouseDownOwned[2]);
             if (gImGuiCapturesInput != imguiNeedsInputNow) {
                 gImGuiCapturesInput = imguiNeedsInputNow;
@@ -454,6 +460,7 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
 
             // Rendering
             ImGui::Render();
+            ImImpl_RenderDrawLists(ImGui::GetDrawData());
         }
         else {gImGuiWereOutsideImGui=true;curFramesDelay = -1;}
 
@@ -477,13 +484,12 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
     }
 
     DestroyGL();
-    ImGui::DestroyContext();
     DestroyImGuiFontTexture();
     DestroyImGuiProgram();
     DestroyImGuiBuffer();
 
     // New: delete cursors-------------------------------------------
-    for (int i=0,isz=ImGuiMouseCursor_Count_+1;i<isz;i++) {
+    for (int i=0,isz=ImGuiMouseCursor_COUNT+1;i<isz;i++) {
         //DestroyCursor(win32Cursors[i]);   // Nope: LoadCursor() loads SHARED cursors that should not be destroyed
     }
     //---------------------------------------------------------------
@@ -495,6 +501,8 @@ int ImImpl_WinMain(const ImImpl_InitParams* pOptionalInitParams,HINSTANCE hInsta
 
     // destroy the window explicitly
     DestroyWindow( hWnd );
+
+    ImGui::DestroyContext();
 
     return msg.wParam;
 }

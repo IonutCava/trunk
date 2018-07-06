@@ -31,7 +31,7 @@ namespace Divide {
 
 namespace {
     std::array<int, to_base(Editor::Theme::COUNT)> imguiThemeMap = {
-        ImGuiStyle_Default,
+        ImGuiStyle_DefaultClassic,
         ImGuiStyle_DefaultDark,
         ImGuiStyle_Gray,
         ImGuiStyle_OSX,

@@ -6,7 +6,7 @@
 #endif //IMGUI_API
 
 enum ImGuiStyleEnum {
-    ImGuiStyle_Default=0,
+    ImGuiStyle_DefaultClassic=0,
     ImGuiStyle_DefaultDark,
     ImGuiStyle_DefaultLight,
     ImGuiStyle_Gray,        // This is the default theme of my main.cpp demo.
