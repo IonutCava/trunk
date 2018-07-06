@@ -26,6 +26,7 @@ bool glVertexBufferObject::Create(U32 usage)
 	ptrdiff_t	nSizeNormal = 0;
 	ptrdiff_t	nSizeTexcoord = 0;
 	ptrdiff_t	nSizeTangent = 0;
+	ptrdiff_t	nSizeBiTangent = 0;
 
 
 	if(!_dataPosition.empty()) {
@@ -50,11 +51,16 @@ bool glVertexBufferObject::Create(U32 usage)
 		nSizeTangent = _dataTangent.size()*sizeof(vec3);
 	}
 
+	if(!_dataBiTangent.empty()) {
+		nSizeBiTangent = _dataBiTangent.size()*sizeof(vec3);
+	}
+
 
 	_VBOoffsetPosition	= 0;
 	_VBOoffsetNormal	= _VBOoffsetPosition + nSizePosition;
 	_VBOoffsetTexcoord	= _VBOoffsetNormal + nSizeNormal;
 	_VBOoffsetTangent	= _VBOoffsetTexcoord + nSizeTexcoord;
+	_VBOoffsetBiTangent	= _VBOoffsetTangent + nSizeTangent;
 
 	glGenBuffers(1, &_VBOid);
 	if(_VBOid == 0) {
@@ -63,7 +69,7 @@ bool glVertexBufferObject::Create(U32 usage)
 	}
 	else {
 		glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
-		glBufferData(GL_ARRAY_BUFFER, nSizePosition+nSizeNormal+nSizeTexcoord+nSizeTangent, 0, usage);
+		glBufferData(GL_ARRAY_BUFFER, nSizePosition+nSizeNormal+nSizeTexcoord+nSizeTangent+nSizeBiTangent, 0, usage);
 
 		glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetPosition,	nSizePosition,	(const GLvoid*)(&_dataPosition[0]));
 
@@ -75,6 +81,9 @@ bool glVertexBufferObject::Create(U32 usage)
 
 		if(_dataTangent.size())
 			glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetTangent,	nSizeTangent,	(const GLvoid*)(&_dataTangent[0]));
+
+		if(_dataBiTangent.size())
+			glBufferSubData(GL_ARRAY_BUFFER, _VBOoffsetBiTangent,	nSizeBiTangent,	(const GLvoid*)(&_dataBiTangent[0]));
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
@@ -117,6 +126,12 @@ void glVertexBufferObject::Enable_VA()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(3, GL_FLOAT, 0, &(_dataTangent[0].x));
 	}
+
+	if(!_dataBiTangent.empty()) {
+		glClientActiveTexture(GL_TEXTURE0 + slot++);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(3, GL_FLOAT, 0, &(_dataBiTangent[0].x));
+	}
 }
 
 void glVertexBufferObject::Enable_VBO()
@@ -144,6 +159,13 @@ void glVertexBufferObject::Enable_VBO()
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glTexCoordPointer(3, GL_FLOAT, 0, (const GLvoid*)_VBOoffsetTangent);
 	}
+
+	if(!_dataBiTangent.empty()){
+		glClientActiveTexture(GL_TEXTURE0 + slot++);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glTexCoordPointer(3, GL_FLOAT, 0, (const GLvoid*)_VBOoffsetBiTangent);
+	}
+
 }
 
 void glVertexBufferObject::Disable_VA()
@@ -156,6 +178,11 @@ void glVertexBufferObject::Disable_VA()
 	}
 
 	if(!_dataTangent.empty()) {
+		glClientActiveTexture(GL_TEXTURE0 + slot++);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+
+	if(!_dataBiTangent.empty()){
 		glClientActiveTexture(GL_TEXTURE0 + slot++);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
@@ -177,6 +204,11 @@ void glVertexBufferObject::Disable_VBO()
 	}
 
 	if(!_dataTangent.empty()) {
+		glClientActiveTexture(GL_TEXTURE0 + slot++);
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
+
+	if(!_dataBiTangent.empty()){
 		glClientActiveTexture(GL_TEXTURE0 + slot++);
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}

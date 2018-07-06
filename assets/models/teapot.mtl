@@ -12,4 +12,4 @@ newmtl 01___Default
 	Kd 0.2941 0.2941 0.8902
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\meshaTeren.tga
+	map_Kd ..\textures\meshaTeren.tga

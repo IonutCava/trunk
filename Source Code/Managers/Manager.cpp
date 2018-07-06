@@ -1,4 +1,4 @@
-#include "Manager.h"
+#include "Headers/Manager.h"
 using namespace std;
 
 void Manager::add(const std::string& name, Resource* const res){
@@ -31,7 +31,7 @@ Resource* const Manager::find(const string& name){
 bool Manager::remove(Resource* const resource,bool force){
 	if(!resource){
 		Console::getInstance().errorfn("ResourceManager: Trying to remove NULL resource!");
-		return true; //delete pointer
+		return false;
 	}
 	string name(resource->getName());
 	if(name.empty()){

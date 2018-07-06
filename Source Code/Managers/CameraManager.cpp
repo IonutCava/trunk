@@ -1,5 +1,5 @@
-#include "CameraManager.h"
-#include "Rendering/Camera/FreeFlyCamera.h"
+#include "Headers/CameraManager.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 Camera* const CameraManager::getActiveCamera()
 {

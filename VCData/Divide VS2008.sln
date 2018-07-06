@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide", "Grafica\Grafica.vcproj", "{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide", "VisualStudioProjects\DIVIDE.vcproj", "{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

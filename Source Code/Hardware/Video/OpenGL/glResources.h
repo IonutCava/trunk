@@ -18,7 +18,6 @@
 #ifndef _GL_RESOURCES_H_
 #define _GL_RESOURCES_H_
 
-
 #include <gl/glew.h>
 //#define GL3_PROTOTYPES
 //#include <gl/gl3.h>

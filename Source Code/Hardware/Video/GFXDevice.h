@@ -34,7 +34,7 @@ public:
 	void initHardware(){_api.initHardware();}
 	void initDevice(){_api.initDevice();}
 	void resizeWindow(U16 w, U16 h);
-	inline void lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
+	inline void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
 	inline void idle() {_api.idle();}
 
 	inline mat4& getLightProjectionMatrix() {return _currentLightProjectionMatrix;}
@@ -57,6 +57,11 @@ public:
 	inline void enableFog(F32 density, F32* color){_api.enableFog(density,color);}
 
 	inline void toggle2D(bool _2D) {_api.toggle2D(_2D);}
+
+	inline void lockProjection(){_api.lockProjection();}
+	inline void releaseProjection(){_api.releaseProjection();}
+	inline void lockModelView(){_api.lockModelView();}
+	inline void releaseModelView(){_api.releaseModelView();}
 	inline void setOrthoProjection(const vec4& rect, const vec2& planes){_api.setOrthoProjection(rect,planes);}
 
 	inline void drawTextToScreen(Text* text){_api.drawTextToScreen(text);}
@@ -66,24 +71,14 @@ public:
 
 	
 	inline void drawBox3D(vec3 min, vec3 max){_api.drawBox3D(min,max);}
-	inline void drawBox3D(SceneGraphNode* node){_api.drawBox3D(node);}
-	inline void drawSphere3D(SceneGraphNode* node){_api.drawSphere3D(node);}
-	inline void drawQuad3D(SceneGraphNode* node){_api.drawQuad3D(node);}
-	inline void drawText3D(SceneGraphNode* node){_api.drawText3D(node);}
-	inline void drawBox3D(Box3D* const model){_api.drawBox3D(model);}
-	inline void drawSphere3D(Sphere3D* const model){_api.drawSphere3D(model);}
-	inline void drawQuad3D(Quad3D* const model){_api.drawQuad3D(model);}
-	inline void drawText3D(Text3D* const model){_api.drawText3D(model);}
 
-	void renderModel(SceneGraphNode* node);
+	void renderModel(Object3D* const model);
 	inline void renderElements(Type t, Format f, U32 count, const void* first_element){_api.renderElements(t,f,count,first_element);}
 	
 	inline void setMaterial(Material* mat){_api.setMaterial(mat);}
 
-	inline void setLight(U8 slot, unordered_map<std::string,vec4>& properties){_api.setLight(slot,properties);}
-	inline void createLight(U8 slot){_api.createLight(slot);}
-	inline void setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional = false){_api.setLightCameraMatrices(lightPosVector,lightTargetVector,directional);}
-	inline void restoreLightCameraMatrices(bool directional = false){_api.restoreLightCameraMatrices(directional);}
+	void setAmbientLight(const vec4& light){_api.setAmbientLight(light);}
+	inline void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){_api.setLight(slot,properties_v,properties_f,type);}
 
 	void toggleWireframe(bool state = false);
     void setDepthMapRendering(bool state) {_api.setDepthMapRendering(state);_depthMapRendering = state;}
@@ -91,9 +86,11 @@ public:
 
     inline void setDeferredShading(bool state) {_deferredShading = state;}
     inline bool getDeferredShading() {return _deferredShading;}
+    inline void setSSAOShading(bool state) {_ssaoShading = state;}
+    inline bool getSSAOShading() {return _ssaoShading;}
 
     inline bool wireframeRendering() {return _wireframeMode;}  
-	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax){_api.Screenshot(filename,xmin,ymin,xmax,ymax);}
+	inline void Screenshot(char *filename, const vec4& rect){_api.Screenshot(filename,rect);}
 
 	inline void setPrevShaderId(const U32& id) {_prevShaderId = id;}
 	inline const U32& getPrevShaderId() {return _prevShaderId;}
@@ -138,12 +135,13 @@ private:
 		   _wireframeMode = false;
 		   _depthMapRendering = false;
 		   _deferredShading = false;
+		   _ssaoShading = false;
 		   _prevShaderId = 0;
 		   _prevTextureId = 0;
 		   _prevMaterialId = 0;
 	   }
 	RenderAPIWrapper& _api;
-	bool _wireframeMode,_deferredShading,_depthMapRendering;
+	bool _wireframeMode,_deferredShading,_depthMapRendering,_ssaoShading;
 	mat4 _currentLightProjectionMatrix;
     U32  _prevShaderId, _prevTextureId;
 	I32  _prevMaterialId;

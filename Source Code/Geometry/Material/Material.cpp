@@ -1,6 +1,6 @@
-#include "Material.h"
+#include "Headers/Material.h"
 #include "Hardware/Video/Texture.h"
-#include "Managers/ResourceManager.h"
+#include "Managers/Headers/ResourceManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/XMLParser.h"
 

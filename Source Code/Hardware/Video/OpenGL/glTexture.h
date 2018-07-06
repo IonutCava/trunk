@@ -19,12 +19,9 @@
 #define _GL_TEXTURE_H_
 
 #include "resource.h"
-#include "Utility/Headers/BaseClasses.h"
 #include "../Texture.h"
-#include "TextureManager/ImageTools.h"
 
-class glTexture : public Texture
-{
+class glTexture : public Texture {
 
 public:
 	glTexture(U32 type, bool flipped = false) : Texture(flipped), _type(type) {}

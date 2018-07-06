@@ -1,18 +1,17 @@
-#include "Managers/ResourceManager.h"
+#include "Headers/ResourceManager.h"
 #include "Utility/Headers/Guardian.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Hardware/Audio/SFXDevice.h"
-#include "Hardware/Video/Light.h"
-#include "Terrain/Terrain.h"
-#include "Terrain/Water.h"
-#include "Importer/DVDConverter.h"
-#include "Hardware/Video/ShaderHandler.h"
-#include "Utility/Headers/BaseClasses.h"
-#include "Terrain/TerrainDescriptor.h"
-#include "Geometry/Predefined/Box3D.h"
-#include "Geometry/Predefined/Sphere3D.h"
-#include "Geometry/Predefined/Text3D.h"
-#include "Geometry/Predefined/Quad3D.h"
+#include "Hardware/Audio/AudioDescriptor.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Rendering/Lighting/Headers/Light.h"
+#include "Environment/Water/Headers/Water.h"
+#include "Environment/Terrain/Headers/Terrain.h"
+#include "Environment/Terrain/Headers/TerrainDescriptor.h"
+#include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 using namespace std;
 
 U32 maxAlloc = 0;
@@ -114,7 +113,7 @@ Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descri
 		else if (i == 1)
 			ptr = GFXDevice::getInstance().newTexture2D(descriptor.getFlag());
 		else{
-			Console::getInstance().errorfn("TextureManager: wrong number of files for cubemap texture: [ %s ]", descriptor.getName().c_str());
+			Console::getInstance().errorfn("ResourceManager: wrong number of files for cubemap texture: [ %s ]", descriptor.getName().c_str());
 			return NULL;
 		}
 
@@ -133,11 +132,11 @@ Shader* ResourceManager::loadResource<Shader>(const ResourceDescriptor& descript
 
 	Shader* ptr = dynamic_cast<Shader*>(loadResource(descriptor.getName()));
 	if(!ptr){
-		
+		ParamHandler& par = ParamHandler::getInstance();
 		ptr = GFXDevice::getInstance().newShader();
 
 		if(descriptor.getResourceLocation().compare("default") == 0)
-			ptr->setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation") + "/shaders/");
+			ptr->setResourceLocation(par.getParam<string>("assetsLocation") + "/" + par.getParam<string>("shaderLocation"));
 		else
 			ptr->setResourceLocation(descriptor.getResourceLocation());
 
@@ -212,6 +211,7 @@ Light* ResourceManager::loadResource<Light>(const ResourceDescriptor& descriptor
 
 	if(!ptr){
 
+		//descriptor ID is not the same as light ID. This is the light's slot!!
 		ptr = New Light(descriptor.getId());
 
 		if(!ptr) return NULL;

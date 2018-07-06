@@ -1,11 +1,11 @@
 #include "EventHandler.h"
 #include "InputManager.h"
-#include "Managers/SceneManager.h"
+#include "Managers/Headers/SceneManager.h"
 
 using namespace OIS;
 
 EventHandler::EventHandler(InputManagerInterface* pApp)
-: _pApplication(pApp)
+: _pApplication(pApp), _pJoystickMgr(NULL), _pEffectMgr(NULL)
 {
 	_activeScene = SceneManager::getInstance().getActiveScene();
 }

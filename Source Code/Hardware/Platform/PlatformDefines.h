@@ -1,7 +1,6 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
-
 //Data Types
 #define U8  unsigned char
 #define U16 unsigned short

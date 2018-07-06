@@ -18,9 +18,9 @@
 #ifndef _SHADER_HANDLER_H_
 #define _SHADER_HANDLER_H_
 
-#include "Utility/Headers/BaseClasses.h"
+#include "Core/Headers/BaseClasses.h"
 
-class Shader : public Resource{
+class Shader : public Resource {
 
 public:
     virtual void init(const std::string &vsFile, const std::string &fsFile) = 0;

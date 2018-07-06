@@ -79,9 +79,10 @@
 #define reverse_for_each BOOST_REVERSE_FOREACH
 #endif
 
-#include "Utility/Headers/MathClasses.h"
-#include "Utility/Headers/Console.h"
-#include "Rendering/Framerate.h" //For time management
+#include "Hardware/Platform/PlatformDefines.h" //For data types
+#include "Core/Math/Headers/MathClasses.h"     //For math classes (mat3,mat4,vec2,vec3,vec4 etc)
+#include "Rendering/Headers/Framerate.h"       //For time management
+#include "Core/Headers/Console.h"              //For printing to the standard output
 
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__

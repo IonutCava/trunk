@@ -18,11 +18,10 @@
 #ifndef _RENDER_API_H
 #define _RENDER_API_H
 
-#include "Hardware/Platform/PlatformDefines.h"
-#include "Utility/Headers/MathClasses.h"
+#include "Core/Math/Headers/MathClasses.h"
 
-class RenderState
-{
+class RenderState {
+
 public:
 	RenderState(bool enableCulling,
 		        bool enableBlend,
@@ -48,8 +47,8 @@ private:
 	bool _culling, _blend, _lighting, _textures,_enabled;
 };
 
-enum RenderAPI
-{
+enum RenderAPI {
+
 	OpenGL10,
 	OpenGL12,
 	OpenGL20,
@@ -59,11 +58,12 @@ enum RenderAPI
 	OpenGL32,
 	Direct3D8,
 	Direct3D9,
-	Direct3D10
+	Direct3D10,
+	PLACEHOLDER
 };
 
-enum Type
-{
+enum Type {
+
 	API_POINTS      = 0x0000,
 	LINES           = 0x0001,
 	LINE_LOOP       = 0x0002,
@@ -78,14 +78,21 @@ enum Type
 	
 };
 
-enum Format
-{
+enum Format{
+
 	_U8              = 0x0000,
 	_U16             = 0x0001,
 	_U32             = 0x0002,
 	_I8              = 0x0003,
 	_I16             = 0x0004,
 	_I32             = 0x0005
+};
+
+enum DetailLevel{
+
+	HIGH = 2,
+	MEDIUM = 1,
+	LOW = 0
 };
 
 //Forward declarations
@@ -109,19 +116,19 @@ class mat4;
 class Material;
 class SceneGraphNode;
 class Transform;
-
+enum LIGHT_TYPE;
 //Renderer Programming Interface
 class RenderAPIWrapper
 {
 
 protected:
-	RenderAPIWrapper() {}
+	RenderAPIWrapper() : _apiId(PLACEHOLDER){}
 
 	friend class GFXDevice;
 	
 	void setId(RenderAPI api) {_apiId = api;}
 	RenderAPI getId() { return _apiId;}
-	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx = false, bool inverty = false) = 0;
+	virtual void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false) = 0;
 	virtual void idle() = 0;
 	virtual void getModelViewMatrix(mat4& mvMat) = 0;
 	virtual void getProjectionMatrix(mat4& projMat) = 0;
@@ -147,9 +154,14 @@ protected:
 	/*Rendering States*/
 
 	/*State Matrix Manipulation*/
-	virtual void toggle2D(bool _2D) = 0;
 	virtual void setOrthoProjection(const vec4& rect, const vec2& planes) = 0;
+	virtual void lockProjection() = 0;
+	virtual void releaseProjection() = 0;
+	virtual void lockModelView() = 0;
+	virtual void releaseModelView() = 0;
 	/*State Matrix Manipulation*/
+
+	virtual void toggle2D(bool _2D) = 0;
 
 	/*GUI Rendering*/
 	virtual void drawTextToScreen(Text*) = 0;
@@ -160,18 +172,10 @@ protected:
 
 	/*Primitives Rendering*/
 	virtual void drawBox3D(vec3 min, vec3 max) = 0;
-	virtual void drawBox3D(Box3D* const box) = 0;
-	virtual void drawSphere3D(Sphere3D* const sphere) = 0;
-	virtual void drawQuad3D(Quad3D* const quad) = 0;
-	virtual void drawText3D(Text3D* const text) = 0;
-	virtual void drawBox3D(SceneGraphNode* node) = 0;
-	virtual void drawSphere3D(SceneGraphNode* node) = 0;
-	virtual void drawQuad3D(SceneGraphNode* node) = 0;
-	virtual void drawText3D(SceneGraphNode* node) = 0;
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/
-	virtual void renderModel(SceneGraphNode* node) = 0;
+	virtual void renderModel(Object3D* const model) = 0;
 	virtual void renderElements(Type t, Format f, U32 count, const void* first_element) = 0;
 	/*Mesh Rendering*/
 
@@ -180,14 +184,12 @@ protected:
 	/*Color Management*/
 
 	/*Light Management*/
-	virtual void setLight(U8 slot, unordered_map<std::string,vec4>& properties) = 0;
-	virtual void createLight(U8 slot) = 0;
-	virtual void setLightCameraMatrices(const vec3& lightVector, const vec3& lightTargetVector,bool directional = false) = 0;
-	virtual void restoreLightCameraMatrices(bool directional = false) = 0;
+	virtual void setAmbientLight(const vec4& light) = 0;
+	virtual void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type) = 0;
 	/*Light Management*/
 
 	virtual void setDepthMapRendering(bool state) = 0;
-	virtual void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax) = 0;
+	virtual void Screenshot(char *filename, const vec4& rect) = 0;
 	virtual void ignoreStateChanges(bool state) = 0;
 	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPIWrapper(){};

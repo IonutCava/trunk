@@ -1,6 +1,5 @@
-#include "Framerate.h"
-#include <iostream>
-#include "Utility/Headers/Console.h"
+#include "Headers/Framerate.h"
+#include "Core/Headers/Console.h"
 
 F32 max(const F32& a, const F32& b){
 	return (a<b) ? b : a;

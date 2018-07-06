@@ -1,6 +1,6 @@
-#include "AIEntity.h"
-#include "ActionInterface/ActionList.h"
-#include "EngineGraphs/SceneGraphNode.h"
+#include "Headers/AIEntity.h"
+#include "ActionInterface/Headers/ActionList.h"
+#include "Graphs/Headers/SceneGraphNode.h"
 
 AIEntity::AIEntity(const std::string& name) : _name(name),
 											  _coordination(New AICoordination()),

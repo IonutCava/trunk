@@ -15,13 +15,12 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef _TEXTURE_H
+#define _TEXTURE_H
 
 #include "resource.h"
-#include "Utility/Headers/BaseClasses.h"
-#include "TextureManager/ImageTools.h"
-
+#include "Utility/Headers/ImageTools.h"
+#include "Core/Headers/BaseClasses.h"
 
 class Texture : public Resource
 {

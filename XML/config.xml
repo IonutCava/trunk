@@ -22,11 +22,18 @@
 </runtime>	
 
 <rendering>
+	<!-- detail level: low = 0, medium = 1, high = 2 -->
+	<detailLevel>2</detailLevel>
+	<enableShadows>true</enableShadows>
+	<shadowDetailLevel>2</shadowDetailLevel>
 	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
+	<enableSSAO>true</enableSSAO>
 </rendering>
     
+<title>DIVIDE Framework</title>
+<defaultTextureLocation>../textures/</defaultTextureLocation>

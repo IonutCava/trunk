@@ -1,0 +1,361 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>Divide</ProjectName>
+    <ProjectGuid>{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}</ProjectGuid>
+    <RootNamespace>Grafica</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v90</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)../</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</EmbedManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)../</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</EmbedManifest>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_VC100_dbg</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectName)_VC100</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <OpenMPSupport>false</OpenMPSupport>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Link>
+      <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Debug;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\includes\sdl;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code\Libs\includes\MultiModalInput;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxTask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <OpenMPSupport>false</OpenMPSupport>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(TargetPath)</OutputFile>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib\Release;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightImpostor.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
+    <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp" />
+    <ClCompile Include="..\..\Source Code\PhysX\PhysXSceneInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
+    <ClCompile Include="..\..\Source Code\GUI\GUIFlash.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISEffect.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISException.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISForceFeedback.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISInputManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISJoyStick.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISKeyboard.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\OISObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32ForceFeedback.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32InputManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32JoyStick.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32KeyBoard.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\MultiModalInput\win32\Win32Mouse.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Terrain.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\Quadtree.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\Quadtree\QuadtreeNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Sky\Sky.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Water\Water.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Vegetation\Vegetation.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\Event.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\Guardian.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\ImageTools.cpp" />
+    <ClCompile Include="..\..\Source Code\Utility\XMLParser.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Application.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Console.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\Quaternion.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\Scene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene\AITenisSceneAIActionList.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\CubeScene\CubeScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\FlashScene\FlashScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\MainScene\MainScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXImplementation.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Texture.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIO.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\Manager.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\ResourceManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Material\Material.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\Bones.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\cAnimationController.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Importer\DVDConverter.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Mesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Object3D.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\SubMesh.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\RenderQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\SceneGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\SceneGraphNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\Sensors\CommunicationSensor.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\Sensors\VisualSensor.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\Coordination.cpp" />
+    <ClCompile Include="..\..\Source Code\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\OrbitCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightImpostor.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\Framerate.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h" />
+    <ClInclude Include="..\..\Source Code\PhysX\PhysX.h" />
+    <ClInclude Include="..\..\Source Code\PhysX\PhysXSceneInterface.h" />
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
+    <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\Terrain.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainChunk.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainDescriptor.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sky.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Water\Headers\Water.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Vegetation\Headers\Vegetation.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\BoundingBox.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\Guardian.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\XMLParser.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\BaseClasses.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Console.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathClasses.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathHelper.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Quaternion.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Ray.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\Transform.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene\Headers\AITenisSceneAIActionList.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\CubeScene\Headers\CubeScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\FlashScene\Headers\FlashScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\MainScene\Headers\MainScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXImplementation.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PhysXScene\Headers\PhysXScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\NetworkScene\Headers\NetworkScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\PingPongScene\Headers\PingPongScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\Headers\Scene.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\EventHandler.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\InputManager.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\InputVariables.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Input\JoystickManager.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\FrameBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\GFXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\PixelBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\RenderAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\ShaderHandler.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Texture.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\VertexBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glResources.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glShader.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glTexture.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glVertexBufferObject.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\AudioAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\AudioDescriptor.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\SFXDevice.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\FmodWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\ALWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Libs\includes\networking\OPCodes.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\AIManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\CameraManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\LightManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\Manager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\ResourceManager.h" />
+    <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\Material.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bones.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\cAnimationController.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Object3D.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SubMesh.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Box3D.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Quad3D.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Sphere3D.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Text3D.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\RenderQueue.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraph.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraphNode.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SpatialGraph.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\CommunicationSensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\ActionList.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\Headers\Coordination.h" />
+    <ClInclude Include="..\..\Source Code\AI\Headers\AIEntity.h" />
+    <ClInclude Include="..\..\Source Code\config.h" />
+    <ClInclude Include="..\..\Source Code\readme.h" />
+    <ClInclude Include="..\..\Source Code\resource.h" />
+    <ClInclude Include="..\..\Source Code\SceneList.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\shaders\GLSL\high\anaglyph.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\anaglyph.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\blur.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\blur.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\bright.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\bright.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_bump.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass1_color.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\DeferredShadingPass2.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\lighting.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\lighting.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\OBJ.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\OBJ.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\postProcessing.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\postProcessing.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\sky.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\sky.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass1.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass1.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass2.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\SSAOPass2.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_grass.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_grass.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_ground.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_ground.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_tree.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\terrain_tree.vert" />
+    <None Include="..\..\assets\shaders\GLSL\high\water.frag" />
+    <None Include="..\..\assets\shaders\GLSL\high\water.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\anaglyph.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\anaglyph.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\blur.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\blur.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\bright.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\bright.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_bump.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass1_color.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\DeferredShadingPass2.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\lighting.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\lighting.vert" />
+    <None Include="..\..\assets\shaders\GLSL\low\sky.frag" />
+    <None Include="..\..\assets\shaders\GLSL\low\sky.vert" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

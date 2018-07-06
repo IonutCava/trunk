@@ -18,7 +18,6 @@
 #ifndef _PIXEL_BUFFER_OBJECT_H
 #define _PIXEL_BUFFER_OBJECT_H
 
-#include <iostream>
 #include "Hardware/Platform/PlatformDefines.h"
 
 class PixelBufferObject 

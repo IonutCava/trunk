@@ -1,15 +1,19 @@
-#include "Scene.h"
-#include "Managers/SceneManager.h" //Object selection
-#include "Managers/AIManager.h"
+#include "Headers/Scene.h"
+
 #include "ASIO.h"
-#include "Terrain/Terrain.h"
+#include "GUI/Headers/GUI.h"
 #include "Utility/Headers/Guardian.h"
-#include "Geometry/Predefined/Box3D.h"
-#include "Geometry/Predefined/Quad3D.h"
-#include "Geometry/Predefined/Sphere3D.h"
-#include "Geometry/Predefined/Text3D.h"
-#include "GUI/GUI.h"
 #include "Utility/Headers/XMLParser.h"
+#include "Managers/Headers/SceneManager.h" //Object selection
+#include "Managers/Headers/AIManager.h"
+#include "Environment/Terrain/Headers/Terrain.h"
+#include "Environment/Terrain/Headers/TerrainDescriptor.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+
 using namespace std;
 
 
@@ -20,7 +24,7 @@ bool Scene::clean(){ //Called when application is idle
 
 	bool _updated = false;
 	if(!PendingDataArray.empty())
-	for(vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); iter++)
+	for(vector<FileData>::iterator iter = PendingDataArray.begin(); iter != PendingDataArray.end(); ++iter)
 	{
 		if(!loadModel(*iter))
 		{
@@ -34,7 +38,7 @@ bool Scene::clean(){ //Called when application is idle
 		else
 		{
 			vector<FileData>::iterator iter2;
-			for(iter2 = ModelDataArray.begin(); iter2 != ModelDataArray.end(); iter2++)
+			for(iter2 = ModelDataArray.begin(); iter2 != ModelDataArray.end(); ++iter2)
 			{
 				if((*iter2).ItemName.compare((*iter).ItemName) == 0)
 				{
@@ -82,8 +86,8 @@ void Scene::setInitialData(){
 	}
 }	
 
-bool Scene::loadModel(const FileData& data)
-{
+bool Scene::loadModel(const FileData& data){
+
 	if(data.type == PRIMITIVE)	return loadGeometry(data);
 
 	ResourceDescriptor model(data.ItemName);
@@ -110,20 +114,20 @@ bool Scene::loadGeometry(const FileData& data){
 	item.setResourceLocation(data.ModelName);
 	if(data.ModelName.compare("Box3D") == 0) {
 			thisObj = _resManager.loadResource<Box3D>(item);
-			dynamic_cast<Box3D*>(thisObj)->getSize() = data.data;
+			dynamic_cast<Box3D*>(thisObj)->setSize(data.data);
 
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
 			thisObj = _resManager.loadResource<Sphere3D>(item);
-			dynamic_cast<Sphere3D*>(thisObj)->getSize() = data.data;
+			dynamic_cast<Sphere3D*>(thisObj)->setSize(data.data);
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3 scale = data.scale;
 			vec3 position = data.position;
 			thisObj = _resManager.loadResource<Quad3D>(item);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_LEFT)     = vec3(0,1,0);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::TOP_RIGHT)    = vec3(1,1,0);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_LEFT)  = vec3(0,0,0);
-			dynamic_cast<Quad3D*>(thisObj)->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(1,0,0);
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3(0,1,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3(1,1,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3(0,0,0));
+			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3(1,0,0));
 	} else if(data.ModelName.compare("Text3D") == 0) {
 		
 			thisObj =_resManager.loadResource<Text3D>(item);
@@ -146,22 +150,25 @@ bool Scene::loadGeometry(const FileData& data){
 	thisObjSGN->getTransform()->scale(data.scale);
 	thisObjSGN->getTransform()->rotateEuler(data.orientation);
 	thisObjSGN->getTransform()->translate(data.position);
-
 	return true;
 }
 
-bool Scene::addDefaultLight(){
-	
-	F32 oldSize = _lights.size();
-	stringstream ss; ss << oldSize;
+void Scene::addLight(Light* const lightItem){
+	LightManager::getInstance().addLight(lightItem);
+}
+
+Light* Scene::addDefaultLight(){
+	stringstream ss; ss << LightManager::getInstance().getLights().size();
 	ResourceDescriptor defaultLight("Default omni light "+ss.str());
-	defaultLight.setId(0);
+	defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
 	defaultLight.setResourceLocation("root");
 	Light* l = _resManager.loadResource<Light>(defaultLight);
+	l->setLightType(LIGHT_DIRECTIONAL);
 	_sceneGraph->getRoot()->addNode(l);
-	_lights.push_back(l);
-	if(_lights.size() > oldSize) return true;	
-	else return false;
+	addLight(l);
+	vec4 ambientColor(0.1f, 0.1f, 0.1f, 1.0f);
+	LightManager::getInstance().setAmbientLight(ambientColor);
+	return l;	
 }
 
 SceneGraphNode* Scene::addGeometry(Object3D* const object){
@@ -188,7 +195,7 @@ bool Scene::load(const std::string& name){
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
 		ResourceDescriptor terrain(TerrainInfoArray[i]->getVariable("terrainName"));
 		Terrain* temp = _resManager.loadResource<Terrain>(terrain);
-		SceneGraphNode* terrainTemp = _sceneGraph->getRoot()->addNode(temp);
+		SceneGraphNode* terrainTemp = root->addNode(temp);
 		terrainTemp->useDefaultTransform(false);
 		terrainTemp->setTransform(NULL);
 		terrainTemp->setActive(TerrainInfoArray[i]->getActive());
@@ -239,7 +246,7 @@ void Scene::clearObjects(){
 }
 
 void Scene::clearLights(){
-	_lights.empty();
+	LightManager::getInstance().clear();
 }
 
 void Scene::clearEvents()
@@ -314,16 +321,16 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 
 	switch(key.key){
 		case OIS::KC_LEFT : 
-			Application::getInstance().angleLR = -(speedFactor/8);
+			Application::getInstance().angleLR = -(speedFactor/5);
 			break;
 		case OIS::KC_RIGHT : 
-			Application::getInstance().angleLR = speedFactor/8;
+			Application::getInstance().angleLR = speedFactor/5;
 			break;
 		case OIS::KC_UP : 
-			Application::getInstance().angleUD = -(speedFactor/8);
+			Application::getInstance().angleUD = -(speedFactor/5);
 			break;
 		case OIS::KC_DOWN : 
-			Application::getInstance().angleUD = speedFactor/8;
+			Application::getInstance().angleUD = speedFactor/5;
 			break;
 		case OIS::KC_END:
 			SceneManager::getInstance().deleteSelection();
@@ -340,8 +347,11 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_ADD:
 			if (speedFactor < 10)  speedFactor += 0.1f;
 			break;
-			case OIS::KC_SUBTRACT:
+		case OIS::KC_SUBTRACT:
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
+			break;
+		case OIS::KC_F12:
+			GFXDevice::getInstance().Screenshot("screenshot_",vec4(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
 			break;
 		default:
 			break;
@@ -370,18 +380,18 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 
 	if(axis == 1){
 		if(key.state.mAxes[axis].abs > 0)
-			Application::getInstance().angleLR = speedFactor/8;
+			Application::getInstance().angleLR = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			Application::getInstance().angleLR = -(speedFactor/8);
+			Application::getInstance().angleLR = -(speedFactor/5);
 		else
 			Application::getInstance().angleLR = 0;
 
 	}else if(axis == 0){
 
 		if(key.state.mAxes[axis].abs > 0)
-			Application::getInstance().angleUD = speedFactor/8;
+			Application::getInstance().angleUD = speedFactor/5;
 		else if(key.state.mAxes[axis].abs < 0)
-			Application::getInstance().angleUD = -(speedFactor/8);
+			Application::getInstance().angleUD = -(speedFactor/5);
 		else
 			Application::getInstance().angleUD = 0;
 	}

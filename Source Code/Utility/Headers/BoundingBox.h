@@ -17,10 +17,10 @@
 
 #ifndef BOUNDINGBOX_H_
 #define BOUNDINGBOX_H_
-#include "Utility/Headers/Ray.h"
+
+#include "Core/Math/Headers/Ray.h"
 //ToDo: -Add BoundingSphere -Ionut
-class BoundingBox
-{
+class BoundingBox {
 public:
 	BoundingBox() {
 		_min.reset();

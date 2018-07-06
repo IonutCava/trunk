@@ -1,5 +1,5 @@
-#include "Coordination.h"
-#include "AI/AIEntity.h"
+#include "Headers/Coordination.h"
+#include "AI/Headers/AIEntity.h"
 
 bool AICoordination::addTeamMember(AIEntity* entity) {
 	_updateMutex.lock();

@@ -1,9 +1,9 @@
 #include "Headers/XMLParser.h"
 #include "Headers/Guardian.h"
-#include "Headers/ParamHandler.h"
-#include "Managers/SceneManager.h"
-#include "Managers/ResourceManager.h"
-#include "Rendering/Application.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Application.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Environment/Terrain/Headers/TerrainDescriptor.h"
 #include "SceneList.h"
 using namespace std;
 
@@ -18,6 +18,7 @@ namespace XML
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
+		par.setParam("shaderFolder",pt.get("shaderFolder","shaders"));
 		par.setParam("scenesLocation",pt.get("scenes","Scenes"));
 		par.setParam("serverAddress",pt.get("server","127.0.0.1"));
 		loadConfig(par.getParam<string>("scriptLocation") + "/" + pt.get("config","config.xml"));
@@ -37,6 +38,11 @@ namespace XML
 		par.setParam("memFile",pt.get("debug.memFile","none"));
 		par.setParam("groundPos", pt.get("runtime.groundPos",-2000.0f));
 		par.setParam("simSpeed",pt.get("runtime.simSpeed",1));
+		par.setParam("appTitle",pt.get("title","DIVIDE Framework"));
+		par.setParam("detailLevel",pt.get<U8>("rendering.detailLevel",HIGH));
+		par.setParam("enableShadows",pt.get("rendering.enableShadows", true));
+		par.setParam("shadowDetailLevel",pt.get<U8>("rendering.shadowDetailLevel",HIGH));
+		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","../textures/"));
 		I32 winWidth = pt.get("runtime.windowWidth",1024);
 		I32 winHeight = pt.get("runtime.windowHeight",768);
 		par.setParam("zNear",(F32)pt.get("runtime.zNear",0.1f));
@@ -45,6 +51,7 @@ namespace XML
 		par.setParam("aspectRatio",1.0f * winWidth / winHeight);
 		par.setParam("windowWidth",winWidth);
 		par.setParam("windowHeight",winHeight);
+		
 		Application::getInstance().setWindowHeight(winHeight);
 		Application::getInstance().setWindowWidth(winWidth);
 		bool postProcessing = pt.get("rendering.enablePostFX",false);
@@ -58,6 +65,7 @@ namespace XML
 			par.setParam("enableNoise",pt.get("rendering.enableNoise",false));
 			par.setParam("enableDepthOfField",pt.get("rendering.enableDepthOfField",false));
 			par.setParam("enableBloom",pt.get("rendering.enableBloom",false));
+			par.setParam("enableSSAO",pt.get("rendering.enableSSAO",false));
 		}
 	}
 
@@ -104,7 +112,7 @@ namespace XML
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
-		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); it++ )	{
+		for (it = pt.get_child("terrainList").begin(); it != pt.get_child("terrainList").end(); ++it )	{
 			string name = it->second.data(); //The actual terrain name
 			string tag = it->first.data();   //The <name> tag for valid terrains or <xmlcomment> for comments
 			//Check and skip commented terrain
@@ -240,7 +248,6 @@ namespace XML
 	}
 
 	Material* loadMaterial(const string &file){
-		Material* mat = NULL;
 	
 		string location = par.getParam<string>("scriptLocation") + "/" + 
 				                    par.getParam<string>("scenesLocation") + "/" +
@@ -309,6 +316,13 @@ namespace XML
 			}else{
 				mat->setShader("");
 			}
+		}
+		if(boost::optional<ptree &> child = pt.get_child_optional("renderState")){
+			RenderState& renderState = mat->getRenderState();
+			renderState.cullingEnabled() = pt.get<bool>("renderState.cullingEnabled",true);
+			renderState.blendingEnabled() = pt.get<bool>("renderState.blendingEnabled",false);
+			renderState.lightingEnabled() =  pt.get<bool>("renderState.lightingEnabled",true);
+			renderState.texturesEnabled() = pt.get<bool>("renderState.texturesEnabled",true);
 		}
 	
 		return mat;
@@ -391,10 +405,14 @@ namespace XML
 		
 		Shader* s = mat->getShader();
 		if(s){
-			pt.put("shader.pixelShader",s->getFragName());
 			pt.put("shader.vertexShader",s->getVertName());
+			pt.put("shader.pixelShader",s->getFragName());
 		}
-		
+		RenderState& state = mat->getRenderState();
+		pt.put("renderState.cullingEnabled", state.cullingEnabled());
+		pt.put("renderState.blendingEnabled", state.blendingEnabled());
+		pt.put("renderState.lightingEnabled", state.lightingEnabled());
+		pt.put("renderState.texturesEnabled", state.texturesEnabled());
 		boost::property_tree::xml_writer_settings<char> settings('\t', 1);
 		FILE * xml = fopen(fileLocation.c_str(), "w");
 		write_xml(fileLocation, pt,std::locale(),settings);

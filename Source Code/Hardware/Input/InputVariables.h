@@ -161,7 +161,7 @@ class VariableEffect
 		_pEffect = NULL;
 	  }
 	  MapVariables::iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
+	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
 		  if (iterVars->second){
 			delete iterVars->second;
 			iterVars->second = NULL;
@@ -196,7 +196,7 @@ class VariableEffect
 	  {
 		// Update the variables.
 		MapVariables::iterator iterVars;
-		for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
+		for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
 		  iterVars->second->update();
 
 		// Apply the updated variable values to the effect.
@@ -207,7 +207,7 @@ class VariableEffect
     void reset()
     {
 	  MapVariables::iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
+	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
 		iterVars->second->reset();
 	  _pfApplyVariables(_mapVariables, _pEffect);
     }
@@ -216,7 +216,7 @@ class VariableEffect
     {
 	  std::string str;
 	  MapVariables::const_iterator iterVars;
-	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); iterVars++)
+	  for (iterVars = _mapVariables.begin(); iterVars != _mapVariables.end(); ++iterVars)
 		str += iterVars->first + ":" + iterVars->second->toString() + " ";
 	  return str;
 	}

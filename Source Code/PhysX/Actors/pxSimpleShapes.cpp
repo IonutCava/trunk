@@ -1,10 +1,10 @@
-#include "PhysX/PhysX.h"
-#include "PhysX/PhysXSceneInterface.h"
-#include "Utility/Headers/Transform.h"
+#include "PhysX/Headers/PhysX.h"
+#include "PhysX/Headers/PhysXSceneInterface.h"
+#include "Core/Math/Headers/Transform.h"
+
 using namespace physx;
 
-bool PhysX::createPlane(PhysXSceneInterface* targetScene, vec3& position,F32 size){
-	PxReal d = 0.0f;  
+bool PhysX::createPlane(PhysXSceneInterface* targetScene,const vec3& position,U32 size){
 	PxTransform pose = PxTransform(PxVec3(position.x,position.y,position.z),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
 	PxRigidStatic* plane = _gPhysicsSDK->createRigidStatic(pose);
 	if (!plane){
@@ -20,7 +20,7 @@ bool PhysX::createPlane(PhysXSceneInterface* targetScene, vec3& position,F32 siz
 	return true;
 }
 
-bool PhysX::createBox(PhysXSceneInterface* targetScene, vec3& position, F32 size){
+bool PhysX::createBox(PhysXSceneInterface* targetScene,const vec3& position, F32 size){
 	PxReal density = 1.0f;
 	PxTransform transform(PxVec3(position.x,position.y,position.z), PxQuat::createIdentity());
 	PxVec3 dimensions(size ,size ,size );

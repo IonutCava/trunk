@@ -1,12 +1,14 @@
-#include "cAnimationController.h"
+#include "Headers/cAnimationController.h"
 #include <assimp.hpp>      // C++ importer interface
 #include <aiScene.h> 
 #include <aiPostProcess.h> // Post processing flags
-#include "Utility/Headers/Quaternion.h" 
+#include "Core/Math/Headers/Quaternion.h" 
 
 #ifndef OUTPUT_DEBUG_MSG // nothing special about this, I use the console for standard debug info
-	#define OUTPUT_DEBUG_MSG(x) {												\
-		std::cout<<x<<std::endl;													     	\
+	#define OUTPUT_DEBUG_MSG(x) {		                    \
+	std::stringstream s;								    \
+	s << x;								  				    \
+	Console::getInstance().printfn("%s", s.str().c_str());	\
 	}
 #endif
 
@@ -38,6 +40,7 @@ void TransformMatrix(mat4& out,const aiMatrix4x4& in){// there is some type of a
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation. 
 cAnimEvaluator::cAnimEvaluator( const aiAnimation* pAnim) {
+	PlayAnimationForward = false;
 	mLastTime = 0.0;
 	TicksPerSecond = static_cast<float>(pAnim->mTicksPerSecond != 0.0f ? pAnim->mTicksPerSecond : 100.0f);
 	Duration = static_cast<float>(pAnim->mDuration);
@@ -169,7 +172,7 @@ void cAnimEvaluator::Evaluate( float pTime, std::map<std::string, cBone*>& bones
 
 		// ******** Position *****
 		aiVector3D presentPosition( 0, 0, 0);
-		if( channel->mPositionKeys.size() > 0){
+		if(!channel->mPositionKeys.empty()){
 			// Look for present frame number. Search from last position if time is after the last time, else from beginning
 			// Should be much quicker than always looking from start for the average use case.
 			//U32 frame = (time >= mLastTime) ? std::get<0>(mLastPositions[a]): 0;
@@ -200,7 +203,7 @@ void cAnimEvaluator::Evaluate( float pTime, std::map<std::string, cBone*>& bones
 		}
 		// ******** Rotation *********
 		aiQuaternion presentRotation( 1, 0, 0, 0);
-		if( channel->mRotationKeys.size() > 0)
+		if(!channel->mRotationKeys.empty())
 		{
 			//U32 frame = (time >= mLastTime) ? std::get<1>(mLastPositions[a]) : 0;
 			U32 frame = (time >= mLastTime) ? mLastPositions[a].y : 0;
@@ -227,7 +230,7 @@ void cAnimEvaluator::Evaluate( float pTime, std::map<std::string, cBone*>& bones
 
 		// ******** Scaling **********
 		aiVector3D presentScaling( 1, 1, 1);
-		if( channel->mScalingKeys.size() > 0) {
+		if(!channel->mScalingKeys.empty()) {
 			//U32 frame = (time >= mLastTime) ? std::get<2>(mLastPositions[a]) : 0;
 			U32 frame = (time >= mLastTime) ? mLastPositions[a].z : 0;
 			while( frame < channel->mScalingKeys.size() - 1){
@@ -283,7 +286,7 @@ void SceneAnimator::Init(const aiScene* pScene){// this will build the skeleton 
 					}
 				}
 				if(!skip){// only insert the bone if it has not already been inserted
-					std::string tes = found->second->Name;
+					//std::string tes = found->second->Name;
 					TransformMatrix(found->second->Offset, bone->mOffsetMatrix);
 					//found->second->Offset.Transpose();// transpoce their matrix to get in the correct format
 					Bones.push_back(found->second);
@@ -343,7 +346,7 @@ void SceneAnimator::Load(std::ifstream& file){
 	for(U32 i(0); i< Animations.size(); i++){// get all the animation names so I can reference them by name and get the correct id
 		AnimationNameToId.insert(std::map<std::string, U32>::value_type(Animations[i].Name, i));
 	}
-	if(Animations.size() >0) CurrentAnimIndex =0;// set it to the first animation if there are any
+	if(!Animations.empty()) CurrentAnimIndex =0;// set it to the first animation if there are any
 	char bname[250];
 	file.read(reinterpret_cast<char*>(&nsize), sizeof(U32));// the number of bones
 	Bones.resize(nsize);

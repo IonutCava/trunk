@@ -19,8 +19,8 @@
 #define _INPUT_MANAGER_H_
 
 #include "JoystickManager.h"
-#include "Rendering/Application.h"
-#include "Utility/Headers/Singleton.h"
+#include "Core/Headers/Application.h"
+
 #if defined OIS_WIN32_PLATFORM
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -171,7 +171,7 @@ class EffectManager{
     ~EffectManager()
     {
 	  std::vector<VariableEffect*>::iterator iterEffs;
-	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); iterEffs++)
+	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs)
 		delete *iterEffs;
 	   *iterEffs = NULL;
 	}
@@ -179,7 +179,7 @@ class EffectManager{
     void updateActiveEffects()
     {
 	  std::vector<VariableEffect*>::iterator iterEffs;
-	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); iterEffs++)
+	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs)
 		if ((*iterEffs)->isActive())
 		{
 		  (*iterEffs)->update();

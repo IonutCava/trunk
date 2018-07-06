@@ -1,9 +1,9 @@
-#include "SceneManager.h"
-#include "Managers/CameraManager.h"
-#include "Rendering/Application.h"
-#include "Rendering/Frustum.h"
+#include "Headers/SceneManager.h"
+#include "Headers//CameraManager.h"
+#include "Core/Headers/Application.h"
+#include "Rendering/Headers/Frustum.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 #include "SceneList.h"
-#include "Utility/Headers/ParamHandler.h"
 
 using namespace std;
 

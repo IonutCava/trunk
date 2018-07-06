@@ -20,8 +20,7 @@
 
 #include "../PixelBufferObject.h"
 
-class glPixelBufferObject : public PixelBufferObject
-{
+class glPixelBufferObject : public PixelBufferObject {
 public:
 
 	glPixelBufferObject();

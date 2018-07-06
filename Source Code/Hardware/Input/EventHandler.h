@@ -19,7 +19,7 @@
 #define _INPUT_EVENT_HANDLER_H_
 
 #include "OIS.h"
-#include "Hardware/Platform/PlatformDefines.h"
+#include "Core/Headers/BaseClasses.h"
 #include <boost/thread.hpp>
 
 class InputManagerInterface;

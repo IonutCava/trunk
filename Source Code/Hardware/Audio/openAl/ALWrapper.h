@@ -19,7 +19,6 @@
 #define _WRAPPER_AL_H_
 
 #include "../AudioAPIWrapper.h"
-#include "Utility/Headers/Singleton.h"
 
 DEFINE_SINGLETON_EXT1(AL_API,AudioAPIWrapper)
 

@@ -1,11 +1,12 @@
-#include "PostFX.h"
-#include "Rendering/Application.h"
+#include "Headers/PostFX.h"
+
+#include "Core/Headers/Application.h"
 #include "Hardware/Video/FrameBufferObject.h"
-#include "Geometry/Predefined/Quad3D.h"
-#include "Utility/Headers/ParamHandler.h"
-#include "Managers/CameraManager.h"
-#include "Managers/SceneManager.h"
-#include "Managers/ResourceManager.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Managers/Headers/CameraManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/ResourceManager.h"
 
 PostFX::PostFX(): _underwaterTexture(NULL),
 	_renderQuad(NULL),
@@ -13,7 +14,10 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_postProcessingShader(NULL),
 	_blurShader(NULL),
 	_bloomShader(NULL),
+	_SSAOShaderPass1(NULL),
+	_SSAOShaderPass2(NULL),
 	_noise(NULL),
+	_colorNoise(NULL),
 	_screenBorder(NULL),
 	_tempBloomFBO(NULL),
 	_bloomFBO(NULL),
@@ -21,13 +25,14 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_depthOfFieldFBO(NULL),
 	_depthFBO(NULL),
 	_screenFBO(NULL),
+	_SSAO_FBO(NULL),
+	_normalMapFBO(NULL),
 	_gfx(GFXDevice::getInstance()){
 	_anaglyphFBO[0] = NULL;
 	_anaglyphFBO[1] = NULL;
 }
 
 PostFX::~PostFX(){
-	ParamHandler& par = ParamHandler::getInstance();
 	if(_underwaterTexture){
 		RemoveResource(_underwaterTexture);
 	}
@@ -84,6 +89,19 @@ PostFX::~PostFX(){
 			RemoveResource(_noise);
 			RemoveResource(_screenBorder);
 		}
+		if(_enableSSAO){
+			if(_SSAO_FBO){
+				delete _SSAO_FBO;
+				_SSAO_FBO = NULL;
+			}
+			if(_normalMapFBO){
+				delete _normalMapFBO;
+				_normalMapFBO = NULL;
+			}
+			RemoveResource(_SSAOShaderPass1);
+			RemoveResource(_SSAOShaderPass2);
+			RemoveResource(_colorNoise);
+		}
 
 	}
 }
@@ -94,6 +112,7 @@ void PostFX::init(){
 	_enablePostProcessing = par.getParam<bool>("enablePostFX");
 	_enableAnaglyph = par.getParam<bool>("enable3D");
 	_enableBloom = par.getParam<bool>("enableBloom");
+	_enableSSAO = par.getParam<bool>("enableSSAO");
 	_enableDOF = par.getParam<bool>("enableDepthOfField");
 	_enableNoise = par.getParam<bool>("enableNoise");
 	_bloomShader = NULL;
@@ -112,6 +131,15 @@ void PostFX::init(){
 			_bloomShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("bright"));
 			_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
 		}
+		if(_enableSSAO){
+			_SSAO_FBO = _gfx.newFBO();
+			_normalMapFBO = _gfx.newFBO();
+			_SSAOShaderPass1 = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("SSAOPass1"));
+			_SSAOShaderPass2 = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("SSAOPass2"));
+			ResourceDescriptor colorNoiseTexture("noiseTexture");
+			colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");
+			_colorNoise = ResourceManager::getInstance().loadResource<Texture>(colorNoiseTexture);
+		}
 		if(_enableDOF){
 			_depthOfFieldFBO = _gfx.newFBO();
 			_tempDepthOfFieldFBO = _gfx.newFBO();
@@ -120,7 +148,7 @@ void PostFX::init(){
 			}
 		}
 		if(_enableNoise){
-			ResourceDescriptor noiseTexture("noieTexture");
+			ResourceDescriptor noiseTexture("noiseTexture");
 			ResourceDescriptor borderTexture("borderTexture");
 			noiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//bruit_gaussien.jpg");
 			borderTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//vignette.jpeg");
@@ -139,10 +167,10 @@ void PostFX::init(){
 	mrt.setFlag(true); //No default Material;
 	_renderQuad = ResourceManager::getInstance().loadResource<Quad3D>(mrt);
 	assert(_renderQuad);
-	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
-	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
-	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
-	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
+	_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3(0, height, 0));
+	_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3(width, height, 0));
+	_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3(0,0,0));
+	_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width, 0, 0));
 	ResourceDescriptor textureWaterCaustics("Underwater Caustics");
 	textureWaterCaustics.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
 	_underwaterTexture = ResourceManager::getInstance().loadResource<Texture2D>(textureWaterCaustics);
@@ -156,19 +184,17 @@ void PostFX::init(){
 
 void PostFX::reshapeFBO(I32 width , I32 height){
 	
-	ParamHandler& par = ParamHandler::getInstance();
-
-	if((D32)width / (D32)height != 1.33){
-		height = width/1.33;
+	if((D32)width / (D32)height != 1.3333){
+		height = width/1.3333;
 	}
 
 
 	_screenFBO->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
 	_depthFBO->Create(FrameBufferObject::FBO_2D_DEPTH, width, height);
-	_renderQuad->getCorner(Quad3D::TOP_LEFT) = vec3(0, height, 0);
-	_renderQuad->getCorner(Quad3D::TOP_RIGHT) = vec3(width, height, 0);
-	_renderQuad->getCorner(Quad3D::BOTTOM_LEFT) = vec3(0,0,0);
-	_renderQuad->getCorner(Quad3D::BOTTOM_RIGHT) = vec3(width, 0, 0);
+	_renderQuad->setCorner(Quad3D::TOP_LEFT, vec3(0, height, 0));
+	_renderQuad->setCorner(Quad3D::TOP_RIGHT, vec3(width, height, 0));
+	_renderQuad->setCorner(Quad3D::BOTTOM_LEFT, vec3(0,0,0));
+	_renderQuad->setCorner(Quad3D::BOTTOM_RIGHT, vec3(width, 0, 0));
 
 	if(!_enablePostProcessing) return;
 	if(_enableAnaglyph){
@@ -179,11 +205,16 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 		_tempDepthOfFieldFBO->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
 		_depthOfFieldFBO->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
 	}
+	if(_enableSSAO){
+		_SSAO_FBO->Create(FrameBufferObject::FBO_2D_COLOR, width, height);
+		_normalMapFBO->Create(FrameBufferObject::FBO_2D_COLOR, width,height);
+	}
 	if(_enableBloom){
 		I32 w = width/4, h = height/4;
 		_bloomFBO->Create(FrameBufferObject::FBO_2D_COLOR, w, h);
 		_tempBloomFBO->Create(FrameBufferObject::FBO_2D_COLOR, w, h);
 	}
+
 
 }
 
@@ -215,7 +246,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 		_anaglyphShader->UniformTexture("texLeftEye", 0);
 		_anaglyphShader->UniformTexture("texRightEye", 1);
 		_gfx.toggle2D(true);
-		_gfx.drawQuad3D(_renderQuad);
+		_gfx.renderModel(_renderQuad);
 		_gfx.toggle2D(false);
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
@@ -250,7 +281,9 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 	if(_enableBloom){
 		generateBloomTexture();
 	}
-
+	if(_enableSSAO){
+		generateSSAOFBO();
+	}
 	if(_enableDOF){
 		generateDepthOfFieldTexture();
 	}
@@ -265,6 +298,7 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		
 		_postProcessingShader->UniformTexture("texScreen", id++);
 		_postProcessingShader->Uniform("enable_bloom",_enableBloom);
+		_postProcessingShader->Uniform("enable_ssao",_enableSSAO);
 		_postProcessingShader->Uniform("enable_vignette",_enableNoise);
 		_postProcessingShader->Uniform("enable_noise",_enableNoise);
 		_postProcessingShader->Uniform("enable_pdc",_enableDOF);
@@ -285,7 +319,11 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		if(_enableBloom){
 			_bloomFBO->Bind(id);
 			_postProcessingShader->UniformTexture("texBloom", id++);
-			_postProcessingShader->Uniform("bloom_factor", 4.0f);
+			_postProcessingShader->Uniform("bloom_factor", 0.3f);
+		}
+		if(_enableSSAO){
+			_SSAO_FBO->Bind(id);
+			_postProcessingShader->UniformTexture("texSSAO", id++);
 		}
 
 		if(_enableNoise){
@@ -299,14 +337,16 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 		}
 
 		_gfx.toggle2D(true);
-		_gfx.drawQuad3D(_renderQuad);
+		_gfx.renderModel(_renderQuad);
 		_gfx.toggle2D(false);
 
 		if(_enableNoise){
 			_screenBorder->Unbind(--id);
 			_noise->Unbind(--id);
 		}
-
+		if(_enableSSAO){
+			_SSAO_FBO->Unbind(--id);
+		}
 		if(_enableBloom){
 			_bloomFBO->Unbind(--id);
 		}
@@ -364,11 +404,11 @@ void PostFX::generateBloomTexture(){
 		_bloomShader->bind();
 
 			_screenFBO->Bind(0);
-
+				
 				_bloomShader->UniformTexture("texScreen", 0);
 				_bloomShader->Uniform("threshold", 0.95f);
 				_gfx.toggle2D(true);
-				_gfx.drawQuad3D(_renderQuad);
+				_gfx.renderModel(_renderQuad);
 				_gfx.toggle2D(false);
 
 			_screenFBO->Unbind(0);
@@ -391,7 +431,7 @@ void PostFX::generateBloomTexture(){
 				_blurShader->Uniform("horizontal", true);
 				_blurShader->Uniform("kernel_size", 10);
 				_gfx.toggle2D(true);
-				_gfx.drawQuad3D(_renderQuad);
+				_gfx.renderModel(_renderQuad);
 				_gfx.toggle2D(false);
 			_bloomFBO->Unbind(0);
 		
@@ -412,13 +452,45 @@ void PostFX::generateBloomTexture(){
 				_blurShader->Uniform("size", vec2((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
 				_blurShader->Uniform("horizontal", false);
 				_gfx.toggle2D(true);
-				_gfx.drawQuad3D(_renderQuad);
+				_gfx.renderModel(_renderQuad);
 				_gfx.toggle2D(false);
 			_tempBloomFBO->Unbind(0);
 		
 		_blurShader->unbind();
 		
 	_bloomFBO->End();
+}
+
+void PostFX::generateSSAOFBO(){
+	ParamHandler& par = ParamHandler::getInstance();
+	_gfx.setSSAOShading(true);
+	_normalMapFBO->Begin();
+		//_SSAOShaderPass1->bind();
+			_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			SceneManager::getInstance().render();
+		//_SSAOShaderPass1->unbind();
+	_normalMapFBO->End();
+
+	_SSAO_FBO->Begin();
+	_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_SSAOShaderPass2->bind();
+			_normalMapFBO->Bind(0);
+			_colorNoise->Bind(1);
+			_SSAOShaderPass2->UniformTexture("normalMap",0);
+			_SSAOShaderPass2->UniformTexture("rnm",1);
+			_SSAOShaderPass2->Uniform("totStrength",  1.38f);
+			_SSAOShaderPass2->Uniform("strength", 0.07f);
+			_SSAOShaderPass2->Uniform("offset", 18.0f);
+			_SSAOShaderPass2->Uniform("falloff", 0.000002f);
+			_SSAOShaderPass2->Uniform("rad", 0.006f);
+			_gfx.toggle2D(true);
+			_gfx.renderModel(_renderQuad);
+			_gfx.toggle2D(false);
+			_colorNoise->Unbind(1);
+			_normalMapFBO->Unbind(0);
+		_SSAOShaderPass2->unbind();
+	_SSAO_FBO->End();
+	_gfx.setSSAOShading(false);
 }
 
 void PostFX::generateDepthOfFieldTexture(){
@@ -439,7 +511,7 @@ void PostFX::generateDepthOfFieldTexture(){
 			_blurShader->UniformTexture("texDepth",1);
 		
 			_gfx.toggle2D(true);
-			_gfx.drawQuad3D(_renderQuad);
+			_gfx.renderModel(_renderQuad);
 			_gfx.toggle2D(false);
 				
 			_depthFBO->Unbind(1);
@@ -466,7 +538,7 @@ void PostFX::generateDepthOfFieldTexture(){
 			_blurShader->UniformTexture("texDepth",1);
 					
 			_gfx.toggle2D(true);
-			_gfx.drawQuad3D(_renderQuad);
+			_gfx.renderModel(_renderQuad);
 			_gfx.toggle2D(false);
 				
 			_depthFBO->Unbind(1);

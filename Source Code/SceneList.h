@@ -18,11 +18,11 @@
 #ifndef _DIVIDE_SCENE_LIST_H_
 #define _DIVIDE_SCENE_LIST_H_
 
-#include "Scenes/MainScene.h"
-#include "Scenes/CubeScene.h"
-#include "Scenes/NetworkScene.h"
-#include "Scenes/PingPongScene.h"
-#include "Scenes/FlashScene.h"
-#include "Scenes/AITenisScene.h"
-#include "Scenes/PhysXScene.h"
+#include "Scenes/MainScene/Headers/MainScene.h"
+#include "Scenes/CubeScene/Headers/CubeScene.h"
+#include "Scenes/NetworkScene/Headers/NetworkScene.h"
+#include "Scenes/PingPongScene/Headers/PingPongScene.h"
+#include "Scenes/FlashScene/Headers/FlashScene.h"
+#include "Scenes/AITenisScene/Headers/AITenisScene.h"
+#include "Scenes/PhysXScene/Headers/PhysXScene.h"
 #endif

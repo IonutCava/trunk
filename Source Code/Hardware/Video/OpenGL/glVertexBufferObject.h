@@ -20,8 +20,7 @@
 
 #include "../VertexBufferObject.h"
 
-class glVertexBufferObject : public VertexBufferObject
-{
+class glVertexBufferObject : public VertexBufferObject {
 
 public:
 	bool        Create();

@@ -1,15 +1,14 @@
 #include "GFXDevice.h"
-#include "Rendering/Application.h"
-#include "Geometry/Object3D.h"
-#include "Importer/DVDConverter.h"
-#include "Managers/TextureManager.h"
-#include "Managers/SceneManager.h"
-#include "Geometry/Predefined/Box3D.h"
-#include "Geometry/Predefined/Sphere3D.h"
-#include "Geometry/Predefined/Quad3D.h"
-#include "Geometry/Predefined/Text3D.h"
-#include "Rendering/PostFX/PostFX.h"
-#include "EngineGraphs/RenderQueue.h"
+#include "Core/Headers/Application.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Graphs/Headers/RenderQueue.h"
 
 using namespace std;
 
@@ -33,6 +32,8 @@ void GFXDevice::setApi(RenderAPI api)
 	case 9: //DX 10
 		_api = DX_API::getInstance();
 		break;
+	case 10: //Placeholder
+		break;
 	//Ionut: OpenGL 4.0 and DX 11 in another life maybe :)
 	};
 	_api.setId(api);
@@ -45,34 +46,19 @@ void GFXDevice::resizeWindow(U16 w, U16 h){
 	PostFX::getInstance().reshapeFBO(w, h);
 }
 
-void GFXDevice::renderModel(SceneGraphNode* node){
-	Object3D* model = node->getNode<Object3D>();
+void GFXDevice::renderModel(Object3D* const model){
 	if(!model) return;
 	if(model->shouldDelete()){
-		delete node;
-		node = NULL;
+		//ToDo: Properly unload this!
+		//delete node;
+		//node = NULL;
 		return;
 	}
-	switch(model->getType())
-	{
-		case BOX_3D:
-			drawBox3D(node);
-			break;
-		case SPHERE_3D:
-			drawSphere3D(node);
-			break;
-		case QUAD_3D:
-			drawQuad3D(node);
-			break;
-		case TEXT_3D:
-			drawText3D(node);
-			break;
-		case SUBMESH:
-			_api.renderModel(node);
-			break;
-		default:
-			break;
-	};
+	if(model->getIndices().empty()){
+		model->onDraw(); //something wrong! Re-run pre-draw tests!
+	}
+	_api.renderModel(model);
+
 }
 
 void GFXDevice::setRenderState(RenderState& state,bool force) {
@@ -93,7 +79,7 @@ void GFXDevice::processRenderQueue(){
 	SceneNode* sn = NULL;
 	SceneGraphNode* sgn = NULL;
 	Transform* t = NULL;
-
+	LightManager::getInstance().bindDepthMaps();
 	//Sort the render queue by the specified key
 	RenderQueue::getInstance().sort();
 	//Draw the entire queue;
@@ -115,11 +101,11 @@ void GFXDevice::processRenderQueue(){
 		//setup materials and render the node
 		//Avoid changing states by not unbind old material/shader/states and checking agains default
 		//As nodes are sorted, this should be very fast
-		
 		setObjectState(t);
 		sn->prepareMaterial(sgn);
 		sn->render(sgn); 
 		sn->releaseMaterial();
 		releaseObjectState(t);
 	}
+	LightManager::getInstance().unbindDepthMaps();
 }

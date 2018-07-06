@@ -18,7 +18,6 @@
 #ifndef _AUDIO_API_H
 #define _AUDIO_API_H
 
-#include "Hardware/Platform/PlatformDefines.h"
 #include "AudioDescriptor.h"
 
 class AudioState
@@ -43,7 +42,7 @@ class AudioAPIWrapper
 {
 
 protected:
-	AudioAPIWrapper() : _state(AudioState(true,true,true,true)) {}
+	AudioAPIWrapper() : _apiId(SDL), _state(AudioState(true,true,true,true)) {}
 
 	friend class SFXDevice;
 	

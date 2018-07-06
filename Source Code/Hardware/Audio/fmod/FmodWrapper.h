@@ -25,7 +25,6 @@
 /*****************************************************************************************/
 
 #include "../AudioAPIWrapper.h"
-#include "Utility/Headers/Singleton.h"
 
 DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 

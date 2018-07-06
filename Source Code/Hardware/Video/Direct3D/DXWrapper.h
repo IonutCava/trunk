@@ -18,7 +18,6 @@
 #ifndef _WRAPPER_DX_H_
 #define _WRAPPER_DX_H_
 
-#include "Utility/Headers/Singleton.h"
 #include "../RenderAPIWrapper.h"
 
 DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
@@ -30,7 +29,7 @@ private:
 	void closeRenderingApi();
 	void initDevice();
 	void resizeWindow(U16 w, U16 h) {}
-	void lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx = false, bool inverty = false);
+	void lookAt(const vec3& eye,const vec3& center,const vec3& up = vec3(0,1,0), bool invertx = false, bool inverty = false);
 	void idle();
 
 	void getModelViewMatrix(mat4& mvMat);
@@ -48,8 +47,14 @@ private:
 	void swapBuffers();
 	void enableFog(F32 density, F32* color);
 
-	void toggle2D(bool _2D);
+	
+	void lockProjection();
+	void releaseProjection();
+	void lockModelView();
+	void releaseModelView();
 	void setOrthoProjection(const vec4& rect, const vec2& planes);
+
+	void toggle2D(bool _2D);
 
 	void drawTextToScreen(Text*);
 	void drawCharacterToScreen(void* ,char);
@@ -57,16 +62,8 @@ private:
 	void drawFlash(GuiFlash* flash);
 
 	void drawBox3D(vec3 min, vec3 max);
-	void drawBox3D(Box3D* const box);
-	void drawSphere3D(Sphere3D* const sphere);
-	void drawQuad3D(Quad3D* const quad);
-	void drawText3D(Text3D* const text);
-	void drawBox3D(SceneGraphNode* node);
-	void drawSphere3D(SceneGraphNode* node);
-	void drawQuad3D(SceneGraphNode* node);
-	void drawText3D(SceneGraphNode* node);
 
-	void renderModel(SceneGraphNode* node);
+	void renderModel(Object3D* const model);
 	void renderElements(Type t, Format f, U32 count, const void* first_element);
 
 	void setMaterial(Material* mat);
@@ -75,13 +72,11 @@ private:
 	typedef void (*callback)();
 	void dxCommand(callback f){(*f)();};
 
-	void setLight(U8 slot, unordered_map<std::string,vec4>& properties){};
-	void createLight(U8 slot){};
-	void setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional = false){}
-	void restoreLightCameraMatrices(bool directional = false){}
+	void setAmbientLight(const vec4& light){}
+	void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){};
 
 	void toggleWireframe(bool state);
-	void Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax);
+	void Screenshot(char *filename, const vec4& rect);
 	void setRenderState(RenderState& state,bool force = false){}
 	void ignoreStateChanges(bool state){}
 

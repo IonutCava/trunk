@@ -1,8 +1,9 @@
-#include "GUI.h"
+#include "Headers/GUI.h"
+#include "Headers/guiFlash.h"
+
 #include <stdarg.h>
 #include "Hardware/Video/GFXDevice.h"
-#include "Rendering/Application.h"
-#include "guiFlash.h"
+#include "Core/Headers/Application.h"
 
 using namespace std;
 
@@ -18,10 +19,10 @@ void GUI::draw(){
 
 	GFXDevice& gfx = GFXDevice::getInstance();
 	gfx.toggle2D(true);
-	
     //------------------------------------------------------------------------
 		for_each(guiMap::value_type& guiStackIterator,_guiStack){
 			GuiElement* guiElement = guiStackIterator.second;
+			if(!guiElement->isVisible()) continue;
 			switch(guiElement->getGuiType())
 			{
 				case GUI_TEXT:

@@ -12,7 +12,7 @@ newmtl Trunk
 	Kd 0.2745 0.1490 0.0118
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\branch.png
+	map_Kd ..\textures\branch.png
 
 newmtl Branch0
 	Ns 25.0000
@@ -25,7 +25,7 @@ newmtl Branch0
 	Kd 0.2745 0.1490 0.0118
 	Ks 0.0450 0.0450 0.0450
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\branch.png
+	map_Kd ..\textures\branch.png
 
 newmtl Branch1
 	Ns 25.0000
@@ -38,7 +38,7 @@ newmtl Branch1
 	Kd 0.2745 0.1490 0.0118
 	Ks 0.0450 0.0450 0.0450
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\branch.png
+	map_Kd ..\textures\branch.png
 
 newmtl Leaves
 	Ns 0.0000
@@ -51,4 +51,4 @@ newmtl Leaves
 	Kd 0.0196 0.4392 0.0000
 	Ks 0.0000 0.0000 0.0000
 	Ke 0.0000 0.0000 0.0000
-	map_Kd ..\texturi\elmleaf.png
+	map_Kd ..\textures\elmleaf.png

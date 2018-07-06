@@ -17,6 +17,7 @@
 
 #ifndef JOYSTICK_MANAGER_H_
 #define JOYSTICK_MANAGER_H_
+
 #include "InputVariables.h"
 
 //////////// Joystick manager class ////////////////////////////////////////////////////////

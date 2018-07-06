@@ -1,9 +1,10 @@
 #include "glResources.h"
 #include "resource.h"
 #include "glShader.h"
-#include "Utility/Headers/ParamHandler.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/Application.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Rendering/Application.h"
+
 using namespace std;
 
 void glShader::validateShader(U16 shader, const string &file) {
@@ -44,12 +45,11 @@ char* glShader::shaderFileRead(const string &fn) {
 
 	char *content = NULL;
 
-	I32 count=0;
 
 	if (fp != NULL) {
       
       fseek(fp, 0, SEEK_END);
-      count = ftell(fp);
+      I32 count = ftell(fp);
       rewind(fp);
 
 			if (count > 0) {

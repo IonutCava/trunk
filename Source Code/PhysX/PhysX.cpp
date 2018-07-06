@@ -1,5 +1,5 @@
-#include "PhysX.h"
-#include "PhysXSceneInterface.h"
+#include "Headers/PhysX.h"
+#include "Headers/PhysXSceneInterface.h"
 
 using namespace physx;
 

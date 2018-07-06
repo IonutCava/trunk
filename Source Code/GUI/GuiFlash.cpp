@@ -1,20 +1,15 @@
-#include "GuiFlash.h"
+#include "Headers/GuiFlash.h"
+
 #include "Hardware/Video/GFXDevice.h"
-#include "Utility/Headers/ParamHandler.h"
+#include "Core/Headers/ParamHandler.h"
 
-GuiFlash::GuiFlash()
-{
-
-	
+GuiFlash::GuiFlash(){
 	_guiType = GUI_FLASH;
 }
 
-GuiFlash::~GuiFlash()
-{
+GuiFlash::~GuiFlash(){
 }
 
-void GuiFlash::playMovie()
-{
-	
+void GuiFlash::playMovie(){
 }
 

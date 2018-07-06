@@ -1,5 +1,5 @@
-#include "CommunicationSensor.h"
-#include "AI/AIEntity.h"
+#include "Headers/CommunicationSensor.h"
+#include "AI/Headers/AIEntity.h"
 
 bool CommunicationSensor::sendMessageToEntity(AIEntity* receiver, AI_MSG msg, const boost::any& msg_content){
 	if(receiver){

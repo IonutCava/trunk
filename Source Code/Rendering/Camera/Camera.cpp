@@ -1,10 +1,11 @@
-#include "Camera.h"
-#include "Rendering/Frustum.h"
-#include "Hardware/Video/GFXDevice.h"
-#include "Managers/SceneManager.h"
+#include "Headers/Camera.h"
 
-void Camera::SaveCamera()
-{
+#include "Rendering/Headers/Frustum.h"
+#include "Hardware/Video/GFXDevice.h"
+#include "Managers/Headers/SceneManager.h"
+
+void Camera::SaveCamera(){
+
 	tSaveVectors[0] = vEye;
 	tSaveVectors[1] = vCenter;
 	tSaveVectors[2] = vViewDir;

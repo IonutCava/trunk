@@ -5,7 +5,6 @@
 #include "Client.h"
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
-#include "Utility/Headers/Singleton.h"
 #include "WorldPacket.h"
 #include "OPCodes.h"
 

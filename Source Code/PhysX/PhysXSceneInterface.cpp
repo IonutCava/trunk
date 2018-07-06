@@ -1,7 +1,8 @@
-#include "PhysXSceneInterface.h"
-#include "Scenes/Scene.h"
-#include "Geometry/Predefined/Box3D.h"
-#include "Geometry/Predefined/Quad3D.h"
+#include "Headers/PhysXSceneInterface.h"
+#include "Scenes/Headers/Scene.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
 using namespace physx;
 
 bool PhysXSceneInterface::init(){
@@ -65,10 +66,17 @@ void PhysXSceneInterface::updateActor(PxRigidActor* actor){
 
 void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
 	if(!t || !shape) return;
-
 	PxTransform pT = PxShapeExt::getGlobalPose(*shape);
+	if(shape->getGeometryType() == PxGeometryType::ePLANE){
+		t->scale(shape->getActor().getObjectSize());
+		//ToDo: Remove hack! Find out why plane isn't rotating - Ionut
+		t->rotate(vec3(1,0,0),90);
+	}else{
+		t->rotateQuaternion(Quaternion(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
+	}
 	t->setPosition(vec3(pT.p.x,pT.p.y,pT.p.z));
-	t->rotateQuaternion(Quaternion(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
+	
+	
 }
 
 void PhysXSceneInterface::process(){
@@ -112,7 +120,7 @@ void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 			actorGeometry = ResourceManager::getInstance().loadResource<Box3D>(ResourceDescriptor(ss.str()));
 			PxBoxGeometry box;
 			shapes[0]->getBoxGeometry(box);
-			dynamic_cast<Box3D*>(actorGeometry)->getSize() = box.halfExtents.x * 2;
+			dynamic_cast<Box3D*>(actorGeometry)->setSize(box.halfExtents.x * 2);
 	   }
        break;
 	   case PxGeometryType::ePLANE:

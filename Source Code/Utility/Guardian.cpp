@@ -1,17 +1,13 @@
 #include "Headers/Guardian.h"
-#include "Managers/SceneManager.h"
-#include "Managers/ResourceManager.h"
-#include "Headers/ParamHandler.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Headers/XMLParser.h"
-#include "Rendering/Application.h"
-#include "Rendering/PostFX/PostFX.h"
-#include "PhysX/PhysX.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "PhysX/Headers/PhysX.h"
 
 using namespace std;
 
 void Guardian::LoadApplication(const string& entryPoint){
 	Application& app = Application::getInstance();
-	ParamHandler& par = ParamHandler::getInstance();
 	Framerate::getInstance().Init(60);
 	Console::getInstance().printCopyrightNotice();
 	Console::getInstance().printfn("Starting the application!");
@@ -29,7 +25,6 @@ void Guardian::LoadApplication(const string& entryPoint){
 }
 
 void Guardian::ReloadSettings(){
-	ParamHandler &par = ParamHandler::getInstance();
 	LoadSettings();
 }
 

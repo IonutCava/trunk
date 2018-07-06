@@ -112,7 +112,49 @@ void glFrameBufferObject::Unbind(U8 unit) {
 }
 
 
-bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
+bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum, TEXTURE_FORMAT formatEnum){
+	GLenum internalFormat;
+	GLenum format;
+	switch(internalFormatEnum){
+		default:
+		case RGBA32F:
+			internalFormat = GL_RGBA32F;
+			break;
+		case RGBA16F:
+			internalFormat = GL_RGBA16F;
+		case RGBA8I:
+			internalFormat = GL_RGBA8I;
+		case RGBA8:
+			internalFormat = GL_RGBA8;
+		case RGB8I:
+			internalFormat = GL_RGB8I;
+		case RGB16F:
+			internalFormat = GL_RGB16F;
+		case RGB16:
+			internalFormat = GL_RGB16;
+			break;
+		case RGB8:
+			internalFormat = GL_RGB8;
+			break;
+	};
+	switch(formatEnum){
+		default:
+		case RGB:
+			format = GL_RGB;
+			break;
+		case RGBA:
+			format = GL_RGBA;
+			break;
+		case BGRA:
+			format = GL_BGRA;
+			break;
+		case LUMINANCE:
+			format = GL_LUMINANCE;
+			break;
+		case LUMINANCE_ALPHA:
+			format = GL_LUMINANCE_ALPHA;
+			break;
+	};
 	Destroy();
 	Console::getInstance().printfn("Generating framebuffer of dimmensions [%d x %d]",width,height);
 	_width = width;
@@ -133,7 +175,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 		GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
 
 		GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _diffuseBufferHandle));
-		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB, width,  height));
+		GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, width,  height));
 		GLCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER, _diffuseBufferHandle));
 
 		GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _positionBufferHandle));
@@ -150,7 +192,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 	
 		GLCheck(glGenTextures(1, &textureId));
 		GLCheck(glBindTexture(GL_TEXTURE_2D, textureId));
-		GLCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,GL_RGB, GL_UNSIGNED_BYTE, NULL));
+		GLCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,GL_RGBA, GL_UNSIGNED_BYTE, NULL));
 		GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 		GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 		GLCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
@@ -187,9 +229,11 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);*/
+		if(type == FBO_2D_DEPTH){
+			/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);*/
+		}
 		_textureId.push_back(textureId);
 
 		U32 eTarget;
@@ -205,7 +249,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 			if(type==FBO_2D_DEPTH)
 				GLCheck(glTexImage2D(eTarget+i, 0, GL_DEPTH_COMPONENT24, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0));
 			else
-				GLCheck(glTexImage2D(eTarget+i, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0));
+				GLCheck(glTexImage2D(eTarget+i, 0, internalFormat, _width, _height, 0, format, GL_UNSIGNED_BYTE, 0));
 		}
 		if(_useFBO)	{
 			// Frame buffer
@@ -217,7 +261,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 				GLCheck(glGenRenderbuffers(1, &_depthBufferHandle));
 				GLCheck(glBindRenderbuffer(GL_RENDERBUFFER, _depthBufferHandle));
 				GLCheck(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height));
-				// atasarea frame bufferului de depth buffer
+				// attach framebuffer to renderbuffer
 				GLCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _depthBufferHandle));
 			}
 			//  attach the framebuffer to our texture, which may be a depth texture

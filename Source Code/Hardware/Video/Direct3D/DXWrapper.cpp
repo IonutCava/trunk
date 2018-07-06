@@ -1,7 +1,9 @@
 #include "DXWrapper.h"
-#include "Hardware/Platform/PlatformDefines.h"
-#include "Importer/DVDConverter.h"
-#include <iostream>
+#include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 using namespace std;
 
 void DX_API::initHardware()
@@ -46,6 +48,22 @@ void DX_API::toggle2D(bool _2D)
 {
 }
 
+void DX_API::lockProjection()
+{
+}
+
+void DX_API::releaseProjection()
+{
+}
+
+void DX_API::lockModelView()
+{
+}
+
+void DX_API::releaseModelView()
+{
+}
+
 void DX_API::setOrthoProjection(const vec4& rect, const vec2& planes)
 {
 }
@@ -69,98 +87,37 @@ void DX_API::drawBox3D(vec3 min, vec3 max)
 {
 }
 
-void DX_API::drawBox3D(SceneGraphNode* node)
+void DX_API::renderModel(Object3D* const model)
 {
-}
-
-void DX_API::drawSphere3D(SceneGraphNode* node)
-{
-}
-
-void DX_API::drawQuad3D(SceneGraphNode* node)
-{
-}
-
-void DX_API::drawText3D(SceneGraphNode* node)
-{
-}
-
-void DX_API::drawBox3D(Box3D* const box)
-{
-}
-
-void DX_API::drawSphere3D(Sphere3D* const sphere)
-{
-}
-
-void DX_API::drawQuad3D(Quad3D* const quad)
-{
-}
-
-void DX_API::drawText3D(Text3D* const text)
-{
-}
-
-void DX_API::renderModel(SceneGraphNode* node)
-{
-/*	Mesh* tempModel = dynamic_cast<Mesh*>(model);
-	SubMesh *s;
-	vector<SubMesh* >::iterator subMeshIterator;
-	
-	//pushMatrix();
-	//ToDo: Per submesh transforms!!!!!!!!!!!!!!!!!!! - Ionut
-	//glMultMatrixf(tempModel->getTransform()->getMatrix());
-	//glMultMatrixf(tempModel->getParentMatrix());
-
-	for(subMeshIterator = tempModel->getSubMeshes().begin(); 
-		subMeshIterator != tempModel->getSubMeshes().end(); 
-		++subMeshIterator)	{
-
-		s = (*subMeshIterator);
-
-			
-		Shader* shader = model->getMaterial()->getShader();
-		Texture2D* baseTexture = model->getMaterial()->getTexture(Material::TEXTURE_BASE);
-		Texture2D* bumpTexture = model->getMaterial()->getTexture(Material::TEXTURE_BUMP);
-		Texture2D* secondTexture = model->getMaterial()->getTexture(Material::TEXTURE_SECOND);
-
-		if(baseTexture) baseTexture->Bind(0);
-		if(bumpTexture) bumpTexture->Bind(1);
-		if(secondTexture) secondTexture->Bind(2);
-
-		if(shader){
-			shader->bind();
-				if(!GFXDevice::getInstance().getDeferredShading()){
-     				shader->Uniform("enable_shadow_mapping", 0);
-					shader->Uniform("tile_factor", 1.0f);
-					shader->Uniform("textureCount",secondTexture != NULL ? 1 : 2);
-					shader->UniformTexture("texDiffuse0",0);
-					if(bumpTexture){
-						shader->Uniform("mode", 1);
-						shader->UniformTexture("texBump",1);
-					}else{
-						shader->Uniform("mode", 0);
-					}
-					if(secondTexture) shader->UniformTexture("texDiffuse1",2);
-
-				}else{
-					//ToDo: deffered rendering supports only one texture for now! -Ionut
-					shader->Uniform("texDiffuse0",0);
-				}
-		}
-
-		s->getGeometryVBO()->Enable();
-		//	glDrawElements(GL_TRIANGLES, s->getIndices().size(), GL_UNSIGNED_INT, &(s->getIndices()[0]));
-		s->getGeometryVBO()->Disable();
-
-		if(shader) shader->unbind();
-		if(secondTexture) secondTexture->Unbind(2);
-		if(bumpTexture) bumpTexture->Unbind(1);
-		if(baseTexture) baseTexture->Unbind(0);
+	Type type = TRIANGLES;
+	//render in the switch or after. hacky, but works -Ionut
+	bool b_continue = true;
+	switch(model->getType()){
+		case TEXT_3D:{
+			Text3D* text = dynamic_cast<Text3D*>(model);
+			b_continue = false;
+			}break;
 		
+		case BOX_3D:
+		case SUBMESH:
+			type = TRIANGLES;
+			break;
+		case QUAD_3D:
+		case SPHERE_3D:
+			type = QUADS;
+			break;
+		//We should never enter the default case!
+		default:
+			Console::getInstance().errorfn("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
+			b_continue = false;
+			break;
 	}
-	//popMatrix();
-*/
+
+	if(b_continue){	
+		model->getGeometryVBO()->Enable();
+			renderElements(type,_U16,model->getIndices().size(), &(model->getIndices()[0]));
+		model->getGeometryVBO()->Disable();
+	}
 }
 
 void DX_API::renderElements(Type t, Format f, U32 count, const void* first_element)
@@ -180,7 +137,7 @@ void DX_API::toggleWireframe(bool state)
 {
 }
 
-void DX_API::Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax)
+void DX_API::Screenshot(char *filename, const vec4& rect)
 {
 }
 

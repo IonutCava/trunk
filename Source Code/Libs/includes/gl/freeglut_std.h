@@ -43,7 +43,7 @@
  */
 
 /* Define FREEGLUT_LIB_PRAGMAS to 1 to include library
- * pragmas or to 1 to exclude library pragmas.
+ * pragmas or to 0 to exclude library pragmas.
  * The default behavior depends on the compiler/platform.
  */
 #   ifndef FREEGLUT_LIB_PRAGMAS
@@ -57,10 +57,10 @@
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN 1
 #  endif
-#ifndef NOMINMAX
-#   define NOMINMAX
-#endif
-#   include <Windows.h>
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
+#   include <windows.h>
 
 /* Windows static library */
 #   ifdef FREEGLUT_STATIC

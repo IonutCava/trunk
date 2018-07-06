@@ -18,8 +18,8 @@
 #ifndef _OPCODES_H_
 #define _OPCODES_H_
 
-enum Opcodes
-{
+enum Opcodes{
+
    	MSG_HEARTBEAT							 = 0x000,
 	SMSG_SEND_FILE                           = 0x001,
     CMSG_PING						         = 0x002,

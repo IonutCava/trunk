@@ -20,7 +20,6 @@
 
 #include "SDL_mixer.h"
 #include "../AudioAPIWrapper.h"
-#include "Utility/Headers/Singleton.h"
 
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 

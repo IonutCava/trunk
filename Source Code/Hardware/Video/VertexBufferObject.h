@@ -21,8 +21,7 @@
 #include <iostream>
 #include "resource.h"
 
-struct vertexWeight
-{
+struct vertexWeight {
 	U32 _vertexId;
 	F32 _weight;
 
@@ -36,8 +35,8 @@ struct vertexWeight
 #endif
 };
 
-class VertexBufferObject
-{
+class VertexBufferObject {
+
 public:
 	virtual bool Create() = 0;
 	virtual bool Create(U32 usage) = 0;
@@ -51,6 +50,7 @@ public:
 	inline std::vector<vec3>&	getNormal()		{return _dataNormal;}
 	inline std::vector<vec2>&	getTexcoord()	{return _dataTexcoord;}
 	inline std::vector<vec3>&	getTangent()	{return _dataTangent;}
+	inline std::vector<vec3>&	getBiTangent()	{return _dataBiTangent;}
 	inline std::vector<std::vector<U8>>& getBoneIndices() {return _boneIndices;}
 	inline std::vector<std::vector<U8>>& getBoneWeights() {return _boneWeights;}
 
@@ -60,10 +60,12 @@ public:
 		_VBOoffsetNormal = 0;
 		_VBOoffsetTexcoord = 0;
 		_VBOoffsetTangent = 0;
+		_VBOoffsetBiTangent = 0;
 		_dataPosition.clear();
 		_dataNormal.clear();
 		_dataTexcoord.clear();
 		_dataTangent.clear();
+		_dataBiTangent.clear();
 		for(U16 i = 0; i < _boneIndices.size(); i++)
 			_boneIndices[i].clear();
 		_boneIndices.clear();
@@ -86,12 +88,14 @@ protected:
 	ptrdiff_t	_VBOoffsetNormal;
 	ptrdiff_t	_VBOoffsetTexcoord;
 	ptrdiff_t	_VBOoffsetTangent;
+	ptrdiff_t	_VBOoffsetBiTangent;
 
 	
 	std::vector<vec3>	_dataPosition;
 	std::vector<vec3>	_dataNormal;
 	std::vector<vec2>	_dataTexcoord;
 	std::vector<vec3>	_dataTangent;
+	std::vector<vec3>	_dataBiTangent;
 	std::vector<std::vector<U8>> _boneIndices;
 	std::vector<std::vector<U8>> _boneWeights;
 

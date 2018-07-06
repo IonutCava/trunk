@@ -17,11 +17,12 @@
 
 #ifndef _AUDIO_DESCRIPTOR_H_
 #define _AUDIO_DESCRIPTOR_H_
-#include "resource.h"
-#include "Utility/Headers/BaseClasses.h"
 
-class AudioDescriptor : public Resource
-{
+#include "resource.h"
+#include "Core/Headers/BaseClasses.h"
+
+class AudioDescriptor : public Resource{
+
 public:
 	AudioDescriptor() :  Resource(),
 						 _is3D(false), _volume(100),

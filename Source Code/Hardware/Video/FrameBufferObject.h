@@ -18,15 +18,16 @@
 #ifndef _FRAME_BUFFER_OBJECT_H
 #define _FRAME_BUFFER_OBJECT_H
 
-#include <iostream>
 #include "Hardware/Platform/PlatformDefines.h"
 
-class FrameBufferObject 
-{
+class FrameBufferObject {
+
 public:
 	enum FBO_TYPE { FBO_2D_COLOR, FBO_CUBE_COLOR, FBO_2D_DEPTH, FBO_2D_DEFERRED };
+	enum TEXTURE_FORMAT {RGB, RGBA, BGRA, LUMINANCE, LUMINANCE_ALPHA};
+	enum TEXTURE_FORMAT_INTERNAL {RGBA32F,RGBA16F,RGBA8I, RGBA8, RGB16F, RGB8I, RGB16, RGB8};
 
-	virtual bool Create(FBO_TYPE type, U16 width, U16 height) = 0;
+	virtual bool Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_FORMAT_INTERNAL internalFormatEnum = RGBA8, TEXTURE_FORMAT formatEnum = BGRA) = 0;
 	virtual void Destroy() = 0;
 
 	virtual void Begin(U8 nFace=0) const = 0;	

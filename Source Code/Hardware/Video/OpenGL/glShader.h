@@ -18,11 +18,10 @@
 #ifndef GLSL_H_
 #define GLSL_H_
 
-#include "Utility/Headers/BaseClasses.h"
 #include "Hardware/Video/ShaderHandler.h"
 
-class glShader : public Shader
-{
+class glShader : public Shader {
+
 public:
 	glShader() : Shader(), _loaded(false), _bound(false) {};
 	glShader(const char *vsFile, const char *fsFile);

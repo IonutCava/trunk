@@ -1,4 +1,5 @@
-#include "Frustum.h"
+#include "Headers/Frustum.h"
+
 #include "resource.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/BoundingBox.h"
