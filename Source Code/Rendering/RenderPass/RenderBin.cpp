@@ -53,23 +53,15 @@ struct RenderQueueKeyCompare {
     }
 };
 
-struct RenderQueueDistanceBacktoFront {
+struct RenderQueueDistanceBackToFront {
     bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
-        if (a._distanceToCameraSq != b._distanceToCameraSq) {
-            return a._distanceToCameraSq < b._distanceToCameraSq;
-        }
-         
-         return RenderQueueKeyCompare()(a, b);
+       return a._distanceToCameraSq > b._distanceToCameraSq;
     }
 };
 
 struct RenderQueueDistanceFrontToBack {
     bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
-        if (a._distanceToCameraSq != b._distanceToCameraSq) {
-            return a._distanceToCameraSq > b._distanceToCameraSq;
-        }
-
-        return RenderQueueKeyCompare()(a, b);
+        return a._distanceToCameraSq < b._distanceToCameraSq;
     }
 };
 
@@ -100,7 +92,7 @@ void RenderBin::sort(RenderStage renderStage) {
         case RenderingOrder::List::BACK_TO_FRONT: {
             std::sort(std::begin(_renderBinStack),
                       std::end(_renderBinStack),
-                      RenderQueueDistanceBacktoFront());
+                      RenderQueueDistanceBackToFront());
         } break;
         case RenderingOrder::List::FRONT_TO_BACK: {
             std::sort(std::begin(_renderBinStack),

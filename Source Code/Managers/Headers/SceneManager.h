@@ -127,6 +127,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     void renderVisibleNodes(RenderStage stage, bool refreshNodeData, U32 pass = 0);
     // cull the scenegraph against the current view frustum
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStage stage);
+    // get the full list of reflective nodes
+    const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
 
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     inline void idle() { _activeScene->idle(); }
@@ -235,6 +237,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     U32 _elapsedTimeMS;
     U64 _saveTimer;
     std::unique_ptr<Renderer> _renderer;
+    RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
 
 END_SINGLETON
 

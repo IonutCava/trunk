@@ -167,6 +167,8 @@ void Kernel::mainLoopApp() {
 
     Kernel::idle();
 
+    Task::update(_timingData._currentTimeDelta);
+
     FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
     Application& APP = Application::getInstance();
@@ -395,7 +397,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return ErrorCode::NOT_ENOUGH_RAM;
     }
 
-    _mainTaskPool.size_controller().resize(HARDWARE_THREAD_COUNT());
+    _mainTaskPool.size_controller().resize(threadCount - 1);
 
     Console::bindConsoleOutput(
         DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(),

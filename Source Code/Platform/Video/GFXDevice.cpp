@@ -366,7 +366,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     PostFX::getInstance().updateResolution(w, h);
     app.getWindowManager().setResolution(vec2<U16>(w, h));
 
-    _gpuBlock._data._invScreenDimension.xy(vec2<F32>(1.0f / w, 1.0f / h));
+    _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
     _gpuBlock._updated = true;
 
     _api->changeResolution(w, h);

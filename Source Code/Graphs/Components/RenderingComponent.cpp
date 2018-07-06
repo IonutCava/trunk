@@ -13,7 +13,7 @@
 namespace Divide {
 
 namespace {
-    const F32 g_MaterialShininessThresholdForReflection = 205.0f;
+    const F32 g_MaterialShininessThresholdForReflection = 127.0f;
 };
 
 RenderingComponent::RenderingComponent(Material* const materialInstance,
@@ -23,7 +23,6 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
       _drawOrder(0),
       _commandIndex(0),
       _commandOffset(0),
-      _cameraDistanceSQCache(0.0f),
       _castsShadows(true),
       _receiveShadows(true),
       _renderWireframe(false),
@@ -541,7 +540,7 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                                   renderStage,
                                                   sceneRenderState,
                                                   pkg._drawCommands)) {
-            _cameraDistanceSQCache =
+            F32 cameraDistanceSQ =
                 _parentSGN
                     .getBoundingSphereConst()
                     .getCenter()
@@ -549,8 +548,8 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                      .getCameraConst()
                                      .getEye());
 
-            U8 lodLevelTemp = _cameraDistanceSQCache > SCENE_NODE_LOD0_SQ
-                                    ? _cameraDistanceSQCache > SCENE_NODE_LOD1_SQ ? 2 : 1
+            U8 lodLevelTemp = cameraDistanceSQ > SCENE_NODE_LOD0_SQ
+                                    ? cameraDistanceSQ > SCENE_NODE_LOD1_SQ ? 2 : 1
                                     : 0;
             U8 minLoD = to_ubyte(_parentSGN.getNode()->getLODcount() - 1);
             _lodLevel = renderStage == RenderStage::REFLECTION
@@ -600,13 +599,11 @@ bool RenderingComponent::updateReflection(const vec3<F32>& camPos, const vec2<F3
         return false;
     }
 
-    GFXDevice& GFX = GFX_DEVICE;
-
-    GFX.generateCubeMap(mat->reflectionTarget(),
-                        0,
-                        camPos,
-                        vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
-                        RenderStage::REFLECTION);
+    GFX_DEVICE.generateCubeMap(mat->reflectionTarget(),
+                               0,
+                               camPos,
+                               vec2<F32>(camZPlanes.x, camZPlanes.y * 0.25f),
+                               RenderStage::REFLECTION);
 
     return true;
 }

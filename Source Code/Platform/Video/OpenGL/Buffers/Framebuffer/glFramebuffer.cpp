@@ -488,11 +488,11 @@ void glFramebuffer::drawToLayer(TextureDescriptor::AttachmentType slot,
         (hasColor() && slot < TextureDescriptor::AttachmentType::Depth);
 
     if (useDepthLayer && _isLayeredDepth) {
-        glNamedFramebufferTextureLayer(_framebufferHandle,
-                                       GL_DEPTH_ATTACHMENT,
-                                       _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)]->getHandle(),
-                                       0,
-                                       layer);
+        glFramebufferTextureLayer(GL_FRAMEBUFFER,
+                                  GL_DEPTH_ATTACHMENT,
+                                  _attachmentTexture[to_const_uint(TextureDescriptor::AttachmentType::Depth)]->getHandle(),
+                                  0,
+                                  layer);
         _attDirty[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
     }
 

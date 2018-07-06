@@ -203,10 +203,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
     _displayShader = CreateResource<ShaderProgram>(ResourceDescriptor("display"));
 
+
+    _gpuBlock._data._invScreenDimension.xy(1.0f / resolution.width, 1.0f / resolution.height);
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
         ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
+    _gpuBlock._updated = true;
+
     // Create a separate loading thread that shares resources with the main
     // rendering context
     _state.startLoaderThread([&]() {

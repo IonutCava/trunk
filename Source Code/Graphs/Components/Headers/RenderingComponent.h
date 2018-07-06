@@ -90,8 +90,6 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 commandOffset() const { return _commandOffset; }
 
-    inline F32 cameraDistanceSQ() const { return _cameraDistanceSQCache; }
-
     ShaderProgram* const getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
 
     U32 getDrawStateHash(RenderStage renderStage);
@@ -157,7 +155,6 @@ class RenderingComponent : public SGNComponent {
     U32 _drawOrder;
     U32 _commandIndex;
     U32 _commandOffset;
-    F32 _cameraDistanceSQCache;
     bool _castsShadows;
     bool _receiveShadows;
     bool _renderGeometry;

@@ -18,19 +18,14 @@ namespace {
     Framebuffer::FramebufferTarget _noDepthClear;
     Framebuffer::FramebufferTarget _depthOnly;
 
-    struct VisibleNodesFrontToBack {
-        bool operator()(const RenderPassCuller::VisibleNode& a,
-                        const RenderPassCuller::VisibleNode& b) const {
-            return a.second.lock()->getComponent<RenderingComponent>()->cameraDistanceSQ() >
-                   b.second.lock()->getComponent<RenderingComponent>()->cameraDistanceSQ();
-        }
-    };
-
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
         U32 g_reflectionBudget = 0;
+#   if defined(_DEBUG)
         U32 g_reflectionBudgetLimit = 3;
-
+#   else
+        U32 g_reflectionBudgetLimit = 5;
+#   endif
         inline bool isInBudget() {
             return g_reflectionBudget < g_reflectionBudgetLimit;
         }
@@ -94,21 +89,13 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
             } break;
             case RenderStage::REFLECTION: {
                 const vec2<F32>& zPlanes= renderState.getCameraConst().getZPlanes();
-                // Get list of nodes in view from the previous frame
-                SceneManager& sceneMgr = SceneManager::getInstance();
-                RenderPassCuller::VisibleNodeList& nodeCache = sceneMgr.getVisibleNodesCache(RenderStage::Z_PRE_PASS);
-                RenderPassCuller::VisibleNodeList reflectiveNodesInView;
-                reflectiveNodesInView.reserve(nodeCache.size());
-                for (RenderPassCuller::VisibleNode& node : nodeCache) {
-                    reflectiveNodesInView.push_back(node);   
-                }
-                // Sort the nodes from front to back
-                std::sort(std::begin(reflectiveNodesInView),
-                          std::end(reflectiveNodesInView),
-                          VisibleNodesFrontToBack());
+                // Get list of reflective nodes from the scene manager
+                const RenderPassCuller::VisibleNodeList& nodeCache = 
+                    SceneManager::getInstance().getSortedReflectiveNodes();
+
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
-                for (RenderPassCuller::VisibleNode& node : reflectiveNodesInView) {
+                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
                     if (!ReflectionUtil::isInBudget()) {
                         break;
                     }
@@ -136,6 +123,8 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
     if (anaglyph != currentCamera.isAnaglyph()) {
         currentCamera.setAnaglyph(anaglyph);
     }
+    GFXDevice::RenderTargetID target = anaglyph ? GFXDevice::RenderTargetID::ANAGLYPH
+                                                : GFXDevice::RenderTargetID::SCREEN;
     currentCamera.renderLookAt();
 
     bool bindShadowMaps = false;
@@ -146,7 +135,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
             bindShadowMaps = true;
             GFX.occlusionCull(0);
             GFX.toggleDepthWrites(false);
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_noDepthClear);
+            GFX.getRenderTarget(target)._buffer->begin(_noDepthClear);
         } break;
         case RenderStage::REFLECTION: {
             bindShadowMaps = true;
@@ -154,7 +143,7 @@ bool RenderPass::preRender(SceneRenderState& renderState, bool anaglyph, U32 pas
         case RenderStage::SHADOW: {
         } break;
         case RenderStage::Z_PRE_PASS: {
-            GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer->begin(_depthOnly);
+            GFX.getRenderTarget(target)._buffer->begin(_depthOnly);
         } break;
     };
     
@@ -173,11 +162,14 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
 
     Attorney::SceneRenderPass::debugDraw(SceneManager::getInstance().getActiveScene(), _stageFlags[pass]);
 
+    GFXDevice::RenderTargetID target = anaglyph ? GFXDevice::RenderTargetID::ANAGLYPH
+                                                : GFXDevice::RenderTargetID::SCREEN;
     switch (_stageFlags[pass]) {
         case RenderStage::DISPLAY:
         case RenderStage::Z_PRE_PASS: {
-            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(GFXDevice::RenderTargetID::SCREEN);
+            GFXDevice::RenderTarget& renderTarget = GFX.getRenderTarget(target);
             renderTarget._buffer->end();
+
             if (_stageFlags[pass] == RenderStage::Z_PRE_PASS) {
                 GFX.constructHIZ();
                 LightManager::getInstance().updateAndUploadLightData(renderState.getCameraConst().getEye(),

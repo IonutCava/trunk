@@ -72,10 +72,10 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
          const DELEGATE_CBK<>& f);
     ~Task();
 
-    void updateTickInterval(U64 tickInterval) { _tickInterval = tickInterval; }
-    void updateTickCounter(I32 numberOfTicks) {
-        _numberOfTicks = numberOfTicks;
-    }
+    // Minimum interval is 1 millisecond!
+    void updateTickInterval(U64 tickInterval);
+
+    void updateTickCounter(I32 numberOfTicks);
     void startTask(TaskPriority priority = TaskPriority::DONT_CARE);
     void stopTask();
     void pauseTask(bool state);
@@ -86,6 +86,11 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
         _onCompletionCbk = cbk;
     }
 
+    // Always is microseconds
+    static void update(const U64 deltaTime) {
+        _currentTime += deltaTime;
+    }
+
    private:
     mutable SharedLock _lock;
     mutable std::atomic<U64> _tickInterval;
@@ -93,10 +98,13 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     mutable std::atomic_bool _end;
     mutable std::atomic_bool _paused;
     mutable std::atomic_bool _done;
+
     DELEGATE_CBK<> _callback;
     DELEGATE_CBK_PARAM<I64> _onCompletionCbk;
     ThreadPool& _tp;
 
+    // Always is microseconds
+    static U64 _currentTime;
    protected:
     void run();
 };

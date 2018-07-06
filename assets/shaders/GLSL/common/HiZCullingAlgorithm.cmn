@@ -1,6 +1,7 @@
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
 vec4 BoundingBox[8];
+
 int PassThrough(const in vec3 position, const in vec3 extents) {
     return 1;
 }
@@ -51,42 +52,51 @@ int zBufferCull(const in vec3 position, const in vec3 extents) {
     }
 
     /* perform perspective division for the bounding box */
-    BoundingBox[0].xyz /= BoundingBox[0].w;
-    BoundingBox[1].xyz /= BoundingBox[1].w;
-    BoundingBox[2].xyz /= BoundingBox[2].w;
-    BoundingBox[3].xyz /= BoundingBox[3].w;
-    BoundingBox[4].xyz /= BoundingBox[4].w;
-    BoundingBox[5].xyz /= BoundingBox[5].w;
-    BoundingBox[6].xyz /= BoundingBox[6].w;
-    BoundingBox[7].xyz /= BoundingBox[7].w;
+    for (int i = 0; i < 8; i++) {
+        BoundingBox[i].xyz /= BoundingBox[i].w;
+    }
 
     /* calculate screen space bounding rectangle */
     vec2 BoundingRect[2];
-    BoundingRect[0].x = min(min(min(BoundingBox[0].x, BoundingBox[1].x), min(BoundingBox[2].x, BoundingBox[3].x)),
-                            min(min(BoundingBox[4].x, BoundingBox[5].x), min(BoundingBox[6].x, BoundingBox[7].x))) * 0.5 + 0.5;
-
-    BoundingRect[0].y = min(min(min(BoundingBox[0].y, BoundingBox[1].y), min(BoundingBox[2].y, BoundingBox[3].y)),
-                            min(min(BoundingBox[4].y, BoundingBox[5].y), min(BoundingBox[6].y, BoundingBox[7].y))) * 0.5 + 0.5;
-
-    BoundingRect[1].x = max(max(max(BoundingBox[0].x, BoundingBox[1].x), max(BoundingBox[2].x, BoundingBox[3].x)),
-                            max(max(BoundingBox[4].x, BoundingBox[5].x), max(BoundingBox[6].x, BoundingBox[7].x))) * 0.5 + 0.5;
-
-    BoundingRect[1].y = max(max(max(BoundingBox[0].y, BoundingBox[1].y), max(BoundingBox[2].y, BoundingBox[3].y)),
-                            max(max(BoundingBox[4].y, BoundingBox[5].y), max(BoundingBox[6].y, BoundingBox[7].y))) * 0.5 + 0.5;
+    BoundingRect[0].x = min(min(min(BoundingBox[0].x, BoundingBox[1].x),
+                                min(BoundingBox[2].x, BoundingBox[3].x)),
+                            min(min(BoundingBox[4].x, BoundingBox[5].x),
+                                min(BoundingBox[6].x, BoundingBox[7].x))) / 2.0 + 0.5;
+    BoundingRect[0].y = min(min(min(BoundingBox[0].y, BoundingBox[1].y),
+                                min(BoundingBox[2].y, BoundingBox[3].y)),
+                            min(min(BoundingBox[4].y, BoundingBox[5].y),
+                                min(BoundingBox[6].y, BoundingBox[7].y))) / 2.0 + 0.5;
+    BoundingRect[1].x = max(max(max(BoundingBox[0].x, BoundingBox[1].x),
+                                max(BoundingBox[2].x, BoundingBox[3].x)),
+                            max(max(BoundingBox[4].x, BoundingBox[5].x),
+                                max(BoundingBox[6].x, BoundingBox[7].x))) / 2.0 + 0.5;
+    BoundingRect[1].y = max(max(max(BoundingBox[0].y, BoundingBox[1].y),
+                                max(BoundingBox[2].y, BoundingBox[3].y)),
+                            max(max(BoundingBox[4].y, BoundingBox[5].y),
+                                max(BoundingBox[6].y, BoundingBox[7].y))) / 2.0 + 0.5;
 
     /* then the linear depth value of the front-most point */
-    float InstanceDepth = min(min(min(BoundingBox[0].z, BoundingBox[1].z), min(BoundingBox[2].z, BoundingBox[3].z)),
-                              min(min(BoundingBox[4].z, BoundingBox[5].z), min(BoundingBox[6].z, BoundingBox[7].z)));
-
+    float InstanceDepth = min(min(min(BoundingBox[0].z, BoundingBox[1].z),
+                                  min(BoundingBox[2].z, BoundingBox[3].z)),
+                              min(min(BoundingBox[4].z, BoundingBox[5].z),
+                                  min(BoundingBox[6].z, BoundingBox[7].z)));
     /* now we calculate the bounding rectangle size in viewport coordinates */
+    float ViewSizeX = (BoundingRect[1].x - BoundingRect[0].x) * dvd_ViewPort.z;
+    float ViewSizeY = (BoundingRect[1].y - BoundingRect[0].y) * dvd_ViewPort.w;
+
     /* now we calculate the texture LOD used for lookup in the depth buffer texture */
-    float LOD = ceil(log2(max((BoundingRect[1].x - BoundingRect[0].x) * dvd_ViewPort.y,
-                              (BoundingRect[1].y - BoundingRect[0].y) * dvd_ViewPort.z) / 2.0));
+    float LOD = ceil(log2(max(ViewSizeX, ViewSizeY) / 2.0));
 
     /* finally fetch the depth texture using explicit LOD lookups */
+    vec4 Samples;
+    Samples.x = textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[0].y), LOD).r;
+    Samples.y = textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[1].y), LOD).r;
+    Samples.z = textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[1].y), LOD).r;
+    Samples.w = textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[0].y), LOD).r;
+    float MaxDepth = max(max(Samples.x, Samples.y), max(Samples.z, Samples.w));
+
     /* if the instance depth is bigger than the depth in the texture discard the instance */
-    return (InstanceDepth > max(max(textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[0].y), LOD).r,
-                                    textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[1].y), LOD).r),
-                             max(textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[1].y), LOD).r,
-                                 textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[0].y), LOD).r))) ? 0 : 1;
+    return (InstanceDepth > MaxDepth) ? 0 : 1;
+
+   
 }

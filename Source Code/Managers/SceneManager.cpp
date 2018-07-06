@@ -15,6 +15,25 @@ namespace Divide {
 namespace {
     // if culled count exceeds this limit, culling becomes multithreaded in the next frame
     const U32 g_asyncCullThreshold = 75;
+
+    struct VisibleNodesFrontToBack {
+        VisibleNodesFrontToBack(const vec3<F32>& camPos) : _camPos(camPos)
+        {
+        }
+
+        bool operator()(const RenderPassCuller::VisibleNode& a,
+            const RenderPassCuller::VisibleNode& b) const {
+            F32 distASQ = a.second.lock()->getBoundingSphereConst()
+                .getCenter()
+                .distanceSquared(_camPos);
+            F32 distBSQ = b.second.lock()->getBoundingSphereConst()
+                .getCenter()
+                .distanceSquared(_camPos);
+            return distASQ < distBSQ;
+        }
+
+        const vec3<F32> _camPos;
+    };
 };
 
 SceneManager::SceneManager()
@@ -180,7 +199,44 @@ void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
                           par.getParam<bool>(_ID("rendering.enableFog")) ? density : 0.0f);
 }
 
-const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {
+const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
+    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
+        SceneGraphNode_cptr sgnNode = node.second.lock();
+        if (sgnNode->getNode()->getType() != SceneNodeType::TYPE_OBJECT3D) {
+            return true;
+        } else {
+            Object3D::ObjectType type = sgnNode->getNode<Object3D>()->getObjectType();
+            return type == Object3D::ObjectType::FLYWEIGHT;
+        }
+        return false;
+    };
+
+    _reflectiveNodesCache.resize(0);
+    const SceneRenderState& renderState = _activeScene->state().renderState();
+    const vec2<F32>& zPlanes = renderState.getCameraConst().getZPlanes();
+    const vec3<F32>& camPos = renderState.getCameraConst().getEye();
+
+    // Get list of nodes in view from the previous frame
+    RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::Z_PRE_PASS);
+    for (RenderPassCuller::VisibleNode& node : nodeCache) {
+        _reflectiveNodesCache.push_back(node);
+    }
+
+    // Cull nodes that are not valid reflection targets
+    _reflectiveNodesCache.erase(std::remove_if(std::begin(_reflectiveNodesCache),
+                                std::end(_reflectiveNodesCache),
+                                cullingFunction),
+                                std::end(_reflectiveNodesCache));
+
+    // Sort the nodes from front to back
+    std::sort(std::begin(_reflectiveNodesCache),
+              std::end(_reflectiveNodesCache),
+              VisibleNodesFrontToBack(camPos));
+
+    return _reflectiveNodesCache;
+}
+
+const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage) {
     auto cullingFunction = [](const SceneGraphNode& node) -> bool {
         if (node.getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType type = node.getNode<Object3D>()->getObjectType();

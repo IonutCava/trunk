@@ -231,7 +231,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
 
     if (texture) {
         REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-        // Environment maps ARE NOT OWNED by the material
+        // Environment maps ARE NOT OWNED by the material directly, but by the FBO
         if (slot == to_const_uint(ShaderProgram::TextureUsage::REFLECTION)) {
             texture->AddRef();
         }
@@ -538,7 +538,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);
         getTextureData(ShaderProgram::TextureUsage::SPECULAR, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFLECTION, textureData);
-
+        
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
                 textureData.push_back(tex.first->getData());

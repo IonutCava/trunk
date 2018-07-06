@@ -45,6 +45,7 @@ ivec4 dvd_BufferIntegerValues() {
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
 #define dvd_lodLevel dvd_BufferIntegerValues().z
+#define dvd_customData dvd_Matrices[VAR.dvd_drawID]._properties.w
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
