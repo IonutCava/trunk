@@ -71,11 +71,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     }
 
     virtual void render(bool forceWireframe = false, U32 instanceCount = 1) = 0;
-
-    virtual void beginBatch(bool reserveBuffers, unsigned int vertexCount) {
-        _inUse = true;
-        _zombieCounter = 0;
-    }
+    virtual void beginBatch(bool reserveBuffers, unsigned int vertexCount) = 0;
 
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(F32 x, F32 y, F32 z) = 0;
@@ -106,7 +102,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     inline void inUse(bool state) { _inUse = state; }
     inline bool inUse() const { return _inUse; }
     inline void zombieCounter(U8 count) { _zombieCounter = count; }
-    inline U8 zombieCounter() const { return _zombieCounter; }
+    inline U8   zombieCounter() const { return _zombieCounter; }
     inline void forceWireframe(bool state) { _forceWireframe = state; }
     inline bool forceWireframe() const { return _forceWireframe; }
     inline bool hasRenderStates() const {
@@ -149,18 +145,8 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
     bool _forceWireframe;
 
    private:
-    /// after rendering an IMPrimitive, it's "inUse" flag is set to false.
-    /// If the API tries to render it again, we just increment the
-    /// _zombieCounter
-    /// If the _zombieCounter reaches 3, we remove it from the vector as it is
-    /// not needed
-    U8 _zombieCounter;
-    /// After rendering the primitive, we se "inUse" to false but leave it in
-    /// the vector
-    /// If a new primitive is to be rendered, it first looks for a zombie
-    /// primitive
-    /// If none are found, it adds a new one
-    bool _inUse;  //<For caching
+    U8   _zombieCounter;
+    bool _inUse;
     /// If _pause is true, rendering for the current primitive is skipped and
     /// nothing is modified (e.g. zombie counters)
     bool _paused;

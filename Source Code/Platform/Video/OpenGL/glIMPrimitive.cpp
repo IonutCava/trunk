@@ -13,11 +13,12 @@ glIMPrimitive::glIMPrimitive() : IMPrimitive() {
         to_uint(AttribLocation::VERTEX_POSITION));
 }
 
-glIMPrimitive::~glIMPrimitive() {}
+glIMPrimitive::~glIMPrimitive()
+{
+}
 
-void glIMPrimitive::beginBatch(bool reserveBuffers, unsigned int vertexCount) {
+void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount) {
     _imInterface->BeginBatch(reserveBuffers, vertexCount);
-    IMPrimitive::beginBatch(reserveBuffers, vertexCount);
 }
 
 void glIMPrimitive::begin(PrimitiveType type) {
@@ -42,9 +43,13 @@ void glIMPrimitive::attribute1i(const stringImpl& attribName, I32 value) {
     _imInterface->Attribute1i(attribName.c_str(), value);
 }
 
-void glIMPrimitive::end() { _imInterface->End(); }
+void glIMPrimitive::end() {
+    _imInterface->End();
+}
 
-void glIMPrimitive::endBatch() { _imInterface->EndBatch(); }
+void glIMPrimitive::endBatch() {
+    _imInterface->EndBatch();
+}
 
 void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     DIVIDE_ASSERT(_drawShader != nullptr,
@@ -53,6 +58,8 @@ void glIMPrimitive::render(bool forceWireframe, U32 instanceCount) {
     _imInterface->SetShaderProgramHandle(_drawShader->getID());
     _imInterface->RenderBatchInstanced(instanceCount,
                                        forceWireframe || _forceWireframe);
+    zombieCounter(0);
+
     GFX_DEVICE.registerDrawCall();
 }
 };

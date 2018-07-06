@@ -57,6 +57,7 @@ class SceneGraph : private NonCopyable {
 
     inline vectorImpl<BoundingBox>& getBBoxes() {
         _boundingBoxes.clear();
+        _boundingBoxes.reserve(_root->getChildren().size());
         _root->getBBoxes(_boundingBoxes);
         return _boundingBoxes;
     }

@@ -5,7 +5,8 @@
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
-SceneGraph::SceneGraph() : _root(nullptr)
+SceneGraph::SceneGraph()
+    : _root(nullptr)
 {
     SceneNode* rootNode = MemoryManager_NEW SceneRoot();
     _root = std::make_shared<SceneGraphNode>(*rootNode, "ROOT");
@@ -26,6 +27,10 @@ SceneGraph::~SceneGraph()
     // Should recursively delete the entire scene graph
     assert(_root.unique());
     _root.reset();
+}
+
+void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
+    Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
 }
 
 void SceneGraph::idle()
@@ -64,11 +69,6 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 void SceneGraph::intersect(const Ray& ray, F32 start, F32 end,
                            vectorImpl<std::weak_ptr<SceneGraphNode>>& selectionHits) {
     _root->intersect(ray, start, end, selectionHits);
-}
-
-
-void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
-    Attorney::SceneGraph::onNodeDestroy(GET_ACTIVE_SCENE(), oldNode);
 }
 
 };

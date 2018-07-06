@@ -64,12 +64,12 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
     _axisGizmo->paused(true);
     // Create the object containing all of the lines
     _axisGizmo->beginBatch(true, to_uint(_axisLines.size()) * 2);
-    _axisGizmo->attribute4ub("inColorData", _axisLines[0]._color);
+    _axisGizmo->attribute4ub("inColorData", _axisLines[0]._colorStart);
     // Set the mode to line rendering
     _axisGizmo->begin(PrimitiveType::LINES);
     // Add every line in the list to the batch
     for (const Line& line : _axisLines) {
-        _axisGizmo->attribute4ub("inColorData", line._color);
+        _axisGizmo->attribute4ub("inColorData", line._colorStart);
         _axisGizmo->vertex(line._startPoint);
         _axisGizmo->vertex(line._endPoint);
     }
@@ -178,7 +178,7 @@ void RenderingComponent::renderWireframe(const bool state) {
 
 void RenderingComponent::renderBoundingBox(const bool state) {
     _renderBoundingBox = state;
-    
+    _boundingBoxPrimitive->paused(!state);
     for (SceneGraphNode::NodeChildren::value_type& it : _parentSGN.getChildren()) {
         RenderingComponent* const renderable =
             it.second->getComponent<RenderingComponent>();

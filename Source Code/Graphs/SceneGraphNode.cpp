@@ -18,11 +18,11 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
     BoundingBox& bb = sgn.getBoundingBox();
     bb.reset();
 
-    for (const SceneGraphNode::NodeChildren::value_type& s :
-         sgn.getChildren())
-    {
-        sgn.addBoundingBox(s.second->getBoundingBoxConst(),
-                           s.second->getNode()->getType());
+    const vectorImpl<BoundingBox>& bBoxes = 
+        GET_ACTIVE_SCENEGRAPH().getBBoxes();
+
+    for (const BoundingBox& bBox : bBoxes) {
+        bb.Add(bBox);
     }
 
     bb.setComputed(true);

@@ -611,9 +611,11 @@ void GFXDevice::ConstructHIZ() {
 IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
     IMPrimitive* tempPriv = nullptr;
     // Find an available and unused primitive (a zombie primitive)
-    vectorImpl<IMPrimitive*>::iterator it = std::find_if(
-        std::begin(_imInterfaces), std::end(_imInterfaces),
-        [](IMPrimitive* const priv) { return (priv && !priv->inUse()); });
+    vectorImpl<IMPrimitive*>::iterator it;
+    it = std::find_if(std::begin(_imInterfaces), std::end(_imInterfaces),
+                      [](IMPrimitive* const priv) { 
+                            return (priv && !priv->inUse()); 
+                      });
     // If we allow resurrected primitives check if we have one available
     if (allowPrimitiveRecycle && it != std::end(_imInterfaces)) {
         tempPriv = *it;

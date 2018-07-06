@@ -57,14 +57,6 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         if (prim->paused()) {
             continue;
         }
-        // If the current primitive isn't in use, and can be recycled, increase
-        // it's "zombie counter"
-        if (!prim->inUse() && prim->_canZombify) {
-            // The zombie counter represents the number of frames since the
-            // primitive was last used
-            prim->zombieCounter(prim->zombieCounter() + 1);
-            continue;
-        }
         // Inform the primitive that we're using the imShader
         // A primitive can be rendered with any shader program available, so
         // make sure we actually use the right one for this stage
@@ -87,11 +79,6 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         prim->render(prim->forceWireframe(), 1);
         // Call any "postDraw" function the primitive may have attached
         prim->resetStates();
-        // If this primitive is recyclable, clear it's inUse flag. It should be
-        // recreated next frame
-        if (prim->_canZombify) {
-            prim->inUse(false);
-        }
     }
 }
 
@@ -119,7 +106,7 @@ void GFXDevice::drawDebugAxis(const SceneRenderState& sceneRenderState) {
     drawLines(*primitive,
               _axisLines,
               offset * _gpuBlock._ViewMatrix.getInverse(),
-              vec4<I32>(windowWidth - 128, 0, 128, 128),
+              vec4<I32>(windowWidth - 120, 8, 128, 128),
               true);
 }
 };

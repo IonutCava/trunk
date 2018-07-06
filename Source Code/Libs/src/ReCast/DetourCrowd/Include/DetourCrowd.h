@@ -164,11 +164,11 @@ struct dtCrowdAgent
     int ncorners;
     
     unsigned char targetState;            ///< State of the movement request.
-    dtPolyRef targetRef;                ///< Target polyref of the movement request.
-    float targetPos[3];                    ///< Target position of the movement request (or velocity in case of DT_CROWDAGENT_TARGET_VELOCITY).
+    dtPolyRef targetRef;                  ///< Target polyref of the movement request.
+    float targetPos[3];                   ///< Target position of the movement request (or velocity in case of DT_CROWDAGENT_TARGET_VELOCITY).
     dtPathQueueRef targetPathqRef;        ///< Path finder ref.
     bool targetReplan;                    ///< Flag indicating that the current path is being replanned.
-    float targetReplanTime;                /// <Time since the agent's target was replanned.
+    float targetReplanTime;               /// <Time since the agent's target was replanned.
 };
 
 struct dtCrowdAgentAnimation

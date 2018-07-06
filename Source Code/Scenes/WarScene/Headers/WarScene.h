@@ -80,6 +80,7 @@ class WarScene : public Scene {
     vectorImpl<AI::AIEntity*> _army[2];
     /// NPC's are the actual game entities
     vectorImpl<NPC*> _armyNPCs[2];
+    IMPrimitive* _targetLines;
     std::weak_ptr<SceneGraphNode> _flag[2];
     /// Teams are factions for AIEntites so they can manage friend/foe situations
     AI::AITeam* _faction[2];

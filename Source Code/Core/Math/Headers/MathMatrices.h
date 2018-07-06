@@ -1100,13 +1100,28 @@ class mat4 {
 struct Line {
     vec3<F32> _startPoint;
     vec3<F32> _endPoint;
-    vec4<U8> _color;
+    vec4<U8> _colorStart;
+    vec4<U8> _colorEnd;
 
-    Line() {}
+    Line()
+    {
+    }
 
     Line(const vec3<F32> &startPoint, const vec3<F32> &endPoint,
          const vec4<U8> &color)
-        : _startPoint(startPoint), _endPoint(endPoint), _color(color) {}
+        : Line(startPoint, endPoint, color, color)
+    {
+    }
+
+    Line(const vec3<F32> &startPoint, const vec3<F32> &endPoint,
+         const vec4<U8> &colorStart, const vec4<U8>& colorEnd)
+        : _startPoint(startPoint),
+          _endPoint(endPoint),
+          _colorStart(colorStart),
+          _colorEnd(colorEnd)
+    {
+    }
+
 };
 
 /// Converts a point from world coordinates to projection coordinates

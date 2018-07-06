@@ -84,13 +84,7 @@ class NOINITVTABLE Scene : public Resource {
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
-#ifdef _DEBUG
-    enum class DebugLines : U32 {
-        DEBUG_LINE_RAY_PICK = 0,
-        DEBUG_LINE_OBJECT_TO_TARGET = 1,
-        COUNT
-    };
-#endif
+
    public:
     Scene();
     virtual ~Scene();
@@ -283,8 +277,8 @@ class NOINITVTABLE Scene : public Resource {
    protected:
     std::unique_ptr<SceneInput> _input;
 #ifdef _DEBUG
-    std::array<IMPrimitive*, to_const_uint(DebugLines::COUNT)> _linesPrimitive;
-    std::array<vectorImpl<Line>, to_const_uint(DebugLines::COUNT)> _lines;
+    Line _pickRayLine;
+    IMPrimitive* _linesPrimitive;
 #endif
 };
 

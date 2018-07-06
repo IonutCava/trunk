@@ -62,29 +62,17 @@ Scene::Scene()
     RenderStateBlock primitiveDescriptor;
     primitiveDescriptor.setLineWidth(3.0f);
 
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)] =
-        GFX_DEVICE.getOrCreatePrimitive(false);
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]->name(
-        "LinesObjectToTarget");
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]
-        ->stateHash(primitiveDescriptor.getHash());
-
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)] =
-        GFX_DEVICE.getOrCreatePrimitive(false);
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->name(
-        "LinesRayPick");
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->stateHash(
-        primitiveDescriptor.getHash());
+    _linesPrimitive = GFX_DEVICE.getOrCreatePrimitive(false);
+    _linesPrimitive->name("LinesRayPick");
+    _linesPrimitive->stateHash(primitiveDescriptor.getHash());
+    _linesPrimitive->paused(true);
 #endif
 }
 
 Scene::~Scene()
 {
 #ifdef _DEBUG
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)]
-        ->_canZombify = true;
-    _linesPrimitive[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)]->_canZombify =
-        true;
+    _linesPrimitive->_canZombify = true;
 #endif
 }
 
@@ -129,19 +117,14 @@ void Scene::preRender() {
 void Scene::postRender() {
 #ifdef _DEBUG
     if (renderState().drawDebugLines()) {
-        U32 linePickIdx = to_uint(DebugLines::DEBUG_LINE_RAY_PICK);
-        if (!_lines[linePickIdx].empty()) {
-            GFX_DEVICE.drawLines(*_linesPrimitive[linePickIdx],
-                                 _lines[linePickIdx], mat4<F32>(), vec4<I32>(),
-                                 false);
-        }
-    }
-    U32 lineTargetIdx = to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET);
-    if (!_lines[lineTargetIdx].empty() &&
-        renderState().drawDebugTargetLines()) {
-        GFX_DEVICE.drawLines(*_linesPrimitive[lineTargetIdx],
-                             _lines[lineTargetIdx], mat4<F32>(), vec4<I32>(),
-                             false);
+        static mat4<F32> identity;
+        static vec4<I32> nullViewport;
+        static vectorImpl<Line> pickVec(1);
+        pickVec[0] = _pickRayLine;
+        GFX_DEVICE.drawLines(*_linesPrimitive,
+                             pickVec, 
+                             identity,
+                             nullViewport);
     }
 #endif
 }
@@ -502,16 +485,6 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.second = [this]() { renderState().toggleBoundingBoxes(); };
     _input->addKeyMapping(Input::KeyCode::KC_B, cbks);
 
-#ifdef _DEBUG
-    cbks.second =
-        [this]() {
-            for (U32 i = 0; i < to_uint(DebugLines::COUNT); ++i) {
-                _lines[i].clear();
-            }
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_F9, cbks);
-#endif
-
     cbks.second = []() {
         ParamHandler& param = ParamHandler::getInstance();
         LightManager::getInstance().togglePreviewShadowMaps();
@@ -758,8 +731,10 @@ void Scene::findSelection() {
         // set it's state to selected
         _currentSelection.lock()->setSelected(true);
 #ifdef _DEBUG
-        _lines[to_uint(DebugLines::DEBUG_LINE_RAY_PICK)].push_back(
-            Line(startRay, endRay, vec4<U8>(0, 255, 0, 255)));
+        _pickRayLine._startPoint.set(startRay);
+        _pickRayLine._endPoint.set(endRay);
+        _pickRayLine._colorStart.set(0, 128, 0, 255);
+        _pickRayLine._colorEnd.set(0, 255, 0, 255);
 #endif
     }
 

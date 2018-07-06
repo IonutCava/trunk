@@ -58,10 +58,13 @@ WarScene::WarScene()
             _GUI->modifyText("entityState", "");
         }
     });
+
+    _targetLines = GFX_DEVICE.getOrCreatePrimitive(false);
 }
 
 WarScene::~WarScene()
 {
+    _targetLines->_canZombify = true;
 }
 
 void WarScene::processGUI(const U64 deltaTime) {
@@ -167,26 +170,23 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
         return;
     }
 
-    _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].clear();
-    _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)].resize(_army[0].size() +
-                                               _army[1].size());
     // renderState().drawDebugLines(true);
-    U32 count = 0;
+    vectorImpl<Line> paths;
+    paths.reserve(_army[0].size() + _army[1].size());
     for (U8 i = 0; i < 2; ++i) {
         for (AI::AIEntity* const character : _army[i]) {
             if (!character->getUnitRef()->getBoundNode().lock()->isActive()) {
                 continue;
             }
 
-            _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)][count]._startPoint.set(
-                character->getPosition());
-            _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)][count]._endPoint.set(
-                character->getDestination());
-            _lines[to_uint(DebugLines::DEBUG_LINE_OBJECT_TO_TARGET)][count]._color.set(
-                i == 1 ? 255 : 0, 0, i == 1 ? 0 : 255, 255);
-            count++;
+            vectorAlg::emplace_back(paths, 
+                                    character->getPosition(),
+                                    character->getDestination(),
+                                    vec4<U8>(i == 0 ? 0 : 255, 0, i == 0 ? 255 : 0, 255),
+                                    vec4<U8>(i == 0 ? 0 : 64, 0, i == 0 ? 64 : 0, 128));
         }
     }
+    GFX_DEVICE.drawLines(*_targetLines, paths, mat4<F32>(), vec4<I32>());
 #endif
 }
 

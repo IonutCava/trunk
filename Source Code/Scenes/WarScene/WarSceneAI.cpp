@@ -340,7 +340,8 @@ void WarScene::startSimulation() {
     bool loadedFromFile = true;
     U64 currentTime = Time::ElapsedMicroseconds(true);
     U64 diffTime = currentTime - _lastNavMeshBuildTime;
-    if (diffTime > Time::SecondsToMicroseconds(10)) {
+    if (_lastNavMeshBuildTime == 0UL ||
+        diffTime > Time::SecondsToMicroseconds(10)) {
         AI::Navigation::NavigationMesh* navMesh =
             AI::AIManager::getInstance().getNavMesh(
                 _army[0][0]->getAgentRadiusCategory());
@@ -359,11 +360,12 @@ void WarScene::startSimulation() {
             navMesh->build(
                 GET_ACTIVE_SCENEGRAPH().getRoot(),
                 [&radius](AI::Navigation::NavigationMesh* navMesh) {
-                    AI::AIManager::getInstance().toggleNavMeshDebugDraw(true);
-                    AI::AIManager::getInstance().addNavMesh(radius, navMesh);
-                    g_navMeshStarted = false;
-                });
-        } else {
+                AI::AIManager::getInstance().toggleNavMeshDebugDraw(true);
+                AI::AIManager::getInstance().addNavMesh(radius, navMesh);
+                g_navMeshStarted = false;
+            });
+        }
+        else {
             AI::AIManager::getInstance().addNavMesh(
                 _army[0][0]->getAgentRadiusCategory(), navMesh);
 #ifdef _DEBUG
@@ -376,14 +378,17 @@ void WarScene::startSimulation() {
             if (loadedFromFile) {
                 _infoBox->setMessage(
                     "Re-loaded the navigation mesh from file!");
-            } else {
+            }
+            else {
                 _infoBox->setMessage(
                     "Re-building the navigation mesh in a background thread!");
             }
-        } else {
+        }
+        else {
             if (loadedFromFile) {
                 _infoBox->setMessage("Navigation mesh loaded from file!");
-            } else {
+            }
+            else {
                 _infoBox->setMessage(
                     "Navigation mesh building in a background thread!");
             }

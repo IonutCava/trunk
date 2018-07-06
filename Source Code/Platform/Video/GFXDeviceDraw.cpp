@@ -377,6 +377,7 @@ void GFXDevice::drawBox3D(IMPrimitive& primitive,
                           const vec3<F32>& min,
                           const vec3<F32>& max,
                           const vec4<U8>& color)  {
+    primitive.paused(false);
     // Create the object
     primitive.beginBatch(true, 16);
     // Set it's color
@@ -420,6 +421,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (!lines.empty()) {
+        primitive.paused(false);
         // Set the world matrix
         primitive.worldMatrix(globalOffset);
         // If we need to render it into a specific viewport, set the pre and post
@@ -432,13 +434,14 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
         }
         // Create the object containing all of the lines
         primitive.beginBatch(true, to_uint(lines.size()) * 2);
-        primitive.attribute4ub("inColorData", lines[0]._color);
+        primitive.attribute4ub("inColorData", lines[0]._colorStart);
         // Set the mode to line rendering
         primitive.begin(PrimitiveType::LINES);
         // Add every line in the list to the batch
         for (const Line& line : lines) {
-            primitive.attribute4ub("inColorData", line._color);
+            primitive.attribute4ub("inColorData", line._colorStart);
             primitive.vertex(line._startPoint);
+            primitive.attribute4ub("inColorData", line._colorEnd);
             primitive.vertex(line._endPoint);
         }
         primitive.end();

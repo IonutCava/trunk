@@ -5,10 +5,10 @@ namespace Divide {
 
 IMPrimitive::IMPrimitive()
     : GUIDWrapper(),
-      _inUse(false),
+      _inUse(true),
       _canZombify(true),
       _forceWireframe(false),
-      _paused(false),
+      _paused(true),
       _zombieCounter(0),
       _texture(nullptr),
       _drawShader(nullptr),
@@ -25,7 +25,6 @@ void IMPrimitive::clear() {
     zombieCounter(0);
     stateHash(0);
     clearRenderStates();
-    inUse(false);
     _worldMatrix.identity();
     _canZombify = true;
     _texture = nullptr;
