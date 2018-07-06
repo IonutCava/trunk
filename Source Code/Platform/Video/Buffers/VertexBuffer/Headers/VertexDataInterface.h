@@ -49,7 +49,6 @@ class NOINITVTABLE VertexDataInterface : public FrameListener,
     virtual ~VertexDataInterface() { UNREGISTER_FRAME_LISTENER(this); }
 
     virtual void Draw(const GenericDrawCommand& command,
-                      std::shared_ptr<HardwareQuery> hardwareQuery,
                       bool useCmdBuffer = false) = 0;
 
     /// Just before we render the frame

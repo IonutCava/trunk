@@ -389,7 +389,8 @@ void Vegetation::gpuCull() {
                                         _instanceCountGrass * queryID,
                                         _instanceCountGrass);
 
-        _cullDrawCommand.primCount(_instanceCountGrass);
+        _cullDrawCommand.cmd().primCount = _instanceCountGrass;
+
         _cullDrawCommand.queryID(static_cast<U8>(queryID));
         _cullDrawCommand.drawToBuffer(true);
         _cullDrawCommand.shaderProgram(_cullShader);
@@ -422,7 +423,7 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     _renderDrawCommand.renderGeometry(renderable->renderGeometry());
     _renderDrawCommand.renderWireframe(renderable->renderWireframe());
     _renderDrawCommand.stateHash(_grassStateBlockHash);
-    _renderDrawCommand.primCount(buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID)));
+    _renderDrawCommand.cmd().primCount = buffer->GetFeedbackPrimitiveCount(static_cast<U8>(queryID));
     _renderDrawCommand.LoD(1);
     _renderDrawCommand.shaderProgram(renderable->getDrawShader(renderStage));
     _renderDrawCommand.sourceBuffer(buffer);

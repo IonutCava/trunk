@@ -161,7 +161,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface {
     virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
     virtual void Draw(const GenericDrawCommand& command,
-                      std::shared_ptr<HardwareQuery> hardwareQuery,
                       bool useCmdBuffer = false) = 0;
 
     /// When reading and writing to the same buffer, we use a round-robin

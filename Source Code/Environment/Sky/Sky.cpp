@@ -118,7 +118,9 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
                       : _skyboxRenderStateHash);
     cmd.shaderProgram(_skyShader);
     cmd.sourceBuffer(_sky->getGeometryVB());
-    cmd.indexCount(_sky->getGeometryVB()->getIndexCount());
+
+    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
+
     drawCommandsOut.push_back(cmd);
 }
 

@@ -63,10 +63,15 @@ class SGNComponent : private NonCopyable {
         _elapsedTime = 0UL;
     }
 
+    virtual void setActive(const bool state) {
+        _parentNodeActive = state;
+    }
+
     inline ComponentType getType() const { return _type; }
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
     
    protected:
+    bool _parentNodeActive;
     /// The current instance using this component
     U32 _instanceID;
     /// Pointer to the SGN owning this instance of AnimationComponent

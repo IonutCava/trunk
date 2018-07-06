@@ -74,7 +74,7 @@ typedef struct {
 
 struct IndirectDrawCommand {
     IndirectDrawCommand()
-        : count(0),
+        : indexCount(0),
           primCount(1),
           firstIndex(0),
           baseVertex(0),
@@ -82,14 +82,14 @@ struct IndirectDrawCommand {
     {
     }
 
-    U32 count;
+    U32 indexCount;
     U32 primCount;
     U32 firstIndex;
     U32 baseVertex;
     U32 baseInstance;
 
     inline void set(const IndirectDrawCommand& other) {
-        count = other.count;
+        indexCount = other.indexCount;
         primCount = other.primCount;
         firstIndex = other.firstIndex;
         baseVertex = other.baseVertex;
@@ -98,15 +98,21 @@ struct IndirectDrawCommand {
 };
 
 struct GenericDrawCommand {
+   public:
+    enum class RenderOptions : U32 {
+        RENDER_GEOMETRY = toBit(1),
+        RENDER_WIREFRAME = toBit(2),
+        RENDER_BOUNDS = toBit(3)
+    };
+
    private:
     U8 _lodIndex;
     U16 _drawCount;
     U32 _queryID;
+    U32 _drawID;
+    U32 _renderOptions;
     bool _locked;
     bool _drawToBuffer;
-    bool _renderWireframe;
-    bool _renderGeometry;
-    bool _renderBounds;
     size_t _stateHash;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
@@ -123,7 +129,7 @@ struct GenericDrawCommand {
 
     inline void drawID(U32 ID) {
         assert(!_locked);
-        _cmd.baseInstance = ID;
+        _drawID = ID;
     }
 
     inline void LoD(U8 lod) {
@@ -148,32 +154,20 @@ struct GenericDrawCommand {
 
     inline void renderWireframe(bool state) {
         assert(!_locked);
-        _renderWireframe = state;
+        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME))
+              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
     }
 
     inline void renderBounds(bool state) {
         assert(!_locked);
-        _renderBounds = state;
+        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS))
+              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS));
     }
 
     inline void renderGeometry(bool state) {
         assert(!_locked);
-        _renderGeometry = state;
-    }
-
-    inline void primCount(U32 count) {
-        assert(!_locked);
-        _cmd.primCount = count;
-    }
-
-    inline void firstIndex(U32 index) {
-        assert(!_locked);
-        _cmd.firstIndex = index;
-    }
-
-    inline void indexCount(U32 count) {
-        assert(!_locked);
-        _cmd.count = count;
+        state ? SetBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY))
+              : ClearBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
     }
 
     inline void shaderProgram(ShaderProgram* const program) {
@@ -193,17 +187,30 @@ struct GenericDrawCommand {
 
     inline U8 LoD() const { return _lodIndex; }
     inline U32 queryID() const { return _queryID; }
-    inline U32 drawID() const { return _cmd.baseInstance; }
+    inline U32 drawID() const { return _drawID; }
     inline U16 drawCount() const { return _drawCount; }
     inline size_t stateHash() const { return _stateHash; }
     inline bool drawToBuffer() const { return _drawToBuffer; }
-    inline bool renderWireframe() const { return _renderWireframe; }
-    inline bool renderGeometry() const { return _renderGeometry; }
-    inline bool renderBounds() const { return _renderBounds; }
-    inline U32 primCount() const { return _cmd.primCount; }
-    inline U32 indexCount() const { return _cmd.count; }
 
-    inline const IndirectDrawCommand& cmd() const { return _cmd; }
+    inline bool renderWireframe() const {
+        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_WIREFRAME));
+    }
+    inline bool renderGeometry() const {
+        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
+    }
+    inline bool renderBounds() const {
+        return BitCompare(_renderOptions, to_uint(RenderOptions::RENDER_BOUNDS));
+    }
+
+    inline const IndirectDrawCommand& cmd() const {
+        return _cmd;
+    }
+
+    inline IndirectDrawCommand& cmd() {
+        assert(!_locked);
+        return _cmd;
+    }
+
     inline ShaderProgram* shaderProgram() const { return _shaderProgram; }
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
     inline PrimitiveType primitiveType() const { return _type; }
@@ -213,22 +220,21 @@ struct GenericDrawCommand {
     {
     }
 
-    GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 count,
+    GenericDrawCommand(const PrimitiveType& type, U32 firstIndex, U32 indexCount,
                        U32 primCount = 1)
         : _queryID(0),
           _lodIndex(0),
+          _drawID(0),
           _drawCount(1),
           _locked(false),
           _drawToBuffer(false),
-          _renderWireframe(false),
-          _renderGeometry(true),
-          _renderBounds(false),
           _stateHash(0),
     	  _type(type),
           _shaderProgram(nullptr),
           _sourceBuffer(nullptr)
     {
-        _cmd.count = count;
+        SetBit(_renderOptions, to_uint(RenderOptions::RENDER_GEOMETRY));
+        _cmd.indexCount = indexCount;
         _cmd.firstIndex = firstIndex;
         _cmd.primCount = primCount;
     }
@@ -238,13 +244,12 @@ struct GenericDrawCommand {
         assert(!_locked);
         _cmd.set(base._cmd);
 
+        _drawID = base._drawID;
         _queryID = base._queryID;
         _lodIndex = base._lodIndex;
         _drawCount = base._drawCount;
         _drawToBuffer = base._drawToBuffer;
-        _renderWireframe = base._renderWireframe;
-        _renderBounds = base._renderBounds;
-        _renderGeometry = base._renderGeometry;
+        _renderOptions = base._renderOptions;
         _stateHash = base._stateHash;
         _type = base._type;
         _shaderProgram = base._shaderProgram;
@@ -254,9 +259,7 @@ struct GenericDrawCommand {
     inline bool compatible(const GenericDrawCommand& other) const {
         return _queryID == other._queryID && _lodIndex == other._lodIndex &&
                _drawToBuffer == other._drawToBuffer &&
-               _renderWireframe == other._renderWireframe &&
-               _renderBounds == other._renderBounds &&
-               _renderGeometry == other._renderGeometry &&
+               _renderOptions == other._renderOptions &&
                _stateHash == other._stateHash && _type == other._type &&
                (_shaderProgram != nullptr) ==
                    (other._shaderProgram != nullptr) &&

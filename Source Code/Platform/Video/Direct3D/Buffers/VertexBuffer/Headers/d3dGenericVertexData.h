@@ -59,8 +59,7 @@ class d3dGenericVertexData : public GenericVertexData {
 
    protected:
     friend class GFXDevice;
-    void Draw(const GenericDrawCommand& command, 
-              std::shared_ptr<HardwareQuery> hardwareQuery,
+    void Draw(const GenericDrawCommand& command,
               bool useCmdBuffer = false) {}
 };
 

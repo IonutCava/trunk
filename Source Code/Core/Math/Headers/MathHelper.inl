@@ -73,6 +73,14 @@ inline bool BitCompare<U32>(const U32 bitMask, const U32 bit) {
     return ((bitMask & bit) == bit);
 }
 
+inline void SetBit(U32& bitMask, const U32 bit) {
+    bitMask |= bit;
+}
+
+inline void ClearBit(U32& bitMask, const U32 bit) {
+    bitMask &= ~(bit);
+}
+
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
 
 // Helper method to emulate GLSL

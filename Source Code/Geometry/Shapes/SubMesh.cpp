@@ -21,8 +21,8 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
       _parentMesh(nullptr)
 {
     _drawCmd.primitiveType(PrimitiveType::TRIANGLES);
-    _drawCmd.firstIndex(0);
-    _drawCmd.indexCount(1);
+    _drawCmd.cmd().firstIndex = 0;
+    _drawCmd.cmd().primCount = 1;
 }
 
 SubMesh::~SubMesh()
@@ -34,10 +34,10 @@ void SubMesh::setParentMesh(Mesh* const parentMesh) {
     setGeometryVB(_parentMesh->getGeometryVB());
     // If the mesh has animation data, use dynamic VB's if we use software
     // skinning
-    _drawCmd.firstIndex(
-        getGeometryVB()->getPartitionOffset(_geometryPartitionID));
-    _drawCmd.indexCount(
-        getGeometryVB()->getPartitionCount(_geometryPartitionID));
+    _drawCmd.cmd().firstIndex = 
+        getGeometryVB()->getPartitionOffset(_geometryPartitionID);
+    _drawCmd.cmd().indexCount =
+        getGeometryVB()->getPartitionCount(_geometryPartitionID);
 }
 
 bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {

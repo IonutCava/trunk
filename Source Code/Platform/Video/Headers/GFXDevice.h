@@ -72,24 +72,6 @@ namespace Attorney {
     class GFXDeviceRenderStateBlock;
 };
 
-class OcclusionQueryHelper {
-public:
-    void init();
-    void deinit();
-    void registerDrawIDForNode(I64 nodeGUID, U32 drawID);
-    void updateDrawIDForNode(I64 nodeGUID, U32 newDrawID);
-    void batchDrawID(U32 previousDrawID, U32 currentDrawID);
-
-    std::shared_ptr<HardwareQuery> getQueryForDrawID(U32 drawID);
-
-private:
-    hashMapImpl<I64 /*node GUID*/, U32 /*draw ID*/> _nodeDrawID;
-    hashMapImpl<U32 /*draw ID*/, I64 /*node GUID*/> _drawIDNode;
-    hashMapImpl<U32 /*draw ID*/, U32 /*occlusion query*/> _occlusionQueries;
-    std::array<std::shared_ptr<HardwareQuery>, 1024> _queries;
-};
-
-
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
@@ -568,6 +550,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     GPUBlock _gpuBlock;
 
     U32 _lastCmdCount;
+    U32 _lastNodeCount;
     std::array<NodeData, Config::MAX_VISIBLE_NODES + 1> _matricesData;
     std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> _drawCommandsCache;
     typedef vectorImpl<RenderPackage> RenderQueue;
@@ -579,7 +562,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     std::unique_ptr<ShaderBuffer> _nodeBuffer;
     GenericDrawCommand _defaultDrawCmd;
-    OcclusionQueryHelper _occlusionHelper;
 END_SINGLETON
 
 namespace Attorney {

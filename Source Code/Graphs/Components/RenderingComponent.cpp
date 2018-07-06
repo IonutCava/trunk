@@ -442,8 +442,8 @@ bool RenderingComponent::getImpostorDrawCommand(SceneRenderState& sceneRenderSta
         commandOut.LoD(lodLevel());
         commandOut.stateHash(getDrawStateHash(renderStage));
         commandOut.shaderProgram(getDrawShader(renderStage));
-        commandOut.indexCount(14);
-        commandOut.firstIndex(0);
+        commandOut.cmd().indexCount = 14;
+        commandOut.cmd().firstIndex = 0;
         return true;
     }
 

@@ -68,7 +68,6 @@ class glVertexArray : public VertexBuffer {
    protected:
     friend class GFXDevice;
     void Draw(const GenericDrawCommand& commands,
-              std::shared_ptr<HardwareQuery> hardwareQuery,
               bool useCmdBuffer = false);
 
    protected:

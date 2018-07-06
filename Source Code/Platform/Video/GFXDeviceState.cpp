@@ -200,8 +200,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 
     _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
 
-    _occlusionHelper.init();
-
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
 }
@@ -210,7 +208,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 void GFXDevice::closeRenderingAPI() {
     DIVIDE_ASSERT(_api != nullptr,
                   "GFXDevice error: closeRenderingAPI called without init!");
-    _occlusionHelper.deinit();
     // Delete the internal shader
     RemoveResource(_HIZConstructProgram);
     // Destroy our post processing system

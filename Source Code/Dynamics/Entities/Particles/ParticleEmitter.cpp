@@ -229,7 +229,8 @@ void ParticleEmitter::getDrawCommands(
     _drawCommand.renderGeometry(renderable->renderGeometry());
     _drawCommand.renderWireframe(renderable->renderWireframe());
     _drawCommand.stateHash(_particleStateBlockHash);
-    _drawCommand.primCount(particleCount);
+    _drawCommand.cmd().primCount = particleCount;
+
     _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY
                                    ? _particleShader
                                    : _particleDepthShader);

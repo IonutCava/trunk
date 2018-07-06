@@ -229,7 +229,6 @@ bool glVertexArray::CreateInternal() {
 
 /// Render the current buffer data using the specified command
 void glVertexArray::Draw(const GenericDrawCommand& command,
-                         std::shared_ptr<HardwareQuery> hardwareQuery,
                          bool useCmdBuffer) {
     // Process the actual draw command
     if (Config::Profile::DISABLE_DRAWS) {
@@ -247,16 +246,7 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
     if (!SetActive()) {
         return;
     }
-    bool generateOccQuery = false;
-    glHardwareQuery* query = static_cast<glHardwareQuery*>(hardwareQuery.get());
-    if (!query->enabled()) {
-        query->enabled(true);
-        generateOccQuery = true;
-        glBeginQuery(GL_ANY_SAMPLES_PASSED, query->getID());
-    } else {
-        //glBeginConditionalRender(query->getID(), GL_QUERY_BY_REGION_WAIT);
-    }
-
+  
     static const size_t cmdSize = sizeof(IndirectDrawCommand);
 
     bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
@@ -278,21 +268,14 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
         GFX_DEVICE.registerDrawCall();
     }
 
-    if (generateOccQuery) {
-        glEndQuery(GL_ANY_SAMPLES_PASSED);
-    } else {
-        //glEndConditionalRender();
-        query->enabled(false);
-
-        if (command.renderWireframe()) {
-            if (drawCount > 1) {
-                glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
-            } else {
-                glDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset);
-            }
-            // Always update draw call counter after draw calls
-            GFX_DEVICE.registerDrawCall();
+    if (command.renderWireframe()) {
+        if (drawCount > 1) {
+            glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
+        } else {
+            glDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset);
         }
+        // Always update draw call counter after draw calls
+        GFX_DEVICE.registerDrawCall();
     }
 }
 
