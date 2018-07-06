@@ -86,21 +86,43 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     typedef std::stack<vec4<I32>> ViewportStack;
 
     struct NodeData {
+      private:
         union {
             mat4<F32> _matrix[4];
             F32       _data[4 * 4 * 4];
         };
+
+      public:
         vec4<F32> _boundingSphere;
 
         NodeData()
         {
-            _matrix[0].identity();
-            _matrix[1].identity();
-            _matrix[2].zero();
-            _matrix[3].zero();
+            worldMatrix().identity();
+            normalMatrix().identity();
+            colorMatrix().zero();
+            propertyMatrix().zero();
             _boundingSphere.reset();
         }
 
+        inline mat4<F32>& worldMatrix() {
+            return _matrix[0];
+        }
+
+        inline mat4<F32>& normalMatrix() {
+            return _matrix[1];
+        }
+
+        inline mat4<F32>& colorMatrix() {
+            return _matrix[2];
+        }
+
+        inline mat4<F32>& propertyMatrix() {
+            return _matrix[3];
+        }
+
+        inline F32* data() {
+            return _data;
+        }
         void set(const NodeData& other);
     };
 
@@ -548,8 +570,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     ErrorCode createAPIInstance();
 
     NodeData& processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
-
-    U32 getResidentTextureHandle(U8 textureSlot);
 
     ShaderBuffer& getCommandBuffer(RenderStage stage) const;
 

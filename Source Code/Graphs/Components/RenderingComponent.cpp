@@ -302,8 +302,8 @@ void RenderingComponent::getMaterialPropertyMatrix(mat4<F32>& matOut) const {
                            0.0));
     Material* mat = getMaterialInstance();
     if (mat) {
-        bool isTranslucent = mat->isTranslucent() ? (mat->useAlphaTest() || GFX_DEVICE.getRenderStage() == RenderStage::SHADOW)
-                                                  : false;
+        bool isTranslucent = mat->isTranslucent() ? mat->useAlphaTest() : false;
+
         matOut.setCol(1,
                       vec4<F32>(isTranslucent ? 1.0f : 0.0f,
                                 to_float(mat->getTextureOperation()),

@@ -13,7 +13,7 @@ void main(void)
     _pixToEye   = -vec3(dvd_ViewMatrix * _vertexW);
 
     _vertexWVP = dvd_ViewProjectionMatrix * _vertexW;
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
+    _normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
 
     gl_Position = _vertexWVP;
 }
@@ -69,7 +69,7 @@ void main (void)
     vec2 uvFinalReflect = uvReflection.xy + _noiseFactor * normal.xy;
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
-    vec3 N = normalize(dvd_NormalMatrix * normal);
+    vec3 N = normalize(dvd_NormalMatrix() * normal);
     vec3 L = normalize(-(dvd_LightSource[0]._position.xyz));
     vec3 V = normalize(_pixToEye);
 

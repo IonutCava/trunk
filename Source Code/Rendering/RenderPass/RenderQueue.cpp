@@ -177,8 +177,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
             // Check if the object has a material with translucency
             if (matInstance && matInstance->isTranslucent()) {
                 // Add it to the appropriate bin if so ...
-                return getOrCreateBin(
-                    RenderBin::RenderBinType::RBT_TRANSLUCENT);
+                return getOrCreateBin(RenderBin::RenderBinType::RBT_TRANSLUCENT);
             }
             //... else add it to the general geometry bin
             return getOrCreateBin(RenderBin::RenderBinType::RBT_MESH);

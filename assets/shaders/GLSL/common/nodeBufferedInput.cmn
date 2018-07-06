@@ -4,7 +4,10 @@
 flat VARYING uint dvd_drawID;
 
 struct NodeData {
-    mat4 _matrix[4];
+    mat4 _worldMatrix;
+    mat4 _normalMatrix;
+    mat4 _colorMatrix;
+    mat4 _propertyMatrix;
     vec4 _boundingSphere;
 };
 
@@ -13,36 +16,42 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
     NodeData dvd_Matrices[MAX_VISIBLE_NODES + 1];
 };
 
-#define dvd_WorldMatrix   dvd_Matrices[dvd_drawID]._matrix[0]
-#define dvd_NormalMatrix  mat3(dvd_Matrices[dvd_drawID]._matrix[1])
-#define dvd_SphereBounds  dvd_Matrices[dvd_drawID]._boundingSphere
+mat4 dvd_WorldMatrix() {
+    return dvd_Matrices[dvd_drawID]._worldMatrix;
+}
+
+mat3 dvd_NormalMatrix() {
+    return mat3(dvd_Matrices[dvd_drawID]._normalMatrix);
+}
+
+ivec4 dvd_BufferIntegerValues() {
+    return ivec4(dvd_Matrices[dvd_drawID]._propertyMatrix[0]);
+}
 
 #if defined(VERT_SHADER)
-#define dvd_boneCount     uint(dvd_Matrices[dvd_drawID]._matrix[1][3][2])
+#define dvd_boneCount     uint(dvd_Matrices[dvd_drawID]._normalMatrix[3][2])
 #endif
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
-#define buffer_integerValues dvd_Matrices[dvd_drawID]._matrix[3][0] 
-#define dvd_lodLevel int(buffer_integerValues.z)
-#define dvd_customData int(buffer_integerValues.w)
+#define dvd_lodLevel dvd_BufferIntegerValues().z
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor
-#define buffer_matProperties dvd_Matrices[dvd_drawID]._matrix[3][1] 
+#define buffer_matProperties dvd_Matrices[dvd_drawID]._propertyMatrix[1] 
 
-#define dvd_isSelected     (buffer_integerValues.x < -0.5)
-#define dvd_isHighlighted  (buffer_integerValues.x >  0.5)
-#define dvd_shadowMapping  (buffer_integerValues.y > 0.0)
+#define dvd_isSelected     (dvd_BufferIntegerValues().x < -0.5)
+#define dvd_isHighlighted  (dvd_BufferIntegerValues().x >  0.5)
+#define dvd_shadowMapping  (dvd_BufferIntegerValues().y > 0.0)
 #define dvd_useAlphaTest   (buffer_matProperties.x > 0.0)
-#define dvd_parallaxFactor buffer_matProperties.w
-#define dvd_reliefFactor   buffer_matProperties.w
-#define dvd_textureCount   uint(buffer_matProperties.z)
 #define dvd_texOperation   uint(buffer_matProperties.y)
-#define dvd_MatAmbient     dvd_Matrices[dvd_drawID]._matrix[2][0].rgb
-#define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._matrix[2][1]
-#define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._matrix[2][2].rgb
-#define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._matrix[2][3].rgb
-#define dvd_MatShininess   dvd_Matrices[dvd_drawID]._matrix[2][3].w
+#define dvd_textureCount   uint(buffer_matProperties.z)
+#define dvd_parallaxFactor buffer_matProperties.w
+#define dvd_reliefFactor   dvd_parallaxFactor
+#define dvd_MatAmbient     dvd_Matrices[dvd_drawID]._colorMatrix[0].rgb
+#define dvd_MatDiffuse     dvd_Matrices[dvd_drawID]._colorMatrix[1]
+#define dvd_MatSpecular    dvd_Matrices[dvd_drawID]._colorMatrix[2].rgb
+#define dvd_MatEmissive    dvd_Matrices[dvd_drawID]._colorMatrix[3].rgb
+#define dvd_MatShininess   dvd_Matrices[dvd_drawID]._colorMatrix[3].w
 
 #endif
 

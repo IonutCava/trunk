@@ -36,6 +36,58 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace GLUtil {
+    class VBO {
+    public:
+        // Allocate VBOs in 64K chunks. This will HIGHLY depend on actual data usage and requires testing.
+        static const U32 MAX_VBO_CHUNK_SIZE_BYTES = 64 * 1024;
+        // nVidia recommended (years ago) to use up to 4 megs per VBO. Use 4 MEGS VBOs :D
+        static const U32  MAX_VBO_SIZE_BYTES = 4 * 1024 * 1024;
+        // The total number of available chunks per VBO is easy to figure out
+        static const U32 MAX_VBO_CHUNK_COUNT = MAX_VBO_SIZE_BYTES / MAX_VBO_CHUNK_SIZE_BYTES;
+
+        //keep track of what chunks we are using
+        //for each chunk, keep track how many next chunks are also part of the same allocation
+        std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
+
+        static U32 getChunkCountForSize(size_t sizeInBytes);
+
+        VBO();
+        ~VBO();
+
+        void freeAll();
+        U32 handle();
+        bool checkChunksAvailability(U32 offset, U32 count);
+
+        bool allocateChunks(U32 count, GLenum usage, U32& offsetOut);
+
+        void releaseChunks(U32 offset);
+
+        U32 getMemUsage();
+
+    private:
+        GLuint _handle;
+        GLenum _usage;
+    };
+
+    struct AllocationHandle {
+        explicit AllocationHandle()
+            : _id(0),
+            _offset(0)
+        {
+        }
+
+        GLuint _id;
+        U32 _offset;
+    };
+
+    static vectorImpl<VBO> g_globalVBOs;
+
+    bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut);
+    bool releaseVBO(GLuint& handle, U32& offset);
+    U32 getVBOMemUsage(GLuint handle);
+    
+    void clearVBOs();
+
     void createAndAllocBuffer(GLsizeiptr bufferSize,
                               GLenum usageMask,
                               GLuint& bufferIdOut,

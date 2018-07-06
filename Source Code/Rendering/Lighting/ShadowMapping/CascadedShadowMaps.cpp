@@ -73,14 +73,15 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     blurMapSampler.setFilters(TextureFilter::LINEAR);
     blurMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     depthMapSampler.setAnisotropy(0);
+    blurMapSampler.toggleMipMaps(false);
     TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                         GFXImageFormat::RG32F,
                                         GFXDataFormat::FLOAT_32);
     blurMapDescriptor.setLayerCount(_numSplits);
     blurMapDescriptor.setSampler(blurMapSampler);
-
+    
     _blurBuffer = GFX_DEVICE.newFB(false);
-    _blurBuffer->addAttachment(depthMapDescriptor,
+    _blurBuffer->addAttachment(blurMapDescriptor,
                                TextureDescriptor::AttachmentType::Color0);
     _blurBuffer->setClearColor(DefaultColors::WHITE());
 

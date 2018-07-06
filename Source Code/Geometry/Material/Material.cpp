@@ -14,6 +14,7 @@ Material::Material()
     : Resource("temp_material"),
       _parallaxFactor(1.0f),
       _dirty(false),
+      _texturesChanged(false),
       _doubleSided(false),
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
@@ -142,6 +143,7 @@ size_t Material::getRenderStateBlock(RenderStage currentStage) {
 bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           Texture* texture,
                           const TextureOperation& op) {
+    _texturesChanged = true;
     bool computeShaders = false;
     U32 slot = to_uint(textureUsageSlot);
 
@@ -459,9 +461,8 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
     U32 slotValue = to_uint(slot);
     Texture* crtTexture = _textures[slotValue];
     if (crtTexture && crtTexture->flushTextureState()) {
-        TextureData data = crtTexture->getData();
-        data.setHandleLow(slotValue);
-        container.push_back(data);
+        container.push_back(crtTexture->getData());
+        container.back().setHandleLow(slotValue);
     }
 }
 
@@ -478,9 +479,8 @@ void Material::getTextureData(TextureDataContainer& textureData) {
 
         for (std::pair<Texture*, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
-                TextureData data = tex.first->getData();
-                data.setHandleLow(to_uint(tex.second));
-                textureData.push_back(data);
+                textureData.push_back(tex.first->getData());
+                textureData.back().setHandleLow(to_uint(tex.second));
             }
         }
     } else {

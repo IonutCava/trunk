@@ -36,6 +36,7 @@
 
 #include "Core/Math/Headers/MathHelper.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 
 namespace Divide {
@@ -61,21 +62,18 @@ class glGenericVertexData : public GenericVertexData {
                    U8 sizeFactor, void* data, bool dynamic, bool stream,
                    bool persistentMapped = false);
 
-    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,
-                      void* data);
+    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset,  void* data);
 
-    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset,
-                                 size_t elementCount);
+    void bindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount);
 
     inline void setFeedbackBuffer(U32 buffer, U32 bindPoint) {
         if (!isFeedbackBuffer(buffer)) {
-            _feedbackBuffers.push_back(_bufferObjects[buffer]);
+            _feedbackBuffers.push_back(_bufferObjects[buffer]._id);
             _fdbkBindPoints.push_back(bindPoint);
         }
 
         GL_API::setActiveTransformFeedback(_transformFeedback);
-        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint,
-                         _bufferObjects[buffer]);
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]._id);
     }
 
    protected:
@@ -89,8 +87,9 @@ class glGenericVertexData : public GenericVertexData {
 
     inline bool isFeedbackBuffer(U32 index) {
         for (U32 handle : _feedbackBuffers)
-            if (handle == _bufferObjects[index]) return true;
-
+            if (handle == _bufferObjects[index]._id) {
+                return true;
+            }
         return false;
     }
 
@@ -124,7 +123,7 @@ class glGenericVertexData : public GenericVertexData {
     GLuint _currentReadQuery;
     size_t* _startDestOffset;
     vectorImpl<U32> _fdbkBindPoints;
-
+    vectorImpl<GLUtil::AllocationHandle> _bufferObjects;
     std::array<GLuint, to_const_uint(GVDUsage::COUNT)> _vertexArray;
     vectorImpl<std::unique_ptr<glBufferLockManager> > _lockManagers;
 };

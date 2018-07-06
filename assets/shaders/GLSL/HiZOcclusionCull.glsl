@@ -4,7 +4,10 @@
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/
 struct NodeData {
-    mat4 _matrix[4];
+    mat4 _worldMatrix;
+    mat4 _normalMatrix;
+    mat4 _colorMatrix;
+    mat4 _propertyMatrix;
     vec4 _boundingSphere;
 };
 
@@ -14,7 +17,7 @@ layout(binding = BUFFER_NODE_INFO, std430) buffer dvd_MatrixBlock
 };
 
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - reserved
-#define dvd_customData(X) dvd_Matrices[X]._matrix[3][0].w 
+#define dvd_customData(X) dvd_Matrices[X]._propertyMatrix[0].w 
 
 layout(location = 0) uniform uint dvd_numEntities;
 layout(binding = 0, offset = 0) uniform atomic_uint culledCount;

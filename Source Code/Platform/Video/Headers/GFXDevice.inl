@@ -259,10 +259,6 @@ inline U32 renderStageToBufferOffset(RenderStage stage) {
     return 0;
 }
 
-inline U32 GFXDevice::getResidentTextureHandle(U8 textureSlot) {
-    return _api->getResidentTextureHandle(textureSlot);
-}
-
 inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage) const {
     return *_indirectCommandBuffers[to_uint(stage)].get();
 }

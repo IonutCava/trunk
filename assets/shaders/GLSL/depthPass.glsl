@@ -83,7 +83,7 @@ void main() {
     float alpha = 1.0;
 #if defined(HAS_TRANSPARENCY)
 #if defined(USE_OPACITY_DIFFUSE_MAP)
-    if (dvd_customData == 0) {
+    if (dvd_BufferIntegerValues().w == 0) {
         alpha *= texture(texDiffuse0, _texCoord).a;
     } else {
         alpha *= texture(texDiffuse1, _texCoord).a;

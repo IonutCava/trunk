@@ -6,6 +6,142 @@
 namespace Divide {
 namespace GLUtil {
 
+U32 VBO::getChunkCountForSize(size_t sizeInBytes) {
+    return to_uint(std::ceil(to_float(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
+}
+
+VBO::VBO() : _handle(0),
+             _usage(GL_NONE)
+{
+}
+
+VBO::~VBO()
+{
+}
+
+void VBO::freeAll() {
+    if (_handle != 0) {
+        GLUtil::freeBuffer(_handle);
+        _handle = 0;
+    }
+    _usage = GL_NONE;
+}
+
+U32 VBO::handle() {
+    return _handle;
+}
+
+bool VBO::checkChunksAvailability(U32 offset, U32 count) {
+    std::pair<bool, U32>& chunk = _chunkUsageState[offset];
+    U32 freeChunkCount = 0;
+    if (!chunk.first) {
+        freeChunkCount++;
+        for (U32 j = 1; j < MAX_VBO_CHUNK_COUNT - offset; ++j) {
+            std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
+            if (chunkChild.first) {
+                break;
+            }
+            else {
+                freeChunkCount++;
+            }
+        }
+    }
+
+    return freeChunkCount >= count;
+}
+
+bool VBO::allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
+    assert(count < MAX_VBO_CHUNK_COUNT);
+
+    if (_usage == GL_NONE || _usage == usage) {
+        for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
+            if (checkChunksAvailability(i, count)) {
+                if (_handle == 0) {
+                    GLUtil::createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle);
+                    _usage = usage;
+                }
+                offsetOut = i;
+                _chunkUsageState[i].first = true;
+                _chunkUsageState[i].second = count;
+                for (U32 j = 1; j < count; ++j) {
+                    _chunkUsageState[j + i].first = true;
+                }
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void VBO::releaseChunks(U32 offset) {
+    assert(offset < MAX_VBO_CHUNK_COUNT);
+    assert(_chunkUsageState[offset].second != 0);
+    U32 childCount = _chunkUsageState[offset].second;
+    for (U32 i = 0; i < childCount; ++i) {
+        std::pair<bool, U32>& chunkChild = _chunkUsageState[i + offset];
+        assert(chunkChild.first);
+        chunkChild.first = false;
+        chunkChild.second = 0;
+    }
+}
+
+U32 VBO::getMemUsage() {
+    U32 usedBlocks = 0;
+    for (std::pair<bool, U32>& chunk : _chunkUsageState) {
+        if (chunk.first) {
+            usedBlocks++;
+        }
+    }
+
+    return usedBlocks * MAX_VBO_CHUNK_SIZE_BYTES;
+}
+
+bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) {
+    for (VBO& vbo : g_globalVBOs) {
+        if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
+            handleOut = vbo.handle();
+            return true;
+        }
+    }
+
+    VBO vbo;
+    if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
+        handleOut = vbo.handle();
+        g_globalVBOs.push_back(vbo);
+        return true;
+    }
+
+    return false;
+}
+
+bool releaseVBO(GLuint& handle, U32& offset) {
+    for (VBO& vbo : g_globalVBOs) {
+        if (vbo.handle() == handle) {
+            vbo.releaseChunks(offset);
+            handle = 0;
+            offset = 0;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+U32 getVBOMemUsage(GLuint handle) {
+    for (VBO& vbo : g_globalVBOs) {
+        if (vbo.handle() == handle) {
+            return vbo.getMemUsage();
+        }
+    }
+
+    return 0;
+}
+
+void clearVBOs() {
+    g_globalVBOs.clear();
+}
+
 bufferPtr allocPersistentBuffer(GLuint bufferId,
                                 GLsizeiptr bufferSize,
                                 BufferStorageMask storageMask,

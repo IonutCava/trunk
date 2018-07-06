@@ -9,7 +9,7 @@ float LinearDepth(in float inDepth);
 
 void main(void){
     computeData();
-    normals = normalize(dvd_NormalMatrix * dvd_Normal);
+    normals = normalize(dvd_NormalMatrix() * dvd_Normal);
     vec4 vToEye = dvd_ModelViewMatrix * dvd_Vertex;    
     depth = LinearDepth(vToEye.z);
     gl_Position = dvd_ModelViewProjectionMatrix * dvd_Vertex;

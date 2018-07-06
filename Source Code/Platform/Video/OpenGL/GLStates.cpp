@@ -289,7 +289,7 @@ bool GL_API::bindTexture(GLushort unit,
         // Bind the texture to the current unit
         GL_API::setActiveTextureUnit(unit);
         glBindTexture(target, handle); 
-        
+        Console::printfn("Binding texture[ %d ] to slot [ %d ]. Depth pass: [ %s ]", handle, unit, GFX_DEVICE.isDepthStage() ? "true" : "false");    
         return true;
     }
 
@@ -310,10 +310,6 @@ bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
     }
 
     return false;
-}
-
-U32 GL_API::getResidentTextureHandle(U8 textureSlot) {
-    return _textureBoundMap[textureSlot].first;
 }
 
 /// Single place to change buffer objects for every target available

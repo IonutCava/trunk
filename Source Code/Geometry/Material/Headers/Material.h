@@ -243,6 +243,7 @@ class Material : public Resource {
     inline void addCustomTexture(Texture* texture, U8 offset) {
         // custom textures are not material dependencies!
         _customTextures.push_back(std::make_pair(texture, offset));
+        _texturesChanged = true;
     }
 
     /// Remove the custom texture assigned to the specified offset
@@ -366,10 +367,10 @@ class Material : public Resource {
 
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
-    bool computeShader(RenderStage renderStage,
-                       const bool computeOnAdd);
+    bool computeShader(RenderStage renderStage, const bool computeOnAdd);
 
     bool canDraw(RenderStage renderStage);
+
    private:
     void getTextureData(ShaderProgram::TextureUsage slot,
                         TextureDataContainer& container);
@@ -392,6 +393,7 @@ class Material : public Resource {
     bool _dirty;
     bool _dumpToFile;
     bool _translucencyCheck;
+    bool _texturesChanged;
     /// use discard if true / blend if otherwise
     bool _useAlphaTest;
     bool _doubleSided;

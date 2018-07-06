@@ -7,11 +7,11 @@ out vec4 _vertexWV;
 
 void computeLightVectors(){
     _lightCount = dvd_lodLevel > 2 ? 1 : dvd_lightCount;
-    _normalWV = normalize(dvd_NormalMatrix * dvd_Normal);
+    _normalWV = normalize(dvd_NormalMatrix() * dvd_Normal);
     _vertexWV = dvd_ViewMatrix * _vertexW;
 
 #if defined(COMPUTE_TBN)
-    _tangentWV = normalize(dvd_NormalMatrix * dvd_Tangent);
+    _tangentWV = normalize(dvd_NormalMatrix() * dvd_Tangent);
     _bitangentWV = normalize(cross(_normalWV, _tangentWV));
     
     vec3 tmpVec = -_vertexWV.xyz;

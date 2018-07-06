@@ -2,7 +2,6 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
-#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
@@ -10,144 +9,13 @@
 namespace Divide {
 
 namespace {
-    class VBO {
-       public:
-
-        static const U32 MAX_VBO_CHUNK_SIZE_BYTES = 512 * 1024;
-        //nVidia recommended (years ago) to use up to 4 megs per VBO
-        static const U32 MAX_VBO_CHUNK_COUNT = 8; 
-        static const U32 MAX_VBO_SIZE_BYTES = MAX_VBO_CHUNK_SIZE_BYTES * MAX_VBO_CHUNK_COUNT;
-        //keep track of what chunks we are using
-        //for each chunk, keep track how many next chunks are also part of the same allocation
-        std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
-
-        static U32 getChunkCountForSize(size_t sizeInBytes) {
-            return to_uint(std::ceil(to_float(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
-        }
-
-        VBO() : _handle(0),
-            _usage(GL_NONE)
-        {
-        }
-
-        ~VBO()
-        {
-            if (_handle != 0) {
-                GLUtil::freeBuffer(_handle);
-            }
-        }
-
-        U32 handle() {
-            return _handle;
-        }
-
-        bool checkChunksAvailability(U32 offset, U32 count) {
-            // Currently hardcoded to use for a single VBO per glVertexArray
-            for (std::pair<bool, U32>& chunk : _chunkUsageState) {
-                if (chunk.first) {
-                    return false;
-                }
-                return true;
-            }
-
-            std::pair<bool, U32>& chunk = _chunkUsageState[offset];
-            U32 freeChunkCount = 0;
-            if (!chunk.first) {
-                freeChunkCount++;
-                for (U32 j = 1; j < MAX_VBO_CHUNK_COUNT - offset; ++j) {
-                    std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
-                    if (chunkChild.first) {
-                        break;
-                    } else {
-                        freeChunkCount++;
-                    }
-                }
-            }
-
-            return freeChunkCount >= count;
-        }
-
-        bool allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
-            assert(count < MAX_VBO_CHUNK_COUNT);
-
-            if (_usage == GL_NONE || _usage == usage) {
-                for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
-                    if (checkChunksAvailability(i, count)) {
-                        if (_handle == 0) {
-                            GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle);
-                            _usage = usage;
-                        }
-                        offsetOut = i;
-                        _chunkUsageState[i].first = true;
-                        _chunkUsageState[i].second = count;
-                        for (U32 j = 1; j < count; ++j) {
-                            _chunkUsageState[j + i].first = true;
-                        } 
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        bool releaseChunks(U32 offset) {
-            assert(offset < MAX_VBO_CHUNK_COUNT);
-
-            std::pair<bool, U32>& chunk = _chunkUsageState[offset];
-            if (chunk.first) {
-                chunk.first = false;
-                for (U32 i = 0; i < chunk.second; ++i) {
-                    std::pair<bool, U32>& chunkChild = _chunkUsageState[i + offset + 1];
-                    assert(chunkChild.first && chunkChild.second == 0);
-                    chunkChild.first = false;
-                    chunkChild.second = 0;
-                }
-                chunk.second = 0;
-                return true;
-            }
-
-            return false;
-        }
-
-    private:
-        GLuint _handle;
-        GLenum _usage;
-    };
-
-    static vectorImpl<VBO> g_globalVBOs;
-
-    static bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) {
-        for (U32 i = 0; i < g_globalVBOs.size() + 2; ++i) {
-            for (VBO& vbo : g_globalVBOs) {
-                if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
-                    handleOut = vbo.handle();
-                    return true;
-                }
-            }
-            g_globalVBOs.emplace_back();
-        }
-
-        return false;
-    }
-
-    static bool releaseVBO(GLuint& handle, U32 offset) {
-        for (VBO& vbo : g_globalVBOs) {
-            if (vbo.handle() == handle) {
-                handle = 0;
-                return vbo.releaseChunks(offset);
-            }
-        }
-
-        return false;
-    }
-
     vec3<U32> g_currentBindConfig;
     vec3<U32> g_tempConfig;
     bool setIfDifferentBindRange(U32 UBOid, U32 offset, U32 size) {
         g_tempConfig.set(UBOid, offset, size);
         if (g_tempConfig != g_currentBindConfig) {
             g_currentBindConfig.set(g_tempConfig);
+            glBindVertexBuffer(0, UBOid, offset, size);
             return true;
         }
 
@@ -159,7 +27,6 @@ glVertexArray::VAOMap glVertexArray::_VAOMap;
 
 void glVertexArray::cleanup() {
     clearVaos();
-    g_globalVBOs.clear();
 }
 
 
@@ -194,10 +61,7 @@ glVertexArray::glVertexArray()
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    _bufferEntrySize = -1;
     _IBid = 0;
-    _VBHandle.first = 0;
-    _VBHandle.second = 0;
     _vaoCaches.fill(0);
     _vaoHashes.fill(0);
 
@@ -214,7 +78,6 @@ void glVertexArray::reset() {
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    _bufferEntrySize = -1;
     _vaoHashes.fill(0);
 
     _useAttribute.fill(false);
@@ -224,8 +87,7 @@ void glVertexArray::reset() {
 
 /// Delete buffer
 void glVertexArray::destroy() {
-    GLUtil::freeBuffer(_IBid);
-    releaseVBO(_VBHandle.first, _VBHandle.second);
+    GLUtil::releaseVBO(_VBHandle._id, _VBHandle._offset);
 }
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
@@ -264,9 +126,9 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         prevOffset += sizeof(U32);
     }
 
-    _bufferEntrySize = static_cast<GLsizei>(prevOffset);
+    _effectiveEntrySize = to_uint(prevOffset);
 
-    _smallData.reserve(_data.size() * _bufferEntrySize);
+    _smallData.reserve(_data.size() * _effectiveEntrySize);
 
     for (const Vertex& data : _data) {
         _smallData << data._position.x;
@@ -387,25 +249,39 @@ bool glVertexArray::refresh() {
 
     GLsizei size = static_cast<GLsizei>(bufferData.second);
     bool sizeChanged = size != _prevSize;
-    _prevSize = size;
+    bool needsReallocation = false;
+    U32 countRequirement = GLUtil::VBO::getChunkCountForSize(size);
+    if (sizeChanged) {
+        needsReallocation = countRequirement > GLUtil::VBO::getChunkCountForSize(_prevSize);
+        _prevSize = size;
+    }
 
     if (!_refreshQueued && !sizeChanged) {
         return false;
     }
 
-    // Refresh buffer data (if this is the first call to refresh, this will be
-    // true)
-    if (sizeChanged) {
-         Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), size, VBO::MAX_VBO_CHUNK_SIZE_BYTES);
-    }
-    
-    if (_VBHandle.first == 0) {
+    if (_VBHandle._id == 0 || needsReallocation) {
+        if (_VBHandle._id != 0) {
+            GLUtil::releaseVBO(_VBHandle._id, _VBHandle._offset);
+        }
         // Generate a new Vertex Buffer Object
-        commitVBO(VBO::getChunkCountForSize(size),_usage, _VBHandle.first, _VBHandle.second);
-        DIVIDE_ASSERT(_VBHandle.first != 0, Locale::get("ERROR_VB_INIT"));
-        // Allocate sufficient space in our buffer
-        glNamedBufferSubData(_VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, size, bufferData.first);
+        GLUtil::commitVBO(countRequirement,_usage, _VBHandle._id, _VBHandle._offset);
+        DIVIDE_ASSERT(_VBHandle._id != 0, Locale::get("ERROR_VB_INIT"));
     }
+    // Refresh buffer data (if this is the first call to refresh, this will be true)
+    if (sizeChanged) {
+        Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"),
+                           _VBHandle._id,
+                           size,
+                           countRequirement * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
+                           GLUtil::getVBOMemUsage(_VBHandle._id),
+                           GLUtil::g_globalVBOs.size());
+
+        _effectiveEntryOffset = _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES;
+    }
+
+    // Allocate sufficient space in our buffer
+    glNamedBufferSubData(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, size, bufferData.first);
 
     _smallData.clear();
 
@@ -437,7 +313,7 @@ bool glVertexArray::refresh() {
 /// Refresh call
 bool glVertexArray::createInternal() {
     // Avoid double create calls
-    DIVIDE_ASSERT(_VBHandle.first == 0,
+    DIVIDE_ASSERT(_VBHandle._id == 0,
                   "glVertexArray error: Attempted to double create a VB");
     // Position data is a minim requirement
     if (_data.empty()) {
@@ -513,9 +389,8 @@ void glVertexArray::draw(const GenericDrawCommand& command,
 
 /// Set the current buffer as active
 bool glVertexArray::setActive() {
-    // Make sure we have valid data (buffer creation is deferred to the first
-    // activate call)
-    if (_VBHandle.first == 0) {
+    // Make sure we have valid data (buffer creation is deferred to the first activate call)
+    if (_IBid == 0) {
         if (!createInternal()) {
             return false;
         }
@@ -537,9 +412,7 @@ bool glVertexArray::setActive() {
 
     // Bind the the vertex buffer and index buffer
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-    if (setIfDifferentBindRange(_VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, _bufferEntrySize)) {
-        glBindVertexBuffer(0, _VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, _bufferEntrySize);
-    }
+    setIfDifferentBindRange(_VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
     return true;
 }
 

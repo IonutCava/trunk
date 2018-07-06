@@ -205,7 +205,6 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     typedef hashMapImpl<U32, AttributeDescriptor> attributeMap;
     bool _doubleBufferedQuery;
     vectorImpl<U32> _feedbackBuffers;
-    vectorImpl<U32> _bufferObjects;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
 

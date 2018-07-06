@@ -15,7 +15,7 @@
 namespace Divide {
 
 // ToDo: This will return false if the number of shader buffers or number of
-// textures does not match between the 2 packages altough said buffers/textures
+// textures does not match between the 2 packages although said buffers/textures
 // might be compatible and batchable between the two.
 // Obviously, this is not desirable. Fix it! -Ionut
 bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
@@ -44,7 +44,7 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
     vectorAlg::vecSize textureCount = other._textureData.size();
     if (_textureData.size() == textureCount) {
         U64 handle1 = 0, handle2 = 0;
-        for (vectorAlg::vecSize i = 0; i < textureCount; i++) {
+        for (vectorAlg::vecSize i = 0; i < textureCount; ++i) {
             const TextureData& data1 = _textureData[i];
             const TextureData& data2 = other._textureData[i];
             data1.getHandle(handle1);
@@ -157,10 +157,7 @@ void GFXDevice::flushRenderQueue() {
                 it._buffer->bindRange(it._slot, it._range.x, it._range.y);
             }
 
-            if (!package._textureData.empty()) {
-                makeTexturesResident(package._textureData);
-            }
-
+            makeTexturesResident(package._textureData);
             submitIndirectRenderCommands(package._drawCommands);
         }
     }
@@ -199,8 +196,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     AnimationComponent* const animComp = nodePtr->getComponent<AnimationComponent>();
     PhysicsComponent* const transform = nodePtr->getComponent<PhysicsComponent>();
 
-    mat4<F32>& modelMatrix = dataOut._matrix[0];
-    mat4<F32>& normalMatrix = dataOut._matrix[1];
+    mat4<F32>& normalMatrix = dataOut.normalMatrix();
 
     dataOut._boundingSphere.set(nodePtr->getBoundingSphereConst().asVec4());
 
@@ -208,7 +204,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        modelMatrix.set(transform->getWorldMatrix(_interpolationFactor, normalMatrix));
+        dataOut.worldMatrix().set(transform->getWorldMatrix(_interpolationFactor, normalMatrix));
         // Calculate the normal matrix (world * view)
         normalMatrix.set(normalMatrix * _gpuBlock._data._ViewMatrix);
     }
@@ -217,10 +213,10 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32
     // to store additional data
     normalMatrix.element(3, 2, true) = to_float(animComp ? animComp->boneCount() : 0);
     // Get the color matrix (diffuse, ambient, specular, etc.)
-    renderable->getMaterialColorMatrix(dataOut._matrix[2]);
+    renderable->getMaterialColorMatrix(dataOut.colorMatrix());
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
-    renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
+    renderable->getMaterialPropertyMatrix(dataOut.propertyMatrix());
 
     return dataOut;
 }
@@ -242,6 +238,10 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
     _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
 
+    U32 textureHandle = 0;
+    U32 lastUnit0Handle = 0;
+    U32 lastUnit1Handle = 0;
+    U32 lastUsedSlot = 0;
     RenderStage currentStage = getRenderStage();
     U32 nodeCount = 1; U32 cmdCount = 1;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
@@ -258,11 +258,21 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData) {
-                        if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0) &&
-                            getResidentTextureHandle(to_ubyte(ShaderProgram::TextureUsage::UNIT0)) != data.getHandleHigh()) {
-                            data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
-                            // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
-                            dataOut._matrix[3].element(3, 3, true) = 1;
+                        if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0)) {
+                            textureHandle = data.getHandleHigh();
+                            if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
+                                  (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
+                                || lastUsedSlot == 0) 
+                            {
+                                data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
+                                    // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
+                                    dataOut.propertyMatrix().element(3, 3, true) = 1;
+                                    lastUnit1Handle = textureHandle;
+                                    lastUsedSlot = 1;
+                            } else {
+                                lastUnit0Handle = textureHandle;
+                                lastUsedSlot = 0;
+                            }
                         }
                     }
                 }

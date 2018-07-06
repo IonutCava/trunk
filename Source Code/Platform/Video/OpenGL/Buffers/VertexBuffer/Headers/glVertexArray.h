@@ -33,6 +33,7 @@
 #define _GL_VERTEX_ARRAY_H_
 
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Headers/ByteBuffer.h"
 
@@ -97,14 +98,14 @@ class glVertexArray : public VertexBuffer {
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
-    // VB GL ID and Offset
-    std::pair<GLuint, U32> _VBHandle;
+    // VB GL ID and Offset.
+    // This could easily be a std::pair, but having names for variables makes everything clearer
+    GLUtil::AllocationHandle _VBHandle;
     GLenum _usage;
     ///< A refresh call might be called before "Create()". This should help with that
     bool _refreshQueued;  
     GLsizei _prevSize;
     GLsizei _prevSizeIndices;
-    GLsizei _bufferEntrySize;
     ByteBuffer _smallData;
     AttribFlags _useAttribute;
     typedef std::array<GLuint, to_const_uint(VertexAttribute::COUNT)> AttribValues;

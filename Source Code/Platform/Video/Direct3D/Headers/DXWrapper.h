@@ -127,10 +127,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
         return MemoryManager_NEW d3dHardwareQuery();
     }
 
-    U32 getResidentTextureHandle(U8 textureSlot) {
-        return 0;
-    }
-
     bool initShaders() override;
     bool deInitShaders() override;
 

@@ -4,6 +4,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 
 #ifndef CEGUI_STATIC
@@ -489,6 +490,8 @@ void GL_API::closeRenderingAPI() {
         _dummyVAO = 0;
     }
     glVertexArray::cleanup();
+    GLUtil::clearVBOs();
+
     // Destroy the OpenGL Context(s)
     destroyGLContext();
     // Destroy application windows and close SDL
