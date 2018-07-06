@@ -160,7 +160,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_ALPHA_BITS,8);
     glfwWindowHint(GLFW_DEPTH_BITS,24);
     glfwWindowHint(GLFW_STENCIL_BITS,8);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE/*GLFW_OPENGL_CORE_PROFILE*/);
 
     //Store the main window ID for future reference
     // Open an OpenGL window; resolution is specified in the external XML files

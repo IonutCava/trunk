@@ -37,10 +37,7 @@ void Terrain::loadVisualResources(){
     //Generate a render state
     RenderStateBlockDescriptor terrainDesc;
     terrainDesc.setCullMode(CULL_MODE_CW);
-    terrainDesc.setZReadWrite(true,true);
-    terrainDesc.setBlend(false);
     _terrainRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
-    terrainDesc.setCullMode(CULL_MODE_CW);
     _terrainReflectionRenderState = GFX_DEVICE.createStateBlock(terrainDesc);
     //Generate a shadow render state
     terrainDesc.setCullMode(CULL_MODE_CCW);

@@ -79,7 +79,8 @@ void main (void){
 	
     _colorOut.rgb = cAmbient * cBase.rgb + cDiffuse * cBase.rgb *(0.2 + 0.8 * shadow);
 	//_colorOut.rgb = cBase.rgb;
-	_colorOut.a = min(cBase.a, _grassColor.a);
+	//_colorOut.a = min(cBase.a, _grassColor.a);
+    _colorOut.a = cBase.a;
 }
 
 
