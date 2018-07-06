@@ -134,7 +134,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
-    sendPushConstantsCmd._constants.set("dvd_zPlanes", GFX::PushConstantType::VEC2, zPlanes);
+    sendPushConstantsCmd._constants.set("dvd_nearPlaneDistance", GFX::PushConstantType::FLOAT, zPlanes.x);
     GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;

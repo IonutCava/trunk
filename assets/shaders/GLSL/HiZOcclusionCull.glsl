@@ -18,10 +18,11 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
 #define dvd_customData(X) dvd_Matrices[X]._properties.w 
 
 layout(location = 0) uniform uint dvd_numEntities;
+layout(location = 1) uniform float dvd_nearPlaneDistance;
+
 layout(binding = 0, offset = 0) uniform atomic_uint culledCount;
 layout(local_size_x = 64) in;
 
-uniform vec2 dvd_zPlanes;
 
 void cullNode(const in uint idx) {
 #if !defined(DEBUG_HIZ_CULLING)
@@ -51,7 +52,7 @@ void main()
     float radius = bSphere.w;
     
     // Sphere clips against near plane, just assume visibility.
-    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -zPlanes.x) {
+    if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_nearPlaneDistance) {
         return;
     }
 

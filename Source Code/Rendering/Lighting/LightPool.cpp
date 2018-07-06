@@ -182,6 +182,8 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
     U32 shadowLightCount = 0;
     shadowCastingLights(playerCamera.getEye(), sortedLights);
 
+    _sortedShadowProperties.clear();
+
     for (Light* light : sortedLights) {
          _currentShadowCastingLight = light;
          light->validateOrCreateShadowMaps(_context, sceneRenderState);
@@ -190,13 +192,8 @@ bool LightPool::generateShadowMaps(SceneRenderState& sceneRenderState, const Cam
     }
     _currentShadowCastingLight = nullptr;
 
-    vec_size lightShadowCount = _sortedShadowProperties.size();
-    lightShadowCount = std::min(lightShadowCount, static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
-    if (lightShadowCount > 0) {
-        _shadowBuffer->writeData(0, lightShadowCount, _sortedShadowProperties.data());
-    } else {
-        _shadowBuffer->writeData(nullptr);
-    }
+    vec_size lightShadowCount = std::min(_sortedShadowProperties.size(), static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
+    _shadowBuffer->writeData(0, lightShadowCount, _sortedShadowProperties.data());
 
     return true;
 }

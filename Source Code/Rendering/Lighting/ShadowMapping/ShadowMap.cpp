@@ -100,11 +100,11 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 SamplerDescriptor depthSampler;
                 depthSampler.setFilters(TextureFilter::NEAREST);
                 depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthSampler._useRefCompare = true;
+                depthSampler._useRefCompare = false;
 
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                                   GFXImageFormat::DEPTH_COMPONENT,
-                                                  GFXDataFormat::UNSIGNED_INT);
+                                                  GFXDataFormat::FLOAT_32);
                 depthDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT *
                                               Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthDescriptor.setSampler(depthSampler);

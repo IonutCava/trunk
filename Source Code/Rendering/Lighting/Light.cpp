@@ -28,7 +28,7 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
 
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
-        _shadowProperties._floatValues[i].set(std::numeric_limits<F32>::max());
+        _shadowProperties._floatValues[i] = std::numeric_limits<F32>::max();
     }
     
     _shadowProperties._lightDetails.x = to_U32(type);
@@ -202,7 +202,7 @@ void Light::generateShadowMaps(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
                   "Light::generateShadowMaps error: Shadow casting light "
                   "with no shadow map found!");
 
-    _shadowProperties._arrayOffset.set(sm->getArrayOffset());
+    _shadowProperties._lightDetails.z = sm->getArrayOffset();
     sm->render(passIdx, bufferInOut);
 
 }

@@ -55,25 +55,20 @@ class SceneRenderState;
 class Light : public SceneNode {
    public:
        struct ShadowProperties {
-           // x = light type
-           // y = csm split count
+           // x = light type,  y = csm split count, z = arrayOffset
            vec4<U32> _lightDetails;
-           vec4<U32> _arrayOffset;
            /// light viewProjection matrices
            mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
            /// light's position in world space
            vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
            /// random float values (e.g. split distances)
-           vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
+           F32 _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
 
            inline void set(const ShadowProperties& other) {
-               _lightDetails = other._lightDetails;
-               _arrayOffset.set(other._arrayOffset);
-               for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
-                   _lightVP[i].set(other._lightVP[i]);
-                   _lightPosition[i].set(other._lightPosition[i]);
-                   _floatValues[i].set(other._floatValues[i]);
-               }
+               _lightDetails.set(other._lightDetails);
+               memcpy(_lightVP,       other._lightVP,       Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(mat4<F32>));
+               memcpy(_lightPosition, other._lightPosition, Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(vec4<F32>));
+               memcpy(_floatValues,   other._floatValues,   Config::Lighting::MAX_SPLITS_PER_LIGHT * sizeof(F32));
            }
        };
 
@@ -179,27 +174,33 @@ class Light : public SceneNode {
     }
 
     inline const mat4<F32>& getShadowVPMatrix(U8 index) const {
+        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
         return _shadowProperties._lightVP[index];
     }
 
-    inline const vec4<F32>& getShadowFloatValues(U8 index) const {
+    inline F32 getShadowFloatValues(U8 index) const {
+        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
         return _shadowProperties._floatValues[index];
     }
 
     inline const vec4<F32>& getShadowLightPos(U8 index) const {
+        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
         return _shadowProperties._lightPosition[index];
     }
 
     inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
+        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
+
         _shadowProperties._lightVP[index].set(newValue);
     }
 
     inline void setShadowFloatValue(U8 index, F32 newValue) {
-        _shadowProperties._floatValues[index].set(newValue);
-    }
+        assert(index < Config::Lighting::MAX_SPLITS_PER_LIGHT);
 
-    inline void setShadowFloatValue(U8 index, const vec4<F32>& newValue) {
-        _shadowProperties._floatValues[index].set(newValue);
+        _shadowProperties._floatValues[index] = newValue;
     }
 
     inline void setShadowLightPos(U8 index, const vec3<F32>& newValue) {

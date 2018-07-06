@@ -166,7 +166,7 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
-    postRender(bufferInOut);
+    //postRender(bufferInOut);
 }
 
 void CascadedShadowMaps::calculateSplitDepths(const mat4<F32>& projMatrix, const vec2<F32>& nearFarPlanes) {

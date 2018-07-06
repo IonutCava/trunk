@@ -35,7 +35,7 @@ float applyShadowSpot(int shadowIndex) {
     shadow_coord = shadow_coord / shadow_coord.w;
     shadow_coord = 0.5 + shadow_coord * 0.5;
     shadow_coord.xyw = shadow_coord.xyz;
-    shadow_coord.z = currentShadowSource._arrayOffset.x;
+    shadow_coord.z = currentShadowSource._lightDetails.z;
 
     return filterFinalShadow(texDepthMapFromLight, shadow_coord);
 }
