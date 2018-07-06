@@ -612,6 +612,15 @@ public:
 		this->mat[2] = m2; this->mat[5] = m5; this->mat[8] = m8;
 	}
 
+	inline void set(const T *m) {
+		memcpy(this->mat, m, sizeof(T) * 9);
+		/*
+		this->mat[0] = m[0]; this->mat[3] = m[3]; this->mat[6] = m[6];
+		this->mat[1] = m[1]; this->mat[4] = m[4]; this->mat[7] = m[7];
+		this->mat[2] = m[2]; this->mat[5] = m[5]; this->mat[8] = m[8];
+		*/
+	}
+
 	inline mat3 transpose() const {
 		return mat3(mat[0], mat[3], mat[6],
 					mat[1], mat[4], mat[2],
@@ -870,6 +879,16 @@ public:
 		this->mat[1] = m1; this->mat[5] = m5; this->mat[9]  = m9;  this->mat[13] = m13;
 		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
 		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
+	}
+	
+	inline void set(const T *m) {
+		memcpy(this->mat, m, sizeof(T) * 16);
+		/*
+		this->mat[0] = m[0]; this->mat[3] = m[3]; this->mat[6]  = m[6];  this->mat[12] = m[12];
+		this->mat[1] = m[1]; this->mat[4] = m[4]; this->mat[7]  = m[7];  this->mat[13] = m[13];
+		this->mat[2] = m[2]; this->mat[5] = m[5]; this->mat[8]  = m[8];  this->mat[14] = m[14];
+		this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
+		*/
 	}
 
 	inline vec4<T> getCol(I32 index) const {

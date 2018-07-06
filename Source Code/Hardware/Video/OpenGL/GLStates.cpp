@@ -47,23 +47,17 @@ void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
 }
 
 void GL_API::getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
-    glm::mat4 matrix;
-    Divide::GL::_queryMatrix(mode,matrix);
-    mat = mat4<GLfloat>(glm::value_ptr(matrix));
+    Divide::GL::_queryMatrix(mode, mat);
 }
 
 void GL_API::getMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat){
     assert(mode != NORMAL_MATRIX /* || mode != ...*/);
-    glm::mat4 matrix;
-    Divide::GL::_queryMatrix(mode,matrix);
-    mat = mat4<GLfloat>(glm::value_ptr(matrix));
+    Divide::GL::_queryMatrix(mode, mat);
 }
 
 void GL_API::getMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
     assert(mode == NORMAL_MATRIX /* || mode = ...*/);
-    glm::mat3 matrix;
-    Divide::GL::_queryMatrix(NORMAL_MATRIX,matrix);
-    mat = mat3<GLfloat>(glm::value_ptr(matrix));
+    Divide::GL::_queryMatrix(NORMAL_MATRIX,mat);
 }
 
 

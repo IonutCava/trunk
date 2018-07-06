@@ -219,8 +219,8 @@ namespace glDataConversion {
 #define PN1010102(x,y,z,w) (P10(x) | (P10(y) << 10) | (P10(z) << 20) | (PN2(w) << 30))
 #define UP1010102(x,y,z,w) (UP10(x) | (UP10(y) << 10) | (UP10(z) << 20) | (UP2(w) << 30))
 
-template<class T>
-class mat4;
+template<class T> class mat4;
+template<class T> class mat3;
 
 namespace Divide {
     namespace GL {
@@ -262,9 +262,9 @@ namespace Divide {
     /*-----------------END: FIXED PIPELINE EMULATION -----------------------*/
     void _setModelMatrix(const mat4<GLfloat>& matrix,bool uniform = true);//<Use uniform to avoid inverseTranspose for normals
 	void _resetModelMatrix(bool force = false);//<Use this to set the model matrix back to identity
-    void _queryMatrix(const MATRIX_MODE& mode, glm::mat4& mat);
-    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat4& mat);
-    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat3& mat);
+    void _queryMatrix(const MATRIX_MODE& mode,     mat4<GLfloat>& mat);
+    void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat);
+    void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat);
 
     ///Cache management - try and avoid recalculating this if not needed
     void _clean();

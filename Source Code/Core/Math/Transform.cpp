@@ -34,7 +34,7 @@ void Transform::applyTransforms(){
 		//    1. Scale
 		_worldMatrix.scale(_scale);
 		//    2. Rotate
-		_worldMatrix *= _orientation.getMatrix();
+		_worldMatrix *= _orientation.getMatrix(); 
 	}
 	//    3. Translate
 	_worldMatrix.translate(_translation);

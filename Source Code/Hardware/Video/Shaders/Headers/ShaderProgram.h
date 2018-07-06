@@ -131,6 +131,11 @@ protected:
 	///ID<->shaders pair
 	typedef Unordered_map<U32, Shader* > ShaderIdMap;
 	ShaderIdMap _shaderIdMap;
+
+private:
+	///Small hack to avoid stack allocations 
+	mat4<F32> _cachedMatrix;
+	mat3<F32> _cachedNormalMatrix;
 };
 
 #endif

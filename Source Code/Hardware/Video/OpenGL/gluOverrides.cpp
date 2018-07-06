@@ -139,44 +139,45 @@ namespace Divide {
         }
     }
 
-    void _queryMatrix(const MATRIX_MODE& mode, glm::mat4& mat){
-        if(mode == VIEW_MATRIX)            mat = _viewMatrix.top();
-        else if(mode == PROJECTION_MATRIX) mat = _projectionMatrix.top();
-        else if(mode == TEXTURE_MATRIX)    mat = _textureMatrix.top();
+    void _queryMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat){
+        if(mode == VIEW_MATRIX)            mat.set(glm::value_ptr(_viewMatrix.top()));
+        else if(mode == PROJECTION_MATRIX) mat.set(glm::value_ptr(_projectionMatrix.top()));
+        else if(mode == TEXTURE_MATRIX)    mat.set(glm::value_ptr(_textureMatrix.top()));
         else assert(mode == -1);
     }
 
-    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat4& mat){
+    void _queryMatrix(const EXTENDED_MATRIX& mode, mat4<GLfloat>& mat){
         assert(mode != NORMAL_MATRIX /*|| mode != ... */);
 
         switch(mode){
             case MODEL_MATRIX:{ //check if we need to reset our model matrix
 				if(_resetModelMatrixFlag) _resetModelMatrix(true);
-                mat = _modelMatrix;
+				mat.set(glm::value_ptr(_modelMatrix));
 				}break;
             case MV_MATRIX:{
 				_clean(); //refresh cache
-                mat = _MVCachedMatrix;
+                mat.set(glm::value_ptr(_MVCachedMatrix));
                }break;
             case MV_INV_MATRIX:{
 				_clean(); //refresh cache
-                mat = glm::inverse(_MVCachedMatrix);
+                mat.set(glm::value_ptr(glm::inverse(_MVCachedMatrix)));
                 }break;
             case MVP_MATRIX:{
 				_clean(); //refresh cache
-                mat = _MVPCachedMatrix;
+                mat.set(glm::value_ptr(_MVPCachedMatrix));
                 }break;
             case BIAS_MATRIX:
-                mat = _biasMatrix;
+                mat.set(glm::value_ptr(_biasMatrix));
                 break;
         };
     }
 
-    void _queryMatrix(const EXTENDED_MATRIX& mode, glm::mat3& mat){
+    void _queryMatrix(const EXTENDED_MATRIX& mode, mat3<GLfloat>& mat){
         assert(mode == NORMAL_MATRIX /*|| mode == ... */);
         _clean();
 		// Normal Matrix
-        mat = _isUniformScaled ? glm::mat3(_MVCachedMatrix) : glm::inverseTranspose(glm::mat3(_MVCachedMatrix));
+       _isUniformScaled ? mat.set(glm::value_ptr(glm::mat3(_MVCachedMatrix))) : 
+						  mat.set(glm::value_ptr(glm::inverseTranspose(glm::mat3(_MVCachedMatrix))));
     }
 
      void _clean(){

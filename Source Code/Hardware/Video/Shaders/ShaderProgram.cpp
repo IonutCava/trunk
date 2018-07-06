@@ -112,24 +112,20 @@ void ShaderProgram::uploadModelMatrices(){
 	GFXDevice& GFX = GFX_DEVICE;
 	/*Get matrix data*/
     if(_matrixMask.b.b0){
-        mat3<F32> norMat;
-        GFX.getMatrix(NORMAL_MATRIX,norMat);
-        this->Uniform("dvd_NormalMatrix",norMat);
+        GFX.getMatrix(NORMAL_MATRIX,_cachedNormalMatrix);
+        this->Uniform("dvd_NormalMatrix",_cachedNormalMatrix);
     }
     if(_matrixMask.b.b1){
-        mat4<F32> modMat;
-        GFX.getMatrix(MODEL_MATRIX,modMat);
-        this->Uniform("dvd_ModelMatrix",modMat);
+        GFX.getMatrix(MODEL_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_ModelMatrix",_cachedMatrix);
     }
     if(_matrixMask.b.b2){
-        mat4<F32> mvMat;
-        GFX.getMatrix(MV_MATRIX,mvMat);
-        this->Uniform("dvd_ModelViewMatrix",mvMat);
+        GFX.getMatrix(MV_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_ModelViewMatrix",_cachedMatrix);
     }
     if(_matrixMask.b.b3){
-        mat4<F32> mvpMat;
-        GFX.getMatrix(MVP_MATRIX,mvpMat);
-        this->Uniform("dvd_ModelViewProjectionMatrix",mvpMat);
+        GFX.getMatrix(MVP_MATRIX,_cachedMatrix);
+        this->Uniform("dvd_ModelViewProjectionMatrix",_cachedMatrix);
     }
 }
 
