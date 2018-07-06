@@ -122,10 +122,10 @@ protected:
     /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
     inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage)  { return _activeFBId[usage]; }
     /// Change the clear color for the specified renderTarget
-    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget = 0);
+    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
     /// Change the clear color for the specified renderTarget
-    inline static void clearColor(const vec4<GLfloat>& color, GLuint renderTarget = 0) {
-        clearColor(color.r,color.g,color.b,color.a,renderTarget);
+    inline static void clearColor(const vec4<GLfloat>& color) {
+        clearColor(color.r,color.g,color.b,color.a);
     }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const std::string& fontName);
@@ -212,7 +212,7 @@ private:
     static GLint  _activePackUnpackRowLength[2];
     static GLint  _activePackUnpackSkipPixels[2];
     static GLint  _activePackUnpackSkipRows[2];
-    static vec4<GLfloat> _prevClearColor[Config::MAX_RENDER_TARGETS];
+    static vec4<GLfloat> _prevClearColor;
     /// Boolean value used to verify if we are using the U16 or U32 primitive restart index
     static bool _lastRestartIndexSmall;
     /// Boolean value used to verify if primitive restart index is enabled or disabled

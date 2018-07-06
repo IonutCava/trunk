@@ -26,7 +26,6 @@ physx::PxProfileZone* PhysX::getOrCreateProfileZone(PxFoundation& inFoundation) 
     return _profileZone;
 }
 
-
 PhysX::PhysX() : _gPhysicsSDK(nullptr),
                  _foundation(nullptr),
                  _zoneManager(nullptr),

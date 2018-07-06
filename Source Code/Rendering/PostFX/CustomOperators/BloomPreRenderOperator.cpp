@@ -26,6 +26,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
 
     _tempBloomFB->AddAttachment(tempBloomDescriptor,TextureDescriptor::Color0);
     _outputFB->AddAttachment(tempBloomDescriptor, TextureDescriptor::Color0);
+    _outputFB->setClearColor(DefaultColors::BLACK());
     ResourceDescriptor bright("bright");
     bright.setThreadedLoading(false);
     ResourceDescriptor blur("blur");
@@ -33,10 +34,10 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* result,
 
     _bright = CreateResource<ShaderProgram>(bright);
     _blur = CreateResource<ShaderProgram>(blur);
-    _bright->UniformTexture("texScreen", 0);
+    _bright->UniformTexture("texScreen", ShaderProgram::TEXTURE_UNIT0);
     _bright->UniformTexture("texExposure", 1);
     _bright->UniformTexture("texPrevExposure", 2);
-    _blur->UniformTexture("texScreen", 0);
+    _blur->UniformTexture("texScreen", ShaderProgram::TEXTURE_UNIT0);
     _blur->Uniform("kernelSize", 10);
     _horizBlur = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurHorizontal");
     _vertBlur  = _blur->GetSubroutineIndex(FRAGMENT_SHADER, "blurVertical");
@@ -67,7 +68,7 @@ void BloomPreRenderOperator::reshape(I32 width, I32 height){
     assert(_tempBloomFB);
     I32 w = width / 4;
     I32 h = height / 4;
-    _tempBloomFB->Create(w,h);
+    _tempBloomFB->Create(w, h);
     _outputFB->Create(width, height);
     if(_genericFlag && _tempHDRFB){
         _tempHDRFB->Create(width, height);
@@ -90,30 +91,40 @@ void BloomPreRenderOperator::operation(){
         return; 
     }
 
+    size_t defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
+
     _bright->bind();
     toneMapScreen();
-    _bright->Uniform("toneMap", false);
+
     // render all of the "bright spots"
     _outputFB->Begin(Framebuffer::defaultPolicy());
-    //screen FB
-    _inputFB[0]->Bind(0);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
-    _blur->bind();
-    _blur->SetSubroutine(FRAGMENT_SHADER, _horizBlur);
+    {
+        //screen FB
+        _inputFB[0]->Bind(ShaderProgram::TEXTURE_UNIT0);
+        GFX_DEVICE.drawPoints(1, defaultStateHash);
+    }
     _outputFB->End();
+
+    _blur->bind();
     //Blur horizontally
+    _blur->SetSubroutine(FRAGMENT_SHADER, _horizBlur);
     _tempBloomFB->Begin(Framebuffer::defaultPolicy());
-    //bright spots
-    _outputFB->Bind(0);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
-    _blur->SetSubroutine(FRAGMENT_SHADER, _vertBlur);
+    {
+        //bright spots
+        _outputFB->Bind(ShaderProgram::TEXTURE_UNIT0);
+        GFX_DEVICE.drawPoints(1, defaultStateHash);
+    }
     _tempBloomFB->End();
+
     //Blur vertically
+    _blur->SetSubroutine(FRAGMENT_SHADER, _vertBlur);
     _outputFB->Begin(Framebuffer::defaultPolicy());
-    //horizontally blurred bright spots
-    _tempBloomFB->Bind(0);
-    GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
-    // clear states
+    {
+        //horizontally blurred bright spots
+        _tempBloomFB->Bind(ShaderProgram::TEXTURE_UNIT0);
+        GFX_DEVICE.drawPoints(1,defaultStateHash);
+        // clear states
+    }
     _outputFB->End();
 }
 
@@ -174,4 +185,5 @@ void BloomPreRenderOperator::toneMapScreen()
     // luminance FB
     _luminaFB[0]->Bind(1);
     GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true));
+    _bright->Uniform("toneMap", false);
 }

@@ -145,7 +145,6 @@ bool WaterPlane::getDrawState(const RenderStage& currentStage) {
 
 /// update water refraction
 void WaterPlane::updateRefraction(){
-   
     if (_cameraUnderWater)
         return;
 
@@ -171,7 +170,6 @@ void WaterPlane::updateRefraction(){
 
 /// Update water reflections
 void WaterPlane::updateReflection(){
-   
     // Early out check for render callback
     if (!_renderCallback.empty()){
         //ToDo: this will cause problems later with multiple reflectors. Fix it! -Ionut

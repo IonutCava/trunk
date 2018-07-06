@@ -76,6 +76,14 @@ void PostFX::init(const vec2<U16>& resolution) {
     if (_gfx->postProcessingEnabled()) {
         ResourceDescriptor postFXShader("postProcessing");
         postFXShader.setThreadedLoading(false);
+        std::stringstream ss;
+        ss << ("TEX_BIND_POINT_SCREEN "     + Util::toString((U32)TEX_BIND_POINT_SCREEN) + ", ");
+        ss << ("TEX_BIND_POINT_BLOOM "      + Util::toString((U32)TEX_BIND_POINT_BLOOM) + ", ");
+        ss << ("TEX_BIND_POINT_SSAO "       + Util::toString((U32)TEX_BIND_POINT_SSAO) + ", ");
+        ss << ("TEX_BIND_POINT_NOISE "      + Util::toString((U32)TEX_BIND_POINT_NOISE) + ", ");
+        ss << ("TEX_BIND_POINT_BORDER "     + Util::toString((U32)TEX_BIND_POINT_BORDER) + ", ");
+        ss << ("TEX_BIND_POINT_UNDERWATER " + Util::toString((U32)TEX_BIND_POINT_UNDERWATER));
+        postFXShader.setPropertyList(ss.str());
         _postProcessingShader = CreateResource<ShaderProgram>(postFXShader);
 
         ResourceDescriptor textureWaterCaustics("Underwater Caustics");
@@ -86,12 +94,6 @@ void PostFX::init(const vec2<U16>& resolution) {
 
         _postProcessingShader->Uniform("_noiseTile", 0.05f);
         _postProcessingShader->Uniform("_noiseFactor", 0.02f);
-        _postProcessingShader->UniformTexture("texScreen", TEX_BIND_POINT_SCREEN);
-        _postProcessingShader->UniformTexture("texBloom", TEX_BIND_POINT_BLOOM);
-        _postProcessingShader->UniformTexture("texSSAO", TEX_BIND_POINT_SSAO);
-        _postProcessingShader->UniformTexture("texNoise", TEX_BIND_POINT_NOISE);
-        _postProcessingShader->UniformTexture("texVignette", TEX_BIND_POINT_BORDER);
-        _postProcessingShader->UniformTexture("texWaterNoiseNM", TEX_BIND_POINT_UNDERWATER);
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Vignette")); //0
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Noise"));    //1
         _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(FRAGMENT_SHADER, "Bloom"));    //2

@@ -28,7 +28,7 @@ GLuint GL_API::_activeBufferId[] = { Divide::GLUtil::_invalidObjectID,
 
 bool GL_API::_lastRestartIndexSmall   = true;
 bool GL_API::_primitiveRestartEnabled = false;
-vec4<GLfloat> GL_API::_prevClearColor[Config::MAX_RENDER_TARGETS];
+vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
 GL_API::samplerObjectMap   GL_API::_samplerMap;
@@ -326,14 +326,13 @@ bool GL_API::setActiveProgram(glShaderProgram* const program) {
     return true;
 }
 
-/// Change the clear color for the specified renderTarget
-void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, GLuint renderTarget) {
-    DIVIDE_ASSERT(renderTarget < Config::MAX_RENDER_TARGETS, "GLStates error: invalid render target ID. Increase Config::MAX_RENDER_TARGETS!");
+/// Change the clear color
+void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    DIVIDE_ASSERT(0 < Config::MAX_RENDER_TARGETS, "GLStates error: invalid render target ID. Increase Config::MAX_RENDER_TARGETS!");
     // Prevent setting the clear color to the exact same value again
-    vec4<F32>& prevClearColor = _prevClearColor[renderTarget];
-    if (prevClearColor != vec4<F32>(r,g,b,a)) {
+    if (_prevClearColor != vec4<F32>(r,g,b,a)) {
         // Remember the current clear color for this target for future reference
-        prevClearColor.set(r, g, b, a);
+        _prevClearColor.set(r, g, b, a);
         // Update the clear target
         glClearColor(r,g,b,a);
     }

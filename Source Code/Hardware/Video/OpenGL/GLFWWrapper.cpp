@@ -183,7 +183,7 @@ ErrorCodes GL_API::initRenderingApi(const vec2<GLushort>& resolution, GLint argc
     PRINT_FN(Locale::get("GL_SUBROUTINE_INFO"), Divide::GLUtil::getIntegerv(GL_MAX_SUBROUTINES), Divide::GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
         
     // Set the clear color to the blue color used since the initial OBJ loader days
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0);
+    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // Enable multisampling if we actually support and request it

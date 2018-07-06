@@ -58,7 +58,7 @@ vec3 Uncharted2Tonemap(vec3 x)
 	return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
 }
 
-void main(){	
+void main() {	
 	vec3 value = texture(texScreen, _texCoord).rgb;
 
 	if(luminancePass){

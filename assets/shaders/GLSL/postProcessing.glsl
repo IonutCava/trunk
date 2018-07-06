@@ -37,20 +37,17 @@ void main() {
 in  vec2 _texCoord;
 out vec4 _colorOut;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-uniform sampler2D texVignette;
-uniform sampler2D texWaterNoiseNM;
-
-uniform sampler2D texNoise;
+layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
+layout(binding = TEX_BIND_POINT_BLOOM)      uniform sampler2D texBloom;
+layout(binding = TEX_BIND_POINT_SSAO)       uniform sampler2D texSSAO;
+layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
+layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
+layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
 
 uniform float _noiseTile;
 uniform float _noiseFactor;
 uniform float dvd_time;
-
-uniform sampler2D texBloom;
 uniform float bloomFactor;
-
-uniform sampler2D texSSAO;
 
 uniform float randomCoeffNoise;
 uniform float randomCoeffFlash;

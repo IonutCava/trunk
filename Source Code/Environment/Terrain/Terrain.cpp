@@ -166,7 +166,7 @@ void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     }
     
     // draw infinite plane
-    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView){
+    if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE) && _planeInView ){
         GenericDrawCommand cmd(TRIANGLE_STRIP, 0, 0);
         cmd.setStateHash(drawStateHash);
         cmd.setDrawID(drawID);

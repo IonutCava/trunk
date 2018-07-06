@@ -86,7 +86,7 @@ bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
 }
 
 void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
-    _skybox->Bind(0);
+    _skybox->Bind(ShaderProgram::TEXTURE_UNIT0);
 
     GenericDrawCommand cmd;
     cmd.setStateHash(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflectedHash : _skyboxRenderStateHash);

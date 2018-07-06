@@ -256,7 +256,7 @@ bool glFramebuffer::Create(GLushort width, GLushort height) {
 
     checkStatus();
 
-    GL_API::clearColor( _clearColor, _framebufferHandle);
+    GL_API::clearColor( _clearColor );
 
     glClear(_clearBufferMask);
 
@@ -343,7 +343,7 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
 
     GL_API::setActiveFB(_framebufferHandle, Framebuffer::FB_WRITE_ONLY);
     // this is checked so it isn't called twice on the GPU
-    GL_API::clearColor(_clearColor, _framebufferHandle);
+    GL_API::clearColor( _clearColor );
     if (_clearBuffersState && drawPolicy._clearBuffersOnBind) {
         glClear(_clearBufferMask);
         GFX_DEVICE.registerDrawCall();
