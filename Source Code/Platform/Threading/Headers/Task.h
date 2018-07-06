@@ -60,9 +60,8 @@ class Task : public GUIDWrapper, private NonCopyable {
        };
 
       enum class TaskFlags : U32 {
-        SYNC_WITH_GPU = toBit(1),
-        PRINT_DEBUG_INFO = toBit(2),
-        COUNT = 2,
+        PRINT_DEBUG_INFO = toBit(1),
+        COUNT = 1,
       };
 
     /**
@@ -120,14 +119,9 @@ class Task : public GUIDWrapper, private NonCopyable {
 
    protected:
     void run();
-    void runTaskWithGPUSync();
-    void runTaskWithDebugInfo();
-    void runTaskWithGPUSyncAndDebugInfo();
+    void runTaskWithDebugInfo();;
 
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
-
-    void beginSyncGPU();
-    void endSyncGPU();
 
    private:
     const Application& _application;

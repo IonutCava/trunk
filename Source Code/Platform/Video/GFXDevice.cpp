@@ -602,7 +602,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
     // Skip invalid callbacks
     if (callback) {
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
-            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_base(Task::TaskFlags::SYNC_WITH_GPU));
+            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH);
         } else {
             if (Runtime::isMainThread()) {
                 callback(mainTask);

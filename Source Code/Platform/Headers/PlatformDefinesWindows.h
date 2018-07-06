@@ -36,6 +36,7 @@
 
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
+#pragma warning(disable : 4522)  //< multiple assignment operators specified (MSVC 14)
 
 #ifndef USE_VLD
 //#define USE_VLD

@@ -57,6 +57,10 @@ bool glTexture::unload() {
 }
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
+	if (_asyncLoad) {
+		GL_API::createOrValidateContextForCurrentThread();
+	}
+
     updateSampler();
     Texture::threadedLoad(onLoadCallback);
     _lockManager->Lock();

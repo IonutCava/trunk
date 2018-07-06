@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-ReCast", "VisualStudioProjects\Divide-ReCast.vcxproj", "{1ED21303-434E-46DA-8050-2DF2684BE74E}"
 EndProject
@@ -48,197 +48,125 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Core", "VisualStudioProjects\Divide-Core.vcxproj", "{4B595495-F8D2-4E58-89D4-DC7257E69676}"
 EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug_v140|x64 = Debug_v140|x64
 		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
+		Profile_v140|x64 = Profile_v140|x64
 		Profile|x64 = Profile|x64
-		Profile|x86 = Profile|x86
+		Release_v140|x64 = Release_v140|x64
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Debug|x64.ActiveCfg = Debug|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Debug|x64.Build.0 = Debug|x64
-		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Debug|x86.ActiveCfg = Debug|x64
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Profile|x64.ActiveCfg = Profile|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Profile|x64.Build.0 = Profile|x64
-		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Profile|x86.ActiveCfg = Profile|x64
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Release_v140|x64.Build.0 = Release_v140|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Release|x64.ActiveCfg = Release|x64
 		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Release|x64.Build.0 = Release|x64
-		{1ED21303-434E-46DA-8050-2DF2684BE74E}.Release|x86.ActiveCfg = Release|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Debug|x64.ActiveCfg = Debug|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Debug|x64.Build.0 = Debug|x64
-		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Debug|x86.ActiveCfg = Debug|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile|x64.ActiveCfg = Profile|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile|x64.Build.0 = Profile|x64
-		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile|x86.ActiveCfg = Profile|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release_v140|x64.Build.0 = Release_v140|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release|x64.ActiveCfg = Release|x64
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release|x64.Build.0 = Release|x64
-		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release|x86.ActiveCfg = Release|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug|x64.ActiveCfg = Debug|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug|x64.Build.0 = Debug|x64
-		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug|x86.ActiveCfg = Debug|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile|x64.ActiveCfg = Profile|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile|x64.Build.0 = Profile|x64
-		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile|x86.ActiveCfg = Profile|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release_v140|x64.Build.0 = Release_v140|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release|x64.ActiveCfg = Release|x64
 		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release|x64.Build.0 = Release|x64
-		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release|x86.ActiveCfg = Release|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Debug|x64.ActiveCfg = Debug|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Debug|x64.Build.0 = Debug|x64
-		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Debug|x86.ActiveCfg = Debug|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Profile|x64.ActiveCfg = Profile|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Profile|x64.Build.0 = Profile|x64
-		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Profile|x86.ActiveCfg = Profile|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Release_v140|x64.Build.0 = Release_v140|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Release|x64.ActiveCfg = Release|x64
 		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Release|x64.Build.0 = Release|x64
-		{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}.Release|x86.ActiveCfg = Release|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug|x64.ActiveCfg = Debug|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug|x64.Build.0 = Debug|x64
-		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Debug|x86.ActiveCfg = Debug|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile|x64.ActiveCfg = Profile|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile|x64.Build.0 = Profile|x64
-		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Profile|x86.ActiveCfg = Profile|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release_v140|x64.Build.0 = Release_v140|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release|x64.ActiveCfg = Release|x64
 		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release|x64.Build.0 = Release|x64
-		{0F94F3A5-3023-45A4-A003-F427AC82D869}.Release|x86.ActiveCfg = Release|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug|x64.ActiveCfg = Debug|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug|x64.Build.0 = Debug|x64
-		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Debug|x86.ActiveCfg = Debug|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile|x64.ActiveCfg = Profile|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile|x64.Build.0 = Profile|x64
-		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Profile|x86.ActiveCfg = Profile|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release_v140|x64.Build.0 = Release_v140|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release|x64.ActiveCfg = Release|x64
 		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release|x64.Build.0 = Release|x64
-		{EF7E2000-C5F8-4345-8082-9F97341F804D}.Release|x86.ActiveCfg = Release|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Debug|x64.ActiveCfg = Debug|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Debug|x64.Build.0 = Debug|x64
-		{87F22E92-2988-41FA-9E23-00033408A869}.Debug|x86.ActiveCfg = Debug|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Profile|x64.ActiveCfg = Profile|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Profile|x64.Build.0 = Profile|x64
-		{87F22E92-2988-41FA-9E23-00033408A869}.Profile|x86.ActiveCfg = Profile|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{87F22E92-2988-41FA-9E23-00033408A869}.Release_v140|x64.Build.0 = Release_v140|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Release|x64.ActiveCfg = Release|x64
 		{87F22E92-2988-41FA-9E23-00033408A869}.Release|x64.Build.0 = Release|x64
-		{87F22E92-2988-41FA-9E23-00033408A869}.Release|x86.ActiveCfg = Release|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Debug|x64.ActiveCfg = Debug|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Debug|x64.Build.0 = Debug|x64
-		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Debug|x86.ActiveCfg = Debug|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Profile|x64.ActiveCfg = Profile|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Profile|x64.Build.0 = Profile|x64
-		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Profile|x86.ActiveCfg = Profile|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Release_v140|x64.Build.0 = Release_v140|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Release|x64.ActiveCfg = Release|x64
 		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Release|x64.Build.0 = Release|x64
-		{3CD700EA-0C66-4FA7-9C66-D8E63CA952CB}.Release|x86.ActiveCfg = Release|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Debug_v140|x64.ActiveCfg = Debug_v140|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Debug_v140|x64.Build.0 = Debug_v140|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Debug|x64.ActiveCfg = Debug|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Debug|x64.Build.0 = Debug|x64
-		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Debug|x86.ActiveCfg = Debug|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile_v140|x64.ActiveCfg = Profile_v140|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile_v140|x64.Build.0 = Profile_v140|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile|x64.ActiveCfg = Profile|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile|x64.Build.0 = Profile|x64
-		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Profile|x86.ActiveCfg = Profile|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release_v140|x64.ActiveCfg = Release_v140|x64
+		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release_v140|x64.Build.0 = Release_v140|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release|x64.ActiveCfg = Release|x64
 		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release|x64.Build.0 = Release|x64
-		{4B595495-F8D2-4E58-89D4-DC7257E69676}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

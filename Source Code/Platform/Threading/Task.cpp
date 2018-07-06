@@ -59,11 +59,6 @@ void Task::addChildTask(Task* task) {
     _childTasks[_childTaskCount++] = task;
 }
 
-void Task::runTaskWithGPUSync() {
-    beginSyncGPU();
-    run();
-    endSyncGPU();
-}
 
 void Task::runTaskWithDebugInfo() {
     Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
@@ -71,23 +66,9 @@ void Task::runTaskWithDebugInfo() {
     Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
 }
 
-void Task::runTaskWithGPUSyncAndDebugInfo() {
-    Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), getGUID(), std::this_thread::get_id());
-    runTaskWithGPUSync();
-    Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), getGUID(), std::this_thread::get_id());
-}
-
 PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
     if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
-        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
-            return PoolTask(to_base(priority), [this]() { runTaskWithGPUSyncAndDebugInfo(); });
-        } else {
-            return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
-        }
-    } else {
-        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
-            return PoolTask(to_base(priority), [this]() { runTaskWithGPUSync(); });
-        }
+	    return PoolTask(to_base(priority), [this]() { runTaskWithDebugInfo(); });
     }
 
     return PoolTask(to_base(priority), [this]() { run(); });
@@ -104,13 +85,6 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         if (priority != TaskPriority::REALTIME &&
             priority != TaskPriority::REALTIME_WITH_CALLBACK) {
             priority = TaskPriority::REALTIME_WITH_CALLBACK;
-        }
-    }
-
-    if (!Config::USE_GPU_THREADED_LOADING) {
-        if (BitCompare(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU))) {
-            priority = TaskPriority::REALTIME_WITH_CALLBACK;
-            ClearBit(taskFlags, to_base(TaskFlags::SYNC_WITH_GPU));
         }
     }
 
@@ -171,14 +145,6 @@ void Task::run() {
 
     // task finished. Everything else is bookkeeping
     _tp->taskCompleted(poolIndex(), _priority);
-}
-
-void Task::beginSyncGPU() {
-    Attorney::ApplicationTask::syncThreadToGPU(_application, std::this_thread::get_id(), true);
-}
-
-void Task::endSyncGPU() {
-    Attorney::ApplicationTask::syncThreadToGPU(_application, std::this_thread::get_id(), false);
 }
 
 };

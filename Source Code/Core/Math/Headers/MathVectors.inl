@@ -28,8 +28,8 @@
 
  */
 
-#ifndef _CORE_MATH_MATH_VECTORS_H_
-#define _CORE_MATH_MATH_VECTORS_H_
+#ifndef _CORE_MATH_MATH_VECTORS_INL_
+#define _CORE_MATH_MATH_VECTORS_INL_
 
 namespace Divide {
 
@@ -816,4 +816,5 @@ inline void vec4<F32>::setV(const F32 *v) {
 }
 */
 };  // namespace Divide
-#endif
+
+#endif //_CORE_MATH_MATH_VECTORS_INL_

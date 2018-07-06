@@ -51,10 +51,6 @@ void DX_API::flushCommandBuffer(const CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
 }
 
-void DX_API::syncToThread(const std::thread::id& threadID) {
-    ACKNOWLEDGE_UNUSED(threadID);
-}
-
 size_t DX_API::setStateBlock(size_t stateBlockHash) {
     ACKNOWLEDGE_UNUSED(stateBlockHash);
     return 0;

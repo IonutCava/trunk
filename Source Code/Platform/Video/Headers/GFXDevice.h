@@ -396,12 +396,6 @@ public:  // Direct API calls
     }
 
 protected:
-    inline void syncThreadToGPU(const std::thread::id& threadID, bool beginSync) {
-        if (beginSync) {
-            _api->syncToThread(threadID);
-        }
-    }
-
     friend class GFXRTPool;
     RenderTarget* newRT(const stringImpl& name) const;
 
@@ -586,12 +580,6 @@ namespace Attorney {
 
         static void onChangeRenderResolution(GFXDevice& device, U16 w, U16 h) {
             device.onChangeResolution(w, h);
-        }
-
-        static void syncThreadToGPU(GFXDevice& device, const std::thread::id& threadID, bool beginSync) {
-            if (beginSync) {
-                device.syncThreadToGPU(threadID, beginSync);
-            }
         }
 
         friend class Divide::Kernel;

@@ -92,7 +92,6 @@ class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
 
    protected:
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
-    virtual void syncToThread(const std::thread::id& threadID) = 0;
     virtual void registerCommandBuffer(const ShaderBuffer& commandBuffer) const = 0;
 };
 

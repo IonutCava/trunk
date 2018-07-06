@@ -120,17 +120,6 @@ DEFINE_SINGLETON(Application)
     vectorImpl<DELEGATE_CBK<void> > _mainThreadCallbacks;
 END_SINGLETON
 
-namespace Attorney {
-    class ApplicationTask {
-    private:
-        // threadID = calling thread
-        // beginSync = true, called before thread processes data / false, called when thread finished processing data
-        static void syncThreadToGPU(const Application& app, const std::thread::id& threadID, bool beginSync);
-
-        friend class Divide::Task;
-    };
-};  // namespace Attorney
-
 };  // namespace Divide
 
 #endif  //_CORE_APPLICATION_H_

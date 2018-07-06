@@ -61,7 +61,6 @@ GL_API::GL_API(GFXDevice& context)
       _previousStateBlockHash(0),
       _fonsContext(nullptr),
       _GUIGLrenderer(nullptr),
-      _mainRenderWindow(nullptr),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     // Only updated in Debug builds
@@ -118,7 +117,7 @@ void GL_API::endFrame(bool swapBuffers) {
     // Swap buffers
     if (swapBuffers) {
         Time::ScopedTimer time(_swapBufferTimer);
-        SDL_GL_SwapWindow(_mainRenderWindow->getRawWindow());
+        SDL_GL_SwapWindow(Application::instance().windowManager().getActiveWindow().getRawWindow());
     }
 
     // End the timing query started in beginFrame() in debug builds

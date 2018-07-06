@@ -178,9 +178,4 @@ void Application::mainThreadTask(const DELEGATE_CBK<void>& task, bool wait) {
     }
 }
 
-void Attorney::ApplicationTask::syncThreadToGPU(const Application& app, const std::thread::id& threadID, bool beginSync) {
-    Attorney::KernelApplication::syncThreadToGPU(*app._kernel, threadID, beginSync);
-}
-
-
 }; //namespace Divide

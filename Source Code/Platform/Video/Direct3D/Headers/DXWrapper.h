@@ -62,7 +62,6 @@ protected:
     void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
 
     void updateClipPlanes() override;
-    void syncToThread(const std::thread::id& threadID) override;
 
     size_t setStateBlock(size_t stateBlockHash) override;
 

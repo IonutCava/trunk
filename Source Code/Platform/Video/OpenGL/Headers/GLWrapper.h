@@ -112,10 +112,6 @@ protected:
 
     void flushCommandBuffer(const CommandBuffer& commandBuffer) override;
 
-    /// This functions should be run in a separate, consumer thread.
-    /// The main app thread, the producer, adds tasks via a lock-free queue that is
-    /// checked every 20 ms
-    void syncToThread(const std::thread::id& threadID) override;
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
     GLuint64 getFrameDurationGPU() override;
@@ -139,6 +135,9 @@ protected:
     bool makeTextureResident(const TextureData& textureData);
 
 public:
+	/// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
+	static void createOrValidateContextForCurrentThread();
+
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
     /// Enable or disable primitive rasterization
@@ -247,7 +246,6 @@ public:
 
 private:
     GFXDevice& _context;
-    const DisplayWindow* _mainRenderWindow;
     /// The previous Text3D node's font face size
     GLfloat _prevSizeNode;
     /// The previous plain text string's font face size
