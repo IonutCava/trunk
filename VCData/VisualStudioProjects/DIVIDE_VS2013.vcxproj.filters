@@ -1436,6 +1436,9 @@
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightGrid.h">
       <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">

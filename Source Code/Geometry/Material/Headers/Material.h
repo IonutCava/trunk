@@ -25,6 +25,7 @@
 
 #include "core.h"
 #include "Utility/Headers/XMLParser.h"
+#include "Utility/Headers/StateTracker.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
@@ -115,32 +116,24 @@ public:
         std::string _shader;
         bool _computedShader;
         vectorImpl<std::string> _shaderDefines;
-        
-        bool _trackedBools[10];
 
         ShaderProgram* const getProgram();
 
-        inline bool getTrackedBool(U8 index) const {
-            assert(index < 10); 
-            return _trackedBools[index];
-        }
-
-        inline void setTrackedBool(U8 index, const bool state){
-            assert(index < 10);
-            _trackedBools[index] = state;
-        }
+        inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
         ShaderInfo()
         {
             _shaderRef = nullptr;
             _shader = "";
             _computedShader = false;
-            memset(_trackedBools, false, 10 * sizeof(bool));
             for(U8 i = 0; i < ShaderType_PLACEHOLDER; ++i)
                 memset(_shadingFunction[i], 0, BumpMethod_PLACEHOLDER * sizeof(U32));
         }
 
         U32 _shadingFunction[ShaderType_PLACEHOLDER][BumpMethod_PLACEHOLDER];
+
+    protected:
+        StateTracker<bool> _trackedBools;
     };
   
 public:

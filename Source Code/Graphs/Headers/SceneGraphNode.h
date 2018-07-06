@@ -27,6 +27,7 @@
 
 #include "SceneNode.h"
 #include <boost/atomic.hpp>
+#include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/SGNComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
@@ -190,16 +191,9 @@ public:
     inline NavigationComponent* getComponent() { return dynamic_cast<NavigationComponent*>(_components[SGNComponent::SGN_COMP_NAVIGATION]); }
     template<>
     inline PhysicsComponent* getComponent() { return dynamic_cast<PhysicsComponent*>(_components[SGNComponent::SGN_COMP_PHYSICS]); }
+    
+    inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
-    inline bool getTrackedBool(U8 index) const {
-        assert(index < 10); 
-        return _trackedBools[index];
-    }
-
-    inline void setTrackedBool(U8 index, const bool state){
-        assert(index < 10);
-        _trackedBools[index] = state;
-    }
 protected:
     friend class RenderPassCuller;
     inline void inView(const bool isInView) { _inView = isInView; }
@@ -250,7 +244,7 @@ private:
 
     Unordered_map<RenderStage, bool> _drawReset;
 
-    bool _trackedBools[10];
+    StateTracker<bool> _trackedBools;
 };
 
 #endif

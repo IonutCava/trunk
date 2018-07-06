@@ -695,6 +695,7 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\ImageTools.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Localization.h" />
+    <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\TextLabel.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Vector.h" />
