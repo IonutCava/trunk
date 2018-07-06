@@ -12,7 +12,7 @@ void main(void)
 }
 
 -- Fragment
-
+#include "utility.frag"
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
@@ -39,7 +39,7 @@ void main() {
 
     if(toneMap) {
         float exposure = exp(textureLod(texExposure, vec2(0.5,0.5), exposureMipLevel).r);
-        _colorOut = vec4(Uncharted2Tonemap(screenColor * exposure) / Uncharted2Tonemap(vec3(whitePoint)) , 1.0);
+        _colorOut = vec4(ToSRGB(Uncharted2Tonemap(screenColor * exposure) / Uncharted2Tonemap(vec3(whitePoint))) , 1.0);
     }else{
         if (dot(screenColor.rgb, vec3(0.2126, 0.7152, 0.0722)) > whitePoint) {
             _colorOut.rgb = screenColor;

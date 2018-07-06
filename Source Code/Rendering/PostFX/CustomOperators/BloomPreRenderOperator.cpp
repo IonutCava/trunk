@@ -22,20 +22,18 @@ namespace {
     }
 };
 
-BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* renderTarget)
-    : PreRenderOperator(FilterType::FILTER_BLOOM_TONEMAP, renderTarget)
+BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+    : PreRenderOperator(FilterType::FILTER_BLOOM_TONEMAP, hdrTarget, ldrTarget)
 {
-    Texture* targetTexture = renderTarget->getAttachment();
-    TextureDescriptor screenDescriptor(targetTexture->getDescriptor());
     for (U8 i = 0; i < 2; ++i) {
         _bloomBlurBuffer[i] = GFX_DEVICE.newFB();
-        _bloomBlurBuffer[i]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+        _bloomBlurBuffer[i]->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
         _bloomBlurBuffer[i]->toggleDepthBuffer(false);
         _bloomBlurBuffer[i]->setClearColor(DefaultColors::BLACK());
     }
 
     _bloomOutput = GFX_DEVICE.newFB();
-    _bloomOutput->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _bloomOutput->addAttachment(_hdrTarget->getDescriptor(), TextureDescriptor::AttachmentType::Color0);
     _bloomOutput->toggleDepthBuffer(false);
     _bloomOutput->setClearColor(DefaultColors::BLACK());
 
@@ -125,7 +123,7 @@ void BloomPreRenderOperator::execute() {
     U32 defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
 
     // Step 1: Luminance calc
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     _previousExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
 
     _currentExposure->begin(Framebuffer::defaultPolicy());
@@ -137,7 +135,7 @@ void BloomPreRenderOperator::execute() {
 
      // Step 2: generate bloom
     _bloom->Uniform("toneMap", false);
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen
+    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); //screen
     // render all of the "bright spots"
     _bloomOutput->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloom);
@@ -159,7 +157,7 @@ void BloomPreRenderOperator::execute() {
     _bloomBlurBuffer[1]->end();
         
     // Step 3: apply bloom
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     _bloomBlurBuffer[1]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
     _bloomBlurBuffer[0]->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloomApply);
@@ -169,9 +167,10 @@ void BloomPreRenderOperator::execute() {
     _bloom->Uniform("toneMap", true);
     _bloomBlurBuffer[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     _currentExposure->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1));
-    _renderTarget->begin(Framebuffer::defaultPolicy());
+    _ldrTarget->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(defaultStateHash, _bloom);
-    _renderTarget->end();
+    _ldrTarget->end();
+    ldrTargetValid(true);
 }
 
 void BloomPreRenderOperator::debugPreview(U8 slot) const {

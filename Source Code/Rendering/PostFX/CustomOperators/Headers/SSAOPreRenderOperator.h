@@ -46,7 +46,7 @@ namespace Divide {
 
 class SSAOPreRenderOperator : public PreRenderOperator {
    public:
-    SSAOPreRenderOperator(Framebuffer* renderTarget);
+    SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
     ~SSAOPreRenderOperator();
 
     void idle() override;

@@ -29,17 +29,17 @@ class PreRenderBatch {
    private:
     inline U32 getOperatorIndex(FilterType type) const {
         switch (type) {
-            case FilterType::FILTER_SS_ANTIALIASING :
-                return 0;
             case FilterType::FILTER_SS_REFLECTIONS:
-                return 1;
+                return 0;
             case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
-                return 2;
+                return 1;
             case FilterType::FILTER_DEPTH_OF_FIELD:
-                return 3;
+                return 2;
             case FilterType::FILTER_MOTION_BLUR:
-                return 4;
+                return 3;
             case FilterType::FILTER_BLOOM_TONEMAP:
+                return 4;
+            case FilterType::FILTER_SS_ANTIALIASING:
                 return 5;
         };
 

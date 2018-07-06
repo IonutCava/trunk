@@ -18,6 +18,8 @@ void main(void)
 
 -- Fragment
 
+#include "utility.frag"
+
 out vec4 _colorOut;
 uniform float lodLevel = 0;
 
@@ -25,7 +27,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    _colorOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
+    _colorOut = ToSRGB(textureLod(texDiffuse0, VAR._texCoord, lodLevel));
     _colorOut.a = 1.0;
 }
 

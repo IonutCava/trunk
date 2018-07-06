@@ -350,8 +350,9 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
             return;
         }
         // Update render targets with the new resolution
-        for (Framebuffer* renderTarget : _renderTarget) {
-            if (renderTarget) {
+        for (U32 i = 0; i < to_uint(RenderTarget::COUNT); ++i) {
+            Framebuffer* renderTarget = _renderTarget[i];
+            if (renderTarget && static_cast<RenderTarget>(i) != RenderTarget::ENVIRONMENT) {
                 renderTarget->create(w, h);
             }
         }

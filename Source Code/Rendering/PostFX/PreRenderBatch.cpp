@@ -8,6 +8,8 @@
 
 namespace Divide {
 
+bool PreRenderOperator::_ldrTargetValid = false;
+
 PreRenderBatch::PreRenderBatch() : _debugOperator(nullptr),
                                    _postFXOutput(nullptr),
                                    _renderTarget(nullptr)
@@ -38,6 +40,7 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
+    screenSampler.toggleSRGBColorSpace(true);
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RGB8,
                                        GFXDataFormat::UNSIGNED_BYTE);
@@ -46,20 +49,20 @@ void PreRenderBatch::init(Framebuffer* renderTarget) {
     _postFXOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
 
     // HDR input -> HDR output
-    _operators[getOperatorIndex(FilterType::FILTER_SS_ANTIALIASING)]
-        = MemoryManager_NEW PostAAPreRenderOperator(_renderTarget);
-
-    // HDR input -> HDR output
     _operators[getOperatorIndex(FilterType::FILTER_SS_AMBIENT_OCCLUSION)]
-        = MemoryManager_NEW SSAOPreRenderOperator(_renderTarget);
+        = MemoryManager_NEW SSAOPreRenderOperator(_renderTarget, _postFXOutput);
 
     // HDR input -> HDR output
     _operators[getOperatorIndex(FilterType::FILTER_DEPTH_OF_FIELD)]
-        = MemoryManager_NEW DoFPreRenderOperator(_renderTarget);
+        = MemoryManager_NEW DoFPreRenderOperator(_renderTarget, _postFXOutput);
 
     // HDR input -> LDR output
     _operators[getOperatorIndex(FilterType::FILTER_BLOOM_TONEMAP)]
-        = MemoryManager_NEW BloomPreRenderOperator(_renderTarget);
+        = MemoryManager_NEW BloomPreRenderOperator(_renderTarget, _postFXOutput);
+
+    // LDR input -> LDR output
+    _operators[getOperatorIndex(FilterType::FILTER_SS_ANTIALIASING)]
+        = MemoryManager_NEW PostAAPreRenderOperator(_renderTarget, _postFXOutput);
 
     //_debugOperator = _operators[getOperatorIndex(FilterType::FILTER_SS_AMBIENT_OCCLUSION)];
 }
@@ -68,7 +71,7 @@ void PreRenderBatch::bindOutput(U8 slot) {
     if (_debugOperator != nullptr) {
         _debugOperator->debugPreview(slot);
     } else {
-        _postFXOutput->getAttachment(TextureDescriptor::AttachmentType::Color0)->Bind(slot);
+        _postFXOutput->getAttachment()->Bind(slot);
     }
 }
 
@@ -81,12 +84,17 @@ void PreRenderBatch::idle() {
 }
 
 void PreRenderBatch::execute(U32 filterMask) {
+    PreRenderOperator::onExecute(filterMask);
+
     for (PreRenderOperator* op : _operators) {
         if (op != nullptr && BitCompare(filterMask, to_uint(op->operatorType()))) {
             op->execute();
         }
     }
-    _postFXOutput->blitFrom(_renderTarget);
+
+    if (!PreRenderOperator::ldrTargetValid()) {
+        _postFXOutput->blitFrom(_renderTarget);
+    }
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {

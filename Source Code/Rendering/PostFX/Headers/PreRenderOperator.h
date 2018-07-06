@@ -37,9 +37,10 @@ class NOINITVTABLE PreRenderOperator {
     /// doing to set up apropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
-    PreRenderOperator(FilterType operatorType, Framebuffer* renderTarget)
+    PreRenderOperator(FilterType operatorType, Framebuffer* hdrTarget, Framebuffer* ldrTarget)
         :  _operatorType(operatorType),
-           _renderTarget(renderTarget)
+           _hdrTarget(hdrTarget),
+           _ldrTarget(ldrTarget)
     {
     }
 
@@ -60,10 +61,22 @@ class NOINITVTABLE PreRenderOperator {
     virtual void debugPreview(U8 slot) const {
     };
 
+    static bool ldrTargetValid() { return _ldrTargetValid; }
+
    protected:
-    Framebuffer* _renderTarget;
+    static void ldrTargetValid(bool state) { _ldrTargetValid = state; }
+
+   protected:
+    friend class PreRenderBatch;
+    static void onExecute(U32 filterMask) { _ldrTargetValid = false; }
+
+   protected:
+    Framebuffer* _hdrTarget;
+    Framebuffer* _ldrTarget;
     FilterType _operatorType;
     vectorImpl<Framebuffer*> _inputFB;
+
+    static bool _ldrTargetValid;;
 };
 
 };  // namespace Divide

@@ -8,8 +8,8 @@
 namespace Divide {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
-SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* renderTarget)
-    : PreRenderOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION, renderTarget)
+SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+    : PreRenderOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
 {
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
@@ -53,10 +53,10 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* renderTarget)
     //Color0 holds the AO texture
     _ssaoOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
     //Color1 holds a copy of the screen
-    TextureDescriptor screenCopyDescriptor(_renderTarget->getAttachment(TextureDescriptor::AttachmentType::Color0)->getDescriptor());
+    TextureDescriptor screenCopyDescriptor(_hdrTarget->getDescriptor());
     _ssaoOutput->addAttachment(screenCopyDescriptor, TextureDescriptor::AttachmentType::Color1);
 
-    _ssaoOutput->create(renderTarget->getWidth(), renderTarget->getHeight());
+    _ssaoOutput->create(_hdrTarget->getWidth(), _hdrTarget->getHeight());
 
     ResourceDescriptor ssaoGenerate("SSAOPass");
     ssaoGenerate.setThreadedLoading(false);
@@ -86,8 +86,8 @@ void SSAOPreRenderOperator::execute() {
     STUBBED("SSAO implementation is incomplete! -Ionut");
     return;
 
-    _renderTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                        TextureDescriptor::AttachmentType::Color0);  // screen
+    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                     TextureDescriptor::AttachmentType::Color0);  // screen
     _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                       TextureDescriptor::AttachmentType::Depth);  // depth
 
@@ -101,9 +101,9 @@ void SSAOPreRenderOperator::execute() {
     _ssaoOutput->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                       TextureDescriptor::AttachmentType::Color0);  // AO texture
 
-    _renderTarget->begin(Framebuffer::defaultPolicy());
+    _hdrTarget->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoApplyShader);
-    _renderTarget->end();
+    _hdrTarget->end();
 }
 
 void SSAOPreRenderOperator::debugPreview(U8 slot) const {

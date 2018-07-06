@@ -71,6 +71,10 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         return _defaultPolicy;
     }
 
+    inline TextureDescriptor getDescriptor(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0) {
+        return _attachment[to_uint(slot)];
+    }
+
     virtual Texture* getAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
                                    bool flushStateOnRequest = true);
 

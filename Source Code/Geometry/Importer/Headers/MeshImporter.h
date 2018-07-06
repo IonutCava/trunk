@@ -42,7 +42,7 @@ namespace Divide {
         struct TextureEntry {
             TextureEntry()
             {
-                _srgbSpace = false;
+                _srgbSpace = true;
                 _wrapU = _wrapV = _wrapW = TextureWrap::REPEAT;
                 _operation = Material::TextureOperation::REPLACE;
             }

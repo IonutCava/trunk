@@ -41,7 +41,7 @@ class ShaderProgram;
 
 class BloomPreRenderOperator : public PreRenderOperator {
    public:
-    BloomPreRenderOperator(Framebuffer* renderTarget);
+    BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget);
     ~BloomPreRenderOperator();
 
     void idle() override;

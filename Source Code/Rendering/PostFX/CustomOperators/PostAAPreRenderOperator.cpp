@@ -7,17 +7,15 @@
 
 namespace Divide {
 
-PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* renderTarget)
-    : PreRenderOperator(FilterType::FILTER_SS_ANTIALIASING, renderTarget),
+PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* ldrTarget)
+    : PreRenderOperator(FilterType::FILTER_SS_ANTIALIASING, hdrTarget, ldrTarget),
       _useSMAA(false),
       _postAASamples(0)
 {
+    TextureDescriptor descriptor = _ldrTarget->getDescriptor();
+    descriptor.getSampler().toggleSRGBColorSpace(false);
     _samplerCopy = GFX_DEVICE.newFB();
-    
-    Texture* targetTexture = renderTarget->getAttachment();
-
-    TextureDescriptor postaaDescriptor(targetTexture->getDescriptor());
-    _samplerCopy->addAttachment(postaaDescriptor, TextureDescriptor::AttachmentType::Color0);
+    _samplerCopy->addAttachment(descriptor, TextureDescriptor::AttachmentType::Color0);
     _samplerCopy->toggleDepthBuffer(false);
 
     ResourceDescriptor fxaa("FXAA");
@@ -37,28 +35,33 @@ PostAAPreRenderOperator::~PostAAPreRenderOperator() {
 
 void PostAAPreRenderOperator::idle() {
     ParamHandler& par = ParamHandler::getInstance();
-    _postAASamples = par.getParam<I32>("rendering.PostAASamples", 0);
+    I32 samples= par.getParam<I32>("rendering.PostAASamples", 0);
+    if (_postAASamples != samples) {
+        _postAASamples = samples;
+        _fxaa->Uniform("dvd_qualityMultiplier", _postAASamples);
+    }
     _useSMAA = par.getParam<stringImpl>("rendering.PostAAType", "FXAA").compare("SMAA") == 0;
 }
 
 void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
     _samplerCopy->create(width, height);
-    _fxaa->Uniform("dvd_fxaaSpanMax", 8.0f);
-    _fxaa->Uniform("dvd_fxaaReduceMul", 1.0f / _postAASamples);
-    _fxaa->Uniform("dvd_fxaaReduceMin", 1.0f / 128.0f);
-    _fxaa->Uniform("dvd_fxaaSubpixShift", 1.0f / (_postAASamples / 2));
 }
 
 /// This is tricky as we use our screen as both input and output
 void PostAAPreRenderOperator::execute() {
     // Copy current screen and bind it as an input texture
-    _samplerCopy->blitFrom(_renderTarget);
+    if (!ldrTargetValid()) {
+        _ldrTarget->blitFrom(_hdrTarget);
+    }
+
+    _samplerCopy->blitFrom(_ldrTarget);
     _samplerCopy->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
     // Apply FXAA/SMAA to the specified render target
-    _renderTarget->begin(Framebuffer::defaultPolicy());
+    _ldrTarget->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true), _useSMAA ? _smaa : _fxaa);
-    _renderTarget->end();
+    _ldrTarget->end();
+    ldrTargetValid(true);
 }
 
 };
