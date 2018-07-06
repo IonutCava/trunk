@@ -15,8 +15,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowDivide.cpp" />
-    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowManagerDivide.cpp" />
     <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -51,14 +49,6 @@
     <ClCompile Include="..\../Source Code/Libs/imgui\imgui.cpp" />
     <ClCompile Include="..\../Source Code/Libs/imgui\imgui_demo.cpp" />
     <ClCompile Include="..\../Source Code/Libs/imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.cpp" />
     <ClCompile Include="..\../Source Code/stdafx-editor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -91,6 +81,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
@@ -101,8 +92,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
     <ClInclude Include="..\../Source Code/Editor\Headers\Editor.h" />
-    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowDivide.h" />
-    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowManagerDivide.h" />
     <ClInclude Include="..\../Source Code/Libs/imgui\examples\opengl3_example\imgui_impl_glfw_gl3.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -124,15 +113,6 @@
     <ClInclude Include="..\../Source Code/Libs/imgui\stb_rect_pack.h" />
     <ClInclude Include="..\../Source Code/Libs/imgui\stb_textedit.h" />
     <ClInclude Include="..\../Source Code/Libs/imgui\stb_truetype.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h" />
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\ApplicationOutputWindow.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\FindWindow.h" />
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\OutputWindow.h" />
@@ -165,6 +145,7 @@
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h" />

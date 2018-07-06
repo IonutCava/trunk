@@ -64,6 +64,8 @@ IMGUI_BASE_PATH=../..
 #DEFINES+=STBI_NO_GIF
 #DEFINES+=NO_IMGUITOOLBAR
 #DEFINES+=YES_IMGUIIMAGEEDITOR
+#DEFINES+=YES_IMGUIPDFVIEWER
+#PKGCONFIG += poppler-glib
 # END USER EDITABLE AREA ----------------------------------------------------------------------------
 
 
@@ -255,5 +257,13 @@ LIBS+= -L"/usr/i686-w64-mingw32/lib" \
 LIBS+= -ld3d9 -luser32 -lkernel32 -static-libgcc -static-libstdc++
 #QMAKE_CXXFLAGS+=--std=c++0x
 }
+
+# Dev stuff here (should be commented out)
+#DEFINES+=IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+#DEFINES+=NO_IMGUIVARIOUSCONTROLS
+#DEFINES+=NO_IMGUIPANELMANAGER
+#DEFINES+=NO_IMGUIDATECHOOSER
+#DEFINES+=IMGUICODEEDITOR_DEBUG
+#DEFINES+=IMGUISTRING_STL_FALLBACK
 
 

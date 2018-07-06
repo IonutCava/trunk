@@ -8,9 +8,6 @@
     <Filter Include="3rdParty">
       <UniqueIdentifier>{6d62067a-bc78-429e-99b0-2667aa3abd1b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="3rdParty/ImWindow">
-      <UniqueIdentifier>{6e852a9d-7e82-4605-b676-7d558609f53e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="3rdParty/ImGUI">
       <UniqueIdentifier>{75c82187-537f-4e48-bd91-39e446c309b0}</UniqueIdentifier>
     </Filter>
@@ -107,30 +104,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\../Source Code/stdafx-editor.cpp" />
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.cpp">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/imgui\extra_fonts\binary_to_compressed_c.cpp">
       <Filter>3rdParty/ImGUI\extra_fonts</Filter>
     </ClCompile>
@@ -160,12 +133,6 @@
     </ClCompile>
     <ClCompile Include="..\../Source Code/Libs/imgui\examples\opengl3_example\main.cpp">
       <Filter>3rdParty/ImGUI\samples\OGL3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowDivide.cpp">
-      <Filter>Widgets</Filter>
-    </ClCompile>
-    <ClCompile Include="..\../Source Code/Editor\Widgets\ImWindowManagerDivide.cpp">
-      <Filter>Widgets</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
@@ -229,35 +196,11 @@
     <ClCompile Include="..\..\Source Code\Editor\Widgets\DockedWindows\FindWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
+      <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwConfig.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwContainer.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwMenu.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwPlatformWindow.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwStatusBar.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwToolBar.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindow.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\ImwWindowManager.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Libs/ImWindow\ImWindow\JsonValue.h">
-      <Filter>3rdParty/ImWindow</Filter>
-    </ClInclude>
     <ClInclude Include="..\../Source Code/Libs/imgui\imconfig.h">
       <Filter>3rdParty/ImGUI</Filter>
     </ClInclude>
@@ -287,12 +230,6 @@
     </ClInclude>
     <ClInclude Include="..\../Source Code/Editor\Headers\Editor.h">
       <Filter>Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowDivide.h">
-      <Filter>Widgets\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\../Source Code/Editor\Widgets\Headers\ImWindowManagerDivide.h">
-      <Filter>Widgets\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_user.h">
       <Filter>3rdParty/ImGUI\addons</Filter>
@@ -473,6 +410,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Editor\Widgets\DockedWindows\Headers\FindWindow.h">
       <Filter>Widgets\DockedWindows\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h">
+      <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

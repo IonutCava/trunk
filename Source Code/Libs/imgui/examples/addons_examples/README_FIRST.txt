@@ -63,7 +63,7 @@ Currently the extra imgui widgets that are available are:
 -> imguitoolbar:			a very flexible imagebutton-bar that can be used inside ImGui Windows (with dynamic layout) and outside (docked at the sides of the screen).
 -> imguipanelmanager:		a mini dock panel layout. Basically it uses imguitoolbar and optionally assigns an ImGui Window to some buttons. Please see main2.cpp for an extensive example on how to use it.
 -> imguitabwindow:			-> a self-partitioning ImGui::Window with TabLabels that can be dragged around. It's used in the central window of main2.cpp.
-							-> this addon also provides ImGui::TabLabels(...), for adding generic tabs in normal imgui windows.
+							-> this addon also provides ImGui::TabLabels(...) and ImGui::TabLabelsVertical(...), for adding generic tabs in normal imgui windows.
 -> imguidock:				Lumix Engine's docking system [from: https://github.com/nem0/LumixEngine/blob/master/src/editor/imgui/imgui_dock.h].
 -> imguivariouscontrols:	a series of minor widgets, such as:
 							-> ProgressBar.

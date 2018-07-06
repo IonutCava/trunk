@@ -88,11 +88,32 @@ typedef enum ImGuiDockSlot {
 
 namespace ImGui{
 
+struct DockContext;
+
+// Create, destroy and change dock contexts. These functions are
+// entirely optional if you only need one dock context - a default
+// dock context is created on startup and set by default.
+
+// Each created context must be destroyed using DestroyDockContext.
+IMGUI_API DockContext* CreateDockContext();
+
+// Destroying the default dock context is a no-op.
+IMGUI_API void DestroyDockContext(DockContext* dock);
+
+// SetCurrentDockContext(NULL) will select the default dock context.
+IMGUI_API void SetCurrentDockContext(DockContext* dock);
+
+IMGUI_API DockContext* GetCurrentDockContext();
+
 IMGUI_API void BeginDockspace();
 IMGUI_API void EndDockspace();
 IMGUI_API void ShutdownDock();
 IMGUI_API void SetNextDock(ImGuiDockSlot slot);
-IMGUI_API bool BeginDock(const char* label, bool* opened = NULL, ImGuiWindowFlags extra_flags = 0, const ImVec2& default_size = ImVec2(-1, -1));
+// 'default_size', when positive, will be used as the initial size of the Window when in floating/undocked mode.
+// When the floating/undocked window is manually resized, the last modified window size is kept (and the passed argument is ignored).
+// If 'default_size' is negative, any manual resizing (of the floating window) will be lost when the window is re-docked.
+// Please note that if you LoadDock(...) the last saved value will be used (so 'default_size' can still be ignored).
+IMGUI_API bool BeginDock(const char* label, bool* opened = NULL, ImGuiWindowFlags extra_flags = 0, const ImVec2& default_size = ImVec2(0,0));
 IMGUI_API void EndDock();
 IMGUI_API void SetDockActive();
 IMGUI_API void DockDebugWindow();

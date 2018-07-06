@@ -894,9 +894,11 @@ struct SdfCharset {
         CharDescriptor lf;
         if (!Chars.get((unsigned int)'\n',lf)) {
             lf = sp;lf.Id='\n';lf.XAdvance=lf.Width=lf.XOffset=0.f;
+			Chars.put((unsigned int)'\n',lf);
         }
         if (!Chars.get((unsigned int)'\r',lf)) {
             lf = sp;lf.Id='\r';lf.XAdvance=lf.Width=lf.XOffset=0.f;
+			Chars.put((unsigned int)'\r',lf);
         }
         return true;
 

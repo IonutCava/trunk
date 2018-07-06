@@ -463,22 +463,22 @@ bool BinaryStringify(const char* input, int inputSize, ImVector<char>& output, i
     b.Buf.reserve(inputSize*7.5f);
     // -----------------------------------------------------------
     if (serializeUnsignedBytes) {
-        b.append("{%d",(int) (*((unsigned char*) &input[0])));  // start byte
+        b.appendf("{%d",(int) (*((unsigned char*) &input[0])));  // start byte
         int cnt=1;
         for (int i=1;i<inputSize;i++) {
-            if (cnt++>=numInputBytesPerLineInStringifiedMode) {cnt=0;b.append("\n");}
-            b.append(",%d",(int) (*((unsigned char*) &input[i])));
+            if (cnt++>=numInputBytesPerLineInStringifiedMode) {cnt=0;b.appendf("\n");}
+            b.appendf(",%d",(int) (*((unsigned char*) &input[i])));
         }
     }
     else {
-        b.append("{%d",(int)input[0]);  // start byte
+        b.appendf("{%d",(int)input[0]);  // start byte
         int cnt=1;
         for (int i=1;i<inputSize;i++) {
-            if (cnt++>=numInputBytesPerLineInStringifiedMode) {cnt=0;b.append("\n");}
-            b.append(",%d",(int)input[i]);
+            if (cnt++>=numInputBytesPerLineInStringifiedMode) {cnt=0;b.appendf("\n");}
+            b.appendf(",%d",(int)input[i]);
         }
     }
-    b.append("};\n");
+    b.appendf("};\n");
     //-------------------------------------------------------------
     b.Buf.swap(output);
     return true;

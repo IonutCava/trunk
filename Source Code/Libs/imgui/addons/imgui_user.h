@@ -73,6 +73,9 @@
 #   if (!defined(YES_IMGUIHELPER) && !defined(NO_IMGUIHELPER))
 #       define NO_IMGUIHELPER
 #   endif //YES_IMGUIHELPER
+#   if (!defined(YES_IMGUIVARIOUSCONTROLS) && !defined(NO_IMGUIVARIOUSCONTROLS))
+#       define NO_IMGUIVARIOUSCONTROLS
+#   endif //YES_IMGUIVARIOUSCONTROLS
 #endif // NO_IMGUI_ADDONS
 
 // Defining a custom placement new() with a dummy parameter allows us to bypass including <new> which on some platforms complains when user has disabled exceptions.

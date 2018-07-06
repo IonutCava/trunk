@@ -23,7 +23,7 @@
 // Code ported from another one of my projects (used a different GUI and worked like a charm!).
 // Now code is very dirty/buggy/terribly slow.
 // Many features don't work (e.g. text selection) and other are buggy (e.g. find text),
-// other are simply not implemented yet (e.g. 90% of the options in the context-menu).
+// Others are simply not implemented yet (e.g. 90% of the options in the context-menu).
 
 // But It's too much work for me for now to make it work like it should (these two files could be a stand-alone git repository by themselves!).
 

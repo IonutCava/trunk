@@ -361,7 +361,7 @@ namespace Divide {
             ImGui::PopStyleColor(2);
         }
 
-        ImTextureID LoadTextureFromMemory(Texture_ptr& target, const stringImpl& name, int width, int height, int channels, const unsigned char* pixels, bool useMipmapsIfPossible, bool wraps, bool wrapt, bool minFilterNearest, bool magFilterNearest) {
+        ImTextureID LoadTextureFromMemory(Texture_ptr& target, const stringImpl& name, int width, int height, int channels, const unsigned char* pixels, bool useMipmapsIfPossible=false, bool wraps=true, bool wrapt=true, bool minFilterNearest=false, bool magFilterNearest=false) {
         
             CLAMP(channels, 1, 4);
 
@@ -555,13 +555,15 @@ namespace Divide {
         }
 
         if (!ImGui::TabWindow::DockPanelIconTextureID) {
-            int dockPanelImageBufferSize = 0;
-            const unsigned char* dockPanelImageBuffer = ImGui::TabWindow::GetDockPanelIconImagePng(&dockPanelImageBufferSize);
+            ImVector<unsigned char> rgba_buffer;int w, h;
+            ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer, &w, &h);
             ImGui::TabWindow::DockPanelIconTextureID = 
                 LoadTextureFromMemory(_textures[to_base(TextureUsage::Dock)],
                                       "Docking Texture",
-                                      dockPanelImageBuffer,
-                                      dockPanelImageBufferSize);
+                                      w,
+                                      h,
+                                      4,
+                                      &rgba_buffer[0]);
         }
 
         ImGui::TabWindow::SetWindowContentDrawerCallback(&TabContentProvider, this); // Mandatory

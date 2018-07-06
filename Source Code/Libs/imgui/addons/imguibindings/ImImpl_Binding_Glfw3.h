@@ -156,9 +156,10 @@ static void glfw_mouse_button_callback(GLFWwindow* /*window*/, int button, int a
     io.KeyAlt = (mods & GLFW_MOD_ALT);
 
 }
-static void glfw_scroll_callback(GLFWwindow* /*window*/, double /*xoffset*/, double yoffset)	{
+static void glfw_scroll_callback(GLFWwindow* /*window*/, double xoffset, double yoffset)	{
     ImGuiIO& io = ImGui::GetIO();
-    io.MouseWheel = (yoffset != 0.0f) ? yoffset > 0.0f ? 1 : - 1 : 0;           // Mouse wheel: -1,0,+1
+    io.MouseWheel = (yoffset != 0.0f) ? (yoffset > 0.0f ? 1 : - 1) : 0;           // Mouse wheel: -1,0,+1
+    io.MouseWheelH = (xoffset != 0.0f) ? (xoffset > 0.0f ? 1 : - 1) : 0;      // Mouse wheel: -1,0,+1
 }
 static bool gImGuiCapsLockDown = false;
 static void glfw_key_callback(GLFWwindow* /*window*/, int key, int /*scancode*/, int action, int mods)	{
@@ -223,6 +224,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)	{
     io.KeyMap[ImGuiKey_PageDown] = GLFW_KEY_PAGE_DOWN;
     io.KeyMap[ImGuiKey_Home] = GLFW_KEY_HOME;
     io.KeyMap[ImGuiKey_End] = GLFW_KEY_END;
+    io.KeyMap[ImGuiKey_Insert] = GLFW_KEY_INSERT;
     io.KeyMap[ImGuiKey_Delete] = GLFW_KEY_DELETE;
     io.KeyMap[ImGuiKey_Backspace] = GLFW_KEY_BACKSPACE;
     io.KeyMap[ImGuiKey_Enter] = GLFW_KEY_ENTER;
@@ -475,8 +477,8 @@ static void ImImplMainLoopFrame(void* userPtr)	{
 
 
     if (!gImGuiPaused)	{
-        gImGuiWereOutsideImGui = !ImGui::IsMouseHoveringAnyWindow() && !ImGui::IsAnyItemActive();
-        const bool imguiNeedsInputNow = !gImGuiWereOutsideImGui && (io.WantTextInput || io.MouseDelta.x!=0 || io.MouseDelta.y!=0 || io.MouseWheel!=0);// || io.MouseDownOwned[0] || io.MouseDownOwned[1] || io.MouseDownOwned[2]);
+        gImGuiWereOutsideImGui = !ImGui::IsAnyWindowHovered() && !ImGui::IsAnyItemActive();
+        const bool imguiNeedsInputNow = !gImGuiWereOutsideImGui && (io.WantTextInput || io.MouseDelta.x!=0 || io.MouseDelta.y!=0 || io.MouseWheel!=0  || io.MouseWheelH!=0);// || io.MouseDownOwned[0] || io.MouseDownOwned[1] || io.MouseDownOwned[2]);
         if (gImGuiCapturesInput != imguiNeedsInputNow) {
             gImGuiCapturesInput = imguiNeedsInputNow;
              if (gImGuiDynamicFPSInsideImGui) {

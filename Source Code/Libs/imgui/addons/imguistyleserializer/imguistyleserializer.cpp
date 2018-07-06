@@ -91,7 +91,7 @@ bool SaveStyle(const char* filename,const ImGuiStyle& style)
     fprintf(f, "[DisplayWindowPadding]\n%1.3f %1.3f\n", style.DisplayWindowPadding.x,style.DisplaySafeAreaPadding.y);
     fprintf(f, "[DisplaySafeAreaPadding]\n%1.3f %1.3f\n", style.DisplaySafeAreaPadding.x,style.DisplaySafeAreaPadding.y);
     fprintf(f, "[AntiAliasedLines]\n%d\n", style.AntiAliasedLines?1:0);
-    fprintf(f, "[AntiAliasedShapes]\n%d\n", style.AntiAliasedShapes?1:0);
+    fprintf(f, "[AntiAliasedFill]\n%d\n", style.AntiAliasedFill?1:0);
     fprintf(f, "[CurveTessellationTol]\n%1.3f\n", style.CurveTessellationTol);
 
     for (size_t i = 0; i != ImGuiCol_COUNT; i++)
@@ -194,7 +194,7 @@ bool LoadStyle(const char* filename,ImGuiStyle& style)
 		else if (strcmp(name, "DisplayWindowPadding")==0)    {npf=2;pf[0]=&style.DisplayWindowPadding.x;pf[1]=&style.DisplayWindowPadding.y;}
                 else if (strcmp(name, "DisplaySafeAreaPadding")==0)    {npf=2;pf[0]=&style.DisplaySafeAreaPadding.x;pf[1]=&style.DisplaySafeAreaPadding.y;}
                 else if (strcmp(name, "AntiAliasedLines")==0)          {npb=1;pb[0]=&style.AntiAliasedLines;}
-                else if (strcmp(name, "AntiAliasedShapes")==0)          {npb=1;pb[0]=&style.AntiAliasedShapes;}
+		else if (strcmp(name, "AntiAliasedFill")==0 || strcmp(name, "AntiAliasedShapes")==0)          {npb=1;pb[0]=&style.AntiAliasedFill;}
                 else if (strcmp(name, "CurveTessellationTol")==0)               {npf=1;pf[0]=&style.CurveTessellationTol;}
                 // all the colors here
                 else {
@@ -400,7 +400,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
     case ImGuiStyle_Gray:
     {
 	style.AntiAliasedLines = true;
-	style.AntiAliasedShapes = true;
+	style.AntiAliasedFill = true;
 	style.CurveTessellationTol = 1.25f;
 	style.Alpha = 1.f;
 	//style.WindowFillAlphaDefault = .7f;
@@ -423,7 +423,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.82f, 0.82f, 0.82f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.16f, 0.16f, 0.18f, 0.70f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.00f, 0.00f, 0.00f, 0.60f);
 	style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.33f, 0.29f, 0.33f, 0.60f);
 	style.Colors[ImGuiCol_FrameBg]               = ImVec4(0.80f, 0.80f, 0.39f, 0.26f);
@@ -468,7 +468,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
     case ImGuiStyle_Light:
     {
 	style.AntiAliasedLines = true;
-	style.AntiAliasedShapes = true;
+	style.AntiAliasedFill = true;
 	style.CurveTessellationTol = 1.25f;
 	style.Alpha = 1.f;
 	//style.WindowFillAlphaDefault = .7f;
@@ -491,7 +491,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.00f, 0.00f, 0.00f, 0.71f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.56f, 0.56f, 0.56f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.99f, 1.00f, 0.71f, 0.10f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.99f, 1.00f, 0.71f, 0.10f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.51f, 0.63f, 0.63f, 0.92f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.14f, 0.14f, 0.14f, 0.51f);
 	style.Colors[ImGuiCol_BorderShadow]          = ImVec4(0.86f, 0.86f, 0.86f, 0.51f);
@@ -540,7 +540,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	//style.Colors[ImGuiCol_TextHovered]           = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	//style.Colors[ImGuiCol_TextActive]            = ImVec4(1.00f, 1.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.94f, 0.94f, 0.94f, 0.7f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
 	style.Colors[ImGuiCol_BorderShadow]          = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
 	style.Colors[ImGuiCol_FrameBg]               = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -592,7 +592,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
     case ImGuiStyle_DarkOpaque:
     case ImGuiStyle_DarkOpaqueInverse:	    {
 	style.AntiAliasedLines = true;
-	style.AntiAliasedShapes = true;
+	style.AntiAliasedFill = true;
 	style.CurveTessellationTol = 1.25f;
 	style.Alpha = 1.f;
 	//style.WindowFillAlphaDefault = .7f;
@@ -615,7 +615,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.73f, 0.73f, 0.73f, 0.39f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.18f, 0.18f, 0.18f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.01f, 0.04f, 0.00f, 1.00f);
 	//style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.04f, 0.04f, 0.04f, 0.51f);
@@ -669,7 +669,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.94f, 0.94f, 0.94f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.00f, 0.00f, 0.00f, 0.39f);
 	style.Colors[ImGuiCol_BorderShadow]          = ImVec4(1.00f, 1.00f, 1.00f, 0.10f);
 	style.Colors[ImGuiCol_FrameBg]               = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -746,7 +746,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.40f, 0.39f, 0.38f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.40f, 0.39f, 0.38f, 0.77f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.92f, 0.91f, 0.88f, 0.70f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(1.00f, 0.98f, 0.95f, 0.58f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(1.00f, 0.98f, 0.95f, 0.58f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.92f, 0.91f, 0.88f, 0.92f);
 	//style.Colors[ImGuiCol_ComboBg]               = ImVec4(1.00f, 0.98f, 0.95f, 1.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.84f, 0.83f, 0.80f, 0.65f);
@@ -796,7 +796,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.98f, 0.98f, 0.98f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.98f, 0.98f, 0.98f, 0.50f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.10f, 0.10f, 0.10f, 0.90f);
 	//style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.21f, 0.21f, 0.21f, 0.99f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.27f, 0.27f, 0.27f, 1.00f);
@@ -848,7 +848,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(1.00f, 1.00f, 1.00f, 0.00f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(1.00f, 1.00f, 1.00f, 0.92f);
 	//style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.96f, 0.96f, 0.96f, 0.92f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.73f, 0.73f, 0.73f, 0.65f);
@@ -904,7 +904,7 @@ bool ResetStyle(int styleEnum,ImGuiStyle& style) {
 	style.Colors[ImGuiCol_Text]                  = ImVec4(0.73f, 0.73f, 0.73f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg]              = ImVec4(0.26f, 0.26f, 0.26f, 0.95f);
-	style.Colors[ImGuiCol_ChildWindowBg]         = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
+	style.Colors[ImGuiCol_ChildBg]         = ImVec4(0.28f, 0.28f, 0.28f, 1.00f);
 	style.Colors[ImGuiCol_PopupBg]               = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
 	//style.Colors[ImGuiCol_ComboBg]               = ImVec4(0.32f, 0.32f, 0.32f, 1.00f);
 	style.Colors[ImGuiCol_Border]                = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);

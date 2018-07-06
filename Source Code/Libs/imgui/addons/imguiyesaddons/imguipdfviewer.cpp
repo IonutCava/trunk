@@ -861,7 +861,7 @@ bool PdfPagePanel::imageZoomAndPan(const ImVec2& size)
     // Here we use the whole size (although it can be partially empty)
     ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + size.x,window->DC.CursorPos.y + size.y));
     ItemSize(bb);
-    if (!ItemAdd(bb, NULL)) return rv;
+    if (!ItemAdd(bb, 0)) return rv;
 
     zoomedImageSize = size;
     ImVec2 remainingWndSize(0,0);
@@ -1239,13 +1239,13 @@ bool PdfPagePanel::render(const ImVec2& size,bool renderTopPanelToo) {
 
     // Static Stuff ========================================
     static int frameCnt = -1;
-    ImGuiState& g = *GImGui;
+    ImGuiContext& g = *GImGui;
     if (frameCnt!=g.FrameCount) {
         frameCnt=g.FrameCount;
         //---------------------
         static const char ContextMenuName[]="PdfPagePanelDefaultContextMenuName";
         if (PdfPagePanel::ContextMenuData.mustOpenContextMenu)    {
-            ImGuiState& g = *GImGui; while (g.OpenedPopupStack.size() > 0) g.OpenedPopupStack.pop_back();   // Close all existing context-menus
+            ImGuiContext& g = *GImGui; while (g.OpenPopupStack.size() > 0) g.OpenPopupStack.pop_back();   // Close all existing context-menus
             ImGui::OpenPopup(ContextMenuName);
             PdfPagePanel::ContextMenuData.mustOpenContextMenu = false;
         }

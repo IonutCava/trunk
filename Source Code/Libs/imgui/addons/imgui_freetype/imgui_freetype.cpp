@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 // Wrapper to use Freetype (instead of stb_truetype) for Dear ImGui
 // Get latest version at http://www.github.com/ocornut/imgui_club
 // Original code by @Vuhdo (Aleksei Skriabin)
@@ -9,6 +7,7 @@
 // - v0.51: (2017/08/26) cleanup, optimizations, support for ImFontConfig::RasterizerFlags, ImFontConfig::RasterizerMultiply.
 // - v0.52: (2017/09/26) fixes for imgui internal changes
 // - v0.53: (2017/10/22) minor inconsequential change to match change in master (removed an unnecessary statement)
+// - v0.54: (2018/01/22) fix for addition of ImFontAtlas::TexUvscale member
 
 // Todo/Bugs:
 // - Font size has lots of waste.
@@ -245,7 +244,8 @@ bool ImGuiFreeType::BuildFontAtlas(ImFontAtlas* atlas, unsigned int extra_flags)
 
     atlas->TexID = NULL;
     atlas->TexWidth = atlas->TexHeight = 0;
-    atlas->TexUvWhitePixel = ImVec2(0, 0);
+    atlas->TexUvScale = ImVec2(0.0f, 0.0f);
+    atlas->TexUvWhitePixel = ImVec2(0.0f, 0.0f);
     atlas->ClearTexData();
 
     ImVector<FreeTypeFont> fonts;
@@ -289,6 +289,7 @@ bool ImGuiFreeType::BuildFontAtlas(ImFontAtlas* atlas, unsigned int extra_flags)
 
     // Create texture
     atlas->TexHeight = ImUpperPowerOfTwo(atlas->TexHeight);
+    atlas->TexUvScale = ImVec2(1.0f / atlas->TexWidth, 1.0f / atlas->TexHeight);
     atlas->TexPixelsAlpha8 = (unsigned char*)ImGui::MemAlloc(atlas->TexWidth * atlas->TexHeight);
     memset(atlas->TexPixelsAlpha8, 0, atlas->TexWidth * atlas->TexHeight);
 

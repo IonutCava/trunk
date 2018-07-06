@@ -289,6 +289,7 @@ void DrawGL()	// Mandatory
     static bool show_performance = false;
     static bool show_mine_game = false;
     static bool show_sudoku_game = false;
+    static bool show_fifteen_game = false;
     static bool show_image_editor = false;
 
     // 1. Show a simple window
@@ -324,13 +325,13 @@ void DrawGL()	// Mandatory
         show_dock_window ^= ImGui::Button("ImGui Dock");
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","An example of imguidock\n(LumixEngine's Docking System)");
 #       endif //NO_IMGUIDOCK
-        ImGui::EndGroup();
-        ImGui::SameLine();
-        ImGui::BeginGroup();
 #       ifndef NO_IMGUITABWINDOW
         show_tab_windows ^= ImGui::Button("ImGui Tab Window");
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","An (incomplete) example of using\nthe imguitabwindow addon.\nMore on this in the second demo (main2.cpp)");
 #       endif //NO_IMGUITABWINDOW
+        ImGui::EndGroup();
+        ImGui::SameLine();
+        ImGui::BeginGroup();
         show_performance ^= ImGui::Button("Show performance");
         if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Performance Window.\nShows the frame rate and the\n number of texture switches per frame");
 #       ifdef YES_IMGUIMINIGAMES
@@ -342,6 +343,10 @@ void DrawGL()	// Mandatory
             show_sudoku_game ^= ImGui::Button("ImGui Sudoku Game");
             if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Another example from the\nimguiminigames yes_addon");
 #           endif //NO_IMGUIMINIGAMES_SUDOKU
+#           ifndef NO_IMGUIMINIGAMES_FIFTEEN
+            show_fifteen_game ^= ImGui::Button("ImGui Fifteen Game");
+            if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s","Another example from the\nimguiminigames yes_addon");
+#           endif //NO_IMGUIMINIGAMES_FIFTEEN
 #       endif //YES_IMGUIMINIGAMES
 #       ifdef YES_IMGUIIMAGEEDITOR
             show_image_editor ^= ImGui::Button("ImGui Image Editor");
@@ -1329,34 +1334,32 @@ void DrawGL()	// Mandatory
         if (selectedTab==0) ImGui::TabLabelStyle::Edit(ImGui::TabLabelStyle().Get());
         ImGui::EndChild();
 
-#	    ifdef IMGUIHELPER_HAS_VERTICAL_TEXT_SUPPORT	// read-only definition
-	// ImGui::TabLabelsVertical() are similiar to ImGui::TabLabels(), but they do not support WrapMode.
+        // ImGui::TabLabelsVertical() are similiar to ImGui::TabLabels(), but they do not support WrapMode.
+        // ImGui::TabLabelsVertical() example usage
+        static bool verticalTabLabelsAtLeft = true;ImGui::Checkbox("Vertical Tab Labels at the left side##VerticalTabLabelPosition",&verticalTabLabelsAtLeft);
+        static const char* verticalTabNames[] = {"Layers","Scene","World"};
+        static const int numVerticalTabs = sizeof(verticalTabNames)/sizeof(verticalTabNames[0]);
+        static const char* verticalTabTooltips[numVerticalTabs] = {"Layers Tab Tooltip","Scene Tab Tooltip","World Tab Tooltip"};
+        static int verticalTabItemOrdering[numVerticalTabs] = {0,1,2};
+        static int selectedVerticalTab = 0;
+        static int optionalHoveredVerticalTab = 0;
+        if (resetTabLabels) {selectedVerticalTab=0;for (int i=0;i<numVerticalTabs;i++) verticalTabItemOrdering[i] = i;}
 
-    static bool verticalTabLabelsAtLeft = true;ImGui::Checkbox("Vertical Tab Labels at the left side##VerticalTabLabelPosition",&verticalTabLabelsAtLeft);
-    static const char* verticalTabNames[] = {"Layers","Scene","World"};
-	static const int numVerticalTabs = sizeof(verticalTabNames)/sizeof(verticalTabNames[0]);
-    static const char* verticalTabTooltips[numVerticalTabs] = {"Layers Tab Tooltip","Scene Tab Tooltip","World Tab Tooltip"};
-    static int verticalTabItemOrdering[numVerticalTabs] = {0,1,2};
-	static int selectedVerticalTab = 0;
-	static int optionalHoveredVerticalTab = 0;
-    if (resetTabLabels) {selectedVerticalTab=0;for (int i=0;i<numVerticalTabs;i++) verticalTabItemOrdering[i] = i;}
-
-	const float verticalTabsWidth = ImGui::CalcVerticalTabLabelsWidth();
-	if (verticalTabLabelsAtLeft)	{
-	    /*const bool verticalTabSelectedChanged =*/ ImGui::TabLabelsVertical(verticalTabLabelsAtLeft,numVerticalTabs,verticalTabNames,selectedVerticalTab,verticalTabTooltips,&optionalHoveredVerticalTab,&verticalTabItemOrdering[0],allowTabLabelDragAndDrop,allowClosingTabs,NULL,NULL);
-	    //if (optionalHoveredVerticalTab>=0) ImGui::Text("Mouse is hovering Tab Label: \"%s\".\n\n",verticalTabNames[optionalHoveredVerticalTab]);
-	    ImGui::SameLine(0,0);
-	}
-	// Draw tab page
-	ImGui::BeginChild("MyVerticalTabLabelsChild",ImVec2(ImGui::GetWindowWidth()-verticalTabsWidth-2.f*ImGui::GetStyle().WindowPadding.x-ImGui::GetStyle().ScrollbarSize,150),true);
-    ImGui::Text("Tab Page For Tab: \"%s\" here.",selectedVerticalTab>=0?verticalTabNames[selectedVerticalTab]:"None!");
-	ImGui::EndChild();
-	if (!verticalTabLabelsAtLeft)	{
-	    ImGui::SameLine(0,0);
-	    /*const bool verticalTabSelectedChanged =*/ ImGui::TabLabelsVertical(verticalTabLabelsAtLeft,numVerticalTabs,verticalTabNames,selectedVerticalTab,verticalTabTooltips,&optionalHoveredVerticalTab,&verticalTabItemOrdering[0],allowTabLabelDragAndDrop,allowClosingTabs,NULL,NULL);
-	    //if (optionalHoveredVerticalTab>=0) ImGui::Text("Mouse is hovering Tab Label: \"%s\".\n\n",verticalTabNames[optionalHoveredVerticalTab]);
-	}
-#	    endif //IMGUIHELPER_HAS_VERTICAL_TEXT_SUPPORT
+        const float verticalTabsWidth = ImGui::CalcVerticalTabLabelsWidth();
+        if (verticalTabLabelsAtLeft)	{
+            /*const bool verticalTabSelectedChanged =*/ ImGui::TabLabelsVertical(verticalTabLabelsAtLeft,numVerticalTabs,verticalTabNames,selectedVerticalTab,verticalTabTooltips,&optionalHoveredVerticalTab,&verticalTabItemOrdering[0],allowTabLabelDragAndDrop,allowClosingTabs,NULL,NULL);
+            //if (optionalHoveredVerticalTab>=0) ImGui::Text("Mouse is hovering Tab Label: \"%s\".\n\n",verticalTabNames[optionalHoveredVerticalTab]);
+            ImGui::SameLine(0,0);
+        }
+        // Draw tab page
+        ImGui::BeginChild("MyVerticalTabLabelsChild",ImVec2(ImGui::GetWindowWidth()-verticalTabsWidth-2.f*ImGui::GetStyle().WindowPadding.x-ImGui::GetStyle().ScrollbarSize,150),true);
+        ImGui::Text("Tab Page For Tab: \"%s\" here.",selectedVerticalTab>=0?verticalTabNames[selectedVerticalTab]:"None!");
+        ImGui::EndChild();
+        if (!verticalTabLabelsAtLeft)	{
+            ImGui::SameLine(0,0);
+            /*const bool verticalTabSelectedChanged =*/ ImGui::TabLabelsVertical(verticalTabLabelsAtLeft,numVerticalTabs,verticalTabNames,selectedVerticalTab,verticalTabTooltips,&optionalHoveredVerticalTab,&verticalTabItemOrdering[0],allowTabLabelDragAndDrop,allowClosingTabs,NULL,NULL);
+            //if (optionalHoveredVerticalTab>=0) ImGui::Text("Mouse is hovering Tab Label: \"%s\".\n\n",verticalTabNames[optionalHoveredVerticalTab]);
+        }
 
 #       else //NO_IMGUITABWINDOW
         ImGui::Text("%s","Excluded from this build.\n");
@@ -1366,16 +1369,28 @@ void DrawGL()	// Mandatory
         // BadCodeEditor Test:
     if (ImGui::TreeNodeEx("imguicodeeditor",ImGuiTreeNodeFlags_CollapsingHeader)) {
         ImGui::TreePop();
-#       ifndef NO_IMGUITABWINDOW
+#       ifndef NO_IMGUICODEEDITOR
         ImGui::Text("ImGui::InputTextWithSyntaxHighlighting(...) [Experimental] (CTRL+MW: zoom):");
+        ImGui::TextDisabled("[New] Experimental dynamic string support (see code)");
         ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.35f);
         static int languageIndex = (int) ImGuiCe::LANG_CPP;
         ImGui::Combo("Language##BCE_LanguageCombo",&languageIndex,ImGuiCe::GetLanguageNames(),(int)ImGuiCe::LANG_COUNT);
         ImGui::PopItemWidth();
+
         static const char* myCode="# include <sadd.h>\n\nusing namespace std;\n\n//This is a comment\nclass MyClass\n{\npublic:\nMyClass() {}\nvoid Init(int num)\n{  // for loop\nfor (int t=0;t<20;t++)\n	{\n     mNum=t; /* setting var */\n     const float myFloat = 1.25f;\n      break;\n	}\n}\n\nprivate:\nint mNum;\n};\n\nstatic const char* SomeStrings[] = {\"One\"/*Comment One*//*Comment*/,\"Two /*Fake Comment*/\",\"Three\\\"Four\"};\n\nwhile (i<25 && i>=0)   {\n\ti--;\nbreak;} /*comment*/{/*This should not fold*/}/*comment2*/for (int i=0;i<20;i++)    {\n\t\t\tcontinue;//OK\n} // end second folding\n\nfor (int j=0;j<200;j++)  {\ncontinue;}\n\n//region Custom Region Here\n{\n//something inside here\n}\n//endregion\n\n/*\nMultiline\nComment\nHere\n*/\n\n/*\nSome Unicode Characters here:\n€€€€\n*/\n\n";
+        /*
+        // This works with a static buffer (fixed-size)
         static char bceBuffer[1024]="";
-        if (bceBuffer[0]=='\0') strcpy(bceBuffer,myCode);   //Bad init (use initGL() to fill the buffer
+        if (bceBuffer[0]=='\0') strcpy(bceBuffer,myCode);   //Bad init (use initGL() to fill the buffer)
         ImGui::InputTextWithSyntaxHighlighting("ITWSH_JustForID",bceBuffer,sizeof(bceBuffer),(ImGuiCe::Language)languageIndex,ImVec2(0,300));
+        */
+        // This "works"(?) with a ImString (dynamic-size)
+        // Tip: ImString is std::string when IMGUISTRING_STL_FALLBACK is defined globally (or at the top of addons/imguistring/imguistring.h)
+        static ImString myCodeString = myCode;
+        static ImGuiID codeEditorID = 0;   // Needs to be static and set to zero (one per input text)
+        ImGui::InputTextWithSyntaxHighlighting(codeEditorID,myCodeString,(ImGuiCe::Language)languageIndex,ImVec2(0,300));
+        // Known problem I'm not going to fix: You must use strlen(myCodeString.c_str()) to find the text size, since myCodeString.size() might be bigger
+        // Won't fix this because otherwise Undo/Redo can't have enough space to work.
 #       else //NO_IMGUICODEEDITOR
         ImGui::Text("%s","Excluded from this build.\n");
 #       endif //NO_IMGUICODEEDITOR
@@ -1585,47 +1600,61 @@ void DrawGL()	// Mandatory
         static SoLoud::Soloud soloud; // Engine core
 
         static bool soloudEnabled = false;
-        if (!soloudEnabled && ImGui::Checkbox("Start SoLoud Test",&soloudEnabled))    {
+        if (soloudEnabled)  {
+            if (ImGui::Button("Stop SoLoud Test")) {
+                soloudEnabled=false;
+                //soloud.stopAll(); // For some odd reasons, if I stop all, then I cannot restart piano (tested WITH_OPENAL only)
+                soloud.deinit();
+            }
+        }
+        else if (ImGui::Button("Start SoLoud Test")) {
+            soloudEnabled = true;
             soloud.init();// Initialize SoLoud (the opposite should be: soloud.stopAll();soloud.deinit();)
             //soloud.setVisualizationEnable(1); // enable visualization for FFT calc
 
+            // START SOME DEMO SOUNDS HERE ==================================
+            {
 #           ifndef NO_IMGUISOLOUD_WAV   // Wav audiosource (SoLoud::WavStream and SoLoud::Wav (i.e. .wav,.ogg) is enabled by default. All the rest must be manually enabled a.t.p.l.)
-            // Here we play some files soon after initing SoLoud:
-            static SoLoud::WavStream ogg; // (SoLoud::Wav still works with ogg too)
-            ogg.load("tetsno.ogg");       // Load an ogg file in streaming mode
-            soloud.play(ogg);
+                // Here we play some files soon after initing SoLoud:
+                static SoLoud::WavStream ogg; // (SoLoud::Wav still works with ogg too)
+                ogg.load("tetsno.ogg");       // Load an ogg file in streaming mode
+                soloud.play(ogg);
 
-            static SoLoud::Wav wav;                 // One sample source
-            wav.load("AKWF_c604_0024.wav");       // Load a wave file
-            //wav.setLooping(1);                          // Tell SoLoud to loop the sound
-            /*int handle1 = */soloud.play(wav);             // Play it
-            //soloud.setVolume(handle1, 0.5f);            // Set volume; 1.0f is "normal"
-            //soloud.setPan(handle1, -0.2f);              // Set pan; -1 is left, 1 is right
-            //soloud.setRelativePlaySpeed(handle1, 0.9f); // Play a bit slower; 1.0f is normal
+                static SoLoud::Wav wav;                 // One sample source
+                wav.load("AKWF_c604_0024.wav");       // Load a wave file
+                //wav.setLooping(1);                          // Tell SoLoud to loop the sound
+                /*int handle1 = */soloud.play(wav);             // Play it
+                //soloud.setVolume(handle1, 0.5f);            // Set volume; 1.0f is "normal"
+                //soloud.setPan(handle1, -0.2f);              // Set pan; -1 is left, 1 is right
+                //soloud.setRelativePlaySpeed(handle1, 0.9f); // Play a bit slower; 1.0f is normal
 #           endif //NO_IMGUISOLOUD_WAV
 
-/*          // These should work too (AFAIK), but audio files are missing...
+            // These should work too (AFAIK), but audio files are missing...
+            /*
 #           ifdef YES_IMGUISOLOUD_MODPLUG
-            static SoLoud::Modplug mod;
-            mod.load("audio/BRUCE.S3M");
-            soloud.play(mod);
+                static SoLoud::Modplug mod;
+                mod.load("audio/BRUCE.S3M");
+                soloud.play(mod);
 #           endif //YES_IMGUISOLOUD_MODPLUG
 #           ifdef YES_IMGUISOLOUD_MONOTONE
-            static SoLoud::Monotone mon;
-            mon.load("audio/Jakim - Aboriginal Derivatives.mon");
-            soloud.play(mon);
+                static SoLoud::Monotone mon;
+                mon.load("audio/Jakim - Aboriginal Derivatives.mon");
+                soloud.play(mon);
 #           endif //YES_IMGUISOLOUD_MONOTONE
 #           ifdef YES_IMGUISOLOUD_TEDSID
-            static SoLoud::TedSid ted;
-            ted.load("audio/ted_storm.prg.dump");
-            soloud.play(ted);
-            static SoLoud::TedSid sid;
-            sid.load("audio/Modulation.sid.dump");
-            soloud.play(sid);
+                static SoLoud::TedSid ted;
+                ted.load("audio/ted_storm.prg.dump");
+                soloud.play(ted);
+                static SoLoud::TedSid sid;
+                sid.load("audio/Modulation.sid.dump");
+                soloud.play(sid);
 #           endif //YES_IMGUISOLOUD_TEDSID
-*/
+            */
             // (soloud.getVoiceCount()==0) can be used to check if any sound is playing
+            }
+            // ==============================================================
         }
+
         if (soloudEnabled && ImGui::TreeNode("SoLoud Stuff"))   {
             // extra sources need additional definitions (at the project level not here), unless you define YES_IMGUISOLOUD_ALL (a.t.p.l. not here).
             // For example:
@@ -1660,6 +1689,37 @@ void DrawGL()	// Mandatory
                 soloud.play(speech);    // Play the sound source (we could do this several times if we wanted)
             }
 #           endif //YES_IMGUISOLOUD_SPEECH
+#           if  (!defined(NO_IMGUIFILESYSTEM) && !defined(NO_IMGUIHELPER)  && !defined(NO_IMGUIHELPER_SERIALIZATION) && !defined(NO_IMGUIHELPER_SERIALIZATION_LOAD))
+#           ifdef YES_IMGUISOLOUD_MODPLUG
+            {
+                // Load dialog
+                static ImGuiFs::Dialog loadDlg;
+                ImGui::AlignFirstTextHeightToWidgets();
+                ImGui::Text("Mod File:");ImGui::SameLine();
+                ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.35f);
+                ImGui::InputText("###ModFiletoplayloadID",(char*)loadDlg.getChosenPath(),ImGuiFs::MAX_PATH_BYTES,ImGuiInputTextFlags_ReadOnly);
+                ImGui::PopItemWidth();
+                ImGui::SameLine(0,0);
+                const bool browseButton = ImGui::Button("...##ModFiletoplayloadbuttonID");
+                if (ImGui::IsItemHovered()) ImGui::SetTooltip("Supported extensions:\n\"%s\"\n(but .mid and .abc files require additional setup to work).",SoLoud::Modplug::SupportedExtensions);
+                loadDlg.chooseFileDialog(browseButton,loadDlg.getLastDirectory(),SoLoud::Modplug::SupportedExtensions);
+                const bool filePathToStringifyIsValid = strlen(loadDlg.getChosenPath())>0;
+                ImGui::SameLine(0.f,50.f);
+                static SoLoud::Modplug mod;
+                if (ImGui::Button("Play##ModPlayButton")) {
+                    if (filePathToStringifyIsValid && ImGuiFs::FileExists(loadDlg.getChosenPath()))   {
+                        soloud.stopAudioSource(mod);
+                        mod.load(loadDlg.getChosenPath());
+                        soloud.play(mod);
+                    }
+                }
+                ImGui::SameLine(0,0);
+                if (ImGui::Button("Stop##ModStopButton")) {
+                    soloud.stopAudioSource(mod);
+                }
+            }
+#           endif //YES_IMGUISOLOUD_MODPLUG
+#           endif //!defined(NO_IMGUIFILESYSTEM)
 #           ifdef IMGUISOLOUD_HAS_BASICPIANO    // This is an automatic definition (that depends on other definitions)
             const bool pianoEnabled = ImGui::TreeNode("Play piano using the PC keyboard");
             if (ImGui::IsItemHovered()) {
@@ -1676,7 +1736,7 @@ void DrawGL()	// Mandatory
 
                 ImGui::TreePop();
             }
-#           endif
+#           endif //IMGUISOLOUD_HAS_BASICPIANO
             ImGui::TreePop();
         }
         ImGui::TreePop();
@@ -1759,7 +1819,7 @@ void DrawGL()	// Mandatory
     if (show_test_window)
     {
         //ImGui::SetNewWindowDefaultPos(ImVec2(650, 20));        // Normally user code doesn't need/want to call this, because positions are saved in .ini file. Here we just want to make the demo initial state a bit more friendly!
-        ImGui::ShowTestWindow(&show_test_window);
+        ImGui::ShowDemoWindow(&show_test_window);
     }
 #   endif // NO_IMGUISTYLESERIALIZER
 #   ifndef NO_IMGUINODEGRAPHEDITOR
@@ -1842,7 +1902,8 @@ void DrawGL()	// Mandatory
             }
 //=========== OPTIONAL STUFF ===================================================
             static bool draggingLookOpen = true;    // With this next dock has a close button (but its state is not serializable AFAIK)
-            if (ImGui::BeginDock("Dragging Look",&draggingLookOpen))    {
+            // We're also passing a 'default_size' as initial size of the window once undocked
+            if (ImGui::BeginDock("Dragging Look",&draggingLookOpen,0,ImVec2(200,350)))    {
                 ImGui::Checkbox("Textured##imguidockDraggingLook",&gImGuiDockReuseTabWindowTextureIfAvailable);
             }
             ImGui::EndDock();
@@ -1938,7 +1999,7 @@ void DrawGL()	// Mandatory
 #   ifdef YES_IMGUIMINIGAMES
 #   ifndef NO_IMGUIMINIGAMES_MINE
     if (show_mine_game) {
-        if (ImGui::Begin("Mine Game",&show_mine_game,ImVec2(600,400),.95f,ImGuiWindowFlags_NoScrollbar))  {
+        if (ImGui::Begin("Mine Game",&show_mine_game,ImVec2(400,400),.95f,ImGuiWindowFlags_NoScrollbar))  {
             static ImGuiMiniGames::Mine mineGame;
             mineGame.render();
         }
@@ -1947,13 +2008,22 @@ void DrawGL()	// Mandatory
 #   endif //NO_IMGUIMINIGAMES_MINE
 #   ifndef NO_IMGUIMINIGAMES_SUDOKU
     if (show_sudoku_game) {
-        if (ImGui::Begin("Sdoku Game",&show_sudoku_game,ImVec2(600,400),.95f,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))  {
+        if (ImGui::Begin("Sudoku Game",&show_sudoku_game,ImVec2(400,400),.95f,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))  {
             static ImGuiMiniGames::Sudoku sudokuGame;
             sudokuGame.render();
         }
         ImGui::End();
     }
 #   endif //NO_IMGUIMINIGAMES_SUDOKU
+#   ifndef NO_IMGUIMINIGAMES_FIFTEEN
+    if (show_fifteen_game) {
+        if (ImGui::Begin("Fifteen Game",&show_fifteen_game,ImVec2(400,400),.95f,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse))  {
+            static ImGuiMiniGames::Fifteen fifteenGame;
+            fifteenGame.render();
+        }
+        ImGui::End();
+    }
+#   endif //NO_IMGUIMINIGAMES_FIFTEEN
 #   endif //YES_IMGUIMINIGAMES
 #   ifdef YES_IMGUIIMAGEEDITOR
     if (show_image_editor)  {
@@ -2091,8 +2161,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,LPSTR lpCmdLine,
                                   //-40.f; // If < 0, it's the number of lines that fit the whole screen (but without any kind of vertical spacing)
     ImFontConfig cfg;
 #   ifdef IMIMPL_BUILD_SDF
-    cfg.OversampleH=1;cfg.OversampleV=1;    // signed distance fonts works better when these values are equal (default: 3,1 are not equal)
-	//ImImpl_SdfShaderSetParams(ImVec4(0.460f,0.365f,0.120f,0.04f));	// (optional) Sets sdf params
+    cfg.OversampleH=cfg.OversampleV=1;    // signed distance fonts works better when these values are equal (default: 3,1 are not equal)
+    //ImImpl_SdfShaderSetParams(ImVec4(0.460f,0.365f,0.120f,0.04f));	// (optional) Sets sdf params
 #   endif //IMIMPL_BUILD_SDF
 
 
@@ -2154,20 +2224,20 @@ void PerformCppSQLiteTest(ImGuiTextBuffer& rv,int nRowsToCreate) {
     try {
 	int i,fld,nRows;
 	DB db;
-    rv.append("SQLite Version: %s\n",db.SQLiteVersion());
+    rv.appendf("SQLite Version: %s\n",db.SQLiteVersion());
 	remove(dbFileName);     // from stdio.h (I must admit I've never used it: does it delete the file ?)
 
-    rv.append("Performed test at http://www.codeproject.com/Articles/6343/CppSQLite-C-Wrapper-for-SQLite.\n\n");
+    rv.appendf("Performed test at http://www.codeproject.com/Articles/6343/CppSQLite-C-Wrapper-for-SQLite.\n\n");
 
 	db.open(dbFileName);    // it opens or creates the db
 	db.execDML("create table emp(empno int, empname char(20));");   // Creates emp table with a int (empno) and a char(20) (empname)
-    nRows = db.execDML("insert into emp values (7, 'David Beckham');");                 rv.append("nRows = %d\n",nRows);
-    nRows = db.execDML("update emp set empname = 'Christiano Ronaldo' where empno = 7;");   rv.append("%d rows updated\n",nRows);
-    nRows = db.execDML("delete from emp where empno = 7;");                                 rv.append("%d rows deleted\n",nRows);
+    nRows = db.execDML("insert into emp values (7, 'David Beckham');");                 rv.appendf("nRows = %d\n",nRows);
+    nRows = db.execDML("update emp set empname = 'Christiano Ronaldo' where empno = 7;");   rv.appendf("%d rows updated\n",nRows);
+    nRows = db.execDML("delete from emp where empno = 7;");                                 rv.appendf("%d rows deleted\n",nRows);
 
 	// Transaction Demo [The transaction could just as easily have been rolled back]
 	clock_t ckStart,ckEnd;
-    rv.append("\nTransaction test, creating %d rows please wait...\n",nRowsToCreate);
+    rv.appendf("\nTransaction test, creating %d rows please wait...\n",nRowsToCreate);
 	ckStart = clock();
 	db.execDML("begin transaction;");
 	for (i = 0; i < nRowsToCreate; i++) {
@@ -2178,12 +2248,12 @@ void PerformCppSQLiteTest(ImGuiTextBuffer& rv,int nRowsToCreate) {
 	db.execDML("commit transaction;");
 	ckEnd = clock();
 	// Demonstrate CppSQLite::DB::execScalar()
-    rv.append("%d rows in emp table in %1.3f seconds (it was fast!)\n",db.execScalar("select count(*) from emp;"),(float)(ckEnd-ckStart)/(float)CLOCKS_PER_SEC);
+    rv.appendf("%d rows in emp table in %1.3f seconds (it was fast!)\n",db.execScalar("select count(*) from emp;"),(float)(ckEnd-ckStart)/(float)CLOCKS_PER_SEC);
 
 	// Pre-compiled Statements Demo
 	db.execDML("drop table emp;");	// SQLITE_LOCKED[6]: database table is locked.
 	db.execDML("create table emp(empno int, empname char(20));");
-    rv.append("\nTransaction test with pre-compiled statements, creating %d rows please wait...\n",nRowsToCreate);
+    rv.appendf("\nTransaction test with pre-compiled statements, creating %d rows please wait...\n",nRowsToCreate);
 	ckStart = clock();
 	db.execDML("begin transaction;");
 	Statement stmt = db.compileStatement("insert into emp values (?, ?);");
@@ -2197,10 +2267,10 @@ void PerformCppSQLiteTest(ImGuiTextBuffer& rv,int nRowsToCreate) {
 	}
 	db.execDML("commit transaction;");
 	ckEnd = clock();
-    rv.append("%d rows in emp table in %1.3f seconds (that was even faster!)\n",db.execScalar("select count(*) from emp;"),(float)(ckEnd-ckStart)/(float)CLOCKS_PER_SEC);
+    rv.appendf("%d rows in emp table in %1.3f seconds (that was even faster!)\n",db.execScalar("select count(*) from emp;"),(float)(ckEnd-ckStart)/(float)CLOCKS_PER_SEC);
 
 	// Re-create emp table with auto-increment field
-    rv.append("\nAuto increment test\n");
+    rv.appendf("\nAuto increment test\n");
 	db.execDML("drop table emp;");
 	db.execDML("create table emp(empno integer primary key, empname char(20));");
 
@@ -2208,53 +2278,53 @@ void PerformCppSQLiteTest(ImGuiTextBuffer& rv,int nRowsToCreate) {
 	    char buf[128];
 	    sprintf(buf,"insert into emp (empname) values ('Empname%06d');", i+1);
 	    db.execDML(buf);
-        rv.append(" primary key: %ld\n",(long)db.lastRowId());
+        rv.appendf(" primary key: %ld\n",(long)db.lastRowId());
 	}
 
 	// Query data and also show results of inserts into auto-increment field
-    rv.append("\nSelect statement test\n");
+    rv.appendf("\nSelect statement test\n");
 	Query q = db.execQuery("select * from emp order by 1;");
 	for (fld = 0; fld < q.numFields(); fld++)   {
-        rv.append("%s(%s)|",q.fieldName(fld),q.fieldDeclType(fld));   // It was fieldType(fld)...
+        rv.appendf("%s(%s)|",q.fieldName(fld),q.fieldDeclType(fld));   // It was fieldType(fld)...
 	}
-    rv.append("\n");
+    rv.appendf("\n");
 	while (!q.eof())    {
-        rv.append("	%s	|   %s	    |\n",q.fieldValue(0),q.fieldDeclType(1));   // It was fieldType(fld)...
+        rv.appendf("	%s	|   %s	    |\n",q.fieldValue(0),q.fieldDeclType(1));   // It was fieldType(fld)...
 	    q.nextRow();
 	}
 
 	// SQLite's printf() functionality. Handles embedded quotes and NULLs
-    rv.append("\nSQLite sprintf test\n");
+    rv.appendf("\nSQLite sprintf test\n");
 	Buffer bufSQL;
 	bufSQL.format("insert into emp (empname) values (%Q);", "He's bad");
-    rv.append("%s\n",(const char*)bufSQL);
+    rv.appendf("%s\n",(const char*)bufSQL);
 	db.execDML(bufSQL);
 
 	bufSQL.format("insert into emp (empname) values (%Q);", NULL);
-    rv.append("%s\n",(const char*)bufSQL);
+    rv.appendf("%s\n",(const char*)bufSQL);
 	db.execDML(bufSQL);
 
 	// Fetch table at once, and also show how to
 	// use CppSQLite::Table::setRow() method
-    rv.append("\ngetTable() test\n");
+    rv.appendf("\ngetTable() test\n");
 	Table t = db.getTable("select * from emp order by 1;");
 
 	for (fld = 0; fld < t.numFields(); fld++)   {
-        rv.append("%s	|",t.fieldName(fld));
+        rv.appendf("%s	|",t.fieldName(fld));
 	}
-    rv.append("\n");
+    rv.appendf("\n");
 	for (int row = 0; row < t.numRows(); row++) {
 	    t.setRow(row);
 	    for (int fld = 0; fld < t.numFields(); fld++)   {
-        if (!t.fieldIsNull(fld))    rv.append("	%s	|",t.fieldValue(fld));
-        else rv.append("	NULL			|");
+        if (!t.fieldIsNull(fld))    rv.appendf("	%s	|",t.fieldValue(fld));
+        else rv.appendf("	NULL			|");
 	    }
-        rv.append("\n");
+        rv.appendf("\n");
 	}
 
 	// Test CppSQLite::Binary by storing/retrieving some binary data, checking
 	// it afterwards to make sure it is the same
-    rv.append("\nBinary data test\n");
+    rv.appendf("\nBinary data test\n");
 	db.execDML("create table bindata(desc char(10), data blob);");
 
 	unsigned char bin[256];
@@ -2265,27 +2335,27 @@ void PerformCppSQLiteTest(ImGuiTextBuffer& rv,int nRowsToCreate) {
 	bufSQL.format("insert into bindata values ('testing', %Q);",
 		      blob.getEncoded());
 	db.execDML(bufSQL);
-    rv.append("Stored binary Length: %d\n",sizeof bin);
+    rv.appendf("Stored binary Length: %d\n",sizeof bin);
 
 	q = db.execQuery("select data from bindata where desc = 'testing';");
 	if (!q.eof())   {
 	    blob.setEncoded((unsigned char*)q.fieldValue("data"));
-        rv.append("Retrieved binary Length: %d\n",blob.getBinaryLength());
+        rv.appendf("Retrieved binary Length: %d\n",blob.getBinaryLength());
 	}
 
 	const unsigned char* pbin = blob.getBinary();
 	for (i = 0; i < (int) sizeof bin; i++)
 	{
 	    if (pbin[i] != i)   {
-        rv.append("Problem: i: ,%d bin[i]: %d\n",i,(int)pbin[i]);
+        rv.appendf("Problem: i: ,%d bin[i]: %d\n",i,(int)pbin[i]);
 	    }
 	}
 
-    rv.append("\nEnd of tests\n");
+    rv.appendf("\nEnd of tests\n");
     }
     catch (CppSQLite3::Exception& e)
     {
-    rv.append("Exception thrown. Code: %d. Message: %s.\n",e.errorCode(),e.errorMessage());
+    rv.appendf("Exception thrown. Code: %d. Message: %s.\n",e.errorCode(),e.errorMessage());
     }
 }
 #endif //YES_IMGUISQLITE3

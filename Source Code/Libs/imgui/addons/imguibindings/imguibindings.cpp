@@ -542,9 +542,9 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
 // We overuse this method to load textures from other imgui addons
 #   ifndef NO_IMGUITABWINDOW
     if (!ImGui::TabWindow::DockPanelIconTextureID)  {
-        int dockPanelImageBufferSize = 0;
-        const unsigned char* dockPanelImageBuffer = ImGui::TabWindow::GetDockPanelIconImagePng(&dockPanelImageBufferSize);
-        ImGui::TabWindow::DockPanelIconTextureID = ImImpl_LoadTextureFromMemory(dockPanelImageBuffer,dockPanelImageBufferSize);
+        ImVector<unsigned char> rgba_buffer;int w=0,h=0;
+        ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer,&w,&h);
+        ImImpl_GenerateOrUpdateTexture(ImGui::TabWindow::DockPanelIconTextureID,w,h,4,&rgba_buffer[0]);
     }
 #   endif //NO_IMGUITABWINDOW
 
@@ -1705,7 +1705,12 @@ void ImImpl_NewFramePaused()    {
 
     // New
     g.MovingWindow = NULL;
-    g.MovingWindowMoveId = 0;
+
+    // New
+    g.TooltipOverrideCount = 0;
+    g.WindowsActiveCount = 0;
+    //g.FrameCount += 1;    // Not sure this should be incremented or not when ImGui is not used...
+
 }
 
 

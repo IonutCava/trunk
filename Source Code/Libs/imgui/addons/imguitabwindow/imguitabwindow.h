@@ -44,9 +44,9 @@
 
     // Texture Loading (*)
     if (!ImGui::TabWindow::DockPanelIconTextureID)  {
-        int pngIconSize = 0;
-        const unsigned char* pngIcon = ImGui::TabWindow::GetDockPanelIconImagePng(&pngIconSize);
-        ImGui::TabWindow::DockPanelIconTextureID = reinterpret_cast<ImTextureID>(MyTextureFromMemoryPngMethod(pngIcon,pngIconSize));  // User must load it (using GetDockPanelIconImagePng and in some cases flipping Y to match tex coords unique convention).
+		ImVector<unsigned char> rgba_buffer;int w,h;
+        ImGui::TabWindow::GetDockPanelIconImageRGBA(rgba_buffer,&w,&h); // 4 channels, no additional stride between lines, => rgba_buffer.size() = 4*w*h
+        ImGui::TabWindow::DockPanelIconTextureID = reinterpret_cast<ImTextureID>(MyTextureFromMemoryRGBAMethod(&rgba_buffer[0],w,h));  // User must turn raw RBGA to texture (using GetDockPanelIconImageRGBA).
     }
 
     // Optional Style
@@ -116,7 +116,7 @@ TIPS ABOUT TEXTURE LOADING;
         what IMGUI_USE_XXX_BINDING is.
      -> If you prefer loading the texture from an external image, I'll provide it here: https://gist.github.com/Flix01/2cdf1db8d936100628c0
      -> Since internally we use texcoords, we had to choose a single convention for them. That means that it might be necessary for
-        some people to load the image upside down (stb_image has a build-in method to do it).
+        some people to flip the image RGBA upside down (we can provide some definitions for that if needed).
 
 ADDITIONAL (OPTIONAL) CALLBACKS:
 static void TabWindow::SetTabLabelFactoryCallback(TabLabelFactoryCallback _tabLabelFactoryCb) {TabLabelFactoryCb=_tabLabelFactoryCb;}
@@ -144,6 +144,18 @@ There are better alternatives to Imgui::TabWindow:
 -> https://github.com/nem0/LumixEngine/blob/master/src/studio_lib/imgui/imgui_dock.inl [lumixengine's Dock] => NOW AVAILABLE as imguidock addon.
 Please see: https://github.com/ocornut/imgui/issues for further info
 */
+
+
+#include <string.h>
+#ifdef _MSC_VER
+#   ifndef strcasecmp
+#       define strcasecmp _stricmp
+#   endif // strcasecmp
+#   ifndef strncasecmp
+#       define strncasecmp _strnicmp
+#   endif // strncasecmp
+#endif // _MSC_VER
+
 
 namespace ImGui {
 
@@ -193,8 +205,6 @@ float closeButtonRounding;
 float closeButtonBorderWidth;
 float closeButtonTextWidth;
 
-bool antialiasing;
-
 enum FontStyle {
     FONT_STYLE_NORMAL=0,
     FONT_STYLE_BOLD,
@@ -221,7 +231,7 @@ IMGUI_API TabLabelStyle();
 void reset() {Reset(*this);}
 IMGUI_API static bool Edit(TabLabelStyle& style=TabLabelStyle::Get());
 IMGUI_API static bool EditFast(TabLabelStyle &s=TabLabelStyle::Get());
-static void Reset(TabLabelStyle& style=TabLabelStyle::Get()) {style = TabLabelStyle();}
+static void Reset(TabLabelStyle& style_=TabLabelStyle::Get()) {style_ = TabLabelStyle();}
 
 // These modify the style: some operation are not loseless!
 IMGUI_API static void InvertSelectedLook(TabLabelStyle& style=TabLabelStyle::Get());
@@ -234,16 +244,16 @@ IMGUI_API static void DarkenBackground(TabLabelStyle& style=TabLabelStyle::Get()
 #if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
 IMGUI_API static bool Save(const TabLabelStyle& style,ImGuiHelper::Serializer& s);
-static inline bool Save(const TabLabelStyle &style, const char *filename)    {
+static inline bool Save(const TabLabelStyle &style_, const char *filename)    {
     ImGuiHelper::Serializer s(filename);
-    return Save(style,s);
+    return Save(style_,s);
 }
 #endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
 IMGUI_API static bool Load(TabLabelStyle& style, ImGuiHelper::Deserializer& d, const char ** pOptionalBufferStart=NULL);
-static inline bool Load(TabLabelStyle& style,const char* filename) {
+static inline bool Load(TabLabelStyle& style_,const char* filename) {
     ImGuiHelper::Deserializer d(filename);
-    return Load(style,d);
+    return Load(style_,d);
 }
 #endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #endif //NO_IMGUIHELPER_SERIALIZATION
@@ -302,20 +312,35 @@ protected:
 public:
     inline const char* getLabel() const {return label;}
     inline bool matchLabel(const char* match) const {return modified ? (strncmp(match,label,strlen(label)-1)==0) : (strcmp(match,label)==0);}
+    inline bool matchLabelExtension(const char* matchExtension) const {
+        const char* dot = strrchr(label,(int) '.');if (!dot) return false;
+        return modified ? (strncasecmp(matchExtension,dot,strlen(dot)-1)==0) : (strcasecmp(matchExtension,dot)==0);
+    }
     void setLabel(const char* lbl,bool appendAnAsteriskAndMarkAsModified=false)  {
         if (label) {ImGui::MemFree(label);label=NULL;}
         const char e = '\0';if (!lbl) lbl=&e;
-        const int sz = strlen(lbl)+1;       // we allocate one char more (optimization for appending an asterisk)
+        const int sz = (int)strlen(lbl)+1;       // we allocate one char more (optimization for appending an asterisk)
         label = (char*) ImGui::MemAlloc(sz+1);strcpy(label,lbl);
         if (appendAnAsteriskAndMarkAsModified)  {
             modified = true;strcat(label,"*");
         }
         else modified = false;
     }
+    inline bool copyLabelTo(char* buffer, int buffer_size) const {
+        int len = modified ? ((int)strlen(label)-1) : (int)strlen(label);
+        if (len<0) len=0;bool ok = true;
+        if (buffer_size<=len) {len = buffer_size-1;ok=false;}
+        strncpy(buffer,label,len);
+        buffer[len]='\0';
+        return ok;
+    }
+    inline bool matchTooltip(const char* match) const {return (strcmp(match,tooltip)==0);}
+    inline bool matchUserText(const char* match) const {return (strcmp(match,userText)==0);}
+
     inline bool getModified() const {return modified;}
     inline void setModified(bool flag) {
         if (modified == flag) return;
-        modified = flag;int sz = strlen(label);
+        modified = flag;int sz = (int)strlen(label);
         if (modified)   {if (sz==0 || label[sz-1]!='*') strcat(label,"*");}
         else            {if (sz>0 && label[sz-1]=='*') label[sz-1]='\0';}
     }
@@ -323,13 +348,13 @@ public:
     void setTooltip(const char* tt)  {
         if (tooltip) {ImGui::MemFree(tooltip);tooltip=NULL;}
         const char e = '\0';if (!tt) tt=&e;
-        const int sz = strlen(tt);
+        const int sz = (int)strlen(tt);
         tooltip = (char*) ImGui::MemAlloc(sz+1);strcpy(tooltip,tt);
     }
     void setUserText(const char* _userText)  {
         if (userText) {ImGui::MemFree(userText);userText=NULL;}
         if (_userText)  {
-            const int sz = strlen(_userText);
+            const int sz = (int)strlen(_userText);
             userText = (char*) ImGui::MemAlloc(sz+1);strcpy(userText,_userText);
         }
     }
@@ -354,6 +379,7 @@ public:
     }
 
     virtual bool saveAs(const char* savePath=NULL) {
+        (void)savePath;
         setModified(false);
         return true;
     }
@@ -442,9 +468,9 @@ inline static const char* GetTabLabelAskForDeletionModalWindowName() {return "Sa
 // Main method
 IMGUI_API void render();
 
-// Texture And Memory Png Data
-static const unsigned char* GetDockPanelIconImagePng(int* bufferSizeOut=NULL); // Manually redrawn based on the ones in https://github.com/dockpanelsuite/dockpanelsuite (that is MIT licensed). So no copyright issues for this AFAIK, but I'm not a lawyer and I cannot guarantee it.
-static ImTextureID DockPanelIconTextureID;  // User must load it (using GetDockPanelIconImagePng) and free it when no IMGUI_USE_XXX_BINDING is used.
+// Texture And Memory Data  (4 channels, no additional stride between lines, => rgba_buffer_out.size() = 4*(*w_out)*(*h_out) )
+static void GetDockPanelIconImageRGBA(ImVector<unsigned char>& rgba_buffer_out,int* w_out=NULL,int* h_out=NULL); // Manually redrawn based on the ones in https://github.com/dockpanelsuite/dockpanelsuite (that is MIT licensed). So no copyright issues for this AFAIK, but I'm not a lawyer and I cannot guarantee it.
+static ImTextureID DockPanelIconTextureID;  // User must load it (using GetDockPanelIconImageRGBA) and free it when no IMGUI_USE_XXX_BINDING is used.
 
 // These are just optional "filtering" methods
 bool isIsolated() const {return isolatedMode;}          // can't exchange tab labels outside
@@ -521,7 +547,12 @@ typedef TabWindow::TabLabel TabWindowLabel;
 */
 IMGUI_API bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex, const char** tabLabelTooltips=NULL , bool wrapMode=true, int* pOptionalHoveredIndex=NULL, int* pOptionalItemOrdering=NULL, bool allowTabReorder=true, bool allowTabClosing=false, int* pOptionalClosedTabIndex=NULL,int * pOptionalClosedTabIndexInsideItemOrdering=NULL);
 
-// Untested attempt to provide serialization for ImGui::TabLabels(...): only "selectedIndex" and "pOptionalItemOrdering" are serialized.
+// ImGui::TabLabelsVertical() are similiar to ImGui::TabLabels(), but they do not support WrapMode.
+IMGUI_API bool TabLabelsVertical(bool textIsRotatedCCW,int numTabs, const char** tabLabels, int& selectedIndex, const char** tabLabelTooltips=NULL, int* pOptionalHoveredIndex=NULL, int* pOptionalItemOrdering=NULL, bool allowTabReorder=false, bool allowTabClosing=false, int* pOptionalClosedTabIndex=NULL,int * pOptionalClosedTabIndexInsideItemOrdering=NULL,bool invertRounding=false);
+IMGUI_API float CalcVerticalTabLabelsWidth();
+
+
+// Untested attempt to provide serialization for ImGui::TabLabels(...) or ImGui::TabLabelsVertical(...): only "selectedIndex" and "pOptionalItemOrdering" are serialized.
 //-------------------------------------------------------------------------------
 #   if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
@@ -536,13 +567,6 @@ IMGUI_API bool TabLabels(int numTabs, const char** tabLabels, int& selectedIndex
 //--------------------------------------------------------------------------------
 
 
-#if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_DRAW_METHODS) && !defined(NO_IMGUIHELPER_VERTICAL_TEXT_METHODS))
-// Tip: IMGUIHELPER_HAS_VERTICAL_TEXT_SUPPORT is a read-only definition that summarizes the definitions above
-
-// ImGui::TabLabelsVertical() are similiar to ImGui::TabLabels(), but they do not support WrapMode.
-IMGUI_API bool TabLabelsVertical(bool textIsRotatedCCW,int numTabs, const char** tabLabels, int& selectedIndex, const char** tabLabelTooltips=NULL, int* pOptionalHoveredIndex=NULL, int* pOptionalItemOrdering=NULL, bool allowTabReorder=false, bool allowTabClosing=false, int* pOptionalClosedTabIndex=NULL,int * pOptionalClosedTabIndexInsideItemOrdering=NULL,bool invertRounding=false);
-IMGUI_API float CalcVerticalTabLabelsWidth();
-#endif // (defined(IMGUIHELPER_H_) && ...)
 
 } // namespace ImGui
 

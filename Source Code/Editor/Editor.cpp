@@ -5,7 +5,6 @@
 #include "Editor/Widgets/Headers/MenuBar.h"
 #include "Editor/Widgets/Headers/PanelManager.h"
 #include "Editor/Widgets/Headers/ApplicationOutput.h"
-#include "Editor/Widgets/Headers/ImWindowManagerDivide.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
@@ -23,9 +22,8 @@
 
 #include "Rendering/Camera/Headers/Camera.h"
 
+#include <imgui_internal.h>
 #include <imgui/addons/imguigizmo/ImGuizmo.h>
-
-#define DISABLE_IMWINDOW
 
 namespace Divide {
 
@@ -66,9 +64,6 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
-#if !defined(DISABLE_IMWINDOW)
-    _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
-#endif
     _panelManager = std::make_unique<PanelManager>(context);
     _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
@@ -175,16 +170,7 @@ bool Editor::init() {
         _applicationOutput->printText(entry);
     });
 
-#if !defined(DISABLE_IMWINDOW)
-    if (_windowManager->Init()) {
-        InitSample();
-        return true;
-    }
-
-    return false;
-#else
     return true;
-#endif
 }
 
 void Editor::close() {
@@ -215,12 +201,6 @@ void Editor::update(const U64 deltaTimeUS) {
         return;
     }
     Time::ScopedTimer timer(_editorUpdateTimer);
-
-#if !defined(DISABLE_IMWINDOW)
-    _windowManager->update(deltaTimeUS);
-    if (_windowManager->Run(false))
-#endif
-
     {
         ImGuiIO& io = ImGui::GetIO();
         io.DeltaTime = Time::MicrosecondsToSeconds<float>(deltaTimeUS);
@@ -292,7 +272,7 @@ bool Editor::renderMinimal(const U64 deltaTime) {
     }
     if (showSampleWindow()) {
         ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-        ImGui::ShowTestWindow(&show_test_window);
+        ImGui::ShowDemoWindow(&show_test_window);
     }
 
     return true;
@@ -310,14 +290,6 @@ bool Editor::renderFull(const U64 deltaTime) {
 
 bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     Time::ScopedTimer timer(_editorRenderTimer);
-#if !defined(DISABLE_IMWINDOW)
-    // Render ImWindow stuff
-    if (_running) {
-        if (!_windowManager->Run(true)) {
-            return false;
-        }
-    } else
-#endif
     {
         ImGui::NewFrame();
     }
@@ -540,9 +512,6 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
     
     bool ret = ImGui::GetIO().WantCaptureKeyboard;
-#if !defined(DISABLE_IMWINDOW)
-    ret = ret || _windowManager->HasWantCaptureKeyboard()
-#endif
     return ret;
 }
 
@@ -570,9 +539,6 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     io.KeySuper = false;
 
     bool ret = ImGui::GetIO().WantCaptureKeyboard;
-#if !defined(DISABLE_IMWINDOW)
-    ret = ret || _windowManager->HasWantCaptureKeyboard()
-#endif
     return ret;
 }
 
@@ -589,9 +555,6 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
 
     if (!_scenePreviewFocused) {
         bool ret = ImGui::GetIO().WantCaptureMouse;
-#if !defined(DISABLE_IMWINDOW)
-        ret = ret || _windowManager->HasWantCaptureMouse()
-#endif
         return ret;
     }
 
@@ -610,9 +573,6 @@ bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton
     io.MouseDown[button == OIS::MB_Left ? 0 : button == OIS::MB_Right ? 1 : 2] = true;
 
     bool ret = ImGui::GetIO().WantCaptureMouse;
-#if !defined(DISABLE_IMWINDOW)
-    ret = ret || _windowManager->HasWantCaptureMouse()
-#endif
     return ret;
 }
 
@@ -633,10 +593,7 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
 
     if (!_scenePreviewFocused) {
         bool ret = ImGui::GetIO().WantCaptureMouse;
-#if !defined(DISABLE_IMWINDOW)
-        ret = ret || _windowManager->HasWantCaptureMouse()
-#endif
-            return ret;
+        return ret;
     }
 
     return false;

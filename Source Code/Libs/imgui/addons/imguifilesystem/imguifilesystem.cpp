@@ -1479,24 +1479,27 @@ struct ImGuiFsDrawIconStruct {
     const int extType = getExtensionType(ext,caseSensitiveMatch);
     return drawIcon(extType,pOptionalColorOverride);
     }
+
+    // New to avoid global static initialization: see https://github.com/Flix01/imgui/issues/38
+    static ImGuiFsDrawIconStruct& Get() {static ImGuiFsDrawIconStruct instance;return instance;}
 };
-static ImGuiFsDrawIconStruct MyImGuiFsDrawIconStruct;
+
 #ifndef IMGUIFS_NO_EXTRA_METHODS
 int FileGetExtensionType(const char* path) {
-    return MyImGuiFsDrawIconStruct.getExtensionType(strrchr(path,'.'));
+    return ImGuiFsDrawIconStruct::Get().getExtensionType(strrchr(path,'.'));
 }
 void FileGetExtensionTypesFromFilenames(ImVector<int>& fileExtensionTypesOut,const FilenameStringVector& fileNames)  {
-    MyImGuiFsDrawIconStruct.fillExtensionTypesFromFilenames(fileExtensionTypesOut,fileNames);
+    ImGuiFsDrawIconStruct::Get().fillExtensionTypesFromFilenames(fileExtensionTypesOut,fileNames);
 }
 #if (defined(__EMSCRIPTEN__) && defined(EMSCRIPTEN_SAVE_SHELL))
 bool FileDownload(const char* path,const char* optionalSaveFileName)    {
     if (!path || !FileExists(path)) return false;
     ImGuiTextBuffer buffer;
-    if (optionalSaveFileName) buffer.append("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",path,optionalSaveFileName);
+    if (optionalSaveFileName) buffer.appendf("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",path,optionalSaveFileName);
     else {
         char fileName[ImGuiFs::MAX_FILENAME_BYTES]="";
         ImGuiFs::PathGetFileName(path,fileName);
-        buffer.append("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",path,fileName);
+        buffer.appendf("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",path,fileName);
     }
     emscripten_run_script(&buffer.Buf[0]);
     return true;
@@ -2050,7 +2053,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
         if (!isSelectFolderDialog)  {
             if (!fileFilterExtensionString || strlen(fileFilterExtensionString)==0) Directory::GetFiles(I.currentFolder,I.files,&I.fileNames,(Sorting)I.sortingMode);
             else                                        Directory::GetFiles(I.currentFolder,I.files,fileFilterExtensionString,NULL,&I.fileNames,(Sorting)I.sortingMode);
-            if (Dialog::DrawFileIconCallback) MyImGuiFsDrawIconStruct.fillExtensionTypesFromFilenames(I.fileExtensionTypes,I.fileNames);
+            if (Dialog::DrawFileIconCallback) ImGuiFsDrawIconStruct::Get().fillExtensionTypesFromFilenames(I.fileExtensionTypes,I.fileNames);
         }
         else {
             I.files.clear();I.fileNames.clear();I.fileExtensionTypes.clear();
@@ -2075,7 +2078,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
             if (!isInsideZipFile)   {
                 if (!fileFilterExtensionString || strlen(fileFilterExtensionString)==0) Directory::GetFiles(I.currentFolder,I.files,&I.fileNames,(Sorting)I.sortingMode);
                 else                                        Directory::GetFiles(I.currentFolder,I.files,fileFilterExtensionString,NULL,&I.fileNames,(Sorting)I.sortingMode);
-                if (Dialog::DrawFileIconCallback) MyImGuiFsDrawIconStruct.fillExtensionTypesFromFilenames(I.fileExtensionTypes,I.fileNames);
+                if (Dialog::DrawFileIconCallback) ImGuiFsDrawIconStruct::Get().fillExtensionTypesFromFilenames(I.fileExtensionTypes,I.fileNames);
             }
             else if (I.unz.isValid()) {
                 /*if (!fileFilterExtensionString || strlen(fileFilterExtensionString)==0)*/ I.unz.getFiles(zipPath,I.files,&I.fileNames,(Sorting)I.sortingMode,true);
@@ -2696,7 +2699,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
         float lastTwoButtonsWidth = 0;
         ImGui::PushID(&id);
         if (isSaveFileDialog)   {
-            ImGui::AlignFirstTextHeightToWidgets();
+            ImGui::AlignTextToFramePadding();
             ImGui::Text("File:");ImGui::SameLine();
             lastTwoButtonsWidth = ImGui::CalcTextSize("Save Cancel").x+2.0f*(style.FramePadding.x+style.ItemSpacing.x)+style.WindowPadding.x;
             ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth()-lastTwoButtonsWidth);
@@ -2706,7 +2709,7 @@ const char* ChooseFileMainMethod(Dialog& ist,const char* directory,const bool _i
             ImGui::SameLine();
         }
         else {
-            ImGui::AlignFirstTextHeightToWidgets();
+            ImGui::AlignTextToFramePadding();
 
             static const ImVec4 sf(1.0,0.8,0.5,1);      // selected folder color factor
             ImVec4& c = ColorSet[Internal::ImGuiCol_Dialog_SelectedFolder_Text];

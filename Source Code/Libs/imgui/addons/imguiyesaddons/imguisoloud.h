@@ -1762,6 +1762,7 @@ namespace SoLoud
 		result loadMem(unsigned char *aMem, unsigned int aLength, bool aCopy = false, bool aTakeOwnership = true);
 		result loadFile(File *aFile);
 		virtual AudioSourceInstance *createInstance();
+        static const char* SupportedExtensions;
 	};
 };
 #endif //YES_IMGUISOLOUD_MODPLUG

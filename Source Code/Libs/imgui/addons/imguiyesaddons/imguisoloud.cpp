@@ -7395,7 +7395,9 @@ namespace SoLoud
 		return new ModplugInstance(this);
 	}
 
-};
+    const char* Modplug::SupportedExtensions = ".669;.abc;.amf;.ams;.dbm;.dmf;.dsm;.far;.it;.j2b;.mdl;.med;.mid;.mod;.mt2;.mtm;.okt;.pat;.psm;.ptm;.s3m;.stm;.ult;.umx;.xm";
+
+} // namespace SoLoud
 #endif //YES_IMGUISOLOUD_MODPLUG
 
 //----../src/audiosource/monotone/soloud_monotone.cpp-----------------------------------------------------------------------------------------------

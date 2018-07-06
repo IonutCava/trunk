@@ -93,7 +93,7 @@ float ProgressBar(const char *optionalPrefixText, float value, const float minVa
     const ImFontAtlas* fontAtlas = ImGui::GetIO().Fonts;
 
     if (optionalPrefixText && strlen(optionalPrefixText)>0) {
-        ImGui::AlignFirstTextHeightToWidgets();
+        ImGui::AlignTextToFramePadding();
         ImGui::Text("%s",optionalPrefixText);
         ImGui::SameLine();
     }
@@ -273,10 +273,10 @@ inline static void ClampColor(ImVec4& color)    {
 }
 
 // Based on the code from: https://github.com/benoitjacquier/imgui
-inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,bool showSliders,ImGuiWindowFlags extra_flags=0,bool* pisAnyItemActive=NULL,float windowWidth = 180)    {
+inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,bool showSliders,ImGuiWindowFlags extra_flags=0,bool* pisAnyItemActive=NULL,float windowWidth = 180/*,bool isCombo = false*/)    {
     bool colorSelected = false;
     if (pisAnyItemActive) *pisAnyItemActive=false;
-    const bool isCombo = (extra_flags&ImGuiWindowFlags_ComboBox);
+    //const bool isCombo = (extra_flags&ImGuiWindowFlags_ComboBox);
 
     ImVec4 color = pColorOut ? *pColorOut : ImVec4(0,0,0,1);
     if (!supportsAlpha) color.w=1.f;
@@ -294,7 +294,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
     ImGuiWindow* colorWindow = GetCurrentWindow();
 
     const float quadSize = windowWidth - smallWidth - colorWindow->WindowPadding.x*2;
-    if (isCombo) ImGui::SetCursorPosX(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x);
+    //if (isCombo) ImGui::SetCursorPosX(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x);
     // Hue Saturation Value
     if (ImGui::BeginChild("ValueSaturationQuad##ValueSaturationQuadColorChooser", ImVec2(quadSize, quadSize), false,extra_flags ))
     //ImGui::BeginGroup();
@@ -353,7 +353,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
 
     ImGui::SameLine();
 
-    if (isCombo) ImGui::SetCursorPosX(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x+quadSize);
+    //if (isCombo) ImGui::SetCursorPosX(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x+quadSize);
 
     //Vertical tint
     if (ImGui::BeginChild("Tint##TintColorChooser", ImVec2(smallWidth, quadSize), false,extra_flags))
@@ -404,8 +404,8 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
     {
         //Sliders
         //ImGui::PushItemHeight();
-        if (isCombo) ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x,ImGui::GetCursorPos().y+colorWindow->WindowPadding.y+quadSize));
-        ImGui::AlignFirstTextHeightToWidgets();
+        //if (isCombo) ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPos().x+colorWindow->WindowPadding.x,ImGui::GetCursorPos().y+colorWindow->WindowPadding.y+quadSize));
+        ImGui::AlignTextToFramePadding();
         ImGui::Text("Sliders");
         static bool useHsvSliders = false;
         static const char* btnNames[2] = {"to HSV","to RGB"};
@@ -414,7 +414,7 @@ inline static bool ColorChooserInternal(ImVec4 *pColorOut,bool supportsAlpha,boo
         if (ImGui::SmallButton(btnNames[index])) useHsvSliders=!useHsvSliders;
 
         ImGui::Separator();
-        const ImVec2 sliderSize = isCombo ? ImVec2(-1,quadSize) : ImVec2(-1,-1);
+        const ImVec2 sliderSize = /*isCombo ? ImVec2(-1,quadSize) : */ImVec2(-1,-1);
         if (ImGui::BeginChild("Sliders##SliderColorChooser", sliderSize, false,extra_flags))
         {
 
@@ -526,36 +526,15 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
             ImGuiContext& g = *GImGui;
             ClosePopupToLevel(g.OpenPopupStack.Size - 1);
         }
-        static inline void ClearSetNextWindowData() {
-            ImGuiContext& g = *GImGui;
-            g.SetNextWindowPosCond = g.SetNextWindowSizeCond = g.SetNextWindowContentSizeCond = g.SetNextWindowCollapsedCond = 0;
-            g.SetNextWindowSizeConstraint = g.SetNextWindowFocus = false;
-        }
         static bool BeginPopupEx(const char* str_id, ImGuiWindowFlags extra_flags)  {
             ImGuiContext& g = *GImGui;
-            ImGuiWindow* window = g.CurrentWindow;
-            const ImGuiID id = window->GetID(str_id);
-            if (!IsPopupOpen(id))
+            if (g.OpenPopupStack.Size <= g.CurrentPopupStack.Size) // Early out for performance
             {
-                ClearSetNextWindowData(); // We behave like Begin() and need to consume those values
+                g.NextWindowData.Clear(); // We behave like Begin() and need to consume those values
                 return false;
             }
-
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGuiWindowFlags flags = extra_flags|ImGuiWindowFlags_Popup|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_AlwaysAutoResize;
-
-            char name[20];
-            if (flags & ImGuiWindowFlags_ChildMenu)
-                ImFormatString(name, IM_ARRAYSIZE(name), "##menu_%d", g.CurrentPopupStack.Size);    // Recycle windows based on depth
-            else
-                ImFormatString(name, IM_ARRAYSIZE(name), "##popup_%08x", id); // Not recycling, so we can close/open during the same frame
-
-            bool is_open = ImGui::Begin(name, NULL, flags);
-            //if (!(window->Flags & ImGuiWindowFlags_ShowBorders))    g.CurrentWindow->Flags &= ~ImGuiWindowFlags_ShowBorders;
-            if (!is_open) // NB: is_open can be 'false' when the popup is completely clipped (e.g. zero size display)
-                ImGui::EndPopup();
-
-            return is_open;
+            return ImGui::BeginPopupEx(g.CurrentWindow->GetID(str_id), flags);
         }
     } ImGuiCppDuply;
 
@@ -638,11 +617,11 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4,2));
 
         bool mustCloseCombo = false;
-        const ImGuiWindowFlags flags =  ImGuiWindowFlags_ComboBox;
+        const ImGuiWindowFlags flags =  0;//ImGuiWindowFlags_Modal;//ImGuiWindowFlags_ComboBox;  // ImGuiWindowFlags_ComboBox is no more available... what now ?
         if (ImGuiCppDuply::BeginPopupEx(label, flags))
         {
             bool comboItemActive = false;
-            value_changed = ColorChooserInternal(pColorOut,supportsAlpha,false,flags,&comboItemActive,windowWidth);
+            value_changed = ColorChooserInternal(pColorOut,supportsAlpha,false,flags,&comboItemActive,windowWidth/*,true*/);
             if (closeWhenMouseLeavesIt && !comboItemActive)
             {
                 const float distance = g.FontSize*1.75f;//1.3334f;//24;
@@ -3199,12 +3178,12 @@ void TreeViewNode::render(void* ptr,int numIndents)   {
         int customColorState = (state&STATE_COLOR1) ? 1 : (state&STATE_COLOR2) ? 2 : (state&STATE_COLOR3) ? 3 : 0;
 
         ImGui::PushID(this);
-        if (allowCheckBox && !tvhs.hasCbGlyphs) ImGui::AlignFirstTextHeightToWidgets();
+        if (allowCheckBox && !tvhs.hasCbGlyphs) ImGui::AlignTextToFramePadding();
 
         tvhs.window->DC.CursorPos.x+= tvhs.arrowOffset*(numIndents-(isLeafNode ? 0 : 1))+(tvhs.hasArrowGlyphs?(GImGui->Style.FramePadding.x*2):0.f);
         if (!isLeafNode) {
             if (!tvhs.hasArrowGlyphs)  {
-                ImGui::SetNextTreeNodeOpen(stateopen,ImGuiSetCond_Always);
+                ImGui::SetNextTreeNodeOpen(stateopen,ImGuiCond_Always);
                 mustTreePop = ImGui::TreeNode("","%s","");
             }
             else {
@@ -3441,7 +3420,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
         bool TreeView::Save(const char* filename,TreeView** pTreeViews,int numTreeviews)    {
             IM_ASSERT(pTreeViews && numTreeviews>0);
             ImGuiHelper::Serializer s(filename);
-            bool ok = false;
+            bool ok = s.isValid();
             for (int i=0;i<numTreeviews;i++)   {
                 IM_ASSERT(pTreeViews[i]);
                 ok|=pTreeViews[i]->save(s);
@@ -3475,7 +3454,7 @@ void TreeView::setTextColorForStateColor(int aStateColorFlag, const ImVec4 &text
                 pTreeViews[i]->clear();
             }
             ImGuiHelper::Deserializer d(filename);
-            const char* amount = 0; bool ok = false;
+            const char* amount = 0; bool ok = d.isValid();
             for (int i=0;i<numTreeviews;i++)   {
                 ok|=pTreeViews[i]->load(d,&amount);
             }

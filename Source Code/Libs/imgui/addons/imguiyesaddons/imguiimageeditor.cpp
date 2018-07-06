@@ -6304,7 +6304,7 @@ struct StbImage {
 #                           if (defined(__EMSCRIPTEN__) && defined(EMSCRIPTEN_SAVE_SHELL))
                             if (ImGuiIE::FileExists(filePath)) {
                                 ImGuiTextBuffer buffer;
-                                buffer.append("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",filePath,filePathName);
+                                buffer.appendf("saveFileFromMemoryFSToDisk(\"%s\",\"%s\")",filePath,filePathName);
                                 emscripten_run_script(&buffer.Buf[0]);
                             }
 #                           endif // EMSCRIPTEN_SAVE_SHELL

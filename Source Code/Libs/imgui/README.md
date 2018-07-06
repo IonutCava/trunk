@@ -45,7 +45,7 @@ Binaries/Demo
 -------------
 
 You should be able to build the examples from sources (tested on Windows/Mac/Linux). If you don't, let me know! If you want to have a quick look at some Dear ImGui features, you can download Windows binaries of the demo app here:
-- [imgui-demo-binaries-20171013.zip](http://www.miracleworld.net/imgui/binaries/imgui-demo-binaries-20171013.zip) (Windows binaries, Dear ImGui 1.52 WIP built 2017/10/13, 5 executables)
+- [imgui-demo-binaries-20171226.zip](http://www.miracleworld.net/imgui/binaries/imgui-demo-binaries-20171226.zip) (Windows binaries, Dear ImGui 1.53 built 2017/12/26, 5 executables)
 
 Bindings
 --------
@@ -60,6 +60,7 @@ Languages:
 - ChaiScript: https://github.com/JuJuBoSc/imgui-chaiscript
 - D (DerelictImgui): https://github.com/Extrawurst/DerelictImgui
 - Go (go-imgui): https://github.com/Armored-Dragon/go-imgui
+- Haxe/hxcpp (linc_imgui): https://github.com/Aidan63/linc_imgui    
 - Lua: https://github.com/patrickriordan/imgui_lua_bindings
 - Odin: https://github.com/ThisDrunkDane/odin-dear_imgui
 - Pascal (imgui-pas): https://github.com/dpethes/imgui-pas
@@ -77,6 +78,7 @@ Frameworks:
 - Cinder: https://github.com/simongeilfus/Cinder-ImGui
 - cocos2d-x: https://github.com/c0i/imguix https://github.com/ocornut/imgui/issues/551
 - Flexium/SFML (FlexGUI): https://github.com/DXsmiley/FlexGUI
+- GML/GameMakerStudio2 (ImGuiGML): https://marketplace.yoyogames.com/assets/6221/imguigml
 - Irrlicht (IrrIMGUI): https://github.com/ZahlGraf/IrrIMGUI
 - Ogre: https://bitbucket.org/LMCrashy/ogreimgui/src
 - openFrameworks (ofxImGui): https://github.com/jvcleave/ofxImGui
@@ -139,7 +141,7 @@ Frequently Asked Question (FAQ)
 <b>Where is the documentation?</b>
 
 - The documentation is at the top of imgui.cpp + effectively imgui.h. 
-- Example code is in imgui_demo.cpp and particularly the ImGui::ShowTestWindow() function. It covers most features of ImGui so you can read the code and call the function itself to see its output. 
+- Example code is in imgui_demo.cpp and particularly the ImGui::ShowDemoWindow() function. It covers most features of ImGui so you can read the code and call the function itself to see its output. 
 - Standalone example applications using e.g. OpenGL/DirectX are provided in the examples/ folder. 
 - We obviously needs better documentation! Consider contributing or becoming a [Patron](http://www.patreon.com/imgui) to promote this effort.
 
@@ -151,10 +153,9 @@ I occasionally tag [Releases](https://github.com/ocornut/imgui/releases) but it 
 
 The library started its life and is best known as "ImGui" only due to the fact that I didn't give it a proper name when I released it. However, the term IMGUI (immediate-mode graphical user interface) was coined before and is being used in variety of other situations. It seemed confusing and unfair to hog the name. To reduce the ambiguity without affecting existing codebases, I have decided on an alternate, longer name "dear imgui" that people can use to refer to this specific library in ambiguous situations.
 
-<b>What is ImTextureID and how do I display an image?</b>
-<br><b>I integrated Dear ImGui in my engine and the text or lines are blurry..</b>
-<br><b>I integrated Dear ImGui in my engine and some elements are disappearing when I move windows around..</b>
-<br><b>How can I have multiple widgets with the same label? Can I have widget without a label? (Yes). A primer on labels/IDs.</b>
+<b>How can I help</b>
+<br><b>How can I display an image? What is ImTextureID, how does it works?</b>
+<br><b>How can I have multiple widgets with the same label? Can I have widget without a label? (Yes). A primer on labels and the ID stack.</b>
 <br><b>How can I tell when Dear ImGui wants my mouse/keyboard inputs VS when I can pass them to my application?</b>
 <br><b>How can I load a different font than the default?</b>
 <br><b>How can I easily use icons in my application?</b>
@@ -162,6 +163,8 @@ The library started its life and is best known as "ImGui" only due to the fact t
 <br><b>How can I display and input non-latin characters such as Chinese, Japanese, Korean, Cyrillic?</b>
 <br><b>How can I preserve my Dear ImGui context across reloading a DLL? (loss of the global/static variables)</b>
 <br><b>How can I use the drawing facilities without an Dear ImGui window? (using ImDrawList API)</b>
+<br><b>I integrated Dear ImGui in my engine and the text or lines are blurry..</b>
+<br><b>I integrated Dear ImGui in my engine and some elements are disappearing when I move windows around..</b>
 
 See the FAQ in imgui.cpp for answers.
 

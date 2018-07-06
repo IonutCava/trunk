@@ -204,6 +204,56 @@ namespace ImGuiMiniGames {
     };
 #   endif //NO_IMGUIMINIGAMES_SUDOKU
 
+#   ifndef NO_IMGUIMINIGAMES_FIFTEEN
+// FIFTEEN GAME LICENSE:
+/*
+    All the source code is in the public domain.
+
+    IN NO EVENT SHALL THE AUTHOR BE LIABLE TO ANY PARTY FOR DIRECT,
+    INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST
+    PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION,
+    EVEN IF THE AUTHOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+    THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+    PARTICULAR PURPOSE. THE SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF
+    ANY, PROVIDED HEREUNDER IS PROVIDED "AS IS". THE AUTHOR HAS NO OBLIGATION
+    TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+*/
+
+    class Fifteen {
+        public:
+        IMGUI_API void render();
+
+        struct Style {
+            enum Color {
+                Color_Text,                     // "PAUSED" "GAME OVER" and "GAME COMPLETED" text color
+                Color_Background,               // of the child window - we can leave it transparent: 0x00000000
+                Color_CellBackground,
+                Color_HoveredCellBackground,
+                Color_Numbers,
+                Color_Count
+            };
+            ImU32 colors[Color_Count];
+            float cellRounding;
+            int keyPause;                       // This depends on your key-mapping in ImGui. (default == 'p')
+            static Style style;
+            inline static Style& Get() {return style;}
+            IMGUI_API Style();
+            void reset() {*this=Style();}
+#           ifndef NO_IMGUIMINIGAMES_MINE
+            IMGUI_API void setFromMineGameStyle(const Mine::Style& ms);
+#           endif //NO_IMGUIMINIGAMES_MINE
+#           ifndef NO_IMGUIMINIGAMES_SUDOKU
+            IMGUI_API void setFromSudokuGameStyle(const Sudoku::Style& ms);
+#           endif //NO_IMGUIMINIGAMES_SUDOKU
+        };
+        IMGUI_API Fifteen();
+        IMGUI_API ~Fifteen();
+        protected:
+        struct FifteenHS* imp;
+    };
+#   endif //NO_IMGUIMINIGAMES_FIFTEEN
 
 } // namespace ImGuiMiniGames
 

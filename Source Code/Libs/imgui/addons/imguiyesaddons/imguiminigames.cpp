@@ -39,16 +39,16 @@ namespace ImGuiMiniGames {
         }
         return false;
     }*/
-    static void ImDrawListPathFillAndStroke(ImDrawList *dl, const ImU32 &fillColor, const ImU32 &strokeColor, bool strokeClosed, float strokeThickness, bool antiAliased)    {
+    static void ImDrawListPathFillAndStroke(ImDrawList *dl, const ImU32 &fillColor, const ImU32 &strokeColor, bool strokeClosed, float strokeThickness)    {
         if (!dl) return;
-        if ((fillColor & IM_COL32_A_MASK) != 0) dl->AddConvexPolyFilled(dl->_Path.Data, dl->_Path.Size, fillColor, antiAliased);
-        if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness, antiAliased);
+        if ((fillColor & IM_COL32_A_MASK) != 0) dl->AddConvexPolyFilled(dl->_Path.Data, dl->_Path.Size, fillColor);
+        if ((strokeColor& IM_COL32_A_MASK)!= 0 && strokeThickness>0) dl->AddPolyline(dl->_Path.Data, dl->_Path.Size, strokeColor, strokeClosed, strokeThickness);
         dl->PathClear();
     }
-    static void ImDrawListAddRect(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColor, const ImU32 &strokeColor, float rounding, int rounding_corners, float strokeThickness, bool antiAliased) {
+    static void ImDrawListAddRect(ImDrawList *dl, const ImVec2 &a, const ImVec2 &b, const ImU32 &fillColor, const ImU32 &strokeColor, float rounding, int rounding_corners, float strokeThickness) {
         if (!dl || (((fillColor & IM_COL32_A_MASK) == 0) && ((strokeColor & IM_COL32_A_MASK) == 0)))  return;
         dl->PathRect(a, b, rounding, rounding_corners);
-        ImDrawListPathFillAndStroke(dl,fillColor,strokeColor,true,strokeThickness,antiAliased);
+        ImDrawListPathFillAndStroke(dl,fillColor,strokeColor,true,strokeThickness);
     }
 
 
@@ -315,10 +315,10 @@ namespace ImGuiMiniGames {
         ImGuiIO& io = ImGui::GetIO();
         if (mustReInit) ImGui::SetNextWindowFocus();
         ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImGui::ColorConvertU32ToFloat4(style.colors[Mine::Style::Color_Background]));
-	ImGui::BeginChild("Mine Game Scrolling Region", ImVec2(0,0), false,fitToScreen ? (ImGuiWindowFlags_NoScrollbar||ImGuiWindowFlags_NoScrollWithMouse) : (ImGuiWindowFlags_HorizontalScrollbar/*|ImGuiWindowFlags_AlwaysHorizontalScrollbar|ImGuiWindowFlags_AlwaysVerticalScrollbar*/));
+    ImGui::BeginChild("Mine Game Scrolling Region", ImVec2(0,0), false,fitToScreen ? (ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse) : ImGuiWindowFlags_HorizontalScrollbar);
 
         // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
-        const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetParentWindow() && ImGui::GetParentWindow()->Active);
+        const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
         const bool isHovered = ImGui::IsWindowHovered();
         ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -376,7 +376,7 @@ namespace ImGuiMiniGames {
                 const ImVec2 textSize = ImGui::CalcTextSize(pausedText);
                 const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.15f+ImGui::GetScrollY());
                 const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                 draw_list->AddText(start,colorText,pausedText);
                 //--------------------------------------
             }
@@ -387,7 +387,7 @@ namespace ImGuiMiniGames {
             const ImVec2 textSize = ImGui::CalcTextSize(controlsText)*fontScaling;
             const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.65f+ImGui::GetScrollY());
             const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-            ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+            ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
             draw_list->AddText(GImGui->Font,GImGui->FontSize*fontScaling,start,colorText,controlsText);
 
 
@@ -576,7 +576,7 @@ namespace ImGuiMiniGames {
                     }
                     const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
                     const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                     draw_list->AddText(start,colorText,gameWonText);
                 }
                 else {
@@ -589,7 +589,7 @@ namespace ImGuiMiniGames {
                     }
                     const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
                     const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Mine::Style::Color_OpenCellBackground],style.colors[Mine::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                     draw_list->AddText(start,colorText,gameOverText);
                 }
             }
@@ -1081,7 +1081,7 @@ namespace ImGuiMiniGames {
             ImGui::BeginChild("Sudoku Game Scrolling Region", ImVec2(0,0), false,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
 
             // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
-            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetParentWindow() && ImGui::GetParentWindow()->Active);
+            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
             const bool isHovered = ImGui::IsWindowHovered();
             ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -1128,7 +1128,7 @@ namespace ImGuiMiniGames {
                     const ImVec2 textSize = ImGui::CalcTextSize(pausedText);
                     const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.15f+ImGui::GetScrollY());
                     const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                     draw_list->AddText(start,colorText,pausedText);
                     //--------------------------------------
                 }
@@ -1139,7 +1139,7 @@ namespace ImGuiMiniGames {
                 const ImVec2 textSize = ImGui::CalcTextSize(controlsText)*fontScaling;
                 const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.65f+ImGui::GetScrollY());
                 const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                 draw_list->AddText(GImGui->Font,GImGui->FontSize*fontScaling,start,colorText,controlsText);
 
 
@@ -1384,7 +1384,7 @@ namespace ImGuiMiniGames {
                         }
                         const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
                         const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                        ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                        ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                         draw_list->AddText(start,colorText,gameWonText);
                     }
                     else {
@@ -1397,7 +1397,7 @@ namespace ImGuiMiniGames {
                         }
                         const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
                         const ImVec2 enlargement(textLineHeight*0.25f,0.f);
-                        ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale,true);
+                        ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Sudoku::Style::Color_CellBackground],style.colors[Sudoku::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
                         draw_list->AddText(start,colorText,gameOverText);
                     }
                 }
@@ -1472,6 +1472,436 @@ namespace ImGuiMiniGames {
 
     Sudoku::Style Sudoku::Style::style;
 #   endif //NO_IMGUIMINIGAMES_SUDOKU
+
+
+#   ifndef NO_IMGUIMINIGAMES_FIFTEEN
+
+
+    struct FifteenHS {
+        struct Coord {
+            int x,y;
+            Coord() : x(-1),y(-1) {}
+            Coord(int _x,int _y) : x(_x),y(_y) {}
+            bool operator==(const Coord& c) const {return (c.x==x && c.y==y);}
+        };
+        static const int MAX_CELL_SIZE = 7;         // Actually it's hard-coded (= can't be changed)
+        int cell_size;
+        static const char* Title;
+        int cells[MAX_CELL_SIZE][MAX_CELL_SIZE];
+        Coord empty;
+        bool paused;
+        int frameCount;float startTime,currentTime;
+        bool inited;
+        int comboSelectedIndex;
+        enum GamePhase {
+            GP_Titles=0,
+            GP_Playing,
+            GP_GameOver
+        };
+        unsigned char gamePhase;bool gameWon;
+        float glyphWidths[MAX_CELL_SIZE*MAX_CELL_SIZE];
+        char glyphChars[MAX_CELL_SIZE*MAX_CELL_SIZE][4];
+
+        void resetVariables() {
+            paused=false;frameCount=ImGui::GetFrameCount();
+            startTime=0;currentTime=0;
+            gamePhase=GP_Titles;gameWon=false;
+            //resetAllCells(_cell_size);
+        }
+        FifteenHS() {resetVariables();inited=false;comboSelectedIndex=1;}
+        ~FifteenHS() {}
+        inline bool isCellMovable(const Coord& coord) const {
+            if (coord==empty) return false;
+            return (coord.x==empty.x || coord.y==empty.y);
+        }
+        inline bool moveCell(const Coord& coord) {
+            if (!isCellMovable(coord)) return false;
+            if (coord.x==empty.x)   {
+                if (empty.y<coord.y)    {
+                    for (int i=empty.y;i<coord.y;i++) cells[coord.x][i]=cells[coord.x][i+1];
+                }
+                else {
+                    for (int i=empty.y;i>coord.y;i--) cells[coord.x][i]=cells[coord.x][i-1];
+                }
+            }
+            else {
+                if (empty.x<coord.x)    {
+                    for (int i=empty.x;i<coord.x;i++) cells[i][coord.y]=cells[i+1][coord.y];
+                }
+                else {
+                    for (int i=empty.x;i>coord.x;i--) cells[i][coord.y]=cells[i-1][coord.y];
+                }
+            }
+            cells[coord.x][coord.y]=0;
+            empty.x=coord.x;
+            empty.y=coord.y;
+            return true;
+        }
+        inline bool gameCompleted() const {
+            if (empty.x!=empty.y || empty.x!=cell_size-1) return false;
+            int cnt=1,maxCnt=cell_size*cell_size-1;
+            //fprintf(stderr,"--------------- (cell_size=%d)\n",cell_size);
+            for (int y=0;y<cell_size;y++) {
+                for (int x=0;x<cell_size;x++) {
+                    //fprintf(stderr,"%d\t",cells[y][x]);
+                    if (cnt>=maxCnt) break;
+                    if (cells[y][x]!=cnt++) return false;
+                }
+                //fprintf(stderr,"\n");
+            }
+            //fprintf(stderr,"---------------\n");
+            return true;
+        }
+
+        void resetAllCells(int _cell_size)	{
+           cell_size = _cell_size;
+            int cnt=1;
+            for (int y=0;y<cell_size;y++) {
+                for (int x=0;x<cell_size;x++) {
+                    cells[y][x]=cnt++;
+                }
+            }
+            cells[cell_size-1][cell_size-1] = 0;
+            empty.x=empty.y=cell_size-1;
+        }
+
+        void initNewGame()  {
+            IM_ASSERT(comboSelectedIndex>=0 && comboSelectedIndex<5);
+            resetVariables();
+            resetAllCells(comboSelectedIndex+3);
+            // shuffle cells---
+            const float puzzle_rand = (float)cell_size/(float)RAND_MAX;
+            const int numShuffleMoves=cell_size*256/4;
+            for (int i=0;i<numShuffleMoves;i++) {
+                Coord coord((int) ((float)rand()*puzzle_rand),(int) ((float)rand()*puzzle_rand));
+                IM_ASSERT(coord.x>=0 && coord.x<cell_size);
+                IM_ASSERT(coord.y>=0 && coord.y<cell_size);
+                if (!moveCell(coord) || gameCompleted()) --i;
+            }
+            // ----------------
+            gameWon = false;
+        }
+
+
+
+
+        void render() {
+            Fifteen::Style& style = Fifteen::Style::Get();
+
+            if (!inited) {
+                inited = true;
+                srand(ImGui::GetTime()*10.f);
+
+                const float textLineHeight = ImGui::GetTextLineHeight();
+                for (int i=0;i<MAX_CELL_SIZE*MAX_CELL_SIZE;i++) {
+                    sprintf(glyphChars[i],"%d",i);
+                    glyphWidths[i] = ImGui::CalcTextSize(glyphChars[i]).x/textLineHeight;
+		    //fprintf(stderr,"%d %s %1.4f\n",i,glyphChars[i],glyphWidths[i]);
+                }
+
+                initNewGame();
+            }
+
+            ImU32 colorText = style.colors[Fifteen::Style::Color_Text];
+            if (colorText>>24==0) colorText = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+
+            ImGui::PushID(this);
+            bool mustReInit = false;
+            ImGui::BeginGroup();
+            if (gamePhase == GP_Playing) {
+                if (ImGui::Button("Quit Game##FifteenQuitGame")) {gamePhase = GP_Titles;mustReInit=true;}
+            }
+            else if (gamePhase == GP_GameOver) {
+                if (ImGui::Button("New Game##FifteenQuitGame")) {gamePhase = GP_Titles;mustReInit=true;}
+            }
+            if (gamePhase == GP_Titles || mustReInit) {
+                static const char* Types[] = {"Eight","Fifteen","TwentyFour","ThirtyFive","FortyEight"};
+                ImGui::PushItemWidth(ImGui::GetWindowWidth()*0.35f);
+                if (mustReInit || ImGui::Combo("Game Type##FifteenGameType",&comboSelectedIndex,Types,sizeof(Types)/sizeof(Types[0]),sizeof(Types)/sizeof(Types[0])))   {
+                    mustReInit = true;
+                    initNewGame();
+                }
+                ImGui::PopItemWidth();
+            }
+            ImGui::EndGroup();
+
+            ImGui::SameLine(ImGui::GetWindowWidth()*0.35f);
+
+            ImGui::BeginGroup();
+            if (gamePhase != GP_Titles && !mustReInit) {
+                if (gamePhase == GP_Playing) {
+                    int newFrame = ImGui::GetFrameCount();
+                    if (newFrame==frameCount+1 && !paused
+        #               ifdef IMGUI_USE_AUTO_BINDING
+                            && !gImGuiPaused && !gImGuiWereOutsideImGui
+        #               endif //IMGUI_USE_AUTO_BINDING
+                            ) {
+                        currentTime = ImGui::GetTime() - startTime;
+                    }
+                    else startTime = ImGui::GetTime() - currentTime;
+                    frameCount = newFrame;
+                }
+                const unsigned int minutes = (unsigned int)currentTime/60;
+                const unsigned int seconds = (unsigned int)currentTime%60;
+                ImGui::Text("Time:  %um:%2us",minutes,seconds);
+                //ImGui::SameLine(0,20);ImGui::Text("Cells: %d",numOpenCells);
+            }
+            ImGui::EndGroup();
+
+            ImGui::PopID();
+
+            ImVec2 gridSize(cell_size,cell_size);
+
+
+	    //ImGuiIO& io = ImGui::GetIO();
+            if (mustReInit) ImGui::SetNextWindowFocus();
+            ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, ImGui::ColorConvertU32ToFloat4(style.colors[Fifteen::Style::Color_Background]));
+            ImGui::BeginChild("Fifteen Game Scrolling Region", ImVec2(0,0), false,ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoScrollWithMouse);
+
+            // Following line is important if we want to avoid clicking on the window just to get the focus back (AFAICS, but there's probably some better way...)
+            const bool isFocused = ImGui::IsWindowFocused() || ImGui::IsRootWindowFocused() || (ImGui::GetCurrentWindow() && ImGui::GetCurrentWindow()->Active);
+            const bool isHovered = ImGui::IsWindowHovered();
+            ImGuiWindow* window = ImGui::GetCurrentWindow();
+
+            bool LMBclick = false, RMBclick = false, isPclicked = false;
+            if (isFocused && isHovered && !mustReInit) {
+                LMBclick = ImGui::IsMouseClicked(0);
+                RMBclick = ImGui::IsMouseReleased(1);
+                isPclicked = ImGui::IsKeyPressed(style.keyPause,false);
+                if (isPclicked && gamePhase == GP_Playing) paused=!paused;
+            }
+
+
+            float textLineHeight = ImGui::GetTextLineHeight();
+            ImVec2 gridDimensions = gridSize * (textLineHeight+window->FontWindowScale)  + ImVec2(0.1f*textLineHeight,0.1f*textLineHeight);
+            ImVec2 gridOffset(0,0);
+            if (gridDimensions.x!=window->Size.x && gridDimensions.y!=window->Size.y) {
+                ImVec2 ratios(gridDimensions.x/window->Size.x,gridDimensions.y/window->Size.y);
+                // Fill X or Y Window Size
+                window->FontWindowScale/= (ratios.x>=ratios.y) ? ratios.x : ratios.y;
+
+                textLineHeight = ImGui::GetTextLineHeight();
+                gridDimensions = gridSize * (textLineHeight+window->FontWindowScale);// + ImVec2(0.1f*textLineHeight,0.1f*textLineHeight);
+            }
+            if (gridDimensions.x<window->Size.x) gridOffset.x = (window->Size.x-gridSize.x*(textLineHeight+window->FontWindowScale))*0.5f;
+            if (gridDimensions.y<window->Size.y) gridOffset.y = (window->Size.y-gridSize.y*(textLineHeight+window->FontWindowScale))*0.5f;
+
+
+
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            ImVec2 canvasSize = window->Size;
+            ImVec2 win_pos = ImGui::GetCursorScreenPos();
+
+            if (gamePhase==GP_Playing && (/*!isFocused ||*/ paused /*|| !ImGui::IsMouseHoveringWindow()*/
+                              #                                       ifdef IMGUI_USE_AUTO_BINDING
+                                          || gImGuiPaused || gImGuiWereOutsideImGui
+                              #                                       endif //IMGUI_USE_AUTO_BINDING
+                                          ))   {
+                // Game Paused here
+
+                if (((unsigned)(ImGui::GetTime()*10.f))%10<5)  {
+                    // Display "PAUSED":-------------------
+                    static const char pausedText[] = "PAUSED";
+                    const ImVec2 textSize = ImGui::CalcTextSize(pausedText);
+                    const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.15f+ImGui::GetScrollY());
+                    const ImVec2 enlargement(textLineHeight*0.25f,0.f);
+                    ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Fifteen::Style::Color_CellBackground],style.colors[Fifteen::Style::Color_Text],4.f,0x0F,window->FontWindowScale);
+                    draw_list->AddText(start,colorText,pausedText);
+                    //--------------------------------------
+                }
+
+                /*// Display controls in a smaller font:
+                static const char controlsText[] = "CONTROLS:\n\nLMB: write annotations.\nMW or RMB: set a cell number and\n    toggle annotations on and off.";
+                const float fontScaling = 0.35f;
+                const ImVec2 textSize = ImGui::CalcTextSize(controlsText)*fontScaling;
+                const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.65f+ImGui::GetScrollY());
+                const ImVec2 enlargement(textLineHeight*0.25f,0.f);
+                ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Fifteen::Style::Color_CellBackground],style.colors[Fifteen::Style::Color_Grid],4.f,0x0F,window->FontWindowScale);
+                draw_list->AddText(GImGui->Font,GImGui->FontSize*fontScaling,start,colorText,controlsText);
+                */
+
+            }
+            else {
+
+
+                //const ImU32& GRID_COLOR = style.colors[Fifteen::Style::Color_Grid];
+                const float GRID_SZ = textLineHeight+window->FontWindowScale;//32.f;
+                const ImVec2 grid_len = gridSize * GRID_SZ;
+                const float grid_Line_width = window->FontWindowScale;
+		const float rounding = style.cellRounding;
+        float thickness = 5.f*grid_len.x/350.f;
+
+		// Display Background
+		draw_list->AddRectFilled(win_pos+gridOffset,win_pos+gridOffset+grid_len+ImVec2(grid_Line_width,grid_Line_width),style.colors[Fifteen::Style::Color_Background],rounding,ImDrawCornerFlags_All);
+                draw_list->AddRect(win_pos+gridOffset,win_pos+gridOffset+grid_len+ImVec2(grid_Line_width,grid_Line_width),style.colors[Fifteen::Style::Color_Text],rounding,ImDrawCornerFlags_All,thickness);
+
+        thickness*= 4.f/(float) (comboSelectedIndex+3);
+
+                // Detect the cell under the mouse.
+                Coord mouseCell(-1,-1);
+                bool isMouseCellValid = false;
+		if (isFocused && isHovered && !mustReInit) {
+		    if (gamePhase != GP_GameOver)  {
+			ImVec2 mp = ImGui::GetMousePos() - win_pos - gridOffset;
+			if (mp.x>0 && mp.y>0)   {
+			    mouseCell.y = mp.x/GRID_SZ;
+			    mouseCell.x = mp.y/GRID_SZ;
+			    // Note that here we return isMouseCellValid = false if the cell is movable!
+			    if (mouseCell.y>=gridSize.y || mouseCell.x>=gridSize.x || !isCellMovable(mouseCell)) {mouseCell.x=mouseCell.y=-1;}
+			    else isMouseCellValid = true;
+			}
+			if (isMouseCellValid) {
+			    bool mustCheckForGameWon = false;
+			    if ((gamePhase==GP_Titles || gamePhase == GP_Playing) && (LMBclick || RMBclick))  {
+				if (gamePhase==GP_Titles) {
+				    gamePhase = GP_Playing;
+				    //Reset game data (without resetting the puzzle) here:
+				    currentTime = 0;
+				    frameCount = ImGui::GetFrameCount();
+				    startTime = ImGui::GetTime();
+				    gameWon = false;
+				}
+				moveCell(mouseCell);
+				mustCheckForGameWon=true;
+			    }
+			    if (mustCheckForGameWon)    {
+				gameWon = gameCompleted();
+				if (gameWon) gamePhase = GP_GameOver;
+			    }
+			}
+			//fprintf(stderr,"Clicked cell[c:%d][r:%d].\n",mouseCellColumn,mouseCellRow);
+		    }
+
+		}
+
+
+                // draw cells:
+                const ImVec2 baseStart = win_pos+gridOffset+ImVec2(0.f/*grid_Line_width*/,grid_Line_width);
+                ImVec2 start(0,0);
+
+		for (int c=0;c<cell_size;c++)  {
+                    for (int r=0;r<cell_size;r++)  {
+                        const int number = cells[r][c];
+                        start = baseStart+ImVec2(c*GRID_SZ,r*GRID_SZ);
+                        //ImVec2 start(win_pos+gridOffset+ImVec2(grid_Line_width,grid_Line_width)+ImVec2(mouseCellColumn*GRID_SZ,mouseCellRow*GRID_SZ));
+
+			//if (gamePhase != GP_Titles)
+			{
+                            if (number!=0)   {
+                                // Optional line to paint cell bg color
+                                const ImU32 cellBgColor = (isMouseCellValid && mouseCell.x==r && mouseCell.y==c) ? style.colors[Fifteen::Style::Color_HoveredCellBackground] : style.colors[Fifteen::Style::Color_CellBackground];
+                                draw_list->AddRectFilled(start+ImVec2(grid_Line_width,0.f),start+ImVec2(grid_Line_width+textLineHeight,textLineHeight),cellBgColor,rounding,ImDrawCornerFlags_All);
+                                draw_list->AddRect(start+ImVec2(grid_Line_width,0.f),start+ImVec2(grid_Line_width+textLineHeight,textLineHeight),style.colors[Fifteen::Style::Color_Text],rounding,ImDrawCornerFlags_All,thickness);
+
+
+				// Draw number (the args of these methods are totally wrong)
+				if (number<10) draw_list->AddText(start+ImVec2((grid_Line_width+glyphWidths[number]*textLineHeight)*0.5f,0.f),style.colors[Fifteen::Style::Color_Numbers],glyphChars[number]);
+				else	       draw_list->AddText(start+ImVec2((grid_Line_width-glyphWidths[number])*0.5f,0.f),style.colors[Fifteen::Style::Color_Numbers],glyphChars[number]);
+			    }
+                        }
+                    }
+                }
+
+
+                // Draw end game messages
+                if (gamePhase==GP_GameOver) {
+                    const float elapsedSeconds = (float)(ImGui::GetTime()-currentTime-startTime);
+            const float fontScaling = 0.365f;
+                    if (gameWon) {
+                        static char gameWonText[256] = "";
+                        sprintf(gameWonText,"GAME COMPLETED\nTIME: %um : %us",((unsigned)currentTime)/60,((unsigned)currentTime)%60);
+			const ImVec2 textSize = ImGui::CalcTextSize(gameWonText)*fontScaling;
+                        ImVec2 deltaPos(0.f,0.f);
+                        if (elapsedSeconds<10.f) {
+                            deltaPos.x = canvasSize.x * sin(2.f*elapsedSeconds) * (10.f-elapsedSeconds)*0.025f;
+                            deltaPos.y = canvasSize.y * cos(2.f*elapsedSeconds) * (10.f-elapsedSeconds)*0.025f;
+                        }
+                        const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
+                        const ImVec2 enlargement(textLineHeight*0.25f,0.f);
+            ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Fifteen::Style::Color_CellBackground],style.colors[Fifteen::Style::Color_Text],4.f,0x0F,window->FontWindowScale*fontScaling);
+			draw_list->AddText(GImGui->Font,GImGui->FontSize*fontScaling,start,colorText,gameWonText);
+                    }
+                    else {
+                        static const char gameOverText[] = "GAME\nOVER";
+                        const ImVec2 textSize = ImGui::CalcTextSize(gameOverText);
+                        ImVec2 deltaPos(0.f,0.f);
+                        if (elapsedSeconds<10.f) {
+                            deltaPos.x = canvasSize.x * sin(2.f*elapsedSeconds) * (10.f-elapsedSeconds)*0.025f;
+                            deltaPos.y = canvasSize.y * cos(2.f*elapsedSeconds) * (10.f-elapsedSeconds)*0.025f;
+                        }
+                        const ImVec2 start = win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX()+deltaPos.x,(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()-deltaPos.y);
+                        const ImVec2 enlargement(textLineHeight*0.25f,0.f);
+                        ImDrawListAddRect(draw_list,start-enlargement,start+textSize+enlargement,style.colors[Fifteen::Style::Color_CellBackground],style.colors[Fifteen::Style::Color_Text],4.f,0x0F,window->FontWindowScale);
+                        draw_list->AddText(start,colorText,gameOverText);
+                    }
+                }
+                /*const ImVec2 textSize = ImGui::CalcTextSize(title);
+            const ImU32 col = IM_COL32(0,255,0,255);
+            draw_list->AddText(win_pos+ImVec2((canvasSize.x-textSize.x)*0.5f+ImGui::GetScrollX(),(canvasSize.y-textSize.y)*0.5f+ImGui::GetScrollY()),col,title);*/
+
+                //if (isMouseDraggingForScrolling) scrolling = scrolling - io.MouseDelta;
+            }
+
+            // Sets scrollbars properly:
+            ImGui::SetCursorPos(ImGui::GetCursorPos() + gridSize * (textLineHeight+window->FontWindowScale) + ImVec2(0.1f*textLineHeight,0.1f*textLineHeight));
+
+            ImGui::EndChild();
+            ImGui::PopStyleColor();
+        }
+
+    };
+
+    const char* FifteenHS::Title = "Fifteen Game";
+
+    Fifteen::Fifteen() : imp(NULL) {
+        imp = (FifteenHS*) ImGui::MemAlloc(sizeof(FifteenHS));
+        IM_PLACEMENT_NEW(imp) FifteenHS();
+        IM_ASSERT(imp);
+    }
+    Fifteen::~Fifteen() {
+        if (imp)    {
+            imp->~FifteenHS();
+            ImGui::MemFree(imp);
+        }
+    }
+    void Fifteen::render() {
+        if (imp) imp->render();
+    }
+
+    Fifteen::Style::Style()    {
+	colors[Color_Text] =                     IM_COL32(40,136,40,255);
+	colors[Color_Background] =           IM_COL32_BLACK_TRANS;//    IM_COL32(20,20,20,255);//IM_COL32(242,241,240,255);
+	colors[Color_CellBackground] =       IM_COL32(222,222,90,255);
+	colors[Color_HoveredCellBackground] = IM_COL32(255,255,150,255);
+	colors[Color_Numbers] = IM_COL32_BLACK;
+
+	cellRounding = 8.f;
+    keyPause = (int) 'p';
+    }
+#   ifndef NO_IMGUIMINIGAMES_MINE
+    void Fifteen::Style::setFromMineGameStyle(const Mine::Style& ms) {
+        colors[Style::Color_Text]                                   =   ms.colors[Mine::Style::Color_Text];
+        colors[Color_Numbers]                                       =   ms.colors[Mine::Style::Color_Mine];
+        colors[Style::Color_Background]                             =   ms.colors[Mine::Style::Color_Background];
+        colors[Style::Color_CellBackground]                         =   ms.colors[Mine::Style::Color_OpenCellBackground];
+        colors[Style::Color_HoveredCellBackground]                  =   ms.colors[Mine::Style::Color_HoveredCellBackground];
+        keyPause = ms.keyPause;
+    }
+#   endif //NO_IMGUIMINIGAMES_MINE
+#   ifndef NO_IMGUIMINIGAMES_SUDOKU
+    void Fifteen::Style::setFromSudokuGameStyle(const Sudoku::Style& ms) {
+        colors[Style::Color_Text]                                   =   ms.colors[Sudoku::Style::Color_Text];
+        colors[Color_Numbers]                                       =   ms.colors[Sudoku::Style::Color_Numbers];
+        colors[Style::Color_Background]                             =   ms.colors[Sudoku::Style::Color_Background];
+        colors[Style::Color_CellBackground]                         =   ms.colors[Sudoku::Style::Color_CellBackground];
+        colors[Style::Color_HoveredCellBackground]                  =   ms.colors[Sudoku::Style::Color_HoveredCellBackground];
+        keyPause = ms.keyPause;
+    }
+#   endif //NO_IMGUIMINIGAMES_SUDOKU
+
+    Fifteen::Style Fifteen::Style::style;
+#   endif //NO_IMGUIMINIGAMES_FIFTEEN
 
 } // namespace ImGuiMiniGames
 

@@ -271,7 +271,7 @@ class Node
         bool nodeEdited = false;
         for (int i=0,isz=fields.size();i<isz;i++)   {
             FieldInfo& f = fields[i];
-            nodeEdited|=f.render(nodeWidth);
+            nodeEdited|=f.render((int)nodeWidth);
         }
         return nodeEdited;
     }
@@ -353,7 +353,7 @@ struct NodeLink
         OutputNode = output_node; OutputSlot = output_slot;
     }
 
-    friend struct NodeGraphEditor;
+    friend class NodeGraphEditor;
 };
 
 class NodeGraphEditor
@@ -472,21 +472,21 @@ class NodeGraphEditor
         }
 
         IMGUI_API static bool Edit(Style& style);
-        static void Reset(Style& style) {style = Style();}
+        static void Reset(Style& style_) {style_ = Style();}
 
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
         IMGUI_API static bool Save(const Style& style,ImGuiHelper::Serializer& s);
-        static inline bool Save(const Style &style, const char *filename)    {
+        static inline bool Save(const Style &style_, const char *filename)    {
             ImGuiHelper::Serializer s(filename);
-            return Save(style,s);
+            return Save(style_,s);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
         IMGUI_API static bool Load(Style& style, ImGuiHelper::Deserializer& d, const char ** pOptionalBufferStart=NULL);
-        static inline bool Load(Style& style,const char* filename) {
+        static inline bool Load(Style& style_,const char* filename) {
             ImGuiHelper::Deserializer d(filename);
-            return Load(style,d);
+            return Load(style_,d);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #       endif //NO_IMGUIHELPER_SERIALIZATION
@@ -678,7 +678,7 @@ class NodeGraphEditor
     // It should be better not to add/delete node/links in the callbacks... (but all is untested here)
     void setNodeCallback(NodeCallback cb) {nodeCallback=cb;}
     void setLinkCallback(LinkCallback cb) {linkCallback=cb;}
-    void setNodeEditedCallbackTimeThreshold(int seconds) {nodeEditedTimeThreshold=seconds;}
+    void setNodeEditedCallbackTimeThreshold(int seconds) {nodeEditedTimeThreshold=(float)seconds;}
 
 //-------------------------------------------------------------------------------
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))

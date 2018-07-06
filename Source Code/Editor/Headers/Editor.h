@@ -166,7 +166,6 @@ class Editor : public PlatformContextComponent,
 
     I64 _activeWindowGUID = -1;
     std::unique_ptr<MenuBar> _menuBar;
-    std::unique_ptr<ImwWindowManagerDivide> _windowManager;
     std::unique_ptr<PanelManager> _panelManager;
     std::unique_ptr<ApplicationOutput> _applicationOutput;
 

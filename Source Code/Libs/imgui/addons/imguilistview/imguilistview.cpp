@@ -88,7 +88,7 @@ bool ListViewBase::render(float listViewHeight, const ImVector<int> *pOptionalCo
     bool skipDisplaying = false;
     if (!useFullHeight) {
         //ImGui::SetNextWindowContentWidth(ImGui::GetWindowContentRegionWidth() + 50);    // Last number is hard-coded! Bad!
-        if (contentRegionWidthForHorizontalScrolling>0) ImGui::SetNextWindowContentWidth(contentRegionWidthForHorizontalScrolling);
+        if (contentRegionWidthForHorizontalScrolling>0) ImGui::SetNextWindowContentSize(ImVec2(contentRegionWidthForHorizontalScrolling,0.f));
         skipDisplaying = !ImGui::BeginChild("##ListViewRows",ImVec2(0,listViewHeight),false,contentRegionWidthForHorizontalScrolling>0 ? ImGuiWindowFlags_HorizontalScrollbar : 0);
     }
     if (!skipDisplaying) {
@@ -142,7 +142,7 @@ bool ListViewBase::render(float listViewHeight, const ImVector<int> *pOptionalCo
                 isThisRowSelected = (selectedRow == row);
                 mustDisplayEditor = isThisRowSelected && hdEditable && selectedColumn==col && hd->type.headerType!=HT_CUSTOM  && hd->type.headerType!=HT_ICON && editorAllowed;
 
-                if (colID==0 && row==scrollToRow) ImGui::SetScrollPosHere();
+                if (colID==0 && row==scrollToRow) ImGui::SetScrollHere();
 
                 cd.reset();
                 getCellData((size_t)row,col,cd);

@@ -332,6 +332,7 @@ static void InitImGui(const ImImpl_InitParams* pOptionalInitParams=NULL)    {
     io.KeyMap[ImGuiKey_PageDown] =      specialCharMapAddend + GLUT_KEY_PAGE_DOWN;  // Next
     io.KeyMap[ImGuiKey_Home] =          specialCharMapAddend + GLUT_KEY_HOME;    // Home
     io.KeyMap[ImGuiKey_End] =           specialCharMapAddend + GLUT_KEY_END;     // End
+    io.KeyMap[ImGuiKey_Insert] =        specialCharMapAddend + GLUT_KEY_INSERT;
     // -----------------------------------------
 
     io.KeyMap[ImGuiKey_Delete] =    127;      // Delete  (ascii) (0x006F)

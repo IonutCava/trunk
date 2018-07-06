@@ -106,6 +106,9 @@ inline static const char** GetLanguageNames()   {
 }
 inline static int GetNumLanguages() {return (int) LANG_COUNT;}
 
+IMGUI_API const char* GetSupportedExtensions();     // e.g. ".cpp;.h;.cs;.lua" or something like that
+IMGUI_API Language GetLanguageFromExtension(const char* ext);   // e.g. ".cpp" (case insensitive)
+
 enum FoldingType {
     FOLDING_TYPE_PARENTHESIS = 0,
     FOLDING_TYPE_COMMENT,
@@ -262,21 +265,21 @@ public:
         IMGUI_API Style();
 
         IMGUI_API static bool Edit(Style& style);
-        static void Reset(Style& style) {style = Style();}
+        static void Reset(Style& style_) {style_ = Style();}
 
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
         IMGUI_API static bool Save(const Style& style,ImGuiHelper::Serializer& s);
-        static inline bool Save(const Style &style, const char *filename)    {
+        static inline bool Save(const Style &style_, const char *filename)    {
             ImGuiHelper::Serializer s(filename);
-            return Save(style,s);
+            return Save(style_,s);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
         IMGUI_API static bool Load(Style& style, ImGuiHelper::Deserializer& d, const char ** pOptionalBufferStart=NULL);
-        static inline bool Load(Style& style,const char* filename) {
+        static inline bool Load(Style& style_,const char* filename) {
             ImGuiHelper::Deserializer d(filename);
-            return Load(style,d);
+            return Load(style_,d);
         }
 #       endif //NO_IMGUIHELPER_SERIALIZATION_LOAD
 #       endif //NO_IMGUIHELPER_SERIALIZATION
@@ -317,8 +320,9 @@ private:
     IMGUI_API void TextLineWithSH(const char *fmt...);
 
     IMGUI_API static void StaticInit();
-    friend bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Language lang,const ImVec2& size_arg, ImGuiInputTextFlags flags, ImGuiTextEditCallback callback, void* user_data);
-
+    friend bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Language lang,const ImVec2& size_arg, ImGuiInputTextFlags flags, ImGuiTextEditCallback callback, void* user_data, ImGuiID* pOptionalItemIDOut);
+    friend const char* GetSupportedExtensions();
+    friend Language GetLanguageFromExtension(const char* ext);
 };
 
 
@@ -328,8 +332,7 @@ private:
 namespace ImGuiCe {
 
 
-IMGUI_API bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Language lang =  ImGuiCe::LANG_CPP,const ImVec2& size_arg = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
-
+IMGUI_API bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Language lang =  ImGuiCe::LANG_CPP,const ImVec2& size_arg = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL,ImGuiID* pOptionalItemIDOut=NULL);
 
 } // namespace ImGuiCe
 
@@ -337,10 +340,27 @@ IMGUI_API bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGui
 namespace ImGui {
 
 
-inline bool InputTextWithSyntaxHighlighting(const char* labelJustForID, char* buf, size_t buf_size,ImGuiCe::Language lang =  ImGuiCe::LANG_CPP,const ImVec2& size_arg = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL) {
-    return ImGuiCe::BadCodeEditor(labelJustForID,buf,buf_size,lang,size_arg,flags,callback,user_data);
+inline bool InputTextWithSyntaxHighlighting(const char* labelJustForID, char* buf, size_t buf_size,ImGuiCe::Language lang =  ImGuiCe::LANG_CPP,const ImVec2& size_arg = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL,ImGuiID* pOptionalItemIDOut=NULL) {
+    return ImGuiCe::BadCodeEditor(labelJustForID,buf,buf_size,lang,size_arg,flags,callback,user_data,pOptionalItemIDOut);
 }
 
+// Tip: ImString is std::string when IMGUISTRING_STL_FALLBACK is defined globally (or at the top of addons/imguistring/imguistring.h
+// USAGE:
+/*
+    static ImString myCodeString = "Some code here";
+    static ImGuiID codeEditorID = 0;   // Needs to be static and set to zero (one per input text)
+    // It works better with a monospace font (but fonts must be passed using: ImGuiCe::SetFonts(...), not using ImGui::PushFont(...)/ImGui::PopFont()!)
+    ImGui::InputTextWithSyntaxHighlighting(codeEditorID,myCodeString,(ImGuiCe::Language)languageIndex,ImVec2(0,300));
+    // Known problem I'm not going to fix: You must use strlen(myCodeString.c_str()) to find the text size, since myCodeString.size() might be bigger
+    // Won't fix this because otherwise Undo/Redo can't have enough space to work.    
+*/
+// The EXPERIMENTAL ImGuiInputTextFlags_ResetText flag can be used to re-assign text WHILE the text box is Active/Focused (otherwise re-setting 'text' just works).
+// Note that the Undo/Redo stack is reset after it (and as a side-effect the textBox loses focus)
+// It should be used only at specific frames (not always).
+#ifndef ImGuiInputTextFlags_ResetText
+#   define ImGuiInputTextFlags_ResetText   (1 << 19)
+#endif //ImGuiInputTextFlags_ResetText
+IMGUI_API bool InputTextWithSyntaxHighlighting(ImGuiID& staticItemIDInOut, ImString& text,ImGuiCe::Language lang =  ImGuiCe::LANG_CPP,const ImVec2& size_arg = ImVec2(0,0), ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = NULL, void* user_data = NULL);
 
 }   // namespace ImGui
 
