@@ -123,7 +123,7 @@ class RenderingComponent : public SGNComponent {
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
-    void getRenderingProperties(vec4<F32>& propertiesOut, vec4<F32>& extraPropertiesOut) const;
+    void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
     inline const Material_ptr& getMaterialInstance() const { return _materialInstance; }
 

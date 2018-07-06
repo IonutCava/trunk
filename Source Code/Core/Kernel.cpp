@@ -53,7 +53,12 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _sceneUpdateLoopTimer(Time::ADD_TIMER("Scene Update Loop timer")),
       _physicsProcessTimer(Time::ADD_TIMER("Physics Process Timer")),
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
-      _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer"))
+      _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer")),
+      _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
+      _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
+      _renderTimer(Time::ADD_TIMER("Render Timer")),
+      _postFxRenderTimer(Time::ADD_TIMER("PostFX Timer")),
+      _blitToDisplayTimer(Time::ADD_TIMER("Blit to screen Timer"))
 {
 
     _appLoopTimer.addChildTimer(_appIdleTimer);
@@ -64,6 +69,11 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     _appScenePass.addChildTimer(_physicsProcessTimer);
     _appScenePass.addChildTimer(_sceneUpdateTimer);
     _appScenePass.addChildTimer(_flushToScreenTimer);
+    _flushToScreenTimer.addChildTimer(_preRenderTimer);
+    _flushToScreenTimer.addChildTimer(_postRenderTimer);
+    _flushToScreenTimer.addChildTimer(_renderTimer);
+    _flushToScreenTimer.addChildTimer(_postFxRenderTimer);
+    _flushToScreenTimer.addChildTimer(_blitToDisplayTimer);
     _sceneUpdateTimer.addChildTimer(_sceneUpdateLoopTimer);
 
     ResourceCache::createInstance();
@@ -326,40 +336,59 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
     Time::ScopedTimer time(_flushToScreenTimer);
+
+    
+        
+        
+        
+
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
 
-    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_START, evt);
+    {
+        Time::ScopedTimer time1(_preRenderTimer);
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_START, evt);
 
-    if (!frameMgr.frameEvent(evt)) {
-        return false;
+        if (!frameMgr.frameEvent(evt)) {
+            return false;
+        }
+
+        // perform time-sensitive shader tasks
+        if (!ShaderProgram::updateAll(deltaTime)) {
+            return false;
+        }
+
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
+        if (!frameMgr.frameEvent(evt)) {
+            return false;
+        }
     }
 
-    // perform time-sensitive shader tasks
-    if (!ShaderProgram::updateAll(deltaTime)){
-        return false;
+    
+    {
+        Time::ScopedTimer time2(_renderTimer);
+        RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState());
     }
-
-    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
-
-    if (!frameMgr.frameEvent(evt)) {
-        return false;
+    {
+        Time::ScopedTimer time3(_postFxRenderTimer);
+        PostFX::instance().apply();
     }
-
-    RenderPassManager::instance().render(_sceneMgr.getActiveScene().renderState());
-    PostFX::instance().apply();
-     
-    Attorney::GFXDeviceKernel::flushDisplay();
-
-    frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);
-
-    if (!frameMgr.frameEvent(evt)) {
-        return false;
+    {
+        Time::ScopedTimer time4(_blitToDisplayTimer);
+        Attorney::GFXDeviceKernel::flushDisplay();
     }
+    {
+        Time::ScopedTimer time5(_postRenderTimer);
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);
 
-    frameMgr.createEvent(_timingData._currentTime,  FrameEventType::FRAME_POSTRENDER_END, evt);
+        if (!frameMgr.frameEvent(evt)) {
+            return false;
+        }
 
-    if (!frameMgr.frameEvent(evt)) {
-        return false;
+        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_END, evt);
+
+        if (!frameMgr.frameEvent(evt)) {
+            return false;
+        }
     }
 
     return true;

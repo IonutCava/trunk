@@ -572,29 +572,28 @@ void SceneGraphNode::invalidateRelationshipCache() {
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<SceneGraphNode&>& callback) {
     ReadLock r_lock(_childLock);
-    for (SceneGraphNode_ptr& child : _children) {
-        if (child) {
-            callback(*child);
-        }
+    //Using childCount instead of a range-based for loops means that we can skip child null check
+    //as childCount should always be updated to reflect the actual number of node children
+    U32 childCount = _childCount;
+    for (U32 i = 0; i < childCount; ++i) {
+        callback(*_children[i]);
     }
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<const SceneGraphNode&>& callback) const {
     ReadLock r_lock(_childLock);
-    for (const SceneGraphNode_ptr& child : _children) {
-        if (child) {
-            callback(*child);
-        }
+    U32 childCount = _childCount;
+    for (U32 i = 0; i < childCount; ++i) {
+        callback(*_children[i]);
     }
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGraphNode&, bool>& callback) {
     ReadLock r_lock(_childLock);
-    for (SceneGraphNode_ptr& child : _children) {
-        if (child) {
-            if (!callback(*child)) {
-                return false;
-            }
+    U32 childCount = _childCount;
+    for (U32 i = 0; i < childCount; ++i) {
+        if (!callback(*_children[i])) {
+            return false;
         }
     }
 
@@ -603,11 +602,10 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGra
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<const SceneGraphNode&, bool>& callback) const {
     ReadLock r_lock(_childLock);
-    for (const SceneGraphNode_ptr& child : _children) {
-        if (child) {
-            if (!callback(*child)) {
-                return false;
-            }
+    U32 childCount = _childCount;
+    for (U32 i = 0; i < childCount; ++i) {
+        if (!callback(*_children[i])) {
+            return false;
         }
     }
 
@@ -616,32 +614,35 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<const Sc
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
+    U32 childCount = _childCount;
+    CLAMP<U32>(end, 0, childCount);
+    assert(start < end);
+
     for (U32 i = start; i < end; ++i) {
-        SceneGraphNode_ptr& child = _children[i];
-        if (child) {
-            callback(*child, i);
-        }
+        callback(*_children[i], i);
     }
 }
 
 void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
+    U32 childCount = _childCount;
+    CLAMP<U32>(end, 0, childCount);
+    assert(start < end);
+
     for (U32 i = start; i < end; ++i) {
-        const SceneGraphNode_ptr& child = _children[i];
-        if (child) {
-            callback(*child, i);
-        }
+        callback(*_children[i], i);
     }
 }
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
+    U32 childCount = _childCount;
+    CLAMP<U32>(end, 0, childCount);
+    assert(start < end);
+
     for (U32 i = start; i < end; ++i) {
-        SceneGraphNode_ptr& child = _children[i];
-        if (child) {
-            if (!callback(*child, i)) {
-                return false;
-            }
+        if (!callback(*_children[i], i)) {
+            return false;
         }
     }
 
@@ -650,12 +651,13 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneG
 
 bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
+    U32 childCount = _childCount;
+    CLAMP<U32>(end, 0, childCount);
+    assert(start < end);
+
     for (U32 i = start; i < end; ++i) {
-        const SceneGraphNode_ptr& child = _children[i];
-        if (child) {
-            if (!callback(*child, i)) {
-                return false;
-            }
+        if (!callback(*_children[i], i)) {
+            return false;
         }
     }
 

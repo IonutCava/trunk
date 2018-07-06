@@ -331,7 +331,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     }
 }
 
-void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, vec4<F32>& extraPropertiesOut) const {
+void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const {
     propertiesOut.set(_parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_SELECTED
                                                      ? -1.0f
                                                      : _parentSGN.getSelectionFlag() == SceneGraphNode::SelectionFlag::SELECTION_HOVER
@@ -342,8 +342,10 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, vec4<F
                       0.0);
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        extraPropertiesOut.x = to_float(mat->defaultReflectionTextureIndex());
-        extraPropertiesOut.y = to_float(mat->defaultRefractionTextureIndex());
+        reflectionIndex = to_float(mat->defaultReflectionTextureIndex());
+        refractionIndex = to_float(mat->defaultRefractionTextureIndex());
+    } else {
+        reflectionIndex = refractionIndex = 0.0f;
     }
 }
 

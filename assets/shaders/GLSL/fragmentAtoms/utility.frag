@@ -15,6 +15,13 @@ float DIST_TO_ZERO(float val) {
 float saturate(float v) { return clamp(v, 0.0, 1.0); }
 vec3  saturate(vec3 v)  { return clamp(v, 0.0, 1.0); }
 vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
+float overlay(float x, float y)
+{
+    if (x < 0.5)
+        return 2.0*x*y;
+    else
+        return 1.0 - 2.0*(1.0 - x)*(1.0 - y);
+}
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));

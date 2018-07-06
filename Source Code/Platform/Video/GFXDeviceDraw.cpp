@@ -150,10 +150,11 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
     dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphere().asVec4());
+    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+    renderable->getRenderingProperties(dataOut._properties, dataOut._normalMatrixWV.element(1, 3), dataOut._normalMatrixWV.element(2, 3));
     // Get the colour matrix (diffuse, specular, etc.)
     renderable->getMaterialColourMatrix(dataOut._colourMatrix);
-    // Get the material property matrix (alpha test, texture count, texture operation, etc.)
-    renderable->getRenderingProperties(dataOut._properties, dataOut._extraProperties);
+
     return dataOut;
 }
 
@@ -247,7 +248,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         bufferData._lasNodeCount = nodeCount;
 
         assert(cmdCount >= nodeCount);
-        bufferData._renderData->setData(_matricesData.data());
+        // If the buffer update required is large enough, just replace the entire thing
+        if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
+            bufferData._renderData->setData(_matricesData.data());
+        } else {
+            // Otherwise, just update the needed range to save bandwidth
+            bufferData._renderData->updateData(0, nodeCount, _matricesData.data());
+        }
 
         ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
         cmdBuffer.setData(_drawCommandsCache.data());

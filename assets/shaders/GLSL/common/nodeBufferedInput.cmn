@@ -5,6 +5,8 @@ struct NodeData {
     mat4 _worldMatrix;
     // [0][0] ... [2][2] = normal matrix
     // [0][3] = bone count
+	// [1][3] = reflection index
+	// [2][3] = refraction index
     // [3][0] ... [3][3] = bounding sphere
     mat4 _normalMatrixWV;
     // [0][0] ... [0][3] = albedo
@@ -20,10 +22,6 @@ struct NodeData {
     // z = lod level
     // w = occlusion flag
     vec4 _properties;
-    // x = environment reflection index
-    // y = environment refraction index
-    // z,w = reserved
-    vec4 _extraProperties;
 };
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
@@ -43,9 +41,6 @@ ivec4 dvd_BufferIntegerValues() {
     return ivec4(dvd_Matrices[VAR.dvd_drawID]._properties);
 }
 
-ivec4 dvd_BufferExtraIntegerValues() {
-    return ivec4(dvd_Matrices[VAR.dvd_drawID]._extraProperties);
-}
 
 #if defined(VERT_SHADER)
 #define dvd_boneCount     uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[0][3])
@@ -54,8 +49,8 @@ ivec4 dvd_BufferExtraIntegerValues() {
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
 #define dvd_lodLevel dvd_BufferIntegerValues().z
 #define dvd_customData dvd_Matrices[VAR.dvd_drawID]._properties.w
-#define dvd_reflectionIndex dvd_BufferExtraIntegerValues().x
-#define dvd_refractionIndex dvd_BufferExtraIntegerValues().y
+#define dvd_reflectionIndex uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[1][3])
+#define dvd_refractionIndex uint(dvd_Matrices[VAR.dvd_drawID]._normalMatrixWV[2][3])
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - parallax/relief mapping factor, w - reserved

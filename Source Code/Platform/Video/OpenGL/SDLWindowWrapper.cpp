@@ -76,8 +76,10 @@ namespace {
 };
 
 ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
-    g_ContextPool.init(HARDWARE_THREAD_COUNT() * 2, window);
+    assert(_mainRenderWindow == nullptr);
+    _mainRenderWindow = &window;
 
+    g_ContextPool.init(HARDWARE_THREAD_COUNT() * 2, window);
     GLUtil::_glRenderContext = SDL_GL_CreateContext(window.getRawWindow());
     if (GLUtil::_glRenderContext == nullptr)
     {
@@ -400,8 +402,7 @@ void GL_API::syncToThread(const std::thread::id& threadID) {
         bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
         assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
         ACKNOWLEDGE_UNUSED(ctxFound);
-        SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(),
-                           GLUtil::_glSecondaryContext);
+        SDL_GL_MakeCurrent(_mainRenderWindow->getRawWindow(), GLUtil::_glSecondaryContext);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well
         if (Config::ENABLE_GPU_VALIDATION) {

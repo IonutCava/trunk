@@ -31,6 +31,7 @@ layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
 };
 #endif
 
+// This could be split up in the future into frequent-infrequent blocks depending on update rate
 layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4  dvd_ProjectionMatrix;

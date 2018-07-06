@@ -183,6 +183,8 @@ void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingPar
     VAOBufferData& data = _bindings[vao];
     vectorAlg::vecSize count = data.size();
     assert(count > 0 && count > index);
+    ACKNOWLEDGE_UNUSED(count);
+
     data[index] = newParams;
 }
 

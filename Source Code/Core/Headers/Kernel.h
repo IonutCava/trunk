@@ -184,6 +184,12 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Time::ProfileTimer& _sceneUpdateLoopTimer;
     Time::ProfileTimer& _cameraMgrTimer;
     Time::ProfileTimer& _flushToScreenTimer;
+    Time::ProfileTimer& _preRenderTimer;
+    Time::ProfileTimer& _postRenderTimer;
+    Time::ProfileTimer& _renderTimer;
+    Time::ProfileTimer& _postFxRenderTimer;
+    Time::ProfileTimer& _blitToDisplayTimer;
+
     // Command line arguments
     I32 _argc;
     char** _argv;

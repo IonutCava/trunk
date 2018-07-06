@@ -105,12 +105,11 @@ DEFINE_SINGLETON(GFXDevice)
     typedef std::stack<vec4<I32>> ViewportStack;
 
   public:
-    struct NodeData {
+    struct NodeData : private NonCopyable {
         mat4<F32> _worldMatrix;
         mat4<F32> _normalMatrixWV;
         mat4<F32> _colourMatrix;
         vec4<F32> _properties;
-        vec4<F32> _extraProperties;
 
         NodeData()
         {
@@ -123,8 +122,6 @@ DEFINE_SINGLETON(GFXDevice)
     };
 
   public:  // GPU specific data
-   // Enough to hold a cubemap (e.g. environment stage has 6 passes)
-   static const U32 MAX_PASSES_PER_STAGE = 6;
 
    struct GPUBlock {
        GPUBlock() : _needsUpload(true),
