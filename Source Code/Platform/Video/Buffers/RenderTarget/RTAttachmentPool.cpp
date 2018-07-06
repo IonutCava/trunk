@@ -84,7 +84,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     RTAttachmentType type = descriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, descriptor._index);
 
-    ptr = std::make_shared<RTAttachment>(descriptor);
+    ptr.reset(new RTAttachment(descriptor));
 
     ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
                                                             _parent.name().c_str(),
@@ -120,7 +120,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor&
     RTAttachmentType type = internalDescriptor._type;
     RTAttachment_ptr& ptr = checkAndRemoveExistingAttachment(type, internalDescriptor._index);
 
-    ptr = std::make_shared<RTAttachment>(internalDescriptor, descriptor._attachment);
+    ptr.reset(new RTAttachment(internalDescriptor, descriptor._attachment));
 
      ++_attachmentCount[to_U32(type)];
 

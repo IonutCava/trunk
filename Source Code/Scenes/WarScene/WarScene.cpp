@@ -579,23 +579,23 @@ bool WarScene::load(const stringImpl& name) {
 
         std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(context().gfx(), emitRate);
 
-        std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
+        std::shared_ptr<ParticleBoxGenerator> boxGenerator(new ParticleBoxGenerator());
         boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
         particleSource->addGenerator(boxGenerator);
 
-        std::shared_ptr<ParticleColourGenerator> colGenerator = std::make_shared<ParticleColourGenerator>();
+        std::shared_ptr<ParticleColourGenerator> colGenerator(new ParticleColourGenerator());
         colGenerator->_minStartCol.set(Util::ToByteColour(FColour(0.7f, 0.4f, 0.4f, 1.0f)));
         colGenerator->_maxStartCol.set(Util::ToByteColour(FColour(1.0f, 0.8f, 0.8f, 1.0f)));
         colGenerator->_minEndCol.set(Util::ToByteColour(FColour(0.5f, 0.2f, 0.2f, 0.5f)));
         colGenerator->_maxEndCol.set(Util::ToByteColour(FColour(0.7f, 0.5f, 0.5f, 0.75f)));
         particleSource->addGenerator(colGenerator);
 
-        std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
+        std::shared_ptr<ParticleVelocityGenerator> velGenerator(new ParticleVelocityGenerator());
         velGenerator->_minStartVel.set(-1.0f, 0.22f, -1.0f, 0.0f);
         velGenerator->_maxStartVel.set(1.0f, 3.45f, 1.0f, 0.0f);
         particleSource->addGenerator(velGenerator);
 
-        std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
+        std::shared_ptr<ParticleTimeGenerator> timeGenerator(new ParticleTimeGenerator());
         timeGenerator->_minTime = 8.5f;
         timeGenerator->_maxTime = 20.5f;
         particleSource->addGenerator(timeGenerator);
