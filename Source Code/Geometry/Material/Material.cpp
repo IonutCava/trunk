@@ -349,7 +349,7 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
     }
 
     bool deferredPassShader = SceneManager::instance().getRenderer().getType() !=
-                              RendererType::RENDERER_FORWARD_PLUS;
+                              RendererType::RENDERER_TILED_FORWARD_SHADING;
     bool depthPassShader = renderStage == RenderStage::SHADOW ||
                            renderStage == RenderStage::Z_PRE_PASS;
 

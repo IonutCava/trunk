@@ -8,7 +8,7 @@
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Rendering/Headers/ForwardPlusRenderer.h"
+#include "Rendering/Headers/TiledForwardShadingRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
@@ -540,8 +540,8 @@ void SceneManager::setRenderer(RendererType rendererType) {
         "SceneManager error: Tried to create an invalid renderer!");
 
     switch (rendererType) {
-    case RendererType::RENDERER_FORWARD_PLUS: {
-        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW ForwardPlusRenderer());
+    case RendererType::RENDERER_TILED_FORWARD_SHADING: {
+        MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW TiledForwardShadingRenderer());
     } break;
     case RendererType::RENDERER_DEFERRED_SHADING: {
         MemoryManager::SAFE_UPDATE(_renderer, MemoryManager_NEW DeferredShadingRenderer());

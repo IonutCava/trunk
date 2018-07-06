@@ -117,7 +117,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
     allocateRT(RenderTargetID::SCREEN, true);
-    allocateRT(RenderTargetID::SCREEN_PREV, true);
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -142,24 +141,40 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
 
-    TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_MS,
-                                       GFXImageFormat::RGB16F,
+    TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D,
+                                       GFXImageFormat::RG16F,
                                        GFXDataFormat::FLOAT_16);
     normalDescriptor.setSampler(screenSampler);
     
-    // Add the attachments to the render targets
-    for (U8 i = 0; i < 2; ++i) {
-        RenderTarget& screenTarget = renderTarget(i == 0 ? RenderTargetID::SCREEN_PREV : RenderTargetID::SCREEN, 0);
-        screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
-        screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
-        screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
-        screenTarget.setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::DIVIDE_BLUE());
-        screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
+    TextureDescriptor velocityDescriptor(TextureType::TEXTURE_2D,
+                                         GFXImageFormat::RG16,
+                                         GFXDataFormat::UNSIGNED_SHORT);
+    velocityDescriptor.setSampler(screenSampler);
 
-        if (i == 1) {
-            _activeRenderTarget = &screenTarget;
-        }
-    }
+    // Add the attachments to the render targets
+    RenderTarget& screenTarget = renderTarget(RenderTargetID::SCREEN, 0);
+    screenTarget.addAttachment(screenDescriptor, RTAttachment::Type::Colour, 0);
+    screenTarget.addAttachment(normalDescriptor, RTAttachment::Type::Colour, 1);
+    screenTarget.addAttachment(velocityDescriptor, RTAttachment::Type::Colour, 2);
+    screenTarget.addAttachment(hiZDescriptor,  RTAttachment::Type::Depth, 0);
+    screenTarget.setClearColour(RTAttachment::Type::Colour, 0, DefaultColours::DIVIDE_BLUE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, 1, DefaultColours::WHITE());
+    screenTarget.setClearColour(RTAttachment::Type::Colour, 2, DefaultColours::WHITE());
+
+    TextureDescriptor depthCopyDescriptor(TextureType::TEXTURE_2D,
+                                          GFXImageFormat::DEPTH_COMPONENT32F,
+                                          GFXDataFormat::FLOAT_32);
+
+    SamplerDescriptor depthCopySampler;
+    depthCopySampler.setFilters(TextureFilter::NEAREST);
+    depthCopySampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
+    depthCopySampler.toggleMipMaps(false);
+    depthCopyDescriptor.setSampler(depthCopySampler);
+
+    _previousDepthBuffer = allocateRT(false);
+    _previousDepthBuffer._rt->addAttachment(depthCopyDescriptor, RTAttachment::Type::Depth, 0);
+
+    _activeRenderTarget = &screenTarget;
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -254,6 +269,7 @@ void GFXDevice::closeRenderingAPI() {
     EnvironmentProbe::onShutdown();
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
+    deallocateRT(_previousDepthBuffer);
     _rtPool.clear();
     _previewDepthMapShader.reset();
     _renderTargetDraw.reset();
@@ -309,6 +325,10 @@ void GFXDevice::idle() {
 void GFXDevice::beginFrame() {
     _api->beginFrame();
     setStateBlock(_defaultStateBlockHash);
+    _previousDepthBuffer._rt->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH_PREV),
+                                   RTAttachment::Type::Depth,
+                                   0,
+                                   false);
 }
 
 void GFXDevice::endFrame(bool swapBuffers) {
@@ -362,12 +382,12 @@ void GFXDevice::endFrame(bool swapBuffers) {
         });
     }
 
-    _rtPool.swap(RenderTargetID::SCREEN, RenderTargetID::SCREEN_PREV);
-
     FRAME_COUNT++;
     FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
     FRAME_DRAW_CALLS = 0;
     
+    _previousDepthBuffer._rt->blitFrom(&renderTarget(RenderTargetID::SCREEN), false, true);
+
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
     // Unbind shaders

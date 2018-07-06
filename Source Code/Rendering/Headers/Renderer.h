@@ -37,14 +37,14 @@
 namespace Divide {
 
 enum class RendererType : U32 {
-    RENDERER_FORWARD_PLUS = 0,
+    RENDERER_TILED_FORWARD_SHADING = 0,
     RENDERER_DEFERRED_SHADING = 1,
     COUNT
 };
 
 class LightPool;
 /// A n abstract renderer used to switch between different rendering techniques:
-/// ForwardPlus, Deferred Shading, etc
+/// TiledForwardShading, Deferred Shading, etc
 class NOINITVTABLE Renderer {
    public:
     Renderer(RendererType type) : _flag(0), _debugView(false), _type(type) {}

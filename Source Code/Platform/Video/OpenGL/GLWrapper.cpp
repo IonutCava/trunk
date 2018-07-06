@@ -183,7 +183,8 @@ bool GL_API::initShaders() {
                                                  "vec4 _vertexWV;",
                                                  "vec3 _normalWV;",
                                                  "vec3 _tangentWV;",
-                                                 "vec3 _bitangentWV;"
+                                                 "vec3 _bitangentWV;",
+                                                 "vec2 _vertexVelocity;"
                                                 };
     // Initialize GLSW
     GLint glswState = glswInit();
@@ -422,6 +423,12 @@ bool GL_API::initShaders() {
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
         to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define TEXTURE_DEPTH_MAP_PREV " +
+        to_stringImpl(to_const_uint(ShaderProgram::TextureUsage::DEPTH_PREV)),
         lineOffsets);
 
     appendToShaderHeader(

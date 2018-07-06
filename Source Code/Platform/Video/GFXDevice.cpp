@@ -368,11 +368,9 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
             rt->create(w, h);
         }
     }
-    for (RenderTarget* rt : _rtPool.renderTargets(RenderTargetID::SCREEN_PREV)) {
-        if (rt) {
-            rt->create(w, h);
-        }
-    }
+
+    _previousDepthBuffer._rt->create(w, h);
+
     // Update post-processing render targets and buffers
     PostFX::instance().updateResolution(w, h);
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
@@ -398,7 +396,7 @@ mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) {
         case MATRIX::VIEW_INV: 
             return _gpuBlock.viewMatrixInv();
         case MATRIX::PROJECTION_INV:
-            return _gpuBlock.projectionMatrixInv();
+            return _gpuBlock._data._InvProjectionMatrix;
         case MATRIX::VIEW_PROJECTION_INV:
             return _gpuBlock.viewProjectionMatrixInv();
         case MATRIX::TEXTURE:
@@ -424,7 +422,7 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
         case MATRIX::VIEW_INV:
             return _gpuBlock.viewMatrixInv();
         case MATRIX::PROJECTION_INV:
-            return _gpuBlock.projectionMatrixInv();
+            return _gpuBlock._data._InvProjectionMatrix;
         case MATRIX::VIEW_PROJECTION_INV:
             return _gpuBlock.viewProjectionMatrixInv();
         case MATRIX::TEXTURE:

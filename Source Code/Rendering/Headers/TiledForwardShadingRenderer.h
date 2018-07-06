@@ -36,10 +36,10 @@
 
 namespace Divide {
 
-class ForwardPlusRenderer : public Renderer {
+class TiledForwardShadingRenderer : public Renderer {
    public:
-    ForwardPlusRenderer();
-    ~ForwardPlusRenderer();
+    TiledForwardShadingRenderer();
+    ~TiledForwardShadingRenderer();
 
     void preRender(RenderTarget& target, LightPool& lightPool) override;
 

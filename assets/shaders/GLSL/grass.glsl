@@ -41,6 +41,8 @@ void main()
 
     //computeLightVectors();
 
+    VAR._vertexVelocity = vec2(0.0, 0.0);
+
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
 }
 
@@ -50,7 +52,8 @@ void main()
 
 flat in int _arrayLayer;
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec3 _normalOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
@@ -61,7 +64,8 @@ void main (void){
     }
     //colour = getPixelColour(VAR._texCoord, VAR._normalWV);
     _colourOut = ToSRGB(applyFog(colour));
-    _normalOut = normalize(f_in._normalWV);
+    _normalOut = packNormal(normalize(f_in._normalWV));
+    _velocityOut = VAR._vertexVelocity;
 }
 
 --Fragment.Shadow

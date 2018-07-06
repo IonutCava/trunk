@@ -23,6 +23,7 @@ void main(void)
 out vec4 _colourOut;
 uniform float lodLevel = 0;
 uniform bool linearSpace = false;
+uniform bool unpack2Channel = false;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -32,6 +33,10 @@ void main()
     if (!linearSpace) {
         _colourOut = ToSRGB(_colourOut);
     }
+    if (unpack2Channel) {
+        _colourOut.rgb = unpackNormal(_colourOut.rg);
+    }
+
     _colourOut.a = 1.0;
 }
 

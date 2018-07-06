@@ -20,6 +20,8 @@ void main()
     
     // UV of the vertex. No special space for this one.
     VAR._texCoord = inVertexData.xy + vec2(0.5, 0.5);
+    VAR._vertexVelocity = vec2(0.0, 0.0);
+
     particleColour = inColourData;
 }
 
@@ -43,7 +45,8 @@ in vec4 particleColour;
 
 // Ouput data
 layout(location = 0) out vec4 colour;
-layout(location = 1) out vec3 normal;
+layout(location = 1) out vec2 normal;
+layout(location = 2) out vec2 _velocityOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
@@ -59,5 +62,6 @@ void main(){
     float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
-    normal = vec3(0.0, 0.0, 1.0);
+    normal = packNormal(vec3(0.0, 0.0, 1.0));
+    _velocityOut = VAR._vertexVelocity;
 }

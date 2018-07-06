@@ -10,7 +10,6 @@ namespace {
 GFXRTPool::GFXRTPool()
 {
     _renderTargets[to_uint(RenderTargetID::SCREEN)].resize(1, nullptr);
-    _renderTargets[to_uint(RenderTargetID::SCREEN_PREV)].resize(1, nullptr);
     _renderTargets[to_uint(RenderTargetID::SHADOW)].resize(to_const_uint(ShadowType::COUNT), nullptr);
     _renderTargets[to_uint(RenderTargetID::REFLECTION)].resize(Config::MAX_REFLECTIVE_NODES_IN_VIEW, nullptr);
     _renderTargets[to_uint(RenderTargetID::REFRACTION)].resize(Config::MAX_REFRACTIVE_NODES_IN_VIEW, nullptr);

@@ -207,8 +207,8 @@ inline stringImpl getRendererTypeName(RendererType type) {
         default:
         case RendererType::COUNT:
             return "Unknown_Renderer_Type";
-        case RendererType::RENDERER_FORWARD_PLUS:
-            return "Forward_Renderer";
+        case RendererType::RENDERER_TILED_FORWARD_SHADING:
+            return "Tiled_Forward_Shading_Renderer";
         case RendererType::RENDERER_DEFERRED_SHADING:
             return "Deferred_Shading Renderer";
     }

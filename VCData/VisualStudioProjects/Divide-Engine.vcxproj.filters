@@ -421,9 +421,6 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\SGNComponent.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\ForwardPlusRenderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
@@ -550,6 +547,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Material\ShaderProgramInfo.cpp">
       <Filter>Geometry\Material</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\TiledForwardShadingRenderer.cpp">
+      <Filter>Rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -810,9 +810,6 @@
     <ClInclude Include="..\..\Source Code\Utility\Headers\StateTracker.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\Headers\ForwardPlusRenderer.h">
-      <Filter>Rendering\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
@@ -975,6 +972,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\ShaderProgramInfo.h">
       <Filter>Geometry\Material\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\Headers\TiledForwardShadingRenderer.h">
+      <Filter>Rendering\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

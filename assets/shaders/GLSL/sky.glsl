@@ -5,6 +5,8 @@
 void main(void){
     computeData();
     VAR._normalWV = normalize(dvd_NormalMatrixWV(VAR.dvd_drawID) * dvd_Normal);
+    VAR._vertexVelocity = vec2(0.0, 0.0);
+
     gl_Position = vec4(dvd_ViewProjectionMatrix * VAR._vertexW).xyzz;
     gl_Position.w += 0.0001;
 }
@@ -12,7 +14,8 @@ void main(void){
 -- Fragment.Display
 
 layout(location = 0) out vec4 _skyColour;
-layout(location = 1) out vec3 _normalOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
 
@@ -40,5 +43,6 @@ vec3 sunColour(){
 void main() {
     vec3 sky_colour = texture(texSky, vec4(f_in._vertexW.xyz, 0)).rgb;
     _skyColour = vec4(ToSRGB(enable_sun ? sky_colour * sunColour() : sky_colour), 1.0);
-    _normalOut = normalize(f_in._normalWV);
+    _normalOut = packNormal(normalize(f_in._normalWV));
+    _velocityOut = VAR._vertexVelocity;
 }

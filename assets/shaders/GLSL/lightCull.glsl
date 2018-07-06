@@ -18,7 +18,7 @@ vec4 ConvertProjToView(in mat4 invProjection, vec4 p)
 {
     p = invProjection * p;
     p /= p.w;
-    // FIXME: Added the following line, not needed in D3D11 or ForwardPlus11 example. [2014-07-07]
+    // FIXME: Added the following line, not needed in D3D11 or TiledForwardShading11 example. [2014-07-07]
     p.y = -p.y;
     return p;
 }

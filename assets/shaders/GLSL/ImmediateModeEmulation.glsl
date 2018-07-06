@@ -6,6 +6,7 @@ uniform mat4 dvd_WorldMatrix;
 void main(){
   VAR._texCoord = inTexCoordData;
   _colour = inColourData;
+  VAR._vertexVelocity = vec2(0.0, 0.0);
   gl_Position = dvd_ViewProjectionMatrix * dvd_WorldMatrix * vec4(inVertexData,1.0);
 } 
 
@@ -18,7 +19,8 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 uniform bool useTexture;
 in  vec4 _colour;
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec3 _normalOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 void main(){
     if(!useTexture){
@@ -28,6 +30,7 @@ void main(){
         _colourOut.rgb += _colour.rgb;
     }
     _colourOut = ToSRGB(_colourOut);
+    _velocityOut = VAR._vertexVelocity;
 }
 
 -- Fragment.GUI
@@ -72,10 +75,12 @@ uniform uint dvd_LayerIndex;
 layout(binding = TEXTURE_REFLECTION) uniform samplerCubeArray texEnvironmentCube;
 
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec3 _normalOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 void main() {
     vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), VAR._normalWV);
     _colourOut = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
-    _normalOut = VAR._normalWV;
+    _normalOut = packNormal(normalize(VAR._normalWV));
+    _velocityOut = VAR._vertexVelocity;
 }

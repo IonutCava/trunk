@@ -221,6 +221,7 @@ DEFINE_SINGLETON(GFXDevice)
            GPUData()
            {
                _ProjectionMatrix.identity();
+               _InvProjectionMatrix.identity();
                _ViewMatrix.identity();
                _ViewProjectionMatrix.identity();
                _cameraPosition.set(0.0f);
@@ -237,6 +238,7 @@ DEFINE_SINGLETON(GFXDevice)
            }
 
            mat4<F32> _ProjectionMatrix;
+           mat4<F32> _InvProjectionMatrix;
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
            vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
@@ -260,7 +262,7 @@ DEFINE_SINGLETON(GFXDevice)
                 _data._ViewMatrix.getInverse(_viewMatrixInv);
             }
             if (!viewMatrixUpdate) {
-                _data._ProjectionMatrix.getInverse(_projMatrixInv);
+                _data._ProjectionMatrix.getInverse(_data._InvProjectionMatrix);
             }
             _data._ViewProjectionMatrix.getInverse(_viewProjMatrixInv);
             updateFrustumPlanes();
@@ -270,18 +272,15 @@ DEFINE_SINGLETON(GFXDevice)
         inline void updateFrustumPlanes();
 
         inline mat4<F32>& viewMatrixInv() { return _viewMatrixInv; }
-        inline mat4<F32>& projectionMatrixInv() { return _projMatrixInv; }
         inline mat4<F32>& viewProjectionMatrixInv() { return _viewProjMatrixInv; }
 
         inline const mat4<F32>& viewMatrixInv() const { return _viewMatrixInv; }
-        inline const mat4<F32>& projectionMatrixInv() const { return _projMatrixInv; }
         inline const mat4<F32>& viewProjectionMatrixInv() const { return _viewProjMatrixInv; }
 
         bool _updated;
        private:
            bool _frustumDirty;
            mat4<F32> _viewMatrixInv;
-           mat4<F32> _projMatrixInv;
            mat4<F32> _viewProjMatrixInv;
    };
 
@@ -586,6 +585,7 @@ DEFINE_SINGLETON(GFXDevice)
     IMPrimitive     *_axisGizmo;
     vectorImpl<Line> _axisLinesTransformed;
 
+    RenderTargetHandle _previousDepthBuffer;
   protected:
     RenderAPI _API_ID;
     GPUVendor _GPUVendor;

@@ -6,6 +6,9 @@
 #if defined(ADD_FOLIAGE)
 #include "foliage.vert"
 #endif
+
+layout(binding = TEXTURE_DEPTH_MAP_PREV) uniform sampler2D prevDepthTex;
+
 void main(void){
 
     computeData();
@@ -16,8 +19,13 @@ void main(void){
     
     computeLightVectors();
 
+    float originDepth = textureLod(prevDepthTex, VAR._texCoord, 0).r;
+    vec4 originPos = positionFromDepth(originDepth, dvd_InvProjectionMatrix, VAR._texCoord);
+
     //Compute the final vert position
     gl_Position = dvd_ViewProjectionMatrix * VAR._vertexW;
+
+    VAR._vertexVelocity = (originPos - gl_Position).xy;
 }
 
 -- Fragment
@@ -37,7 +45,8 @@ layout(early_fragment_tests) in;
 #endif
 
 layout(location = 0) out vec4 _colourOut;
-layout(location = 1) out vec3 _normalOut;
+layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 //subroutine vec4 MappingRoutineType();
 
@@ -90,11 +99,12 @@ vec4 getFinalPixelColour() {
 
 void main (void){
     _colourOut = ToSRGB(applyFog(getFinalPixelColour()));
-    _normalOut = processedNormal;
+    _normalOut = packNormal(processedNormal);
+    _velocityOut = VAR._vertexVelocity;
 
 #if defined(_DEBUG)
     if (dvd_NormalsOnly) {
-        _colourOut.rgb = _normalOut;
+        _colourOut.rgb = processedNormal;
     }
 #endif
 

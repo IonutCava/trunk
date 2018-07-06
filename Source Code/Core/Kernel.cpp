@@ -469,7 +469,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                           par.getParam<F32>(_ID("rendering.zFar"))));
     _sceneMgr.onStartup();
     // We start of with a forward plus renderer
-    _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
+    _sceneMgr.setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
 
     DisplayWindow& window = winManager.getActiveWindow();
     window.type(WindowType::SPLASH);

@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "Headers/ForwardPlusRenderer.h"
+#include "Headers/TiledForwardShadingRenderer.h"
 
 #include "Core/Headers/Console.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -12,8 +12,8 @@
 //ref: https://github.com/bioglaze/aether3d
 namespace Divide {
 
-ForwardPlusRenderer::ForwardPlusRenderer() 
-    : Renderer(RendererType::RENDERER_FORWARD_PLUS)
+TiledForwardShadingRenderer::TiledForwardShadingRenderer() 
+    : Renderer(RendererType::RENDERER_TILED_FORWARD_SHADING)
 {
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
@@ -30,17 +30,16 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
 
-ForwardPlusRenderer::~ForwardPlusRenderer()
+TiledForwardShadingRenderer::~TiledForwardShadingRenderer()
 {
 }
 
-void ForwardPlusRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
+void TiledForwardShadingRenderer::preRender(RenderTarget& target, LightPool& lightPool) {
     Renderer::preRender(target, lightPool);
 
     lightPool.uploadLightData(ShaderBufferLocation::LIGHT_NORMAL);
 
-    target.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH),
-                RTAttachment::Type::Depth, 0);
+    target.bind(to_const_ubyte(ShaderProgram::TextureUsage::DEPTH), RTAttachment::Type::Depth, 0);
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
@@ -50,16 +49,16 @@ void ForwardPlusRenderer::preRender(RenderTarget& target, LightPool& lightPool) 
     _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
 }
 
-void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
+void TiledForwardShadingRenderer::render(const DELEGATE_CBK<>& renderCallback,
                                  const SceneRenderState& sceneRenderState) {
     renderCallback();
 }
 
-void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
+void TiledForwardShadingRenderer::updateResolution(U16 width, U16 height) {
     _resolution.set(width, height);
 }
 
-U32 ForwardPlusRenderer::getMaxNumLightsPerTile() const {
+U32 TiledForwardShadingRenderer::getMaxNumLightsPerTile() const {
     const U32 adjustmentMultipier = 32;
 
     // I haven't tested at greater than 1080p, so cap it
@@ -68,12 +67,12 @@ U32 ForwardPlusRenderer::getMaxNumLightsPerTile() const {
     return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
 }
 
-U32 ForwardPlusRenderer::getNumTilesX() const {
+U32 TiledForwardShadingRenderer::getNumTilesX() const {
     return to_uint((_resolution.width + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
            to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
 }
 
-U32 ForwardPlusRenderer::getNumTilesY() const {
+U32 TiledForwardShadingRenderer::getNumTilesY() const {
     return to_uint((_resolution.height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
            to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
 }

@@ -74,21 +74,6 @@ bool InRangeExclusive(in float value, in float min, in float max) {
     return value > min && value < max;
 }
 
-vec4 positionFromDepth(in float depth,
-                       in mat4 invProjectionMatrix,
-                       in vec2 uv) {
-
-    vec4 pos = vec4(2.0 * uv.x - 1.0,
-                    2.0 * uv.y - 1.0,
-                    2.0 * depth - 1.0,
-                    1.0);
-
-    pos = invProjectionMatrix * pos;
-    pos /= pos.w;
-
-    return pos;
-}
-
 float luminance(in vec3 rgb) {
     const vec3 kLum = vec3(0.299, 0.587, 0.114);
     return max(dot(rgb, kLum), 0.0001); // prevent zero result
@@ -106,6 +91,20 @@ vec4  ToLinear(vec4 v)  { return vec4(pow(v.rgb, gammaVec), v.a); }
 float ToSRGB(float v) { return pow(v, invGamma); }
 vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
 vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
+
+
+vec3 unpackNormal(vec2 packedNormal)
+{
+    vec3 normal;
+    normal.xy = packedNormal.xy * (255.0 / 128.0) - 1.0;
+    normal.z = sqrt(1 - normal.x*normal.x - normal.y * normal.y);
+    return normal;
+}
+
+vec2 packNormal(vec3 normal)
+{
+    return vec2(normal.xy * 0.5 + 0.5);
+}
 
 
 float Gloss(vec3 bump)

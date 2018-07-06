@@ -66,13 +66,24 @@ void GFXDevice::previewDepthBuffer() {
         }
 
         triangleCmd.shaderProgram(_renderTargetDraw);
-        {
+        {        
             //Normals preview
             renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
                                                       RTAttachment::Type::Colour, 1);
 
             GFX::ScopedViewport viewport(screenWidth - 768, 0, 256, 256);
             _renderTargetDraw->Uniform("linearSpace", false);
+            _renderTargetDraw->Uniform("unpack2Channel", true);
+            draw(triangleCmd);
+        }
+        {
+            //Velocity preview
+            renderTarget(RenderTargetID::SCREEN).bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                                                       RTAttachment::Type::Colour, 2);
+
+            GFX::ScopedViewport viewport(screenWidth - 1024, 0, 256, 256);
+            _renderTargetDraw->Uniform("linearSpace", false);
+            _renderTargetDraw->Uniform("unpack2Channel", false);
             draw(triangleCmd);
         }
     }
