@@ -34,10 +34,9 @@ void glBufferLockManager::WaitForLockedRange(size_t _lockBeginBytes,
     vectorImpl<BufferLock> swapLocks;
     swapLocks.reserve(_bufferLocks.size());
 
-    GLenum response;
     for (BufferLock& lock : _bufferLocks) {
         if (testRange.Overlaps(lock._range)) {
-            wait(&lock._syncObj, response);
+            wait(&lock._syncObj, lock._status);
             cleanup(&lock);
         } else {
             swapLocks.push_back(lock);
@@ -53,14 +52,16 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
 
     BufferRange testRange = { _lockBeginBytes, _lockLength };
     for (BufferLock& lock : _bufferLocks) {
-        if (testRange.Overlaps(lock._range)) {
+        if (testRange.Overlaps(lock._range) && lock._status != GL_UNSIGNALED) {
             return;
         }
     }
 
     _bufferLocks.push_back({testRange,
                             glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE,
-                                        UnusedMask::GL_UNUSED_BIT)});
+                                        UnusedMask::GL_UNUSED_BIT), 
+                            GL_UNSIGNALED});
+
     _lastLockOffset = _lockBeginBytes;
     _lastLockRange = _lockLength;
 }

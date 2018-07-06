@@ -55,6 +55,7 @@ struct BufferRange {
 struct BufferLock {
     BufferRange _range;
     GLsync _syncObj;
+    GLenum _status;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
