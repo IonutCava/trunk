@@ -65,7 +65,7 @@ void CubeScene::preRender() {
     SceneGraphNode_ptr dwarf(_sceneGraph.findNode("dwarf").lock());
 
     cutia1->get<PhysicsComponent>()->rotate(
-        vec3<F32>(0.3f * g_i, 0.6f * g_i, 0));
+        0.3f * g_i, 0.6f * g_i, 0);
     hellotext->get<PhysicsComponent>()->rotate(
         vec3<F32>(0.6f, 0.2f, 0.4f), g_i);
     bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);

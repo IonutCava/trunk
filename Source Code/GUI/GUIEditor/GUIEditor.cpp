@@ -1151,12 +1151,12 @@ bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     _pauseSelectionTracking = false;
     return true;
@@ -1181,12 +1181,12 @@ bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     _pauseSelectionTracking = false;
     return true;
@@ -1211,12 +1211,12 @@ bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     _pauseSelectionTracking = false;
     return true;
@@ -1450,12 +1450,12 @@ bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     return true;
 }
@@ -1471,12 +1471,12 @@ bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
 
     return true;
@@ -1494,12 +1494,12 @@ bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     return true;
 }
@@ -1515,12 +1515,12 @@ bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     return true;
 }
@@ -1537,12 +1537,12 @@ bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     return true;
 }
@@ -1559,12 +1559,12 @@ bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
         PhysicsComponent *pComp =
             node->get<PhysicsComponent>();
         pComp->setRotation(
-            vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
+            currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
             currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_Y),
             currentValues(TransformFields::TRANSFORM_ROTATION,
-            ControlFields::CONTROL_FIELD_Z)));
+            ControlFields::CONTROL_FIELD_Z));
     }
     return true;
 }

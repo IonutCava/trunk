@@ -105,13 +105,6 @@ void PhysXSceneInterface::update(const U64 deltaTime) {
         return;
     }
 
-    _sceneRigidActors.erase(
-        std::remove_if(std::begin(_sceneRigidActors),
-                       std::end(_sceneRigidActors),
-                       [](PhysXActor* actor)
-                           -> bool { return actor->getParent() == nullptr; }),
-        std::end(_sceneRigidActors));
-
     for (PhysXActor* actor : _sceneRigidActors) {
         updateActor(*actor);
     }
@@ -134,16 +127,7 @@ void PhysXSceneInterface::update(const U64 deltaTime) {
 }
 
 void PhysXSceneInterface::updateActor(PhysXActor& actor) {
-    if (!actor.resetTransforms()) {
-        return;
-    }
 
-    const vec3<F32>& position = actor.getParent()->getPosition();
-    const vec4<F32>& orientation = actor.getParent()->getOrientation().asVec4();
-    actor._actor->setGlobalPose(physx::PxTransform(
-                                    PxVec3(position.x, position.y, position.z),
-                                    PxQuat(orientation.x, orientation.y, orientation.z, orientation.w).getConjugate()));
-    actor.resetTransforms(false);
 }
 
 void PhysXSceneInterface::process(const U64 deltaTime) {
@@ -174,30 +158,13 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
     }
 }
 
-PhysXActor* PhysXSceneInterface::getOrCreateRigidActor(const stringImpl& actorName) {
-    if (!_gScene) {
-        return nullptr;
-    }
-
-    for (RigidMap::iterator it = std::begin(_sceneRigidActors);
-         it != std::end(_sceneRigidActors); ++it) {
-        if ((*it)->_actorName.compare(actorName) == 0) {
-            return (*it);
-        }
-    }
-
-    PhysXActor* newActor = MemoryManager_NEW PhysXActor();
-    newActor->_actorName = actorName;
-    return newActor;
-}
-
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
+   /* STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;
 
     _gScene->addActor(*(actor._actor));
@@ -270,5 +237,6 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
 
     assert(targetNode != nullptr);
     actor.setParent(targetNode->get<PhysicsComponent>());
+    */
 }
 };

@@ -146,7 +146,6 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                       0.34f);
     _waterGraphNode = _sceneGraph.getRoot().addNode(*_water, normalMask);
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
-    waterGraphNode->useDefaultTransform(false);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation

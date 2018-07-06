@@ -1,5 +1,6 @@
 #include "Headers/PhysX.h"
 #include "Headers/PhysXSceneInterface.h"
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
@@ -190,7 +191,7 @@ void PhysX::initScene() {
     _targetScene->init();
 }
 
-void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
+/*void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
                         PhysicsActorMask mask, PhysicsCollisionGroup group) {
     assert(_targetScene != nullptr);
 
@@ -327,4 +328,24 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     return;
 };
+*/
+
+PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node,
+                                      PhysicsActorMask mask,
+                                      PhysicsCollisionGroup group)
+{
+    PhysicsComponent* pComp = node.get<PhysicsComponent>();
+    assert(pComp != nullptr);
+
+    PhysXActor* newActor = new PhysXActor(*pComp);
+
+    // get node Geometry
+    // create Shape from Geometry
+    // create Actor
+    // attach Shape to Actor
+    // register actor
+
+    return newActor;
+}
+
 };

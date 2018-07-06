@@ -315,11 +315,12 @@
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAPIWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Physics\PhysicsAsset.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsSceneInterface.cpp" />
-    <ClCompile Include="..\..\Source Code\Physics\PhysX\Actors\pxShapeScaling.cpp" />
-    <ClCompile Include="..\..\Source Code\Physics\PhysX\Actors\pxSimpleShapes.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysX.cpp" />
+    <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysXActor.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysXSceneInterface.cpp" />
+    <ClCompile Include="..\..\Source Code\Physics\PhysX\pxShapeScaling.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PXDevice.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FirstPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FreeFlyCamera.cpp" />
@@ -385,6 +386,7 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.inl" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\TransformInterface.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceCache.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\ResourceDescriptor.h" />
@@ -435,11 +437,13 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAPIWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAsset.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsSceneInterface.h" />
     <ClInclude Include="..\..\Source Code\Physics\Headers\PXDevice.h" />
-    <ClInclude Include="..\..\Source Code\Physics\PhysX\Actors\Headers\pxShapeScaling.h" />
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysX.h" />
+    <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysXActor.h" />
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysXSceneInterface.h" />
+    <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\pxShapeScaling.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />
@@ -521,6 +525,7 @@
     <None Include="..\..\Source Code\Core\Math\Headers\MathHelper.inl" />
     <None Include="..\..\Source Code\Core\Math\Headers\MathMatrices.inl" />
     <None Include="..\..\Source Code\Core\Math\Headers\Quaternion.inl" />
+    <None Include="..\..\Source Code\Core\Math\Headers\Transform.inl" />
     <None Include="..\..\Source Code\Core\Time\Headers\ApplicationTimer.inl" />
     <None Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.inl" />
     <None Include="..\..\Source Code\Core\Time\Headers\ProfileTimer.inl" />

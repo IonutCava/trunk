@@ -36,7 +36,7 @@ namespace Divide {
 namespace Time {
 
 inline U64 ProfileTimer::get() const {
-    return _timerAverage / _timerCounter;
+    return _timerAverage / std::max(_timerCounter, 1u);
 }
 
 inline const stringImpl& ProfileTimer::name() const {

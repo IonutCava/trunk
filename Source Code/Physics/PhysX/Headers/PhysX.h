@@ -36,17 +36,7 @@
 #define _PHYSICS_API_FOUND_
 #endif
 
-// PhysX includes
-
-#include <PxPhysicsAPI.h>
-// Connecting the SDK to Visual Debugger
-#include <pvd/PxVisualDebugger.h>
-#include <extensions/PxDefaultErrorCallback.h>
-#include <extensions/PxDefaultAllocator.h>
-#include <extensions/PxVisualDebuggerExt.h>
-#include <foundation/PxAllocatorCallback.h>
-// PhysX includes //
-
+#include "PhysXActor.h"
 #include "Physics/Headers/PhysicsAPIWrapper.h"
 
 #define MAX_ACTOR_QUEUE 30
@@ -56,27 +46,7 @@ namespace Divide {
 class Transform;
 class PhysX;
 class PhysXSceneInterface;
-class PhysXActor : public PhysicsAsset {
-   public:
-    PhysXActor()
-        : PhysicsAsset(),
-          _actor(nullptr),
-          _isDynamic(false),
-          _userData(0.0f)
-    {
-    }
 
-    ~PhysXActor() {}
-
-   protected:
-    friend class PhysX;
-    friend class PhysXSceneInterface;
-    physx::PxRigidActor* _actor;
-    physx::PxGeometryType::Enum _type;
-    stringImpl _actorName;
-    bool _isDynamic;
-    F32 _userData;
-};
 
 class PxDefaultAllocator : public physx::PxAllocatorCallback {
     void* allocate(size_t size, const char*, const char*, int) {
@@ -88,6 +58,7 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
     }
 };
 
+class PhysicsAsset;
 class SceneGraphNode;
 DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
                       physx::debugger::comm::PvdConnectionHandler,
@@ -111,21 +82,16 @@ DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
     void idle();
 
     void updateTimeStep(U8 timeStepFactor);
-    inline void updateTimeStep() {
-        updateTimeStep(_timeStepFactor);
-    }
 
     PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
-    // Default Shapes:
-    void createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
-    void createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
-    void createActor(SceneGraphNode& node, const stringImpl& sceneName,
-                     PhysicsActorMask mask, PhysicsCollisionGroup group);
     inline physx::PxPhysics* const getSDK() { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
     void initScene();
 
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node,
+                                   PhysicsActorMask mask,
+                                   PhysicsCollisionGroup group) override;
   protected:
     physx::PxProfileZone* getOrCreateProfileZone(physx::PxFoundation& inFoundation);
 

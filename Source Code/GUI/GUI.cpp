@@ -51,8 +51,7 @@ GUI::~GUI()
     // Close CEGUI
     try {
         CEGUI::System::destroy();
-    }
-    catch (...) {
+    } catch (...) {
         Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
     }
 }

@@ -56,15 +56,15 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     SceneInput::PressReleaseActions cbks;
     cbks.second = [this]() {
         if (!_hasGroundPlane) {
-            PHYSICS_DEVICE.createPlane(vec3<F32>(0, 0, 0),
-                                       Random(100, 200));
+            assert(false);
+            // register ground plane
             _hasGroundPlane = true;
         }
     };
-    _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
-    cbks.second =
-        DELEGATE_BIND(&PXDevice::createBox, &PHYSICS_DEVICE,
-                      vec3<F32>(0, Random(10, 30), 0), Random(0.5f, 2.0f));
+
+    //_input->addKeyMapping(Input::KeyCode::KC_1, cbks);
+    //CREATE BOX
+
     _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
     cbks.second = [this]() {
         TaskHandle e(CreateTask(getGUID(), DELEGATE_BIND(&PhysXScene::createTower, this, std::placeholders::_1, to_uint(Random(5, 20)))));
@@ -78,14 +78,6 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
         registerTask(e);
     };
     _input->addKeyMapping(Input::KeyCode::KC_4, cbks);
-    cbks.second = []() {
-        ParamHandler::instance().setParam(_ID("simSpeed"),
-            IS_ZERO(ParamHandler::instance().getParam<F32>(_ID("simSpeed")))
-                ? 1.0f
-                : 0.0f);
-        PHYSICS_DEVICE.updateTimeStep();
-    };
-    _input->addKeyMapping(Input::KeyCode::KC_5, cbks);
 
     s_sceneState = PhysXState::STATE_IDLE;
     return loadState;
@@ -130,7 +122,8 @@ void PhysXScene::createStack(const std::atomic_bool& stopRequested, U32 size) {
         }
         for (U16 i = 0; i < stackSize; i++) {
             Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-            PHYSICS_DEVICE.createBox(Pos, CubeSize);
+            assert(false);
+            //CREATE BOX
         }
         Offset += CubeSize;
         Pos.y += (CubeSize * 2.0f + Spacing);
@@ -149,7 +142,8 @@ void PhysXScene::createTower(const std::atomic_bool& stopRequested, U32 size) {
         if (stopRequested) {
             return;
         }
-        PHYSICS_DEVICE.createBox(vec3<F32>(0, 5.0f + 5 * i, 0), 0.5f);
+        assert(false);
+        //CREATE BOX *vec3<F32>(0, 5.0f + 5 * i, 0), 0.5f
     }
     s_sceneState = PhysXState::STATE_IDLE;
 }

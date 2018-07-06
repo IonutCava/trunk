@@ -3,6 +3,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Physics/Headers/PXDevice.h"
 
 namespace Divide {
 
@@ -33,6 +34,37 @@ Object3D::Object3D(const stringImpl& name, const stringImpl& resourceLocation, O
         BitCompare(_geometryFlagMask, to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
         ? nullptr
         : GFX_DEVICE.newVB();
+
+    switch (type) {
+        case ObjectType::BOX_3D :
+            _rigidBodyShape = RigidBodyShape::SHAPE_BOX;
+            break;
+        case ObjectType::QUAD_3D :
+            _rigidBodyShape = RigidBodyShape::SHAPE_PLANE;
+            break;
+        case ObjectType::SPHERE_3D :
+            _rigidBodyShape = RigidBodyShape::SHAPE_SPHERE;
+            break;
+        case ObjectType::TERRAIN :
+            _rigidBodyShape = RigidBodyShape::SHAPE_HEIGHTFIELD;
+            break;
+        case ObjectType::TEXT_3D :
+            _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
+        case ObjectType::MESH: {
+            if (true) { // general meshes? Maybe have a concave flag?
+                _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
+            } else { 
+                if (true) { // skinned characters?
+                    _rigidBodyShape = RigidBodyShape::SHAPE_CAPSULE;
+                } else { // have a convex flag for imported meshes?
+                    _rigidBodyShape = RigidBodyShape::SHAPE_CONVEXMESH;
+                }
+            }
+            } break;
+        default:
+            _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;
+            break;
+    };
 }
 
 Object3D::~Object3D()

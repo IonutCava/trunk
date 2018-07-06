@@ -32,7 +32,6 @@
 #ifndef _PHYSICS_API_WRAPPER_H_
 #define _PHYSICS_API_WRAPPER_H_
 
-#include "Core/Headers/Application.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -41,59 +40,50 @@ enum class PhysicsCollisionGroup : U32 {
     GROUP_NON_COLLIDABLE = 0,
     GROUP_COLLIDABLE_NON_PUSHABLE,
     GROUP_COLLIDABLE_PUSHABLE,
+    GROUP_COUNT
 };
 
 enum class PhysicsActorMask : U32 {
     MASK_RIGID_STATIC = 0,
-    MASK_RIGID_DYNAMIC
+    MASK_RIGID_DYNAMIC,
+    MASK_COUNT
+};
+
+enum class RigidBodyShape : U32 {
+    SHAPE_SPHERE = 0,
+    SHAPE_PLANE,
+    SHAPE_CAPSULE,
+    SHAPE_BOX,
+    SHAPE_CONVEXMESH,
+    SHAPE_TRIANGLEMESH,
+    SHAPE_HEIGHTFIELD,
+    SHAPE_COUNT
 };
 
 class Scene;
+class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsSceneInterface;
 typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 
-class PhysicsComponent;
-class PhysicsAsset {
-    friend class PhysicsComponent;
-
-   public:
-    PhysicsAsset();
-    virtual ~PhysicsAsset();
-    PhysicsComponent* getParent() { return _parentComponent; }
-
-   protected:
-    inline bool resetTransforms() const { return _resetTransforms; }
-    inline void resetTransforms(const bool state) { _resetTransforms = state; }
-
-    void setParent(PhysicsComponent* parent);
-    
-   protected:
-    bool _resetTransforms;
-    PhysicsComponent* _parentComponent;
-};
-
+enum class ErrorCode : I32;
 class NOINITVTABLE PhysicsAPIWrapper {
    protected:
     friend class PXDevice;
     virtual ErrorCode initPhysicsAPI(U8 targetFrameRate) = 0;
     virtual bool closePhysicsAPI() = 0;
     virtual void updateTimeStep(U8 timeStepFactor) = 0;
-    virtual void updateTimeStep() = 0;
     virtual void update(const U64 deltaTime) = 0;
     virtual void process(const U64 deltaTime) = 0;
     virtual void idle() = 0;
     virtual PhysicsSceneInterface* NewSceneInterface(Scene* scene) = 0;
 
-    virtual void createPlane(const vec3<F32>& position = VECTOR3_ZERO,
-                             U32 size = 1) = 0;
-    virtual void createBox(const vec3<F32>& position = VECTOR3_ZERO,
-                           F32 size = 1.0f) = 0;
-    virtual void createActor(SceneGraphNode& node,
-                             const stringImpl& sceneName, PhysicsActorMask mask,
-                             PhysicsCollisionGroup group) = 0;
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
     virtual void initScene() = 0;
+
+    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node,
+                                           PhysicsActorMask mask,
+                                           PhysicsCollisionGroup group) = 0;
 };
 
 };  // namespace Divide

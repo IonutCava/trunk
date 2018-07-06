@@ -125,8 +125,6 @@ void Kernel::onLoop() {
 
     // Update internal timer
     Time::ApplicationTimer::instance().update();
-
-
     {
         Time::ScopedTimer timer(_appLoopTimer);
    

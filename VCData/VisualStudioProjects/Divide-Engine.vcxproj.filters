@@ -155,12 +155,6 @@
     <Filter Include="Physics\PhysX">
       <UniqueIdentifier>{79101247-5c09-4da1-af59-108d04ad42da}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics\PhysX\Actors">
-      <UniqueIdentifier>{dae634bc-605b-4c63-9bc8-d8b79faad574}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\PhysX\Actors\Headers">
-      <UniqueIdentifier>{1e7063d4-b392-49bc-a650-7d75a8ba843f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Physics\PhysX\Headers">
       <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
     </Filter>
@@ -472,12 +466,6 @@
     <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysXSceneInterface.cpp">
       <Filter>Physics\PhysX</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Physics\PhysX\Actors\pxShapeScaling.cpp">
-      <Filter>Physics\PhysX\Actors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Physics\PhysX\Actors\pxSimpleShapes.cpp">
-      <Filter>Physics\PhysX\Actors</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp">
       <Filter>Core\Math\BoundingVolumes</Filter>
@@ -544,6 +532,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Time\FrameRateHandler.cpp">
       <Filter>Core\Time</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Physics\PhysX\pxShapeScaling.cpp">
+      <Filter>Physics\PhysX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Physics\PhysicsAsset.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Physics\PhysX\PhysXActor.cpp">
+      <Filter>Physics\PhysX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -852,9 +849,6 @@
     <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysXSceneInterface.h">
       <Filter>Physics\PhysX\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Physics\PhysX\Actors\Headers\pxShapeScaling.h">
-      <Filter>Physics\PhysX\Actors\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAPIWrapper.h">
       <Filter>Physics\Headers</Filter>
     </ClInclude>
@@ -952,6 +946,18 @@
     <ClInclude Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.h">
       <Filter>Core\Time\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\pxShapeScaling.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\Headers\TransformInterface.h">
+      <Filter>Core\Math\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Physics\Headers\PhysicsAsset.h">
+      <Filter>Physics\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Physics\PhysX\Headers\PhysXActor.h">
+      <Filter>Physics\PhysX\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">
@@ -992,6 +998,9 @@
     </None>
     <None Include="..\..\Source Code\Core\Time\Headers\FrameRateHandler.inl">
       <Filter>Core\Time\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Core\Math\Headers\Transform.inl">
+      <Filter>Core\Math\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

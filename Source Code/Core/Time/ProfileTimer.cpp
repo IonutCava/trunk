@@ -100,7 +100,8 @@ stringImpl ProfileTimer::printAll() {
 
     for (ProfileTimer& entry : g_profileTimers) {
         if (!g_profileTimersState[entry._globalIndex] ||
-                entry._parent < Config::Profile::MAX_PROFILE_TIMERS) {
+                entry._parent < Config::Profile::MAX_PROFILE_TIMERS ||
+                    entry._timerCounter == 0) {
             continue;
         }
         ret.append(entry.print());

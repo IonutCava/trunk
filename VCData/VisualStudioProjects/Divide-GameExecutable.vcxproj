@@ -17,6 +17,9 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\ToDo.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{87F22E92-2988-41FA-9E23-00033408A869}</ProjectGuid>
     <RootNamespace>DivideHardware</RootNamespace>

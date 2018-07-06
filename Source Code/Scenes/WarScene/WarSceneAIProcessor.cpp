@@ -472,14 +472,14 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 PhysicsComponent* pComp = flag->get<PhysicsComponent>();
                 PhysicsComponent* parentPComp = targetNode.lock()->get<PhysicsComponent>();
                 flag->setParent(*targetNode.lock());
-                vec3<F32> prevScale(pComp->getScale(1.0, true));
-                vec3<F32> parentScale(parentPComp->getScale(1.0, true));
+                vec3<F32> prevScale(pComp->getLocalScale());
+                vec3<F32> parentScale(parentPComp->getLocalScale());
                 vec3<F32> parentPos(parentPComp->getPosition());
 
                 pComp->pushTransforms();
                 pComp->setPosition(vec3<F32>(-2.5f, 2.75f, 1.0f));
                 pComp->setScale(prevScale / parentScale);
-                pComp->rotate(vec3<F32>(0, -90, 0));
+                pComp->rotate(0, -90, 0);
             }
 
             _localWorkingMemory._hasEnemyFlag.value(true);

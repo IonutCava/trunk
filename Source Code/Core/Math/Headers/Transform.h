@@ -32,7 +32,7 @@
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
-#include "Quaternion.h"
+#include "TransformInterface.h"
 
 #include "Utility/Headers/GUIDWrapper.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
@@ -49,308 +49,76 @@ struct TransformValues {
     /// (because they are awesome and also have an internal mat4 if needed)
     Quaternion<F32> _orientation;
 
-    void operator=(const TransformValues& other) {
-        _translation.set(other._translation);
-        _scale.set(other._scale);
-        _orientation.set(other._orientation);
-    }
+    void operator=(const TransformValues& other);
 
-    bool operator==(const TransformValues& other) const {
-        return _scale.compare(other._scale) &&
-               _orientation.compare(other._orientation) &&
-               _translation.compare(other._translation);
-    }
-    bool operator!=(const TransformValues& other) const {
-        return !_scale.compare(other._scale) ||
-               !_orientation.compare(other._orientation) ||
-               !_translation.compare(other._translation);
-    }
+    bool operator==(const TransformValues& other) const;
+    bool operator!=(const TransformValues& other) const;
 };
 
-class Transform : public GUIDWrapper, private NonCopyable {
+class Transform : public TransformInterface, public GUIDWrapper, private NonCopyable {
    public:
     Transform();
-    Transform(const Quaternion<F32>& orientation, const vec3<F32>& translation,
+    Transform(const Quaternion<F32>& orientation,
+              const vec3<F32>& translation,
               const vec3<F32>& scale);
 
     ~Transform();
 
-    /// Set the local X,Y and Z position
-    void setPosition(const vec3<F32>& position) {
-        this->_dirty = true;
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._translation.set(position);
-    }
+    void setPosition(const vec3<F32>& position) override;
+    void setPositionX(const F32 positionX) override;
+    void setPositionY(const F32 positionY) override;
+    void setPositionZ(const F32 positionZ) override;
+    void translate(const vec3<F32>& axisFactors) override;
 
-    /// Set the local X,Y and Z scale factors
-    void setScale(const vec3<F32>& scale) {
-        this->_dirty = true;
-        this->_rebuildMatrix = true;
+    void setScale(const vec3<F32>& ammount) override;
+    void setScaleX(const F32 ammount) override;
+    void setScaleY(const F32 ammount) override;
+    void setScaleZ(const F32 ammount) override;
+    void scale(const vec3<F32>& axisFactors) override;
+    void scaleX(const F32 ammount) override;
+    void scaleY(const F32 ammount) override;
+    void scaleZ(const F32 ammount) override;
 
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._scale.set(scale);
-    }
+    void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
+    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void setRotation(const Quaternion<F32>& quat) override;
+    void setRotationX(const F32 angle, bool inDegrees = true) override;
+    void setRotationY(const F32 angle, bool inDegrees = true) override;
+    void setRotationZ(const F32 angle, bool inDegrees = true) override;
+    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
+    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void rotate(const Quaternion<F32>& quat) override;
+    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) override;
+    void rotateX(const F32 angle, bool inDegrees = true) override;
+    void rotateY(const F32 angle, bool inDegrees = true) override;
+    void rotateZ(const F32 angle, bool inDegrees = true) override;
 
-    /// Set the local orientation using the Axis-Angle system.
-    /// The angle can be in either degrees(default) or radians
-    void setRotation(const vec3<F32>& axis, F32 degrees,
-                     bool inDegrees = true) {
-        setRotation(Quaternion<F32>(axis, degrees, inDegrees));
-    }
+    vec3<F32> getScale() const override;
+    vec3<F32> getPosition() const override;
+    Quaternion<F32> getOrientation() const override;
 
-    /// Set the local orientation using the Euler system.
-    /// The angles can be in either degrees(default) or radians
-    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) {
-        setRotation(
-            Quaternion<F32>(pitch, yaw, roll, inDegrees));
-    }
-
-    /// Set the local orientation so that it matches the specified quaternion.
-    void setRotation(const Quaternion<F32>& quat) {
-        this->_dirty = true;
-        this->_rebuildMatrix = true;
-
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._orientation.set(quat);
-        this->_transformValues._orientation.normalize();
-    }
-
-    /// Add the specified translation factors to the current local position
-    void translate(const vec3<F32>& axisFactors) {
-        this->_dirty = true;
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._translation += axisFactors;
-    }
-
-    /// Add the specified scale factors to the current local position
-    void scale(const vec3<F32>& axisFactors) {
-        this->_dirty = true;
-        this->_rebuildMatrix = true;
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._scale += axisFactors;
-    }
-
-    /// Apply the specified Axis-Angle rotation starting from the current
-    /// orientation.
-    /// The angles can be in either degrees(default) or radians
-    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) {
-        rotate(Quaternion<F32>(axis, degrees, inDegrees));
-    }
-
-    /// Apply the specified Euler rotation starting from the current
-    /// orientation.
-    /// The angles can be in either degrees(default) or radians
-    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) {
-        rotate(Quaternion<F32>(pitch, yaw, roll, inDegrees));
-    }
-
-    /// Apply the specified Quaternion rotation starting from the current orientation.
-    void rotate(const Quaternion<F32>& quat) {
-        setRotation(quat * this->_transformValues._orientation);
-    }
-
-    /// Perform a SLERP rotation towards the specified quaternion
-    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
-        this->_dirty = true;
-        this->_rebuildMatrix = true;
-
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._orientation.slerp(quat, to_float(deltaTime));
-        this->_transformValues._orientation.normalize();
-    }
-
-    /// If a non-uniform scaling factor is currently set (either locally or in
-    /// the parent transform),
-    // return false
-    inline bool isUniformScaled() const { return getScale().isUniform(); }
-
-    /// Transformation helper functions. These just call the normal
-    /// translate/rotate/scale functions
-    /// Set an uniform scale on all three axis
-    inline void setScale(const F32 scale) {
-        this->setScale(vec3<F32>(scale));
-    }
-    /// Set the scaling factor on the X axis
-    inline void setScaleX(const F32 scale) {
-        this->setScale(vec3<F32>(scale, this->_transformValues._scale.y,
-                                 this->_transformValues._scale.z));
-    }
-    /// Set the scaling factor on the Y axis
-    inline void setScaleY(const F32 scale) {
-        this->setScale(vec3<F32>(this->_transformValues._scale.x, scale,
-                                 this->_transformValues._scale.z));
-    }
-    /// Set the scaling factor on the Z axis
-    inline void setScaleZ(const F32 scale) {
-        this->setScale(vec3<F32>(this->_transformValues._scale.x,
-                                 this->_transformValues._scale.y, scale));
-    }
-    /// Increase the scaling factor on all three axis by an uniform factor
-    inline void scale(const F32 scale) {
-        this->scale(vec3<F32>(scale, scale, scale));
-    }
-    /// Increase the scaling factor on the X axis by the specified factor
-    inline void scaleX(const F32 scale) {
-        this->scale(vec3<F32>(scale, this->_transformValues._scale.y,
-                              this->_transformValues._scale.z));
-    }
-    /// Increase the scaling factor on the Y axis by the specified factor
-    inline void scaleY(const F32 scale) {
-        this->scale(vec3<F32>(this->_transformValues._scale.x, scale,
-                              this->_transformValues._scale.z));
-    }
-    /// Increase the scaling factor on the Z axis by the specified factor
-    inline void scaleZ(const F32 scale) {
-        this->scale(vec3<F32>(this->_transformValues._scale.x,
-                              this->_transformValues._scale.y, scale));
-    }
-    /// Rotate on the X axis (Axis-Angle used) by the specified angle (either
-    /// degrees or radians)
-    inline void rotateX(const F32 angle, bool inDegrees = true) {
-        this->rotate(vec3<F32>(1, 0, 0), angle, inDegrees);
-    }
-    /// Rotate on the Y axis (Axis-Angle used) by the specified angle (either
-    /// degrees or radians)
-    inline void rotateY(const F32 angle, bool inDegrees = true) {
-        this->rotate(vec3<F32>(0, 1, 0), angle, inDegrees);
-    }
-    /// Rotate on the Z axis (Axis-Angle used) by the specified angle (either
-    /// degrees or radians)
-    inline void rotateZ(const F32 angle, bool inDegrees = true) {
-        this->rotate(vec3<F32>(0, 0, 1), angle, inDegrees);
-    }
-    /// Set the rotation on the X axis (Axis-Angle used) by the specified angle
-    /// (either degrees or radians)
-    inline void setRotationX(const F32 angle, bool inDegrees = true) {
-        this->setRotation(vec3<F32>(1, 0, 0), angle, inDegrees);
-    }
-    /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle
-    /// (either degrees or radians)
-    inline void setRotationY(const F32 angle, bool inDegrees = true) {
-        this->setRotation(vec3<F32>(0, 1, 0), angle, inDegrees);
-    }
-    /// Set the rotation on the Z axis (Axis-Angle used) by the specified angle
-    /// (either degrees or radians)
-    inline void setRotationZ(const F32 angle, bool inDegrees = true) {
-        this->setRotation(vec3<F32>(0, 0, 1), angle, inDegrees);
-    }
-    /// Translate the object on the X axis by the specified amount
-    inline void translateX(const F32 positionX) {
-        this->translate(vec3<F32>(positionX, 0.0f, 0.0f));
-    }
-    /// Translate the object on the Y axis by the specified amount
-    inline void translateY(const F32 positionY) {
-        this->translate(vec3<F32>(0.0f, positionY, 0.0f));
-    }
-    /// Translate the object on the Z axis by the specified amount
-    inline void translateZ(const F32 positionZ) {
-        this->translate(vec3<F32>(0.0f, 0.0f, positionZ));
-    }
-    /// Set the object's position on the X axis
-    inline void setPositionX(const F32 positionX) {
-        this->setPosition(vec3<F32>(positionX,
-                                    this->_transformValues._translation.y,
-                                    this->_transformValues._translation.z));
-    }
-    /// Set the object's position on the Y axis
-    inline void setPositionY(const F32 positionY) {
-        this->setPosition(vec3<F32>(this->_transformValues._translation.x,
-                                    positionY,
-                                    this->_transformValues._translation.z));
-    }
-    /// Set the object's position on the Z axis
-    inline void setPositionZ(const F32 positionZ) {
-        this->setPosition(vec3<F32>(this->_transformValues._translation.x,
-                                    this->_transformValues._translation.y,
-                                    positionZ));
-    }
-    /// Return the scale factor
-    inline const vec3<F32>& getScale() const {
-        ReadLock r_lock(this->_lock);
-        return this->_transformValues._scale;
-    }
-    /// Return the position
-    inline const vec3<F32>& getPosition() const {
-        ReadLock r_lock(this->_lock);
-        return this->_transformValues._translation;
-    }
-    /// Return the orientation quaternion
-    inline const Quaternion<F32>& getOrientation() const {
-        ReadLock r_lock(this->_lock);
-        return this->_transformValues._orientation;
-    }
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
-    const mat4<F32>& getMatrix(bool& wasRebuilt);
+    const mat4<F32>& getMatrix() override;
+
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified
     /// matrix
-    inline void setTransforms(const mat4<F32>& transform) {
-        this->_dirty = true;
+    void setTransforms(const mat4<F32>& transform);
 
-        WriteLock w_lock(this->_lock);
-        Quaternion<F32>& rotation = this->_transformValues._orientation;
-        vec3<F32>& position = this->_transformValues._translation;
-        vec3<F32>& scale = this->_transformValues._scale;
-        // extract translation
-        position.set(transform.m[0][3], transform.m[1][3], transform.m[2][3]);
-
-        // extract the rows of the matrix
-        vec3<F32> vRows[3] = {
-            vec3<F32>(transform.m[0][0], transform.m[1][0], transform.m[2][0]),
-            vec3<F32>(transform.m[0][1], transform.m[1][1], transform.m[2][1]),
-            vec3<F32>(transform.m[0][2], transform.m[1][2], transform.m[2][2])};
-
-        // extract the scaling factors
-        scale.set(vRows[0].length(), vRows[1].length(), vRows[2].length());
-
-        // and the sign of the scaling
-        if (transform.det() < 0) {
-            scale.set(-scale);
-        }
-
-        // and remove all scaling from the matrix
-        if (!IS_ZERO(scale.x)) {
-            vRows[0] /= scale.x;
-        }
-        if (!IS_ZERO(scale.y)) {
-            vRows[1] /= scale.y;
-        }
-        if (!IS_ZERO(scale.z)) {
-            vRows[2] /= scale.z;
-        }
-
-        // build a 3x3 rotation matrix and generate the rotation quaternion from
-        // it
-        rotation = Quaternion<F32>(mat3<F32>(
-            vRows[0].x, vRows[1].x, vRows[2].x, vRows[0].y, vRows[1].y,
-            vRows[2].y, vRows[0].z, vRows[1].z, vRows[2].z));
-    }
     /// Set all of the internal values to match those of the specified transform
-    inline void clone(Transform* const transform) {
-        this->setValues(transform->getValues());
-    }
+    void clone(Transform* const transform);
+
     /// Extract the 3 transform values (position, scale, rotation) from the
     /// current instance
-    inline const TransformValues& getValues() const { return _transformValues; }
+    const TransformValues& getValues() const;
     /// Set position, scale and rotation based on the specified transform values
-    inline void setValues(const TransformValues& values) {
-        this->_dirty = true;
-        this->_rebuildMatrix = true;
-        WriteLock w_lock(this->_lock);
-        this->_transformValues._scale.set(values._scale);
-        this->_transformValues._translation.set(values._translation);
-        this->_transformValues._orientation.set(values._orientation);
-    }
+    void setValues(const TransformValues& values);
+
     /// Compares 2 transforms
-    bool operator==(const Transform& other) const {
-        ReadLock r_lock(_lock);
-        return _transformValues == other._transformValues;
-    }
-    bool operator!=(const Transform& other) const {
-        ReadLock r_lock(_lock);
-        return _transformValues != other._transformValues;
-    }
+    bool operator==(const Transform& other) const;
+    bool operator!=(const Transform& other) const;
+
     /// Reset transform to identity
     void identity();
 
@@ -372,3 +140,5 @@ class Transform : public GUIDWrapper, private NonCopyable {
 };  // namespace Divide
 
 #endif
+
+#include "Transform.inl"

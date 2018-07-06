@@ -38,6 +38,8 @@
 namespace Divide {
 
 class BoundingBox;
+enum class RigidBodyShape : U32;
+
 class Object3D : public SceneNode {
    public:
     enum class ObjectType : U32 {
@@ -123,6 +125,7 @@ class Object3D : public SceneNode {
     U32 _geometryFlagMask;
     U16 _geometryPartitionID;
     ObjectType _geometryType;
+    RigidBodyShape _rigidBodyShape;
     /// 3 indices, pointing to position values, that form a triangle in the
     /// mesh.
     /// used, for example, for cooking collision meshes

@@ -178,9 +178,6 @@ class SceneGraphNode : public GUIDWrapper,
 
     void setParent(SceneGraphNode& parent);
 
-    /*Parent <-> Children*/
-    void useDefaultTransform(const bool state);
-
     /*Node State*/
     void setActive(const bool state);
     inline bool isActive() const { return _active; }

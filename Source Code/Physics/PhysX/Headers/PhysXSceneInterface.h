@@ -55,7 +55,6 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     virtual void update(const U64 deltaTime);
     virtual void process(const U64 deltaTime);
 
-    PhysXActor* getOrCreateRigidActor(const stringImpl& actorName);
     void addRigidActor(PhysXActor* const actor, bool threaded = true);
     inline const vectorImpl<physx::PxMaterial*> getMaterials() {
         return _materials;

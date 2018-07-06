@@ -29,6 +29,8 @@
 
  */
 
+#include "Core/Headers/Application.h"
+
 #ifndef _PHYSICS_DEVICE_H_
 #define _PHYSICS_DEVICE_H_
 #include "Physics/PhysX/Headers/PhysX.h"
@@ -39,6 +41,7 @@
 
 namespace Divide {
 
+class PhysicsAsset;
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
   public:
@@ -56,7 +59,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
     bool closePhysicsAPI();
 
     void updateTimeStep(U8 timeStepFactor);
-    void updateTimeStep();
     void update(const U64 deltaTime);
     void process(const U64 deltaTime);
     void idle();
@@ -65,10 +67,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(PXDevice, PhysicsAPIWrapper, final)
 
     PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
-    void createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1);
-    void createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f);
-    void createActor(SceneGraphNode& node, const stringImpl& sceneName,
-        PhysicsActorMask mask, PhysicsCollisionGroup group);
+    PhysicsAsset* createRigidActor(const SceneGraphNode& node,
+                                   PhysicsActorMask mask,
+                                   PhysicsCollisionGroup group) override;
 
   private:
     PXDevice();

@@ -53,7 +53,25 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
         setComponent(SGNComponent::ComponentType::NAVIGATION, new NavigationComponent(*this));
     }
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::PHYSICS))) {
-        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this));
+        bool isRigidBody = false;
+
+        STUBBED("Due to the way that physics libs work in world transforms only, a classical scene graph type system does not "
+            "fit the physics model well. Thus, for now, only first-tier nodes are physically simulated!");
+        // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
+        // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
+        if (getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
+            Object3D::ObjectType crtType = getNode<Object3D>()->getObjectType();
+            if (crtType != Object3D::ObjectType::TEXT_3D &&
+                crtType != Object3D::ObjectType::SUBMESH &&
+                crtType != Object3D::ObjectType::FLYWEIGHT) {
+                SceneGraphNode_ptr grandParent = getParent().lock();
+                isRigidBody = grandParent->getNode()->getType() == SceneNodeType::TYPE_ROOT;
+            }
+        }
+        STUBBED("Rigid body physics disabled for now - Ionut");
+        isRigidBody = false;
+
+        setComponent(SGNComponent::ComponentType::PHYSICS, new PhysicsComponent(*this, isRigidBody));
 
         PhysicsComponent* pComp = get<PhysicsComponent>();
         pComp->addTransformUpdateCbk(DELEGATE_BIND(&Attorney::SceneGraphSGN::onNodeTransform, std::ref(_sceneGraph), std::ref(*this)));
@@ -119,10 +137,6 @@ SceneGraphNode::~SceneGraphNode()
     } else {
         RemoveResource(_node);
     }
-}
-
-void SceneGraphNode::useDefaultTransform(const bool state) {
-    get<PhysicsComponent>()->useDefaultTransform(!state);
 }
 
 /// Change current SceneGraphNode's parent

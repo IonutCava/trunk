@@ -39,15 +39,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-namespace Attorney {
-    class PXCompPXAsset;
-};
-
 class Transform;
 class PhysicsAsset;
 class SceneGraphNode;
-class PhysicsComponent : public SGNComponent {
-    friend class Attorney::PXCompPXAsset;
+class PhysicsComponent : public SGNComponent, public TransformInterface {
   public:
     enum class PhysicsGroup : U32 {
         NODE_COLLIDE_IGNORE = 0,
@@ -145,78 +140,48 @@ class PhysicsComponent : public SGNComponent {
         _physicsCollisionGroup = newGroup;
     }
 
-    inline PhysicsAsset* const physicsAsset() { return _physicsAsset; }
-
     void cookCollisionMesh(const stringImpl& sceneName);
 
     void reset();
-
-    const mat4<F32>& getLocalMatrix() const;
 
     const mat4<F32>& getWorldMatrix();
 
     const mat4<F32>& getWorldMatrix(D64 interpolationFactor);
     
     /// Component <-> Transform interface
-    void setPosition(const vec3<F32>& position);
-    void setScale(const vec3<F32>& scale);
-    void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true);
-    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true);
-    void setRotation(const Quaternion<F32>& quat);
-    void translate(const vec3<F32>& axisFactors);
-    void scale(const vec3<F32>& axisFactors);
-    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true);
-    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true);
-    void rotate(const Quaternion<F32>& quat);
-    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime);
-    void setScale(const F32 scale);
-    void setScaleX(const F32 scale);
-    void setScaleY(const F32 scale);
-    void setScaleZ(const F32 scale);
-    void scale(const F32 scale);
-    void scaleX(const F32 scale);
-    void scaleY(const F32 scale);
-    void scaleZ(const F32 scale);
-    void rotateX(const F32 angle, bool inDegrees = true);
-    void rotateY(const F32 angle, bool inDegrees = true);
-    void rotateZ(const F32 angle, bool inDegrees = true);
-    void setRotationX(const F32 angle, bool inDegrees = true);
-    void setRotationY(const F32 angle, bool inDegrees = true);
-    void setRotationZ(const F32 angle, bool inDegrees = true);
-    void translateX(const F32 positionX);
-    void translateY(const F32 positionY);
-    void translateZ(const F32 positionZ);
-    void setPositionX(const F32 positionX);
-    void setPositionY(const F32 positionY);
-    void setPositionZ(const F32 positionZ);
+    void setPosition(const vec3<F32>& position) override;
+    void setPositionX(const F32 positionX) override;
+    void setPositionY(const F32 positionY) override;
+    void setPositionZ(const F32 positionZ) override;
+    void translate(const vec3<F32>& axisFactors) override;
+    using TransformInterface::setPosition;
 
-    inline void setPosition(F32 x, F32 y, F32 z) {
-        setPosition(vec3<F32>(x,y,z));
-    }
+    void setScale(const vec3<F32>& ammount) override;
+    void setScaleX(const F32 ammount) override;
+    void setScaleY(const F32 ammount) override;
+    void setScaleZ(const F32 ammount) override;
+    void scale(const vec3<F32>& axisFactors) override;
+    void scaleX(const F32 ammount) override;
+    void scaleY(const F32 ammount) override;
+    void scaleZ(const F32 ammount) override;
+    using TransformInterface::setScale;
 
-    inline void setScale(F32 x, F32 y, F32 z) {
-        setScale(vec3<F32>(x,y,z));
-    }
+    void setRotation(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
+    void setRotation(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void setRotation(const Quaternion<F32>& quat) override;
+    void setRotationX(const F32 angle, bool inDegrees = true) override;
+    void setRotationY(const F32 angle, bool inDegrees = true) override;
+    void setRotationZ(const F32 angle, bool inDegrees = true) override;
+    using TransformInterface::setRotation;
 
-    inline void setRotation(const vec3<F32>& euler, bool inDegrees = true) {
-        setRotation(euler.pitch, euler.yaw, euler.roll, inDegrees);
-    }
-
-    inline void translate(F32 x, F32 y, F32 z) {
-        translate(vec3<F32>(x,y,z));
-    }
-
-    inline void scale(F32 x, F32 y, F32 z) {
-        scale(vec3<F32>(x, y, z));
-    }
-
-    inline void rotate(F32 xAxis, F32 yAxis, F32 zAxis, F32 degrees, bool inDegrees = true) {
-        rotate(vec3<F32>(xAxis, yAxis, zAxis), degrees, inDegrees);
-    }
-
-    inline void rotate(const vec3<F32>& euler, bool inDegrees = true) {
-        rotate(euler.pitch, euler.yaw, euler.roll, inDegrees);
-    }
+    void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true) override;
+    void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true) override;
+    void rotate(const Quaternion<F32>& quat) override;
+    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) override;
+    void rotateX(const F32 angle, bool inDegrees = true) override;
+    void rotateY(const F32 angle, bool inDegrees = true) override;
+    void rotateZ(const F32 angle, bool inDegrees = true) override;
+    using TransformInterface::rotate;
 
     inline void setTransform(const TransformValues& values) {
         setPosition(values._translation);
@@ -224,16 +189,36 @@ class PhysicsComponent : public SGNComponent {
         setScale(values._scale);
     }
 
-    inline bool isUniformScaled() const {
-        return _transform != nullptr ? _transform->isUniformScaled() : true;
-    }
+    bool isUniformScaled() const;
+
+    /// Return the position
+    vec3<F32> getPosition() const override;
+    /// Return the local position
+    vec3<F32> getLocalPosition() const;
+    /// Return the position
+    vec3<F32> getPosition(D64 interpolationFactor) const;
+    /// Return the local position
+    vec3<F32> getLocalPosition(D64 interpolationFactor) const;
 
     /// Return the scale factor
-    vec3<F32> getScale(D64 interpolationFactor = 1.0, const bool local = false) const;
-    /// Return the position
-    vec3<F32> getPosition(D64 interpolationFactor = 1.0, const bool local = false) const;
+    vec3<F32> getScale() const override;
+    /// Return the local scale factor
+    vec3<F32> getLocalScale() const;
+    /// Return the scale factor
+    vec3<F32> getScale(D64 interpolationFactor) const;
+    /// Return the local scale factor
+    vec3<F32> getLocalScale(D64 interpolationFactor) const;
+
     /// Return the orientation quaternion
-    Quaternion<F32> getOrientation(D64 interpolationFactor = 1.0, const bool local = false) const;
+    Quaternion<F32> getOrientation() const override;
+    /// Return the local orientation quaternion
+    Quaternion<F32> getLocalOrientation() const;
+    /// Return the orientation quaternion
+    Quaternion<F32> getOrientation(D64 interpolationFactor) const;
+    /// Return the local orientation quaternion
+    Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
+
+    const mat4<F32>& getMatrix() override;
 
     void pushTransforms();
     bool popTransforms();
@@ -248,10 +233,8 @@ class PhysicsComponent : public SGNComponent {
 
    protected:
     friend class SceneGraphNode;
-    PhysicsComponent(SceneGraphNode& parentSGN);
+    PhysicsComponent(SceneGraphNode& parentSGN, bool isRigidBody);
     ~PhysicsComponent();
-
-    void useDefaultTransform(const bool state);
 
     inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {
         _transformCallbacks.push_back(cbk);
@@ -262,11 +245,16 @@ class PhysicsComponent : public SGNComponent {
     void setTransformDirty(TransformType type);
     bool isParentTransformDirty() const;
 
+    Transform* getTransform() const;
+    PhysicsAsset* getPhysicsAsset() const;
+
    protected:
+
+    std::unique_ptr<TransformInterface> _transformInterface;
+    bool _physicsDriven;
+
     IgnoreViewSettings _ignoreViewSettings;
-    PhysicsAsset* _physicsAsset;
     PhysicsGroup _physicsCollisionGroup;
-    Transform* _transform;
     TransformValues _prevTransformValues;
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
@@ -279,25 +267,11 @@ class PhysicsComponent : public SGNComponent {
     std::atomic_bool _dirtyInterp;
     std::atomic_bool _parentDirty;
 
+    bool _isUniformScaled;
     mat4<F32> _worldMatrix;
     D64  _prevInterpValue;
     mat4<F32> _worldMatrixInterp;
 };
 
-namespace Attorney {
-class PXCompPXAsset {
-   private:
-    static void setPhysicsAsset(PhysicsComponent& component,
-                                PhysicsAsset* asset)
-    {
-        DIVIDE_ASSERT(!asset || component._physicsAsset == nullptr,
-            "PhysicsComponent error: Double set physics asset detected! "
-            "remove the previous one first!");
-        component._physicsAsset = asset;
-    }
-
-    friend class Divide::PhysicsAsset;
-};
-};  // namespace Attorney
 };  // namespace Divide
 #endif
