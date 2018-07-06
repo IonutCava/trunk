@@ -29,7 +29,8 @@ MouseState MouseEvent::state(bool warped, bool viewportRelative) const {
     const OIS::MouseState& stateIn = _event.state;
 
     MouseState ret{ stateIn.X, stateIn.Y, stateIn.Z };
-    
+    ret.Z.rel /= 120; //Magic MS/OIS number
+
     if (_parentWindow.warp() && warped) {
         const Rect<I32>& rect = _parentWindow.warpRect();
         if (rect.contains(stateIn.X.abs, stateIn.Y.abs)) {
@@ -40,8 +41,11 @@ MouseState MouseEvent::state(bool warped, bool viewportRelative) const {
     
     if (viewportRelative) {
         const Rect<I32>& rect = _parentWindow.renderingViewport();
-        adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
-        adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);
+        /*adjust(ret.X, 0, _event.state.width, rect.x, rect.z);
+        adjust(ret.Y, 0, _event.state.height, rect.y, rect.w);*/
+
+        adjust(ret.X, rect.x, rect.z, 0, _event.state.width);
+        adjust(ret.Y, rect.y, rect.w, 0, _event.state.height);
     }
 
     return ret;

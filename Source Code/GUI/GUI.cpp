@@ -206,12 +206,14 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     _ceguiRenderTextureTarget->declareRenderSize(size);
     _ceguiContext = &CEGUI::System::getSingleton().createGUIContext(static_cast<CEGUI::RenderTarget&>(*_ceguiRenderTextureTarget));
 
-    getCEGUIContext().setRootWindow(_rootSheet);
-    getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
+    _ceguiContext->setRootWindow(_rootSheet);
+    _ceguiContext->setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
   
     _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
     assert(_console);
     
+    _ceguiContext->getMouseCursor().setDefaultImage("GWEN/Tree.Plus");
+
     _console->createCEGUIWindow();
 
     _defaultMsgBox = addMsgBox(_ID("AssertMsgBox"),
@@ -260,8 +262,18 @@ void GUI::destroy() {
 }
 
 void GUI::onSizeChange(const SizeChangeParams& params) {
-    if ((params.isWindowResize || params.isFullScreen) && parent().platformContext().config().gui.cegui.enabled) {
-        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        if ((params.isWindowResize || params.isFullScreen)) {
+            CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(params.width, params.height));
+        }
+
+        if (_ceguiRenderTextureTarget) {
+            const Rect<I32>& renderViewport = parent().platformContext().activeWindow().renderingViewport();
+            CEGUI::Sizef size(static_cast<float>(renderViewport.z), static_cast<float>(renderViewport.w));
+            //_ceguiRenderTextureTarget->setArea(CEGUI::Rectf(renderViewport.x, renderViewport.y, renderViewport.z, renderViewport.w));
+            _ceguiRenderTextureTarget->declareRenderSize(size);
+        }
+
     }
 
     ReadLock r_lock(_guiStackLock);

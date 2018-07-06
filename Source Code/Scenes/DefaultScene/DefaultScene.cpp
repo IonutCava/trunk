@@ -226,14 +226,15 @@ void DefaultScene::onSetActive() {
 
 bool DefaultScene::mouseMoved(const Input::MouseEvent& arg) {
     _GUI->modifyText(_ID("Mouse"),
-                     Util::StringFormat("_______________________Position: [%d - %d]\n"
-                                        "Warped______________Position: [%d - %d]\n"
+                     Util::StringFormat("_____________________Position: [%d - %d]\n"
+                                        "Warped_____________Position: [%d - %d]\n"
                                         "Viewport____________Position: [%d - %d]\n"
                                         "Warped + Viewport_Position: [%d - %d]",
                                         arg.X(false, false).abs, arg.Y(false, false).abs,
                                         arg.X(true, false).abs, arg.Y(true, false).abs,
                                         arg.X(false, true).abs, arg.Y(false, true).abs,
                                         arg.X(true, true).abs, arg.Y(true, true).abs));
+    
     return Scene::mouseMoved(arg);
 }
 
