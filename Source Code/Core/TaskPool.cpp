@@ -47,14 +47,19 @@ void TaskPool::shutdown() {
     waitForAllTasks(true, true, true);
 }
 
-bool TaskPool::enqueue(const PoolTask& task) {
-    assert(_mainTaskPool != nullptr);
-#if defined(USE_BOOST_ASIO_THREADPOOL)
-    boost::asio::post(*_mainTaskPool, task);
-#else
-    _mainTaskPool->AddJob(task);
-#endif
+bool TaskPool::enqueue(const PoolTask& task, TaskPriority priority) {
     _runningTaskCount.fetch_add(1);
+
+    if (!Config::USE_SINGLE_THREADED_TASK_POOLS && priority != TaskPriority::REALTIME) {
+        assert(_mainTaskPool != nullptr);
+#if defined(USE_BOOST_ASIO_THREADPOOL)
+        boost::asio::post(*_mainTaskPool, task);
+#else
+        _mainTaskPool->AddJob(task);
+#endif
+    } else {
+        task();
+    }
 
     return true;
 }
@@ -101,19 +106,24 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
 #endif
 }
 
-
-void TaskPool::taskCompleted(U32 taskIndex, bool runCallback) {
-    if (runCallback) {
-        runCbkAndClearTask(taskIndex);
-    } else {
-        WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(taskIndex));
-        _runningTaskCount.fetch_sub(1);
-    }
+void TaskPool::taskCompleted(U32 taskIndex) {
+    _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::createTask(Task* parentTask,
-                           const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                           const DELEGATE_CBK<void>& onCompletionFunction) 
+void TaskPool::taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
+    if (onCompletionFunction) {
+        if (Config::USE_SINGLE_THREADED_TASK_POOLS || priority == TaskPriority::REALTIME) {
+            onCompletionFunction();
+        } else {
+            _taskCallbacks[taskIndex] = onCompletionFunction;
+            WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(taskIndex));
+        }
+    }
+
+    taskCompleted(taskIndex);
+}
+
+Task* TaskPool::createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction) 
 {
     if (parentTask != nullptr) {
         parentTask->_unfinishedJobs.fetch_add(1);
@@ -138,10 +148,6 @@ Task* TaskPool::createTask(Task* parentTask,
         task->_id = id++;
     }
 
-    if (onCompletionFunction) {
-        _taskCallbacks[task->_id] = onCompletionFunction;
-    }
-
     return task;
 }
 
@@ -160,7 +166,7 @@ void TaskPool::nameThreadpoolWorkers(const char* name) {
             }
             setThreadName(Util::StringFormat("%s_%d", name, i).c_str());
             ++count;
-        });
+        }, TaskPriority::DONT_CARE);
     }
     predicate = true;
     condition.notify_all();
@@ -173,21 +179,17 @@ bool TaskPool::stopRequested() const {
     return _stopRequested.load();
 }
 
-TaskHandle CreateTask(TaskPool& pool,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction)
+TaskHandle CreateTask(TaskPool& pool, const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    return CreateTask(pool, nullptr, threadedFunction, onCompletionFunction);
+    return CreateTask(pool, nullptr, threadedFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
                       TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction)
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
     Task* freeTask = pool.createTask(parentTask ? parentTask->_task : nullptr,
-                                     threadedFunction,
-                                     onCompletionFunction);
+                                     threadedFunction);
     return TaskHandle(freeTask, &pool);
 }
 
@@ -195,13 +197,11 @@ void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceC
     pool.waitForAllTasks(yield, flushCallbacks, foceClear);
 }
 
-
 TaskHandle parallel_for(TaskPool& pool, 
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        TaskPriority priority,
-                        U32 taskFlags)
+                        TaskPriority priority)
 {
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     if (count > 0) {
@@ -217,18 +217,18 @@ TaskHandle parallel_for(TaskPool& pool,
                        &updateTask,
                        [&cbk, start, end](const Task& parentTask) {
                            cbk(parentTask, start, end);
-                       }).startTask(priority, taskFlags);
+                       }).startTask(priority);
         }
         if (remainder > 0) {
             CreateTask(pool,
                        &updateTask,
                        [&cbk, count, remainder](const Task& parentTask) {
                            cbk(parentTask, count - remainder, count);
-                       }).startTask(priority, taskFlags);
+                       }).startTask(priority);
         }
     }
 
-    updateTask.startTask(priority, taskFlags).wait();
+    updateTask.startTask(priority).wait();
 
     return updateTask;
 }

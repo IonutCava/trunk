@@ -53,9 +53,7 @@ class TaskPool : public GUIDWrapper {
     void flushCallbackQueue();
     void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
 
-    Task* createTask(Task* parentTask,
-                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                     const DELEGATE_CBK<void>& onCompletionFunction);
+    Task* createTask(Task* parentTask, const DELEGATE_CBK<void, const Task&>& threadedFunction);
 
     inline U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
@@ -73,12 +71,13 @@ class TaskPool : public GUIDWrapper {
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend struct Task;
     friend struct TaskHandle;
-    friend void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags);
+    friend void Start(Task* task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     friend bool StopRequested(const Task *task);
 
-    void taskCompleted(U32 taskIndex, bool runCallback);
+    void taskCompleted(U32 taskIndex);
+    void taskCompleted(U32 taskIndex, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
     
-    bool enqueue(const PoolTask& task);
+    bool enqueue(const PoolTask& task, TaskPriority priority);
     bool stopRequested() const;
 
     void nameThreadpoolWorkers(const char* name);
@@ -98,20 +97,17 @@ class TaskPool : public GUIDWrapper {
 };
 
 TaskHandle CreateTask(TaskPool& pool,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction);
 
 TaskHandle CreateTask(TaskPool& pool,
                       TaskHandle* parentTask,
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction);
 
 TaskHandle parallel_for(TaskPool& pool,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        TaskPriority priority = TaskPriority::DONT_CARE,
-                        U32 taskFlags = 0);
+                        TaskPriority priority = TaskPriority::DONT_CARE);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
 

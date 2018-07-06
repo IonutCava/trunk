@@ -113,7 +113,7 @@ void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
         }
     };
 
-    CreateTask(_context.parent().platformContext(), bbBuildStart, bbBuildComplete).startTask();
+    CreateTask(_context.parent().platformContext(), bbBuildStart).startTask(bbBuildComplete);
 }
 
 };

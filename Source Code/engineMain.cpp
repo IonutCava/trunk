@@ -9,7 +9,7 @@
 #include "Scripting/Headers/Script.h"
 
 #include <iostream>
-
+#include "Core/Headers/TaskPool.h"
 namespace Divide {
 
 namespace {
@@ -85,7 +85,7 @@ void Engine::shutdown() {
 
 bool Engine::step() {
     assert(_errorCode == 0);
-        
+
     return _app->step();
 }
 

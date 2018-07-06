@@ -47,16 +47,8 @@ enum class TaskPriority : U8 {
     COUNT
 };
 
-enum class TaskFlags : U8 {
-    PRINT_DEBUG_INFO = toBit(1),
-    COUNT = 1,
-};
-
 struct alignas(64) Task {
-    //mutable std::mutex _taskDoneMutex;
-    //mutable std::condition_variable _taskDoneCV;
-
-    U32 _id;
+    U32 _id = 0;
     Task* _parent = nullptr;
     TaskPool* _parentPool = nullptr;
     std::atomic_ushort _unfinishedJobs;
@@ -64,7 +56,7 @@ struct alignas(64) Task {
     DELEGATE_CBK<void, const Task&> _callback;
 };
 
-void Start(Task *task, TaskPool& pool, TaskPriority priority, U32 taskFlags);
+void Start(Task *task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction);
 void Stop(Task *task);
 void Wait(const Task *task);
 bool StopRequested(const Task *task);
@@ -83,7 +75,15 @@ struct TaskHandle {
     {
     }
 
-    TaskHandle& startTask(TaskPriority prio = TaskPriority::DONT_CARE, U32 taskFlags = 0);
+    inline TaskHandle& startTask(TaskPriority prio = TaskPriority::DONT_CARE) {
+        return startTask(prio, 0);
+    }
+
+    inline TaskHandle& startTask(const DELEGATE_CBK<void>& onCompletionFunction) {
+        return startTask(TaskPriority::DONT_CARE, onCompletionFunction);
+    }
+
+    TaskHandle& startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction);
 
     inline TaskHandle& wait() {
         if (_task != nullptr) {

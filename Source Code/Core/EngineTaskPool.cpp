@@ -13,20 +13,16 @@ namespace Divide {
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(PlatformContext& context, 
-                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                      const DELEGATE_CBK<void>& onCompletionFunction)
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    TaskPool& pool = context.taskPool();
-    return CreateTask(pool, threadedFunction, onCompletionFunction);
+    return CreateTask(context.taskPool(), threadedFunction);
 }
 
 TaskHandle CreateTask(PlatformContext& context,
                      TaskHandle* parentTask,
-                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                     const DELEGATE_CBK<void>& onCompletionFunction)
+                     const DELEGATE_CBK<void, const Task&>& threadedFunction)
 {
-    TaskPool& pool = context.taskPool();
-    return CreateTask(pool, parentTask, threadedFunction, onCompletionFunction);
+    return CreateTask(context.taskPool(), parentTask, threadedFunction);
 }
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear) {
@@ -38,11 +34,10 @@ TaskHandle parallel_for(PlatformContext& context,
                         const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
-                        TaskPriority priority,
-                        U32 taskFlags)
+                        TaskPriority priority)
 {
     TaskPool& pool = context.taskPool();
-    return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags);
+    return parallel_for(pool, cbk, count, partitionSize, priority);
 }
 
 }; //namespace Divide

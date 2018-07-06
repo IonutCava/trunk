@@ -71,8 +71,8 @@ TEST(TaskCallbackTest)
         testValue = true;
     };
 
-    TaskHandle job = CreateTask(test, task, callback);
-    job.startTask();
+    TaskHandle job = CreateTask(test, task);
+    job.startTask(callback);
 
     CHECK_FALSE(testValue);
 
@@ -119,9 +119,8 @@ TEST(TaskClassMemberCallbackTest)
     ThreadedTest testObj;
 
     TaskHandle job = CreateTask(test,
-        DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1),
-        DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
-    job.startTask();
+        DELEGATE_BIND(&ThreadedTest::threadedFunction, &testObj, std::placeholders::_1));
+    job.startTask(DELEGATE_BIND(&ThreadedTest::setTestValue, &testObj, false));
 
     CHECK_FALSE(testObj.getTestValue());
 
@@ -179,8 +178,8 @@ TEST(TaskPriorityTest)
         callbackValue++;
     };
 
-    TaskHandle job = CreateTask(test, testFunction, callback);
-    job.startTask();
+    TaskHandle job = CreateTask(test, testFunction);
+    job.startTask(callback);
     job.wait();
     CHECK_EQUAL(callbackValue, 1u);
     test.flushCallbackQueue();
@@ -193,8 +192,8 @@ TEST(TaskPriorityTest)
     test.flushCallbackQueue();
     CHECK_EQUAL(callbackValue, 3u);
 
-    job = CreateTask(test, testFunction, callback);
-    job.startTask(TaskPriority::REALTIME);
+    job = CreateTask(test, testFunction);
+    job.startTask(TaskPriority::REALTIME, callback);
     job.wait();
     CHECK_EQUAL(callbackValue, 5u);
 }

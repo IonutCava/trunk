@@ -194,11 +194,11 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
                     _octree->updateTree();
                 }
                 _octree->update(deltaTimeUS);
-            },
-            [this]() mutable
-            {
-                _octreeUpdating = false;
-            }).startTask(TaskPriority::REALTIME);
+            }).startTask(TaskPriority::REALTIME,
+                [this]() mutable
+                {
+                    _octreeUpdating = false;
+                });
     }
 }
 

@@ -241,7 +241,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
                     unloadScene(sceneToUnload);
                 }
             }
-        },
+        }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME, 
         [this, name, unloadPrevious, &sceneToUnload]()
         {
             bool foundInCache = false;
@@ -276,7 +276,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
 
             Time::ApplicationTimer::instance().resetFPSCounter();
             
-        }).startTask(threaded ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+        });
 
     _sceneSwitchTarget.reset();
 

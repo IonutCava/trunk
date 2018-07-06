@@ -1132,11 +1132,11 @@ void Scene::onLostFocus() {
     //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
-void Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, TaskPriority priority) {
+void Scene::registerTask(const TaskHandle& taskItem, bool start, TaskPriority priority) {
     WriteLock w_lock(_tasksMutex);
     _tasks.push_back(taskItem);
     if (start) {
-        _tasks.back().startTask(priority, flags);
+        _tasks.back().startTask(priority);
     }
 }
 

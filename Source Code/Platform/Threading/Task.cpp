@@ -28,6 +28,10 @@ void finish(Task* task) {
 }
 
 void run(Task* task, const OnFinishCbk& onFinish) {
+    if (g_DebugTaskStartStop) {
+        Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
+    }
+
     //UniqueLock lk(_taskDoneMutex);
     //_taskDoneCV.wait(lk, [this]() -> bool { return _unfinishedJobs.load() == 1; });
     while (task->_unfinishedJobs.load() > 1) {
@@ -42,50 +46,32 @@ void run(Task* task, const OnFinishCbk& onFinish) {
     onFinish(task->_id);
 
     finish(task);
-}
-
-PoolTask getRunTask(Task* task, const OnFinishCbk& onFinish, U32 taskFlags) {
 
     if (g_DebugTaskStartStop) {
-        if (BitCompare(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO))) {
-            return PoolTask([task, onFinish]() { 
-                Console::d_printfn(Locale::get(_ID("TASK_RUN_IN_THREAD")), task->_id, std::this_thread::get_id());
-                run(task, onFinish);
-                Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id, std::this_thread::get_id());
-            });
-        }
+        Console::d_printfn(Locale::get(_ID("TASK_COMPLETE_IN_THREAD")), task->_id, std::this_thread::get_id());
     }
-
-    return PoolTask([task, onFinish]() {
-        run(task, onFinish);
-    });
 }
 
-void Start(Task* task, TaskPool& pool, TaskPriority priority, U32 taskFlags) {
-    assert(task != nullptr);
-
-    if (Config::USE_SINGLE_THREADED_TASK_POOLS) {
-        if (priority != TaskPriority::REALTIME) {
-            priority = TaskPriority::REALTIME;
-        }
-    }
-
-    if (g_DebugTaskStartStop) {
-        SetBit(taskFlags, to_base(TaskFlags::PRINT_DEBUG_INFO));
-    }
-
-    bool runCallback = priority == TaskPriority::REALTIME;
-    PoolTask wrappedTask(getRunTask(task,
-                                    [&pool, runCallback](U32 index) {
-                                        pool.taskCompleted(index, runCallback);
-                                    }, taskFlags));
-
-    if (priority != TaskPriority::REALTIME) {
-        while (!pool.enqueue(wrappedTask)) {
-            Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
-        }
+void Start(Task* task, TaskPool& pool, TaskPriority priority, const DELEGATE_CBK<void>& onCompletionFunction) {
+    PoolTask wrappedTask = 0;
+    if (!onCompletionFunction) {
+        wrappedTask = [task, &pool]() {
+                          run(task,
+                              [&pool](U32 index) {
+                                  pool.taskCompleted(index);
+                              });
+                      };
     } else {
-        wrappedTask();
+        wrappedTask = [task, &pool, priority, onCompletionFunction]() {
+                        run(task,
+                            [&pool, priority, &onCompletionFunction](U32 index) {
+                                pool.taskCompleted(index, priority, onCompletionFunction);
+                            });
+                    };
+    }
+
+    while (!pool.enqueue(wrappedTask, priority)) {
+        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
     }
 }
 
@@ -113,10 +99,11 @@ bool Finished(const Task *task) {
     return task->_unfinishedJobs.load() == 0;
 }
 
-TaskHandle& TaskHandle::startTask(TaskPriority prio, U32 taskFlags) {
+TaskHandle& TaskHandle::startTask(TaskPriority prio, const DELEGATE_CBK<void>& onCompletionFunction) {
+    assert(task != nullptr);
     assert(_task->_unfinishedJobs.load() > 0 && "StartTask error: double start call detected!");
 
-    Start(_task, *_tp, prio, taskFlags);
+    Start(_task, *_tp, prio, onCompletionFunction);
     return *this;
 }
 
