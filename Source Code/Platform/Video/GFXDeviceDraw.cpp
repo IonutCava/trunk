@@ -209,7 +209,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     Time::ScopedTimer timer(*_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
-    if (visibleNodes.empty()) {
+    if (refreshNodeData) {
         _lastCommandCount = _lastNodeCount = 0;
     }
 
@@ -235,13 +235,15 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         SceneGraphNode_ptr nodeRef = node.lock();
 
         RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
-        RenderPackage& pkg =
-            Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable, sceneRenderState, currentStage);
+        if (refreshNodeData) {
+            Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
+        }
+
+        RenderPackage& pkg = Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable, sceneRenderState, currentStage);
 
         if (pkg._isRenderable) {
             if (refreshNodeData) {
                 NodeData& dataOut = processVisibleNode(node, nodeCount);
-                Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
                 if (isDepthStage()) {
                     for (TextureData& data : pkg._textureData) {
                         if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0)) {
@@ -263,30 +265,24 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                     }
                 }
 
-            }
-            for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                IndirectDrawCommand& iCmd = cmd.cmd();
-                iCmd.baseInstance = renderable->commandIndex();
-                cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
-                // Extract the specific rendering commands from the draw commands
-                // Rendering commands are stored in GPU memory. Draw commands are not.
-                if (refreshNodeData) {
-                    _drawCommandsCache[iCmd.baseInstance].set(iCmd);
+                for (GenericDrawCommand& cmd : pkg._drawCommands) {
+                    _drawCommandsCache[cmd.cmd().baseInstance].set(cmd.cmd());
                 }
-                cmdCount++;
             }
+            cmdCount += to_uint(pkg._drawCommands.size());
             nodeCount++;
         }
     });
     
     if (refreshNodeData) {
+        _lastCommandCount = cmdCount;
+        _lastNodeCount = nodeCount;
         getNodeBuffer(currentStage, pass).updateData(0, nodeCount, _matricesData.data());
 
         ShaderBuffer& cmdBuffer = getCommandBuffer(currentStage, pass);
-        _api->registerCommandBuffer(cmdBuffer);
         cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
-        _lastCommandCount = cmdCount;
-        _lastNodeCount = nodeCount;
+        _api->registerCommandBuffer(cmdBuffer);
+
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
         getNodeBuffer(getRenderStage(), pass).bind(ShaderBufferLocation::NODE_INFO);
     }
@@ -350,11 +346,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
     return false;
 }
 
-void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport) {
-}
-
-/// This is just a short-circuit system (hack) to send a list of points to the
-/// shader
+/// This is just a short-circuit system (hack) to send a list of points to the shader
 /// It's used, mostly, to draw full screen quads using geometry shaders
 void GFXDevice::drawPoints(U32 numPoints, U32 stateHash,
                            ShaderProgram* const shaderProgram) {

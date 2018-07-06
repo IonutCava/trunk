@@ -256,7 +256,6 @@ DEFINE_SINGLETON(GFXDevice)
                    const bool inViewport = false);
     void drawPoints(U32 numPoints, U32 stateHash, ShaderProgram* const shaderProgram);
     void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
-    void drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& viewport);
 
     void addToRenderQueue(const RenderPackage& package);
     void flushRenderQueue();

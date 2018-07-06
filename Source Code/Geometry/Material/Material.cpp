@@ -15,7 +15,6 @@ Material::Material()
     : Resource("temp_material"),
       _parallaxFactor(1.0f),
       _dirty(false),
-      _texturesChanged(false),
       _doubleSided(false),
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
@@ -144,7 +143,6 @@ U32 Material::getRenderStateBlock(RenderStage currentStage) {
 bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           Texture* texture,
                           const TextureOperation& op) {
-    _texturesChanged = true;
     bool computeShaders = false;
     U32 slot = to_uint(textureUsageSlot);
 

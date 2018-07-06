@@ -231,13 +231,12 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U
     }
     updateVisibleNodes(stage, refreshNodeData, pass);
 
-    RenderStage renderStage = GFX_DEVICE.getRenderStage();
     SceneRenderState& renderState = _activeScene->renderState();
     if (renderState.drawGeometry()) {
         RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
-        U16 renderBinCount = renderQueue.getRenderQueueBinSize();
-        for (U16 i = 0; i < renderBinCount; ++i) {
-            renderQueue.getBinSorted(i)->render(renderState, renderStage);
+        vectorImpl<RenderBin*>& bins = renderQueue.getBinsSorted();
+        for (RenderBin* bin : bins) {
+            bin->render(renderState, stage);
         }
     }
 }

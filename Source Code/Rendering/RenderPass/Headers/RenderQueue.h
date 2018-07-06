@@ -63,6 +63,10 @@ class RenderQueue {
         return _sortedRenderBins[renderBin];
     }
 
+    inline vectorImpl<RenderBin*>& getBinsSorted() {
+        return _sortedRenderBins;
+    }
+
     inline RenderBin* getBin(U16 renderBin) {
         return getBin(_renderBinID[renderBin]);
     }

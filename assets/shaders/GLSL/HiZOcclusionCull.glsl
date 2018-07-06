@@ -11,7 +11,7 @@ struct NodeData {
     vec4 _boundingSphere;
 };
 
-layout(binding = BUFFER_NODE_INFO, std430) buffer dvd_MatrixBlock
+layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
 {
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
@@ -37,13 +37,13 @@ void main()
 
     // Sphere clips against near plane, just assume visibility.
     if ((dvd_ViewMatrix * vec4(center, 1.0)).z + radius >= -dvd_ZPlanesCombined.x) {
-        dvd_customData(ident) = 1.0;
         return;
     }
 
     if (HiZOcclusionCull(center, vec3(radius)) == 0) {
         atomicCounterIncrement(culledCount);
         dvd_drawCommands[ident].instanceCount = 0;
+        dvd_customData(nodeIndex) = 1.0;
         return;
     }
 }

@@ -487,11 +487,14 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
     {
-        
         pkg._isRenderable = _parentSGN.getNode()->getDrawCommands(_parentSGN,
                                                                   renderStage,
                                                                   sceneRenderState,
                                                                   pkg._drawCommands);
+        for (GenericDrawCommand& cmd : pkg._drawCommands) {
+            cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
+            cmd.cmd().baseInstance = commandIndex();
+        }
     }
 
     return pkg;

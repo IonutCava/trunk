@@ -95,6 +95,14 @@ struct IndirectDrawCommand {
         baseVertex = other.baseVertex;
         baseInstance = other.baseInstance;
     }
+
+    bool operator==(const IndirectDrawCommand &other) const {
+        return  indexCount == other.indexCount &&
+                primCount == other.primCount &&
+                firstIndex == other.firstIndex &&
+                baseVertex == other.baseVertex &&
+                baseInstance == other.baseInstance;
+    }
 };
 
 struct GenericDrawCommand {

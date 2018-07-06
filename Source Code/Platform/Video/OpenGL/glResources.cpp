@@ -264,7 +264,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
         if (drawCommand.drawCount() > 1) {
             submitMultiIndirectCommand(drawCommand.cmd().baseInstance, drawCommand.drawCount(), mode, internalFormat, indexBuffer);
         } else {
-            submitIndirectCommand(drawCommand.cmd().baseInstance,mode, internalFormat, indexBuffer);
+            submitIndirectCommand(drawCommand.cmd().baseInstance, mode, internalFormat, indexBuffer);
         }
     } else {
         if (drawCommand.drawCount() > 1) {
