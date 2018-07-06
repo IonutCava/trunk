@@ -695,4 +695,13 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
     retMatrix.setRow(2, vec4<F32>(_shaderData._emissive.rgb(), _shaderData._shininess));
     retMatrix.setRow(3, vec4<F32>(isTranslucent() ? 1.0f : 0.0f,  to_float(getTextureOperation()), to_float(getTextureCount()), getParallaxFactor()));
 }
+
+void Material::rebuild() {
+    for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
+        ShaderInfo& info = _shaderInfo[i];
+        computeShader(static_cast<RenderStage>(i), _highPriority);
+        info._shaderRef->recompile();
+    }
+}
+
 };

@@ -118,6 +118,9 @@ class d3dShaderProgram final : public ShaderProgram {
     void SetMemoryBarrier(MemoryBarrierType type) override;
 
    protected:
+     bool recompileInternal() override;
+
+   protected:
     bool load() override;
 };
 

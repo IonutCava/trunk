@@ -161,6 +161,7 @@ class Scene : public Resource {
     inline const AI::AIManager& aiManager() const { return *_aiManager; }
 
    protected:
+    virtual void rebuildShaders();
     virtual void onSetActive();
     virtual void onRemoveActive();
     // returns the first available action ID

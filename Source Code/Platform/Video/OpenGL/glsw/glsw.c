@@ -74,6 +74,11 @@ static int glswClear(glswContext* gc)
     return 0;
 }
 
+void glswClearCurrentContext()
+{
+    glswClear(__glsw__Context);
+}
+
 int glswInit()
 {
     if (__glsw__Context)
@@ -145,7 +150,7 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
     return 1;
 }
 
-const char* glswGetShader(const char* pEffectKey, int recompile)
+const char* glswGetShader(const char* pEffectKey)
 {
     glswContext* gc = __glsw__Context;
 
@@ -159,10 +164,6 @@ const char* glswGetShader(const char* pEffectKey, int recompile)
 
     if (!gc) {
         return 0;
-    } else {
-        if (recompile) {
-            glswClear(gc);
-        }
     }
 
     // Extract the effect name from the effect key

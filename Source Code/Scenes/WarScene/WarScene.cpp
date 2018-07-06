@@ -712,6 +712,11 @@ void WarScene::postLoadMainThread() {
         vec2<U32>(100, 25),
         DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
 
+    _GUI->addButton(_ID("ShaderReload"), "Shader Reload",
+        vec2<I32>(resolution.width - 220, 30),
+        vec2<U32>(100, 25),
+        [this](I64 btnID) { rebuildShaders(); });
+
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 63),  // Position
         Font::DIVIDE_DEFAULT,  // Font

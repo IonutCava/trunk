@@ -127,6 +127,7 @@ class RenderingComponent : public SGNComponent {
 
     void unregisterShaderBuffer(ShaderBufferLocation slot);
 
+    void rebuildMaterial();
 
     void registerTextureDependency(const TextureData& additionalTexture);
     void removeTextureDependency(const TextureData& additionalTexture);

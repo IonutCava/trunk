@@ -344,6 +344,7 @@ class Material : public Resource, public FrameListener {
 
     void getTextureData(TextureDataContainer& textureData);
 
+    void rebuild();
     void clean();
     bool isTranslucent();
     inline bool isTranslucent() const { return !_translucencySource.empty(); }

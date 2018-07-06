@@ -16,6 +16,10 @@ bool d3dShaderProgram::unload() {
     return ShaderProgram::unload();
 }
 
+bool d3dShaderProgram::recompileInternal() {
+    return true;
+}
+
 bool d3dShaderProgram::bind() {
     return false;
 }

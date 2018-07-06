@@ -47,6 +47,15 @@ class glShaderProgram final : public ShaderProgram {
     USE_CUSTOM_ALLOCATOR
     friend class Attorney::GLAPIShaderProgram;
    public:
+       struct glShaderProgramLoadInfo {
+           stringImpl _resourcePath;
+           stringImpl _header;
+           stringImpl _programName;
+           stringImpl _programProperties;
+           stringImpl _vertexStageProperties;
+       };
+
+   public:
     explicit glShaderProgram(GFXDevice& context,
                              const stringImpl& name,
                              const stringImpl& resourceLocation,
@@ -124,6 +133,15 @@ class glShaderProgram final : public ShaderProgram {
     void SetMemoryBarrier(MemoryBarrierType type) override;
 
    protected:
+    glShaderProgramLoadInfo buildLoadInfo();
+    std::pair<bool, stringImpl> loadSourceCode(ShaderType stage,
+                                               const stringImpl& stageName,
+                                               const stringImpl& header,
+                                               bool forceReParse);
+    bool loadFromBinary();
+       
+    bool recompileInternal() override;
+
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
     bool load() override;
@@ -150,7 +168,7 @@ class glShaderProgram final : public ShaderProgram {
     stringImpl getLog() const;
 
     /// Add a new shader stage to this program
-    void attachShader(glShader* const shader, const bool refresh = false);
+    void attachShader(glShader* const shader);
     /// Remove a shader stage from this program
     void detachShader(glShader* const shader);
 
@@ -188,9 +206,6 @@ class glShaderProgram final : public ShaderProgram {
     GLuint _shaderProgramIDTemp;
     static std::array<U32, to_const_uint(ShaderType::COUNT)> _lineOffset;
     std::array<glShader*, to_const_uint(ShaderType::COUNT)> _shaderStage;
-    /// ID<->shaders pair
-    typedef hashMapImpl<U32, glShader*> ShaderIDMap;
-    ShaderIDMap _shaderIDMap;
 
     glLockManager* _lockManager;
 };

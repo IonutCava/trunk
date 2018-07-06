@@ -74,14 +74,12 @@ class glShader : protected GraphicsResource, public TrackedObject {
     /// Remove a shader from the cache
     static void removeShader(glShader* s);
     /// Return a new shader reference
-    static glShader* getShader(const stringImpl& name,
-                               const bool recompile = false);
+    static glShader* getShader(const stringImpl& name);
     /// Add or refresh a shader from the cache
     static glShader* loadShader(const stringImpl& name,
                                 const stringImpl& location,
                                 const ShaderType& type,
-                                const bool parseCode,
-                                const bool recompile = false);
+                                const bool parseCode);
    private:
     stringImpl preprocessIncludes(const stringImpl& source,
                                   const stringImpl& filename,

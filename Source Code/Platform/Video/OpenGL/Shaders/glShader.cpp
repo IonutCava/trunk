@@ -101,8 +101,7 @@ glShader::~glShader() {
 
 bool glShader::load(const stringImpl& source) {
     if (source.empty()) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")),
-                         getName().c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), getName().c_str());
         return false;
     }
 
@@ -239,17 +238,11 @@ void glShader::removeShader(glShader* s) {
 }
 
 /// Return a new shader reference
-glShader* glShader::getShader(const stringImpl& name, const bool recompile) {
+glShader* glShader::getShader(const stringImpl& name) {
     // Try to find the shader
     ReadLock r_lock(_shaderNameLock);
     ShaderMap::iterator it = _shaderNameMap.find(_ID_RT(name));
     if (it != std::end(_shaderNameMap)) {
-        if (!recompile) {
-            // We don't need a ref count increase if we just recompile the shader
-            it->second->AddRef();
-            Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")),
-                name.c_str(), it->second->GetRef());
-        }
         return it->second;
     }
 
@@ -260,32 +253,30 @@ glShader* glShader::getShader(const stringImpl& name, const bool recompile) {
 glShader* glShader::loadShader(const stringImpl& name,
                                const stringImpl& source,
                                const ShaderType& type,
-                               const bool parseCode,
-                               const bool recompile) {
+                               const bool parseCode) {
     // See if we have the shader already loaded
-    glShader* shader = getShader(name, recompile);
-    if (!recompile) {
-        // If we do, and don't need a recompile, just return it
-        if (shader != nullptr) {
-            return shader;
-        }
+    glShader* shader = getShader(name);
+    
+    bool newShader = false;
+    // If we do, and don't need a recompile, just return it
+    if (shader == nullptr) {
         // If we can't find it, we create a new one
         shader = MemoryManager_NEW glShader(GFX_DEVICE, name, type, false);
+        newShader = true;
     }
 
     shader->skipIncludes(!parseCode);
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(source)) {
         // If loading the source code failed, delete it
-        MemoryManager::DELETE(shader);
+        if (newShader) {
+            MemoryManager::DELETE(shader);
+        }
     } else {
-        ULL nameHash = _ID_RT(name);
-        // If we loaded the source code successfully, either update it (if we
-        // recompiled) or register it
-        WriteLock w_lock(_shaderNameLock);
-        if (recompile) {
-            _shaderNameMap[nameHash] = shader;
-        } else {
+        if (newShader) {
+            ULL nameHash = _ID_RT(name);
+            // If we loaded the source code successfully,  register it
+            WriteLock w_lock(_shaderNameLock);
             hashAlg::emplace(_shaderNameMap, nameHash, shader);
         }
     }

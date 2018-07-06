@@ -159,6 +159,13 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
     return canDraw;
 }
 
+void RenderingComponent::rebuildMaterial() {
+    const Material_ptr& mat = getMaterialInstance();
+    if (mat) {
+       mat->rebuild();
+    }
+}
+
 void RenderingComponent::registerTextureDependency(const TextureData& additionalTexture) {
     size_t inputHash = additionalTexture.getHash();
     TextureDataContainer::const_iterator it;

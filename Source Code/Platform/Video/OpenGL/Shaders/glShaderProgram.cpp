@@ -38,10 +38,6 @@ glShaderProgram::~glShaderProgram() {
         MemoryManager::DELETE(_lockManager);
     }
 
-    // remove shader stages
-    for (ShaderIDMap::value_type& it : _shaderIDMap) {
-        detachShader(it.second);
-    }
     // delete shader program
     if (_shaderProgramID > 0 && _shaderProgramID != GLUtil::_invalidObjectID) {
         glDeleteProgram(_shaderProgramID);
@@ -51,10 +47,11 @@ glShaderProgram::~glShaderProgram() {
 
 bool glShaderProgram::unload() {
     // Remove every shader attached to this program
-    for (ShaderIDMap::value_type& it : _shaderIDMap) {
-        glShader::removeShader(it.second);
+    for (glShader* shader : _shaderStage) {
+        if (shader) {
+            glShader::removeShader(shader);
+        }
     }
-    _shaderIDMap.clear();
 
     return ShaderProgram::unload();
 }
@@ -62,9 +59,7 @@ bool glShaderProgram::unload() {
 /// Basic OpenGL shader program validation (both in debug and in release)
 bool glShaderProgram::validateInternal() {
     bool shaderError = false;
-    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-        // Get the shader pointer for that stage
-        glShader* shader = _shaderStage[i];
+    for (glShader* shader : _shaderStage) {
         // If a shader exists for said stage
         if (shader) {
             // Validate it
@@ -105,11 +100,8 @@ bool glShaderProgram::update(const U64 deltaTime) {
             MemoryManager::DELETE(_lockManager);
         }
         // Call the internal validation function
-        if (!validateInternal()) {
-            if (_lockManager) {
-                MemoryManager::DELETE(_lockManager);
-            }
-        }
+        validateInternal();
+
         // We dump the shader binary only if it wasn't loaded from one
         if (!_loadedFromBinary && _context.getGPUVendor() == GPUVendor::NVIDIA && false) {
             STUBBED(
@@ -194,39 +186,28 @@ stringImpl glShaderProgram::getLog() const {
 
 /// Remove a shader stage from this program
 void glShaderProgram::detachShader(glShader* const shader) {
-    glDetachShader(_shaderProgramID, shader->getShaderID());
+    if (!shader) {
+        return;
+    }
+
+    glDetachShader(_shaderProgramID == GLUtil::_invalidObjectID
+                                     ? _shaderProgramIDTemp
+                                     : _shaderProgramID,
+                   shader->getShaderID());
     // glUseProgramStages(_shaderProgramID,
     // GLUtil::glShaderStageTable[to_uint(shader->getType())], 0);
 }
 
 /// Add a new shader stage to this program
-void glShaderProgram::attachShader(glShader* const shader, const bool refresh) {
+void glShaderProgram::attachShader(glShader* const shader) {
     if (!shader) {
         return;
     }
-
-    GLuint shaderID = shader->getShaderID();
-    // If refresh == true, than we are re-attaching an existing shader (possibly
-    // after re-compilation)
-    if (refresh) {
-        // Find the previous iteration (and print an error if not found)
-        ShaderIDMap::iterator it = _shaderIDMap.find(shaderID);
-        if (it != std::end(_shaderIDMap)) {
-            // Update the internal pointer
-            it->second = shader;
-            // and detach the shader
-            detachShader(shader);
-        } else {
-            Console::errorfn(Locale::get(_ID("ERROR_RECOMPILE_NOT_FOUND_ATOM")),
-                             shader->getName().c_str());
-        }
-    } else {
-        // If refresh == false, we are adding a new stage
-        hashAlg::emplace(_shaderIDMap, shaderID, shader);
-    }
-
     // Attach the shader
-    glAttachShader(_shaderProgramIDTemp, shaderID);
+    glAttachShader(_shaderProgramID == GLUtil::_invalidObjectID
+                                     ? _shaderProgramIDTemp
+                                     : _shaderProgramID,
+                   shader->getShaderID());
     // glUseProgramStages(_shaderProgramIDTemp,
     // GLUtil::glShaderStageTable[to_uint(shader->getType())], shaderID);
     // Clear the 'linked' flag. Program must be re-linked before usage
@@ -243,17 +224,15 @@ void glShaderProgram::threadedLoad() {
         if (_shaderProgramID == GLUtil::_invalidObjectID) {
             _shaderProgramIDTemp = glCreateProgram();
             // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
+        } else {
+            _shaderProgramIDTemp = _shaderProgramID;
         }
         // For every possible stage that the program might use
-        for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-            // Get the shader pointer for that stage
-            glShader* shader = _shaderStage[i];
+        for (glShader* shader : _shaderStage) {
             // If a shader exists for said stage
             if (shader) {
                 // Attach it
-                attachShader(shader, _refreshStage[i]);
-                // Clear the refresh flag for this stage
-                _refreshStage[i] = false;
+                attachShader(shader);
             }
         }
         // Link the program
@@ -265,6 +244,7 @@ void glShaderProgram::threadedLoad() {
     if (_lockManager) {
         _lockManager->Lock();
     }
+
     ShaderProgram::load();
 }
 
@@ -275,8 +255,7 @@ void glShaderProgram::link() {
     // Loading from binary is optional, but it using it does require sending the
     // driver a hint to give us access to it later
     if (Config::USE_SHADER_BINARY) {
-        glProgramParameteri(_shaderProgramIDTemp,
-                            GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
+        glProgramParameteri(_shaderProgramIDTemp, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
     }
 #endif
     Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), getName().c_str(),
@@ -288,6 +267,12 @@ void glShaderProgram::link() {
     */
     // Link the program
     glLinkProgram(_shaderProgramIDTemp);
+    // Detach shaders after link so that the driver might free up some memory
+    // remove shader stages
+    for (glShader* shader : _shaderStage) {
+        detachShader(shader);
+    }
+
     // And check the result
     GLint linkStatus = 0;
     glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
@@ -318,32 +303,11 @@ void glShaderProgram::link() {
     _shaderVarLocation.clear();
 }
 
-/// Creation of a new shader program. Pass in a shader token and use glsw to
-/// load the corresponding effects
-bool glShaderProgram::load() {
-    // NULL shader means use shaderProgram(0), so bypass the normal
-    // loading routine
-    if (_name.compare("NULL") == 0) {
-        _validationQueued = false;
-        _shaderProgramID = 0;
-        return ShaderProgram::load();
-    }
-
-    // Reset the linked status of the program
-    _linked = _loadedFromBinary = false;
-
-    // Check if we need to refresh an existing program, or create a new one
-    bool refresh = false;
-    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
-        if (_refreshStage[i]) {
-            refresh = true;
-            break;
-        }
-    }
-
+bool glShaderProgram::loadFromBinary() {
+    _loadedFromBinary = false;
 #if !defined(_DEBUG)
     // Load the program from the binary file, if available and allowed, to avoid linking.
-    if (Config::USE_SHADER_BINARY && !refresh && false && _context.getGPUVendor() == GPUVendor::NVIDIA) {
+    if (Config::USE_SHADER_BINARY && false) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         stringImpl fileName(glShader::CACHE_LOCATION_BIN + _name + ".bin");
@@ -354,7 +318,8 @@ bool glShaderProgram::load() {
             fclose(inFile);
             // If we loaded the binary format successfully, load the binary
             inFile = fopen(fileName.c_str(), "rb");
-        } else {
+        }
+        else {
             // If the binary format load failed, we don't need to load the
             // binary code as it's useless without a proper format
             inFile = nullptr;
@@ -374,8 +339,7 @@ bool glShaderProgram::load() {
             _shaderProgramIDTemp = glCreateProgram();
             // glCreateProgramPipelines(1, &_shaderProgramIDTemp);
             // Load binary code on the GPU
-            glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary,
-                            binaryLength);
+            glProgramBinary(_shaderProgramIDTemp, _binaryFormat, binary, binaryLength);
             // Delete the local binary code buffer
             free(binary);
             // Check if the program linked successfully on load
@@ -391,106 +355,137 @@ bool glShaderProgram::load() {
         fclose(inFile);
     }
 #endif
-    // The program wasn't loaded from binary, so process shaders
-    if (!_loadedFromBinary) {
+
+    return _loadedFromBinary;
+}
+
+glShaderProgram::glShaderProgramLoadInfo glShaderProgram::buildLoadInfo() {
+    glShaderProgramLoadInfo loadInfo;
+
+    loadInfo._resourcePath = getResourceLocation() + "GLSL/";
+    // Get all of the preprocessor defines and add them to the general shader header for this program
+    for (U8 i = 0; i < _definesList.size(); ++i) {
+        // Placeholders are ignored
+        if (_definesList[i].compare("DEFINE_PLACEHOLDER") == 0) {
+            continue;
+        }
+        // We manually add define dressing
+        loadInfo._header.append("#define " + _definesList[i] + "\n");
+    }
+
+    // Split the shader name to get the effect file name and the effect properties
+    // The effect file name is the part up until the first period or comma symbol
+    loadInfo._programName = _name.substr(0, _name.find_first_of(".,"));
+    // We also differentiate between general properties, and vertex properties
+    // Get the position of the first "," symbol. Must be added at the end of the program's name!!
+    stringAlg::stringSize propPositionVertex = _name.find_first_of(",");
+    // Get the position of the first "." symbol
+    stringAlg::stringSize propPosition = _name.find_first_of(".");
+    // If we have effect properties, we extract them from the name
+    // (starting from the first "." symbol to the first "," symbol)
+    if (propPosition != stringImpl::npos) {
+        loadInfo._programProperties = "." +
+            _name.substr(propPosition + 1,
+                propPositionVertex - propPosition - 1);
+    }
+    // Vertex properties start off identically to the rest of the stages' names
+    loadInfo._vertexStageProperties = loadInfo._programProperties;
+    // But we also add the shader specific properties
+    if (propPositionVertex != stringImpl::npos) {
+        loadInfo._vertexStageProperties += "." + _name.substr(propPositionVertex + 1);
+    }
+
+    return loadInfo;
+}
+
+std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
+                                                            const stringImpl& stageName,
+                                                            const stringImpl& header,
+                                                            bool forceReParse) {
+    std::pair<bool, stringImpl> sourceCode;
+    sourceCode.first = false;
+
+    if (Config::USE_SHADER_TEXT_CACHE && !forceReParse) {
+#if !defined(ENABLE_GPU_VALIDATION)
+        ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + stageName,
+                                      true,
+                                      sourceCode.second);
+#endif
+    }
+
+    if (sourceCode.second.empty()) {
+        sourceCode.first = true;
+        // Use GLSW to read the appropriate part of the effect file
+        // based on the specified stage and properties
+        const char* sourceCodeStr = glswGetShader(stageName.c_str());
+        sourceCode.second = sourceCodeStr ? sourceCodeStr : "";
+        // GLSW may fail for various reasons (not a valid effect stage, invalid name, etc)
+        if (!sourceCode.second.empty()) {
+            // And replace in place with our program's headers created earlier
+            Util::ReplaceStringInPlace(sourceCode.second, "//__CUSTOM_DEFINES__", header);
+            Util::ReplaceStringInPlace(sourceCode.second, "//__LINE_OFFSET_",
+                Util::StringFormat("#line %d\n", 1 + _lineOffset[to_uint(stage)] + to_uint(_definesList.size())));
+        }
+    }
+
+    return sourceCode;
+}
+
+/// Creation of a new shader program. Pass in a shader token and use glsw to
+/// load the corresponding effects
+bool glShaderProgram::load() {
+    // NULL shader means use shaderProgram(0), so bypass the normal
+    // loading routine
+    if (_name.compare("NULL") == 0) {
+        _validationQueued = false;
+        _shaderProgramID = 0;
+        return ShaderProgram::load();
+    }
+
+    // Reset the linked status of the program
+    _linked = false;
+
+    if (!loadFromBinary()) {
+        glShaderProgramLoadInfo info = buildLoadInfo();
+        // The program wasn't loaded from binary, so process shaders
         // Use the specified shader path
-        glswSetPath((getResourceLocation() + "GLSL/").c_str(), ".glsl");
-        // Get all of the preprocessor defines and add them to the general
-        // shader header for this program
-        stringImpl shaderSourceHeader;
-        for (U8 i = 0; i < _definesList.size(); ++i) {
-            // Placeholders are ignored
-            if (_definesList[i].compare("DEFINE_PLACEHOLDER") == 0) {
-                continue;
-            }
-            // We manually add define dressing
-            shaderSourceHeader.append("#define " + _definesList[i] + "\n");
-        }
-        // Split the shader name to get the effect file name and the effect properties
-        // The effect file name is the part up until the first period or comma symbol
-        stringImpl shaderName = _name.substr(0, _name.find_first_of(".,"));
-        // We also differentiate between general properties, and vertex properties
-        stringImpl shaderProperties;
-        // Get the position of the first "," symbol. Must be added at the end of the program's name!!
-        stringAlg::stringSize propPositionVertex = _name.find_first_of(",");
-        // Get the position of the first "." symbol
-        stringAlg::stringSize propPosition = _name.find_first_of(".");
-        // If we have effect properties, we extract them from the name
-        // (starting from the first "." symbol to the first "," symbol)
-        if (propPosition != stringImpl::npos) {
-            shaderProperties =
-                "." +
-                _name.substr(propPosition + 1,
-                             propPositionVertex - propPosition - 1);
-        }
-        // Vertex properties start off identically to the rest of the stages' names
-        stringImpl vertexProperties(shaderProperties);
-        // But we also add the shader specific properties
-        if (propPositionVertex != stringImpl::npos) {
-            vertexProperties += "." + _name.substr(propPositionVertex + 1);
-        }
+        glswSetPath(info._resourcePath.c_str(), ".glsl");
 
         // For every stage
         for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
             // Brute force conversion to an enum
             ShaderType type = static_cast<ShaderType>(i);
-            stringImpl shaderCompileName(shaderName + "." + GLUtil::glShaderStageNameTable[to_uint(type)] + vertexProperties);
-            // If we request a refresh for the current stage, we need to have a
-            // pointer for the stage's shader already
-            if (!_refreshStage[i]) {
-                // Else, we ask the shader manager to see if it was previously loaded elsewhere
-                _shaderStage[i] = glShader::getShader(shaderCompileName, refresh);
-            }
+            stringImpl shaderCompileName(info._programName +
+                                         "." +
+                                         GLUtil::glShaderStageNameTable[to_uint(type)] +
+                                         info._vertexStageProperties);
+
+            // We ask the shader manager to see if it was previously loaded elsewhere
+            _shaderStage[i] = glShader::getShader(shaderCompileName);
 
             // If this is the first time this shader is loaded ...
             if (!_shaderStage[i]) {
-                bool parseIncludes = false;
-
-                stringImpl sourceCode;
-                if (Config::USE_SHADER_TEXT_CACHE) {
-#if !defined(ENABLE_GPU_VALIDATION)
-                    ShaderProgram::shaderFileRead(glShader::CACHE_LOCATION_TEXT + shaderCompileName,
-                                                  true,
-                                                  sourceCode);
-#endif
-                }
-
-                if (sourceCode.empty()) {
-                    parseIncludes = true;
-                    // Use GLSW to read the appropriate part of the effect file
-                    // based on the specified stage and properties
-                    const char* sourceCodeStr = glswGetShader(
-                        shaderCompileName.c_str(),
-                        _refreshStage[i]);
-                    sourceCode = sourceCodeStr ? sourceCodeStr : "";
-                    // GLSW may fail for various reasons (not a valid effect stage, invalid name, etc)
-                    if (!sourceCode.empty()) {
-                        // And replace in place with our program's headers created earlier
-                        Util::ReplaceStringInPlace(sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                        Util::ReplaceStringInPlace(sourceCode, "//__LINE_OFFSET_", 
-                            Util::StringFormat("#line %d\n", 1 + _lineOffset[i] + to_uint(_definesList.size())));
-                    }
-                }
-                if (!sourceCode.empty()){
+                std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, false);
+                if (!sourceCode.second.empty()){
                     // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
+                    _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
                 }
+            } else {
+                _shaderStage[i]->AddRef();
+                Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), _shaderStage[i]->getName().c_str(), _shaderStage[i]->GetRef());
             }
+
             // Show a message, in debug, if we don't have a shader for this stage
             if (!_shaderStage[i]) {
-                Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")),
-                                   shaderCompileName.c_str());
+                Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")), shaderCompileName.c_str());
             } else {
-                // Try to compile the shader (it doesn't double compile shaders,
-                // so it's safe to call it multiple types)
+                // Try to compile the shader (it doesn't double compile shaders, so it's safe to call it multiple times)
                 if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")),
-                                     _shaderStage[i]->getShaderID());
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _shaderStage[i]->getShaderID());
                 }
             }
         }
     }
-    ShaderProgram::load();
 
     // try to link the program in a separate thread
     return _context.loadInContext(
@@ -500,6 +495,47 @@ bool glShaderProgram::load() {
         [&](bool stopRequested){
             threadedLoad();
         });
+}
+
+bool glShaderProgram::recompileInternal() {
+    if (_name.compare("NULL") == 0) {
+        _validationQueued = false;
+        _shaderProgramID = 0;
+        return true;
+    }
+    if (_lockManager) {
+        _lockManager->Wait(true);
+        MemoryManager::DELETE(_lockManager);
+    }
+
+    glShaderProgramLoadInfo info = buildLoadInfo();
+    glswClearCurrentContext();
+    // The program wasn't loaded from binary, so process shaders
+    // Use the specified shader path
+    glswSetPath(info._resourcePath.c_str(), ".glsl");
+
+    for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
+        // Brute force conversion to an enum
+        ShaderType type = static_cast<ShaderType>(i);
+        stringImpl shaderCompileName(info._programName +
+                                     "." +
+                                     GLUtil::glShaderStageNameTable[to_uint(type)] +
+                                     info._vertexStageProperties);
+
+        // We ask the shader manager to see if it was previously loaded elsewhere
+        _shaderStage[i] = glShader::getShader(shaderCompileName);
+        if (_shaderStage[i]) {
+            std::pair<bool, stringImpl> sourceCode = loadSourceCode(type, shaderCompileName, info._header, true);
+            if (!sourceCode.second.empty()) {
+                // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
+                _shaderStage[i] = glShader::loadShader(shaderCompileName, sourceCode.second, type, sourceCode.first);
+            }
+        }
+    }
+
+    threadedLoad();
+
+    return true;
 }
 
 /// Check every possible combination of flags to make sure this program can be used for rendering

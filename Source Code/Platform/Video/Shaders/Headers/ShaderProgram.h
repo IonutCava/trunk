@@ -93,7 +93,6 @@ class NOINITVTABLE ShaderProgram : public Resource,
     virtual bool isBound() const = 0;
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-
     virtual bool update(const U64 deltaTime);
     virtual bool load() override;
     virtual bool unload() override;
@@ -182,11 +181,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     inline U32 getID() const { return _shaderProgramID; }
     ///  Calling recompile will re-create the marked shaders from source files
     ///  and update them in the ShaderManager if needed
-    void recompile(const bool vertex,
-                   const bool fragment,
-                   const bool geometry = false,
-                   const bool tessellation = false,
-                   const bool compute = false);
+    bool recompile();
     /// Add a define to the shader. The defined must not have been added
     /// previously
     void addShaderDefine(const stringImpl& define);
@@ -262,6 +257,11 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();
 
+    static void rebuildAllShaders();
+
+   protected:
+       virtual bool recompileInternal() = 0;
+
    protected:
     /// Shaders loaded from files are kept as atoms
     static AtomMap _atoms;
@@ -286,7 +286,6 @@ class NOINITVTABLE ShaderProgram : public Resource,
     // with a mutex or something
     /// A list of preprocessor defines
     vectorImpl<stringImpl> _definesList;
-    std::array<bool, to_const_uint(ShaderType::COUNT)> _refreshStage;
 
    private:
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_const_uint(ShaderType::COUNT)> _functionIndex;

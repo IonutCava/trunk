@@ -654,10 +654,22 @@ void Scene::postLoadMainThread() {
     setState(ResourceState::RES_LOADED);
 }
 
+void Scene::rebuildShaders() {
+    SceneGraphNode_ptr selection(_currentSelection.lock());
+    if (selection != nullptr) {
+        selection->get<RenderingComponent>()->rebuildMaterial();
+    } else {
+        ShaderProgram::rebuildAllShaders();
+    }
+}
+
 void Scene::onSetActive() {
     PHYSICS_DEVICE.setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
-    
+
+    SFX_DEVICE.stopMusic();
+    SFX_DEVICE.dumpPlaylists();
+
     for (U32 i = 0; i < to_const_uint(MusicType::COUNT); ++i) {
         const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
@@ -671,8 +683,6 @@ void Scene::onSetActive() {
 
 void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
-    SFX_DEVICE.stopMusic();
-    SFX_DEVICE.dumpPlaylists();
 }
 
 bool Scene::loadPhysics(bool continueOnErrors) {

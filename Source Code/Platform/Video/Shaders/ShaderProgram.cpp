@@ -25,8 +25,6 @@ ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const s
     _linked = false;
     // Override in concrete implementations with appropriate invalid values
     _shaderProgramID = 0;
-    // Start with clean refresh flags
-    _refreshStage.fill(false);
 }
 
 ShaderProgram::~ShaderProgram()
@@ -86,30 +84,24 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
 }
 
 /// Rebuild the specified shader stages from source code
-void ShaderProgram::recompile(const bool vertex, const bool fragment,
-                              const bool geometry, const bool tessellation,
-                              const bool compute) {
-    _linked = false;
+bool ShaderProgram::recompile() {
+    if (getState() != ResourceState::RES_LOADED) {
+        return true;
+    }
+
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
         ShaderProgram::unbind();
     }
-    // Update refresh flags
-    _refreshStage[to_const_uint(ShaderType::VERTEX)] = vertex;
-    _refreshStage[to_const_uint(ShaderType::FRAGMENT)] = fragment;
-    _refreshStage[to_const_uint(ShaderType::GEOMETRY)] = geometry;
-    _refreshStage[to_const_uint(ShaderType::TESSELATION_CTRL)] =
-        tessellation;
-    _refreshStage[to_const_uint(ShaderType::TESSELATION_EVAL)] =
-        tessellation;
-    _refreshStage[to_const_uint(ShaderType::COMPUTE)] = compute;
-    // Recreate all of the needed shaders
-    load();
+    bool state = recompileInternal();
+
     // Restore bind state
     if (wasBound) {
         bind();
     }
+
+    return state;
 }
 
 //================================ static methods ========================================
@@ -117,7 +109,9 @@ void ShaderProgram::idle() {
     // If we don't have any shaders queued for recompilation, return early
     if (!_recompileQueue.empty()) {
         // Else, recompile the top program from the queue
-        _recompileQueue.top()->recompile(true, true, true, true, true);
+        if (!_recompileQueue.top()->recompile()) {
+            // error
+        }
         _recompileQueue.pop();
     }
 }
@@ -259,6 +253,13 @@ bool ShaderProgram::unbind() {
 
 const ShaderProgram_ptr& ShaderProgram::defaultShader() {
     return _imShader;
+}
+
+
+void ShaderProgram::rebuildAllShaders() {
+    for (ShaderProgramMap::value_type& shader : _shaderPrograms) {
+        _recompileQueue.push(shader.second);
+    }
 }
 
 };
