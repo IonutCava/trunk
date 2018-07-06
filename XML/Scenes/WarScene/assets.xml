@@ -52,7 +52,7 @@
 <cylinderNE>
 	<model>models/cylinder.obj</model>
 	<scale x="2" y="2" z="2" />
-	<position x="-10" y="0" z="-10" />
+	<position x="-100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
@@ -63,7 +63,7 @@
 <cylinderNW>
 	<model>models/cylinder.obj</model>
 	<scale x="3" y="3" z="3" />
-	<position x="10" y="0" z="-10" />
+	<position x="100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
@@ -74,7 +74,7 @@
 <cylinderSE>
 	<model>models/cylinder.obj</model>
 	<scale x="2" y="2" z="2" />
-	<position x="-10" y="0" z="10" />
+	<position x="-100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
@@ -85,7 +85,7 @@
 <cylinderSW>
 	<model>models/cylinder.obj</model>
 	<scale x="2.5" y="2.5" z="2.5" />
-	<position x="10" y="0" z="10" />
+	<position x="100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
@@ -102,4 +102,4 @@
 	<staticObject>true</staticObject>
 	<addToNavigation>true</addToNavigation>
 	<useHighNavigationDetail>true</useHighNavigationDetail>
-</cylinderSW>
+</cylinderC>

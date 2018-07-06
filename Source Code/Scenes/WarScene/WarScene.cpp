@@ -156,12 +156,12 @@ void WarScene::updateSceneState(const U64 deltaTime){
     }
 
     Scene::updateSceneState(deltaTime);
-    if(_lampLightNode && _bobNodeBody){
-      /*  static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
+    /*if(_lampLightNode && _bobNodeBody){
+        static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
         const mat4<F32>& fingerPosition = _bobNodeBody->getBoneTransform("fingerstip.R");
         mat4<F32> finalTransform(fingerPosition * position);
-        _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());*/
-    }
+        _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());
+    }*/
     
     if(!AIManager::getInstance().getNavMesh(0))
         return;
@@ -221,7 +221,63 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
     _faction1 = New AICoordination(1);
     _faction2 = New AICoordination(2);
 
-    _bobNode = _sceneGraph->findNode("Soldier3");
+    // Add some obstacles
+    SceneGraphNode* cylinderNW = _sceneGraph->findNode("cylinderNW");
+    SceneGraphNode* cylinderNE = _sceneGraph->findNode("cylinderNE");
+    SceneGraphNode* cylinderSW = _sceneGraph->findNode("cylinderSW");
+    SceneGraphNode* cylinderSE = _sceneGraph->findNode("cylinderSE");
+
+    assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
+    SceneNode* cylinderMeshNW = cylinderNW->getNode<SceneNode>();
+    SceneNode* cylinderMeshNE = cylinderNE->getNode<SceneNode>();
+    SceneNode* cylinderMeshSW = cylinderSW->getNode<SceneNode>();
+    SceneNode* cylinderMeshSE = cylinderSE->getNode<SceneNode>();
+
+    std::string currentName;
+    SceneNode* currentMesh = NULL;
+    SceneGraphNode* baseNode = NULL;
+    SceneGraphNode* currentNode = NULL;
+    std::pair<I32, I32> currentPos;
+    for(U8 i = 0; i < 40; ++i){
+        if(i < 10){
+            baseNode = cylinderNW;
+            currentMesh = cylinderMeshNW;
+            currentName = std::string("Cylinder_NW_" + Util::toString((I32)i));
+            currentPos.first  = -200 + 40 * i + 50;
+            currentPos.second = -200 + 40 * i + 50;
+        }else if(i >= 10 && i < 20){
+            baseNode = cylinderNE;
+            currentMesh = cylinderMeshNE;
+            currentName = std::string("Cylinder_NE_" + Util::toString((I32)i));
+            currentPos.first  =  200 - 40 * (i%10) - 50;
+            currentPos.second = -200 + 40 * (i%10) + 50;
+        }else if(i >= 20 && i < 30){
+            baseNode = cylinderSW;
+            currentMesh = cylinderMeshSW;
+            currentName = std::string("Cylinder_SW_" + Util::toString((I32)i));
+            currentPos.first  = -200 + 40 * (i%20) + 50;
+            currentPos.second =  200 - 40 * (i%20) - 50;
+        }else{
+            baseNode = cylinderSE;
+            currentMesh = cylinderMeshSE;
+            currentName = std::string("Cylinder_SE_" + Util::toString((I32)i));
+            currentPos.first  = 200 - 40 * (i%30) - 50;
+            currentPos.second = 200 - 40 * (i%30) - 50;
+        }
+
+        currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+        assert(currentNode);
+        currentNode->setSelectable(true);
+        currentNode->setUsageContext(baseNode->getUsageContext());
+        currentNode->setPhysicsGroup(baseNode->getPhysicsGroup());
+        currentNode->setNavigationContext(baseNode->getNavigationContext());      
+        currentNode->setNavigationDetailOverride(baseNode->getNavMeshDetailOverride());
+        
+        currentNode->getTransform()->scale(baseNode->getTransform()->getScale());
+        currentNode->getTransform()->setPosition(vec3<F32>(currentPos.first, 0, currentPos.second));
+    }
+
+    /*_bobNode = _sceneGraph->findNode("Soldier3");
     _bobNodeBody = _sceneGraph->findNode("Soldier3_Bob.md5mesh-submesh-0");
     _lampLightNode = NULL;
     if(_bobNodeBody != NULL){
@@ -240,8 +296,8 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
         _lampTransformNode = _bobNodeBody->addNode(_lampTransform, "lampTransform");
         _lampLightNode = addLight(light, _lampTransformNode);
         // Move it to the lamp's position
-        _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));*/
-    }
+        _lampTransformNode->getTransform()->setPosition(vec3<F32>(-75.0f, -45.0f, -5.0f));
+    }*/
     //------------------------ The rest of the scene elements -----------------------------///
 //	_groundPlaceholder = _sceneGraph->findNode("Ground_placeholder");
 //	_groundPlaceholder->getNode<SceneNode>()->getMaterial()->setCastsShadows(false);
@@ -251,48 +307,70 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
 
 bool WarScene::initializeAI(bool continueOnErrors){
     //----------------------------Artificial Intelligence------------------------------//
+    SceneGraphNode* soldierNode1 = _sceneGraph->findNode("Soldier1");
+    SceneGraphNode* soldierNode2 = _sceneGraph->findNode("Soldier2");
+    SceneGraphNode* soldierNode3 = _sceneGraph->findNode("Soldier3");
+    SceneNode* soldierMesh1 = soldierNode1->getNode<SceneNode>();
+    SceneNode* soldierMesh2 = soldierNode2->getNode<SceneNode>();
+    SceneNode* soldierMesh3 = soldierNode3->getNode<SceneNode>();
+    assert(soldierMesh1 && soldierMesh2 && soldierMesh3);
 
+    vec3<F32> currentScale;
+    NPC* soldier = NULL;
+    std::string currentName;
     AIEntity* aiSoldier = NULL;
-    SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
-    if(soldierMesh){
-        soldierMesh->setSelectable(true);
-        AIEntity* aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier1");
-        aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-        aiSoldier->setComInterface();
-        aiSoldier->addActionProcessor(New WarSceneAIActionList());
-        aiSoldier->setTeam(_faction1);
-        NPC* soldier = New NPC(soldierMesh, aiSoldier);
-        soldier->setMovementSpeed(1.2f); /// 1.2 m/s
-        _army1NPCs.push_back(soldier);
-        _army1.push_back(aiSoldier);
+    SceneNode* currentMesh = NULL;
+    SceneGraphNode* currentNode = NULL;
+    for(U8 k = 0; k < 2; ++k) {
+        for(U8 i = 0; i < 15; ++i){
+            F32 speed = 1.2f; // 1.2 m/s
+            U8 zFactor = 0;
+            if(i < 5){
+                currentMesh = soldierMesh1;
+                currentScale = soldierNode1->getTransform()->getScale();
+                currentName = std::string("Soldier_1_" + Util::toString((I32)k) + "_" + Util::toString((I32)i));
+            }else if(i >= 5 && i < 10){
+                currentMesh = soldierMesh2;
+                currentScale = soldierNode2->getTransform()->getScale();
+                currentName = std::string("Soldier_2_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%5));
+                speed = 1.75f;
+                zFactor = 1;
+            }else{
+                currentMesh = soldierMesh3;
+                currentScale = soldierNode3->getTransform()->getScale();
+                currentName = std::string("Soldier_3_" + Util::toString((I32)k) + "_" + Util::toString((I32)i%10));
+                speed = 1.35f;
+                zFactor = 2;
+            }
+
+            currentNode = _sceneGraph->getRoot()->addNode(currentMesh, currentName);
+            currentNode->getTransform()->scale(currentScale);
+            assert(currentNode);
+            currentNode->setSelectable(true);
+            I8 side = k == 0 ? -1 : 1;
+
+            currentNode->getTransform()->setPosition(vec3<F32>(-125 + 25*(i%5), 0, 200 * side + 25*zFactor*side));
+            if(side == 1)
+                currentNode->getTransform()->rotateY(180);
+            
+            aiSoldier = New AIEntity(currentNode->getTransform()->getPosition(), currentNode->getName());
+            aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
+            aiSoldier->setComInterface();
+            aiSoldier->addActionProcessor(New WarSceneAIActionList());
+            aiSoldier->setTeam(k == 0 ? _faction1 : _faction2);
+            soldier = New NPC(currentNode, aiSoldier);
+            soldier->setMovementSpeed(speed); 
+            if(k == 0){
+                _army1NPCs.push_back(soldier);
+                _army1.push_back(aiSoldier);
+            }else{
+                _army2NPCs.push_back(soldier);
+                _army2.push_back(aiSoldier);
+            }
+      
+        }
     }
 
-    soldierMesh = _sceneGraph->findNode("Soldier2");
-    if(soldierMesh){
-        soldierMesh->setSelectable(true);
-        aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier2");
-        aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-        aiSoldier->setComInterface();
-        aiSoldier->addActionProcessor(New WarSceneAIActionList());
-        aiSoldier->setTeam(_faction2);
-        NPC* soldier = New NPC(soldierMesh, aiSoldier);
-        soldier->setMovementSpeed(1.23f); /// 1.23 m/s
-        _army2NPCs.push_back(soldier);
-        _army2.push_back(aiSoldier);
-    }
-    soldierMesh = _sceneGraph->findNode("Soldier3");
-    if(soldierMesh){
-        soldierMesh->setSelectable(true);
-        aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier3");
-        aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
-        aiSoldier->setComInterface();
-        aiSoldier->addActionProcessor(New WarSceneAIActionList());
-        aiSoldier->setTeam(_faction2);
-        NPC* soldier = New NPC(soldierMesh, aiSoldier);
-        soldier->setMovementSpeed(1.43f); /// 1.23 m/s
-        _army2NPCs.push_back(soldier);
-        _army2.push_back(aiSoldier);
-    }
     //----------------------- AI controlled units ---------------------//
     for(U8 i = 0; i < _army1.size(); i++){
         AIManager::getInstance().addEntity(_army1[i]);    
@@ -305,6 +383,13 @@ bool WarScene::initializeAI(bool continueOnErrors){
     bool state = !(_army1.empty() || _army2.empty());
 
     if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
+
+    _sceneGraph->getRoot()->removeNode(soldierNode1);
+    _sceneGraph->getRoot()->removeNode(soldierNode2);
+    _sceneGraph->getRoot()->removeNode(soldierNode3);
+    SAFE_DELETE(soldierNode1);
+    SAFE_DELETE(soldierNode2);
+    SAFE_DELETE(soldierNode3);
     AIManager::getInstance().pauseUpdate(false);
     return state;
 }

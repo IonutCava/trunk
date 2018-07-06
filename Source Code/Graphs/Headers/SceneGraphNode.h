@@ -201,6 +201,7 @@ private:
     SceneGraphNode *_parent;
     SceneGraph     *_sceneGraph;
     boost::atomic<bool> _active;
+    boost::atomic<bool> _loaded;
     //Used to skip certain BB's (sky, ligts, etc);
     U32 _bbAddExclusionList;
     bool _selected;

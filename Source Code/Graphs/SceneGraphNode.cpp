@@ -16,6 +16,7 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
                                                   _parent(NULL),
                                                   _transform(NULL),
                                                   _transformPrevious(NULL),
+                                                  _loaded(true),
                                                   _wasActive(true),
                                                   _active(true),
                                                   _selected(false),
@@ -41,6 +42,9 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 
 ///If we are destroyng the current graph node
 SceneGraphNode::~SceneGraphNode(){
+    if(_loaded)
+        unload();
+
     PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     //delete children nodes recursively
     for_each(NodeChildren::value_type it, _children){
@@ -96,6 +100,7 @@ bool SceneGraphNode::unload(){
             RemoveResource(_node);
         }
     }
+    _loaded = false;
     return true;
 }
 

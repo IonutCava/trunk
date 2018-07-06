@@ -62,5 +62,4 @@ void Mesh::sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState
 }
 
 void Mesh::refModifyCallback(bool increase) {
-    U32 newRefCount = getRefCount();
 }
