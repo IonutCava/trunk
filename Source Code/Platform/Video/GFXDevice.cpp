@@ -619,14 +619,19 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     if (!callback) {
         return false;
     }
+    bool loadInThread = context == CurrentContext::GFX_LOADING_CTX && _state.loadingThreadAvailable();
+    if (getGPUVendor() == GPUVendor::AMD) {
+        STUBBED("Crimson drivers seem to be having an issue with multi-threaded multi-context fence sync")
+        loadInThread = false;
+    }
     // If we want and can call the function in the loading thread, add it to the
     // lock-free, single-producer, single-consumer queue
-    if (context == CurrentContext::GFX_LOADING_CTX &&
-        _state.loadingThreadAvailable()) {
+    if (loadInThread) {
         _state.addToLoadQueue(callback);
     } else {
         callback();
     }
+
     // The callback is valid and has been processed
     return true;
 }

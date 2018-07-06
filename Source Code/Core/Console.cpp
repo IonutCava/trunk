@@ -54,7 +54,7 @@ void Console::printCopyrightNotice() {
 }
 
 const char* Console::formatText(const char* format, ...) {
-    thread_local static char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
+    static thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
     va_list args;
     va_start(args, format);
     assert(_vscprintf(format, args) + 1 < CONSOLE_OUTPUT_BUFFER_SIZE);

@@ -45,8 +45,8 @@ void main()
 
     if (zBufferCull(center, vec3(radius)) == 0) {
         atomicCounterIncrement(culledCount);
-        //dvd_drawCommands[ident].instanceCount = 0;
-        //dvd_customData(nodeIndex) = 3.0;
+        dvd_drawCommands[ident].instanceCount = 0;
+        dvd_customData(nodeIndex) = 3.0;
     }
 }
 

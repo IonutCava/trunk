@@ -57,7 +57,7 @@ bool preAssert(const bool expression, const char* failMessage) {
 
 #if defined(_DEBUG)
 void* operator new(size_t size) {
-    static bool logged = false;
+    static thread_local bool logged = false;
     void* ptr = malloc(size);
     if (!logged) {
         Divide::MemoryManager::log_new(ptr, size, " allocation outside of macro ", 0);
@@ -74,7 +74,7 @@ void operator delete(void* ptr) noexcept {
 }
 
 void* operator new[](size_t size) {
-    static bool logged = false;
+    static thread_local bool logged = false;
     void* ptr = malloc(size);
     if (!logged) {
         Divide::MemoryManager::log_new(ptr, size, " array allocation outside of macro ", 0);

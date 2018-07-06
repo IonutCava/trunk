@@ -69,8 +69,12 @@ DEFINE_SINGLETON(ShaderManager)
     /// Return a new shader reference
     Shader* getShader(const stringImpl& name, const bool recompile = false);
     /// Add or refresh a shader from the cache
-    Shader* loadShader(const stringImpl& name, const stringImpl& location,
-                       const ShaderType& type, const bool recompile = false);
+    Shader* loadShader(const stringImpl& name,
+                       const stringImpl& location,
+                       const ShaderType& type,
+                       const bool parseCode,
+                       const bool recompile = false);
+
     /// Remove a shaderProgram from the program cache
     void unregisterShaderProgram(const stringImpl& name);
     /// Add a shaderProgram to the program cache
@@ -81,8 +85,11 @@ DEFINE_SINGLETON(ShaderManager)
     /// Load a shader from file
     const stringImpl& shaderFileRead(const stringImpl& atomName,
                                      const stringImpl& location);
+    void shaderFileRead(const stringImpl& filePath,
+                        bool buildVariant,
+                        stringImpl& sourceCodeOut) const;
     /// Save a shader to file
-    I8 shaderFileWrite(const stringImpl& atomName, const stringImpl& sourceCode);
+    void shaderFileWrite(const stringImpl& atomName, const char* sourceCode);
     /// Bind the null shader
     bool unbind();
     /// Return a default shader used for general purpose rendering

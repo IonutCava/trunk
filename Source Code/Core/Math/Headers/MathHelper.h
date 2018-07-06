@@ -244,6 +244,10 @@ bool IsNumber(const stringImpl& s);
 template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
 void insertion_sort(FwdIt first, FwdIt last, Compare cmp = Compare());
 
+void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut);
+stringImpl ReadTextFile(const stringImpl& filePath);
+void WriteTextFile(const stringImpl& filePath, const stringImpl& content);
+
 // U = to data type, T = from data type
 template <typename U, typename T>
 U ConvertData(const T& data);
@@ -258,6 +262,7 @@ stringImpl& Ltrim(stringImpl& s);
 stringImpl& Rtrim(stringImpl& s);
 
 stringImpl& Trim(stringImpl& s);
+stringImpl  Trim(const stringImpl& s);
 //fmt_str is passed by value to conform with the requirements of va_start.
 //http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
 stringImpl StringFormat(const stringImpl fmt_str, ...);

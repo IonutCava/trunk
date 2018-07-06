@@ -88,7 +88,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
 
     // Always is microseconds
     static void update(const U64 deltaTime) {
-        _currentTime += deltaTime;
+        _currentTime = _currentTime + deltaTime;
     }
 
    private:
@@ -104,7 +104,7 @@ class Task : public GUIDWrapper, public std::enable_shared_from_this<Task> {
     ThreadPool& _tp;
 
     // Always is microseconds
-    static U64 _currentTime;
+    static std::atomic<U64> _currentTime;
    protected:
     void run();
 };

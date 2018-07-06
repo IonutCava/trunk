@@ -49,15 +49,19 @@ bool glShader::load(const stringImpl& source) {
                          getName().c_str());
         return false;
     }
-    stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
-    const char* src = Util::Trim(parsedSource).c_str();
+
+    stringImpl parsedSource = _skipIncludes ? source
+                                            : preprocessIncludes(source, getName(), 0);
+
+    const char* src = parsedSource.c_str();
 
     GLsizei sourceLength = (GLsizei)parsedSource.length();
     glShaderSource(_shader, 1, &src, &sourceLength);
-#if defined(_DEBUG)
-    ShaderManager::getInstance().shaderFileWrite(
-        "shaderCache/Text/" + getName(), parsedSource);
-#endif
+
+    if (!_skipIncludes) {
+        ShaderManager::getInstance().shaderFileWrite(Shader::CACHE_LOCATION_TEXT + getName(), src);
+    }
+
     return true;
 }
 

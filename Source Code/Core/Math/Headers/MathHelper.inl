@@ -312,6 +312,11 @@ inline stringImpl& Trim(stringImpl& s) {
     return Ltrim(Rtrim(s));
 }
 
+inline stringImpl Trim(const stringImpl& s) {
+    stringImpl temp(s);
+    return Trim(temp);
+}
+
 template<class FwdIt, class Compare>
 void insertion_sort(FwdIt first, FwdIt last, Compare cmp)
 {

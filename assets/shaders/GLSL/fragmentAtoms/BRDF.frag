@@ -38,6 +38,11 @@ uint GetNumLightsInThisTile(uint nTileIndex)
 }
 
 vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
+    //Occlusion culling visibility debug code
+    //if (dvd_customData > 2.0) {
+    //    return vec4(1.0, 0.0, 0.0, 1.0);
+    //}
+
     parseMaterial();
 
     processedNormal = normalWV;

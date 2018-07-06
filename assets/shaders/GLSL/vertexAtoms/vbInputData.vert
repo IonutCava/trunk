@@ -19,8 +19,12 @@ vec3 UNPACK_FLOAT(in float value) {
 }
 
 void computeData(){
-    VAR.dvd_drawID  = gl_BaseInstanceARB;// + gl_DrawIDARB;
-    dvd_Vertex  = vec4(inVertexData,1.0);
+    VAR.dvd_drawID  = gl_BaseInstanceARB;
+    dvd_Vertex  = vec4(inVertexData, 1.0);
+    //Occlusion culling visibility debug code
+    //if (dvd_customData > 2.0) {
+    //    dvd_Vertex.xyz *= 5;
+    //}
     dvd_Normal  = UNPACK_FLOAT(inNormalData);
     dvd_Color   = inColorData;
     dvd_Tangent = UNPACK_FLOAT(inTangentData); 

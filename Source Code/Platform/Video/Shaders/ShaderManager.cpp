@@ -148,7 +148,6 @@ void ShaderManager::idle() {
 /// code
 const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
                                                 const stringImpl& location) {
-    static std::ifstream inFile;
     ULL atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
     AtomMap::iterator it = _atoms.find(atomNameHash);
@@ -159,40 +158,45 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
     // If we forgot to specify an atom location, we have nothing to return
     assert(!location.empty());
     
-    // Open the atom file
-    stringImpl file = location + "/" + atomName;
-    stringImpl code;
-
-    inFile.open(file);
-    inFile.seekg(0, std::ios::end);   
-    code.reserve(inFile.tellg());
-    inFile.seekg(0, std::ios::beg);
-
-    code.assign((std::istreambuf_iterator<char>(inFile)),
-                 std::istreambuf_iterator<char>());
-    inFile.close();
-    assert(inFile.good());
-    // Add the code to the atom cache for future reference
+    // Open the atom file and add the code to the atom cache for future reference
     std::pair<AtomMap::iterator, bool> result =
-        hashAlg::emplace(_atoms, atomNameHash, code);
+        hashAlg::emplace(_atoms, atomNameHash,
+                                 shaderFileRead(location + "/" + atomName, false));
+
     assert(result.second);
 
     // Return the source code
     return result.first->second;
 }
 
+void ShaderManager::shaderFileRead(const stringImpl& filePath,
+                                   bool buildVariant,
+                                   stringImpl& sourceCodeOut) const {
+    static const char* variant =
+#if defined(_DEBUG)
+        ".debug";
+#elif defined(_PROFILE)
+        ".profile";
+#else
+        ".release";
+#endif
+
+    Util::ReadTextFile(buildVariant ? (filePath + variant) : filePath, sourceCodeOut);
+}
+
 /// Dump the source code 's' of atom file 'atomName' to file
-I8 ShaderManager::shaderFileWrite(const stringImpl& atomName,
-                                  const stringImpl& sourceCode) {
-    static std::ofstream outputFile;
+void ShaderManager::shaderFileWrite(const stringImpl& atomName,
+                                    const char* sourceCode) {
+    static const char* variant =                                         
+#if defined(_DEBUG)
+    ".debug";
+#elif defined(_PROFILE)
+    ".profile";
+#else
+    ".release";
+#endif
 
-    if (!atomName.empty() && !sourceCode.empty()) {
-        outputFile.open(atomName);
-        outputFile << sourceCode;
-        outputFile.close();
-    }
-
-    return outputFile.good();
+    Util::WriteTextFile(atomName + variant, sourceCode);
 }
 
 /// Remove a shader entity. The shader is deleted only if it isn't referenced by
@@ -234,6 +238,7 @@ Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
 Shader* ShaderManager::loadShader(const stringImpl& name,
                                   const stringImpl& source,
                                   const ShaderType& type,
+                                  const bool parseCode,
                                   const bool recompile) {
     // See if we have the shader already loaded
     Shader* shader = getShader(name, recompile);
@@ -245,6 +250,8 @@ Shader* ShaderManager::loadShader(const stringImpl& name,
         // If we can't find it, we create a new one
         shader = GFX_DEVICE.newShader(name, type);
     }
+
+    shader->skipIncludes(!parseCode);
     // At this stage, we have a valid Shader object, so load the source code
     if (!shader->load(source)) {
         // If loading the source code failed, delete it

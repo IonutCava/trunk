@@ -5,11 +5,15 @@
 
 namespace Divide {
 
+const char* Shader::CACHE_LOCATION_TEXT = "shaderCache/Text/";
+const char* Shader::CACHE_LOCATION_BIN = "shaderCache/Binary/";
+
 Shader::Shader(GFXDevice& context,
                const stringImpl& name,
                const ShaderType& type,
                const bool optimise)
     : GraphicsResource(context),
+      _skipIncludes(false),
       _shader(std::numeric_limits<U32>::max()),
       _name(name),
       _type(type)

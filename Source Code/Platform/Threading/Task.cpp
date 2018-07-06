@@ -76,8 +76,9 @@ void Task::run() {
     _done = !_callback;
 
     I32 tickCountTemp = 0;
-    U64 tickIntervalTemp = 0;
-    U64 currentTimeTemp = 0;
+    U64 tickIntervalTemp = 0UL;
+    U64 currentTimeTemp = 0UL;
+
     while (true) {
         tickCountTemp = _numberOfTicks;
         tickIntervalTemp = _tickInterval;

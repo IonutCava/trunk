@@ -3,6 +3,7 @@
 
 #include <boost/thread/tss.hpp>
 #include <cstdarg>
+#include <fstream>
 
 namespace Divide {
 namespace Util {
@@ -27,10 +28,42 @@ bool IsNumber(const stringImpl& s) {
     return false;
 }
 
+void ReadTextFile(const stringImpl& filePath, stringImpl& contentOut) {
+    std::ifstream inFile(filePath, std::ios::in);
+
+    if (!inFile.eof() && !inFile.fail())
+    {
+        assert(inFile.good());
+        inFile.seekg(0, std::ios::end);
+        contentOut.reserve(inFile.tellg());
+        inFile.seekg(0, std::ios::beg);
+
+        contentOut.assign((std::istreambuf_iterator<char>(inFile)),
+                           std::istreambuf_iterator<char>());
+    }
+
+    inFile.close();
+}
+
+stringImpl ReadTextFile(const stringImpl& filePath) {
+    stringImpl content;
+    ReadTextFile(filePath, content);
+    return content;
+}
+
+void WriteTextFile(const stringImpl& filePath, const stringImpl& content) {
+    if (filePath.empty()) {
+        return;
+    }
+    std::ofstream outputFile(filePath, std::ios::out);
+    outputFile << content;
+    outputFile.close();
+    assert(outputFile.good());
+}
+
 vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems) {
-    static stringImpl item;
-    item.resize(0);
+    stringImpl item;
     elems.resize(0);
     std::istringstream ss(input);
     while (std::getline(ss, item, delimiter)) {
@@ -41,8 +74,7 @@ vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
 }
 
 vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
-    static vectorImpl<stringImpl> elems;
-    elems.resize(0);
+    vectorImpl<stringImpl> elems;
     Split(input, delimiter, elems);
     return elems;
 }

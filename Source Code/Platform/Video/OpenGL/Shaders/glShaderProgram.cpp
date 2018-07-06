@@ -102,7 +102,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
             glGetProgramBinary(_shaderProgramID, binaryLength, NULL, &_binaryFormat, binary);
             if (_binaryFormat != GL_NONE) {
                 // dump the buffer to file
-                stringImpl outFileName("shaderCache/Binary/" + getName() + ".bin");
+                stringImpl outFileName(Shader::CACHE_LOCATION_BIN + getName() + ".bin");
                 FILE* outFile = fopen(outFileName.c_str(), "wb");
                 if (outFile != NULL) {
                     fwrite(binary, binaryLength, 1, outFile);
@@ -290,6 +290,8 @@ void glShaderProgram::link() {
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
 bool glShaderProgram::load() {
+    ShaderManager& shaderMgr = ShaderManager::getInstance();
+
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_name.compare("NULL") == 0) {
@@ -316,7 +318,7 @@ bool glShaderProgram::load() {
     if (Config::USE_SHADER_BINARY && !refresh && false && _context.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
-        stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
+        stringImpl fileName(Shader::CACHE_LOCATION_BIN + _name + ".bin");
         // Load the program's binary format from file
         FILE* inFile = fopen((fileName + ".fmt").c_str(), "wb");
         if (inFile) {
@@ -376,16 +378,12 @@ bool glShaderProgram::load() {
             // We manually add define dressing
             shaderSourceHeader.append("#define " + _definesList[i] + "\n");
         }
-        // Split the shader name to get the effect file name and the effect
-        // properties
-        // The effect file name is the part up until the first period or comma
-        // symbol
+        // Split the shader name to get the effect file name and the effect properties
+        // The effect file name is the part up until the first period or comma symbol
         stringImpl shaderName = _name.substr(0, _name.find_first_of(".,"));
-        // We also differentiate between general properties, and vertex
-        // properties
+        // We also differentiate between general properties, and vertex properties
         stringImpl shaderProperties;
-        // Get the position of the first "," symbol. Must be added at the end of
-        // the program's name!!
+        // Get the position of the first "," symbol. Must be added at the end of the program's name!!
         stringAlg::stringSize propPositionVertex = _name.find_first_of(",");
         // Get the position of the first "." symbol
         stringAlg::stringSize propPosition = _name.find_first_of(".");
@@ -397,8 +395,7 @@ bool glShaderProgram::load() {
                 _name.substr(propPosition + 1,
                              propPositionVertex - propPosition - 1);
         }
-        // Vertex properties start off identically to the rest of the stages'
-        // names
+        // Vertex properties start off identically to the rest of the stages' names
         stringImpl vertexProperties(shaderProperties);
         // But we also add the shader specific properties
         if (propPositionVertex != stringImpl::npos) {
@@ -413,36 +410,41 @@ bool glShaderProgram::load() {
             // If we request a refresh for the current stage, we need to have a
             // pointer for the stage's shader already
             if (!_refreshStage[i]) {
-                // Else, we ask the shader manager to see if it was previously
-                // loaded elsewhere
-                _shaderStage[i] = ShaderManager::getInstance().getShader(
-                    shaderCompileName, refresh);
+                // Else, we ask the shader manager to see if it was previously loaded elsewhere
+                _shaderStage[i] = shaderMgr.getShader(shaderCompileName, refresh);
             }
 
             // If this is the first time this shader is loaded ...
             if (!_shaderStage[i]) {
-                // Use GLSW to read the appropriate part of the effect file
-                // based on the specified stage and properties
-                const char* sourceCodeStr = glswGetShader(
-                    shaderCompileName.c_str(),
-                    _refreshStage[i]);
-                stringImpl sourceCode(sourceCodeStr ? sourceCodeStr : "");
-                // GLSW may fail for various reasons (not a valid effect stage,
-                // invalid name, etc)
-                if (!sourceCode.empty()) {
-                    // And replace in place with our program's headers created
-                    // earlier
-                    Util::ReplaceStringInPlace(sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-                    Util::ReplaceStringInPlace(sourceCode, "//__LINE_OFFSET_", 
-                        Util::StringFormat("#line %d\n", 1 + _lineOffset[i] + to_uint(_definesList.size())));
-                    // Load our shader from the final string and save it in the
-                    // manager in case a new Shader Program needs it
-                    _shaderStage[i] = ShaderManager::getInstance().loadShader(
-                        shaderCompileName, sourceCode, type, _refreshStage[i]);
+                bool parseIncludes = false;
+
+                stringImpl sourceCode;
+                shaderMgr.shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
+                                         true,
+                                         sourceCode);
+
+                if (sourceCode.empty()) {
+                    parseIncludes = true;
+                    // Use GLSW to read the appropriate part of the effect file
+                    // based on the specified stage and properties
+                    const char* sourceCodeStr = glswGetShader(
+                        shaderCompileName.c_str(),
+                        _refreshStage[i]);
+                    sourceCode = sourceCodeStr ? sourceCodeStr : "";
+                    // GLSW may fail for various reasons (not a valid effect stage, invalid name, etc)
+                    if (!sourceCode.empty()) {
+                        // And replace in place with our program's headers created earlier
+                        Util::ReplaceStringInPlace(sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+                        Util::ReplaceStringInPlace(sourceCode, "//__LINE_OFFSET_", 
+                            Util::StringFormat("#line %d\n", 1 + _lineOffset[i] + to_uint(_definesList.size())));
+                    }
+                }
+                if (!sourceCode.empty()){
+                    // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
+                    _shaderStage[i] = shaderMgr.loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
                 }
             }
-            // Show a message, in debug, if we don't have a shader for this
-            // stage
+            // Show a message, in debug, if we don't have a shader for this stage
             if (!_shaderStage[i]) {
                 Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")),
                                    shaderCompileName.c_str());

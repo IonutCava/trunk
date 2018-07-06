@@ -43,6 +43,9 @@ class ShaderProgram;
 /// It can be used simultaneously in multiple programs/pipelines
 class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
    public:
+    static const char* CACHE_LOCATION_TEXT;
+    static const char* CACHE_LOCATION_BIN;
+
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
     explicit Shader(GFXDevice& context,
@@ -68,9 +71,16 @@ class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
     /// API dependent validation
     virtual void validate() = 0;
 
+  protected:
+    friend class ShaderManager;
+    inline void skipIncludes(bool state) {
+        _skipIncludes = state;
+    }
+
    protected:
     stringImpl _name;
     ShaderType _type;
+    bool _skipIncludes;
     /// The API dependent object handle. Not thread-safe!
     U32 _shader;
     std::atomic_bool _compiled;

@@ -15,7 +15,7 @@
 namespace Divide {
 
 namespace {
-    const bool USE_Z_PRE_PASS = false;
+    bool USE_Z_PRE_PASS = false;
 
     Framebuffer::FramebufferTarget _noDepthClear;
     Framebuffer::FramebufferTarget _depthOnly;
@@ -57,6 +57,9 @@ RenderPass::RenderPass(stringImpl name, U8 sortKey, std::initializer_list<Render
     _depthOnly._clearDepthBufferOnBind = true;
     _depthOnly._drawMask.fill(false);
     _depthOnly._drawMask[to_const_uint(TextureDescriptor::AttachmentType::Depth)] = true;
+
+    STUBBED("Crimson drivers seem to be having issues with this at the moment!");
+    USE_Z_PRE_PASS = GFX_DEVICE.getGPUVendor() != GPUVendor::AMD;
 }
 
 RenderPass::~RenderPass() 
