@@ -32,31 +32,37 @@ struct MaterialProperties {
 
 vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
 
-    float alpha = 1.0;
 #if defined(HAS_TRANSPARENCY)
 #if defined(USE_OPACITY_DIFFUSE_MAP)
-    alpha *= textureColor.a;
+    float alpha = textureColor.a;
 #endif
 #if defined(USE_OPACITY_DIFFUSE)
-    alpha *= dvd_MatDiffuse.a;
+    float alpha = dvd_MatDiffuse.a;
 #endif
 #if defined(USE_OPACITY_MAP)
-    //vec4 opacityMap = texture(texOpacityMap, texCoord);
-    //alpha *= max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
+    vec4 opacityMap = texture(texOpacityMap, texCoord);
+    float alpha = max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #endif
-    /*if (dvd_useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD)
-        discard;*/
+    if (dvd_useAlphaTest && alpha < ALPHA_DISCARD_THRESHOLD){
+        discard;
+	}
+#else
+	const float alpha = 1.0;
 #endif
 
     MaterialProperties materialProp;
     
 #if defined(USE_SPECULAR_MAP)
-    //materialProp.specularValue = texture(texSpecularMap, texCoord).rgb;
+    materialProp.specularValue = texture(texSpecularMap, texCoord).rgb;
 #else
     materialProp.specularValue = dvd_MatSpecular;
 #endif
 
+#if defined (USE_DOUBLE_SIDED)
     phong_loop(normalize(gl_FrontFacing ? normal : -normal), materialProp);
+#else
+	phong_loop(normalize(normal), materialProp);
+#endif
     //Add global ambient value and selection ambient value
     vec3 color = (materialProp.ambient + dvd_lightAmbient * dvd_MatAmbient) + materialProp.diffuse;
 
@@ -72,10 +78,10 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
     switch (dvd_showShadowSplits ? _shadowTempInt : -2){
         case -2: return vec4(color, alpha);
         case -1: return vec4(1.0);
-        case  0: return vec4(color, alpha) + vec4(0.15, 0.0,  0.0,  0.0);
-        case  1: return vec4(color, alpha) + vec4(0.00, 0.25, 0.0,  0.0);
-        case  2: return vec4(color, alpha) + vec4(0.00, 0.0,  0.40, 0.0);
-        case  3: return vec4(color, alpha) + vec4(0.15, 0.25, 0.40, 0.0);
+        case  0: return vec4(color.r + 0.15, color.g, color.b,  alpha);
+        case  1: return vec4(color.r, color.g + 0.25, color.b,  alpha);
+        case  2: return vec4(color.r, color.g,  color.b + 0.40, alpha);
+        case  3: return vec4(color.r + 0.15, color.g + 0.25, color.b + 0.40, alpha);
     };
 #else
     return vec4(color, alpha);

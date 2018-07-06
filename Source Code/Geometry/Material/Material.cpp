@@ -246,7 +246,10 @@ bool Material::computeShader(const RenderStage& renderStage){
             }
         }
     }
-
+	if (_doubleSided){
+		shader += ".DoubleSided";
+		addShaderDefines(renderStage, "USE_DOUBLE_SIDED");
+	}
     //Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning){
         addShaderDefines(renderStage, "USE_GPU_SKINNING");
@@ -359,6 +362,7 @@ void Material::setDoubleSided(bool state, const bool useAlphaTest) {
     }
 
     _dirty = true;
+	recomputeShaders();
 }
 
 bool Material::isTranslucent() {

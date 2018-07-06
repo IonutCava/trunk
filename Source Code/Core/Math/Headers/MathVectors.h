@@ -214,6 +214,13 @@ public:
     inline vec2<T> gb() const { return vec2<T>(this->g, this->b);}
     inline vec2<T> yz() const { return this->gb();}
 
+    inline void rg(const vec2<T>& rg)   { this->set(rg); }
+    inline void xy(const vec2<T>& xy)   { this->set(xy); }
+    inline void rb(const vec2<T>& rb)   { this->r = rb.x; this->b = rb.y; }
+    inline void xz(const vec2<T>& xz)   { this->x = xz.x; this->z = xz.y; }
+    inline void gb(const vec2<T>& gb)   { this->g = gb.x; this->b = gb.y; }
+    inline void yz(const vec2<T>& yz)   { this->y = yz.x; this->z = yz.y; }
+
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)        { this->set(v[0], v[1], v[2]); }
     /// set the 3 components of the vector manually
@@ -369,6 +376,28 @@ public:
     inline vec3<T> xyw() const { return this->rga(); }
     inline vec3<T> gba() const { return vec3<T>(this->g, this->b, this->a); }
     inline vec3<T> yzw() const { return this->gba(); }
+
+    inline void rg(const vec2<T>& rg)   { this->set(rg); }
+    inline void xy(const vec2<T>& xy)   { this->set(xy); }
+    inline void rb(const vec2<T>& rb)   { this->r = rb.x; this->b = rb.y; }
+    inline void xz(const vec2<T>& xz)   { this->x = xz.x; this->z = xz.y; }
+    inline void gb(const vec2<T>& gb)   { this->g = gb.x; this->b = gb.y; }
+    inline void yz(const vec2<T>& yz)   { this->y = yz.x; this->z = yz.y; }
+    inline void ra(const vec2<T>& ra)   { this->r = ra.x; this->a = ra.y; }
+    inline void xw(const vec2<T>& xw)   { this->x = xw.x; this->w = xw.y; }
+    inline void ga(const vec2<T>& ga)   { this->g = ga.x; this->a = ga.y; }
+    inline void yw(const vec2<T>& yw)   { this->y = yw.x; this->w = yw.y; }
+    inline void ba(const vec2<T>& ba)   { this->b = ba.x; this->a = ba.y; }
+    inline void zw(const vec2<T>& zw)   { this->z = zw.x; this->w = zw.y; }
+    inline void rgb(const vec3<T>& rgb) { this->r = rgb.x; this->g = rgb.y; this->b = rgb.z; }
+    inline void xyz(const vec3<T>& xyz) { this->x = xyz.x; this->y = xyz.y; this->z = xyz.z; }
+    inline void bgr(const vec3<T>& bgr) { this->b = bgr.x; this->g = bgr.y; this->r = bgr.z; }
+    inline void zyx(const vec3<T>& zyx) { this->z = zyx.x; this->y = zyx.y; this->x = zyx.z; }
+    inline void rga(const vec3<T>& rga) { this->r = rga.x; this->g = rga.y; this->a = rga.z; }
+    inline void xyw(const vec3<T>& xyw) { this->x = xyw.x; this->y = xyw.y; this->w = xyw.z; }
+    inline void gba(const vec3<T>& gba) { this->g = gba.x; this->b = gba.y; this->a = gba.z; }
+    inline void yzw(const vec3<T>& yzw) { this->y = yzw.x; this->z = yzw.y; this->w = yzw.z; }
+
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
     inline void setV(const T* v)         { this->set(v[0], v[1], v[2], v[3]); }
     /// set the 4 components of the vector manually

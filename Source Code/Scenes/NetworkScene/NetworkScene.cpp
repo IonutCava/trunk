@@ -16,7 +16,6 @@ void NetworkScene::preRender(){
 
     light->setDirection(_sunvector);
     light->setDiffuseColor(vSunColor);
-    light->setSpecularColor(vSunColor);
 
 	_currentSky->getNode<Sky>()->setSunProperties(_sunvector, vSunColor);
 }

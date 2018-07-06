@@ -57,7 +57,6 @@ void main() {
 /****************************************************************************/
 uniform mat4 dvd_ProjectionMatrixInverse;
 uniform vec2 dvd_invScreenDimension;
-uniform ivec2 dvd_screenDimension;
 uniform sampler2D depthTex;
 
 out vec2 resultMinMax;

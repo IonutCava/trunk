@@ -38,7 +38,9 @@ Light::Light(const F32 range, const LightType& type) : SceneNode(TYPE_LIGHT),
     _shadowCamera->setFixedYawAxis(true);
     
     _properties._diffuse.set(DefaultColors::WHITE());
-    _properties._specular.set(DefaultColors::WHITE(), 35);
+    _properties._position.w = 35.0f;
+    _properties._options.x = getLightTypeValue();
+    _properties._options.y = 0;
     _properties._direction.w = 0.0f;
     _properties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 1.0f); //constAtt, linearAtt, quadAtt
     
@@ -94,11 +96,11 @@ void Light::onCameraChange(){
 
         if(_mode == LIGHT_MODE_MOVABLE) {  
             const vec3<F32>& newPosition = _lightSGN->getComponent<PhysicsComponent>()->getPosition();
-            if ( _properties._position != newPosition ) {
-                _properties._position.set( newPosition );
+            if ( _properties._position.xyz() != newPosition ) {
+                _properties._position.xyz(newPosition);
             }
         } else {
-            _lightSGN->getComponent<PhysicsComponent>()->setPosition(_properties._position);
+            _lightSGN->getComponent<PhysicsComponent>()->setPosition(_properties._position.xyz());
         }
 
         if (_updateLightBB) {
@@ -117,7 +119,7 @@ void Light::setPosition(const vec3<F32>& newPosition){
         return;
     }
 
-    _properties._position = vec4<F32>(newPosition, _properties._position.w);
+    _properties._position.xyz(newPosition);
 
     if (_mode == LIGHT_MODE_MOVABLE) {
         _lightSGN->getComponent<PhysicsComponent>()->setPosition(newPosition);
@@ -132,11 +134,6 @@ void  Light::setDiffuseColor(const vec3<F32>& newDiffuseColor){
     _dirty[PROPERTY_TYPE_VISUAL] = true;
 }
 
-void Light::setSpecularColor(const vec3<F32>& newSpecularColor) {
-    _properties._specular.set(newSpecularColor, _properties._specular.w);
-    _dirty[PROPERTY_TYPE_VISUAL] = true;
-}
-
 void Light::setRange(F32 range) {
     _properties._attenuation.w = range;
     _dirty[PROPERTY_TYPE_PHYSICAL] = true;
@@ -148,13 +145,13 @@ void Light::setDirection(const vec3<F32>& newDirection){
         ERROR_FN( Locale::get( "WARNING_ILLEGAL_PROPERTY" ), getGUID(), "Light_Togglable", "LIGHT_DIRECTION" );
         return;
     }
+    vec3<F32> newDirectionNormalized(newDirection);
+    newDirectionNormalized.normalize();
+
     if ( _type == LIGHT_TYPE_SPOT ) {
-        _properties._direction = vec4<F32>( newDirection, 1.0f );
-        _properties._direction.normalize();
+        _properties._direction.xyz(newDirectionNormalized);
     } else {
-        _properties._position = vec4<F32>(newDirection, 1.0f);
-        _properties._position.normalize();
-        _properties._position.w = _type == LIGHT_TYPE_DIRECTIONAL ? 0.0f : 1.0f;
+        _properties._position.xyz(newDirectionNormalized);
     }
 
     _updateLightBB = true;
@@ -180,8 +177,8 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneSta
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     if ( _type == LIGHT_TYPE_DIRECTIONAL ) {
-        vec4<F32> directionalLightPosition = _properties._position * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
-        sgn->getBoundingBox().set( directionalLightPosition.xyz() - vec3<F32>( 10 ), directionalLightPosition.xyz() + vec3<F32>( 10 ) );
+        vec3<F32> directionalLightPosition = _properties._position.xyz() * Config::Lighting::DIRECTIONAL_LIGHT_DISTANCE * -1.0f;
+        sgn->getBoundingBox().set( directionalLightPosition - vec3<F32>( 10 ), directionalLightPosition + vec3<F32>( 10 ) );
     } else {
         sgn->getBoundingBox().set( vec3<F32>( -getRange() ), vec3<F32>( getRange() ) );
     }

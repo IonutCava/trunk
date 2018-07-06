@@ -81,7 +81,7 @@ void main (void)
                         texture(texWaterRefraction, uvFinalReflect).rgb, 
                         vec3(clamp(Fresnel(V, normalize(_normalWV)), 0.0, 1.0)));
     // add Specular
-    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[0]._specular.rgb * dvd_MatSpecular.rgb * iSpecular, vec3(0.0), vec3(1.0));
+    _colorOut.rgb = clamp(_colorOut.rgb + dvd_LightSource[0]._color.rgb * dvd_MatSpecular.rgb * iSpecular, vec3(0.0), vec3(1.0));
     // shadow mapping
     if (!underwater){
         _colorOut.rgb *= (0.2 + 0.8 * applyShadowDirectional(0, dvd_ShadowSource[0]));

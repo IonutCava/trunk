@@ -51,14 +51,13 @@ in vec4 vertexVP;
 out vec4 color;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-uniform sampler2D depthBuffer;
-uniform ivec2 dvd_screenDimension;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D depthBuffer;
 
 void main(){
     
     float d = texture(depthBuffer, gl_FragCoord.xy * dvd_screenDimension).r  - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 40.0 * d), 2.0);
-    softness = 1.0 - pow(softness, 2.0);
+    softness = max(0.1, 1.0 - pow(softness, 2.0));
 
     color = texture(texDiffuse0, texCoord) * particleColor;
     color.a *= softness;

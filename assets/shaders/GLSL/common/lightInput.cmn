@@ -8,12 +8,11 @@ const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
 
 struct Light {
-    vec4   _diffuse;     //< rgb = diffuse,  w = ambientFactor;
-    vec4   _specular;    //< rgb = specular color, w = spot cutoff
+    vec4   _color;       //< rgb = color,  w = ambientCoef;
     vec4   _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
-    vec4   _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4   _position;    //< xyz = Position is a direction for directional lights; w = spot cutoff
     vec4   _direction;   //< xyz = Used by spot lights, w = spotExponent
-    ivec4  _options;     //< x = casts shadows, yzw = reserved
+    ivec4  _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw = reserved
 };
 
 layout(binding = SHADER_BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock

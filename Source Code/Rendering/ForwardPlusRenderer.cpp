@@ -31,7 +31,6 @@ ForwardPlusRenderer::ForwardPlusRenderer() : Renderer(RENDERER_FORWARD_PLUS)
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
     vec2<U16> resTemp(screenRes + tileSize);
     _depthRanges->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
-    _depthRangesConstructProgram->Uniform("dvd_screenDimension", screenRes);
 }
 
 ForwardPlusRenderer::~ForwardPlusRenderer()
@@ -54,16 +53,15 @@ void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
     vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
     vec2<U16> resTemp(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->getResolution() + tileSize);
     _depthRanges->Create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
-    _depthRangesConstructProgram->Uniform("dvd_screenDimension", vec2<U16>(width, height));
 }
 
 bool ForwardPlusRenderer::buildLightGrid(const GFXDevice::GPUBlock& gpuBlock) {
     const Light::LightMap& lights = LightManager::getInstance().getLights();
 
     _omniLightList.clear();
-    _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
+    _omniLightList.reserve(lights.size());
 
-	for (const Light::LightMap::value_type& it : lights) {
+    for (const Light::LightMap::value_type& it : lights) {
         const Light& light = *it.second;
         if ( light.getLightType() == LIGHT_TYPE_POINT ) {
             _omniLightList.push_back( LightGrid::make_light( light.getPosition(), light.getDiffuseColor(), light.getRange() ) );

@@ -3,22 +3,22 @@
 
 #include "shadowMapping.frag"
 
-void phong_omni(in uint lightIndex, in float NdotL, in float iSpecular, float att, inout MaterialProperties materialProp) {
+void phong_omni(in vec4 lightColor, in float NdotL, in float iSpecular, float att, inout MaterialProperties materialProp) {
     //add the lighting contributions
-    materialProp.ambient += dvd_MatAmbient * dvd_LightSource[lightIndex]._diffuse.a * att;
+    materialProp.ambient += dvd_MatAmbient * lightColor.a * att;
     if (NdotL > 0.0){
-        materialProp.diffuse  += dvd_LightSource[lightIndex]._diffuse.rgb * dvd_MatDiffuse.rgb * NdotL * att;
-        materialProp.specular += dvd_LightSource[lightIndex]._specular.rgb * materialProp.specularValue * iSpecular * att;
+        materialProp.diffuse  += lightColor.rgb * dvd_MatDiffuse.rgb * NdotL * att;
+        materialProp.specular += lightColor.rgb * materialProp.specularValue * iSpecular * att;
     }
 }
 
-void phong_spot(in uint lightIndex, in float NdotL, in float iSpecular, float att, inout MaterialProperties materialProp) {
+void phong_spot(in vec4 lightColor, in float NdotL, in float iSpecular, float att, inout MaterialProperties materialProp) {
     //Diffuse intensity
     if (NdotL > 0.0){
         //add the lighting contributions
-        materialProp.ambient  += dvd_MatAmbient * dvd_LightSource[lightIndex]._diffuse.w  * att;
-        materialProp.diffuse  += dvd_LightSource[lightIndex]._diffuse.rgb  * dvd_MatDiffuse.rgb * NdotL * att;
-        materialProp.specular += dvd_LightSource[lightIndex]._specular.rgb * materialProp.specularValue  * iSpecular * att;
+        materialProp.ambient  += dvd_MatAmbient * lightColor.a * att;
+        materialProp.diffuse  += lightColor.rgb * dvd_MatDiffuse.rgb * NdotL * att;
+        materialProp.specular += lightColor.rgb * materialProp.specularValue * iSpecular * att;
     }
 }
 
@@ -45,7 +45,7 @@ float computeAttenuationSpot(const in uint lightIndex, const in vec3 lightDirect
     float att = max(1.0 / (attIn.x + (attIn.y * distance) + (attIn.z * distance * distance)), 0.0);
 
     float clampedCosine = max(0.0, dot(-lightDirection, normalize(dirIn.xyz)));
-    return mix(0.0, att * pow(clampedCosine, dirIn.w), clampedCosine < cos(dvd_LightSource[lightIndex]._specular.w * M_PIDIV180));
+    return mix(0.0, att * pow(clampedCosine, dirIn.w), clampedCosine < cos(dvd_LightSource[lightIndex]._position.w * M_PIDIV180));
 }
 
 float computeAttenuationOmni(const in uint lightIndex, const in vec3 lightDirection){
@@ -65,21 +65,21 @@ void phong_loop(in vec3 normal, inout MaterialProperties materialProp){
     for (uint i = 0; i < MAX_LIGHTS_PER_SCENE; i++){
         if (_lightCount == i) break;
 
-        switch (uint(dvd_LightSource[i]._position.w)){
+        switch (dvd_LightSource[i]._options.x){
             case LIGHT_DIRECTIONAL      : {
                 lightDir = -normalize(dvd_LightSource[i]._position.xyz);
                 getLightProperties(lightDir, viewDirection, normal, NDotL, iSpecular);
-                phong_omni(i, NDotL, iSpecular, 1.0, materialProp);
+                phong_omni(dvd_LightSource[i]._color, NDotL, iSpecular, 1.0, materialProp);
             } break;
             case LIGHT_OMNIDIRECTIONAL  : {
                 lightDir = normalize(viewDirection + dvd_LightSource[i]._position.xyz);
                 getLightProperties(lightDir, viewDirection, normal, NDotL, iSpecular);
-                phong_omni(i, NDotL, iSpecular, computeAttenuationOmni(i, lightDir), materialProp);
+                phong_omni(dvd_LightSource[i]._color, NDotL, iSpecular, computeAttenuationOmni(i, lightDir), materialProp);
             } break;
             case LIGHT_SPOT             : {
                 lightDir = normalize(viewDirection + dvd_LightSource[i]._position.xyz);
                 getLightProperties(lightDir, viewDirection, normal, NDotL, iSpecular);
-                phong_spot(i, NDotL, iSpecular, computeAttenuationSpot(i, lightDir), materialProp);
+                phong_spot(dvd_LightSource[i]._color, NDotL, iSpecular, computeAttenuationSpot(i, lightDir), materialProp);
             } break;
         }
     }
@@ -97,8 +97,8 @@ float shadow_loop(){
     for (uint i = 0; i < MAX_SHADOW_CASTING_LIGHTS; i++){
         if (_lightCount == i) break;
 
-        if (dvd_LightSource[i]._options.x == 1)
-            switch (uint(dvd_LightSource[i]._position.w)){
+        if (dvd_LightSource[i]._options.y == 1)
+            switch (dvd_LightSource[i]._options.x){
                 case LIGHT_DIRECTIONAL     : shadow *= applyShadowDirectional(i, dvd_ShadowSource[i]); break;
                 //case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, dvd_ShadowSource[i]);       break;
                 //case LIGHT_SPOT            : shadow *= applyShadowSpot(i, dvd_ShadowSource[i]);        break;

@@ -45,11 +45,10 @@ enum LightMode{
 
 struct LightProperties {
     vec4<F32> _diffuse;     //< rgb = diffuse,  w = ambientFactor;
-    vec4<F32> _specular;    //< rgb = specular color, w = _spotCutoff;
     vec4<F32> _attenuation; //< x = constAtt, y = linearAtt, z = quadraticAtt,  w = brightness
-    vec4<F32> _position;    //< Position is a direction for directional lights. w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    vec4<F32> _position;    //< Position is a direction for directional lights. w = reserved
     vec4<F32> _direction;   //< xyz = Used by spot lights, w = spotExponent
-    vec4<I32> _options;     //< x - casts shadows, yzw - reserved;
+    vec4<I32> _options;     //< x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot, y = casts shadows, zw - reserved;
 };
 
 struct LightShadowProperties {
@@ -86,7 +85,7 @@ public:
     inline void setScore(const F32 score)       {_score = score;}
 
     ///Is the light a shadow caster?
-    inline bool  castsShadows() const {return _properties._options.x == 1;}
+    inline bool  castsShadows() const {return _properties._options.y == 1;}
     ///Get the entire property block
     inline const LightProperties& getProperties() const { return _properties; }
     inline const LightShadowProperties& getShadowProperties() const {return _shadowProperties;}
@@ -96,9 +95,6 @@ public:
     ///Get light diffuse color
     inline vec3<F32>  getDiffuseColor() const { return _properties._diffuse.rgb(); }
            void       setDiffuseColor(const vec3<F32>& newDiffuseColor);
-    ///Get light specular color
-    inline vec3<F32>  getSpecularColor() const { return _properties._specular.rgb(); }
-           void       setSpecularColor(const vec3<F32>& newSpecularColor);
     ///Get light position for omni and spot or direction for a directional light
     inline vec3<F32>  getPosition()     const { return _properties._position.xyz(); }
            void       setPosition(const vec3<F32>& newPosition);
@@ -109,7 +105,7 @@ public:
     inline bool  getEnabled() const {return _enabled;}
 
     ///Does this list cast shadows?
-    inline void  setCastShadows(const bool state) { _properties._options.x = (state ? 1 : 0);}
+    inline void  setCastShadows(const bool state) { _properties._options.y = (state ? 1 : 0);}
     ///Draw a sphere at the lights position
     ///The impostor has the range of the light's effect range and the diffuse color as the light's diffuse property
     inline void  setDrawImpostor(const bool state) {_drawImpostor = state;}
@@ -160,7 +156,7 @@ protected:
     void postLoad(SceneGraphNode* const sgn);
     ///Set light type
     ///@param type Directional/Spot/Omni (see LightType enum)
-    inline void  setLightType(const LightType& type) {_type = type;}
+    inline void  setLightType(const LightType& type) { _type = type; _properties._options.x = getLightTypeValue(); }
     ///Set light mode
     ///@param mode Togglable, Movable, Simple, Dominant (see LightMode enum)
     void setLightMode(const LightMode& mode);
@@ -168,6 +164,7 @@ protected:
     void updateResolution(I32 newWidth, I32 newHeight);
     ///Get a ref to the shadow camera used by this light
     Camera* const shadowCamera() const {return _shadowCamera;}
+    const I32 getLightTypeValue() const { return _type == LIGHT_TYPE_DIRECTIONAL ? 0 : (_type == LIGHT_TYPE_POINT ? 1 : 2); }
 
 protected:
     LightProperties       _properties;

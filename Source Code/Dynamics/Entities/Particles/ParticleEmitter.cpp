@@ -130,7 +130,7 @@ ShaderProgram* const ParticleEmitter::getDrawShader(RenderStage renderStage){
 void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState, const RenderStage& currentRenderStage){
     if(_particlesCurrentCount > 0 && _enabled && _created){
         _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
-        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
+        GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(ShaderProgram::TEXTURE_UNIT1, TextureDescriptor::Depth);
 
         _drawCommand.renderWireframe(sgn->renderWireframe());
         _drawCommand.stateHash(_particleStateBlockHash);
@@ -243,7 +243,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
         currentParticle.rgba[0] = rand() % 256;
         currentParticle.rgba[1] = rand() % 256;
         currentParticle.rgba[2] = rand() % 256;
-        currentParticle.rgba[3] = (rand() % 256) / 3;
+        currentParticle.rgba[3] = (rand() % 256) / 2;
 
         currentParticle.size = (rand()%1000)/2000.0f + 0.1f;
     }

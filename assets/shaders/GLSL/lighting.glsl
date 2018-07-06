@@ -53,7 +53,7 @@ vec4 mappingRelief(){
 //subroutine(MappingRoutineType)
 vec4 mappingParallax(){
     vec3 lightDir = vec3(0.0);
-    switch (uint(dvd_LightSource[bumpMapLightId]._position.w)){
+    switch (dvd_LightSource[bumpMapLightId]._options.x){
         case LIGHT_DIRECTIONAL      : lightDir = -normalize(dvd_LightSource[bumpMapLightId]._position.xyz); break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : lightDir = normalize(_viewDirection + dvd_LightSource[bumpMapLightId]._position.xyz); break;

@@ -184,7 +184,8 @@ bool Scene::loadGeometry( const FileData& data ) {
         ERROR_FN( Locale::get( "ERROR_SCENE_UNSUPPORTED_GEOM" ), data.ModelName.c_str() );
         return false;
     }
-    Material* tempMaterial = XML::loadMaterial( stringAlg::fromBase( data.ItemName + "_material" ) );
+	STUBBED("Load material from XML disabled for primitives! - Ionut")
+    Material* tempMaterial = nullptr/*XML::loadMaterial( stringAlg::fromBase( data.ItemName + "_material" ) )*/;
     if ( !tempMaterial ) {
         ResourceDescriptor materialDescriptor( data.ItemName + "_material" );
         tempMaterial = CreateResource<Material>( materialDescriptor );

@@ -14,7 +14,7 @@ layout(binding = SHADER_BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 vec2 dvd_sceneZPlanes = dvd_ZPlanesCombined.zw;
 vec2 dvd_zPlanes = dvd_ZPlanesCombined.xy;
-
+ivec2 dvd_screenDimension = ivec2(dvd_ViewPort.z, dvd_ViewPort.w);
 #if defined(VERT_SHADER)
 
 out float gl_ClipDistance[MAX_CLIP_PLANES];
