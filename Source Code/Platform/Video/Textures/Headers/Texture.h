@@ -81,8 +81,7 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
-                        const vec2<U16>& dimensions,
-                        const vec2<U16>& mipLevels) = 0;
+                        const vec2<U16>& dimensions) = 0;
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,

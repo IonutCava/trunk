@@ -59,8 +59,7 @@ class glTexture final : public Texture,
     void setMipMapRange(U16 base = 0, U16 max = 1000) override;
 
     void resize(const bufferPtr ptr,
-                const vec2<U16>& dimensions,
-                const vec2<U16>& mipLevels) override;
+                const vec2<U16>& dimensions) override;
 
     void loadData(const TextureLoadInfo& info,
                   const vectorImpl<ImageTools::ImageLayer>& imageLayers) override;

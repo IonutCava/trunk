@@ -44,6 +44,7 @@ class SceneRenderState;
 class Task;
 class Camera;
 class SceneGraph;
+class PlatformContext;
 enum class RenderStage : U32;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
@@ -67,7 +68,8 @@ class RenderPassCuller {
     VisibleNodeList& getNodeCache(RenderStage stage);
     const VisibleNodeList& getNodeCache(RenderStage stage) const;
 
-    void frustumCull(SceneGraph& sceneGraph,
+    void frustumCull(PlatformContext& context,
+                     SceneGraph& sceneGraph,
                      const SceneState& sceneState,
                      RenderStage stage,
                      const CullingFunction& cullingFunction);
@@ -88,8 +90,6 @@ class RenderPassCuller {
     void addAllChildren(const SceneGraphNode& currentNode,
                         RenderStage stage,
                         VisibleNodeList& nodes) const;
-
-    U32 stageToCacheIndex(RenderStage stage) const;
 
    protected:
     std::array<CullingFunction, to_base(RenderStage::COUNT)> _cullingFunction;

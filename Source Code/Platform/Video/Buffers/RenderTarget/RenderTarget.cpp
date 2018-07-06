@@ -17,14 +17,18 @@ RTDrawDescriptor RenderTarget::_policyDefault;
 RTDrawDescriptor RenderTarget::_policyKeepDepth;
 RTDrawDescriptor RenderTarget::_policyDepthOnly;
 
-RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
+RenderTarget::RenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name)
     : GUIDWrapper(),
       GraphicsResource(context, getGUID()),
-      _width(0),
-      _height(0),
+      _width(resolution.w),
+      _height(resolution.h),
       _depthValue(1.0),
       _name(name)
 {
+    if (Config::Profile::USE_2x2_TEXTURES) {
+        _width = _height = 2;
+    }
+
     _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, g_maxColourAttachments);
 
     if (!g_policiesInitialised) {
@@ -47,10 +51,18 @@ void RenderTarget::copy(const RenderTarget& other) {
     _depthValue = other._depthValue;
 }
 
+void RenderTarget::addAttachment(const RTAttachment& attachment, RTAttachment::Type type, U8 index) {
+    if (attachment.used()) {
+        _attachmentPool->update(type, index, attachment.texture()->getDescriptor());
+    } else {
+        _attachmentPool->clear(type, index);
+    }
+}
+
 void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
                                  RTAttachment::Type type,
                                  U8 index) {
-    _attachmentPool->add(type, index, descriptor);
+    _attachmentPool->update(type, index, descriptor);
 }
 
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
@@ -67,10 +79,6 @@ RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
 
 RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     return _policyDepthOnly;
-}
-
-const TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {
-    return _attachmentPool->get(type, index)->descriptor();
 }
 
 /// Used by cubemap FB's

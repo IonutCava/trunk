@@ -14,8 +14,9 @@ namespace Divide {
 DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_DEPTH_OF_FIELD)
 {
-    _samplerCopy = _context.allocateRT("DoF");
-    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy = _context.allocateRT(vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight()), "DoF");
+    _samplerCopy._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->create();
 
     ResourceDescriptor dof("DepthOfField");
     dof.setThreadedLoading(false);

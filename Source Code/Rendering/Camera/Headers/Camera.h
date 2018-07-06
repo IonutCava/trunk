@@ -236,7 +236,9 @@ class Camera : public Resource {
         return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _aspectRatio));
     }
 
-    inline const F32 getAspectRatio() const { return _aspectRatio; }
+    inline const F32 getAspectRatio() const {
+        return _aspectRatio;
+    }
 
     inline const mat4<F32>& getViewMatrix() const {
         return _viewMatrix;

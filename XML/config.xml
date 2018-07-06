@@ -22,7 +22,7 @@
   <!-- splash screen dimensions -->
   <splashScreenSize w="400" h="300"/>
   <!-- rendering resolution -->
-  <resolution w="1024" h="578" />
+  <resolution w="1280" h="720" />
   <!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
   <simSpeed>0.0</simSpeed>
   <zNear>0.25</zNear>
@@ -33,10 +33,10 @@
 <GUI>
   <CEGUI>
     <ExtraStates>false</ExtraStates>
-    <SkipRendering>true</SkipRendering>
+    <SkipRendering>false</SkipRendering>
     <defaultGUIScheme>GWEN</defaultGUIScheme>
   </CEGUI>
-  <enableDebugVariableControls>false</enableDebugVariableControls>
+  <enableDebugVariableControls>true</enableDebugVariableControls>
   <consoleLayoutFile>console.layout</consoleLayoutFile>
   <editorLayoutFile>editor.layout</editorLayoutFile>
 </GUI>
@@ -50,15 +50,15 @@
   <anisotropicFilteringLevel>8</anisotropicFilteringLevel>
   <!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
   <!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-  <shadowDetailLevel>3</shadowDetailLevel>
-   <renderDetailLevel>4</renderDetailLevel>
+  <shadowDetailLevel>0</shadowDetailLevel>
+  <renderDetailLevel>4</renderDetailLevel>
   <enableFog>true</enableFog>
   <fogDensity>3</fogDensity>
   <fogColour r="0.5" g="0.5" b="0.55"/>
   <enable3D>false</enable3D>
   <anaglyphOffset>0.16</anaglyphOffset>
   <enableDepthOfField>false</enableDepthOfField>
-  <enableBloom>true</enableBloom>
+  <enableBloom>false</enableBloom>
   <bloomFactor>0.8</bloomFactor>
   <enableSSAO>false</enableSSAO>
 </rendering>  

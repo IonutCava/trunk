@@ -106,7 +106,8 @@ void TenisScene::resetGame() {
 void TenisScene::startGame(I64 btnGUID) {
     resetGame();
 
-    TaskHandle newGame(CreateTask(getGUID(),
+    TaskHandle newGame(CreateTask(platformContext(),
+                                  getGUID(),
                                DELEGATE_BIND(&TenisScene::playGame, this,
                                              std::placeholders::_1,
                                              Random(4),

@@ -2,13 +2,19 @@
 
 #include "Headers/ParticleSource.h"
 
+#include "Core/Headers/Kernel.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+
 namespace Divide {
 
-ParticleSource::ParticleSource() : ParticleSource(0)
+ParticleSource::ParticleSource(GFXDevice& context)
+    : ParticleSource(context, 0)
 {
 }
 
-ParticleSource::ParticleSource(F32 emitRate) : _emitRate(emitRate)
+ParticleSource::ParticleSource(GFXDevice& context, F32 emitRate)
+    : _emitRate(emitRate),
+      _context(context)
 {
 }
 
@@ -24,7 +30,7 @@ void ParticleSource::emit(const U64 deltaTime, std::shared_ptr<ParticleData> p) 
     const U32 startID = data.aliveCount();
     const U32 endID = std::min(startID + maxNewParticles, data.totalCount() - 1);
 
-    TaskHandle generateTask = CreateTask(DELEGATE_CBK<void, const Task&>());
+    TaskHandle generateTask = CreateTask(_context.parent().platformContext(), DELEGATE_CBK<void, const Task&>());
     for (std::shared_ptr<ParticleGenerator>& gen : _particleGenerators) {
         gen->generate(generateTask, deltaTime, data, startID, endID);
     }

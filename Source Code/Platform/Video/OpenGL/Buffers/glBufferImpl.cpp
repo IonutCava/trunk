@@ -31,8 +31,8 @@ namespace {
     }
 };
 
-glBufferImpl::glBufferImpl(const BufferImplParams& params)
-    : glObject(glObjectType::TYPE_BUFFER),
+glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
+    : glObject(glObjectType::TYPE_BUFFER, context),
       _target(params._target),
       _handle(0),
       _alignedSize(params._dataSizeInBytes),

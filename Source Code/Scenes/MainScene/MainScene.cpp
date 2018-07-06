@@ -264,7 +264,8 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
         std::this_thread::sleep_for(std::chrono::milliseconds(30));
         if (g_boxMoveTaskID != 0) {
             if (!parentTask.stopRequested()) {
-                g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
+                g_boxMoveTaskID = registerTask(CreateTask(platformContext(), 
+                                               getGUID(),
                                                DELEGATE_BIND(&MainScene::test,
                                                              this,
                                                              std::placeholders::_1,
@@ -286,7 +287,8 @@ bool MainScene::loadResources(bool continueOnErrors) {
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
     removeTask(g_boxMoveTaskID);
-    g_boxMoveTaskID = registerTask(CreateTask(getGUID(),
+    g_boxMoveTaskID = registerTask(CreateTask(platformContext(),
+                                              getGUID(),
                                               DELEGATE_BIND(&MainScene::test,
                                               this,
                                               std::placeholders::_1,

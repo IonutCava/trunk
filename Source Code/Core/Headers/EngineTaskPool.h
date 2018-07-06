@@ -36,16 +36,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class PlatformContext;
+
 // The following calls should work with any taskpool, 
 // but will default to the one created by the kernel
-TaskHandle GetTaskHandle(I64 taskGUID);
+TaskHandle GetTaskHandle(const PlatformContext& context, I64 taskGUID);
 
 /**
 * @brief Creates a new Task that runs in a separate thread
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
+TaskHandle CreateTask(const PlatformContext& context, 
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
                       const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 /**
@@ -55,18 +58,20 @@ TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(I64 jobIdentifier,
-                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
-                     const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
+TaskHandle CreateTask(const PlatformContext& context, 
+                      I64 jobIdentifier,
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
-TaskHandle parallel_for(const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
+TaskHandle parallel_for(const PlatformContext& context,
+                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,
                         U32 taskFlags = 0,
                         bool waitForResult = true);
 
-void WaitForAllTasks(bool yeld, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(const PlatformContext& context, bool yeld, bool flushCallbacks, bool foceClear);
 
 }; //namespace Divide
 

@@ -536,7 +536,8 @@ bool WarScene::load(const stringImpl& name) {
     const F32 emitRate = particleCount / 4;
 
     std::shared_ptr<ParticleData> particles = 
-        std::make_shared<ParticleData>(particleCount,
+        std::make_shared<ParticleData>(platformContext().gfx(),
+                                       particleCount,
                                        to_base(ParticleData::Properties::PROPERTIES_POS) |
                                        to_base(ParticleData::Properties::PROPERTIES_VEL) |
                                        to_base(ParticleData::Properties::PROPERTIES_ACC) |
@@ -544,7 +545,7 @@ bool WarScene::load(const stringImpl& name) {
                                        to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS));
     particles->_textureFileName = "particle.DDS";
 
-    std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(emitRate);
+    std::shared_ptr<ParticleSource> particleSource =  std::make_shared<ParticleSource>(platformContext().gfx(), emitRate);
 
     std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
     boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
@@ -576,14 +577,14 @@ bool WarScene::load(const stringImpl& name) {
     test->addSource(particleSource);
     boxGenerator->pos(vec4<F32>(testSGN->get<PhysicsComponent>()->getPosition()));
 
-    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
+    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(platformContext().gfx());
     eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
     test->addUpdater(eulerUpdater);
-    std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>();
+    std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(platformContext().gfx());
     floorUpdater->_bounceFactor = 0.65f;
     test->addUpdater(floorUpdater);
-    test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
-    test->addUpdater(std::make_shared<ParticleBasicColourUpdater>());
+    test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(platformContext().gfx()));
+    test->addUpdater(std::make_shared<ParticleBasicColourUpdater>(platformContext().gfx()));
     
     state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 

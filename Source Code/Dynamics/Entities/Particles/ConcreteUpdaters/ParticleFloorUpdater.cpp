@@ -2,7 +2,9 @@
 
 #include "Headers/ParticleFloorUpdater.h"
 #include "Core/Headers/Console.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/EngineTaskPool.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
@@ -31,7 +33,7 @@ void ParticleFloorUpdater::update(const U64 deltaTime, ParticleData& p) {
         }
     };
 
-    parallel_for(updateFloor, endID, s_particlesPerThread, Task::TaskPriority::HIGH);
+    parallel_for(_context.parent().platformContext(), updateFloor, endID, s_particlesPerThread, Task::TaskPriority::HIGH);
 }
 
 };

@@ -4,6 +4,7 @@
 
 #include "Headers/ParticleEmitter.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -232,9 +233,9 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
         }
     };
 
-    parallel_for(updateDistToCamera, aliveCount, 1000);
+    parallel_for(_context.parent().platformContext(), updateDistToCamera, aliveCount, 1000);
 
-    _bufferUpdate.emplace_back(CreateTask(
+    _bufferUpdate.emplace_back(CreateTask(_context.parent().platformContext(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
             // invalidateCache means that the existing particle data is no longer partially sorted
             _particles->sort(true);
@@ -322,7 +323,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
             }
         };
 
-        parallel_for(updateSize, aliveCount, s_particlesPerThread, Task::TaskPriority::HIGH);
+        parallel_for(_context.parent().platformContext(), updateSize, aliveCount, s_particlesPerThread, Task::TaskPriority::HIGH);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
@@ -333,7 +334,9 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
             task.wait();
         }
         _bufferUpdate.clear();
-        _bbUpdate.emplace_back(CreateTask([this, aliveCount, averageEmitRate](const Task& parentTask) {
+        _bbUpdate.emplace_back(CreateTask(_context.parent().platformContext(), 
+              [this, aliveCount, averageEmitRate](const Task& parentTask)
+        {
             _tempBB.reset();
             for (U32 i = 0; i < aliveCount; i += to_U32(averageEmitRate) / 4) {
                 _tempBB.add(_particles->_position[i]);

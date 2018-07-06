@@ -106,7 +106,7 @@ void SceneManager::idle() {
         switchScene(_sceneSwitchTarget.targetSceneName(),
                     _sceneSwitchTarget.unloadPreviousScene(),
                     _sceneSwitchTarget.loadInSeparateThread());
-        WaitForAllTasks(true, true, false);
+        WaitForAllTasks(getActiveScene().platformContext(), true, true, false);
     } else {
         while (!_playerAddQueue.empty()) {
             std::pair<Scene*, SceneGraphNode_ptr>& playerToAdd = _playerAddQueue.front();
@@ -248,7 +248,7 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool
         sceneToUnload = &_scenePool->activeScene();
     }
 
-    CreateTask(
+    CreateTask(*_platformContext,
         [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
         {
             // Load first, unload after to make sure we don't reload common resources
@@ -397,6 +397,9 @@ void SceneManager::onCameraUpdate(const Camera& camera) {
 
 void SceneManager::onCameraChange(const Camera& camera) {
     getActiveScene().sceneGraph().onCameraChange(camera);
+    if (camera.getType() == Camera::CameraType::THIRD_PERSON) {
+        _platformContext->app().snapCursorToCenter();
+    }
 }
 
 void SceneManager::updateSceneState(const U64 deltaTime) {
@@ -609,7 +612,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
         return type == SceneNodeType::TYPE_LIGHT || type == SceneNodeType::TYPE_TRIGGER;
     };
 
-    _renderPassCuller->frustumCull(activeScene.sceneGraph(),
+    _renderPassCuller->frustumCull(activeScene.platformContext(),
+                                   activeScene.sceneGraph(),
                                    activeScene.state(),
                                    stage.stage(),
                                    cullingFunction);

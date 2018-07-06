@@ -137,7 +137,7 @@ protected:
 
 public:
     /// Makes sure that the calling thread has a valid GL context. If not, a new one is created.
-    static void createOrValidateContextForCurrentThread();
+    static void createOrValidateContextForCurrentThread(GFXDevice& context);
 
     /// Enable or disable primitive restart and ensure that the correct index size is used
     static void togglePrimitiveRestart(bool state);
@@ -249,7 +249,7 @@ public:
     static GLuint s_UBMaxSize;
     static GLuint s_SSBOffsetAlignment;
     static GLuint s_SSBMaxSize;
-    static glHardwareQueryPool s_hardwareQueryPool;
+    static glHardwareQueryPool* s_hardwareQueryPool;
 private:
     GFXDevice& _context;
     /// The previous Text3D node's font face size
@@ -297,7 +297,7 @@ private:
     /// Current state of all available clipping planes
     std::array<bool, to_base(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
-    vectorImpl<glHardwareQueryRing*> _hardwareQueries;
+    vectorImpl<std::shared_ptr<glHardwareQueryRing>> _hardwareQueries;
 
     /// Duration in nanoseconds to render a frame
     GLuint64 FRAME_DURATION_GPU;

@@ -211,7 +211,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::SHOWN: {
         } break;
         case WindowEvent::MINIMIZED: {
-            Application::instance().mainLoopPaused(true);
+            _context->app().mainLoopPaused(true);
             getWindow(winGUID).minimized(true);
         } break;
         case WindowEvent::MAXIMIZED: {
@@ -229,8 +229,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESIZED_INTERNAL: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::instance().onChangeWindowSize(to_U16(data1), 
-                                                              to_U16(data2));
+                _context->app().onChangeWindowSize(to_U16(data1), to_U16(data2));
             }
         } break;
         case WindowEvent::RESIZED_EXTERNAL: {
@@ -238,8 +237,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         case WindowEvent::RESOLUTION_CHANGED: {
             // Only if rendering window
             if (_activeWindowGUID == winGUID) {
-                Application::instance().onChangeRenderResolution(to_U16(data1),
-                                                                    to_U16(data2));
+                _context->app().onChangeRenderResolution(to_U16(data1), to_U16(data2));
             }
         } break;
         case WindowEvent::APP_LOOP: {

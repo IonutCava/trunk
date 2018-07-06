@@ -4,10 +4,12 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
-ParticleData::ParticleData(U32 particleCount, U32 optionsMask)
+ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask)
+    : _context(context)
 {
     _isBillboarded = true;
     // Default particles are quad sprites.
@@ -112,7 +114,7 @@ void ParticleData::sort(bool invalidateCache) {
         }
     };
     
-    TaskPool& pool = Application::instance().kernel().taskPool();
+    TaskPool& pool = _context.parent().taskPool();
     TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     updateTask.addChildTask(CreateTask(pool, parsePositions)._task)->startTask(Task::TaskPriority::HIGH);
     updateTask.addChildTask(CreateTask(pool, parseColours)._task)->startTask(Task::TaskPriority::HIGH);

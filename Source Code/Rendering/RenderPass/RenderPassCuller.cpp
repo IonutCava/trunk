@@ -69,7 +69,8 @@ bool RenderPassCuller::wasNodeInView(I64 GUID, RenderStage stage) const {
     return it != std::cend(cache);
 }
 
-void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
+void RenderPassCuller::frustumCull(PlatformContext& context,
+                                   SceneGraph& sceneGraph,
                                    const SceneState& sceneState,
                                    RenderStage stage,
                                    const CullingFunction& cullingFunction)
@@ -93,7 +94,7 @@ void RenderPassCuller::frustumCull(SceneGraph& sceneGraph,
             root.forEachChild(perChildCull, start, end);
         };
 
-        parallel_for(cullIterFunction, childCount, g_nodesPerCullingPartition, Task::TaskPriority::MAX);
+        parallel_for(context, cullIterFunction, childCount, g_nodesPerCullingPartition, Task::TaskPriority::MAX);
 
         VisibleNodeList& nodeCache = getNodeCache(stage);
         nodeCache.resize(0);

@@ -16,9 +16,9 @@ namespace Divide {
 SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_SS_AMBIENT_OCCLUSION)
 {
-
-    _samplerCopy = _context.allocateRT("SSAO");
-    _samplerCopy._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy = _context.allocateRT(vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight()), "SSAO");
+    _samplerCopy._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->create();
 
     U16 ssaoNoiseSize = 4;
     U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
@@ -69,7 +69,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.setAnisotropy(0);
 
-    _ssaoOutput = _context.allocateRT("SSAO_Out");
+    vec2<U16> res(parent.inputRT().getWidth(), parent.inputRT().getHeight());
+
+    _ssaoOutput = _context.allocateRT(res, "SSAO_Out");
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RED16,
                                        GFXDataFormat::FLOAT_16);
@@ -78,7 +80,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     //Colour0 holds the AO texture
     _ssaoOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
 
-    _ssaoOutputBlurred = _context.allocateRT("SSAO_Blurred_Out");
+    _ssaoOutputBlurred = _context.allocateRT(res, "SSAO_Blurred_Out");
     _ssaoOutputBlurred._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
@@ -111,8 +113,8 @@ void SSAOPreRenderOperator::idle(const Configuration& config) {
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 
-    _ssaoOutput._rt->create(width, height);
-    _ssaoOutputBlurred._rt->create(width, height);
+    _ssaoOutput._rt->resize(width, height);
+    _ssaoOutputBlurred._rt->resize(width, height);
 
     _ssaoGenerateShader->Uniform("noiseScale", vec2<F32>(width, height) / to_F32(_noiseTexture->getWidth()));
     _ssaoBlurShader->Uniform("ssaoTexelSize", vec2<F32>(1.0f / _ssaoOutput._rt->getWidth(),

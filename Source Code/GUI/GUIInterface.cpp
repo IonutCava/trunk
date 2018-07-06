@@ -219,7 +219,6 @@ GUIText* GUIInterface::addText(U64 guiID,
                                            colour,
                                            _context->rootSheet(),
                                            fontSize);
-    t->initialHeightCache(to_F32(getDisplayResolution().height));
     addElement(guiID, t);
 
     return t;

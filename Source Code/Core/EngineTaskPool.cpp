@@ -1,18 +1,20 @@
 #include "stdafx.h"
 
 #include "Headers/EngineTaskPool.h"
+
 #include "Headers/Kernel.h"
+#include "Headers/PlatformContext.h"
 
 namespace Divide {
 
-TaskHandle GetTaskHandle(I64 taskGUID) {
-    return GetTaskHandle(Application::instance().kernel().taskPool(), taskGUID);
+TaskHandle GetTaskHandle(const PlatformContext& context, I64 taskGUID) {
+    return GetTaskHandle(context.app().kernel().taskPool(), taskGUID);
 }
 
-TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
+TaskHandle CreateTask(const PlatformContext& context, const DELEGATE_CBK<void, const Task&>& threadedFunction,
     const DELEGATE_CBK<void>& onCompletionFunction)
 {
-    return CreateTask(-1, threadedFunction, onCompletionFunction);
+    return CreateTask(context, -1, threadedFunction, onCompletionFunction);
 }
 
 /**
@@ -22,27 +24,29 @@ TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(I64 jobIdentifier,
+TaskHandle CreateTask(const PlatformContext& context, 
+    I64 jobIdentifier,
     const DELEGATE_CBK<void, const Task&>& threadedFunction,
     const DELEGATE_CBK<void>& onCompletionFunction)
 {
-    TaskPool& pool = Application::instance().kernel().taskPool();
+    TaskPool& pool = context.app().kernel().taskPool();
     return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
 }
 
-void WaitForAllTasks(bool yeld, bool flushCallbacks, bool foceClear) {
-    TaskPool& pool = Application::instance().kernel().taskPool();
+void WaitForAllTasks(const PlatformContext& context, bool yeld, bool flushCallbacks, bool foceClear) {
+    TaskPool& pool = context.app().kernel().taskPool();
     WaitForAllTasks(pool, yeld, flushCallbacks, foceClear);
 }
 
-TaskHandle parallel_for(const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
+TaskHandle parallel_for(const PlatformContext& context,
+                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
                         U32 taskFlags,
                         bool waitForResult)
 {
-    TaskPool& pool = Application::instance().kernel().taskPool();
+    TaskPool& pool = context.app().kernel().taskPool();
     return parallel_for(pool, cbk, count, partitionSize, priority, taskFlags, waitForResult);
 }
 

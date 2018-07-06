@@ -40,6 +40,7 @@ class GUI;
 class GFXDevice;
 class SFXDevice;
 class PXDevice;
+class Application;
 class LocalClient;
 class XMLEntryData;
 class Configuration;
@@ -51,7 +52,8 @@ namespace Input {
 
 class PlatformContext {
 public:
-    explicit PlatformContext(std::unique_ptr<GFXDevice> gfx,
+    explicit PlatformContext(Application& app,
+                             std::unique_ptr<GFXDevice> gfx,
                              std::unique_ptr<SFXDevice> sfx,
                              std::unique_ptr<PXDevice> pfx,
                              std::unique_ptr<GUI> gui,
@@ -64,6 +66,9 @@ public:
 
     void idle();
     void terminate();
+
+    inline Application& app() { return _app; }
+    inline const Application& app() const { return _app; }
 
     inline GFXDevice& gfx() { return *_gfx; }
     inline const GFXDevice& gfx() const { return *_gfx; }
@@ -93,6 +98,8 @@ public:
     inline const DebugInterface& debug() const { return *_debug; }
 
 private:
+    /// Main application instance
+    Application& _app;
     /// Access to the GPU
     std::unique_ptr<GFXDevice> _gfx;
     /// The graphical user interface

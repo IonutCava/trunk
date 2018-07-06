@@ -295,7 +295,7 @@ void LightPool::prepareLightData(const vec3<F32>& eyePos, const mat4<F32>& viewM
     };
 
     // Sort all lights (Sort in parallel by type)
-    _lightUpdateTask.emplace_back(CreateTask(Application::instance().kernel().taskPool(), lightUpdate));
+    _lightUpdateTask.emplace_back(CreateTask(_context.parent().taskPool(), lightUpdate));
     _lightUpdateTask.back().startTask(Task::TaskPriority::LOW, 0);
 }
 

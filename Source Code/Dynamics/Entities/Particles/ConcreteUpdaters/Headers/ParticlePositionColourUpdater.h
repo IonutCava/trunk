@@ -42,9 +42,13 @@ class ParticlePositionColourUpdater final : public ParticleUpdater {
     vec4<F32> _maxPos;
 
    public:
-    ParticlePositionColourUpdater() { _maxPos.set(1.0f); }
+    ParticlePositionColourUpdater(GFXDevice& context) : ParticleUpdater(context), _maxPos(1.0f)
+    {
+    }
 
-    ~ParticlePositionColourUpdater() {}
+    ~ParticlePositionColourUpdater()
+    {
+    }
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

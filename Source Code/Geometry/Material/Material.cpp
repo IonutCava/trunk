@@ -170,13 +170,6 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         _operation = op;
     }
 
-    if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
-        Texture_ptr& diffuseMap = _textures[to_base(ShaderProgram::TextureUsage::UNIT0)];
-        if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
-            return false;
-        }
-    }
-
     if (!_translucencyCheck) {
          _translucencyCheck =
             (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
@@ -299,7 +292,7 @@ void Material::updateReflectionIndex(ReflectorType type, I32 index) {
                                                        ? RenderTargetUsage::REFLECTION_PLANAR
                                                        : RenderTargetUsage::REFLECTION_CUBE,
                                   index));
-        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachment::Type::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFLECTION_PLANAR
                          : ShaderProgram::TextureUsage::REFLECTION_CUBE,
@@ -320,7 +313,7 @@ void Material::updateRefractionIndex(ReflectorType type, I32 index) {
                                                        ? RenderTargetUsage::REFRACTION_PLANAR
                                                        : RenderTargetUsage::REFRACTION_CUBE,
                                   index));
-        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachment::Type::Colour, 0).texture();
         setTexture(type == ReflectorType::PLANAR_REFLECTOR
                          ? ShaderProgram::TextureUsage::REFRACTION_PLANAR
                          : ShaderProgram::TextureUsage::REFRACTION_CUBE,

@@ -290,6 +290,10 @@ class TextureDescriptor : public PropertyDescriptor {
         return _type == TextureType::TEXTURE_2D_ARRAY;
     }
 
+    inline bool isMultisampledTexture() const {
+        return _type == TextureType::TEXTURE_2D_MS ||
+               _type == TextureType::TEXTURE_2D_ARRAY_MS;
+    }
     /// A TextureDescriptor will always have a sampler, even if it is the
     /// default one
     inline void setSampler(const SamplerDescriptor& descriptor) {

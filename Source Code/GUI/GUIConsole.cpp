@@ -63,17 +63,14 @@ void GUIConsole::CreateCEGUIWindow() {
         Console::errorfn(Locale::get(_ID("ERROR_CONSOLE_DOUBLE_INIT")));
     }
     // load the console Window from the layout file
-    const stringImpl& layoutFile = _context.config().gui.consoleLayoutFile;
-    _consoleWindow =
-        CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile.c_str());
+    stringImpl layoutFile(_context.config().gui.consoleLayoutFile);
+    _consoleWindow = CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile.c_str());
 
     if (_consoleWindow) {
         // Add the Window to the GUI Root Sheet
         CEGUI_DEFAULT_CTX.getRootWindow()->addChild(_consoleWindow);
-        _outputWindow =
-            static_cast<CEGUI::Listbox*>(_consoleWindow->getChild("ChatBox"));
-        _editBox =
-            static_cast<CEGUI::Editbox*>(_consoleWindow->getChild("EditBox"));
+        _outputWindow = static_cast<CEGUI::Listbox*>(_consoleWindow->getChild("ChatBox"));
+        _editBox = static_cast<CEGUI::Editbox*>(_consoleWindow->getChild("EditBox"));
         // Now register the handlers for the events (Clicking, typing, etc)
         RegisterHandlers();
     } else {

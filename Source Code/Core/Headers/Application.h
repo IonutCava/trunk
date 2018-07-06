@@ -34,7 +34,6 @@
 
 #include "WindowManager.h"
 #include "ErrorCodes.h"
-#include <thread>
 
 namespace Divide {
 
@@ -48,12 +47,17 @@ namespace Attorney {
 
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
-DEFINE_SINGLETON(Application)
+class Application {
     friend class Attorney::ApplicationTask;
   public:
+     Application();
+     ~Application();
+
     /// Startup and shutdown
     ErrorCode start(const stringImpl& entryPoint, I32 argc, char** argv);
     void      stop();
+
+    void idle();
 
     bool step();
     bool onLoop();
@@ -92,9 +96,6 @@ DEFINE_SINGLETON(Application)
 
   private:
 
-    Application();
-    ~Application();
-
     //ToDo: Remove this hack - Ionut
     void warmup();
 
@@ -118,7 +119,7 @@ DEFINE_SINGLETON(Application)
     /// A list of callbacks to execute on the main thread
     mutable SharedLock _taskLock;
     vectorImpl<DELEGATE_CBK<void> > _mainThreadCallbacks;
-END_SINGLETON
+};
 
 };  // namespace Divide
 

@@ -685,7 +685,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         RenderTarget& target = _context.renderTarget(reflectRTID);
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
-            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
@@ -694,10 +694,10 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).texture();
                     viewPtr->_shader = _previewRenderTargetDepth;
                 } else {
-                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).texture();
                     viewPtr->_shader = _previewRenderTargetColour;
                 }
                 
@@ -764,7 +764,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
-            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+            viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).texture();
             viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
@@ -773,10 +773,10 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
         } else {
             if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
                 if (viewPtr->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).texture();
                     viewPtr->_shader = _previewRenderTargetDepth;
                 } else {
-                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                    viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).texture();
                     viewPtr->_shader = _previewRenderTargetColour;
                 }
             } 
@@ -812,7 +812,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
     }
 
     RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
-    mat->defaultReflectionTexture(rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture(),
+    mat->defaultReflectionTexture(rt->getAttachment(RTAttachment::Type::Colour, 0).texture(),
                                   _envProbes.front()->getRTIndex());
 }
 

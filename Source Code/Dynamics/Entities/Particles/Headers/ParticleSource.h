@@ -38,8 +38,8 @@ namespace Divide {
 
 class ParticleSource {
    public:
-    ParticleSource();
-    ParticleSource(F32 emitRate);
+    ParticleSource(GFXDevice& context);
+    ParticleSource(GFXDevice& context, F32 emitRate);
     virtual ~ParticleSource();
 
     virtual void emit(const U64 deltaTime, std::shared_ptr<ParticleData> p);
@@ -60,6 +60,7 @@ class ParticleSource {
 
    protected:
     F32 _emitRate;
+    GFXDevice& _context;
     vectorImpl<std::shared_ptr<ParticleGenerator> > _particleGenerators;
 };
 };

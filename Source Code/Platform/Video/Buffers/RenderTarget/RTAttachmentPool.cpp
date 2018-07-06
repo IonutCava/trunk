@@ -2,9 +2,29 @@
 
 #include "Headers/RTAttachmentPool.h"
 
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/Console.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+
+#include "Utility/Headers/Localization.h"
+
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
+
+namespace {
+    const char* getAttachmentName(RTAttachment::Type type) {
+        switch (type) {
+        case RTAttachment::Type::Colour:  return "Colour";
+        case RTAttachment::Type::Depth:   return "Depth";
+        case RTAttachment::Type::Stencil: return "Stencil";
+        };
+
+        return "ERROR";
+    };
+};
 
 RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, U8 colourAttCount)
     : _parent(parent)
@@ -25,28 +45,61 @@ void RTAttachmentPool::copy(const RTAttachmentPool& other) {
             const RTAttachment_ptr& att = other._attachment[i][j];
             if (att != nullptr) {
                 RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-                add(type, j, att->descriptor());
+                update(type, j, att->texture()->getDescriptor());
             }
         }
     }
 }
 
-void RTAttachmentPool::onClear() {
-
-}
-
-void RTAttachmentPool::add(RTAttachment::Type type,
-                           U8 index,
-                           const TextureDescriptor& descriptor) {
+RTAttachment_ptr& RTAttachmentPool::update(RTAttachment::Type type,
+                                           U8 index,
+                                           const TextureDescriptor& descriptor) {
 
     assert(index < to_U8(_attachment[to_U32(type)].size()));
 
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
-    assert(ptr == nullptr);
-
+    if (ptr != nullptr) {
+        // Replacing existing attachment
+        Console::d_printfn(Locale::get(_ID("WARNING_REPLACING_RT_ATTACHMENT")), 
+                           _parent.getGUID(),
+                           getAttachmentName(type),
+                           index);
+        // Just to be clear about our intentions
+        ptr.reset();
+    }
     ptr = std::make_shared<RTAttachment>();
-    ptr->fromDescriptor(descriptor);
+
+    ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
+                                                            _parent.getName().c_str(),
+                                                            getAttachmentName(type),
+                                                            index,
+                                                            _parent.getGUID()));
+    textureAttachment.setThreadedLoading(false);
+    textureAttachment.setPropertyDescriptor(descriptor);
+
+    GFXDevice& context = _parent.context();
+    ResourceCache& parentCache = context.parent().resourceCache();
+    Texture_ptr tex = CreateResource<Texture>(parentCache, textureAttachment);
+    assert(tex);
+
+    Texture::TextureLoadInfo info;
+    tex->loadData(info, NULL, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
+
+    ptr->texture(tex);
+
     _attachmentCount[to_U32(type)]++;
+
+    return ptr;
+}
+
+bool RTAttachmentPool::clear(RTAttachment::Type type, U8 index) {
+    RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
+    if (ptr != nullptr) {
+        ptr.reset();
+        return true;
+    }
+
+    return false;
 }
 
 RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index) {

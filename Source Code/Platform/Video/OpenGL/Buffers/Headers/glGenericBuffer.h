@@ -60,7 +60,7 @@ struct BufferParams {
 class glBufferImpl;
 class glGenericBuffer {
   public:
-      glGenericBuffer(const BufferParams& params);
+      glGenericBuffer(GFXDevice& context, const BufferParams& params);
       ~glGenericBuffer();
 
       inline glBufferImpl* impl() const { return _buffer; }

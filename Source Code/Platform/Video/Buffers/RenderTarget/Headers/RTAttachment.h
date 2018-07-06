@@ -53,14 +53,10 @@ class RTAttachment {
         RTAttachment();
         virtual ~RTAttachment();
 
-        const TextureDescriptor& descriptor() const;
-
         bool used() const;
         
         bool changed() const;
         void clearChanged();
-
-        void fromDescriptor(const TextureDescriptor& descriptor);
 
         void clearColour(const vec4<F32>& clearColour);
         const vec4<F32>& clearColour() const;
@@ -71,8 +67,8 @@ class RTAttachment {
         void writeLayer(U16 layer);
         U16  writeLayer() const;
 
-        const Texture_ptr& asTexture() const;
-        void setTexture(const Texture_ptr& tex);
+        const Texture_ptr& texture() const;
+        void texture(const Texture_ptr& tex);
 
         U32 binding() const;
         void binding(U32 binding);
@@ -82,10 +78,8 @@ class RTAttachment {
         U32  _binding;
         U16  _mipWriteLevel;
         U16  _writeLayer;
-        Texture_ptr _texture;
         vec4<F32> _clearColour;
-        vec2<U16> _mipMapLevel;
-        TextureDescriptor _descriptor;
+        Texture_ptr _texture;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(RTAttachment);

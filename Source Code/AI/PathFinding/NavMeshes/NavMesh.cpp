@@ -23,6 +23,7 @@ namespace Navigation {
 
 NavigationMesh::NavigationMesh(PlatformContext& context)
     : GUIDWrapper(),
+      _context(context),
       _buildJobGUID(-1)
 {
     ParamHandler& par = ParamHandler::instance();
@@ -74,7 +75,7 @@ bool NavigationMesh::unload() {
 
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
-        TaskHandle buildThread = GetTaskHandle(_buildJobGUID);
+        TaskHandle buildThread = GetTaskHandle(_context, _buildJobGUID);
         assert(buildThread._task);
         if (buildThread._task->jobIdentifier() == getGUID()) {
             buildThread._task->stopTask();
@@ -188,7 +189,8 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
 bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
-    CreateTask(getGUID(),
+    CreateTask(_context,
+               getGUID(),
                [this](const Task& parentTask) {
                    buildInternal(parentTask);
                }).startTask(Task::TaskPriority::HIGH);

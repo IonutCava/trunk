@@ -49,7 +49,6 @@ LoopTimingData::LoopTimingData() : _updateLoops(0),
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
-      _APP(parentApp),
       _platformContext(nullptr),
       _resCache(nullptr),
       _taskPool(Config::MAX_POOLED_TASKS),
@@ -67,6 +66,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
 {
     _platformContext = std::make_unique<PlatformContext>(
+        parentApp,
         std::make_unique<GFXDevice>(*this),              // Video
         std::make_unique<SFXDevice>(*this),              // Audio
         std::make_unique<PXDevice>(*this),               // Physics
@@ -117,14 +117,14 @@ void Kernel::idle() {
     if (freezeLoopTime != _timingData._freezeLoopTime) {
         _timingData._freezeLoopTime = freezeLoopTime;
         _timingData._currentTimeFrozen = _timingData._currentTime;
-        _APP.mainLoopPaused(_timingData._freezeLoopTime);
+        _platformContext->app().mainLoopPaused(_timingData._freezeLoopTime);
     }
 }
 
 void Kernel::onLoop() {
     if (!_timingData._keepAlive) {
         // exiting the rendering loop will return us to the last control point
-        _APP.mainLoopActive(false);
+        _platformContext->app().mainLoopActive(false);
         return;
     }
 
@@ -176,16 +176,16 @@ void Kernel::onLoop() {
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
-        _platformContext->gfx().endFrame(_APP.mainLoopActive());
+        _platformContext->gfx().endFrame(_platformContext->app().mainLoopActive());
         _platformContext->sfx().endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
         frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
         _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
 
-        _timingData._keepAlive = !_APP.ShutdownRequested() && _timingData._keepAlive;
+        _timingData._keepAlive = !_platformContext->app().ShutdownRequested() && _timingData._keepAlive;
     
-        ErrorCode err = _APP.errorCode();
+        ErrorCode err = _platformContext->app().errorCode();
 
         if (err != ErrorCode::NO_ERR) {
             Console::errorfn("Error detected: [ %s ]", getErrorCodeName(err));
@@ -265,7 +265,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         Camera::update(deltaTime);
     }
 
-    if (_APP.windowManager().getActiveWindow().minimized()) {
+    if (_platformContext->app().windowManager().getActiveWindow().minimized()) {
         idle();
         return true;
     }
@@ -344,7 +344,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     GFXDevice::setFrameInterpolationFactor(interpolationFactor);
     
     // Get input events
-    if (_APP.windowManager().getActiveWindow().hasFocus()) {
+    if (_platformContext->app().windowManager().getActiveWindow().hasFocus()) {
         _platformContext->input().update(_timingData._currentTimeDelta);
     } else {
         _sceneManager->onLostFocus();
@@ -620,7 +620,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     // Create mem log file
     const stringImpl& mem = config.debug.memFile;
-    _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
+    _platformContext->app().setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
     Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
 
     // Fullscreen is automatically calculated
@@ -629,7 +629,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     initRes[to_base(WindowType::SPLASH)].set(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
 
     bool startFullScreen = !config.runtime.windowedMode;
-    WindowManager& winManager = _APP.windowManager();
+    WindowManager& winManager = _platformContext->app().windowManager();
 
     ErrorCode initError = winManager.init(*_platformContext, _platformContext->gfx().getAPI(), initRes, startFullScreen, config.runtime.targetDisplay);
     if (initError != ErrorCode::NO_ERR) {

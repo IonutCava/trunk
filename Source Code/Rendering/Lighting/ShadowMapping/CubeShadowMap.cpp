@@ -25,7 +25,7 @@ CubeShadowMap::CubeShadowMap(GFXDevice& context, Light* light, const ShadowCamer
 
     for (U32 i = 0; i < 6; ++i) {
         GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
-        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Depth, 0).texture();
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData._intValues.push_back(std::make_pair("layer", _arrayOffset));
         shadow->_shaderData._intValues.push_back(std::make_pair("face", i));

@@ -121,7 +121,8 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                 buildBoundingBoxesForAnimCompleted(animationIndex);
             };
 
-            CreateTask(bbBuildStart, bbBuildComplete).startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
+            CreateTask(_context.parent().platformContext(), 
+                       bbBuildStart, bbBuildComplete).startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
                                                                                                        : Task::TaskPriority::REALTIME_WITH_CALLBACK);
         }
     }

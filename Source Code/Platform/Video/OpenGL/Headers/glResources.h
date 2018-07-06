@@ -105,7 +105,7 @@ enum class glObjectType : U8 {
 
 class glObject {
 public:
-    explicit glObject(glObjectType type);
+    explicit glObject(glObjectType type, GFXDevice& context);
 
     inline glObjectType type() const { return _type;  }
 

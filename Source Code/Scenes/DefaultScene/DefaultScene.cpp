@@ -3,6 +3,8 @@
 #include "Headers/DefaultScene.h"
 
 #include "GUI/Headers/GUIButton.h"
+
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 
@@ -83,7 +85,7 @@ void DefaultScene::postLoadMainThread() {
     _GUI->addButton(_ID_RT("Quit"), "Quit",
         vec2<I32>(resolution.width - quitButtonWidth * 1.5f, resolution.height - quitButtonHeight * 1.5f),
         vec2<U32>(quitButtonWidth, quitButtonHeight),
-        [](I64 btnGUID) {Application::instance().RequestShutdown(); });
+        [this](I64 btnGUID) { _context.app().RequestShutdown(); });
 
     _GUI->addButton(_ID_RT("AddPlayer"), "Add Player",
         vec2<I32>(0, resolution.height - playerButtonHeight * 1.5f),

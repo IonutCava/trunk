@@ -6,6 +6,7 @@
 #include "GUI/Headers/GUIText.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -23,11 +24,14 @@ namespace Divide {
 DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, ResourceCache& cache)
     : Renderer(context, cache, RendererType::RENDERER_DEFERRED_SHADING), _cachedLightCount(0)
 {
+
+    WindowManager& winManager = context.app().windowManager();
+
     _lightTexture = _context.gfx().newPB();
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(cache, deferred);
-    _deferredBuffer = _context.gfx().allocateRT("Deferred");
+    _deferredBuffer = _context.gfx().allocateRT(winManager.getActiveWindow().getDimensions(),  "Deferred");
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);
@@ -234,7 +238,7 @@ void DeferredShadingRenderer::secondPass(
 }
 
 void DeferredShadingRenderer::updateResolution(U16 width, U16 height) {
-    _deferredBuffer._rt->create(width, height);
+    _deferredBuffer._rt->resize(width, height);
 
     F32 widthF = to_F32(width);
     F32 heightF = to_F32(height);

@@ -89,7 +89,7 @@ void PingPongScene::serveBall(I64 btnGUID) {
 
     removeTask(g_gameTaskID);
 
-    g_gameTaskID = registerTask(CreateTask(getGUID(),DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER)));
+    g_gameTaskID = registerTask(CreateTask(platformContext(), getGUID(),DELEGATE_BIND(&PingPongScene::test, this, std::placeholders::_1, Random(4), CallbackParam::TYPE_INTEGER)));
 }
 
 void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {

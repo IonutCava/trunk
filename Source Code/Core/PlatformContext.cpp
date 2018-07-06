@@ -14,7 +14,8 @@
 
 namespace Divide {
 
-PlatformContext::PlatformContext(std::unique_ptr<GFXDevice> gfx,
+PlatformContext::PlatformContext(Application& app,
+                                 std::unique_ptr<GFXDevice> gfx,
                                  std::unique_ptr<SFXDevice> sfx,
                                  std::unique_ptr<PXDevice> pfx,
                                  std::unique_ptr<GUI> gui,
@@ -23,7 +24,8 @@ PlatformContext::PlatformContext(std::unique_ptr<GFXDevice> gfx,
                                  std::unique_ptr<Configuration> config,
                                  std::unique_ptr<LocalClient> client,
                                  std::unique_ptr<DebugInterface> debug)
-  : _gfx(std::move(gfx)),
+  : _app(app),
+    _gfx(std::move(gfx)),
     _sfx(std::move(sfx)),
     _pfx(std::move(pfx)),
     _gui(std::move(gui)),
@@ -52,6 +54,7 @@ void PlatformContext::terminate() {
 }
 
 void PlatformContext::idle() {
+    _app.idle();
     _gfx->idle();
     //_sfx->idle();
     _pfx->idle();

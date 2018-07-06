@@ -13,8 +13,7 @@ GUIText::GUIText(U64 guiID,
                  U32 fontSize)
     : GUIElement(guiID, parent, GUIType::GUI_TEXT),
       TextLabel(text, font, colour, fontSize),
-      _position(relativePosition),
-      _heightCache(0.0f)
+      _position(relativePosition)
 {
 }
 
@@ -29,11 +28,7 @@ void GUIText::draw(GFXDevice& context) const {
 }
 
 vec2<F32> GUIText::getPosition() const {
-    return vec2<F32>(_position.width, _heightCache - _position.height);
-}
-
-void GUIText::onChangeResolution(U16 w, U16 h) {
-    _heightCache = h;
+    return vec2<F32>(_position.width, _position.height);
 }
 
 // Return true if input was consumed

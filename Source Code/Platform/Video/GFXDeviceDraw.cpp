@@ -13,7 +13,9 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
@@ -334,19 +336,16 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
                 to_U8(ScreenTargets::ALBEDO));
 
 
+    GFX::Scoped2DRendering scoped2D(*this);
     GFX::ScopedViewport targetArea(*this, targetViewport);
 
     // Blit render target to screen
     draw(triangleCmd);
 
-
     // Render all 2D debug info and call API specific flush function
-    if (Application::instance().mainLoopActive()) {
-        GFX::Scoped2DRendering scoped2D(*this);
-        ReadLock r_lock(_2DRenderQueueLock);
-        for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
-            callbackFunction.second.second();
-        }
+    ReadLock r_lock(_2DRenderQueueLock);
+    for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
+        callbackFunction.second.second();
     }
 }
 

@@ -2,13 +2,18 @@
 
 #include "Headers/RTAttachment.h"
 
+#include "Headers/RenderTarget.h"
+
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
 RTAttachment::RTAttachment()
     : _clearColour(DefaultColours::WHITE()),
-      _descriptor(TextureDescriptor()),
       _texture(nullptr),
       _changed(false),
       _mipWriteLevel(0),
@@ -21,16 +26,13 @@ RTAttachment::~RTAttachment()
 {
 }
 
-const Texture_ptr& RTAttachment::asTexture() const {
+const Texture_ptr& RTAttachment::texture() const {
     return _texture;
 }
 
-void RTAttachment::setTexture(const Texture_ptr& tex) {
+void RTAttachment::texture(const Texture_ptr& tex) {
     _texture = tex;
-}
-
-const TextureDescriptor& RTAttachment::descriptor() const {
-    return _descriptor;
+    _changed = true;
 }
 
 bool RTAttachment::used() const {
@@ -55,12 +57,6 @@ U16 RTAttachment::writeLayer() const {
 
 bool RTAttachment::changed() const {
     return _changed;
-}
-
-void RTAttachment::fromDescriptor(const TextureDescriptor& descriptor) {
-    _descriptor = descriptor;
-
-    _changed = true;
 }
 
 void RTAttachment::clearColour(const vec4<F32>& clearColour) {

@@ -41,7 +41,7 @@ namespace Divide {
 
 class glHardwareQuery : public glObject {
 public:
-    glHardwareQuery();
+    explicit glHardwareQuery(GFXDevice& context);
     ~glHardwareQuery();
 
     void create();
@@ -59,7 +59,7 @@ protected:
 class glHardwareQueryRing : public RingBuffer {
 
 public:
-    glHardwareQueryRing(U32 queueLength, U32 id = 0);
+    glHardwareQueryRing(GFXDevice& context, U32 queueLength, U32 id = 0);
     ~glHardwareQueryRing();
 
     glHardwareQuery& readQuery();
@@ -74,7 +74,8 @@ public:
 protected:
     U32 _id;
     bool _needRefresh;
-    vectorImpl<glHardwareQuery> _queries;
+    GFXDevice& _context;
+    vectorImpl<std::shared_ptr<glHardwareQuery>> _queries;
 };
 
 };

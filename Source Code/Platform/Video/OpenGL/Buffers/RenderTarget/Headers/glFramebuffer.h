@@ -45,12 +45,14 @@ class glFramebuffer : public RenderTarget,
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    glFramebuffer(GFXDevice& context, const stringImpl& name);
+    explicit glFramebuffer(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name);
     ~glFramebuffer();
 
     void copy(const RenderTarget& other) override;
 
-    bool create(U16 width, U16 height) override;
+    bool create() override;
+
+    bool resize(U16 width, U16 height) override;
 
     const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const override;
 
@@ -97,9 +99,6 @@ class glFramebuffer : public RenderTarget,
     void prepareBuffers(const RTDrawDescriptor& drawPolicy);
 
     void initAttachment(RTAttachment::Type type, U8 index);
-    void initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount);
-
-    void updateDescriptor(RTAttachment::Type type, U8 index);
 
     void toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state);
 

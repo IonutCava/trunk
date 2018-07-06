@@ -44,9 +44,14 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
-    _previousLuminance = _context.allocateRT("PreviousLuminance");
-    _currentLuminance = _context.allocateRT("Luminance");
-    _postFXOutput = _context.allocateRT("PostFXOutput");
+    const RenderTarget& rt = inputRT();
+    // make the texture square sized and power of two
+    U16 lumaRez = to_U16(nextPOW2(to_U32(rt.getWidth() / 3.0f)));
+    
+    _previousLuminance = _context.allocateRT(vec2<U16>(1), "PreviousLuminance");
+    _currentLuminance = _context.allocateRT(vec2<U16>(lumaRez), "Luminance");
+
+    _postFXOutput = _context.allocateRT(vec2<U16>(rt.getWidth(), rt.getHeight()), "PostFXOutput");
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
@@ -58,6 +63,7 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     outputDescriptor.setSampler(screenSampler);
     //Colour0 holds the LDR screen texture
     _postFXOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
+    _postFXOutput._rt->create();
 
     SamplerDescriptor lumaSampler;
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -69,11 +75,13 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     lumaDescriptor.setSampler(lumaSampler);
     lumaDescriptor.toggleAutomaticMipMapGeneration(false);
     _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
+    _currentLuminance._rt->create();
 
     lumaSampler.setFilters(TextureFilter::LINEAR);
     lumaDescriptor.setSampler(lumaSampler);
     _previousLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
     _previousLuminance._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
+    _previousLuminance._rt->create();
 
     // Order is very important!
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
@@ -182,16 +190,17 @@ void PreRenderBatch::execute(const FilterStack& stack) {
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {
-    U16 lumaRez = to_U16(nextPOW2(to_U32(width / 3.0f)));
     // make the texture square sized and power of two
-    _currentLuminance._rt->create(lumaRez, lumaRez);
-    _previousLuminance._rt->create(1, 1);
+    U16 lumaRez = to_U16(nextPOW2(to_U32(width / 3.0f)));
+
+    _currentLuminance._rt->resize(lumaRez, lumaRez);
+    _previousLuminance._rt->resize(1, 1);
 
     _toneMap->Uniform("luminanceMipLevel",
                       _currentLuminance
                       ._rt
                       ->getAttachment(RTAttachment::Type::Colour, 0)
-                      .asTexture()
+                      .texture()
                       ->getMaxMipLevel());
 
     for (OperatorBatch& batch : _operators) {
@@ -202,6 +211,6 @@ void PreRenderBatch::reshape(U16 width, U16 height) {
         }
     }
 
-    _postFXOutput._rt->create(width, height);
+    _postFXOutput._rt->resize(width, height);
 }
 };

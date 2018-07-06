@@ -174,7 +174,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     //_root->sgnUpdate(deltaTime, sceneState);
 
     if (_loadComplete) {
-        CreateTask(
+        CreateTask(parentScene().platformContext(),
             [this, deltaTime](const Task& parentTask) mutable
             {
                 _octreeUpdating = true;
@@ -206,7 +206,7 @@ void SceneGraph::onCameraUpdate(const Camera& camera) {
         _root->forEachChild(perChildCull, start, end);
     };
 
-    parallel_for(updateCamera, childCount, s_nodesPerThread, Task::TaskPriority::MAX);
+    parallel_for(parentScene().platformContext(), updateCamera, childCount, s_nodesPerThread, Task::TaskPriority::MAX);
 }
 
 void SceneGraph::onCameraChange(const Camera& camera) {

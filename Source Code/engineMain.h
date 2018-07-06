@@ -53,8 +53,8 @@ private:
     Engine& operator=(const Engine&) = delete;
 
 private:
-    Application& _app;
     int _errorCode;
+    std::unique_ptr<Application> _app;
     StreamBuffer* _outputStreams[2];
 };
 

@@ -42,9 +42,13 @@ class ParticleVelocityColourUpdater final : public ParticleUpdater {
     vec4<F32> _maxVel;
 
    public:
-    ParticleVelocityColourUpdater() { _maxVel.set(1.0f); }
+    ParticleVelocityColourUpdater(GFXDevice& context) : ParticleUpdater(context), _maxVel(1.0f)
+    {
+    }
 
-    ~ParticleVelocityColourUpdater() {}
+    ~ParticleVelocityColourUpdater()
+    {
+    }
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

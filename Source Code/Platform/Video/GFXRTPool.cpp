@@ -43,7 +43,7 @@ void GFXRTPool::clear() {
 void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
     for (RenderTarget* rt : _renderTargets[to_U32(target)]) {
         if (rt) {
-            rt->create(width, height);
+            rt->resize(width, height);
         }
     }
 }

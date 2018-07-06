@@ -35,7 +35,7 @@ void PreRenderOperator::cacheDisplaySettings(const GFXDevice& context) {
 
 void PreRenderOperator::reshape(U16 width, U16 height) {
     if (_samplerCopy._rt) {
-        _samplerCopy._rt->create(width, height);
+        _samplerCopy._rt->resize(width, height);
     }
 }
 

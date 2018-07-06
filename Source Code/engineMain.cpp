@@ -34,8 +34,9 @@ private:
     std::ofstream _buf;
 };
 
-Engine::Engine() :_app(Application::instance()),
-                  _errorCode(0)
+Engine::Engine() 
+    : _errorCode(0),
+      _app(std::make_unique<Application>())
 {
     std::set_new_handler(out_of_memory);
     _outputStreams[0] = new StreamBuffer(OUTPUT_LOG_FILE);
@@ -60,7 +61,7 @@ bool Engine::init(int argc, char** argv) {
     } else {
         // Start our application based on XML configuration.
         // If it fails to start, it should automatically clear up all of its data
-        err = _app.start("main.xml", argc, argv);
+        err = _app->start("main.xml", argc, argv);
         if (err != ErrorCode::NO_ERR) {
             // If any error occurred, close the application as details should
             // already be logged
@@ -76,7 +77,7 @@ bool Engine::init(int argc, char** argv) {
 }
 
 void Engine::shutdown() {
-    _app.stop();
+    _app->stop();
 
     if (!PlatformClose()) {
         _errorCode = to_I32(ErrorCode::PLATFORM_CLOSE_ERROR);
@@ -86,7 +87,7 @@ void Engine::shutdown() {
 bool Engine::step() {
     assert(_errorCode == 0);
         
-    return _app.step();
+    return _app->step();
 }
 
 int Engine::errorCode() const {

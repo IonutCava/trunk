@@ -4,10 +4,14 @@
 #include "Headers/glHardwareQuery.h"
 
 #include "GUI/Headers/GUI.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+
 #include "Utility/Headers/Localization.h"
+
 
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -115,7 +119,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
-    const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
+    const DisplayWindow& window = _context.parent().platformContext().app().windowManager().getActiveWindow();
     ErrorCode errorState = createGLContext(window);
     if (errorState != ErrorCode::NO_ERR) {
         return errorState;
@@ -128,6 +132,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     }
 
     glbinding::Binding::useCurrentContext();
+
+    if (s_hardwareQueryPool == nullptr) {
+        s_hardwareQueryPool = MemoryManager_NEW glHardwareQueryPool(_context);
+    }
 
     // OpenGL has a nifty error callback system, available in every build
     // configuration if required
@@ -327,7 +335,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Initialize our VAO pool
     GL_API::s_vaoPool.init(g_maxVAOS);
     // Initialize our query pool
-    GL_API::s_hardwareQueryPool.init(g_maxQueryRings);
+    GL_API::s_hardwareQueryPool->init(g_maxQueryRings);
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
     // We need a dummy VAO object for point rendering
@@ -339,7 +347,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         // We have multiple counter buffers, and each can be multi-buffered
         // (currently, only double-buffered, front and back)
         // to avoid pipeline stalls
-        for (glHardwareQueryRing* queryRing : _hardwareQueries) {
+        for (std::shared_ptr<glHardwareQueryRing>& queryRing : _hardwareQueries) {
             queryRing->initQueries();
         }
     }
@@ -395,11 +403,13 @@ void GL_API::closeRenderingAPI() {
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     GL_API::s_vaoPool.destroy();
-    GL_API::s_hardwareQueryPool.destroy();
+    GL_API::s_hardwareQueryPool->destroy();
+    MemoryManager::DELETE(s_hardwareQueryPool);
+
     destroyGLContext();
 }
 
-void GL_API::createOrValidateContextForCurrentThread() {
+void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
     if (Runtime::isMainThread() || glbinding::getCurrentContext() != 0) {
         return;
     }
@@ -413,7 +423,7 @@ void GL_API::createOrValidateContextForCurrentThread() {
         bool ctxFound = g_ContextPool.getAvailableContext(GLUtil::_glSecondaryContext);
         assert(ctxFound && "GL_API::syncToThread: context not found for current thread!");
         ACKNOWLEDGE_UNUSED(ctxFound);
-        const DisplayWindow& window = Application::instance().windowManager().getActiveWindow();
+        const DisplayWindow& window = context.parent().platformContext().app().windowManager().getActiveWindow();
         SDL_GL_MakeCurrent(window.getRawWindow(), GLUtil::_glSecondaryContext);
         glbinding::Binding::initialize(false);
         // Enable OpenGL debug callbacks for this context as well

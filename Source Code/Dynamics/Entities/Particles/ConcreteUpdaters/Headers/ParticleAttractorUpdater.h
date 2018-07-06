@@ -42,9 +42,13 @@ class ParticleAttractorUpdater final : public ParticleUpdater {
     vectorImpl<vec4<F32>> _attractors;
 
    public:
-    ParticleAttractorUpdater() {}
+    ParticleAttractorUpdater(GFXDevice& context) : ParticleUpdater(context)
+    {
+    }
 
-    ~ParticleAttractorUpdater() {}
+    ~ParticleAttractorUpdater()
+    {
+    }
 
     void update(const U64 deltaTime, ParticleData& p) override;
 

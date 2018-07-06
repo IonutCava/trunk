@@ -16,8 +16,10 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "GUI/Headers/GUIText.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Utility/Headers/Localization.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -73,13 +75,13 @@ GL_API::GL_API(GFXDevice& context)
 
     _hardwareQueries.reserve(g_performanceQueryCount);
     for (U32 i = 0; i < g_performanceQueryCount; ++i) {
-        _hardwareQueries.emplace_back(MemoryManager_NEW glHardwareQueryRing(g_performanceQueryRingLength));
+        _hardwareQueries.emplace_back(std::make_shared<glHardwareQueryRing>(context, g_performanceQueryRingLength));
     }
 }
 
 GL_API::~GL_API()
 {
-    MemoryManager::DELETE_VECTOR(_hardwareQueries);
+    _hardwareQueries.clear();
 }
 
 /// FontStash library initialization
@@ -117,7 +119,7 @@ void GL_API::endFrame(bool swapBuffers) {
     // Swap buffers
     if (swapBuffers) {
         Time::ScopedTimer time(_swapBufferTimer);
-        SDL_GL_SwapWindow(Application::instance().windowManager().getActiveWindow().getRawWindow());
+        SDL_GL_SwapWindow(_context.parent().platformContext().app().windowManager().getActiveWindow().getRawWindow());
     }
 
     // End the timing query started in beginFrame() in debug builds

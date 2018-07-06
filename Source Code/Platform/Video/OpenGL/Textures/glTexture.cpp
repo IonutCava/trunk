@@ -24,7 +24,7 @@ glTexture::glTexture(GFXDevice& context,
                      const TextureDescriptor& texDescriptor)
 
     : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor),
-      glObject(glObjectType::TYPE_TEXTURE),
+      glObject(glObjectType::TYPE_TEXTURE, context),
      _lockManager(MemoryManager_NEW glLockManager())
 {
     GL_API::getOrCreateSamplerObject(_descriptor.getSampler());
@@ -62,7 +62,7 @@ bool glTexture::unload() {
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
     if (_asyncLoad) {
-        GL_API::createOrValidateContextForCurrentThread();
+        GL_API::createOrValidateContextForCurrentThread(_context);
     }
 
     Texture::threadedLoad(onLoadCallback);
@@ -85,8 +85,8 @@ void glTexture::setMipRangeInternal(U16 base, U16 max) {
 }
 
 void glTexture::resize(const bufferPtr ptr,
-                       const vec2<U16>& dimensions,
-                       const vec2<U16>& mipLevels) {
+                       const vec2<U16>& dimensions) {
+
     U32 textureID = _textureData.getHandleHigh();
     if (textureID > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
@@ -97,6 +97,10 @@ void glTexture::resize(const bufferPtr ptr,
         glDeleteTextures(1, &textureID);
         textureID = tempHandle;
     }
+
+    vec2<U16> mipLevels(0, _descriptor.getSampler().generateMipMaps()
+                                ? 1 + Texture::computeMipCount(_width, _height)
+                                : 1);
 
     _textureData.setHandleHigh(textureID);
     _allocatedStorage = false;

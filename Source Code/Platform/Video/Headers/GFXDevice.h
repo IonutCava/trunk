@@ -317,12 +317,12 @@ public:  // Accessors and Mutators
         _rtPool->set(target, newTarget);
     }
 
-    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const stringImpl& name) {
-        return _rtPool->add(targetUsage, newRT(name));
+    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const vec2<U16>& resolution, const stringImpl& name) {
+        return _rtPool->add(targetUsage, newRT(resolution, name));
     }
 
-    inline RenderTargetHandle allocateRT(const stringImpl& name) {
-        return allocateRT(RenderTargetUsage::OTHER, name);
+    inline RenderTargetHandle allocateRT(const vec2<U16>& resolution, const stringImpl& name) {
+        return allocateRT(RenderTargetUsage::OTHER, resolution, name);
     }
 
     inline bool deallocateRT(RenderTargetHandle& handle) {
@@ -397,7 +397,7 @@ public:  // Direct API calls
 
 protected:
     friend class GFXRTPool;
-    RenderTarget* newRT(const stringImpl& name) const;
+    RenderTarget* newRT(const vec2<U16>& resolution, const stringImpl& name) const;
 
     void drawDebugFrustum(RenderSubPassCmds& subPassesInOut);
 

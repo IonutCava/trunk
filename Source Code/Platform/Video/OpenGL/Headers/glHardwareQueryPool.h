@@ -38,7 +38,7 @@ namespace Divide {
 
 class glHardwareQueryPool {
 public:
-    glHardwareQueryPool();
+    glHardwareQueryPool(GFXDevice& context);
     ~glHardwareQueryPool();
 
     void init(U32 size);
@@ -50,6 +50,7 @@ public:
 private:
     vectorImpl<glHardwareQueryRing*> _queryPool;
     U32 _index;
+    GFXDevice& _context;
 };
 
 }; //namespace Divide

@@ -196,9 +196,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void onChangeRenderResolution(U16 w, U16 h) const;
 
    private:
-
-    Application& _APP;
-
     std::unique_ptr<ResourceCache>     _resCache;
     std::unique_ptr<PlatformContext>   _platformContext;
     std::unique_ptr<SceneManager>      _sceneManager;

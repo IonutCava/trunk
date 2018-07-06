@@ -5,6 +5,7 @@
 
 #include "GUI/Headers/GUIMessageBox.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
@@ -54,9 +55,8 @@ void WarScene::checkGameCompletion() {
                 _timeLimitMinutes = 5;
                 _runCount = 2;
                 restartGame = true;
-            }
-            else if (_runCount == 2) {
-                Application::instance().RequestShutdown();
+            } else if (_runCount == 2) {
+                _context.app().RequestShutdown();
             }
         }
     }
@@ -77,7 +77,7 @@ void WarScene::checkGameCompletion() {
                 _runCount = 2;
             }
             else if (_runCount == 2) {
-                Application::instance().RequestShutdown();
+                _context.app().RequestShutdown();
             }
         }
         restartGame = true;

@@ -76,13 +76,10 @@ class GUIText : public GUIElement, public TextLabel {
     bool onMouseUp(const GUIEvent& event) override;
     // Return true if input was consumed
     bool onMouseDown(const GUIEvent& event) override;
-    void onChangeResolution(U16 w, U16 h);
+
     vec2<F32> getPosition() const;
-protected:
-    inline void initialHeightCache(F32 height) { _heightCache = height; }
 
 private:
-    F32 _heightCache;
     vec2<F32> _position;
 };
 

@@ -227,7 +227,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
     params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
     params._data = data;
 
-    glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(params);
+    glGenericBuffer* tempBuffer = MemoryManager_NEW glGenericBuffer(_context, params);
     _bufferObjects[buffer] = tempBuffer;
 
     // if "setFeedbackBuffer" was called before "create"

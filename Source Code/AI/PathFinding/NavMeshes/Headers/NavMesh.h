@@ -226,6 +226,8 @@ class NavigationMesh : public GUIDWrapper /*,public SceneObject */ {
     RenderMode _renderMode;
     /// DebugDraw interface
     NavMeshDebugDraw* _debugDrawInterface;
+
+    PlatformContext& _context;
 };
 
 namespace Attorney {

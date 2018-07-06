@@ -154,7 +154,7 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
 }
 
 void RenderQueue::sort() {
-    TaskPool& pool = Application::instance().kernel().taskPool();
+    TaskPool& pool = _context.parent().taskPool();
     TaskHandle sortTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     for (RenderBin* renderBin : _activeBins) {
         if (!renderBin->empty()) {

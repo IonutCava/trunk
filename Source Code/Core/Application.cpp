@@ -60,7 +60,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
         }
         // Create a new kernel
         assert(_kernel == nullptr);
-        _kernel = MemoryManager_NEW Kernel(argc, argv, this->instance());
+        _kernel = MemoryManager_NEW Kernel(argc, argv, *this);
 
         // and load it via an XML file config
         err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
@@ -121,6 +121,10 @@ void Application::warmup() {
     Attorney::KernelApplication::warmup(*_kernel);
     //Restore to normal window
     _windowManager.getActiveWindow().previousType();
+}
+
+void Application::idle() {
+
 }
 
 bool Application::step() {

@@ -93,7 +93,7 @@ class ParticleData {
         return _isBillboarded;
     }
    public:
-    explicit ParticleData(U32 particleCount, U32 optionsMask);
+    explicit ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask);
     ~ParticleData();
 
     void generateParticles(U32 particleCount, U32 optionsMask);
@@ -116,6 +116,8 @@ class ParticleData {
     vectorImpl<vec3<F32>> _particleGeometryVertices;
     vectorImpl<U32> _particleGeometryIndices;
     PrimitiveType _particleGeometryType;
+
+    GFXDevice& _context;
 };
 
 };  // namespace Divide

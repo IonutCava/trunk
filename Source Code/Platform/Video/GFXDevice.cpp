@@ -6,6 +6,8 @@
 
 #include "Core/Headers/TaskPool.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Core/Headers/PlatformContext.h"
+
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
@@ -184,11 +186,11 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = (colourAttachment.descriptor().isCubeTexture());
+        isValidFB = (colourAttachment.texture()->getDescriptor().isCubeTexture());
     } else {
         // We don't have a colour attachment, so we require a cube map depth
         // attachment
-        isValidFB = hasDepth && depthAttachment.descriptor().isCubeTexture();
+        isValidFB = hasDepth && depthAttachment.texture()->getDescriptor().isCubeTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -265,10 +267,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     bool isValidFB = true;
     if (hasColour) {
         // We only need the colour attachment
-        isValidFB = colourAttachment.descriptor().isArrayTexture();
+        isValidFB = colourAttachment.texture()->getDescriptor().isArrayTexture();
     } else {
         // We don't have a colour attachment, so we require a cube map depth attachment
-        isValidFB = hasDepth && depthAttachment.descriptor().isArrayTexture();
+        isValidFB = hasDepth && depthAttachment.texture()->getDescriptor().isArrayTexture();
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -310,7 +312,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 }
 
 void GFXDevice::increaseResolution() {
-    const WindowManager& winManager = Application::instance().windowManager();
+    WindowManager& winManager = _parent.platformContext().app().windowManager();
     const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
 
@@ -320,18 +322,17 @@ void GFXDevice::increaseResolution() {
 
         if (resolution.width < tempResolution.width &&
             resolution.height < tempResolution.height) {
-            WindowManager& winMgr = Application::instance().windowManager();
-            winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
-                                     winMgr.getActiveWindow().getGUID(),
-                                     to_I32(tempResolution.width),
-                                     to_I32(tempResolution.height));
+            winManager.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
+                                         winManager.getActiveWindow().getGUID(),
+                                         to_I32(tempResolution.width),
+                                         to_I32(tempResolution.height));
             return;
         }
     }
 }
 
 void GFXDevice::decreaseResolution() {
-    const WindowManager& winManager = Application::instance().windowManager();
+    WindowManager& winManager = _parent.platformContext().app().windowManager();
     const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
     const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
     
@@ -340,18 +341,18 @@ void GFXDevice::decreaseResolution() {
         const vec2<U16>& tempResolution = it->_resolution;
         if (resolution.width > tempResolution.width &&
             resolution.height > tempResolution.height) {
-            WindowManager& winMgr = Application::instance().windowManager();
-            winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
-                                     winMgr.getActiveWindow().getGUID(),
-                                     to_I32(tempResolution.width),
-                                     to_I32(tempResolution.height));
+            winManager.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
+                                         winManager.getActiveWindow().getGUID(),
+                                         to_I32(tempResolution.width),
+                                         to_I32(tempResolution.height));
             return;
         }
     }
 }
 
 void GFXDevice::toggleFullScreen() {
-    WindowManager& winManager = Application::instance().windowManager();
+    WindowManager& winManager = _parent.platformContext().app().windowManager();
+
     switch (winManager.getActiveWindow().type()) {
         case WindowType::WINDOW:
         case WindowType::SPLASH:
@@ -388,12 +389,7 @@ void GFXDevice::onChangeResolution(U16 w, U16 h) {
     _rtPool->resizeTargets(RenderTargetUsage::REFRACTION_CUBE, reflectRes, reflectRes);
 
     for (Texture_ptr& tex : _prevDepthBuffers) {
-        vec2<U16> mipLevel(0,
-            tex->getDescriptor().getSampler().generateMipMaps()
-            ? 1 + Texture::computeMipCount(w, h)
-            : 1);
-
-        tex->resize(NULL, vec2<U16>(w, h), mipLevel);
+        tex->resize(NULL, vec2<U16>(w, h));
     }
 
     // Update post-processing render targets and buffers
@@ -602,7 +598,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
     // Skip invalid callbacks
     if (callback) {
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
-            CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH);
+            CreateTask(parent().platformContext(), callback)._task->startTask(Task::TaskPriority::HIGH);
         } else {
             if (Runtime::isMainThread()) {
                 callback(mainTask);
@@ -653,7 +649,7 @@ void GFXDevice::constructHIZ(RenderTarget& depthBuffer) {
     vec4<I32> previousViewport(_viewport.top());
 
     // Bind the depth texture to the first texture unit
-    Texture_ptr depth = screenTarget.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+    Texture_ptr depth = screenTarget.getAttachment(RTAttachment::Type::Depth, 0).texture();
     if (depth->getDescriptor().automaticMipMapGeneration()) {
         return;
     }

@@ -400,7 +400,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
     if (Runtime::isMainThread()) {
         emitter->initData(data);
     } else {
-        Application::instance().mainThreadTask([&emitter, &data] { emitter->initData(data); });
+        _context.app().mainThreadTask([&emitter, &data] { emitter->initData(data); });
     }
 
     return parentNode.addNode(emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
@@ -577,7 +577,7 @@ U16 Scene::registerInputActions() {
         state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
     };
     auto rendererDebugView = [this](InputParams param) {_context.gfx().getRenderer().toggleDebugView();};
-    auto shutdown = [](InputParams param) {Application::instance().RequestShutdown();};
+    auto shutdown = [this](InputParams param) { _context.app().RequestShutdown();};
     auto povNavigation = [this](InputParams param) {
         if (param._var[0] & OIS::Pov::North) {  // Going up
             state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
@@ -969,9 +969,18 @@ bool Scene::mouseMoved(const Input::MouseEvent& arg) {
     // ToDo: Use mapping between device ID an player index -Ionut
     U8 playerIndex = getPlayerIndexForDevice(arg._deviceIndex);
 
-    return _scenePlayers[playerIndex]->getCamera().moveRelative(vec3<I32>(arg._event.state.X.rel,
-                                                                          arg._event.state.Y.rel,
-                                                                          arg._event.state.Z.rel));
+    Camera& cam = _scenePlayers[playerIndex]->getCamera();
+    if (cam.moveRelative(vec3<I32>(arg._event.state.X.rel,
+                                   arg._event.state.Y.rel,
+                                   arg._event.state.Z.rel)))
+    {
+        if (cam.getType() == Camera::CameraType::THIRD_PERSON) {
+            _context.app().snapCursorToCenter();
+        }
+        return true;
+    }
+
+    return false;
 }
 
 bool Scene::updateCameraControls(U8 playerIndex) {
@@ -1161,7 +1170,7 @@ bool Scene::checkCameraUnderwater(U8 playerIndex) const {
 void Scene::findHoverTarget(U8 playerIndex) {
     const Camera& crtCamera = getPlayerForIndex(playerIndex)->getCamera();
 
-    const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& displaySize = _context.app().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
     const vec2<I32>& aimPos = state().playerState(playerIndex).aimPos();
 

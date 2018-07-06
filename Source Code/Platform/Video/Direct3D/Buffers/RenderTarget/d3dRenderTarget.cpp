@@ -5,8 +5,8 @@
 namespace Divide {
 
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dRenderTarget, 0, 0)
-d3dRenderTarget::d3dRenderTarget(GFXDevice& context, const stringImpl& name)
-    : RenderTarget(context, name)
+d3dRenderTarget::d3dRenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name)
+    : RenderTarget(context, resolution, name)
 {
 }
 
@@ -18,7 +18,9 @@ void d3dRenderTarget::copy(const RenderTarget& other) {
     RenderTarget::copy(other);
 }
 
-bool d3dRenderTarget::create(U16 width, U16 height) { return true; }
+bool d3dRenderTarget::create() { return true; }
+
+bool d3dRenderTarget::resize(U16 width, U16 height) { return create(); }
 
 void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}
 

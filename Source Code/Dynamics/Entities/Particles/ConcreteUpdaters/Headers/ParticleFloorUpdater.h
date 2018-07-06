@@ -42,9 +42,13 @@ class ParticleFloorUpdater final : public ParticleUpdater {
     F32 _bounceFactor;
 
    public:
-    ParticleFloorUpdater() : _floorY(0.0f), _bounceFactor(0.5f) {}
+    ParticleFloorUpdater(GFXDevice& context) : ParticleUpdater(context), _floorY(0.0f), _bounceFactor(0.5f)
+    {
+    }
 
-    ~ParticleFloorUpdater() {}
+    ~ParticleFloorUpdater()
+    {
+    }
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

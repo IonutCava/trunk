@@ -41,7 +41,7 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
 
     for (U32 i = 0; i < _numSplits; ++i) {
         GFXDevice::DebugView_ptr shadow = std::make_shared<GFXDevice::DebugView>();
-        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+        shadow->_texture = getDepthMap().getAttachment(RTAttachment::Type::Colour, 0).texture();
         shadow->_shader = _previewDepthMapShader;
         shadow->_shaderData._intValues.push_back(std::make_pair("layer", i + _arrayOffset));
         _context.addDebugView(shadow);
@@ -66,10 +66,12 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     blurMapDescriptor.setLayerCount(Config::Lighting::MAX_SPLITS_PER_LIGHT);
     blurMapDescriptor.setSampler(blurMapSampler);
     
-    _blurBuffer = _context.allocateRT("CSM_Blur");
+    const RenderTarget& depthMap = getDepthMap();
+
+    _blurBuffer = _context.allocateRT(vec2<U16>(depthMap.getWidth(), depthMap.getHeight()), "CSM_Blur");
     _blurBuffer._rt->addAttachment(blurMapDescriptor, RTAttachment::Type::Colour, 0);
     _blurBuffer._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
-
+    _blurBuffer._rt->create();
     STUBBED("Migrate to this: http://www.ogldev.org/www/tutorial49/tutorial49.html");
 }
 
@@ -81,7 +83,7 @@ CascadedShadowMaps::~CascadedShadowMaps()
 void CascadedShadowMaps::init(ShadowMapInfo* const smi) {
     _numSplits = smi->numLayers();
     const RenderTarget& depthMap = getDepthMap();
-    _blurBuffer._rt->create(depthMap.getWidth(), depthMap.getHeight());
+
     _horizBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH");
     _vertBlur = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
 

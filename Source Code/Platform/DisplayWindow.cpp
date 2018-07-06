@@ -101,7 +101,7 @@ void DisplayWindow::update() {
         {
             case SDL_QUIT: {
                 SDL_HideWindow(_mainWindow);
-                Application::instance().RequestShutdown();
+                _context.app().RequestShutdown();
             } break;
             case SDL_WINDOWEVENT: {
                 switch (event.window.event) {

@@ -47,9 +47,12 @@ public:
 
     void copy(const RTAttachmentPool& other);
 
-    void add(RTAttachment::Type type,
-        U8 index,
-        const TextureDescriptor& descriptor);
+    RTAttachment_ptr& update(RTAttachment::Type type,
+                             U8 index,
+                             const TextureDescriptor& descriptor);
+
+    // Return true if the attachment was used. False if the call had no effect
+    bool clear(RTAttachment::Type type, U8 index);
 
     RTAttachment_ptr& get(RTAttachment::Type type, U8 index);
     const RTAttachment_ptr& get(RTAttachment::Type type, U8 index) const;
@@ -57,8 +60,6 @@ public:
     void get(RTAttachment::Type type, vectorImpl<RTAttachment_ptr>& attachments) const;
 
     U8 attachmentCount(RTAttachment::Type type) const;
-
-    void onClear();
 
 private:
     RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachment::Type type, U8 index);

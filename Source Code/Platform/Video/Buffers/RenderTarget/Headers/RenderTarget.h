@@ -83,7 +83,7 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     };
 
    protected:
-    explicit RenderTarget(GFXDevice& context, const stringImpl& name);
+    explicit RenderTarget(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name);
 
    public:
     virtual ~RenderTarget();
@@ -94,9 +94,10 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     static RTDrawDescriptor& defaultPolicyKeepDepth();
     static RTDrawDescriptor& defaultPolicyDepthOnly();
 
-    /// If the FB is not initialized, it gets created, otherwise
-    /// the attachments get resized.
-    virtual bool create(U16 width, U16 height) = 0;
+    /// Bake in all settings and attachments to prepare it for rendering
+    virtual bool create() = 0;
+    /// Resize all attachments
+    virtual bool resize(U16 width, U16 height) = 0;
 
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
 
@@ -113,7 +114,7 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
-    const TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
+    void addAttachment(const RTAttachment& attachment, RTAttachment::Type type, U8 index);
     void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);

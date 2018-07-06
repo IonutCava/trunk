@@ -11,37 +11,38 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
-
-namespace {
-    const char* getAttachmentName(RTAttachment::Type type) {
-        switch(type) {
-            case RTAttachment::Type::Colour  : return "Colour";
-            case RTAttachment::Type::Depth   : return "Depth";
-            case RTAttachment::Type::Stencil : return "Stencil";
-        };
-
-        return "ERROR";
-    };
-};
 
 bool glFramebuffer::_bufferBound = false;
 bool glFramebuffer::_zWriteEnabled = true;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
-glFramebuffer::glFramebuffer(GFXDevice& context, const stringImpl& name)
-    : RenderTarget(context, name),
-      glObject(glObjectType::TYPE_FRAMEBUFFER),
+glFramebuffer::glFramebuffer(GFXDevice& context, const vec2<U16>& resolution, const stringImpl& name)
+    : RenderTarget(context, resolution, name),
+      glObject(glObjectType::TYPE_FRAMEBUFFER, context),
       _resolveBuffer(nullptr),
       _resolved(false),
       _isLayeredDepth(false),
       _activeDepthBuffer(false),
       _framebufferHandle(0)
 {
+    glCreateFramebuffers(1, &_framebufferHandle);
+    _resolved = false;
+    _isLayeredDepth = false;
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
+        glObjectLabel(GL_FRAMEBUFFER,
+                      _framebufferHandle,
+                      -1,
+                      Util::StringFormat("DVD_FB_%d", _framebufferHandle).c_str());
+    }
+
     // Everything disabled so that the initial "begin" will override this
     _previousPolicy.drawMask().disableAll();
     _previousPolicy.stateMask(0);
@@ -58,66 +59,35 @@ glFramebuffer::~glFramebuffer()
 
 void glFramebuffer::copy(const RenderTarget& other) {
     RenderTarget::copy(other);
-    create(other.getWidth(), other.getHeight());
+    create();
 }
 
-void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
-    const RTAttachment_ptr& attachment = _attachmentPool->get(type, index);
 
-    if (!attachment->used() && !attachment->changed()) {
-        return;
-    }
-
-    // If this is a multisampled FBO, create a resolve buffer
-    TextureType texType = attachment->descriptor().type();
-    if ((type == RTAttachment::Type::Colour && index == 0) || type == RTAttachment::Type::Depth) {
-        if (texType == TextureType::TEXTURE_2D_MS || texType == TextureType::TEXTURE_2D_ARRAY_MS) {
-            if(_resolveBuffer == nullptr) {
-                _resolveBuffer = MemoryManager_NEW glFramebuffer(_context, _name + "_resolve");
-            }
-        }
-    }
-}
-
-void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount) {
+void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index) {
+    // Avoid invalid dimensions
     assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
 
-    vec2<U16> mipLevel(0,
-                       attachment->descriptor().getSampler().generateMipMaps()
-                            ? 1 + Texture::computeMipCount(_width, _height)
-                            : 1);
+    // Process only valid attachments
+    const RTAttachment_ptr& attachment = _attachmentPool->get(type, index);
+     if (!attachment->used()) {
+         return;
+     }
 
-    // check if we have a valid attachment
-    if (attachment->used()) {
-        const Texture_ptr& tex = attachment->asTexture();
-        // Do we need to resize the attachment?
-        if (tex->getWidth() != _width || tex->getHeight() != _height) {
-            tex->resize(NULL, vec2<U16>(_width, _height), mipLevel);
-        }
-    } else {
-        ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d_%d",
-                                             _name.c_str(),
-                                             getAttachmentName(type),
-                                             index,
-                                             copyCount,
-                                             getGUID()));
-        textureAttachment.setThreadedLoading(false);
-        textureAttachment.setPropertyDescriptor(attachment->descriptor());
+     const Texture_ptr& tex = attachment->texture();
 
-        Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), textureAttachment);
-        assert(tex);
+     // Do we need to resize the attachment?
+     bool shouldResize = tex->getWidth() != _width || tex->getHeight() != _height;
+     if (shouldResize) {
+         tex->resize(NULL, vec2<U16>(_width, _height));
+     }
 
-        Texture::TextureLoadInfo info;
-        tex->loadData(info, NULL, vec2<U16>(_width, _height));
-        attachment->setTexture(tex);
-    }
+     TextureType texType = tex->getTextureType();
 
-    // Attach to frame buffer
-    GLenum attachmentEnum;
-    if (type == RTAttachment::Type::Depth) {
+     // Find the appropriate binding point
+     GLenum attachmentEnum;
+     if (type == RTAttachment::Type::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
 
-        TextureType texType = attachment->descriptor().type();
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
                            texType == TextureType::TEXTURE_CUBE_MAP ||
@@ -128,17 +98,35 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
     }
 
     attachment->binding(to_U32(attachmentEnum));
-    attachment->clearChanged();
-}
 
-void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
-    const RTAttachment_ptr& attachment = _attachmentPool->get(type, index);
-
-    if (!attachment->used() && !attachment->changed()) {
-        return;
+    // If this is a multisampled FBO, make sure we have a resolve buffer
+    if ((type == RTAttachment::Type::Colour && index == 0) || type == RTAttachment::Type::Depth) {
+        if (tex->getDescriptor().isMultisampledTexture()) {
+            if (_resolveBuffer == nullptr) {
+                _resolveBuffer = MemoryManager_NEW glFramebuffer(context(), vec2<U16>(_width, _height), _name + "_resolve");
+            }
+        }
     }
 
-    initAttachment(attachment, type, index, 0);
+    // Make sure we have the exact same attachments in the resolve buffer
+    if (_resolveBuffer) {
+        const RTAttachment_ptr& resAtt = _resolveBuffer->_attachmentPool->get(type, index);
+        // If the main attachment changed or if we never added a copy to the resolve buffer ...
+        if (!resAtt->used() || attachment->changed()) {
+            TextureDescriptor attDescriptor = attachment->texture()->getDescriptor();
+            // Resolve buffer attachments are identical to the main attachments, but without multisampling
+            attDescriptor.msaaSamples(0);
+
+            _resolveBuffer->_attachmentPool->update(type, index, attDescriptor)->clearColour(attachment->clearColour());
+        } else {
+            if (shouldResize) {
+                resAtt->texture()->resize(NULL, vec2<U16>(_width, _height));
+            }
+        }
+    }
+
+
+    attachment->clearChanged();
 }
 
 void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, AttachmentState state) {
@@ -149,7 +137,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
         GLint level = 0;
         GLint layer = 0;
         if (attachment->used() && state != AttachmentState::STATE_DISABLED) {
-            handle = attachment->asTexture()->getHandle();
+            handle = attachment->texture()->getHandle();
             level = attachment->mipWriteLevel();
             layer = attachment->writeLayer();
         } 
@@ -164,56 +152,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment_ptr& attachment, Attachm
     }
 }
 
-bool glFramebuffer::create(U16 width, U16 height) {
-    for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
-        RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-        for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-            updateDescriptor(type, j);
-        }
-    }
-    
-    if (_resolveBuffer) {
-        for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
-            RTAttachment::Type type = static_cast<RTAttachment::Type>(i);
-            for (U8 j = 0; j < _attachmentPool->attachmentCount(type); ++j) {
-                // Resolve buffers have all attachments identical but without multisampling
-                const RTAttachment_ptr& att = _attachmentPool->get(type, j);
-                TextureDescriptor attDescriptor = att->descriptor();
-                attDescriptor.msaaSamples(0);
-
-                const RTAttachment_ptr& resAtt = _resolveBuffer->_attachmentPool->get(type, j);
-                resAtt->fromDescriptor(attDescriptor);
-                resAtt->clearColour(att->clearColour());
-            }
-        }
-
-        _resolveBuffer->create(width, height);
-    }
-
-    bool shouldResetAttachments = (_width != width || _height != height);
-    _width = width;
-    _height = height;
-
-    if (Config::Profile::USE_2x2_TEXTURES) {
-        _width = _height = 2;
-    }
-
-    if (_framebufferHandle == 0) {
-        glCreateFramebuffers(1, &_framebufferHandle);
-        shouldResetAttachments = false;
-        _resolved = false;
-        _isLayeredDepth = false;
-
-        if (Config::ENABLE_GPU_VALIDATION) {
-            // label this FB to be able to tell that it's internally created and nor from a 3rd party lib
-            glObjectLabel(GL_FRAMEBUFFER,
-                          _framebufferHandle,
-                          -1,
-                          Util::StringFormat("DVD_FB_%d", _framebufferHandle).c_str());
-        }
-
-    }
-
+bool glFramebuffer::create() {
     // For every attachment, be it a colour or depth attachment ...
     I32 attachmentCountTotal = 0;
     for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
@@ -228,7 +167,33 @@ bool glFramebuffer::create(U16 width, U16 height) {
     prepareBuffers(RenderTarget::defaultPolicy());
     clear(RenderTarget::defaultPolicy());
 
-    return checkStatus();
+    if (checkStatus()) {
+        if (_resolveBuffer) {
+            _resolveBuffer->create();
+        }
+        return true;
+    }
+
+    return false;
+}
+
+bool glFramebuffer::resize(U16 width, U16 height) {
+    if (Config::Profile::USE_2x2_TEXTURES) {
+        _width = _height = 2;
+    }
+
+    if (_width == width && _height == height) {
+        return false;
+    }
+
+    _width = width;
+    _height = height;
+
+    if (_resolveBuffer) {
+        _resolveBuffer->resize(width, height);
+    }
+
+    return create();
 }
 
 void glFramebuffer::resolve() {
@@ -364,7 +329,7 @@ const RTAttachment& glFramebuffer::getAttachment(RTAttachment::Type type, U8 ind
 void glFramebuffer::bind(U8 unit, RTAttachment::Type type, U8 index) {
     const RTAttachment& attachment = getAttachment(type, index);
     if (attachment.used()) {
-        attachment.asTexture()->bind(unit);
+        attachment.texture()->bind(unit);
     }
 }
 
@@ -459,7 +424,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
         for (U8 i = 0; i < to_U8(_activeColourBuffers.size()); ++i) {
             if (_activeColourBuffers[i] != GL_NONE) {
                 const RTAttachment_ptr& att = _attachmentPool->get(RTAttachment::Type::Colour, i);
-                GFXDataFormat dataType = att->descriptor().dataType();
+                GFXDataFormat dataType = att->texture()->getDescriptor().dataType();
                 if (dataType == GFXDataFormat::FLOAT_16 || dataType == GFXDataFormat::FLOAT_32) {
                     glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, i, att->clearColour()._v);
                 } else if (dataType == GFXDataFormat::SIGNED_BYTE || dataType == GFXDataFormat::SIGNED_SHORT || dataType == GFXDataFormat::SIGNED_INT) {
@@ -467,7 +432,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
                 } else {
                     glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, i, Util::ToUIntColour(att->clearColour())._v);
                 }
-                att->asTexture()->refreshMipMaps();
+                att->texture()->refreshMipMaps();
                 _context.registerDrawCall();
             }
         }
@@ -475,7 +440,7 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
 
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER) && hasDepth()) {
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_depthValue);
-        _attachmentPool->get(RTAttachment::Type::Depth, 0)->asTexture()->refreshMipMaps();
+        _attachmentPool->get(RTAttachment::Type::Depth, 0)->texture()->refreshMipMaps();
         _context.registerDrawCall();
     }
 }
@@ -487,7 +452,7 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
 
     const RTAttachment_ptr& att = _attachmentPool->get(type, index);
 
-    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->descriptor().type())];
+    GLenum textureType = GLUtil::glTextureTypeTable[to_U32(att->texture()->getTextureType())];
     // only for array textures (it's better to simply ignore the command if the format isn't supported (debugging reasons)
     if (textureType != GL_TEXTURE_2D_ARRAY &&
         textureType != GL_TEXTURE_CUBE_MAP_ARRAY &&
@@ -495,11 +460,9 @@ void glFramebuffer::drawToLayer(RTAttachment::Type type,
         return;
     }
 
-    bool useDepthLayer =
-        (hasDepth() && includeDepth) ||
-        (hasDepth() && type == RTAttachment::Type::Depth);
-    bool useColourLayer =
-        (hasColour() && type == RTAttachment::Type::Colour);
+    bool useDepthLayer =  (hasDepth()  && includeDepth) ||
+                          (hasDepth()  && type == RTAttachment::Type::Depth);
+    bool useColourLayer = (hasColour() && type == RTAttachment::Type::Colour);
 
     if (useDepthLayer && _isLayeredDepth) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachment::Type::Depth, 0);
@@ -521,10 +484,9 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
     for (U8 i = 0; i < to_base(RTAttachment::Type::COUNT); ++i) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
-            const Texture_ptr& texture = attachment->asTexture();
+            const Texture_ptr& texture = attachment->texture();
             if (texture->getMaxMipLevel() > writeLevel ||
-                texture->getTextureType() == TextureType::TEXTURE_2D_MS ||
-                texture->getTextureType() == TextureType::TEXTURE_2D_ARRAY_MS)
+                texture->getDescriptor().isMultisampledTexture())
             {
                 if (attachment->writeLayer() > 0) {
                     glNamedFramebufferTextureLayer(_framebufferHandle,

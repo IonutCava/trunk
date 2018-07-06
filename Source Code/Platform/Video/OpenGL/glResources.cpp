@@ -15,10 +15,10 @@
 
 namespace Divide {
 
-glObject::glObject(glObjectType type)
+glObject::glObject(glObjectType type, GFXDevice& context)
     : _type(type)
 {
-    GL_API::createOrValidateContextForCurrentThread();
+    GL_API::createOrValidateContextForCurrentThread(context);
 }
 
 VAOBindings::VAOBindings()
@@ -333,15 +333,15 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     glHardwareQueryRing* anySamplesQuery = nullptr;
 
     if (queryPrimitives) {
-        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        primitiveQuery = &GL_API::s_hardwareQueryPool->allocate();
         glBeginQuery(GL_PRIMITIVES_GENERATED, primitiveQuery->writeQuery().getID());
     }
     if (querySampleCount) {
-        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        primitiveQuery = &GL_API::s_hardwareQueryPool->allocate();
         glBeginQuery(GL_SAMPLES_PASSED, sampleCountQuery->writeQuery().getID());
     }
     if (querySamplePassed) {
-        primitiveQuery = &GL_API::s_hardwareQueryPool.allocate();
+        primitiveQuery = &GL_API::s_hardwareQueryPool->allocate();
         glBeginQuery(GL_ANY_SAMPLES_PASSED, anySamplesQuery->writeQuery().getID());
     }
 

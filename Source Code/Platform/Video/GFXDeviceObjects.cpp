@@ -35,7 +35,7 @@ namespace {
     }
 };
 
-RenderTarget* GFXDevice::newRT(const stringImpl& name) const {
+RenderTarget* GFXDevice::newRT(const vec2<U16>& resolution, const stringImpl& name) const {
     std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
 
     RenderTarget* temp = nullptr;
@@ -44,10 +44,10 @@ RenderTarget* GFXDevice::newRT(const stringImpl& name) const {
         case RenderAPI::OpenGLES: {
             /// Create and return a new framebuffer.
             /// The callee is responsible for it's deletion!
-            temp =  new (_gpuObjectArena) glFramebuffer(refThis(this), name);
+            temp =  new (_gpuObjectArena) glFramebuffer(refThis(this), resolution, name);
         } break;
         case RenderAPI::Direct3D: {
-            temp = new (_gpuObjectArena) d3dRenderTarget(refThis(this), name);
+            temp = new (_gpuObjectArena) d3dRenderTarget(refThis(this), resolution, name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

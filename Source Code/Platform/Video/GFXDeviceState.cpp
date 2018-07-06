@@ -138,7 +138,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    allocateRT(RenderTargetUsage::SCREEN, "Screen");
+    allocateRT(RenderTargetUsage::SCREEN, renderResolution, "Screen");
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -181,6 +181,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::NORMALS), DefaultColours::WHITE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_U8(ScreenTargets::VELOCITY), DefaultColours::WHITE());
+    screenTarget.create();
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -208,31 +209,37 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                                             GFXDataFormat::FLOAT_32);
     depthDescriptorPlanar.setSampler(reflectionSampler);
 
+    U16 reflectRes = std::max(renderResolution.width, renderResolution.height) / Config::REFLECTION_TARGET_RESOLUTION_DOWNSCALE_FACTOR;
+
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, Util::StringFormat("Reflection_Planar_%d", i));
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION_PLANAR, vec2<U16>(reflectRes), Util::StringFormat("Reflection_Planar_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+        tempHandle._rt->create();
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, Util::StringFormat("Refraction_Planar_%d", i));
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION_PLANAR, vec2<U16>(reflectRes), Util::StringFormat("Refraction_Planar_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptorPlanar, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptorPlanar, RTAttachment::Type::Depth, 0);
         tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+        tempHandle._rt->create();
     }
 
 
-    tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, "Reflection_Cube_Array");
+    tempHandle = allocateRT(RenderTargetUsage::REFLECTION_CUBE, vec2<U16>(reflectRes), "Reflection_Cube_Array");
     tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
     tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
     tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+    tempHandle._rt->create();
 
-    tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, "Refraction_Cube_Array");
+    tempHandle = allocateRT(RenderTargetUsage::REFRACTION_CUBE, vec2<U16>(reflectRes), "Refraction_Cube_Array");
     tempHandle._rt->addAttachment(environmentDescriptorCube, RTAttachment::Type::Colour, 0);
     tempHandle._rt->addAttachment(depthDescriptorCube, RTAttachment::Type::Depth, 0);
     tempHandle._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
+    tempHandle._rt->create();
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
@@ -272,7 +279,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         postFX.pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
-
     PipelineDescriptor pipelineDesc;
 
     _axisGizmo = newIMP();
@@ -292,7 +298,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     assert(_renderTargetDraw != nullptr);
 
     // Create initial buffers, cameras etc for this resolution. It should match window size
-    WindowManager& winMgr = Application::instance().windowManager();
+    WindowManager& winMgr = _parent.platformContext().app().windowManager();
     winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
                              winMgr.getActiveWindow().getGUID(),
                              to_I32(renderResolution.width),
@@ -405,7 +411,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
     }
 
     while (_prevDepthBuffers.size() < historySize) {
-        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+        const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).texture();
 
         ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
         prevDepthTex.setPropertyDescriptor(src->getDescriptor());
@@ -422,7 +428,7 @@ void GFXDevice::resizeHistory(U8 historySize) {
 
 void GFXDevice::historyIndex(U8 index, bool copyPrevious) {
     if (copyPrevious) {
-        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture());
+        getPrevDepthBuffer()->copy(renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).texture());
     }
 
     _historyIndex = index;

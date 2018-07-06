@@ -92,7 +92,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args) {
         Console::printfn(Locale::get(_ID("CONSOLE_QUIT_COMMAND_ARGUMENT")),
                          args.c_str());
     }
-    Application::instance().RequestShutdown();
+    _context.app().RequestShutdown();
 }
 
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {

@@ -117,8 +117,7 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
 }
 
 void NetworkScene::postLoadMainThread() {
-    const vec2<U16>& resolution
-        = Application::instance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& resolution = _context.app().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
         vec2<I32>(60, 60),  // Position

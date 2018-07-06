@@ -124,8 +124,6 @@ class Task : public GUIDWrapper, private NonCopyable {
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
 
    private:
-    const Application& _application;
-
     mutable std::mutex _taskDoneMutex;
     std::condition_variable _taskDoneCV;
     std::atomic_bool _done;

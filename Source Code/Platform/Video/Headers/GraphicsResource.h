@@ -43,10 +43,15 @@ protected:
     explicit GraphicsResource(GFXDevice& context, I64 GUID);
     virtual ~GraphicsResource();
 
+public:
+    inline GFXDevice& context() { return _context; }
+
+protected:
     GFXDevice& _context;
 
 private:
     I64 _GUID;
+
 };
 
 }; //namespace Divide

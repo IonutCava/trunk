@@ -45,7 +45,6 @@ class ThirdPersonCamera : public OrbitCamera {
 
   public:
     bool moveRelative(const vec3<I32>& relMovement) override;
-    void setActiveInternal(bool state) override;
 };
 
 };  // namespace Divide

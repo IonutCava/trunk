@@ -1,7 +1,10 @@
 #include "stdafx.h"
 
 #include "Headers/ParticleBasicColourUpdater.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/EngineTaskPool.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
@@ -16,6 +19,6 @@ void ParticleBasicColourUpdater::update(const U64 deltaTime, ParticleData& p) {
         }
     };
 
-    parallel_for(parseRange, p.aliveCount(), g_partitionSize);
+    parallel_for(_context.parent().platformContext(), parseRange, p.aliveCount(), g_partitionSize);
 }
 };

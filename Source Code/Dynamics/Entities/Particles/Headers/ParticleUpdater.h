@@ -38,10 +38,19 @@ namespace Divide {
 
 class NOINITVTABLE ParticleUpdater {
    public:
-    ParticleUpdater() {}
-    virtual ~ParticleUpdater() {}
+    ParticleUpdater(GFXDevice& context)
+        : _context(context)
+    {
+    }
+    
+    virtual ~ParticleUpdater()
+    {
+    }
 
     virtual void update(const U64 deltaTime, ParticleData& p) = 0;
+
+protected:
+    GFXDevice& _context;
 };
 };
 #endif

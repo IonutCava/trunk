@@ -18,15 +18,19 @@ namespace Divide {
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache& cache)
     : PreRenderOperator(context, parent, cache, FilterType::FILTER_BLOOM)
 {
+    vec2<U16> res(parent.inputRT().getWidth(), parent.inputRT().getHeight());
     for (U8 i = 0; i < 2; ++i) {
-        _bloomBlurBuffer[i] = _context.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
-        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+        _bloomBlurBuffer[i] = _context.allocateRT(res, Util::StringFormat("Bloom_Blur_%d", i));
+        _bloomBlurBuffer[i]._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
         _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
+        _bloomBlurBuffer[i]._rt->create();
     }
 
-    _bloomOutput = _context.allocateRT("Bloom");
-    _bloomOutput._rt->addAttachment(parent.inputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    vec2<U16> qRes(to_U16(res.w / 4.0f), to_U16(res.h / 4.0f));
+    _bloomOutput = _context.allocateRT(qRes, "Bloom");
+    _bloomOutput._rt->addAttachment(parent.inputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
     _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
+    _bloomOutput._rt->create();
 
     ResourceDescriptor bloomCalc("bloom.BloomCalc");
     bloomCalc.setThreadedLoading(false);
@@ -60,9 +64,9 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
 
     U16 w = to_U16(width / 4.0f);
     U16 h = to_U16(height / 4.0f);
-    _bloomOutput._rt->create(w, h);
-    _bloomBlurBuffer[0]._rt->create(width, height);
-    _bloomBlurBuffer[1]._rt->create(width, height);
+    _bloomOutput._rt->resize(w, h);
+    _bloomBlurBuffer[0]._rt->resize(width, height);
+    _bloomBlurBuffer[1]._rt->resize(width, height);
 
     _blur->Uniform("size", vec2<F32>(width, height));
 }

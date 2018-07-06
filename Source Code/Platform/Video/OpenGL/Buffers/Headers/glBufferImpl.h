@@ -55,7 +55,7 @@ struct BufferImplParams {
 class glBufferLockManager;
 class glBufferImpl : public glObject {
 public:
-    glBufferImpl(const BufferImplParams& params);
+    explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
     GLuint bufferID() const;

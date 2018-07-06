@@ -4,7 +4,7 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"
 
 namespace Divide {
-glGenericBuffer::glGenericBuffer(const BufferParams& params)
+glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     : _elementCount(params._elementCount),
       _elementSize(params._elementSizeInBytes),
       _elementCountBindOffset(0),
@@ -22,7 +22,7 @@ glGenericBuffer::glGenericBuffer(const BufferParams& params)
         implParams._initialData = params._data;
     }
 
-    _buffer = MemoryManager_NEW glBufferImpl(implParams);
+    _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr && _ringSizeFactor > 1) {

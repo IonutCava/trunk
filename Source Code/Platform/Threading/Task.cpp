@@ -16,7 +16,6 @@ namespace {
 
 Task::Task()
     : GUIDWrapper(),
-    _application(Application::instance()),
     _tp(nullptr),
     _poolIndex(0),
     _jobIdentifier(-1),

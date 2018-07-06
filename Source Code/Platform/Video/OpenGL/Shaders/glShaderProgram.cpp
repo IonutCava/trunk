@@ -40,7 +40,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const stringImpl& resourceLocation,
                                  bool asyncLoad)
     : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad),
-      glObject(glObjectType::TYPE_SHADER_PROGRAM),
+      glObject(glObjectType::TYPE_SHADER_PROGRAM, context),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -229,9 +229,9 @@ void glShaderProgram::attachShader(glShader* const shader) {
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
 void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister) {
-	if (_asyncLoad) {
-		GL_API::createOrValidateContextForCurrentThread();
-	}
+    if (_asyncLoad) {
+        GL_API::createOrValidateContextForCurrentThread(_context);
+    }
 
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {

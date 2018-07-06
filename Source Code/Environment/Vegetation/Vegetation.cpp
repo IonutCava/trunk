@@ -116,7 +116,8 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
 
-    CreateTask(DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
+    CreateTask(_context.parent().platformContext(),
+               DELEGATE_BIND(&Vegetation::generateGrass, this, std::placeholders::_1),
                DELEGATE_BIND(&Vegetation::uploadGrassData, this))
                .startTask(Task::TaskPriority::LOW);
     setState(ResourceState::RES_LOADED);

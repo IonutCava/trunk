@@ -40,12 +40,12 @@ namespace {
 class AtomicCounter : public RingBuffer
 {
 public:
-    AtomicCounter(U32 sizeFactor, const char* name);
+    AtomicCounter(GFXDevice& context, U32 sizeFactor, const char* name);
     ~AtomicCounter();
     glGenericBuffer* _buffer;
 };
 
-AtomicCounter::AtomicCounter(U32 sizeFactor, const char* name)
+AtomicCounter::AtomicCounter(GFXDevice& context, U32 sizeFactor, const char* name)
     : RingBuffer(sizeFactor)
 {
     BufferParams params;
@@ -57,7 +57,7 @@ AtomicCounter::AtomicCounter(U32 sizeFactor, const char* name)
     params._ringSizeFactor = sizeFactor;
     params._data = NULL;
 
-    _buffer = MemoryManager_NEW glGenericBuffer(params);
+    _buffer = MemoryManager_NEW glGenericBuffer(context, params);
 }
 
 AtomicCounter::~AtomicCounter()
@@ -82,7 +82,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._initialData = descriptor._initialData;
     implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
 
-    _buffer = MemoryManager_NEW glBufferImpl(implParams);
+    _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -155,7 +155,7 @@ bool glUniformBuffer::bind(U32 bindIndex) {
 
 void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
     stringImpl name = Util::StringFormat("DVD_ATOMIC_BUFFER_%d_%d", getGUID(), _atomicCounters.size());
-    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(std::max(sizeFactor, 1u), name.c_str()));
+    _atomicCounters.emplace_back(MemoryManager_NEW AtomicCounter(_context, std::max(sizeFactor, 1u), name.c_str()));
 }
 
 U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {

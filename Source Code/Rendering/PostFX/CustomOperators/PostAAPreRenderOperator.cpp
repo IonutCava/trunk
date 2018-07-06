@@ -19,8 +19,9 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
       _postAASamples(0),
       _idleCount(0)
 {
-    _samplerCopy = _context.allocateRT("PostAA");
-    _samplerCopy._rt->addAttachment(parent.outputRT().getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy = _context.allocateRT(vec2<U16>(parent.inputRT().getWidth(), parent.inputRT().getHeight()), "PostAA");
+    _samplerCopy._rt->addAttachment(parent.outputRT().getAttachment(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
+    _samplerCopy._rt->create();
 
     ResourceDescriptor fxaa("FXAA");
     fxaa.setThreadedLoading(false);

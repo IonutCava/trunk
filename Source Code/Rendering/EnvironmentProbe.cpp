@@ -78,10 +78,10 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     depthDescriptor.setSampler(reflectionSampler);
 
     RenderTargetHandle tempHandle;
-    s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, "EnviromentProbe");
+    s_reflection = context.allocateRT(RenderTargetUsage::ENVIRONMENT, vec2<U16>(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE), "EnviromentProbe");
     s_reflection._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
     s_reflection._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
-    s_reflection._rt->create(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE, Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE);
+    s_reflection._rt->create();
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }
 
@@ -144,7 +144,7 @@ U32 EnvironmentProbe::getRTIndex() const {
 void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
     _boundingBoxPrimitive->paused(false);
 
-    const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+    const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).texture();
 
     VertexBuffer* vb = _impostor->getGeometryVB();
 

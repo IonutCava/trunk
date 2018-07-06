@@ -41,9 +41,13 @@ class ParticleEulerUpdater final : public ParticleUpdater {
     vec3<F32> _globalAcceleration;
 
    public:
-    ParticleEulerUpdater() {}
+    ParticleEulerUpdater(GFXDevice& context) : ParticleUpdater(context)
+    {
+    }
 
-    ~ParticleEulerUpdater() {}
+    ~ParticleEulerUpdater()
+    {
+    }
 
     void update(const U64 deltaTime, ParticleData& p) override;
 };

@@ -351,7 +351,10 @@ namespace Import {
         if (!importData._ignoreAlpha && importData._textures[to_base(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
             Texture_ptr diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
             if (diffuse && diffuse->hasTransparency()) {
-                Texture_ptr textureRes = CreateResource<Texture>(cache, ResourceDescriptor(diffuse->getName()));
+                ResourceDescriptor opacityDesc(diffuse->getName());
+                opacityDesc.setPropertyDescriptor(diffuse->getDescriptor());
+
+                Texture_ptr textureRes = CreateResource<Texture>(cache, opacityDesc);
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);
             }
         }

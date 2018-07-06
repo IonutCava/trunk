@@ -41,7 +41,7 @@ void RenderPassManager::render(SceneRenderState& sceneRenderState) {
     // Attempt to build draw commands in parallel
 
 
-    TaskPool& pool = Application::instance().kernel().taskPool();
+    TaskPool& pool = _context.parent().taskPool();
 
     U8 passCount = to_U8(_renderPasses.size());
     _renderCmdTasks.clear();
@@ -192,7 +192,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
 
         if (params.target._usage != RenderTargetUsage::COUNT) {
             RenderTarget& target = _context.renderTarget(params.target);
-            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).texture();
 
             RenderPassCmd cmd;
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
@@ -250,7 +250,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         if (params.stage == RenderStage::DISPLAY) {
             // Bind the depth buffers
             RenderTarget& target = _context.renderTarget(params.target);
-            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+            const Texture_ptr& depthBufferTexture = target.getAttachment(RTAttachment::Type::Depth, 0).texture();
             depthBufferTexture->bind(to_U8(ShaderProgram::TextureUsage::DEPTH));
 
             const RTAttachment& velocityAttachment = target.getAttachment(RTAttachment::Type::Colour,
