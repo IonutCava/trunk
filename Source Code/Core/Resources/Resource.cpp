@@ -13,6 +13,7 @@ Resource::Resource(ResourceType type,
 {
     _loadingCallbacks.fill(DELEGATE_CBK<void>());
 }
+
 Resource::Resource(ResourceType type,
                   const stringImpl& name,
                   const stringImpl& resourceName)
@@ -34,8 +35,8 @@ Resource::~Resource()
 {
 }
 
-bool Resource::load() {
-    setState(ResourceState::RES_LOADED);
+bool Resource::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+    onLoadCallback(shared_from_this());
     return true;
 }
 

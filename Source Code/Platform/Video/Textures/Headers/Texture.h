@@ -153,15 +153,14 @@ class NOINITVTABLE Texture : public GraphicsResource, public Resource {
         return _descriptor;
     }
 
-
     static U16 computeMipCount(U16 width, U16 height);
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
-    virtual bool load() override;
-    virtual void threadedLoad();
+    virtual bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) override;
+    virtual void threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback);
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 

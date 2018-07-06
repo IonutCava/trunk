@@ -44,7 +44,10 @@ class TerrainDescriptor : public PropertyDescriptor {
         setDefaultValues();
     }
 
-    ~TerrainDescriptor() { _variables.clear(); }
+    ~TerrainDescriptor()
+    {
+        _variables.clear();
+    }
 
     TerrainDescriptor* clone() const {
         return MemoryManager_NEW TerrainDescriptor(*this);

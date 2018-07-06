@@ -29,8 +29,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
     REGISTER_FRAME_LISTENER(this, 1);
     _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
-    _rootNode->postLoad(*_root);
-
+    Attorney::SceneNodeSceneGraph::postLoad(*_rootNode, *_root);
     onNodeAdd(*_root);
     _allNodes.push_back(_root);
 

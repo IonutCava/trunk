@@ -438,7 +438,10 @@ void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
         child.getOrderedNodeList(nodeList);
     });
 
-    nodeList.push_back(this);
+    const SceneNode_ptr& node = getNode();
+    if (!node || (node && node->getState() == ResourceState::RES_LOADED)) {
+        nodeList.push_back(this);
+    }
 }
 
 void SceneGraphNode::sgnUpdate(const U64 deltaTime, SceneState& sceneState) {

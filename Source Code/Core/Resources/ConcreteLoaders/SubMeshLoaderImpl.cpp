@@ -16,7 +16,7 @@ Resource_ptr ImplResourceLoader<SubMesh>::operator()() {
         ptr.reset(MemoryManager_NEW SubMesh(_context.gfx(), _cache, _descriptor.getName()), DeleteResource(_cache));
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {

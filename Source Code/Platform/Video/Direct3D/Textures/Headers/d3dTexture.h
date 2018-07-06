@@ -46,10 +46,6 @@ class d3dTexture final : public Texture {
                         bool asyncLoad);
     ~d3dTexture() {}
 
-    void threadedLoad() override { 
-        Texture::threadedLoad();
-    }
-
     bool unload() override { return Texture::unload(); }
 
     void bind(U8 unit, bool flushStateOnRequest = true) override {}

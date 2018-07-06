@@ -26,7 +26,7 @@ Resource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }
 
@@ -52,7 +52,7 @@ Resource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }
 

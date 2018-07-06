@@ -33,7 +33,7 @@ Sky::~Sky()
 {
 }
 
-bool Sky::load() {
+bool Sky::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     if (_sky != nullptr) {
         return false;
     }
@@ -71,7 +71,8 @@ bool Sky::load() {
     _skyShader->Uniform("enable_sun", true);
     _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
-    return Resource::load();
+
+    return Resource::load(onLoadCallback);
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {

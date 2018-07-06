@@ -107,7 +107,7 @@ class NOINITVTABLE SceneNode : public Resource {
     /// Perform any pre-draw operations (this is after sort and transform updates)
     /// If the node isn't ready for rendering and should be skipped this frame,
     /// the return value is false
-    virtual bool onRender(const RenderStagePass& renderStagePass) = 0;
+    virtual bool onRender(const RenderStagePass& renderStagePass);
     virtual bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some SceneNodes may need special case handling. I.E. water shouldn't
     /// render itself in REFLECTION
@@ -251,6 +251,7 @@ class SceneNodeSceneGraph {
         node.onCameraChange(sgn, cam);
     }
 
+    friend class Divide::SceneGraph;
     friend class Divide::SceneGraphNode;
 };
 

@@ -46,7 +46,7 @@ Light::~Light()
 {
 }
 
-bool Light::load() {
+bool Light::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     _shadowCamera = Camera::createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
 
     _shadowCamera->setMoveSpeedFactor(0.0f);
@@ -54,7 +54,7 @@ bool Light::load() {
     _shadowCamera->setFixedYawAxis(true);
 
     if (_parentPool.addLight(*this)) {
-        return Resource::load();
+        return Resource::load(onLoadCallback);
     }
 
     return false;

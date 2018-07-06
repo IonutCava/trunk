@@ -40,10 +40,10 @@ ShaderProgram::~ShaderProgram()
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
 }
 
-bool ShaderProgram::load() {
-    registerShaderProgram(getName(), shared_from_this());
+bool ShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+    registerShaderProgram(getName(), std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
 
-    return Resource::load();
+    return Resource::load(onLoadCallback);
 }
 
 bool ShaderProgram::unload() {

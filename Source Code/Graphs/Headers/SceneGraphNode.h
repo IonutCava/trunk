@@ -61,19 +61,6 @@ class SceneRoot : public SceneNode {
         _boundingBox.set(VECTOR3_UNIT, -VECTOR3_UNIT);
 
     }
-
-    bool onRender(const RenderStagePass& renderStagePass) {
-        return true;
-    }
-
-    bool unload() { return true; }
-    bool load() override {
-        return true; 
-    }
-
-   protected:
-    friend class SceneGraph;
-    void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
@@ -88,12 +75,6 @@ class SceneTransform : public SceneNode {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
     }
-
-    bool onRender(const RenderStagePass& renderStagePass) { return true; }
-
-    void postLoad(SceneGraphNode& sgn) { return; }
-    bool unload() { return true; }
-    bool load() override { return true; }
 
     inline void updateBoundsInternal(SceneGraphNode& sgn) override {
         _boundingBox.setMin(-_extents * 0.5f);

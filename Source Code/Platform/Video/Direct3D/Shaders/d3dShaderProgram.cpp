@@ -95,7 +95,7 @@ void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {}
 void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 }
 
-bool d3dShaderProgram::load() {
-    return ShaderProgram::load();
+bool d3dShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+    return ShaderProgram::load(onLoadCallback);
 }
 };

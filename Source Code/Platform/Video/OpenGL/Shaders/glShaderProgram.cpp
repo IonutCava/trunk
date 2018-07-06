@@ -214,7 +214,7 @@ void glShaderProgram::attachShader(glShader* const shader) {
 
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(bool skipRegister) {
+void glShaderProgram::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback, bool skipRegister) {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object
@@ -244,7 +244,7 @@ void glShaderProgram::threadedLoad(bool skipRegister) {
     }
 
     if (!skipRegister) {
-        ShaderProgram::load();
+        ShaderProgram::load(onLoadCallback);
     }
 }
 
@@ -420,13 +420,13 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
-bool glShaderProgram::load() {
+bool glShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_resourceName.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
-        return ShaderProgram::load();
+        return ShaderProgram::load(onLoadCallback);
     }
 
     // Reset the linked status of the program
@@ -441,8 +441,8 @@ bool glShaderProgram::load() {
         !_loadedFromBinary && _asyncLoad
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
-        [&](const Task& parent){
-            threadedLoad(false);
+        [&, onLoadCallback](const Task& parent){
+            threadedLoad(std::move(onLoadCallback), false);
         });
 }
 
@@ -507,8 +507,9 @@ bool glShaderProgram::recompileInternal() {
     }
 
     reloadShaders(true);
-    threadedLoad(true);
-    return true;
+    threadedLoad(DELEGATE_CBK<void, Resource_ptr>(), true);
+
+    return getState() == ResourceState::RES_LOADED;
 }
 
 /// Check every possible combination of flags to make sure this program can be used for rendering

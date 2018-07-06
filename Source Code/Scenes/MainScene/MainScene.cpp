@@ -22,7 +22,6 @@ namespace {
 
 MainScene::MainScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
    : Scene(context, cache, parent, name),
-    _water(nullptr),
     _beep(nullptr),
     _freeflyCamera(false),
     _updateLights(true),
@@ -55,7 +54,7 @@ void MainScene::processInput(U8 playerIndex, const U64 deltaTime) {
         if (!_freeflyCamera) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
-            for (SceneGraphNode_wptr terrainNode : _visibleTerrains) {
+            for (SceneGraphNode_wptr terrainNode : _terrains) {
                 const std::shared_ptr<Terrain>& ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
@@ -141,20 +140,6 @@ bool MainScene::load(const stringImpl& name) {
     _sun.lock()->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
-    for (U8 i = 0; i < _terrainList.size(); i++) {
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(_terrainList[i]).lock());
-        if (terrainNode) {  // We might have an unloaded terrain in the Array,
-                            // and thus, not present in the graph
-            const std::shared_ptr<Terrain>& tempTerrain = terrainNode->getNode<Terrain>();
-            if (terrainNode->isActive()) {
-                tempTerrain->toggleBoundingBoxes();
-                _visibleTerrains.push_back(terrainNode);
-            }
-        } else {
-            Console::errorfn(Locale::get(_ID("ERROR_MISSING_TERRAIN")), _terrainList[i].c_str());
-        }
-    }
-
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
@@ -163,10 +148,10 @@ bool MainScene::load(const stringImpl& name) {
 
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setID(to_uint(_baseCamera->getZPlanes().y));
-    _water = CreateResource<WaterPlane>(_resCache, infiniteWater);
-    _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
-    _waterGraphNode = _sceneGraph->getRoot().addNode(_water, normalMask, PhysicsGroup::GROUP_IGNORE);
-    SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
+    WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
+    water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),  0.34f);
+    _waterPlanes.push_back(_sceneGraph->getRoot().addNode(water, normalMask, PhysicsGroup::GROUP_IGNORE));
+    SceneGraphNode_ptr waterGraphNode(_waterPlanes.back().lock());
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     waterGraphNode->get<PhysicsComponent>()->setPositionY(state().waterLevel());
@@ -212,7 +197,7 @@ U16 MainScene::registerInputActions() {
     actionID++;
 
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
-        for (SceneGraphNode_wptr ter : _visibleTerrains) {
+        for (SceneGraphNode_wptr ter : _terrains) {
             ter.lock()->getNode<Terrain>()->toggleBoundingBoxes();
         }
     });

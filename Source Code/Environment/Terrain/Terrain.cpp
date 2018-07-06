@@ -49,10 +49,6 @@ Terrain::~Terrain() {
     MemoryManager::DELETE(_normalSampler);
 }
 
-bool Terrain::load() {
-    return Object3D::load();
-}
-
 bool Terrain::unload() {
     MemoryManager::DELETE_VECTOR(_terrainTextures);
     return Object3D::unload();

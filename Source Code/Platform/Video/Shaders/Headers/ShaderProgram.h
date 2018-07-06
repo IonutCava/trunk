@@ -55,8 +55,7 @@ enum class FileUpdateEvent : U8;
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 class NOINITVTABLE ShaderProgram : public Resource, 
-                                   public GraphicsResource,
-                                   public std::enable_shared_from_this<ShaderProgram> {
+                                   public GraphicsResource {
    public:
     typedef hashMapImpl<U64, ShaderProgram_ptr> ShaderProgramMap;
     typedef hashMapImpl<U64, stringImpl> AtomMap;
@@ -109,7 +108,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     virtual bool update(const U64 deltaTime);
-    virtual bool load() override;
+    virtual bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) override;
     virtual bool unload() override;
 
     /// Uniforms (update constant buffer for D3D. Use index as location in

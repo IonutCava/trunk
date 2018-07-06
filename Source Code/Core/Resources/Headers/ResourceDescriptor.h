@@ -64,6 +64,8 @@ class NOINITVTABLE PropertyDescriptor {
     DescriptorType _type;
 };
 
+
+FWD_DECLARE_MANAGED_CLASS(Resource);
 class ResourceDescriptor {
    public:
     explicit ResourceDescriptor(const stringImpl& resourceName);
@@ -85,8 +87,8 @@ class ResourceDescriptor {
     inline const stringImpl& getName() const { return _name; }
 
     template <typename T>
-    inline const T* getPropertyDescriptor() const {
-        return dynamic_cast<T*>(_propertyDescriptor);
+    inline const std::shared_ptr<T> getPropertyDescriptor() const {
+        return std::dynamic_pointer_cast<T>(_propertyDescriptor);
     }
 
     inline bool hasPropertyDescriptor() const {
@@ -94,10 +96,14 @@ class ResourceDescriptor {
     }
     inline bool getFlag() const { return _flag; }
     inline bool getThreaded() const { return _threaded; }
-    inline U32 getEnumValue() const { return _enumValue; }
-    inline U32 getID() const { return _ID; }
-    inline P32 getMask() const { return _mask; }
+    inline U32  getEnumValue() const { return _enumValue; }
+    inline U32  getID() const { return _ID; }
+    inline P32  getMask() const { return _mask; }
     inline void* getUserPtr() const { return _userPtr; }
+
+    const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback() const {
+        return _onLoadCallback;
+    }
 
     inline void setPropertyList(const stringImpl& propertyListString) {
         _properties = propertyListString;
@@ -121,7 +127,11 @@ class ResourceDescriptor {
 
     template <typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
-        MemoryManager::SAFE_UPDATE(_propertyDescriptor, MemoryManager_NEW T(descriptor));
+        _propertyDescriptor.reset(MemoryManager_NEW T(descriptor));
+    }
+
+    void setOnLoadCallback(const DELEGATE_CBK<void, Resource_ptr>& callback) {
+        _onLoadCallback = callback;
     }
 
    private:
@@ -139,9 +149,12 @@ class ResourceDescriptor {
     /// 4 bool values representing  ... anything ...
     P32 _mask;
     U32 _enumValue;
-    void *_userPtr;
     /// Use for extra resource properties: textures, samplers, terrain etc.
-    PropertyDescriptor* _propertyDescriptor;
+    std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
+    /// Callback to use when the resource finished loading (includes threaded loading)
+    DELEGATE_CBK<void, Resource_ptr> _onLoadCallback;
+    /// General Data
+    void *_userPtr;
 };
 
 };  // namespace Divide

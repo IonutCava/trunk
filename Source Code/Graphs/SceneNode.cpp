@@ -72,6 +72,11 @@ void SceneNode::sgnUpdate(const U64 deltaTime,
     }
 }
 
+bool SceneNode::onRender(const RenderStagePass& renderStagePass) {
+    ACKNOWLEDGE_UNUSED(renderStagePass);
+    return true;
+}
+
 void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
     ACKNOWLEDGE_UNUSED(sgn);
 }

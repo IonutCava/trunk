@@ -2,6 +2,7 @@
 #include "Headers/TerrainLoader.h"
 #include "Headers/TerrainDescriptor.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
@@ -12,7 +13,9 @@
 namespace Divide {
 
 bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
-                                const TerrainDescriptor* terrainDescriptor) {
+                                const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
+                                PlatformContext& context,
+                                DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
     Attorney::TerrainLoader::setUnderwaterDiffuseScale(
@@ -216,10 +219,16 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
-    return loadThreadedResources(terrain, terrainDescriptor);
+    return context.gfx().loadInContext(CurrentContext::GFX_LOADING_CTX,
+                                       [terrain, terrainDescriptor, &onLoadCallback](const Task& parent) {
+                                            loadThreadedResources(std::move(terrain), std::move(terrainDescriptor), std::move(onLoadCallback));
+                                       });
 }
 
-bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, const TerrainDescriptor* terrainDescriptor) {
+bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
+                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
+                                          DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true);  // No default material
 
@@ -453,11 +462,11 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain, cons
     Attorney::TerrainLoader::plane(*terrain, plane);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
-    return terrain->load();
+    return terrain->load(onLoadCallback);
 }
 
 void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
-                                         const TerrainDescriptor* terrainDescriptor) {
+                                         const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
     U8 textureCount = 0;
     stringImpl textureName;
 

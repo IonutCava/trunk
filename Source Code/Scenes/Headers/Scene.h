@@ -279,6 +279,11 @@ class Scene : public Resource {
        SceneGUIElements* _GUI;
        Camera* _baseCamera;
 
+
+       vectorImpl<SceneGraphNode_wptr> _terrains;
+       vectorImpl<SceneGraphNode_wptr> _waterPlanes;
+       SceneGraphNode_wptr _sun;
+
        vectorImpl<Player_ptr> _scenePlayers;
        U64 _sceneTimer;
        vectorImpl<D64> _taskTimers;
@@ -287,7 +292,6 @@ class Scene : public Resource {
        FileDataStack _modelDataArray;
        vectorImpl<FileData> _vegetationDataArray;
 
-       vectorImpl<stringImpl> _terrainList;
        vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection

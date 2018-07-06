@@ -71,7 +71,7 @@ class Sky : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
 
-    bool load();
+    bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) override;
 
     void onCameraUpdate(SceneGraphNode& sgn,
                         const I64 cameraGUID,

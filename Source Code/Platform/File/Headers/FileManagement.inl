@@ -39,7 +39,7 @@ namespace Divide {
 template<typename T>
 bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
     static_assert(std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value,
-        "Specified target container does not have a direct assignment operator!");
+                  "Specified target container does not have a direct assignment operator!");
 
     size_t fileSize = 0;
     if (!filePath.empty()) {
@@ -49,11 +49,12 @@ bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
 
         if (!streamIn.eof() && !streamIn.fail()) {
             streamIn.seekg(0, std::ios::end);
-            optional_reserve(contentOut, streamIn.tellg());
+            fileSize = streamIn.tellg();
             streamIn.seekg(0, std::ios::beg);
 
+            optional_reserve(contentOut, fileSize);
             contentOut.assign((std::istreambuf_iterator<Byte>(streamIn)),
-                std::istreambuf_iterator<Byte>());
+                               std::istreambuf_iterator<Byte>());
         }
 
         streamIn.close();

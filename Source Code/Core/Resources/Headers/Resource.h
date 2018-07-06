@@ -66,7 +66,12 @@ enum class ResourceType : U32 {
     COUNT
 };
 
-class NOINITVTABLE Resource : public GUIDWrapper
+
+class Resource;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
+
+class NOINITVTABLE Resource : public GUIDWrapper,
+                              public std::enable_shared_from_this<Resource>
 {
     friend class ResourceCache;
     friend class ResourceLoader;
@@ -87,7 +92,7 @@ class NOINITVTABLE Resource : public GUIDWrapper
     virtual ~Resource();
 
     /// Loading and unloading interface
-    virtual bool load();
+    virtual bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback);
 
     virtual bool unload();
 
@@ -174,8 +179,6 @@ struct TerrainInfo {
     vec2<F32> scale;
     bool active;
 };
-
-TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
 
 };  // namespace Divide
 

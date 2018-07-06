@@ -54,7 +54,7 @@ TEST(TaskCallbackTest)
     std::atomic_bool testValue = false;
 
     auto task = [](const Task& parentTask) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     };
 
     auto callback = [&testValue]() {

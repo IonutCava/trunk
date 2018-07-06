@@ -16,7 +16,6 @@ ResourceDescriptor::ResourceDescriptor(const stringImpl& resourceName)
 
 ResourceDescriptor::~ResourceDescriptor()
 {
-    MemoryManager::DELETE(_propertyDescriptor);
 }
 
 ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
@@ -32,13 +31,10 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _mask = old._mask;
       _enumValue = old._enumValue;
       _userPtr = old._userPtr;
-      if (old._propertyDescriptor != nullptr) {
-          _propertyDescriptor = old._propertyDescriptor->clone();
-      }
+      _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
 }
 
-ResourceDescriptor& ResourceDescriptor::operator=(
-    ResourceDescriptor const& old) {
+ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old) {
     if (this != &old) {
         _name = old._name;
         _resourceName = old._resourceName;
@@ -50,10 +46,7 @@ ResourceDescriptor& ResourceDescriptor::operator=(
         _mask = old._mask;
         _enumValue = old._enumValue;
         _userPtr = old._userPtr;
-        if (old._propertyDescriptor != nullptr) {
-            MemoryManager::SAFE_UPDATE(_propertyDescriptor,
-                                       old._propertyDescriptor->clone());
-        }
+        _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
     }
 
     return *this;

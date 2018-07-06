@@ -667,17 +667,27 @@ bool Scene::load(const stringImpl& name) {
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph->getRoot();
 
+    auto registerTerrain = [this](Resource_ptr res) {
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName()).lock());
+        assert(terrainNode != nullptr);
+        const std::shared_ptr<Terrain>& tempTerrain = terrainNode->getNode<Terrain>();
+        if (terrainNode->isActive()) {
+            //tempTerrain->toggleBoundingBoxes();
+            _terrains.push_back(terrainNode);
+        }
+    };
+
      // Add terrain from XML
     if (!_terrainInfoArray.empty()) {
         for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             terrain.setPropertyDescriptor(*terrainInfo);
+            terrain.setOnLoadCallback(registerTerrain);
             std::shared_ptr<Terrain> temp = CreateResource<Terrain>(_resCache, terrain);
 
             SceneGraphNode_ptr terrainTemp = root.addNode(temp, normalMask, PhysicsGroup::GROUP_STATIC);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-            _terrainList.push_back(terrainTemp->getName());
 
             NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
             nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);

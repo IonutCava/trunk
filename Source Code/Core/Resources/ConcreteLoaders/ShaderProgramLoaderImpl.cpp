@@ -43,7 +43,7 @@ Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
         }
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }
 

@@ -109,8 +109,8 @@ class Terrain : public Object3D {
    public:
     explicit Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
     ~Terrain();
-    bool load();
-    bool unload();
+
+    bool unload() override;
 
     inline void toggleBoundingBoxes() { _drawBBoxes = !_drawBBoxes; }
 

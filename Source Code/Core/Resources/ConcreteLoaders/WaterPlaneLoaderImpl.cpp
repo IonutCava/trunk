@@ -8,8 +8,10 @@
 namespace Divide {
 
 template <>
-bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
+bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     const stringImpl& name = res->getName();
+
+    res->setState(ResourceState::RES_LOADING);
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
@@ -52,7 +54,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     waterMatDesc.setCullMode(CullMode::NONE);
     waterMat->setRenderStateBlock(waterMatDesc.getHash());
 
-    return res->load();
+    return res->load(onLoadCallback);
 }
 
 template<>
@@ -62,8 +64,8 @@ Resource_ptr ImplResourceLoader<WaterPlane>::operator()() {
 
     std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _descriptor.getName(), to_int(sideLength)),
                                     DeleteResource(_cache));
-
-    if (!load(ptr)) {
+    
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }
 

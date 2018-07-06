@@ -52,10 +52,11 @@ bool glTexture::unload() {
     return true;
 }
 
-void glTexture::threadedLoad() {
+void glTexture::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     updateSampler();
-    Texture::threadedLoad();
+    Texture::threadedLoad(onLoadCallback);
     _lockManager->Lock();
+    Resource::load(onLoadCallback);
 }
 
 void glTexture::setMipMapRange(GLushort base, GLushort max) {

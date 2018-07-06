@@ -77,7 +77,7 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
         ptr->setCurrentSampler(*_descriptor.getPropertyDescriptor<SamplerDescriptor>());
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.getResourceLocation().c_str(),
                          _descriptor.getName().c_str());

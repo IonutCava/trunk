@@ -18,7 +18,7 @@ Resource_ptr ImplResourceLoader<Box3D>::operator()() {
                                                        vec3<F32>(to_float(size))),
                                 DeleteResource(_cache));
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {

@@ -13,7 +13,7 @@ Resource_ptr ImplResourceLoader<Text3D>::operator()() {
                                                          _descriptor.getResourceLocation()),
                                  DeleteResource(_cache)); //< font
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {

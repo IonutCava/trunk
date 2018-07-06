@@ -11,7 +11,7 @@ Resource_ptr ImplResourceLoader<Material>::operator()() {
     Material_ptr ptr(MemoryManager_NEW Material(_context.gfx(), _cache, _descriptor.getName()), DeleteResource(_cache));
     assert(ptr != nullptr);
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {

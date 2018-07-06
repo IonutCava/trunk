@@ -39,12 +39,11 @@ Texture::~Texture()
 {
 }
 
-bool Texture::load() {
+bool Texture::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
-        [&](const Task& parent) {
-            threadedLoad();
-            Resource::load();
+        [this, onLoadCallback](const Task& parent) {
+            threadedLoad(std::move(onLoadCallback));
         }
     );
 
@@ -52,7 +51,7 @@ bool Texture::load() {
 }
 
 /// Load texture data using the specified file name
-void Texture::threadedLoad() {
+void Texture::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     TextureLoadInfo info;
     info._type = _textureData._textureType;
 
@@ -67,29 +66,29 @@ void Texture::threadedLoad() {
     stringImpl currentTextureLocation;
     stringImpl currentTextureFullPath;
     while (std::getline(textureLocationList, currentTextureLocation, ',') &&
-           std::getline(textureFileList, currentTextureFile, ','))
+        std::getline(textureFileList, currentTextureFile, ','))
     {
         loadFromFile = true;
         Util::Trim(currentTextureFile);
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
             currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation
-                                                                     : currentTextureLocation) +
-                                     "/" +
-                                     currentTextureFile;
+                : currentTextureLocation) +
+                "/" +
+                currentTextureFile;
 
-                // Attempt to load the current entry
-                if (!loadFile(info, currentTextureFullPath)) {
-                    // Invalid texture files are not handled yet, so stop loading
-                    return;
+            // Attempt to load the current entry
+            if (!loadFile(info, currentTextureFullPath)) {
+                // Invalid texture files are not handled yet, so stop loading
+                return;
+            }
+            info._layerIndex++;
+            if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                if (info._layerIndex == 6) {
+                    info._layerIndex = 0;
+                    info._cubeMapCount++;
                 }
-                info._layerIndex++;
-                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-                    if (info._layerIndex == 6) {
-                        info._layerIndex = 0;
-                        info._cubeMapCount++;
-                    }
-                }
+            }
         }
     }
 
@@ -152,19 +151,15 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
     U16 height = img.dimensions().height;
     // If we have an alpha channel, we must check for translucency
     if (img.alpha()) {
-
-        // Each pixel is independent so this is a brilliant place to parallelize work
-        // should this be atomic? At most, we run an extra task -Ionut
-        std::atomic_bool abort = false;
-
-        auto findAlpha = [&abort, &img, height](const Task& parent, U32 start, U32 end) {
+        auto findAlpha = [this, &img, height](const Task& parent, U32 start, U32 end) {
             U8 tempR, tempG, tempB, tempA;
             for (U32 i = start; i < end; ++i) {
-                for (I32 j = 0; j < height; ++j) {
-                    if (!abort) {
+                if (!_hasTransparency) {
+                    for (I32 j = 0; j < height; ++j) {
                         img.getColour(i, j, tempR, tempG, tempB, tempA);
                         if (tempA < 250) {
-                            abort = true;
+                            _hasTransparency = true;
+                             return;
                         }
                     }
                 }
@@ -175,8 +170,6 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
         };
 
         parallel_for(findAlpha, width, g_partitionSize);
-
-        _hasTransparency = abort;
     }
 
     Console::d_printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY")),

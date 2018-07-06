@@ -10,7 +10,7 @@ Resource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
                                                               _descriptor.getResourceName(),
                                                               _descriptor.getResourceLocation()),
                             DeleteResource(_cache));
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         ptr->isLooping() = _descriptor.getFlag();

@@ -28,7 +28,7 @@ namespace Divide {
         ptr->setMaterialTpl(matTemp);
     }
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     }
 

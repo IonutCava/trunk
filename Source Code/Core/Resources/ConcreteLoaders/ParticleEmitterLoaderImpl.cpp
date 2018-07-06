@@ -10,7 +10,7 @@ Resource_ptr ImplResourceLoader<ParticleEmitter>::operator()() {
     std::shared_ptr<ParticleEmitter> ptr(MemoryManager_NEW ParticleEmitter(_context.gfx(), _cache, _descriptor.getName()),
                                          DeleteResource(_cache));
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         ptr->renderState().useDefaultMaterial(false);

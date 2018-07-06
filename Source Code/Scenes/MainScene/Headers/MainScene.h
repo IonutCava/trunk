@@ -66,10 +66,6 @@ class MainScene : public Scene {
     bool _freeflyCamera;
     bool _updateLights;
     AudioDescriptor_ptr _beep;
-    vectorImpl<SceneGraphNode_wptr> _visibleTerrains;
-    WaterPlane_ptr _water;
-    SceneGraphNode_wptr _sun;
-    SceneGraphNode_wptr _waterGraphNode;
 };
 
 };  // namespace Divide

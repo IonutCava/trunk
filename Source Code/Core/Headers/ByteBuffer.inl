@@ -316,7 +316,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
 
 template <typename T, size_t N>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::array<T, N> const &v) {
-    b << (U64)N;
+    b << static_cast<U64>(N);
     b.append(v.data(), N);
 
     return b;
@@ -324,8 +324,10 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::array<T, N> const &v) {
 
 template <typename T, size_t N>
 inline ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N> &v) {
-    b >> (U64)N;
-    b.read((Byte*)v.data(), N * sizeof(T));
+    U64 size;
+    b >> size;
+    assert(size == static_cast<U64>(N));
+    b.read((Byte*)v.data(), size * sizeof(T));
 
     return b;
 }

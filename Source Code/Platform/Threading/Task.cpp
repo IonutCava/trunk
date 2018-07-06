@@ -154,9 +154,7 @@ void Task::wait() {
 
 void Task::run() {
     //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
-    while (_childTaskCount > 0) {
-        std::this_thread::yield();
-    }
+    WAIT_FOR_CONDITION(_childTaskCount == 0, true);
 
     if (_callback) {
         _callback(*this);

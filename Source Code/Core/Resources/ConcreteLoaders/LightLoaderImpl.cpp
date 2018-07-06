@@ -34,7 +34,7 @@ Resource_ptr ImplResourceLoader<Light>::operator()() {
     };
     assert(ptr != nullptr);
 
-    if (!load(ptr)) {
+    if (!load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         ptr->renderState().useDefaultMaterial(false);

@@ -20,7 +20,7 @@ Resource_ptr ImplResourceLoader<Mesh>::operator()() {
                                _descriptor.getResourceLocation().c_str()).c_str());
     }
 
-    if (!load(ptr) || !ptr) {
+    if (!ptr && !load(ptr, _descriptor.onLoadCallback())) {
         ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
