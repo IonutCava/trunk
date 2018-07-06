@@ -108,11 +108,8 @@ void GL_API::beginFrame() {
 #ifdef _DEBUG
     glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0].getID());
 #endif
-    // Restore the clear color (in case it changed)
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     // Clear our buffers
-    glClear(GL_COLOR_BUFFER_BIT |
-            GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /* | GL_STENCIL_BUFFER_BIT*/);
     // Clears are registered as draw calls by most software, so we do the same
     // to stay in sync with third party software
     GFX_DEVICE.registerDrawCall();

@@ -34,46 +34,6 @@
 namespace Divide {
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const U8& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
-    }
-
-    ShaderVarU8Map::iterator it = _shaderVarsU8.find(location);
-    if (it != std::end(_shaderVarsU8)) {
-        if (it->second == value) {
-            return false;
-        } else {
-            it->second = value;
-        }
-    } else {
-        hashAlg::emplace(_shaderVarsU8, location, value);
-    }
-
-    return true;
-}
-
-template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const U16& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
-    }
-
-    ShaderVarU16Map::iterator it = _shaderVarsU16.find(location);
-    if (it != std::end(_shaderVarsU16)) {
-        if (it->second == value) {
-            return false;
-        } else {
-            it->second = value;
-        }
-    } else {
-        hashAlg::emplace(_shaderVarsU16, location, value);
-    }
-
-    return true;
-}
-
-template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
     if (location == -1 || _shaderProgramID == 0) {
         return false;
@@ -168,26 +128,6 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& va
         }
     } else {
         hashAlg::emplace(_shaderVarsVec2I32, location, value);
-    }
-
-    return true;
-}
- 
-template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<U16>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
-    }
-
-    ShaderVarVec2U16Map::iterator it = _shaderVarsVec2U16.find(location);
-    if (it != std::end(_shaderVarsVec2U16)) {
-        if (it->second == value) {
-            return false;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::emplace(_shaderVarsVec2U16, location, value);
     }
 
     return true;
@@ -297,11 +237,6 @@ void glShaderProgram::Uniform(const stringImpl& ext,
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
-                              const vec2<U16>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec3<F32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
@@ -358,10 +293,6 @@ void glShaderProgram::Uniform(const stringImpl& ext,
                               const vectorImpl<mat4<F32> >& values,
                               bool rowMajor) {
     Uniform(getUniformLocation(ext), values, rowMajor);
-}
-
-void glShaderProgram::Uniform(const stringImpl& ext, U8 slot) {
-    Uniform(getUniformLocation(ext), slot);
 }
 
 }; //namespace Divide

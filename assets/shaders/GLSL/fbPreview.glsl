@@ -75,7 +75,7 @@ out vec4 _colorOut;
 
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform int layer;
+uniform uint layer;
 uniform float lodLevel = 0;
 
 void main()
@@ -99,7 +99,7 @@ in vec2 _texCoord;
 out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform int layer;
+uniform uint layer;
 uniform float lodLevel = 0;
 
 #if !defined(USE_SCENE_ZPLANES)
@@ -118,7 +118,6 @@ void main()
 
     float depth = textureLod(texDiffuse0, vec3(_texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-    
 	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }

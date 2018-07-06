@@ -39,8 +39,9 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     // We clear the FB on each face draw call, not on Begin()
     _renderPolicy->_clearBuffersOnBind = false;
 
-    ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM");
+    ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
     shadowPreviewShader.setThreadedLoading(false);
+    shadowPreviewShader.setPropertyList("USE_SCENE_ZPLANES");
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     _previewDepthMapShader->Uniform("useScenePlanes", false);
 
@@ -64,7 +65,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera,
     _depthMap = GFX_DEVICE.newFB(false);
     _depthMap->AddAttachment(depthMapDescriptor,
                              TextureDescriptor::AttachmentType::Color0);
-    _depthMap->toggleDepthBuffer(true);  //<create a floating point depth buffer
+    //_depthMap->toggleDepthBuffer(true);  //<create a floating point depth buffer
     _depthMap->setClearColor(DefaultColors::WHITE());
 
     SamplerDescriptor blurMapSampler;
@@ -144,15 +145,13 @@ void CascadedShadowMaps::render(SceneRenderState& renderState,
     camera.getWorldMatrix(_viewInvMatrixCache);
     camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
     camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
+    for (U8 i = 0; i < _numSplits; ++i) {
+        ApplyFrustumSplit(i);
+    }
 
-    _depthMap->Begin(*_renderPolicy);
+    _depthMap->Begin(Framebuffer::defaultPolicy());
         renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
-            for (U8 i = 0; i < _numSplits; ++i) {
-                ApplyFrustumSplit(i);
-                _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
-                                       true);
-                GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
-            }
+            GFX_DEVICE.getRenderer().render(sceneRenderFunction, renderState);
         renderState.getCameraMgr().popActiveCamera();
     _depthMap->End();
 }
@@ -261,9 +260,9 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass) {
 }
 
 void CascadedShadowMaps::postRender() {
-    if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
+    //if (GFX_DEVICE.shadowDetailLevel() == RenderDetailLevel::LOW) {
         return;
-    }
+    //}
 
     // Blur horizontally
     _blurDepthMapShader->bind();
@@ -272,8 +271,7 @@ void CascadedShadowMaps::postRender() {
     _depthMap->Bind(0, TextureDescriptor::AttachmentType::Color0, false);
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
-        _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
-                                 false);
+        _blurBuffer->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i, false);
         GFX_DEVICE.drawPoints(1, 
                               GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
@@ -286,8 +284,7 @@ void CascadedShadowMaps::postRender() {
     _blurBuffer->Bind();
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
-        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,
-                               false);
+        _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i, false);
         GFX_DEVICE.drawPoints(1, 
                               GFX_DEVICE.getDefaultStateBlock(true),
                               _blurDepthMapShader);
@@ -305,16 +302,14 @@ void CascadedShadowMaps::previewShadowMaps() {
         return;
     }
 
-
+    size_t stateHash = GFX_DEVICE.getDefaultStateBlock(true);
     _depthMap->Bind();
-    for (U8 i = 0; i < _numSplits; ++i) {
+    for (U32 i = 0; i < _numSplits; ++i) {
         _previewDepthMapShader->Uniform("layer", i);
-        _previewDepthMapShader->Uniform(
-            "dvd_zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
+        _previewDepthMapShader->Uniform("dvd_zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
 
         GFX::ScopedViewport viewport(256 * i, 1, 256, 256);
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
-                                _previewDepthMapShader);
+        GFX_DEVICE.drawTriangle(stateHash, _previewDepthMapShader);
     }
 }
 };

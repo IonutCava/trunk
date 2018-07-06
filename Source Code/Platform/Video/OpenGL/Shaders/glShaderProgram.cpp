@@ -280,14 +280,11 @@ void glShaderProgram::link() {
         _linked = true;
     }
 
-    _shaderVarsU8.clear();
-    _shaderVarsU16.clear();
     _shaderVarsU32.clear();
     _shaderVarsI32.clear();
     _shaderVarsF32.clear();
     _shaderVarsVec2F32.clear();
     _shaderVarsVec2I32.clear();
-    _shaderVarsVec2U16.clear();
     _shaderVarsVec3F32.clear();
     _shaderVarsVec4F32.clear();
     _shaderVarsMat3.clear();
@@ -657,14 +654,6 @@ void glShaderProgram::Uniform(GLint location, const vec2<I32>& value) {
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec2<U16>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform2uiv(_shaderProgramID, location, 1,
-                             vec2<U32>(value.x, value.y));
-    }
-}
-
-/// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniform3fv(_shaderProgramID, location, 1, value);
@@ -773,12 +762,6 @@ void glShaderProgram::Uniform(GLint location,
     glProgramUniformMatrix4fv(_shaderProgramID, location,
                               (GLsizei)values.size(),
                               rowMajor ? GL_TRUE : GL_FALSE, values.front());
-}
-
-void glShaderProgram::Uniform(GLint location, U8 slot) {
-    if (cachedValueUpdate(location, slot)) {
-        glProgramUniform1i(_shaderProgramID, location, to_int(slot));
-    }
 }
 
 void glShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {

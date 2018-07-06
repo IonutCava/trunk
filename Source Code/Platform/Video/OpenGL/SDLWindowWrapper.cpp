@@ -380,9 +380,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINES),
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
 
-    // Set the clear color to the blue color used since the initial OBJ loader
-    // days
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
     // Seamless cubemaps are a nice feature to have enabled (core since 3.2)
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     // Enable multisampling if we actually support and request it

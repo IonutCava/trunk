@@ -82,13 +82,11 @@ class glShaderProgram final : public ShaderProgram {
                                      const stringImpl& name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
     /// Set an uniform value
-    inline void Uniform(const stringImpl& ext, U8 slot) override;
     inline void Uniform(const stringImpl& ext, U32 value) override;
     inline void Uniform(const stringImpl& ext, I32 value) override;
     inline void Uniform(const stringImpl& ext, F32 value) override;
     inline void Uniform(const stringImpl& ext, const vec2<F32>& value) override;
     inline void Uniform(const stringImpl& ext, const vec2<I32>& value) override;
-    inline void Uniform(const stringImpl& ext, const vec2<U16>& value) override;
     inline void Uniform(const stringImpl& ext, const vec3<F32>& value) override;
     inline void Uniform(const stringImpl& ext, const vec4<F32>& value) override;
     inline void Uniform(const stringImpl& ext,
@@ -112,13 +110,11 @@ class glShaderProgram final : public ShaderProgram {
                         const vectorImpl<mat4<F32>>& values,
                         bool rowMajor = false) override;
 
-    void Uniform(I32 location, U8 slot) override;
     void Uniform(I32 location, U32 value) override;
     void Uniform(I32 location, I32 value) override;
     void Uniform(I32 location, F32 value) override;
     void Uniform(I32 location, const vec2<F32>& value) override;
     void Uniform(I32 location, const vec2<I32>& value) override;
-    void Uniform(I32 location, const vec2<U16>& value) override;
     void Uniform(I32 location, const vec3<F32>& value) override;
     void Uniform(I32 location, const vec4<F32>& value) override;
     void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) override;
@@ -169,27 +165,21 @@ class glShaderProgram final : public ShaderProgram {
 
    private:
     typedef hashMapImpl<stringImpl, I32> ShaderVarMap;
-    typedef hashMapImpl<I32, U8> ShaderVarU8Map;
-    typedef hashMapImpl<I32, U16> ShaderVarU16Map;
     typedef hashMapImpl<I32, U32> ShaderVarU32Map;
     typedef hashMapImpl<I32, I32> ShaderVarI32Map;
     typedef hashMapImpl<I32, F32> ShaderVarF32Map;
     typedef hashMapImpl<I32, vec2<F32>> ShaderVarVec2F32Map;
     typedef hashMapImpl<I32, vec2<I32>> ShaderVarvec2I32Map;
-    typedef hashMapImpl<I32, vec2<U16>> ShaderVarVec2U16Map;
     typedef hashMapImpl<I32, vec3<F32>> ShaderVarVec3F32Map;
     typedef hashMapImpl<I32, vec4<F32>> ShaderVarVec4F32Map;
     typedef hashMapImpl<I32, mat3<F32>> ShaderVarMat3Map;
     typedef hashMapImpl<I32, mat4<F32>> ShaderVarMat4Map;
 
-    ShaderVarU8Map _shaderVarsU8;
-    ShaderVarU16Map _shaderVarsU16;
     ShaderVarU32Map _shaderVarsU32;
     ShaderVarI32Map _shaderVarsI32;
     ShaderVarF32Map _shaderVarsF32;
     ShaderVarVec2F32Map _shaderVarsVec2F32;
     ShaderVarvec2I32Map _shaderVarsVec2I32;
-    ShaderVarVec2U16Map _shaderVarsVec2U16;
     ShaderVarVec3F32Map _shaderVarsVec3F32;
     ShaderVarVec4F32Map _shaderVarsVec4F32;
     ShaderVarMat3Map _shaderVarsMat3;

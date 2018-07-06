@@ -199,21 +199,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     inline static GLuint getActiveFB(Framebuffer::FramebufferUsage usage) {
         return _activeFBID[to_uint(usage)];
     }
-    /// Change the clear color for the specified renderTarget
-    static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, vec4<GLfloat>& prevColor);
-    /// Change the clear color for the specified renderTarget
-    inline static void clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-        static vec4<GLfloat> prevColor;
-        clearColor(r, g, b, a, prevColor);
-    }
-        /// Change the clear color for the specified renderTarget
-    inline static void clearColor(const vec4<GLfloat>& color, vec4<GLfloat>& prevColor) {
-        clearColor(color.r, color.g, color.b, color.a, prevColor);
-    }
-    /// Change the clear color for the specified renderTarget
-    inline static void clearColor(const vec4<GLfloat>& color) {
-        clearColor(color.r, color.g, color.b, color.a);
-    }
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const stringImpl& fontName);
     /// Internally change window size
@@ -363,7 +348,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static GLint _activePackUnpackSkipPixels[2];
     static GLint _activePackUnpackSkipRows[2];
     static GLuint _activeShaderProgram;
-    static vec4<GLfloat> _prevClearColor;
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
     static bool _primitiveRestartEnabled;

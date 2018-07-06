@@ -32,7 +32,6 @@ GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID};
 GL_API::VAOBufferData GL_API::_vaoBufferData;
 bool GL_API::_primitiveRestartEnabled = false;
-vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
 GL_API::imageBoundMapDef GL_API::_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
@@ -42,6 +41,7 @@ GL_API::samplerObjectMap GL_API::_samplerMap;
 void GL_API::clearStates(const bool skipTextures,
                          const bool skipBuffers,
                          const bool skipScissor) {
+    static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();
 
     if (!skipTextures) {
         for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
@@ -71,7 +71,8 @@ void GL_API::clearStates(const bool skipTextures,
     if (!skipScissor) {
         glDisable(GL_SCISSOR_TEST);
     }
-    GL_API::clearColor(DefaultColors::DIVIDE_BLUE());
+
+    glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -349,10 +350,8 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
     // Prevent double bind
     if (_activeFBID[to_uint(usage)] == ID) {
         if (usage == Framebuffer::FramebufferUsage::FB_READ_WRITE) {
-            if (_activeFBID[to_uint(
-                    Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
-                _activeFBID[to_uint(
-                    Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
+            if (_activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] == ID &&
+                _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] == ID) {
                 return false;
             }
         } else {
@@ -367,10 +366,8 @@ bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID, GLuint&
             // bindFramebuffer(read, ID) and bindFramebuffer(write, ID)
             glBindFramebuffer(GL_FRAMEBUFFER, ID);
             // This also overrides the read and write bindings
-            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] =
-                ID;
-            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] =
-                ID;
+            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_READ_ONLY)] = ID;
+            _activeFBID[to_uint(Framebuffer::FramebufferUsage::FB_WRITE_ONLY)] = ID;
         } break;
         case Framebuffer::FramebufferUsage::FB_READ_ONLY: {
             glBindFramebuffer(GL_READ_FRAMEBUFFER, ID);
@@ -492,18 +489,6 @@ bool GL_API::setActiveProgram(GLuint programHandle) {
     glUseProgram(programHandle);
 
     return true;
-}
-
-/// Change the clear color
-void GL_API::clearColor(GLfloat r, GLfloat g, GLfloat b, GLfloat a, vec4<GLfloat>& prevColor) {
-    prevColor.set(_prevClearColor);
-    // Prevent setting the clear color to the exact same value again
-    if (_prevClearColor != vec4<F32>(r, g, b, a)) {
-        // Remember the current clear color for this target for future reference
-        _prevClearColor.set(r, g, b, a);
-        // Update the clear target
-        glClearColor(r, g, b, a);
-    }
 }
 
 /// Change the current viewport area. Redundancy check is performed in GFXDevice

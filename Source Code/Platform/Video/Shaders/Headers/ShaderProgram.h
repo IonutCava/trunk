@@ -75,15 +75,12 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
 
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
-    virtual void Uniform(const stringImpl& ext, U8 value) = 0;
     virtual void Uniform(const stringImpl& ext, U32 value) = 0;
     virtual void Uniform(const stringImpl& ext, I32 value) = 0;
     virtual void Uniform(const stringImpl& ext, F32 value) = 0;
     virtual void Uniform(const stringImpl& ext, const vec2<F32>& value) = 0;
 
     virtual void Uniform(const stringImpl& ext, const vec2<I32>& value) = 0;
-
-    virtual void Uniform(const stringImpl& ext, const vec2<U16>& value) = 0;
 
     virtual void Uniform(const stringImpl& ext, const vec3<F32>& value) = 0;
 
@@ -136,7 +133,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     virtual void Uniform(I32 location, F32 value) = 0;
     virtual void Uniform(I32 location, const vec2<F32>& value) = 0;
     virtual void Uniform(I32 location, const vec2<I32>& value) = 0;
-    virtual void Uniform(I32 location, const vec2<U16>& value) = 0;
     virtual void Uniform(I32 location, const vec3<F32>& value) = 0;
     virtual void Uniform(I32 location, const vec4<F32>& value) = 0;
     virtual void Uniform(I32 location,
@@ -159,7 +155,6 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     virtual void Uniform(I32 location,
                          const vectorImpl<mat4<F32> >& values,
                          bool rowMajor = false) = 0;
-    virtual void Uniform(I32 location, U8 slot) = 0;
 
     virtual void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) = 0;
 

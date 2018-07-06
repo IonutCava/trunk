@@ -341,7 +341,7 @@ bool Material::computeShader(RenderStage renderStage,
     }
 
     if (depthPassShader && renderStage == RenderStage::SHADOW) {
-        setShaderDefines(renderStage, "COMPUTE_MOMENTS");
+        setShaderDefines(renderStage, "SHADOW_PASS");
         shader += ".Shadow";
     }
 

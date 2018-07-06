@@ -68,13 +68,11 @@ class d3dShaderProgram final : public ShaderProgram {
     }
     U32 GetSubroutineUniformCount(ShaderType type) const override { return 0; }
     // Uniforms
-    void Uniform(const stringImpl& ext, U8 slot) override {}
     void Uniform(const stringImpl& ext, U32 value) override {}
     void Uniform(const stringImpl& ext, I32 value) override {}
     void Uniform(const stringImpl& ext, F32 value) override {}
     void Uniform(const stringImpl& ext, const vec2<F32>& value) override {}
     void Uniform(const stringImpl& ext, const vec2<I32>& value) override {}
-    void Uniform(const stringImpl& ext, const vec2<U16>& value) override {}
     void Uniform(const stringImpl& ext, const vec3<F32>& value) override {}
     void Uniform(const stringImpl& ext, const vec4<F32>& value) override {}
     void Uniform(const stringImpl& ext,
@@ -95,13 +93,11 @@ class d3dShaderProgram final : public ShaderProgram {
                  const vectorImpl<mat4<F32> >& values,
                  bool rowMajor = false) override {}
 
-    void Uniform(I32 location, U8 slot) override {}
     void Uniform(I32 location, U32 value) override {}
     void Uniform(I32 location, I32 value) override {}
     void Uniform(I32 location, F32 value) override {}
     void Uniform(I32 location, const vec2<F32>& value) override {}
     void Uniform(I32 location, const vec2<I32>& value) override {}
-    void Uniform(I32 location, const vec2<U16>& value) override {}
     void Uniform(I32 location, const vec3<F32>& value) override {}
     void Uniform(I32 location, const vec4<F32>& value) override {}
     void Uniform(I32 location, const mat3<F32>& value, bool rowMajor = false) override {}

@@ -372,7 +372,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
     inline I32 getDrawCallCount() const { return FRAME_DRAW_CALLS_PREV; }
 
-    inline void registerDrawCall() { FRAME_DRAW_CALLS++; }
+    inline void registerDrawCall() { registerDrawCalls(1); }
+
+    inline void registerDrawCalls(U32 count) { FRAME_DRAW_CALLS += count; }
 
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 

@@ -18,7 +18,8 @@ void d3dRenderTarget::End() {}
 void d3dRenderTarget::Bind(U8 unit, TextureDescriptor::AttachmentType slot, bool flushStateOnRequest) {}
 
 void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot,
-                                  U8 layer, bool includeDepth) {}
+                                  U8 layer,
+                                  bool includeDepth) {}
 
 void d3dRenderTarget::SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
                                   TextureDescriptor::AttachmentType slot) {}

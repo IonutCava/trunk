@@ -8,12 +8,12 @@ namespace Divide {
 Framebuffer::Framebuffer(bool multiSampled)
     : GUIDWrapper(),
       _shouldRebuild(true),
-      _clearBuffersState(true),
       _useDepthBuffer(false),
       _disableColorWrites(false),
       _multisampled(multiSampled),
       _width(0),
       _height(0),
+      _depthValue(1.0),
       _framebufferHandle(0)
 {
     _clearColor.set(DefaultColors::WHITE());

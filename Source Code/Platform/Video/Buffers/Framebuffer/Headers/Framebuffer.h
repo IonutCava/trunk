@@ -136,6 +136,10 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         _clearColor.set(clearColor);
     }
 
+    inline void setClearDepth(F32 depthValue) {
+        _depthValue = depthValue;
+    }
+
     inline bool isMultisampled() const {
         return _multisampled;
     }
@@ -148,14 +152,6 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         return vec2<U16>(_width, _height);
     }
 
-    inline void clearBuffers(bool state) {
-        _clearBuffersState = state;
-    }
-
-    inline bool clearBuffers() const {
-        return _clearBuffersState;
-    }
-
     Framebuffer(bool multiSample);
     virtual ~Framebuffer();
 
@@ -164,12 +160,12 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
 
    protected:
     bool _shouldRebuild;
-    bool _clearBuffersState;
     bool _useDepthBuffer;
     bool _disableColorWrites;
     bool _multisampled;
     U16 _width, _height;
     U32 _framebufferHandle;
+    F32 _depthValue;
     vec4<F32> _clearColor;
     std::array<TextureDescriptor,
                to_const_uint(TextureDescriptor::AttachmentType::COUNT)>

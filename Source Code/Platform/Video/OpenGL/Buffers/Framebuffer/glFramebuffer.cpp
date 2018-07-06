@@ -158,27 +158,12 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         }
         attachment = GL_COLOR_ATTACHMENT0 + offset;
     }
+    _attOffset[slot] = offset + 1;
 
     glNamedFramebufferTexture(_framebufferHandle, attachment, tex->getHandle(), 0);
     if (type != AttachmentType::Depth) {
         _colorBuffers.push_back(attachment);
-        U32 layerCount = texDescriptor._layerCount;
-        if (currentType == TextureType::TEXTURE_CUBE_MAP) {
-            layerCount *= 6;
-        }
-
-        if (layerCount > 1) {
-            offset += 1;
-            for (U32 i = 0; i < layerCount; ++i) {
-                GLenum attachPoint = GL_COLOR_ATTACHMENT0 + offset + i;
-                glNamedFramebufferTextureLayer(_framebufferHandle, attachPoint, tex->getHandle(), 0, i);
-                _colorBuffers.push_back(attachPoint);
-            }
-        }
-
-        _attOffset[slot] = offset + layerCount;
     }
-    
 }
 
 void glFramebuffer::RemoveDepthBuffer() {
@@ -198,16 +183,6 @@ void glFramebuffer::AddDepthBuffer() {
     TextureDescriptor desc = _attachment[to_uint(AttachmentType::Color0)];
     TextureType texType = desc._type;
 
-    if (texType == TextureType::TEXTURE_2D_ARRAY) {
-        texType = TextureType::TEXTURE_2D;
-    }
-    if (texType == TextureType::TEXTURE_2D_ARRAY_MS) {
-        texType = TextureType::TEXTURE_2D_MS;
-    }
-    if (texType == TextureType::TEXTURE_CUBE_ARRAY) {
-        texType = TextureType::TEXTURE_CUBE_MAP;
-    }
-
     GFXDataFormat dataType = desc._dataType;
     bool fpDepth = (dataType == GFXDataFormat::FLOAT_16 ||
                     dataType == GFXDataFormat::FLOAT_32);
@@ -226,6 +201,7 @@ void glFramebuffer::AddDepthBuffer() {
     screenSampler._cmpFunc =
         ComparisonFunction::LEQUAL;  //< Use less or equal
     depthDescriptor.setSampler(screenSampler);
+    depthDescriptor.setLayerCount(desc._layerCount);
     _attachmentDirty[to_uint(AttachmentType::Depth)] = true;
     _attachment[to_uint(AttachmentType::Depth)] = depthDescriptor;
     InitAttachment(AttachmentType::Depth, depthDescriptor, false);
@@ -295,13 +271,7 @@ bool glFramebuffer::Create(U16 width, U16 height) {
         }
     }
 
-    if (!_hasColor && _hasDepth) {
-        _clearBufferMask = GL_DEPTH_BUFFER_BIT;
-    } else if (_hasColor && !_hasDepth) {
-        _clearBufferMask = GL_COLOR_BUFFER_BIT;
-    } else {
-        _clearBufferMask = GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT;
-    }
+    clearBuffers();
 
     _isCreated = checkStatus();
     _shouldRebuild = !_isCreated;
@@ -431,22 +401,9 @@ void glFramebuffer::Begin(const FramebufferTarget& drawPolicy) {
     }
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
-
-    // this is checked so it isn't called twice on the GPU
-    GL_API::clearColor(_clearColor, _prevClearColor);
-
-    if (_clearBuffersState && drawPolicy._clearBuffersOnBind) {
-        if (drawPolicy._drawMask == FramebufferTarget::BufferMask::DEPTH &&
-            _hasDepth) {
-            glClear(GL_DEPTH_BUFFER_BIT);
-        } else if (drawPolicy._drawMask ==
-                       FramebufferTarget::BufferMask::COLOR &&
-                   _hasColor) {
-            glClear(GL_COLOR_BUFFER_BIT);
-        } else {
-            glClear(_clearBufferMask);
-        }
-        GFX_DEVICE.registerDrawCall();
+    checkStatus();
+    if (drawPolicy._clearBuffersOnBind) {
+        clearBuffers();
     }
 
     ResetMipMaps(drawPolicy._drawMask);
@@ -469,9 +426,23 @@ void glFramebuffer::End() {
         _viewportChanged = false;
     }
     resolve();
-
-    GL_API::clearColor(_prevClearColor);
     glFramebuffer::_bufferBound = false;
+}
+
+void glFramebuffer::clearBuffers() const {
+    if (_hasColor) {
+        GLuint index = 0;
+        for (; index < _colorBuffers.size(); ++index) {
+            glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index++, _clearColor._v);
+        }
+        GFX_DEVICE.registerDrawCalls(index);
+    }
+    if (_hasDepth) {
+        glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_depthValue);
+        GFX_DEVICE.registerDrawCall();
+    }
+
+    
 }
 
 void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
@@ -505,27 +476,18 @@ void glFramebuffer::DrawToLayer(TextureDescriptor::AttachmentType slot,
     }
 
     if (useColorLayer) {
-        GLint offset = 1;
+        U32 offset = 0;
         if (to_uint(slot) > 0) {
-            offset += _attOffset[to_uint(slot) - 1];
+            offset = _attOffset[to_uint(slot) - 1];
         }
-
-        glNamedFramebufferDrawBuffer(_framebufferHandle, _colorBuffers[layer + offset]);
+        glNamedFramebufferTextureLayer(_framebufferHandle,
+                                       _colorBuffers[offset],
+                                       _attachmentTexture[to_uint(slot)]->getHandle(),
+                                       0,
+                                       layer);
     }
 
     _attachmentTexture[to_uint(slot)]->refreshMipMaps();
-
-    if (_clearBuffersState) {
-        if (useDepthLayer) {
-            useColorLayer ? glClear(_clearBufferMask)
-                          : glClear(GL_DEPTH_BUFFER_BIT);
-        } else {
-            if (useColorLayer) {
-                glClear(GL_COLOR_BUFFER_BIT);
-            }
-        }
-        GFX_DEVICE.registerDrawCall();
-    }
 }
 
 void glFramebuffer::SetMipLevel(U16 mipLevel, U16 mipMaxLevel, U16 writeLevel,
