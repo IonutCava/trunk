@@ -19,9 +19,11 @@ glVertexArray::glVertexArray()
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
+    _bufferEntrySize = 0;
     _VAOid = _VBid = _IBid = 0;
 
     _useAttribute.fill(false);
+    _attributeOffset.fill(0);
 }
 
 glVertexArray::~glVertexArray()
@@ -47,10 +49,41 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
     bool useTexcoords = _useAttribute[to_uint(VertexAttribute::ATTRIB_TEXCOORD)];
     bool useBoneData = _useAttribute[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)];
 
+    size_t prevOffset = sizeof(vec3<F32>);
+    if (useNormals) {
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_NORMAL)] = prevOffset;
+        prevOffset += sizeof(F32);
+    }
+
+    if (useTangents) {
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TANGENT)] = prevOffset;
+        prevOffset += sizeof(F32);
+    }
+
+    if (useColor) {
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_COLOR)] = prevOffset;
+        prevOffset += sizeof(vec4<U8>);
+    }
+
+    if (useTexcoords) {
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_TEXCOORD)] = prevOffset;
+        prevOffset += sizeof(vec2<F32>);
+    }
+
+    if (useBoneData) {
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_INDICE)] = prevOffset;
+        prevOffset += sizeof(P32);
+        _attributeOffset[to_uint(VertexAttribute::ATTRIB_BONE_WEIGHT)] = prevOffset;
+        prevOffset += sizeof(vec4<F32>);
+    }
+
+    _bufferEntrySize = prevOffset;
+
     for (Vertex& data : _data) {
         _smallData << data._position.x;
         _smallData << data._position.y;
         _smallData << data._position.z;
+
         if (useNormals) {
             _smallData << data._normal;
         }
@@ -80,10 +113,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
         }
     }
     
-    //Enable this when vertex attributes are adjusted accordingly
-    //return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
-
-    return  std::make_pair((bufferPtr)_data.data(), _data.size() * sizeof(Vertex));
+    return std::make_pair((bufferPtr)_smallData.contents(), _smallData.size());
 }
 
 /// Create a dynamic or static VB
@@ -136,7 +166,7 @@ bool glVertexArray::refresh() {
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
 
-    size_t size = bufferData.second;
+    GLsizei size = static_cast<GLsizei>(bufferData.second);
     bool sizeChanged = size != _prevSize;
     _prevSize = size;
 
@@ -153,6 +183,7 @@ bool glVertexArray::refresh() {
     }
 
     glNamedBufferSubData(_VBid, 0, size, bufferData.first);
+    _smallData.clear();
 
     // Check if we need to update the IBO (will be true for the first Refresh()
     // call)
@@ -292,14 +323,14 @@ void glVertexArray::uploadVBAttributes() {
     glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_POSITION));
 
     glVertexAttribPointer(to_uint(AttribLocation::VERTEX_POSITION),
-                          3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                          (bufferPtr)(offsetof(Vertex, _position)));
+                          3, GL_FLOAT, GL_FALSE, _bufferEntrySize,
+                          (bufferPtr)(0));
 
     if (_useAttribute[to_uint(AttribLocation::VERTEX_COLOR)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
         glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_COLOR),
-                               4, GL_UNSIGNED_BYTE, sizeof(Vertex),
-                               (bufferPtr)(offsetof(Vertex, _color)));
+                               4, GL_UNSIGNED_BYTE, _bufferEntrySize,
+                               (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_COLOR)]));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_COLOR));
     }
@@ -307,8 +338,8 @@ void glVertexArray::uploadVBAttributes() {
     if (_useAttribute[to_uint(AttribLocation::VERTEX_NORMAL)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
         glVertexAttribPointer(to_uint(AttribLocation::VERTEX_NORMAL),
-                              1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (bufferPtr)(offsetof(Vertex, _normal)));
+                              1, GL_FLOAT, GL_FALSE, _bufferEntrySize,
+                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_NORMAL)]));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_NORMAL));
     }
@@ -316,8 +347,8 @@ void glVertexArray::uploadVBAttributes() {
     if (_useAttribute[to_uint(AttribLocation::VERTEX_TEXCOORD)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
         glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TEXCOORD),
-                              2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (bufferPtr)(offsetof(Vertex, _texcoord)));
+                              2, GL_FLOAT, GL_FALSE, _bufferEntrySize,
+                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_TEXCOORD)]));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TEXCOORD));
     }
@@ -325,8 +356,8 @@ void glVertexArray::uploadVBAttributes() {
     if (_useAttribute[to_uint(AttribLocation::VERTEX_TANGENT)]) {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
         glVertexAttribPointer(to_uint(AttribLocation::VERTEX_TANGENT),
-                              1, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (bufferPtr)(offsetof(Vertex, _tangent)));
+                              1, GL_FLOAT, GL_FALSE, _bufferEntrySize,
+                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_TANGENT)]));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_TANGENT));
     }
@@ -337,11 +368,11 @@ void glVertexArray::uploadVBAttributes() {
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
         glEnableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));
         glVertexAttribPointer(to_uint(AttribLocation::VERTEX_BONE_WEIGHT),
-                              4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (bufferPtr)(offsetof(Vertex, _weights)));
+                              4, GL_FLOAT, GL_FALSE, _bufferEntrySize,
+                              (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_BONE_WEIGHT)]));
         glVertexAttribIPointer(to_uint(AttribLocation::VERTEX_BONE_INDICE),
-                               1, GL_UNSIGNED_INT, sizeof(Vertex),
-                               (bufferPtr)(offsetof(Vertex, _indices)));
+                               1, GL_UNSIGNED_INT, _bufferEntrySize,
+                               (bufferPtr)(_attributeOffset[to_uint(AttribLocation::VERTEX_BONE_INDICE)]));
     } else {
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_WEIGHT));
         glDisableVertexAttribArray(to_uint(AttribLocation::VERTEX_BONE_INDICE));
