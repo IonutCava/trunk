@@ -82,35 +82,37 @@ class glVertexArray : public VertexBuffer {
     /// Internally create the VB
     bool createInternal();
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
-    void uploadVBAttributes();
+    void uploadVBAttributes(U8 vaoIndex);
     /// Integrity checks
     void checkStatus();
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
     std::pair<bufferPtr, size_t> getMinimalData();
 
-    static GLuint getVao(size_t hash);
-    static void setVao(size_t hash, GLuint id);
+    static GLuint getVao(U32 hash);
+    static void setVao(U32 hash, GLuint id);
     static void clearVaos();
+
+    static void cleanup();
 
    protected:
     GLenum _formatInternal;
     GLuint _IBid;
-    GLuint _VBid;
+    // VB GL ID and Offset
+    std::pair<GLuint, U32> _VBHandle;
     GLenum _usage;
-    bool _refreshQueued;  ///< A refresh call might be called before "Create()".
-                          ///This should help with that
+    ///< A refresh call might be called before "Create()". This should help with that
+    bool _refreshQueued;  
     GLsizei _prevSize;
     GLsizei _prevSizeIndices;
     GLsizei _bufferEntrySize;
     ByteBuffer _smallData;
-    typedef std::array<bool, to_const_uint(VertexAttribute::COUNT)> AttribFlags;
     AttribFlags _useAttribute;
     typedef std::array<GLuint, to_const_uint(VertexAttribute::COUNT)> AttribValues;
     AttribValues _attributeOffset;
 
-    size_t _vaoHash;
-    GLuint _vaoCache;
-    typedef hashMapImpl<size_t, GLuint> VAOMap;
+    std::array<U32, to_const_uint(RenderStage::COUNT)> _vaoHashes;
+    std::array<GLuint, to_const_uint(RenderStage::COUNT)> _vaoCaches;
+    typedef hashMapImpl<U32, GLuint> VAOMap;
     static VAOMap _VAOMap;
 };
 

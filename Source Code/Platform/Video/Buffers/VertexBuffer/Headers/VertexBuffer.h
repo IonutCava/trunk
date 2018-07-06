@@ -47,20 +47,18 @@ class ShaderProgram;
 
 class NOINITVTABLE VertexBuffer : public VertexDataInterface
 {
-   protected:
+   public:
     enum class VertexAttribute : U32 {
         ATTRIB_POSITION = 0,
-        ATTRIB_COLOR    = 1,
-        ATTRIB_NORMAL   = 2,
+        ATTRIB_COLOR = 1,
+        ATTRIB_NORMAL = 2,
         ATTRIB_TEXCOORD = 3,
-        ATTRIB_TANGENT  = 4,
+        ATTRIB_TANGENT = 4,
         ATTRIB_BONE_WEIGHT = 5,
         ATTRIB_BONE_INDICE = 6,
         COUNT = 7
     };
 
-   public:
-       
     struct Vertex {
         vec3<F32> _position;
         F32       _normal;
@@ -70,6 +68,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         P32       _weights;
         P32       _indices;
     };
+
+    typedef std::array<bool, to_const_uint(VertexAttribute::COUNT)> AttribFlags;
 
     VertexBuffer()
         : VertexDataInterface(),
@@ -463,7 +463,19 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         return false;
     }
 
+    static void setAttribMasks(AttribFlags flagMask) {
+        for (AttribFlags& flags : _attribMaskPerStage) {
+            flags = flagMask;
+        }
+    }
+
+    static void setAttribMask(RenderStage stage, AttribFlags flagMask) {
+        _attribMaskPerStage[to_uint(stage)] = flagMask;
+    }
+
    protected:
+    static std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> _attribMaskPerStage;
+
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;
     virtual bool createInternal() = 0;

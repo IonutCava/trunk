@@ -293,6 +293,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                                  GLuint bufferID,
                                  GLintptr offset,
                                  GLsizei stride);
+
+    U32 getResidentTextureHandle(U8 textureSlot);
+
   private:
     ErrorCode createWindow();
     ErrorCode createGLContext();

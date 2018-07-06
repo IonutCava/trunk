@@ -259,15 +259,18 @@ inline U32 renderStageToBufferOffset(RenderStage stage) {
     return 0;
 }
 
-inline U32 renderStageBufferSize() {
-    U32 result = 0;
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
-        result =
-            std::max(result,
-                renderStageToBufferOffset(static_cast<RenderStage>(i)) + 1);
-    }
-    return result;
+inline U32 GFXDevice::getResidentTextureHandle(U8 textureSlot) {
+    return _api->getResidentTextureHandle(textureSlot);
 }
+
+inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage) const {
+    return *_indirectCommandBuffers[to_uint(stage)].get();
+}
+
+inline ShaderBuffer& GFXDevice::getNodeBuffer(U32 stageIndex) {
+    return *_nodeBuffers[stageIndex].get();
+}
+
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE \
     RenderPassManager::getInstance().getLastTotalBinSize(0)

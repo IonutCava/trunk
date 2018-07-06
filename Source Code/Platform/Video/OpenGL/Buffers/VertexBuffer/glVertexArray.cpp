@@ -10,6 +10,138 @@
 namespace Divide {
 
 namespace {
+    class VBO {
+       public:
+
+        static const U32 MAX_VBO_CHUNK_SIZE_BYTES = 512 * 1024;
+        //nVidia recommended (years ago) to use up to 4 megs per VBO
+        static const U32 MAX_VBO_CHUNK_COUNT = 8; 
+        static const U32 MAX_VBO_SIZE_BYTES = MAX_VBO_CHUNK_SIZE_BYTES * MAX_VBO_CHUNK_COUNT;
+        //keep track of what chunks we are using
+        //for each chunk, keep track how many next chunks are also part of the same allocation
+        std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
+
+        static U32 getChunkCountForSize(size_t sizeInBytes) {
+            return to_uint(std::ceil(to_float(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
+        }
+
+        VBO() : _handle(0),
+            _usage(GL_NONE)
+        {
+        }
+
+        ~VBO()
+        {
+            if (_handle != 0) {
+                GLUtil::freeBuffer(_handle);
+            }
+        }
+
+        U32 handle() {
+            return _handle;
+        }
+
+        bool checkChunksAvailability(U32 offset, U32 count) {
+            // Currently hardcoded to use for a single VBO per glVertexArray
+            for (std::pair<bool, U32>& chunk : _chunkUsageState) {
+                if (chunk.first) {
+                    return false;
+                }
+                return true;
+            }
+
+            std::pair<bool, U32>& chunk = _chunkUsageState[offset];
+            U32 freeChunkCount = 0;
+            if (!chunk.first) {
+                freeChunkCount++;
+                for (U32 j = 1; j < MAX_VBO_CHUNK_COUNT - offset; ++j) {
+                    std::pair<bool, U32>& chunkChild = _chunkUsageState[offset + j];
+                    if (chunkChild.first) {
+                        break;
+                    } else {
+                        freeChunkCount++;
+                    }
+                }
+            }
+
+            return freeChunkCount >= count;
+        }
+
+        bool allocateChunks(U32 count, GLenum usage, U32& offsetOut) {
+            assert(count < MAX_VBO_CHUNK_COUNT);
+
+            if (_usage == GL_NONE || _usage == usage) {
+                for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
+                    if (checkChunksAvailability(i, count)) {
+                        if (_handle == 0) {
+                            GLUtil::createAndAllocBuffer(count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle);
+                            _usage = usage;
+                        }
+                        offsetOut = i;
+                        _chunkUsageState[i].first = true;
+                        _chunkUsageState[i].second = count;
+                        for (U32 j = 1; j < count; ++j) {
+                            _chunkUsageState[j + i].first = true;
+                        } 
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        bool releaseChunks(U32 offset) {
+            assert(offset < MAX_VBO_CHUNK_COUNT);
+
+            std::pair<bool, U32>& chunk = _chunkUsageState[offset];
+            if (chunk.first) {
+                chunk.first = false;
+                for (U32 i = 0; i < chunk.second; ++i) {
+                    std::pair<bool, U32>& chunkChild = _chunkUsageState[i + offset + 1];
+                    assert(chunkChild.first && chunkChild.second == 0);
+                    chunkChild.first = false;
+                    chunkChild.second = 0;
+                }
+                chunk.second = 0;
+                return true;
+            }
+
+            return false;
+        }
+
+    private:
+        GLuint _handle;
+        GLenum _usage;
+    };
+
+    static vectorImpl<VBO> g_globalVBOs;
+
+    static bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, U32& offsetOut) {
+        for (U32 i = 0; i < g_globalVBOs.size() + 2; ++i) {
+            for (VBO& vbo : g_globalVBOs) {
+                if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
+                    handleOut = vbo.handle();
+                    return true;
+                }
+            }
+            g_globalVBOs.emplace_back();
+        }
+
+        return false;
+    }
+
+    static bool releaseVBO(GLuint& handle, U32 offset) {
+        for (VBO& vbo : g_globalVBOs) {
+            if (vbo.handle() == handle) {
+                handle = 0;
+                return vbo.releaseChunks(offset);
+            }
+        }
+
+        return false;
+    }
+
     vec3<U32> g_currentBindConfig;
     vec3<U32> g_tempConfig;
     bool setIfDifferentBindRange(U32 UBOid, U32 offset, U32 size) {
@@ -25,13 +157,19 @@ namespace {
 
 glVertexArray::VAOMap glVertexArray::_VAOMap;
 
-GLuint glVertexArray::getVao(size_t hash) {
+void glVertexArray::cleanup() {
+    clearVaos();
+    g_globalVBOs.clear();
+}
+
+
+GLuint glVertexArray::getVao(U32 hash) {
     VAOMap::const_iterator result = _VAOMap.find(hash);
     return result != std::end(_VAOMap) ? result->second
                                        : 0;
 }
 
-void glVertexArray::setVao(size_t hash, GLuint id) {
+void glVertexArray::setVao(U32 hash, GLuint id) {
     std::pair<VAOMap::const_iterator, bool> result =
         hashAlg::emplace(_VAOMap, hash, id);
     assert(result.second);
@@ -57,8 +195,11 @@ glVertexArray::glVertexArray()
     _prevSize = -1;
     _prevSizeIndices = -1;
     _bufferEntrySize = -1;
-    _vaoCache = _VBid = _IBid = 0;
-    _vaoHash = static_cast<size_t>(-1);
+    _IBid = 0;
+    _VBHandle.first = 0;
+    _VBHandle.second = 0;
+    _vaoCaches.fill(0);
+    _vaoHashes.fill(0);
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -74,7 +215,7 @@ void glVertexArray::reset() {
     _prevSize = -1;
     _prevSizeIndices = -1;
     _bufferEntrySize = -1;
-    _vaoHash = static_cast<size_t>(-1);
+    _vaoHashes.fill(0);
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -84,7 +225,7 @@ void glVertexArray::reset() {
 /// Delete buffer
 void glVertexArray::destroy() {
     GLUtil::freeBuffer(_IBid);
-    GLUtil::freeBuffer(_VBid);
+    releaseVBO(_VBHandle.first, _VBHandle.second);
 }
 
 /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
@@ -213,17 +354,33 @@ bool glVertexArray::refresh() {
     }
     _attribDirty.fill(false);
 
-    _vaoHash = std::hash<AttribFlags>()(_useAttribute);
 
-    Console::printfn("VAO HASH: %d", _vaoHash);
+    Console::printfn("VAO HASHES: ");
+    std::array<bool, to_const_uint(RenderStage::COUNT)> vaoCachesDirty;
+    vaoCachesDirty.fill(false);
+    std::array<AttribFlags, to_const_uint(RenderStage::COUNT)> attributesPerStage;
+    for (U8 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        const AttribFlags& stageMask = _attribMaskPerStage[i];
 
-    _vaoCache = getVao(_vaoHash);
-    if (_vaoCache == 0) {
-        // Generate a "Vertex Array Object"
-        glCreateVertexArrays(1, &_vaoCache);
-        DIVIDE_ASSERT(_vaoCache != 0, Locale::get("ERROR_VAO_INIT"));
-        setVao(_vaoHash, _vaoCache);
-    } 
+        AttribFlags& stageUsage = attributesPerStage[i];
+        for (U8 j = 0; j < to_uint(VertexAttribute::COUNT); ++j) {
+            stageUsage[j] = _useAttribute[j] && stageMask[j];
+        }
+        U32 crtHash = to_uint(std::hash<AttribFlags>()(stageUsage));
+        _vaoHashes[i] = crtHash;
+        _vaoCaches[i] = getVao(crtHash);
+        if (_vaoCaches[i] == 0) {
+            // Generate a "Vertex Array Object"
+            glCreateVertexArrays(1, &_vaoCaches[i]);
+            DIVIDE_ASSERT(_vaoCaches[i] != 0, Locale::get("ERROR_VAO_INIT"));
+            setVao(crtHash, _vaoCaches[i]);
+            vaoCachesDirty[i] = true;
+        }
+
+        Console::printfn("      %d : %d", i, crtHash);
+    }
+
+
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the
     // entire buffer.
@@ -239,11 +396,17 @@ bool glVertexArray::refresh() {
     // Refresh buffer data (if this is the first call to refresh, this will be
     // true)
     if (sizeChanged) {
-         Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), size,  4 * 1024 * 1024);
+         Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"), size, VBO::MAX_VBO_CHUNK_SIZE_BYTES);
     }
     
-    // Allocate sufficient space in our buffer
-    glNamedBufferData(_VBid, size, bufferData.first, _usage);
+    if (_VBHandle.first == 0) {
+        // Generate a new Vertex Buffer Object
+        commitVBO(VBO::getChunkCountForSize(size),_usage, _VBHandle.first, _VBHandle.second);
+        DIVIDE_ASSERT(_VBHandle.first != 0, Locale::get("ERROR_VB_INIT"));
+        // Allocate sufficient space in our buffer
+        glNamedBufferSubData(_VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, size, bufferData.first);
+    }
+
     _smallData.clear();
 
     // Check if we need to update the IBO (will be true for the first Refresh()
@@ -255,8 +418,13 @@ bool glVertexArray::refresh() {
         // Update our IB
         glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
     }
-    // Set vertex attribute pointers
-    uploadVBAttributes();
+    for (U8 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        if (vaoCachesDirty[i]) {
+            // Set vertex attribute pointers
+            uploadVBAttributes(i);
+        }
+    }
+    vaoCachesDirty.fill(false);
     // Validate the buffer
     checkStatus();
     // Possibly clear client-side buffer for all non-required attributes?
@@ -269,7 +437,7 @@ bool glVertexArray::refresh() {
 /// Refresh call
 bool glVertexArray::createInternal() {
     // Avoid double create calls
-    DIVIDE_ASSERT(_VBid == 0,
+    DIVIDE_ASSERT(_VBHandle.first == 0,
                   "glVertexArray error: Attempted to double create a VB");
     // Position data is a minim requirement
     if (_data.empty()) {
@@ -278,12 +446,9 @@ bool glVertexArray::createInternal() {
     }
 
     _formatInternal = GLUtil::glDataFormat[to_uint(_format)];
-    // Generate a new Vertex Buffer Object
-    glCreateBuffers(1, &_VBid);
     // Generate an "Index Buffer Object"
     glCreateBuffers(1, &_IBid);
     // Validate buffer creation
-    DIVIDE_ASSERT(_VBid != 0, Locale::get("ERROR_VB_INIT"));
     // Assert if the IB creation failed
     DIVIDE_ASSERT(_IBid != 0, Locale::get("ERROR_IB_INIT"));
     // Calling refresh updates all stored information and sends it to the GPU
@@ -350,7 +515,7 @@ void glVertexArray::draw(const GenericDrawCommand& command,
 bool glVertexArray::setActive() {
     // Make sure we have valid data (buffer creation is deferred to the first
     // activate call)
-    if (_VBid == 0) {
+    if (_VBHandle.first == 0) {
         if (!createInternal()) {
             return false;
         }
@@ -364,7 +529,7 @@ bool glVertexArray::setActive() {
 
     // Bind the vertex array object that in turn activates all of the bindings
     // and pointers set on creation
-    if (GL_API::setActiveVAO(_vaoCache)) {
+    if (GL_API::setActiveVAO(_vaoCaches[to_uint(GFX_DEVICE.getRenderStage())])) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);
@@ -372,16 +537,16 @@ bool glVertexArray::setActive() {
 
     // Bind the the vertex buffer and index buffer
     GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-    if (setIfDifferentBindRange(_VBid, 0, _bufferEntrySize)) {
-        glBindVertexBuffer(0, _VBid, 0, _bufferEntrySize);
+    if (setIfDifferentBindRange(_VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, _bufferEntrySize)) {
+        glBindVertexBuffer(0, _VBHandle.first, _VBHandle.second * VBO::MAX_VBO_CHUNK_SIZE_BYTES, _bufferEntrySize);
     }
     return true;
 }
 
 /// Activate and set all of the required vertex attributes.
-void glVertexArray::uploadVBAttributes() {
+void glVertexArray::uploadVBAttributes(U8 vaoIndex) {
     // Bind the current VAO to save our attributes
-    GL_API::setActiveVAO(_vaoCache);
+    GL_API::setActiveVAO(_vaoCaches[vaoIndex]);
     static const U32 positionLoc = to_const_uint(AttribLocation::VERTEX_POSITION);
     static const U32 colorLoc = to_const_uint(AttribLocation::VERTEX_COLOR);
     static const U32 normalLoc = to_const_uint(AttribLocation::VERTEX_NORMAL);

@@ -551,6 +551,9 @@ void Kernel::runLogicLoop() {
 
 void Kernel::shutdown() {
     Console::printfn(Locale::get("STOP_KERNEL"));
+    _mainTaskPool.clear();
+    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
+
     // release the scene
     GET_ACTIVE_SCENE().state().runningState(false);
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
@@ -573,7 +576,6 @@ void Kernel::shutdown() {
     OpenCLInterface::getInstance().deinit();
     _SFX.closeAudioAPI();
     _GFX.closeRenderingAPI();
-    _mainTaskPool.wait();
     Input::InputInterface::destroyInstance();
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
@@ -582,9 +584,7 @@ void Kernel::shutdown() {
     ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
         
-    _mainTaskPool.clear();
-    WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
-    
+   
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 

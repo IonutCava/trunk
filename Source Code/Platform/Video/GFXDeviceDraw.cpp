@@ -123,7 +123,7 @@ void GFXDevice::flushRenderQueue() {
     uploadGPUBlock();
     // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
     _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
-    _nodeBuffer->bind(ShaderBufferLocation::NODE_INFO, renderStageToBufferOffset(getRenderStage()));
+    getNodeBuffer(renderStageToBufferOffset(getRenderStage())).bind(ShaderBufferLocation::NODE_INFO);
 
     U32 queueSize = _renderQueue.size();
     for (U32 idx = 0; idx < queueSize; ++idx) {
@@ -189,7 +189,7 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
 }
 
 /// Prepare the list of visible nodes for rendering
-void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex) {
+GFXDevice::NodeData& GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex) {
     NodeData& dataOut = _matricesData[dataIndex];
 
     SceneGraphNode_ptr nodePtr = node.lock();
@@ -221,6 +221,8 @@ void GFXDevice::processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex) {
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
     renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
+
+    return dataOut;
 }
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
@@ -252,8 +254,18 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
 
         if (pkg._isRenderable) {
             if (refreshNodeData) {
-                processVisibleNode(node, nodeCount);
+                NodeData& dataOut = processVisibleNode(node, nodeCount);
                 Attorney::RenderingCompGFXDevice::commandIndex(*renderable, nodeCount);
+                if (isDepthStage()) {
+                    for (TextureData& data : pkg._textureData) {
+                        if (data.getHandleLow() == to_uint(ShaderProgram::TextureUsage::UNIT0) &&
+                            getResidentTextureHandle(to_ubyte(ShaderProgram::TextureUsage::UNIT0)) != data.getHandleHigh()) {
+                            data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
+                            // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
+                            dataOut._matrix[3].element(3, 3, true) = 1;
+                        }
+                    }
+                }
             }
 
             for (GenericDrawCommand& cmd : pkg._drawCommands) {
@@ -273,8 +285,11 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     cmdBuffer.updateData(0, cmdCount, _drawCommandsCache.data());
     registerCommandBuffer(cmdBuffer);
     _lastCommandCount = cmdCount;
-    _nodeBuffer->updateData(0, nodeCount, _matricesData.data(), renderStageToBufferOffset(currentStage));
-    _lastNodeCount = nodeCount;
+    if (refreshNodeData) {
+        ShaderBuffer& nodeBuffer = getNodeBuffer(renderStageToBufferOffset(currentStage));
+        nodeBuffer.updateData(0, nodeCount, _matricesData.data());
+        _lastNodeCount = nodeCount;
+    }
 }
 
 void GFXDevice::occlusionCull() {

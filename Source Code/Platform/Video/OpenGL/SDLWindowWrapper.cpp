@@ -488,7 +488,7 @@ void GL_API::closeRenderingAPI() {
         glDeleteVertexArrays(1, &_dummyVAO);
         _dummyVAO = 0;
     }
-    glVertexArray::clearVaos();
+    glVertexArray::cleanup();
     // Destroy the OpenGL Context(s)
     destroyGLContext();
     // Destroy application windows and close SDL

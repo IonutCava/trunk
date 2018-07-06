@@ -13,6 +13,8 @@
 
 namespace Divide {
 
+std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexBuffer::_attribMaskPerStage;
+
 namespace {
 /// Used for anaglyph rendering
 struct CameraFrustum {
@@ -41,7 +43,6 @@ GFXDevice::GFXDevice()
     _axisGizmo = nullptr;
     _imShader = nullptr;
     _imShaderLines = nullptr;
-    _nodeBuffer = nullptr;
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
@@ -92,6 +93,18 @@ GFXDevice::GFXDevice()
     // Blue Z-axis
     _axisLines.push_back(
         Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 3.0f));
+
+    VertexBuffer::AttribFlags flags;
+    flags.fill(true);
+    VertexBuffer::setAttribMasks(flags);
+
+    // Don't (currently) need these for shadow passes
+    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
+    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
+    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
+
+    VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
+    VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
 }
 
 GFXDevice::~GFXDevice()

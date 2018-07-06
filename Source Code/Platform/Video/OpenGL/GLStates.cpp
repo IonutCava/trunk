@@ -311,6 +311,11 @@ bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,
 
     return false;
 }
+
+U32 GL_API::getResidentTextureHandle(U8 textureSlot) {
+    return _textureBoundMap[textureSlot].first;
+}
+
 /// Single place to change buffer objects for every target available
 bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
     BufferBindingParams currentParams(location, bufferID, offset, stride);

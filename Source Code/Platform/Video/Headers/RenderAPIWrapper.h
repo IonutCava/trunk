@@ -440,6 +440,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void drawText(const TextLabel& textLabel,
                           const vec2<F32>& relativeOffset) = 0;
 
+    virtual U32  getResidentTextureHandle(U8 textureSlot) = 0;
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock,

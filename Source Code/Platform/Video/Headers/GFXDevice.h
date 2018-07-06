@@ -547,11 +547,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     size_t setStateBlock(size_t stateBlockHash);
     ErrorCode createAPIInstance();
 
-    void processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
+    NodeData& processVisibleNode(SceneGraphNode_wptr node, U32 dataIndex);
 
-    inline ShaderBuffer& getCommandBuffer(RenderStage stage) const {
-        return *_indirectCommandBuffers[to_uint(stage)].get();
-    }
+    U32 getResidentTextureHandle(U8 textureSlot);
+
+    ShaderBuffer& getCommandBuffer(RenderStage stage) const;
+
+    ShaderBuffer& getNodeBuffer(U32 stageIndex);
 
   private:
     Camera* _cubeCamera;
@@ -623,8 +625,9 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
-    std::unique_ptr<ShaderBuffer> _nodeBuffer;
     std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
+    // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFER
+    std::array<std::unique_ptr<ShaderBuffer>, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON
 

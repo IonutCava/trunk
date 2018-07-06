@@ -16,7 +16,7 @@ void main() {
 
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
-    mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
+    mat4 _lightVP[MAX_SPLITS_PER_LIGHT];
 };
 
 in Inputs{
@@ -53,6 +53,8 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
+#include "nodeBufferedInput.cmn"
+
 #if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)
 #define HAS_TRANSPARENCY
 #if defined(USE_OPACITY_DIFFUSE)
@@ -63,6 +65,7 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif
 #if defined(USE_OPACITY_DIFFUSE_MAP)
 layout(binding = TEXTURE_UNIT0)   uniform sampler2D texDiffuse0;
+layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
 #endif
 #endif
 
@@ -80,7 +83,11 @@ void main() {
     float alpha = 1.0;
 #if defined(HAS_TRANSPARENCY)
 #if defined(USE_OPACITY_DIFFUSE_MAP)
-    alpha *= texture(texDiffuse0, _texCoord).a;
+    if (dvd_customData == 0) {
+        alpha *= texture(texDiffuse0, _texCoord).a;
+    } else {
+        alpha *= texture(texDiffuse1, _texCoord).a;
+    }
 #endif
 #if defined(USE_OPACITY_DIFFUSE)
     alpha *= dvd_MatDiffuse.a;
@@ -100,5 +107,6 @@ void main() {
 #else
     _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, alpha);
 #endif
+
 }
 

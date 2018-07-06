@@ -127,24 +127,24 @@ inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) {
 
 namespace Angle {
 template <typename T>
-/*constexpr*/ T DegreesToRadians(const T angleDegrees) {
+constexpr T DegreesToRadians(const T angleDegrees) {
     return static_cast<T>(angleDegrees * M_PIDIV180);
 }
 
 template <typename T>
-/*constexpr*/ T RadiansToDegrees(const T angleRadians) {
+constexpr T RadiansToDegrees(const T angleRadians) {
     return static_cast<T>(angleRadians * M_180DIVPI);
 }
 
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-/*constexpr*/ T Degrees(const T degrees) {
+constexpr T Degrees(const T degrees) {
     return degrees;
 }
 
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-/*constexpr*/ T Radians(const T radians) {
+constexpr T Radians(const T radians) {
     return radians;
 }
 
@@ -152,67 +152,67 @@ template <typename T>
 
 namespace Metric {
 template <typename T>
-/*constexpr*/ T Tera(const T a) {
+constexpr T Tera(const T a) {
     return static_cast<T>(a * 1000000000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Giga(const T a) {
+constexpr T Giga(const T a) {
     return static_cast<T>(a * 1000000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Mega(const T a) {
+constexpr T Mega(const T a) {
     return static_cast<T>(a * 1000000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Kilo(const T a) {
+constexpr T Kilo(const T a) {
     return static_cast<T>(a * 1000.0);
 }
 
 template <typename T>
-/*constexpr*/ T Hecto(const T a) {
+constexpr T Hecto(const T a) {
     return static_cast<T>(a * 100.0);
 }
 
 template <typename T>
-/*constexpr*/ T Deca(const T a) {
+constexpr T Deca(const T a) {
     return static_cast<T>(a * 10.0);
 }
 
 template <typename T>
-/*constexpr*/ T Base(const T a) {
+constexpr T Base(const T a) {
     return a;
 }
 
 template <typename T>
-/*constexpr*/ T Deci(const T a) {
+constexpr T Deci(const T a) {
     return static_cast<T>(a * 0.1);
 }
 
 template <typename T>
-/*constexpr*/ T Centi(const T a) {
+constexpr T Centi(const T a) {
     return static_cast<T>(a * 0.01);
 }
 
 template <typename T>
-/*constexpr*/ T Milli(const T a) {
+constexpr T Milli(const T a) {
     return static_cast<T>(a * 0.001);
 }
 
 template <typename T>
-/*constexpr*/ T Micro(const T a) {
+constexpr T Micro(const T a) {
     return static_cast<T>(a * 0.000001);
 }
 
 template <typename T>
-/*constexpr*/ T Nano(const T a) {
+constexpr T Nano(const T a) {
     return static_cast<T>(a * 0.000000001);
 }
 
 template <typename T>
-/*constexpr*/ T Pico(const T a) {
+constexpr T Pico(const T a) {
     return static_cast<T>(a * 0.000000000001);
 }
 };  // namespace Metric

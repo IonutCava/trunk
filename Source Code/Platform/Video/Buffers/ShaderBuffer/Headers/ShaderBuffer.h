@@ -100,6 +100,10 @@ class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public
     const bool _unbound;
     const bool _persistentMapped;
     const BufferUpdateFrequency _frequency;
+
+#   if defined(ENABLE_GPU_VALIDATION)
+    stringImpl _bufferName;
+#   endif
 };
 
 };  // namespace Divide

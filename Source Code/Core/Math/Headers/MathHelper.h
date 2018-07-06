@@ -122,58 +122,58 @@ class Quaternion;
 namespace Angle {
 /// Return the radian equivalent of the given degree value
 template <typename T>
-T DegreesToRadians(const T angleDegrees);
+constexpr T DegreesToRadians(const T angleDegrees);
 /// Return the degree equivalent of the given radian value
 template <typename T>
-T RadiansToDegrees(const T angleRadians);
+constexpr T RadiansToDegrees(const T angleRadians);
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-T Degrees(const T degrees);
+constexpr T Degrees(const T degrees);
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-T Radians(const T radians);
+constexpr T Radians(const T radians);
 };
 
 namespace Metric {
 /// Base value * 1000000000000
 template <typename T>
-T Tera(const T a);
+constexpr T Tera(const T a);
 /// Base value * 1000000000
 template <typename T>
-T Giga(const T a);
+constexpr T Giga(const T a);
 /// Base value * 1000000
 template <typename T>
-T Mega(const T a);
+constexpr T Mega(const T a);
 /// Base value * 1000
 template <typename T>
-T Kilo(const T a);
+constexpr T Kilo(const T a);
 /// Base value * 100
 template <typename T>
-T Hecto(const T a);
+constexpr T Hecto(const T a);
 /// Base value * 10
 template <typename T>
-T Deca(const T a);
+constexpr T Deca(const T a);
 /// Base value
 template <typename T>
-T Base(const T a);
+constexpr T Base(const T a);
 /// Base value * 0.1
 template <typename T>
-T Deci(const T a);
+constexpr T Deci(const T a);
 /// Base value * 0.01
 template <typename T>
-T Centi(const T a);
+constexpr T Centi(const T a);
 /// Base value * 0.001
 template <typename T>
-T Milli(const T a);
+constexpr T Milli(const T a);
 /// Base value * 0.000001
 template <typename T>
-T Micro(const T a);
+constexpr T Micro(const T a);
 /// Base value * 0.000000001
 template <typename T>
-T Nano(const T a);
+constexpr T Nano(const T a);
 /// Base value * 0.000000000001
 template <typename T>
-T Pico(const T a);
+constexpr T Pico(const T a);
 };
 
 namespace Time {

@@ -24,7 +24,7 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 // x - isSelected/isHighlighted; y - isShadowMapped; z - lodLevel, w - occlusion cull data
 #define buffer_integerValues dvd_Matrices[dvd_drawID]._matrix[3][0] 
 #define dvd_lodLevel int(buffer_integerValues.z)
-//#define dvd_customData int(buffer_integerValues.w)
+#define dvd_customData int(buffer_integerValues.w)
 
 #if defined(FRAG_SHADER)
 // x - useAlphaTest; y - textureOperation; z - textureCount, w - parallax/relief mapping factor

@@ -68,17 +68,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
     STUBBED("ToDo: Use different sizes for node buffer and command buffer, as commands for Z PrePas and Display are different -Ionut")
     STUBBED("ToDo: Increase buffer size to handle multiple shadow passes. Round robin with size factor 3 should suffice for shadows -Ionut")
-    U32 bufferSizeFactor = renderStageBufferSize();
-    _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true, BufferUpdateFrequency::OFTEN));
-    _nodeBuffer->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData), bufferSizeFactor);
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
-        _indirectCommandBuffers[i].reset(newSB("dvd_GPUCmds", 1, true, false, BufferUpdateFrequency::OFTEN));
+    for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
+        _indirectCommandBuffers[i].reset(newSB(Util::StringFormat("dvd_GPUCmds%d", i), 1, true, false, BufferUpdateFrequency::OFTEN));
         _indirectCommandBuffers[i]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(IndirectDrawCommand));
         _indirectCommandBuffers[i]->addAtomicCounter(3);
     }
     
+    for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
+        _nodeBuffers[i].reset(newSB(Util::StringFormat("dvd_MatrixBlock%d", i), 1, true, true, BufferUpdateFrequency::OFTEN));
+        _nodeBuffers[i]->create(Config::MAX_VISIBLE_NODES + 1, sizeof(NodeData));
+    }
+
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
@@ -238,9 +240,11 @@ void GFXDevice::closeRenderingAPI() {
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);
     _gfxDataBuffer->destroy();
-    _nodeBuffer->destroy();
-    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+    for (U32 i = 0; i < _indirectCommandBuffers.size(); ++i) {
         _indirectCommandBuffers[i]->destroy();
+    }
+    for (U32 i = 0; i < _nodeBuffers.size(); ++i) {
+        _nodeBuffers[i]->destroy();
     }
     // Destroy all rendering passes and rendering bins
     RenderPassManager::destroyInstance();
