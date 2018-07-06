@@ -92,11 +92,11 @@ Scene::~Scene()
     MemoryManager::DELETE(_GUI);
 }
 
-bool Scene::initStaticData() {
+bool Scene::onStartup() {
     return true;
 }
 
-bool Scene::destroyStaticData() {
+bool Scene::onShutdown() {
     return true;
 }
 

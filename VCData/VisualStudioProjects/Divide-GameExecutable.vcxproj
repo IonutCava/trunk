@@ -15,9 +15,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\HotReloading\HotReloadingApple.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\HotReloading\HotReloadingUnix.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\HotReloading\HotReloadingWindows.cpp" />
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\HotReloading\Headers\HotReloading.h" />
+    <ClInclude Include="..\..\Source Code\HotReloading\Headers\HotReloadingApple.h" />
+    <ClInclude Include="..\..\Source Code\HotReloading\Headers\HotReloadingUnix.h" />
+    <ClInclude Include="..\..\Source Code\HotReloading\Headers\HotReloadingWindows.h" />
     <ClInclude Include="..\..\Source Code\ToDo.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

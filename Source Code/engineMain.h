@@ -32,12 +32,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ENGINE_MAIN_HEADER_
 #define _ENGINE_MAIN_HEADER_
 
-namespace Divide {
+#if defined(_WIN32)
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+#endif
 
-extern int engineMain(int argc, char **argv);
-extern bool initStaticData();
-extern bool destroyStaticData();
+namespace Divide {
+
+class Application;
+class StreamBuffer;
+class Engine {
+public:
+    Engine();
+    ~Engine();
+
+    // see the ErrorCode enum in Application.h for the returned value
+    bool init(int argc, char **argv);
+    void shutdown();
+    bool step();
+
+    int errorCode() const;
+
+private:
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+
+private:
+    Application& _app;
+    int _errorCode;
+    StreamBuffer* _outputStreams[2];
+};
 
 };
 

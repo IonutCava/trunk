@@ -47,6 +47,7 @@ inline const char* getErrorCodeName(ErrorCode code) {
         case ErrorCode::PLATFORM_INIT_ERROR: {
             return "Could not initialize target platform!";
         };
+
         case ErrorCode::MISSING_SCENE_DATA: {
             return "Invalid Scene Data. SceneManager failed to load the "
                    "specified scene";

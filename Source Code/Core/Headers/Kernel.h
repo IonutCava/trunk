@@ -92,8 +92,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     Kernel(I32 argc, char** argv, Application& parentApp);
     ~Kernel();
 
-    static bool initStaticData();
-    static bool destroyStaticData();
+    static bool onStartup();
+    static bool onShutdown();
 
     /// Our main application rendering loop.
     /// Call input requests, physics calculations, pre-rendering,

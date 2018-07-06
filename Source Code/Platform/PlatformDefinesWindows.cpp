@@ -154,10 +154,6 @@ namespace Divide {
         info._windowHandle = wmInfo.info.win.window;
     }
 
-    bool PlatformInitStatic() {
-        return true;
-    }
-
     bool PlatformInit() {
         return true;
     }

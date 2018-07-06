@@ -15,105 +15,131 @@ bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 
-bool Application::initStaticData() {
+std::thread::id Application::_threadID;
+
+std::thread::id Application::mainThreadID() {
+    return _threadID;
+}
+
+bool Application::isMainThread() {
+    return (_threadID == std::this_thread::get_id());
+}
+
+void Application::mainThreadID(std::thread::id threadID) {
+    _threadID = threadID;
+}
+
+Application::Application() : _kernel(nullptr),
+                             _isInitialized(false)
+{
+    mainThreadID(std::this_thread::get_id());
+    _requestShutdown = false;
+    _mainLoopPaused = false;
+    _mainLoopActive = false;
+    _errorCode = ErrorCode::NO_ERR;
+
     if (Config::Build::IS_DEBUG_BUILD) {
         MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
         MemoryManager::MemoryTracker::LogAllAllocations = true;
     }
-    
-    return Kernel::initStaticData();
-}
-
-bool Application::destroyStaticData() {
-    return Kernel::destroyStaticData();
-}
-
-Application::Application() : _kernel(nullptr)
-{
-    _requestShutdown = false;
-    _mainLoopPaused = false;
-    _mainLoopActive = false;
-    _threadID = std::this_thread::get_id();
-    _errorCode = ErrorCode::NO_ERR;
-    ParamHandler::createInstance();
-    Time::ApplicationTimer::createInstance();
-    // Don't log parameter requests
-    ParamHandler::instance().setDebugOutput(false);
-    // Print a copyright notice in the log file
-    Console::printCopyrightNotice();
-    Console::toggleTimeStamps(true);
-    Console::togglethreadID(true);
 }
 
 Application::~Application()
 {
-    for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
-        cbk();
-    }
-    Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
-
-    if (Config::Build::IS_DEBUG_BUILD) {
-        MemoryManager::MemoryTracker::Ready = false;
-        bool leakDetected = false;
-        size_t sizeLeaked = 0;
-        stringImpl allocLog =
-            MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
-        if (leakDetected) {
-            Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
-                             to_int(std::ceil(sizeLeaked / 1024.0f)));
-        }
-        std::ofstream memLog;
-        memLog.open(_memLogBuffer.c_str());
-        memLog << allocLog;
-        memLog.close();
-    }
-
-    _windowManager.close();
-    ParamHandler::destroyInstance();
-    Time::ApplicationTimer::destroyInstance();
-    MemoryManager::DELETE(_kernel);
-    Locale::clear();
-    Console::stop();
+    assert(!_isInitialized);
 }
 
-ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc, char** argv) {
+ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv) {
     assert(!entryPoint.empty());
-    Console::start();
+
+    _isInitialized = true;
+    ErrorCode err = ErrorCode::NO_ERR;
+
+    ParamHandler::createInstance();
+    Time::ApplicationTimer::createInstance();
+    // Don't log parameter requests
+    ParamHandler::instance().setDebugOutput(false);
     // Read language table
     if (!Locale::init()) {
-        return errorCode();
+        err = errorCode();
+    } else {
+        Console::start();
+        // Print a copyright notice in the log file
+        Console::printCopyrightNotice();
+        Console::toggleTimeStamps(true);
+        Console::togglethreadID(true);
+        Console::printfn(Locale::get(_ID("START_APPLICATION")));
+        // Create a new kernel
+        assert(_kernel == nullptr);
+        _kernel = MemoryManager_NEW Kernel(argc, argv, this->instance());
+
+        // and load it via an XML file config
+        err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
     }
-    Console::printfn(Locale::get(_ID("START_APPLICATION")));
 
-    // Create a new kernel
-    assert(_kernel == nullptr);
-    _kernel = MemoryManager_NEW Kernel(argc, argv, this->instance());
-
-    // and load it via an XML file config
-    ErrorCode err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
+    // failed to start, so cleanup
     if (err != ErrorCode::NO_ERR) {
-        MemoryManager::DELETE(_kernel);
+        stop();
+    } else {
+        warmup();
+        mainLoopActive(true);
     }
 
     return err;
 }
 
-void Application::run() {
-    Kernel& kernel = *_kernel;
+void Application::stop() {
+    if (_isInitialized) {
+        Attorney::KernelApplication::shutdown(*_kernel);
+        for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
+            cbk();
+        }
+
+        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
+
+        if (Config::Build::IS_DEBUG_BUILD) {
+            MemoryManager::MemoryTracker::Ready = false;
+            bool leakDetected = false;
+            size_t sizeLeaked = 0;
+            stringImpl allocLog =
+                MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
+            if (leakDetected) {
+                Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
+                    to_int(std::ceil(sizeLeaked / 1024.0f)));
+            }
+            std::ofstream memLog;
+            memLog.open(_memLogBuffer.c_str());
+            memLog << allocLog;
+            memLog.close();
+        }
+
+        _windowManager.close();
+        ParamHandler::destroyInstance();
+        Time::ApplicationTimer::destroyInstance();
+        MemoryManager::DELETE(_kernel);
+        Locale::clear();
+        Console::stop();
+
+        _isInitialized = false;
+    }
+}
+
+void Application::warmup() {
+    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     //Make sure we are displaying a splash screen
     _windowManager.getActiveWindow().type(WindowType::SPLASH);
-    Attorney::KernelApplication::warmup(kernel);
+    Attorney::KernelApplication::warmup(*_kernel);
     //Restore to normal window
     _windowManager.getActiveWindow().previousType();
+}
 
-    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
-
-    mainLoopActive(true);
-    while(onLoop()) {
-        Attorney::KernelApplication::onLoop(kernel);
+bool Application::step() {
+    if (onLoop()) {
+        Attorney::KernelApplication::onLoop(*_kernel);
+        return true;
     }
 
-    Attorney::KernelApplication::shutdown(kernel);
+    return false;
 }
 
 bool Application::onLoop() {
@@ -145,14 +171,6 @@ void Application::onChangeWindowSize(U16 w, U16 h) const {
 
 void Application::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::KernelApplication::onChangeRenderResolution(*_kernel, w, h);
-}
-
-std::thread::id Application::mainThreadID() const {
-    return _threadID;
-}
-
-bool Application::isMainThread() const {
-    return (_threadID == std::this_thread::get_id());
 }
 
 void Application::mainThreadTask(const DELEGATE_CBK<>& task, bool wait) {

@@ -56,8 +56,8 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerRenderPass;
   public:
-    static bool initStaticData();
-    static bool destroyStaticData();
+    static bool onStartup();
+    static bool onShutdown();
 
     void idle();
 

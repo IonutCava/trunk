@@ -92,8 +92,8 @@ class Scene : public Resource {
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
-    static bool initStaticData();
-    static bool destroyStaticData();
+    static bool onStartup();
+    static bool onShutdown();
 
    public:
     explicit Scene(const stringImpl& name);
@@ -335,12 +335,12 @@ class SceneManager {
         scene.onRemoveActive();
     }
 
-    static bool initStaticData() {
-        return Scene::initStaticData();
+    static bool onStartup() {
+        return Scene::onStartup();
     }
 
-    static bool destroyStaticData() {
-        return Scene::destroyStaticData();
+    static bool onShutdown() {
+        return Scene::onShutdown();
     }
 
     static SceneGUIElements* gui(Scene& scene) {

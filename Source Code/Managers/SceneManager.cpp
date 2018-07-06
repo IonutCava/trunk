@@ -46,12 +46,12 @@ namespace {
     };
 };
 
-bool SceneManager::initStaticData() {
-    return Attorney::SceneManager::initStaticData();
+bool SceneManager::onStartup() {
+    return Attorney::SceneManager::onStartup();
 }
 
-bool SceneManager::destroyStaticData() {
-    return Attorney::SceneManager::destroyStaticData();
+bool SceneManager::onShutdown() {
+    return Attorney::SceneManager::onShutdown();
 }
 
 SceneManager::SceneManager()

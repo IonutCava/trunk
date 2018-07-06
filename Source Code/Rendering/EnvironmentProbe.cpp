@@ -43,7 +43,7 @@ EnvironmentProbe::~EnvironmentProbe()
     _boundingBoxPrimitive->_canZombify = true;
 }
 
-void EnvironmentProbe::initStaticData() {
+void EnvironmentProbe::onStartup() {
     s_availableSlices.resize(g_maxEnvironmentProbes, false);
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
@@ -64,7 +64,7 @@ void EnvironmentProbe::initStaticData() {
     s_reflection._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::WHITE());
 }
 
-void EnvironmentProbe::destroyStaticData() {
+void EnvironmentProbe::onShutdown() {
     GFX_DEVICE.deallocateRT(s_reflection);
 }
 

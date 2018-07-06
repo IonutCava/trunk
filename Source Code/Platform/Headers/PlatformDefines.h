@@ -271,7 +271,6 @@ extern void getWindowHandle(void* window, SysInfo& info);
 extern void setThreadName(std::thread* thread, const char* threadName);
 extern void setThreadName(const char* threadName);
 
-bool PlatformInitStatic();
 bool PlatformInit();
 bool PlatformClose();
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);

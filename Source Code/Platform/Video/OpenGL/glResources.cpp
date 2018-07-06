@@ -74,7 +74,7 @@ void glVAOPool::allocate(U32 count, GLuint* vaosOUT) {
 }
 
 void glVAOPool::deallocate(GLuint& vao) {
-    assert(Application::instance().isMainThread());
+    assert(Application::isMainThread());
 
     vectorImpl<std::pair<GLuint, bool>>::iterator it;
     it = std::find_if(std::begin(_pool),

@@ -240,8 +240,8 @@ class NOINITVTABLE ShaderProgram : public Resource,
 
     //==================== static methods ===============================//
     static void idle();
-    static void initStaticData();
-    static void destroyStaticData();
+    static void onStartup();
+    static void onShutdown();
     static bool updateAll(const U64 deltaTime);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);

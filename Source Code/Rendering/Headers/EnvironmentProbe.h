@@ -50,8 +50,8 @@ public:
     EnvironmentProbe(ProbeType type);
     ~EnvironmentProbe();
 
-    static void initStaticData();
-    static void destroyStaticData();
+    static void onStartup();
+    static void onShutdown();
 
     void refresh();
     void setUpdateRate(U8 rate);

@@ -195,7 +195,7 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
         Util::WriteTextFile(variant, sourceCode);
 }
 
-void ShaderProgram::initStaticData() {
+void ShaderProgram::onStartup() {
     // Create an immediate mode rendering shader that simulates the fixed function pipeline
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
@@ -208,7 +208,7 @@ void ShaderProgram::initStaticData() {
     assert(_nullShader != nullptr);  // LoL -Ionut
 }
 
-void ShaderProgram::destroyStaticData() {
+void ShaderProgram::onShutdown() {
     // Make sure we unload all shaders
     _shaderPrograms.clear();
     _nullShader.reset();

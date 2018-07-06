@@ -32,14 +32,6 @@ LoopTimingData::LoopTimingData() : _updateLoops(0),
 {
 }
 
-bool Kernel::initStaticData() {
-    return SceneManager::initStaticData();
-}
-
-bool Kernel::destroyStaticData() {
-    return SceneManager::destroyStaticData();
-}
-
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
@@ -475,6 +467,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                 par.getParam<F32>(_ID("rendering.verticalFOV")),
                                                 vec2<F32>(par.getParam<F32>(_ID("rendering.zNear")),
                                                           par.getParam<F32>(_ID("rendering.zFar"))));
+    _sceneMgr.onStartup();
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
 
@@ -536,6 +529,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 void Kernel::shutdown() {
     Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     _taskPool.waitForAllTasks(true, true, true);
+    _sceneMgr.onShutdown();
     // release the scene
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     SceneManager::destroyInstance();
