@@ -7,13 +7,14 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
 
 std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
-glShaderProgram::glShaderProgram()
-    : ShaderProgram(),
+glShaderProgram::glShaderProgram(GFXDevice& context)
+    : ShaderProgram(context),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -83,7 +84,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
-        if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA && false) {
+        if (!_loadedFromBinary && _context.getGPUVendor() == GPUVendor::NVIDIA && false) {
             STUBBED(
                 "GLSL binary dump/load is only enabled for nVidia GPUS. "
                 "Catalyst 13.x  - 15.x destroys uniforms on shader dump, for whatever "
@@ -314,7 +315,7 @@ bool glShaderProgram::load() {
 
 #if !defined(_DEBUG)
     // Load the program from the binary file, if available and allowed, to avoid linking.
-    if (Config::USE_SHADER_BINARY && !refresh && false &&  GFX_DEVICE.getGPUVendor() == GPUVendor::NVIDIA) {
+    if (Config::USE_SHADER_BINARY && !refresh && false && _context.getGPUVendor() == GPUVendor::NVIDIA) {
         // Only available for new programs
         assert(_shaderProgramIDTemp == 0);
         stringImpl fileName("shaderCache/Binary/" + _name + ".bin");
@@ -460,7 +461,7 @@ bool glShaderProgram::load() {
     }
 
     // try to link the program in a separate thread
-    return GFX_DEVICE.loadInContext(
+    return _context.loadInContext(
         /*_threadedLoading && !_loadedFromBinary
             ? CurrentContext::GFX_LOADING_CTX
             : */CurrentContext::GFX_RENDERING_CTX,
@@ -644,10 +645,22 @@ void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
     }
 }
 
+void glShaderProgram::Uniform(I32 location, const vec3<I32>& value) {
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform3iv(_shaderProgramID, location, 1, value);
+    }
+}
+
 /// Set an uniform value
 void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
     if (cachedValueUpdate(location, value)) {
         glProgramUniform4fv(_shaderProgramID, location, 1, value);
+    }
+}
+
+void glShaderProgram::Uniform(I32 location, const vec4<I32>& value) {
+    if (cachedValueUpdate(location, value)) {
+        glProgramUniform4iv(_shaderProgramID, location, 1, value);
     }
 }
 
@@ -759,6 +772,9 @@ void glShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
             break;
         case MemoryBarrierType::BUFFER :
             barrierType = MemoryBarrierMask::GL_BUFFER_UPDATE_BARRIER_BIT;
+            break;
+        case MemoryBarrierType::SHADER_BUFFER :
+            barrierType = MemoryBarrierMask::GL_SHADER_STORAGE_BARRIER_BIT;
             break;
         case MemoryBarrierType::COUNTER:
             barrierType = MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT;

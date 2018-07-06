@@ -8,10 +8,11 @@
 
 namespace Divide {
 
-glShader::glShader(const stringImpl& name,
+glShader::glShader(GFXDevice& context,
+                   const stringImpl& name,
                    const ShaderType& type,
                    const bool optimise)
-    : Shader(name, type, optimise) {
+    : Shader(context, name, type, optimise) {
     switch (type) {
         default:
             Console::errorfn(Locale::get(_ID("ERROR_GLSL_UNKNOWN_ShaderType")),

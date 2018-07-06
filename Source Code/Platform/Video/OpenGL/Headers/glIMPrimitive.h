@@ -44,7 +44,7 @@ namespace Divide {
 /// An Implementation of the NS_GLIM library.
 class glIMPrimitive : public IMPrimitive {
    public:
-    glIMPrimitive();
+    glIMPrimitive(GFXDevice& context);
     ~glIMPrimitive();
 
    public:

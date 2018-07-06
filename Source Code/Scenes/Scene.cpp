@@ -22,7 +22,10 @@
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
+#include "Platform/Video/Headers/IMPrimitive.h"
+
 #include "Physics/Headers/PhysicsSceneInterface.h"
+
 
 namespace Divide {
 

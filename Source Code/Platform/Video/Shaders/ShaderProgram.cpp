@@ -12,8 +12,9 @@
 
 namespace Divide {
 
-ShaderProgram::ShaderProgram()
-    : Resource("temp_shader_program")
+ShaderProgram::ShaderProgram(GFXDevice& context)
+    : Resource("temp_shader_program"),
+      GraphicsResource(context)
 {
     _linked = false;
     // Override in concrete implementations with appropriate invalid values

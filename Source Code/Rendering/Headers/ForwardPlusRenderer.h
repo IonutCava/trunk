@@ -49,6 +49,12 @@ class ForwardPlusRenderer : public Renderer {
     void updateResolution(U16 width, U16 height);
 
    private:
+       U32 getMaxNumLightsPerTile() const;
+       U32 getNumTilesX() const;
+       U32 getNumTilesY() const;
+
+   private:
+    vec2<U16> _resolution;
     ShaderProgram* _lightCullComputeShader;
     std::shared_ptr<ShaderBuffer> _perTileLightIndexBuffer;
 };

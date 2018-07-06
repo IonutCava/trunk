@@ -14,6 +14,7 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputInterface.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC

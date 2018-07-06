@@ -5,6 +5,7 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/LightManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/IMPrimitive.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Dynamics/Entities/Headers/Impostor.h"

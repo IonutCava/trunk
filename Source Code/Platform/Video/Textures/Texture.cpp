@@ -6,8 +6,9 @@
 
 namespace Divide {
 
-Texture::Texture(TextureType type)
-    : Resource("temp_texture"),
+Texture::Texture(GFXDevice& context, TextureType type)
+    : GraphicsResource(context),
+      Resource("temp_texture"),
       _numLayers(1),
       _lockMipMaps(false),
       _samplerDirty(true),

@@ -38,7 +38,7 @@ namespace Divide {
 class glLockManager;
 class glTexture final : public Texture {
    public:
-    glTexture(TextureType type);
+    glTexture(GFXDevice& context, TextureType type);
     ~glTexture();
 
     bool unload() override;

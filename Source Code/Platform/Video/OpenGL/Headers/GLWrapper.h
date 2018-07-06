@@ -52,7 +52,7 @@ namespace Divide {
 
     enum class WindowType : U32;
 
-class glHardwareQuery : public HardwareQuery {
+class glHardwareQuery {
 public:
     glHardwareQuery();
     ~glHardwareQuery();
@@ -60,8 +60,10 @@ public:
     void create();
     void destroy();
     inline U32 getID() const { return _queryID; }
-
-private:
+    inline bool enabled() const { return _enabled; }
+    inline void enabled(bool state) { _enabled = state; }
+protected:
+    bool _enabled;
     U32 _queryID;
 };
 
@@ -123,50 +125,44 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void endFrame() override;
     /// Create and return a new IM emulation primitive. The callee is responsible
     /// for it's deletion!
-    IMPrimitive* newIMP() const override;
+    IMPrimitive* newIMP(GFXDevice& context) const override;
     /// Create and return a new framebuffer. The callee is responsible for it's
     /// deletion!
-    Framebuffer* newFB(bool multisampled) const override;
+    Framebuffer* newFB(GFXDevice& context, bool multisampled) const override;
     /// Create and return a new vertex array (VAO + VB + IB). The callee is
     /// responsible for it's deletion!
-    VertexBuffer* newVB() const override;
+    VertexBuffer* newVB(GFXDevice& context) const override;
     /// Create and return a new pixel buffer using the requested format. The callee
     /// is responsible for it's deletion!
-    PixelBuffer* newPB(const PBType& type) const override;
+    PixelBuffer* newPB(GFXDevice& context, const PBType& type) const override;
     /// Create and return a new generic vertex data object and, optionally set it as
     /// persistently mapped.
     /// The callee is responsible for it's deletion!
-    GenericVertexData* newGVD(const bool persistentMapped) const override;
+    GenericVertexData* newGVD(GFXDevice& context, const bool persistentMapped) const override;
     /// Create and return a new shader buffer. The callee is responsible for it's
     /// deletion!
     /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
     /// unbound is false
     /// or a 'Shader Storage Block Object' otherwise
-    ShaderBuffer* newSB(const stringImpl& bufferName, 
+    ShaderBuffer* newSB(GFXDevice& context,
+                        const stringImpl& bufferName,
                         const U32 ringBufferLength = 1,
                         const bool unbound = false,
                         const bool persistentMapped = true,
                         BufferUpdateFrequency frequency =
                             BufferUpdateFrequency::ONCE) const override;
-    /// Create and return a new texture array (optionally, flipped vertically). The
-    /// callee is responsible for it's deletion!
-    Texture* newTextureArray() const override;
-    /// Create and return a new 2D texture (optionally, flipped vertically). The
-    /// callee is responsible for it's deletion!
-    Texture* newTexture2D() const override;
-    /// Create and return a new cube texture (optionally, flipped vertically). The
-    /// callee is responsible for it's deletion!
-    Texture* newTextureCubemap() const override;
+    /// Create and return a new texture. The callee is responsible for it's deletion!
+    Texture* newTexture(GFXDevice& context, TextureType type) const override;
     /// Create and return a new shader program.
     /// The callee is responsible for it's deletion!
-    ShaderProgram* newShaderProgram() const override;
+    ShaderProgram* newShaderProgram(GFXDevice& context) const override;
     /// Create and return a new shader of the specified type by loading the
     /// specified name (optionally, post load optimised).
     /// The callee is responsible for it's deletion!
-    Shader* newShader(const stringImpl& name, const ShaderType& type,
+    Shader* newShader(GFXDevice& context,
+                      const stringImpl& name,
+                      const ShaderType& type,
                       const bool optimise = false) const override;
-    /// Return a new OpenGL hardware query
-    HardwareQuery* newHardwareQuery() const override;
     /// Enable or disable rasterization (useful for transform feedback)
     inline void toggleRasterization(bool state) override {
         state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD);

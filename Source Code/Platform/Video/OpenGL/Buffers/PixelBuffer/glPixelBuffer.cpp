@@ -4,6 +4,7 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 namespace Divide {
@@ -30,7 +31,7 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
     return 0;
 }
 
-glPixelBuffer::glPixelBuffer(PBType type) : PixelBuffer(type) {
+glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(context, type) {
     _bufferSize = 0;
     _dataSizeBytes = 1;
 

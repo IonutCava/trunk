@@ -154,6 +154,28 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<F32>& va
 }
 
 template <>
+inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<I32>& value) {
+    if (location == -1 || _shaderProgramID == 0) {
+        return false;
+    }
+
+    ShaderVarVec3I32Map::iterator it = _shaderVarsVec3I32.find(location);
+    if (it != std::end(_shaderVarsVec3I32)) {
+        if (it->second == value) {
+            return false;
+        }
+        else {
+            it->second.set(value);
+        }
+    }
+    else {
+        hashAlg::emplace(_shaderVarsVec3I32, location, value);
+    }
+
+    return true;
+}
+
+template <>
 inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& value) {
     if (location == -1 || _shaderProgramID == 0) {
         return false;
@@ -168,6 +190,28 @@ inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& va
         }
     } else {
         hashAlg::emplace(_shaderVarsVec4F32, location, value);
+    }
+
+    return true;
+}
+
+template <>
+inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<I32>& value) {
+    if (location == -1 || _shaderProgramID == 0) {
+        return false;
+    }
+
+    ShaderVarVec4I32Map::iterator it = _shaderVarsVec4I32.find(location);
+    if (it != std::end(_shaderVarsVec4I32)) {
+        if (it->second == value) {
+            return false;
+        }
+        else {
+            it->second.set(value);
+        }
+    }
+    else {
+        hashAlg::emplace(_shaderVarsVec4I32, location, value);
     }
 
     return true;
@@ -242,7 +286,17 @@ void glShaderProgram::Uniform(const stringImpl& ext,
 }
 
 void glShaderProgram::Uniform(const stringImpl& ext,
+                              const vec3<I32>& value) {
+    Uniform(getUniformLocation(ext), value);
+}
+
+void glShaderProgram::Uniform(const stringImpl& ext,
                               const vec4<F32>& value) {
+    Uniform(getUniformLocation(ext), value);
+}
+
+void glShaderProgram::Uniform(const stringImpl& ext,
+                              const vec4<I32>& value) {
     Uniform(getUniformLocation(ext), value);
 }
 

@@ -79,6 +79,8 @@ typedef unsigned long long ULL;
 #endif
 
 #ifdef _DEBUG
+#include <assert.h>
+
 #define STUBBED(x)                                  \
 do {                                                \
     static bool seen_this = false;                  \
@@ -88,6 +90,7 @@ do {                                                \
                          x, __FILE__, __LINE__);    \
     }                                               \
 } while (0);
+
 #else
 #define STUBBED(x)
 #endif

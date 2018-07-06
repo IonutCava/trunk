@@ -38,8 +38,14 @@ namespace Divide {
 
 class d3dPixelBuffer : public PixelBuffer {
    public:
-    d3dPixelBuffer(PBType type) : PixelBuffer(type) {}
-    ~d3dPixelBuffer() { Destroy(); }
+    d3dPixelBuffer(GFXDevice& context, PBType type) : PixelBuffer(context, type)
+    {
+    }
+
+    ~d3dPixelBuffer()
+    {
+        Destroy();
+    }
 
     bool Create(U16 width, U16 height, U16 depth = 0,
                 GFXImageFormat internalFormatEnum = GFXImageFormat::RGBA8,

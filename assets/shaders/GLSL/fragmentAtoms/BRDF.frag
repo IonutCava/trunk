@@ -23,16 +23,13 @@ void getBRDFFactors(in int lightIndex,
 uint GetNumLightsInThisTile(uint nTileIndex)
 {
     uint nNumLightsInThisTile = 0;
-    uint lightsPerTile = uint(dvd_otherData.w);
-    uint offset = lightsPerTile * nTileIndex;
-    // count point lights
-    for (uint i = 0; i < lightsPerTile; ++i) {
-        uint light = perTileLightIndices[offset + i];
-        if (light > 0 && light < LIGHT_INDEX_BUFFER_SENTINEL) {
-            nNumLightsInThisTile++;
-        } else if (light == LIGHT_INDEX_BUFFER_SENTINEL) {
-            break;
-        }
+    uint nIndex = uint(dvd_otherData.w) * nTileIndex;
+    uint nNextLightIndex = perTileLightIndices[nIndex];
+    while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
+    {
+        nIndex++;
+        nNextLightIndex = perTileLightIndices[nIndex];
+        nNumLightsInThisTile++;
     }
 
     return nNumLightsInThisTile;
@@ -71,61 +68,32 @@ vec4 getPixelColor(const in vec2 texCoord, in vec3 normalWV) {
     // Apply all lighting contributions
     uint lightIdx;
     // Directional lights
-    for (lightIdx = 0; lightIdx < VAR._lightCount[0]; ++lightIdx) {
+    for (lightIdx = 0; lightIdx < dvd_lightCountPerType[0]; ++lightIdx) {
         getBRDFFactors(int(lightIdx), normalWV, lightColor);
     }
-    uint offset = lightIdx + 1;
+    uint offset = dvd_lightCountPerType[0];
     // Point lights
-    for (lightIdx = 0; lightIdx < VAR._lightCount[1]; ++lightIdx) {
-        getBRDFFactors(int(lightIdx + offset), normalWV, lightColor);
-    }
-    offset += lightIdx + 1;
-    // Spot lights
-    for (lightIdx = 0; lightIdx < VAR._lightCount[2]; ++lightIdx) {
-        getBRDFFactors(int(lightIdx + offset), normalWV, lightColor);
-    }
-
-    /*uint nTileIndex = GetTileIndex(gl_FragCoord.xy);
-    uint nIndex = uint(dvd_otherData.w) * nTileIndex;
+    uint nIndex = uint(dvd_otherData.w) * GetTileIndex(gl_FragCoord.xy);
     uint nNextLightIndex = perTileLightIndices[nIndex];
-    uint count = 0;
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
     {
         uint nLightIndex = nNextLightIndex;
         nNextLightIndex = perTileLightIndices[++nIndex];
-        // offset index to account for directional lights
-        //getBRDFFactors(int(nLightIndex + offset), normalWV, lightColor);
-        if (nLightIndex > 0) {
-            count++;
-            if (count > 10) {
-                break;
-            }
-        }
-    }
-    return vec4(0.2, 0.2, 0.2, 1.0) + (float(GetTileIndex(gl_FragCoord.xy)) / 5100.0);
-    uint tileCount = GetNumLightsInThisTile(GetTileIndex(gl_FragCoord.xy));
-    if (tileCount == 0) {
-        return vec4(0.0, 0.0, 0.0, 1.0);
-    } else if (tileCount == 1) {
-        return vec4(0.5, 0.5, 0.5, 1.0);
-    } else {
-        return vec4(1.0);
-    }
-    // Moves past the first sentinel to get to the spot lights.
-    nIndex++;
-    nNextLightIndex = perTileLightIndices[nIndex];
 
-    // Loops over spot lights.
+        getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
+    }
+
+    offset = dvd_lightCountPerType[1];
+    // Spot lights
+    // Moves past the first sentinel to get to the spot lights.
+    nNextLightIndex = perTileLightIndices[++nIndex];
     while (nNextLightIndex != LIGHT_INDEX_BUFFER_SENTINEL)
     {
-    uint nLightIndex = nNextLightIndex;
-    nIndex++;
-    nNextLightIndex = perTileLightIndices[nIndex];
-    // offset index to account for directional and point lights
-    uint lightIndex = nNextLightIndex + dvd_lightCountPerType[0] + dvd_lightCountPerType[1];
+        uint nLightIndex = nNextLightIndex;
+        nNextLightIndex = perTileLightIndices[++nIndex];
+        getBRDFFactors(int(nLightIndex - 1 + offset), normalWV, lightColor);
     }
-*/
-
+    
     vec3 color = mix(dvd_MatEmissive, lightColor, DIST_TO_ZERO(length(lightColor)));
 #endif
 

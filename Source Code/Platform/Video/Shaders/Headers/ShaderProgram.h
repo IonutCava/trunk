@@ -33,7 +33,6 @@
 #define _HANDLER_H_
 
 #include "Core/Resources/Headers/Resource.h"
-#include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
 
 namespace Divide {
@@ -44,7 +43,7 @@ class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
-class NOINITVTABLE ShaderProgram : public Resource {
+class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
    public:
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {
@@ -69,10 +68,12 @@ class NOINITVTABLE ShaderProgram : public Resource {
         TRANSFORM_FEEDBACK = 3,
         COUNTER = 4,
         QUERY = 5,
-        ALL = 6,
+        SHADER_BUFFER = 6,
+        ALL = 7,
         COUNT
     };
 
+    ShaderProgram(GFXDevice& context);
     virtual ~ShaderProgram();
 
     virtual bool bind() = 0;
@@ -95,7 +96,11 @@ class NOINITVTABLE ShaderProgram : public Resource {
 
     virtual void Uniform(const stringImpl& ext, const vec3<F32>& value) = 0;
 
+    virtual void Uniform(const stringImpl& ext, const vec3<I32>& value) = 0;
+
     virtual void Uniform(const stringImpl& ext, const vec4<F32>& value) = 0;
+
+    virtual void Uniform(const stringImpl& ext, const vec4<I32>& value) = 0;
 
     virtual void Uniform(const stringImpl& ext,
                          const mat3<F32>& value,
@@ -145,7 +150,9 @@ class NOINITVTABLE ShaderProgram : public Resource {
     virtual void Uniform(I32 location, const vec2<F32>& value) = 0;
     virtual void Uniform(I32 location, const vec2<I32>& value) = 0;
     virtual void Uniform(I32 location, const vec3<F32>& value) = 0;
+    virtual void Uniform(I32 location, const vec3<I32>& value) = 0;
     virtual void Uniform(I32 location, const vec4<F32>& value) = 0;
+    virtual void Uniform(I32 location, const vec4<I32>& value) = 0;
     virtual void Uniform(I32 location,
                          const mat3<F32>& value,
                          bool rowMajor = false) = 0;
@@ -248,7 +255,6 @@ class NOINITVTABLE ShaderProgram : public Resource {
     }
     /** ------ END EXPERIMENTAL CODE ----- **/
    protected:
-    ShaderProgram();
 
     template <typename T>
     friend class ImplResourceLoader;

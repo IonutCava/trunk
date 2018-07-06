@@ -1,10 +1,13 @@
 #include "Headers/glFramebuffer.h"
+
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
@@ -31,9 +34,9 @@ const char* getAttachmentName(AttachmentType type) {
 }
 };
 
-glFramebuffer::glFramebuffer(bool useResolveBuffer)
-    : Framebuffer(useResolveBuffer),
-      _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer()
+glFramebuffer::glFramebuffer(GFXDevice& context, bool useResolveBuffer)
+    : Framebuffer(context, useResolveBuffer),
+      _resolveBuffer(useResolveBuffer ? MemoryManager_NEW glFramebuffer(context)
                                       : nullptr),
       _hasDepth(false),
       _hasColor(false),
@@ -344,14 +347,14 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
                               this->_width, this->_height, GL_COLOR_BUFFER_BIT,
                               GL_NEAREST);
         }
-        GFX_DEVICE.registerDrawCalls(to_uint(colorCount));
+        _context.registerDrawCalls(to_uint(colorCount));
     }
 
     if (blitDepth && _hasDepth) {
         glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0,
                           this->_width, this->_height, GL_DEPTH_BUFFER_BIT,
                           GL_NEAREST);
-        GFX_DEVICE.registerDrawCall();
+        _context.registerDrawCall();
     }
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
@@ -407,7 +410,7 @@ void glFramebuffer::begin(const FramebufferTarget& drawPolicy) {
 
     if (drawPolicy._changeViewport) {
         _viewportChanged = true;
-        GFX_DEVICE.setViewport(vec4<GLint>(0, 0, _width, _height));
+        _context.setViewport(vec4<GLint>(0, 0, _width, _height));
     }
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, _framebufferHandle);
@@ -472,7 +475,7 @@ void glFramebuffer::end() {
 
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
     if (_viewportChanged) {
-        GFX_DEVICE.restoreViewport();
+        _context.restoreViewport();
         _viewportChanged = false;
     }
 
@@ -497,11 +500,11 @@ void glFramebuffer::clear() const {
         for (; index < _colorBuffers.size(); ++index) {
             glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, index++, _clearColor._v);
         }
-        GFX_DEVICE.registerDrawCalls(index);
+        _context.registerDrawCalls(index);
     }
     if (_hasDepth) {
         glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_depthValue);
-        GFX_DEVICE.registerDrawCall();
+        _context.registerDrawCall();
     }
 
     

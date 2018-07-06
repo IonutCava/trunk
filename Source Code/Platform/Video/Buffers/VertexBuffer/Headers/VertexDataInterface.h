@@ -32,15 +32,14 @@
 #ifndef _VERTEX_DATA_INTERFACE_H_
 #define _VERTEX_DATA_INTERFACE_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
-class NOINITVTABLE VertexDataInterface : public GUIDWrapper,
-                                         private NonCopyable {
+class NOINITVTABLE VertexDataInterface : protected GraphicsResource, public GUIDWrapper {
    public:
-    VertexDataInterface() : GUIDWrapper() 
+    VertexDataInterface(GFXDevice& context) : GraphicsResource(context),
+                                              GUIDWrapper()
     {
     }
 

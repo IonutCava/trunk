@@ -32,12 +32,11 @@
 #ifndef _PIXEL_BUFFER_OBJECT_H
 #define _PIXEL_BUFFER_OBJECT_H
 
-#include "Platform/Headers/PlatformDefines.h"
-#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
-class NOINITVTABLE PixelBuffer {
+class NOINITVTABLE PixelBuffer : protected GraphicsResource {
    public:
     virtual bool Create(
         U16 width, U16 height, U16 depth = 0,
@@ -59,16 +58,21 @@ class NOINITVTABLE PixelBuffer {
     inline U16 getDepth() const { return _depth; }
     inline PBType getType() const { return _pbtype; }
 
-    virtual ~PixelBuffer(){};
-    PixelBuffer(PBType type)
-        : _pbtype(type),
+    PixelBuffer(GFXDevice& context, PBType type)
+        : GraphicsResource(context),
+          _pbtype(type),
           _textureID(0),
           _width(0),
           _height(0),
           _depth(0),
           _pixelBufferHandle(0),
-          _textureType(0) {}
+          _textureType(0)
+    {
+    }
 
+    virtual ~PixelBuffer()
+    {
+    }
    protected:
     PBType _pbtype;
     U32 _textureID;

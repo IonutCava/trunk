@@ -8,6 +8,7 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/Headers/ForwardPlusRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 

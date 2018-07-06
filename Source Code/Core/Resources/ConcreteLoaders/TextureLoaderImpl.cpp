@@ -14,15 +14,15 @@ Texture* ImplResourceLoader<Texture>::operator()() {
 
     if (_descriptor.getEnumValue() ==
         to_uint(TextureType::TEXTURE_CUBE_MAP)) {
-        ptr = GFX_DEVICE.newTextureCubemap();
+        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_CUBE_MAP);
     } else if (_descriptor.getEnumValue() ==
                    to_uint(TextureType::TEXTURE_2D_ARRAY) ||
                _descriptor.getEnumValue() ==
                    to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
-        ptr = GFX_DEVICE.newTextureArray();
+        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_2D_ARRAY);
         ptr->setNumLayers(to_ubyte(_descriptor.getID()));
     } else {
-        ptr = GFX_DEVICE.newTexture2D();
+        ptr = GFX_DEVICE.newTexture(TextureType::TEXTURE_2D);
     }
 
     ptr->enableThreadedLoading(_descriptor.getThreaded());

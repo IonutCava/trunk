@@ -34,6 +34,7 @@
 
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
@@ -41,7 +42,7 @@ class Texture;
 class ShaderProgram;
 enum class PrimitiveType : U32;
 /// IMPrimitive replaces immediate mode calls to VB based rendering
-class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
+class NOINITVTABLE IMPrimitive : protected GraphicsResource, public GUIDWrapper {
    public:
     inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback,
                                 const DELEGATE_CBK<>& releaseStatesCallback) {
@@ -128,7 +129,7 @@ class NOINITVTABLE IMPrimitive : public GUIDWrapper, private NonCopyable {
 #       endif
     }
    protected:
-    IMPrimitive();
+    IMPrimitive(GFXDevice& context);
 #ifdef _DEBUG
     stringImpl _name;
 #endif

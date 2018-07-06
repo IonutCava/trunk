@@ -15,7 +15,7 @@ struct Light {
     /// rgb = color
     /// w = reserved
     vec4   _color;
-    /// xyz = light positoon (or direction for Directional lights)
+    /// xyz = light positon (or direction for Directional lights)
     /// w = range
     vec4   _positionWV; 
     /// xyz = spot direction
@@ -49,7 +49,9 @@ layout(binding = BUFFER_LIGHT_CULL_SPOT, std430) coherent ACCESS buffer spotLigh
 {
     Light dvd_SpotLightSource[];
 };
-
+#else
+#define windowWidth int(dvd_ViewPort.z)
+#define windowHeight int(dvd_ViewPort.w)
 #endif
 
 #if defined(FRAG_SHADER)
@@ -64,21 +66,19 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowB
 {
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 };
-#endif 
 
-#define windowWidth int(dvd_ViewPort.z)
-#define windowHeight int(dvd_ViewPort.w)
+#endif 
 
 // calculate the number of tiles in the horizontal direction
 uint GetNumTilesX()
 {
-    return uint(((windowWidth + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES)));
+    return uint((windowWidth + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES));
 }
 
 // calculate the number of tiles in the vertical direction
 uint GetNumTilesY()
 {
-    return uint(((windowHeight + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES)));
+    return uint((windowHeight + FORWARD_PLUS_TILE_RES - 1) / float(FORWARD_PLUS_TILE_RES));
 }
 
 uint GetTileIndex(in vec2 ScreenPos)

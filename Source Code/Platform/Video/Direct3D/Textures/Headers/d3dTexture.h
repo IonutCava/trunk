@@ -38,7 +38,7 @@ namespace Divide {
 
 class d3dTexture final : public Texture {
    public:
-    d3dTexture(TextureType type);
+    d3dTexture(GFXDevice& context, TextureType type);
     ~d3dTexture() {}
 
     bool load() override { return Texture::load(); }

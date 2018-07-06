@@ -46,14 +46,6 @@
 
 namespace Divide {
 
-class d3dHardwareQuery : public HardwareQuery {
-public:
-    d3dHardwareQuery() : HardwareQuery() {}
-    ~d3dHardwareQuery() {}
-    void create() {}
-    void destroy() {}
-};
-
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
   protected:
     DX_API() : RenderAPIWrapper() {}
@@ -70,61 +62,53 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void beginFrame() override;
     void endFrame() override;
 
-    inline ShaderBuffer* newSB(const stringImpl& bufferName,
+    inline ShaderBuffer* newSB(GFXDevice& context,
+                               const stringImpl& bufferName,
                                const U32 ringBufferLength = 1,
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
                                    BufferUpdateFrequency::ONCE) const override {
-        return MemoryManager_NEW d3dConstantBuffer(bufferName, 
+        return MemoryManager_NEW d3dConstantBuffer(context,
+                                                   bufferName, 
                                                    ringBufferLength,
                                                    unbound,
                                                    persistentMapped,
                                                    frequency);
     }
 
-    inline IMPrimitive* newIMP() const override { return nullptr; }
+    inline IMPrimitive* newIMP(GFXDevice& context) const override { return nullptr; }
 
-    inline Framebuffer* newFB(bool multisampled) const override {
-        return MemoryManager_NEW d3dRenderTarget(multisampled);
+    inline Framebuffer* newFB(GFXDevice& context, bool multisampled) const override {
+        return MemoryManager_NEW d3dRenderTarget(context, multisampled);
     }
 
-    inline GenericVertexData* newGVD(
-        const bool persistentMapped = false) const override {
-        return MemoryManager_NEW d3dGenericVertexData(persistentMapped);
+    inline GenericVertexData* newGVD(GFXDevice& context,
+                                     const bool persistentMapped = false) const override {
+        return MemoryManager_NEW d3dGenericVertexData(context, persistentMapped);
     }
 
-    inline VertexBuffer* newVB() const override {
-        return MemoryManager_NEW d3dVertexBuffer();
+    inline VertexBuffer* newVB(GFXDevice& context) const override {
+        return MemoryManager_NEW d3dVertexBuffer(context);
     }
 
-    inline PixelBuffer* newPB(const PBType& type) const override {
-        return MemoryManager_NEW d3dPixelBuffer(type);
+    inline PixelBuffer* newPB(GFXDevice& context, const PBType& type) const override {
+        return MemoryManager_NEW d3dPixelBuffer(context, type);
     }
 
-    inline Texture* newTextureArray() const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D_ARRAY);
+    inline Texture* newTexture(GFXDevice& context, TextureType type) const override {
+        return MemoryManager_NEW d3dTexture(context, type);
     }
 
-    inline Texture* newTexture2D() const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_2D);
+    inline ShaderProgram* newShaderProgram(GFXDevice& context) const override {
+        return MemoryManager_NEW d3dShaderProgram(context);
     }
 
-    inline Texture* newTextureCubemap() const override {
-        return MemoryManager_NEW d3dTexture(TextureType::TEXTURE_CUBE_MAP);
-    }
-
-    inline ShaderProgram* newShaderProgram() const override {
-        return MemoryManager_NEW d3dShaderProgram();
-    }
-
-    inline Shader* newShader(const stringImpl& name, const ShaderType& type,
+    inline Shader* newShader(GFXDevice& context,
+                             const stringImpl& name,
+                             const ShaderType& type,
                              const bool optimise = false) const override {
-        return MemoryManager_NEW d3dShader(name, type, optimise);
-    }
-
-    inline HardwareQuery* newHardwareQuery() const override {
-        return MemoryManager_NEW d3dHardwareQuery();
+        return MemoryManager_NEW d3dShader(context, name, type, optimise);
     }
 
     bool initShaders() override;

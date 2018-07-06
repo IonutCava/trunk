@@ -49,8 +49,14 @@ class d3dVertexBuffer : public VertexBuffer {
 
     bool queueRefresh() { return refresh(); }
 
-    d3dVertexBuffer() : VertexBuffer() {}
-    ~d3dVertexBuffer() { destroy(); }
+    d3dVertexBuffer(GFXDevice& context) : VertexBuffer(context)
+    {
+    }
+
+    ~d3dVertexBuffer()
+    {
+        destroy();
+    }
 
    private:
     bool createInternal() { return true; }

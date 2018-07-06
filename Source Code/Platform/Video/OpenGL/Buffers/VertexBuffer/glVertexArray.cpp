@@ -1,6 +1,7 @@
 #include "Headers/glVertexArray.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
@@ -52,8 +53,8 @@ void glVertexArray::clearVaos() {
 }
 
 /// Default destructor
-glVertexArray::glVertexArray()
-    : VertexBuffer(),
+glVertexArray::glVertexArray(GFXDevice& context)
+    : VertexBuffer(context),
       _refreshQueued(false),
       _formatInternal(GL_NONE)
 {
@@ -177,7 +178,7 @@ bool glVertexArray::create(bool staticDraw) {
     if (!staticDraw) {
         // OpenGLES support isn't added, but this check doesn't break anything,
         // so I'll just leave it here -Ionut
-        GLenum usage = (GFX_DEVICE.getAPI() == GFXDevice::RenderAPI::OpenGLES)
+        GLenum usage = (_context.getAPI() == GFXDevice::RenderAPI::OpenGLES)
                            ? GL_STREAM_DRAW
                            : GL_DYNAMIC_DRAW;
         if (usage != _usage) {
@@ -348,7 +349,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, bool useCmdBuffer) {
 
     // Bind the vertex array object that in turn activates all of the bindings
     // and pointers set on creation
-    if (GL_API::setActiveVAO(_vaoCaches[to_uint(GFX_DEVICE.getRenderStage())])) {
+    if (GL_API::setActiveVAO(_vaoCaches[to_uint(_context.getRenderStage())])) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests
         GL_API::togglePrimitiveRestart(_primitiveRestartEnabled);

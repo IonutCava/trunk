@@ -38,7 +38,7 @@ namespace Divide {
 
 class glPixelBuffer : public PixelBuffer {
    public:
-    glPixelBuffer(PBType type);
+    glPixelBuffer(GFXDevice& context, PBType type);
     ~glPixelBuffer() { Destroy(); }
 
     bool Create(GLushort width, GLushort height, GLushort depth = 0,

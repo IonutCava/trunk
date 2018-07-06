@@ -38,7 +38,9 @@ namespace Divide {
 
 class glShader : public Shader {
    public:
-    glShader(const stringImpl& name, const ShaderType& type,
+    glShader(GFXDevice& context,
+             const stringImpl& name,
+             const ShaderType& type,
              const bool optimise = false);
     ~glShader();
 

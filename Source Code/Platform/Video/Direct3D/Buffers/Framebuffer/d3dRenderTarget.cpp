@@ -2,10 +2,14 @@
 
 namespace Divide {
 
-d3dRenderTarget::d3dRenderTarget(bool multisampled)
-    : Framebuffer(multisampled) {}
+d3dRenderTarget::d3dRenderTarget(GFXDevice& context, bool multisampled)
+    : Framebuffer(context, multisampled)
+{
+}
 
-d3dRenderTarget::~d3dRenderTarget() {}
+d3dRenderTarget::~d3dRenderTarget()
+{
+}
 
 bool d3dRenderTarget::create(U16 width, U16 height) { return true; }
 

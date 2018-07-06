@@ -33,7 +33,7 @@ float shadow_loop(){
     int offset = 0;
     int shadowLights = 0;
     for (int i = 0; i < MAX_LIGHT_TYPES; ++i) {
-        for (int j = 0; j < int(VAR._lightCount[i]); ++j) {
+        for (int j = 0; j < int(dvd_lightCountPerType[i]); ++j) {
             int lightIndex = j + offset;
             if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && 
                 dvd_LightSource[lightIndex]._options.y == 1) {
@@ -41,7 +41,7 @@ float shadow_loop(){
                 shadowLights++;
             }
         }
-        offset += int(VAR._lightCount[i]);
+        offset += int(dvd_lightCountPerType[i]);
     }
 
     return clamp(shadow, 0.05, 1.0);

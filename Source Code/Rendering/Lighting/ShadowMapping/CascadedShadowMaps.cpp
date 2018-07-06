@@ -11,10 +11,12 @@
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderManager.h"
-
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 

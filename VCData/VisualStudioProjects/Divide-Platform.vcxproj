@@ -77,6 +77,7 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Direct3D\Textures\Headers\d3dTexture.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXDevice.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GFXState.h" />
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\GraphicsResource.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\IMPrimitive.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h" />

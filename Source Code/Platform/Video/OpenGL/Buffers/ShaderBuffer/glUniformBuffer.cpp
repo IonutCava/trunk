@@ -1,11 +1,13 @@
 #include "Headers/glUniformBuffer.h"
 
-#include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/OpenGL/Buffers/Headers/glBufferLockManager.h"
+#include "Core/Headers/ParamHandler.h"
+
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
-#include "Core/Headers/ParamHandler.h"
 
 namespace Divide {
 
@@ -32,12 +34,13 @@ namespace {
     }
 };
 
-glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
+glUniformBuffer::glUniformBuffer(GFXDevice& context,
+                                 const stringImpl& bufferName,
                                  const U32 ringBufferLength,
                                  bool unbound,
                                  bool persistentMapped,
                                  BufferUpdateFrequency frequency)
-    : ShaderBuffer(bufferName, ringBufferLength, unbound, persistentMapped, frequency),
+    : ShaderBuffer(context, bufferName, ringBufferLength, unbound, persistentMapped, frequency),
       _UBOid(0),
       _mappedBuffer(nullptr),
       _alignment(0),

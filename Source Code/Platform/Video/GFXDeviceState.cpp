@@ -5,8 +5,16 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/ProfileTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
+#include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Shaders/Headers/ShaderManager.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
+#include "Platform/Video/Direct3D/Headers/DXWrapper.h"
 
 namespace Divide {
 
@@ -74,7 +82,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
-    STUBBED("ToDo: Use different sizes for node buffer and command buffer, as commands for Z PrePas and Display are different -Ionut")
     STUBBED("ToDo: Increase buffer size to handle multiple shadow passes. Round robin with size factor 3 should suffice for shadows -Ionut")
     // Create a shader buffer to hold all of our indirect draw commands
     // Usefull if we need access to the buffer in GLSL/Compute programs
@@ -289,7 +296,6 @@ void GFXDevice::closeRenderingAPI() {
     }
     // Close the shader manager
     ShaderManager::getInstance().destroy();
-    ShaderManager::getInstance().destroyInstance();
     // Close the rendering API
     _api->closeRenderingAPI();
     // Close the loading thread and wait for it to terminate

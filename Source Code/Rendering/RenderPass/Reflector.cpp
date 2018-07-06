@@ -3,9 +3,12 @@
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
 #include "Utility/Headers/Localization.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
 

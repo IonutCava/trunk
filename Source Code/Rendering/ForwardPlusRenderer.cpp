@@ -3,35 +3,12 @@
 #include "Core/Headers/Console.h"
 #include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 //ref: https://github.com/bioglaze/aether3d
 namespace Divide {
-namespace {
-    U32 numActivePointLights = 0;
-    U32 numActiveSpotLights = 0;
-
-    U32 getMaxNumLightsPerTile() {
-        const U32 adjustmentMultipier = 32;
-
-        // I haven't tested at greater than 1080p, so cap it
-        U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().height;
-        CLAMP<U16>(height, height, 1080);
-
-        // adjust max lights per tile down as height increases
-        //return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
-        return 32;
-    }
-
-    U32 getNumTilesX() { 
-        U16 width = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().width;
-        return to_uint((width + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) / to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
-    }
-
-    U32 getNumTilesY() { 
-        U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().height;
-        return to_uint((height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) / to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
-    }
-};
 
 ForwardPlusRenderer::ForwardPlusRenderer() 
     : Renderer(RendererType::RENDERER_FORWARD_PLUS)
@@ -39,6 +16,9 @@ ForwardPlusRenderer::ForwardPlusRenderer()
     ResourceDescriptor cullShaderDesc("lightCull");
     cullShaderDesc.setThreadedLoading(false);
     _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
+
+    vec2<U16> res(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution());
+    updateResolution(res.width, res.height);
 
     const U32 numTiles = getNumTilesX() * getNumTilesY();
     const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
@@ -55,23 +35,21 @@ ForwardPlusRenderer::~ForwardPlusRenderer()
 
 void ForwardPlusRenderer::preRender() {
     LightManager& lightMgr = LightManager::getInstance();
-    numActivePointLights = lightMgr.getActiveLightCount(LightType::POINT);
-    numActiveSpotLights = lightMgr.getActiveLightCount(LightType::SPOT);
-
     lightMgr.uploadLightData(LightType::POINT, ShaderBufferLocation::LIGHT_CULL_POINT);
     lightMgr.uploadLightData(LightType::SPOT, ShaderBufferLocation::LIGHT_CULL_SPOT);
 
-    GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-        ->getAttachment(TextureDescriptor::AttachmentType::Depth)
-        ->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
+    Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH);
+    Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    depthTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
 
     _flag = getMaxNumLightsPerTile();
     _lightCullComputeShader->bind();
-    _lightCullComputeShader->Uniform("numLights", ((numActiveSpotLights & 0xFFFFu) << 16) |
-                                                   (numActivePointLights & 0xFFFFu));
-    _lightCullComputeShader->Uniform("maxNumLightsPerTile", (I32)_flag);
+    _lightCullComputeShader->Uniform("windowDimensions", vec2<I32>(_resolution.width, _resolution.height));
+    _lightCullComputeShader->Uniform("numLights", vec3<I32>(lightMgr.getActiveLightCount(LightType::POINT),
+                                                            lightMgr.getActiveLightCount(LightType::SPOT),
+                                                            _flag));
     _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
-    _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::BUFFER);
+    _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
@@ -80,6 +58,25 @@ void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
 }
 
 void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
+    _resolution.set(width, height);
+}
 
+U32 ForwardPlusRenderer::getMaxNumLightsPerTile() const {
+    const U32 adjustmentMultipier = 32;
+
+    // I haven't tested at greater than 1080p, so cap it
+    U16 height = std::min(_resolution.height, to_ushort(1080));
+    // adjust max lights per tile down as height increases
+    return (Config::Lighting::FORWARD_PLUS_MAX_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
+}
+
+U32 ForwardPlusRenderer::getNumTilesX() const {
+    return to_uint((_resolution.width + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
+           to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
+}
+
+U32 ForwardPlusRenderer::getNumTilesY() const {
+    return to_uint((_resolution.height + Config::Lighting::FORWARD_PLUS_TILE_RES - 1) /
+           to_float(Config::Lighting::FORWARD_PLUS_TILE_RES));
 }
 };

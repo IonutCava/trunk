@@ -42,8 +42,7 @@
 
 namespace Divide {
 
-/// A tracked object takes car of it's own reference counting and knows it's own
-/// size
+/// A tracked object takes car of it's own reference counting and knows it's own size
 /// It also schedules it's own deletion (a pompous name for a smart pointer)
 class TrackedObject : private NonCopyable, public GUIDWrapper {
    public:

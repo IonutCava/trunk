@@ -29,18 +29,17 @@
 
  */
 
-#ifndef _TEXTURE_H
-#define _TEXTURE_H
+#ifndef _TEXTURE_H_
+#define _TEXTURE_H_
 
-#include "TextureDescriptor.h"
-
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Core/Resources/Headers/Resource.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
 
 /// An API-independent representation of a texture
-class NOINITVTABLE Texture : public Resource {
+class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename T>
@@ -142,7 +141,7 @@ class NOINITVTABLE Texture : public Resource {
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
 
-    explicit Texture(TextureType type);
+    explicit Texture(GFXDevice& context, TextureType type);
     virtual ~Texture();
 
    protected:
@@ -162,4 +161,4 @@ class NOINITVTABLE Texture : public Resource {
 };
 
 };  // namespace Divide
-#endif
+#endif // _TEXTURE_H_

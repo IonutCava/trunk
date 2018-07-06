@@ -41,7 +41,7 @@ class glFramebuffer : public Framebuffer {
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    glFramebuffer(bool useResolveBuffer = false);
+    glFramebuffer(GFXDevice& context, bool useResolveBuffer = false);
     ~glFramebuffer();
 
     bool create(U16 width, U16 height);

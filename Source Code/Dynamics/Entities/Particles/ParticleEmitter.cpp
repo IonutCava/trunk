@@ -8,6 +8,8 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 

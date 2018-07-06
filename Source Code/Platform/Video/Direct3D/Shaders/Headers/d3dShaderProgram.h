@@ -38,9 +38,13 @@ namespace Divide {
 
 class d3dShaderProgram final : public ShaderProgram {
    public:
-    d3dShaderProgram() : ShaderProgram() {}
+    d3dShaderProgram(GFXDevice& context) : ShaderProgram(context)
+    {
+    }
 
-    ~d3dShaderProgram() {}
+    ~d3dShaderProgram()
+    {
+    }
 
     bool unload() override {
         return ShaderProgram::unload();
@@ -72,7 +76,9 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(const stringImpl& ext, const vec2<F32>& value) override {}
     void Uniform(const stringImpl& ext, const vec2<I32>& value) override {}
     void Uniform(const stringImpl& ext, const vec3<F32>& value) override {}
+    void Uniform(const stringImpl& ext, const vec3<I32>& value) override {}
     void Uniform(const stringImpl& ext, const vec4<F32>& value) override {}
+    void Uniform(const stringImpl& ext, const vec4<I32>& value) override {}
     void Uniform(const stringImpl& ext,
                  const mat3<F32>& value,
                  bool transpose = false) override {}
@@ -97,7 +103,9 @@ class d3dShaderProgram final : public ShaderProgram {
     void Uniform(I32 location, const vec2<F32>& value) override {}
     void Uniform(I32 location, const vec2<I32>& value) override {}
     void Uniform(I32 location, const vec3<F32>& value) override {}
+    void Uniform(I32 location, const vec3<I32>& value) override {}
     void Uniform(I32 location, const vec4<F32>& value) override {}
+    void Uniform(I32 location, const vec4<I32>& value) override {}
     void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override {}
     void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override {}
     void Uniform(I32 location, const vectorImpl<I32>& values) override {}

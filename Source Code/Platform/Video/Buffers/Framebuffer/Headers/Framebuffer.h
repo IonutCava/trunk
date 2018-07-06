@@ -32,13 +32,13 @@
 #ifndef _FRAME_BUFFER_H_
 #define _FRAME_BUFFER_H_
 
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
 
 class Texture;
-class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
+class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper {
    public:
     struct FramebufferTarget {
         enum class BufferMask : U32 {
@@ -157,7 +157,7 @@ class NOINITVTABLE Framebuffer : private NonCopyable, public GUIDWrapper {
         return vec2<U16>(_width, _height);
     }
 
-    Framebuffer(bool multiSample);
+    Framebuffer(GFXDevice& context, bool multiSample);
     virtual ~Framebuffer();
 
    protected:

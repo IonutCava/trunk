@@ -32,9 +32,8 @@
 #ifndef _SHADER_H_
 #define _SHADER_H_
 
+#include "Platform/Video/Headers/GraphicsResource.h"
 #include "Core/MemoryManagement/Headers/TrackedObject.h"
-#include "Platform/Headers/PlatformDefines.h"
-#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
 
@@ -42,12 +41,14 @@ class ShaderProgram;
 /// Shader represents one of a program's rendering stages (vertex, geometry,
 /// fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
-class NOINITVTABLE Shader : public TrackedObject {
+class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
    public:
     /// The shader's name is the period-separated list of properties, type is
     /// the render stage this shader is used for
-    Shader(const stringImpl& name, const ShaderType& type,
-           const bool optimise = false);
+    explicit Shader(GFXDevice& context,
+                    const stringImpl& name,
+                    const ShaderType& type,
+                    const bool optimise = false);
     /// The shader is deleted only by the ShaderManager when no shader programs
     /// are referencing it
     virtual ~Shader();

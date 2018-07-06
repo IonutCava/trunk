@@ -143,8 +143,8 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
         GFXDataFormat _type;
     };
 
-    GenericVertexData(bool persistentMapped)
-        : VertexDataInterface(),
+    GenericVertexData(GFXDevice& context, bool persistentMapped)
+        : VertexDataInterface(context),
           FrameListener(),
           _persistentMapped(persistentMapped &&
                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)

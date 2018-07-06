@@ -1,27 +1,28 @@
 -- Compute
 
+uniform ivec2 windowDimensions;
+uniform ivec3 numLights;
+
+#define windowWidth windowDimensions.x
+#define windowHeight windowDimensions.y
+
 #include "lightInput.cmn"
 
 #define NUM_THREADS_PER_TILE (FORWARD_PLUS_TILE_RES * FORWARD_PLUS_TILE_RES)
 #define FLT_MAX 3.402823466e+38F
 
-#define windowWidth int(dvd_ViewPort.z)
-#define windowHeight int(dvd_ViewPort.w)
-
-uniform uint numLights;
-uniform int maxNumLightsPerTile;
-mat4 invProjection;
+//#define windowWidth int(dvd_ViewPort.z)
+//#define windowHeight int(dvd_ViewPort.w)
 
 // shared = The value of such variables are shared between all invocations within a work group.
-
 shared uint ldsLightIdxCounter;
 shared uint ldsLightIdx[MAX_NUM_LIGHTS_PER_TILE];
 shared uint ldsZMax;
 shared uint ldsZMin;
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTexture;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D HiZBuffer;
 
-vec4 ConvertProjToView(vec4 p)
+vec4 ConvertProjToView(in mat4 invProjection, vec4 p)
 {
     p = invProjection * p;
     p /= p.w;
@@ -45,18 +46,16 @@ vec4 CreatePlaneEquation(vec4 b, vec4 c)
     return n;
 }
 
-// point-plane distance, simplified for the case where 
-// the plane passes through the origin
+// point-plane distance, simplified for the case where the plane passes through the origin
 float GetSignedDistanceFromPlane(in vec4 p, in vec4 eqn)
 {
-    // dot( eqn.xyz, p.xyz ) + eqn.w, , except we know eqn.w is zero 
-    // (see CreatePlaneEquation above)
+    // dot( eqn.xyz, p.xyz ) + eqn.w, , except we know eqn.w is zero (see CreatePlaneEquation above)
     return dot(eqn.xyz, p.xyz);
 }
 
 void CalculateMinMaxDepthInLds(uvec3 globalThreadIdx)
 {
-    float depth = -textureLod(depthTexture, ivec2(globalThreadIdx.x, globalThreadIdx.y), 0).x;
+    float depth = -textureLod(HiZBuffer, vec2(globalThreadIdx.x, globalThreadIdx.y), 0).x;
     uint z = floatBitsToUint(depth);
 
     if (depth != 0.f)
@@ -70,8 +69,6 @@ layout(local_size_x = FORWARD_PLUS_TILE_RES, local_size_y = FORWARD_PLUS_TILE_RE
 
 void main(void)
 {
-
-    invProjection = inverse(dvd_ProjectionMatrix);
     uvec3 globalIdx = gl_GlobalInvocationID;
     uvec3 localIdx = gl_LocalInvocationID;
     uvec3 groupIdx = gl_WorkGroupID;
@@ -98,11 +95,12 @@ void main(void)
         uint uWindowHeightEvenlyDivisibleByTileRes = FORWARD_PLUS_TILE_RES * GetNumTilesY();
 
         // four corners of the tile, clockwise from top-left
+        mat4 invProjection = inverse(dvd_ProjectionMatrix);
         vec4 frustum[4];
-        frustum[0] = ConvertProjToView(vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[1] = ConvertProjToView(vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[2] = ConvertProjToView(vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
-        frustum[3] = ConvertProjToView(vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
+        frustum[0] = ConvertProjToView(invProjection, vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
+        frustum[1] = ConvertProjToView(invProjection, vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pym) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
+        frustum[2] = ConvertProjToView(invProjection, vec4(pxp / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
+        frustum[3] = ConvertProjToView(invProjection, vec4(pxm / float(uWindowWidthEvenlyDivisibleByTileRes) * 2.0f - 1.0f, (uWindowHeightEvenlyDivisibleByTileRes - pyp) / float(uWindowHeightEvenlyDivisibleByTileRes) * 2.0f - 1.0f, 1.0f, 1.0f));
 
         // create plane equations for the four sides of the frustum, 
         // with the positive half-space outside the frustum (and remember, 
@@ -132,7 +130,7 @@ void main(void)
     maxZ = uintBitsToFloat(ldsZMin);
 
     // loop over the point lights and do a sphere vs. frustum intersection test
-    uint numPointLights = numLights & 0xFFFFu;
+    uint numPointLights = uint(numLights.x);
 
     for (uint i = 0; i < numPointLights; i += NUM_THREADS_PER_TILE)
     {
@@ -142,21 +140,20 @@ void main(void)
         {
             vec4 center = dvd_PointLightSource[il]._positionWV;
             float r = center.w;
-
             // test if sphere is intersecting or inside frustum
-            /*if (-center.z + minZ < r && center.z - maxZ < r)
+            //if (-center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[2]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[3]) < r))
-                {*/
+                {
                     // do a thread-safe increment of the list counter 
                     // and put the index of this light into the list
                     uint dstIdx = atomicAdd(ldsLightIdxCounter, 1);
                     ldsLightIdx[dstIdx] = il + 1;
-              /*  }
-            }*/
+                }
+            }
         }
     }
 
@@ -164,7 +161,7 @@ void main(void)
 
     // Spot lights.
     uint uNumPointLightsInThisTile = ldsLightIdxCounter;
-    uint numSpotLights = (numLights & 0xFFFF0000u) >> 16u;
+    uint numSpotLights = uint(numLights.y);
 
     for (uint i = 0; i < numSpotLights; i += NUM_THREADS_PER_TILE)
     {
@@ -176,25 +173,26 @@ void main(void)
             float r = center.w * 5.0f; // FIXME: Multiply was added, but more clever culling should be done instead.
 
             // test if sphere is intersecting or inside frustum
-            /*if (-center.z + minZ < r && center.z - maxZ < r)
+            if (-center.z + minZ < r && center.z - maxZ < r)
             {
                 if ((GetSignedDistanceFromPlane(center, frustumEqn[0]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[1]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[2]) < r) &&
                     (GetSignedDistanceFromPlane(center, frustumEqn[3]) < r))
-                {*/
+                {
                     // do a thread-safe increment of the list counter 
                     // and put the index of this light into the list
                     uint dstIdx = atomicAdd(ldsLightIdxCounter, 1);
                     ldsLightIdx[dstIdx] = il + 1;
-                /*}
-            }*/
+                }
+            }
         }
     }
     
     barrier();
 
     {   // write back
+        int maxNumLightsPerTile = numLights.z;
         uint startOffset = maxNumLightsPerTile * tileIdxFlattened;
 
         for (uint i = localIdxFlattened; i < uNumPointLightsInThisTile; i += NUM_THREADS_PER_TILE)

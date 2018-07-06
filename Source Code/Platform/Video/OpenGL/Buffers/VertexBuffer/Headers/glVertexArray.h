@@ -54,7 +54,7 @@ namespace Divide {
 
 class glVertexArray : public VertexBuffer {
    public:
-    glVertexArray();
+    glVertexArray(GFXDevice& context);
     ~glVertexArray();
 
     bool create(bool staticDraw = true);

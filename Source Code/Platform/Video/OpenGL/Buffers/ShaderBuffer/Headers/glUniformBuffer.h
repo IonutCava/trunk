@@ -42,7 +42,8 @@ namespace Divide {
 class glBufferLockManager;
 class glUniformBuffer final : public ShaderBuffer {
    public:
-     glUniformBuffer(const stringImpl &bufferName,
+     glUniformBuffer(GFXDevice& context,
+                     const stringImpl &bufferName,
                      const U32 ringBufferLength,
                      bool unbound,
                      bool persistentMapped,

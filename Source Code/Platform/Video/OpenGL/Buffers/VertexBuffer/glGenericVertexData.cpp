@@ -6,8 +6,8 @@
 
 namespace Divide {
 
-glGenericVertexData::glGenericVertexData(bool persistentMapped)
-    : GenericVertexData(persistentMapped),
+glGenericVertexData::glGenericVertexData(GFXDevice& context, bool persistentMapped)
+    : GenericVertexData(context, persistentMapped),
       _bufferSet(nullptr),
       _bufferPersistent(nullptr),
       _elementCount(nullptr),

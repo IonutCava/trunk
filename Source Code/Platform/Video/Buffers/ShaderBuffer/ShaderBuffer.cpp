@@ -1,12 +1,15 @@
 #include "Headers/ShaderBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
-    ShaderBuffer::ShaderBuffer(const stringImpl& bufferName,
+    ShaderBuffer::ShaderBuffer(GFXDevice& context,
+                               const stringImpl& bufferName,
                                const U32 ringBufferLength,
                                bool unbound,
                                bool persistentMapped,
                                BufferUpdateFrequency frequency)
-                                                      : RingBuffer(ringBufferLength),
+                                                      : GraphicsResource(context),
+                                                        RingBuffer(ringBufferLength),
                                                         GUIDWrapper(),
                                                         _sizeFactor(1),
                                                         _bufferSize(0),
@@ -17,9 +20,9 @@ namespace Divide {
                                                         _unbound(unbound),
                                                         _persistentMapped(persistentMapped &&
                                                             !Config::Profile::DISABLE_PERSISTENT_BUFFER)
-#                                                       if defined(ENABLE_GPU_VALIDATION)
+#  if defined(ENABLE_GPU_VALIDATION)
                                                         ,_bufferName(bufferName)
-#endif
+#   endif
     {
     }
 

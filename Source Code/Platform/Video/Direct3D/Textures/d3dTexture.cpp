@@ -3,8 +3,10 @@
 
 namespace Divide {
 
-d3dTexture::d3dTexture(TextureType type)
-    : Texture(type) {
+d3dTexture::d3dTexture(GFXDevice& context, TextureType type)
+    : Texture(context, type)
+{
     _type = d3dTextureTypeTable[to_uint(type)];
 }
+
 };

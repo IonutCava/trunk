@@ -2,6 +2,9 @@
 #define _PRE_RENDER_OPERATOR_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
 

@@ -32,15 +32,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SHADER_BUFFER_H_
 #define _SHADER_BUFFER_H_
 
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
-#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
 class ShaderProgram;
-class NOINITVTABLE ShaderBuffer : private NonCopyable, public RingBuffer, public GUIDWrapper {
+class NOINITVTABLE ShaderBuffer : protected GraphicsResource, 
+                                  public RingBuffer,
+                                  public GUIDWrapper {
    public:
-    explicit ShaderBuffer(const stringImpl& bufferName,
+    explicit ShaderBuffer(GFXDevice& context, 
+                          const stringImpl& bufferName,
                           const U32 ringBufferLength,
                           bool unbound,
                           bool persistentMapped,

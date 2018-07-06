@@ -71,8 +71,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
 
     typedef std::array<bool, to_const_uint(VertexAttribute::COUNT)> AttribFlags;
 
-    VertexBuffer()
-        : VertexDataInterface(),
+    VertexBuffer(GFXDevice& context)
+        : VertexDataInterface(context),
           _format(GFXDataFormat::UNSIGNED_SHORT),
           _primitiveRestartEnabled(false),
           _staticBuffer(false)

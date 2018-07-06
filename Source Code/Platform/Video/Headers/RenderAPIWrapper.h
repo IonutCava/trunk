@@ -35,8 +35,6 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
-#include <assert.h>
-
 namespace Divide {
 
 class Kernel;
@@ -335,22 +333,6 @@ class ShaderBuffer;
 class VertexBuffer;
 class ShaderProgram;
 
-class HardwareQuery {
-public:
-    HardwareQuery() : _enabled(false) {}
-
-    virtual ~HardwareQuery() {}
-    virtual void create() = 0;
-    virtual void destroy() = 0;
-
-    inline bool enabled() const { return _enabled; }
-    inline void enabled(bool state) { _enabled = state; }
-
-protected:
-    bool _enabled;
-};
-
-
 class RingBuffer {
     public:
         explicit RingBuffer(U32 queueLength) : 
@@ -390,7 +372,7 @@ class RingBuffer {
 };
 
 /// Renderer Programming Interface
-class NOINITVTABLE RenderAPIWrapper {
+class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
    protected:
     friend class GFXDevice;
     /*Application display frame*/
@@ -402,24 +384,25 @@ class NOINITVTABLE RenderAPIWrapper {
     /// Set's the cursor's location to the specified X and Y relative to the
     /// edge of the window
     virtual void setCursorPosition(I32 x, I32 y) = 0;
-    virtual IMPrimitive* newIMP() const = 0;
-    virtual Framebuffer* newFB(bool multisampled) const = 0;
-    virtual VertexBuffer* newVB() const = 0;
-    virtual ShaderBuffer* newSB(const stringImpl& bufferName,
+    virtual IMPrimitive* newIMP(GFXDevice& context) const = 0;
+    virtual Framebuffer* newFB(GFXDevice& context, bool multisampled) const = 0;
+    virtual VertexBuffer* newVB(GFXDevice& context) const = 0;
+    virtual ShaderBuffer* newSB(GFXDevice& context,
+                                const stringImpl& bufferName,
                                 const U32 ringBufferLength = 1,
                                 const bool unbound = false,
                                 const bool persistentMapped = true,
                                 BufferUpdateFrequency frequency =
                                     BufferUpdateFrequency::ONCE) const = 0;
-    virtual GenericVertexData* newGVD(const bool persistentMapped = false) const = 0;
-    virtual PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
-    virtual Texture* newTextureArray() const = 0;
-    virtual Texture* newTexture2D() const = 0;
-    virtual Texture* newTextureCubemap() const = 0;
-    virtual ShaderProgram* newShaderProgram() const = 0;
-    virtual Shader* newShader(const stringImpl& name, const ShaderType& type,
+    virtual GenericVertexData* newGVD(GFXDevice& context, 
+                                      const bool persistentMapped = false) const = 0;
+    virtual PixelBuffer* newPB(GFXDevice& context,
+                               const PBType& type = PBType::PB_TEXTURE_2D) const = 0;
+    virtual Texture* newTexture(GFXDevice& context, TextureType type) const = 0;
+    virtual ShaderProgram* newShaderProgram(GFXDevice& context) const = 0;
+    virtual Shader* newShader(GFXDevice& context,
+                              const stringImpl& name, const ShaderType& type,
                               const bool optimise = false) const = 0;
-    virtual HardwareQuery* newHardwareQuery() const = 0;
 
     virtual bool initShaders() = 0;
     virtual bool deInitShaders() = 0;

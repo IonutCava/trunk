@@ -33,7 +33,7 @@
 
 namespace Divide {
 
-glHardwareQuery::glHardwareQuery() : HardwareQuery(),
+glHardwareQuery::glHardwareQuery() : _enabled(false),
                                      _queryID(0)
 {
 }
@@ -201,8 +201,7 @@ bool GL_API::initShaders() {
                                                   "vec4 _vertexWV;",
                                                   "vec3 _normalWV;",
                                                   "vec3 _tangentWV;",
-                                                  "vec3 _bitangentWV;",
-                                                  Util::StringFormat("flat uint _lightCount[%d];", to_const_uint(LightType::COUNT))
+                                                  "vec3 _bitangentWV;"
                                                 };
     // Initialize GLSW
     GLint glswState = glswInit();
@@ -793,39 +792,39 @@ GLuint GL_API::getSamplerHandle(U32 samplerHash) {
 
 /// Create and return a new IM emulation primitive. The callee is responsible
 /// for it's deletion!
-IMPrimitive* GL_API::newIMP() const {
-    return MemoryManager_NEW glIMPrimitive();
+IMPrimitive* GL_API::newIMP(GFXDevice& context) const {
+    return MemoryManager_NEW glIMPrimitive(context);
 }
 
 /// Create and return a new framebuffer. The callee is responsible for it's
 /// deletion!
-Framebuffer* GL_API::newFB(bool multisampled) const {
+Framebuffer* GL_API::newFB(GFXDevice& context, bool multisampled) const {
     // If MSAA is disabled, this will be a simple color / depth buffer
     // If we requested a MultiSampledFramebuffer and MSAA is enabled, we also
     // allocate a resolve framebuffer
     // We set the resolve framebuffer as the requested framebuffer's child.
     // The framebuffer is responsible for deleting it's own resolve child!
-    return MemoryManager_NEW glFramebuffer(
-        (multisampled && GFX_DEVICE.gpuState().MSAAEnabled()));
+    return MemoryManager_NEW glFramebuffer(context,
+        (multisampled && context.gpuState().MSAAEnabled()));
 }
 
 /// Create and return a new vertex array (VAO + VB + IB). The callee is
 /// responsible for it's deletion!
-VertexBuffer* GL_API::newVB() const {
-    return MemoryManager_NEW glVertexArray();
+VertexBuffer* GL_API::newVB(GFXDevice& context) const {
+    return MemoryManager_NEW glVertexArray(context);
 }
 
 /// Create and return a new pixel buffer using the requested format. The callee
 /// is responsible for it's deletion!
-PixelBuffer* GL_API::newPB(const PBType& type) const {
-    return MemoryManager_NEW glPixelBuffer(type);
+PixelBuffer* GL_API::newPB(GFXDevice& context, const PBType& type) const {
+    return MemoryManager_NEW glPixelBuffer(context, type);
 }
 
 /// Create and return a new generic vertex data object and, optionally set it as
 /// persistently mapped.
 /// The callee is responsible for it's deletion!
-GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
-    return MemoryManager_NEW glGenericVertexData(persistentMapped);
+GenericVertexData* GL_API::newGVD(GFXDevice& context, const bool persistentMapped) const {
+    return MemoryManager_NEW glGenericVertexData(context, persistentMapped);
 }
 
 /// Create and return a new shader buffer. The callee is responsible for it's
@@ -833,53 +832,40 @@ GenericVertexData* GL_API::newGVD(const bool persistentMapped) const {
 /// The OpenGL implementation creates either an 'Uniform Buffer Object' if
 /// unbound is false
 /// or a 'Shader Storage Block Object' otherwise
-ShaderBuffer* GL_API::newSB(const stringImpl& bufferName, 
+ShaderBuffer* GL_API::newSB(GFXDevice& context,
+                            const stringImpl& bufferName,
                             const U32 ringBufferLength,
                             const bool unbound,
                             const bool persistentMapped,
                             BufferUpdateFrequency frequency) const {
     // The shader buffer can also be persistently mapped, if requested
-    return MemoryManager_NEW glUniformBuffer(bufferName, 
+    return MemoryManager_NEW glUniformBuffer(context,
+                                             bufferName, 
                                              ringBufferLength,
                                              unbound,
                                              persistentMapped,
                                              frequency);
 }
 
-/// Create and return a new texture array (optionally, flipped vertically). The
-/// callee is responsible for it's deletion!
-Texture* GL_API::newTextureArray() const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D_ARRAY);
-}
-
-/// Create and return a new 2D texture (optionally, flipped vertically). The
-/// callee is responsible for it's deletion!
-Texture* GL_API::newTexture2D() const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_2D);
-}
-
-/// Create and return a new cube texture (optionally, flipped vertically). The
-/// callee is responsible for it's deletion!
-Texture* GL_API::newTextureCubemap() const {
-    return MemoryManager_NEW glTexture(TextureType::TEXTURE_CUBE_MAP);
+/// Create and return a new 2D texture. The callee is responsible for it's deletion!
+Texture* GL_API::newTexture(GFXDevice& context, TextureType type) const {
+    return MemoryManager_NEW glTexture(context, type);
 }
 
 /// Create and return a new shader program (optionally, post load optimised).
 /// The callee is responsible for it's deletion!
-ShaderProgram* GL_API::newShaderProgram() const {
-    return MemoryManager_NEW glShaderProgram();
+ShaderProgram* GL_API::newShaderProgram(GFXDevice& context) const {
+    return MemoryManager_NEW glShaderProgram(context);
 }
 
 /// Create and return a new shader of the specified type by loading the
 /// specified name (optionally, post load optimised).
 /// The callee is responsible for it's deletion!
-Shader* GL_API::newShader(const stringImpl& name, const ShaderType& type,
+Shader* GL_API::newShader(GFXDevice& context,
+                          const stringImpl& name,
+                          const ShaderType& type,
                           const bool optimise) const {
-    return MemoryManager_NEW glShader(name, type, optimise);
-}
-
-HardwareQuery* GL_API::newHardwareQuery() const {
-    return MemoryManager_NEW glHardwareQuery();
+    return MemoryManager_NEW glShader(context, name, type, optimise);
 }
 
 };

@@ -5,8 +5,9 @@
 
 namespace Divide {
 
-Framebuffer::Framebuffer(bool multiSampled)
-    : GUIDWrapper(),
+Framebuffer::Framebuffer(GFXDevice& context, bool multiSampled)
+    : GraphicsResource(context),
+      GUIDWrapper(),
       _shouldRebuild(true),
       _useDepthBuffer(false),
       _disableColorWrites(false),

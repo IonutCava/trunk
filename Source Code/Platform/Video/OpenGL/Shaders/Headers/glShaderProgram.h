@@ -45,7 +45,7 @@ namespace Attorney {
 class glShaderProgram final : public ShaderProgram {
     friend class Attorney::GLAPIShaderProgram;
    public:
-    glShaderProgram();
+    glShaderProgram(GFXDevice& context);
     ~glShaderProgram();
 
     /// Make sure this program is ready for deletion
@@ -85,7 +85,9 @@ class glShaderProgram final : public ShaderProgram {
     inline void Uniform(const stringImpl& ext, const vec2<F32>& value) override;
     inline void Uniform(const stringImpl& ext, const vec2<I32>& value) override;
     inline void Uniform(const stringImpl& ext, const vec3<F32>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec3<I32>& value) override;
     inline void Uniform(const stringImpl& ext, const vec4<F32>& value) override;
+    inline void Uniform(const stringImpl& ext, const vec4<I32>& value) override;
     inline void Uniform(const stringImpl& ext,
                         const mat3<F32>& value,
                         bool transpose = false) override;
@@ -113,7 +115,9 @@ class glShaderProgram final : public ShaderProgram {
     void Uniform(I32 location, const vec2<F32>& value) override;
     void Uniform(I32 location, const vec2<I32>& value) override;
     void Uniform(I32 location, const vec3<F32>& value) override;
+    void Uniform(I32 location, const vec3<I32>& value) override;
     void Uniform(I32 location, const vec4<F32>& value) override;
+    void Uniform(I32 location, const vec4<I32>& value) override;
     void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override;
     void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override;
     void Uniform(I32 location, const vectorImpl<I32>& values) override;
@@ -145,20 +149,18 @@ class glShaderProgram final : public ShaderProgram {
     /// Cache uniform/attribute locations for shader programs
     I32 getUniformLocation(const stringImpl& name) override;
 
-    //template<typename T> struct fake_dependency: public std::false_type {};
+    struct fake_dependency: public std::false_type {};
     template <typename T>
-    bool cachedValueUpdate(I32 location, const T& value);/* {
+    bool cachedValueUpdate(I32 location, const T& value) {
         static_assert(
                 fake_dependency::value,
             "glShaderProgram::cachedValue error: unsupported data type!");
         return false;
-    }*/
+    }
     /// Basic OpenGL shader program validation (both in debug and in release)
     void validateInternal();
     /// Retrieve the program's validation log if we need it
     stringImpl getLog() const;
-    /// Prevent binding multiple textures to the same slot.
-    bool checkSlotUsage(GLint location, GLushort slot);
 
    private:
     typedef hashMapImpl<ULL, I32> ShaderVarMap;
@@ -168,7 +170,9 @@ class glShaderProgram final : public ShaderProgram {
     typedef hashMapImpl<I32, vec2<F32>> ShaderVarVec2F32Map;
     typedef hashMapImpl<I32, vec2<I32>> ShaderVarvec2I32Map;
     typedef hashMapImpl<I32, vec3<F32>> ShaderVarVec3F32Map;
+    typedef hashMapImpl<I32, vec3<I32>> ShaderVarVec3I32Map;
     typedef hashMapImpl<I32, vec4<F32>> ShaderVarVec4F32Map;
+    typedef hashMapImpl<I32, vec4<I32>> ShaderVarVec4I32Map;
     typedef hashMapImpl<I32, mat3<F32>> ShaderVarMat3Map;
     typedef hashMapImpl<I32, mat4<F32>> ShaderVarMat4Map;
 
@@ -178,7 +182,9 @@ class glShaderProgram final : public ShaderProgram {
     ShaderVarVec2F32Map _shaderVarsVec2F32;
     ShaderVarvec2I32Map _shaderVarsVec2I32;
     ShaderVarVec3F32Map _shaderVarsVec3F32;
+    ShaderVarVec3I32Map _shaderVarsVec3I32;
     ShaderVarVec4F32Map _shaderVarsVec4F32;
+    ShaderVarVec4I32Map _shaderVarsVec4I32;
     ShaderVarMat3Map _shaderVarsMat3;
     ShaderVarMat4Map _shaderVarsMat4;
 

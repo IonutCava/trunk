@@ -35,6 +35,7 @@
 #include "SceneGraphNode.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
+#include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
 class Ray;

@@ -3,14 +3,15 @@
 
 #include "Headers/glTexture.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
-glTexture::glTexture(TextureType type)
-    : Texture(type),
+glTexture::glTexture(GFXDevice& context, TextureType type)
+    : Texture(context, type),
     _lockManager(new glLockManager())
 {
     _internalFormat = GFXImageFormat::COUNT;
@@ -101,7 +102,7 @@ void glTexture::updateSampler() {
 }
 
 bool glTexture::load() {
-    GFX_DEVICE.loadInContext(
+    _context.loadInContext(
         _threadedLoading ? CurrentContext::GFX_LOADING_CTX
                          : CurrentContext::GFX_RENDERING_CTX,
         [&]() {
@@ -142,7 +143,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_MS: {
             glTextureStorage2DMultisample(
                 _textureData.getHandleHigh(), 
-                GFX_DEVICE.gpuState().MSAASamples(),
+                _context.gpuState().MSAASamples(),
                 glInternalFormat,
                 _width,
                 _height,
@@ -151,7 +152,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D_ARRAY_MS: {
             glTextureStorage3DMultisample(
                 _textureData.getHandleHigh(),
-                GFX_DEVICE.gpuState().MSAASamples(),
+                _context.gpuState().MSAASamples(),
                 glInternalFormat,
                 _width,
                 _height,

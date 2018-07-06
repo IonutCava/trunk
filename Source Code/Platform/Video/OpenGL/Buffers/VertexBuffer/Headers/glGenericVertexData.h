@@ -49,7 +49,7 @@ class glGenericVertexData : public GenericVertexData {
     };
 
    public:
-    glGenericVertexData(bool persistentMapped);
+    glGenericVertexData(GFXDevice& context, bool persistentMapped);
     ~glGenericVertexData();
 
     void create(U8 numBuffers = 1, U8 numQueries = 1);

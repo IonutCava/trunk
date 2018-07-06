@@ -38,10 +38,17 @@ namespace Divide {
 
 class d3dShader : public Shader {
    public:
-    d3dShader(const stringImpl& name, const ShaderType& type,
+    d3dShader(GFXDevice& context, 
+              const stringImpl& name,
+              const ShaderType& type,
               const bool optimise = false)
-        : Shader(name, type, optimise) {}
-    ~d3dShader() {}
+        : Shader(context, name, type, optimise)
+    {
+    }
+
+    ~d3dShader()
+    {
+    }
 
     bool load(const stringImpl& source) { return true; }
     bool compile() { return true; }

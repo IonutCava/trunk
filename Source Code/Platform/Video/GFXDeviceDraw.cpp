@@ -5,11 +5,12 @@
 #include "GUI/Headers/GUIFlash.h"
 
 #include "Rendering/Headers/Renderer.h"
-
 #include "Managers/Headers/SceneManager.h"
-
 #include "Core/Headers/ProfileTimer.h"
 #include "Core/Headers/ApplicationTimer.h"
+#include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 

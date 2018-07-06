@@ -3,8 +3,9 @@
 
 namespace Divide {
 
-IMPrimitive::IMPrimitive()
-    : GUIDWrapper(),
+IMPrimitive::IMPrimitive(GFXDevice& context)
+    : GraphicsResource(context),
+      GUIDWrapper(),
       _inUse(true),
       _canZombify(true),
       _forceWireframe(false),

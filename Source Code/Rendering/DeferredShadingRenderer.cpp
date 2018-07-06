@@ -13,6 +13,8 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 
 namespace Divide {
 

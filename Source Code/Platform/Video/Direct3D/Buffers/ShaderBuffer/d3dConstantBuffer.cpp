@@ -1,13 +1,15 @@
 #include "Headers/d3dConstantBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
-d3dConstantBuffer::d3dConstantBuffer(const stringImpl& bufferName,
+d3dConstantBuffer::d3dConstantBuffer(GFXDevice& context,
+                                     const stringImpl& bufferName,
                                      const U32 ringBufferLength,
                                      bool unbound,
                                      bool persistentMapped,
                                      BufferUpdateFrequency frequency)
-    : ShaderBuffer(bufferName, ringBufferLength, unbound, persistentMapped, frequency)
+    : ShaderBuffer(context, bufferName, ringBufferLength, unbound, persistentMapped, frequency)
 
 {
 }

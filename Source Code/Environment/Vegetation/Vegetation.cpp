@@ -11,6 +11,7 @@
 #include "Environment/Terrain/Quadtree/Headers/Quadtree.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 

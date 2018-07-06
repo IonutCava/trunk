@@ -38,9 +38,14 @@ namespace Divide {
 
 class d3dGenericVertexData : public GenericVertexData {
    public:
-    d3dGenericVertexData(bool persistentMapped)
-        : GenericVertexData(persistentMapped) {}
-    ~d3dGenericVertexData() {}
+    d3dGenericVertexData(GFXDevice& context, bool persistentMapped)
+        : GenericVertexData(context, persistentMapped)
+    {
+    }
+
+    ~d3dGenericVertexData()
+    {
+    }
 
     void create(U8 numBuffers = 1, U8 numQueries = 1) {}
 

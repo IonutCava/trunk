@@ -35,11 +35,10 @@
 #include "GFXState.h"
 #include "ScopedStates.h"
 
-#include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/Direct3D/Headers/DXWrapper.h"
-
 #include "Managers/Headers/RenderPassManager.h"
+
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
+
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
@@ -395,42 +394,36 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline bool deInitShaders() { return _api->deInitShaders(); }
 
-    inline IMPrimitive* newIMP() const { return _api->newIMP(); }
+    inline IMPrimitive* newIMP() { return _api->newIMP(*this); }
 
-    inline Framebuffer* newFB(bool multisampled = false) const {
-        return _api->newFB(multisampled);
+    inline Framebuffer* newFB(bool multisampled = false) {
+        return _api->newFB(*this, multisampled);
     }
 
-    inline VertexBuffer* newVB() const { return _api->newVB(); }
-
-    inline PixelBuffer* newPB(
-        const PBType& type = PBType::PB_TEXTURE_2D) const {
-        return _api->newPB(type);
+    inline VertexBuffer* newVB() {
+        return _api->newVB(*this);
     }
 
-    inline GenericVertexData* newGVD(const bool persistentMapped) const {
-        return _api->newGVD(persistentMapped);
+    inline PixelBuffer* newPB(const PBType& type = PBType::PB_TEXTURE_2D) {
+        return _api->newPB(*this, type);
     }
 
-    inline Texture* newTextureArray() const {
-        return _api->newTextureArray();
+    inline GenericVertexData* newGVD(const bool persistentMapped) {
+        return _api->newGVD(*this, persistentMapped);
     }
 
-    inline Texture* newTexture2D() const {
-        return _api->newTexture2D();
+    inline Texture* newTexture(TextureType type) {
+        return _api->newTexture(*this, type);
     }
 
-    inline Texture* newTextureCubemap() const {
-        return _api->newTextureCubemap();
+    inline ShaderProgram* newShaderProgram() {
+        return _api->newShaderProgram(*this);
     }
 
-    inline ShaderProgram* newShaderProgram() const {
-        return _api->newShaderProgram();
-    }
-
-    inline Shader* newShader(const stringImpl& name, const ShaderType& type,
-                             const bool optimise = false) const {
-        return _api->newShader(name, type, optimise);
+    inline Shader* newShader(const stringImpl& name,
+                             const ShaderType& type,
+                             const bool optimise = false) {
+        return _api->newShader(*this, name, type, optimise);
     }
 
     inline ShaderBuffer* newSB(const stringImpl& bufferName,
@@ -438,12 +431,8 @@ DEFINE_SINGLETON(GFXDevice)
                                const bool unbound = false,
                                const bool persistentMapped = true,
                                BufferUpdateFrequency frequency =
-                                   BufferUpdateFrequency::ONCE) const {
-        return _api->newSB(bufferName, ringBufferLength, unbound, persistentMapped, frequency);
-    }
-
-    inline HardwareQuery* newHardwareQuery() const {
-        return _api->newHardwareQuery();
+                                   BufferUpdateFrequency::ONCE) {
+        return _api->newSB(*this, bufferName, ringBufferLength, unbound, persistentMapped, frequency);
     }
 
     inline U64 getFrameDurationGPU() {

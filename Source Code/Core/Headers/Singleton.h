@@ -32,7 +32,8 @@
 #ifndef _CORE_SINGLETON_H_
 #define _CORE_SINGLETON_H_
 
-#if defined(_DEBUG)
+//#define _DEBUG_SINGLETONS
+#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
 #include <assert.h>
 #endif
 
@@ -49,21 +50,16 @@ protected:
     }
 
     inline static T& getInstance() { 
-        if (!_instance) {
-#       if defined(_DEBUG)
-            // Avoid resurrection
-            assert(!_zombified);
-            _zombified = false;
-#       endif
-            _instance = new T();
-        }
-        return *_instance;
+#   if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
+        assert(!_zombified);
+#    endif
+        static T *instance = new T();
+        return *instance;
     }
 
     inline static void destroyInstance() {
-        delete _instance;
-        _instance = nullptr;
-#       if defined(_DEBUG)
+        delete &getInstance();
+#       if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
         _zombified = true;
 #       endif
     }
@@ -81,17 +77,13 @@ protected:
     Singleton(Singleton&) = delete;
     void operator=(Singleton&) = delete;
 
+#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
    private:
-    static T* _instance;
-#if defined(_DEBUG)
     static bool _zombified;
 #endif
 };
 
-template <typename T>
-T* Singleton<T>::_instance = nullptr;
-
-#if defined(_DEBUG)
+#if defined(_DEBUG) && defined(_DEBUG_SINGLETONS)
 template <typename T>
 bool Singleton<T>::_zombified = false;
 #endif

@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-glIMPrimitive::glIMPrimitive() : IMPrimitive() {
+glIMPrimitive::glIMPrimitive(GFXDevice& context) : IMPrimitive(context) {
     _imInterface.reset(new NS_GLIM::GLIM_BATCH());
     _imInterface->SetVertexAttribLocation(
         to_uint(AttribLocation::VERTEX_POSITION));

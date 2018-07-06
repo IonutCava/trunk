@@ -38,7 +38,7 @@ namespace Divide {
 
 class d3dRenderTarget : public Framebuffer {
    public:
-    d3dRenderTarget(bool multisampled);
+    d3dRenderTarget(GFXDevice& context, bool multisampled);
     ~d3dRenderTarget();
 
     bool create(U16 width, U16 height);

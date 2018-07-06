@@ -6,6 +6,10 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 
 namespace Divide {
 /// Show the contents of the depth buffer in a small rectangle in the bottom
