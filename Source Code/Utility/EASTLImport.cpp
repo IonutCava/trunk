@@ -1,12 +1,11 @@
-#include "config.h"
+#include "Platform/Platform/Headers/PlatformDefines.h"
 
-#if HASH_MAP_IMP == EASTL_IMP || STRING_IMP == EASTL_IMP || VECTOR_IMP == EASTL_IMP
+#if HASH_MAP_IMP == EASTL_IMP || VECTOR_IMP == EASTL_IMP
 #include <EASTL/src/assert.cpp>
 #include <EASTL/src/allocator.cpp>
 #include <EASTL/src/fixed_pool.cpp>
 #include <EASTL/src/hashtable.cpp>
 #include <EASTL/src/red_black_tree.cpp>
-#include <EASTL/src/string.cpp>
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned int debugFlags,
@@ -22,6 +21,7 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
     assert(alignment <= 8);
     return malloc(size);
 }
+
 void* operator new[](size_t size, const char* pName, int flags,
                      unsigned int debugFlags, const char* file, int line) {
     ACKNOWLEDGE_UNUSED(pName);

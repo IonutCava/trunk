@@ -16,10 +16,10 @@ ForwardPlusRenderer::ForwardPlusRenderer()
 
     stringImpl gridDim("LIGHT_GRID_TILE_DIM_X ");
     gridDim.append(
-        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X).c_str());
+        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X));
     gridDim.append(",LIGHT_GRID_TILE_DIM_Y ");
     gridDim.append(
-        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y).c_str());
+        std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
     rangesDesc.setPropertyList(gridDim);
 
     _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);

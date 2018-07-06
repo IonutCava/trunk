@@ -136,10 +136,10 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    std::string filename =
-        ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
-        "/" + stringAlg::fromBase(args);
-    std::ifstream soundfile(filename.c_str());
+    stringImpl filename =
+        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
+        "/" + args;
+    std::ifstream soundfile(filename);
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
@@ -156,7 +156,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
-        sound.setResourceLocation(stringAlg::toBase(filename));
+        sound.setResourceLocation(filename);
         sound.setFlag(false);
         _sound = CreateResource<AudioDescriptor>(sound);
         if (filename.find("music") != stringImpl::npos) {
@@ -231,7 +231,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     std::istringstream ss(args.c_str());
-    std::string args1, args2;
+    stringImpl args1, args2;
     std::getline(ss, args1, ',');
     std::getline(ss, args2, ',');
 
@@ -241,17 +241,17 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     } else {
         scale = to_float(atof(args2.c_str()));
     }
-    std::string assetLocation(
-        ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
+    stringImpl assetLocation(
+        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
         "/");
 
     FileData model;
-    model.ItemName = stringAlg::toBase(args1 + "_console" + args2);
-    model.ModelName = stringAlg::toBase(
+    model.ItemName = args1 + "_console" + args;
+    model.ModelName = 
         ((args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
              ? ""
              : assetLocation) +
-        args1);
+        args1;
     model.position =
         GET_ACTIVE_SCENE().state().renderState().getCamera().getEye();
     model.data = 1.0f;

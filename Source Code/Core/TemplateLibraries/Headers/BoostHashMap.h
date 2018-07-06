@@ -34,24 +34,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <boost/Unordered_Map.hpp>
 
-#if defined(STRING_IMP) && STRING_IMP == EASTL_IMP
-#include "EASTLString.h"
-#endif
-
 namespace hashAlg = boost;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImpl = boost::unordered_map<K, V, HashFun>;
 
 namespace boost {
-#if defined(STRING_IMP) && STRING_IMP == EASTL_IMP
-    template <>
-    struct hash<eastl::string> {
-        size_t operator()(const eastl::string& v) const {
-            return std::hash<std::string>()(v.c_str());
-        }
-    };
-#endif
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashPairReturn = std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;

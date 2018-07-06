@@ -274,7 +274,7 @@ class Material : public Resource {
                                  const stringImpl& shaderDefines) {
         vectorImpl<stringImpl>& defines =
             _shaderInfo[to_uint(renderStage)]._shaderDefines;
-        if (std::find(std::begin(defines), end(defines), shaderDefines) ==
+        if (std::find(std::begin(defines), std::end(defines), shaderDefines) ==
             std::end(defines)) {
             defines.push_back(shaderDefines);
         }

@@ -24,13 +24,12 @@ GUIButton::GUIButton(const stringImpl& id,
       _btnWindow(nullptr)
 {
     
-    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(
-        stringAlg::fromBase(guiScheme + "/Button"), stringAlg::fromBase(id));
+    _btnWindow = CEGUI::WindowManager::getSingleton().createWindow(guiScheme + "/Button", id);
     _btnWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(relativeOffset.x / 100, 0.0f),
                                             CEGUI::UDim(relativeOffset.y / 100, 0.0f)));
     _btnWindow->setSize(CEGUI::USize(CEGUI::UDim(relativeDimensions.x / 100, 0.0f),
                                      CEGUI::UDim(relativeDimensions.y / 100, 0.0f)));
-    _btnWindow->setText(text.c_str());
+    _btnWindow->setText(text);
     _btnWindow->subscribeEvent(
         CEGUI::PushButton::EventClicked,
         CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
@@ -49,19 +48,19 @@ void GUIButton::draw() const {
 }
 
 void GUIButton::setTooltip(const stringImpl& tooltipText) {
-    _btnWindow->setTooltipText(tooltipText.c_str());
+    _btnWindow->setTooltipText(tooltipText);
 }
 
 void GUIButton::setFont(const stringImpl& fontName,
                         const stringImpl& fontFileName, U32 size) {
     if (!fontName.empty()) {
-        if (!CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
+        if (!CEGUI::FontManager::getSingleton().isDefined(fontName)) {
             CEGUI::FontManager::getSingleton().createFreeTypeFont(
-                fontName.c_str(), to_float(size), true, fontFileName.c_str());
+                fontName.c_str(), to_float(size), true, fontFileName);
         }
 
-        if (CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
-            _btnWindow->setFont(fontName.c_str());
+        if (CEGUI::FontManager::getSingleton().isDefined(fontName)) {
+            _btnWindow->setFont(fontName);
         }
     }
 }

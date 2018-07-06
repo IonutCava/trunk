@@ -19,8 +19,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address,
     try {
         tcp::endpoint listen_endpoint(tcp::v4(), port);
         udp::endpoint broadcast_endpoint(
-            boost::asio::ip::address::from_string(
-                broadcast_endpoint_address.c_str()),
+            boost::asio::ip::address::from_string(broadcast_endpoint_address),
             port);
         acceptor_ = new tcp::acceptor(io_service_, listen_endpoint);
         subscriber_ptr bc(new udp_broadcaster(io_service_, broadcast_endpoint));

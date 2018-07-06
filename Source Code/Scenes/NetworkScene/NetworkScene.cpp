@@ -41,9 +41,9 @@ void NetworkScene::processGUI(const U64 deltaTime) {
     if (_taskTimers[2] >= ServerPing) {
         _GUI->modifyText(
             "statusText",
-            (char*)_paramHandler.getParam<std::string>("asioStatus").c_str());
+            (char*)_paramHandler.getParam<stringImpl>("asioStatus").c_str());
         _GUI->modifyText("serverMessage",
-                         (char*)_paramHandler.getParam<std::string>(
+                         (char*)_paramHandler.getParam<stringImpl>(
                                                   "serverResponse").c_str());
         _guiTimers[2] = 0.0;
     }
@@ -67,7 +67,7 @@ void NetworkScene::checkPatches() {
 bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
     _GFX.changeResolution(640, 384);
     ASIOImpl::getInstance().init(
-        _paramHandler.getParam<std::string>("serverAddress").c_str(), "443");
+        _paramHandler.getParam<stringImpl>("serverAddress").c_str(), "443");
     // Load scene resources
     bool loadState = SCENE_LOAD(name, gui, true, true);
 
@@ -87,9 +87,7 @@ void NetworkScene::test() {
 
 void NetworkScene::connect() {
     _GUI->modifyText("statusText", "Connecting to server ...");
-    ASIOImpl::getInstance().connect(
-        stringAlg::toBase(_paramHandler.getParam<std::string>("serverAddress")),
-        "443");
+    ASIOImpl::getInstance().connect(_paramHandler.getParam<stringImpl>("serverAddress"), "443");
 }
 
 void NetworkScene::disconnect() {

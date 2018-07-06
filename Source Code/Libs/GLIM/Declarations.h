@@ -11,7 +11,7 @@
 #define AE_RENDERAPI_OPENGL
 #endif
 
-#include <string>
+#include "Core/TemplateLibraries/Headers/String.h"
 #include <stdexcept>
 
 namespace NS_GLIM
@@ -20,7 +20,7 @@ namespace NS_GLIM
     class glimException : public std::runtime_error
     {
     public:
-        glimException (const std::string &err);
+        glimException (const stringImpl &err);
 
     };
 

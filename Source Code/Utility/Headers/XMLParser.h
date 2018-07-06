@@ -34,7 +34,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <string>
+#include "Core/TemplateLibraries/Headers/String.h"
 
 namespace Divide {
 
@@ -45,17 +45,17 @@ class SceneManager;
 
 namespace XML {
 /// Parent Function
-std::string loadScripts(const std::string& file);
+stringImpl loadScripts(const stringImpl& file);
 
 /// Child Functions
-void loadConfig(const std::string& file);
-void loadScene(const std::string& sceneName, SceneManager& sceneMgr);
-void loadGeometry(const std::string& file, Scene* const scene);
-void loadTerrain(const std::string& file, Scene* const scene);
-Material* loadMaterial(const std::string& file);
+void loadConfig(const stringImpl& file);
+void loadScene(const stringImpl& sceneName, SceneManager& sceneMgr);
+void loadGeometry(const stringImpl& file, Scene* const scene);
+void loadTerrain(const stringImpl& file, Scene* const scene);
+Material* loadMaterial(const stringImpl& file);
 void dumpMaterial(Material& mat);
 
-Material* loadMaterialXML(const std::string& location,
+Material* loadMaterialXML(const stringImpl& location,
                           bool rendererDependent = true);
 };  // namespace XML
 };  // namespace Divide

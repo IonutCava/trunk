@@ -99,8 +99,7 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             U8 lightID = static_cast<U8>(row * 10 + col);
             std::stringstream ss;
             ss << to_uint(lightID);
-            ResourceDescriptor tempLight(
-                stringAlg::toBase("Light Deferred " + ss.str()));
+            ResourceDescriptor tempLight("Light Deferred " + ss.str());
             tempLight.setEnumValue(to_uint(LightType::POINT));
             Light* light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);

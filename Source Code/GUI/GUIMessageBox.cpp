@@ -19,7 +19,7 @@ GUIMessageBox::GUIMessageBox(const stringImpl& id, const stringImpl& title,
         CEGUI::WindowManager::getSingletonPtr();
     // load the messageBox Window from the layout file
     _msgBoxWindow = pWindowManager->loadLayoutFromFile("messageBox.layout");
-    _msgBoxWindow->setName(stringAlg::fromBase(id + "_MesageBox"));
+    _msgBoxWindow->setName(id + "_MesageBox");
     _parent->addChild(_msgBoxWindow);
     CEGUI::PushButton* confirmBtn =
         dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));
@@ -61,11 +61,11 @@ void GUIMessageBox::setActive(const bool active) {
 }
 
 void GUIMessageBox::setTitle(const stringImpl& titleText) {
-    _msgBoxWindow->setText(titleText.c_str());
+    _msgBoxWindow->setText(titleText);
 }
 
 void GUIMessageBox::setMessage(const stringImpl& message) {
-    _msgBoxWindow->getChild("MessageText")->setText(message.c_str());
+    _msgBoxWindow->getChild("MessageText")->setText(message);
 }
 
 void GUIMessageBox::setOffset(const vec2<I32>& offsetFromCentre) {

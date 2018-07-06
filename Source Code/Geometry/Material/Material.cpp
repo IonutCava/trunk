@@ -218,12 +218,12 @@ void Material::setShaderProgramInternal(
     std::stringstream ss;
     if (!info._shaderDefines.empty()) {
         for (stringImpl& shaderDefine : info._shaderDefines) {
-            ss << stringAlg::fromBase(shaderDefine);
+            ss << shaderDefine;
             ss << ",";
         }
     }
     ss << "DEFINE_PLACEHOLDER";
-    shaderDescriptor.setPropertyList(stringAlg::toBase(ss.str()));
+    shaderDescriptor.setPropertyList(ss.str());
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     ShaderQueueElement queueElement(stageIndex, shaderDescriptor);

@@ -61,7 +61,8 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _cullShader = CreateResource<ShaderProgram>(instanceCullShader);
 }
 
-Vegetation::~Vegetation() {
+Vegetation::~Vegetation()
+{
     Console::printfn(Locale::get("UNLOAD_VEGETATION_BEGIN"), getName().c_str());
     _stopLoadingRequest = true;
     U32 timer = 0;

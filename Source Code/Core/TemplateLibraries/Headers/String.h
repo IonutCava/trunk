@@ -34,14 +34,8 @@
 
 #include "config.h"
 
-/// Although the string implementation replaces most of the string instances in
-/// the code, some are left as std::string for compatibility reasons (mainly with
-/// algorithms and external libraries) -Ionut
-
-#if defined(STRING_IMP) && STRING_IMP == EASTL_IMP
-#include "EASTLString.h"
-#else  // defined(STRING_IMP) && STRING_IMP == STL_IMP
+/// Only STL string is used as Boost and EASTL do not offer valid/useful alternatives
+/// All string implementations must be API/ABI compatible with std::string (use wrapper classes if needed)
 #include "STLString.h"
-#endif // defined(STRING_IMP)
 
 #endif //_STRING_H_

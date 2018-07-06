@@ -72,7 +72,7 @@ inline void ParamHandler::setParam(const stringImpl& name, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(name);
     if (it == std::end(_params)) {
-        DIVIDE_ASSERT(emplace(_params, name, cdiggins::any(value)).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_params, name, cdiggins::any(value)).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = cdiggins::any(value);
@@ -110,7 +110,7 @@ inline void ParamHandler::setParam(const stringImpl& name, const stringImpl& val
     WriteLock w_lock(_mutex);
     ParamStringMap::iterator it = _paramsStr.find(name);
     if (it == std::end(_paramsStr)) {
-        DIVIDE_ASSERT(emplace(_paramsStr, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramsStr, name, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -123,25 +123,6 @@ inline bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const {
     return _paramsStr.find(param) != std::cend(_paramsStr);
 }
 
-
-#if defined(STRING_IMP) && STRING_IMP != 1
-template <>
-inline std::string ParamHandler::getParam(const stringImpl& name,
-                                   std::string defaultValue) const {
-    return stringAlg::fromBase(
-        getParam<stringImpl>(name, stringAlg::toBase(defaultValue)));
-}
-
-template <>
-inline void ParamHandler::setParam(const stringImpl& name, const std::string& value) {
-    setParam(name, stringImpl(value.c_str()));
-}
-
-template <>
-inline void ParamHandler::delParam<std::string>(const stringImpl& name) {
-    delParam<stringImpl>(name);
-}
-#endif
 
 template <>
 inline void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
@@ -173,7 +154,7 @@ inline void ParamHandler::setParam(const stringImpl& name, const bool& value) {
     WriteLock w_lock(_mutex);
     ParamBoolMap::iterator it = _paramBool.find(name);
     if (it == std::end(_paramBool)) {
-        DIVIDE_ASSERT(emplace(_paramBool, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramBool, name, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -216,7 +197,7 @@ inline void ParamHandler::setParam(const stringImpl& name, const F32& value) {
     WriteLock w_lock(_mutex);
     ParamFloatMap::iterator it = _paramsFloat.find(name);
     if (it == std::end(_paramsFloat)) {
-        DIVIDE_ASSERT(emplace(_paramsFloat, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramsFloat, name, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;

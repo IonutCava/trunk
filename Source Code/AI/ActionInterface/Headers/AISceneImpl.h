@@ -88,7 +88,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         _activeGoals.clear();
         for (GOAPGoal& goal : goalList()) {
             goal.relevancy(0.0f);
-            activateGoal(stringAlg::toBase(goal.getName()));
+            activateGoal(goal.getName());
         }
     }
     /// Although we want the goal to be activated,

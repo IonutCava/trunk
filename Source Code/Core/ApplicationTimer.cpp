@@ -5,11 +5,6 @@
 #include "Core/Math/Headers/MathHelper.h"
 #include "Utility/Headers/Localization.h"
 
-#pragma message( \
-    "DIVIDE Framework uses U64 (unsigned long long) data types for timing with microsecond resolution!")
-#pragma message( \
-    "Use apropriate conversion in time sensitive code (see ApplicationTimer.h)")
-
 namespace Divide {
 namespace Time {
 
@@ -62,7 +57,7 @@ TimeValue ApplicationTimer::getCurrentTicksInternal() const {
 }
 
 U64 ApplicationTimer::getElapsedTimeInternal(TimeValue currentTicks) const {
-    return Time::SecondsToMicroseconds((currentTicks - _startupTicks) / _ticksPerSecond);
+    return Time::SecondsToMicroseconds(to_float(currentTicks - _startupTicks) / _ticksPerSecond);
 }
 
 void ApplicationTimer::update(U32 frameCount) {

@@ -51,9 +51,8 @@ bool glShader::load(const stringImpl& source) {
         return false;
     }
     stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
-    Util::Trim(parsedSource);
+    const char* src = Util::Trim(parsedSource).c_str();
 
-    const char* src = parsedSource.c_str();
     GLsizei sourceLength = (GLsizei)parsedSource.length();
     glShaderSource(_shader, 1, &src, &sourceLength);
 #if defined(_DEBUG)
@@ -106,12 +105,12 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
     static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
     std::stringstream input, output;
 
-    input << source.c_str();
+    input << source;
 
     size_t line_number = 1;
     std::smatch matches;
 
-    std::string line;
+    stringImpl line;
     stringImpl include_file, include_string, loc;
     ParamHandler& par = ParamHandler::getInstance();
     stringImpl shaderAtomLocationPrefix(
@@ -119,7 +118,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
         par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, re)) {
-            include_file = stringAlg::toBase(matches[1].str());
+            include_file = matches[1].str();
 
             if (include_file.find("frag") != stringImpl::npos) {
                 loc = "fragmentAtoms";
@@ -145,14 +144,12 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                                  getName().c_str(), line_number,
                                  include_file.c_str());
             }
-            output << stringAlg::fromBase(preprocessIncludes(
-                          include_string, include_file, level + 1))
-                   << "\n";
+            output << preprocessIncludes(include_string, include_file, level + 1) << "\n";
         } else {
             output << line << "\n";
         }
         ++line_number;
     }
-    return stringAlg::toBase(output.str());
+    return output.str();
 }
 };

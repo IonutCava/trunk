@@ -10,7 +10,7 @@
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>
 
-#include <SimpleIni.h>
+#include <SimpleINI/include/SimpleIni.h>
 
 namespace Divide {
 namespace AI {

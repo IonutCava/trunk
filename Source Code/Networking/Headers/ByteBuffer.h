@@ -136,19 +136,11 @@ class ByteBuffer {
         return *this;
     }
 
-    ByteBuffer &operator<<(const std::string &value) {
-        append((U8 const *)value.c_str(), value.length());
-        append((U8)0);
-        return *this;
-    }
-
-#if defined(STRING_IMP) && STRING_IMP != 1
     ByteBuffer &operator<<(const stringImpl &value) {
         append((U8 const *)value.c_str(), value.length());
         append((U8)0);
         return *this;
     }
-#endif
 
     ByteBuffer &operator<<(const char *str) {
         append((U8 const *)str, str ? strlen(str) : 0);
@@ -212,7 +204,7 @@ class ByteBuffer {
         return *this;
     }
 
-    ByteBuffer &operator>>(std::string &value) {
+    ByteBuffer &operator>>(stringImpl& value) {
         value.clear();
         while (rpos() <
                size())  // prevent crash at wrong string format in packet
@@ -224,19 +216,6 @@ class ByteBuffer {
         return *this;
     }
 
-#if defined(STRING_IMP) && STRING_IMP != 1
-    ByteBuffer &operator>>(stringImpl &value) {
-        value.clear();
-        while (rpos() <
-               size())  // prevent crash at wrong string format in packet
-        {
-            char c = read<char>();
-            if (c == 0) break;
-            value += c;
-        }
-        return *this;
-    }
-#endif
     template <typename T>
     ByteBuffer &operator>>(Unused<T> const &) {
         read_skip<T>();
@@ -324,7 +303,7 @@ class ByteBuffer {
         if (ressize > size()) _storage.reserve(ressize);
     }
 
-    void append(const std::string &str) {
+    void append(const stringImpl& str) {
         append((U8 const *)str.c_str(), str.size() + 1);
     }
 
@@ -493,7 +472,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m) {
 
 template <>
 inline void ByteBuffer::read_skip<char *>() {
-    std::string temp;
+    stringImpl temp;
     *this >> temp;
 }
 
@@ -503,7 +482,7 @@ inline void ByteBuffer::read_skip<char const *>() {
 }
 
 template <>
-inline void ByteBuffer::read_skip<std::string>() {
+inline void ByteBuffer::read_skip<stringImpl>() {
     read_skip<char *>();
 }
 

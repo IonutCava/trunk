@@ -33,28 +33,24 @@
 #define _MANAGERS_RENDER_PASS_MANAGER_H_
 
 #include "Core/Headers/NonCopyable.h"
-#include "Platform/Platform/Headers/PlatformDefines.h"
+#include "Rendering/RenderPass/Headers/RenderPass.h"
 
 namespace Divide {
 
 class SceneGraph;
 
-class RenderPass;
-
-class RenderPassItem : private NonCopyable {
+class RenderPassItem {
    public:
     RenderPassItem(const stringImpl& renderPassName, U8 sortKey);
-    RenderPassItem(RenderPassItem&& other);
     ~RenderPassItem();
-    RenderPassItem& operator=(RenderPassItem&& other);
 
     inline U8 sortKey() const { return _sortKey; }
-
-    inline RenderPass& renderPass() const { return *_renderPass; }
+    inline RenderPass& renderPass() { return _renderPass; }
+    inline const RenderPass& renderPass() const { return _renderPass; }
 
    private:
     U8 _sortKey;
-    std::unique_ptr<RenderPass> _renderPass;
+    RenderPass _renderPass;
 };
 
 class SceneRenderState;

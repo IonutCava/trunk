@@ -231,7 +231,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
     Material* tempMaterial =
-        nullptr /*XML::loadMaterial( stringAlg::fromBase( data.ItemName + "_material" ) )*/;
+        nullptr /*XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);

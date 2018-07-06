@@ -63,7 +63,7 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
          
             container->second.erase(nodeEntry);
             NodePositions& positions = _nodePositionsMap[containerID];
-            NodePositions::const_iterator it = positions.find(nodeGUID);
+            NodePositions::iterator it = positions.find(nodeGUID);
             if (it != std::end(positions)) {
                 positions.erase(it);
             }

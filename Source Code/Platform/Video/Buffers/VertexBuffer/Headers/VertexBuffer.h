@@ -360,7 +360,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     std::array<ptrdiff_t, to_const_uint(VertexAttribute::COUNT)> _VBoffset;
 
     // first: offset, second: count
-    vectorImpl<vectorAlg::pair<U32, U32> > _partitions;
+    vectorImpl<std::pair<U32, U32> > _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should
     /// provide the indices
     vectorImpl<U32> _hardwareIndicesL;

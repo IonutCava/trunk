@@ -55,7 +55,7 @@ void tcp_session_impl::HandlePingOpCode(WorldPacket& p) {
 }
 
 void tcp_session_impl::HandleDisconnectOpCode(WorldPacket& p) {
-    std::string client;
+    stringImpl client;
     p >> client;
     std::cout << "Received [ CMSG_REQUEST_DISCONNECT ] from: [ " << client
               << " ]" << std::endl;
@@ -121,8 +121,7 @@ void tcp_session_impl::HandleRequestGeometry(WorldPacket& p) {
     stringImpl file;
     p >> file;
 
-    std::cout << "Sending SMSG_SEND_FILE with item: "
-              << stringAlg::fromBase(file) << std::endl;
+    std::cout << "Sending SMSG_SEND_FILE with item: " << file << std::endl;
     WorldPacket r(OPCodesEx::SMSG_SEND_FILE);
     r << (U8)0;
     sendPacket(r);

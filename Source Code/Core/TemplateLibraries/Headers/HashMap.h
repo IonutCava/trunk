@@ -34,6 +34,20 @@
 
 #include <algorithm>
 
+template<class T>
+struct EnumHash;
+
+template <typename Key>
+using HashType = EnumHash<Key>;
+
+#if defined(HASH_MAP_IMP) && HASH_MAP_IMP == BOOST_IMP
+#include "BOOSTHashMap.h"
+#elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == EASTL_IMP
+#include "EASTLHashMap.h"
+#else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == STL_IMP
+#include "STLHashMap.h"
+#endif
+
 template<class T, bool>
 struct hasher {
     inline size_t operator() (const T& elem) {
@@ -55,17 +69,5 @@ struct EnumHash {
         return hasher<T, std::is_enum<T>::value>()(elem);
     }
 };
-
-
-template <typename Key>
-using HashType = EnumHash<Key>;
-
-#if defined(HASH_MAP_IMP) && HASH_MAP_IMP == BOOST_IMP
-#include "BOOSTHashMap.h"
-#elif defined(HASH_MAP_IMP) && HASH_MAP_IMP == EASTL_IMP
-#include "EASTLHashMap.h"
-#else  // defined(HASH_MAP_IMP) && HASH_MAP_IMP == STL_IMP
-#include "STLHashMap.h"
-#endif
 
 #endif

@@ -40,15 +40,6 @@ using hashMapImpl = std::unordered_map<K, V, HashFun>;
 
 namespace std {
 
-#if defined(STRING_IMP) && STRING_IMP == EASTL_IMP
-    template <>
-    struct hash<eastl::string> {
-        size_t operator()(const eastl::string& x) const {
-            return std::hash<std::string>()(x.c_str());
-        }
-    };
-#endif
-
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashPairReturn =
     std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;

@@ -372,7 +372,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
         } else {
             iAttributeArray =
                 glGetAttribLocation(uiCurrentProgram, it->first.c_str());
-            attribs.insert(std::make_pair(uiCurrentProgram, iAttributeArray));
+            hashAlg::insert(attribs, std::make_pair(uiCurrentProgram, iAttributeArray));
         }
 
         if (iAttributeArray < 0) {
@@ -474,7 +474,7 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
     }
 
     m_bufferData.resize(0);
-    m_bufferData.reserve(bufferSize);
+    m_bufferData.reserve(static_cast<vectorAlg::vecSize>(bufferSize));
     m_bufferData.insert(std::end(m_bufferData), std::begin(m_PositionData),
                         std::end(m_PositionData));
     m_PositionData.clear();

@@ -33,40 +33,37 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EASTL_HASH_MAP_H_
 #include <EASTL/hash_map.h>
 
-
 namespace hashAlg = eastl;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
 using hashMapImpl = eastl::hash_map<K, V, HashFun>;
 
 namespace eastl {
-
-#if defined(STRING_IMP) && STRING_IMP == STL_IMP
-    template <>
-    struct hash<std::string> {
-        size_t operator()(const std::string& x) const {
-            return std::hash<std::string>()(x);
-        }
-    };
-#endif
+    
+template <typename K, typename V, typename HashFun = HashType<K> >
+using hashPairReturn = std::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-using hashPairReturn =
-eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
+using internalPairReturn = eastl::pair<typename hashMapImpl<K, V, HashFun>::iterator, bool>;
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map,
-    K key, const V& val) {
+inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val) {
     hashMapImpl<K, V, HashFun>::value_type value(key);
     value.second = val;
-    return map.insert(value);
+
+    internalPairReturn<K, V, HashFun> result = map.insert(value);
+
+    return std::make_pair(result.first, result.second);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> insert(
-    hashMapImpl<K, V, HashFun>& map,
-    const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
-    return map.insert(valuePair);
+inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map,
+                                            const std::pair<K, V>& valuePair) {
+    
+    
+    internalPairReturn<K, V, HashFun> result = map.insert(eastl::pair<K, V>(valuePair.first, valuePair.second));
+
+    return std::make_pair(result.first, result.second);
 }
 
 }; //namespace eastl

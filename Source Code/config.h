@@ -190,17 +190,17 @@ const unsigned int NUM_POSSIBLE_LIGHTS = 1024;
 #define STL_IMP 1
 #define EASTL_IMP 2
 
-/// Use eastl or stl string classes
+/// Specify the string implementation to use
 #ifndef STRING_IMP
 #define STRING_IMP STL_IMP
 #endif  // STRING_IMP
 
-/// Use boost, eastl or stl vector
+/// Specify the vector implementation to use
 #ifndef VECTOR_IMP
 #define VECTOR_IMP STL_IMP
 #endif  // VECTOR_IMP
 
-/// Use boost, eastl or stl hash maps / unordered maps
+/// Specify the hash maps / unordered maps implementation to use
 #ifndef HASH_MAP_IMP
 #define HASH_MAP_IMP STL_IMP
 #endif  // HASH_MAP_IMP

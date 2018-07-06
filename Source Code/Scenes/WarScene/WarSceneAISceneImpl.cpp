@@ -88,15 +88,15 @@ void WarSceneAISceneImpl::initInternal() {
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
         std::weak_ptr<SceneGraphNode> node = member.second->getUnitRef()->getBoundNode();
-        _nodeToUnitMap[g_myTeamContainer].insert(
-            std::make_pair(node.lock()->getGUID(), member.second));
+        hashAlg::insert(_nodeToUnitMap[g_myTeamContainer],
+                        std::make_pair(node.lock()->getGUID(), member.second));
         _visualSensor->followSceneGraphNode(g_myTeamContainer, node);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
         std::weak_ptr<SceneGraphNode> node = enemy.second->getUnitRef()->getBoundNode();
-        _nodeToUnitMap[g_enemyTeamContainer].insert(
-            std::make_pair(node.lock()->getGUID(), enemy.second));
+        hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer],
+                        std::make_pair(node.lock()->getGUID(), enemy.second));
         _visualSensor->followSceneGraphNode(g_enemyTeamContainer, node);
     }
 

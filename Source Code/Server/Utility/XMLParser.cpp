@@ -9,34 +9,30 @@ ptree pt;
 
 void loadScene(const stringImpl &sceneName) {
     pt.clear();
-    std::cout << "XML: Loading scene [ " << stringAlg::fromBase(sceneName)
-              << " ] " << std::endl;
-    read_xml(stringAlg::fromBase("Scenes/" + sceneName + ".xml"), pt);
-    std::string assetLocation(stringAlg::fromBase("Scenes/" + sceneName + "/"));
-    loadGeometry(
-        stringAlg::toBase(assetLocation + pt.get("assets", "assets.xml")));
+    std::cout << "XML: Loading scene [ " << sceneName << " ] " << std::endl;
+    read_xml("Scenes/" + sceneName + ".xml", pt);
+    stringImpl assetLocation("Scenes/" + sceneName + "/");
+    loadGeometry(assetLocation + pt.get("assets", "assets.xml"));
 }
 
 void loadGeometry(const stringImpl &file) {
     pt.clear();
-    std::cout << "XML: Loading Geometry: [ " << stringAlg::fromBase(file)
-              << " ] " << std::endl;
-    read_xml(stringAlg::fromBase(file), pt);
+    std::cout << "XML: Loading Geometry: [ " << file << " ] " << std::endl;
+    read_xml(file, pt);
     ptree::iterator it;
     for (it = std::begin(pt.get_child("geometry"));
          it != std::end(pt.get_child("geometry")); ++it) {
-        std::string name(it->second.data());
-        std::string format(it->first.data());
+        stringImpl name(it->second.data());
+        stringImpl format(it->first.data());
 
         if (format.find("<xmlcomment>") != stringImpl::npos) {
             continue;
         }
 
         FileData model;
-        model.ItemName = name.c_str();
+        model.ItemName = name;
         model.ModelName = "Assets/";
-        model.ModelName.append(
-            stringAlg::toBase(pt.get<std::string>(name + ".model")));
+        model.ModelName.append(pt.get<stringImpl>(name + ".model"));
         model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
         model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
         model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -52,16 +48,15 @@ void loadGeometry(const stringImpl &file) {
     }
     for (it = std::begin(pt.get_child("vegetation"));
          it != std::end(pt.get_child("vegetation")); ++it) {
-        std::string name(it->second.data());
-        std::string format(it->first.data());
+        stringImpl name(it->second.data());
+        stringImpl format(it->first.data());
         if (format.find("<xmlcomment>") != stringImpl::npos) {
             continue;
         }
         FileData model;
-        model.ItemName = stringAlg::toBase(name);
+        model.ItemName = name;
         model.ModelName = "Assets/";
-        model.ModelName.append(
-            stringAlg::toBase(pt.get<std::string>(name + ".model")));
+        model.ModelName.append(pt.get<stringImpl>(name + ".model"));
         model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
         model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
         model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -80,14 +75,14 @@ void loadGeometry(const stringImpl &file) {
             pt.get_child_optional("primitives"))
         for (it = std::begin(pt.get_child("primitives"));
              it != std::end(pt.get_child("primitives")); ++it) {
-            std::string name(it->second.data());
-            std::string format(it->first.data());
-            if (format.find("<xmlcomment>") != stringImpl::npos) continue;
-
+            stringImpl name(it->second.data());
+            stringImpl format(it->first.data());
+            if (format.find("<xmlcomment>") != stringImpl::npos) {
+                continue;
+            }
             FileData model;
-            model.ItemName = stringAlg::toBase(name);
-            model.ModelName =
-                stringAlg::toBase(pt.get<std::string>(name + ".model"));
+            model.ItemName = name;
+            model.ModelName = pt.get<stringImpl>(name + ".model");
             model.position.x = pt.get<F32>(name + ".position.<xmlattr>.x");
             model.position.y = pt.get<F32>(name + ".position.<xmlattr>.y");
             model.position.z = pt.get<F32>(name + ".position.<xmlattr>.z");
@@ -110,8 +105,7 @@ void loadGeometry(const stringImpl &file) {
              * length*/
             if (model.ModelName.compare("Text3D") == 0) {
                 model.data = pt.get<F32>(name + ".lineWidth");
-                model.data2 =
-                    stringAlg::toBase(pt.get<std::string>(name + ".text"));
+                model.data2 = pt.get<stringImpl>(name + ".text");
             } else if (model.ModelName.compare("Box3D") == 0)
                 model.data = pt.get<F32>(name + ".size");
 

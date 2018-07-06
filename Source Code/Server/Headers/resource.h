@@ -16,12 +16,4 @@
 
 #include "Platform/Platform/Headers/PlatformDefines.h"
 
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
-                     const char* pName, int flags, unsigned debugFlags,
-                     const char* file, int line);
-
-// EASTL also wants us to define this (see string.h line 197)
-int Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
-               va_list arguments);
-
 #endif

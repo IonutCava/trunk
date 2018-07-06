@@ -1,7 +1,7 @@
 #include "Headers/Localization.h"
 
 #include "Core/Headers/Application.h"
-#include <SimpleIni.h>
+#include <SimpleINI/include/SimpleIni.h>
 
 namespace Divide {
 namespace Locale {

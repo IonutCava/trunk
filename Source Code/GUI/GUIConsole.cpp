@@ -49,8 +49,8 @@ void GUIConsole::CreateCEGUIWindow() {
         Console::errorfn(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
     }
     // load the console Window from the layout file
-    const std::string& layoutFile =
-        ParamHandler::getInstance().getParam<std::string>("GUI.consoleLayout");
+    const stringImpl& layoutFile =
+        ParamHandler::getInstance().getParam<stringImpl>("GUI.consoleLayout");
     _consoleWindow =
         CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile);
 
@@ -99,17 +99,17 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs& e) {
             _inputHistoryIndex--;
             if (_inputHistoryIndex < 0)
                 _inputHistoryIndex = (I16)_inputHistory.size() - 1;
-            _editBox->setText(_inputHistory[_inputHistoryIndex].c_str());
+            _editBox->setText(_inputHistory[_inputHistoryIndex]);
         }
         if (keyEvent->scancode == CEGUI::Key::ArrowDown) {
             _inputHistoryIndex++;
             if (_inputHistoryIndex >= (I32)_inputHistory.size())
                 _inputHistoryIndex = 0;
-            _editBox->setText(_inputHistory[_inputHistoryIndex].c_str());
+            _editBox->setText(_inputHistory[_inputHistoryIndex]);
         }
     }
 
-    _inputBuffer = _editBox->getText().c_str();
+    _inputBuffer = _editBox->getText();
     return true;
 }
 

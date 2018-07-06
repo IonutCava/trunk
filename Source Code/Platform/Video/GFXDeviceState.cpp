@@ -34,10 +34,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
             // Optionally, output to console/file each display mode
-            refreshRates = std::to_string(mode._refreshRate.front());
+            refreshRates = Util::StringFormat("%d", mode._refreshRate.front());
             vectorAlg::vecSize refreshRateCount = mode._refreshRate.size();
             for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
-                refreshRates += ", " + std::to_string(mode._refreshRate[i]);
+                refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
             }
             Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"),
                 mode._resolution.width,

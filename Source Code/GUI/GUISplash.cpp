@@ -18,10 +18,10 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);
     splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
-    stringImpl splashImageLocation = stringAlg::toBase(
-        ParamHandler::getInstance().getParam<std::string>("assetsLocation") +
-        "/misc_images/");
-    splashImageLocation += splashImageName;
+    stringImpl splashImageLocation = 
+        Util::StringFormat("%s/misc_images/%s",
+                           ParamHandler::getInstance().getParam<stringImpl>("assetsLocation").c_str(),
+                           splashImageName.c_str());
     splashImage.setResourceLocation(splashImageLocation);
 
     _splashImage = CreateResource<Texture>(splashImage);

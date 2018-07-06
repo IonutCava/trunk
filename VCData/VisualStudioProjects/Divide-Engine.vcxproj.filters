@@ -182,6 +182,12 @@
     <Filter Include="Core\TemplateLibraries\Headers">
       <UniqueIdentifier>{cd131efd-52a5-4103-b68c-68ba4aa2e949}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Utility\SimpleINI">
+      <UniqueIdentifier>{07bed289-d6c4-4c25-8c7e-bf329d76084b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility\SimpleINI\Headers">
+      <UniqueIdentifier>{8c424791-e813-4a15-b2e0-4e799739e503}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -520,6 +526,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp">
       <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.c">
+      <Filter>Utility\SimpleINI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -898,9 +907,6 @@
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\HashMap.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\Vector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
@@ -913,12 +919,6 @@
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLHashMap.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\EASTLString.h">
-      <Filter>Core\TemplateLibraries\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\BoostVector.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
@@ -926,6 +926,18 @@
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLVector.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h">
+      <Filter>Utility\SimpleINI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h">
+      <Filter>Utility\SimpleINI\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\String.h">
+      <Filter>Core\TemplateLibraries\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\TemplateLibraries\Headers\STLString.h">
       <Filter>Core\TemplateLibraries\Headers</Filter>
     </ClInclude>
   </ItemGroup>

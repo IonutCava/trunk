@@ -104,7 +104,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     rp = static_cast<CEGUI::DefaultResourceProvider*>(
         CEGUI::System::getSingleton().getResourceProvider());
     CEGUI::String CEGUIInstallSharePath(
-        ParamHandler::getInstance().getParam<std::string>("assetsLocation"));
+        ParamHandler::getInstance().getParam<stringImpl>("assetsLocation"));
     CEGUIInstallSharePath += "/GUI/";
     rp->setResourceGroupDirectory("schemes",
                                   CEGUIInstallSharePath + "schemes/");
@@ -142,15 +142,13 @@ bool GUI::init(const vec2<U16>& resolution) {
         "DejaVuSans-12-NoScale.font");
     _defaultGUIScheme =
         ParamHandler::getInstance().getParam<stringImpl>("GUI.defaultScheme");
-    CEGUI::SchemeManager::getSingleton().createFromFile(
-        stringAlg::fromBase(_defaultGUIScheme + ".scheme"));
+    CEGUI::SchemeManager::getSingleton().createFromFile(_defaultGUIScheme + ".scheme");
 
     _rootSheet = CEGUI::WindowManager::getSingleton().createWindow(
         "DefaultWindow", "root_window");
     _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
-    CEGUI_DEFAULT_CTX.setDefaultTooltipType(
-        stringAlg::fromBase(_defaultGUIScheme + "/Tooltip"));
+    CEGUI_DEFAULT_CTX.setDefaultTooltipType(_defaultGUIScheme + "/Tooltip");
     _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
@@ -334,7 +332,7 @@ GUIButton* GUI::addButton(const stringImpl& ID,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, btn);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(ID, btn));
+        hashAlg::insert(_guiStack, std::make_pair(ID, static_cast<GUIElement*>(btn)));
     }
 
     return btn;
@@ -349,7 +347,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, box);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(id, box));
+        hashAlg::insert(_guiStack, std::make_pair(id, static_cast<GUIElement*>(box)));
     }
 
     return box;
@@ -381,7 +379,7 @@ GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, t);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(id, t));
+        hashAlg::insert(_guiStack, std::make_pair(id, static_cast<GUIElement*>(t)));
     }
 
     fmt_text.empty();
@@ -396,7 +394,7 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie,
     if (it != std::end(_guiStack)) {
         MemoryManager::SAFE_UPDATE(it->second, flash);
     } else {
-        hashAlg::insert(_guiStack, std::make_pair(id, flash));
+        hashAlg::insert(_guiStack, std::make_pair(id, static_cast<GUIElement*>(flash)));
     }
     return flash;
 }

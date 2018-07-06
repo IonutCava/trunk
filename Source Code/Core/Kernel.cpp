@@ -428,8 +428,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Using OpenGL for rendering as default
     _GFX.setAPI(GFXDevice::RenderAPI::OpenGL);
     // Load info from XML files
-    stringImpl startupScene(
-        stringAlg::toBase(XML::loadScripts(stringAlg::fromBase(entryPoint))));
+    stringImpl startupScene(XML::loadScripts(entryPoint));
     // Create mem log file
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);

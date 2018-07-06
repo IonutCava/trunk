@@ -247,10 +247,10 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
     if (temp.empty()) {
         std::stringstream ss;
         ss << _fileLocation.substr(_fileLocation.rfind("/") + 1,
-                                   _fileLocation.length()).c_str();
+                                   _fileLocation.length());
         ss << "-submesh-";
         ss << to_uint(count);
-        temp = stringAlg::toBase(ss.str());
+        temp = ss.str();
     }
 
     SubMesh* tempSubMesh = nullptr;
@@ -397,7 +397,7 @@ Material* DVDConverter::loadSubMeshMaterial(bool skinned,
 #endif
     Material* tempMaterial = nullptr;
     if (!DISABLE_MAT_FROM_FILE) {
-        tempMaterial = XML::loadMaterial(materialName.c_str());
+        tempMaterial = XML::loadMaterial(materialName);
         if (tempMaterial) {
             return tempMaterial;
         }

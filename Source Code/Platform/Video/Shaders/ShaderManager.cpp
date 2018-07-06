@@ -183,7 +183,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
     inFile.close();
     assert(inFile.good());
     // Add the code to the atom cache for future reference
-    hashAlg::pair<AtomMap::iterator, bool> result =
+    std::pair<AtomMap::iterator, bool> result =
         hashAlg::emplace(_atoms, atomName, code);
     assert(result.second);
 

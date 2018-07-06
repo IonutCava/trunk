@@ -1,20 +1,12 @@
 #include "Headers/RenderPassManager.h"
-#include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 namespace Divide {
 
 RenderPassItem::RenderPassItem(const stringImpl& renderPassName, U8 sortKey)
-    : _sortKey(sortKey) {
-    _renderPass = std::make_unique<RenderPass>(renderPassName);
-}
-
-RenderPassItem::RenderPassItem(RenderPassItem&& other)
-    : _renderPass(std::move(other._renderPass)) {}
-
-RenderPassItem& RenderPassItem::operator=(RenderPassItem&& other) {
-    _renderPass = std::move(other._renderPass);
-    return *this;
+    : _sortKey(sortKey),
+      _renderPass(renderPassName)
+{
 }
 
 RenderPassItem::~RenderPassItem()

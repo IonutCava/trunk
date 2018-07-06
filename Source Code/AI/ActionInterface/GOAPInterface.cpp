@@ -10,11 +10,11 @@ const char* GOAPFactName(GOAPFact fact) {
     return std::to_string(fact).c_str();
 }
 
-GOAPGoal::GOAPGoal(const std::string& name, U32 ID)
+GOAPGoal::GOAPGoal(const stringImpl& name, U32 ID)
     : goap::WorldState(), _relevancy(0.0f)
 {
     _ID = ID;
-    name_ = name;
+    name_ = name.c_str();
 }
 
 GOAPGoal::~GOAPGoal()

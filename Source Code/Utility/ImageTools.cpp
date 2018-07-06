@@ -207,14 +207,12 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
 I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth,
               U8* imageData) {
     static I32 savedImages = 0;
-    stringImpl newFilename(filename);
     // compute the new filename by adding the
     // series number and the extension
-    newFilename.append(std::to_string(savedImages) + ".tga");
+    stringImpl newFilename(Util::StringFormat("%s_%d.tga", filename.c_str(), savedImages));
 
     // save the image
-    I8 status =
-        SaveToTGA(newFilename.c_str(), dimensions, pixelDepth, imageData);
+    I8 status = SaveToTGA(newFilename, dimensions, pixelDepth, imageData);
 
     // increase the counter
     if (status == 0) {

@@ -227,14 +227,15 @@ void glUniformBuffer::PrintInfo(const ShaderProgram* shaderProgram,
         std::ostringstream details;
         details << std::setfill('0') << std::setw(4) << offsets[i] << ": "
                 << std::setfill(' ') << std::setw(5) << types[i] << " "
-                << name.c_str();
+                << name;
 
         if (sizes[i] > 1) {
             details << "[" << sizes[i] << "]";
         }
 
         details << "\n";
-        uniform_details.push_back(stringAlg::toBase(details.str()));
+
+        uniform_details.push_back(details.str());
     }
 
     // Sort uniform detail string alphabetically. (Since the detail strings

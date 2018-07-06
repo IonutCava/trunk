@@ -40,16 +40,16 @@ bool Texture::generateHWResource(const stringImpl& name) {
     } else if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
                _textureData._textureType == TextureType::TEXTURE_2D_ARRAY) {
         // Each texture face/layer must be in a comma separated list
-        std::stringstream textureLocationList(getResourceLocation().c_str());
+        std::stringstream textureLocationList(getResourceLocation());
         // We loop over every texture in the above list and store it in this
         // temporary string
-        std::string currentTexture;
+        stringImpl currentTexture;
         U8 idx = 0;
         while (std::getline(textureLocationList, currentTexture, ',')) {
             // Skip invalid entries
             if (!currentTexture.empty()) {
                 // Attempt to load the current entry
-                if (!LoadFile(idx, stringAlg::toBase(currentTexture))) {
+                if (!LoadFile(idx, currentTexture)) {
                     // Invalid texture files are not handled yet, so stop
                     // loading
                     return false;

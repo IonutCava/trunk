@@ -44,8 +44,8 @@ typedef I32 GOAPFact;
 typedef bool GOAPValue;
 typedef goap::Action GOAPAction;
 typedef goap::WorldState GOAPWorldState;
-typedef vectorImpl<const GOAPAction*> GOAPActionSet;
-typedef vectorImpl<const GOAPAction*> GOAPPlan;
+typedef std::vector<const GOAPAction*> GOAPActionSet;
+typedef std::vector<const GOAPAction*> GOAPPlan;
 
 inline const char* GOAPValueName(GOAPValue val) {
     return val ? "true" : "false";
@@ -56,7 +56,7 @@ const char* GOAPFactName(GOAPFact fact);
 class AISceneImpl;
 class GOAPGoal : public goap::WorldState {
    public:
-    GOAPGoal(const std::string& name, U32 ID);
+    GOAPGoal(const stringImpl& name, U32 ID);
     virtual ~GOAPGoal();
 
     inline F32 relevancy() const { return _relevancy; }

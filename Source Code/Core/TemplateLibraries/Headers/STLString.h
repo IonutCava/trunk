@@ -39,10 +39,6 @@ typedef std::string stringImpl;
 
 namespace std {
     typedef size_t stringSize;
-    inline const std::string& toBase(const std::string& input) { return input; }
-
-    inline const char* fromBase(const std::string& input) { return input.c_str(); }
-
 };
 
 #endif //_STL_STRING_H_

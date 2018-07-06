@@ -11,7 +11,8 @@ namespace Divide {
 
 DEFINE_SINGLETON(Server)
   public:
-    void init(U16 port, const stringImpl& broadcast_endpoint_address,
+    void init(U16 port,
+              const stringImpl& broadcast_endpoint_address,
               bool debugOutput);
 
   private:

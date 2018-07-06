@@ -234,14 +234,14 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 
 bool SceneInput::addKeyMapping(Input::KeyCode key,
                                const PressReleaseActions& keyCbks) {
-    hashAlg::pair<KeyMap::iterator, bool> result =
+    std::pair<KeyMap::iterator, bool> result =
         hashAlg::emplace(_keyMap, key, keyCbks);
 
     return result.second;
 }
 
 bool SceneInput::removeKeyMapping(Input::KeyCode key) {
-    KeyMap::const_iterator it = _keyMap.find(key);
+    KeyMap::iterator it = _keyMap.find(key);
     if (it != std::end(_keyMap)) {
         _keyMap.erase(it);
         return false;
@@ -263,14 +263,14 @@ bool SceneInput::getKeyMapping(Input::KeyCode key,
 
 bool SceneInput::addMouseMapping(Input::MouseButton button,
                                  const PressReleaseActions& btnCbks) {
-    hashAlg::pair<MouseMap::iterator, bool> result =
+    std::pair<MouseMap::iterator, bool> result =
         hashAlg::emplace(_mouseMap, button, btnCbks);
 
     return result.second;
 }
 
 bool SceneInput::removeMouseMapping(Input::MouseButton button) {
-    MouseMap::const_iterator it = _mouseMap.find(button);
+    MouseMap::iterator it = _mouseMap.find(button);
     if (it != std::end(_mouseMap)) {
         _mouseMap.erase(it);
         return false;
@@ -292,14 +292,14 @@ bool SceneInput::getMouseMapping(Input::MouseButton button,
 
 bool SceneInput::addJoystickMapping(Input::JoystickButton button,
                                     const PressReleaseActions& btnCbks) {
-    hashAlg::pair<JoystickMap::iterator, bool> result =
+    std::pair<JoystickMap::iterator, bool> result =
         hashAlg::emplace(_joystickMap, button, btnCbks);
 
     return result.second;
 }
 
 bool SceneInput::removeJoystickMapping(Input::JoystickButton button) {
-    JoystickMap::const_iterator it = _joystickMap.find(button);
+    JoystickMap::iterator it = _joystickMap.find(button);
     if (it != std::end(_joystickMap)) {
         _joystickMap.erase(it);
         return false;

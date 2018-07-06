@@ -138,7 +138,7 @@ void SceneGraphNode::setParent(SceneGraphNode_ptr parent) {
 
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneGraphNode_ptr node) {
     // Time to add it to the children map
-    hashAlg::pair<NodeChildren::iterator, bool> result;
+    std::pair<NodeChildren::iterator, bool> result;
     // Try and add it to the map
     WriteLock w_lock(_childrenLock);
     result = hashAlg::insert(_children, std::make_pair(node->getName(), node));

@@ -39,6 +39,13 @@
 #define VECTOR_IMP STL_IMP
 #endif
 
+/// EASTL vectors can't erase entries using const_iterators and also have forwarding issues
+/// so we can't actually use them
+#if defined(VECTOR_IMP) && VECTOR_IMP == EASTL_IMP
+#undef VECTOR_IMP
+#define VECTOR_IMP STL_IMP
+#endif
+
 #if defined(VECTOR_IMP) && VECTOR_IMP == BOOST_IMP
 #include "BoostVector.h"
 #elif defined(VECTOR_IMP) && VECTOR_IMP == EASTL_IMP

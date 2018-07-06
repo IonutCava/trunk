@@ -61,7 +61,7 @@ class Variable {
     virtual void setValue(D32 dValue) { _dValue = dValue; }
 
     virtual stringImpl toString() const {
-        return stringAlg::toBase(std::to_string(_dValue));
+        return std::to_string(_dValue);
     }
 
     virtual void update(){};

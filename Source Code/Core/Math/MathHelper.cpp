@@ -12,7 +12,7 @@ static boost::thread_specific_ptr<vectorImpl<GlobalFloatEvent>> _globalFloatEven
 void GetPermutations(const stringImpl& inputString,
                      vectorImpl<stringImpl>& permutationContainer) {
     permutationContainer.clear();
-    std::string tempCpy(stringAlg::fromBase(inputString));
+    stringImpl tempCpy(inputString);
     std::sort(std::begin(tempCpy), std::end(tempCpy));
     do {
         permutationContainer.push_back(inputString);
@@ -21,7 +21,7 @@ void GetPermutations(const stringImpl& inputString,
 
 bool IsNumber(const stringImpl& s) {
     F32 number;
-    if (std::istringstream(s.c_str()) >> number) {
+    if (std::istringstream(s) >> number) {
         return !(number == 0 && s[0] != 0);
     }
     return false;
@@ -29,10 +29,10 @@ bool IsNumber(const stringImpl& s) {
 
 vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems) {
-    std::stringstream ss(input.c_str());
-    std::string item;
+    std::stringstream ss(input);
+    stringImpl item;
     while (std::getline(ss, item, delimiter)) {
-        elems.push_back(stringAlg::toBase(item));
+        elems.push_back(item);
     }
     return elems;
 }
@@ -43,13 +43,12 @@ vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter) {
     return elems;
 }
 
-stringImpl StringFormat(const stringImpl fmt_str, ...) {
+stringImpl StringFormat(const stringImpl& fmt_str, ...) {
     // Reserve two times as much as the length of the fmt_str
     I32 final_n, n = to_int(fmt_str.size()) * 2; 
     std::unique_ptr<char[]> formatted;
     va_list ap;
-    bool loop = true;
-    while(loop) {
+    while(true) {
         /// Wrap the plain char array into the unique_ptr
         formatted.reset(new char[n]); 
         strcpy(&formatted[0], fmt_str.c_str());
@@ -57,12 +56,13 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
         final_n = vsnprintf(&formatted[0], n, fmt_str.c_str(), ap);
         va_end(ap);
         if (final_n < 0 || final_n >= n) {
-            n += abs(final_n - n + 1);
+            n += std::abs(final_n - n + 1);
         } else {
-            loop = false;
+            break;
         }
     }
-    return stringImpl(formatted.get());
+
+    return formatted.get();
 }
 
 vec4<U8> ToByteColor(const vec4<F32>& floatColor) {

@@ -229,6 +229,45 @@
     <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h">
       <Filter>Video\OpenGL\GLIM\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool.hpp">
+      <Filter>Threading\ThreadPool\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\future.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\pool.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\pool_adaptors.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\scheduling_policies.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\shutdown_policies.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\size_policies.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\task_adaptors.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\future.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\locking_ptr.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\pool_core.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\scope_guard.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\Threadpool\include\threadpool\detail\worker_thread.hpp">
+      <Filter>Threading\ThreadPool\Headers\threadpool\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -646,6 +685,18 @@
     </Filter>
     <Filter Include="Video\OpenGL\GLIM\Headers">
       <UniqueIdentifier>{b9e334c3-13a5-4fce-a825-6abd3bab77c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Threading\ThreadPool">
+      <UniqueIdentifier>{f504933d-1d6d-4a49-a869-5527311798b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Threading\ThreadPool\Headers">
+      <UniqueIdentifier>{330cacb9-1aa9-49d5-bfd2-2420382162db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Threading\ThreadPool\Headers\threadpool">
+      <UniqueIdentifier>{fc1a648a-0bcd-43e7-aac2-589e3c8ebb53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Threading\ThreadPool\Headers\threadpool\detail">
+      <UniqueIdentifier>{a205ee33-6098-4f11-b36a-d54e67db176b}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

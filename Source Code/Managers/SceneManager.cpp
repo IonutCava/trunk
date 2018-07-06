@@ -43,7 +43,7 @@ bool SceneManager::init(GUI* const gui) {
     // Load default material
     Console::printfn(Locale::get("LOAD_DEFAULT_MATERIAL"));
     _defaultMaterial = XML::loadMaterialXML(
-        ParamHandler::getInstance().getParam<std::string>("scriptLocation") +
+        ParamHandler::getInstance().getParam<stringImpl>("scriptLocation") +
             "/defaultMaterial",
         false);
     _defaultMaterial->dumpToFile(false);
@@ -63,7 +63,7 @@ bool SceneManager::load(const stringImpl& sceneName,
     if (!DVDConverter::getInstance().init()) {
         return false;
     }
-    XML::loadScene(stringAlg::fromBase(sceneName), *this);
+    XML::loadScene(sceneName, *this);
     if (!_activeScene) {
         return false;
     }

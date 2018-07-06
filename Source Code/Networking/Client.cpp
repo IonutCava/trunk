@@ -106,7 +106,7 @@ void Client::handle_read_file(const boost::system::error_code& ec,
               << ", size=" << _requestBuf.size()
               << ", max_size=" << _requestBuf.max_size() << ".\n";
     std::istream request_stream(&_requestBuf);
-    std::string file_path;
+    stringImpl file_path;
     request_stream >> file_path;
     request_stream >> _fileSize;
     request_stream.read(_buf.c_array(), 2);  // eat the "\n\n"
@@ -114,7 +114,7 @@ void Client::handle_read_file(const boost::system::error_code& ec,
               << ", tellg=" << request_stream.tellg() << std::endl;
     size_t pos = file_path.find_last_of('\\');
     if (pos != stringImpl::npos) file_path = file_path.substr(pos + 1);
-    _outputFile.open(file_path.c_str(), std::ios_base::binary);
+    _outputFile.open(file_path, std::ios_base::binary);
     if (!_outputFile) {
         std::cout << "failed to open " << file_path << std::endl;
         return;
@@ -149,7 +149,7 @@ void Client::handle_read_file_content(const boost::system::error_code& err,
 
 void handle_error(const stringImpl& function_name,
                   const boost::system::error_code& err) {
-    std::cout << __FUNCTION__ << " in " << function_name.c_str() << " due to "
+    std::cout << __FUNCTION__ << " in " << function_name << " due to "
               << err << " " << err.message() << std::endl;
 }
 

@@ -125,9 +125,9 @@ void SceneAnimator::extractAnimations(const aiScene* pScene) {
     }
     // get all the animation names so I can reference them by name and get the
     // correct id
-    U16 i = 0;
+    U32 i = 0;
     for (AnimEvaluator& animation : _animations) {
-        _animationNameToID.insert(std::make_pair(animation.name(), i++));
+        hashAlg::insert(_animationNameToID, std::make_pair(animation.name(), i++));
     }
 }
 
@@ -239,7 +239,7 @@ const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
     // create all the needed points
     vectorImpl<Line>& lines = _skeletonLinesContainer[it->second];
     if (lines.empty()) {
-        lines.reserve(boneCount());
+        lines.reserve(vectorAlg::vecSize(boneCount()));
         // Construct skeleton
         calculate(animationIndex, dt);
         // Start with identity transform

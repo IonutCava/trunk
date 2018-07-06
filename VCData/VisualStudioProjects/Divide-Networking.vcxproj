@@ -174,7 +174,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -239,7 +239,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -300,7 +300,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\EASTL\include;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>false</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>

@@ -39,15 +39,13 @@ void ASIO::init(const stringImpl& address, const stringImpl& port) {
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(tcp::resolver::query(address.c_str(), port.c_str())));
+            res.resolve(tcp::resolver::query(address, port)));
         _thread = new std::thread([&] { io_service_.run(); });
         io_service_.poll();
         _connected = true;
     } catch (std::exception& e) {
         if (_debugOutput) {
-            stringImpl msg("ASIO Exception: ");
-            msg.append(e.what());
-            std::cout << msg.c_str() << std::endl;
+            std::cout << "ASIO Exception: " << e.what() << std::endl;
         }
     }
 }
