@@ -35,7 +35,7 @@ public:
 	WarSceneAIActionList();
 	void processData();
 	void processInput();
-	void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL);
+	void update(NPC* unitRef = NULL);
 	void addEntityRef(AIEntity* entity);
 	void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
 
@@ -43,7 +43,6 @@ private:
 	void updatePositions();
 
 private:
-	SceneGraphNode* _node;
 	U16 _tickCount;
 };
 

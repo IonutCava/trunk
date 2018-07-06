@@ -37,7 +37,7 @@ public:
 	AITenisSceneAIActionList(SceneGraphNode* target);
 	void processData();
 	void processInput();
-	void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL);
+	void update(NPC* unitRef = NULL);
 	void addEntityRef(AIEntity* entity);
 	void processMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
 
@@ -46,7 +46,6 @@ private:
 	F32 distanceToBall(const vec3<F32>& entityPosition, const vec3<F32> ballPosition);
 
 private:
-	SceneGraphNode* _node;
 	SceneGraphNode* _target;
 	vec3<F32> _ballPosition, _prevBallPosition, _entityPosition, _initialPosition;
 	bool _attackBall, _ballToTeam2,_gameStop;

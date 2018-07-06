@@ -6,7 +6,6 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 AITenisSceneAIActionList::AITenisSceneAIActionList(SceneGraphNode* target) : ActionList(),
-                                                                             _node(NULL),
                                                                              _target(target),
                                                                              _attackBall(false),
                                                                              _ballToTeam2(true),
@@ -110,13 +109,9 @@ void AITenisSceneAIActionList::processData(){
     _entity->sendMessage(nearestEntity, ATTACK_BALL, distance);
 }
 
-void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
+void AITenisSceneAIActionList::update(NPC* unitRef){
     if(!unitRef)
         return;
-
-    if(!_node){
-        _node = node;
-    }
 
     updatePositions();
 
@@ -130,8 +125,9 @@ void AITenisSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
 
     /// Update sensor information
     Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
+
     if(visualSensor){
-        visualSensor->updatePosition(node->getTransform()->getPosition());
+        visualSensor->updatePosition(unitRef->getPosition());
     }
 }
 

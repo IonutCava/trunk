@@ -126,23 +126,23 @@ void WarScene::processInput(const U64 deltaTime){
 }
 
 void WarScene::updateSceneState(const U64 deltaTime){
-	static U64 totalTime = 0;
-	static bool navMeshCreated = false;
-	totalTime += deltaTime;
-	if(getUsToSec(totalTime) > 20 && !navMeshCreated){
-		/*Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
-		temp->setFileName(GET_ACTIVE_SCENE()->getName());
-		bool loaded = temp->load(NULL);//<Start from root for now
+    static U64 totalTime = 0;
+    static bool navMeshCreated = false;
+    totalTime += deltaTime;
+    if(getUsToSec(totalTime) > 20 && !navMeshCreated && false){
+        Navigation::NavigationMesh* temp = New Navigation::NavigationMesh();
+        temp->setFileName(GET_ACTIVE_SCENE()->getName());
+        bool loaded = temp->load(NULL);//<Start from root for now
 
-		if(!loaded){
-			loaded = temp->build(NULL,false);
-			temp->save();
-		}
+        if(!loaded){
+            loaded = temp->build(NULL,false);
+            temp->save();
+        }
 
-		if(loaded){
-			navMeshCreated = AIManager::getInstance().addNavMesh(temp);
-		}*/
-	}
+        if(loaded){
+            navMeshCreated = AIManager::getInstance().addNavMesh(temp);
+        }
+    }
     Scene::updateSceneState(deltaTime);
     if(_lampLightNode && _bobNodeBody){
       /*  static mat4<F32> position = _lampLightNode->getTransform()->getMatrix(); 
@@ -150,29 +150,29 @@ void WarScene::updateSceneState(const U64 deltaTime){
         mat4<F32> finalTransform(fingerPosition * position);
         _lampLightNode->getTransform()->setTransforms(finalTransform.transpose());*/
     }
-		
-	Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
+        
+    Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
 
-	for_each(AIEntity* character, _army1){
+    for_each(AIEntity* character, _army1){
 
-	     // Update character (position, animations, state)
+         // Update character (position, animations, state)
         character->update(deltaTime);
         // If destination reached: Set new random destination
-        if ( character->getUnitRef()->destinationReached() ) {
-			character->getUnitRef()->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getBoundNode()->getTransform()->getPosition());
+        if ( character->destinationReached() ) {
+            character->updateDestination(navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army2[0]->getUnitRef()->getPosition());
         }
-	}
+    }
 
-	
-	for_each(AIEntity* character, _army2){
+    
+    for_each(AIEntity* character, _army2){
 
-	     // Update character (position, animations, state)
+         // Update character (position, animations, state)
         character->update(deltaTime);
         // If destination reached: Set new random destination
-        if ( character->getUnitRef()->destinationReached() ) {
-			character->getUnitRef()->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getBoundNode()->getTransform()->getPosition());
+        if ( character->destinationReached() ) {
+            character->updateDestination( navMesh ? Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(*navMesh) : _army1[0]->getUnitRef()->getPosition());
         }
-	}
+    }
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr){
@@ -224,23 +224,28 @@ bool WarScene::initializeAI(bool continueOnErrors){
     SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
     if(soldierMesh){
         soldierMesh->setSelectable(true);
-        AIEntity* aiSoldier = New AIEntity("Soldier1");
-        aiSoldier->attachNode(soldierMesh);
+        AIEntity* aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier1");
         aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
         aiSoldier->setComInterface();
         aiSoldier->addActionProcessor(New WarSceneAIActionList());
         aiSoldier->setTeam(_faction1);
+        NPC* soldier = New NPC(soldierMesh, aiSoldier);
+        soldier->setMovementSpeed(1.2f); /// 1.2 m/s
+        _army1NPCs.push_back(soldier);
         _army1.push_back(aiSoldier);
     }
+
     soldierMesh = _sceneGraph->findNode("Soldier2");
     if(soldierMesh){
         soldierMesh->setSelectable(true);
-        aiSoldier = New AIEntity("Soldier2");
-        aiSoldier->attachNode(soldierMesh);
+        aiSoldier = New AIEntity(soldierMesh->getTransform()->getPosition(), "Soldier2");
         aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
         aiSoldier->setComInterface();
         aiSoldier->addActionProcessor(New WarSceneAIActionList());
         aiSoldier->setTeam(_faction2);
+        NPC* soldier = New NPC(soldierMesh, aiSoldier);
+        soldier->setMovementSpeed(1.23f); /// 1.23 m/s
+        _army2NPCs.push_back(soldier);
         _army2.push_back(aiSoldier);
     }
     soldierMesh = _sceneGraph->findNode("Soldier3");
@@ -249,28 +254,22 @@ bool WarScene::initializeAI(bool continueOnErrors){
     }
     //----------------------- AI controlled units ---------------------//
     for(U8 i = 0; i < _army1.size(); i++){
-        NPC* soldier = New NPC(_army1[i]);
-        soldier->setMovementSpeed(1.2f); /// 1.2 m/s
-        _army1NPCs.push_back(soldier);
-        AIManager::getInstance().addEntity(_army1[i]);
+        AIManager::getInstance().addEntity(_army1[i]);    
     }
 
     for(U8 i = 0; i < _army2.size(); i++){
-        NPC* soldier = New NPC(_army2[i]);
-        soldier->setMovementSpeed(1.23f); /// 1.23 m/s
-        _army2NPCs.push_back(soldier);
         AIManager::getInstance().addEntity(_army2[i]);
     }
 
     bool state = !(_army1.empty() || _army2.empty());
 
     if(state || continueOnErrors) Scene::initializeAI(continueOnErrors);
-	AIManager::getInstance().pauseUpdate(false);
+    AIManager::getInstance().pauseUpdate(false);
     return state;
 }
 
 bool WarScene::deinitializeAI(bool continueOnErrors){
-	AIManager::getInstance().pauseUpdate(true);
+    AIManager::getInstance().pauseUpdate(true);
     for(U8 i = 0; i < _army1NPCs.size(); i++){
         SAFE_DELETE(_army1NPCs[i]);
     }

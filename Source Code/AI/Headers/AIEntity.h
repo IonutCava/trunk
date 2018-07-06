@@ -32,51 +32,145 @@ class ActionList;
 class SceneGraphNode;
 class NPC;
 
+struct dtCrowdAgent;
+namespace Navigation {
+    class DivideDtCrowd;
+}
+/// Based on OgreCrowd.
 class AIEntity : public GUIDWrapper {
-	friend class AIManager;
+    friend class AIManager;
 
 public:
-	AIEntity(const std::string& name);
-	~AIEntity();
-	void processInput();
-	void processData();
-	void update(const U64 deltaTime);
+    AIEntity(const vec3<F32>& currentPosition, const std::string& name);
+    ~AIEntity();
 
-	SceneGraphNode* getBoundNode() {return _node;}
-	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
-	bool addSensor(SensorType type, Sensor* sensor);
-	bool setComInterface() {SAFE_UPDATE(_comInterface, New CommunicationInterface(this)); return true;}
-	bool addActionProcessor(ActionList* actionProcessor);
-	Sensor* getSensor(SensorType type);
-	CommunicationInterface* getCommunicationInterface() {return _comInterface;}
-	inline AICoordination* getTeam() {return _coordination; }
-	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return 0; }
+    void load(const vec3<F32>& position);
+    void unload();
 
-	///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
-	void setTeam(AICoordination* const coordination);
-	///Add a friend to our team
-	bool addFriend(AIEntity* const friendEntity);
+    void processInput();
+    void processData();
+    void update(const U64 deltaTime);
 
-	void sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content);
-	void receiveMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
-	void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content);
-	const std::string& getName() {return _name;}
+    bool addSensor(SensorType type, Sensor* sensor);
+    bool setComInterface() {SAFE_UPDATE(_comInterface, New CommunicationInterface(this)); return true;}
+    bool addActionProcessor(ActionList* actionProcessor);
 
-	inline void addUnitRef(NPC* const npc) {_unitRef = npc;}
-	inline NPC* getUnitRef()               {return _unitRef;}
+    Sensor* getSensor(SensorType type);
+    CommunicationInterface* getCommunicationInterface() {return _comInterface;}
+
+    inline AICoordination* getTeam() {return _coordination; }
+    inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return 0; }
+
+    ///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
+    void setTeam(AICoordination* const coordination);
+    ///Add a friend to our team
+    bool addFriend(AIEntity* const friendEntity);
+
+    void sendMessage(AIEntity* receiver, AIMsg msg,const boost::any& msg_content);
+    void receiveMessage(AIEntity* sender, AIMsg msg,const boost::any& msg_content);
+    void processMessage(AIEntity* sender, AIMsg msg, const boost::any& msg_content);
+    const std::string& getName() {return _name;}
+
+           void addUnitRef(NPC* const npc);
+    inline NPC* getUnitRef()               {return _unitRef;}
+
+    /// PathFinding
+    /// Index ID identifying the agent of this character in the crowd
+    inline I32 getAgentID() const { return _agentID; }
+    /// The agent that steers this character within the crowd
+    inline const dtCrowdAgent* getAgent() const { return _agent; }
+    inline bool  isAgentLoaded() const { return _agentID >= 0; }
+     /// Set the crowd object
+    void   resetCrowd(Navigation::DivideDtCrowd* const crowd = NULL);
+    /// The height of the agent for this character.
+    D32 getAgentHeight() const;
+    /// The radius of the agent for this character.
+    D32 getAgentRadius() const;
+    /**
+      * Update the destination for this agent.
+      * If updatePreviousPath is set to true the previous path will be reused instead
+      * of calculating a completely new path, but this can only be used if the new
+      * destination is close to the previous (eg. when chasing a moving entity).
+    **/
+    void updateDestination(const vec3<F32>& destination, bool updatePreviousPath = false);
+    /// The destination set for this agent.
+    vec3<F32> getDestination() const;
+    /// Returns true when this agent has reached its set destination.
+    bool destinationReached();
+    /// Place agent at new position.
+    void setPosition(const vec3<F32> position);
+    /// The current position of the agent. Is only up to date once update() has been called in a frame.
+    vec3<F32> getPosition() const;
+    /// The maximum speed this character can attain.
+    /// This parameter is configured for the agent controlling this character.
+    D32 getMaxSpeed();
+    /// The maximum acceleration this character has towards its maximum speed.
+    /// This parameter is configured for the agent controlling this character.
+    D32 getMaxAcceleration();
+     /**
+      * Request to set a manual velocity for this character, to control it
+      * manually.
+      * The set velocity will stay active, meaning that the character will
+      * keep moving in the set direction, until you stop() it.
+      * Manually controlling a character offers no absolute control as the
+      * laws of acceleration and max speed still apply to an agent, as well
+      * as the fact that it cannot steer off the navmesh or into other agents.
+      * You will notice small corrections to steering when walking into objects
+      * or the border of the navmesh (which is usually a wall or object).
+    **/
+    void setVelocity(const vec3<F32>& velocity);
+    /// Manually control the character moving it forward.
+    void moveForward();
+    /// Stop any movement this character is currently doing. This means losing the requested velocity or target destination.
+    void stop();
+    /// The current velocity (speed and direction) this character is traveling at.
+    vec3<F32> getVelocity() const;
+    /// The current speed this character is traveling at.
+    D32 getSpeed()  const { return getVelocity().length(); }
+    /// Returns true if this character is moving.
+    bool isMoving() const  {return !_stopped || !IS_ZERO(getSpeed()); }
+protected:
+    /**
+      * Update current position of this character to the current position of its agent.
+    **/
+    void updatePosition(const U64 deltaTime);
+        /**
+      * Set destination member variable directly without updating the agent state.
+      * Usually you should call updateDestination() externally, unless you are controlling
+      * the agents directly and need to update the corresponding character class to reflect
+      * the change in state (see OgreRecastApplication friendship).
+    **/
+    void setDestination(const vec3<F32>& destination);
 
 private:
-	std::string     _name;
-	SceneGraphNode* _node;
-	AICoordination* _coordination;
-	ActionList*     _actionProcessor;
-	mutable SharedLock    _updateMutex;
-	mutable SharedLock    _managerQueryMutex;
+    std::string     _name;
+    AICoordination* _coordination;
+    ActionList*     _actionProcessor;
+    mutable SharedLock    _updateMutex;
+    mutable SharedLock    _managerQueryMutex;
 
-	typedef Unordered_map<SensorType, Sensor*> sensorMap;
-	CommunicationInterface* _comInterface;
-	sensorMap               _sensorList;
-	NPC*                    _unitRef;
+    typedef Unordered_map<SensorType, Sensor*> sensorMap;
+    CommunicationInterface* _comInterface;
+    sensorMap               _sensorList;
+    NPC*                    _unitRef;
+    /// PathFinding
+    /// ID of mAgent within the crowd.
+    I32 _agentID;
+    /// Crowd in which the agent of this character is.
+    Navigation::DivideDtCrowd* _detourCrowd;
+    /// The agent controlling this character.
+    const dtCrowdAgent* _agent;
+    /**
+      * The current destination set for this agent.
+      * Take care in properly setting this variable, as it is only updated properly when
+      * using Character::updateDestination() to set an individual destination for this character.
+      * After updating the destination of all agents this variable should be set externally using
+      * setDestination().
+    **/
+    vec3<F32> _destination;
+    vec3<F32> _currentPosition;  
+    /// True if this character is stopped.
+    bool _stopped;
 };
 
 #endif

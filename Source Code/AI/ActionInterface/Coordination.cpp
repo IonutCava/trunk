@@ -42,7 +42,7 @@ void AICoordination::resetNavMeshes() {
         }
     }
 	for_each(teamMap::value_type& aiEntity, _team){
-		aiEntity.second->getUnitRef()->resetCrowd(_teamCrowd[0]);
+		aiEntity.second->resetCrowd(_teamCrowd[0]);
 	}
 }
 

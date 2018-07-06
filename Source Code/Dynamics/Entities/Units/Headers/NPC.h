@@ -29,8 +29,7 @@ class AIEntity;
 class NPC : public Character {
 public:
     /// NPC's don't need AI by default
-    NPC(SceneGraphNode* const node);
-    NPC(AIEntity* const aiEntity);
+    NPC(SceneGraphNode* const node, AIEntity* const aiEntity = NULL);
     ~NPC();
 
 protected:

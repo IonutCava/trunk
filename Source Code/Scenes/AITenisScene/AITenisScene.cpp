@@ -78,10 +78,10 @@ void AITenisScene::startGame(){
 }
 
 void AITenisScene::checkCollisions(){
-    SceneGraphNode* Player1 = _aiPlayer1->getBoundNode();
-    SceneGraphNode* Player2 = _aiPlayer2->getBoundNode();
-    SceneGraphNode* Player3 = _aiPlayer3->getBoundNode();
-    SceneGraphNode* Player4 = _aiPlayer4->getBoundNode();
+    SceneGraphNode* Player1 = _aiPlayer1->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player2 = _aiPlayer2->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
     BoundingBox ballBB     = _ballSGN->getBoundingBox();
     BoundingBox floorBB    = _floor->getBoundingBox();
     WriteLock w_lock(_gameLock);
@@ -104,10 +104,10 @@ void AITenisScene::playGame(boost::any a, CallbackParam b){
 
     UpgradableReadLock ur_lock(_gameLock);
     //Shortcut to the scene graph nodes containing our agents
-    SceneGraphNode* Player1 = _aiPlayer1->getBoundNode();
-    SceneGraphNode* Player2 = _aiPlayer2->getBoundNode();
-    SceneGraphNode* Player3 = _aiPlayer3->getBoundNode();
-    SceneGraphNode* Player4 = _aiPlayer4->getBoundNode();
+    SceneGraphNode* Player1 = _aiPlayer1->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player2 = _aiPlayer2->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player3 = _aiPlayer3->getUnitRef()->getBoundNode();
+    SceneGraphNode* Player4 = _aiPlayer4->getUnitRef()->getBoundNode();
     //Store by copy (thread-safe) current ball position (getPosition()) should be threadsafe
     vec3<F32> netPosition  = _net->getTransform()->getPosition();
     vec3<F32> ballPosition = _ballSGN->getTransform()->getPosition();
@@ -271,22 +271,21 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr)
 
 bool AITenisScene::initializeAI(bool continueOnErrors){
     bool state = false;
+    SceneGraphNode* player[4];
     //----------------------------ARTIFICIAL INTELLIGENCE------------------------------//
-    _aiPlayer1 = New AIEntity("Player1");
-    _aiPlayer2 = New AIEntity("Player2");
-    _aiPlayer3 = New AIEntity("Player3");
-    _aiPlayer4 = New AIEntity("Player4");
+    player[0] = _sceneGraph->findNode("Player1");
+    player[1] = _sceneGraph->findNode("Player2");
+    player[2] = _sceneGraph->findNode("Player3");
+    player[3] = _sceneGraph->findNode("Player4");
+    player[0]->setSelectable(true);
+    player[1]->setSelectable(true);
+    player[2]->setSelectable(true);
+    player[3]->setSelectable(true);
 
-    _aiPlayer1->attachNode(_sceneGraph->findNode("Player1"));
-    _aiPlayer2->attachNode(_sceneGraph->findNode("Player2"));
-    _aiPlayer3->attachNode(_sceneGraph->findNode("Player3"));
-    _aiPlayer4->attachNode(_sceneGraph->findNode("Player4"));
-
-    _aiPlayer1->getBoundNode()->setSelectable(true);
-    _aiPlayer2->getBoundNode()->setSelectable(true);
-    _aiPlayer3->getBoundNode()->setSelectable(true);
-    _aiPlayer4->getBoundNode()->setSelectable(true);
-
+    _aiPlayer1 = New AIEntity(player[0]->getTransform()->getPosition(), "Player1");
+    _aiPlayer2 = New AIEntity(player[1]->getTransform()->getPosition(), "Player2");
+    _aiPlayer3 = New AIEntity(player[2]->getTransform()->getPosition(), "Player3");
+    _aiPlayer4 = New AIEntity(player[3]->getTransform()->getPosition(), "Player4");
     _aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer2->addSensor(VISUAL_SENSOR,New VisualSensor());
     _aiPlayer3->addSensor(VISUAL_SENSOR,New VisualSensor());
@@ -325,10 +324,10 @@ bool AITenisScene::initializeAI(bool continueOnErrors){
     }
     if(state || continueOnErrors){
     //----------------------- AI controlled units (NPC's) ---------------------//
-        _player1 = New NPC(_aiPlayer1);
-        _player2 = New NPC(_aiPlayer2);
-        _player3 = New NPC(_aiPlayer3);
-        _player4 = New NPC(_aiPlayer4);
+        _player1 = New NPC(player[0], _aiPlayer1);
+        _player2 = New NPC(player[1], _aiPlayer2);
+        _player3 = New NPC(player[2], _aiPlayer3);
+        _player4 = New NPC(player[3], _aiPlayer4);
 
         _player1->setMovementSpeed(1.45f);
         _player2->setMovementSpeed(1.5f);

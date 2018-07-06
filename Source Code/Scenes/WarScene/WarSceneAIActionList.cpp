@@ -6,8 +6,7 @@
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 
 WarSceneAIActionList::WarSceneAIActionList() : ActionList(),
-                                              _node(NULL),
-                                             _tickCount(0)
+                                              _tickCount(0)
 {
 }
 
@@ -55,9 +54,9 @@ void WarSceneAIActionList::processInput(){
 void WarSceneAIActionList::processData(){
 }
 
-void WarSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
-    if(!_node){
-        _node = node;
+void WarSceneAIActionList::update(NPC* unitRef){
+    if(!unitRef){
+        return;
     }
 
     updatePositions();
@@ -65,6 +64,6 @@ void WarSceneAIActionList::update(SceneGraphNode* node, NPC* unitRef){
     /// Updateaza informatia senzorilor
     Sensor* visualSensor = _entity->getSensor(VISUAL_SENSOR);
     if(visualSensor){
-        visualSensor->updatePosition(node->getTransform()->getPosition());
+        visualSensor->updatePosition(unitRef->getPosition());
     }
 }
