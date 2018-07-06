@@ -6,19 +6,15 @@
 #include "Managers/CameraManager.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Terrain/Sky.h"
-#include "PhysX/PhysX.h"
+
 using namespace std;
 
-void NetworkScene::render()
-{
-
-	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
+void NetworkScene::render(){
 
 	_sceneGraph->render();
 }
 
-void NetworkScene::preRender()
-{
+void NetworkScene::preRender(){
 	
 	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + cosf(_sunAngle.y) * 0.75f);

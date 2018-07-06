@@ -8,7 +8,10 @@
 using namespace std;
 
 SceneManager::SceneManager() : _scene(NULL), _currentSelection(NULL){}
-
+SceneManager::~SceneManager(){
+	Console::getInstance().printfn("Deleting Scene Manager ...");
+	Console::getInstance().printfn("Removing all scenes and destroying scene manager ...");
+}
 
 Scene* SceneManager::loadScene(const string& name){
 	Scene* scene = NULL;

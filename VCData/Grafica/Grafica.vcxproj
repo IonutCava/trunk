@@ -57,7 +57,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -71,10 +71,10 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>glew32d.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;ILU.lib;ILUT.lib;assimpd.lib;DIVIDE-NetworkingD.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32d.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimpd.lib;DIVIDE-NetworkingD.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -90,7 +90,7 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include;$(EngineLibraries)\physx\include\PhysXLoader;$(EngineLibraries)\physx\include\Physics;$(EngineLibraries)\physx\include\NxCharacter;$(EngineLibraries)\physx\include\Foundation;$(EngineLibraries)\physx\include\Cooking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code\Libs\includes\sdl;$(EngineLibraries)\assimp\include;$(OutDir)Source Code;$(EngineLibraries)\boost;$(OutDir)Source Code\Libs\UtilityLibraries\MultiModalInput\includes;$(OutDir)Source Code/Libs\includes\networking;$(OutDir)Source Code/Libs\includes;$(EngineLibraries)\physx\include\PhysXAPI;$(EngineLibraries)\physx\include\PhysXAPI\foundation;$(EngineLibraries)\physx\include\PhysXAPI\extensions;$(EngineLibraries)\physx\include\PhysXAPI\common;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include;$(EngineLibraries)\physx\include\PxFoundation\internal\include;$(EngineLibraries)\physx\include\PxFoundation;$(EngineLibraries)\physx\include\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -102,10 +102,10 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;PhysXloader.lib;PhysXCooking.lib;PhysXCore.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glew32.lib;glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;dxguid.lib;dinput.lib;dinput8.lib;SDL.lib;SDL_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
-      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD.lib; LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -129,9 +129,7 @@
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp" />
-    <ClCompile Include="..\..\Source Code\PhysX\pxStream.cpp" />
     <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp" />
-    <ClCompile Include="..\..\Source Code\PhysX\Debug\pxDebugRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Importer\DVDConverter.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
@@ -215,10 +213,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\OrbitCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\PhysX\PhysX.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\pxDecorator.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\pxStream.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\Debug\ErrorStream.h" />
-    <ClInclude Include="..\..\Source Code\PhysX\Debug\pxDebugRenderer.h" />
     <ClInclude Include="..\..\Source Code\Importer\DVDConverter.h" />
     <ClInclude Include="..\..\Source Code\GUI\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\GuiFlash.h" />

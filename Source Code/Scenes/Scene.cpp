@@ -1,7 +1,6 @@
 #include "Scene.h"
 #include "Managers/SceneManager.h" //Object selection
 #include "Managers/AIManager.h"
-#include "PhysX/PhysX.h"
 #include "ASIO.h"
 #include "Terrain/Terrain.h"
 #include "Utility/Headers/Guardian.h"
@@ -333,9 +332,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_R:
 			Guardian::getInstance().ReloadEngine();
 			break;
-		case OIS::KC_P:
-			Guardian::getInstance().RestartPhysX();
-			break;
 		case OIS::KC_N:
 			_GFX.toggleWireframe();
 			break;
@@ -347,25 +343,6 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			break;
 			case OIS::KC_SUBTRACT:
 			if (speedFactor > 0.1f)   speedFactor -= 0.1f;
-			break;
-		//1+2+3+4 = cream diversi actori prin scena
-		case OIS::KC_1:
-			PhysX::getInstance().CreateStack(20);
-			break;
-		case OIS::KC_2:
-			PhysX::getInstance().CreateTower(15);
-			break;
-		case OIS::KC_3:
-			PhysX::getInstance().CreateSphere(8);
-			break;
-		case OIS::KC_4:
-			PhysX::getInstance().CreateCube(20);
-			break;
-		case OIS::KC_5:
-			PhysX::getInstance().setDebugRender(!PhysX::getInstance().getDebugRender());
-			break;
-		case OIS::KC_6:
-			PhysX::getInstance().ApplyForceToActor(PhysX::getInstance().GetSelectedActor(), NxVec3(+1,0,0), 3000); 
 			break;
 		default:
 			break;

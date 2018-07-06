@@ -33,7 +33,6 @@ namespace XML
 		pt.clear();
 		Console::getInstance().printf("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
-		par.setParam("showPhysXErrors", pt.get("debug.showPhysXErrors",true));
 		par.setParam("logFile",pt.get("debug.logFile","none"));
 		par.setParam("memFile",pt.get("debug.memFile","none"));
 		par.setParam("groundPos", pt.get("runtime.groundPos",-2000.0f));

@@ -60,6 +60,7 @@ public:
 private:
 
 	SceneManager();
+	~SceneManager();
 	Scene* _scene;
     Object3D* _currentSelection;
 

@@ -21,7 +21,6 @@
 #include "resource.h"
 #include "Utility/Headers/Singleton.h"
 
-class PhysX;
 class Camera;
 class SceneManager;
 class GUI;
@@ -38,7 +37,6 @@ private:
 
 	GFXDevice&    _GFX;
 	SFXDevice&    _SFX;
-    PhysX&        _px;
 	SceneManager& _scene;
 	Camera*       _camera;
 	GUI&          _gui;

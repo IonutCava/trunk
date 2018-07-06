@@ -15,9 +15,6 @@
     <Filter Include="PhysX\Actors">
       <UniqueIdentifier>{a258d248-19de-4d69-89c9-87f993bbebf0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="PhysX\Debug">
-      <UniqueIdentifier>{4dca80af-c63f-408b-b245-644ee7accce8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Importer">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
@@ -141,14 +138,8 @@
     <ClCompile Include="..\..\Source Code\PhysX\PhysX.cpp">
       <Filter>PhysX</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\PhysX\pxStream.cpp">
-      <Filter>PhysX</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp">
       <Filter>PhysX\Actors</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\PhysX\Debug\pxDebugRenderer.cpp">
-      <Filter>PhysX\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Importer\DVDConverter.cpp">
       <Filter>Importer</Filter>
@@ -389,18 +380,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\PhysX\PhysX.h">
       <Filter>PhysX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\pxDecorator.h">
-      <Filter>PhysX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\pxStream.h">
-      <Filter>PhysX</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\Debug\ErrorStream.h">
-      <Filter>PhysX\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\PhysX\Debug\pxDebugRenderer.h">
-      <Filter>PhysX\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Importer\DVDConverter.h">
       <Filter>Importer</Filter>

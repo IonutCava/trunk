@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,10 +63,10 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-NetworkingD.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimpd.lib DIVIDE-NetworkingD.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib"
 				GenerateDebugInformation="true"
@@ -124,8 +124,8 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include&quot;;&quot;$(EngineLibraries)\physx\include\PhysXLoader&quot;;&quot;$(EngineLibraries)\physx\include\Physics&quot;;&quot;$(EngineLibraries)\physx\include\NxCharacter&quot;;&quot;$(EngineLibraries)\physx\include\Foundation&quot;;&quot;$(EngineLibraries)\physx\include\Cooking&quot;"
-				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _SCL_SECURE=0"
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code\Libs\includes\sdl&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(OutDir)../Source Code\Libs\UtilityLibraries\MultiModalInput\includes&quot;;&quot;$(OutDir)../Source Code/Libs\includes\networking&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\foundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\extensions&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\common&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation\internal\include&quot;;&quot;$(EngineLibraries)\physx\include\PxFoundation&quot;;&quot;$(EngineLibraries)\physx\include\PhysXAPI\pxtask\include&quot;;&quot;$(EngineLibraries)\physx\include\SampleFramework\framework\include&quot;"
+				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32; _SCL_SECURE=0; "
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -146,10 +146,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib dxguid.lib dinput.lib dinput8.lib SDL.lib SDL_mixer.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
-				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib&quot;"
-				IgnoreDefaultLibraryNames="LIBCMTD.lib"
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="LIBCMTD.lib;LIBCMT.lib"
 				GenerateDebugInformation="true"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -265,39 +266,11 @@
 				RelativePath="..\..\Source Code\PhysX\PhysX.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\Source Code\PhysX\pxDecorator.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\PhysX\pxStream.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\Source Code\PhysX\pxStream.h"
-				>
-			</File>
 			<Filter
 				Name="Actors"
 				>
 				<File
 					RelativePath="..\..\Source Code\PhysX\Actors\pxSimpleShapes.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Debug"
-				>
-				<File
-					RelativePath="..\..\Source Code\PhysX\Debug\ErrorStream.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\PhysX\Debug\pxDebugRenderer.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\Source Code\PhysX\Debug\pxDebugRenderer.h"
 					>
 				</File>
 			</Filter>

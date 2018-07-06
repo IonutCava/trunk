@@ -32,7 +32,7 @@ public:
 	Resource* find(const std::string& name);
 	//If we crash here due to an invalid name, the problem lies with the resource, not the manager
 	virtual bool remove(Resource* res,bool force = false);
-	void Destroy();
+	virtual void Destroy();
 	virtual ~Manager() {Destroy();} //Deleting any manager, will destroy it first
 };
 

@@ -1,24 +1,19 @@
 #include "FlashScene.h"
 #include "GUI/GUI.h"
-#include "PhysX/PhysX.h"
 #include "Managers/CameraManager.h"
 using namespace std;
 
-void FlashScene::render()
-{
+void FlashScene::render(){
 	
 	_sceneGraph->render();
 }
 
 
-void FlashScene::preRender()
-{
-	if(PhysX::getInstance().getScene() != NULL)	
-		PhysX::getInstance().UpdateActors();
+void FlashScene::preRender(){
+
 } 
 
-void FlashScene::processInput()
-{
+void FlashScene::processInput(){
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 
 	moveFB  = Application::getInstance().moveFB;
@@ -33,19 +28,16 @@ void FlashScene::processInput()
 
 }
 
-void FlashScene::processEvents(F32 time)
-{
+void FlashScene::processEvents(F32 time){
 	F32 FpsDisplay = 0.3f;
-	if (time - _eventTimers[0] >= FpsDisplay)
-	{
+	if (time - _eventTimers[0] >= FpsDisplay)	{
 		
 		GUI::getInstance().modifyText("fpsDisplay", "FPS: %5.2f", Framerate::getInstance().getFps());
 		_eventTimers[0] += FpsDisplay;
 	}
 }
 
-bool FlashScene::load(const string& name)
-{
+bool FlashScene::load(const string& name){
 	bool state = false;
 	addDefaultLight();
 	state = loadResources(true);	
@@ -54,8 +46,7 @@ bool FlashScene::load(const string& name)
 	return state;
 }
 
-bool FlashScene::loadResources(bool continueOnErrors)
-{
+bool FlashScene::loadResources(bool continueOnErrors){
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 	_sunAngle = vec2(0.0f, RADIANS(45.0f));
 	_sunVector = vec4(-cosf(_sunAngle.x) * sinf(_sunAngle.y),

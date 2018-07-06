@@ -1,7 +1,6 @@
 #include "MainScene.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/Application.h"
-#include "PhysX/PhysX.h"
 #include "Terrain/Sky.h"
 #include "Terrain/Terrain.h"
 #include "Terrain/Water.h"
@@ -162,8 +161,6 @@ void MainScene::processEvents(F32 time){
 		GUI::getInstance().modifyText("timeDisplay", "Elapsed time: %5.0f", time);
 		_eventTimers[2] += TimeDisplay;
 	}
-
-	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 }
 
 bool MainScene::load(const string& name){

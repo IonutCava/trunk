@@ -2,7 +2,6 @@
 #include "Terrain/Sky.h"
 #include "Managers/CameraManager.h"
 #include "Managers/AIManager.h"
-#include "PhysX/PhysX.h"
 #include "Rendering/Frustum.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Sphere3D.h"

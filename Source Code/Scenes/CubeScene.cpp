@@ -1,7 +1,6 @@
 #include "CubeScene.h"
 #include "Managers/CameraManager.h"
 #include "Rendering/Application.h"
-#include "PhysX/PhysX.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Quad3D.h"
 using namespace std;
@@ -78,9 +77,6 @@ void CubeScene::preRender()
 	hellotext->getTransform()->rotate(vec3(0.6f,0.2f,0.4f),i);
 	bila->getTransform()->translateY(j*0.25f);
 	dwarf->getTransform()->rotate(vec3(0,1,0),i);
-
-	if(PhysX::getInstance().getScene() != NULL)	
-		PhysX::getInstance().UpdateActors();
 
 	U8 index = 0;
 	F32* pixels = (F32*)_lightTexture->Begin();

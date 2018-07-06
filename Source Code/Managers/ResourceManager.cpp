@@ -42,6 +42,8 @@ void operator delete(void * pxData ,char* zFile, I32 nLine){
 }
 
 ResourceManager::~ResourceManager(){
+	Console::getInstance().printfn("Destroying resource manager ...");
+	Console::getInstance().printfn("Deleting resource manager ...");
 }
 
 template<class T>

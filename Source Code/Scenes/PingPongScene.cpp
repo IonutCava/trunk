@@ -2,7 +2,6 @@
 #include "Managers/CameraManager.h"
 #include "Rendering/Application.h"
 #include "Rendering/Frustum.h"
-#include "PhysX/PhysX.h"
 #include "Importer/DVDConverter.h"
 #include "Terrain/Sky.h"
 #include "GUI/GUI.h"
@@ -36,8 +35,6 @@ void PingPongScene::preRender()
 	if(_lightPosition.y <= 1 ) _switchLightUpDown = true;
 	getLights()[0]->setLightProperties("position",_lightPosition);
 	getLights()[0]->setLightProperties("spotDirection",-_lightPosition);
-
-	if(PhysX::getInstance().getScene() != NULL)	PhysX::getInstance().UpdateActors();
 
 	_GFX.setDepthMapRendering(true);
 	_GFX.setLightCameraMatrices(_lightPosition,vec3(0,0,0),false);

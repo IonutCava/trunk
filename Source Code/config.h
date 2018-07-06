@@ -18,7 +18,6 @@
 /**************************************************************************************************************\
 *                             Welcome to DIVIDE Engine's config settings!                                     *
 * From here you can decide how you want to build your release of the code.
-* - Configure if you want to you a PhysX generated terrain or an openGl generated one
 * - Decide how many threads your application can use (maximum upper limit).
 * - Show the debug ms-dos window that prints application information
 * - Define what the console output log file should be named

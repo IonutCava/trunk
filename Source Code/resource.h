@@ -22,6 +22,10 @@
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
 
+#ifndef _DEBUG
+	#define NDEBUG
+#endif
+
 #pragma warning(disable:4244)
 #pragma warning(disable:4996) //strcpy
  

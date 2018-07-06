@@ -15,17 +15,18 @@
 #include "Geometry/Predefined/Text3D.h"
 #include "Hardware/Audio/SFXDevice.h"
 #include "Rendering/PostFX/PostFX.h"
+#include "PhysX/PhysX.h"
 
 void Application::Idle(){
 	SceneManager::getInstance().clean();
 	PostFX::getInstance().idle();
 	GFXDevice::getInstance().idle();
+	PhysX::getInstance().idle();
 }
 
 Application::Application() : 
 	_GFX(GFXDevice::getInstance()), //Video
 	_SFX(SFXDevice::getInstance()), //Audio
-    _px(PhysX::getInstance()),
 	_scene(SceneManager::getInstance()),
 	_gui(GUI::getInstance()),
 	_camera(New FreeFlyCamera()){
@@ -51,13 +52,6 @@ void Application::DrawScene(){
 		light->onDraw();
 	}
 
-	if(_px.getScene() != NULL){
-		_px.GetPhysicsResults();
-		if (_px.getWireFrameData())
-			_px.getDebugRenderer()->renderData(*(_px.getScene()->getDebugRenderable()));
-		_px.StartPhysics();
-	}
-	
 	_scene.preRender();
 	PostFX::getInstance().render();
 	GUI::getInstance().draw();
@@ -74,4 +68,5 @@ void Application::Initialize(){
 	F32 fogColor[4] = {0.7f, 0.7f, 0.9f, 1.0}; 
 	_GFX.enableFog(0.3f,fogColor);
 	PostFX::getInstance().init();
+	PhysX::getInstance().InitNx();
 }

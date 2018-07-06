@@ -7,7 +7,6 @@
 #include "Terrain/QuadtreeNode.h"
 #include "Terrain/TerrainChunk.h"
 #include "Hardware/Video/VertexBufferObject.h"
-#include "PhysX/PhysX.h"
 #include "Managers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "TextureManager/ImageTools.h"

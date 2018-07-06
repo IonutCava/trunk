@@ -16,7 +16,6 @@
  */
 
 #include "resource.h"
-#include "PhysX/PhysX.h"
 
 DEFINE_SINGLETON( Guardian )
 
@@ -25,9 +24,7 @@ public:
 	void LoadSettings();
 	void LoadApplication(const std::string& entryPoint);
 	void ReloadSettings();
-	void RestartPhysX();
 	void TerminateApplication();
-	void StartPhysX();
 	void ReloadEngine();
 	std::ofstream myfile;
 

@@ -32,6 +32,7 @@ public:
 	T* loadResource(const ResourceDescriptor& descriptor);
 	template<class T>
 	void removeResource(T*& res,bool force = false);
+
 protected:
 	Resource* loadResource(const std::string& name);
 
