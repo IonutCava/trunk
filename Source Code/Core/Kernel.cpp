@@ -694,6 +694,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // We start of with a forward plus renderer
     _platformContext->gfx().setRenderer(RendererType::RENDERER_TILED_FORWARD_SHADING);
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
+    Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
     DisplayWindow& window = winManager.getActiveWindow();
     window.setDimensions(config.runtime.splashScreen);

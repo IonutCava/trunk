@@ -216,7 +216,7 @@ void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorImpl<I64>& 
         U32 filter = to_base(SceneNodeType::TYPE_OBJECT3D);
         SceneGraphNode* collision = _octree->nearestIntersection(ray, start, end, filter)._intersectedObject1.lock();
         if (collision) {
-            Console::d_printfn("Octree ray cast [ %s ]", collision->getName().c_str());
+            Console::d_printfn("Octree ray cast [ %s ]", collision->name().c_str());
         }
     }*/
 }

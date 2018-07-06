@@ -19,7 +19,7 @@ namespace Divide {
 template<>
 CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     if (_descriptor.getResourceName().empty()) {
-        _descriptor.setResourceName(_descriptor.getName());
+        _descriptor.setResourceName(_descriptor.name());
     }
 
     if (_descriptor.getResourceLocation().empty()) {
@@ -27,7 +27,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     }
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_loadingDescriptorHash,
-                                                          _descriptor.getName(),
+                                                          _descriptor.name(),
                                                           _descriptor.getResourceName(),
                                                           _descriptor.getResourceLocation(),
                                                           USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()

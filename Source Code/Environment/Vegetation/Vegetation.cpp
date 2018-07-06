@@ -72,7 +72,7 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t de
 
 Vegetation::~Vegetation()
 {
-    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), getName().c_str());
+    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), name().c_str());
     _stopLoadingRequest = true;
     U32 timer = 0;
     while (!_threadedLoadComplete) {
@@ -97,7 +97,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     transparentRenderState.setCullMode(CullMode::CW);
     _grassStateBlockHash = transparentRenderState.getHash();
 
-    ResourceDescriptor vegetationMaterial("vegetationMaterial" + getName());
+    ResourceDescriptor vegetationMaterial("vegetationMaterial" + name());
     Material_ptr vegMaterial = CreateResource<Material>(_parentCache, vegetationMaterial);
 
     //vegMaterial->setShaderLoadThreaded(false);

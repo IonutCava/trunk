@@ -92,7 +92,7 @@ void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
                 Console::errorfn("%s", Mix_GetError());
             }
         } else {
-            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), music->getName().c_str());
+            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), music->name().c_str());
         }
     }
 }
@@ -118,10 +118,10 @@ void SDL_API::playSound(const AudioDescriptor_ptr& sound) {
         if (soundPtr) {
             Mix_Volume(sound->getChannel(), sound->getVolume());
             if (Mix_PlayChannel(sound->getChannel(), soundPtr, sound->isLooping() ? -1 : 0) == -1) {
-                Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")), sound->getName().c_str(), Mix_GetError());
+                Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")), sound->name().c_str(), Mix_GetError());
             }
         } else {
-            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), sound->getName().c_str());
+            Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")), sound->name().c_str());
         }
     }   
 }

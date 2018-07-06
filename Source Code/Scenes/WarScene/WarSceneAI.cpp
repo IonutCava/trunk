@@ -348,7 +348,7 @@ bool WarScene::addUnits() {
                                          Metric::Base(zFactor)));
 
             aiSoldier = MemoryManager_NEW AI::AIEntity(tComp->getPosition(),
-                                                       currentNode->getName());
+                                                       currentNode->name());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             currentNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, k == 0);
             currentNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, k != 0);
@@ -438,7 +438,7 @@ void WarScene::startSimulation(I64 btnGUID) {
             _aiManager->destroyNavMesh(aiEntity->getAgentRadiusCategory());
         }
         navMesh = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
-        navMesh->setFileName(getName());
+        navMesh->setFileName(name());
 
         if (!navMesh->load(_sceneGraph->getRoot())) {
             loadedFromFile = false;

@@ -12,7 +12,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
     std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
                                                              _cache,
                                                              _loadingDescriptorHash,
-                                                             _descriptor.getName(),
+                                                             _descriptor.name(),
                                                              _descriptor.getEnumValue() == 0
                                                                                          ? 1.0f
                                                                                          : to_F32(_descriptor.getEnumValue()),
@@ -25,7 +25,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
         ptr->renderState().useDefaultMaterial(false);
     } else {
 
-        ResourceDescriptor matDesc("Material_" + _descriptor.getName());
+        ResourceDescriptor matDesc("Material_" + _descriptor.name());
         matDesc.setEnumValue(to_U32(Material::ShadingMode::BLINN_PHONG));
         Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);
         ptr->setMaterialTpl(matTemp);

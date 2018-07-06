@@ -161,6 +161,7 @@ extern std::array<GLenum, to_base(TextureWrap::COUNT)> glWrapTable;
 extern std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 extern std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 extern std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
+extern std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
 extern std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
 extern std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 

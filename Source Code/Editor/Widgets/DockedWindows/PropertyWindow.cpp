@@ -24,7 +24,7 @@ namespace Divide {
     void PropertyWindow::draw() {
         Camera* selectedCamera = Attorney::PanelManagerDockedWindows::getSelectedCamera(_parent);
         if (selectedCamera != nullptr) {
-            if (ImGui::CollapsingHeader(selectedCamera->getName().c_str())) {
+            if (ImGui::CollapsingHeader(selectedCamera->name().c_str())) {
                 vec3<F32> eye = selectedCamera->getEye();
                 if (ImGui::InputFloat3("Eye", eye._v)) {
                     selectedCamera->setEye(eye);
@@ -91,7 +91,7 @@ namespace Divide {
             for (I64 nodeGUID : selections) {
                 SceneGraphNode* node = activeScene.sceneGraph().findNode(nodeGUID);
                 if (node != nullptr) {
-                    ImGui::Text(node->getName().c_str());
+                    ImGui::Text(node->name().c_str());
 
                     vectorImpl<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*node);
                     for (EditorComponent* comp : editorComp) {

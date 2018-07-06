@@ -14,6 +14,7 @@
 
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
@@ -422,7 +423,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 #undef OFFSETOF
 
     // Prepare shader headers and various shader related states
-    if (initShaders()) {
+    if (initShaders() && initGLSW()) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
 
@@ -437,6 +438,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 void GL_API::closeRenderingAPI() {
     if (!deInitShaders()) {
         DIVIDE_UNEXPECTED_CALL("GLSL failed to shutdown!");
+    } else {
+        deInitGLSW();
     }
 
     if (_GUIGLrenderer) {
@@ -491,6 +494,9 @@ void GL_API::createOrValidateContextForCurrentThread(GFXDevice& context) {
             glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, GLUtil::_glSecondaryContext);
         }
     }
+
+    initGLSW();
+    
 }
 
 vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {

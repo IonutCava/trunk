@@ -47,7 +47,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     bool isSubMesh = type == Object3D::ObjectType::SUBMESH;
     bool nodeSkinned = parentSGN.getNode<Object3D>()->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
 
-    assert(!_materialInstance || (_materialInstance && !_materialInstance->getName().empty()));
+    assert(!_materialInstance || (_materialInstance && !_materialInstance->name().empty()));
 
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         if (_materialInstance) {
@@ -78,24 +78,24 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     Pipeline pipeline = _context.newPipeline(pipelineDescriptor);
 
     _boundingBoxPrimitive[0] = _context.newIMP();
-    _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.getName());
+    _boundingBoxPrimitive[0]->name("BoundingBox_" + parentSGN.name());
     _boundingBoxPrimitive[0]->pipeline(pipeline);
     _boundingBoxPrimitive[0]->paused(true);
 
     _boundingBoxPrimitive[1] = _context.newIMP();
-    _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.getName());
+    _boundingBoxPrimitive[1]->name("BoundingBox_Parent_" + parentSGN.name());
     _boundingBoxPrimitive[1]->pipeline(pipeline);
     _boundingBoxPrimitive[1]->paused(true);
 
     _boundingSpherePrimitive = _context.newIMP();
-    _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.getName());
+    _boundingSpherePrimitive->name("BoundingSphere_" + parentSGN.name());
     _boundingSpherePrimitive->pipeline(pipeline);
     _boundingSpherePrimitive->paused(true);
 
     if (nodeSkinned) {
         primitiveStateBlock.setZRead(false);
         _skeletonPrimitive = _context.newIMP();
-        _skeletonPrimitive->name("Skeleton_" + parentSGN.getName());
+        _skeletonPrimitive->name("Skeleton_" + parentSGN.name());
         _skeletonPrimitive->pipeline(pipeline);
         _skeletonPrimitive->paused(true);
     }
@@ -121,7 +121,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
         RenderStateBlock stateBlock(RenderStateBlock::get(noDepthStateBlock));
 
         pipelineDescriptor._stateHash = stateBlock.getHash();
-        _axisGizmo->name("AxisGizmo_" + parentSGN.getName());
+        _axisGizmo->name("AxisGizmo_" + parentSGN.name());
         _axisGizmo->pipeline(_context.newPipeline(pipelineDescriptor));
         // Create the object containing all of the lines
         _axisGizmo->beginBatch(true, to_U32(_axisLines.size()) * 2, 1);

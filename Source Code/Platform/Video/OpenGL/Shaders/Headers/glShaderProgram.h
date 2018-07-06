@@ -106,10 +106,12 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
    protected:
     glShaderProgramLoadInfo buildLoadInfo();
-    std::pair<bool, stringImpl> loadSourceCode(ShaderType stage,
-                                               const stringImpl& stageName,
-                                               const stringImpl& header,
-                                               bool forceReParse);
+    void loadSourceCode(ShaderType stage,
+                        const stringImpl& stageName,
+                        const stringImpl& header,
+                        bool forceReParse,
+                        std::pair<bool, stringImpl>& sourceCodeOut);
+
     bool loadFromBinary();
        
     bool recompileInternal() override;
@@ -166,6 +168,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     GLuint _shaderProgramIDTemp;
     static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
     std::array<glShader*, to_base(ShaderType::COUNT)> _shaderStage;
+
+    UseProgramStageMask _stageMask;
 
     glLockManager* _lockManager;
 };

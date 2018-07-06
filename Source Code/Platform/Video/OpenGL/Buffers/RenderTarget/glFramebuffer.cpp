@@ -154,7 +154,7 @@ bool glFramebuffer::create() {
         }
 
         RenderTargetDescriptor desc = {};
-        desc._name = getName() + "_resolve";
+        desc._name = name() + "_resolve";
         desc._resolution = vec2<U16>(getWidth(), getHeight());
         desc._attachmentCount = to_U8(attachments.size());
         desc._attachments = attachments.data();
@@ -410,7 +410,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     /// Push debug state
     if (Config::ENABLE_GPU_VALIDATION) {
         assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
-        GL_API::pushDebugMessage(("FBO Begin: " + getName()).c_str(), _framebufferHandle);
+        GL_API::pushDebugMessage(("FBO Begin: " + name()).c_str(), _framebufferHandle);
         glFramebuffer::_bufferBound = true;
     }
 

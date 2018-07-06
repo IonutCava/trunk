@@ -45,37 +45,19 @@ namespace Divide {
 
     bool TransformSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
-        if (tComp != nullptr) {
-            vec3<F32> localPos;
-            tComp->getPosition(localPos);
-            outputBuffer << localPos;
-
-            vec3<F32> localScale;
-            tComp->getScale(localScale);
-            outputBuffer << localScale;
-
-            Quaternion<F32> localRotation;
-            tComp->getOrientation(localRotation);
-            outputBuffer << localRotation.asVec4();
+        if (tComp != nullptr && !tComp->save(outputBuffer)) {
+            return false;
         }
+         
         return ECSSystem<TransformSystem>::save(sgn, outputBuffer);
     }
 
     bool TransformSystem::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
         TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
-        if (tComp != nullptr) {
-            vec3<F32> localPos;
-            inputBuffer >> localPos;
-            tComp->setPosition(localPos);
-
-            vec3<F32> localScale;
-            inputBuffer >> localScale;
-            tComp->setScale(localScale);
-
-            vec4<F32> localRotation;
-            inputBuffer >> localRotation;
-            tComp->setRotation(Quaternion<F32>(localRotation));
+        if (tComp != nullptr && !tComp->load(inputBuffer)) {
+            return false;
         }
+           
         return ECSSystem<TransformSystem>::save(sgn, inputBuffer);
     }
 }; //namespace Divide

@@ -3,5 +3,5 @@
 #include "Headers/SGNComponent.h"
 
 namespace Divide {
-    
+
 };

@@ -248,7 +248,7 @@ NavModelData mergeModels(NavModelData& a,
             mergedData.clear();
     }
 
-    mergedData.setName(a.getName() + "+" + b.getName());
+    mergedData.setName(a.name() + "+" + b.name());
     return mergedData;
 }
 
@@ -333,7 +333,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         if (!BitCompare(allowedNodeType, to_U32(nodeType))) {
             if (!BitCompare(ignoredNodeType, to_U32(nodeType))) {
                 Console::printfn(Locale::get(_ID("WARN_NAV_UNSUPPORTED")),
-                                 sn->getName().c_str());
+                                 sn->name().c_str());
                 goto next;
             }
         }
@@ -381,7 +381,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
-                           sn->getName().c_str(), to_U32(level));
+                           sn->name().c_str(), to_U32(level));
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
 
@@ -443,7 +443,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         }
 
         Console::printfn(Locale::get(_ID("NAV_MESH_ADD_NODE")),
-                         sn->getName().c_str());
+                         sn->name().c_str());
     }
 // although labels are bad, skipping here using them is the easiest solution to
 // follow -Ionut

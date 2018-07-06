@@ -111,7 +111,7 @@ SceneGraphNode::~SceneGraphNode()
         Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     }
 
-    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), getName().c_str(), _node->getName().c_str());
+    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->name().c_str());
 
     RemoveAllSGNComponents();
 
@@ -182,7 +182,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
 
 SceneGraphNode* SceneGraphNode::registerNode(SceneGraphNode* node) {
     // Time to add it to the children vector
-    SceneGraphNode* child = findChild(node->getName());
+    SceneGraphNode* child = findChild(node->name());
     if (child) {
         removeNode(*child);
     }
@@ -204,7 +204,7 @@ SceneGraphNode* SceneGraphNode::addNode(const SceneNode_ptr& node, U32 component
     SceneGraphNode* sceneGraphNode = parentGraph().createSceneGraphNode(_sceneGraph,
                                                                         physicsGroup,
                                                                         node,
-                                                                        name.empty() ? node->getName()
+                                                                        name.empty() ? node->name()
                                                                                      : name,
                                                                         componentMask);
 
@@ -346,8 +346,8 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool recursive) const {
 SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNodeName, bool recursive) const {
     ReadLock r_lock(_childLock);
     for (auto& child : _children) {
-        if (sceneNodeName ? child->getNode()->getName().compare(name) == 0
-                          : child->getName().compare(name) == 0)
+        if (sceneNodeName ? child->getNode()->name().compare(name) == 0
+                          : child->name().compare(name) == 0)
         {
             return child;
         } else {

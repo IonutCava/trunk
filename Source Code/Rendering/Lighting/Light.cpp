@@ -49,7 +49,7 @@ Light::~Light()
 
 bool Light::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     for (U32 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
-        _shadowCameras[i] = Camera::createCamera(getName() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
+        _shadowCameras[i] = Camera::createCamera(name() + "_shadowCamera_" + to_stringImpl(i), Camera::CameraType::FREE_FLY);
 
         _shadowCameras[i]->setMoveSpeedFactor(0.0f);
         _shadowCameras[i]->setTurnSpeedFactor(0.0f);

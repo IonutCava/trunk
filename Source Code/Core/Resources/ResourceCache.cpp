@@ -58,7 +58,7 @@ void ResourceCache::add(CachedResource_wptr res) {
     size_t hash = resource->getDescriptorHash();
     DIVIDE_ASSERT(hash != 0, "ResourceCache add error: Invalid resource hash!");
 
-    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->getName().c_str(), hash);
+    Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), hash);
     WriteLock w_lock(_creationMutex);
     hashAlg::insert(_resDB, std::make_pair(hash, resource));
 }
@@ -90,7 +90,7 @@ void ResourceCache::remove(CachedResource* resource) {
     WAIT_FOR_CONDITION(resource->getState() != ResourceState::RES_LOADING);
 
     size_t resourceHash = resource->getDescriptorHash();
-    const stringImpl& name = resource->getName();
+    const stringImpl& name = resource->name();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));
 

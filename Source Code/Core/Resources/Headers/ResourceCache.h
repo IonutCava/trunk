@@ -56,7 +56,7 @@ public:
         // The loading process may change the resource descriptor so always use the user-specified descriptor hash for loockup!
         size_t loadingHash = descriptor.getHash();
         /// Check cache first to avoit loading the same resource twice
-        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.getName()));
+        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(loadingHash, descriptor.name()));
         /// If the cache did not contain our resource ...
         if (!ptr) {
             /// ...aquire the resource's loader

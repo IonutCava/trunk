@@ -92,7 +92,7 @@ void WarSceneAIProcessor::reset()
 void WarSceneAIProcessor::initInternal() {
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.open(
-        Util::StringFormat("AILogs/%s_.txt", _entity->getName().c_str()).c_str(),
+        Util::StringFormat("AILogs/%s_.txt", _entity->name().c_str()).c_str(),
         std::ofstream::out | std::ofstream::trunc);
 #endif
 
@@ -329,7 +329,7 @@ void WarSceneAIProcessor::requestOrders() {
     GOAPGoal* goal = findRelevantGoal();
     
     if (goal != nullptr) {
-        _planStatus = Util::StringFormat("Current goal: [ %s ]\n", goal->getName().c_str());
+        _planStatus = Util::StringFormat("Current goal: [ %s ]\n", goal->name().c_str());
 
         // Hack to loop in idle
         worldState().setVariable(GOAPFact(Fact::IDLING), GOAPValue(false));
@@ -338,14 +338,14 @@ void WarSceneAIProcessor::requestOrders() {
         if (replanGoal()) {
             _planStatus += Util::StringFormat(
                 "The plan for goal [ %s ] involves [ %d ] actions.\n",
-                goal->getName().c_str(),
+                goal->name().c_str(),
                 goal->getCurrentPlan().size());
             _planStatus += printPlan();
             beginPlan(*goal);
         } else {
             _planStatus += Util::StringFormat("%s\n", getPlanLog().c_str());
             _planStatus += Util::StringFormat("Can't generate plan for goal [ %s ]\n",
-                  goal->getName().c_str());
+                  goal->name().c_str());
             invalidateCurrentPlan();
         }
 
@@ -461,7 +461,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
-            _scoreCallback(to_U8(ownTeamID), _entity->getName());
+            _scoreCallback(to_U8(ownTeamID), _entity->name());
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Capture flag action over");
@@ -496,7 +496,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                 _entity->sendMessage(*enemy.second, AIMsg::ENEMY_HAS_FLAG, _entity);
             }
-            _messageCallback(0, _entity->getName());
+            _messageCallback(0, _entity->name());
         } break;
         case ActionType::RETURN_TO_BASE: {
             PRINT("Return to base action over");
@@ -512,7 +512,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
                 _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, _entity);
             }
-            _messageCallback(1, _entity->getName());
+            _messageCallback(1, _entity->name());
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL();
@@ -722,7 +722,7 @@ void WarSceneAIProcessor::updatePositions() {
                 for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
                     _entity->sendMessage(*enemy.second, AIMsg::RETURNED_FLAG, teamID);
                 }
-                _messageCallback(1, _entity->getName());
+                _messageCallback(1, _entity->name());
             }
         }
     }
@@ -868,7 +868,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
     U32 ownTeamID = currentTeam->getTeamID();
     U32 enemyTeamID = 1 - ownTeamID;
 
-    stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->getName().c_str()));
+    stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->name().c_str()));
     ret.append("--------------- Working memory state BEGIN ----------------------------\n");
     ret.append(Util::StringFormat(
         "        Current position: - [ %4.1f , %4.1f, %4.1f]\n",
@@ -893,8 +893,8 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         _globalWorkingMemory._flagsAtBase[enemyTeamID].value() ? "true" : "false"));
     ret.append(Util::StringFormat(
         "        Flags carriers - OwnTeam : [ %s ] | Enemy Team : [ %s ]\n",
-        _globalWorkingMemory._flagCarriers[ownTeamID].value() ? _globalWorkingMemory._flagCarriers[ownTeamID].value()->getName().c_str() : "none",
-        _globalWorkingMemory._flagCarriers[enemyTeamID].value() ? _globalWorkingMemory._flagCarriers[enemyTeamID].value()->getName().c_str() : "none"));
+        _globalWorkingMemory._flagCarriers[ownTeamID].value() ? _globalWorkingMemory._flagCarriers[ownTeamID].value()->name().c_str() : "none",
+        _globalWorkingMemory._flagCarriers[enemyTeamID].value() ? _globalWorkingMemory._flagCarriers[enemyTeamID].value()->name().c_str() : "none"));
     ret.append(Util::StringFormat(
         "        Score - OwnTeam : [ %d ] | Enemy Team : [ %d ]\n",
         _globalWorkingMemory._score[ownTeamID].value(),
@@ -935,7 +935,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
     SceneGraphNode* enemy(_localWorkingMemory._currentTarget.value());
     if (enemy) {
         ret.append("Active target: ");
-        ret.append(enemy->getName());
+        ret.append(enemy->name());
         ret.append("\n");
     }
 

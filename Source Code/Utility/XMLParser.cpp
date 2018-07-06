@@ -878,7 +878,7 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
     }
 
     ParamHandler &par = ParamHandler::instance();
-    stringImpl file(mat.getName());
+    stringImpl file(mat.name());
     file = file.substr(file.rfind("/") + 1, file.length());
 
     stringImpl location(Paths::g_xmlDataLocation + Paths::g_scenesLocation  +
@@ -947,7 +947,7 @@ void dumpMaterial(PlatformContext& context, Material &mat) {
             RenderPassType passType = static_cast<RenderPassType>(pass);
 
             ShaderProgram_ptr shaderProg = mat.getShaderInfo(RenderStagePass(stage, passType)).getProgram();
-            pt.put(Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType)).c_str(), shaderProg->getName());
+            pt.put(Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType)).c_str(), shaderProg->name());
         }
     }
 

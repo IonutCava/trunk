@@ -80,7 +80,7 @@ class Resource : public GUIDWrapper
     virtual ~Resource();
 
     /// Name management
-    const stringImpl& getName() const;
+    const stringImpl& name() const;
     ResourceType getType() const;
     ResourceState getState() const;
 

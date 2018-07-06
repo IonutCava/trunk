@@ -73,6 +73,31 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
 }
 
 template <typename T>
+void ByteBuffer::read_noskip(T& value) {
+    value = read<T>(_rpos);
+}
+
+template <typename T>
+void ByteBuffer::read_noskip(bool& value) {
+    value = read<I8>(_rpos) == to_I8(1);
+}
+
+template <typename T>
+void ByteBuffer::read_noskip(stringImpl& value) {
+    value.clear();
+    size_t inc = 0;
+    // prevent crash at wrong string format in packet
+    while (rpos() < size()) {
+        const char c = read<char>(); ++inc;
+        if (c == to_U8(0)) {
+            break;
+        }
+        value += c;
+    }
+    _rpos -= inc;
+}
+
+template <typename T>
 inline ByteBuffer& ByteBuffer::operator>>(const Unused<T>& unused) {
     ACKNOWLEDGE_UNUSED(unused);
 

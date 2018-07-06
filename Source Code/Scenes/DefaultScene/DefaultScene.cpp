@@ -80,7 +80,7 @@ void DefaultScene::postLoadMainThread() {
 
     size_t i = 0, j = 0;
     for (const stringImpl& scene : scenes) {
-        if (scene != getName()) {
+        if (scene != name()) {
             size_t localOffsetX = btnWidth * (i % numColumns) + spacingX * (i % numColumns);
             size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
 

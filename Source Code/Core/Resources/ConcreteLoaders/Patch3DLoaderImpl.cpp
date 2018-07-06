@@ -12,7 +12,7 @@ namespace Divide {
         std::shared_ptr<Patch3D> ptr(MemoryManager_NEW Patch3D(_context.gfx(),
                                                                _cache,
                                                                _loadingDescriptorHash,
-                                                               _descriptor.getName(),
+                                                               _descriptor.name(),
                                                                *reinterpret_cast<vec2<U16>*>(_descriptor.getUserPtr())),
                                      DeleteResource(_cache));
 

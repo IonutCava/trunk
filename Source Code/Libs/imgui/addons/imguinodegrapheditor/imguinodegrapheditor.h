@@ -263,7 +263,7 @@ class Node
     virtual ~Node() {}
     mutable void* user_ptr;
     mutable int userID;
-    inline const char* getName() const {return Name;}
+    inline const char* name() const {return Name;}
     inline int getType() const {return typeID;}
     inline int getNumInputSlots() const {return InputsCount;}
     inline int getNumOutputSlots() const {return OutputsCount;}

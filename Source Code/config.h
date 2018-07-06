@@ -146,8 +146,8 @@ constexpr unsigned int TERRAIN_CHUNKS_LOD = 3;
 constexpr unsigned int TERRAIN_LOD0 = 200;
 /// Relative distance for LOD1->LOD2 selection
 constexpr unsigned int TERRAIN_LOD1 = 400;
-/// Use "precompiled" shaders if possible
-constexpr bool USE_SHADER_BINARY = true;
+/// Use separate shader objects
+constexpr bool USE_SEPARATE_SHADER_OBJECTS = false;
 /// Use HW AA'ed lines
 constexpr bool USE_HARDWARE_AA_LINES = true;
 /// Multi-draw causes some problems with profiling software (e.g.

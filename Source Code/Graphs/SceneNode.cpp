@@ -85,7 +85,7 @@ const Material_ptr& SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);
     if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
         // UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = CreateResource<Material>(_parentCache, ResourceDescriptor("defaultMaterial_" + getName()));
+        _materialTemplate = CreateResource<Material>(_parentCache, ResourceDescriptor("defaultMaterial_" + name()));
         _materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     }
     return _materialTemplate;
@@ -100,8 +100,8 @@ void SceneNode::setMaterialTpl(const Material_ptr& material) {
             // if the old material isn't the same as the new one
             if (_materialTemplate->getGUID() != material->getGUID()) {
                 Console::printfn(Locale::get(_ID("REPLACE_MATERIAL")),
-                                 _materialTemplate->getName().c_str(),
-                                 material->getName().c_str());
+                                 _materialTemplate->name().c_str(),
+                                 material->name().c_str());
                 _materialTemplate = material;  // set the new material
             }
         } else {

@@ -67,7 +67,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         GOAPGoalList::iterator it;
         it = std::find_if(std::begin(_goals), std::end(_goals),
                           [&goalName](const GOAPGoal& goal) -> bool {
-                              return goal.getName().compare(goalName.c_str()) ==
+                              return goal.name().compare(goalName.c_str()) ==
                                      0;
                           });
 
@@ -88,7 +88,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         _activeGoals.clear();
         for (GOAPGoal& goal : goalList()) {
             goal.relevancy(0.0f);
-            activateGoal(goal.getName());
+            activateGoal(goal.name());
         }
     }
     /// Although we want the goal to be activated,
@@ -130,7 +130,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         it = vectorAlg::find_if(
             std::begin(_activeGoals), std::end(_activeGoals),
             [goal](GOAPGoal const* actGoal) {
-                return actGoal->getName().compare(goal->getName()) == 0;
+                return actGoal->name().compare(goal->name()) == 0;
             });
 
         if (it == std::end(_activeGoals)) {

@@ -177,7 +177,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh(_context);
     }
     // Set it's file name
-    temp->setFileName(_context.gui().activeScene()->getName());
+    temp->setFileName(_context.gui().activeScene()->name());
     // Try to load it from file
     bool loaded = temp->load(sceneGraph.getRoot());
     if (!loaded) {

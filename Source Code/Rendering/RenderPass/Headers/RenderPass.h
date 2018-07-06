@@ -83,7 +83,7 @@ class RenderPass : private NonCopyable {
     void render(SceneRenderState& renderState);
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
-    inline const stringImpl& getName() const { return _name; }
+    inline const stringImpl& name() const { return _name; }
 
     inline RenderStage stageFlag() const { return _stageFlag; }
 

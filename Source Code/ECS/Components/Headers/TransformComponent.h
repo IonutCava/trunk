@@ -222,6 +222,9 @@ namespace Divide {
          void getPosition(vec3<F32>& posOut) const override;
          void getOrientation(Quaternion<F32>& quatOut) const override;
 
+         bool save(ByteBuffer& outputBuffer) const override;
+         bool load(ByteBuffer& inputBuffer) override;
+
       protected:
          friend class TransformSystem;
          void setTransformDirty(TransformType type);

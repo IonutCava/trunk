@@ -83,7 +83,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     ptr = std::make_shared<RTAttachment>(descriptor);
 
     ResourceDescriptor textureAttachment(Util::StringFormat("FBO_%s_Att_%s_%d_%d",
-                                                            _parent.getName().c_str(),
+                                                            _parent.name().c_str(),
                                                             getAttachmentName(type),
                                                             index,
                                                             _parent.getGUID()));

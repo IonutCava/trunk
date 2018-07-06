@@ -92,7 +92,7 @@ class ResourceDescriptor : public Hashable {
     inline const stringImpl& getResourceLocation() const {
         return _resourceLocation;
     }
-    inline const stringImpl& getName() const { return _name; }
+    inline const stringImpl& name() const { return _name; }
 
     template <typename T>
     inline const std::shared_ptr<T> getPropertyDescriptor() const {

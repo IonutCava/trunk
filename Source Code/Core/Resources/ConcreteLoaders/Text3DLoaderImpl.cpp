@@ -12,7 +12,7 @@ CachedResource_ptr ImplResourceLoader<Text3D>::operator()() {
     std::shared_ptr<Text3D> ptr(MemoryManager_NEW Text3D(_context.gfx(),
                                                          _cache,
                                                          _loadingDescriptorHash,
-                                                         _descriptor.getName(),
+                                                         _descriptor.name(),
                                                          _descriptor.getResourceLocation()),
                                  DeleteResource(_cache)); //< font
 

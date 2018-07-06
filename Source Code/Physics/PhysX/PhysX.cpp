@@ -239,7 +239,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     Object3D* sNode = node.getNode<Object3D>();
 
     // Load cached version from file first
-    stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->getName() + "_]");
+    stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->name() + "_]");
     nodeName.append(".cm");
 
     hashMapImpl<stringImpl, physx::PxTriangleMesh*>::iterator it;
@@ -301,7 +301,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     PhysXSceneInterface* targetScene =  dynamic_cast<PhysXSceneInterface*>(_targetScene);
     RigidBodyComponent* nodePhysics = node.get<RigidBodyComponent>();
 
-    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName(), *nodePhysics);
+    PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.name(), *nodePhysics);
     assert(tempActor != nullptr);
     tempActor->setParent(nodePhysics);
 

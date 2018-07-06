@@ -65,6 +65,14 @@ class ByteBuffer {
     template <> 
     ByteBuffer& operator<<(const stringImpl& value);
 
+    /// read_noskip calls don't move the read head
+    template <typename T>
+    void read_noskip(T& value);
+    template <typename T>
+    void read_noskip(bool& value);
+    template <typename T>
+    void read_noskip(stringImpl& value);
+
     template <typename T>
     ByteBuffer& operator>>(T& value);
     template<>

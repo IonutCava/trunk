@@ -426,7 +426,7 @@ SceneGraphNode* Scene::addLight(LightType type,
     }
 
     ResourceDescriptor defaultLight(
-        getName() +
+        name() +
         lightType +
         to_stringImpl(_lightPool->getLights(type).size()));
 
@@ -741,20 +741,20 @@ void Scene::loadDefaultCamera() {
     
 
     // Camera position is overridden in the scene's XML configuration file
-    if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (ParamHandler::instance().getParam<bool>(_ID_RT((name() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.x").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.y").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((name() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -883,7 +883,7 @@ void Scene::onSetActive() {
     addPlayerInternal(false);
 
     static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
-    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + getName());
+    _context.app().windowManager().getActiveWindow().title(originalTitle + " - " + name());
 }
 
 void Scene::onRemoveActive() {
@@ -972,7 +972,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
     }
 
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID((getName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+    if (_paramHandler.getParam<bool>(_ID((name() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
     return true;

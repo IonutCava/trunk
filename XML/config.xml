@@ -1,5 +1,7 @@
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
+  <useShaderBinaryCache>true</useShaderBinaryCache>
+  <!-- this is only taken into consideration if binary cache is disabled-->
   <useShaderTextCache>true</useShaderTextCache>
   <!-- memFile: file name that the application should use to write  memory allocation info -->
   <!-- leave empty for none! -->

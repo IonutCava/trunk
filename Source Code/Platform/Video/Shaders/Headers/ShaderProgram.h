@@ -206,7 +206,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
      virtual bool recompileInternal() = 0;
      void registerAtomFile(const stringImpl& atomFile);
 
-     static void useShaderTextCache(bool state) { s_useShaderTextCache = state; }
+     static void useShaderTextCache(bool state) { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
+     static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
    protected:
     /// Shaders loaded from files are kept as atoms
@@ -235,7 +236,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     vectorImpl<stringImpl> _definesList;
     /// A list of atoms used by this program. (All stages are added toghether)
     vectorImpl<stringImpl> _usedAtoms;
+
     static bool s_useShaderTextCache;
+    static bool s_useShaderBinaryCache;
 
    private:
     std::array<std::array<vectorImpl<U32>, Config::SCENE_NODE_LOD>, to_base(ShaderType::COUNT)> _functionIndex;
@@ -249,6 +252,10 @@ namespace Attorney {
       protected:
         static void useShaderTextCache(bool state) { 
             ShaderProgram::useShaderTextCache(state);
+        }
+
+        static void useShaderBinaryCache(bool state) {
+            ShaderProgram::useShaderBinaryCache(state);
         }
 
         friend class Divide::Kernel;

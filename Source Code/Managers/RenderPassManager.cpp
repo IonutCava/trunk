@@ -80,7 +80,7 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
     for (vectorImpl<RenderPass*>::iterator it = std::begin(_renderPasses);
          it != std::end(_renderPasses); ++it) {
-        if ((*it)->getName().compare(name) == 0) {
+        if ((*it)->name().compare(name) == 0) {
             _renderPasses.erase(it);
             break;
         }

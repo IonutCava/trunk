@@ -55,7 +55,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     addSelectionCallback([&](PlayerIndex idx, SceneGraphNode* node) {
         if (node != nullptr) {
-            _GUI->modifyText(_ID("entityState"), node->getName().c_str());
+            _GUI->modifyText(_ID("entityState"), node->name().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -791,7 +791,7 @@ void WarScene::postLoadMainThread() {
 }
 
 void WarScene::weaponCollision(const RigidBodyComponent& collider) {
-    Console::d_printfn("Weapon touched [ %s ]", collider.getSGN().getName().c_str());
+    Console::d_printfn("Weapon touched [ %s ]", collider.getSGN().name().c_str());
 }
 
 };

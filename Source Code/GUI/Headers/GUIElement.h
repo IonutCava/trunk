@@ -101,7 +101,7 @@ class GUIElement : public GUIDWrapper {
     GUIElement(U64 guiID, const stringImpl& name, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
     
-    inline const stringImpl& getName() const { return _name; }
+    inline const stringImpl& name() const { return _name; }
     inline const GUIType getType() const { return _guiType; }
     inline const bool isActive() const { return _active; }
     virtual const bool isVisible() const { return _visible; }

@@ -21,7 +21,7 @@ Resource::~Resource()
 }
 
 /// Name management
-const stringImpl& Resource::getName() const {
+const stringImpl& Resource::name() const {
     return _name;
 }
 

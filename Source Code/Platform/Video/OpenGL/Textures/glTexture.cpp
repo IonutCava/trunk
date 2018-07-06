@@ -36,7 +36,7 @@ glTexture::glTexture(GFXDevice& context,
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
     if (Config::ENABLE_GPU_VALIDATION) {
-        glObjectLabel(GL_TEXTURE, tempHandle, -1, getName().c_str());
+        glObjectLabel(GL_TEXTURE, tempHandle, -1, name.c_str());
     }
     assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
     _textureData.setHandle(tempHandle);

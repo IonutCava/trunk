@@ -40,7 +40,8 @@ namespace Divide {
     SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
       : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
         _parentSGN(parentSGN),
-        _editorComponent(name)
+        _editorComponent(name),
+        _hasChanged(false)
     {
         RegisterEventCallbacks();
     }
@@ -53,6 +54,23 @@ namespace Divide {
 
     template<typename T>
     void SGNComponent<T>::RegisterEventCallbacks() {
+    }
+
+    template<typename T>
+    bool SGNComponent<T>::save(ByteBuffer& outputBuffer) const {
+        ACKNOWLEDGE_UNUSED(outputBuffer);
+        return true;
+    }
+
+    template<typename T>
+    bool SGNComponent<T>::load(ByteBuffer& inputBuffer) {
+        ACKNOWLEDGE_UNUSED(inputBuffer);
+        return true;
+    }
+
+    template<typename T>
+    I64 SGNComponent<T>::uniqueID() const {
+        return _ID_RT((_parentSGN.name() + "_" + _editorComponent.name().c_str()));
     }
 
 };//namespace Divide

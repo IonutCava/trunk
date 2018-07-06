@@ -11,6 +11,7 @@ namespace Divide {
 
 Configuration::Configuration() : XML::IXMLSerializable()
 {
+    debug.useShaderBinaryCache = false;
     debug.useShaderTextCache = false;
     debug.memFile = "none";
     debug.mesh.playAnimations = true;
@@ -65,6 +66,7 @@ bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), xmlFile);
     LOAD_FILE(xmlFile);
     if (FILE_VALID()) {
+        GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.memFile);
         GET_PARAM(debug.mesh.playAnimations);
@@ -125,6 +127,7 @@ bool Configuration::fromXML(const char* xmlFile) {
 
 bool Configuration::toXML(const char* xmlFile) const {
     PREPARE_FILE_FOR_WRITING(xmlFile);
+    PUT_PARAM(debug.useShaderBinaryCache);
     PUT_PARAM(debug.useShaderTextCache);
     PUT_PARAM(debug.memFile);
     PUT_PARAM(debug.mesh.playAnimations);

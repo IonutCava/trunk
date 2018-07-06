@@ -75,19 +75,19 @@ glShader::glShader(GFXDevice& context,
 }
 
 glShader::~glShader() {
-    Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), getName().c_str());
+    Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
     glDeleteShader(_shader);
 }
 
 bool glShader::load(const stringImpl& source, U32 lineOffset) {
     if (source.empty()) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), getName().c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
     }
 
     _usedAtoms.clear();
     stringImpl parsedSource = _skipIncludes ? source
-                                            : preprocessIncludes(getName(), source, 0, _usedAtoms);
+                                            : preprocessIncludes(name(), source, 0, _usedAtoms);
 
     Util::ReplaceStringInPlace(parsedSource, "//__LINE_OFFSET_",
                                Util::StringFormat("#line %d", lineOffset));
@@ -98,7 +98,7 @@ bool glShader::load(const stringImpl& source, U32 lineOffset) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, getName(), src);
+        ShaderProgram::shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText, name(), src);
     }
 
     _compiled = false;
@@ -113,7 +113,7 @@ bool glShader::compile() {
     glCompileShader(_shader);
     _compiled = true;
     if (Config::ENABLE_GPU_VALIDATION) {
-        glObjectLabel(GL_SHADER, _shader, -1, getName().c_str());
+        glObjectLabel(GL_SHADER, _shader, -1, name().c_str());
     }
     return validate();
 }
@@ -207,7 +207,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& name,
 /// Remove a shader entity. The shader is deleted only if it isn't referenced by a program
 void glShader::removeShader(glShader* s) {
     // Keep a copy of it's name
-    stringImpl name(s->getName());
+    stringImpl name(s->name());
     // Try to find it
     U64 nameHash = _ID_RT(name);
     UpgradableReadLock ur_lock(_shaderNameLock);

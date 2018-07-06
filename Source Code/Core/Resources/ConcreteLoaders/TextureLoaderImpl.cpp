@@ -59,7 +59,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     }
 
     Texture_ptr ptr(_context.gfx().newTexture(_loadingDescriptorHash,
-                                              _descriptor.getName(),
+                                              _descriptor.name(),
                                               _descriptor.getResourceName(),
                                               _descriptor.getResourceLocation(),
                                               !_descriptor.getFlag(),
@@ -70,7 +70,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     if (!load(ptr, _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.getResourceLocation().c_str(),
-                         _descriptor.getName().c_str());
+                         _descriptor.name().c_str());
         ptr.reset();
     }
 

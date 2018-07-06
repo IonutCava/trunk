@@ -32,7 +32,7 @@ namespace Divide {
         }
 
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
-        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->getName().c_str())) {
+        if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->name().c_str())) {
             if (ImGui::IsItemClicked()) {
                 activeScene.resetSelection(0);
                 Attorney::PanelManagerDockedWindows::setSelectedCamera(_parent, camera);
@@ -52,7 +52,7 @@ namespace Divide {
         if (!sgn.hasChildren()) {
             node_flags |= ImGuiTreeNodeFlags_Leaf /*| ImGuiTreeNodeFlags_NoTreePushOnOpen*/; // ImGuiTreeNodeFlags_Bullet
         }
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.getName().c_str());
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, sgn.name().c_str());
         if (ImGui::IsItemClicked()) {
             activeScene.resetSelection(0);
             activeScene.setSelected(0, sgn);
@@ -77,7 +77,7 @@ namespace Divide {
         SceneGraphNode& root = activeScene.sceneGraph().getRoot();
 
 
-        if (ImGui::TreeNode(activeScene.getName().c_str()))
+        if (ImGui::TreeNode(activeScene.name().c_str()))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
             const SceneManager::PlayerList& activePlayers = sceneManager.getPlayers();
@@ -91,7 +91,7 @@ namespace Divide {
 
         const vectorImpl<stringImpl>& scenes = sceneManager.sceneNameList();
         for (const stringImpl& scene : scenes) {
-            if (scene != activeScene.getName()) {
+            if (scene != activeScene.name()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
                     ImGui::TreePop();
                 }

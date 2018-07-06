@@ -88,6 +88,7 @@ std::array<GLenum, to_base(TextureWrap::COUNT)> glWrapTable;
 std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
+std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
 std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
 std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 
@@ -249,6 +250,14 @@ void fillEnumTables() {
     glShaderStageTable[to_base(ShaderType::TESSELATION_CTRL)] = GL_TESS_CONTROL_SHADER;
     glShaderStageTable[to_base(ShaderType::TESSELATION_EVAL)] = GL_TESS_EVALUATION_SHADER;
     glShaderStageTable[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER;
+
+    glProgramStageMask[to_base(ShaderType::VERTEX)] = GL_VERTEX_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::FRAGMENT)] = GL_FRAGMENT_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::GEOMETRY)] = GL_GEOMETRY_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::TESSELATION_CTRL)] = GL_TESS_CONTROL_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::TESSELATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER_BIT;
+    glProgramStageMask[to_base(ShaderType::COUNT)] = GL_NONE_BIT;
 
     glShaderStageNameTable[to_base(ShaderType::VERTEX)] = "Vertex";
     glShaderStageNameTable[to_base(ShaderType::FRAGMENT)] = "Fragment";

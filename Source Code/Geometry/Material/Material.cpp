@@ -104,7 +104,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
                   "Material error: clone called without a valid name suffix!");
 
     const Material& base = *this;
-    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(getName() + nameSuffix));
+    Material_ptr cloneMat = CreateResource<Material>(_parentCache, ResourceDescriptor(name() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_translucencyCheck = base._translucencyCheck;
@@ -236,11 +236,11 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     // if we already have a different shader assigned ...
-    if (info._shaderRef != nullptr && info._shaderRef->getName().compare(shader) != 0)
+    if (info._shaderRef != nullptr && info._shaderRef->name().compare(shader) != 0)
     {
         // We cannot replace a shader that is still loading in the background
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
-        Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->getName().c_str(), shader.c_str());
+        Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shaderRef->name().c_str(), shader.c_str());
     }
     else
     {

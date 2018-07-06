@@ -87,7 +87,7 @@ U16 RenderTarget::getHeight() const {
     return _descriptor._resolution.h;
 }
 
-const stringImpl& RenderTarget::getName() const {
+const stringImpl& RenderTarget::name() const {
     return _descriptor._name;
 }
 

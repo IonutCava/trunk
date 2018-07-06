@@ -129,7 +129,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     F32& depthClearValue();
 
-    const stringImpl& getName() const;
+    const stringImpl& name() const;
 
    protected:
     RTAttachmentPool* _attachmentPool;

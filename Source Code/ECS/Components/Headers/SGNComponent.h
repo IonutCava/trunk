@@ -75,10 +75,16 @@ class SGNComponent : private NonCopyable,
     EditorComponent& getEditorComponent() { return _editorComponent; }
     const EditorComponent& getEditorComponent() const { return _editorComponent; }
 
+    virtual bool save(ByteBuffer& outputBuffer) const;
+    virtual bool load(ByteBuffer& inputBuffer);
+
+    I64 uniqueID() const;
+
    protected:
     void RegisterEventCallbacks();
 
    protected:
+    mutable std::atomic_bool _hasChanged;
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;
     EditorComponent _editorComponent;

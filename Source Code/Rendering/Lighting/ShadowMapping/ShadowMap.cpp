@@ -190,7 +190,7 @@ U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
     LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     U16 layer = std::numeric_limits<U16>::max();
     U16 usageCount = (U16)usageMask.size();
-    for (vectorAlg::vecSize i = 0; i < usageCount; ++i) {
+    for (U16 i = 0; i < usageCount; ++i) {
         if (usageMask[i] == false) {
             layer = i;
             break;

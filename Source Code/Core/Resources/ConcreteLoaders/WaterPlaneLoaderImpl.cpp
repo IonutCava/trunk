@@ -12,7 +12,7 @@ namespace Divide {
 
 template <>
 bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
-    const stringImpl& name = res->getName();
+    const stringImpl& name = res->name();
 
     res->setState(ResourceState::RES_LOADING);
 
@@ -55,7 +55,7 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
     waterMat->setShadingMode(Material::ShadingMode::BLINN_PHONG);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT0, waterNM);
     waterMat->setTexture(ShaderProgram::TextureUsage::UNIT1, waterDUDV);
-    waterMat->setShaderProgram(waterShaderProgram->getName(), true);
+    waterMat->setShaderProgram(waterShaderProgram->name(), true);
     waterMat->setShaderProgram("depthPass.PrePass", RenderPassType::DEPTH_PASS, true);
 
     size_t hash = waterMat->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS));
@@ -70,7 +70,7 @@ template<>
 CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
     vec3<F32> dimensions = *reinterpret_cast<vec3<F32>*>(_descriptor.getUserPtr());
 
-    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _loadingDescriptorHash, _descriptor.getName(), dimensions),
+    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_cache, _loadingDescriptorHash, _descriptor.name(), dimensions),
                                     DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

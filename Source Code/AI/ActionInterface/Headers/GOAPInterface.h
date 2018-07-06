@@ -61,7 +61,7 @@ class GOAPGoal : public goap::WorldState {
     inline F32 relevancy() const { return _relevancy; }
     inline void relevancy(F32 relevancy) { _relevancy = relevancy; }
 
-    const std::string& getName() const { return name_; }
+    const std::string& name() const { return name_; }
     U32 getID() const { return _ID; }
     virtual bool plan(const GOAPWorldState& worldState,
                       const GOAPActionSet& actionSet);

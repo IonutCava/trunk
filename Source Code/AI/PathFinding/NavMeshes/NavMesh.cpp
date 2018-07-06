@@ -414,7 +414,7 @@ bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
 
 bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data, rcContextDivide* ctx) {
     if (_fileName.empty()) {
-        _fileName = data.getName();
+        _fileName = data.name();
     }
 
     // Create a heightfield to voxelise our input geometry
@@ -776,7 +776,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 
 stringImpl NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
     return (sgn.getNode()->getType() != SceneNodeType::TYPE_ROOT)
-               ? "_node_[_" + sgn.getName() + "_]"
+               ? "_node_[_" + sgn.name() + "_]"
                : "_root_node";
 }
 

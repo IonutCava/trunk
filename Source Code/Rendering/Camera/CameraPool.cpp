@@ -121,7 +121,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
     if (camera != nullptr) {
         WriteLock w_lock(s_cameraPoolLock);
-        hashAlg::insert(s_cameraPool, _ID_RT(camera->getName()), camera);
+        hashAlg::insert(s_cameraPool, _ID_RT(camera->name()), camera);
     }
 
     return camera;
@@ -135,7 +135,7 @@ bool Camera::destroyCamera(Camera*& camera) {
 
         if (camera->unload()) {
             WriteLock w_lock(s_cameraPoolLock);
-            s_cameraPool.erase(_ID_RT(camera->getName()));
+            s_cameraPool.erase(_ID_RT(camera->name()));
             MemoryManager::DELETE(camera);
             return true;
         }

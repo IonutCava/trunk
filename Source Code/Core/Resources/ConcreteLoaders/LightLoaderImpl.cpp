@@ -22,15 +22,15 @@ CachedResource_ptr ImplResourceLoader<Light>::operator()() {
     switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
         case LightType::POINT:
-            ptr.reset(MemoryManager_NEW PointLight(_cache, _loadingDescriptorHash, _descriptor.getName(), 1, pool),
+            ptr.reset(MemoryManager_NEW PointLight(_cache, _loadingDescriptorHash, _descriptor.name(), 1, pool),
                       DeleteResource(_cache));
             break;
         case LightType::DIRECTIONAL:
-            ptr.reset(MemoryManager_NEW DirectionalLight(_cache, _loadingDescriptorHash, _descriptor.getName(), pool),
+            ptr.reset(MemoryManager_NEW DirectionalLight(_cache, _loadingDescriptorHash, _descriptor.name(), pool),
                       DeleteResource(_cache));
             break;
         case LightType::SPOT:
-            ptr.reset(MemoryManager_NEW SpotLight(_cache, _loadingDescriptorHash, _descriptor.getName(), 1, pool),
+            ptr.reset(MemoryManager_NEW SpotLight(_cache, _loadingDescriptorHash, _descriptor.name(), 1, pool),
                       DeleteResource(_cache));
             break;
     };

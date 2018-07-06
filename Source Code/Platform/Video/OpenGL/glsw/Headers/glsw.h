@@ -4,6 +4,9 @@
 extern "C" {
 #endif
 
+typedef struct glswContextRec glswContext;
+
+glswContext* glswGetCurrentContext();
 void glswClearCurrentContext();
 int  glswInit();
 int  glswShutdown();

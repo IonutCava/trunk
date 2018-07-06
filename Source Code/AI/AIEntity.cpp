@@ -422,6 +422,6 @@ stringImpl AIEntity::toString() const {
         return _processor->toString();
     }
 
-    return "Error_" + getName();
+    return "Error_" + name();
 }
 };  // namespace Divide

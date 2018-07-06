@@ -56,7 +56,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                     submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
                     PhysicsGroup::GROUP_IGNORE,
                     Util::StringFormat("%s_%d",
-                                        sgn.getName().c_str(),
+                                        sgn.name().c_str(),
                                         submesh->getID()));
     }
     sgn.get<BoundsComponent>()->lockBBTransforms(true);

@@ -84,7 +84,7 @@ class AIEntity : public GUIDWrapper {
 
     inline AITeam* getTeam() const { return _teamPtr; }
     I32 getTeamID() const;
-    const stringImpl& getName() const { return _name; }
+    const stringImpl& name() const { return _name; }
 
     void addUnitRef(NPC* const npc);
     inline NPC* getUnitRef() { return _unitRef; }

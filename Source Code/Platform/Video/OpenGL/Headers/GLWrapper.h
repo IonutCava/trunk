@@ -276,9 +276,12 @@ public:
 
 private:
     /// Prepare our shader loading system
-    bool initShaders();
+    static bool initShaders();
     /// Revert everything that was set up in "initShaders()"
-    bool deInitShaders();
+    static bool deInitShaders();
+
+    static bool initGLSW();
+    static bool deInitGLSW();
 
     bool switchWindow(I64 windowGUID);
     bool bindPipeline(const Pipeline& pipeline);
@@ -294,8 +297,7 @@ private:
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to
     /// all stages
     typedef std::array<GLint, to_base(ShaderType::COUNT) + 1> ShaderOffsetArray;
-    void appendToShaderHeader(ShaderType type, const stringImpl& entry,
-        ShaderOffsetArray& inOutOffset);
+    static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;

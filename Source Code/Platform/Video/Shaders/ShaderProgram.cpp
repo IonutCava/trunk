@@ -15,6 +15,7 @@
 
 namespace Divide {
     bool ShaderProgram::s_useShaderTextCache = false;
+    bool ShaderProgram::s_useShaderBinaryCache = false;
 
 namespace {
     UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
@@ -45,7 +46,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const st
 
 ShaderProgram::~ShaderProgram()
 {
-    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
+    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), name().c_str());
 }
 
 bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
@@ -86,7 +87,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
         // If we did find it, we'll show an error message in debug builds about
         // double add
         Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")),
-                           define.c_str(), getName().c_str());
+                           define.c_str(), name().c_str());
     }
 }
 
@@ -102,7 +103,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
     } else {
         // If we did not find it, we'll show an error message in debug builds
         Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")),
-                           define.c_str(), getName().c_str());
+                           define.c_str(), name().c_str());
     }
 }
 
@@ -144,7 +145,7 @@ bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
 
     // Find the shader program
     for (ShaderProgramMap::value_type& it : _shaderPrograms) {
-        const stringImpl& shaderName = it.second->getName();
+        const stringImpl& shaderName = it.second->name();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue

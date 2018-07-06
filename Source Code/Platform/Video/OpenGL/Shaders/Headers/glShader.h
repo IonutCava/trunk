@@ -64,7 +64,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     inline const ShaderType getType() const { return _type; }
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    inline const stringImpl& getName() const { return _name; }
+    inline const stringImpl& name() const { return _name; }
 
    public:
     // ======================= static data ========================= //

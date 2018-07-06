@@ -55,7 +55,7 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     Mesh_ptr ptr(MemoryManager_NEW Mesh(_context.gfx(),
                                         _cache,
                                         _loadingDescriptorHash,
-                                        _descriptor.getName(),
+                                        _descriptor.name(),
                                         tempMeshData._modelName,
                                         tempMeshData._modelPath),
                                 DeleteResource(_cache));

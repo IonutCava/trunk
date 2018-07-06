@@ -33,10 +33,20 @@ namespace Divide {
     }
 
     bool AnimationSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+        AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
+        if (aComp != nullptr && !aComp->save(outputBuffer)) {
+            return false;
+        }
+
         return ECSSystem<AnimationSystem>::save(sgn, outputBuffer);
     }
 
     bool AnimationSystem::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+        AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
+        if (aComp != nullptr && !aComp->load(inputBuffer)) {
+            return false;
+        }
+
         return ECSSystem<AnimationSystem>::load(sgn, inputBuffer);
     }
 };//namespace Divide

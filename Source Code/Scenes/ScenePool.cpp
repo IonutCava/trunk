@@ -78,7 +78,7 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache& cach
 
     UpgradableReadLock ur_lock(_sceneLock);
     for (Scene* scene : _createdScenes) {
-        if (scene->getName().compare(name) == 0) {
+        if (scene->name().compare(name) == 0) {
             ret = scene;
             foundInCache = true;
             break;

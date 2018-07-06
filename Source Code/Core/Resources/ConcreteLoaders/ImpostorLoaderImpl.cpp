@@ -11,14 +11,14 @@ namespace Divide {
 
 template <>
 CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
-    std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName(), 1.0f),
+    std::shared_ptr<ImpostorSphere> ptr(MemoryManager_NEW ImpostorSphere(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.name(), 1.0f),
                                         DeleteResource(_cache));
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
         Material_ptr matTemp = 
-            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
+            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.name()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);
@@ -37,14 +37,14 @@ CachedResource_ptr ImplResourceLoader<ImpostorSphere>::operator()() {
 
 template <>
 CachedResource_ptr ImplResourceLoader<ImpostorBox>::operator()() {
-    std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName(), 1.0f),
+    std::shared_ptr<ImpostorBox> ptr(MemoryManager_NEW ImpostorBox(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.name(), 1.0f),
                                      DeleteResource(_cache));
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
         Material_ptr matTemp =
-            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.getName()));
+            CreateResource<Material>(_cache, ResourceDescriptor("Material_" + _descriptor.name()));
 
         RenderStateBlock dummyDesc(RenderStateBlock::get(matTemp->getRenderStateBlock(RenderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS))));
         dummyDesc.setFillMode(FillMode::WIREFRAME);

@@ -23,7 +23,7 @@ typedef struct glswListRec
     struct glswListRec* Next;
 } glswList;
 
-typedef struct glswContextRec
+struct glswContextRec
 {
     bstring PathPrefix;
     bstring PathSuffix;
@@ -31,12 +31,12 @@ typedef struct glswContextRec
     glswList* TokenMap;
     glswList* ShaderMap;
     glswList* LoadedEffects;
-} glswContext;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE GLOBALS
 
-static glswContext* __glsw__Context = 0;
+thread_local glswContext* __glsw__Context = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
@@ -74,28 +74,37 @@ static int glswClear(glswContext* gc)
     return 0;
 }
 
+glswContext* glswGetCurrentContext()
+{
+    return __glsw__Context;
+}
+
+void glswSetCurrentContext(glswContext* gc) {
+    __glsw__Context = gc;
+}
+
 void glswClearCurrentContext()
 {
-    glswClear(__glsw__Context);
+    glswClear(glswGetCurrentContext());
 }
 
 int glswInit()
 {
-    if (__glsw__Context)
+    if (glswGetCurrentContext())
     {
-        bdestroy(__glsw__Context->ErrorMessage);
-        __glsw__Context->ErrorMessage = bfromcstr("Already initialized.");
+        bdestroy(glswGetCurrentContext()->ErrorMessage);
+        glswGetCurrentContext()->ErrorMessage = bfromcstr("Already initialized.");
         return 0;
     }
 
-    __glsw__Context = (glswContext*) calloc(sizeof(glswContext), 1);
+    glswSetCurrentContext((glswContext*) calloc(sizeof(glswContext), 1));
 
     return 1;
 }
 
 int glswShutdown()
 {
-    glswContext* gc = __glsw__Context;
+    glswContext* gc = glswGetCurrentContext();
 
     if (!gc)
     {
@@ -109,14 +118,14 @@ int glswShutdown()
     __glsw__FreeList(gc->TokenMap);
     gc->TokenMap = NULL;
     free(gc);
-    __glsw__Context = 0;
+    glswSetCurrentContext(0);
 
     return 1;
 }
 
 int glswSetPath(const char* pathPrefix, const char* pathSuffix)
 {
-    glswContext* gc = __glsw__Context;
+    glswContext* gc = glswGetCurrentContext();
 
     if (!gc)
     {
@@ -152,7 +161,7 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
 
 const char* glswGetShader(const char* pEffectKey)
 {
-    glswContext* gc = __glsw__Context;
+    glswContext* gc = glswGetCurrentContext();
 
     bstring effectKey = 0;
     glswList* closestMatch = 0;
@@ -374,7 +383,7 @@ const char* glswGetShader(const char* pEffectKey)
 
 const char* glswGetError()
 {
-    glswContext* gc = __glsw__Context;
+    glswContext* gc = glswGetCurrentContext();
 
     if (!gc)
     {
@@ -386,7 +395,7 @@ const char* glswGetError()
 
 int glswAddDirectiveToken(const char* token, const char* directive)
 {
-    glswContext* gc = __glsw__Context;
+    glswContext* gc = glswGetCurrentContext();
     glswList* temp;
 
     if (!gc)

@@ -481,7 +481,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     Attorney::TerrainLoader::buildQuadtree(*terrain);
     Attorney::TerrainLoader::plane(*terrain, plane, planeShader, planeDepthShader);
 
-    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->getName().c_str());
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->name().c_str());
     return terrain->load(onLoadCallback);
 }
 
@@ -535,7 +535,7 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
     vegDetails.billboardCount = textureCount;
-    vegDetails.name = terrain->getName() + "_grass";
+    vegDetails.name = terrain->name() + "_grass";
     vegDetails.grassDensity = terrainDescriptor->getGrassDensity();
     vegDetails.grassScale = terrainDescriptor->getGrassScale();
     vegDetails.treeDensity = terrainDescriptor->getTreeDensity();

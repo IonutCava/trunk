@@ -189,7 +189,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     void lockVisibility(const bool state);
     inline bool visibilityLocked() const { return _visibilityLocked; }
 
-    const stringImpl& getName() const { return _name; }
+    const stringImpl& name() const { return _name; }
     /*Node Management*/
 
     /*Parent <-> Children*/

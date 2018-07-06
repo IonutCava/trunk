@@ -34,6 +34,8 @@ namespace Divide {
             } else if (field._name == "Position Offset") {
                 setTransformDirty(TransformType::VIEW_OFFSET);
             }
+
+            _hasChanged = true;
         });
     }
 
@@ -45,7 +47,7 @@ namespace Divide {
     void TransformComponent::RegisterEventCallbacks() {
         RegisterEventCallback(&TransformComponent::OnParentTransformDirty);
         RegisterEventCallback(&TransformComponent::OnParentTransformClean);
-        SGNComponent::RegisterEventCallbacks();
+        SGNComponent<TransformComponent>::RegisterEventCallbacks();
     }
 
     void TransformComponent::OnParentTransformDirty(const ParentTransformDirty* event) {
@@ -556,5 +558,55 @@ namespace Divide {
             _dirty = false;
             _parentSGN.SendEvent<TransformClean>(GetOwner());
         }
+    }
+
+    bool TransformComponent::save(ByteBuffer& outputBuffer) const {
+        outputBuffer << uniqueID();
+        outputBuffer << _hasChanged;
+
+        if (_hasChanged) {
+
+            vec3<F32> localPos;
+            getPosition(localPos);
+            outputBuffer << localPos;
+
+            vec3<F32> localScale;
+            getScale(localScale);
+            outputBuffer << localScale;
+
+            Quaternion<F32> localRotation;
+            getOrientation(localRotation);
+            outputBuffer << localRotation.asVec4();
+            _hasChanged = false;
+        }
+
+        return SGNComponent<TransformComponent>::save(outputBuffer);
+    }
+
+    bool TransformComponent::load(ByteBuffer& inputBuffer) {
+        I64 tempID = -1;
+        inputBuffer >> tempID;
+        assert(tempID == uniqueID());
+
+        bool hasChanged = false;
+        inputBuffer >> hasChanged;
+
+        if (hasChanged) {
+            inputBuffer >> tempID;
+
+            vec3<F32> localPos;
+            inputBuffer >> localPos;
+            setPosition(localPos);
+
+            vec3<F32> localScale;
+            inputBuffer >> localScale;
+            setScale(localScale);
+
+            vec4<F32> localRotation;
+            inputBuffer >> localRotation;
+            setRotation(Quaternion<F32>(localRotation));
+        }
+
+        return SGNComponent<TransformComponent>::save(inputBuffer);
     }
 }; //namespace
