@@ -2,6 +2,7 @@
 
 set libraryFolder=3rdParty
 set libraryLocation=%~dp0%libraryFolder%
+set physxLocation = %libraryLocation%/physx
 
 IF NOT EXIST %libraryLocation% mkdir %libraryLocation%
 
@@ -17,7 +18,7 @@ exit 1
 svn cleanup
 svn checkout https://xp-dev.com/svn/Divide-Dependencies %libraryFolder%
 
-IF NOT EXIST physx mkdir physx
+IF NOT EXIST %physxLocation% mkdir %physxLocation%
 echo Downloading PhysX SDK (manually register and download the newest version)
 echo Build all of the projects in DEBUG, CHECKED and RELEASE mode
 echo Remember to update the PhysX DLL in the working directory with the newly built variants

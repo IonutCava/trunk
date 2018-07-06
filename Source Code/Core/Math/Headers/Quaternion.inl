@@ -87,13 +87,6 @@ Quaternion<T>::Quaternion(const vec4<T>& values) noexcept
 }
 
 template <typename T>
-template <typename U>
-Quaternion<T>::Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type*) noexcept
-    : _elements(reg)
-{
-}
-
-template <typename T>
 Quaternion<T>::Quaternion(const mat3<T>& rotationMatrix) noexcept
 {
     fromMatrix(rotationMatrix);

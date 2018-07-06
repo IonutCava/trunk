@@ -20,11 +20,11 @@ namespace {
     };
 };
 
-vectorImpl<stringImpl> getFiles(const stringImpl& input, const std::regex& pattern) {
+vector<stringImpl> getFiles(const stringImpl& input, const std::regex& pattern) {
     std::smatch matches;
     istringstreamImpl inputStream(input);
     stringImpl line;
-    vectorImpl<stringImpl> include_file;
+    vector<stringImpl> include_file;
     while (std::getline(inputStream, line)) {
         if (std::regex_search(line, matches, pattern)) {
             include_file.emplace_back(Util::Trim(matches[1].str().c_str()));
@@ -44,24 +44,24 @@ TEST(RegexSuccessTest)
             const stringImpl& inputInclude4("   #include <  blaBla.h>");
             const stringImpl& resultInclude("blaBla.h");
 
-            vectorImpl<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
+            vector<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
             CHECK_TRUE(temp1.size() == 1);
             if (!temp1.empty()) {
                 CHECK_EQUAL(resultInclude, temp1.front());
             }
 
-            vectorImpl<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
+            vector<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
             CHECK_TRUE(temp2.size() == 1);
             if (!temp2.empty()) {
                 CHECK_EQUAL(resultInclude, temp2.front());
             }
 
-            vectorImpl<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
+            vector<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
             CHECK_TRUE(temp3.size() == 1);
             if (!temp3.empty()) {
                 CHECK_EQUAL(resultInclude, temp3.front());
             }
-            vectorImpl<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
+            vector<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
             CHECK_TRUE(temp4.size() == 1);
             if (!temp4.empty()) {
                 CHECK_EQUAL(resultInclude, temp4.front());
@@ -75,24 +75,24 @@ TEST(RegexSuccessTest)
             const stringImpl& inputUse4("use(\"blaBla.h\"         )");
             const stringImpl& resultUse("blaBla.h");
 
-            vectorImpl<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
+            vector<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
             CHECK_TRUE(temp1.size() == 1);
             if (!temp1.empty()) {
                 CHECK_EQUAL(resultUse, temp1.front());
             }
 
-            vectorImpl<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
+            vector<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
             CHECK_TRUE(temp2.size() == 1);
             if (!temp2.empty()) {
                 CHECK_EQUAL(resultUse, temp2.front());
             }
 
-            vectorImpl<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
+            vector<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
             CHECK_TRUE(temp3.size() == 1);
             if (!temp3.empty()) {
                 CHECK_EQUAL(resultUse, temp3.front());
             }
-            vectorImpl<stringImpl> temp4 = getFiles(inputUse4, Paths::g_usePattern);
+            vector<stringImpl> temp4 = getFiles(inputUse4, Paths::g_usePattern);
             CHECK_TRUE(temp4.size() == 1);
             if (!temp4.empty()) {
                 CHECK_EQUAL(resultUse, temp4.front());
@@ -109,13 +109,13 @@ TEST(RegexFailTest)
         const stringImpl& inputInclude3("# include \"blaBla.h");
         const stringImpl& inputInclude4("   include <  blaBla.h>");
 
-        vectorImpl<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
+        vector<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
         CHECK_FALSE(temp1.size() == 1);
-        vectorImpl<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
+        vector<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
         CHECK_FALSE(temp2.size() == 1);
-        vectorImpl<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
+        vector<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
         CHECK_FALSE(temp3.size() == 1);
-        vectorImpl<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
+        vector<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
         CHECK_FALSE(temp4.size() == 1);
     }
     {
@@ -123,11 +123,11 @@ TEST(RegexFailTest)
         const stringImpl& inputUse2("usadfse( \"blaBla.h\")");
         const stringImpl& inputUse3("      use    ---   (\"blaBla.h\")");
 
-        vectorImpl<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
+        vector<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
         CHECK_FALSE(temp1.size() == 1);
-        vectorImpl<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
+        vector<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
         CHECK_FALSE(temp2.size() == 1);
-        vectorImpl<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
+        vector<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
         CHECK_FALSE(temp3.size() == 1);
     }
 }
@@ -147,7 +147,7 @@ TEST(TestReplaceInPlace)
 TEST(TestPermutations)
 {
     const stringImpl input("ABC");
-    vectorImpl<stringImpl> permutations;
+    vector<stringImpl> permutations;
     Util::GetPermutations(input, permutations);
     CHECK_TRUE(permutations.size() == 6);
 }
@@ -191,7 +191,7 @@ TEST(TestExtension) {
 
 TEST(TestStringSplit) {
     const stringImpl input1("a b c d");
-    const vectorImpl<stringImpl> result = {"a", "b", "c", "d"};
+    const vector<stringImpl> result = {"a", "b", "c", "d"};
 
     CHECK_EQUAL(Util::Split(input1, ' '), result);
     CHECK_TRUE(Util::Split(input1, ',').size() == 1);

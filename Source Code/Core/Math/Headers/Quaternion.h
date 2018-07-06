@@ -52,8 +52,8 @@ class Quaternion {
     Quaternion(T x, T y, T z, T w) noexcept;
     Quaternion(const vec4<T>& values) noexcept;
 
-    template <typename U = T>
-    Quaternion(__m128 reg, typename std::enable_if<std::is_same<U, F32>::value>::type* = nullptr) noexcept;
+	template<typename U = T, class = std::enable_if<std::is_same<U, F32>::value>::type>
+	Quaternion(__m128 reg) : _elements(reg) {}
 
     Quaternion(const mat3<T>& rotationMatrix) noexcept;
     Quaternion(const vec3<T>& axis, Angle::DEGREES<T> angle) noexcept;
