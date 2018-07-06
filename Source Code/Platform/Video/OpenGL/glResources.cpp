@@ -17,6 +17,7 @@ namespace GLUtil {
 /*-----------Object Management----*/
 GLuint _invalidObjectID = GL_INVALID_INDEX;
 SDL_GLContext _glRenderContext;
+SharedLock _glContextLock;
 hashMapImpl<size_t /*threadID hash*/, SDL_GLContext> _glSecondaryContexts;
 
 /// this may not seem very efficient (or useful) but it saves a lot of

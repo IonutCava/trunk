@@ -87,6 +87,8 @@ ErrorCode GL_API::createGLContext(const DisplayWindow& window) {
 ErrorCode GL_API::destroyGLContext() {
     SDL_GL_DeleteContext(GLUtil::_glRenderContext);
     g_ContextPool.destroy();
+
+    WriteLock w_lock(GLUtil::_glContextLock);
     GLUtil::_glSecondaryContexts.clear();
 
     return ErrorCode::NO_ERR;
@@ -337,15 +339,19 @@ void GL_API::syncToThread(std::thread::id threadID) {
     if (glbinding::getCurrentContext() == 0) {
         std::hash<std::thread::id> hasher;
         size_t threadHash = hasher(threadID);
-        hashMapImpl<size_t, SDL_GLContext>::iterator it;
-        it = GLUtil::_glSecondaryContexts.find(threadHash);
-        assert(it == std::cend(GLUtil::_glSecondaryContexts));
-        // This also makes the context current
-        SDL_GLContext ctx;
-        bool ctxFound = g_ContextPool.getAvailableContext(ctx);
-        DIVIDE_ASSERT(ctxFound, "GL_API::syncToThread: context not found for current thread!");
 
-        hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
+        SDL_GLContext ctx;
+        {
+            WriteLock w_lock(GLUtil::_glContextLock);
+            hashMapImpl<size_t, SDL_GLContext>::iterator it;
+            it = GLUtil::_glSecondaryContexts.find(threadHash);
+            assert(it == std::cend(GLUtil::_glSecondaryContexts));
+            // This also makes the context current
+            bool ctxFound = g_ContextPool.getAvailableContext(ctx);
+            DIVIDE_ASSERT(ctxFound, "GL_API::syncToThread: context not found for current thread!");
+
+            hashAlg::emplace(GLUtil::_glSecondaryContexts, threadHash, ctx);
+        }
 
         SDL_GL_MakeCurrent(Application::instance().windowManager().getActiveWindow().getRawWindow(), ctx);
         glbinding::Binding::initialize(false);

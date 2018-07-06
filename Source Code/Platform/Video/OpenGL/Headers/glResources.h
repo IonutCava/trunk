@@ -68,6 +68,7 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 /// properly created
 extern GLuint _invalidObjectID;
 extern SDL_GLContext _glRenderContext;
+extern SharedLock _glContextLock;
 extern hashMapImpl<size_t /*threadID hash*/, SDL_GLContext> _glSecondaryContexts;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,

@@ -11,25 +11,25 @@ RTDrawMask::RTDrawMask()
 
 bool RTDrawMask::enabled(RTAttachment::Type type, U8 index) const {
     switch (type) {
-        case RTAttachment::Type::Depth: return !_disabledDepth;
-        case RTAttachment::Type::Stencil: return !_disabledStencil;
-        case RTAttachment::Type::Colour: {
+        case RTAttachment::Type::Depth   : return !_disabledDepth;
+        case RTAttachment::Type::Stencil : return !_disabledStencil;
+        case RTAttachment::Type::Colour  : {
             for (U8 crtIndex : _disabledColours) {
                 if (crtIndex == index) {
-                    return true;
+                    return false;
                 }
             }
         } break;
     }
 
-    return false;
+    return true;
 }
 
 void RTDrawMask::enabled(RTAttachment::Type type, U8 index, const bool state) {
     switch (type) {
-        case RTAttachment::Type::Depth: _disabledDepth = !state; break;
-        case RTAttachment::Type::Stencil: _disabledStencil = !state; break;
-        case RTAttachment::Type::Colour: {
+        case RTAttachment::Type::Depth   : _disabledDepth   = !state; break;
+        case RTAttachment::Type::Stencil : _disabledStencil = !state; break;
+        case RTAttachment::Type::Colour  : {
             for (U8 crtIndex : _disabledColours) {
                 if (crtIndex == index) {
                     return;
