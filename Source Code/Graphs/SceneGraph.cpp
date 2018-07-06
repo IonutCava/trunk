@@ -22,8 +22,6 @@ SceneGraph::SceneGraph() : FrameListener(),
 
     SceneNode* rootNode = MemoryManager_NEW SceneRoot();
     _root = std::make_shared<SceneGraphNode>(*rootNode, "ROOT");
-    _root->getComponent<RenderingComponent>()->castsShadows(false);
-    _root->getComponent<RenderingComponent>()->receivesShadows(false);
     _root->setBBExclusionMask(
         to_uint(SceneNodeType::TYPE_SKY) |
         to_uint(SceneNodeType::TYPE_LIGHT) |

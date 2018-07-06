@@ -236,14 +236,12 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         getRenderer().preRender(_gpuBlock);
     }
 
-    _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
-
     U32 textureHandle = 0;
     U32 lastUnit0Handle = 0;
     U32 lastUnit1Handle = 0;
     U32 lastUsedSlot = 0;
     RenderStage currentStage = getRenderStage();
-    U32 nodeCount = 1; U32 cmdCount = 1;
+    U32 nodeCount = 0; U32 cmdCount = 0;
     std::for_each(std::begin(visibleNodes), std::end(visibleNodes),
         [&](GFXDevice::VisibleNodeList::value_type& node) -> void {
         SceneGraphNode_ptr nodeRef = node.lock();
@@ -262,7 +260,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                             textureHandle = data.getHandleHigh();
                             if ((!(lastUnit0Handle == 0 || textureHandle == lastUnit0Handle) &&
                                   (lastUnit1Handle == 0 || textureHandle == lastUnit1Handle))                              
-                                || lastUsedSlot == 0) 
+                                || (lastUsedSlot == 0 && lastUnit0Handle != 0))
                             {
                                 data.setHandleLow(to_uint(ShaderProgram::TextureUsage::UNIT1));
                                     // Set this to 1 if we need to use texture UNIT1 instead of UNIT0 as the main texture
@@ -402,8 +400,7 @@ void GFXDevice::drawTriangle(size_t stateHash,
                              ShaderProgram* const shaderProgram) {
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);
-    // We also require a shader program (although it may already be bound.
-    // Better safe ...)
+    // We also require a shader program (although it may already be bound. Better safe ...)
     _defaultDrawCmd.shaderProgram(shaderProgram);
     // If the draw command was successfully parsed
     if (setBufferData(_defaultDrawCmd)) {

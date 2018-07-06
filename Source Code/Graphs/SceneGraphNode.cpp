@@ -46,22 +46,19 @@ SceneGraphNode::SceneGraphNode(SceneNode& node, const stringImpl& name)
     setName(name);
 
     _instanceID = (_node->GetRef() - 1);
+
+    _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
+
+    _components[to_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
+
     Material* const materialTpl = _node->getMaterialTpl();
-
-    _components[to_uint(SGNComponent::ComponentType::ANIMATION)].reset(
-        nullptr);
-
-    _components[to_uint(SGNComponent::ComponentType::NAVIGATION)]
-        .reset(new NavigationComponent(*this));
-
-    _components[to_uint(SGNComponent::ComponentType::PHYSICS)].reset(
-        new PhysicsComponent(*this));
 
     _components[to_uint(SGNComponent::ComponentType::RENDERING)].reset(
         new RenderingComponent(
             materialTpl != nullptr ? materialTpl->clone("_instance_" + name)
-                                   : nullptr,
+                                    : nullptr,
             *this));
+    
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {

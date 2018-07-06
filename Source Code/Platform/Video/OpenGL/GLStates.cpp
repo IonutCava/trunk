@@ -38,40 +38,31 @@ GL_API::samplerBoundMapDef GL_API::_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::_samplerMap;
 
 /// Reset as much of the GL default state as possible within the limitations given
-void GL_API::clearStates(const bool skipTextures,
-                         const bool skipBuffers,
-                         const bool skipScissor) {
+void GL_API::clearStates() {
     static const vec4<F32> clearColor = DefaultColors::DIVIDE_BLUE();
 
-    if (!skipTextures) {
-        for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
-            std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
-            if (it.second != GL_ZERO) {
-                GL_API::bindTexture(i, 0, it.second);
-            }
+    for(U16 i = 0; i < to_ushort(GL_API::_maxTextureUnits); ++i) {
+        std::pair<GLuint, GLenum>& it  = _textureBoundMap[i];
+        if (it.second != GL_ZERO) {
+            GL_API::bindTexture(i, 0, it.second);
         }
-
-        setActiveTextureUnit(0);
     }
 
-    if (!skipBuffers) {
-        setPixelPackUnpackAlignment();
-        setActiveVAO(0);
-        setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
-        setActiveBuffer(GL_ARRAY_BUFFER, 0);
-        setActiveBuffer(GL_TEXTURE_BUFFER, 0);
-        setActiveBuffer(GL_UNIFORM_BUFFER, 0);
-        setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        setActiveTransformFeedback(0);
-    }
-
-    if (!skipScissor) {
-        glDisable(GL_SCISSOR_TEST);
-    }
-
+    setActiveTextureUnit(0);
+    
+    setPixelPackUnpackAlignment();
+    setActiveVAO(0);
+    setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, 0);
+    setActiveBuffer(GL_ARRAY_BUFFER, 0);
+    setActiveBuffer(GL_TEXTURE_BUFFER, 0);
+    setActiveBuffer(GL_UNIFORM_BUFFER, 0);
+    setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
+    setActiveTransformFeedback(0);
+    
+    glDisable(GL_SCISSOR_TEST);
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 }
 
@@ -397,6 +388,7 @@ bool GL_API::setActiveVAO(GLuint ID, GLuint& previousID) {
     _activeVAOID = ID;
     // Activate the specified VAO
     glBindVertexArray(ID);
+    setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     return true;
 }
@@ -427,27 +419,27 @@ bool GL_API::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
     GLint index = -1;
     // Select the appropriate index in the array based on the buffer target
     switch (target) {
-        case GL_ARRAY_BUFFER:
+        case GL_ARRAY_BUFFER: {
             index = 0;
-            break;
-        case GL_TEXTURE_BUFFER:
+            }break;
+        case GL_TEXTURE_BUFFER: {
             index = 1;
-            break;
-        case GL_UNIFORM_BUFFER:
+            }break;
+        case GL_UNIFORM_BUFFER: {
             index = 2;
-            break;
-        case GL_SHADER_STORAGE_BUFFER:
+            }break;
+        case GL_SHADER_STORAGE_BUFFER: {
             index = 3;
-            break;
-        case GL_ELEMENT_ARRAY_BUFFER:
+            }break;
+        case GL_ELEMENT_ARRAY_BUFFER: {
             index = 4;
-            break;
-        case GL_PIXEL_UNPACK_BUFFER:
+            }break;
+        case GL_PIXEL_UNPACK_BUFFER: {
             index = 5;
-            break;
-        case GL_DRAW_INDIRECT_BUFFER:
+            }break;
+        case GL_DRAW_INDIRECT_BUFFER: {
             index = 6;
-            break;
+            }break;
         default:
             // Make sure the target is available. Assert if it isn't as this
             // means that a non-supported feature is used somewhere

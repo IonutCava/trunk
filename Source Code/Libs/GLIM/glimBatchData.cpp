@@ -346,10 +346,7 @@ unsigned int glimBatchData::getVertexDataSize(void) const {
 
 void glimBatchData::UnbindOGL(void) {
     if (!m_bUploadedToGPU) return;
-
-    Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, 0);
-    Divide::GL_API::setActiveVAO(0);
+	Divide::GL_API::setActiveVAO(0);
 }
 
 void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {

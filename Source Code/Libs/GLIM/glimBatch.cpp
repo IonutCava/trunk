@@ -143,8 +143,6 @@ namespace NS_GLIM
             glDrawElements (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
         }
 
-        //Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
         EndRender ();
     }
 
@@ -188,7 +186,6 @@ namespace NS_GLIM
             glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
         }
 
-        Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         EndRender ();
     }
 #endif

@@ -210,9 +210,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     void changeViewport(const vec4<GLint>& newViewport) const override;
     /// Reset as much of the GL default state as possible within the limitations
     /// given
-    void clearStates(const bool skipTextures,
-                     const bool skipBuffers,
-                     const bool skipScissor);
+    void clearStates();
     void registerCommandBuffer(const ShaderBuffer& commandBuffer) const override;
 
     bool makeTexturesResident(const TextureDataContainer& textureData) override;

@@ -53,7 +53,6 @@ glGenericVertexData::~glGenericVertexData() {
         _vertexArray[to_uint(GVDUsage::FDBCK)] = 0;
     }
     // Make sure we don't have the indirect draw buffer bound
-    // glBindBuffer(GL_QUERY_BUFFER_AMD, 0);
     // Make sure we don't have our transform feedback object bound
     GL_API::setActiveTransformFeedback(0);
     // If we have a transform feedback object, delete it
@@ -223,10 +222,10 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         static const size_t cmdSize = sizeof(IndirectDrawCommand);
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
         GLuint drawCount = command.drawCount();
+        GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
         if (useCmdBuffer) {
             bufferPtr offset = (bufferPtr)(cmd.baseInstance * cmdSize);
             if (_indexBuffer > 0) {
-                GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
                 if (command.renderGeometry()) {
                     glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
                 }

@@ -639,8 +639,7 @@ void GFXDevice::constructHIZ() {
         currentHeight = currentHeight > 0 ? currentHeight : 1;
         // Update the viewport with the new resolution
         updateViewportInternal(vec4<I32>(0, 0, currentWidth, currentHeight));
-        // Bind next mip level for rendering but first restrict fetches only to
-        // previous level
+        // Bind next mip level for rendering but first restrict fetches only to previous level
         _renderTarget[to_uint(RenderTarget::DEPTH)]->setMipLevel(
             i - 1, i - 1, i, TextureDescriptor::AttachmentType::Depth);
         // Dummy draw command as the full screen quad is generated completely in the vertex shader
@@ -652,6 +651,7 @@ void GFXDevice::constructHIZ() {
         ->resetMipLevel(TextureDescriptor::AttachmentType::Depth);
     // Unbind the render target
     _renderTarget[to_uint(RenderTarget::DEPTH)]->end();
+    
 }
 
 /// Find an unused primitive object or create a new one and return it

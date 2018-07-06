@@ -28,8 +28,6 @@ Sky::Sky(const stringImpl& name)
     // Generate a render state
     RenderStateBlock skyboxRenderState;
     skyboxRenderState.setCullMode(CullMode::CCW);
-    // skyboxDesc.setZReadWrite(false, false); - not needed anymore. Using
-    // gl_Position.z = gl_Position.w - 0.0001 in GLSL -Ionut
     _skyboxRenderStateHash = skyboxRenderState.getHash();
     skyboxRenderState.setCullMode(CullMode::CW);
     _skyboxRenderStateReflectedHash = skyboxRenderState.getHash();

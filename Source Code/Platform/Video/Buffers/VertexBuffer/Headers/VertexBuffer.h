@@ -332,11 +332,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
     }
 
     inline size_t partitionBuffer() {
-        U32 currentIndexCount = getIndexCount();
-        U32 previousIndexCount = _partitions.empty() ? 0 
-                                                     : _partitions.back().second;
-
-        _partitions.push_back(std::make_pair(previousIndexCount, currentIndexCount - previousIndexCount));
+        U32 previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
+        U32 previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
+        U32 partitionedIndexCount = previousIndexCount + previousOffset;
+        _partitions.push_back(std::make_pair(partitionedIndexCount, getIndexCount() - partitionedIndexCount));
         return _partitions.size() - 1;
     }
 
