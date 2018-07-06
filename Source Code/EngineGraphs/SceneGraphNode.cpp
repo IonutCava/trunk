@@ -190,7 +190,7 @@ void SceneGraphNode::updateVisualInformation(){
 		Scene* curentScene = SceneManager::getInstance().getActiveScene();
 		//Hold a pointer to the scenegraph
 		if(!_sceneGraph){
-			_sceneGraph = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+			_sceneGraph = curentScene->getSceneGraph();
 		}
 		if(_node->isInView(true,_boundingBox)){
 			_inView = (curentScene->drawObjects() && _node->getRenderState());

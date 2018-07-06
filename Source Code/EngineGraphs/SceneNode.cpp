@@ -5,8 +5,28 @@
 #include "Managers/CameraManager.h"
 #include "Rendering/Frustum.h"
 
+SceneNode::SceneNode() : Resource(),
+						 _material(NULL),
+						 _renderState(true),
+						 _noDefaultMaterial(false),
+						 _sortKey(0),
+						 _updateSceneGraphNode(true)
+{}
+
+SceneNode::SceneNode(std::string name) : Resource(name),
+								        _material(NULL),
+										_renderState(true),
+										_noDefaultMaterial(false),
+										_sortKey(0),
+										_updateSceneGraphNode(true)
+{}
+
 SceneGraphNode* SceneNode::getSceneGraphNode(){
-	return SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(_sceneGraphNodeName);
+	if(!_sceneGraphNode || _updateSceneGraphNode){
+		_sceneGraphNode = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(_sceneGraphNodeName);
+		_updateSceneGraphNode = false;
+	}
+	return _sceneGraphNode;
 }
 
 void SceneNode::removeCopy(){
@@ -35,14 +55,14 @@ void SceneNode::onDraw(){
 bool SceneNode::isInView(bool distanceCheck,BoundingBox& boundingBox){
 	Frustum& frust = Frustum::getInstance();
 	const vec3& eye_pos = CameraManager::getInstance().getActiveCamera()->getEye();
-	
+	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 	vec3& center = boundingBox.getCenter();
 	F32   halfExtent = boundingBox.getHalfExtent().length();
 	if(distanceCheck){
 		
 		vec3 vEyeToChunk = center - eye_pos;
 
-		if((vEyeToChunk.length() + halfExtent) > SceneManager::getInstance().getActiveScene()->getGeneralVisibility()){
+		if((vEyeToChunk.length() + halfExtent) > activeScene->getGeneralVisibility()){
 			return false;
 		}
 	}

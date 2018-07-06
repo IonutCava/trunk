@@ -77,7 +77,7 @@ public:
 	virtual void preRender() = 0;
 	virtual bool load(const std::string& name);
 	
-	virtual void processInput() = 0;
+	virtual void processInput();
 	virtual void processEvents(F32 time) = 0;
 
 	inline F32& getWindSpeed(){return _windSpeed;}
@@ -149,12 +149,14 @@ protected:
 private: 
 	std::vector<Event_ptr> _events;
 	std::vector<Light*> _lights;
+	Event_ptr _inputEvent;
+	Event_ptr _aiEvent;
 
 protected:
 
 	friend class SceneManager;
 	virtual bool loadResources(bool continueOnErrors){return true;}
-	virtual bool loadEvents(bool continueOnErrors){return true;}
+	virtual bool loadEvents(bool continueOnErrors);
 	virtual void setInitialData();
 	void clearEvents();
 	void clearObjects();

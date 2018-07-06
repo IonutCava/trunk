@@ -24,20 +24,13 @@
 #include "Geometry/Material/Material.h"
 #include "Utility/Headers/Console.h"
 
+class Scene;
 class SceneNode : public Resource {
 	friend class SceneGraphNode;
 	friend class RenderQueue;
 public:
-	SceneNode() : Resource(),
-				 _material(NULL),
-				 _renderState(true),
-				 _noDefaultMaterial(false),
-	             _sortKey(0){}
-	SceneNode(std::string name) : Resource(name),
-								  _material(NULL),
-								  _renderState(true),
-								  _noDefaultMaterial(false),
-								  _sortKey(0){}
+	SceneNode();
+	SceneNode(std::string name);
 
 	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
@@ -64,6 +57,7 @@ public:
 
 	inline	void	setSelected(bool state)  {_selected = state;}
 	inline	bool    isSelected()			 {return _selected;}
+	inline  void    updateSceneGraphNode()   {_updateSceneGraphNode = true;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
 private:
@@ -71,10 +65,10 @@ private:
 	Material*	_material;				   
 
 	bool		_renderState,_noDefaultMaterial;
-	bool        _selected;
+	bool        _selected, _updateSceneGraphNode;
 	F32         _sortKey;
 	std::string _sceneGraphNodeName;
-
+	SceneGraphNode* _sceneGraphNode;
 };
 
 #endif

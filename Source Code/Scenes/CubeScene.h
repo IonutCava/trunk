@@ -29,7 +29,6 @@ public:
 	bool load(const std::string& name);
 	bool unload();
 	bool loadResources(bool continueOnErrors);
-	bool loadEvents(bool continueOnErrors){return true;}
 	void processInput();
 	void processEvents(F32 time);
 

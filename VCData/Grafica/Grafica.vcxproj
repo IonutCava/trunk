@@ -116,9 +116,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp" />
     <ClCompile Include="..\..\Source Code\EngineGraphs\RenderQueue.cpp" />
     <ClCompile Include="..\..\Source Code\EngineGraphs\SceneGraph.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\ShaderHandler.cpp" />
+    <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Application.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
@@ -131,6 +133,7 @@
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PostFX.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene.cpp" />
     <ClCompile Include="..\..\Source Code\Vegetation\Vegetation.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\Quadtree.cpp" />
     <ClCompile Include="..\..\Source Code\Terrain\QuadtreeNode.cpp" />
@@ -190,7 +193,12 @@
     <ClCompile Include="..\..\Source Code\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source Code\AI\AIEntity.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\AudioSensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Sensor.h" />
+    <ClInclude Include="..\..\Source Code\AI\Sensors\VisualSensor.h" />
     <ClInclude Include="..\..\Source Code\EngineGraphs\RenderQueue.h" />
+    <ClInclude Include="..\..\Source Code\Managers\AIManager.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Application.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Framerate.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Frustum.h" />
@@ -208,6 +216,7 @@
     <ClInclude Include="..\..\Source Code\GUI\GUI.h" />
     <ClInclude Include="..\..\Source Code\GUI\GuiFlash.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\PostFX.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene.h" />
     <ClInclude Include="..\..\Source Code\Vegetation\Vegetation.h" />
     <ClInclude Include="..\..\Source Code\Terrain\Quadtree.h" />
     <ClInclude Include="..\..\Source Code\Terrain\QuadtreeNode.h" />

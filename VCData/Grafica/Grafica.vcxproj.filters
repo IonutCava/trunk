@@ -118,6 +118,12 @@
     <Filter Include="Rendering\PostFX">
       <UniqueIdentifier>{27807888-106c-4639-bf00-14abbb10d310}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{e65d767b-e1e7-40cf-8f1f-c7a224556a1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\Sensors">
+      <UniqueIdentifier>{1c9f431f-fe0b-4104-8f8e-bac4fcb23a7e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -333,6 +339,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\Application.cpp">
       <Filter>Rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
+      <Filter>AI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp">
+      <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\AITenisScene.cpp">
+      <Filter>Scenes</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -675,6 +690,24 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Application.h">
       <Filter>Rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\AudioSensor.h">
+      <Filter>AI\Sensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\Sensor.h">
+      <Filter>AI\Sensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\Sensors\VisualSensor.h">
+      <Filter>AI\Sensors</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\AIEntity.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Managers\AIManager.h">
+      <Filter>Managers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\AITenisScene.h">
+      <Filter>Scenes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

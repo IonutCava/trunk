@@ -2,5 +2,5 @@
 #include "Managers/SceneManager.h"
 
 void Object3D::render(SceneGraphNode* node){
-	GFXDevice::getInstance().renderModel(node);
+	_gfx.renderModel(node);
 }

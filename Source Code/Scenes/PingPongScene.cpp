@@ -30,7 +30,7 @@ void PingPongScene::render()
 bool _switchLightUpDown = true;
 void PingPongScene::preRender()
 {
-	GFXDevice::getInstance().getActiveRenderState().lightingEnabled() = false;
+	_GFX.getActiveRenderState().lightingEnabled() = false;
 	_switchLightUpDown ? _lightPosition.y += 0.01f : _lightPosition.y -= 0.01f;
 	if(_lightPosition.y >= 10 ) _switchLightUpDown = false;
 	if(_lightPosition.y <= 1 ) _switchLightUpDown = true;
@@ -220,9 +220,9 @@ void PingPongScene::test(boost::any a, CallbackParam b)
 	}
 }
 
-void PingPongScene::processInput()
-{
-	_inputManager.tick();
+void PingPongScene::processInput(){
+	Scene::processInput();
+
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	//Move FB = Forward/Back = sus/jos
 	//Move LR = Left/Right = stanga/dreapta

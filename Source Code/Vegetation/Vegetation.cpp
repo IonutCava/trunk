@@ -41,11 +41,11 @@ void Vegetation::initialize(const string& grassShader,const string& terrainName)
 
 void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
-
+	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 	
-	_windX = SceneManager::getInstance().getActiveScene()->getWindDirX();
-	_windZ = SceneManager::getInstance().getActiveScene()->getWindDirZ();
-	_windS = SceneManager::getInstance().getActiveScene()->getWindSpeed();
+	_windX = activeScene->getWindDirX();
+	_windZ = activeScene->getWindDirZ();
+	_windS = activeScene->getWindSpeed();
 	_time = GETTIME();
 
 	GFXDevice::getInstance().ignoreStateChanges(true);

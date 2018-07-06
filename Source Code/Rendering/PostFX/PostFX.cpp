@@ -20,7 +20,8 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_tempDepthOfFieldFBO(NULL),
 	_depthOfFieldFBO(NULL),
 	_depthFBO(NULL),
-	_screenFBO(NULL){
+	_screenFBO(NULL),
+	_gfx(GFXDevice::getInstance()){
 	_anaglyphFBO[0] = NULL;
 	_anaglyphFBO[1] = NULL;
 }
@@ -87,7 +88,7 @@ PostFX::~PostFX(){
 
 void PostFX::init(){
 	ParamHandler& par = ParamHandler::getInstance();
-	GFXDevice& gfx = GFXDevice::getInstance();
+
 	_enablePostProcessing = par.getParam<bool>("enablePostFX");
 	_enableAnaglyph = par.getParam<bool>("enable3D");
 	_enableBloom = par.getParam<bool>("enableBloom");
@@ -98,20 +99,20 @@ void PostFX::init(){
 	if(_enablePostProcessing){
 		_postProcessingShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("postProcessing"));
 		if(_enableAnaglyph){
-			_anaglyphFBO[0] = gfx.newFBO();
-			_anaglyphFBO[1] = gfx.newFBO();
+			_anaglyphFBO[0] = _gfx.newFBO();
+			_anaglyphFBO[1] = _gfx.newFBO();
 			_anaglyphShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("anaglyph"));
 			_eyeOffset = par.getParam<F32>("anaglyphOffset");
 		}
 		if(_enableBloom){
-			_bloomFBO = gfx.newFBO();
-			_tempBloomFBO = gfx.newFBO();
+			_bloomFBO = _gfx.newFBO();
+			_tempBloomFBO = _gfx.newFBO();
 			_bloomShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("bright"));
 			_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
 		}
 		if(_enableDOF){
-			_depthOfFieldFBO = gfx.newFBO();
-			_tempDepthOfFieldFBO = gfx.newFBO();
+			_depthOfFieldFBO = _gfx.newFBO();
+			_tempDepthOfFieldFBO = _gfx.newFBO();
 			if(!_blurShader){
 				_blurShader = ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor("blur"));
 			}
@@ -125,8 +126,8 @@ void PostFX::init(){
 			_screenBorder = ResourceManager::getInstance().loadResource<Texture>(borderTexture);
 		}
 	}
-	_screenFBO = gfx.newFBO();
-	_depthFBO  = gfx.newFBO();
+	_screenFBO = _gfx.newFBO();
+	_depthFBO  = _gfx.newFBO();
 
 		
 
@@ -185,7 +186,7 @@ void PostFX::reshapeFBO(I32 width , I32 height){
 }
 
 void PostFX::displaySceneWithAnaglyph(void){
-	GFXDevice& gfx = GFXDevice::getInstance();
+
 	CameraManager::getInstance().getActiveCamera()->SaveCamera();
 	F32 _eyePos[2] = {_eyeOffset/2, -_eyeOffset};
 
@@ -195,7 +196,7 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 		_anaglyphFBO[i]->Begin();
 		
-			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			SceneManager::getInstance().render();
 		
 		_anaglyphFBO[i]->End();
@@ -211,9 +212,9 @@ void PostFX::displaySceneWithAnaglyph(void){
 
 		_anaglyphShader->UniformTexture("texLeftEye", 0);
 		_anaglyphShader->UniformTexture("texRightEye", 1);
-		gfx.toggle2D(true);
-		gfx.drawQuad3D(_renderQuad);
-		gfx.toggle2D(false);
+		_gfx.toggle2D(true);
+		_gfx.drawQuad3D(_renderQuad);
+		_gfx.toggle2D(false);
 		_anaglyphFBO[1]->Unbind(1);
 		_anaglyphFBO[0]->Unbind(0);
 	}
@@ -225,22 +226,22 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 
 	CameraManager::getInstance().getActiveCamera()->RenderLookAt();
 	ParamHandler& par = ParamHandler::getInstance();
-	GFXDevice& gfx = GFXDevice::getInstance();
+
 	bool underwater = par.getParam<bool>("underwater");
 	_enableDOF = par.getParam<bool>("enableDepthOfField");
 
 	if(!_enableDOF){
 		_screenFBO->Begin();
-			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			SceneManager::getInstance().render();
 		_screenFBO->End();
 	}else{
 		_depthFBO->Begin();
-			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			SceneManager::getInstance().render();
 		_depthFBO->End();
 		_screenFBO->Begin();
-			gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+			_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 			SceneManager::getInstance().render();
 		_screenFBO->End();
 	}
@@ -293,9 +294,9 @@ void PostFX::displaySceneWithoutAnaglyph(void){
 			_postProcessingShader->UniformTexture("texVignette", id++);
 		}
 
-		gfx.toggle2D(true);
-		gfx.drawQuad3D(_renderQuad);
-		gfx.toggle2D(false);
+		_gfx.toggle2D(true);
+		_gfx.drawQuad3D(_renderQuad);
+		_gfx.toggle2D(false);
 
 		if(_enableNoise){
 			_screenBorder->Unbind(--id);
@@ -331,7 +332,7 @@ void PostFX::render(){
 		}
 	}else{
 		CameraManager::getInstance().getActiveCamera()->RenderLookAt();
-		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 		SceneManager::getInstance().render();
 	}
 
@@ -353,9 +354,8 @@ void PostFX::idle(){
 
 
 void PostFX::generateBloomTexture(){
-	GFXDevice& gfx = GFXDevice::getInstance();
 	_bloomFBO->Begin();
-		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
 		_bloomShader->bind();
 
@@ -363,9 +363,9 @@ void PostFX::generateBloomTexture(){
 
 				_bloomShader->UniformTexture("texScreen", 0);
 				_bloomShader->Uniform("threshold", 0.95f);
-				gfx.toggle2D(true);
-				gfx.drawQuad3D(_renderQuad);
-				gfx.toggle2D(false);
+				_gfx.toggle2D(true);
+				_gfx.drawQuad3D(_renderQuad);
+				_gfx.toggle2D(false);
 
 			_screenFBO->Unbind(0);
 
@@ -377,7 +377,7 @@ void PostFX::generateBloomTexture(){
 	// ON BLUR LES SOURCES LUMINEUSES HORIZONTALEMENT
 	_tempBloomFBO->Begin();
 	
-		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
 		_blurShader->bind();
 		
@@ -386,9 +386,9 @@ void PostFX::generateBloomTexture(){
 				_blurShader->Uniform("size", vec2((F32)_bloomFBO->getWidth(), (F32)_bloomFBO->getHeight()));
 				_blurShader->Uniform("horizontal", true);
 				_blurShader->Uniform("kernel_size", 10);
-				gfx.toggle2D(true);
-				gfx.drawQuad3D(_renderQuad);
-				gfx.toggle2D(false);
+				_gfx.toggle2D(true);
+				_gfx.drawQuad3D(_renderQuad);
+				_gfx.toggle2D(false);
 			_bloomFBO->Unbind(0);
 		
 		_blurShader->unbind();
@@ -399,7 +399,7 @@ void PostFX::generateBloomTexture(){
 	// ON BLUR LES SOURCES LUMINEUSES VERTICALEMENT
 	_bloomFBO->Begin();
 	
-		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
 		_blurShader->bind();
 		
@@ -407,9 +407,9 @@ void PostFX::generateBloomTexture(){
 				_blurShader->UniformTexture("texScreen", 0);
 				_blurShader->Uniform("size", vec2((F32)_tempBloomFBO->getWidth(), (F32)_tempBloomFBO->getHeight()));
 				_blurShader->Uniform("horizontal", false);
-				gfx.toggle2D(true);
-				gfx.drawQuad3D(_renderQuad);
-				gfx.toggle2D(false);
+				_gfx.toggle2D(true);
+				_gfx.drawQuad3D(_renderQuad);
+				_gfx.toggle2D(false);
 			_tempBloomFBO->Unbind(0);
 		
 		_blurShader->unbind();
@@ -418,11 +418,10 @@ void PostFX::generateBloomTexture(){
 }
 
 void PostFX::generateDepthOfFieldTexture(){
-	GFXDevice& gfx = GFXDevice::getInstance();
 
 	_tempDepthOfFieldFBO->Begin();
 	
-		GFXDevice::getInstance().clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
 		_blurShader->bind();
 
@@ -435,9 +434,9 @@ void PostFX::generateDepthOfFieldTexture(){
 			_blurShader->UniformTexture("texScreen", 0);
 			_blurShader->UniformTexture("texDepth",1);
 		
-			gfx.toggle2D(true);
-			gfx.drawQuad3D(_renderQuad);
-			gfx.toggle2D(false);
+			_gfx.toggle2D(true);
+			_gfx.drawQuad3D(_renderQuad);
+			_gfx.toggle2D(false);
 				
 			_depthFBO->Unbind(1);
 			_screenFBO->Unbind(0);
@@ -449,7 +448,7 @@ void PostFX::generateDepthOfFieldTexture(){
 
 	_depthOfFieldFBO->Begin();
 	
-		gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 
 		_blurShader->bind();
 				
@@ -462,9 +461,9 @@ void PostFX::generateDepthOfFieldTexture(){
 			_blurShader->UniformTexture("texScreen", 0);
 			_blurShader->UniformTexture("texDepth",1);
 					
-			gfx.toggle2D(true);
-			gfx.drawQuad3D(_renderQuad);
-			gfx.toggle2D(false);
+			_gfx.toggle2D(true);
+			_gfx.drawQuad3D(_renderQuad);
+			_gfx.toggle2D(false);
 				
 			_depthFBO->Unbind(1);
 			_tempDepthOfFieldFBO->Unbind(0);

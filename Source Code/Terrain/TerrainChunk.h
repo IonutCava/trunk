@@ -20,6 +20,8 @@
 
 #include "resource.h"
 #include "Utility/Headers/BaseClasses.h"
+#include "Hardware/Video/GFXDevice.h"
+
 using namespace std;
 
 #define TERRAIN_CHUNKS_LOD 3
@@ -43,7 +45,7 @@ public:
     
 	void								addObject(Mesh* obj);
 	void								addTree(const vec4& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
-	TerrainChunk() {}
+	TerrainChunk() : _gfx(GFXDevice::getInstance()){}
 	~TerrainChunk() {Destroy();}
 
 private:
@@ -53,8 +55,9 @@ private:
 	std::vector<U32> 	_indice[TERRAIN_CHUNKS_LOD];
 	U32					_indOffsetW[TERRAIN_CHUNKS_LOD];
 	U32					_indOffsetH[TERRAIN_CHUNKS_LOD];
-
+	F32                 _grassVisibility;
 	std::vector<U32>	_grassIndice;
+	GFXDevice&          _gfx;
 };
 
 #endif

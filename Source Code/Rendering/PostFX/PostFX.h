@@ -2,6 +2,7 @@
 #define EFFECTS_H
 
 #include "resource.h"
+#include "Hardware/Video/GFXDevice.h"
 
 #define FBO_BLOOM_SAMPLES 1
 
@@ -43,6 +44,7 @@ public:
 	Shader* _blurShader;
 	Shader* _bloomShader;
 	Texture2D* _underwaterTexture;
+	GFXDevice& _gfx;
 
 private:
 	void displaySceneWithoutAnaglyph(void);

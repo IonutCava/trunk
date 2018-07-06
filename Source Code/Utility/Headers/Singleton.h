@@ -17,20 +17,24 @@
 
 #ifndef SINGLETON_H_
 #define SINGLETON_H_
+#include <boost/thread.hpp>
 
 template <class T>
 class Singleton{
 
 public :
 	inline static T& getInstance() {
+		_singletonMutex.lock();
 		if (!_instance){
 			_instance = new T;
 		}
+		_singletonMutex.unlock();
 
 		return *_instance;
 	}
 
 	inline static void DestroyInstance() {
+		boost::mutex::scoped_lock l(_singletonMutex);
 		if(_instance){
 			delete _instance;
 			_instance = NULL;
@@ -48,13 +52,15 @@ private :
 
 	Singleton(Singleton&);
 	void operator =(Singleton&);
+	static boost::mutex _singletonMutex;
 };
 
 template <class T> T* Singleton<T>::_instance = 0;
+template <class T> boost::mutex Singleton<T>::_singletonMutex;
 
 #define DEFINE_SINGLETON(class_name) \
 	class class_name : public Singleton<class_name> { \
-		friend class Singleton<class_name>;
+		friend class Singleton<class_name>; 
 
 #define DEFINE_SINGLETON_EXT1(class_name, base_class) \
 	class class_name : public Singleton<class_name> , public base_class{ \

@@ -28,7 +28,6 @@ public:
 	void preRender();
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
-	bool loadEvents(bool continueOnErrors){return true;}
 	void processInput();
 	void processEvents(F32 time);
 

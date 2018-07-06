@@ -228,7 +228,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 }
 
 void AITenisScene::processInput(){
-	_inputManager.tick();
+	Scene::processInput();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Application::getInstance().moveFB;

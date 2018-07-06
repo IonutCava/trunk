@@ -5,15 +5,16 @@
 #include "AI/AIEntity.h"
 
 DEFINE_SINGLETON(AIManager)
-
+	typedef unordered_map<U32, AIEntity*> AIEntityMap;
 
 public:
+	U8 tick();
+	
+private:
 	void processInput();  //sensors
 	void processData();   //think
 	void updateEntities();//react
-
-private:
 	//ToDo: Maybe create the "Unit" class and agregate it with AIEntity? -Ionut
-	unordered_map<U32, AIEntity> aiEntities;
+	AIEntityMap aiEntities;
 END_SINGLETON
 #endif

@@ -1,14 +1,16 @@
 #include "TerrainChunk.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
-#include "Managers/SceneManager.h"
 #include "Managers/ResourceManager.h"
+#include "Managers/SceneManager.h"
 #include "EngineGraphs/SceneGraph.h"
+
 typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
 void TerrainChunk::Load(U8 depth, ivec2 pos, ivec2 HMsize){
 
 	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
 		ComputeIndicesArray(i, depth, pos, HMsize);
+	_grassVisibility = SceneManager::getInstance().getActiveScene()->getGrassVisibility();
 }
 
 
@@ -81,7 +83,7 @@ int TerrainChunk::DrawGround(I8 lod, bool drawInReflection){
 	if(lod>0) lod--;
 
 	for(U32 j=0; j < _indOffsetH[lod]; j++){
-		GFXDevice::getInstance().renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+		_gfx.renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 	}
 
 	return 1;
@@ -89,16 +91,14 @@ int TerrainChunk::DrawGround(I8 lod, bool drawInReflection){
 
 void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 
-	
-	F32 grassVisibility = SceneManager::getInstance().getActiveScene()->getGrassVisibility();
 	assert(lod < TERRAIN_CHUNKS_LOD);
 	if(lod != 0) return;
-	if(d > grassVisibility) { //if we go beyond grass visibility limit ...
+	if(d > _grassVisibility) { //if we go beyond grass visibility limit ...
 			return; // ... do not draw grass
 	}
 	
 	if(_grassIndice.size() > 0)	{
-		F32 ratio = 1.0f - (d / grassVisibility);
+		F32 ratio = 1.0f - (d / _grassVisibility);
 		ratio *= 2.0f;
 		if(ratio > 1.0f) ratio = 1.0f;
 
@@ -106,7 +106,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			GFXDevice::getInstance().renderElements(QUADS,_U32,indices_count, &(_grassIndice[0]));
+			_gfx.renderElements(QUADS,_U32,indices_count, &(_grassIndice[0]));
 			
 	}
 

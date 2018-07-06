@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Managers/SceneManager.h" //Object selection
+#include "Managers/AIManager.h"
 #include "PhysX/PhysX.h"
 #include "ASIO.h"
 #include "Terrain/Terrain.h"
@@ -199,6 +200,10 @@ bool Scene::load(const std::string& name){
 
 bool Scene::unload(){
 	clearEvents();
+	//_inputEvent.get()->stopEvent();
+	//_inputEvent.reset();
+	_aiEvent.get()->stopEvent();
+	_aiEvent.reset();
 	_inputManager.terminate();
 	_inputManager.DestroyInstance();
 	if(_lightTexture != NULL){
@@ -242,6 +247,17 @@ void Scene::clearEvents()
 
 void Scene::onMouseMove(const OIS::MouseEvent& key){
 	GUI::getInstance().checkItem(key.state.X.abs,key.state.Y.abs);
+}
+
+void Scene::processInput(){
+	_inputManager.tick();
+}
+
+bool Scene::loadEvents(bool continueOnErrors){
+	//Running the input manager through a separate thread degrades performance. Enable at your own risk - Ionut
+	//_inputEvent.reset(New Event(1,true,false,boost::bind(&InputManagerInterface::tick, boost::ref(InputManagerInterface::getInstance()))));
+	_aiEvent.reset(New Event(3,true,false,boost::bind(&AIManager::tick,boost::ref(AIManager::getInstance()))));
+	return true;
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){

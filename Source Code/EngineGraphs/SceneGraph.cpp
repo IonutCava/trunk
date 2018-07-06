@@ -4,6 +4,11 @@
 #include "Managers/SceneManager.h"
 #include "Utility/Headers/Event.h"
 
+SceneGraph::SceneGraph() : _scene(NULL){
+	_root = New SceneGraphNode(New SceneRoot);
+	_updateRunning = false;
+}
+
 void SceneGraph::update(){
 	RenderQueue::getInstance().refresh();
 	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
@@ -15,8 +20,11 @@ void SceneGraph::render(){
 	GFXDevice& gfx = GFXDevice::getInstance();
 	//If we have computed shadowmaps, bind them before rendering any geomtry;
 	//Always bind shadowmaps to slots 7 and 8;
-	FrameBufferObject *dm0 = SceneManager::getInstance().getActiveScene()->getDepthMap(0);
-	FrameBufferObject *dm1 = SceneManager::getInstance().getActiveScene()->getDepthMap(1);
+	if(!_scene){
+		_scene = SceneManager::getInstance().getActiveScene();
+	}
+	FrameBufferObject *dm0 = _scene->getDepthMap(0);
+	FrameBufferObject *dm1 = _scene->getDepthMap(1);
 
 	if(!gfx.getDepthMapRendering() && !gfx.getDeferredShading()){
 		if(dm0)	dm0->Bind(7);
@@ -26,7 +34,7 @@ void SceneGraph::render(){
 		startUpdateThread();
 	}
 
-	GFXDevice::getInstance().processRenderQueue();
+	gfx.processRenderQueue();
 
 	if(!gfx.getDepthMapRendering()&& !gfx.getDeferredShading()){
 	 	if(dm0)	dm0->Unbind(8);

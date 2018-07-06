@@ -20,6 +20,7 @@
 
 #include "OIS.h"
 #include "Hardware/Platform/PlatformDefines.h"
+#include <boost/thread.hpp>
 
 class InputManagerInterface;
 class JoystickManager;
@@ -33,6 +34,7 @@ class EventHandler : public OIS::KeyListener, public OIS::JoyStickListener,publi
     JoystickManager*		   _pJoystickMgr;
 	EffectManager*			   _pEffectMgr;
 	Scene*					   _activeScene;
+	boost::mutex               _mutex;
 
   public:
 

@@ -108,9 +108,8 @@ void CubeScene::preRender()
 	_deferredBuffer->End();
 } 
 
-void CubeScene::processInput()
-{
-	_inputManager.tick();
+void CubeScene::processInput(){
+	Scene::processInput();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 

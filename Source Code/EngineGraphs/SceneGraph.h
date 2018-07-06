@@ -19,13 +19,11 @@
 #define _SCENE_GRAPH_H_
 #include "SceneGraphNode.h"
 
+class Scene;
 class SceneGraph  {
 	public:
 	
-	SceneGraph(){
-		_root = New SceneGraphNode(New SceneRoot);
-		_updateRunning = false;
-	}
+	SceneGraph();
 
 	~SceneGraph(){
 		Console::getInstance().printfn("Deleting SceneGraph");
@@ -45,8 +43,9 @@ class SceneGraph  {
 	void print();
 	void startUpdateThread();
 private:
-	boost::mutex _rootAccessMutex; 
+	boost::mutex    _rootAccessMutex; 
 	SceneGraphNode* _root;
-	bool _updateRunning;
+	Scene*          _scene;
+	bool            _updateRunning;
 };
 #endif

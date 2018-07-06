@@ -111,7 +111,7 @@ void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 }
 
 void MainScene::processInput(){
-	_inputManager.tick();
+	Scene::processInput();
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Application::getInstance().moveFB;

@@ -42,13 +42,15 @@ class Object3D : public SceneNode
 public:
 	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(),
 											  _update(false),
-											  _geometryType(type)
+											  _geometryType(type),
+											  _gfx(GFXDevice::getInstance())
 
 	{}
 
 	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D) : SceneNode(name),
 																	    _update(false),
-																		_geometryType(type)
+																		_geometryType(type),
+																		_gfx(GFXDevice::getInstance())
 	{}
 
 	virtual ~Object3D(){};
@@ -60,8 +62,9 @@ public:
 	virtual		void    render(SceneGraphNode* node);
 	
 protected:
-	bool						 _update;
-	PrimitiveType				_geometryType;
+	bool		   _update;
+	PrimitiveType  _geometryType;
+	GFXDevice&     _gfx;
 };
 
 #endif

@@ -5,7 +5,9 @@ void AIEntity::processInput(){
 }
 
 void AIEntity::processData(){
+
 }
 
 void AIEntity::update(){
+
 }

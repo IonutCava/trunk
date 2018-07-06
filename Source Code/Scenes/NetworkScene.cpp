@@ -35,9 +35,8 @@ void NetworkScene::preRender()
 
 }
 
-void NetworkScene::processInput()
-{
-	_inputManager.tick();
+void NetworkScene::processInput(){
+	Scene::processInput();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	moveFB  = Application::getInstance().moveFB;
 	moveLR  = Application::getInstance().moveLR;
