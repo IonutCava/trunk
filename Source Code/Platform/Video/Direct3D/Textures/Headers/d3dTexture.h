@@ -51,8 +51,11 @@ class d3dTexture : public Texture {
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) {}
     void updateMipMaps() {}
-    void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions,
-                  const vec2<U16>& mipLevels, GFXImageFormat format,
+    void loadData(TextureLoadInfo info,
+                  const U8* const ptr,
+                  const vec2<U16>& dimensions,
+                  const vec2<U16>& mipLevels,
+                  GFXImageFormat format,
                   GFXImageFormat internalFormat) {}
 
    private:

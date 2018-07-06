@@ -78,8 +78,8 @@ void glTexture::resize(const U8* const ptr,
     }
     _textureData.setHandleHigh(tempHandle);
     _allocatedStorage = false;
-
-    loadData(0, ptr, dimensions, mipLevels, _format, _internalFormat);
+    TextureLoadInfo info;
+    loadData(info, ptr, dimensions, mipLevels, _format, _internalFormat);
 }
 
 void glTexture::updateMipMaps() {
@@ -112,7 +112,7 @@ bool glTexture::generateHWResource(const stringImpl& name) {
     return true;
 }
 
-void glTexture::reserveStorage() {
+void glTexture::reserveStorage(TextureLoadInfo info) {
     DIVIDE_ASSERT(
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP &&
           _width != _height),
@@ -124,36 +124,59 @@ void glTexture::reserveStorage() {
                             : GLUtil::glImageFormatTable[to_uint(_internalFormat)];
     switch (_textureData._textureType) {
         case TextureType::TEXTURE_1D: {
-            GLUtil::DSAWrapper::dsaTextureStorage(
-                _textureData.getHandleHigh(), _type, _mipMaxLevel,
-                glInternalFormat, _width, -1, -1);
+            glTextureStorage1D(
+                _textureData.getHandleHigh(),
+                _mipMaxLevel,
+                glInternalFormat,
+                _width);
 
         } break;
-        case TextureType::TEXTURE_2D:
-        case TextureType::TEXTURE_CUBE_MAP: {
-            GLUtil::DSAWrapper::dsaTextureStorage(
-                _textureData.getHandleHigh(), _type, _mipMaxLevel,
-                glInternalFormat, _width, _height, -1);
+        case TextureType::TEXTURE_CUBE_MAP:
+        case TextureType::TEXTURE_2D: {
+            glTextureStorage2D(
+                _textureData.getHandleHigh(),
+                _mipMaxLevel,
+                glInternalFormat,
+                _width,
+                _height);
         } break;
         case TextureType::TEXTURE_2D_MS: {
-            GLUtil::DSAWrapper::dsaTextureStorageMultisample(
-                _textureData.getHandleHigh(), _type,
-                GFX_DEVICE.gpuState().MSAASamples(), glInternalFormat, _width,
-                _height, -1, GL_TRUE);
+            glTextureStorage2DMultisample(
+                _textureData.getHandleHigh(), 
+                GFX_DEVICE.gpuState().MSAASamples(),
+                glInternalFormat,
+                _width,
+                _height,
+                GL_TRUE);
         } break;
         case TextureType::TEXTURE_2D_ARRAY_MS: {
-            GLUtil::DSAWrapper::dsaTextureStorageMultisample(
-                _textureData.getHandleHigh(), _type,
-                GFX_DEVICE.gpuState().MSAASamples(), glInternalFormat, _width,
-                _height, _numLayers, GL_TRUE);
+            glTextureStorage3DMultisample(
+                _textureData.getHandleHigh(),
+                GFX_DEVICE.gpuState().MSAASamples(),
+                glInternalFormat,
+                _width,
+                _height,
+                _numLayers,
+                GL_TRUE);
         } break;
-        case TextureType::TEXTURE_2D_ARRAY:
-        case TextureType::TEXTURE_CUBE_ARRAY:
-        case TextureType::TEXTURE_3D: {
-            // Use _imageLayers as depth for GL_TEXTURE_3D
-            GLUtil::DSAWrapper::dsaTextureStorage(
-                _textureData.getHandleHigh(), _type, _mipMaxLevel,
-                glInternalFormat, _width, _height, _numLayers);
+        case TextureType::TEXTURE_3D:
+        case TextureType::TEXTURE_2D_ARRAY: {
+            glTextureStorage3D(
+                _textureData.getHandleHigh(),
+                _mipMaxLevel,
+                glInternalFormat,
+                _width,
+                _height,
+                _numLayers);
+        } break;
+        case TextureType::TEXTURE_CUBE_ARRAY: {
+            glTextureStorage3D(
+                _textureData.getHandleHigh(), 
+                _mipMaxLevel,
+                glInternalFormat,
+                _width,
+                _height,
+                _numLayers * 6);
         } break;
         default:
             return;
@@ -162,7 +185,7 @@ void glTexture::reserveStorage() {
     _allocatedStorage = true;
 }
 
-void glTexture::loadData(GLuint target,
+void glTexture::loadData(TextureLoadInfo info,
                          const GLubyte* const ptr,
                          const vec2<GLushort>& dimensions,
                          const vec2<GLushort>& mipLevels,
@@ -172,11 +195,7 @@ void glTexture::loadData(GLuint target,
     _internalFormat = internalFormat;
     GLenum glFormat = GLUtil::glImageFormatTable[to_uint(format)];
 
-    bool isTextureLayer =
-        (_textureData._textureType == TextureType::TEXTURE_2D_ARRAY &&
-         target > 0);
-
-    if (!isTextureLayer) {
+    if (info._layerIndex == 0) {
             
         setMipMapRange(mipLevels.x, mipLevels.y);
 
@@ -194,8 +213,9 @@ void glTexture::loadData(GLuint target,
     }
 
     if (!_allocatedStorage) {
-        reserveStorage();
+        reserveStorage(info);
     }
+
     assert(_allocatedStorage);
 
     GLdouble xPow2 = log((GLdouble)_width)  / log(2.0);
@@ -216,29 +236,58 @@ void glTexture::loadData(GLuint target,
         GL_API::setPixelPackUnpackAlignment();
         switch (_textureData._textureType) {
             case TextureType::TEXTURE_1D: {
-                GLUtil::DSAWrapper::dsaTextureSubImage(
-                    _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
-                    _width, -1, -1, glFormat, GL_UNSIGNED_BYTE, (bufferPtr)ptr);
+                glTextureSubImage1D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    _width,
+                    glFormat,
+                    GL_UNSIGNED_BYTE,
+                    (bufferPtr)ptr);
+            } break;
+            case TextureType::TEXTURE_2D:
+            case TextureType::TEXTURE_2D_MS: {
+                glTextureSubImage2D(
+                    _textureData.getHandleHigh(),
+                    0, 
+                    0,
+                    0,
+                    _width,
+                    _height,
+                    glFormat,
+                    GL_UNSIGNED_BYTE,
+                    (bufferPtr)ptr);
             } break;
             case TextureType::TEXTURE_3D:
             case TextureType::TEXTURE_2D_ARRAY:
             case TextureType::TEXTURE_2D_ARRAY_MS: {
-                GLUtil::DSAWrapper::dsaTextureSubImage(
-                    _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
-                    _width, _height, 1, glFormat, GL_UNSIGNED_BYTE, (bufferPtr)ptr);
+                glTextureSubImage3D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    0,
+                    info._layerIndex,
+                    _width,
+                    _height,
+                    1,
+                    glFormat,
+                    GL_UNSIGNED_BYTE,
+                    (bufferPtr)ptr);
             } break;
-            case TextureType::TEXTURE_CUBE_MAP:
+            case TextureType::TEXTURE_CUBE_MAP: 
             case TextureType::TEXTURE_CUBE_ARRAY: {
-                GLUtil::DSAWrapper::dsaTextureSubImage(
-                    _textureData.getHandleHigh(), _type, 0, 0, 0, target,
-                    _width, _height, 1, glFormat, GL_UNSIGNED_BYTE, (bufferPtr)ptr);
-            } break;
-            default:
-            case TextureType::TEXTURE_2D:
-            case TextureType::TEXTURE_2D_MS: {
-                GLUtil::DSAWrapper::dsaTextureSubImage(
-                    _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
-                    _width, _height, -1, glFormat, GL_UNSIGNED_BYTE, (bufferPtr)ptr);
+                glTextureSubImage3D(
+                    _textureData.getHandleHigh(),
+                    0,
+                    0,
+                    0,
+                    (info._cubeMapCount * 6) + info._layerIndex,
+                    _width,
+                    _height,
+                    1,
+                    glFormat,
+                    GL_UNSIGNED_BYTE,
+                    (bufferPtr)ptr);
             } break;
         }
     }

@@ -145,11 +145,9 @@ void glFramebuffer::InitAttachment(AttachmentType type,
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
     }else {
-        tex->loadData(
-            isLayeredTexture
-            ? 0
-            : to_uint(GLUtil::glTextureTypeTable[to_uint(currentType)]),
-            NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
+        Texture::TextureLoadInfo info;
+        info._type = currentType;
+        tex->loadData(info, NULL, vec2<U16>(_width, _height), _mipMapLevel[slot], format, internalFormat);
     }
 
     // Attach to frame buffer

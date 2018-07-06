@@ -30,59 +30,70 @@ bool Texture::generateHWResource(const stringImpl& name) {
         getResourceLocation().compare("default") == 0) {
         return false;
     }
-    // Each texture type is loaded differently
-    if (_textureData._textureType == TextureType::TEXTURE_2D) {
-        // 2D Textures are loaded directly
-        if (!LoadFile(to_uint(_textureData._textureType), getResourceLocation())) {
-            return false;
-        }
-        // Cube maps and texture arrays need to load each face/layer separately
-    } else if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
-               _textureData._textureType == TextureType::TEXTURE_2D_ARRAY) {
-        // Each texture face/layer must be in a comma separated list
-        std::stringstream textureLocationList(getResourceLocation());
-        // We loop over every texture in the above list and store it in this
-        // temporary string
-        stringImpl currentTexture;
-        U8 idx = 0;
-        while (std::getline(textureLocationList, currentTexture, ',')) {
-            // Skip invalid entries
-            if (!currentTexture.empty()) {
-                // Attempt to load the current entry
-                if (!LoadFile(idx, currentTexture)) {
+
+    TextureLoadInfo info;
+    info._type = _textureData._textureType;
+
+    // Each texture face/layer must be in a comma separated list
+    std::stringstream textureLocationList(getResourceLocation());
+    // We loop over every texture in the above list and store it in this
+    // temporary string
+    stringImpl currentTexture;
+    while (std::getline(textureLocationList, currentTexture, ',')) {
+        // Skip invalid entries
+        if (!currentTexture.empty()) {
+               // Attempt to load the current entry
+                if (!LoadFile(info, currentTexture)) {
                     // Invalid texture files are not handled yet, so stop
                     // loading
                     return false;
                 }
-                idx++;
-            }
+                info._layerIndex++;
+                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                    if (info._layerIndex == 6) {
+                        info._layerIndex = 0;
+                        info._cubeMapCount++;
+                    }
+                }
         }
-        // Cube maps have exactly 6 faces, so make sure all of them are loaded
-        if (idx != 6 && _textureData._textureType == TextureType::TEXTURE_CUBE_MAP) {
+    }
+
+    if (info._type == TextureType::TEXTURE_CUBE_MAP ||
+        info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (info._layerIndex != 6) {
             Console::errorfn(
                 Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"),
                 getResourceLocation().c_str());
             return false;
         }
-        // Same logic applies to texture arrays
-        if (idx != _numLayers &&
-            _textureData._textureType == TextureType::TEXTURE_2D_ARRAY) {
+    }
+
+    if (info._type == TextureType::TEXTURE_2D_ARRAY ||
+        info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (info._layerIndex != _numLayers) {
             Console::errorfn(
                 Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"),
                 getResourceLocation().c_str());
             return false;
         }
-    } else {
-        // We don't support other texture types
-        return false;
     }
+
+    if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (info._cubeMapCount != _numLayers) {
+            Console::errorfn(
+                Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"),
+                getResourceLocation().c_str());
+            return false;
+        }
+    }
+
     setResourceLocation(name);
 
     return HardwareResource::generateHWResource(name);
 }
 
 /// Use DevIL to load a file into a Texture Object
-bool Texture::LoadFile(U32 target, const stringImpl& name) {
+bool Texture::LoadFile(TextureLoadInfo info, const stringImpl& name) {
     // Create a new imageData object
     ImageTools::ImageData img;
     // Flip image if needed
@@ -164,7 +175,7 @@ bool Texture::LoadFile(U32 target, const stringImpl& name) {
         mipMaxLevel = static_cast<U16>(floorf(log2f(fmaxf(width, height))));
     }
     // Uploading to the GPU dependents on the rendering API
-    loadData(target, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel),
+    loadData(info, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel),
              img.format(), internalFormat);
 
     // We will always return true because we load the "missing_texture.jpg" in

@@ -45,7 +45,20 @@ class NOINITVTABLE Texture : public HardwareResource {
     friend class ResourceLoader;
     template <typename T>
     friend class ImplResourceLoader;
-   public:
+    public:
+       struct TextureLoadInfo {
+           TextureLoadInfo() :
+               _type(TextureType::COUNT),
+               _layerIndex(0),
+               _cubeMapCount(0)
+           {
+           }
+
+           TextureType _type;
+           I32 _layerIndex;
+           I32 _cubeMapCount;
+       };
+    public:
     /// Bind the texture to the specified texture unit
     virtual void Bind(U8 slot) = 0;
     /// Change the texture's mip levels. This can be called at any time
@@ -56,7 +69,8 @@ class NOINITVTABLE Texture : public HardwareResource {
                         const vec2<U16>& mipLevels) = 0;
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
-    virtual void loadData(U32 target, const U8* const ptr,
+    virtual void loadData(TextureLoadInfo info,
+                          const U8* const ptr,
                           const vec2<U16>& dimensions,
                           const vec2<U16>& mipLevels, 
                           GFXImageFormat format,
@@ -106,7 +120,7 @@ class NOINITVTABLE Texture : public HardwareResource {
     SET_DELETE_FRIEND
 
     /// Use DevIL to load a file into a Texture Object
-    bool LoadFile(U32 target, const stringImpl& name);
+    bool LoadFile(TextureLoadInfo info, const stringImpl& name);
     /// Load texture data using the specified file name
     virtual bool generateHWResource(const stringImpl& name);
     /// Force a refresh of the entire mipmap chain

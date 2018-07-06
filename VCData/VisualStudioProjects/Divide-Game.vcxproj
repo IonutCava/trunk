@@ -446,7 +446,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;Divide-Engine_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ShowProgress>LinkVerbose</ShowProgress>
+      <ShowProgress>NotSet</ShowProgress>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
     </Link>
