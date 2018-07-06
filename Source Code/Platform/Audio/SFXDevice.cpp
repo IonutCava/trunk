@@ -47,7 +47,8 @@ ErrorCode SFXDevice::initAudioAPI(PlatformContext& context) {
 
 void SFXDevice::closeAudioAPI() {
     assert(_api != nullptr && "SFXDevice error: closeAudioAPI called without init!");
-
+    _musicPlaylists.clear();
+    _currentPlaylist.second.clear();
     _api->closeAudioAPI();
     _api.release();
 }

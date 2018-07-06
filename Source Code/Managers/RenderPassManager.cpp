@@ -29,11 +29,8 @@ bool RenderPassManager::init() {
 }
 
 void RenderPassManager::destroy() {
-    for (RenderPass* rp : _renderPasses) {
-        MemoryManager::DELETE(rp);
-    }
-
-    MemoryManager::SAFE_DELETE(_renderQueue);
+    MemoryManager::DELETE_VECTOR(_renderPasses);
+    MemoryManager::DELETE(_renderQueue);
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {

@@ -147,6 +147,7 @@ void SceneManager::destroy() {
         MemoryManager::DELETE(_renderPassCuller);
         AI::Navigation::DivideRecast::destroyInstance();
         _platformContext = nullptr;
+        _defaultMaterial.reset();
         _init = false;
     }
 }

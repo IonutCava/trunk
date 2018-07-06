@@ -312,6 +312,7 @@ void GUI::destroy() {
         catch (...) {
             Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
         }
+        _guiShader.reset();
         _init = false;
     }
 }

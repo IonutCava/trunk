@@ -791,18 +791,27 @@ typedef union {
 } P32;
 
 template <typename... Args>
+#if defined(CPP_14_SUPPORT)
+[[deprecated("Please use lambda expressions instead!")]]
+#endif
 auto DELEGATE_BIND(Args&&... args)
     -> decltype(std::bind(std::forward<Args>(args)...)) {
     return std::bind(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
+#if defined(CPP_14_SUPPORT)
+[[deprecated("Please use lambda expressions instead!")]]
+#endif
 auto DELEGATE_REF(Args&&... args)
     -> decltype(std::ref(std::forward<Args>(args)...)) {
     return std::ref(std::forward<Args>(args)...);
 }
 
 template <typename... Args>
+#if defined(CPP_14_SUPPORT)
+[[deprecated("Please use lambda expressions instead!")]]
+#endif
 auto DELEGATE_CREF(Args&&... args)
     -> decltype(std::cref(std::forward<Args>(args)...)) {
     return std::cref(std::forward<Args>(args)...);

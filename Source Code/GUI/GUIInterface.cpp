@@ -124,7 +124,7 @@ GUIButton* GUIInterface::addButton(U64 guiID,
     ResourceDescriptor beepSound("buttonClick");
     beepSound.setResourceLocation(assetPath + "/sounds/beep.wav");
     beepSound.setFlag(false);
-    AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->activeScene()->resourceCache(), beepSound);
+    AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 
     GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, _context->guiScheme(), relOffset, relDim, parent, callback, onClickSound);
 

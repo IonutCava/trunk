@@ -77,7 +77,7 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         _tp != nullptr && _tp->workerThreadCount() > 0)
     {
         U32 failCount = 0;
-        while (!_tp->threadPool().schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
+        while (!_tp->threadPool().schedule(PoolTask(to_uint(priority), [this]() { run(); }))) {
             ++failCount;
         }
         if (failCount > 0) {

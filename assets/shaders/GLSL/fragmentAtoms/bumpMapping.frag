@@ -114,8 +114,9 @@ vec3 normalOverlayBlend(in vec3 n1, in vec3 n2) {
     return normalize(n*2.0 - 1.0);
 }
 
-vec3 normalPartial DerivativesBlend(in vec3 n1, in vec3 n2) {
-    return normalize(vec3(n1.xy*n2.z + n2.xy*n1.z, n1.z*n2.z));
+vec3 normalPartialDerivativesBlend(in vec3 n1, in vec3 n2) {
+    return normalize(vec3(n1.xy * n2.z + n2.xy * n1.z,
+                         n1.z * n2.z));
 }
 
 vec3 normalWhiteoutBlend(in vec3 n1, in vec3 n2) {

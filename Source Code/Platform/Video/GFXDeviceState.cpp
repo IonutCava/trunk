@@ -235,7 +235,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     // Register a 2D function used for previewing the depth buffer.
     if (Config::Build::IS_DEBUG_BUILD) {
-        add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this)), 0);
+        add2DRenderFunction(GUID_DELEGATE_CBK([this]() { previewDepthBuffer(); }), 0);
     }
 
     par.setParam<bool>(_ID("rendering.previewDepthBuffer"), false);

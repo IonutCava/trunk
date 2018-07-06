@@ -96,8 +96,6 @@ void Application::stop() {
             cbk();
         }
 
-        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
-
         if (Config::Build::IS_DEBUG_BUILD) {
             MemoryManager::MemoryTracker::Ready = false;
             bool leakDetected = false;
@@ -116,11 +114,11 @@ void Application::stop() {
 
         _windowManager.close();
         ParamHandler::destroyInstance();
-        Time::ApplicationTimer::destroyInstance();
         MemoryManager::DELETE(_kernel);
+        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
         Locale::clear();
+        Time::ApplicationTimer::destroyInstance();
         Console::stop();
-
         _isInitialized = false;
     }
 }

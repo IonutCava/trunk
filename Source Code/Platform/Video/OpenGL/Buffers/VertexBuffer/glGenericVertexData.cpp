@@ -62,6 +62,7 @@ void glGenericVertexData::destroy() {
             MemoryManager::DELETE_ARRAY(_feedbackQueries[i]);
             MemoryManager::DELETE_ARRAY(_resultAvailable[i]);
         }
+        _numQueries = 0;
     }
     GLUtil::freeBuffer(_indexBuffer);
     _indexBufferSize = 0;

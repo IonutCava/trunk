@@ -89,16 +89,11 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     FrameListenerManager::createInstance();
     OpenCLInterface::createInstance();
     
-    Camera::addUpdateListener(DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, *_sceneManager, std::placeholders::_1));
-    Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->gfx(), cam); });
-    Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->gfx(), cam); });
-
     ParamHandler::instance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 }
 
 Kernel::~Kernel()
 {
-    Camera::destroyPool();
 }
 
 void Kernel::idle() {
@@ -481,6 +476,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                : mainWindow.getDimensions(WindowType::WINDOW));
     initError = _platformContext->gfx().initRenderingAPI(_argc, _argv, renderResolution);
 
+    Camera::addUpdateListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraUpdate(_platformContext->gfx(), cam); });
+    Camera::addChangeListener([this](const Camera& cam) { Attorney::GFXDeviceKernel::onCameraChange(_platformContext->gfx(), cam); });
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -548,13 +545,16 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                     "PROFILE DATA",                                // Text
                                     12);                                           // Font size
 
-    Console::bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText,
-                                             _platformContext->gui().getConsole(),
-                                             std::placeholders::_1,
-                                             std::placeholders::_2));
-
+    Console::bindConsoleOutput([this](const char* output, bool error) {
+                                   _platformContext->gui().getConsole()->printText(output, error);
+                               });
+    
     ShadowMap::initShadowMaps(_platformContext->gfx());
     _sceneManager->init(*_platformContext, *_resCache);
+    Camera::addUpdateListener([this](const Camera& cam) {
+                                   Attorney::SceneManagerKernel::onCameraUpdate(*_sceneManager, cam);
+                              });
+
 
     if (!_sceneManager->switchScene(startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
@@ -593,6 +593,7 @@ void Kernel::shutdown() {
     _platformContext->input().terminate();
     _resCache->clear();
     FrameListenerManager::destroyInstance();
+    Camera::destroyPool();
 }
 
 void Kernel::onChangeWindowSize(U16 w, U16 h) {

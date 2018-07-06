@@ -258,17 +258,15 @@ TaskHandle parallel_for(TaskPool& pool,
         U32 start = i * crtPartitionSize;
         U32 end = start + crtPartitionSize;
         updateTask.addChildTask(CreateTask(pool,
-                                           DELEGATE_BIND(cbk,
-                                                         std::placeholders::_1,
-                                                         start,
-                                                         end))._task)->startTask(priority, taskFlags);
+                                           [&cbk, start, end](const std::atomic_bool& stopRequested) {
+                                               cbk(stopRequested, start, end);
+                                           })._task)->startTask(priority, taskFlags);
     }
     if (remainder > 0) {
         updateTask.addChildTask(CreateTask(pool,
-                                           DELEGATE_BIND(cbk,
-                                                         std::placeholders::_1,
-                                                         count - remainder,
-                                                         count))._task)->startTask(priority, taskFlags);
+                                          [&cbk, count, remainder](const std::atomic_bool& stopRequested) {
+                                              cbk(stopRequested, count - remainder, count);
+                                          })._task)->startTask(priority, taskFlags);
     }
 
     updateTask.startTask(priority, taskFlags);
