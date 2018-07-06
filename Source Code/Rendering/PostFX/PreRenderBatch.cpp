@@ -199,6 +199,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
 
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = _currentLuminance._targetID;
+        beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
         GFX::BeginRenderPass(buffer, beginRenderPassCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
@@ -248,6 +249,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _postFXOutput._targetID;
+    beginRenderPassCmd._name = "DO_TONEMAP_PASS";
     GFX::BeginRenderPass(buffer, beginRenderPassCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;

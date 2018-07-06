@@ -75,6 +75,42 @@ CommandBuffer::~CommandBuffer()
 
 
 void CommandBuffer::batch() {
+    clean();
+    // If we don't have any actual work to do, clear everything
+    bool hasWork = false;
+    for (const std::shared_ptr<Command>& cmd : _data) {
+        switch (cmd->_type) {
+            case GFX::CommandType::BEGIN_RENDER_PASS: {
+                // We may just wish to clear the RT
+                GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());
+                if (crtCmd->_descriptor.stateMask() != 0) {
+                    hasWork = true;
+                    break;
+                }
+            } break;
+            case GFX::CommandType::DISPATCH_COMPUTE:
+            case GFX::CommandType::DRAW_TEXT:
+            case GFX::CommandType::DRAW_COMMANDS:
+            case GFX::CommandType::BIND_DESCRIPTOR_SETS:
+            case GFX::CommandType::BIND_PIPELINE:
+            case GFX::CommandType::BLIT_RT:
+            case GFX::CommandType::SEND_PUSH_CONSTANTS:
+            case GFX::CommandType::BEGIN_PIXEL_BUFFER:
+            case GFX::CommandType::SET_CAMERA:
+            case GFX::CommandType::SET_CLIP_PLANES:
+            case GFX::CommandType::SET_SCISSOR:
+            case GFX::CommandType::SET_VIEWPORT: {
+                hasWork = true;
+                break;
+            }break;
+                
+        };
+    }
+
+    if (!hasWork) {
+        _data.clear();
+        return;
+    }
     /*auto batch = [](GenericDrawCommand& previousIDC,
     GenericDrawCommand& currentIDC)  -> bool {
     if (previousIDC.compatible(currentIDC) &&
@@ -158,5 +194,189 @@ void CommandBuffer::clean() {
 
     erase_indices(_data, redundantEntries);
 }
+
+//ToDo: This needs to grow to handle every possible scenario - Ionut
+bool CommandBuffer::validate() const {
+    bool valid = true;
+
+    if (Config::ENABLE_GPU_VALIDATION) {
+        bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
+        bool hasPipeline = false, needsPipeline = false;
+        bool hasDescriptorSets = false, needsDescriptorSets = false;
+        U32 pushedDebugScope = 0;
+
+        for (const std::shared_ptr<GFX::Command>& cmd : _data) {
+            switch (cmd->_type) {
+                case GFX::CommandType::BEGIN_RENDER_PASS: {
+                    if (pushedPass) {
+                        return false;
+                    }
+                    pushedPass = true;
+                } break;
+                case GFX::CommandType::END_RENDER_PASS: {
+                    if (!pushedPass) {
+                        return false;
+                    }
+                    pushedPass = false;
+                } break;
+                case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
+                    if (pushedSubPass) {
+                        return false;
+                    }
+                    pushedSubPass = true;
+                } break;
+                case GFX::CommandType::END_RENDER_SUB_PASS: {
+                    if (!pushedSubPass) {
+                        return false;
+                    }
+                    pushedSubPass = false;
+                } break;
+                case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
+                    ++pushedDebugScope;
+                } break;
+                case GFX::CommandType::END_DEBUG_SCOPE: {
+                    if (pushedDebugScope == 0) {
+                        return false;
+                    }
+                    --pushedDebugScope;
+                } break;
+                case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
+                    if (pushedPixelBuffer) {
+                        return false;
+                    }
+                    pushedPixelBuffer = true;
+                }break;
+                case GFX::CommandType::END_PIXEL_BUFFER: {
+                    if (!pushedPixelBuffer) {
+                        return false;
+                    }
+                    pushedPixelBuffer = false;
+                }break;
+                case GFX::CommandType::BIND_PIPELINE: {
+                    hasPipeline = true;
+                } break;
+                case GFX::CommandType::DISPATCH_COMPUTE: 
+                case GFX::CommandType::DRAW_TEXT:
+                case GFX::CommandType::DRAW_COMMANDS: {
+                    needsPipeline = true;
+                }break;
+                case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+                    hasDescriptorSets = true;
+                }break;
+                case GFX::CommandType::BLIT_RT: {
+                    needsDescriptorSets = true;
+                }break;
+            };
+        }
+
+        valid = !pushedPass && !pushedSubPass && !pushedPixelBuffer &&
+                pushedDebugScope == 0 &&
+                (hasPipeline == needsPipeline);
+        if (needsDescriptorSets) {
+            valid = hasDescriptorSets && valid;
+        }
+        if (!valid) {
+            int a;
+            a = 6;
+        }
+    }
+
+    return valid;
+}
+
+void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const {
+    auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
+        for (I32 i = 0; i < indent; ++i) {
+            target.append("    ");
+        }
+        target.append(text);
+    };
+
+    switch (cmd->_type) {
+        case GFX::CommandType::BEGIN_RENDER_PASS: {
+            GFX::BeginRenderPassCommand* crtCmd = static_cast<GFX::BeginRenderPassCommand*>(cmd.get());
+            append(out, "BEGIN_RENDER_PASS: " + crtCmd->_name, crtIndent);
+            ++crtIndent;
+        }break;
+        case GFX::CommandType::END_RENDER_PASS: {
+            --crtIndent;
+            append(out, "END_RENDER_PASS", crtIndent);
+        }break;
+        case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
+            append(out, "BEGIN_PIXEL_BUFFER", crtIndent);
+            ++crtIndent;
+        }break;
+        case GFX::CommandType::END_PIXEL_BUFFER: {
+            --crtIndent;
+            append(out, "END_PIXEL_BUFFER", crtIndent);
+        }break;
+        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
+            append(out, "BEGIN_RENDER_SUB_PASS", crtIndent);
+            ++crtIndent;
+        }break;
+        case GFX::CommandType::END_RENDER_SUB_PASS: {
+            --crtIndent;
+            append(out, "END_RENDER_SUB_PASS", crtIndent);
+        }break;
+        case GFX::CommandType::BLIT_RT: {
+            append(out, "BLIT_RT", crtIndent);
+        }break;
+        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            append(out, "BIND_DESCRIPTOR_SETS", crtIndent);
+        }break;
+        case GFX::CommandType::BIND_PIPELINE: {
+            append(out, "BIND_PIPELINE", crtIndent);
+        } break;
+        case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+            append(out, "SEND_PUSH_CONSTANTS", crtIndent);
+        } break;
+        case GFX::CommandType::SET_SCISSOR: {
+            append(out, "SET_SCISSOR", crtIndent);
+        }break;
+        case GFX::CommandType::SET_VIEWPORT: {
+            vec4<I32> viewport = static_cast<GFX::SetViewportCommand*>(cmd.get())->_viewport;
+            append(out, "SET_VIEWPORT: " + Util::StringFormat("[%d, %d, %d, %d]", viewport.x, viewport.y, viewport.z, viewport.w), crtIndent);
+        }break;
+        case GFX::CommandType::SET_CAMERA: {
+            append(out, "SET_CAMERA", crtIndent);
+        }break;
+        case GFX::CommandType::SET_CLIP_PLANES: {
+            append(out, "SET_CLIP_PLANES", crtIndent);
+        }break;
+        case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
+            GFX::BeginDebugScopeCommand* crtCmd = static_cast<GFX::BeginDebugScopeCommand*>(cmd.get());
+            append(out, "BEGIN_DEBUG_SCOPE: " + crtCmd->_scopeName, crtIndent);
+            ++crtIndent;
+        } break;
+        case GFX::CommandType::END_DEBUG_SCOPE: {
+            --crtIndent;
+            append(out, "END_DEBUG_SCOPE", crtIndent);
+        } break;
+        case GFX::CommandType::DRAW_TEXT: {
+            append(out, "DRAW_TEXT", crtIndent);
+        }break;
+        case GFX::CommandType::DRAW_COMMANDS: {
+            append(out, "DRAW_COMMANDS", crtIndent);
+        }break;
+        case GFX::CommandType::DISPATCH_COMPUTE: {
+            append(out, "DISPATCH_COMPUTE", crtIndent);
+        }break;
+    }
+}
+
+stringImpl CommandBuffer::toString() const {
+    I32 crtIndent = 0;
+    stringImpl out = "\n\n\n\n";
+    for (const std::shared_ptr<GFX::Command>& cmd : _data) {
+        toString(cmd, crtIndent, out);
+        out.append("\n");
+    }
+    out.append("\n\n\n\n");
+
+    assert(crtIndent == 0);
+
+    return out;
+}
+
 }; //namespace GFX
 }; //namespace Divide

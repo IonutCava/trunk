@@ -222,6 +222,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Enable our render target
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = cubeMap;
+    beginRenderPassCmd._name = "GENERATE_CUBE_MAP";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
@@ -307,6 +308,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = targetBuffer;
+    beginRenderPassCmd._name = "GENERATE_DUAL_PARABOLOID_MAP";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     for (U8 i = 0; i < 2; ++i) {
@@ -500,26 +502,25 @@ void GFXDevice::setSceneZPlanes(const vec2<F32>& zPlanes) {
 }
 
 void GFXDevice::renderFromCamera(Camera& camera) {
-    Camera::activeCamera(&camera);
+    bool cameraChanged = Attorney::CameraGFXDevice::SetActiveCamera(&camera);
+
     // Tell the Rendering API to draw from our desired PoV
-    camera.updateLookAt();
+    if (camera.updateLookAt() || cameraChanged) {
+        const mat4<F32>& viewMatrix = camera.getViewMatrix();
+        const mat4<F32>& projMatrix = camera.getProjectionMatrix();
 
-    const mat4<F32>& viewMatrix = camera.getViewMatrix();
-    const mat4<F32>& projMatrix = camera.getProjectionMatrix();
+        GFXShaderData::GPUData& data = _gpuBlock._data;
 
-    GFXShaderData::GPUData& data = _gpuBlock._data;
-    bool viewMatUpdated = viewMatrix != data._ViewMatrix;
-    bool projMatUpdated = projMatrix != data._ProjectionMatrix;
-    if (viewMatUpdated) {
-        data._ViewMatrix.set(viewMatrix);
-        data._ViewMatrix.getInverse(_gpuBlock._viewMatrixInv);
-    }
-    if (projMatUpdated) {
-        data._ProjectionMatrix.set(projMatrix);
-        data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
-    }
+        if (viewMatrix != data._ViewMatrix) {
+            data._ViewMatrix.set(viewMatrix);
+            data._ViewMatrix.getInverse(_gpuBlock._viewMatrixInv);
+        }
 
-    if (viewMatUpdated || projMatUpdated) {
+        if (projMatrix != data._ProjectionMatrix) {
+            data._ProjectionMatrix.set(projMatrix);
+            data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
+        }
+
         F32 FoV = camera.getVerticalFoV();
         data._cameraPosition.set(camera.getEye(), camera.getAspectRatio());
         data._renderProperties.zw(FoV, std::tan(FoV * 0.5f));
@@ -528,6 +529,7 @@ void GFXDevice::renderFromCamera(Camera& camera) {
         data._ViewProjectionMatrix.getInverse(_gpuBlock._viewProjMatrixInv);
         Frustum::computePlanes(_gpuBlock._viewProjMatrixInv, data._frustumPlanes);
         _gpuBlock._needsUpload = true;
+        
     }
 }
 
@@ -652,6 +654,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = depthBuffer;
     beginRenderPassCmd._descriptor = depthOnlyTarget;
+    beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
     GFX::BeginRenderPass(cmdBufferInOut, beginRenderPassCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
@@ -673,13 +676,13 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
             twidth = twidth < 1 ? 1 : twidth;
             theight = theight < 1 ? 1 : theight;
 
-            // Update the viewport with the new resolution
-            viewportCommand._viewport.set(0, 0, twidth, theight);
-            GFX::SetViewPort(cmdBufferInOut, viewportCommand);
-
             // Bind next mip level for rendering but first restrict fetches only to previous level
             beginRenderSubPassCmd._mipWriteLevel = level;
             GFX::BeginRenderSubPass(cmdBufferInOut, beginRenderSubPassCmd);
+
+            // Update the viewport with the new resolution
+            viewportCommand._viewport.set(0, 0, twidth, theight);
+            GFX::SetViewPort(cmdBufferInOut, viewportCommand);
 
             pushConstantsCommand._constants.set("depthInfo", PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
             GFX::SendPushConstants(cmdBufferInOut, pushConstantsCommand);
@@ -688,6 +691,8 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(triangleCmd);
             GFX::AddDrawCommands(cmdBufferInOut, drawCmd);
+
+            GFX::EndRenderSubPass(cmdBufferInOut, endRenderSubPassCmd);
         }
 
         // Calculate next viewport size

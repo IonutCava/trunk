@@ -10,7 +10,7 @@
 
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
@@ -72,19 +72,13 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     _drawConstants.set("_noiseFactor", PushConstantType::FLOAT, 0.02f);
     _drawConstants.set("_fadeActive", PushConstantType::BOOL, false);
     
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "Vignette"));  // 0
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "Noise"));  // 1
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "screenUnderwater"));  // 2
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "screenNormal"));  // 3
-    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(
-            ShaderType::FRAGMENT, "ColourPassThrough"));  // 4
+    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette"));  // 0
+    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise"));  // 1
+    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "screenUnderwater"));  // 2
+    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "screenNormal"));  // 3
+    _shaderFunctionList.push_back(_postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough"));  // 4
 
-    _shaderFunctionSelection.resize(
-        _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
+    _shaderFunctionSelection.resize(_postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
     
 
     SamplerDescriptor defaultSampler;
@@ -151,7 +145,7 @@ void PostFX::apply() {
         _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
         PipelineDescriptor desc = _drawPipeline.toDescriptor();
-        desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
+        desc._shaderFunctions[ShaderType::FRAGMENT] = _shaderFunctionSelection;
         _drawPipeline.fromDescriptor(desc);
         _filtersDirty = false;
     }
@@ -173,6 +167,7 @@ void PostFX::apply() {
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
     beginRenderPassCmd._descriptor = _postFXTarget;
+    beginRenderPassCmd._name = "DO_POSTFX_PASS";
     GFX::BeginRenderPass(buffer, beginRenderPassCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd;

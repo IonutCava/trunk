@@ -11,8 +11,8 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Rendering/Camera/Headers/ThirdPersonCamera.h"
 #include "Rendering/Camera/Headers/FirstPersonCamera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
@@ -524,7 +524,7 @@ bool WarScene::load(const stringImpl& name) {
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
 
-    //_firstPersonWeapon.lock()->get<PhysicsComponent>()->ignoreView(true, Camera::activeCamera()->getGUID());
+    //_firstPersonWeapon.lock()->get<PhysicsComponent>()->ignoreView(true, playerCamera()->getGUID());
 
     AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
@@ -623,7 +623,7 @@ U16 WarScene::registerInputActions() {
 
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
-    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::toggleCamera, this));
+    _input->actionList().registerInputAction(actionID, DELEGATE_BIND(&WarScene::toggleCamera, this, std::placeholders::_1));
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
     _input->addKeyMapping(Input::KeyCode::KC_TAB, actions);
     actionID++;
@@ -671,21 +671,30 @@ U16 WarScene::registerInputActions() {
     return actionID++;
 }
 
-void WarScene::toggleCamera() {
+void WarScene::toggleCamera(InputParams param) {
+    // None of this works with multiple players
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
+    static Camera* tpsCamera = nullptr;
+    static Camera* fpsCamera = nullptr;
 
-    if (!_currentSelection[0].expired()) {
+    if (!tpsCamera) {
+        tpsCamera = Camera::findCamera(_ID("tpsCamera"));
+        fpsCamera = Camera::findCamera(_ID("fpsCamera"));
+    }
+
+    U8 playerIndex = getPlayerIndexForDevice(param._deviceIndex);
+    if (!_currentSelection[playerIndex].expired()) {
         if (flyCameraActive) {
-            Camera::activeCamera(_ID("tpsCamera"));
-            static_cast<ThirdPersonCamera&>(*Camera::activeCamera()).setTarget(_currentSelection[0]);
+            state().playerState(playerIndex).overrideCamera(tpsCamera);
+            static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(_currentSelection[playerIndex]);
             flyCameraActive = false;
             tpsCameraActive = true;
             return;
         }
     }
     if (tpsCameraActive) {
-        Camera::activeCamera(&_scenePlayers[_parent.playerPass()]->getCamera());
+        state().playerState(playerIndex).overrideCamera(nullptr);
         tpsCameraActive = false;
         flyCameraActive = true;
     }

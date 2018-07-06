@@ -145,12 +145,12 @@ bool WarScene::initializeAI(bool continueOnErrors) {
     return state;
 }
 
-bool WarScene::removeUnits(bool removeNodesOnCall) {
+bool WarScene::removeUnits() {
     WAIT_FOR_CONDITION(!_aiManager->updating());
     for (U8 i = 0; i < 2; ++i) {
         for (SceneGraphNode_wptr npc : _armyNPCs[i]) {
             _aiManager->unregisterEntity(npc.lock()->get<UnitComponent>()->getUnit<NPC>()->getAIEntity());
-            _sceneGraph->removeNode(npc, removeNodesOnCall);
+            _sceneGraph->removeNode(npc);
         }
         _armyNPCs[i].clear();
     }
@@ -390,7 +390,7 @@ AI::AIEntity* WarScene::findAI(SceneGraphNode_ptr node) {
 bool WarScene::resetUnits() {
     _aiManager->pauseUpdate(true);
     bool state = false;
-    if (removeUnits(true)) {
+    if (removeUnits()) {
        state = addUnits();
     }
     _aiManager->pauseUpdate(false);
@@ -399,7 +399,7 @@ bool WarScene::resetUnits() {
 
 bool WarScene::deinitializeAI(bool continueOnErrors) {
     _aiManager->pauseUpdate(true);
-    if (removeUnits(true)) {
+    if (removeUnits()) {
         for (U8 i = 0; i < 2; ++i) {
             MemoryManager::DELETE(_faction[i]);
         }

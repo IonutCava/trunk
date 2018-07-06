@@ -243,6 +243,7 @@ namespace Import {
 
         mesh->renderState().setDrawState(true);
         mesh->getGeometryVB()->fromBuffer(*dataIn._vertexBuffer);
+        mesh->setGeometryVBDirty();
 
         SubMesh_ptr tempSubMesh;
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {

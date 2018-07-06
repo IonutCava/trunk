@@ -11,7 +11,7 @@
 
 #include "Core/Headers/StringHelper.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -111,13 +111,13 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     _nearClipOffset = _dirLight->csmNearClipOffset();
     _lightPosition.set(_light->getPosition());
 
-    Camera& camera = *Camera::activeCamera();
-    _sceneZPlanes.set(camera.getZPlanes());
-    camera.getWorldMatrix(_viewInvMatrixCache);
-    camera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
-    camera.getFrustum().getCornersViewSpace(_frustumCornersVS);
+    Camera* camera = playerCamera();
+    _sceneZPlanes.set(camera->getZPlanes());
+    camera->getWorldMatrix(_viewInvMatrixCache);
+    camera->getFrustum().getCornersWorldSpace(_frustumCornersWS);
+    camera->getFrustum().getCornersViewSpace(_frustumCornersVS);
 
-    calculateSplitDepths(camera);
+    calculateSplitDepths(*camera);
     applyFrustumSplits();
 
     /*const RenderPassCuller::VisibleNodeList& nodes = 
@@ -143,6 +143,7 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params.target;
+    beginRenderPassCmd._name = "DO_CSM_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
@@ -243,7 +244,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
     pipelineDescriptor._shaderProgram = _blurDepthMapShader;
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
+    pipelineDescriptor._shaderFunctions[ShaderType::GEOMETRY].push_back(_horizBlur);
 
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
@@ -268,6 +269,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _blurBuffer._targetID;
+    beginRenderPassCmd._name = "DO_CSM_BLUR_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;
@@ -278,7 +280,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 
     // Blur vertically
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)][0] = _vertBlur;
+    pipelineDescriptor._shaderFunctions[ShaderType::GEOMETRY].front() = _vertBlur;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 

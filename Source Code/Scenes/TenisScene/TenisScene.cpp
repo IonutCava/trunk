@@ -4,8 +4,8 @@
 #include "Headers/TenisSceneAIProcessor.h"
 
 #include "AI/ActionInterface/Headers/AITeam.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Geometry/Material/Headers/Material.h"

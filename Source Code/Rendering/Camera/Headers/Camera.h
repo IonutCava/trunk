@@ -39,7 +39,14 @@
 
 namespace Divide {
 
+namespace Attorney {
+    class CameraGFXDevice;
+}
+
+class GFXDevice;
 class Camera : public Resource {
+    friend class Attorney::CameraGFXDevice;
+
    public:
     enum class CameraType : U32 { 
         FREE_FLY = 0,
@@ -59,7 +66,8 @@ class Camera : public Resource {
 
     virtual void fromCamera(Camera& camera);
 
-    void updateLookAt();
+    // Return true if the cached camera state wasn't up-to-date
+    bool updateLookAt();
 
     void setReflection(const Plane<F32>& reflectionPlane);
     void clearReflection();
@@ -363,12 +371,8 @@ class Camera : public Resource {
        static void update(const U64 deltaTime);
        static void initPool(const vec2<U16>& renderResolution);
        static void destroyPool();
-       static Camera* activeCamera();
 
        static Camera* utilityCamera(UtilityCamera type);
-       static Camera* previousCamera();
-       static void    activeCamera(Camera* cam);
-       static void    activeCamera(U64 cam);
 
        static Camera* createCamera(const stringImpl& cameraName, CameraType type);
        static bool    destroyCamera(Camera*& camera);
@@ -382,12 +386,16 @@ class Camera : public Resource {
        static bool removeUpdateListener(U32 id);
        static U32 addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
+    protected:
+      // Returns true if the camera was changed. False if the camera is already active
+      static bool activeCamera(Camera* camera);
+      static bool activeCamera(U64 camera);
+
     private:
       typedef hashMapImpl<U64, Camera*> CameraPool;
       typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
       static Camera* s_activeCamera;
-      static Camera* s_previousCamera;
 
       static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 
@@ -403,6 +411,20 @@ class Camera : public Resource {
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);
+
+namespace Attorney {
+    class CameraGFXDevice {
+      private:
+        static bool SetActiveCamera(Camera* camera) {
+            return Camera::activeCamera(camera);
+        }
+        static bool SetActiveCamera(U64 camera) {
+            return Camera::activeCamera(camera);
+        }
+
+        friend class Divide::GFXDevice;
+    };
+};
 
 };  // namespace Divide
 #endif

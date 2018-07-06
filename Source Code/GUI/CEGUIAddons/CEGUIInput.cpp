@@ -8,8 +8,14 @@
 
 namespace Divide {
 
+CEGUIInput::CEGUIInput(GUI& parent)
+    : _parent(parent)
+{
+}
+
 // return true if the input was consumed
 bool CEGUIInput::injectOISKey(bool pressed, const Input::KeyEvent& inKey) {
+    
     bool consumed = false;
     if (pressed) {
         if (CEGUI_DEFAULT_CTX.injectKeyDown((CEGUI::Key::Scan)inKey._key)) {

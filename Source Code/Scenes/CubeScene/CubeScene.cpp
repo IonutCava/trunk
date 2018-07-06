@@ -3,7 +3,7 @@
 #include "Headers/CubeScene.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"

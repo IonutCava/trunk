@@ -502,13 +502,17 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     return lightPool->generateShadowMaps(activeScene.renderState(), bufferInOut);
 }
 
-Camera* SceneManager::getActiveCamera() const {
-    Camera* overrideCamera = getActiveScene().state().playerState(_currentPlayerPass).overrideCamera();
+Camera* SceneManager::playerCamera(U8 playerIndex) const {
+    Camera* overrideCamera = getActiveScene().state().playerState(playerIndex).overrideCamera();
     if (overrideCamera == nullptr) {
-        overrideCamera = &getPlayers().at(_currentPlayerPass)->getCamera();
+        overrideCamera = &getPlayers().at(playerIndex)->getCamera();
     }
 
     return overrideCamera;
+}
+
+Camera* SceneManager::playerCamera() const {
+    return playerCamera(_currentPlayerPass);
 }
 
 void SceneManager::currentPlayerPass(U8 playerIndex) {
@@ -516,13 +520,12 @@ void SceneManager::currentPlayerPass(U8 playerIndex) {
     _platformContext->gfx().historyIndex(playerIndex, true);
     Camera& playerCam = getPlayers().at(_currentPlayerPass)->getCamera();
     _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
-    Camera::activeCamera(&playerCam);
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), playerIndex);
 }
 
 const RenderPassCuller::VisibleNodeList&
 SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
-    const vec3<F32>& camPos = Camera::activeCamera()->getEye();
+    const vec3<F32>& camPos = playerCamera()->getEye();
 
     // Get list of nodes in view from the previous frame
     RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::DISPLAY);
@@ -624,7 +627,8 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
                                    activeScene.sceneGraph(),
                                    activeScene.state(),
                                    stage.stage(),
-                                   cullingFunction);
+                                   cullingFunction,
+                                   *playerCamera());
     RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
 
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
@@ -658,7 +662,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
     if (refreshNodeData) {
         // Add all the visible nodes to the proper bins
         queue.refresh();
-        const vec3<F32>& eyePos = Camera::activeCamera()->getEye();
+        const vec3<F32>& eyePos = playerCamera()->getEye();
         for (RenderPassCuller::VisibleNode& node : visibleNodes) {
             queue.addNodeToQueue(*node.second, stage, eyePos);
         }
@@ -673,7 +677,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
     // Get all of the sorted render bins
     SceneRenderState& renderState = getActiveScene().renderState();
     const RenderQueue::SortedQueues& sortedQueues = queue.getSortedQueues();
-    gfx.buildDrawCommands(sortedQueues, renderState, bufferData, refreshNodeData);
+    gfx.buildDrawCommands(sortedQueues, renderState, bufferData, *playerCamera(), refreshNodeData);
 }
 
 bool SceneManager::populateRenderQueue(const Camera& camera,

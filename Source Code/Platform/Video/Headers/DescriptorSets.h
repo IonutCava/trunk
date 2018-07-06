@@ -88,6 +88,18 @@ namespace Divide {
             _buffer = buffer;
             _range.set(range);
         }
+
+        inline bool operator==(const ShaderBufferBinding& other) const {
+            return _binding == other._binding &&
+                   _buffer == other._buffer &&
+                   _range == other._range;
+        }
+
+        inline bool operator!=(const ShaderBufferBinding& other) const {
+            return _binding != other._binding ||
+                   _buffer != other._buffer ||
+                   _range != other._range;
+        }
     };
 
     typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;

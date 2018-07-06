@@ -7,10 +7,10 @@
 #include "Core/Headers/Application.h"
 #include "Utility/Headers/Localization.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Text3D.h"
 
 namespace Divide {
 

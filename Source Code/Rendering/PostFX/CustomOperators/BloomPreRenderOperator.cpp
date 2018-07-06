@@ -8,7 +8,7 @@
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
@@ -108,6 +108,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // render all of the "bright spots"
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _bloomOutput._targetID;
+    beginRenderPassCmd._name = "DO_BLOOM_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;
@@ -120,7 +121,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Step 2: blur bloom
     // Blur horizontally
     pipelineDescriptor._shaderProgram = _blur;
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
+    pipelineDescriptor._shaderFunctions[ShaderType::FRAGMENT].push_back(_horizBlur);
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
@@ -142,7 +143,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     // Blur vertically (recycle the render target. We have a copy)
     pipelineDescriptor._shaderProgram = _blur;
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)][0] = _vertBlur;
+    pipelineDescriptor._shaderFunctions[ShaderType::FRAGMENT].front() = _vertBlur;
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 
@@ -174,7 +175,7 @@ void BloomPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgram = _bloomApply;
-    pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].clear();
+    pipelineDescriptor._shaderFunctions.clear();
     pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 

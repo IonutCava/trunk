@@ -159,7 +159,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
             params.occlusionCull = Config::USE_HIZ_CULLING;
-            params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
+            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             params.stage = _stageFlag;
             params.target = RenderTargetID(RenderTargetUsage::SCREEN);
@@ -189,8 +189,8 @@ void RenderPass::render(SceneRenderState& renderState) {
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
             params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
-
+            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
+            
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 30;
@@ -199,7 +199,7 @@ void RenderPass::render(SceneRenderState& renderState) {
 
                 //Part 1 - update envirnoment maps:
                 /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
-                const EnvironmentProbeList& probes = envProbPool->getNearestSorted();
+                const EnvironmentProbeList& probes = envProbPool->getNearestSorted(params.camera->getEye());
                 for (EnvironmentProbe_ptr& probe : probes) {
                     probe->refresh(commandBuffer);
                 }
@@ -254,7 +254,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             SceneManager& mgr = _parent.parent().sceneManager();
             RenderPassManager::PassParams params;
             params.pass = Config::MAX_REFLECTIVE_NODES_IN_VIEW;
-            params.camera = Attorney::SceneManagerRenderPass::getActiveCamera(_parent.parent().sceneManager());
+            params.camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
 
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;

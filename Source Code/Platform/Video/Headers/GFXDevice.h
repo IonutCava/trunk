@@ -389,6 +389,7 @@ protected:
     void buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                            SceneRenderState& sceneRenderState,
                            RenderPass::BufferData& bufferData,
+                           const Camera& camera,
                            bool refreshNodeData);
 
     void constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmdBufferInOut);

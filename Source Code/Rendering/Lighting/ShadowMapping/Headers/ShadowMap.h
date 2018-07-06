@@ -90,6 +90,9 @@ class NOINITVTABLE ShadowMap {
     static void clearShadowMapBuffers(GFXDevice& context);
 
    protected:
+     Camera* playerCamera() const;
+
+   protected:
     GFXDevice& _context;
 
     typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;

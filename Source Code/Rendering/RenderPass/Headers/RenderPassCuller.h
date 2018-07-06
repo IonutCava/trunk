@@ -72,7 +72,8 @@ class RenderPassCuller {
                      SceneGraph& sceneGraph,
                      const SceneState& sceneState,
                      RenderStage stage,
-                     const CullingFunction& cullingFunction);
+                     const CullingFunction& cullingFunction,
+                     const Camera& camera);
 
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
 

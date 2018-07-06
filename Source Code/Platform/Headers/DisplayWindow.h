@@ -78,7 +78,7 @@ public:
     inline void minimized(const bool state);
 
     inline bool hidden() const;
-    inline void hidden(const bool state);
+           void hidden(const bool state);
 
     inline WindowType type() const;
     inline void type(WindowType type);

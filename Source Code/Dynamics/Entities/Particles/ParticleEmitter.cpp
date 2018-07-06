@@ -6,6 +6,7 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
+#include "Scenes/Headers/Scene.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -280,7 +281,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
         cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
         pkg.drawCommand(0, 0, cmd);
 
-        prepareForRender(renderStagePass, *Camera::activeCamera());
+        prepareForRender(renderStagePass, *sceneRenderState.parentScene().playerCamera());
 
         return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
     }

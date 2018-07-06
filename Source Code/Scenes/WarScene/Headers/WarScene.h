@@ -66,8 +66,8 @@ class WarScene : public Scene {
 
    private:
     void startSimulation(I64 btnGUID);
-    void toggleCamera();
-    bool removeUnits(bool removeNodesOnCall);
+    void toggleCamera(InputParams param);
+    bool removeUnits();
     bool addUnits();
     bool resetUnits();
     void checkGameCompletion();

@@ -25,6 +25,7 @@ Configuration::Configuration() : XML::IXMLSerializable()
     runtime.zFar = 700.0f;
     runtime.verticalFOV = 60;
 
+    gui.cegui.enabled = true;
     gui.cegui.extraStates = false;
     gui.cegui.skipRendering = false;
     gui.cegui.defaultGUIScheme = "GWEN";
@@ -76,6 +77,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.zNear);
         GET_PARAM(runtime.zFar);
         GET_PARAM(runtime.verticalFOV);
+        GET_PARAM(gui.cegui.enabled);
         GET_PARAM(gui.cegui.extraStates);
         GET_PARAM(gui.cegui.skipRendering);
         GET_PARAM(gui.cegui.defaultGUIScheme);
@@ -132,6 +134,7 @@ bool Configuration::toXML(const char* xmlFile) const {
     PUT_PARAM(runtime.zNear);
     PUT_PARAM(runtime.zFar);
     PUT_PARAM(runtime.verticalFOV);
+    PUT_PARAM(gui.cegui.enabled);
     PUT_PARAM(gui.cegui.extraStates);
     PUT_PARAM(gui.cegui.skipRendering);
     PUT_PARAM(gui.cegui.defaultGUIScheme);

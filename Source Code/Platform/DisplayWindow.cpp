@@ -241,6 +241,18 @@ void DisplayWindow::setCursorPosition(I32 x, I32 y) const {
     SDL_WarpMouseInWindow(_mainWindow, x, y);
 }
 
+void DisplayWindow::hidden(const bool state) {
+    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_SHOWN)) == state)
+    {
+        if (state) {
+            SDL_HideWindow(_mainWindow);
+        } else {
+            SDL_ShowWindow(_mainWindow);
+        }
+        _hidden = state;
+    }
+}
+
 void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
     _previousType = _type;
     _type = newWindowType;
@@ -282,7 +294,6 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
     centerWindowPosition();
 
     if (hidden()) {
-        SDL_ShowWindow(_mainWindow);
         hidden(false);
     }
 }

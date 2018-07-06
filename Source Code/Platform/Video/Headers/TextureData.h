@@ -85,6 +85,18 @@ public:
         _textureHandle = handle;
     }
 
+    inline bool operator==(const TextureData& other) const {
+        return _textureType == other._textureType &&
+               _samplerHash == other._samplerHash &&
+               _textureHandle == other._textureHandle;
+    }
+
+    inline bool operator!=(const TextureData& other) const {
+        return _textureType != other._textureType ||
+               _samplerHash != other._samplerHash ||
+               _textureHandle != other._textureHandle;
+    }
+
     // No need to cache this as it should already be pretty fast
     size_t getHash() const;
 
@@ -100,7 +112,7 @@ class TextureDataContainer {
       TextureDataContainer();
       ~TextureDataContainer();
 
-      void set(const TextureDataContainer& other);
+      bool set(const TextureDataContainer& other);
       bool addTexture(const TextureData& data, U8 binding);
       bool addTexture(const std::pair<TextureData, U8 /*binding*/>& textureEntry);
       bool removeTexture(U8 binding);

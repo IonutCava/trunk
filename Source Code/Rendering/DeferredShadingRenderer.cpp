@@ -15,7 +15,7 @@
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
@@ -188,6 +188,7 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void, GFX::CommandBuf
     // Draw the geometry, saving parameters into the buffer
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _deferredBuffer._targetID;
+    beginRenderPassCmd._name = "DO_DEFERRED_RENDERING_PASS_1";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
         renderCallback(bufferInOut);
@@ -232,8 +233,6 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     GenericDrawCommand cmd;
     if (_debugView) {
-        const RenderStagePass& stagePass = _context.gfx().getRenderStage();
-
         pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 4);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());

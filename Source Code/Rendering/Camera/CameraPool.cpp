@@ -14,7 +14,6 @@
 namespace Divide {
 
 Camera* Camera::s_activeCamera = nullptr;
-Camera* Camera::s_previousCamera = nullptr;
 
 std::array<Camera*, to_base(Camera::UtilityCamera::COUNT)> Camera::_utilityCameras;
 
@@ -39,36 +38,27 @@ void Camera::onUpdate(const Camera& cam) {
     }
 }
 
-void Camera::activeCamera(Camera* cam) {
+bool Camera::activeCamera(Camera* camera) {
     if (s_activeCamera) {
-        if (cam && s_activeCamera->getGUID() == cam->getGUID()) {
-            return;
+        if (camera && s_activeCamera->getGUID() == camera->getGUID()) {
+            return false;
         }
         s_activeCamera->setActiveInternal(false);
     }
 
-    s_previousCamera = s_activeCamera;
-    s_activeCamera = cam;
-    if (cam) {
+    s_activeCamera = camera;
+    if (camera) {
         s_activeCamera->setActiveInternal(true);
         for (ListenerMap::value_type it : s_changeCameraListeners) {
             it.second(*s_activeCamera);
         }
     }
+
+    return true;
 }
 
-void Camera::activeCamera(U64 cam) {
-    activeCamera(findCamera(cam));
-}
-
-Camera* Camera::previousCamera() {
-    return s_previousCamera;
-}
-
-Camera* Camera::activeCamera() {
-    assert(s_activeCamera != nullptr);
-
-    return s_activeCamera;
+bool Camera::activeCamera(U64 camera) {
+    return activeCamera(findCamera(camera));
 }
 
 Camera* Camera::utilityCamera(UtilityCamera type) {

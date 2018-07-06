@@ -7,8 +7,8 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 namespace Divide {
@@ -302,9 +302,9 @@ U16 PingPongScene::registerInputActions() {
     _input->actionList().registerInputAction(actionID, [this](InputParams param) {
         _freeFly = !_freeFly;
         if (!_freeFly) {
-            Camera::activeCamera(_paddleCam);
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
         } else {
-            Camera::activeCamera(Camera::activeCamera());
+            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
         }
     });
     actions.actionID(PressReleaseActions::Action::RELEASE, actionID);
@@ -359,7 +359,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0);  // Light
 
     _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);
-    _paddleCam->fromCamera(*Camera::activeCamera());
+    _paddleCam->fromCamera(*playerCamera());
     // Position the camera
     // renderState().getCamera().setPitch(-90);
     _paddleCam->lockMovement(true);

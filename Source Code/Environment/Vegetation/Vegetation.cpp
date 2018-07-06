@@ -260,7 +260,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
     if (_threadedLoadComplete && !_success) {
         generateTrees(updateTask);
         Camera::addUpdateListener([this, &renderState](const Camera& cam) {
-            gpuCull(renderState);
+            gpuCull(renderState, cam);
         });
         _success = true;
     }
@@ -299,7 +299,7 @@ U32 Vegetation::getQueryID() {
     };
 }
 
-void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
+void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera& cam) {
     U32 queryID = getQueryID();
 
     bool draw = false;
@@ -317,7 +317,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState) {
             _culledFinal = true;
         } break;
     }
-    _parentLoD = _terrainChunk->getLoD(Camera::activeCamera()->getEye());
+    _parentLoD = _terrainChunk->getLoD(cam.getEye());
     if (draw && _threadedLoadComplete && _parentLoD == 0) {
         GenericVertexData* buffer = _grassGPUBuffer[_writeBuffer];
         //_cullShader->SetSubroutine(VERTEX,
@@ -410,7 +410,7 @@ bool Vegetation::onRender(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(sceneRenderState);
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
-    gpuCull(sceneRenderState);
+    gpuCull(sceneRenderState, *sceneRenderState.parentScene().playerCamera());
 
     buffer->attribDescriptor(posLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);

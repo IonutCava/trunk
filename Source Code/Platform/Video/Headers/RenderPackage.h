@@ -36,14 +36,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class RenderPackageQueue;
 class RenderingComponent;
 namespace Attorney {
     class RenderPackageRenderingComponent;
+    class RenderPackageRenderPackageQueue;
 };
 
 class RenderPackage {
     friend class Attorney::RenderPackageRenderingComponent;
+    friend class Attorney::RenderPackageRenderPackageQueue;
+
 public:
+private:
+    enum class CommandType : U8 {
+        NONE = 0,
+        DRAW = toBit(1),
+        PIPELINE = toBit(2),
+        CLIP_PLANES = toBit(3),
+        PUSH_CONSTANTS = toBit(4),
+        DESCRIPTOR_SETS = toBit(5),
+        ALL = DRAW | PIPELINE | CLIP_PLANES | PUSH_CONSTANTS | DESCRIPTOR_SETS,
+        COUNT = 7
+    };
+
     struct CommandEntry {
         size_t _index = 0;
         GFX::CommandType _type = GFX::CommandType::COUNT;
@@ -103,21 +119,13 @@ private:
     bool _secondaryCommandPool;
 
     vectorImpl<GFX::DrawCommand> _drawCommands;
-    bool _drawCommandDirty = true;
-
     vectorImpl<GFX::BindPipelineCommand> _pipelines;
-    bool _pipelineDirty = true;
-
     vectorImpl<GFX::SetClipPlanesCommand> _clipPlanes;
-    bool _clipPlanesDirty = true;
-
     vectorImpl<GFX::SendPushConstantsCommand> _pushConstants;
-    bool _pushConstantsDirty = true;
-
     vectorImpl<GFX::BindDescriptorSetsCommand> _descriptorSets;
-    bool _descriptorSetsDirty = true;
 
 protected:
+    U32 _dirtyFlags = 0;
     vectorImpl<CommandEntry> _commandOrdering;
     // Cached command buffer
     bool _commandBufferDirty = true;
@@ -141,6 +149,20 @@ namespace Attorney {
         }
 
         friend class Divide::RenderingComponent;
+    };
+
+    class RenderPackageRenderPackageQueue {
+        private:
+        static GFX::CommandBuffer* commands(const RenderPackage& pkg) {
+            return pkg._commands;
+        }
+
+        // Return true if the command buffer was reconstructed
+        static bool buildCommandBuffer(RenderPackage& pkg) {
+            return pkg.buildCommandBuffer();
+        }
+
+        friend class Divide::RenderPackageQueue;
     };
 }; // namespace Attorney
 }; // namespace Divide

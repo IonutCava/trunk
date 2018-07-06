@@ -9,8 +9,8 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 using namespace physx;
 

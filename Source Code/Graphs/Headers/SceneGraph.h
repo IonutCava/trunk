@@ -84,8 +84,12 @@ class SceneGraph : private NonCopyable,
     void intersect(const Ray& ray, F32 start, F32 end,
                    vectorImpl<SceneGraphNode_cwptr>& selectionHits) const;
 
-    void removeNode(SceneGraphNode_wptr node, bool deferrRemoval);
-    void removeNodesByType(SceneNodeType nodeType);
+    // If deferrRemoval is true, removal will happen on the next "idle" call.
+    // If this function returns true, the node was successfully removed (or queued for removal)
+    bool removeNode(SceneGraphNode_wptr node, bool deferrRemoval = true);
+    // If deferrRemoval is true, removal will happen on the next "idle" call.
+    // If this function returns true, nodes of the specified type were successfully removed (or queued for removal)
+    bool removeNodesByType(SceneNodeType nodeType, bool deferrRemoval = true);
 
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
@@ -113,6 +117,7 @@ class SceneGraph : private NonCopyable,
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
     vectorImpl<SceneGraphNode_wptr> _allNodes;
+    vectorImpl<SceneNodeType> _pendingRemovalNodeTypes;
     vectorImpl<SceneGraphNode_wptr> _pendingRemovalNodes;
     vectorImpl<SceneGraphNode*> _orderedNodeList;
 

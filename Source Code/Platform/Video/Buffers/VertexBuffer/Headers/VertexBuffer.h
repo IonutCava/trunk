@@ -41,7 +41,6 @@
 
 namespace Divide {
 
-class ShaderProgram;
 /// Vertex Buffer interface class to allow API-independent implementation of data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
@@ -381,6 +380,9 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     inline bool keepData() const {
         return _keepDataInMemory;
     }
+
+   protected:
+    void notifyListeners() const;
 
    protected:
     /// Flag used to prevent clearing of the _data vector for static buffers

@@ -4,7 +4,7 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 

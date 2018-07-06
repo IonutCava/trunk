@@ -62,11 +62,14 @@ size_t Pipeline::getHash() const {
     if (!_shaderProgram.expired()) {
         Util::Hash_combine(hash, _shaderProgram.lock()->getID());
     }
-    for (U32 i = 0; i < to_U32(ShaderType::COUNT); ++i) {
-        for (U32 j : _shaderFunctions[i]) {
-            Util::Hash_combine(hash, j);
+
+    for (const ShaderFunctions::value_type& functions : _shaderFunctions) {
+        Util::Hash_combine(hash, functions.first);
+        for (U32 function : functions.second) {
+            Util::Hash_combine(hash, function);
         }
     }
+    
     return hash;
 }
 }; //namespace Divide

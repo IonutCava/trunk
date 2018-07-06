@@ -15,15 +15,14 @@ SceneEnvironmentProbePool::~SceneEnvironmentProbePool()
 {
 }
 
-const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted() {
+const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted(const vec3<F32>& position) {
     if (!_isSorted) {
         _sortedProbes.resize(0);
-        const vec3<F32>& camPosition = Camera::activeCamera()->getEye();
 
         _sortedProbes.insert(std::cend(_sortedProbes), std::cbegin(_envProbes), std::cend(_envProbes));
 
-        auto sortFunc = [&camPosition](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
-            return a->distanceSqTo(camPosition) < b->distanceSqTo(camPosition);
+        auto sortFunc = [&position](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
+            return a->distanceSqTo(position) < b->distanceSqTo(position);
         };
 
         std::sort(std::begin(_sortedProbes), std::end(_sortedProbes), sortFunc);

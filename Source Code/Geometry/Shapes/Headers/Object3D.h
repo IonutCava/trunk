@@ -72,6 +72,8 @@ class Object3D : public SceneNode {
     virtual ~Object3D();
 
     virtual VertexBuffer* const getGeometryVB() const;
+    inline void setGeometryVBDirty() { _geometryDirty = true; }
+
     inline ObjectType getObjectType() const { return _geometryType; }
 
     inline void setObjectFlag(ObjectFlag flag) {
@@ -129,10 +131,8 @@ class Object3D : public SceneNode {
                                   std::cend(triangles));
     }
 
-    // Create a list of triangles from the vertices + indices lists based on
-    // primitive type
+    // Create a list of triangles from the vertices + indices lists based on primitive type
     bool computeTriangleList(bool force = false);
-
 
     static vectorImpl<SceneGraphNode_wptr> filterByType(const vectorImpl<SceneGraphNode_wptr>& nodes, ObjectType filter);
 
@@ -141,8 +141,7 @@ class Object3D : public SceneNode {
     virtual void rebuildVB();
 
     bool isPrimitive();
-    /// Use a custom vertex buffer for this object (e.g., a submesh uses the
-    /// mesh's vb)
+    /// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
@@ -151,7 +150,6 @@ class Object3D : public SceneNode {
                                    RenderPackage& pkgInOut) override;
    protected:
     GFXDevice& _context;
-    bool _geometryDirty;
     bool _playAnimations;
     U32 _geometryFlagMask;
     U16 _geometryPartitionID;
@@ -160,8 +158,11 @@ class Object3D : public SceneNode {
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
     vectorImpl<vec3<U32> > _geometryTriangles;
-    /// A custom, override vertex buffer
-    VertexBuffer* _buffer;
+
+  private:
+     bool _geometryDirty;
+     /// A custom, override vertex buffer
+     VertexBuffer* _buffer;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Object3D);

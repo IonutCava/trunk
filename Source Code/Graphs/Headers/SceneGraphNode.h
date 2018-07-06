@@ -129,11 +129,12 @@ class SceneGraphNode : public GUIDWrapper,
     /// to the scene graph
     SceneGraphNode_ptr addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
     SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
-    /// If recursive is true, this stops on the first node match. 
+
     /// If this function returns true, the node will no longer be part of the scene hierarchy.
-    bool removeNode(SceneGraphNode& node, bool recursive = true);
-    
-    void removeNodesByType(SceneNodeType nodeType);
+    /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
+    bool removeNode(SceneGraphNode& node);
+    /// If this function returns true, at least one node of the specified type was removed.
+    bool removeNodesByType(SceneNodeType nodeType);
 
     /// Find a node in the graph based on the SceneGraphNode's name
     /// If sceneNodeName = true, find a node in the graph based on the

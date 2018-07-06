@@ -56,12 +56,6 @@
     <Filter Include="Geometry\Shapes">
       <UniqueIdentifier>{e57286c4-02f9-40d3-85d4-20fee267d788}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Geometry\Shapes\Headers">
-      <UniqueIdentifier>{00f2c4db-6f17-4243-8fd5-5cdbff39b555}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Geometry\Shapes\Headers\Predefined">
-      <UniqueIdentifier>{6d5ae7f0-298b-4c07-92c0-af148eb8eff7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Graphs">
       <UniqueIdentifier>{017cb9d0-2540-4f7a-8d02-9290c1d4d28c}</UniqueIdentifier>
     </Filter>
@@ -142,6 +136,15 @@
     </Filter>
     <Filter Include="Scripting\Headers">
       <UniqueIdentifier>{2e4e6571-075f-4b4d-8cb0-002bb59e91f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Predefined">
+      <UniqueIdentifier>{e77729e5-6b2a-4df3-8df3-65821c80b614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Headers">
+      <UniqueIdentifier>{c414fbbd-b6a7-48ba-ab7d-82ce852709bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Geometry\Shapes\Predefined\Headers">
+      <UniqueIdentifier>{5a4facdb-c967-4818-bd5f-f85630e42b24}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -444,6 +447,21 @@
     <ClCompile Include="..\..\Source Code\Graphs\Components\RenderingComponentState.cpp">
       <Filter>Graphs\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Predefined\Box3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Predefined\Patch3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Predefined\Quad3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Predefined\Sphere3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Geometry\Shapes\Predefined\Text3D.cpp">
+      <Filter>Geometry\Shapes\Predefined</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -469,27 +487,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Importer\Headers\DVDConverter.h">
       <Filter>Geometry\Importer\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Object3D.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SubMesh.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Box3D.h">
-      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Quad3D.h">
-      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Sphere3D.h">
-      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Text3D.h">
-      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraph.h">
       <Filter>Graphs\Headers</Filter>
@@ -566,9 +563,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h">
       <Filter>Graphs\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h">
-      <Filter>Geometry\Shapes\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Headers\DeferredShadingRenderer.h">
       <Filter>Rendering\Headers</Filter>
@@ -763,8 +757,32 @@
     <ClInclude Include="..\..\Source Code\Scripting\Headers\GameScript.h">
       <Filter>Scripting\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Patch3D.h">
-      <Filter>Geometry\Shapes\Headers\Predefined</Filter>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Mesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Object3D.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SkinnedSubMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\SubMesh.h">
+      <Filter>Geometry\Shapes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Predefined\Headers\Box3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Predefined\Headers\Patch3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Predefined\Headers\Quad3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Predefined\Headers\Sphere3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Geometry\Shapes\Predefined\Headers\Text3D.h">
+      <Filter>Geometry\Shapes\Predefined\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

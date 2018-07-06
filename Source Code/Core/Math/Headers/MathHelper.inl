@@ -294,13 +294,25 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max)
     return static_cast<T>(output_start + std::round(slope * (input - input_start)));
 }
 
-template<typename T>
-bool BitCompare(const T bitMask, const T bit) {
-    return BitCompare(to_U32(bitMask), to_U32(bit));
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const U32 bitMask, const Type bit) {
+    return BitCompare(bitmask, to_base(bit));
 }
 
-template<>
-inline bool BitCompare<U32>(const U32 bitMask, const U32 bit) {
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+SetBit(U32& bitMask, const Type bit) {
+    SetBit(bitMask, to_base(bit));
+}
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ClearBit(U32& bitMask, const Type bit) {
+    ClearBit(bitMask, to_base(bit));
+}
+
+inline bool BitCompare(const U32 bitMask, const U32 bit) {
     return ((bitMask & bit) == bit);
 }
 

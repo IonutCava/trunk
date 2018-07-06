@@ -154,7 +154,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
             return;
         }
         // Remove us from the old parent's children map
-        parentPtr->removeNode(*this, false);
+        parentPtr->removeNode(*this);
     }
     // Set the parent pointer to the new parent
     _parent = parent.shared_from_this();
@@ -168,7 +168,7 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     // Time to add it to the children vector
     SceneGraphNode_ptr child = findChild(node->getName()).lock();
     if (child) {
-        removeNode(*child, true);
+        removeNode(*child);
     }
     
     Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *node);
@@ -223,28 +223,44 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
     return sceneGraphNode;
 }
 
-void SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
-    UpgradableReadLock ur_lock(_childLock);
+bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
+    // Bottom-up pattern
+    U32 removalCount = 0, childRemovalCount = 0;
+    forEachChild([nodeType, &childRemovalCount](SceneGraphNode& child) {
+        if (child.removeNodesByType(nodeType)) {
+            ++childRemovalCount;
+        }
+    });
 
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        if (_children[i]->getNode()->getType() == nodeType) {
-            {
+    bool stopSearching = false;
+    UpgradableReadLock ur_lock(_childLock);
+    while (!stopSearching) {
+        stopSearching = true;
+        for (U32 i = 0; i < _childCount; ++i) {
+            if (_children[i]->getNode()->getType() == nodeType) {
                 UpgradeToWriteLock w_lock(ur_lock);
                 _children[i].reset();
                 _childCount = _childCount - 1;
                 std::swap(_children[_childCount], _children[i]);
+                stopSearching = false;
+                ++removalCount;
+                break;
             }
-            invalidateRelationshipCache();
         }
     }
 
-    forEachChild([nodeType](SceneGraphNode& child) {
-        child.removeNodesByType(nodeType);
-    });
+    if (removalCount > 0) {
+        invalidateRelationshipCache();
+        return true;
+    }
+
+    return childRemovalCount > 0;
 }
 
-bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
+bool SceneGraphNode::removeNode(SceneGraphNode& node) {
+    // Beware. Removing a node, does no delete it!
+    // Call delete on the SceneGraphNode's pointer to do that
+
     UpgradableReadLock ur_lock(_childLock);
     
     U32 childCount = getChildCount();
@@ -262,20 +278,13 @@ bool SceneGraphNode::removeNode(SceneGraphNode& node, bool recursive) {
     }
     
 
-    bool success = false;
-    if (recursive) {
-        // If this didn't finish, it means that we found our node
-        success = !forEachChildInterruptible([&node](SceneGraphNode& child) {
-                        if (child.removeNode(node)) {
-                            return false;
-                        }
-                        return true;
-                    });
-    }
-
-    // Beware. Removing a node, does no delete it!
-    // Call delete on the SceneGraphNode's pointer to do that
-    return success;
+    // If this didn't finish, it means that we found our node
+    return !forEachChildInterruptible([&node](SceneGraphNode& child) {
+                    if (child.removeNode(node)) {
+                        return false;
+                    }
+                    return true;
+                });
 }
 
 void SceneGraphNode::postLoad() {

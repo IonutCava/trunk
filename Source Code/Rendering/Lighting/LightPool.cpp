@@ -113,7 +113,7 @@ bool LightPool::clear() {
         return true;
     }
 
-    _parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT);
+    _parentScene.sceneGraph().removeNodesByType(SceneNodeType::TYPE_LIGHT, false);
     for (Light::LightList& lightList : _lights) {
         lightList.clear();
     }

@@ -28,7 +28,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descri
 Object3D::Object3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
     : SceneNode(parentCache, descriptorHash, name, resourceName, resourceLocation, SceneNodeType::TYPE_OBJECT3D),
     _context(context),
-    _geometryDirty(false),
+    _geometryDirty(true),
     _buffer(nullptr),
     _playAnimations(true),
     _geometryType(type),

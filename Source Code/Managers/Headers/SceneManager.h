@@ -48,12 +48,15 @@ public:
 enum class RenderStage : U32;
 namespace Attorney {
     class SceneManagerKernel;
+    class SceneManagerScenePool;
     class SceneManagerRenderPass;
+    class SceneManagerCameraAccessor;
 };
 
 class ScenePool;
 class SceneShaderData;
 class ShaderComputeQueue;
+class GUIConsoleCommandParser;
 FWD_DECLARE_MANAGED_CLASS(Player);
 
 class SceneManager : public FrameListener,
@@ -61,7 +64,10 @@ class SceneManager : public FrameListener,
                      public KernelComponent {
 
     friend class Attorney::SceneManagerKernel;
+    friend class Attorney::SceneManagerScenePool;
     friend class Attorney::SceneManagerRenderPass;
+    friend class Attorney::SceneManagerCameraAccessor;
+
 public:
     typedef vectorImpl<Player_ptr> PlayerList;
 
@@ -167,7 +173,6 @@ protected:
     bool networkUpdate(U32 frameCount);
 
 protected:
-    friend class ScenePool;
     void initPostLoadState();
     Scene* load(stringImpl name);
     bool   unloadScene(Scene* scene);
@@ -189,7 +194,8 @@ protected:
     void debugDraw(const Camera& camera, GFX::CommandBuffer& bufferInOut);
     bool generateShadowMaps(GFX::CommandBuffer& bufferInOut);
     bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
-    Camera* getActiveCamera() const;
+    Camera* playerCamera() const;
+    Camera* playerCamera(U8 playerIndex) const;
     void currentPlayerPass(U8 playerIndex);
 
 private:
@@ -289,6 +295,31 @@ class SceneManagerKernel {
     friend class Divide::Kernel;
 };
 
+class SceneManagerScenePool {
+  private:
+   static bool unloadScene(Divide::SceneManager& mgr, Scene* scene) {
+       return mgr.unloadScene(scene);
+   }
+
+   friend class Divide::ScenePool;
+};
+
+class SceneManagerCameraAccessor {
+  private:
+    static Camera* playerCamera(Divide::SceneManager& mgr) {
+        return mgr.playerCamera();
+    }
+
+    static Camera* playerCamera(Divide::SceneManager& mgr, U8 playerIndex) {
+        return mgr.playerCamera(playerIndex);
+    }
+
+    friend class Divide::Scene;
+    friend class Divide::ShadowMap;
+    friend class Divide::RenderPass;
+    friend class Divide::GUIConsoleCommandParser;
+};
+
 class SceneManagerRenderPass {
    private:
     static bool populateRenderQueue(Divide::SceneManager& mgr,
@@ -312,10 +343,6 @@ class SceneManagerRenderPass {
 
     static bool generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
         return mgr.generateShadowMaps(bufferInOut);
-    }
-
-    static Camera* getActiveCamera(Divide::SceneManager& mgr) {
-        return mgr.getActiveCamera();
     }
 
     friend class Divide::RenderPass;

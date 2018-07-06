@@ -49,11 +49,13 @@ class CommandBuffer {
     inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
     add(const T& command);
 
+    bool validate() const;
+
     inline void add(const CommandBuffer& other);
 
     void clean();
 
-    inline void batch();
+    void batch();
 
     inline vectorImpl<std::shared_ptr<Command>>& operator()();
     inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
@@ -61,6 +63,12 @@ class CommandBuffer {
     inline vectorAlg::vecSize size() const { return _data.size(); }
     inline void clear();
     inline bool empty() const;
+
+    // Multi-line. indented list of all commands (and params for some of them)
+    stringImpl toString() const;
+
+  protected:
+    void toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtIndent, stringImpl& out) const;
 
   protected:
     size_t _index = 0;

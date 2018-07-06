@@ -111,10 +111,6 @@ namespace Divide {
         return _hidden;
     }
 
-    inline void DisplayWindow::hidden(const bool state) {
-        _hidden = state;
-    }
-
     inline WindowType DisplayWindow::type() const {
         return _type;
     }

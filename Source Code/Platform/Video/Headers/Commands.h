@@ -110,6 +110,7 @@ struct BeginRenderPassCommand : Command {
 
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
+    stringImpl _name;
 };
 
 struct EndRenderPassCommand : Command {

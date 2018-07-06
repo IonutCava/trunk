@@ -89,8 +89,21 @@ void SeedRandom();
 template<typename Engine = std::mt19937_64>
 void SeedRandom(U32 seed);
 
-template<typename T>
-bool BitCompare(const T bitMask, const T bit);
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const U32 bitMask, const Type bit);
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+SetBit(U32& bitMask, const Type bit);
+
+template<typename Type>
+inline typename std::enable_if<std::is_enum<Type>::value, void>::type
+ClearBit(U32& bitMask, const Type bit);
+
+bool BitCompare(const U32 bitMask, const U32 bit);
+inline void SetBit(U32& bitMask, const U32 bit);
+inline void ClearBit(U32& bitMask, const U32 bit);
 
 /// Clamps value n between min and max
 template <typename T>

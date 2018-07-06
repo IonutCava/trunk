@@ -195,4 +195,5 @@ bool VertexBuffer::serialize(ByteBuffer& dataOut) const {
     }
     return false;
 }
+
 };

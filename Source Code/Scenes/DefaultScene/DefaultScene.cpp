@@ -49,7 +49,7 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
 
 void DefaultScene::postLoadMainThread() {
     // Replace buttons with nice, animated elements? images?
-    vectorImpl<stringImpl> scenes = _parent.sceneNameList();
+    const vectorImpl<stringImpl>& scenes = _parent.sceneNameList();
 
     const vec2<U16>& resolution = _GUI->getDisplayResolution();
 

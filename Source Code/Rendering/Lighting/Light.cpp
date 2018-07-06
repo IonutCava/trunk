@@ -8,7 +8,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 
@@ -130,13 +130,6 @@ bool Light::onRender(SceneGraphNode& sgn,
                      const SceneRenderState& sceneRenderState,
                      const RenderStagePass& renderStagePass) {
     ACKNOWLEDGE_UNUSED(sceneRenderState);
-
-    /*if (_type == LightType::DIRECTIONAL) {
-        if (sceneState.playerState(0).overrideCamera() == nullptr) {
-            sceneState.playerState(0).overrideCamera(_shadowCamera);
-            GFXDevice::instance().debugDrawFrustum(&Camera::activeCamera()->getFrustum());
-        }
-    }*/
 
     if (!_drawImpostor) {
         return true;

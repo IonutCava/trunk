@@ -56,7 +56,7 @@ struct ComputeParams {
     vec3<U32> _groupSize;
 };
 
-typedef std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
+typedef hashMapImpl<ShaderType, vectorImpl<U32>> ShaderFunctions;
 
 struct PipelineDescriptor {
     U8 _multiSampleCount = 0;

@@ -44,11 +44,10 @@ class RenderPackageQueue {
     bool empty() const;
     bool locked() const;
 
-    const RenderPackage& getPackage(U32 idx) const;
+    const GFX::CommandBuffer& getCommandBuffer(U32 idx);
 
     protected:
     friend class GFXDevice;
-    RenderPackage& getPackage(U32 idx);
     RenderPackage& back();
     bool push_back(const RenderPackage& package);
     bool pop_back();

@@ -30,7 +30,7 @@ ScenePool::~ScenePool()
     }
 
     for (Scene* scene : tempScenes) {
-        _parentMgr.unloadScene(scene);
+        Attorney::SceneManagerScenePool::unloadScene(_parentMgr, scene);
         deleteScene(scene);
     }
 

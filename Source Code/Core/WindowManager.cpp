@@ -270,6 +270,7 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
             Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), winGUID);
 
             if (_activeWindowGUID == winGUID) {
+                getWindow(winGUID).hidden(true);
                 _context->app().RequestShutdown();
             } else {
                 for (DisplayWindow* win : _windows) {

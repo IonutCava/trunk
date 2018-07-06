@@ -46,7 +46,6 @@ class GFXDevice;
 class RenderBin;
 class WaterPlane;
 class ImpostorBox;
-class ShaderProgram;
 class SceneGraphNode;
 class ParticleEmitter;
 
@@ -183,7 +182,7 @@ class RenderingComponent : public SGNComponent {
 
     void rebuildDrawCommands(const RenderStagePass& stagePass);
 
-    void prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
+    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
 
     void setDrawIDs(const RenderStagePass& renderStagePass,
                     U32 cmdOffset,
@@ -227,8 +226,6 @@ class RenderingComponent : public SGNComponent {
     bool _renderPackagesDirty;
     PushConstants _globalPushConstants;
 
-    ShaderBufferList _shaderBuffers;
-
     IMPrimitive* _boundingBoxPrimitive[2];
     IMPrimitive* _boundingSpherePrimitive;
     IMPrimitive* _skeletonPrimitive;
@@ -244,6 +241,8 @@ class RenderingComponent : public SGNComponent {
     size_t _shadowStateBlockHash;
 
     ReflectorType _reflectorType;
+    TextureDataContainer _textureCache;
+    ShaderBufferList _shaderBuffersCache;
 
     hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
     ShaderProgram_ptr _previewRenderTargetColour;
@@ -291,9 +290,10 @@ class RenderingCompRenderPass {
 class RenderingCompGFXDevice {
    private:
     static void prepareDrawPackage(RenderingComponent& renderable,
-                                             const SceneRenderState& sceneRenderState,
-                                             const RenderStagePass& renderStagePass) {
-        renderable.prepareDrawPackage(sceneRenderState, renderStagePass);
+                                   const Camera& camera,
+                                   const SceneRenderState& sceneRenderState,
+                                   const RenderStagePass& renderStagePass) {
+        renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass);
     }
 
     static void setDrawIDs(RenderingComponent& renderable, 

@@ -43,7 +43,7 @@ public:
     SceneEnvironmentProbePool(Scene& parentScene);
     ~SceneEnvironmentProbePool();
 
-    const EnvironmentProbeList& getNearestSorted();
+    const EnvironmentProbeList& getNearestSorted(const vec3<F32>& position);
 
     EnvironmentProbe_wptr addInfiniteProbe(const vec3<F32>& position);
     EnvironmentProbe_wptr addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);

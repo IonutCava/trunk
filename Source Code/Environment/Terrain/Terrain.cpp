@@ -10,7 +10,7 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Geometry/Shapes/Headers/Predefined/Patch3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -127,9 +127,10 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
 
     if (cameraUpdated) {
-        const vec3<F32>& newEye = Camera::activeCamera()->getEye();
+        Camera* camera = sceneRenderState.parentScene().playerCamera();
+        const vec3<F32>& newEye = camera->getEye();
         if (tessellator.getEye() != newEye) {
-            tessellator.createTree(Camera::activeCamera()->getEye(),
+            tessellator.createTree(newEye,
                                    vec3<F32>(0),
                                    _terrainDimensions);
             tessellator.updateRenderData();

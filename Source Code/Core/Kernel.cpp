@@ -508,14 +508,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
         }
         {
             Time::ScopedTimer time3(getTimer(_flushToScreenTimer, _postFxRenderTimer, i, "PostFX Timer"));
-            //PostFX::instance().apply();
+            PostFX::instance().apply();
         }
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
             Attorney::GFXDeviceKernel::flushDisplay(_platformContext->gfx(), targetViewports[i]);
         }
     }
-    Camera::activeCamera(nullptr);
 
     for (U8 i = playerCount; i < to_U8(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);

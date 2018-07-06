@@ -6,7 +6,7 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/StringHelper.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
@@ -178,6 +178,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _ssaoOutput._targetID;
+    beginRenderPassCmd._name = "DO_SSAO_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;

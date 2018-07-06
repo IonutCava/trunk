@@ -33,7 +33,6 @@
 #define _DIRECTIONAL_LIGHT_H_
 
 #include "Light.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 namespace Divide {
 

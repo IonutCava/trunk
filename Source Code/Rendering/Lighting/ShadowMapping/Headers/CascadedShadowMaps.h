@@ -42,7 +42,6 @@ class Quad3D;
 class Camera;
 class GFXDevice;
 class ShaderBuffer;
-class ShaderProgram;
 class DirectionalLight;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);

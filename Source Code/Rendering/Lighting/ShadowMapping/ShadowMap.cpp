@@ -5,6 +5,7 @@
 #include "Headers/SingleShadowMap.h"
 #include "Scenes/Headers/SceneState.h"
 #include "Headers/CascadedShadowMaps.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Rendering/Lighting/Headers/DirectionalLight.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
@@ -274,4 +275,7 @@ ShadowMap* ShadowMapInfo::createShadowMap(GFXDevice& context, const SceneRenderS
     return _shadowMap;
 }
 
+Camera* ShadowMap::playerCamera() const {
+    return Attorney::SceneManagerCameraAccessor::playerCamera(_context.parent().sceneManager());
+}
 };

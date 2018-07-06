@@ -141,7 +141,7 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneSt
 
 bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderState) const {
     if (BitCompare(options, to_base(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
-        const Camera& cam = *Camera::activeCamera();
+        const Camera& cam = *sceneRenderState.parentScene().playerCamera();
         F32 boundingRadius = _boundingSphere.getRadius();
         const vec3<F32>& boundingCenter = _boundingSphere.getCenter();
 

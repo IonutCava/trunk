@@ -58,6 +58,7 @@ SceneGraph::~SceneGraph()
 
 void SceneGraph::unload()
 {
+    idle();
     U32 childCount = 0;
     stringImpl childNameCpy;
     while((childCount = _root->getChildCount()) != 0) {
@@ -134,30 +135,48 @@ void SceneGraph::idle()
             removeNode(node, false);
         }
       
-        _pendingRemovalNodes.clear();
+        _pendingRemovalNodes.resize(0);
+    }
+
+    if (!_pendingRemovalNodeTypes.empty()) {
+        for (SceneNodeType type : _pendingRemovalNodeTypes) {
+            removeNodesByType(type, false);
+        }
+
+        _pendingRemovalNodeTypes.resize(0);
     }
 }
 
-void SceneGraph::removeNodesByType(SceneNodeType nodeType) {
-    getRoot().removeNodesByType(nodeType);
-}
-
-void SceneGraph::removeNode(SceneGraphNode_wptr node, bool deferrRemoval) {
-    SceneGraphNode_ptr sgn = node.lock();
-    if (!sgn) {
-        return;
-    }
+bool SceneGraph::removeNodesByType(SceneNodeType nodeType, bool deferrRemoval) {
     if (deferrRemoval) {
-        _pendingRemovalNodes.push_back(node);
-    } else {
+        _pendingRemovalNodeTypes.push_back(nodeType);
+        return true;
+    }
+     
+    return getRoot().removeNodesByType(nodeType);
+}
+
+bool SceneGraph::removeNode(SceneGraphNode_wptr node, bool deferrRemoval) {
+    SceneGraphNode_ptr sgn = node.lock();
+    if (sgn) {
+        if (deferrRemoval) {
+            _pendingRemovalNodes.push_back(node);
+            return true;
+        }
+
         SceneGraphNode_ptr parent = sgn->getParent().lock();
         if (parent) {
-            parent->removeNode(*sgn, false);
+            if (!parent->removeNode(*sgn)) {
+                return false;
+            }
         }
 
         assert(sgn.unique());
         sgn.reset();
+        return true;
     }
+
+    return false;
 }
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {

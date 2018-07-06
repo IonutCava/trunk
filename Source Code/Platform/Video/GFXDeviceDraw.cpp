@@ -41,14 +41,21 @@ void GFXDevice::renderQueueToSubPasses(RenderBinType queueType, GFX::CommandBuff
     if (!renderQueue.empty()) {
         U32 queueSize = renderQueue.size();
         for (U32 idx = 0; idx < queueSize; ++idx) {
-            subPassCmd.add(renderQueue.getPackage(idx).commands());
+            subPassCmd.add(renderQueue.getCommandBuffer(idx));
         }
         renderQueue.clear();
     }
 }
 
+
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
-    _api->flushCommandBuffer(commandBuffer);
+    commandBuffer.batch();
+    if (commandBuffer.validate()) {
+        _api->flushCommandBuffer(commandBuffer);
+    } else {
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());
+        DIVIDE_ASSERT(false, "GFXDevice::flushCommandBuffer error: Invalid command buffer. Check error log!");
+    }
 }
 
 void GFXDevice::flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer) {
@@ -128,6 +135,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
 void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
                                   SceneRenderState& sceneRenderState,
                                   RenderPass::BufferData& bufferData,
+                                  const Camera& camera,
                                   bool refreshNodeData)
 {
     Time::ScopedTimer timer(_commandBuildTimer);
@@ -163,7 +171,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
             [&](SceneGraphNode* node) -> void
             {
                 RenderingComponent& renderable = *node->get<RenderingComponent>();
-                Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, sceneRenderState, currentStage);
+                Attorney::RenderingCompGFXDevice::prepareDrawPackage(renderable, camera, sceneRenderState, currentStage);
             });
 
         std::for_each(std::begin(queue), std::end(queue),
@@ -217,6 +225,7 @@ void GFXDevice::buildDrawCommands(const RenderQueue::SortedQueues& sortedNodes,
 void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               GFX::CommandBuffer& bufferInOut) {
+
     static const U32 GROUP_SIZE_AABB = 64;
 
     GFX::BindPipelineCommand bindPipelineCmd;
@@ -276,6 +285,7 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
     GFX::SetCamera(bufferInOut, setCameraCommand);
+    
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
     GFX::AddDrawTextCommand(bufferInOut, drawTextCommand);
@@ -283,8 +293,17 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
     GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+    GFX::CommandBuffer& buffer = sBuffer();
 
-    drawText(batch, sBuffer());
+    // Assume full game window viewport for text
+    GFX::SetViewportCommand viewportCommand;
+    RenderTarget& screenRT = _rtPool->renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    U16 width = screenRT.getWidth();
+    U16 height = screenRT.getHeight();
+    viewportCommand._viewport.set(0, 0, width, height);
+    GFX::SetViewPort(buffer, viewportCommand);
+
+    drawText(batch, buffer);
     flushCommandBuffer(sBuffer());
 }
 
@@ -299,6 +318,15 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
+
+    GFX::BeginDebugScopeCommand beginDebugScopeCmd;
+    beginDebugScopeCmd._scopeID = 12345;
+    beginDebugScopeCmd._scopeName = "Flush Display";
+    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
+
+    GFX::SetCameraCommand setCameraCommand;
+    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
+    GFX::SetCamera(buffer, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = newPipeline(pipelineDescriptor);
@@ -320,9 +348,9 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     drawCmd._drawCommands.push_back(triangleCmd);
     GFX::AddDrawCommands(buffer, drawCmd);
 
-    GFX::SetCameraCommand setCameraCommand;
-    setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(buffer, setCameraCommand);
+    GFX::EndDebugScopeCommand endDebugScopeCommand;
+    GFX::EndDebugScope(buffer, endDebugScopeCommand);
+    
     flushCommandBuffer(buffer);
     
     // Render all 2D debug info and call API specific flush function
@@ -330,6 +358,7 @@ void GFXDevice::flushDisplay(const vec4<I32>& targetViewport) {
     for (std::pair<U32, GUID2DCbk>& callbackFunction : _2dRenderQueue) {
         callbackFunction.second.second();
     }
+
 }
 
 };

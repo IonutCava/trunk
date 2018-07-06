@@ -5,7 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"

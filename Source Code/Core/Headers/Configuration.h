@@ -73,6 +73,7 @@ public:
 
     struct GUI {
         struct CEGUI {
+            bool enabled;
             bool extraStates;
             bool skipRendering;
             stringImpl defaultGUIScheme;

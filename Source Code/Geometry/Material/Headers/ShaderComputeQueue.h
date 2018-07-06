@@ -45,7 +45,6 @@ namespace Time {
 class ResourceCache;
 class PlatformContext;
 
-class ShaderProgram;
 class ShaderComputeQueue : public FrameListener {
 public:
     class ShaderQueueElement {

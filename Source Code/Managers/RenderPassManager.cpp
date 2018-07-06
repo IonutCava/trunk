@@ -131,6 +131,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
                 GFX::BeginRenderPassCommand beginRenderPassCommand;
                 beginRenderPassCommand._target = params.target;
                 beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
+                beginRenderPassCommand._name = "DO_PRE_PASS";
                 GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
             }
 
@@ -154,6 +155,9 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
         }
         
     }
+
+    GFX::EndDebugScopeCommand endDebugScopeCmd;
+    GFX::EndDebugScope(bufferInOut, endDebugScopeCmd);
 }
 
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -215,6 +219,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             GFX::BeginRenderPassCommand beginRenderPassCommand;
             beginRenderPassCommand._target = params.target;
             beginRenderPassCommand._descriptor = drawPolicy;
+            beginRenderPassCommand._name = "DO_MAIN_PASS";
             GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
         }
 
@@ -258,6 +263,9 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
     // Weighted Blended Order Independent Transparency
     if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0) {
         GFX::BeginRenderPassCommand beginRenderPassOitCmd, beginRenderPassCompCmd;
+        beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
+        beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
+
         beginRenderPassOitCmd._target = RenderTargetID(RenderTargetUsage::OIT);
         RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(0);
         RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(1);

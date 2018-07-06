@@ -170,6 +170,9 @@ class Scene : public Resource {
     inline ResourceCache& resourceCache() { return _resCache; }
     inline const ResourceCache& resourceCache() const { return _resCache; }
 
+    Camera* playerCamera() const;
+    Camera* playerCamera(U8 index) const;
+
    protected:
     virtual void rebuildShaders();
     virtual void onSetActive();

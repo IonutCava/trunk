@@ -5,7 +5,7 @@
 #include "Core/Headers/Console.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
@@ -73,6 +73,7 @@ void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _parent.inputRT()._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
+    beginRenderPassCmd._name = "DO_DOF_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;

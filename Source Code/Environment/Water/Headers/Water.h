@@ -33,7 +33,7 @@
 #define _WATER_PLANE_H_
 
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {

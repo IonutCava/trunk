@@ -848,8 +848,8 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     if (Attorney::GLAPIShaderProgram::bind(*program)) {
-        for (U32 i = 0; i < to_U32(ShaderType::COUNT); ++i) {
-            Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(i), pipeline.shaderFunctions()[i]);
+        for (const ShaderFunctions::value_type& func : pipeline.shaderFunctions()) {
+            Attorney::GLAPIShaderProgram::SetSubroutines(*program, func.first, func.second);
         }
         return true;
     }
@@ -937,6 +937,7 @@ void GL_API::popDebugMessage(GFXDevice& context) {
 
 void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
     U32 drawCallCount = 0;
+
     const vectorImpl<std::shared_ptr<GFX::Command>>& commands = commandBuffer();
     for (const std::shared_ptr<GFX::Command>& cmd : commands) {
         switch (cmd->_type) {

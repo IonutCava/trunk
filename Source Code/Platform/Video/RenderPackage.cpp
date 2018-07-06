@@ -13,11 +13,7 @@ RenderPackage::RenderPackage(GFXDevice& context, bool useSecondaryBuffers)
       _isOcclusionCullable(true),
       _secondaryCommandPool(useSecondaryBuffers),
       _commands(nullptr),
-      _drawCommandDirty(true),
-      _pipelineDirty(true),
-      _clipPlanesDirty(true),
-      _pushConstantsDirty(true),
-      _descriptorSetsDirty(true)
+      _dirtyFlags(to_base(CommandType::ALL))
 {
 }
 
@@ -29,17 +25,29 @@ RenderPackage::~RenderPackage()
 }
 
 void RenderPackage::clear() {
-    _commands->clear();
+    if (_commands != nullptr) {
+        _commands->clear();
+    }
+    _commandOrdering.clear();
     _drawCommands.clear();
     _pipelines.clear();
     _clipPlanes.clear();
     _pushConstants.clear();
+    _descriptorSets.clear();
 
-    _drawCommandDirty = _pipelineDirty = _clipPlanesDirty = _pushConstantsDirty = _descriptorSetsDirty = true;
+    _dirtyFlags = to_base(CommandType::ALL);
 }
 
 void RenderPackage::set(const RenderPackage& other) {
-    *_commands = *other._commands;
+    _commandOrdering = other._commandOrdering;
+
+    _drawCommands = other._drawCommands;
+    _pipelines = other._pipelines;
+    _clipPlanes = other._clipPlanes;
+    _pushConstants = other._pushConstants;
+    _descriptorSets = other._descriptorSets;
+
+    _dirtyFlags = to_base(CommandType::ALL);
 }
 
 size_t RenderPackage::getSortKeyHash() const {
@@ -74,7 +82,7 @@ void RenderPackage::drawCommand(I32 index, I32 cmdIndex, const GenericDrawComman
     DIVIDE_ASSERT(index < to_I32(_drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command index!");
     DIVIDE_ASSERT(cmdIndex < to_I32(_drawCommands[index]._drawCommands.size()), "RenderPackage::drawCommand error: Invalid draw command sub-index!");
     _drawCommands[index]._drawCommands[cmdIndex] = cmd;
-    _drawCommandDirty = true;
+    SetBit(_dirtyFlags, CommandType::DRAW);
 }
 
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
@@ -94,7 +102,7 @@ const Pipeline& RenderPackage::pipeline(I32 index) const {
 void RenderPackage::pipeline(I32 index, const Pipeline& pipeline) {
     DIVIDE_ASSERT(index < to_I32(_pipelines.size()), "RenderPackage::pipeline error: Invalid pipeline index!");
     _pipelines[index]._pipeline.fromDescriptor(pipeline.toDescriptor());
-    _pipelineDirty = true;
+    SetBit(_dirtyFlags, CommandType::PIPELINE);
 }
 
 void RenderPackage::addPipelineCommand(const GFX::BindPipelineCommand& pipeline) {
@@ -114,7 +122,7 @@ const ClipPlaneList& RenderPackage::clipPlanes(I32 index) const {
 void RenderPackage::clipPlanes(I32 index, const ClipPlaneList& clipPlanes) {
     DIVIDE_ASSERT(index < to_I32(_clipPlanes.size()), "RenderPackage::clipPlanes error: Invalid clip plane list index!");
     _clipPlanes[index]._clippingPlanes = clipPlanes;
-    _clipPlanesDirty = true;
+    SetBit(_dirtyFlags, CommandType::CLIP_PLANES);
 }
 
 void RenderPackage::addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes) {
@@ -134,7 +142,7 @@ const PushConstants& RenderPackage::pushConstants(I32 index) const {
 void RenderPackage::pushConstants(I32 index, const PushConstants& constants) {
     DIVIDE_ASSERT(index < to_I32(_pushConstants.size()), "RenderPackage::pushConstants error: Invalid push constants index!");
     _pushConstants[index]._constants = constants;
-    _pushConstantsDirty = true;
+    SetBit(_dirtyFlags, CommandType::PUSH_CONSTANTS);
 }
 
 void RenderPackage::addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants) {
@@ -154,7 +162,7 @@ const DescriptorSet& RenderPackage::descriptorSet(I32 index) const {
 void RenderPackage::descriptorSet(I32 index, const DescriptorSet& descriptorSets) {
     DIVIDE_ASSERT(index < to_I32(_descriptorSets.size()), "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     _descriptorSets[index]._set = descriptorSets;
-    _descriptorSetsDirty = true;
+    SetBit(_dirtyFlags, CommandType::DESCRIPTOR_SETS);
 }
 
 void RenderPackage::addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets) {
@@ -201,27 +209,29 @@ const GFX::CommandBuffer& RenderPackage::commands() const {
 
 bool RenderPackage::buildCommandBuffer() {
     //ToDo: Try to rebuild only the affected bits and pieces. That's why we have multiple dirty flags -Ionut
-    if (_commands == nullptr || _drawCommandDirty || _pipelineDirty || _clipPlanesDirty || _pushConstantsDirty || _descriptorSetsDirty) {
+    if (_commands == nullptr || _dirtyFlags != 0) {
         if (_commands == nullptr) {
             _commands = GFX::allocateCommandBuffer(_secondaryCommandPool);
         }
+        GFX::CommandBuffer& buffer = *_commands;
 
+        buffer.clear();
         for (const CommandEntry& cmd : _commandOrdering) {
             switch (cmd._type) {
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    addDrawCommand(_drawCommands[cmd._index]);
+                    GFX::AddDrawCommands(buffer, _drawCommands[cmd._index]);
                 } break;
                 case GFX::CommandType::BIND_PIPELINE: {
-                    addPipelineCommand(_pipelines[cmd._index]);
+                    GFX::BindPipeline(buffer, _pipelines[cmd._index]);
                 } break;
                 case GFX::CommandType::SET_CLIP_PLANES: {
-                    addClipPlanesCommand(_clipPlanes[cmd._index]);
+                    GFX::SetClipPlanes(buffer, _clipPlanes[cmd._index]);
                 } break;
                 case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                    addPushConstantsCommand(_pushConstants[cmd._index]);
+                    GFX::SendPushConstants(buffer, _pushConstants[cmd._index]);
                 } break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                    addDescriptorSetsCommand(_descriptorSets[cmd._index]);
+                    GFX::BindDescriptorSets(buffer, _descriptorSets[cmd._index]);
                 } break;
                 default:
                 case GFX::CommandType::COUNT: {
@@ -232,7 +242,7 @@ bool RenderPackage::buildCommandBuffer() {
             }
         }
 
-        _drawCommandDirty = _pipelineDirty = _clipPlanesDirty = _pushConstantsDirty = _descriptorSetsDirty = false;
+        _dirtyFlags = to_base(CommandType::NONE);
         return true;
     }
     return false;

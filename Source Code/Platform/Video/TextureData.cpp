@@ -24,13 +24,33 @@ TextureDataContainer::~TextureDataContainer()
 {
 }
 
-void TextureDataContainer::set(const TextureDataContainer& other) {
+bool TextureDataContainer::set(const TextureDataContainer& other) {
+    auto compareTextures = [](const vectorImpl<std::pair<TextureData, U8>>& a,
+                              const vectorImpl<std::pair<TextureData, U8>>& b) -> bool {
+        if (a.size() != b.size()) {
+            return false;
+        }
+
+        for (vectorAlg::vecSize i = 0; i < a.size(); ++i) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
     const vectorImpl<std::pair<TextureData, U8>>& otherTextures = other.textures();
-    _textures.resize(0);
-    _textures.reserve(otherTextures.size());
-    _textures.insert(std::begin(_textures),
-                     std::begin(otherTextures),
-                     std::end(otherTextures));
+    if (!compareTextures(otherTextures, _textures)) {
+        _textures.resize(0);
+        _textures.reserve(otherTextures.size());
+        _textures.insert(std::begin(_textures),
+                         std::begin(otherTextures),
+                         std::end(otherTextures));
+        return true;
+    }
+
+    return false;
 }
 
 bool TextureDataContainer::addTexture(const std::pair<TextureData, U8 /*binding*/>& textureEntry) {

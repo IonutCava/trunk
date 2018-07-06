@@ -32,8 +32,8 @@
 #ifndef _IMPOSTOR_H_
 #define _IMPOSTOR_H_
 
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 

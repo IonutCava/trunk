@@ -63,8 +63,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
 
     virtual void draw(const GenericDrawCommand& command) = 0;
 
-    /// When reading and writing to the same buffer, we use a round-robin
-    /// approach and
+    /// When reading and writing to the same buffer, we use a round-robin approach and
     /// offset the reading and writing to multiple copies of the data
     virtual void setBuffer(U32 buffer,
                            U32 elementCount,

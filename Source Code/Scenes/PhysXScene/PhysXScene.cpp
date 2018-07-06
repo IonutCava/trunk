@@ -110,10 +110,10 @@ U16 PhysXScene::registerInputActions() {
 
 bool PhysXScene::loadResources(bool continueOnErrors) {
     _guiTimers.push_back(0.0);  // Fps
-    Camera::activeCamera()->setFixedYawAxis(false);
-    Camera::activeCamera()->setRotation(-45 /*yaw*/, 10 /*pitch*/);
-    Camera::activeCamera()->setEye(vec3<F32>(0, 30, -40));
-    Camera::activeCamera()->setFixedYawAxis(true);
+    playerCamera()->setFixedYawAxis(false);
+    playerCamera()->setRotation(-45 /*yaw*/, 10 /*pitch*/);
+    playerCamera()->setEye(vec3<F32>(0, 30, -40));
+    playerCamera()->setFixedYawAxis(true);
     _context.config().rendering.enableFog = false;
     _context.config().rendering.bloomFactor = 0.1f;
     return true;

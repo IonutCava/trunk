@@ -14,8 +14,8 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "Geometry/Shapes/Headers/Mesh.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 
@@ -206,7 +206,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV, 40, 140);
 
-    Camera::activeCamera()->setHorizontalFoV(Angle::DEGREES<F32>(FoV));
+    Attorney::SceneManagerCameraAccessor::playerCamera(_context.gfx().parent().sceneManager())->setHorizontalFoV(Angle::DEGREES<F32>(FoV));
 }
 
 void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
@@ -214,6 +214,8 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     stringImpl args1, args2;
     std::getline(ss, args1, ',');
     std::getline(ss, args2, ',');
+
+    Camera* cam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.gfx().parent().sceneManager());
 
     float scale = 1.0f;
     if (!Util::IsNumber(args2.c_str())) {
@@ -230,10 +232,10 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
              ? ""
              : assetLocation) +
         args1;
-    model.position = Camera::activeCamera()->getEye();
+    model.position = cam->getEye();
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
-    model.orientation = Camera::activeCamera()->getEuler();
+    model.orientation = cam->getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;

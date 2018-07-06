@@ -42,6 +42,7 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
 GUI::GUI(Kernel& parent)
     : GUIInterface(*this, vec2<U16>(1, 1)), //<dangerous, but better than a Singleton
     KernelComponent(parent),
+    _ceguiInput(*this),
     _init(false),
     _rootSheet(nullptr),
     _defaultMsgBox(nullptr),
@@ -131,8 +132,10 @@ void GUI::draw(GFXDevice& context) const {
     }
 
     // CEGUI handles its own states, so render it after we clear our states but before we swap buffers
-    if (!parent().platformContext().config().gui.cegui.skipRendering) {
-        CEGUI::System::getSingleton().renderAllGUIContexts();
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        if (!parent().platformContext().config().gui.cegui.skipRendering) {
+            CEGUI::System::getSingleton().renderAllGUIContexts();
+        }
     }
 }
 
@@ -141,9 +144,11 @@ void GUI::update(const U64 deltaTime) {
         return;
     }
 
-    _ceguiInput.update(deltaTime);
-    CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        _ceguiInput.update(deltaTime);
+        CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+        CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+    }
 
     if (_console) {
         _console->update(deltaTime);
@@ -265,7 +270,9 @@ void GUI::destroy() {
 }
 
 void GUI::onChangeResolution(U16 w, U16 h) {
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    }
 
     GUIInterface::onChangeResolution(w, h);
 
@@ -284,7 +291,9 @@ void GUI::selectionChangeCallback(Scene* const activeScene, U8 playerIndex) {
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) const {
-    CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(x), to_F32(y));
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        CEGUI_DEFAULT_CTX.injectMousePosition(to_F32(x), to_F32(y));
+    }
 }
 
 // Return true if input was consumed
@@ -293,7 +302,11 @@ bool GUI::onKeyDown(const Input::KeyEvent& key) {
         return false;
     }
 
-    return _ceguiInput.onKeyDown(key);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.onKeyDown(key);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
@@ -301,7 +314,12 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
     if (!_init) {
         return false;
     }
-    return _ceguiInput.onKeyUp(key);
+
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.onKeyUp(key);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
@@ -327,7 +345,11 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
         }
     }
 
-    return _ceguiInput.mouseMoved(arg);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.mouseMoved(arg);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
@@ -337,7 +359,11 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
         return false;
     }
 
-    bool consumed = _ceguiInput.mouseButtonPressed(arg, button);
+    bool consumed = false;
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        consumed = _ceguiInput.mouseButtonPressed(arg, button);
+    }
+
     if (!consumed) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
@@ -368,7 +394,11 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
         return false;
     }
 
-    bool consumed = _ceguiInput.mouseButtonReleased(arg, button);
+    bool consumed = false;
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        consumed = _ceguiInput.mouseButtonReleased(arg, button);
+    }
+
     if (!consumed) {
         if (button == Input::MouseButton::MB_Left) {
             GUIEvent event;
@@ -394,34 +424,58 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
 
 // Return true if input was consumed
 bool GUI::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
-    return _ceguiInput.joystickAxisMoved(arg, axis);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickAxisMoved(arg, axis);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
-    return _ceguiInput.joystickPovMoved(arg, pov);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickPovMoved(arg, pov);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button) {
-    return _ceguiInput.joystickButtonPressed(arg, button);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickButtonPressed(arg, button);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
                                  Input::JoystickButton button) {
-    return _ceguiInput.joystickButtonReleased(arg, button);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickButtonReleased(arg, button);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
-    return _ceguiInput.joystickSliderMoved(arg, index);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickSliderMoved(arg, index);
+    }
+
+    return false;
 }
 
 // Return true if input was consumed
 bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    return _ceguiInput.joystickVector3DMoved(arg, index);
+    if (parent().platformContext().config().gui.cegui.enabled) {
+        return _ceguiInput.joystickVector3DMoved(arg, index);
+    }
+
+    return false;
 }
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {

@@ -7,7 +7,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
@@ -90,6 +90,7 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     // Apply FXAA/SMAA to the specified render target
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = ldrTarget._targetID;
+    beginRenderPassCmd._name = "DO_POSTAA_PASS";
     GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
 
     GenericDrawCommand pointsCmd;

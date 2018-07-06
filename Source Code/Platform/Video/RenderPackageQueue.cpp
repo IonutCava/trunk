@@ -31,14 +31,11 @@ bool RenderPackageQueue::empty() const {
     return _currentCount == 0;
 }
 
-const RenderPackage& RenderPackageQueue::getPackage(U32 idx) const {
+const GFX::CommandBuffer& RenderPackageQueue::getCommandBuffer(U32 idx) {
     assert(idx < _currentCount);
-    return *_packages[idx];
-}
-
-RenderPackage& RenderPackageQueue::getPackage(U32 idx) {
-    assert(idx < _currentCount);
-    return *_packages[idx];
+    RenderPackage& pkg = *_packages[idx];
+    Attorney::RenderPackageRenderPackageQueue::buildCommandBuffer(pkg);
+    return *Attorney::RenderPackageRenderPackageQueue::commands(pkg);
 }
 
 RenderPackage& RenderPackageQueue::back() {

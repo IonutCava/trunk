@@ -91,7 +91,7 @@ class Vegetation : public SceneNode {
                   const SceneRenderState& sceneRenderState,
                   const RenderStagePass& renderStagePass)  override;
 
-    void gpuCull(const SceneRenderState& sceneRenderState);
+    void gpuCull(const SceneRenderState& sceneRenderState, const Camera& cam);
 
    private:
     void uploadGrassData();

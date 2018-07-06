@@ -8,7 +8,7 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 
@@ -123,7 +123,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     drawCommand._drawCommands.push_back(cmd);
     pkgInOut.addDrawCommand(drawCommand);
 
-    const Pipeline& pipeline = pkgInOut.pipeline(1);
+    const Pipeline& pipeline = pkgInOut.pipeline(0);
     PipelineDescriptor pipeDesc = pipeline.toDescriptor();
     if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
@@ -135,7 +135,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
         pipeDesc._shaderProgram = _skyShader;
     }
 
-    pkgInOut.pipeline(1, _context.newPipeline(pipeDesc));
+    pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

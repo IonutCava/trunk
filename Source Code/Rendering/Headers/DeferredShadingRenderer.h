@@ -39,7 +39,6 @@ namespace Divide {
 class Quad3D;
 class RenderTarget;
 class PixelBuffer;
-class ShaderProgram;
 
 /// This class implements a full  deferred renderer based on the 2 pass, huge
 /// G-buffer model

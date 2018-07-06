@@ -73,13 +73,13 @@ void RenderPassCuller::frustumCull(PlatformContext& context,
                                    SceneGraph& sceneGraph,
                                    const SceneState& sceneState,
                                    RenderStage stage,
-                                   const CullingFunction& cullingFunction)
+                                   const CullingFunction& cullingFunction,
+                                   const Camera& camera)
 {
     const SceneRenderState& renderState = sceneState.renderState();
     if (renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)) {
         _cullingFunction[to_U32(stage)] = cullingFunction;
 
-        const Camera& camera = *Camera::activeCamera();
         F32 cullMaxDistance = renderState.generalVisibility();
 
         SceneGraphNode& root = sceneGraph.getRoot();

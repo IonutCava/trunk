@@ -36,10 +36,13 @@
 
 namespace Divide {
 
+class GUI;
+
 /// This class defines AutoRepeatKey::repeatKey(...) as CEGUI key inputs
 class CEGUIInput : public Input::InputAggregatorInterface,
                    public Input::AutoRepeatKey {
    public:
+    explicit CEGUIInput(GUI& parent);
     /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key);
     /// Key released: return true if input was consumed
@@ -66,6 +69,7 @@ class CEGUIInput : public Input::InputAggregatorInterface,
                              Input::MouseButton button);
 
    protected:
+    GUI& _parent;
     /// Called on key events: return true if the input was consumed
     bool injectOISKey(bool pressed, const Input::KeyEvent& inKey);
     void repeatKey(I32 inKey, U32 Char);

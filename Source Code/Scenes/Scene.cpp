@@ -22,10 +22,10 @@
 
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Headers/Predefined/Box3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
-#include "Geometry/Shapes/Headers/Predefined/Text3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Text3D.h"
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
@@ -496,7 +496,7 @@ U16 Scene::registerInputActions() {
     _input->flushCache();
 
     auto none = [](InputParams param) {};
-    auto deleteSelection = [this](InputParams param) { _sceneGraph->removeNode(_currentSelection[0], false); };
+    auto deleteSelection = [this](InputParams param) { _sceneGraph->removeNode(_currentSelection[0]); };
     auto increaseCameraSpeed = [this](InputParams param){
         Camera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
@@ -1275,6 +1275,14 @@ bool Scene::load(ByteBuffer& inputBuffer) {
     }
 
     return true;
+}
+
+Camera* Scene::playerCamera() const {
+    return Attorney::SceneManagerCameraAccessor::playerCamera(_parent);
+}
+
+Camera* Scene::playerCamera(U8 index) const {
+    return Attorney::SceneManagerCameraAccessor::playerCamera(_parent, index);
 }
 
 };

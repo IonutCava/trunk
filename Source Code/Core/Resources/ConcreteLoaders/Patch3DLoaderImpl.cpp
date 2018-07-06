@@ -3,7 +3,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Headers/Predefined/Patch3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Patch3D.h"
 
 namespace Divide {
 

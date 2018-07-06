@@ -266,23 +266,46 @@ bool RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
 
     ACKNOWLEDGE_UNUSED(sceneRenderState);
 
-    // Call any pre-draw operations on the SceneNode (refresh VB, update
-    // materials, get list of textures, etc)
-    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    DescriptorSet set = pkg->descriptorSet(0);
+    _textureCache.clear();
+
+    // Call any pre-draw operations on the SceneNode (refresh VB, update materials, get list of textures, etc)
+
     
-    set._textureData.clear(false);
+    for (auto texture : _textureDependencies.textures()) {
+        _textureCache.addTexture(texture);
+    }
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        mat->getTextureData(set._textureData);
+        mat->getTextureData(_textureCache);
     }
 
-    for (auto texture : _textureDependencies.textures()) {
-        set._textureData.addTexture(texture);
+    std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
+    DescriptorSet set = pkg->descriptorSet(0);
+
+    bool bufferDirty = set._textureData.set(_textureCache);
+    
+    auto compareBuffers = [](const ShaderBufferList& a,
+                             const ShaderBufferList& b) -> bool {
+        if (a.size() != b.size()) {
+            return false;
+        }
+        for (vectorAlg::vecSize i = 0; i < a.size(); ++i) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+
+        return true;
+    };
+
+    if (!compareBuffers(set._shaderBuffers, _shaderBuffersCache)) {
+        set._shaderBuffers = _shaderBuffersCache;
+        bufferDirty = true;
     }
 
-    set._shaderBuffers = _shaderBuffers;
-    pkg->descriptorSet(0, set);
+    if (bufferDirty) {
+        pkg->descriptorSet(0, set);
+    }
 
     return true;
 }
@@ -427,24 +450,24 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-    ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffers),
-                                                 std::end(_shaderBuffers),
+    ShaderBufferList::iterator it = std::find_if(std::begin(_shaderBuffersCache),
+                                                 std::end(_shaderBuffersCache),
                                                  [slot](const ShaderBufferBinding& binding)
                                                  -> bool { return binding._binding == slot; });
 
-    if (it == std::end(_shaderBuffers)) {
-        vectorAlg::emplace_back(_shaderBuffers, slot, &shaderBuffer, bindRange);
+    if (it == std::end(_shaderBuffersCache)) {
+        vectorAlg::emplace_back(_shaderBuffersCache, slot, &shaderBuffer, bindRange);
     } else {
         it->set(slot, &shaderBuffer, bindRange);
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    _shaderBuffers.erase(std::remove_if(std::begin(_shaderBuffers),
-                                        std::end(_shaderBuffers),
-                                        [&slot](const ShaderBufferBinding& binding)
-                                        -> bool { return binding._binding == slot; }),
-                         std::end(_shaderBuffers));
+    _shaderBuffersCache.erase(std::remove_if(std::begin(_shaderBuffersCache),
+                                             std::end(_shaderBuffersCache),
+                                             [&slot](const ShaderBufferBinding& binding)
+                                                 -> bool { return binding._binding == slot; }),
+                              std::end(_shaderBuffersCache));
 }
 
 ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& renderStagePass) {
@@ -518,7 +541,7 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
     }
 }
 
-void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
+void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     pkg->isRenderable(false);
     if (canDraw(renderStagePass)) {
@@ -531,7 +554,7 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
         }
 
         if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
-            updateLoDLevel(*Camera::activeCamera(), renderStagePass);
+            updateLoDLevel(camera, renderStagePass);
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
             renderGeometry = renderGeometry || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY);
