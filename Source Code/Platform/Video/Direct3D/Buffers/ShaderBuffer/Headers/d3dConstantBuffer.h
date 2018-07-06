@@ -51,7 +51,7 @@ class d3dConstantBuffer final : public ShaderBuffer {
 
     void UpdateData(ptrdiff_t offsetElementCount,
                     ptrdiff_t rangeElementCount,
-                    const bufferPtr data) const;
+                    const bufferPtr data);
 
     bool BindRange(U32 bindIndex,
                    U32 offsetElementCount,

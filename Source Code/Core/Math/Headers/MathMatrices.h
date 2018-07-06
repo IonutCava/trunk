@@ -193,19 +193,19 @@ class mat3 {
     mat3 &operator-=(const mat3 &m) { return *this = *this - m; }
 
     bool operator==(mat3 &B) const {
-        if (!FLOAT_COMPARE(this->m[0][0], B[0][0]) ||
-            !FLOAT_COMPARE(this->m[0][1], B[0][1]) ||
-            !FLOAT_COMPARE(this->m[0][2], B[0][2])) {
+        if (!COMPARE(this->m[0][0], B[0][0]) ||
+            !COMPARE(this->m[0][1], B[0][1]) ||
+            !COMPARE(this->m[0][2], B[0][2])) {
             return false;
         }
-        if (!FLOAT_COMPARE(this->m[1][0], B[1][0]) ||
-            !FLOAT_COMPARE(this->m[1][1], B[1][1]) ||
-            !FLOAT_COMPARE(this->m[1][2], B[1][2])) {
+        if (!COMPARE(this->m[1][0], B[1][0]) ||
+            !COMPARE(this->m[1][1], B[1][1]) ||
+            !COMPARE(this->m[1][2], B[1][2])) {
             return false;
         }
-        if (!FLOAT_COMPARE(this->m[2][0], B[2][0]) ||
-            !FLOAT_COMPARE(this->m[2][1], B[2][1]) ||
-            !FLOAT_COMPARE(this->m[2][2], B[2][2])) {
+        if (!COMPARE(this->m[2][0], B[2][0]) ||
+            !COMPARE(this->m[2][1], B[2][1]) ||
+            !COMPARE(this->m[2][2], B[2][2])) {
             return false;
         }
         return true;
@@ -323,11 +323,11 @@ class mat3 {
     }
 
     inline bool isIdentity() const {
-        return (FLOAT_COMPARE(this->mat[0], 1.0) && IS_ZERO(this->mat[1]) &&
+        return (COMPARE(this->mat[0], 1.0) && IS_ZERO(this->mat[1]) &&
                 IS_ZERO(this->mat[2]) && IS_ZERO(this->mat[3]) &&
-                FLOAT_COMPARE(this->mat[4], 1.0) && IS_ZERO(this->mat[5]) &&
+                COMPARE(this->mat[4], 1.0) && IS_ZERO(this->mat[5]) &&
                 IS_ZERO(this->mat[6]) && IS_ZERO(this->mat[7]) &&
-                FLOAT_COMPARE(this->mat[8], 1.0));
+                COMPARE(this->mat[8], 1.0));
     }
 
     inline void rotate(const vec3<T> &v, T angle, bool inDegrees = true) {
@@ -604,33 +604,33 @@ class mat4 {
 
     inline bool operator==(const mat4 &B) const {
         // Add a small epsilon value to avoid 0.0 != 0.0
-        if (!FLOAT_COMPARE(this->elementSum() + EPSILON_F32,
-                           B.elementSum() + EPSILON_F32)) {
+        if (!COMPARE(this->elementSum() + EPSILON_F32,
+                     B.elementSum() + EPSILON_F32)) {
             return false;
         }
 
-        if (!FLOAT_COMPARE(this->m[0][0], B.m[0][0]) ||
-            !FLOAT_COMPARE(this->m[0][1], B.m[0][1]) ||
-            !FLOAT_COMPARE(this->m[0][2], B.m[0][2]) ||
-            !FLOAT_COMPARE(this->m[0][3], B.m[0][3])) {
+        if (!COMPARE(this->m[0][0], B.m[0][0]) ||
+            !COMPARE(this->m[0][1], B.m[0][1]) ||
+            !COMPARE(this->m[0][2], B.m[0][2]) ||
+            !COMPARE(this->m[0][3], B.m[0][3])) {
             return false;
         }
-        if (!FLOAT_COMPARE(this->m[1][0], B.m[1][0]) ||
-            !FLOAT_COMPARE(this->m[1][1], B.m[1][1]) ||
-            !FLOAT_COMPARE(this->m[1][2], B.m[1][2]) ||
-            !FLOAT_COMPARE(this->m[1][3], B.m[1][3])) {
+        if (!COMPARE(this->m[1][0], B.m[1][0]) ||
+            !COMPARE(this->m[1][1], B.m[1][1]) ||
+            !COMPARE(this->m[1][2], B.m[1][2]) ||
+            !COMPARE(this->m[1][3], B.m[1][3])) {
             return false;
         }
-        if (!FLOAT_COMPARE(this->m[2][0], B.m[2][0]) ||
-            !FLOAT_COMPARE(this->m[2][1], B.m[2][1]) ||
-            !FLOAT_COMPARE(this->m[2][2], B.m[2][2]) ||
-            !FLOAT_COMPARE(this->m[2][3], B.m[2][3])) {
+        if (!COMPARE(this->m[2][0], B.m[2][0]) ||
+            !COMPARE(this->m[2][1], B.m[2][1]) ||
+            !COMPARE(this->m[2][2], B.m[2][2]) ||
+            !COMPARE(this->m[2][3], B.m[2][3])) {
             return false;
         }
-        if (!FLOAT_COMPARE(this->m[3][0], B.m[3][0]) ||
-            !FLOAT_COMPARE(this->m[3][1], B.m[3][1]) ||
-            !FLOAT_COMPARE(this->m[3][2], B.m[3][2]) ||
-            !FLOAT_COMPARE(this->m[3][3], B.m[3][3])) {
+        if (!COMPARE(this->m[3][0], B.m[3][0]) ||
+            !COMPARE(this->m[3][1], B.m[3][1]) ||
+            !COMPARE(this->m[3][2], B.m[3][2]) ||
+            !COMPARE(this->m[3][3], B.m[3][3])) {
             return false;
         }
 
@@ -670,14 +670,17 @@ class mat4 {
         this->mat[4] = matrix.mat[3];
         this->mat[8] = matrix.mat[6];
         this->mat[12] = 0.0;
+
         this->mat[1] = matrix.mat[1];
         this->mat[5] = matrix.mat[4];
         this->mat[9] = matrix.mat[7];
         this->mat[13] = 0.0;
+
         this->mat[2] = matrix.mat[2];
         this->mat[6] = matrix.mat[5];
         this->mat[10] = matrix.mat[8];
         this->mat[14] = 0.0;
+
         this->mat[3] = 0.0;
         this->mat[7] = 0.0;
         this->mat[11] = 0.0;
@@ -685,6 +688,20 @@ class mat4 {
     }
 
     inline F32 *getRow(I32 index) { return this->m[index]; }
+
+    inline void setRow(I32 index, const T value) {
+        this->m[index][0] = value;
+        this->m[index][1] = value;
+        this->m[index][2] = value;
+        this->m[index][3] = value;
+    }
+
+    inline void setRow(I32 index, const T x, const T y, const T z, const T w) {
+        this->m[index][0] = x;
+        this->m[index][1] = y;
+        this->m[index][2] = z;
+        this->m[index][3] = w;
+    }
 
     inline void setRow(I32 index, const vec4<T> &value) {
         this->m[index][0] = value.x;
@@ -694,15 +711,35 @@ class mat4 {
     }
 
     inline vec4<T> getCol(I32 index) const {
-        return vec4<T>(this->mat[0 + (index * 4)], this->mat[1 + (index * 4)],
-                       this->mat[2 + (index * 4)], this->mat[3 + (index * 4)]);
+        const I32 columnIndex = index * 4;
+        return vec4<T>(this->mat[0 + columnIndex], 
+                       this->mat[1 + columnIndex],
+                       this->mat[2 + columnIndex],
+                       this->mat[3 + columnIndex]);
+    }
+
+    inline void setCol(I32 index, const T value) {
+        const I32 columnIndex = index * 4;
+        this->mat[0 + columnIndex] = value;
+        this->mat[1 + columnIndex] = value;
+        this->mat[2 + columnIndex] = value;
+        this->mat[3 + columnIndex] = value;
+    }
+
+    inline void setCol(I32 index, const T x, const T y, const T z, const T w) {
+        const I32 columnIndex = index * 4;
+        this->mat[0 + columnIndex] = x;
+        this->mat[1 + columnIndex] = y;
+        this->mat[2 + columnIndex] = z;
+        this->mat[3 + columnIndex] = w;
     }
 
     inline void setCol(I32 index, const vec4<T> &value) {
-        this->mat[0 + (index * 4)] = value.x;
-        this->mat[1 + (index * 4)] = value.y;
-        this->mat[2 + (index * 4)] = value.z;
-        this->mat[3 + (index * 4)] = value.w;
+        const I32 columnIndex = index * 4;
+        this->mat[0 + columnIndex] = value.x;
+        this->mat[1 + columnIndex] = value.y;
+        this->mat[2 + columnIndex] = value.z;
+        this->mat[3 + columnIndex] = value.w;
     }
 
     mat4 operator+(const mat4 &matrix) const {

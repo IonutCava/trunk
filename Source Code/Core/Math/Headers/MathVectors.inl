@@ -159,23 +159,18 @@ inline T vec2<T>::normalize() {
     return l;
 }
 
+/// compare 2 vectors
+template <typename T>
+inline bool vec2<T>::compare(const vec2<T> &v) const {
+    return COMPARE<T>(this->x, v.x) &&
+           COMPARE<T>(this->y, v.y);
+}
+
 /// compare 2 vectors using the given tolerance
 template <typename T>
-inline bool vec2<T>::compare(const vec2 &v, F32 epsi) const {
-    return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-            FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi));
-}
-
-template <>
-inline bool vec2<I32>::compare(const vec2<I32> &v, F32 epsi) const {
-    ACKNOWLEDGE_UNUSED(epsi);
-    return this->x == v.x && this->y == v.y;
-}
-
-template <>
-inline bool vec2<U32>::compare(const vec2<U32> &v, F32 epsi) const {
-    ACKNOWLEDGE_UNUSED(epsi);
-    return this->x == v.x && this->y == v.y;
+inline bool vec2<T>::compare(const vec2 &v, T epsi) const {
+    return (COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
+            COMPARE_TOLERANCE<T>(this->y, v.y, epsi));
 }
 
 /// return the projection factor from *this to the line determined by points vA
@@ -255,18 +250,27 @@ inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
 /*
 *  vec3 inline definitions
 */
+
+/// compare 2 vectors
+template <typename T>
+inline bool vec3<T>::compare(const vec3<T> &v) const {
+    return COMPARE<T>(this->x, v.x) &&
+           COMPARE<T>(this->y, v.y) &&
+           COMPARE<T>(this->z, v.z);
+}
+
 /// compare 2 vectors within the specified tolerance
 template <typename T>
-inline bool vec3<T>::compare(const vec3 &v, F32 epsi) const {
-    return FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-           FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) &&
-           FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi);
+inline bool vec3<T>::compare(const vec3 &v, T epsi) const {
+    return COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
+           COMPARE_TOLERANCE<T>(this->y, v.y, epsi) &&
+           COMPARE_TOLERANCE<T>(this->z, v.z, epsi);
 }
 
 /// uniform vector: x = y = z
 template <typename T>
 inline bool vec3<T>::isUniform() const {
-    return FLOAT_COMPARE(this->x, this->y) && FLOAT_COMPARE(this->y, this->z);
+    return COMPARE(this->x, this->y) && COMPARE(this->y, this->z);
 }
 
 /// return the squared distance of the vector
@@ -466,34 +470,23 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
 *  vec4 inline definitions
 */
 
+/// compare 2 vectors
+template <typename T>
+inline bool vec4<T>::compare(const vec4<T> &v) const {
+    return COMPARE<T>(this->x, v.x) &&
+           COMPARE<T>(this->y, v.y) &&
+           COMPARE<T>(this->z, v.z) &&
+           COMPARE<T>(this->w, v.w);
+}
+
 /// compare this vector with the one specified and see if they match within the
 /// specified amount
 template <typename T>
-inline bool vec4<T>::compare(const vec4 &v, F32 epsi) const {
-    return (FLOAT_COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-            FLOAT_COMPARE_TOLERANCE(this->y, v.y, epsi) &&
-            FLOAT_COMPARE_TOLERANCE(this->z, v.z, epsi) &&
-            FLOAT_COMPARE_TOLERANCE(this->w, v.w, epsi));
-}
-
-template <>
-inline bool vec4<I32>::compare(const vec4<I32> &v, F32 epsi) const {
-    ACKNOWLEDGE_UNUSED(epsi);
-
-    return this->x == v.x &&
-           this->y == v.y &&
-           this->z == v.z &&
-           this->w == v.w;
-}
-
-template <>
-inline bool vec4<U32>::compare(const vec4<U32> &v, F32 epsi) const {
-    ACKNOWLEDGE_UNUSED(epsi);
-
-    return this->x == v.x &&
-           this->y == v.y &&
-           this->z == v.z &&
-           this->w == v.w;
+inline bool vec4<T>::compare(const vec4 &v, T epsi) const {
+    return (COMPARE_TOLERANCE<T>(this->x, v.x, epsi) &&
+            COMPARE_TOLERANCE<T>(this->y, v.y, epsi) &&
+            COMPARE_TOLERANCE<T>(this->z, v.z, epsi) &&
+            COMPARE_TOLERANCE<T>(this->w, v.w, epsi));
 }
 
 /// round all four values

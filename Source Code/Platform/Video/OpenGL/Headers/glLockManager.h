@@ -44,7 +44,7 @@ class glLockManager {
     void Lock();
 
    protected:
-    void wait(GLsync* _syncObj);
+    void wait(GLsync* _syncObj, GLenum& response);
 
    protected:
     GLsync _defaultSync;

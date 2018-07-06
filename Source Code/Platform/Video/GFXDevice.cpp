@@ -428,7 +428,7 @@ void GFXDevice::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes,
                                    bool rightFrustum) {
     // Only update frustum values if the interocular distance changed from the
     // previous request
-    if (!FLOAT_COMPARE(_anaglyphIOD, camIOD)) {
+    if (!COMPARE(_anaglyphIOD, camIOD)) {
         static const F32 DTR = 0.0174532925f;
         static const F32 screenZ = 10.0f;
 

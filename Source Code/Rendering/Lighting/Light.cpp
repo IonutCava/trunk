@@ -176,7 +176,7 @@ void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     }
 
     // Check if range changed
-    if (FLOAT_COMPARE(getRange(), sgn.getBoundingBoxConst().getMax().x)) {
+    if (COMPARE(getRange(), sgn.getBoundingBoxConst().getMax().x)) {
         return;
     }
 
@@ -224,7 +224,7 @@ bool Light::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     impostorMaterialInst->setAmbient(getDiffuseColor());
 
     // Updating impostor range is expensive, so check if we need to
-    if (!FLOAT_COMPARE(getRange(), _impostor->getRadius())) {
+    if (!COMPARE(getRange(), _impostor->getRadius())) {
         _impostor->setRadius(getRange());
     }
 

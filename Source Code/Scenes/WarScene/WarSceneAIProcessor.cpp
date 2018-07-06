@@ -708,15 +708,16 @@ void WarSceneAIProcessor::updatePositions() {
                         ->getComponent<PhysicsComponent>();
                 pComp->popTransforms();
                 _globalWorkingMemory._flagsAtBase[teamID].value(true);
+            
+                for (const AITeam::TeamMap::value_type& member :
+                     currentTeam->getTeamMembers()) {
+                    _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, teamID);
+                }
+                for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
+                    _entity->sendMessage(*enemy.second, AIMsg::RETURNED_FLAG, teamID);
+                }
+                _messageCallback(1, _entity->getName());
             }
-           for (const AITeam::TeamMap::value_type& member :
-                 currentTeam->getTeamMembers()) {
-                _entity->sendMessage(*member.second, AIMsg::RETURNED_FLAG, teamID);
-            }
-            for (const AITeam::TeamMap::value_type& enemy : enemyTeam->getTeamMembers()) {
-                _entity->sendMessage(*enemy.second, AIMsg::RETURNED_FLAG, teamID);
-            }
-            _messageCallback(1, _entity->getName());
         }
     }
 

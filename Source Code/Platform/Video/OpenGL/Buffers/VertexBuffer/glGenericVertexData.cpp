@@ -198,14 +198,6 @@ void glGenericVertexData::draw(const GenericDrawCommand& command,
         return;
     }
 
-    if (_persistentMapped) {
-        vectorAlg::vecSize bufferCount = _bufferObjects.size();
-        for(vectorAlg::vecSize i = 0; i < bufferCount; ++i) {
-            if (_bufferPersistent[i]) {
-                _lockManagers[i]->WaitForLockedRange();
-            }
-        }
-    }
     // Check if we are rendering to the screen or to a buffer
     bool feedbackActive = (command.drawToBuffer() && !_feedbackBuffers.empty());
     // Activate the appropriate vertex array object for the type of rendering we
@@ -384,8 +376,6 @@ void glGenericVertexData::setBuffer(U32 buffer,
             bufferPtr dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
             memcpy(dst, data, bufferSize);
         }
-        // Make sure we synchronize the write commands
-        _lockManagers[buffer]->LockRange(0, bufferSize * sizeFactor);
     } else {
         GLenum flag =
             isFeedbackBuffer(buffer)
@@ -431,13 +421,9 @@ void glGenericVertexData::updateBuffer(U32 buffer,
         _lockManagers[buffer]->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
         // Offset the data pointer by the required offset taking in account the
         // current data copy we are writing into
-        bufferPtr dst = (U8*)_bufferPersistentData[buffer] +
-                             _startDestOffset[buffer] + offset;
+        bufferPtr dst = (U8*)_bufferPersistentData[buffer] + _startDestOffset[buffer] + offset;
         // Update the data
         memcpy(dst, data, dataCurrentSize);
-        // Lock the current buffer copy until uploading to GPU visible memory is
-        // finished
-        _lockManagers[buffer]->LockRange(_startDestOffset[buffer], bufferSize);
     }
     // Update offset pointers for reading and writing
     _startDestOffset[buffer] = (_startDestOffset[buffer] + bufferSize) %

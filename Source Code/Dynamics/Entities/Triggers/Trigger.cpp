@@ -45,7 +45,7 @@ void Trigger::setParams(Task_ptr triggeredTask,
         _triggerPosition = triggerPosition;
     }
     /// Check if radius has changed
-    if (!FLOAT_COMPARE(_radius, radius)) {
+    if (!COMPARE(_radius, radius)) {
         _radius = radius;
         if (_triggerImpostor) {
             /// update dummy radius if so

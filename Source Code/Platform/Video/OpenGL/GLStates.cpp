@@ -510,7 +510,7 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
         toggle(newBlock.zEnable(), GL_DEPTH_TEST);
     }
     // Check line width
-    if (!oldBlock || !FLOAT_COMPARE(oldBlock->lineWidth(), newBlock.lineWidth())) {
+    if (!oldBlock || !COMPARE(oldBlock->lineWidth(), newBlock.lineWidth())) {
         glLineWidth(std::min(newBlock.lineWidth(), to_float(_lineWidthLimit)));
     }
     // Check separate blend functions
@@ -569,12 +569,12 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
                     GLUtil::glStencilOpTable[to_uint(newBlock.stencilPassOp())]);
     }
     // Check and set polygon offset
-    if (!oldBlock || !FLOAT_COMPARE(oldBlock->zBias(), newBlock.zBias())) {
+    if (!oldBlock || !COMPARE(oldBlock->zBias(), newBlock.zBias())) {
         if (IS_ZERO(newBlock.zBias())) {
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-            if (!oldBlock || !FLOAT_COMPARE(oldBlock->zUnits(), newBlock.zUnits())) {
+            if (!oldBlock || !COMPARE(oldBlock->zUnits(), newBlock.zUnits())) {
                 glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
             }
         }

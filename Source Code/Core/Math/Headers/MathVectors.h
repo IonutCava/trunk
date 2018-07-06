@@ -243,8 +243,10 @@ class vec2 {
     /// return the closest point on the line segment defined between the 2 points
     /// (A, B) and this vector
     inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
+    /// compare 2 vectors
+    inline bool compare(const vec2 &_v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec2 &_v, F32 epsi = EPSILON_F32) const;
+    inline bool compare(const vec2 &_v, T epsi) const;
     /// export the vector's components in the first 2 positions of the specified
     /// array
     inline void get(T *v) const;
@@ -442,8 +444,10 @@ class vec3 {
     inline T length() const { return std::sqrt(lengthSquared()); }
     /// return true if length is zero
     inline bool isZeroLength() const { return lengthSquared() < EPSILON_F32; }
+    /// compare 2 vectors
+    inline bool compare(const vec3 &v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec3 &v, F32 epsi = EPSILON_F32) const;
+    inline bool compare(const vec3 &v, T epsi) const;
     /// uniform vector: x = y = z
     inline bool isUniform() const;
     /// return the squared distance of the vector
@@ -795,8 +799,10 @@ class vec4 {
     }
     /// set all the components back to 0
     inline void reset() { this->set(0, 0, 0, 0); }
+    /// compare 2 vectors
+    inline bool compare(const vec4 &v) const;
     /// compare 2 vectors within the specified tolerance
-    inline bool compare(const vec4 &v, F32 epsi = EPSILON_F32) const;
+    inline bool compare(const vec4 &v, T epsi) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
     /// swap the components  of this vector with that of the specified one

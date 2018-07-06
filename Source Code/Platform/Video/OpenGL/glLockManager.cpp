@@ -20,7 +20,8 @@ glLockManager::~glLockManager()
 
 void glLockManager::Wait() {
     if (_defaultSync) {
-        wait(&_defaultSync);
+        GLenum retValue;
+        wait(&_defaultSync, retValue);
     }
 }
  
@@ -32,24 +33,25 @@ void glLockManager::Lock() {
                     UnusedMask::GL_UNUSED_BIT);
 }
 
-void glLockManager::wait(GLsync* syncObj) {
+void glLockManager::wait(GLsync* syncObj, GLenum& response) {
     if (_CPUUpdates) {
         GLuint64 waitDuration = 0;
         while (true) {
-            GLenum waitRet = glClientWaitSync(
+            response = glClientWaitSync(
                 *syncObj, GL_SYNC_FLUSH_COMMANDS_BIT, waitDuration);
-            if (waitRet == GL_ALREADY_SIGNALED ||
-                waitRet == GL_CONDITION_SATISFIED) {
+            if (response == GL_ALREADY_SIGNALED ||
+                response == GL_CONDITION_SATISFIED) {
                 return;
             }
 
-            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED,
+            DIVIDE_ASSERT(response != GL_WAIT_FAILED,
                           "Not sure what to do here. Probably raise an "
                           "exception or something.");
             waitDuration = kOneSecondInNanoSeconds;
         }
     } else {
         glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
+        response = GL_UNSIGNALED;
     }
 }
 

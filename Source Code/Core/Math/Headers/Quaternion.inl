@@ -96,9 +96,8 @@ inline bool Quaternion<T>::compare(const Quaternion<T>& rq,
     T angleRad = Angle::DegreesToRadians((T)std::acos(to_double(dot(rq))));
     F32 toleranceRad = Angle::DegreesToRadians(tolerance);
 
-    return (std::abs(angleRad) <= toleranceRad) ||
-           FLOAT_COMPARE_TOLERANCE(angleRad, to_float(M_PI),
-                                   toleranceRad);
+    return  IS_TOLERANCE(angleRad, toleranceRad) ||
+            COMPARE_TOLERANCE(angleRad, to_float(M_PI), toleranceRad);
 }
 
 template <typename T>

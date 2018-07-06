@@ -55,6 +55,7 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
         g_targetDataAlignment[1] = 
             ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
     }
+    _updated = false;
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -99,7 +100,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                                      _UBOid);
     }
 }
-void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data) const {
+
+void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeElementCount, const bufferPtr data) {
 
     if (rangeElementCount == 0) {
         return;
@@ -120,9 +122,9 @@ void glUniformBuffer::UpdateData(GLintptr offsetElementCount, GLsizeiptr rangeEl
 
     if (_persistentMapped) {
         _lockManager->WaitForLockedRange(offset, range);
-            bufferPtr dst = (U8*)(_mappedBuffer) + offset;
-            memcpy(dst, data, range);
-        _lockManager->LockRange(offset, range);
+
+        bufferPtr dst = (U8*)(_mappedBuffer) + offset;
+        memcpy(dst, data, range);
     } else {
         /*
         glInvalidateBufferSubData(_UBOid, offset, range);
@@ -139,23 +141,21 @@ bool glUniformBuffer::BindRange(U32 bindIndex, U32 offsetElementCount, U32 range
         return false;
     }
 
+    size_t range = rangeElementCount * _primitiveSize;
+    size_t offset = offsetElementCount * _primitiveSize;
+    offset += _queueReadIndex * (_bufferSize + _alignmentPadding);
+
+    bool success = false;
     if (setIfDifferentBindRange(_UBOid, bindIndex, offsetElementCount, rangeElementCount)) {
-        size_t range = rangeElementCount * _primitiveSize;
-        size_t offset = offsetElementCount * _primitiveSize;
-        offset += _queueReadIndex * (_bufferSize + _alignmentPadding);
-
-        if (_persistentMapped) {
-            _lockManager->WaitForLockedRange(offset, range);
-                glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
-            _lockManager->LockRange(offset, range);
-        } else {
-            glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
-        }
-
-        return true;
+        glBindBufferRange(_target, bindIndex, _UBOid, offset, range);
+        success = true;
     }
 
-    return false;
+    if (_persistentMapped) {
+        _lockManager->LockRange(offset, range);
+    }
+
+    return success;
 }
 
 bool glUniformBuffer::Bind(U32 bindIndex) {

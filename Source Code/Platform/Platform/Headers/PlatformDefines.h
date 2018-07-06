@@ -249,7 +249,9 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     // Check if the numbers are really close -- needed
     // when comparing numbers near zero.
     F32 absDiff = std::fabs(A - B);
-    if (absDiff <= maxDiff) return true;
+    if (absDiff <= maxDiff) {
+        return true;
+    }
 
     Float_t uA(A);
     Float_t uB(B);
@@ -339,29 +341,45 @@ inline bool IS_ZERO(D32 X) {
 
 template <typename T>
 inline bool IS_TOLERANCE(T X, T TOLERANCE) {
-    return (std::abs(X) < TOLERANCE);
+    return (std::abs(X) <= TOLERANCE);
 }
 template <>
 inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) {
-    return (std::fabs(X) < TOLERANCE);
+    return (std::fabs(X) <= TOLERANCE);
 }
 template <>
 inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) {
-    return (std::fabs(X) < TOLERANCE);
+    return (std::fabs(X) <= TOLERANCE);
 }
 
-inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) {
-    return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
+template<typename T>
+inline bool COMPARE_TOLERANCE(T X, T Y, T TOLERANCE) {
+    return std::fabs(X - Y) <= TOLERANCE;
 }
-inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {
+
+template<>
+inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
-inline bool FLOAT_COMPARE(F32 X, F32 Y) {
-    return FLOAT_COMPARE_TOLERANCE(X, Y, EPSILON_F32);
+template<>
+inline bool COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {
+    return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
-inline bool DOUBLE_COMPARE(D32 X, D32 Y) {
-    return DOUBLE_COMPARE_TOLERANCE(X, Y, EPSILON_D32);
+
+template<typename T>
+inline bool COMPARE(T X, T Y) {
+    return X == Y;
+}
+
+template<>
+inline bool COMPARE(F32 X, F32 Y) {
+    return COMPARE_TOLERANCE(X, Y, EPSILON_F32);
+}
+
+template<>
+inline bool COMPARE(D32 X, D32 Y) {
+    return COMPARE_TOLERANCE(X, Y, EPSILON_D32);
 }
 
 /// Performes extra asserts steps (logging, message boxes, etc). 

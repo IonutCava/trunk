@@ -82,7 +82,10 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
 
     struct NodeData {
-        mat4<F32> _matrix[4];
+        union {
+            mat4<F32> _matrix[4];
+            F32       _data[4 * 4 * 4];
+        };
 
         NodeData() {
             _matrix[0].identity();
@@ -92,9 +95,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         }
 
         inline void set(const NodeData& other) {
-            for (U8 i = 0; i < 4; ++i) {
-                _matrix[i].set(other._matrix[i]);
-            }
+            memcpy(_data, other._data, 4 * 4 * 4 * sizeof(F32));
         }
     };
 

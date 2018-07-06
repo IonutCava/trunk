@@ -66,7 +66,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // usage of the buffer)
     _gfxDataBuffer.reset(newSB("dvd_GPUBlock", 1, false, false));
     _gfxDataBuffer->Create(1, sizeof(GPUBlock));
-    _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
     // Every visible node will first update this buffer with required data
     // (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a
@@ -74,7 +73,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // and coherently mapped
     _nodeBuffer.reset(newSB("dvd_MatrixBlock", 1, true, true));
     _nodeBuffer->Create(Config::MAX_VISIBLE_NODES, sizeof(NodeData));
-    _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);

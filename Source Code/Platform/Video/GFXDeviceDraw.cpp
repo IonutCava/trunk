@@ -64,6 +64,9 @@ void GFXDevice::uploadGPUBlock() {
         _gfxDataBuffer->SetData(&_gpuBlock._data);
         _gpuBlock._updated = false;
     }
+
+    _gfxDataBuffer->Bind(ShaderBufferLocation::GPU_BLOCK);
+    _nodeBuffer->Bind(ShaderBufferLocation::NODE_INFO);
 }
 
 /// A draw command is composed of a target buffer and a command. The command
@@ -179,33 +182,40 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     PhysicsComponent* const transform =
         nodeRef.getComponent<PhysicsComponent>();
 
+    mat4<F32>& modelMatrix = dataOut._matrix[0];
+    mat4<F32>& normalMatrix = dataOut._matrix[1];
+
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
     if (transform) {
         // ... get the node's world matrix properly interpolated
-        dataOut._matrix[0].set(transform->getWorldMatrix(_interpolationFactor));
+        modelMatrix.set(transform->getWorldMatrix(_interpolationFactor));
         // Calculate the normal matrix (world * view)
         // If the world matrix is uniform scaled, inverseTranspose is a
         // double transpose (no-op) so we can skip it
 
-        dataOut._matrix[1].set(mat3<F32>(dataOut._matrix[0]));
+        //Avoid allocating a new matrix on the stack.
+        // Alternative: normalMatrix.set(mat3<F32>(modelMatrix));
+        normalMatrix.set(modelMatrix);
+        normalMatrix.setCol(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
-            dataOut._matrix[1].inverseTranspose();
+            normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            normalMatrix.inverseTranspose();
+            normalMatrix.mat[15] = 0.0f;
+        } else {
+            normalMatrix.setRow(3, 0.0f);
         }
 
-        dataOut._matrix[1].mat[15] = 0.0f;
-
-        dataOut._matrix[1].set(dataOut._matrix[1] * _gpuBlock._data._ViewMatrix);
+        normalMatrix.set(normalMatrix * _gpuBlock._data._ViewMatrix);
     }
+
     // Since the normal matrix is 3x3, we can use the extra row and column
     // to store additional data
-    dataOut._matrix[1].element(3, 2, true) =
-        to_float(LightManager::getInstance().getLights().size());
-    dataOut._matrix[1].element(3, 3, true) =
-        to_float(animComp ? animComp->boneCount() : 0);
+    normalMatrix.element(3, 2, true) = to_float(LightManager::getInstance().getLights().size());
+    normalMatrix.element(3, 3, true) = to_float(animComp ? animComp->boneCount() : 0);
 
     // Get the color matrix (diffuse, ambient, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._matrix[2]);

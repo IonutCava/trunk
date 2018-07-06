@@ -54,7 +54,7 @@ class glUniformBuffer final : public ShaderBuffer {
 
     void UpdateData(GLintptr offsetElementCount,
                     GLsizeiptr rangeElementCount,
-                    const bufferPtr data) const;
+                    const bufferPtr data);
 
     bool BindRange(U32 bindIndex,
                    U32 offsetElementCount,
@@ -70,7 +70,7 @@ class glUniformBuffer final : public ShaderBuffer {
     GLuint _UBOid;
     GLsizeiptr _alignmentPadding;
     bufferPtr _mappedBuffer;
-
+    bool _updated;
     const GLenum _target;
     const std::unique_ptr<glBufferLockManager> _lockManager;
 };
