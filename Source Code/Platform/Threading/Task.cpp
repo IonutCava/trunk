@@ -16,6 +16,7 @@ namespace {
     const bool g_DebugTaskStartStop = false;
 };
 
+
 Task::Task()
     : GUIDWrapper(),
     _tp(nullptr),
@@ -24,8 +25,6 @@ Task::Task()
     _priority(TaskPriority::DONT_CARE)
 {
     _parentTask = nullptr;
-    _done = true;
-    _running = false;
     _stopRequested = false;
     _childTasks.reserve(MAX_CHILD_TASKS);
 }
@@ -36,13 +35,20 @@ Task::~Task()
     wait();
 }
 
+bool Task::isRunning() const {
+    if (_tp) {
+        return _tp->state(poolIndex()) != TaskPool::TaskState::TASK_FREE;
+    }
+
+    return false;
+}
+
 void Task::reset() {
-    if (!_done) {
+    if (_tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
         stopTask();
         wait();
     }
 
-    _running = false;
     _stopRequested = false;
     _callback = nullptr;
     _jobIdentifier = -1;
@@ -53,13 +59,13 @@ void Task::reset() {
 }
 
 Task* Task::addChildTask(Task* task) {
-    DIVIDE_ASSERT(!isRunning(),
-                  "Task::addChildTask error: Can't add child tasks to running tasks!");
+    DIVIDE_ASSERT(_tp->state(poolIndex()) == TaskPool::TaskState::TASK_ALLOCATED,
+                  "Task::addChildTask error: Can't add child tasks to running or free tasks!");
 
     assert(childTaskCount() < MAX_CHILD_TASKS && task->_parentTask == nullptr);
     task->_parentTask = this; 
 
-    WriteLock w_lock(_childTaskMutex);
+    UniqueLock u_lock(_childTaskMutex);
     _childTasks.push_back(task);
 
     return _childTasks.back();
@@ -81,7 +87,7 @@ PoolTask Task::getRunTask(TaskPriority priority, U32 taskFlags) {
 }
 
 void Task::startTask(TaskPriority priority, U32 taskFlags) {
-    if (isRunning()) {
+    if (_tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
         return;
     }
 
@@ -96,7 +102,6 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
         }
     }
 
-    _done = false;
     _priority = priority;
 
     if (priority != TaskPriority::REALTIME && 
@@ -113,14 +118,14 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 
 void Task::stopTask() {
     {
-        WriteLock w_lock(_childTaskMutex);
+        UniqueLock u_lock(_childTaskMutex);
         for (Task* child : _childTasks) {
             child->stopTask();
         }
     }
 
     if (Config::Build::IS_DEBUG_BUILD) {
-        if (isRunning()) {
+        if (_tp && _tp->state(poolIndex()) == TaskPool::TaskState::TASK_RUNNING) {
             Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
         }
     }
@@ -129,39 +134,52 @@ void Task::stopTask() {
 }
 
 vectorAlg::vecSize Task::childTaskCount() const {
-    ReadLock r_lock(_childTaskMutex);
+    UniqueLock u_lock(_childTaskMutex);
     return _childTasks.size();
 }
 
 void Task::removeChildTask(const Task& child) {
     I64 targetGUID = child.getGUID();
 
-    WriteLock w_lock(_childTaskMutex);
-    _childTasks.erase(
-        std::remove_if(std::begin(_childTasks),
-                       std::end(_childTasks),
-                       [&targetGUID](Task* const childTask) -> bool {
-                           return childTask->getGUID() == targetGUID;
-                       }),
-        std::end(_childTasks));
-
+    {
+        UniqueLock lk(_childTaskMutex);
+        _childTasks.erase(
+            std::remove_if(std::begin(_childTasks),
+                           std::end(_childTasks),
+                           [&targetGUID](Task* const childTask) -> bool {
+                               return childTask->getGUID() == targetGUID;
+                           }),
+            std::end(_childTasks));
+    }
+    _childTaskCV.notify_one();
 }
 
 void Task::wait() {
-    std::unique_lock<std::mutex> lk(_taskDoneMutex);
+    UniqueLock lk(_taskDoneMutex);
     _taskDoneCV.wait(lk,
                      [this]() -> bool {
-                        return _done;
+                        if (_tp) {
+                            return _tp->state(poolIndex()) == TaskPool::TaskState::TASK_FREE;
+                        }
+                        return true;
                      });
 }
 
 void Task::run() {
-    _running = true;
-
     _taskThread = std::this_thread::get_id();
 
-    //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
-    WAIT_FOR_CONDITION(childTaskCount() == 0);
+    {
+        UniqueLock lk(_childTaskMutex);
+        _childTaskCV.wait(lk,
+                         [this]() -> bool {
+                            return _childTasks.empty();
+                        });
+    }
+
+    {
+        UniqueLock lk(_taskDoneMutex);
+        _tp->taskStarted(poolIndex(), _priority);
+    }
 
     if (_callback) {
         _callback(*this);
@@ -171,15 +189,12 @@ void Task::run() {
         _parentTask->removeChildTask(*this);
     }
 
-    _done = true;
-    {
-        std::unique_lock<std::mutex> lk(_taskDoneMutex);
-        _taskDoneCV.notify_one();
-        _running = false;
-    }
-
     // task finished. Everything else is bookkeeping
-    _tp->taskCompleted(poolIndex(), _priority);
+    {
+        UniqueLock lk(_taskDoneMutex);
+        _tp->taskCompleted(poolIndex(), _priority);
+    }
+    _taskDoneCV.notify_one();
 }
 
 };

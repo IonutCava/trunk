@@ -36,7 +36,7 @@ namespace {
 };
 
 RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     RenderTarget* temp = nullptr;
     switch (_API_ID) {
@@ -62,7 +62,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) const {
 }
 
 IMPrimitive* GFXDevice::newIMP() const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     IMPrimitive* temp = nullptr;
     switch (_API_ID) {
@@ -85,7 +85,7 @@ IMPrimitive* GFXDevice::newIMP() const {
 }
 
 VertexBuffer* GFXDevice::newVB() const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     VertexBuffer* temp = nullptr;
     switch (_API_ID) {
@@ -111,7 +111,7 @@ VertexBuffer* GFXDevice::newVB() const {
 }
 
 PixelBuffer* GFXDevice::newPB(PBType type) const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     PixelBuffer* temp = nullptr;
     switch (_API_ID) {
@@ -137,7 +137,7 @@ PixelBuffer* GFXDevice::newPB(PBType type) const {
 }
 
 GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     GenericVertexData* temp = nullptr;
     switch (_API_ID) {
@@ -219,7 +219,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
 }
 
 ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) const {
-    std::unique_lock<std::mutex> lk(_gpuObjectArenaMutex);
+    UniqueLock lk(_gpuObjectArenaMutex);
 
     ShaderBuffer* temp = nullptr;
     switch (_API_ID) {

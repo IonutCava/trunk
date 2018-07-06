@@ -37,6 +37,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class TaskPool {
+  protected:
+    enum class TaskState : U8 {
+        TASK_FREE = 0,
+        TASK_ALLOCATED,
+        TASK_RUNNING
+    };
+
   public:
     enum class TaskPoolType : U32 {
         PRIORITY_QUEUE = 0,
@@ -64,7 +71,9 @@ class TaskPool {
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend class Task;
+    void taskStarted(U32 poolIndex, Task::TaskPriority priority);
     void taskCompleted(U32 poolIndex, Task::TaskPriority priority);
+    
     inline ThreadPool& threadPool() {
         assert(_mainTaskPool != nullptr);
         return *_mainTaskPool;
@@ -73,12 +82,13 @@ class TaskPool {
     void nameThreadpoolWorkers(const char* name, ThreadPool& pool);
     void runCbkAndClearTask(U32 taskIndex);
 
+    TaskState state(U32 index) const;
   private:
     std::unique_ptr<ThreadPool> _mainTaskPool;
     boost::lockfree::queue<U32> _threadedCallbackBuffer;
 
     vectorImpl<Task> _tasksPool;
-    vectorImpl<bool> _taskStates;
+    vectorImpl<TaskState> _taskStates;
     vectorImpl<DELEGATE_CBK<void>> _taskCallbacks;
 
     mutable std::mutex _taskStateLock;

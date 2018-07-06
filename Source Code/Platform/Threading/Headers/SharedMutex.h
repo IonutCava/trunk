@@ -45,6 +45,8 @@ typedef boost::shared_lock<SharedLock> ReadLock;
 typedef boost::upgrade_lock<SharedLock> UpgradableReadLock;
 typedef boost::upgrade_to_unique_lock<SharedLock> UpgradeToWriteLock;
 
+typedef std::unique_lock<std::mutex> UniqueLock;
+
 };  // namespace Divide
 
 #endif //_SHARED_MUTEX_BOOST_H_

@@ -112,7 +112,7 @@ void Console::output(const char* text, const bool newline, const bool error) {
         WAIT_FOR_CONDITION_TIMEOUT(outBuffer().enqueue(/*ptok, */entry),
                                    Time::SecondsToMilliseconds(1.0));
 
-        std::unique_lock<std::mutex> lk(condMutex());
+        UniqueLock lk(condMutex());
         entryAdded() = true;
         entryEnqueCV().notify_one();
     }
@@ -121,7 +121,7 @@ void Console::output(const char* text, const bool newline, const bool error) {
 void Console::outThread() {
     //moodycamel::ConsumerToken ctok(outBuffer());
     while (_running) {
-        std::unique_lock<std::mutex> lk(condMutex());
+        UniqueLock lk(condMutex());
         entryEnqueCV().wait(lk, []() -> bool { return entryAdded(); });
 
         OutputEntry entry;

@@ -128,7 +128,7 @@ bool Scene::onShutdown() {
 }
 
 bool Scene::frameStarted() {
-    std::unique_lock<std::mutex> lk(_perFrameArenaMutex);
+    UniqueLock lk(_perFrameArenaMutex);
     _perFrameArena.clear();
     return true;
 }
@@ -165,7 +165,7 @@ bool Scene::idle() {  // Called when application is idle
 
     WriteLock w_lock(_tasksMutex);
     _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
-                 [](const TaskHandle& handle) -> bool { return handle._task->finished(); }),
+                 [](const TaskHandle& handle) -> bool { return !handle._task->isRunning(); }),
         std::end(_tasks));
 
     return true;

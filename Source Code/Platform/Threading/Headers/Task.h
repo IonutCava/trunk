@@ -44,7 +44,7 @@ class TaskPool;
 /**
  *@brief Using std::atomic for thread-shared data to avoid locking
  */
-class Task : public GUIDWrapper, private NonCopyable {
+class Task : public GUIDWrapper, protected NonCopyable {
    public:
        static constexpr U16 MAX_CHILD_TASKS = to_base(std::numeric_limits<I8>::max());
 
@@ -64,11 +64,7 @@ class Task : public GUIDWrapper, private NonCopyable {
         COUNT = 1,
       };
 
-    /**
-     * @brief Creates a new Task that runs in a separate thread
-     * @param f The callback function (bool param will be true if the task receives a stop request)
-     */
-    explicit Task();
+    Task();
     ~Task();
 
     void startTask(TaskPriority priority = TaskPriority::DONT_CARE,
@@ -78,22 +74,11 @@ class Task : public GUIDWrapper, private NonCopyable {
 
     void reset();
 
-    inline void setOwningPool(TaskPool& pool, U32 poolIndex) {
-        _tp = &pool;
-        _poolIndex = poolIndex;
-    }
+    bool isRunning() const;
 
     inline TaskPool& getOwningPool() {
         assert(_tp != nullptr);
         return *_tp;
-    }
-
-    inline bool isRunning() const {
-        return !_done;
-    }
-
-    inline bool finished() const {
-        return _done;
     }
 
     inline I64 jobIdentifier() const {
@@ -118,8 +103,14 @@ class Task : public GUIDWrapper, private NonCopyable {
     void wait();
 
    protected:
+    friend class TaskPool;
+    inline void setPoolIndex(TaskPool* const pool, U32 index) {
+        _tp = pool;
+        _poolIndex = index;
+    }
+   protected:
     void run();
-    void runTaskWithDebugInfo();;
+    void runTaskWithDebugInfo();
     vectorAlg::vecSize childTaskCount() const;
     void removeChildTask(const Task& child);
     PoolTask getRunTask(TaskPriority priority, U32 taskFlags);
@@ -127,8 +118,6 @@ class Task : public GUIDWrapper, private NonCopyable {
    private:
     mutable std::mutex _taskDoneMutex;
     std::condition_variable _taskDoneCV;
-    std::atomic_bool _done;
-    std::atomic_bool _running;
 
     I64 _jobIdentifier;
 
@@ -141,7 +130,10 @@ class Task : public GUIDWrapper, private NonCopyable {
     U32 _poolIndex;
 
     Task* _parentTask;
-    mutable SharedLock _childTaskMutex;
+
+    mutable std::mutex _childTaskMutex;
+    std::condition_variable _childTaskCV;
+
     vectorImpl<Task*> _childTasks;
     std::atomic<std::thread::id> _taskThread;
 };

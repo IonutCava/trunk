@@ -11,19 +11,19 @@ TaskPool::TaskPool(U32 maxTaskCount)
       _workerThreadCount(0u),
       _tasksPool(maxTaskCount),
       _taskCallbacks(maxTaskCount),
-      _taskStates(maxTaskCount, false)
+      _taskStates(maxTaskCount, TaskState::TASK_FREE)
 {
     assert(isPowerOfTwo(maxTaskCount));
     _allocatedJobs = 0;
 
     for (U32 i = 0; i < maxTaskCount; ++i) {
-        Task& task = _tasksPool[i];
-        task.setOwningPool(*this, i);
+        _tasksPool[i].setPoolIndex(this, i);
     }
 }
 
 TaskPool::~TaskPool()
 {
+    _tasksPool.clear();
 }
 
 bool TaskPool::init(U32 threadCount, TaskPoolType type, const stringImpl& workerName) {
@@ -59,6 +59,11 @@ void TaskPool::runCbkAndClearTask(U32 taskIndex) {
     }
 }
 
+TaskPool::TaskState TaskPool::state(U32 index) const {
+    UniqueLock lk(_taskStateLock);
+    return _taskStates[index];
+}
+
 void TaskPool::flushCallbackQueue()
 {
     U32 taskIndex = 0;
@@ -70,7 +75,6 @@ void TaskPool::flushCallbackQueue()
 void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) {
     bool finished = _workerThreadCount == 0;
     while (!finished) {
-        std::unique_lock<std::mutex> lk(_taskStateLock);
         if (forceClear) {
             std::for_each(std::begin(_tasksPool),
                           std::end(_tasksPool),
@@ -79,10 +83,11 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
                           });
         }
         // Possible race condition. Try to set all child states to false as well!
+        UniqueLock lk(_taskStateLock);
         finished = std::find_if(std::cbegin(_taskStates),
                                 std::cend(_taskStates),
-                                [](bool entry) {
-                                    return entry;
+                                [](TaskState entry) {
+                                    return entry != TaskState::TASK_FREE;
                                 }) == std::cend(_taskStates);
         if (yeld) {
             std::this_thread::yield();
@@ -104,6 +109,11 @@ void TaskPool::setTaskCallback(const TaskHandle& handle,
     _taskCallbacks[index] = callback;
 }
 
+void TaskPool::taskStarted(U32 poolIndex, Task::TaskPriority priority) {
+    UniqueLock lk(_taskStateLock);
+    _taskStates[poolIndex] = TaskState::TASK_RUNNING;
+}
+
 void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
     if (priority != Task::TaskPriority::REALTIME_WITH_CALLBACK) {
         WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
@@ -111,8 +121,8 @@ void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
         runCbkAndClearTask(poolIndex);
     }
 
-    std::unique_lock<std::mutex> lk(_taskStateLock);
-    _taskStates[poolIndex] = false;
+    UniqueLock lk(_taskStateLock);
+    _taskStates[poolIndex] = TaskState::TASK_FREE;
 }
 
 TaskHandle TaskPool::getTaskHandle(I64 taskGUID) {
@@ -139,17 +149,16 @@ Task& TaskPool::getAvailableTask() {
     size_t failCount = 0;
 
     {
-        std::unique_lock<std::mutex> lk(_taskStateLock);
-        while(_taskStates[taskIndex]) {
+        UniqueLock lk(_taskStateLock);
+        while(_taskStates[taskIndex] != TaskState::TASK_FREE) {
             failCount++;
             taskIndex = (++_allocatedJobs - 1u) & (poolSize - 1u);
             assert(failCount < poolSize * 2);
         }
-        _taskStates[taskIndex] = true;
+        _taskStates[taskIndex] = TaskState::TASK_ALLOCATED;
     }
 
     Task& task = _tasksPool[taskIndex];
-    assert(!task.isRunning());
     task.reset();
 
     return task;
@@ -161,10 +170,10 @@ void TaskPool::nameThreadpoolWorkers(const char* name, ThreadPool& pool) {
     std::mutex mutex;
     std::condition_variable condition;
     bool predicate = false;
-    std::unique_lock<std::mutex> lock(mutex);
+    UniqueLock lock(mutex);
     for (std::size_t i = 0; i < pool.numThreads(); ++i) {
         pool.enqueue(PoolTask(1, [i, &name, &mutex, &condition, &predicate]() {
-            std::unique_lock<std::mutex> lock(mutex);
+            UniqueLock lock(mutex);
             while (!predicate) {
                 condition.wait(lock);
             }
