@@ -21,9 +21,6 @@ Terrain::Terrain()
       _plane(nullptr),
       _drawBBoxes(false),
       _underwaterDiffuseScale(100.0f),
-      _terrainRenderStateHash(0),
-      _terrainDepthRenderStateHash(0),
-      _terrainReflectionRenderStateHash(0),
       _terrainInView(false),
       _planeInView(false)
 {
@@ -39,6 +36,8 @@ Terrain::Terrain()
     _normalSampler->setWrapMode(TextureWrap::REPEAT);
     _normalSampler->setAnisotropy(8);
     _normalSampler->toggleMipMaps(true);
+
+    _terrainStateHash.fill(0);
 }
 
 Terrain::~Terrain() {
@@ -74,27 +73,20 @@ void Terrain::buildQuadtree() {
     _boundingBox = _terrainQuadtree.computeBoundingBox();
 
     Material* mat = getMaterialTpl();
-    for (U8 i = 0; i < 3; ++i) {
-        ShaderProgram* const drawShader =
-            mat->getShaderInfo(i == 0
-                                   ? RenderStage::DISPLAY
-                                   : (i == 1 ? RenderStage::SHADOW
-                                             : RenderStage::Z_PRE_PASS))
-                .getProgram();
-        drawShader->Uniform("dvd_waterHeight",
-                            GET_ACTIVE_SCENE().state().waterLevel());
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        RenderStage stage = static_cast<RenderStage>(i);
+
+        ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
+
+        drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE().state().waterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
-        drawShader->Uniform("texWaterCaustics",
-                            ShaderProgram::TextureUsage::UNIT0);
-        drawShader->Uniform("texUnderwaterAlbedo",
-                            ShaderProgram::TextureUsage::UNIT1);
-        drawShader->Uniform("texUnderwaterDetail",
-                            ShaderProgram::TextureUsage::NORMALMAP);
+        drawShader->Uniform("texWaterCaustics", ShaderProgram::TextureUsage::UNIT0);
+        drawShader->Uniform("texUnderwaterAlbedo", ShaderProgram::TextureUsage::UNIT1);
+        drawShader->Uniform("texUnderwaterDetail", ShaderProgram::TextureUsage::NORMALMAP);
         drawShader->Uniform("underwaterDiffuseScale", _underwaterDiffuseScale);
 
-        U8 textureOffset =
-            static_cast<U8>(ShaderProgram::TextureUsage::NORMALMAP) + 1;
+        U8 textureOffset = to_ubyte(ShaderProgram::TextureUsage::NORMALMAP) + 1;
         U8 layerOffset = 0;
         stringImpl layerIndex;
         for (U8 k = 0; k < _terrainTextures.size(); ++k) {
@@ -152,45 +144,33 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    size_t drawStateHash = 0;
 
-    if (GFX_DEVICE.isDepthStage()) {
-        drawStateHash = renderStage == RenderStage::Z_PRE_PASS
-                            ? _terrainRenderStateHash
-                            : _terrainDepthRenderStateHash;
-    } else {
-        drawStateHash = renderStage == RenderStage::REFLECTION
-                            ? _terrainReflectionRenderStateHash
-                            : _terrainRenderStateHash;
-    }
-
-    RenderingComponent* const renderable =
-        sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
-    ShaderProgram* drawShader = renderable->getDrawShader(
-        renderStage == RenderStage::REFLECTION
-            ? RenderStage::DISPLAY
-            : renderStage);
+    drawCommandsOut.resize(0);
+
+    GenericDrawCommand cmd;
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.renderGeometry(renderable->renderGeometry());
+    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.stateHash(_terrainStateHash[to_uint(renderStage)]);
+    cmd.shaderProgram(renderable->getDrawShader(renderStage));
+    cmd.sourceBuffer(getGeometryVB());
 
     if (_terrainInView) {
-        vectorImpl<GenericDrawCommand> tempCommands;
-        tempCommands.reserve(_terrainQuadtree.getChunkCount());
-
-        // draw ground
-        _terrainQuadtree.createDrawCommands(sceneRenderState, tempCommands);
-
-        std::sort(std::begin(tempCommands), std::end(tempCommands),
-                  [](const GenericDrawCommand& a, const GenericDrawCommand& b) {
-                      return a.LoD() < b.LoD();
+        vectorImpl<vec3<U32>> chunkData;
+        chunkData.reserve(_terrainQuadtree.getChunkCount());
+        _terrainQuadtree.getChunkBufferData(sceneRenderState, chunkData);
+        std::sort(std::begin(chunkData), std::end(chunkData),
+                  [](const vec3<U32>& a, const vec3<U32>& b) {
+                      // LoD comparison
+                      return a.z < b.z; 
                   });
-
-        for (GenericDrawCommand& cmd : tempCommands) {
-            cmd.renderGeometry(renderable->renderGeometry());
-            cmd.renderWireframe(renderable->renderWireframe());
-            cmd.stateHash(drawStateHash);
-            cmd.shaderProgram(drawShader);
-            cmd.sourceBuffer(getGeometryVB());
+        for (vec3<U32>& cmdData : chunkData) {
+            cmd.cmd().firstIndex = cmdData.x;
+            cmd.cmd().indexCount = cmdData.y;
+            cmd.LoD(to_byte(cmdData.z));
             drawCommandsOut.push_back(cmd);
         }
     }
@@ -199,14 +179,16 @@ void Terrain::getDrawCommands(SceneGraphNode& sgn,
     if ((GFX_DEVICE.getRenderStage() == RenderStage::DISPLAY ||
          GFX_DEVICE.getRenderStage() == RenderStage::Z_PRE_PASS) &&
         _planeInView) {
-        GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 1);
-        cmd.renderGeometry(renderable->renderGeometry());
-        cmd.renderWireframe(renderable->renderWireframe());
-        cmd.stateHash(drawStateHash);
-        cmd.shaderProgram(drawShader);
-        cmd.sourceBuffer(_plane->getGeometryVB());
+
+        VertexBuffer* const vb = _plane->getGeometryVB();
+        cmd.cmd().firstIndex = 0;
+        cmd.cmd().indexCount = vb->getIndexCount();
+        cmd.LoD(0);
+        cmd.sourceBuffer(vb);
         drawCommandsOut.push_back(cmd);
     }
+
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void Terrain::postDrawBoundingBox(SceneGraphNode& sgn) const {

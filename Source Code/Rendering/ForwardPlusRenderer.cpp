@@ -136,7 +136,7 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
             "dvd_ProjectionMatrixInverse",
             GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
-            ->Bind(static_cast<U8>(ShaderProgram::TextureUsage::UNIT0),
+            ->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Depth);
         GFX_DEVICE.drawPoints(1, GFX_DEVICE.getDefaultStateBlock(true),
                               _depthRangesConstructProgram);

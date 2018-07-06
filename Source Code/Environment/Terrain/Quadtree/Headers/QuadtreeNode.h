@@ -67,11 +67,10 @@ class QuadtreeNode {
                U32 minHMSize, Terrain* const terrain, U32& chunkCount);
 
     bool computeBoundingBox();
-    void Destroy();
-
-    void createDrawCommand(U32 options,
-                           const SceneRenderState& sceneRenderState,
-                           vectorImpl<GenericDrawCommand>& drawCommandsOut);
+    
+    void getBufferOffsetAndSize(U32 options,
+                                const SceneRenderState& sceneRenderState,
+                                vectorImpl<vec3<U32>>& chunkBufferData) const;
     void drawBBox() const;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,

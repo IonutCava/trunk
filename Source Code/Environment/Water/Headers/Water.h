@@ -45,14 +45,18 @@ class ShaderProgram;
 class WaterPlane : public SceneNode, public Reflector {
    public:
     /// Resource inherited "unload"
-    bool unload();
+    bool unload() override;
     /// General SceneNode stuff
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
+
     bool getDrawState(RenderStage currentStage);
+
     void setParams(F32 shininess, const vec2<F32>& noiseTile,
                    const vec2<F32>& noiseFactor, F32 transparency);
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState);
+
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
 
     inline Quad3D* getQuad() const { return _plane; }
 
@@ -85,20 +89,23 @@ class WaterPlane : public SceneNode, public Reflector {
     friend class ImplResourceLoader;
 
     WaterPlane();
-    ~WaterPlane() {}
+
+    ~WaterPlane();
+
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
 
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn) override;
+
     void previewReflection();
 
     inline const Plane<F32>& getRefractionPlane() { return _refractionPlane; }
 
    private:
     /// Bounding Box computation overwrite from SceneNode
-    bool computeBoundingBox(SceneGraphNode& sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn) override;
 
    private:
     /// the hw clip-plane index for the water

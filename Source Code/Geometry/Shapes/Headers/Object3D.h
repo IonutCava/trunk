@@ -92,7 +92,7 @@ class Object3D : public SceneNode {
     inline bool playAnimations() const { return _playAnimations; }
 
     inline void setGeometryPartitionID(size_t ID) {
-        _geometryPartitionID = static_cast<U16>(ID);
+        _geometryPartitionID = to_ushort(ID);
     }
 
     inline const vectorImpl<vec3<U32> >& getTriangles() const {
@@ -110,10 +110,6 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
    protected:
-    virtual void getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut);
     virtual void computeNormals();
     virtual void computeTangents();
     /// Use a custom vertex buffer for this object (e.g., a submesh uses the

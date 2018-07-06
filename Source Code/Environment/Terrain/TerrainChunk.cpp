@@ -137,18 +137,15 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth,
     assert(nIndice == _lodIndCount[lod]);
 }
 
-void TerrainChunk::createDrawCommand(
-    I8 lod, vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    assert(lod < Config::TERRAIN_CHUNKS_LOD);
-    if (lod > 0) {
-        lod--;
+vec3<U32> TerrainChunk::getBufferOffsetAndSize(I8 targetLoD) const {
+    assert(targetLoD < Config::TERRAIN_CHUNKS_LOD);
+    if (targetLoD > 0) {
+        targetLoD--;
     }
-    GenericDrawCommand drawCommand(PrimitiveType::TRIANGLE_STRIP,
-                                   _lodIndOffset[lod] + _chunkIndOffset,
-                                   _lodIndCount[lod]);
-    drawCommand.LoD(lod);
-    drawCommandsOut.push_back(drawCommand);
+    return vec3<U32>(_lodIndOffset[targetLoD] + _chunkIndOffset, _lodIndCount[targetLoD], to_uint(targetLoD));
+
 }
+
 
 U8 TerrainChunk::getLoD() const { return _parentNode->getLoD(); }
 };

@@ -141,9 +141,9 @@ void LightManager::idle() {
 U8 LightManager::getShadowBindSlotOffset(ShadowType type) {
     if (_shadowLocation.front() == 255) {
         const U8 maxTextureStorage = 
-            static_cast<U8>(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
+            to_ubyte(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
         const U8 maxShadowSources =
-            static_cast<U8>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
+            to_ubyte(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
         _shadowLocation.fill(maxTextureStorage);
         _shadowLocation[to_uint(ShadowType::CUBEMAP)] -= (maxShadowSources * 3);
         _shadowLocation[to_uint(ShadowType::SINGLE)]  -= (maxShadowSources * 2);

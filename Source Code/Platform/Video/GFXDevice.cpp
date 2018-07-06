@@ -605,7 +605,7 @@ void GFXDevice::ConstructHIZ() {
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Begin(hizTarget);
     // Bind the depth texture to the first texture unit
     _renderTarget[to_uint(RenderTarget::DEPTH)]->Bind(
-        static_cast<U8>(ShaderProgram::TextureUsage::UNIT0),
+        to_ubyte(ShaderProgram::TextureUsage::UNIT0),
         TextureDescriptor::AttachmentType::Depth);
     // Calculate the number of mipmap levels we need to generate
     U32 numLevels = 1 + to_uint(floorf(log2f(fmaxf(to_float(resolution.width),

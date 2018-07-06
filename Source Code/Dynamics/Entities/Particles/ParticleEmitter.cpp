@@ -27,7 +27,6 @@ ParticleEmitter::ParticleEmitter()
       _particleShader(nullptr),
       _particleGPUBuffer(nullptr),
       _particleDepthShader(nullptr) {
-    _drawCommand = GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 4, 1);
     _readOffset = 0;
     _writeOffset = 2;
 }
@@ -178,6 +177,17 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
         sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
     }
 
+
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
+
+    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4, 1);
+    cmd.sourceBuffer(_particleGPUBuffer);
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
+                                                          static_cast<RenderStage>(i)).push_back(cmd);
+    }
+
     SceneNode::postLoad(sgn);
 }
 
@@ -219,28 +229,30 @@ void ParticleEmitter::onCameraUpdate(SceneGraphNode& sgn, Camera& camera) {
                   viewMatrixCache.m[2][1]));
 }
 
-void ParticleEmitter::getDrawCommands(
-                            SceneGraphNode& sgn,
-                            RenderStage renderStage,
-                            const SceneRenderState& sceneRenderState,
-                            vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
+                                      RenderStage renderStage,
+                                      const SceneRenderState& sceneRenderState,
+                                      vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
     U32 particleCount = getAliveParticleCount();
     if (!_enabled || particleCount == 0) {
         return;
     }
 
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
-    _drawCommand.renderGeometry(renderable->renderGeometry());
-    _drawCommand.renderWireframe(renderable->renderWireframe());
-    _drawCommand.stateHash(_particleStateBlockHash);
-    _drawCommand.cmd().primCount = particleCount;
+    GenericDrawCommand& cmd = drawCommandsOut.front();
 
-    _drawCommand.shaderProgram(renderStage == RenderStage::DISPLAY
-                                   ? _particleShader
-                                   : _particleDepthShader);
-    _drawCommand.sourceBuffer(_particleGPUBuffer);
-    drawCommandsOut.push_back(_drawCommand);
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+
+    cmd.renderGeometry(renderable->renderGeometry());
+    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.stateHash(_particleStateBlockHash);
+    cmd.cmd().primCount = particleCount;
+
+    cmd.shaderProgram(renderStage == RenderStage::DISPLAY
+                                  ? _particleShader
+                                  : _particleDepthShader);
+
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void ParticleEmitter::uploadToGPU() {

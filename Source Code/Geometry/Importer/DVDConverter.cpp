@@ -336,7 +336,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
             for (U8 a = 0; a < weightsPerVertex[j].size(); a++) {
                 U16 boneID = weightsPerVertex[j][a]._boneID + submeshBoneOffsetOut;
                 assert(boneID < std::numeric_limits<U8>::max());
-                boneIndices.b[a] = static_cast<U8>(boneID);
+                boneIndices.b[a] = to_ubyte(boneID);
                 boneWeights[a] = weightsPerVertex[j][a]._boneWeight;
             }
 
@@ -345,7 +345,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,
         }
     }  // endfor
 
-    submeshBoneOffsetOut += static_cast<U8>(source->mNumBones);
+    submeshBoneOffsetOut += to_ubyte(source->mNumBones);
     Attorney::SubMeshDVDConverter::setGeometryLimits(
         *tempSubMesh, importBB.getMin(), importBB.getMax());
 

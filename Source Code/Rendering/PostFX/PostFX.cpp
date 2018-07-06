@@ -72,10 +72,8 @@ void PostFX::init(const vec2<U16>& resolution) {
     ResourceDescriptor anaglyph("anaglyph");
     anaglyph.setThreadedLoading(false);
     _anaglyphShader = CreateResource<ShaderProgram>(anaglyph);
-    _anaglyphShader->Uniform("texRightEye",
-                             static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
-    _anaglyphShader->Uniform("texLeftEye",
-                             static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
+    _anaglyphShader->Uniform("texRightEye", to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+    _anaglyphShader->Uniform("texLeftEye", to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
 
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.setThreadedLoading(false);
@@ -209,10 +207,10 @@ void PostFX::displayScene(bool applyFilters) {
         drawShader = _anaglyphShader;
         _anaglyphShader->bind();
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
+            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
 
         _gfx->getRenderTarget(GFXDevice::RenderTarget::ANAGLYPH)
-            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
+            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_LEFT_EYE));
     } else {
         if (applyFilters) {
             PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
@@ -226,22 +224,22 @@ void PostFX::displayScene(bool applyFilters) {
         _gfx->getRenderTarget(
                   _depthPreview ? GFXDevice::RenderTarget::DEPTH
                                 : GFXDevice::RenderTarget::SCREEN)
-            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
+            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN),
                    _depthPreview ? TextureDescriptor::AttachmentType::Depth
                                  : TextureDescriptor::AttachmentType::Color0);
 #else
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
-            ->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+            ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
 #endif
         if (applyFilters) {
-            _underwaterTexture->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-            _noise->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-            _screenBorder->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+            _underwaterTexture->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+            _noise->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+            _screenBorder->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
             if (_bloomFB) {
-                _bloomFB->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
+                _bloomFB->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_BLOOM));
             }
             if (_SSAO_FB) {
-                _SSAO_FB->Bind(static_cast<U8>(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
+                _SSAO_FB->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_SSAO));
             }
         }
     }

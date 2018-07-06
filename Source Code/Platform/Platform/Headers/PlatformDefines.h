@@ -173,10 +173,29 @@ U32 to_uint(const T value) {
 }
 
 template <typename T>
+U16 to_ushort(const T value) {
+    return static_cast<U16>(to_underlying_type(value));
+}
+
+template <typename T>
+U8 to_ubyte(const T value) {
+    return static_cast<U8>(to_underlying_type(value));
+}
+
+template <typename T>
 I32 to_int(const T value) {
     return static_cast<I32>(to_underlying_type(value));
 }
 
+template <typename T>
+I16 to_short(const T value) {
+    return static_cast<I16>(to_underlying_type(value));
+}
+
+template <typename T>
+I8 to_byte(const T value) {
+    return static_cast<I8>(to_underlying_type(value));
+}
 template <typename T>
 F32 to_float(const T value) {
     return static_cast<F32>(to_underlying_type(value));

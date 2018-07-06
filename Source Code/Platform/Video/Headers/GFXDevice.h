@@ -461,8 +461,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class SceneManager;
     void buildDrawCommands(VisibleNodeList& visibleNodes,
                            SceneRenderState& sceneRenderState,
-                           bool refreshNodeData,
-                           bool impostorPass);
+                           bool refreshNodeData);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
 

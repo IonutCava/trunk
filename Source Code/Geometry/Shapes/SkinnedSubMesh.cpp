@@ -139,17 +139,9 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     boundingBoxPerAnimation::const_iterator it3 = _boundingBoxes.find(animationIndex);
     // If the BBs are computed, set the BB for the current frame as the node BB
     if (it3 != std::end(_boundingBoxes)) {
-/*#if defined(_DEBUG)
-        const boundingBoxPerFrame& bbPerFrame = it3->second;
-        boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(animComp->frameIndex());
-        if (it4 != std::end(bbPerFrame))  {
-            sgn.setInitialBoundingBox(it4->second);
-        }
-#else*/
         sgn.setInitialBoundingBox(it3->second.find(animComp->frameIndex())->second);
-//#endif
-
     }
+
     return true;
 }
 };

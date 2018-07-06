@@ -268,9 +268,9 @@ void AIEntity::updatePosition(const U64 deltaTime) {
     if (isAgentLoaded() && getAgent()->active) {
         _previousDistanceToTarget = _distanceToTarget;
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
-        F32 distanceDelta = std::abs(_previousDistanceToTarget - _distanceToTarget);
+        /*F32 distanceDelta = std::abs(_previousDistanceToTarget - _distanceToTarget);
         // if we are walking but did not change distance in a while
-        /*if (distanceDelta < DESTINATION_RADIUS_SQ) {
+        if (distanceDelta < DESTINATION_RADIUS_SQ) {
             _moveWaitTimer += deltaTime;
 
             if (Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5) {

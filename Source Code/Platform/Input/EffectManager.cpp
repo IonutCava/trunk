@@ -56,11 +56,9 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pConstForce->level = 5000;  //-10K to +10k
     pConstForce->envelope.attackLength =
         to_uint(1000000.0 / _nUpdateFreq / 2);
-    pConstForce->envelope.attackLevel =
-        static_cast<U16>(pConstForce->level * 0.1);
+    pConstForce->envelope.attackLevel = to_ushort(pConstForce->level * 0.1);
     pConstForce->envelope.fadeLength = 0;  // Never reached, actually.
-    pConstForce->envelope.fadeLevel =
-        static_cast<U16>(pConstForce->level);  // Idem
+    pConstForce->envelope.fadeLevel = to_ushort(pConstForce->level);  // Idem
 
     mapVars.clear();
     mapVars["Force"] = MemoryManager_NEW TriangleVariable(

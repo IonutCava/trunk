@@ -20,24 +20,33 @@ SubMesh::SubMesh(const stringImpl& name, ObjectFlag flag)
       _ID(0),
       _parentMesh(nullptr)
 {
-    _drawCmd.primitiveType(PrimitiveType::TRIANGLES);
-    _drawCmd.cmd().firstIndex = 0;
-    _drawCmd.cmd().primCount = 1;
 }
 
 SubMesh::~SubMesh()
 {
 }
 
+void SubMesh::postLoad(SceneGraphNode& sgn) {
+    Object3D::postLoad(sgn);
+
+    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    assert(renderable != nullptr);
+
+    GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
+        getGeometryVB()->getPartitionOffset(_geometryPartitionID),
+        getGeometryVB()->getPartitionCount(_geometryPartitionID));
+
+    cmd.sourceBuffer(_parentMesh->getGeometryVB());
+
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
+                                                          static_cast<RenderStage>(i)).push_back(cmd);
+    }
+}
+
 void SubMesh::setParentMesh(Mesh* const parentMesh) {
     _parentMesh = parentMesh;
     setGeometryVB(_parentMesh->getGeometryVB());
-    // If the mesh has animation data, use dynamic VB's if we use software
-    // skinning
-    _drawCmd.cmd().firstIndex = 
-        getGeometryVB()->getPartitionOffset(_geometryPartitionID);
-    _drawCmd.cmd().indexCount =
-        getGeometryVB()->getPartitionCount(_geometryPartitionID);
 }
 
 bool SubMesh::computeBoundingBox(SceneGraphNode& sgn) {
@@ -56,17 +65,18 @@ void SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               RenderStage renderStage,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    assert(_parentMesh != nullptr);
 
     RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
 
-    _drawCmd.renderGeometry(renderable->renderGeometry());
-    _drawCmd.renderWireframe(renderable->renderWireframe());
-    _drawCmd.LoD(renderable->lodLevel());
-    _drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
-    _drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
-    _drawCmd.sourceBuffer(_parentMesh->getGeometryVB());
-    drawCommandsOut.push_back(_drawCmd);
+    GenericDrawCommand& cmd = drawCommandsOut.front();
+
+    cmd.renderGeometry(renderable->renderGeometry());
+    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.LoD(renderable->lodLevel());
+    cmd.stateHash(renderable->getDrawStateHash(renderStage));
+    cmd.shaderProgram(renderable->getDrawShader(renderStage));
+    
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 };

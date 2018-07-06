@@ -71,6 +71,10 @@ WaterPlane::WaterPlane()
     _refractionTexture->Create(_resolution.x, _resolution.y);
 }
 
+WaterPlane::~WaterPlane()
+{
+}
+
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
     sgn.addNode(*_plane);
     SceneNode::postLoad(sgn);
@@ -148,10 +152,10 @@ bool WaterPlane::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
             TextureDescriptor::AttachmentType::Color0;
         RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
         renderable->makeTextureResident(
-            *(_reflectedTexture->GetAttachment(att)), 1);
+            *(_reflectedTexture->GetAttachment(att)), 1, currentStage);
         if (!_cameraUnderWater) {
             renderable->makeTextureResident(
-                *(_refractionTexture->GetAttachment(att)), 2);
+                *(_refractionTexture->GetAttachment(att)), 2, currentStage);
         }
     }
 
@@ -171,14 +175,17 @@ void WaterPlane::getDrawCommands(SceneGraphNode& sgn,
     ShaderProgram* drawShader =
         renderable->getDrawShader(depthPass ? RenderStage::Z_PRE_PASS : RenderStage::DISPLAY);
     drawShader->Uniform("underwater", _cameraUnderWater);
-    GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 0);
+
+    drawCommandsOut.resize(1);
+    GenericDrawCommand& cmd = drawCommandsOut.front();
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
-    cmd.stateHash(
-        renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));
+    cmd.stateHash(renderable->getMaterialInstance()->getRenderStateBlock(RenderStage::DISPLAY));
     cmd.shaderProgram(drawShader);
     cmd.sourceBuffer(_plane->getGeometryVB());
-    drawCommandsOut.push_back(cmd);
+
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 

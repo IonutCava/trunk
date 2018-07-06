@@ -57,12 +57,8 @@ class TerrainChunk {
     ~TerrainChunk();
     void Load(U8 depth, const vec2<U32>& pos, U32 minHMSize,
               const vec2<U32>& HMsize, Terrain* const terrain);
-    void Destroy();
 
-    void createDrawCommand(I8 lod,
-                           vectorImpl<GenericDrawCommand>& drawCommandsOut);
-
-    void addObject(Mesh* obj);
+    vec3<U32> getBufferOffsetAndSize(I8 targetLoD) const;
 
     inline F32 getMinHeight() const { return _heightBounds.x; }
     inline F32 getMaxHeight() const { return _heightBounds.y; }

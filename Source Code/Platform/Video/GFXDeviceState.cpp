@@ -39,7 +39,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
             for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
                 refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
             }
-            Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"),
+            Console::printfn(Locale::get("CURRENT_DISPLAY_MODE"),
                 mode._resolution.width,
                 mode._resolution.height,
                 mode._bitDepth,
@@ -344,13 +344,11 @@ void GFXDevice::handleWindowEvent(WindowEvent event, I32 data1, I32 data2) {
             Application::getInstance().getWindowManager().hasFocus(true);
         } break;
         case WindowEvent::RESIZED_INTERNAL:{
-            U16 width = static_cast<U16>(data1);
-            U16 height = static_cast<U16>(data2);
-            setBaseViewport(vec4<I32>(0, 0, width, height));
+            setBaseViewport(vec4<I32>(0, 0, data1, data2));
             // Update the 2D camera so it matches our new rendering viewport
-            _2DCamera->setProjection(vec4<F32>(0, width, 0, height),
+            _2DCamera->setProjection(vec4<F32>(0, data1, 0, data2),
                                      vec2<F32>(-1, 1));
-            Application::getInstance().getKernel().onChangeWindowSize(width, height);
+            Application::getInstance().getKernel().onChangeWindowSize(to_ushort(data1), to_ushort(data2));
         } break;
         case WindowEvent::RESIZED_EXTERNAL:{
         } break;

@@ -76,6 +76,7 @@ bool Sky::load() {
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
     _sky->setResolution(4);
+
     Console::printfn(Locale::get("CREATE_SKY_RES_OK"));
     return true;
 }
@@ -84,9 +85,22 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     if (_sky == nullptr) {
         load();
     }
+
     _sky->renderState().setDrawState(false);
     sgn.addNode(*_sky)->getComponent<PhysicsComponent>()->physicsGroup(
         PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
+
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+
+    GenericDrawCommand cmd;
+    cmd.sourceBuffer(_sky->getGeometryVB());
+    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
+    cmd.shaderProgram(_skyShader);
+
+    for (U32 i = 0; i < to_uint(RenderStage::COUNT); ++i) {
+        Attorney::RenderingCompSceneNode::getDrawCommands(*renderable,
+            static_cast<RenderStage>(i)).push_back(cmd);
+    }
 
     SceneNode::postLoad(sgn);
 }
@@ -97,7 +111,7 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
     if (_sky->onDraw(sgn, currentStage)) {
         sgn.getComponent<RenderingComponent>()->makeTextureResident(
-            *_skybox, static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
+            *_skybox, to_ubyte(ShaderProgram::TextureUsage::UNIT0), currentStage);
         return true;
     }
     return false;
@@ -108,20 +122,16 @@ void Sky::getDrawCommands(SceneGraphNode& sgn,
                           const SceneRenderState& sceneRenderState,
                           vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    GenericDrawCommand& cmd = drawCommandsOut.front();
 
-    GenericDrawCommand cmd;
+    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(renderStage == RenderStage::REFLECTION
-                      ? _skyboxRenderStateReflectedHash
-                      : _skyboxRenderStateHash);
-    cmd.shaderProgram(_skyShader);
-    cmd.sourceBuffer(_sky->getGeometryVB());
+                              ? _skyboxRenderStateReflectedHash
+                              : _skyboxRenderStateHash);
 
-    cmd.cmd().indexCount = _sky->getGeometryVB()->getIndexCount();
-
-    drawCommandsOut.push_back(cmd);
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

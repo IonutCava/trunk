@@ -32,6 +32,12 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
+void SceneNode::getDrawCommands(SceneGraphNode& sgn,
+                                RenderStage renderStage,
+                                const SceneRenderState& sceneRenderState,
+                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+}
+
 bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
                          SceneGraphNode& sgn, bool distanceCheck) {
     const BoundingBox& boundingBox = sgn.getBoundingBoxConst();

@@ -74,21 +74,27 @@ class Vegetation : public SceneNode {
     ~Vegetation();
 
     void initialize(TerrainChunk* const terrainChunk);
+
     inline void toggleRendering(bool state) { _render = state; }
+
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+
     inline bool isInView(const SceneRenderState& sceneRenderState,
                          SceneGraphNode& sgn,
-                         const bool distanceCheck = true) {
+                         const bool distanceCheck = true) override {
         return true;
     }
 
    protected:
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState);
-    bool onDraw(SceneGraphNode& sgn, RenderStage renderStage);
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
+
+    bool onDraw(SceneGraphNode& sgn, RenderStage renderStage)  override;
+
     void gpuCull();
 
    private:
@@ -138,7 +144,6 @@ class Vegetation : public SceneNode {
     ShaderBuffer* _grassMatrices;
     static bool _staticDataUpdated;
     GenericDrawCommand _cullDrawCommand;
-    GenericDrawCommand _renderDrawCommand;
 };
 
 };  // namespace Divide

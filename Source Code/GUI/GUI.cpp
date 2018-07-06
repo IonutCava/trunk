@@ -66,8 +66,7 @@ void GUI::draw() const {
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
-    setCursorPosition(static_cast<U16>(mouseState.X.abs),
-                      static_cast<U16>(mouseState.Y.abs));
+    setCursorPosition(to_ushort(mouseState.X.abs), to_ushort(mouseState.Y.abs));
 }
 
 void GUI::update(const U64 deltaTime) {
@@ -160,8 +159,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     const OIS::MouseState& mouseState =
         Input::InputInterface::getInstance().getMouse().getMouseState();
 
-    setCursorPosition(static_cast<U16>(mouseState.X.abs),
-                      static_cast<U16>(mouseState.Y.abs));
+    setCursorPosition(to_ushort(mouseState.X.abs), to_ushort(mouseState.Y.abs));
 
     _defaultMsgBox = addMsgBox("AssertMsgBox", "Assertion failure",
                                "Assertion failed with message: ");

@@ -67,13 +67,13 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
 
 vec4<U8> ToByteColor(const vec4<F32>& floatColor) {
     return vec4<U8>(ToByteColor(floatColor.rgb()),
-                    static_cast<U8>(floatColor.a * 255));
+                    to_ubyte(floatColor.a * 255));
 }
 
 vec3<U8> ToByteColor(const vec3<F32>& floatColor) {
-    return vec3<U8>(static_cast<U8>(floatColor.r * 255),
-                    static_cast<U8>(floatColor.g * 255),
-                    static_cast<U8>(floatColor.b * 255));
+    return vec3<U8>(to_ubyte(floatColor.r * 255),
+                    to_ubyte(floatColor.g * 255),
+                    to_ubyte(floatColor.b * 255));
 }
 
 vec4<U32> ToUIntColor(const vec4<F32>& floatColor) {

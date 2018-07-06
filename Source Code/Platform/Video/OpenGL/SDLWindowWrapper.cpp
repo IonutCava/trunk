@@ -158,8 +158,8 @@ void GL_API::pollWindowEvents() {
                     } break;
                     case SDL_WINDOWEVENT_RESIZED: {
                         _externalResizeEvent = true;
-                        changeWindowSize(static_cast<U16>(event.window.data1),
-                                         static_cast<U16>(event.window.data2));
+                        changeWindowSize(to_ushort(event.window.data1),
+                                         to_ushort(event.window.data2));
                         _externalResizeEvent = false;
                     }break;
                     case SDL_WINDOWEVENT_SIZE_CHANGED: {
@@ -173,8 +173,8 @@ void GL_API::pollWindowEvents() {
                                                      event.window.data2);
 
                         if (!_internalMoveEvent) {
-                            setWindowPosition(static_cast<U16>(event.window.data1),
-                                              static_cast<U16>(event.window.data2));
+                            setWindowPosition(to_ushort(event.window.data1),
+                                              to_ushort(event.window.data2));
                             _internalMoveEvent = false;
                         }
                     } break;
@@ -272,29 +272,26 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
+
+    Console::printfn(Locale::get("GL_MAX_TEX_UNITS_FRAG"), _maxTextureUnits);
+    
     par.setParam<I32>("rendering.maxTextureSlots", _maxTextureUnits);
     // Maximum number of color attachments per framebuffer
     par.setParam<I32>("rendering.maxRenderTargetOutputs",
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
-    stringImpl gpuVendorByte;
     const char* gpuVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
     if (gpuVendor != nullptr) {
-        gpuVendorByte = gpuVendor;
-    } else {
-        gpuVendorByte = "unknown";
-    }
-    if (!gpuVendorByte.empty()) {
-        if (gpuVendorByte.compare(0, 5, "Intel") == 0) {
+        if (strstr(gpuVendor, "Intel") != nullptr) {
             GFX_DEVICE.setGPUVendor(GPUVendor::INTEL);
-        } else if (gpuVendorByte.compare(0, 6, "NVIDIA") == 0) {
+        } else if (strstr(gpuVendor, "NVIDIA") != nullptr) {
             GFX_DEVICE.setGPUVendor(GPUVendor::NVIDIA);
-        } else if (gpuVendorByte.compare(0, 3, "ATI") == 0 ||
-                   gpuVendorByte.compare(0, 3, "AMD") == 0) {
+        } else if (strstr(gpuVendor, "ATI") != nullptr ||
+                   strstr(gpuVendor, "AMD") != nullptr) {
             GFX_DEVICE.setGPUVendor(GPUVendor::AMD);
         }
     } else {
-        gpuVendorByte = "Unknown GPU Vendor";
+        gpuVendor = "Unknown GPU Vendor";
         GFX_DEVICE.setGPUVendor(GPUVendor::OTHER);
     }
 
@@ -321,8 +318,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     if (samplerBuffers == 0 || sampleCount == 0) {
         msaaSamples = 0;
     }
-    GFX_DEVICE.gpuState().initAA(static_cast<U8>(par.getParam<I32>("rendering.FXAAsamples", 0)),
-                                 static_cast<U8>(msaaSamples));
+    GFX_DEVICE.gpuState().initAA(to_ubyte(par.getParam<I32>("rendering.FXAAsamples", 0)),
+                                 to_ubyte(msaaSamples));
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get("GL_MAX_UNIFORM"),
@@ -341,7 +338,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     Console::printfn(Locale::get("GL_GLSL_SUPPORT"),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
-    Console::printfn(Locale::get("GL_VENDOR_STRING"), gpuVendorByte.c_str(),
+    Console::printfn(Locale::get("GL_VENDOR_STRING"), gpuVendor,
                      glGetString(GL_RENDERER), glGetString(GL_VERSION));
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
@@ -407,9 +404,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                 tempDisplayMode._resolution.set(displayMode.w, displayMode.h);
                 tempDisplayMode._bitDepth = SDL_BITSPERPIXEL(displayMode.format);
                 tempDisplayMode._formatName = SDL_GetPixelFormatName(displayMode.format);
-                tempDisplayMode._refreshRate.push_back(static_cast<U8>(displayMode.refresh_rate));
+                tempDisplayMode._refreshRate.push_back(to_ubyte(displayMode.refresh_rate));
                 Util::ReplaceStringInPlace(tempDisplayMode._formatName, "SDL_PIXELFORMAT_", "");
-                GFX_DEVICE.gpuState().registerDisplayMode(static_cast<U8>(display), tempDisplayMode);
+                GFX_DEVICE.gpuState().registerDisplayMode(to_ubyte(display), tempDisplayMode);
                 tempDisplayMode._refreshRate.clear();
             }
         }
@@ -569,8 +566,8 @@ void GL_API::changeWindowSize(U16 w, U16 h) {
             mode.w = w;
             mode.h = h;
             SDL_GetClosestDisplayMode(winManager.targetDisplay(), &mode, &closestMode);
-            w = static_cast<U16>(closestMode.w);
-            h = static_cast<U16>(closestMode.h);
+            w = to_ushort(closestMode.w);
+            h = to_ushort(closestMode.h);
         }
 
         SDL_SetWindowSize(GLUtil::_mainWindow, w, h);

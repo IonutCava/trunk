@@ -184,9 +184,9 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     template <typename T>
     inline void addIndex(T index) {
         if (usesLargeIndices()) {
-            _hardwareIndicesL.push_back(static_cast<U32>(index));
+            _hardwareIndicesL.push_back(to_uint(index));
         } else {
-            _hardwareIndicesS.push_back(static_cast<U16>(index));
+            _hardwareIndicesS.push_back(to_ushort(index));
         }
     }
 
@@ -302,7 +302,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
             return 0;
         }
         if (_partitions.empty()) return 0;
-        return getPartitionOffset(static_cast<U16>(_partitions.size() - 1));
+        return getPartitionOffset(to_ushort(_partitions.size() - 1));
     }
 
     inline void reset() {

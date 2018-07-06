@@ -72,10 +72,6 @@ class Trigger : public SceneNode {
     /// SceneNode concrete implementations
     bool unload();
 
-    void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
     /// SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState,
                   SceneGraphNode& sgn, const bool distanceCheck = false) {

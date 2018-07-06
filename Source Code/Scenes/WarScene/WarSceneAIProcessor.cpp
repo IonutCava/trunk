@@ -130,8 +130,8 @@ void WarSceneAIProcessor::initInternal() {
                                      ->getPosition());
 
     
-    _globalWorkingMemory._teamAliveCount[g_myTeamContainer].value(static_cast<U8>(teamAgents.size()));
-    _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value(static_cast<U8>(enemyMembers.size()));
+    _globalWorkingMemory._teamAliveCount[g_myTeamContainer].value(to_ubyte(teamAgents.size()));
+    _globalWorkingMemory._teamAliveCount[g_enemyTeamContainer].value(to_ubyte(enemyMembers.size()));
 }
 
 bool WarSceneAIProcessor::DIE() {
@@ -145,7 +145,7 @@ bool WarSceneAIProcessor::DIE() {
 
     _entity->getUnitRef()->setAttribute(to_uint(UnitAttributes::ALIVE_FLAG), 0);
     U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
-    _globalWorkingMemory._teamAliveCount[ownTeamID].value(static_cast<U8>(std::max(teamCount - 1, 0)));
+    _globalWorkingMemory._teamAliveCount[ownTeamID].value(to_ubyte(std::max(teamCount - 1, 0)));
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
@@ -314,7 +314,7 @@ void WarSceneAIProcessor::requestOrders() {
                 }
             } break;
         }
-        priority[order->getID()] = static_cast<U8>(prio);
+        priority[order->getID()] = to_ubyte(prio);
     }
 
     for (GOAPGoal& goal : goalList()) {
@@ -455,7 +455,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 _entity->sendMessage(*member.second, AIMsg::HAVE_SCORED, _entity);
             }
 
-            _scoreCallback(static_cast<U8>(ownTeamID), _entity->getName());
+            _scoreCallback(to_ubyte(ownTeamID), _entity->getName());
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Capture flag action over");

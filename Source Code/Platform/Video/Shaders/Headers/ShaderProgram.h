@@ -112,7 +112,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
                          bool rowMajor = false) = 0;
 
     inline void Uniform(const stringImpl& ext, TextureUsage slot) {
-        Uniform(ext, static_cast<U8>(slot));
+        Uniform(ext, to_ubyte(slot));
     }
     
     inline void Uniform(const stringImpl& ext, bool value) {
@@ -160,7 +160,7 @@ class NOINITVTABLE ShaderProgram : public HardwareResource {
     virtual void Uniform(I32 location, U8 slot) = 0;
 
     inline void Uniform(I32 location, TextureUsage slot) {
-        Uniform(location, static_cast<U8>(slot));
+        Uniform(location, to_ubyte(slot));
     }
 
     inline void Uniform(I32 location, bool value) {

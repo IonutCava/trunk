@@ -28,9 +28,10 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
      Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
      _isSubMesh = type == Object3D::ObjectType::SUBMESH;
     _nodeSkinned = parentSGN.getNode<Object3D>()->isSkinned();
-    _renderData._textureData.reserve(ParamHandler::getInstance().getParam<I32>(
-        "rendering.maxTextureSlots", 16));
 
+    for (GFXDevice::RenderPackage& pkg : _renderData) {
+        pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
+    }
 
     // Prepare it for rendering lines
     RenderStateBlock primitiveStateBlock;
@@ -116,10 +117,11 @@ void RenderingComponent::update(const U64 deltaTime) {
     }
 }
 
-void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
+void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot, RenderStage currentStage) {
+    GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
+
     TextureDataContainer::iterator it;
-    it = std::find_if(std::begin(_renderData._textureData),
-                      std::end(_renderData._textureData),
+    it = std::find_if(std::begin(pkg._textureData), std::end(pkg._textureData),
                       [&slot](const TextureData& data)
                           -> bool { return data.getHandleLow() == slot; });
 
@@ -127,8 +129,8 @@ void RenderingComponent::makeTextureResident(const Texture& texture, U8 slot) {
     TextureData data = texture.getData();
     data.setHandleLow(to_uint(slot));
 
-    if (it == std::end(_renderData._textureData)) {
-        _renderData._textureData.push_back(data);
+    if (it == std::end(pkg._textureData)) {
+        pkg._textureData.push_back(data);
     } else {
         *it = data;
     }
@@ -176,14 +178,16 @@ bool RenderingComponent::onDraw(RenderStage currentStage) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
 
-    _renderData._textureData.resize(0);
+    GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
+
+    pkg._textureData.resize(0);
     Material* mat = getMaterialInstance();
     if (mat) {
-        mat->getTextureData(_renderData._textureData);
+        mat->getTextureData(pkg._textureData);
     }
 
     for (const TextureData& texture : _textureDependencies) {
-        _renderData._textureData.push_back(texture);
+        pkg._textureData.push_back(texture);
     }
 
     return _parentSGN.getNode()->onDraw(_parentSGN, currentStage);
@@ -348,29 +352,29 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
 void RenderingComponent::registerShaderBuffer(ShaderBufferLocation slot,
                                               vec2<U32> bindRange,
                                               ShaderBuffer& shaderBuffer) {
-    GFXDevice::ShaderBufferList::iterator it;
-    it = std::find_if(
-        std::begin(_renderData._shaderBuffers),
-        std::end(_renderData._shaderBuffers),
-        [&slot](const GFXDevice::ShaderBufferBinding& binding)
-            -> bool { return binding._slot == slot; });
 
-    if (it == std::end(_renderData._shaderBuffers)) {
-       vectorAlg::emplace_back(_renderData._shaderBuffers, slot, &shaderBuffer, bindRange);
-    } else {
-        it->set(slot, &shaderBuffer, bindRange);
+    GFXDevice::ShaderBufferList::iterator it;
+    for (GFXDevice::RenderPackage& pkg : _renderData) {
+        it = std::find_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
+            [&slot](const GFXDevice::ShaderBufferBinding& binding)
+                    -> bool { return binding._slot == slot; });
+
+        if (it == std::end(pkg._shaderBuffers)) {
+           vectorAlg::emplace_back(pkg._shaderBuffers, slot, &shaderBuffer, bindRange);
+        } else {
+            it->set(slot, &shaderBuffer, bindRange);
+        }
     }
 }
 
 void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
-    _renderData._shaderBuffers.erase(
-        std::remove_if(
-            std::begin(_renderData._shaderBuffers),
-            std::end(_renderData._shaderBuffers),
-            [&slot](
-                const GFXDevice::ShaderBufferBinding& binding)
-                -> bool { return binding._slot == slot; }),
-        std::end(_renderData._shaderBuffers));
+    for (GFXDevice::RenderPackage& pkg : _renderData) {
+        pkg._shaderBuffers.erase(
+            std::remove_if(std::begin(pkg._shaderBuffers), std::end(pkg._shaderBuffers),
+                [&slot](const GFXDevice::ShaderBufferBinding& binding)
+                    -> bool { return binding._slot == slot; }),
+            std::end(pkg._shaderBuffers));
+    }
 }
 
 U8 RenderingComponent::lodLevel() const {
@@ -383,8 +387,8 @@ U8 RenderingComponent::lodLevel() const {
 void RenderingComponent::lodLevel(U8 LoD) {
     
     _lodLevel =
-        std::min(static_cast<U8>(_parentSGN.getNode()->getLODcount() - 1),
-                 std::max(LoD, static_cast<U8>(0)));
+        std::min(to_ubyte(_parentSGN.getNode()->getLODcount() - 1),
+                 std::max(LoD, to_ubyte(0)));
 }
 
 ShaderProgram* const RenderingComponent::getDrawShader(
@@ -417,11 +421,13 @@ size_t RenderingComponent::getDrawStateHash(RenderStage renderStage) {
                                      : RenderStage::DISPLAY));
 }
 
-vectorImpl<GenericDrawCommand>&
-RenderingComponent::getDrawCommands(const SceneRenderState& sceneRenderState,
-                                    RenderStage renderStage) {
 
-    _renderData._drawCommands.clear();
+bool RenderingComponent::getDrawCommands(const SceneRenderState& sceneRenderState,
+                                         RenderStage renderStage,
+                                         vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+
+    GFXDevice::RenderPackage& pkg = _renderData[to_uint(renderStage)];
+
     if (canDraw(sceneRenderState, renderStage) &&
         preDraw(sceneRenderState, renderStage))
     {
@@ -429,10 +435,16 @@ RenderingComponent::getDrawCommands(const SceneRenderState& sceneRenderState,
         _parentSGN.getNode()->getDrawCommands(_parentSGN,
                                               renderStage,
                                               sceneRenderState,
-                                              _renderData._drawCommands);
+                                              pkg._drawCommands);
+        return true;
     }
 
-    return _renderData._drawCommands;
+    return false;
+}
+
+vectorImpl<GenericDrawCommand>&
+RenderingComponent::getDrawCommands(RenderStage renderStage) {
+    return _renderData[to_uint(renderStage)]._drawCommands;
 }
 
 bool RenderingComponent::getImpostorDrawCommand(const SceneRenderState& sceneRenderState,

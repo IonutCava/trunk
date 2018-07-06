@@ -171,10 +171,9 @@ bool TerrainLoader::loadTerrain(Terrain* terrain,
     terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " +
                                       std::to_string(textureCount));
     terrainMaterial->setShaderProgram("terrain", RenderStage::DISPLAY, true);
-    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW,
-                                      true);
-    terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain",
-                                      RenderStage::Z_PRE_PASS, true);
+    terrainMaterial->setShaderProgram("terrain", RenderStage::REFLECTION, true);
+    terrainMaterial->setShaderProgram("depthPass.Shadow.Terrain", RenderStage::SHADOW, true);
+    terrainMaterial->setShaderProgram("depthPass.PrePass.Terrain", RenderStage::Z_PRE_PASS, true);
 
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(

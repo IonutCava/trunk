@@ -278,7 +278,7 @@ class ByteBuffer {
         (*this) >> guidmark;
 
         for (I32 i = 0; i < 8; ++i) {
-            if (guidmark & (static_cast<U8>(1) << i)) {
+            if (guidmark & (to_ubyte(1) << i)) {
                 U8 bit;
                 (*this) >> bit;
                 guid |= (static_cast<U64>(bit) << (i * 8));
@@ -337,8 +337,8 @@ class ByteBuffer {
         size_t size = 1;
         for (U8 i = 0; guid != 0; ++i) {
             if (guid & 0xFF) {
-                packGUID[0] |= static_cast<U8>(1 << i);
-                packGUID[size] = static_cast<U8>(guid & 0xFF);
+                packGUID[0] |= to_ubyte(1 << i);
+                packGUID[size] = to_ubyte(guid & 0xFF);
                 ++size;
             }
 

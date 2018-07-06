@@ -40,13 +40,13 @@ LightGrid::ScreenRect LightGrid::findScreenSpaceBounds(
     CLAMP<vec4<F32> >(reg, DefaultColors::BLACK(), DefaultColors::WHITE());
 
     LightGrid::ScreenRect result;
-    result.min.x = static_cast<U16>(reg.x * to_float(width));
-    result.min.y = static_cast<U16>(reg.y * to_float(height));
-    result.max.x = static_cast<U16>(reg.z * to_float(width));
-    result.max.y = static_cast<U16>(reg.w * to_float(height));
+    result.min.x = to_ushort(reg.x * to_float(width));
+    result.min.y = to_ushort(reg.y * to_float(height));
+    result.max.x = to_ushort(reg.z * to_float(width));
+    result.max.y = to_ushort(reg.w * to_float(height));
 
-    assert(result.max.x <= U32(width));
-    assert(result.max.y <= U32(height));
+    assert(result.max.x <= to_uint(width));
+    assert(result.max.y <= to_uint(height));
 
     return result;
 }

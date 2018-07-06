@@ -161,8 +161,7 @@ bool QuadtreeNode::isInView(U32 options,
                 visibilityDistance) {
                 if (_boundingBox.nearestDistanceFromPointSquared(eye) -
                         _terLoDOffset >
-                    std::min(visibilityDistance,
-                             sceneRenderState.getCameraConst().getZPlanes().y))
+                    std::min(visibilityDistance, cam.getZPlanes().y))
                     return false;
             }
         }
@@ -211,29 +210,20 @@ void QuadtreeNode::drawBBox() const {
     }
 }
 
-void QuadtreeNode::createDrawCommand(
-    U32 options, const SceneRenderState& sceneRenderState,
-    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-    if (!isInView(options, sceneRenderState)) {
-        return;
-    }
-
-    if (isALeaf()) {
-        assert(_terrainChunk);
-        _terrainChunk->createDrawCommand(
-            BitCompare(options, to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION))
-                ? Config::TERRAIN_CHUNKS_LOD - 1
-                : _LOD,
-            drawCommandsOut);
-    } else {
-        _children[to_uint(ChildPosition::CHILD_NW)]->createDrawCommand(options, sceneRenderState,
-                                               drawCommandsOut);
-        _children[to_uint(ChildPosition::CHILD_NE)]->createDrawCommand(options, sceneRenderState,
-                                               drawCommandsOut);
-        _children[to_uint(ChildPosition::CHILD_SW)]->createDrawCommand(options, sceneRenderState,
-                                               drawCommandsOut);
-        _children[to_uint(ChildPosition::CHILD_SE)]->createDrawCommand(options, sceneRenderState,
-                                               drawCommandsOut);
+void QuadtreeNode::getBufferOffsetAndSize(U32 options,
+                                          const SceneRenderState& sceneRenderState,
+                                          vectorImpl<vec3<U32>>& chunkBufferData) const {
+    if (isInView(options, sceneRenderState)) {
+        if (isALeaf()) {
+            assert(_terrainChunk);
+            bool waterReflection = BitCompare(options, to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION));
+            chunkBufferData.push_back(_terrainChunk->getBufferOffsetAndSize(waterReflection ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD));
+        } else {
+            _children[to_uint(ChildPosition::CHILD_NW)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            _children[to_uint(ChildPosition::CHILD_NE)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            _children[to_uint(ChildPosition::CHILD_SW)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+            _children[to_uint(ChildPosition::CHILD_SE)]->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
+        }
     }
 }
 };

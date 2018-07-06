@@ -226,8 +226,7 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                                   SceneRenderState& sceneRenderState,
-                                  bool refreshNodeData,
-                                  bool impostorPass) {
+                                  bool refreshNodeData) {
     Time::ScopedTimer timer(*_commandBuildTimer);
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
@@ -247,60 +246,35 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 lastNodeCount = 1;
     _drawCommandsCache[0].set(_defaultDrawCmd.cmd());
 
-    GenericDrawCommand tempCommand;
-    RenderStateBlock cullingState;
-    cullingState.setZReadWrite(true, false);
-    cullingState.setColorWrites(false, false, false, false);
-    cullingState.setCullMode(CullMode::NONE);
-    size_t cullingStateHash = cullingState.getHash();
+    vectorImpl<GenericDrawCommand> nodeDrawCommands;
+    nodeDrawCommands.reserve(nodeCount);
     // Loop over the list of nodes to generate a new command list
     RenderStage currentStage = getRenderStage();
     std::for_each(
         std::begin(visibleNodes), std::end(visibleNodes),
         [&](VisibleNodeList::value_type& node) -> void {
-
             SceneGraphNode& nodeRef = *node._visibleNode;
+            
+            if (Attorney::RenderingCompGFXDevice::getDrawCommands(
+                *nodeRef.getComponent<RenderingComponent>(),
+                sceneRenderState, currentStage, nodeDrawCommands)) {
 
-            if (impostorPass) {
-               if (Attorney::RenderingCompGFXDevice::getImpostorDrawCommand(
-                    *nodeRef.getComponent<RenderingComponent>(),
-                    sceneRenderState, currentStage, tempCommand)) {
-                   if (refreshNodeData) {
-                       processVisibleNode(node, _matricesData[lastNodeCount]);
-                   }
-
-                   IndirectDrawCommand& iCmd = tempCommand.cmd();
-                   iCmd.baseInstance = lastNodeCount;
-
-                    tempCommand.drawID(lastNodeCount);
-                    tempCommand.stateHash(cullingStateHash);
-                    _drawCommandsCache[lastCmdCount++].set(iCmd);
-                    lastNodeCount += 1;
+                if (refreshNodeData) {
+                    processVisibleNode(node, _matricesData[lastNodeCount]);
                 }
-            } else {
-                vectorImpl<GenericDrawCommand>& nodeDrawCommands =
-                    Attorney::RenderingCompGFXDevice::getDrawCommands(
-                    *nodeRef.getComponent<RenderingComponent>(),
-                    sceneRenderState, currentStage);
 
-                if (!nodeDrawCommands.empty()) {
-                    if (refreshNodeData) {
-                        processVisibleNode(node, _matricesData[lastNodeCount]);
-                    }
+                for (GenericDrawCommand& cmd : nodeDrawCommands) {
+                    IndirectDrawCommand& iCmd = cmd.cmd();
+                    iCmd.baseInstance = lastNodeCount;
 
-                    for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                        IndirectDrawCommand& iCmd = cmd.cmd();
-                        iCmd.baseInstance = lastNodeCount;
-
-                        cmd.drawID(lastCmdCount);
-                        cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
-                        // Extract the specific rendering commands from the draw commands
-                        // Rendering commands are stored in GPU memory. Draw commands are not.
-                        _drawCommandsCache[lastCmdCount].set(iCmd);
-                        lastCmdCount++;
-                    }
-                    lastNodeCount += 1;
+                    cmd.drawID(lastCmdCount);
+                    cmd.renderWireframe(cmd.renderWireframe() || sceneRenderState.drawWireframe());
+                    // Extract the specific rendering commands from the draw commands
+                    // Rendering commands are stored in GPU memory. Draw commands are not.
+                    _drawCommandsCache[lastCmdCount].set(iCmd);
+                    lastCmdCount++;
                 }
+                lastNodeCount += 1;
             }
         });
 
@@ -335,7 +309,7 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         }
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
-        previousIDC.drawCount(static_cast<U16>(prevCount + currentIDC.drawCount()));
+        previousIDC.drawCount(to_ushort(prevCount + currentIDC.drawCount()));
         // And set the current command's draw count to zero so it gets removed
         // from the list later on
         currentIDC.drawCount(0);

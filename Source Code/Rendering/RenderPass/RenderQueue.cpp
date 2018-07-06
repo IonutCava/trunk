@@ -132,7 +132,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
     };
 
     hashAlg::emplace(_renderBins, rbType, temp);
-    hashAlg::emplace(_renderBinID, static_cast<U16>(_renderBins.size() - 1),
+    hashAlg::emplace(_renderBinID, to_ushort(_renderBins.size() - 1),
                      rbType);
 
     _sortedRenderBins.insert(

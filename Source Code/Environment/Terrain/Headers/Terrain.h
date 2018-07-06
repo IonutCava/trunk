@@ -122,10 +122,6 @@ class Terrain : public Object3D {
         return vec2<F32>(_terrainDimensions.x, _terrainDimensions.y);
     }
 
-    void terrainSmooth(F32 k);
-    void initializeVegetation(TerrainDescriptor* const terrain,
-                              SceneGraphNode& terrainSGN);
-
     inline const Quadtree& getQuadtree() const { return _terrainQuadtree; }
 
     bool computeBoundingBox(SceneGraphNode& sgn);
@@ -134,7 +130,7 @@ class Terrain : public Object3D {
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                      SceneState& sceneState);
@@ -168,12 +164,7 @@ class Terrain : public Object3D {
     SamplerDescriptor* _normalSampler;
 
     vectorImpl<TerrainChunk*> _terrainChunks;
-    /// Normal rendering state
-    size_t _terrainRenderStateHash;
-    /// Depth map rendering state
-    size_t _terrainDepthRenderStateHash;
-    /// Reflection rendering state
-    size_t _terrainReflectionRenderStateHash;
+    std::array<size_t, to_const_uint(RenderStage::COUNT)> _terrainStateHash;
 };
 
 namespace Attorney {
@@ -208,12 +199,15 @@ class TerrainLoader {
     static U32 textureLayerCount(Terrain& terrain) {
         return to_uint(terrain._terrainTextures.size());
     }
-    static void setRenderStateHashes(Terrain& terrain, size_t normalStateHash,
+
+    static void setRenderStateHashes(Terrain& terrain,
+                                     size_t normalStateHash,
                                      size_t reflectionStateHash,
                                      size_t depthStateHash) {
-        terrain._terrainRenderStateHash = normalStateHash;
-        terrain._terrainReflectionRenderStateHash = reflectionStateHash;
-        terrain._terrainDepthRenderStateHash = depthStateHash;
+        terrain._terrainStateHash[to_uint(RenderStage::DISPLAY)] = normalStateHash;
+        terrain._terrainStateHash[to_uint(RenderStage::Z_PRE_PASS)] = normalStateHash;
+        terrain._terrainStateHash[to_uint(RenderStage::REFLECTION)] = reflectionStateHash;
+        terrain._terrainStateHash[to_uint(RenderStage::SHADOW)] = depthStateHash;
     }
     static VegetationDetails& vegetationDetails(Terrain& terrain) {
         return terrain._vegDetails;

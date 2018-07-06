@@ -174,7 +174,7 @@ void RenderBin::render(const SceneRenderState& renderState,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
         gfx.addToRenderQueue(
-            Attorney::RenderingCompRenderBin::getRenderData(*item._renderable));
+            Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
 
     gfx.flushRenderQueue();

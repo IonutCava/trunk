@@ -44,7 +44,7 @@ Object3D::~Object3D()
 }
 
 void Object3D::postLoad(SceneGraphNode& sgn) {
-    SceneNode::postLoad(sgn);
+     SceneNode::postLoad(sgn);
 }
 
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
@@ -56,27 +56,6 @@ void Object3D::setGeometryVB(VertexBuffer* const vb) {
 
 VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
-}
-
-void Object3D::getDrawCommands(SceneGraphNode& sgn,
-                               RenderStage renderStage,
-                               const SceneRenderState& sceneRenderState,
-                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
-
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
-    assert(renderable != nullptr);
-
-    VertexBuffer* const vb = getGeometryVB();
-
-    GenericDrawCommand drawCmd;
-    drawCmd.renderGeometry(renderable->renderGeometry());
-    drawCmd.renderWireframe(renderable->renderWireframe());
-    drawCmd.stateHash(renderable->getDrawStateHash(renderStage));
-    drawCmd.shaderProgram(renderable->getDrawShader(renderStage));
-    drawCmd.sourceBuffer(vb);
-    drawCmd.cmd().indexCount = to_uint(vb->getIndexCount());
-
-    drawCommandsOut.push_back(drawCmd);
 }
 
 bool Object3D::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {

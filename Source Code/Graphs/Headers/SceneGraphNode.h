@@ -64,10 +64,6 @@ class SceneRoot : public SceneNode {
 
    protected:
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
-    void getDrawCommands(SceneGraphNode& sgn,
-                         RenderStage renderStage,
-                         const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 };
 
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode

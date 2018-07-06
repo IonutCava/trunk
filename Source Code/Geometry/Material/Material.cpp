@@ -83,7 +83,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
         cloneMat->_translucencySource.push_back(trans);
     }
 
-    for (U8 i = 0; i < static_cast<U8>(base._textures.size()); ++i) {
+    for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
         Texture* const tex = base._textures[i];
         if (tex) {
             tex->AddRef();

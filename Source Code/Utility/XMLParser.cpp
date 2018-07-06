@@ -178,7 +178,7 @@ Texture *loadTextureXML(const stringImpl &textureNode,
     TextureFilter magFilterValue =
         getFilter(pt.get<stringImpl>(textureNode + ".magFilter", "LINEAR"));
 
-    U8 anisotropy = static_cast<U8>(pt.get(textureNode + ".anisotropy", 0U));
+    U8 anisotropy = to_ubyte(pt.get(textureNode + ".anisotropy", 0U));
 
     SamplerDescriptor sampDesc;
     sampDesc.setWrapMode(wrapU, wrapV, wrapW);
@@ -542,7 +542,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
                 pt.get<F32>(layerName + ".alphaDetailScale", 0.0f));
         }
 
-        ter->setTextureLayerCount(static_cast<U8>(i));
+        ter->setTextureLayerCount(to_ubyte(i));
         ter->addVariable("grassMap",
                          assetLocation + pt.get<stringImpl>(name + ".vegetation.map"));
         ter->addVariable(

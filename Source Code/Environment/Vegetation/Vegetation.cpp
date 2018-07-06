@@ -49,8 +49,6 @@ Vegetation::Vegetation(const VegetationDetails& details)
     _treeGPUBuffer[1] = GFX_DEVICE.newGVD(false);
 
     _cullDrawCommand = GenericDrawCommand(PrimitiveType::API_POINTS, 0, 1);
-    _renderDrawCommand =
-        GenericDrawCommand(PrimitiveType::TRIANGLE_STRIP, 0, 12 * 3);
 
     _instanceRoutineIdx.fill(0);
 
@@ -122,7 +120,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
     vegMaterial->setShaderProgram(_grassShaderName + ".PrePass",
                                   RenderStage::Z_PRE_PASS, true);
     vegMaterial->addCustomTexture(_grassBillboards,
-                                  static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
+                                  to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     vegMaterial->setShaderLoadThreaded(false);
     vegMaterial->dumpToFile(false);
     setMaterialTpl(vegMaterial);
@@ -238,7 +236,7 @@ void Vegetation::uploadGrassData() {
     for (U8 i = 0; i < 2; ++i) {
         GenericVertexData* buffer = _grassGPUBuffer[i];
 
-        buffer->create(static_cast<U8>(BufferUsage::COUNT), 3);
+        buffer->create(to_ubyte(BufferUsage::COUNT), 3);
         // position culled will be generated using transform feedback using
         // shader output 'posLocation'
         // writing to buffer "CulledPositionBuffer"
@@ -380,7 +378,7 @@ void Vegetation::gpuCull() {
 
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
 
-        _cullDrawCommand.queryID(static_cast<U8>(queryID));
+        _cullDrawCommand.queryID(to_ubyte(queryID));
         _cullDrawCommand.drawToBuffer(true);
         _cullDrawCommand.shaderProgram(_cullShader);
         _cullDrawCommand.sourceBuffer(buffer);
@@ -409,14 +407,20 @@ void Vegetation::getDrawCommands(SceneGraphNode& sgn,
     RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
     assert(renderable != nullptr);
 
-    _renderDrawCommand.renderGeometry(renderable->renderGeometry());
-    _renderDrawCommand.renderWireframe(renderable->renderWireframe());
-    _renderDrawCommand.stateHash(_grassStateBlockHash);
-    _renderDrawCommand.cmd().primCount = buffer->getFeedbackPrimitiveCount(static_cast<U8>(queryID));
-    _renderDrawCommand.LoD(1);
-    _renderDrawCommand.shaderProgram(renderable->getDrawShader(renderStage));
-    _renderDrawCommand.sourceBuffer(buffer);
-    drawCommandsOut.push_back(_renderDrawCommand);
+    drawCommandsOut.resize(1);
+    GenericDrawCommand& cmd = drawCommandsOut.front();
+    cmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+    cmd.cmd().firstIndex = 0;
+    cmd.cmd().indexCount = 12 * 3;
+    cmd.renderGeometry(renderable->renderGeometry());
+    cmd.renderWireframe(renderable->renderWireframe());
+    cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
+    cmd.shaderProgram(renderable->getDrawShader(renderStage));
+    cmd.sourceBuffer(buffer);
+    cmd.LoD(1);
+    cmd.stateHash(_grassStateBlockHash);
+
+    SceneNode::getDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
 }
 
 bool Vegetation::onDraw(SceneGraphNode& sgn, RenderStage renderStage) {

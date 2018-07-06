@@ -175,10 +175,10 @@ class Light : public SceneNode {
     /// Checks if this light needs and update
     void onCameraUpdate(Camera& camera);
 
-    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage);
+    bool onDraw(SceneGraphNode& sgn, RenderStage currentStage) override;
 
     /// SceneNode concrete implementations
-    bool unload();
+    bool unload() override;
 
     bool computeBoundingBox(SceneGraphNode& sgn);
 
@@ -236,14 +236,7 @@ class Light : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
     bool load(const stringImpl& name);
-
-    virtual void getDrawCommands(
-                        SceneGraphNode& sgn,
-                        RenderStage renderStage,
-                        const SceneRenderState& sceneRenderState,
-                        vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
-
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn) override;
 
     /// Set light type
     /// @param type Directional/Spot/Omni (see LightType enum)

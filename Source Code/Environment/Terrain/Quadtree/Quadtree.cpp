@@ -15,9 +15,8 @@ void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _root->sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-void Quadtree::createDrawCommands(
-    const SceneRenderState& sceneRenderState,
-    vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+void Quadtree::getChunkBufferData(const SceneRenderState& sceneRenderState, 
+                                  vectorImpl<vec3<U32>>& chunkBufferData) const {
     assert(_root);
     U32 options = to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN);
     if (GFX_DEVICE.getRenderStage() == RenderStage::REFLECTION) {
@@ -25,7 +24,8 @@ void Quadtree::createDrawCommands(
     } else if (GFX_DEVICE.getRenderStage() == RenderStage::SHADOW) {
         options |= to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP);
     }
-    _root->createDrawCommand(options, sceneRenderState, drawCommandsOut);
+
+    _root->getBufferOffsetAndSize(options, sceneRenderState, chunkBufferData);
 }
 
 void Quadtree::drawBBox() const {

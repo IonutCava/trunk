@@ -75,7 +75,7 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _outputFB->Create(width, height);
     if (_genericFlag && _tempHDRFB) {
         _tempHDRFB->Create(width, height);
-        U16 lumaRez = static_cast<U16>(nextPOW2(width / 3));
+        U16 lumaRez = to_ushort(nextPOW2(width / 3));
         // make the texture square sized and power of two
         _luminaFB[0]->Create(lumaRez, lumaRez);
         _luminaFB[1]->Create(lumaRez, lumaRez);
@@ -104,7 +104,7 @@ void BloomPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // screen FB
-        _inputFB[0]->Bind(static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
+        _inputFB[0]->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _bright);
     }
     _outputFB->End();
@@ -115,7 +115,7 @@ void BloomPreRenderOperator::operation() {
     _tempBloomFB->Begin(Framebuffer::defaultPolicy());
     {
         // bright spots
-        _outputFB->Bind(static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
+        _outputFB->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
     }
     _tempBloomFB->End();
@@ -125,7 +125,7 @@ void BloomPreRenderOperator::operation() {
     _outputFB->Begin(Framebuffer::defaultPolicy());
     {
         // horizontally blurred bright spots
-        _tempBloomFB->Bind(static_cast<U8>(ShaderProgram::TextureUsage::UNIT0));
+        _tempBloomFB->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
         GFX_DEVICE.drawPoints(1, defaultStateHash, _blur);
         // clear states
     }
@@ -156,7 +156,7 @@ void BloomPreRenderOperator::toneMapScreen() {
                                          GFXDataFormat::FLOAT_16);
         lumaDescriptor.setSampler(lumaSampler);
         _luminaFB[0]->AddAttachment(lumaDescriptor, TextureDescriptor::AttachmentType::Color0);
-        U16 lumaRez = static_cast<U16>(nextPOW2(_inputFB[0]->getWidth() / 3));
+        U16 lumaRez = to_ushort(nextPOW2(_inputFB[0]->getWidth() / 3));
         // make the texture square sized and power of two
         _luminaFB[0]->Create(lumaRez, lumaRez);
 

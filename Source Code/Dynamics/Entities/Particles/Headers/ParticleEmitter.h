@@ -86,20 +86,21 @@ class ParticleEmitter : public SceneNode {
     U32 getAliveParticleCount() const;
 
    protected:
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn)  override;
 
     /// preprocess particles here
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime,
+                     SceneGraphNode& sgn,
+                     SceneState& sceneState) override;
 
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
-    void onCameraUpdate(SceneGraphNode& sgn, Camera& camera);
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+
+    void onCameraUpdate(SceneGraphNode& sgn, Camera& camera) override;
 
    private:
-    I32 findUnusedParticle();
     void uploadToGPU();
 
    private:
@@ -124,7 +125,6 @@ class ParticleEmitter : public SceneNode {
     ShaderProgram* _particleShader;
     ShaderProgram* _particleDepthShader;
     Texture* _particleTexture;
-    GenericDrawCommand _drawCommand;
 };
 
 };  // namespace Divide

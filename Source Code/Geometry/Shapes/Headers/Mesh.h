@@ -74,10 +74,6 @@ class Mesh : public Object3D {
     virtual void sceneUpdate(const U64 deltaTime,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
-    virtual void getDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
-                                 const SceneRenderState& sceneRenderState,
-                                 vectorImpl<GenericDrawCommand>& drawCommandsOut) {}
 
     inline bool isSubMesh(const SceneGraphNode_ptr& node) {
         return std::find(std::cbegin(_subMeshNameMap), 

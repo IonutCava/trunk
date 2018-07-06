@@ -129,8 +129,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
                 // We process one column per thread
                 for (I32 j = 0; j < height; j++) {
                     // Check alpha value
-                    if (img.getColor(static_cast<U16>(i),
-                                     static_cast<U16>(j)).a < 250) {
+                    if (img.getColor(to_ushort(i), to_ushort(j)).a < 250) {
                         // If the pixel is transparent, toggle translucency flag
 #                       pragma omp critical
                         {
@@ -171,7 +170,7 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
     U16 mipMaxLevel = 1;
     if (_samplerDescriptor.generateMipMaps()) {
-        mipMaxLevel = static_cast<U16>(floorf(log2f(fmaxf(width, height))));
+        mipMaxLevel = to_ushort(floorf(log2f(fmaxf(width, height))));
     }
     // Uploading to the GPU dependents on the rendering API
     loadData(info, img.data(), img.dimensions(), vec2<U16>(0, mipMaxLevel),

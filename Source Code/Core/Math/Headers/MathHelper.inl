@@ -90,7 +90,7 @@ inline F32 FRACT(const F32 floatValue) {
 
 //Helper method to go from a float to packed char
 inline U8 FLOAT_TO_CHAR(const F32 value) {
-    return static_cast<U8>(((value + 1.0f) * 0.5f) * 255.0f);
+    return to_ubyte(((value + 1.0f) * 0.5f) * 255.0f);
 }
 
 // Pack 3 values into 1 float

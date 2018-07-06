@@ -38,18 +38,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+class Sky;
 class Material;
 class GFXDevice;
 class RenderBin;
 class ImpostorBox;
 class ShaderProgram;
 class SceneGraphNode;
+class ParticleEmitter;
 
 namespace Attorney {
     class RenderingCompGFXDevice;
     class RenderingCompSceneGraph;
     class RenderingCompRenderBin;
     class RenderingCompPassCuller;
+    class RenderingCompSceneNode;
 };
 
 class RenderingComponent : public SGNComponent {
@@ -57,6 +60,7 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompSceneGraph;
     friend class Attorney::RenderingCompRenderBin;
     friend class Attorney::RenderingCompPassCuller;
+    friend class Attorney::RenderingCompSceneNode;
 
    public:
     bool onDraw(RenderStage currentStage);
@@ -98,7 +102,7 @@ class RenderingComponent : public SGNComponent {
 
     inline Material* const getMaterialInstance() { return _materialInstance; }
 
-    void makeTextureResident(const Texture& texture, U8 slot);
+    void makeTextureResident(const Texture& texture, U8 slot, RenderStage currentStage);
 
     void registerShaderBuffer(ShaderBufferLocation slot,
                               vec2<U32> bindRange,
@@ -138,8 +142,11 @@ class RenderingComponent : public SGNComponent {
     void postDraw(const SceneRenderState& sceneRenderState,
                   RenderStage renderStage);
 
-    vectorImpl<GenericDrawCommand>& getDrawCommands(const SceneRenderState& sceneRenderState,
-                                                    RenderStage renderStage);
+    bool getDrawCommands(const SceneRenderState& sceneRenderState,
+                         RenderStage renderStage,
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+
+    vectorImpl<GenericDrawCommand>& getDrawCommands(RenderStage renderStage);
 
     bool getImpostorDrawCommand(const SceneRenderState& sceneRenderState,
                                 RenderStage renderStage,
@@ -163,7 +170,8 @@ class RenderingComponent : public SGNComponent {
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
     TextureDataContainer _textureDependencies;
-    GFXDevice::RenderPackage _renderData;
+    std::array<GFXDevice::RenderPackage, to_const_uint(RenderStage::COUNT)> _renderData;
+    
     IMPrimitive* _boundingBoxPrimitive;
     IMPrimitive* _skeletonPrimitive;
     ImpostorBox* _impostor;
@@ -175,20 +183,32 @@ class RenderingComponent : public SGNComponent {
 };
 
 namespace Attorney {
+class RenderingCompSceneNode {
+    private:
+        static vectorImpl<GenericDrawCommand>& getDrawCommands(
+                                                    RenderingComponent& renderable,
+                                                    RenderStage renderStage) {
+            return renderable.getDrawCommands(renderStage);
+        }
+
+    friend class Divide::Sky;
+    friend class Divide::SubMesh;
+    friend class Divide::ParticleEmitter;
+};
+
 class RenderingCompGFXDevice {
    private:
-    static vectorImpl<GenericDrawCommand>& getDrawCommands(
-                                                RenderingComponent& renderable,
-                                                const SceneRenderState& sceneRenderState,
-                                                RenderStage renderStage) {
-        return renderable.getDrawCommands(sceneRenderState, renderStage);
-    }
-
-    static bool getImpostorDrawCommand(
-                                RenderingComponent& renderable,
+    static bool getDrawCommands(RenderingComponent& renderable,
                                 const SceneRenderState& sceneRenderState,
                                 RenderStage renderStage,
-                                GenericDrawCommand& commandOut) {
+                                vectorImpl<GenericDrawCommand>& drawCommandsOut) {
+        return renderable.getDrawCommands(sceneRenderState, renderStage, drawCommandsOut);
+    }
+
+    static bool getImpostorDrawCommand(RenderingComponent& renderable,
+                                       const SceneRenderState& sceneRenderState,
+                                       RenderStage renderStage,
+                                       GenericDrawCommand& commandOut) {
 
         return renderable.getImpostorDrawCommand(sceneRenderState, renderStage, commandOut);
     }
@@ -217,9 +237,9 @@ class RenderingCompSceneGraph {
 
 class RenderingCompRenderBin {
    private:
-    static const GFXDevice::RenderPackage& getRenderData(
-        RenderingComponent& renderable) {
-        return renderable._renderData;
+    static const GFXDevice::RenderPackage& getRenderData(RenderingComponent& renderable,
+                                                         RenderStage renderStage) {
+        return renderable._renderData[to_uint(renderStage)];
     }
 
     static void postDraw(RenderingComponent& renderable,

@@ -158,21 +158,6 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         return false;
     };
 
-    auto submeshOnlyCullingFunction = [](const RenderPassCuller::RenderableNode& node) -> bool {
-        const SceneGraphNode* sgnNode = node._visibleNode;
-        if (sgnNode->getNode()->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            Object3D::ObjectType type =
-                sgnNode->getNode<Object3D>()->getObjectType();
-            return (type != Object3D::ObjectType::SUBMESH &&
-                    type != Object3D::ObjectType::SPHERE_3D &&
-                    type != Object3D::ObjectType::BOX_3D &&
-                    type != Object3D::ObjectType::QUAD_3D &&
-                    type != Object3D::ObjectType::TEXT_3D &&
-                    type != Object3D::ObjectType::TERRAIN);
-        }
-        return false;
-    };
-
     if (flushCache) {
         _renderPassCuller->refresh();
     }
@@ -194,18 +179,6 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
         queue.sort(stage);
         sortVisibleNodes(nodes);
 
-        /// Occlusion queries
-        {
-            //_renderPassCuller->cullSpecial(nodes, submeshOnlyCullingFunction);
-            /*GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
-                                         _activeScene->renderState(),
-                                         true,
-                                         true);
-
-            GFX::ScopedRasterizer noRasterization(false);
-            renderScene();*/
-        }
-
         // Generate and upload all lighting data
         if (stage != RenderStage::SHADOW &&
             stage != RenderStage::DISPLAY) {
@@ -217,8 +190,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
 
     GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
                                  _activeScene->renderState(),
-                                refreshNodeData,
-                                false);
+                                refreshNodeData);
 }
 
 void SceneManager::renderVisibleNodes(bool flushCache) {

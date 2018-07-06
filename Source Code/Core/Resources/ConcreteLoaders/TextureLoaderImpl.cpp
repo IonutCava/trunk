@@ -23,7 +23,7 @@ Texture* ImplResourceLoader<Texture>::operator()() {
                _descriptor.getEnumValue() ==
                    to_uint(TextureType::TEXTURE_2D_ARRAY_MS)) {
         ptr = GFX_DEVICE.newTextureArray();
-        ptr->setNumLayers(static_cast<U8>(_descriptor.getID()));
+        ptr->setNumLayers(to_ubyte(_descriptor.getID()));
     } else {
         ptr = GFX_DEVICE.newTexture2D();
     }

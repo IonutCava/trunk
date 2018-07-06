@@ -70,9 +70,9 @@ class SubMesh : public Object3D {
 
     virtual ~SubMesh();
 
-    bool unload() { return SceneNode::unload(); }
+    bool unload() override { return SceneNode::unload(); }
 
-    bool computeBoundingBox(SceneGraphNode& sgn);
+    bool computeBoundingBox(SceneGraphNode& sgn) override;
 
     inline U32 getID() { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
@@ -81,12 +81,15 @@ class SubMesh : public Object3D {
     inline Mesh* getParentMesh() { return _parentMesh; }
 
    protected:
-    void setParentMesh(Mesh* const parentMesh);
 
     void getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
-                         vectorImpl<GenericDrawCommand>& drawCommandsOut);
+                         vectorImpl<GenericDrawCommand>& drawCommandsOut) override;
+
+    void postLoad(SceneGraphNode& sgn) override;
+
+    void setParentMesh(Mesh* const parentMesh);
 
    protected:
     bool _visibleToNetwork;
@@ -94,7 +97,6 @@ class SubMesh : public Object3D {
     U32 _ID;
     Mesh* _parentMesh;
     BoundingBox _importBB;
-    GenericDrawCommand _drawCmd;
 };
 
 namespace Attorney {
