@@ -31,6 +31,7 @@ ResourceDescriptor::ResourceDescriptor(const ResourceDescriptor& old)
       _mask = old._mask;
       _enumValue = old._enumValue;
       _userPtr = old._userPtr;
+      _onLoadCallback = old._onLoadCallback;
       _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
 }
 
@@ -46,6 +47,7 @@ ResourceDescriptor& ResourceDescriptor::operator=(ResourceDescriptor const& old)
         _mask = old._mask;
         _enumValue = old._enumValue;
         _userPtr = old._userPtr;
+        _onLoadCallback = old._onLoadCallback;
         _propertyDescriptor.reset(old._propertyDescriptor ? old._propertyDescriptor->clone() : nullptr);
     }
 

@@ -15,13 +15,13 @@ Resource_ptr ImplResourceLoader<Terrain>::operator()() {
                                  DeleteResource(_cache));
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.getName().c_str());
-    const std::shared_ptr<TerrainDescriptor> terrain = _descriptor.getPropertyDescriptor<TerrainDescriptor>();
+    const std::shared_ptr<TerrainDescriptor>& terrain = _descriptor.getPropertyDescriptor<TerrainDescriptor>();
     
     if (ptr) {
         ptr->setState(ResourceState::RES_LOADING);
     }
 
-    if (!TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.onLoadCallback())) {
+    if (!ptr || !TerrainLoader::loadTerrain(ptr, terrain, _context, _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), _descriptor.getName().c_str());
         ptr.reset();
     }

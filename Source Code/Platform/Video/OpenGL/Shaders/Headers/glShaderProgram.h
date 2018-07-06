@@ -144,7 +144,7 @@ class glShaderProgram final : public ShaderProgram {
     bool recompileInternal() override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) override;
     /// Linking a shader program also sets up all pre-link properties for the
     /// shader (varying locations, attrib bindings, etc)
     void link();

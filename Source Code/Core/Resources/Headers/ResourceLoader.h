@@ -79,9 +79,10 @@ class ImplResourceLoader : public ResourceLoader {
     Resource_ptr operator()();
 
    protected:
-    bool load(std::shared_ptr<ResourceType> res, DELEGATE_CBK<void, Resource_ptr> loadCallback) {
+
+    bool load(std::shared_ptr<ResourceType> res, const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
         res->setState(ResourceState::RES_LOADING);
-        return res->load(loadCallback);
+        return res->load(onLoadCallback);
     }
 };
 

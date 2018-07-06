@@ -44,8 +44,8 @@ bool readFile(const stringImpl& filePath, T& contentOut, FileType fileType) {
     size_t fileSize = 0;
     if (!filePath.empty()) {
         std::ifstream streamIn(filePath.c_str(), fileType == FileType::BINARY
-            ? std::ios::in | std::ios::binary
-            : std::ios::in);
+                                                           ? std::ios::in | std::ios::binary
+                                                           : std::ios::in);
 
         if (!streamIn.eof() && !streamIn.fail()) {
             streamIn.seekg(0, std::ios::end);

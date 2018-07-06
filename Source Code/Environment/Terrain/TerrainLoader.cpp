@@ -13,10 +13,9 @@
 namespace Divide {
 
 bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
-                                const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
+                                const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
-                                DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
-
+                                const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback ) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
     Attorney::TerrainLoader::setUnderwaterDiffuseScale(
@@ -220,11 +219,10 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION);
     terrainMaterial->setRenderStateBlock(terrainRenderStateDepth.getHash(), RenderStage::SHADOW);
 
-    /*return context.gfx().loadInContext(CurrentContext::GFX_LOADING_CTX,
-                                       [terrain, terrainDescriptor, &onLoadCallback](const Task& parent) {
-                                            loadThreadedResources(std::move(terrain), std::move(terrainDescriptor), std::move(onLoadCallback));
-                                       });*/
-    return loadThreadedResources(terrain, terrainDescriptor, onLoadCallback);
+    return context.gfx().loadInContext(CurrentContext::GFX_RENDERING_CTX,
+                                       [terrain, terrainDescriptor, onLoadCallback](const Task& parent) {
+                                            loadThreadedResources(terrain, std::move(terrainDescriptor), std::move(onLoadCallback));
+                                       });
 }
 
 bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
@@ -280,8 +278,8 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     }
 
     vec2<U16>& dimensions = Attorney::TerrainLoader::dimensions(*terrain);
-    Attorney::TerrainLoader::dimensions(*terrain)
-        .set(heightmapWidth, heightmapHeight);
+    Attorney::TerrainLoader::dimensions(*terrain).set(heightmapWidth, heightmapHeight);
+
     if (dimensions.x % 2 == 0) {
         dimensions.x++;
     }

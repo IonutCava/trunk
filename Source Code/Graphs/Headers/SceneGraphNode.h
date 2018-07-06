@@ -108,6 +108,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     enum class UpdateFlag : U32 {
         SPATIAL_PARTITION = 0,
+        THREADED_LOAD = 1,
         COUNT
     };
 

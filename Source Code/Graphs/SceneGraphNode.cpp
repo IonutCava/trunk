@@ -204,10 +204,13 @@ SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 compon
         Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
         invalidateRelationshipCache();
     } else if (node->getState() == ResourceState::RES_LOADING) {
+        setUpdateFlag(UpdateFlag::THREADED_LOAD);
+
         node->setStateCallback(ResourceState::RES_LOADED,
-            [this, &node, sceneGraphNode]() {
-                Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
+            [this, sceneGraphNode](Resource_ptr res) {
+                Attorney::SceneNodeSceneGraph::postLoad(*(std::dynamic_pointer_cast<SceneNode>(res)), *sceneGraphNode);
                 invalidateRelationshipCache();
+                clearUpdateFlag(UpdateFlag::THREADED_LOAD);
             }
         );
     }
@@ -548,6 +551,10 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
                               F32 maxDistanceFromCamera,
                               RenderStage currentStage,
                               Frustum::FrustCollision& collisionTypeOut) const {
+
+    if (getFlag(UpdateFlag::THREADED_LOAD)) {
+        return true;
+    }
 
     collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
     if (visibilityLocked()) {

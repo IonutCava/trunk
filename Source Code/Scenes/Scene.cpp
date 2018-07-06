@@ -379,8 +379,8 @@ void Scene::toggleFlashlight(U8 playerIndex) {
                                  to_const_uint(SGNComponent::ComponentType::RENDERING) |
                                  to_const_uint(SGNComponent::ComponentType::NETWORKING);
 
-    SceneGraphNode_wptr flashLight = _flashLight[playerIndex];
-    if (!flashLight.lock()) {
+    SceneGraphNode_ptr flashLight = _flashLight[playerIndex];
+    if (!flashLight) {
         ResourceDescriptor tempLightDesc(Util::StringFormat("Flashlight_%d", playerIndex));
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool);
@@ -393,7 +393,7 @@ void Scene::toggleFlashlight(U8 playerIndex) {
         hashAlg::emplace(_flashLight, playerIndex, flashLight);
     }
 
-    flashLight.lock()->getNode<Light>()->toggleEnabled();
+    flashLight->getNode<Light>()->toggleEnabled();
 }
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
@@ -652,6 +652,8 @@ void Scene::loadBaseCamera() {
 }
 
 bool Scene::load(const stringImpl& name) {
+    constexpr bool terrainThreadedLoading = true;
+
     setState(ResourceState::RES_LOADING);
 
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
@@ -665,12 +667,24 @@ bool Scene::load(const stringImpl& name) {
 
     loadBaseCamera();
     loadXMLAssets();
-    SceneGraphNode& root = _sceneGraph->getRoot();
 
     auto registerTerrain = [this](Resource_ptr res) {
-        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName()).lock());
+        SceneGraphNode& root = _sceneGraph->getRoot();
+        SceneGraphNode_ptr terrainTemp = root.addNode(std::dynamic_pointer_cast<Terrain>(res), normalMask, PhysicsGroup::GROUP_STATIC);
+        terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
+
+        for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
+            if (res->getName().compare(terrainInfo->getVariable("terrainName"))) {
+                terrainTemp->setActive(terrainInfo->getActive());
+                break;
+            }
+        }
+
+        NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
+        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+        SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(res->getName(), true).lock());
         assert(terrainNode != nullptr);
-        const std::shared_ptr<Terrain>& tempTerrain = terrainNode->getNode<Terrain>();
         if (terrainNode->isActive()) {
             //tempTerrain->toggleBoundingBoxes();
             _terrains.push_back(terrainNode);
@@ -682,15 +696,9 @@ bool Scene::load(const stringImpl& name) {
         for (const std::shared_ptr<TerrainDescriptor>& terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             terrain.setPropertyDescriptor(*terrainInfo);
+            terrain.setThreadedLoading(terrainThreadedLoading);
             terrain.setOnLoadCallback(registerTerrain);
             std::shared_ptr<Terrain> temp = CreateResource<Terrain>(_resCache, terrain);
-
-            SceneGraphNode_ptr terrainTemp = root.addNode(temp, normalMask, PhysicsGroup::GROUP_STATIC);
-            terrainTemp->setActive(terrainInfo->getActive());
-            terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-
-            NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
-            nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
         }
     }
     _terrainInfoArray.clear();
@@ -886,7 +894,9 @@ void Scene::clearObjects() {
         _modelDataArray.pop();
     }
     _vegetationDataArray.clear();
-
+    _terrains.clear();
+    _waterPlanes.clear();
+    _flashLight.clear();
     _sceneGraph->unload();
 }
 
@@ -943,7 +953,7 @@ void Scene::updateSceneState(const U64 deltaTime) {
     for (U8 i = 0; i < _scenePlayers.size(); ++i) {
         findHoverTarget(i);
         if (_flashLight.size() > i) {
-            PhysicsComponent* pComp = _flashLight[i].lock()->get<PhysicsComponent>();
+            PhysicsComponent* pComp = _flashLight[i]->get<PhysicsComponent>();
             const Camera& cam = _scenePlayers[i]->getCamera();
             pComp->setPosition(cam.getEye());
             pComp->setRotation(cam.getEuler());

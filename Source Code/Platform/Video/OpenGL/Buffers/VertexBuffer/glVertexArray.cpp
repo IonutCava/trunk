@@ -9,6 +9,92 @@
 
 namespace Divide {
 
+namespace {
+// Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
+// Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
+template<bool normals, bool tangents, bool colour, bool texcoords, bool bones>
+void fillSmallData5(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut)
+{
+    for (const VertexBuffer::Vertex& data : dataIn) {
+        dataOut << data._position;
+
+        if (normals) {
+            dataOut << data._normal;
+        }
+
+        if (tangents) {
+            dataOut << data._tangent;
+        }
+
+        if (colour) {
+            dataOut << data._colour.r;
+            dataOut << data._colour.g;
+            dataOut << data._colour.b;
+            dataOut << data._colour.a;
+        }
+
+        if (texcoords) {
+            dataOut << data._texcoord.s;
+            dataOut << data._texcoord.t;
+        }
+
+        if (bones) {
+            dataOut << data._weights.i;
+            dataOut << data._indices.i;
+        }
+    }
+}
+
+template <bool normals, bool tangents, bool colour, bool texCoords>
+void fillSmallData4(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool bones)
+{
+    if (bones) {
+        fillSmallData5<normals, tangents, colour, texCoords, true>(dataIn, dataOut);
+    } else {
+        fillSmallData5<normals, tangents, colour, texCoords, false>(dataIn, dataOut);
+    }
+}
+
+template <bool normals, bool tangents, bool colour>
+void fillSmallData3(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool texCoords, bool bones)
+{
+    if (texCoords) {
+        fillSmallData4<normals, tangents, colour, true>(dataIn, dataOut, bones);
+    } else {
+        fillSmallData4<normals, tangents, colour, false>(dataIn, dataOut, bones);
+    }
+}
+
+template <bool normals, bool tangents>
+void fillSmallData2(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool colour, bool texCoords, bool bones)
+{
+    if (colour) {
+        fillSmallData3<normals, tangents, true>(dataIn, dataOut, texCoords, bones);
+    } else {
+        fillSmallData3<normals, tangents, false>(dataIn, dataOut, texCoords, bones);
+    }
+}
+
+template <bool normals>
+void fillSmallData1(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool tangents, bool colour, bool texCoords, bool bones)
+{
+    if (tangents) {
+        fillSmallData2<normals, true>(dataIn, dataOut, colour, texCoords, bones);
+    } else {
+        fillSmallData2<normals, false>(dataIn, dataOut, colour, texCoords, bones);
+    }
+}
+
+void fillSmallData(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& dataOut, bool normals, bool tangents, bool colour, bool texCoords, bool bones)
+{
+    if (normals) {
+        fillSmallData1<true>(dataIn, dataOut, tangents, colour, texCoords, bones);
+    } else {
+        fillSmallData1<false>(dataIn, dataOut, tangents, colour, texCoords, bones);
+    }
+}
+};
+
 glVertexArray::VAOMap glVertexArray::_VAOMap;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glVertexArray, 0, 0)
@@ -16,7 +102,6 @@ IMPLEMENT_CUSTOM_ALLOCATOR(glVertexArray, 0, 0)
 void glVertexArray::cleanup() {
     clearVaos();
 }
-
 
 GLuint glVertexArray::getVao(size_t hash) {
     VAOMap::const_iterator result = _VAOMap.find(hash);
@@ -118,34 +203,7 @@ std::pair<bufferPtr, size_t> glVertexArray::getMinimalData() {
 
     _smallData.reserve(_data.size() * _effectiveEntrySize);
 
-    for (const Vertex& data : _data) {
-        _smallData << data._position;
-
-        if (useNormals) {
-            _smallData << data._normal;
-        }
-
-        if (useTangents) {
-            _smallData << data._tangent;
-        }
-
-        if (useColour) {
-            _smallData << data._colour.r;
-            _smallData << data._colour.g;
-            _smallData << data._colour.b;
-            _smallData << data._colour.a;
-        }
-
-        if (useTexcoords) {
-            _smallData << data._texcoord.s;
-            _smallData << data._texcoord.t;
-        }
-
-        if (useBoneData) {
-            _smallData << data._weights.i;
-            _smallData << data._indices.i;
-        }
-    }
+    fillSmallData(_data, _smallData, useNormals, useTangents, useColour, useTexcoords, useBoneData);
 
     if (_staticBuffer && !keepData()) {
         _data.clear();

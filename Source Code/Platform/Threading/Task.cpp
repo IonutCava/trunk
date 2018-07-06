@@ -154,7 +154,7 @@ void Task::wait() {
 
 void Task::run() {
     //ToDo: Add better wait for children system. Just manually balance calls for now -Ionut
-    WAIT_FOR_CONDITION(_childTaskCount == 0, true);
+    WAIT_FOR_CONDITION(_childTaskCount == 0);
 
     if (_callback) {
         _callback(*this);

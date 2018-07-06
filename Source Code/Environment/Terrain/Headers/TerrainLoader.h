@@ -41,9 +41,9 @@ class TerrainDescriptor;
 class TerrainLoader : private NonCopyable {
    public:
     static bool loadTerrain(std::shared_ptr<Terrain> terrain,
-                            const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
+                            const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                             PlatformContext& context,
-                            DELEGATE_CBK<void, Resource_ptr> onLoadCallback);
+                            const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback);
 
    protected:
     static bool Save(const char* fileName);
@@ -56,7 +56,6 @@ class TerrainLoader : private NonCopyable {
     static bool loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                       const std::shared_ptr<TerrainDescriptor> terrainDescriptor,
                                       DELEGATE_CBK<void, Resource_ptr> onLoadCallback);
-
     static void initializeVegetation(std::shared_ptr<Terrain> terrain,
                                      const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
 };

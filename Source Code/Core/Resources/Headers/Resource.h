@@ -66,7 +66,6 @@ enum class ResourceType : U32 {
     COUNT
 };
 
-
 class Resource;
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
 
@@ -92,7 +91,7 @@ class NOINITVTABLE Resource : public GUIDWrapper,
     virtual ~Resource();
 
     /// Loading and unloading interface
-    virtual bool load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback);
+    virtual bool load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback);
 
     virtual bool unload();
 
@@ -109,7 +108,7 @@ class NOINITVTABLE Resource : public GUIDWrapper,
 
     ResourceType getType() const;
 
-    void setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk);
+    void setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_ptr>& cbk);
 
    protected:
     void setState(ResourceState currentState);
@@ -122,7 +121,7 @@ class NOINITVTABLE Resource : public GUIDWrapper,
     stringImpl   _resourceLocation;  ///< Physical file location
     stringImpl   _resourceName;      ///< Physical file name
     std::atomic<ResourceState> _resourceState;
-    std::array<DELEGATE_CBK<void>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
+    std::array<DELEGATE_CBK<void, Resource_ptr>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
     mutable SharedLock _callbackLock;
 };
 
@@ -179,6 +178,8 @@ struct TerrainInfo {
     vec2<F32> scale;
     bool active;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
 
 };  // namespace Divide
 

@@ -420,7 +420,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
-bool glShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+bool glShaderProgram::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_resourceName.compare("NULL") == 0) {
@@ -441,8 +441,8 @@ bool glShaderProgram::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
         !_loadedFromBinary && _asyncLoad
             ? CurrentContext::GFX_LOADING_CTX
             : CurrentContext::GFX_RENDERING_CTX,
-        [&, onLoadCallback](const Task& parent){
-            threadedLoad(onLoadCallback, false);
+        [this, onLoadCallback](const Task& parent){
+            threadedLoad(std::move(onLoadCallback), false);
         });
 }
 

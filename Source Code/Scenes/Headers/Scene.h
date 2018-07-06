@@ -299,7 +299,7 @@ class Scene : public Resource {
        hashMapImpl<U8 /*player index*/, SceneGraphNode_wptr> _currentHoverTarget;
 
        SceneGraphNode_wptr _currentSky;
-       hashMapImpl<U8, SceneGraphNode_wptr> _flashLight;
+       hashMapImpl<U8, SceneGraphNode_ptr> _flashLight;
 
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete;

@@ -44,7 +44,8 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImp
     _albedoSampler->toggleSRGBColourSpace(false);
 }
 
-Terrain::~Terrain() {
+Terrain::~Terrain()
+{
     MemoryManager::DELETE(_albedoSampler);
     MemoryManager::DELETE(_normalSampler);
 }
@@ -157,12 +158,15 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         drawCommandsInOut.push_back(cmd);
 
         //BoundingBoxes
-        GenericDrawCommand bbCommand;
-        bbCommand.drawCount(0);
-        for (U32 i = 0; i < chunkCount + 2; ++i) {
-            drawCommandsInOut.push_back(bbCommand);
+        GenericDrawCommands commands;
+        commands.reserve(chunkCount);
+        _terrainQuadtree.drawBBox(_context, commands);
+        assert(commands.size() == chunkCount + 2);
+        for (const GenericDrawCommand& crtCmd : commands) {
+            drawCommandsInOut.push_back(crtCmd);
         }
     }
+
     Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
 }
 
@@ -213,8 +217,8 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             }
 
         } else {
-            for (; i < chunkCount; ++i) {
-                drawCommandsInOut[i].drawCount(0);
+            for (U8 j = 0; j < chunkCount + 2; ++j) {
+                drawCommandsInOut[i + j].drawCount(0);
             }
         }
     }

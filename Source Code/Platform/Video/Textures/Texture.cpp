@@ -39,11 +39,11 @@ Texture::~Texture()
 {
 }
 
-bool Texture::load(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
+bool Texture::load(const DELEGATE_CBK<void, Resource_ptr>& onLoadCallback) {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
         [this, onLoadCallback](const Task& parent) {
-            threadedLoad(onLoadCallback);
+            threadedLoad(std::move(onLoadCallback));
         }
     );
 
@@ -66,29 +66,29 @@ void Texture::threadedLoad(DELEGATE_CBK<void, Resource_ptr> onLoadCallback) {
     stringImpl currentTextureLocation;
     stringImpl currentTextureFullPath;
     while (std::getline(textureLocationList, currentTextureLocation, ',') &&
-        std::getline(textureFileList, currentTextureFile, ','))
+           std::getline(textureFileList, currentTextureFile, ','))
     {
         loadFromFile = true;
         Util::Trim(currentTextureFile);
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
             currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation
-                : currentTextureLocation) +
-                "/" +
-                currentTextureFile;
+                                                                     : currentTextureLocation) +
+                                     "/" +
+                                     currentTextureFile;
 
-            // Attempt to load the current entry
-            if (!loadFile(info, currentTextureFullPath)) {
-                // Invalid texture files are not handled yet, so stop loading
-                return;
-            }
-            info._layerIndex++;
-            if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
-                if (info._layerIndex == 6) {
-                    info._layerIndex = 0;
-                    info._cubeMapCount++;
+                // Attempt to load the current entry
+                if (!loadFile(info, currentTextureFullPath)) {
+                    // Invalid texture files are not handled yet, so stop loading
+                    return;
                 }
-            }
+                info._layerIndex++;
+                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                    if (info._layerIndex == 6) {
+                        info._layerIndex = 0;
+                        info._cubeMapCount++;
+                    }
+                }
         }
     }
 
