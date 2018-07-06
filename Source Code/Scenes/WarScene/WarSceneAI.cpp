@@ -259,7 +259,7 @@ bool WarScene::addUnits() {
     heavyPackage._goalList.push_back(scoreFlag);
     heavyPackage._goalList.push_back(protectFlagCarrier);
     lightPackage._goalList.push_back(protectFlagCarrier);
-    SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));
+    SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier3"));
     lightNode->getNode<Object3D>()->playAnimations(*lightNode, true);
 #if 0
     SceneGraphNode* lightNode(_sceneGraph->findNode("Soldier1"));

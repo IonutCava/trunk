@@ -9,6 +9,10 @@
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
+#ifndef USE_COLOUR_WOIT
+//#define USE_COLOUR_WOIT
+#endif
+
 namespace Divide {
 
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
@@ -263,10 +267,12 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
     // Weighted Blended Order Independent Transparency
     if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT) > 0) {
-        GFX::BeginRenderPassCommand beginRenderPassOitCmd, beginRenderPassCompCmd;
-        beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
-        beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
+        RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT));
 
+        // Step1: Draw translucent items into the accumulation and revealage buffers
+
+        GFX::BeginRenderPassCommand beginRenderPassOitCmd;
+        beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
         beginRenderPassOitCmd._target = RenderTargetID(RenderTargetUsage::OIT);
         RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(0);
         RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(1);
@@ -281,49 +287,55 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
         state1._blendProperties._blendOp = BlendOperation::ADD;
 
-        // Don't clear depth & colours and do not write to the depth buffer
-        RTDrawDescriptor noClearPolicy;
-        noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        noClearPolicy.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        noClearPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-        noClearPolicy.blendState(0)._blendEnable = true;
-        noClearPolicy.blendState(0)._blendProperties._blendSrc = BlendProperty::SRC_ALPHA;
-        noClearPolicy.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
-
-        beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
-        beginRenderPassCompCmd._descriptor = noClearPolicy;
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = _context.get2DStateBlock();
-        pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
-
-        GFX::BindPipelineCommand bindPipelineCmd;
-        bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-
-        GFX::DrawCommand drawCmd;
-        GenericDrawCommand drawCommand;
-        drawCommand._primitiveType = PrimitiveType::TRIANGLES;
-        drawCommand._drawCount = 1;
-        drawCmd._drawCommands.push_back(drawCommand);
-
-        GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
-
-        // Step1: Draw translucent items into the accumulation and revealage buffers
+        // Don't clear our screen target. That would be BAD.
+        beginRenderPassOitCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
+        // Don't clear and don't write to depth buffer
+        beginRenderPassOitCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
         GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
+
         _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, bufferInOut);
+
+        GFX::EndRenderPassCommand endRenderPassOitCmd;
         GFX::EnqueueCommand(bufferInOut, endRenderPassOitCmd);
 
         // Step2: Composition pass
+        // Don't clear depth & colours and do not write to the depth buffer
+        GFX::BeginRenderPassCommand beginRenderPassCompCmd;
+        beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
+        beginRenderPassCompCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+        beginRenderPassCompCmd._descriptor.blendState(0)._blendEnable = true;
+        beginRenderPassCompCmd._descriptor.blendState(0)._blendProperties._blendSrc = BlendProperty::ONE;
+        beginRenderPassCompCmd._descriptor.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
+
+        GFX::BindPipelineCommand bindPipelineCmd;
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
+        bindPipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
         GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-        TextureData accum = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
-        TextureData revealage = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
+
+        TextureData accum = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
+        TextureData revealage = oitTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = _context.newDescriptorSet();
         descriptorSetCmd._set->_textureData.addTexture(accum, 0u);
         descriptorSetCmd._set->_textureData.addTexture(revealage, 1u);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        GFX::DrawCommand drawCmd;
+        GenericDrawCommand drawCommand;
+        drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+        drawCommand._drawCount = 1;
+        drawCmd._drawCommands.push_back(drawCommand);
         GFX::EnqueueCommand(bufferInOut, drawCmd);
+
+        GFX::EndRenderPassCommand endRenderPassCompCmd;
         GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);
     }
 }
@@ -347,9 +359,7 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     }
 
     mainPass(params, target, bufferInOut);
-    if (false) {
-        woitPass(params, target, bufferInOut);
-    }
+    woitPass(params, target, bufferInOut);
 }
 
 };

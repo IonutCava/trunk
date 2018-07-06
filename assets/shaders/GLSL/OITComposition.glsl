@@ -18,6 +18,11 @@ void main(void)
 
 --Fragment
 
+#ifndef USE_COLOURED_WOIT
+//#define USE_COLOURED_WOIT
+#endif //USE_COLOURED_WOIT
+
+
 #include "Utility.frag"
 
 /* sum(rgb * a, a) */
@@ -46,7 +51,13 @@ void main() {
     // dst' =  (accum.rgb / accum.a) * (1 - revealage) + dst
     // [dst has already been modulated by the transmission colors and coverage and the blend mode
     // inverts revealage for us] 
+#ifdef USE_COLOURED_WOIT
     result = vec4(accum.rgb / max(accum.a, 0.00001), revealage);
+#else
+    vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
+    result = vec4(averageColor, 1.0 - revealage);
+#endif
+
 }
 
 
