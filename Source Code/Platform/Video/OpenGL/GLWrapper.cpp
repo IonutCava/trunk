@@ -423,6 +423,12 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define BUFFER_PUSH_CONSTANTS " +
+        to_stringImpl(to_base(ShaderBufferLocation::PUSH_CONSTANTS)),
+        lineOffsets);
+    
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),
         lineOffsets);
 
@@ -925,6 +931,16 @@ bool GL_API::makeTextureResident(const TextureData& textureData) {
         textureData.getHandleHigh(),
         GLUtil::glTextureTypeTable[to_U32(textureData._textureType)],
         textureData._samplerHash);
+}
+
+/// Called right before a glDraw* command
+void GL_API::preCommandSubmission() {
+    ShaderProgram::preCommandSubmission();
+}
+
+/// Called right after a glDraw* command returns
+void GL_API::postCommandSubmission() {
+    ShaderProgram::postCommandSubmission();
 }
 
 /// Verify if we have a sampler object created and available for the given

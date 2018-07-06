@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
+
 class glHardwareQuery : public glObject {
 public:
     glHardwareQuery();
@@ -45,9 +46,11 @@ public:
 
     void create();
     void destroy();
+
     inline U32 getID() const { return _queryID; }
     inline bool enabled() const { return _enabled; }
     inline void enabled(bool state) { _enabled = state; }
+
 protected:
     bool _enabled;
     U32 _queryID;

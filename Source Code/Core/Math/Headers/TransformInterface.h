@@ -35,6 +35,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Quaternion.h"
 
 namespace Divide {
+struct TransformValues {
+    TransformValues();
+    TransformValues(const TransformValues& other);
+    /// The object's position in the world as a 3 component vector
+    vec3<F32> _translation;
+    /// Scaling is stored as a 3 component vector.
+    /// This helps us check more easily if it's an uniform scale or not
+    vec3<F32> _scale;
+    /// All orientation/rotation info is stored in a Quaternion
+    /// (because they are awesome and also have an internal mat4 if needed)
+    Quaternion<F32> _orientation;
+
+    void operator=(const TransformValues& other);
+    bool operator==(const TransformValues& other) const;
+    bool operator!=(const TransformValues& other) const;
+};
+
 class TransformInterface {
 public:
     /// Set the local X,Y and Z position
@@ -161,6 +178,11 @@ public:
     /// Get the local transformation matrix
     /// wasRebuilt is set to true if the matrix was just rebuilt
     virtual const mat4<F32>& getMatrix() = 0;
+
+    /// Get the current position, rotation and scale as a "TransformValues" package
+    virtual void getValues(TransformValues& valuesOut) const = 0;
 };
+
+
 };
 #endif //_TRANSFORM_INTERFACE_H_

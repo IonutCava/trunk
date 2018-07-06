@@ -37,7 +37,8 @@ PhysicsComponent::~PhysicsComponent()
 
 void PhysicsComponent::update(const U64 deltaTime) {
     if (!physicsDriven()) {
-        _prevTransformValues = getTransform()->getValues();
+        ReadLock r_lock(_lock);
+        _transformInterface->getValues(_prevTransformValues);
     }
 
     _parentDirty = isParentTransformDirty();
@@ -94,145 +95,259 @@ void PhysicsComponent::setTransformDirty(TransformType type) {
 }
 
 void PhysicsComponent::setPosition(const vec3<F32>& position) {
-    _transformInterface->setPosition(position);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setPosition(position);
+    }
+
     setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setScale(const vec3<F32>& scale) {
-    _transformInterface->setScale(scale);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setScale(scale);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
-    _transformInterface->setRotation(quat);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotation(quat);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
-    _transformInterface->setRotation(axis, degrees);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotation(axis, degrees);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
-    _transformInterface->setRotation(pitch, yaw, roll);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotation(pitch, yaw, roll);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::translate(const vec3<F32>& axisFactors) {
-    _transformInterface->translate(axisFactors);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->translate(axisFactors);
+    }
+
     setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
-    _transformInterface->scale(axisFactors);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->scale(axisFactors);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
-    _transformInterface->rotate(axis, degrees);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotate(axis, degrees);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
-    _transformInterface->rotate(pitch, yaw, roll);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotate(pitch, yaw, roll);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
-    _transformInterface->rotate(quat);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotate(quat);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
-   _transformInterface->rotateSlerp(quat, deltaTime);
-   setTransformDirty(TransformType::ROTATION);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotateSlerp(quat, deltaTime);
+    }
+
+    setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setScaleX(const F32 ammount) {
-    _transformInterface->setScaleX(ammount);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setScaleX(ammount);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setScaleY(const F32 ammount) {
-    _transformInterface->setScaleY(ammount);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setScaleY(ammount);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::setScaleZ(const F32 ammount) {
-    _transformInterface->setScaleZ(ammount);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setScaleZ(ammount);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleX(const F32 scale) {
-    _transformInterface->scaleX(scale);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->scaleX(scale);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleY(const F32 scale) {
-    _transformInterface->scaleY(scale);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->scaleY(scale);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::scaleZ(const F32 scale) {
-    _transformInterface->scaleZ(scale);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->scaleZ(scale);
+    }
+
     setTransformDirty(TransformType::SCALE);
 }
 
 void PhysicsComponent::rotateX(const Angle::DEGREES<F32> angle) {
-    _transformInterface->rotateX(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotateX(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateY(const Angle::DEGREES<F32> angle) {
-    _transformInterface->rotateY(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotateY(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::rotateZ(const Angle::DEGREES<F32> angle) {
-    _transformInterface->rotateZ(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->rotateZ(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationX(const Angle::DEGREES<F32> angle) {
-    _transformInterface->setRotationX(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotationX(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationY(const Angle::DEGREES<F32> angle) {
-    _transformInterface->setRotationY(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotationY(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setRotationZ(const Angle::DEGREES<F32> angle) {
-    _transformInterface->setRotationZ(angle);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setRotationZ(angle);
+    }
+
     setTransformDirty(TransformType::ROTATION);
 }
 
 void PhysicsComponent::setPositionX(const F32 positionX) {
-    _transformInterface->setPositionX(positionX);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setPositionX(positionX);
+    }
+
     setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setPositionY(const F32 positionY) {
-    _transformInterface->setPositionY(positionY);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setPositionY(positionY);
+    }
+
     setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::setPositionZ(const F32 positionZ) {
-    _transformInterface->setPositionZ(positionZ);
+    {
+        WriteLock w_lock(_lock);
+        _transformInterface->setPositionZ(positionZ);
+    }
+
     setTransformDirty(TransformType::TRANSLATION);
 }
 
 void PhysicsComponent::pushTransforms() {
     if (!physicsDriven()) {
-        _transformStack.push(getTransform()->getValues());
+        TransformValues temp;
+        {
+            ReadLock r_lock(_lock);
+            _transformInterface->getValues(temp);
+        }
+
+        _transformStack.push(temp);
     }
 }
 
 bool PhysicsComponent::popTransforms() {
     if (!physicsDriven() && !_transformStack.empty()) {
         _prevTransformValues = _transformStack.top();
-        getTransform()->setValues(_prevTransformValues);
+        {
+            WriteLock w_lock(_lock);
+            static_cast<Transform*>(_transformInterface.get())->setValues(_prevTransformValues);
+        }
+
         _transformStack.pop();
 
         setTransformDirty(TransformType::TRANSLATION);
@@ -271,7 +386,13 @@ bool PhysicsComponent::dirty() const {
     return _dirty || _dirtyInterp;
 }
 
+void PhysicsComponent::getValues(TransformValues& valuesOut) const {
+    ReadLock r_lock(_lock);
+    _transformInterface->getValues(valuesOut);
+}
+
 const mat4<F32>& PhysicsComponent::getMatrix() {
+    ReadLock r_lock(_lock);
     return _transformInterface->getMatrix();
 }
 
@@ -439,16 +560,6 @@ bool PhysicsComponent::isUniformScaled() const {
     return getLocalScale().isUniform();
 }
 
-Transform* PhysicsComponent::getTransform() const {
-    assert(!physicsDriven());
-    return static_cast<Transform*>(_transformInterface.get());
-}
-
-PhysicsAsset* PhysicsComponent::getPhysicsAsset() const {
-    assert(physicsDriven());
-    return static_cast<PhysicsAsset*>(_transformInterface.get());
-}
-
 bool PhysicsComponent::physicsDriven() const {
     return (_physicsCollisionGroup != PhysicsGroup::GROUP_IGNORE &&
             _physicsCollisionGroup != PhysicsGroup::GROUP_COUNT);
@@ -456,14 +567,20 @@ bool PhysicsComponent::physicsDriven() const {
 
 // Transform interface access
 void PhysicsComponent::getScale(vec3<F32>& scaleOut) const {
+    ReadLock r_lock(_lock);
+
     _transformInterface->getScale(scaleOut);
 }
 
 void PhysicsComponent::getPosition(vec3<F32>& posOut) const {
+    ReadLock r_lock(_lock);
+
     _transformInterface->getPosition(posOut);
 }
 
 void PhysicsComponent::getOrientation(Quaternion<F32>& quatOut) const {
+    ReadLock r_lock(_lock);
+
     _transformInterface->getOrientation(quatOut);
 }
 

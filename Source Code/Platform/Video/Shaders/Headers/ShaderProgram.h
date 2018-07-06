@@ -53,6 +53,33 @@ class GenericDrawCommand;
 enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
+class PushConstants {
+private:
+    struct Data {
+        mat4<F32> _globalMatrix;
+    };
+public:
+    PushConstants(GFXDevice& context);
+
+    inline void globalMatrix(const mat4<F32>& globalMatrix) {
+        _bufferData._globalMatrix.set(globalMatrix);
+        _dirty = true;
+    }
+
+    inline const mat4<F32>& globalMatrix() const {
+        return _bufferData._globalMatrix;
+    }
+
+protected:
+    friend class ShaderProgram;
+    void upload();
+
+private:
+    GFXDevice& _context;
+    bool _dirty;
+    Data _bufferData;
+    ShaderBuffer* _pushConstantsBuffer;
+};
 
 class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
@@ -216,8 +243,10 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     //==================== static methods ===============================//
     static void idle();
-    static void onStartup(ResourceCache& parentCache);
+    static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
+    static void preCommandSubmission();
+    static void postCommandSubmission();
     static bool updateAll(const U64 deltaTime);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);
@@ -239,10 +268,12 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static vectorImpl<stringImpl> getAllAtomLocations();
 
-   protected:
-       virtual bool recompileInternal() = 0;
+    static inline PushConstants& pushConstants() { return *_pushConstants; }
 
-       void registerAtomFile(const stringImpl& atomFile);
+   protected:
+     virtual bool recompileInternal() = 0;
+     void registerAtomFile(const stringImpl& atomFile);
+
    protected:
     /// Shaders loaded from files are kept as atoms
     static AtomMap _atoms;
@@ -257,6 +288,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static ShaderProgramMap _shaderPrograms;
 
     static SharedLock _programLock;
+
+    static std::unique_ptr<PushConstants> _pushConstants;
 
    protected:
     template <typename T>

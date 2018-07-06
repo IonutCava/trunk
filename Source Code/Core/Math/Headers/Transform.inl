@@ -55,7 +55,6 @@ inline bool TransformValues::operator!=(const TransformValues& other) const {
 /// Set the local X,Y and Z position
 inline void Transform::setPosition(const vec3<F32>& position) {
     _dirty = true;
-    WriteLock w_lock(_lock);
     _transformValues._translation.set(position);
 }
 /// Set the object's position on the X axis
@@ -82,8 +81,6 @@ inline void Transform::setPositionZ(const F32 positionZ) {
 inline void Transform::setScale(const vec3<F32>& scale) {
     _dirty = true;
     _rebuildMatrix = true;
-
-    WriteLock w_lock(_lock);
     _transformValues._scale.set(scale);
 }
 
@@ -103,8 +100,6 @@ inline void Transform::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32
 inline void Transform::setRotation(const Quaternion<F32>& quat) {
     _dirty = true;
     _rebuildMatrix = true;
-
-    WriteLock w_lock(_lock);
     _transformValues._orientation.set(quat);
     _transformValues._orientation.normalize();
 }
@@ -112,7 +107,6 @@ inline void Transform::setRotation(const Quaternion<F32>& quat) {
 /// Add the specified translation factors to the current local position
 inline void Transform::translate(const vec3<F32>& axisFactors) {
     _dirty = true;
-    WriteLock w_lock(_lock);
     _transformValues._translation += axisFactors;
 }
 
@@ -120,7 +114,6 @@ inline void Transform::translate(const vec3<F32>& axisFactors) {
 inline void Transform::scale(const vec3<F32>& axisFactors) {
     _dirty = true;
     _rebuildMatrix = true;
-    WriteLock w_lock(_lock);
     _transformValues._scale *= axisFactors;
 }
 
@@ -147,8 +140,6 @@ inline void Transform::rotate(const Quaternion<F32>& quat) {
 inline void Transform::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
     _dirty = true;
     _rebuildMatrix = true;
-
-    WriteLock w_lock(_lock);
     _transformValues._orientation.slerp(quat, to_F32(deltaTime));
     _transformValues._orientation.normalize();
 }
@@ -220,33 +211,35 @@ inline void Transform::setRotationZ(const Angle::DEGREES<F32> angle) {
 
 /// Return the scale factor
 inline void Transform::getScale(vec3<F32>& scaleOut) const {
-    ReadLock r_lock(_lock);
     scaleOut.set(_transformValues._scale);
 }
+
 /// Return the position
 inline void Transform::getPosition(vec3<F32>& posOut) const {
-    ReadLock r_lock(_lock);
     posOut.set(_transformValues._translation);
 }
+
 /// Return the orientation quaternion
 inline void Transform::getOrientation(Quaternion<F32>& quatOut) const {
-    ReadLock r_lock(_lock);
     quatOut.set(_transformValues._orientation);
 }
 
 inline void Transform::clone(Transform* const transform) {
-    setValues(transform->getValues());
+    _dirty = true;
+    _rebuildMatrix = true;
+
+    transform->getValues(_transformValues);
 }
 
-inline const TransformValues& Transform::getValues() const {
-    return _transformValues;
+inline void Transform::getValues(TransformValues& valuesOut) const {
+    valuesOut = _transformValues;
 }
 
 /// Set position, scale and rotation based on the specified transform values
 inline void Transform::setValues(const TransformValues& values) {
     _dirty = true;
     _rebuildMatrix = true;
-    WriteLock w_lock(_lock);
+
     _transformValues._scale.set(values._scale);
     _transformValues._translation.set(values._translation);
     _transformValues._orientation.set(values._orientation);
@@ -254,12 +247,10 @@ inline void Transform::setValues(const TransformValues& values) {
 
 /// Compares 2 transforms
 inline bool Transform::operator==(const Transform& other) const {
-    ReadLock r_lock(_lock);
     return _transformValues == other._transformValues;
 }
 
 inline bool Transform::operator!=(const Transform& other) const {
-    ReadLock r_lock(_lock);
     return _transformValues != other._transformValues;
 }
 };

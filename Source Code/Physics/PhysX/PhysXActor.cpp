@@ -173,4 +173,11 @@ namespace Divide {
     const mat4<F32>& PhysXActor::getMatrix() {
         return _cachedLocalMatrix;
     }
+
+    void PhysXActor::getValues(TransformValues& valuesOut) const {
+        getPosition(valuesOut._translation);
+        getScale(valuesOut._scale);
+        getOrientation(valuesOut._orientation);
+    }
+
 }; //namespace Divide

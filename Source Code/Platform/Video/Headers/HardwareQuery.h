@@ -29,37 +29,20 @@
 
  */
 
-#ifndef _OCCLUSION_QUERY_H
-#define _OCCLUSION_QUERY_H
+#ifndef _HARDWARE_QUERY_H_
+#define _HARDWARE_QUERY_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
 
-class NOINITVTABLE OcclusionQuery {
-   public:
-    OcclusionQuery() {}
-    virtual ~OcclusionQuery() {}
+class HardwareQuery {
+public:
 
-    enum class QueryResult : U32 {
-        OC_VISIBLE = 0,
-        OC_OCCLUDED,
-        OC_WAITING,
-        OC_ERROR,
-        COUNT
-    };
-
-    /// Returns the status of the last query
-    virtual QueryResult getStatus(bool blockCPU,
-                                  U32* visiblePixels = nullptr) = 0;
-    /// Prepares the query. If the previous query is finished, returns true,
-    /// else it returs false
-    virtual bool begin() = 0;
-    /// Called after the geometry is drawn to process the query and prepare the
-    /// result
-    virtual end() = 0;
+    U64 _result;
+    QueryType _type;
 };
 
 };  // namespace Divide
 
-#endif
+#endif //_HARDWARE_QUERY_H_

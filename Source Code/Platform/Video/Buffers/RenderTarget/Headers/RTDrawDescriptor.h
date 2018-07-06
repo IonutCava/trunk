@@ -38,6 +38,9 @@ namespace Divide {
 
 class RTDrawMask {
   public:
+    // 16 should be more than enough even for batching multiple render targets together
+    static constexpr U8 MAX_RT_COLOUR_ATTACHMENTS = 16;
+
     RTDrawMask();
 
     bool isEnabled(RTAttachment::Type type, U8 index) const;
@@ -52,7 +55,7 @@ class RTDrawMask {
   private:
     bool _disabledDepth;
     bool _disabledStencil;
-    vectorImpl<U8> _disabledColours;
+    std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _disabledColours;
 };
 
 class RTDrawDescriptor {

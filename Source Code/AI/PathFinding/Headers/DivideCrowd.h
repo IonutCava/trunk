@@ -72,7 +72,7 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "DetourCrowd/Include/DetourCrowd.h"
 #include "../NavMeshes/Headers/NavMesh.h"
-#include <vector>
+#include "Core/TemplateLibraries/Headers/Vector.h"
 
 /**
   * Divide wrapper around Ogre wrapper around DetourCrowd.

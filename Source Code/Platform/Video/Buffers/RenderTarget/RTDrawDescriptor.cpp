@@ -11,50 +11,42 @@ RTDrawMask::RTDrawMask()
 }
 
 bool RTDrawMask::isEnabled(RTAttachment::Type type, U8 index) const {
+    assert(index < RTDrawMask::MAX_RT_COLOUR_ATTACHMENTS);
+
     switch (type) {
         case RTAttachment::Type::Depth   : return !_disabledDepth;
         case RTAttachment::Type::Stencil : return !_disabledStencil;
-        case RTAttachment::Type::Colour  : {
-            for (U8 crtIndex : _disabledColours) {
-                if (crtIndex == index) {
-                    return false;
-                }
-            }
-        } break;
+        case RTAttachment::Type::Colour  : return !_disabledColours[index];
+        default : break;
     }
 
     return true;
 }
 
 void RTDrawMask::setEnabled(RTAttachment::Type type, U8 index, const bool state) {
+    assert(index < RTDrawMask::MAX_RT_COLOUR_ATTACHMENTS);
+
     switch (type) {
         case RTAttachment::Type::Depth   : _disabledDepth   = !state; break;
         case RTAttachment::Type::Stencil : _disabledStencil = !state; break;
-        case RTAttachment::Type::Colour  : {
-            for (U8 crtIndex : _disabledColours) {
-                if (crtIndex == index) {
-                    return;
-                }
-            }
-            _disabledColours.push_back(index);
-        } break;
+        case RTAttachment::Type::Colour  : _disabledColours[index] = !state; break;
+        default : break;
     }
 }
 
 void RTDrawMask::enableAll() {
     _disabledDepth = _disabledStencil = false;
-    _disabledColours.clear();
+    _disabledColours.fill(false);
 }
 
 void RTDrawMask::disableAll() {
     _disabledDepth = _disabledStencil = true;
-    _disabledColours.resize(std::numeric_limits<U8>::max());
-    std::iota(std::begin(_disabledColours), std::end(_disabledColours), to_U8(0));
+    _disabledColours.fill(true);
 }
 
 
 bool RTDrawMask::operator==(const RTDrawMask& other) const {
-    return _disabledDepth == other._disabledDepth &&
+    return _disabledDepth   == other._disabledDepth &&
            _disabledStencil == other._disabledStencil &&
            _disabledColours == other._disabledColours;
 }

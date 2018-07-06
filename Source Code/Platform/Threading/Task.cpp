@@ -42,12 +42,13 @@ void Task::reset() {
     }
 
     _stopRequested = false;
-    _callback = [](const Task&){};
+    _callback = nullptr;
     _jobIdentifier = -1;
     _priority = TaskPriority::DONT_CARE;
     _parentTask = nullptr;
-    _childTasks.fill(nullptr);
     _childTaskCount = 0;
+    //not needed
+    //_childTasks.fill(nullptr);
 }
 
 void Task::addChildTask(Task* task) {

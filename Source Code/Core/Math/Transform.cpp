@@ -38,7 +38,6 @@ Transform::~Transform()
 
 const mat4<F32>& Transform::getMatrix() {
     if (_dirty) {
-        WriteLock w_lock(_lock);
         if (_rebuildMatrix) {
             // Ordering - a la Ogre:
             _worldMatrix.identity();
@@ -59,7 +58,6 @@ const mat4<F32>& Transform::getMatrix() {
 void Transform::setTransforms(const mat4<F32>& transform) {
     _dirty = true;
 
-    WriteLock w_lock(_lock);
     Quaternion<F32>& rotation = _transformValues._orientation;
     vec3<F32>& position = _transformValues._translation;
     vec3<F32>& scale = _transformValues._scale;
@@ -99,7 +97,6 @@ void Transform::setTransforms(const mat4<F32>& transform) {
 }
 
 void Transform::identity() {
-    WriteLock w_lock(_lock);
     _transformValues._scale.set(1.0f);
     _transformValues._translation.reset();
     _transformValues._orientation.identity();

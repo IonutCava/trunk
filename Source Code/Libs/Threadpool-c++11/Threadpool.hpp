@@ -23,11 +23,11 @@
 
 #include <thread>
 #include <atomic>
-#include <vector>
 #include <future>
 #include <mutex>
 #include <boost/lockfree/queue.hpp>
 
+#include "Core/TemplateLibraries/Headers/Vector.h"
 
 #ifndef _ctplThreadPoolLength_
 #define _ctplThreadPoolLength_  100
@@ -123,8 +123,8 @@ namespace ctpl {
 
         void init();
 
-        std::vector<std::unique_ptr<std::thread>> threads;
-        std::vector<std::shared_ptr<std::atomic<bool>>> flags;
+        vectorImpl<std::unique_ptr<std::thread>> threads;
+        vectorImpl<std::shared_ptr<std::atomic<bool>>> flags;
         mutable boost::lockfree::queue<std::function<void(int id)> *> q;
         std::atomic<bool> isDone;
         std::atomic<bool> isStop;

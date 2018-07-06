@@ -91,6 +91,7 @@ enum class ShaderBufferLocation : U32 {
     BONE_TRANSFORMS = 6,
     SCENE_DATA = 7,
     TERRAIN_DATA = 8,
+    PUSH_CONSTANTS = 9,
     COUNT
 };
 
@@ -434,13 +435,20 @@ enum class GPURenderer : U32 {
     COUNT
 };
 
-enum class BufferUpdateFrequency : U32 {
+enum class BufferUpdateFrequency : U8 {
     ONCE = 0,       //STATIC
     OCASSIONAL = 1, //DYNAMIC
     OFTEN = 2,      //STREAM
     COUNT
 };
 
+enum class QueryType : U8 {
+    TIME = 0,
+    PRIMITIVES_GENERATED,
+    XFORM_FDBK_PRIMITIVES_GENERATED,
+    GPU_TIME,
+    COUNT
+};
 
 inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
     switch (internalFormat) {

@@ -193,12 +193,10 @@ TaskHandle CreateTask(TaskPool& pool,
                       const DELEGATE_CBK<void>& onCompletionFunction)
 {
     Task& freeTask = pool.getAvailableTask();
-    TaskHandle handle(&freeTask, jobIdentifier);
-
     freeTask.threadedCallback(threadedFunction, jobIdentifier);
-    if (onCompletionFunction) {
-        pool.setTaskCallback(handle, onCompletionFunction);
-    }
+
+    TaskHandle handle(&freeTask, jobIdentifier);
+    pool.setTaskCallback(handle, onCompletionFunction);
 
     return handle;
 }

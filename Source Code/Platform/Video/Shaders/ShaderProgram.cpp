@@ -10,6 +10,7 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 namespace {
@@ -23,9 +24,35 @@ ShaderProgram_ptr ShaderProgram::_nullShader;
 ShaderProgram::AtomMap ShaderProgram::_atoms;
 ShaderProgram::ShaderQueue ShaderProgram::_recompileQueue;
 ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
+std::unique_ptr<PushConstants> ShaderProgram::_pushConstants;
+
 SharedLock ShaderProgram::_programLock;
 
 std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
+
+PushConstants::PushConstants(GFXDevice& context)
+    : _context(context),
+      _dirty(true)
+{
+    ShaderBufferDescriptor bufferDescriptor;
+    bufferDescriptor._primitiveCount = 1;
+    bufferDescriptor._primitiveSizeInBytes = sizeof(Data);
+    bufferDescriptor._ringBufferLength = 1;
+    bufferDescriptor._unbound = false;
+    bufferDescriptor._initialData = &_bufferData;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+
+    _pushConstantsBuffer = _context.newSB(bufferDescriptor);
+    _pushConstantsBuffer->bind(ShaderBufferLocation::PUSH_CONSTANTS);
+}
+
+void PushConstants::upload() {
+    if (_dirty) {
+        _pushConstantsBuffer->writeData(&_bufferData);
+        _pushConstantsBuffer->bind(ShaderBufferLocation::PUSH_CONSTANTS);
+        _dirty = false;
+    }
+}
 
 ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
@@ -222,7 +249,7 @@ void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sour
     writeFile(variant, (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
 }
 
-void ShaderProgram::onStartup(ResourceCache& parentCache) {
+void ShaderProgram::onStartup(GFXDevice& context, ResourceCache& parentCache) {
     s_shaderFileWatcher = std::make_unique<FW::FileWatcher>();
 
     if (!Config::Build::IS_SHIPPING_BUILD) {
@@ -245,6 +272,8 @@ void ShaderProgram::onStartup(ResourceCache& parentCache) {
     _nullShader = CreateResource<ShaderProgram>(parentCache, ResourceDescriptor("NULL"));
     // The null shader should never be nullptr!!!!
     assert(_nullShader != nullptr);  // LoL -Ionut
+
+    _pushConstants = std::make_unique<PushConstants>(context);
 }
 
 void ShaderProgram::onShutdown() {
@@ -252,11 +281,20 @@ void ShaderProgram::onShutdown() {
     _shaderPrograms.clear();
     _nullShader.reset();
     _imShader.reset();
+    _pushConstants.reset();
     while (!_recompileQueue.empty()) {
         _recompileQueue.pop();
     }
 
     s_shaderFileWatcher.reset();
+}
+
+void ShaderProgram::preCommandSubmission() {
+    pushConstants().upload();
+}
+
+void ShaderProgram::postCommandSubmission() {
+
 }
 
 bool ShaderProgram::updateAll(const U64 deltaTime) {

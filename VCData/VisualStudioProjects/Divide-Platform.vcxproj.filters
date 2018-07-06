@@ -49,9 +49,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\IMPrimitive.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\OcclusionQuery.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderAPIEnums.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
@@ -368,6 +365,9 @@
       <Filter>Video\OpenGL\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\HardwareQuery.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
   </ItemGroup>

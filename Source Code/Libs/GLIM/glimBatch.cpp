@@ -104,20 +104,24 @@ namespace NS_GLIM
         return (true);
     }
 
-    void GLIM_BATCH::RenderBatchOGL (bool bWireframe)
+    void GLIM_BATCH::RenderBatchInstancedOGL(int iInstances, bool bWireframe)
     {
         if (!BeginRender ())
             return;
     
         bWireframe |= GLIM_Interface::s_bForceWireframe;
 
+        Divide::GenericDrawCommand cmd;
+        cmd.cmd().primCount = iInstances;
+
         if (!bWireframe)
         {
             // render all triangles
             if (m_Data.m_uiTriangleElements > 0)
             {
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
-                glDrawElements (GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
+                cmd.primitiveType(Divide::PrimitiveType::TRIANGLES);
+                cmd.cmd().indexCount = m_Data.m_uiTriangleElements;
+                Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Triangles);
             }
         }
         else
@@ -125,69 +129,34 @@ namespace NS_GLIM
             // render all triangles
             if (m_Data.m_uiWireframeElements > 0)
             {
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
-                glDrawElements (GL_LINES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
+                cmd.primitiveType(Divide::PrimitiveType::LINES);
+                cmd.cmd().indexCount = m_Data.m_uiWireframeElements;
+                Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Wireframe);
             }
         }
         
         // render all lines
         if (m_Data.m_uiLineElements > 0)
         {
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
-            glDrawElements (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
+            cmd.primitiveType(Divide::PrimitiveType::LINES);
+            cmd.cmd().indexCount = m_Data.m_uiLineElements;
+            Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Lines);
         }
 
         // render all points
         if (m_Data.m_uiPointElements > 0)
         {
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
-            glDrawElements (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0));
+            cmd.primitiveType(Divide::PrimitiveType::API_POINTS);
+            cmd.cmd().indexCount = m_Data.m_uiPointElements;
+            Divide::GLUtil::submitRenderCommand(cmd, false, GL_UNSIGNED_INT, m_Data.m_uiElementBufferID_Points);
         }
 
         EndRender ();
     }
 
-    void GLIM_BATCH::RenderBatchInstancedOGL (int iInstances, bool bWireframe)
+    void GLIM_BATCH::RenderBatchOGL (bool bWireframe)
     {
-        if (!BeginRender ())
-            return;
-
-        bWireframe |= GLIM_Interface::s_bForceWireframe;
-
-        if (!bWireframe)
-        {
-            // render all triangles
-            if (m_Data.m_uiTriangleElements > 0)
-            {
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
-                glDrawElementsInstanced(GL_TRIANGLES, m_Data.m_uiTriangleElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
-            }
-        }
-        else
-        {
-            // render all triangles
-            if (m_Data.m_uiWireframeElements > 0)
-            {
-                Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
-                glDrawElementsInstanced (GL_TRIANGLES, m_Data.m_uiWireframeElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
-            }
-        }
-
-        // render all points
-        if (m_Data.m_uiPointElements > 0)
-        {
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
-            glDrawElementsInstanced (GL_POINTS, m_Data.m_uiPointElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
-        }
-
-        // render all lines
-        if (m_Data.m_uiLineElements > 0)
-        {
-            Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
-            glDrawElementsInstanced (GL_LINES, m_Data.m_uiLineElements, GL_UNSIGNED_INT, BUFFER_OFFSET (0), iInstances);
-        }
-
-        EndRender ();
+        RenderBatchInstancedOGL(1, bWireframe);
     }
 #endif
 

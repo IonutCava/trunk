@@ -125,6 +125,7 @@ void DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
 /// Invalid object value. Used to compare handles and determine if they were
 /// properly created
 extern GLuint _invalidObjectID;
+extern GLuint _lastQueryResult;
 extern SDL_GLContext _glRenderContext;
 extern thread_local SDL_GLContext _glSecondaryContext;
 extern SharedLock _glSecondaryContextMutex;
@@ -152,6 +153,8 @@ extern std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 extern std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 extern std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 extern std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
+extern std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
+
 };  // namespace GLUtil
 };  // namespace Divide
 

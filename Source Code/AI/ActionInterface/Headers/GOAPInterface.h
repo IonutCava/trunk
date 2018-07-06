@@ -44,8 +44,8 @@ typedef I32 GOAPFact;
 typedef bool GOAPValue;
 typedef goap::Action GOAPAction;
 typedef goap::WorldState GOAPWorldState;
-typedef std::vector<const GOAPAction*> GOAPActionSet;
-typedef std::vector<const GOAPAction*> GOAPPlan;
+typedef vectorImpl<const GOAPAction*> GOAPActionSet;
+typedef vectorImpl<const GOAPAction*> GOAPPlan;
 
 inline const char* GOAPValueName(GOAPValue val) {
     return val ? "true" : "false";

@@ -223,6 +223,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
 
     const mat4<F32>& getMatrix() override;
+    void getValues(TransformValues& valuesOut) const override;
 
     void pushTransforms();
     bool popTransforms();
@@ -257,9 +258,6 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     void setTransformDirty(TransformType type);
     bool isParentTransformDirty() const;
 
-    Transform* getTransform() const;
-    PhysicsAsset* getPhysicsAsset() const;
-
     bool physicsDriven() const;
 
    protected:
@@ -270,7 +268,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     TransformValues _prevTransformValues;
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
-    TransformMask _transformUpdatedMask;
+    TransformMask  _transformUpdatedMask;
 
     vectorImpl<DELEGATE_CBK<void> > _transformCallbacks;
 
@@ -283,6 +281,8 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     mat4<F32> _worldMatrix;
     D64  _prevInterpValue;
     mat4<F32> _worldMatrixInterp;
+
+    mutable SharedLock _lock;
 };
 
 };  // namespace Divide

@@ -60,6 +60,8 @@ namespace GLUtil {
 
 /*-----------Object Management----*/
 GLuint _invalidObjectID = GL_INVALID_INDEX;
+GLuint _lastQueryResult = GL_INVALID_INDEX;
+
 SDL_GLContext _glRenderContext;
 thread_local SDL_GLContext _glSecondaryContext = nullptr;
 SharedLock _glSecondaryContextMutex;
@@ -87,6 +89,7 @@ std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 std::array<stringImpl, to_base(ShaderType::COUNT)> glShaderStageNameTable;
+std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 
 void fillEnumTables() {
     glBlendTable[to_base(BlendProperty::ZERO)] = GL_ZERO;
@@ -253,6 +256,11 @@ void fillEnumTables() {
     glShaderStageNameTable[to_base(ShaderType::TESSELATION_CTRL)] = "TessellationC";
     glShaderStageNameTable[to_base(ShaderType::TESSELATION_EVAL)] = "TessellationE";
     glShaderStageNameTable[to_base(ShaderType::COMPUTE)] = "Compute";
+
+    glQueryTypeTable[to_base(QueryType::TIME)] = GL_TIME_ELAPSED;
+    glQueryTypeTable[to_base(QueryType::PRIMITIVES_GENERATED)] = GL_PRIMITIVES_GENERATED;
+    glQueryTypeTable[to_base(QueryType::XFORM_FDBK_PRIMITIVES_GENERATED)] = GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN;
+    glQueryTypeTable[to_base(QueryType::GPU_TIME)] = GL_TIMESTAMP;
 }
 
 namespace {
@@ -288,9 +296,9 @@ void sumitDirectCommand(const IndirectDrawCommand& cmd,
                         GLuint indexBuffer) {
 
     if (indexBuffer > 0) {
-        glDrawElements(mode, cmd.indexCount, internalFormat, bufferOffset(cmd.firstIndex));
+        glDrawElementsInstanced(mode, cmd.indexCount, internalFormat, bufferOffset(cmd.firstIndex), cmd.primCount);
     } else {
-        glDrawArrays(mode, cmd.firstIndex, cmd.indexCount);
+        glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
     }
 }
 
@@ -315,6 +323,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          GLenum internalFormat,
                          GLuint indexBuffer) {
 
+    GL_API::preCommandSubmission();
     if (useIndirectBuffer) {
         // Don't trust the driver to optimize the loop. Do it here so we know the cost upfront
         if (drawCommand.drawCount() > 1) {
@@ -329,6 +338,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
             sumitDirectCommand(drawCommand.cmd(), mode, internalFormat, indexBuffer);
         }
     }
+    GL_API::postCommandSubmission();
 }
 
 };

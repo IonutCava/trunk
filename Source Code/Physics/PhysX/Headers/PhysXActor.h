@@ -94,6 +94,9 @@ public:
     /// wasRebuilt is set to true if the matrix was just rebuilt
     const mat4<F32>& getMatrix() override;
 
+
+    void getValues(TransformValues& valuesOut) const override;
+
 protected:
     friend class PhysX;
     friend class PhysXSceneInterface;

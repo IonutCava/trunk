@@ -83,7 +83,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
     // Initialize the shader manager
-    ShaderProgram::onStartup(cache);
+    ShaderProgram::onStartup(*this, cache);
     EnvironmentProbe::onStartup(*this);
     PostFX::createInstance();
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)

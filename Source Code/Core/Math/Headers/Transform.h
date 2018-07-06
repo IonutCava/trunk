@@ -36,23 +36,6 @@
 
 namespace Divide {
 
-struct TransformValues {
-    TransformValues();
-    TransformValues(const TransformValues& other);
-    /// The object's position in the world as a 3 component vector
-    vec3<F32> _translation;
-    /// Scaling is stored as a 3 component vector.
-    /// This helps us check more easily if it's an uniform scale or not
-    vec3<F32> _scale;
-    /// All orientation/rotation info is stored in a Quaternion
-    /// (because they are awesome and also have an internal mat4 if needed)
-    Quaternion<F32> _orientation;
-
-    void operator=(const TransformValues& other);
-    bool operator==(const TransformValues& other) const;
-    bool operator!=(const TransformValues& other) const;
-};
-
 class Transform : public TransformInterface, public GUIDWrapper, private NonCopyable {
    public:
     Transform();
@@ -107,9 +90,8 @@ class Transform : public TransformInterface, public GUIDWrapper, private NonCopy
     /// Set all of the internal values to match those of the specified transform
     void clone(Transform* const transform);
 
-    /// Extract the 3 transform values (position, scale, rotation) from the
-    /// current instance
-    const TransformValues& getValues() const;
+    /// Extract the 3 transform values (position, scale, rotation) from the current instance
+    void getValues(TransformValues& valuesOut) const override;
     /// Set position, scale and rotation based on the specified transform values
     void setValues(const TransformValues& values);
 
@@ -132,7 +114,6 @@ class Transform : public TransformInterface, public GUIDWrapper, private NonCopy
     /// _rebuildMatrix is true when a rotation or scale is applied to avoid
     /// rebuilding matrices on translation
     std::atomic_bool _rebuildMatrix;
-    mutable SharedLock _lock;
 };
 
 };  // namespace Divide
