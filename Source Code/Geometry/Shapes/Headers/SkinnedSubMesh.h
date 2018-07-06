@@ -53,7 +53,7 @@ class SkinnedSubMesh : public SubMesh {
     void updateAnimations(SceneGraphNode& sgn);
 
    private:
-    void sceneUpdate(const U64 deltaTime,
+    void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
     void computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn);

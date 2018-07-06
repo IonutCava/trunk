@@ -229,7 +229,7 @@ bool GUIEditor::isVisible() const {
     return _editorWindow->isVisible();
 }
 
-bool GUIEditor::update(const U64 deltaTime) {
+bool GUIEditor::update(const U64 deltaTimeUS) {
     _wasControlClick = false;
     bool state = true;
     if (_createNavMeshQueued) {

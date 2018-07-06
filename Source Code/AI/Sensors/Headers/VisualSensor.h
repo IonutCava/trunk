@@ -58,7 +58,7 @@ class VisualSensor : public Sensor {
    public:
      ~VisualSensor();
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     void followSceneGraphNode(U32 containerID, SceneGraphNode_wptr node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);

@@ -128,7 +128,7 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
     }
 }
 
-void SkinnedSubMesh::sceneUpdate(const U64 deltaTime,
+void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
                                  SceneGraphNode& sgn,
                                  SceneState& sceneState) {
     AnimationComponent* animComp = sgn.get<AnimationComponent>();
@@ -142,7 +142,7 @@ void SkinnedSubMesh::sceneUpdate(const U64 deltaTime,
             setFlag(UpdateFlag::BOUNDS_CHANGED);
         }
     }
-    SubMesh::sceneUpdate(deltaTime, sgn, sceneState);
+    SubMesh::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 };

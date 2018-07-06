@@ -90,12 +90,12 @@ void Terrain::buildQuadtree() {
     getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2/*, true*/);
 }
 
-void Terrain::sceneUpdate(const U64 deltaTime,
+void Terrain::sceneUpdate(const U64 deltaTimeUS,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
     _waterHeight = sceneState.waterLevel();
-    _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
-    Object3D::sceneUpdate(deltaTime, sgn, sceneState);
+    _terrainQuadtree.sceneUpdate(deltaTimeUS, sgn, sceneState);
+    Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 void Terrain::onCameraUpdate(SceneGraphNode& sgn,

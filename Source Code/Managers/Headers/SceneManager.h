@@ -118,19 +118,19 @@ public:
         return Attorney::SceneManager::checkLoadFlag(getActiveScene());
     }
     /// Update animations, network data, sounds, triggers etc.
-    void updateSceneState(const U64 deltaTime);
+    void updateSceneState(const U64 deltaTimeUS);
 
     /// Gather input events and process them in the current scene
-    inline void processInput(PlayerIndex idx, const U64 deltaTime) {
-        getActiveScene().processInput(idx, deltaTime);
+    inline void processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+        getActiveScene().processInput(idx, deltaTimeUS);
         Attorney::SceneManager::updateCameraControls(getActiveScene(), idx);
     }
 
-    inline void processTasks(const U64 deltaTime) {
-        getActiveScene().processTasks(deltaTime);
+    inline void processTasks(const U64 deltaTimeUS) {
+        getActiveScene().processTasks(deltaTimeUS);
     }
-    inline void processGUI(const U64 deltaTime) {
-        getActiveScene().processGUI(deltaTime);
+    inline void processGUI(const U64 deltaTimeUS) {
+        getActiveScene().processGUI(deltaTimeUS);
     }
 
     void onChangeResolution(U16 w, U16 h);

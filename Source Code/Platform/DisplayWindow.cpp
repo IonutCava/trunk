@@ -109,9 +109,9 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
     return _inputHandler->init(_context.app().kernel(), dimensions);
 }
 
-void DisplayWindow::update(const U64 deltaTime) {
+void DisplayWindow::update(const U64 deltaTimeUS) {
     if (hasFocus()) {
-        _inputHandler->update(deltaTime);
+        _inputHandler->update(deltaTimeUS);
     }
     if (_queuedType != WindowType::COUNT) {
         //handleChangeWindowType(_queuedType);

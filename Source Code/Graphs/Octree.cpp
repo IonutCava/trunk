@@ -47,7 +47,7 @@ Octree::~Octree()
 {
 }
 
-void Octree::update(const U64 deltaTime) {
+void Octree::update(const U64 deltaTimeUS) {
     if (!s_treeBuilt) {
         buildTree();
         return;
@@ -92,7 +92,7 @@ void Octree::update(const U64 deltaTime) {
     //recursively update any child nodes.
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
-            _childNodes[i]->update(deltaTime);
+            _childNodes[i]->update(deltaTimeUS);
         }
     }
 

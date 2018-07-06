@@ -12,7 +12,7 @@
 
 namespace Divide {
 
-void CubeScene::processTasks(const U64 deltaTime) {
+void CubeScene::processTasks(const U64 deltaTimeUS) {
     D64 updateLights = Time::SecondsToMilliseconds(0.05);
 
     if (_taskTimers[0] >= updateLights) {
@@ -41,14 +41,14 @@ void CubeScene::processTasks(const U64 deltaTime) {
 
         _taskTimers[0] = 0.0;
     }
-    Scene::processTasks(deltaTime);
+    Scene::processTasks(deltaTimeUS);
 }
 
 I8 g_j = 1;
 F32 g_i = 0;
 bool _switch = false;
 
-void CubeScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void CubeScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (g_i >= 360)
         _switch = true;
     else if (g_i <= 0)
@@ -73,7 +73,7 @@ void CubeScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);
     dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
 
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
 bool CubeScene::load(const stringImpl& name) {

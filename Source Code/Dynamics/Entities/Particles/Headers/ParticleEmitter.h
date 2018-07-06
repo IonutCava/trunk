@@ -81,7 +81,7 @@ class ParticleEmitter : public SceneNode {
     void postLoad(SceneGraphNode& sgn)  override;
 
     /// preprocess particles here
-    void sceneUpdate(const U64 deltaTime,
+    void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 

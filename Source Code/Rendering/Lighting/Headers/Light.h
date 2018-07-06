@@ -156,7 +156,7 @@ class Light : public SceneNode {
 
     void updateBoundsInternal(SceneGraphNode& sgn);
 
-    void sceneUpdate(const U64 deltaTime,
+    void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 

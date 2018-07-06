@@ -16,16 +16,16 @@ bool ReflectionScene::loadResources(bool continueOnErrors) {
     return Scene::loadResources(continueOnErrors);
 }
 
-void ReflectionScene::processInput(PlayerIndex idx, const U64 deltaTime) {
-    Scene::processInput(idx, deltaTime);
+void ReflectionScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void ReflectionScene::processTasks(const U64 deltaTime) {
-    Scene::processTasks(deltaTime);
+void ReflectionScene::processTasks(const U64 deltaTimeUS) {
+    Scene::processTasks(deltaTimeUS);
 }
 
-void ReflectionScene::processGUI(const U64 deltaTime) {
-    Scene::processGUI(deltaTime);
+void ReflectionScene::processGUI(const U64 deltaTimeUS) {
+    Scene::processGUI(deltaTimeUS);
 }
 
 void ReflectionScene::onSetActive() {

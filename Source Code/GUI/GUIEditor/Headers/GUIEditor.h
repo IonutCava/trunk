@@ -56,7 +56,7 @@ public:
     bool init();
     void setVisible(bool visible);  //< Hide or show the editor
     bool isVisible() const;  //< Return true if editor is visible, false if is hidden
-    bool update(const U64 deltaTime);  //< Used to update time dependent elements
+    bool update(const U64 deltaTimeUS);  //< Used to update time dependent elements
     bool Handle_ChangeSelection(SceneGraphNode_wptr newNode);
 
     /// Returns true if the last click was in one of the editor's windows

@@ -42,9 +42,9 @@ namespace Divide {
 
         bool load(const stringImpl& name) override;
         bool loadResources(bool continueOnErrors) override;
-        void processInput(PlayerIndex idx, const U64 deltaTime) override;
-        void processTasks(const U64 deltaTime) override;
-        void processGUI(const U64 deltaTime) override;
+        void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
+        void processTasks(const U64 deltaTimeUS) override;
+        void processGUI(const U64 deltaTimeUS) override;
 
         void onSetActive() override;
         void onRemoveActive() override;

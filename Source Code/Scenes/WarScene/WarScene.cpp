@@ -74,9 +74,9 @@ WarScene::~WarScene()
 	_targetLines->clear();
 }
 
-void WarScene::processGUI(const U64 deltaTime) {
+void WarScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         const Camera& cam = _scenePlayers.front()->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
@@ -93,10 +93,10 @@ void WarScene::processGUI(const U64 deltaTime) {
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
                                             eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw));
 
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
 
-    if (_guiTimers[1] >= Time::SecondsToMilliseconds(1)) {
+    if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
         if (!_currentSelection[0].expired()) {
             AI::AIEntity* entity = findAI(_currentSelection[0].lock());
             if (entity) {
@@ -105,7 +105,7 @@ void WarScene::processGUI(const U64 deltaTime) {
         }
     }
 
-    if (_guiTimers[2] >= 66) {
+    if (_guiTimersMS[2] >= 66) {
         U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
         U32 elapsedTimeMilliseconds = Time::MicrosecondsToMilliseconds<U32>(_elapsedGameTime) % 1000;
@@ -127,10 +127,10 @@ void WarScene::processGUI(const U64 deltaTime) {
                                limitTimeSeconds,
                                limitTimeMilliseconds));
 
-        _guiTimers[2] = 0.0;
+        _guiTimersMS[2] = 0.0;
     }
 
-    Scene::processGUI(deltaTime);
+    Scene::processGUI(deltaTimeUS);
 }
 
 namespace {
@@ -151,7 +151,7 @@ void WarScene::debugDraw(const Camera& activeCamera, const RenderStagePass& stag
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
 
-void WarScene::processTasks(const U64 deltaTime) {
+void WarScene::processTasks(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
     }
@@ -251,7 +251,7 @@ void WarScene::processTasks(const U64 deltaTime) {
         _taskTimers[3] = 0.0;
     }
 
-    Scene::processTasks(deltaTime);
+    Scene::processTasks(deltaTimeUS);
 }
 
 namespace {
@@ -260,7 +260,7 @@ namespace {
     bool initPosSet = false;
 };
 
-void WarScene::updateSceneStateInternal(const U64 deltaTime) {
+void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
     }
@@ -322,7 +322,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
     _targetLines->fromLines(paths);
 
     if (!_aiManager->updatePaused()) {
-        _elapsedGameTime += deltaTime;
+        _elapsedGameTime += deltaTimeUS;
         checkGameCompletion();
     }
 }
@@ -712,9 +712,9 @@ bool WarScene::loadResources(bool continueOnErrors) {
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
 
-    _guiTimers.push_back(0.0);  // Fps
-    _guiTimers.push_back(0.0);  // AI info
-    _guiTimers.push_back(0.0);  // Game info
+    _guiTimersMS.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // AI info
+    _guiTimersMS.push_back(0.0);  // Game info
     _taskTimers.push_back(0.0); // Sun animation
     _taskTimers.push_back(0.0); // animation team 1
     _taskTimers.push_back(0.0); // animation team 2

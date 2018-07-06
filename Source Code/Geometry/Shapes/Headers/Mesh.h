@@ -83,7 +83,7 @@ class Mesh : public Object3D {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime,
+    virtual void sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState);
     void updateBoundsInternal(SceneGraphNode& sgn) override;

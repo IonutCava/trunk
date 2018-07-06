@@ -64,8 +64,8 @@ bool OrbitCamera::updateViewMatrix() {
     return Camera::updateViewMatrix();
 }
 
-void OrbitCamera::update(const U64 deltaTime) {
-    Camera::update(deltaTime);
+void OrbitCamera::update(const U64 deltaTimeUS) {
+    Camera::update(deltaTimeUS);
 
     SceneGraphNode_cptr sgn = _targetNode.lock();
     if (!sgn) {

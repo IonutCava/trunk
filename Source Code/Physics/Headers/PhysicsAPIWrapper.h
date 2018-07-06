@@ -61,8 +61,8 @@ class NOINITVTABLE PhysicsAPIWrapper {
     virtual ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) = 0;
     virtual bool closePhysicsAPI() = 0;
     virtual void updateTimeStep(U8 timeStepFactor, F32 simSpeed) = 0;
-    virtual void update(const U64 deltaTime) = 0;
-    virtual void process(const U64 deltaTime) = 0;
+    virtual void update(const U64 deltaTimeUS) = 0;
+    virtual void process(const U64 deltaTimeUS) = 0;
     virtual void idle() = 0;
     virtual PhysicsSceneInterface* NewSceneInterface(Scene& scene) = 0;
 

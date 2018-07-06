@@ -203,10 +203,10 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
 void RenderingComponent::postLoad() {
 }
 
-void RenderingComponent::update(const U64 deltaTime) {
+void RenderingComponent::update(const U64 deltaTimeUS) {
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
-        mat->update(deltaTime);
+        mat->update(deltaTimeUS);
     }
 
     Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();

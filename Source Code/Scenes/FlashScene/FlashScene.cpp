@@ -8,23 +8,23 @@
 
 namespace Divide {
 
-void FlashScene::processInput(PlayerIndex idx, const U64 deltaTime) {
-    Scene::processInput(idx, deltaTime);
+void FlashScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void FlashScene::processGUI(const U64 deltaTime) {
+void FlashScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
 }
 
-void FlashScene::processTasks(const U64 deltaTime) {
-    Scene::processTasks(deltaTime);
+void FlashScene::processTasks(const U64 deltaTimeUS) {
+    Scene::processTasks(deltaTimeUS);
 }
 
 bool FlashScene::load(const stringImpl& name) {
@@ -41,7 +41,7 @@ bool FlashScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
-    _guiTimers.push_back(0.0);
+    _guiTimersMS.push_back(0.0);
     i = 0;
     return true;
 }

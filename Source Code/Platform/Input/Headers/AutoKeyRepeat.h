@@ -64,7 +64,7 @@ class AutoRepeatKey {
     /// Called when a key is released
     void end(const Input::KeyEvent &evt);
     /// Update the internal time interval between frames (microseconds)
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
     /// Adjust delay between key injections
     inline void setRepeatDelay(F32 repeatDelay) { _repeatDelay = repeatDelay; }
     /// Adjust the initial delay before we start injecting key repeats

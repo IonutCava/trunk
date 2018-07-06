@@ -25,10 +25,10 @@ Camera::ListenerMap Camera::s_updateCameraListeners;
 SharedLock Camera::s_cameraPoolLock;
 Camera::CameraPool Camera::s_cameraPool;
 
-void Camera::update(const U64 deltaTime) {
+void Camera::update(const U64 deltaTimeUS) {
     ReadLock r_lock(s_cameraPoolLock);
     for (CameraPool::value_type& it : s_cameraPool) {
-        it.second->updateInternal(deltaTime);
+        it.second->updateInternal(deltaTimeUS);
     }
 }
 

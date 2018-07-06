@@ -142,7 +142,7 @@ class Terrain : public Object3D {
                                 const RenderStagePass& renderStagePass,
                                 RenderPackage& pkgInOut) override;
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
     bool onRender(SceneGraphNode& sgn,

@@ -49,7 +49,7 @@ class ParticleVelocityFromPositionGenerator final : public ParticleGenerator {
         : _offset(offset), _minScale(minScale), _maxScale(maxScale) {}
 
     void generate(TaskHandle& packagedTasksParent,
-                  const U64 deltaTime,
+                  const U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,
                   U32 endIndex) override;

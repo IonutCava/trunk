@@ -148,10 +148,10 @@ bool AIEntity::setAIProcessor(AIProcessor* processor) {
     return true;
 }
 
-bool AIEntity::processInput(const U64 deltaTime) {
+bool AIEntity::processInput(const U64 deltaTimeUS) {
     if (_processor) {
         _processor->init();
-        if (!_processor->processInput(deltaTime)) {
+        if (!_processor->processInput(deltaTimeUS)) {
             return false;
         }
     }
@@ -159,9 +159,9 @@ bool AIEntity::processInput(const U64 deltaTime) {
     return true;
 }
 
-bool AIEntity::processData(const U64 deltaTime) {
+bool AIEntity::processData(const U64 deltaTimeUS) {
     if (_processor) {
-        if (!_processor->processData(deltaTime)) {
+        if (!_processor->processData(deltaTimeUS)) {
             return false;
         }
     }
@@ -169,17 +169,17 @@ bool AIEntity::processData(const U64 deltaTime) {
     return true;
 }
 
-bool AIEntity::update(const U64 deltaTime) {
+bool AIEntity::update(const U64 deltaTimeUS) {
     if (_processor) {
-        _processor->update(deltaTime, _unitRef);
+        _processor->update(deltaTimeUS, _unitRef);
     }
     if (_unitRef) {
-        _unitRef->update(deltaTime);
+        _unitRef->update(deltaTimeUS);
         if (!_detourCrowd) {
             resetCrowd();
         }
     }
-    updatePosition(deltaTime);
+    updatePosition(deltaTimeUS);
 
     return true;
 }
@@ -265,7 +265,7 @@ bool AIEntity::setPosition(const vec3<F32>& position) {
     return true;
 }
 
-void AIEntity::updatePosition(const U64 deltaTime) {
+void AIEntity::updatePosition(const U64 deltaTimeUS) {
     if (isAgentLoaded() && getAgent()->active) {
         _previousDistanceToTarget = _distanceToTarget;
         _distanceToTarget = _currentPosition.distanceSquared(_destination);

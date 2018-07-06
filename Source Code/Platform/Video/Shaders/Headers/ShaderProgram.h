@@ -103,7 +103,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-    virtual bool update(const U64 deltaTime);
+    virtual bool update(const U64 deltaTimeUS);
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() override;
 
@@ -180,7 +180,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static void idle();
     static void onStartup(GFXDevice& context, ResourceCache& parentCache);
     static void onShutdown();
-    static bool updateAll(const U64 deltaTime);
+    static bool updateAll(const U64 deltaTimeUS);
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const stringImpl& name);
     static const stringImpl& shaderFileRead(const stringImpl& atomName, const stringImpl& location);

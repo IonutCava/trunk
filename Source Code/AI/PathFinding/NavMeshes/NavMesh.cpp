@@ -590,7 +590,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
     return true;
 }
 
-void NavigationMesh::update(const U64 deltaTime) {
+void NavigationMesh::update(const U64 deltaTimeUS) {
     _debugDrawInterface->paused(!_debugDraw);
 }
 

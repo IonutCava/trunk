@@ -65,7 +65,7 @@ class OrbitCamera : public Camera {
     inline F32 minRadius() const { return _minRadius; }
     inline F32 curRadius() const { return _curRadius; }
 
-    virtual void update(const U64 deltaTime);
+    virtual void update(const U64 deltaTimeUS);
     virtual void move(F32 dx, F32 dy, F32 dz);
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
     virtual bool moveRelative(const vec3<I32>& relMovement) override;

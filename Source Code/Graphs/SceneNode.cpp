@@ -48,15 +48,15 @@ SceneNode::~SceneNode()
 {
 }
 
-void SceneNode::sceneUpdate(const U64 deltaTime,
+void SceneNode::sceneUpdate(const U64 deltaTimeUS,
                             SceneGraphNode& sgn,
                             SceneState& sceneState) {
-    ACKNOWLEDGE_UNUSED(deltaTime);
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(sceneState);
 }
 
-void SceneNode::sgnUpdate(const U64 deltaTime,
+void SceneNode::sgnUpdate(const U64 deltaTimeUS,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
     vectorImpl<SceneNode::SGNParentData>::iterator it;

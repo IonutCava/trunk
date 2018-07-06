@@ -85,7 +85,7 @@ public:
     void onUnloadScene(Scene* scene);
 
     /// Main update call
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     template<typename T = GUIElement>
     inline T* getGUIElement(I64 sceneID, U64 elementName) {

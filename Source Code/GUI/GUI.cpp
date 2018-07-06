@@ -143,22 +143,22 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
     }
 }
 
-void GUI::update(const U64 deltaTime) {
+void GUI::update(const U64 deltaTimeUS) {
     if (!_init) {
         return;
     }
 
     if (parent().platformContext().config().gui.cegui.enabled) {
-        _ceguiInput.update(deltaTime);
-        CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
-        CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+        _ceguiInput.update(deltaTimeUS);
+        CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
+        CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
     }
 
     if (_console) {
-        _console->update(deltaTime);
+        _console->update(deltaTimeUS);
     }
 
-    _guiEditor->update(deltaTime);
+    _guiEditor->update(deltaTimeUS);
 }
 
 bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& renderResolution) {

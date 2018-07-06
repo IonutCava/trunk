@@ -8,8 +8,8 @@ namespace Divide {
 SGNComponent::SGNComponent(ComponentType type, SceneGraphNode& parentSGN)
     : _type(type),
      _parentSGN(parentSGN),
-     _elapsedTime(0ULL),
-     _deltaTime(0ULL),
+     _elapsedTimeUS(0ULL),
+     _deltaTimeUS(0ULL),
     _parentNodeActive(true)
 {
 }

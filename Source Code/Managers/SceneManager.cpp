@@ -404,11 +404,11 @@ void SceneManager::onCameraChange(const Camera& camera) {
     }
 }
 
-void SceneManager::updateSceneState(const U64 deltaTime) {
+void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     Scene& activeScene = getActiveScene();
     assert(activeScene.getState() == ResourceState::RES_LOADED);
     // Update internal timers
-    _elapsedTime += deltaTime;
+    _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
     LightPool* lightPool = Attorney::SceneManager::lightPool(activeScene);
@@ -417,7 +417,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     _sceneData->enableDebugRender(ParamHandler::instance().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
-    _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));
+    _sceneData->deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
     _sceneData->lightCount(LightType::DIRECTIONAL, lightPool->getActiveLightCount(LightType::DIRECTIONAL));
     _sceneData->lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
     _sceneData->lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
@@ -457,9 +457,9 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
         }
     }
 
-    activeScene.updateSceneState(deltaTime);
+    activeScene.updateSceneState(deltaTimeUS);
 
-    _saveTimer += deltaTime;
+    _saveTimer += deltaTimeUS;
 
     if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
         LoadSave::saveScene(activeScene);

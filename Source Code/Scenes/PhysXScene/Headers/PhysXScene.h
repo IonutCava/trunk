@@ -48,8 +48,8 @@ class PhysXScene : public Scene {
     void postLoadMainThread() override;
     bool loadResources(bool continueOnErrors) override;
     bool unload() override;
-    void processInput(PlayerIndex idx, const U64 deltaTime) override;
-    void processGUI(const U64 deltaTime) override;
+    void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
+    void processGUI(const U64 deltaTimeUS) override;
     U16 registerInputActions() override;
 
    private:

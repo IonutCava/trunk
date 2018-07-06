@@ -59,7 +59,7 @@ public:
 
     void close();
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     bool anyWindowFocus() const;
 

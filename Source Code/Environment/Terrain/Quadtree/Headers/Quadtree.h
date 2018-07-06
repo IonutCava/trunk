@@ -60,7 +60,7 @@ class Quadtree {
 
     inline U32 getChunkCount() const { return _chunkCount; }
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);

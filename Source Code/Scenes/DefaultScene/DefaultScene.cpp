@@ -37,8 +37,8 @@ bool DefaultScene::load(const stringImpl& name) {
     return loadState;
 }
 
-void DefaultScene::processGUI(const U64 deltaTime) {
-    Scene::processGUI(deltaTime);
+void DefaultScene::processGUI(const U64 deltaTimeUS) {
+    Scene::processGUI(deltaTimeUS);
 }
 
 bool DefaultScene::loadResources(bool continueOnErrors) {
@@ -116,7 +116,7 @@ void DefaultScene::postLoadMainThread() {
     Scene::postLoadMainThread();
 }
 
-void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
         _GUI->modifyText(_ID("globalMessage"),
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()));
@@ -134,10 +134,10 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     }
     angle = 0.0f;
 
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void DefaultScene::processTasks(const U64 deltaTime) {
+void DefaultScene::processTasks(const U64 deltaTimeUS) {
     D64 SpinTimer = Time::Milliseconds(16.0);
     if (_taskTimers[0] >= SpinTimer) {
         for (hashMapImpl<U8, Angle::DEGREES<F32>>::value_type& it : _camAngle) {
@@ -147,7 +147,7 @@ void DefaultScene::processTasks(const U64 deltaTime) {
         _taskTimers[0] = 0.0;
     }
 
-    Scene::processTasks(deltaTime);
+    Scene::processTasks(deltaTimeUS);
 }
 
 void DefaultScene::loadScene(I64 btnGUID) {

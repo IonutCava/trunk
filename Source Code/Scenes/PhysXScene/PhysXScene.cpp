@@ -23,9 +23,9 @@ namespace {
     std::atomic<PhysXState> s_sceneState;
 };
 
-void PhysXScene::processGUI(const U64 deltaTime) {
+void PhysXScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
@@ -34,18 +34,18 @@ void PhysXScene::processGUI(const U64 deltaTime) {
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                          _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
                          _context.gfx().getLastCullCount()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
-    Scene::processGUI(deltaTime);
+    Scene::processGUI(deltaTimeUS);
 }
 
-void PhysXScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void PhysXScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     PushConstants& constants = _currentSky.lock()->get<RenderingComponent>()->pushConstants();
     constants.set("enable_sun", PushConstantType::BOOL, true);
     constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
     constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
 
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
 bool PhysXScene::load(const stringImpl& name) {
@@ -109,7 +109,7 @@ U16 PhysXScene::registerInputActions() {
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors) {
-    _guiTimers.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // Fps
     playerCamera()->setFixedYawAxis(false);
     playerCamera()->setRotation(-45 /*yaw*/, 10 /*pitch*/);
     playerCamera()->setEye(vec3<F32>(0, 30, -40));

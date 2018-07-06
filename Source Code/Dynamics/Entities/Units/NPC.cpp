@@ -19,8 +19,8 @@ NPC::~NPC()
 {
 }
 
-void NPC::update(const U64 deltaTime) {
-    Character::update(deltaTime);
+void NPC::update(const U64 deltaTimeUS) {
+    Character::update(deltaTimeUS);
 }
 
 AI::AIEntity* NPC::getAIEntity() const {

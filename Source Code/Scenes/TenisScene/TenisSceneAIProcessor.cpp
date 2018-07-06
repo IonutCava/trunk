@@ -97,7 +97,7 @@ void TenisSceneAIProcessor::updatePositions() {
 }
 
 /// Collect all of the necessary information for this current update step
-bool TenisSceneAIProcessor::processInput(const U64 deltaTime) {
+bool TenisSceneAIProcessor::processInput(const U64 deltaTimeUS) {
     updatePositions();
     AITeam* currentTeam = _entity->getTeam();
     assert(currentTeam != nullptr);
@@ -114,7 +114,7 @@ bool TenisSceneAIProcessor::processInput(const U64 deltaTime) {
     return true;
 }
 
-bool TenisSceneAIProcessor::processData(const U64 deltaTime) {
+bool TenisSceneAIProcessor::processData(const U64 deltaTimeUS) {
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
     typedef hashMapImpl<AIEntity*, F32> memberVariable;
@@ -131,7 +131,7 @@ bool TenisSceneAIProcessor::processData(const U64 deltaTime) {
     return true;
 }
 
-bool TenisSceneAIProcessor::update(const U64 deltaTime, NPC* unitRef) {
+bool TenisSceneAIProcessor::update(const U64 deltaTimeUS, NPC* unitRef) {
     if (!unitRef) {
         return true;
     }
@@ -149,7 +149,7 @@ bool TenisSceneAIProcessor::update(const U64 deltaTime, NPC* unitRef) {
     Sensor* visualSensor = _entity->getSensor(SensorType::VISUAL_SENSOR);
 
     if (visualSensor) {
-        visualSensor->update(deltaTime);
+        visualSensor->update(deltaTimeUS);
     }
 
     return true;

@@ -191,10 +191,10 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
 }
 
 /// Process results
-void PhysX::process(const U64 deltaTime) {
+void PhysX::process(const U64 deltaTimeUS) {
     if (_targetScene && _timeStep > 0.0f) {
         _accumulator +=
-            Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTime);
+            Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTimeUS);
 
         if (_accumulator < _timeStep) {
             return;
@@ -206,9 +206,9 @@ void PhysX::process(const U64 deltaTime) {
 }
 
 /// Update actors
-void PhysX::update(const U64 deltaTime) {
+void PhysX::update(const U64 deltaTimeUS) {
     if (_targetScene) {
-        _targetScene->update(deltaTime);
+        _targetScene->update(deltaTimeUS);
     }
 }
 

@@ -33,19 +33,19 @@ PingPongScene::PingPongScene(PlatformContext& context, ResourceCache& cache, Sce
     _wasInFreeFly = false;
 }
 
-void PingPongScene::processGUI(const U64 deltaTime) {
+void PingPongScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
                                             Time::ApplicationTimer::instance().getFrameTime()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
-    Scene::processGUI(deltaTime);
+    Scene::processGUI(deltaTimeUS);
 }
 
-void PingPongScene::processTasks(const U64 deltaTime) {
+void PingPongScene::processTasks(const U64 deltaTimeUS) {
     static vec2<F32> _sunAngle =
         vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     static bool direction = false;
@@ -70,7 +70,7 @@ void PingPongScene::processTasks(const U64 deltaTime) {
     constants.set("sun_vector", PushConstantType::VEC3, _sunvector);
     constants.set("sun_colour", PushConstantType::VEC3, _sun.lock()->getNode<Light>()->getDiffuseColour());
 
-    Scene::processTasks(deltaTime);
+    Scene::processTasks(deltaTimeUS);
 }
 
 void PingPongScene::resetGame() {
@@ -224,10 +224,10 @@ void PingPongScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
     }
 }
 
-void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (_freeFly) {
         _wasInFreeFly = true;
-        Scene::processInput(idx, deltaTime);
+        Scene::processInput(idx, deltaTimeUS);
         return;
     }
     if (_wasInFreeFly) {
@@ -256,7 +256,7 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     if (state().playerState(idx).moveFB() != MoveDirection::NONE) {
         if ((state().playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
             (state().playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
-            Scene::processInput(idx, deltaTime);
+            Scene::processInput(idx, deltaTimeUS);
             return;
         }
         paddle->get<PhysicsComponent>()->translateY(to_I32(state().playerState(idx).moveFB()) / paddleMovementDivisor);
@@ -266,13 +266,13 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTime) {
         // Left/right movement is flipped for proper control
         if ((state().playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
             (state().playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
-            Scene::processInput(idx, deltaTime);
+            Scene::processInput(idx, deltaTimeUS);
             return;
         }
         paddle->get<PhysicsComponent>()->translateX(to_I32(state().playerState(idx).moveLR()) / paddleMovementDivisor);
     }
 
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
 bool PingPongScene::load(const stringImpl& name) {
@@ -355,7 +355,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
         "you");
     _quotes.push_back("It's not the hard. Even a monkey can do it.");
 
-    _guiTimers.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // Fps
     _taskTimers.push_back(0.0);  // Light
 
     _paddleCam = Camera::createCamera("paddleCam", Camera::CameraType::FREE_FLY);

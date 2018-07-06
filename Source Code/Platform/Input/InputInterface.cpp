@@ -191,7 +191,9 @@ void InputInterface::terminate() {
     _bIsInitialized = false;
 }
 
-U8 InputInterface::update(const U64 deltaTime) {
+U8 InputInterface::update(const U64 deltaTimeUS) {
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
+
     const U8 nMaxEffectUpdateCnt = g_nHartBeatFreq / g_nEffectUpdateFreq;
     U8 nEffectUpdateCnt = 0;
 

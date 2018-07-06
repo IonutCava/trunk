@@ -118,7 +118,7 @@ public:
                    WindowType initialType,
                    const vec2<U16>& dimensions,
                    const char* windowTitle);
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     ErrorCode destroyWindow();
 

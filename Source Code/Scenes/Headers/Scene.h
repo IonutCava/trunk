@@ -108,10 +108,10 @@ class Scene : public Resource {
 
     /**Begin scene logic loop*/
     /// Get all input commands from the user
-    virtual void processInput(PlayerIndex idx, const U64 deltaTime);
+    virtual void processInput(PlayerIndex idx, const U64 deltaTimeUS);
     /// Update the scene based on the inputs
-    virtual void processTasks(const U64 deltaTime);
-    virtual void processGUI(const U64 deltaTime);
+    virtual void processTasks(const U64 deltaTimeUS);
+    virtual void processGUI(const U64 deltaTimeUS);
     /// Scene is rendering, so add intensive tasks here to save CPU cycles
     bool idle();  
     /// The application has lost focus
@@ -119,9 +119,9 @@ class Scene : public Resource {
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
-    void updateSceneState(const U64 deltaTime);
+    void updateSceneState(const U64 deltaTimeUS);
     /// Override this for Scene specific updates
-    virtual void updateSceneStateInternal(const U64 deltaTime) {}
+    virtual void updateSceneStateInternal(const U64 deltaTimeUS) {}
     inline SceneState& state() { return *_sceneState; }
     inline const SceneState& state() const { return *_sceneState; }
     inline SceneRenderState& renderState() { return _sceneState->renderState(); }
@@ -283,9 +283,9 @@ class Scene : public Resource {
        SceneGraphNode_wptr _sun;
 
        vectorImpl<Player_ptr> _scenePlayers;
-       U64 _sceneTimer;
+       U64 _sceneTimerUS;
        vectorImpl<D64> _taskTimers;
-       vectorImpl<D64> _guiTimers;
+       vectorImpl<D64> _guiTimersMS;
        /// Datablocks for models,vegetation,terrains,tasks etc
        std::atomic_uint _loadingTasks;
        FileDataStack _modelDataArray;

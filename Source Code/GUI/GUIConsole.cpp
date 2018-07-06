@@ -200,7 +200,7 @@ void GUIConsole::OutputText(const char* inMsg, const bool error) {
     _outputWindow->ensureItemIsVisible(crtItem);
 }
 
-void GUIConsole::update(const U64 deltaTime) {
+void GUIConsole::update(const U64 deltaTimeUS) {
     if (!_init || !Runtime::isMainThread() || _closing) {
         return;
     }

@@ -113,7 +113,7 @@ class SceneGraphNode : public GUIDWrapper,
     };
 
     /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
     /*Node Management*/
     /// Always use the level of redirection needed to reduce virtual function
     /// overhead
@@ -177,7 +177,7 @@ class SceneGraphNode : public GUIDWrapper,
     inline const UsageContext& usageContext() const { return _usageContext; }
     void usageContext(const UsageContext& newContext);
 
-    inline U64 getElapsedTime() const { return _elapsedTime; }
+    inline U64 getElapsedTimeUS() const { return _elapsedTimeUS; }
 
     template <typename T>
     inline T* get() const {
@@ -306,7 +306,7 @@ class SceneGraphNode : public GUIDWrapper,
         _updateFlags[to_U32(flag)] = true;
     }
 
-    void sgnUpdate(const U64 deltaTime, SceneState& sceneState);
+    void sgnUpdate(const U64 deltaTimeUS, SceneState& sceneState);
 
     void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
 
@@ -343,7 +343,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     mutable I8 _frustPlaneCache;
     D64 _updateTimer;
-    U64 _elapsedTime;
+    U64 _elapsedTimeUS;
     stringImpl _name;
     SceneNode_ptr _node;
     SceneGraphNode_wptr _parent;

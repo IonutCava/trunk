@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-void ParticleAttractorUpdater::update(const U64 deltaTime, ParticleData& p) {
+void ParticleAttractorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     const U32 endID = p.aliveCount();
     const vectorAlg::vecSize countAttractors = _attractors.size();
 

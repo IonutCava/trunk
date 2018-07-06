@@ -317,7 +317,7 @@ class Camera : public Resource {
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
     /// Inject mouse events
-    virtual void updateInternal(const U64 deltaTime);
+    virtual void updateInternal(const U64 deltaTimeUS);
     /// Called when the camera becomes active/ is deactivated
     virtual void setActiveInternal(bool state);
 
@@ -368,7 +368,7 @@ class Camera : public Resource {
 
     // Camera pool
     public:
-       static void update(const U64 deltaTime);
+       static void update(const U64 deltaTimeUS);
        static void initPool(const vec2<U16>& renderResolution);
        static void destroyPool();
 

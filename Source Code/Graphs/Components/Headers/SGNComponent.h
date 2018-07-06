@@ -66,14 +66,14 @@ class SGNComponent : private NonCopyable {
         return true;
     }
 
-    virtual void update(const U64 deltaTime) {
-        _deltaTime = deltaTime;
-        _elapsedTime += deltaTime;
+    virtual void update(const U64 deltaTimeUS) {
+        _deltaTimeUS = deltaTimeUS;
+        _elapsedTimeUS += deltaTimeUS;
     }
 
     virtual void resetTimers() {
-        _deltaTime = 0UL;
-        _elapsedTime = 0UL;
+        _deltaTimeUS = 0UL;
+        _elapsedTimeUS = 0UL;
     }
 
     virtual void setActive(const bool state) {
@@ -91,8 +91,8 @@ class SGNComponent : private NonCopyable {
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;
     ComponentType _type;
-    U64 _elapsedTime;
-    U64 _deltaTime;
+    U64 _elapsedTimeUS;
+    U64 _deltaTimeUS;
 };
 
 };  // namespace Divide

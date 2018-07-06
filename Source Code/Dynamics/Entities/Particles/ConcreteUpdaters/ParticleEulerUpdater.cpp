@@ -11,8 +11,8 @@ namespace {
     const U32 g_partitionSize = 256;
 };
 
-void ParticleEulerUpdater::update(const U64 deltaTime, ParticleData& p) {
-    F32 const dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
+void ParticleEulerUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
+    F32 const dt = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
     const vec4<F32> globalA(dt * _globalAcceleration, 0.0f);
 
     const U32 endID = p.aliveCount();

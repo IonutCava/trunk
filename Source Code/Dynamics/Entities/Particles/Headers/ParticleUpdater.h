@@ -47,7 +47,7 @@ class NOINITVTABLE ParticleUpdater {
     {
     }
 
-    virtual void update(const U64 deltaTime, ParticleData& p) = 0;
+    virtual void update(const U64 deltaTimeUS, ParticleData& p) = 0;
 
 protected:
     GFXDevice& _context;

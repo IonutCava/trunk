@@ -90,7 +90,7 @@ class SceneGraph : private NonCopyable,
     }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
-    void sceneUpdate(const U64 deltaTime, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
 
     void idle();
 

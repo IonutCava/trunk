@@ -27,8 +27,8 @@ void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
     _parentTimeStamp += timestamp;
 }
 
-void AnimationComponent::update(const U64 deltaTime) {
-    SGNComponent::update(deltaTime);
+void AnimationComponent::update(const U64 deltaTimeUS) {
+    SGNComponent::update(deltaTimeUS);
 
     if (!_animator || _parentTimeStamp == _currentTimeStamp) {
         return;

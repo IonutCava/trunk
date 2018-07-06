@@ -55,9 +55,9 @@ enum class FrameEventType : U32 {
 };
 
 struct FrameEvent {
-    D64 _timeSinceLastEvent;
-    D64 _timeSinceLastFrame;
-    D64 _currentTime;
+    D64 _timeSinceLastEventUS;
+    D64 _timeSinceLastFrameUS;
+    D64 _currentTimeUS;
     FrameEventType _type;
 };
 

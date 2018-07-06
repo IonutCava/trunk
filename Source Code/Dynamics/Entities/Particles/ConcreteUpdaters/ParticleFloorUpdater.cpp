@@ -8,7 +8,7 @@
 
 namespace Divide {
 
-void ParticleFloorUpdater::update(const U64 deltaTime, ParticleData& p) {
+void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     static const U32 s_particlesPerThread = 1024;
     const U32 endID = p.aliveCount();
 

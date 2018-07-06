@@ -59,8 +59,8 @@ public:
     bool closePhysicsAPI()  override;
 
     void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  override;
-    void update(const U64 deltaTime)  override;
-    void process(const U64 deltaTime);
+    void update(const U64 deltaTimeUS)  override;
+    void process(const U64 deltaTimeUS);
     void idle()  override;
     void setPhysicsScene(PhysicsSceneInterface* const targetScene);
 

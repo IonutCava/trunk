@@ -170,10 +170,10 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
     return false;
 }
 
-void WindowManager::update(const U64 deltaTime) {
+void WindowManager::update(const U64 deltaTimeUS) {
     pollSDLEvents();
     for (DisplayWindow* win : _windows) {
-        win->update(deltaTime);
+        win->update(deltaTimeUS);
     }
 }
 

@@ -62,7 +62,7 @@ class GUIConsole {
     /// Return true if console is visible, false if is hidden
     bool isVisible();
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     /// Add text to the console Window. Uses a text buffer if the console isn't ready for display yet
     void printText(const char* output, bool error);

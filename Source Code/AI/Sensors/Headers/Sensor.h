@@ -47,7 +47,7 @@ class AIEntity;
 class NOINITVTABLE Sensor {
    public:
     inline SensorType sensorType() const { return _type; }
-    virtual void update(const U64 deltaTime) = 0;
+    virtual void update(const U64 deltaTimeUS) = 0;
     inline void updateRange(const vec2<F32>& range) { _range.set(range); }
 
    protected:

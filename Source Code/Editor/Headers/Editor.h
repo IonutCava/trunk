@@ -50,7 +50,7 @@ class Editor : private NonCopyable, public FrameListener {
     bool init();
     void close();
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
   protected:
     bool frameStarted(const FrameEvent& evt);

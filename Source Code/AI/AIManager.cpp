@@ -21,9 +21,9 @@ AIManager::AIManager(Scene& parentScene, TaskPool& pool)
       _navMeshDebugDraw(false),
       _pauseUpdate(true),
       _updating(false),
-      _deltaTime(0ULL),
-      _currentTime(0ULL),
-      _previousTime(0ULL)
+      _deltaTimeUS(0ULL),
+      _currentTimeUS(0ULL),
+      _previousTimeUS(0ULL)
 {
     _shouldStop = false;
     _running = false;
@@ -56,14 +56,14 @@ void AIManager::destroy() {
     }
 }
 
-void AIManager::update(const U64 deltaTime) {
-    static const U64 updateFreq = Time::MillisecondsToMicroseconds(Config::AI_THREAD_UPDATE_FREQUENCY);
+void AIManager::update(const U64 deltaTimeUS) {
+    static const U64 updateFreqUS = Time::SecondsToMicroseconds(1) / Config::AI_THREAD_UPDATE_TICKS_PER_SECOND;
 
-    _currentTime += deltaTime;
-    if (_currentTime >= _previousTime + updateFreq && !shouldStop()) {
+    _currentTimeUS += deltaTimeUS;
+    if (_currentTimeUS >= _previousTimeUS + updateFreqUS && !shouldStop()) {
         _running = true;
         /// use internal delta time calculations
-        _deltaTime = _currentTime - _previousTime;
+        _deltaTimeUS = _currentTimeUS - _previousTimeUS;
         {
             /// Lock the entities during update() adding or deleting entities is
             /// suspended until this returns
@@ -74,41 +74,41 @@ void AIManager::update(const U64 deltaTime) {
                     _sceneCallback();
                 }
 
-                if (processInput(_deltaTime)) {  // sensors
-                    if (processData(_deltaTime)) {  // think
-                        updateEntities(_deltaTime);  // react
+                if (processInput(deltaTimeUS)) {  // sensors
+                    if (processData(deltaTimeUS)) {  // think
+                        updateEntities(deltaTimeUS);  // react
                     }
                 }
 
                 _updating = false;
             }
         }
-        _previousTime = _currentTime;
+        _previousTimeUS = _currentTimeUS;
         _running = false;
     }
 }
 
-bool AIManager::processInput(const U64 deltaTime) {  // sensors
+bool AIManager::processInput(const U64 deltaTimeUS) {  // sensors
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->processInput(_parentPool, deltaTime)) {
+        if (!team.second->processInput(_parentPool, deltaTimeUS)) {
             return false;
         }
     }
     return true;
 }
 
-bool AIManager::processData(const U64 deltaTime) {  // think
+bool AIManager::processData(const U64 deltaTimeUS) {  // think
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->processData(_parentPool, deltaTime)) {
+        if (!team.second->processData(_parentPool, deltaTimeUS)) {
             return false;
         }
     }
     return true;
 }
 
-bool AIManager::updateEntities(const U64 deltaTime) {  // react
+bool AIManager::updateEntities(const U64 deltaTimeUS) {  // react
     for (AITeamMap::value_type& team : _aiTeams) {
-        if (!team.second->update(_parentPool, deltaTime)) {
+        if (!team.second->update(_parentPool, deltaTimeUS)) {
             return false;
         }
     }
@@ -210,7 +210,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
     WriteLock w_lock(_navMeshMutex);
     for (NavMeshMap::value_type& it : _navMeshes) {
-        it.second->update(_deltaTime);
+        it.second->update(_deltaTimeUS);
         if (forceAll || it.second->debugDraw()) {
             bufferInOut.add(it.second->draw());
         }

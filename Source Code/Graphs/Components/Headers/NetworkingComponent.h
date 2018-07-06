@@ -45,7 +45,7 @@ public:
     NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient);
     ~NetworkingComponent();
 
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
     void onNetworkSend(U32 frameCountIn);
 
     void flagDirty();

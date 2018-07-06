@@ -47,7 +47,7 @@ class NPC : public Character {
     /// NPCs don't need AI by default
     NPC(AI::AIEntity* const aiEntity = nullptr);
     ~NPC();
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
     
     AI::AIEntity* getAIEntity() const;
 

@@ -82,7 +82,7 @@ class QuadtreeNode {
     
     void drawBBox(GFXDevice& context, RenderPackage& packageOut);
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                      SceneState& sceneState);
 
     inline bool isALeaf() const { return _children == nullptr; }

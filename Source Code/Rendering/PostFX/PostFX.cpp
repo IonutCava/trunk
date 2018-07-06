@@ -214,9 +214,9 @@ void PostFX::idle(const Configuration& config) {
     _preRenderBatch->idle(config);
 }
 
-void PostFX::update(const U64 deltaTime) {
+void PostFX::update(const U64 deltaTimeUS) {
     if (_fadeActive) {
-        _currentFadeTimeMS += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+        _currentFadeTimeMS += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
         F32 fadeStrength = to_F32(std::min(_currentFadeTimeMS / _targetFadeTimeMS , 1.0));
         if (!_fadeOut) {
             fadeStrength = 1.0f - fadeStrength;
@@ -229,7 +229,7 @@ void PostFX::update(const U64 deltaTime) {
                     _fadeOutComplete = DELEGATE_CBK<void>();
                 }
             } else {
-                _fadeWaitDurationMS -= Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+                _fadeWaitDurationMS -= Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
             }
         }
 

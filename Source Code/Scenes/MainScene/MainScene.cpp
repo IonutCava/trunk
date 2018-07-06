@@ -54,7 +54,7 @@ void MainScene::updateLights() {
     return;
 }
 
-void MainScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (state().playerState(idx).cameraUpdated()) {
         Camera& cam = getPlayerForIndex(idx)->getCamera();
         const vec3<F32>& eyePos = cam.getEye();
@@ -94,14 +94,14 @@ void MainScene::processInput(PlayerIndex idx, const U64 deltaTime) {
         }
     }
 
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void MainScene::processGUI(const U64 deltaTime) {
+void MainScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.5);
     D64 TimeDisplay = Time::SecondsToMilliseconds(1.0);
 
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                              Time::ApplicationTimer::instance().getFps(),
@@ -114,19 +114,19 @@ void MainScene::processGUI(const U64 deltaTime) {
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                                             _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
                                             _context.gfx().getLastCullCount()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
 
-    if (_guiTimers[1] >= TimeDisplay) {
+    if (_guiTimersMS[1] >= TimeDisplay) {
         _GUI->modifyText(_ID("timeDisplay"),
                          Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
-        _guiTimers[1] = 0.0;
+        _guiTimersMS[1] = 0.0;
     }
 
-    Scene::processGUI(deltaTime);
+    Scene::processGUI(deltaTimeUS);
 }
 
-void MainScene::processTasks(const U64 deltaTime) {
+void MainScene::processTasks(const U64 deltaTimeUS) {
     updateLights();
     D64 SunDisplay = Time::SecondsToMilliseconds(1.50);
     if (_taskTimers[0] >= SunDisplay) {
@@ -145,7 +145,7 @@ void MainScene::processTasks(const U64 deltaTime) {
         }
     }
 
-    Scene::processTasks(deltaTime);
+    Scene::processTasks(deltaTimeUS);
 }
 
 bool MainScene::load(const stringImpl& name) {
@@ -291,8 +291,8 @@ void MainScene::test(const Task& parentTask, AnyParam a, CallbackParam b) {
 
 bool MainScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0); // Sun
-    _guiTimers.push_back(0.0);  // Fps
-    _guiTimers.push_back(0.0);  // Time
+    _guiTimersMS.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // Time
 
     _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
     _sunvector =

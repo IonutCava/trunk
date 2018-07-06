@@ -47,7 +47,7 @@ class Trigger : public SceneNode {
     explicit Trigger(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Trigger();
 
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
     /// Checks if the unit has activated this trigger and launches the Task

@@ -17,8 +17,8 @@ void FreeFlyCamera::fromCamera(Camera& camera) {
     _currentVelocity.set(cam._currentVelocity);
 }
 
-void FreeFlyCamera::update(const U64 deltaTime) {
-    Camera::update(deltaTime);
+void FreeFlyCamera::update(const U64 deltaTimeUS) {
+    Camera::update(deltaTimeUS);
 }
 
 void FreeFlyCamera::move(F32 dx, F32 dy, F32 dz) {

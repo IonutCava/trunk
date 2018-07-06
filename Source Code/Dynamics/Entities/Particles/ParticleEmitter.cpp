@@ -291,7 +291,7 @@ bool ParticleEmitter::onRender(SceneGraphNode& sgn,
 
 
 /// Pre-process particles
-void ParticleEmitter::sceneUpdate(const U64 deltaTime,
+void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
                                   SceneGraphNode& sgn,
                                   SceneState& sceneState) {
 
@@ -346,7 +346,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         _bbUpdate.back().startTask(Task::TaskPriority::HIGH);
     }
 
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+    SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 U32 ParticleEmitter::getAliveParticleCount() const {

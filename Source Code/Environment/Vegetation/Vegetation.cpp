@@ -36,8 +36,8 @@ Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t de
       _instanceCountGrass(0),
       _instanceCountTrees(0),
       _grassStateBlockHash(0),
-      _stateRefreshIntervalBuffer(0ULL),
-      _stateRefreshInterval(Time::SecondsToMicroseconds(1))  ///<Every second?
+      _stateRefreshIntervalBufferUS(0ULL),
+      _stateRefreshIntervalUS(Time::SecondsToMicroseconds(1))  ///<Every second?
 {
     _threadedLoadComplete = false;
     _stopLoadingRequest = false;
@@ -251,7 +251,7 @@ void Vegetation::uploadGrassData() {
     _render = _threadedLoadComplete = true;
 }
 
-void Vegetation::sceneUpdate(const U64 deltaTime,
+void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
     static const Task updateTask;
@@ -267,23 +267,23 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
 
     if (_render && _success) {
         // Query shadow state every "_stateRefreshInterval" microseconds
-        if (_stateRefreshIntervalBuffer >= _stateRefreshInterval) {
+        if (_stateRefreshIntervalBufferUS >= _stateRefreshIntervalUS) {
             if (!_staticDataUpdated) {
                 _windX = sceneState.windDirX();
                 _windZ = sceneState.windDirZ();
                 _windS = sceneState.windSpeed();
-                _stateRefreshIntervalBuffer -= _stateRefreshInterval;
+                _stateRefreshIntervalBufferUS -= _stateRefreshIntervalUS;
                 _staticDataUpdated = true;
             }
         }
-        _stateRefreshIntervalBuffer += deltaTime;
+        _stateRefreshIntervalBufferUS += deltaTimeUS;
 
         _writeBuffer = (_writeBuffer + 1) % 2;
         _readBuffer = (_writeBuffer + 1) % 2;
         _culledFinal = false;
     }
 
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
+    SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 U32 Vegetation::getQueryID() {

@@ -88,7 +88,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// be used for rendering
     bool isValid() const override;
     /// Called once per frame. Used to update internal state
-    bool update(const U64 deltaTime) override;
+    bool update(const U64 deltaTimeUS) override;
 
     /// Get the index of the specified subroutine name for the specified stage.
     /// Not cached!

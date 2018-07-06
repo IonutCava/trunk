@@ -30,11 +30,11 @@ void AutoRepeatKey::end(const KeyEvent &evt) {
 }
 
 // Inject key repeats if the _repeatDelay expired between calls
-void AutoRepeatKey::update(const U64 deltaTime) {
+void AutoRepeatKey::update(const U64 deltaTimeUS) {
     if (_key._key == KeyCode::KC_UNASSIGNED) {
         return;
     }
-    _elapsed += (deltaTime * 0.000001);  //< use seconds
+    _elapsed += Time::MicrosecondsToSeconds(deltaTimeUS);
     if (_elapsed < _delay) return;
 
     _elapsed -= _delay;

@@ -55,9 +55,9 @@ class WarScene : public Scene {
     bool loadResources(bool continueOnErrors) override;
     bool initializeAI(bool continueOnErrors) override;
     bool deinitializeAI(bool continueOnErrors) override;
-    void processTasks(const U64 deltaTime) override;
-    void processGUI(const U64 deltaTime) override;
-    void updateSceneStateInternal(const U64 deltaTime);
+    void processTasks(const U64 deltaTimeUS) override;
+    void processGUI(const U64 deltaTimeUS) override;
+    void updateSceneStateInternal(const U64 deltaTimeUS);
     U16 registerInputActions() override;
 
     void registerPoint(U16 teamID, const stringImpl& unitName);

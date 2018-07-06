@@ -20,7 +20,7 @@ NetworkScene::~NetworkScene()
 {
 }
 
-void NetworkScene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void NetworkScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     Light* light = _lightPool->getLight(0, LightType::DIRECTIONAL);
     vec4<F32> vSunColour = Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
         vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f),
@@ -29,23 +29,23 @@ void NetworkScene::processInput(PlayerIndex idx, const U64 deltaTime) {
     light->setDiffuseColour(vSunColour);
 
     //_currentSky = addSky();
-    Scene::processInput(idx, deltaTime);
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void NetworkScene::processGUI(const U64 deltaTime) {
+void NetworkScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     D64 TimeDisplay = Time::SecondsToMilliseconds(0.01);
     D64 ServerPing = Time::SecondsToMilliseconds(1.0);
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::instance().getFps()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
 
-    if (_guiTimers[1] >= TimeDisplay) {
+    if (_guiTimersMS[1] >= TimeDisplay) {
         _GUI->modifyText(_ID("timeDisplay"),
                          Util::StringFormat("Elapsed time: %5.0f", time));
-        _guiTimers[1] = 0.0;
+        _guiTimersMS[1] = 0.0;
     }
 
     if (_taskTimers[2] >= ServerPing) {
@@ -55,7 +55,7 @@ void NetworkScene::processGUI(const U64 deltaTime) {
         _GUI->modifyText(_ID("serverMessage"),
                          (char*)_paramHandler.getParam<stringImpl>(
                              _ID("serverResponse")).c_str());
-        _guiTimers[2] = 0.0;
+        _guiTimersMS[2] = 0.0;
     }
 }
 
@@ -110,9 +110,9 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
-    _guiTimers.push_back(0.0f);  // Fps
-    _guiTimers.push_back(0.0f);  // Time
-    _guiTimers.push_back(0.0f);  // Server Ping
+    _guiTimersMS.push_back(0.0f);  // Fps
+    _guiTimersMS.push_back(0.0f);  // Time
+    _guiTimersMS.push_back(0.0f);  // Server Ping
     return true;
 }
 

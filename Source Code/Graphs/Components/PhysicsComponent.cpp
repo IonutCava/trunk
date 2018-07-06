@@ -35,7 +35,7 @@ PhysicsComponent::~PhysicsComponent()
 {
 }
 
-void PhysicsComponent::update(const U64 deltaTime) {
+void PhysicsComponent::update(const U64 deltaTimeUS) {
     if (!physicsDriven()) {
         ReadLock r_lock(_lock);
         _transformInterface->getValues(_prevTransformValues);

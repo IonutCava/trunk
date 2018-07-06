@@ -59,20 +59,85 @@ enum class RenderStage : U32;
 
 struct FrameEvent;
 
-struct LoopTimingData {
+class LoopTimingData {
+  public:
     LoopTimingData();
 
+    bool _keepAlive;
+  
+    inline void update(const U64 elapsedTimeUS) {
+        _previousTimeUS = _currentTimeUS;
+        _currentTimeUS = elapsedTimeUS;
+        _currentTimeDeltaUS = _currentTimeUS - _previousTimeUS;
+
+        // In case we break in the debugger
+        if (_currentTimeDeltaUS > Time::SecondsToMicroseconds(1)) {
+            _currentTimeDeltaUS = Time::SecondsToMicroseconds(1) / Config::TICKS_PER_SECOND;
+            _previousTimeUS = _currentTimeUS - _currentTimeDeltaUS;
+        }
+    }
+
+    // return true on change
+    inline bool freezeTime(bool state) {
+        if (_freezeLoopTime != state) {
+            _freezeLoopTime = state;
+            _currentTimeFrozenUS = _currentTimeUS;
+            return true;
+        }
+        return false;
+    }
+
+    inline bool runUpdateLoop() {
+        if (_currentTimeUS > _nextGameTickUS && _updateLoops < Config::MAX_FRAMESKIP) {
+            return true;
+        }
+
+        _updateLoops = 0;
+        return false;
+    }
+
+    inline void endUpdateLoop(const U64 deltaTimeUS) {
+        _nextGameTickUS += deltaTimeUS;
+        ++_updateLoops;
+
+        if (Config::USE_FIXED_TIMESTEP) {
+            if (_updateLoops == Config::MAX_FRAMESKIP && _currentTimeUS > _nextGameTickUS) {
+                _nextGameTickUS = _currentTimeUS;
+            }
+        } else {
+            _nextGameTickUS = _currentTimeUS;
+        }
+    }
+
+    inline bool freezeTime() const {
+        return _freezeLoopTime;
+    }
+
+    inline U64 currentTimeUS() const {
+        return _currentTimeUS;
+    }
+
+    inline U64 currentTimeDeltaUS(bool ignoreFreeze = false) const {
+        return (!ignoreFreeze && _freezeLoopTime) ? 0ULL : _currentTimeDeltaUS;
+    }
+
+    inline U64 nextGameTickUS() const {
+        return _nextGameTickUS;
+    }
+
+    inline U8 updateLoops() const {
+        return _updateLoops;
+    }
+
+  protected:
     // number of scene update loops
     U8 _updateLoops;
-
-    bool _keepAlive;
     bool _freezeLoopTime;
-    // both are in ms
-    U64 _currentTime;
-    U64 _currentTimeFrozen;
-    U64 _currentTimeDelta;
-    U64 _previousTime;
-    U64 _nextGameTick;
+    U64 _currentTimeUS;
+    U64 _currentTimeFrozenUS;
+    U64 _currentTimeDeltaUS;
+    U64 _previousTimeUS;
+    U64 _nextGameTickUS;
 };
 
 namespace Attorney {
@@ -192,8 +257,8 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
     void shutdown();
-    bool mainLoopScene(FrameEvent& evt, const U64 deltaTime);
-    bool presentToScreen(FrameEvent& evt, const U64 deltaTime);
+    bool mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS);
+    bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     bool setCursorPosition(I32 x, I32 y) const;
     /// Update all engine components that depend on the current screen size
     void onChangeWindowSize(U16 w, U16 h);

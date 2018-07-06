@@ -32,12 +32,12 @@ void Character::setParentNode(SceneGraphNode_ptr node) {
     }
 }
 
-void Character::update(const U64 deltaTime) {
+void Character::update(const U64 deltaTimeUS) {
     assert(_node.lock() != nullptr);
 
     if (_positionDirty) {
         _curPosition.lerp(_newPosition,
-                          Time::MicrosecondsToSeconds<F32>(deltaTime));
+                          Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
         _positionDirty = false;
     }
 
@@ -46,7 +46,7 @@ void Character::update(const U64 deltaTime) {
         _newVelocity.z *= -1.0f;
         _newVelocity.normalize();
         _curVelocity.lerp(_newVelocity,
-                          Time::MicrosecondsToSeconds<F32>(deltaTime));
+                          Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
         _velocityDirty = false;
     }
 

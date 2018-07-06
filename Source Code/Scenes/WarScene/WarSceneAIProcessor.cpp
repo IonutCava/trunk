@@ -744,12 +744,12 @@ void WarSceneAIProcessor::updatePositions() {
     }
 }
 
-bool WarSceneAIProcessor::processInput(const U64 deltaTime) {
+bool WarSceneAIProcessor::processInput(const U64 deltaTimeUS) {
     if (!_entity) {
         return true;
     }
 
-    _deltaTime += deltaTime;
+    _deltaTime += deltaTimeUS;
     // wait 1 and a half seconds at the destination
     if (_deltaTime > Time::SecondsToMicroseconds(1.5)) {
         _deltaTime = 0;
@@ -762,7 +762,7 @@ bool WarSceneAIProcessor::processInput(const U64 deltaTime) {
     return true;
 }
 
-bool WarSceneAIProcessor::processData(const U64 deltaTime) {
+bool WarSceneAIProcessor::processData(const U64 deltaTimeUS) {
     if (!_entity) {
         return true;
     }
@@ -785,7 +785,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
 
     updatePositions();
 
-    _attackTimer += deltaTime;
+    _attackTimer += deltaTimeUS;
 
     SceneGraphNode_ptr enemy(_localWorkingMemory._currentTarget.value().lock());
     if (enemy != nullptr) {
@@ -821,16 +821,16 @@ bool WarSceneAIProcessor::processData(const U64 deltaTime) {
     return true;
 }
 
-bool WarSceneAIProcessor::update(const U64 deltaTime, NPC* unitRef) {
+bool WarSceneAIProcessor::update(const U64 deltaTimeUS, NPC* unitRef) {
     U8 visualSensorUpdateFreq = 10;
     _visualSensorUpdateCounter =
         (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
     // Update sensor information
     if (_visualSensor && _visualSensorUpdateCounter == visualSensorUpdateFreq) {
-        _visualSensor->update(deltaTime);
+        _visualSensor->update(deltaTimeUS);
     }
     if (_audioSensor) {
-        _audioSensor->update(deltaTime);
+        _audioSensor->update(deltaTimeUS);
     }
 
     return true;

@@ -65,7 +65,7 @@ class AIManager : public SceneComponent
     /// Clear all AI related data (teams, entities, NavMeshes, etc);
     void destroy();
     /// Called at a fixed interval (preferably in a separate thread);
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
     /// Add an AI Entity to a specific team.
     /// Entities can be added to multiple teams. Caller is responsible for the
     /// lifetime of entity
@@ -132,14 +132,14 @@ class AIManager : public SceneComponent
     bool shouldStop() const;
 
   private:
-    bool processInput(const U64 deltaTime);    ///< sensors
-    bool processData(const U64 deltaTime);     ///< think
-    bool updateEntities(const U64 deltaTime);  ///< react
+    bool processInput(const U64 deltaTimeUS);    ///< sensors
+    bool processData(const U64 deltaTimeUS);     ///< think
+    bool updateEntities(const U64 deltaTimeUS);  ///< react
 
   private:
     TaskPool& _parentPool;
     Task* _activeTask;
-    U64 _deltaTime, _currentTime, _previousTime;
+    U64 _deltaTimeUS, _currentTimeUS, _previousTimeUS;
     std::atomic<bool> _navMeshDebugDraw;
     std::atomic<bool> _pauseUpdate;
     std::atomic<bool> _updating;

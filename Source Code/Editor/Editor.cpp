@@ -38,8 +38,8 @@ void Editor::close() {
     ImGui::Shutdown();
 }
 
-void Editor::update(const U64 deltaTime) {
-    ACKNOWLEDGE_UNUSED(deltaTime);
+void Editor::update(const U64 deltaTimeUS) {
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
     Time::ScopedTimer timer(_editorUpdateTimer);
     if (_windowManager->Run(false)) {
 
@@ -76,7 +76,7 @@ bool Editor::framePostRenderEnded(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
     Time::ScopedTimer timer(_editorRenderTimer);
     // Render ImWindow stuff
-    ImGui::GetIO().DeltaTime = Time::MillisecondsToSeconds<float>(evt._timeSinceLastFrame);
+    ImGui::GetIO().DeltaTime = Time::MicrosecondsToSeconds<float>(evt._timeSinceLastFrameUS);
     return _windowManager->Run(true);
 }
 

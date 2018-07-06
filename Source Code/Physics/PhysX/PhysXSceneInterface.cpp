@@ -106,7 +106,7 @@ void PhysXSceneInterface::idle() {
     }
 }
 
-void PhysXSceneInterface::update(const U64 deltaTime) {
+void PhysXSceneInterface::update(const U64 deltaTimeUS) {
     if (!_gScene) {
         return;
     }
@@ -136,13 +136,13 @@ void PhysXSceneInterface::updateActor(PhysXActor& actor) {
 
 }
 
-void PhysXSceneInterface::process(const U64 deltaTime) {
+void PhysXSceneInterface::process(const U64 deltaTimeUS) {
     if (!_gScene) {
         return;
     }
 
     physx::PxReal deltaTimeMS = 
-        Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTime);
+        Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTimeUS);
 
     _gScene->simulate(deltaTimeMS);
 

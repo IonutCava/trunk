@@ -118,7 +118,7 @@ bool glShaderProgram::validateInternal() {
 }
 
 /// Called once per frame. Used to update internal state
-bool glShaderProgram::update(const U64 deltaTime) {
+bool glShaderProgram::update(const U64 deltaTimeUS) {
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && _shaderProgramID != 0) {
         if (_lockManager) {
@@ -161,7 +161,7 @@ bool glShaderProgram::update(const U64 deltaTime) {
     }
 
     // pass the update responsibility back to the parent class
-    return ShaderProgram::update(deltaTime);
+    return ShaderProgram::update(deltaTimeUS);
 }
 
 /// Retrieve the program's validation log if we need it

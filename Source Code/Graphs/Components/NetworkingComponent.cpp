@@ -29,7 +29,7 @@ void NetworkingComponent::flagDirty() {
     _resendRequired = true;
 }
 
-void NetworkingComponent::update(const U64 deltaTime) {
+void NetworkingComponent::update(const U64 deltaTimeUS) {
 
 }
 

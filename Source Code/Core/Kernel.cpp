@@ -37,11 +37,11 @@
 namespace Divide {
 
 LoopTimingData::LoopTimingData() : _updateLoops(0),
-                                   _previousTime(0ULL),
-                                   _currentTime(0ULL),
-                                   _currentTimeFrozen(0ULL),
-                                   _currentTimeDelta(0ULL),
-                                   _nextGameTick(0ULL),
+                                   _previousTimeUS(0ULL),
+                                   _currentTimeUS(0ULL),
+                                   _currentTimeFrozenUS(0ULL),
+                                   _currentTimeDeltaUS(0ULL),
+                                   _nextGameTickUS(0ULL),
                                    _keepAlive(true),
                                    _freezeLoopTime(false)
 {
@@ -118,10 +118,9 @@ void Kernel::idle() {
     FrameListenerManager::instance().idle();
 
     bool freezeLoopTime = ParamHandler::instance().getParam(_ID("freezeLoopTime"), false);
-    if (freezeLoopTime != _timingData._freezeLoopTime) {
-        _timingData._freezeLoopTime = freezeLoopTime;
-        _timingData._currentTimeFrozen = _timingData._currentTime;
-        _platformContext->app().mainLoopPaused(_timingData._freezeLoopTime);
+
+    if (_timingData.freezeTime(freezeLoopTime)) {
+        _platformContext->app().mainLoopPaused(freezeLoopTime);
     }
 }
 
@@ -138,18 +137,7 @@ void Kernel::onLoop() {
         Time::ScopedTimer timer(_appLoopTimer);
    
         // Update time at every render loop
-        _timingData._previousTime = _timingData._currentTime;
-        _timingData._currentTime = Time::ElapsedMicroseconds();
-        _timingData._currentTimeDelta = _timingData._currentTime - 
-                                        _timingData._previousTime;
-
-        // In case we break in the debugger
-        if (_timingData._currentTimeDelta > Time::SecondsToMicroseconds(1)) {
-            _timingData._currentTimeDelta = Config::SKIP_TICKS;
-            _timingData._previousTime = _timingData._currentTime -
-                                        _timingData._currentTimeDelta;
-        }
-
+        _timingData.update(Time::ElapsedMicroseconds());
         {
             Time::ScopedTimer timer2(_appIdleTimer);
             idle();
@@ -163,19 +151,20 @@ void Kernel::onLoop() {
         {
             Time::ScopedTimer timer3(_frameTimer);
             // Launch the FRAME_STARTED event
-            frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_STARTED, evt);
+            frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_STARTED, evt);
             _timingData._keepAlive = frameMgr.frameEvent(evt);
 
-            U64 deltaTime = _timingData._freezeLoopTime ? 0UL
-                                                        : Config::USE_FIXED_TIMESTEP
-                                                                    ? Config::SKIP_TICKS
-                                                                    : _timingData._currentTimeDelta;
+            U64 deltaTimeUS = 0ULL;
+            if (!_timingData.freezeTime()) {
+                deltaTimeUS = Config::USE_FIXED_TIMESTEP ? Time::SecondsToMicroseconds(1) / Config::TICKS_PER_SECOND
+                                                         : _timingData.currentTimeDeltaUS();
+            }
 
             // Process the current frame
-            _timingData._keepAlive = mainLoopScene(evt, deltaTime) && _timingData._keepAlive;
+            _timingData._keepAlive = mainLoopScene(evt, deltaTimeUS) && _timingData._keepAlive;
 
             // Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-            frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_PROCESS, evt);
+            frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_PROCESS, evt);
 
             _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
         }
@@ -183,7 +172,7 @@ void Kernel::onLoop() {
         _platformContext->sfx().endFrame();
 
         // Launch the FRAME_ENDED event (buffers have been swapped)
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_EVENT_ENDED, evt);
+        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_EVENT_ENDED, evt);
         _timingData._keepAlive = frameMgr.frameEvent(evt) && _timingData._keepAlive;
 
         _timingData._keepAlive = !_platformContext->app().ShutdownRequested() && _timingData._keepAlive;
@@ -209,7 +198,7 @@ void Kernel::onLoop() {
         }
 
         if (print) {
-            stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData._updateLoops));
+            stringImpl profileData(Util::StringFormat("Scene Update Loops: %d", _timingData.updateLoops()));
 
             if (Config::Profile::BENCHMARK_PERFORMANCE) {
                 profileData.append("\n");
@@ -245,9 +234,7 @@ void Kernel::onLoop() {
             _platformContext->gui().modifyText(_ID("ProfileData"), profileData);
         }
 
-        Util::RecordFloatEvent("kernel.mainLoopApp",
-                               to_F32(_appLoopTimer.get()),
-                               _timingData._currentTime);
+        Util::RecordFloatEvent("kernel.mainLoopApp", to_F32(_appLoopTimer.get()), _timingData.currentTimeUS());
 
         if (frameCount % (Config::TARGET_FRAME_RATE * 10) == 0) {
             Util::FlushFloatEvents();
@@ -255,17 +242,15 @@ void Kernel::onLoop() {
     }
 }
 
-bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
+bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     Time::ScopedTimer timer(_appScenePass);
 
     // Physics system uses (or should use) its own timestep code
-    U64 physicsTime 
-        =  _timingData._freezeLoopTime ? 0ULL
-                                       : _timingData._currentTimeDelta;
+    U64 physicsTime = _timingData.currentTimeDeltaUS();
     {
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras
-        Camera::update(deltaTime);
+        Camera::update(deltaTimeUS);
     }
 
     if (_platformContext->app().windowManager().getActiveWindow().minimized()) {
@@ -285,48 +270,39 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
         U8 playerCount = to_U8(activePlayers.size());
 
-        _timingData._updateLoops = 0;
-        while (_timingData._currentTime > _timingData._nextGameTick &&
-            _timingData._updateLoops < Config::MAX_FRAMESKIP) {
+        bool firstRun = true;
+        while (_timingData.runUpdateLoop()) {
 
-            if (_timingData._updateLoops == 0) {
+            if (firstRun) {
                 _sceneUpdateLoopTimer.start();
             }
 
             if (Config::Build::ENABLE_EDITOR) {
-                _editor->update(deltaTime);
+                _editor->update(deltaTimeUS);
             }
 
-            _sceneManager->processGUI(deltaTime);
+            _sceneManager->processGUI(deltaTimeUS);
 
             // Flush any pending threaded callbacks
             _taskPool.flushCallbackQueue();
             // Update scene based on input
             for (U8 i = 0; i < playerCount; ++i) {
-                _sceneManager->processInput(i, deltaTime);
+                _sceneManager->processInput(i, deltaTimeUS);
             }
             // process all scene events
-            _sceneManager->processTasks(deltaTime);
+            _sceneManager->processTasks(deltaTimeUS);
             // Update the scene state based on current time (e.g. animation matrices)
-            _sceneManager->updateSceneState(deltaTime);
+            _sceneManager->updateSceneState(deltaTimeUS);
             // Update visual effect timers as well
-            PostFX::instance().update(deltaTime);
-            if (_timingData._updateLoops == 0) {
+            PostFX::instance().update(deltaTimeUS);
+
+            if (firstRun) {
                 _sceneUpdateLoopTimer.stop();
             }
 
-            _timingData._nextGameTick += deltaTime;
-            _timingData._updateLoops++;
+            _timingData.endUpdateLoop(deltaTimeUS);
 
-            if (Config::USE_FIXED_TIMESTEP) {
-                if (_timingData._updateLoops == Config::MAX_FRAMESKIP &&
-                    _timingData._currentTime > _timingData._nextGameTick) {
-                    _timingData._nextGameTick = _timingData._currentTime;
-                }
-            } else {
-                _timingData._nextGameTick = _timingData._currentTime;
-            }
-
+            firstRun = false;
         }  // while
     }
 
@@ -341,10 +317,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
         }
     }
 
-
     D64 interpolationFactor = 1.0;
-    if (Config::USE_FIXED_TIMESTEP && !_timingData._freezeLoopTime) {
-        interpolationFactor = static_cast<D64>(_timingData._currentTime + deltaTime - _timingData._nextGameTick) / deltaTime;
+    if (Config::USE_FIXED_TIMESTEP && !_timingData.freezeTime()) {
+        interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
         assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
     }
 
@@ -352,7 +327,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
     
     // Update windows and get input events
     WindowManager& winManager = _platformContext->app().windowManager();
-    winManager.update(_timingData._currentTimeDelta);
+    winManager.update(deltaTimeUS);
     if (!winManager.anyWindowFocus()) {
         _sceneManager->onLostFocus();
     }
@@ -365,9 +340,9 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTime) {
 
     // Update the graphical user interface
     const OIS::MouseState& mouseState = _platformContext->input().getKeyboardMousePair(0).second->getMouseState();
-    _platformContext->gui().update(_timingData._currentTimeDelta);
+    _platformContext->gui().update(deltaTimeUS);
     _platformContext->gui().setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
-    return presentToScreen(evt, deltaTime);
+    return presentToScreen(evt, deltaTimeUS);
 }
 
 void computeViewports(const vec4<I32>& mainViewport, vectorImpl<vec4<I32>>& targetViewports, U8 count) {
@@ -476,7 +451,7 @@ Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorImpl<Time::P
     return *timers[index];
 }
 
-bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
+bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     static vectorImpl<vec4<I32>> targetViewports;
 
     Time::ScopedTimer time(_flushToScreenTimer);
@@ -485,18 +460,18 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
     {
         Time::ScopedTimer time1(_preRenderTimer);
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_START, evt);
+        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_PRERENDER_START, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;
         }
 
         // perform time-sensitive shader tasks
-        if (!ShaderProgram::updateAll(deltaTime)) {
+        if (!ShaderProgram::updateAll(deltaTimeUS)) {
             return false;
         }
 
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
+        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_PRERENDER_END, evt);
         if (!frameMgr.frameEvent(evt)) {
             return false;
         }
@@ -535,13 +510,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 
     {
         Time::ScopedTimer time5(_postRenderTimer);
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_START, evt);
+        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_POSTRENDER_START, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;
         }
 
-        frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_POSTRENDER_END, evt);
+        frameMgr.createEvent(_timingData.currentTimeUS(), FrameEventType::FRAME_POSTRENDER_END, evt);
 
         if (!frameMgr.frameEvent(evt)) {
             return false;
@@ -554,8 +529,6 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTime) {
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
-    _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
-    _timingData._keepAlive = true;
 
     if (false) {
         static const U8 warmupLoopCount = 3;
@@ -583,7 +556,7 @@ void Kernel::warmup() {
     ParamHandler::instance().setParam(_ID("freezeLoopTime"), false);
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
-    _timingData._currentTime = _timingData._nextGameTick = Time::ElapsedMicroseconds(true);
+    _timingData.update(Time::ElapsedMicroseconds(true));
 }
 
 ErrorCode Kernel::initialize(const stringImpl& entryPoint) {

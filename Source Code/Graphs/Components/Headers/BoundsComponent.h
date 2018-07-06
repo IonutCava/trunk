@@ -56,7 +56,7 @@ namespace Divide {
         BoundsComponent(SceneGraphNode& sgn);
         ~BoundsComponent();
         
-        void update(const U64 deltaTime);
+        void update(const U64 deltaTimeUS);
 
         inline void flagBoundingBoxDirty() {
             _boundingBoxDirty = true;

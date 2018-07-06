@@ -45,7 +45,7 @@ class AudioSensor : public Sensor {
     friend class Attorney::AudioSensorConstructor;
 
    public:
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
     ~AudioSensor();
 
    protected:

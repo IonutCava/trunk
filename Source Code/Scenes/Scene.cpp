@@ -78,7 +78,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
       _baseCamera(nullptr),
       _paramHandler(ParamHandler::instance())
 {
-    _sceneTimer = 0UL;
+    _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
     _input = MemoryManager_NEW SceneInput(*this, _context.input());
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
@@ -1020,11 +1020,11 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     return playerState.cameraUpdated();
 }
 
-void Scene::updateSceneState(const U64 deltaTime) {
-    _sceneTimer += deltaTime;
-    updateSceneStateInternal(deltaTime);
-    _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    _aiManager->update(deltaTime);
+void Scene::updateSceneState(const U64 deltaTimeUS) {
+    _sceneTimerUS += deltaTimeUS;
+    updateSceneStateInternal(deltaTimeUS);
+    _sceneGraph->sceneUpdate(deltaTimeUS, *_sceneState);
+    _aiManager->update(deltaTimeUS);
 
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         PlayerIndex idx = _scenePlayers[i]->index();
@@ -1083,18 +1083,18 @@ void Scene::removeTask(I64 jobIdentifier) {
 
 }
 
-void Scene::processInput(PlayerIndex idx, const U64 deltaTime) {
+void Scene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 }
 
-void Scene::processGUI(const U64 deltaTime) {
-    for (U16 i = 0; i < _guiTimers.size(); ++i) {
-        _guiTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+void Scene::processGUI(const U64 deltaTimeUS) {
+    for (U16 i = 0; i < _guiTimersMS.size(); ++i) {
+        _guiTimersMS[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
     }
 }
 
-void Scene::processTasks(const U64 deltaTime) {
+void Scene::processTasks(const U64 deltaTimeUS) {
     for (U16 i = 0; i < _taskTimers.size(); ++i) {
-        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
+        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
     }
 }
 

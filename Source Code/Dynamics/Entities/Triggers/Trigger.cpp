@@ -24,7 +24,7 @@ Trigger::~Trigger()
 }
 
 
-void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
         if (!_triggerImpostor) {

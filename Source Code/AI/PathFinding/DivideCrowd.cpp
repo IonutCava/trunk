@@ -90,12 +90,12 @@ DivideDtCrowd::~DivideDtCrowd() {
     dtFreeObstacleAvoidanceDebugData(_vod);
 }
 
-void DivideDtCrowd::update(const U64 deltaTime) {
+void DivideDtCrowd::update(const U64 deltaTimeUS) {
     dtNavMesh* nav = Attorney::NavigationMeshCrowd::getNavigationMesh(*_recast);
 
     if (!nav || !_crowd) return;
     // TimeVal startTime = getPerfTime();
-    _crowd->update(Time::MicrosecondsToSeconds<F32>(deltaTime), &_agentDebug);
+    _crowd->update(Time::MicrosecondsToSeconds<F32>(deltaTimeUS), &_agentDebug);
     // TimeVal endTime = getPerfTime();
     // Update agent trails
     for (I32 i = 0; i < _crowd->getAgentCount(); ++i) {

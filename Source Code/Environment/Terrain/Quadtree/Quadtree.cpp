@@ -21,10 +21,10 @@ Quadtree::~Quadtree()
     MemoryManager::DELETE(_root);
 }
 
-void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+void Quadtree::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                            SceneState& sceneState) {
     assert(_root);
-    _root->sceneUpdate(deltaTime, sgn, sceneState);
+    _root->sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 void Quadtree::drawBBox(GFXDevice& context, RenderPackage& packageOut) {

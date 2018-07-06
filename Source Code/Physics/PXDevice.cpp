@@ -62,12 +62,12 @@ void PXDevice::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
     _api->updateTimeStep(timeStepFactor, simSpeed);
 }
 
-void PXDevice::update(const U64 deltaTime) {
-    _api->update(deltaTime);
+void PXDevice::update(const U64 deltaTimeUS) {
+    _api->update(deltaTimeUS);
 }
 
-void PXDevice::process(const U64 deltaTime) {
-    _api->process(deltaTime);
+void PXDevice::process(const U64 deltaTimeUS) {
+    _api->process(deltaTimeUS);
 }
 
 void PXDevice::idle() {

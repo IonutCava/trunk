@@ -150,7 +150,7 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     return cloneMat;
 }
 
-void Material::update(const U64 deltaTime) {
+void Material::update(const U64 deltaTimeUS) {
     for (ShaderProgramInfo& info : _shaderInfo) {
         if (info.update()) {
             _dirty = true;

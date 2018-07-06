@@ -150,7 +150,7 @@ class Material : public CachedResource {
     /// clone calls CreateResource internally!)
     Material_ptr clone(const stringImpl& nameSuffix);
     bool unload();
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     void setColourData(const ColourData& other);
     void setDiffuse(const vec4<F32>& value);

@@ -42,7 +42,7 @@ class ParticleSource {
     ParticleSource(GFXDevice& context, F32 emitRate);
     virtual ~ParticleSource();
 
-    virtual void emit(const U64 deltaTime, std::shared_ptr<ParticleData> p);
+    virtual void emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p);
 
     inline void addGenerator(std::shared_ptr<ParticleGenerator> generator) {
         _particleGenerators.push_back(generator);

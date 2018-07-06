@@ -72,7 +72,7 @@ void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
     }
 }
 
-void VisualSensor::update(const U64 deltaTime) {
+void VisualSensor::update(const U64 deltaTimeUS) {
     for (const NodeContainerMap::value_type& container : _nodeContainerMap) {
         NodePositions& positions = _nodePositionsMap[container.first];
         for (const NodeContainer::value_type& entry : container.second) {

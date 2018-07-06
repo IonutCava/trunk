@@ -115,7 +115,7 @@ class RenderingComponent : public SGNComponent {
    public:
     bool onRender(const SceneRenderState& sceneRenderState,
                   const RenderStagePass& renderStagePass) override;
-    void update(const U64 deltaTime) override;
+    void update(const U64 deltaTimeUS) override;
 
     void setActive(const bool state) override;
     void postLoad() override;

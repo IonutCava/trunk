@@ -53,7 +53,7 @@ DEFINE_SINGLETON(FrameListenerManager)
     bool frameEvent(const FrameEvent& evt);
 
     /// pass the current time in microseconds as the first parameter
-    void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt);
+    void createEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
 
   private:
     FrameListenerManager();
@@ -67,9 +67,9 @@ DEFINE_SINGLETON(FrameListenerManager)
     bool framePostRenderEnded(const FrameEvent& evt);
     bool frameEnded(const FrameEvent& evt);
 
-    /// pass the current time in milliseconds as the first parameter
-    /// returns the event time in milliseconds
-    D64 calculateEventTime(const D64 currentTime, FrameEventType type);
+    /// pass the current time in microseconds as the first parameter
+    /// returns the event time in microseconds
+    D64 calculateEventTime(const D64 currentTimeUS, FrameEventType type);
 
    private:
     mutable SharedLock _listenerLock;

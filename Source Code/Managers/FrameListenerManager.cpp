@@ -160,17 +160,16 @@ void FrameListenerManager::idle() {
 }
 
 /// Please see the Ogre3D documentation about this
-void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt) {
-    evt._currentTime = Time::MicrosecondsToMilliseconds<D64>(currentTime);
-    evt._timeSinceLastEvent =
-        calculateEventTime(evt._currentTime, FrameEventType::FRAME_EVENT_ANY);
-    evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
+void FrameListenerManager::createEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt) {
+    evt._currentTimeUS = currentTimeUS;
+    evt._timeSinceLastEventUS = calculateEventTime(evt._currentTimeUS, FrameEventType::FRAME_EVENT_ANY);
+    evt._timeSinceLastFrameUS = calculateEventTime(evt._currentTimeUS, type);
     evt._type = type;
 }
 
-D64 FrameListenerManager::calculateEventTime(const D64 currentTime, FrameEventType type) {
+D64 FrameListenerManager::calculateEventTime(const D64 currentTimeUS, FrameEventType type) {
     EventTimeMap& times = _eventTimers[to_U32(type)];
-    times.push_back(currentTime);
+    times.push_back(currentTimeUS);
 
     if (times.size() == 1) {
         return 0.0;
@@ -180,7 +179,7 @@ D64 FrameListenerManager::calculateEventTime(const D64 currentTime, FrameEventTy
     EventTimeMap::iterator end = std::end(times) - 2;
 
     while (it != end) {
-        if (currentTime - *it > 0) {
+        if (currentTimeUS - *it > 0) {
             ++it;
         } else {
             break;
@@ -188,6 +187,6 @@ D64 FrameListenerManager::calculateEventTime(const D64 currentTime, FrameEventTy
     }
 
     times.erase(std::cbegin(times), it);
-    return (times.back() - times.front()) / Time::SecondsToMilliseconds(times.size() - 1);
+    return (times.back() - times.front()) / Time::SecondsToMicroseconds(times.size() - 1);
 }
 };

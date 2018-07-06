@@ -16,16 +16,16 @@ bool ShadowScene::loadResources(bool continueOnErrors) {
     return Scene::loadResources(continueOnErrors);
 }
 
-void ShadowScene::processInput(PlayerIndex idx, const U64 deltaTime) {
-    Scene::processInput(idx, deltaTime);
+void ShadowScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    Scene::processInput(idx, deltaTimeUS);
 }
 
-void ShadowScene::processTasks(const U64 deltaTime) {
-    Scene::processTasks(deltaTime);
+void ShadowScene::processTasks(const U64 deltaTimeUS) {
+    Scene::processTasks(deltaTimeUS);
 }
 
-void ShadowScene::processGUI(const U64 deltaTime) {
-    Scene::processGUI(deltaTime);
+void ShadowScene::processGUI(const U64 deltaTimeUS) {
+    Scene::processGUI(deltaTimeUS);
 }
 
 void ShadowScene::onSetActive() {

@@ -41,7 +41,7 @@ public:
     FrameRateHandler();
     ~FrameRateHandler();
 
-    void tick(const U64 deltaTime);
+    void tick(const U64 deltaTimeUS);
     void init(U32 targetFrameRate);
     void reset();
 

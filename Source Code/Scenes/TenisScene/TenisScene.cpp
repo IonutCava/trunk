@@ -42,9 +42,9 @@ TenisScene::TenisScene(PlatformContext& context, ResourceCache& cache, SceneMana
     _team2 = nullptr;
 }
 
-void TenisScene::processGUI(const U64 deltaTime) {
+void TenisScene::processGUI(const U64 deltaTimeUS) {
     D64 FpsDisplay = 0.7;
-    if (_guiTimers[0] >= FpsDisplay) {
+    if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText(_ID("fpsDisplay"),
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",
                                             Time::ApplicationTimer::instance().getFps(),
@@ -53,13 +53,13 @@ void TenisScene::processGUI(const U64 deltaTime) {
                          Util::StringFormat("Number of items in Render Bin: %d. Number of HiZ culled items: %d",
                          _context.gfx().parent().renderPassManager().getLastTotalBinSize(RenderStage::DISPLAY),
                          _context.gfx().getLastCullCount()));
-        _guiTimers[0] = 0.0;
+        _guiTimersMS[0] = 0.0;
     }
-    Scene::processGUI(deltaTime);
+    Scene::processGUI(deltaTimeUS);
 }
 
-void TenisScene::processTasks(const U64 deltaTime) {
-    Scene::processTasks(deltaTime);
+void TenisScene::processTasks(const U64 deltaTimeUS) {
+    Scene::processTasks(deltaTimeUS);
 
     checkCollisions();
 
@@ -277,8 +277,8 @@ void TenisScene::playGame(const Task& parentTask, AnyParam a, CallbackParam b) {
     }
 }
 
-void TenisScene::processInput(PlayerIndex idx, const U64 deltaTime) {
-    Scene::processInput(idx, deltaTime);
+void TenisScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    Scene::processInput(idx, deltaTimeUS);
 }
 
 bool TenisScene::load(const stringImpl& name) {
@@ -384,7 +384,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ballSGN.lock()->setSelectable(true);
 
 
-    _guiTimers.push_back(0.0);  // Fps
+    _guiTimersMS.push_back(0.0);  // Fps
     return true;
 }
 

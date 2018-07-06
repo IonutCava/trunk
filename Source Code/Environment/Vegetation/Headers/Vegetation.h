@@ -83,7 +83,7 @@ class Vegetation : public SceneNode {
                                 RenderPackage& pkgInOut) override;
 
     protected:
-    void sceneUpdate(const U64 deltaTime,
+    void sceneUpdate(const U64 deltaTimeUS,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
@@ -121,8 +121,8 @@ class Vegetation : public SceneNode {
     U16 _billboardCount;  ///< Vegetation cumulated density
     F32 _grassSize, _grassScale, _treeScale;
     F32 _windX, _windZ, _windS, _time;
-    U64 _stateRefreshInterval;
-    U64 _stateRefreshIntervalBuffer;
+    U64 _stateRefreshIntervalUS;
+    U64 _stateRefreshIntervalBufferUS;
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
     Texture_ptr _grassBillboards;
     ShaderProgram_ptr _cullShader;

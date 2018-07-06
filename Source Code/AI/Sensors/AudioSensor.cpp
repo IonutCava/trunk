@@ -14,6 +14,6 @@ AudioSensor::~AudioSensor()
 {
 }
 
-void AudioSensor::update(const U64 deltaTime) {}
+void AudioSensor::update(const U64 deltaTimeUS) {}
 
 };  // namespace Divide

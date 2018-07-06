@@ -137,7 +137,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     };
 
    public:
-    void update(const U64 deltaTime);
+    void update(const U64 deltaTimeUS);
 
     inline const PhysicsGroup& physicsGroup() const {
         return _physicsCollisionGroup;

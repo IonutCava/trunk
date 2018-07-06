@@ -45,8 +45,8 @@ class NetworkScene : public Scene {
     bool loadResources(bool continueOnErrors);
     void postLoadMainThread() override;
 
-    void processGUI(const U64 deltaTime);
-    void processInput(PlayerIndex idx, const U64 deltaTime);
+    void processGUI(const U64 deltaTimeUS);
+    void processInput(PlayerIndex idx, const U64 deltaTimeUS);
 
    private:
     void test(I64 btnGUID);

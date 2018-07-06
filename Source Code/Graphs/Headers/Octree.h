@@ -47,7 +47,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         ~Octree();
 
-        void update(const U64 deltaTime);
+        void update(const U64 deltaTimeUS);
         bool addNode(SceneGraphNode_wptr node);
         bool addNodes(const vectorImpl<SceneGraphNode_wptr>& nodes);
         void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;

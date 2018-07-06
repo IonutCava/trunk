@@ -179,13 +179,13 @@ bool SceneGraph::removeNode(SceneGraphNode_wptr node, bool deferrRemoval) {
     return false;
 }
 
-void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
+void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     // Gather all nodes in order
     _orderedNodeList.resize(0);
     _root->getOrderedNodeList(_orderedNodeList);
     for (SceneGraphNode* node : _orderedNodeList) {
-        node->sceneUpdate(deltaTime, sceneState);
-        node->sgnUpdate(deltaTime, sceneState);
+        node->sceneUpdate(deltaTimeUS, sceneState);
+        node->sgnUpdate(deltaTimeUS, sceneState);
     }
 
     // Split updates into 2 passes to allow for better parallelism:
@@ -199,13 +199,13 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
 
     if (_loadComplete) {
         CreateTask(parentScene().platformContext(),
-            [this, deltaTime](const Task& parentTask) mutable
+            [this, deltaTimeUS](const Task& parentTask) mutable
             {
                 _octreeUpdating = true;
                 if (_octreeChanged) {
                     _octree->updateTree();
                 }
-                _octree->update(deltaTime);
+                _octree->update(deltaTimeUS);
             },
             [this]() mutable
             {

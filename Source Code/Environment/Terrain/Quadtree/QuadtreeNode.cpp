@@ -126,16 +126,16 @@ U8 QuadtreeNode::getLoD(const vec3<F32>& eyePos) const {
                             : 0;
 }
 
-void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
+void QuadtreeNode::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     if (isALeaf()) {
-        ACKNOWLEDGE_UNUSED(deltaTime);
+        ACKNOWLEDGE_UNUSED(deltaTimeUS);
         ACKNOWLEDGE_UNUSED(sgn);
         ACKNOWLEDGE_UNUSED(sceneState);
     } else {
-        getChild(ChildPosition::CHILD_NW).sceneUpdate(deltaTime, sgn, sceneState);
-        getChild(ChildPosition::CHILD_NE).sceneUpdate(deltaTime, sgn, sceneState);
-        getChild(ChildPosition::CHILD_SW).sceneUpdate(deltaTime, sgn, sceneState);
-        getChild(ChildPosition::CHILD_SE).sceneUpdate(deltaTime, sgn, sceneState);
+        getChild(ChildPosition::CHILD_NW).sceneUpdate(deltaTimeUS, sgn, sceneState);
+        getChild(ChildPosition::CHILD_NE).sceneUpdate(deltaTimeUS, sgn, sceneState);
+        getChild(ChildPosition::CHILD_SW).sceneUpdate(deltaTimeUS, sgn, sceneState);
+        getChild(ChildPosition::CHILD_SE).sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 }
 

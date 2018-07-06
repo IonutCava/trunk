@@ -142,10 +142,10 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                              SceneState& sceneState);
     /// Called as a second pass after sceneUpdate
-    virtual void sgnUpdate(const U64 deltaTime, SceneGraphNode& sgn,
+    virtual void sgnUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                            SceneState& sceneState);
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
@@ -206,14 +206,14 @@ class SceneNodeSceneGraph {
         node.postLoad(sgn);
     }
     
-    static void sceneUpdate(SceneNode& node, const U64 deltaTime,
+    static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,
                             SceneGraphNode& sgn, SceneState& sceneState) {
-        node.sceneUpdate(deltaTime, sgn, sceneState);
+        node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void sgnUpdate(SceneNode& node, const U64 deltaTime,
+    static void sgnUpdate(SceneNode& node, const U64 deltaTimeUS,
                           SceneGraphNode& sgn, SceneState& sceneState) {
-        node.sgnUpdate(deltaTime, sgn, sceneState);
+        node.sgnUpdate(deltaTimeUS, sgn, sceneState);
     }
     
     static void registerSGNParent(SceneNode& node, I64 sgnGUID) {

@@ -64,7 +64,7 @@ bool ShaderProgram::unload() {
 }
 
 /// Called once per frame. Update common values used across programs
-bool ShaderProgram::update(const U64 deltaTime) {
+bool ShaderProgram::update(const U64 deltaTimeUS) {
     if (_shouldRecompile) {
         recompile();
     }
@@ -256,11 +256,11 @@ void ShaderProgram::onShutdown() {
     s_shaderFileWatcher.reset();
 }
 
-bool ShaderProgram::updateAll(const U64 deltaTime) {
+bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     ReadLock r_lock(_programLock);
     // Pass the update call to all registered programs
     for (ShaderProgramMap::value_type& it : _shaderPrograms) {
-        if (!it.second->update(deltaTime)) {
+        if (!it.second->update(deltaTimeUS)) {
             // If an update call fails, stop updating
             return false;
         }

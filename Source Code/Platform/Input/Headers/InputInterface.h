@@ -53,7 +53,7 @@ public:
 
     ErrorCode init(Kernel& kernel, const vec2<U16>& inputAreaDimensions);
 
-    U8 update(const U64 deltaTime);
+    U8 update(const U64 deltaTimeUS);
     void terminate();
 
     void onChangeWindowSize(U16 w, U16 h);

@@ -26,7 +26,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _frustPlaneCache(-1),
       _sceneGraph(sceneGraph),
       _updateTimer(Time::ElapsedMilliseconds()),
-      _elapsedTime(0ULL),
+      _elapsedTimeUS(0ULL),
       _node(node),
       _active(true),
       _visibilityLocked(false),
@@ -447,21 +447,21 @@ void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
     }
 }
 
-void SceneGraphNode::sgnUpdate(const U64 deltaTime, SceneState& sceneState) {
-    Attorney::SceneNodeSceneGraph::sgnUpdate(*_node, deltaTime, *this, sceneState);
+void SceneGraphNode::sgnUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
+    Attorney::SceneNodeSceneGraph::sgnUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
 
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
-void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
+void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     assert(_node->getState() == ResourceState::RES_LOADED);
 
     // update local time
-    _elapsedTime += deltaTime;
+    _elapsedTimeUS += deltaTimeUS;
 
     // update all of the internal components (animation, physics, etc)
     for (SGNComponent* component : _components) {
         if (component != nullptr) {
-            component->update(deltaTime);
+            component->update(deltaTimeUS);
          }
     }
 
@@ -469,7 +469,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         _relationshipCache.rebuild();
     }
 
-    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
+    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
 
 void SceneGraphNode::onTransform() {

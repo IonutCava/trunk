@@ -165,7 +165,7 @@ class AIEntity : public GUIDWrapper {
       * Update current position of this character to the current position of its
     *agent.
     **/
-    void updatePosition(const U64 deltaTime);
+    void updatePosition(const U64 deltaTimeUS);
     /**
   * Set destination member variable directly without updating the agent state.
   * Usually you should call updateDestination() externally, unless you are
@@ -178,9 +178,9 @@ class AIEntity : public GUIDWrapper {
 
    protected:
     void setTeamPtr(AITeam* const teamPtr);
-    bool processInput(const U64 deltaTime);
-    bool processData(const U64 deltaTime);
-    bool update(const U64 deltaTime);
+    bool processInput(const U64 deltaTimeUS);
+    bool processData(const U64 deltaTimeUS);
+    bool update(const U64 deltaTimeUS);
 
    private:
     stringImpl _name;
@@ -228,14 +228,14 @@ class AIEntityAITeam {
     static void setTeamPtr(AIEntity& entity, AITeam* const teamPtr) {
         entity.setTeamPtr(teamPtr);
     }
-    static bool processInput(AIEntity& entity, const U64 deltaTime) {
-        return entity.processInput(deltaTime);
+    static bool processInput(AIEntity& entity, const U64 deltaTimeUS) {
+        return entity.processInput(deltaTimeUS);
     }
-    static bool processData(AIEntity& entity, const U64 deltaTime) {
-        return entity.processData(deltaTime);
+    static bool processData(AIEntity& entity, const U64 deltaTimeUS) {
+        return entity.processData(deltaTimeUS);
     }
-    static bool update(AIEntity& entity, const U64 deltaTime) {
-        return entity.update(deltaTime);
+    static bool update(AIEntity& entity, const U64 deltaTimeUS) {
+        return entity.update(deltaTimeUS);
     }
     friend class Divide::AI::AITeam;
 };

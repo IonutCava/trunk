@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-void ParticleVelocityColourUpdater::update(const U64 deltaTime, ParticleData& p) {
+void ParticleVelocityColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     const U32 endID = p.aliveCount();
     F32 diffr = _maxVel.x - _minVel.x;
     F32 diffg = _maxVel.y - _minVel.y;
