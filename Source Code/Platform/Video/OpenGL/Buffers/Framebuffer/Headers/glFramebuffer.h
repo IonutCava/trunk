@@ -75,6 +75,11 @@ class glFramebuffer : public Framebuffer {
     void clear() const override;
     bool checkStatus() const;
     void setInitialAttachments();
+
+    void initAttachment(TextureDescriptor::AttachmentType type,
+                        Texture& texture,
+                        bool resize) override;
+
     void initAttachment(TextureDescriptor::AttachmentType type,
                         TextureDescriptor& texDescriptor,
                         bool resize);

@@ -56,6 +56,49 @@ glFramebuffer::~glFramebuffer() {
 }
 
 void glFramebuffer::initAttachment(AttachmentType type,
+                                   Texture& texture,
+                                   bool resize) {
+    I32 slot = to_int(type);
+    const TextureDescriptor& texDescriptor = texture.getDescriptor();
+
+    if (IS_ZERO(_mipMapLevel[slot].y)) {
+        _mipMapLevel[slot].set(0,
+            texDescriptor.getSampler().generateMipMaps()
+            ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+            : 1);
+    }
+
+    // Attach to frame buffer
+    I32 offset = 0;
+    GLenum attachment;
+    if (type == AttachmentType::Depth) {
+        attachment = GL_DEPTH_ATTACHMENT;
+        _isLayeredDepth = (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY ||
+                           texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS ||
+                           texDescriptor._type == TextureType::TEXTURE_CUBE_MAP ||
+                           texDescriptor._type == TextureType::TEXTURE_CUBE_ARRAY ||
+                           texDescriptor._type == TextureType::TEXTURE_3D);
+    } else {
+        if (slot > 0) {
+            offset = _attOffset[slot - 1];
+        }
+        attachment = GL_COLOR_ATTACHMENT0 + offset;
+    }
+    _attOffset[slot] = offset + 1;
+
+    _attachments[slot] = std::make_pair(attachment, texture.getHandle());
+    _attachmentChanged[slot] = false;
+    _attDirty[slot] = true;
+    if (!resize) {
+        if (type != AttachmentType::Depth) {
+            _colorBuffers.push_back(attachment);
+            _colorBufferEnabled.push_back(true);
+            assert(_colorBuffers.size() <= to_uint(AttachmentType::COUNT) - 1);
+        }
+    }
+}
+
+void glFramebuffer::initAttachment(AttachmentType type,
                                    TextureDescriptor& texDescriptor,
                                    bool resize) {
     I32 slot = to_int(type);
@@ -64,7 +107,6 @@ void glFramebuffer::initAttachment(AttachmentType type,
     if (!_attachmentChanged[to_uint(type)] && !shouldResize) {
         return;
     }
-
 
     DIVIDE_ASSERT(_width != 0 && _height != 0,
                   "glFramebuffer error: Invalid frame buffer dimensions!");
@@ -90,12 +132,6 @@ void glFramebuffer::initAttachment(AttachmentType type,
             texDescriptor._type = TextureType::TEXTURE_2D_ARRAY;
         }
     }
-
-    bool isLayeredTexture = (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY ||
-                             texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS ||
-                             texDescriptor._type == TextureType::TEXTURE_CUBE_MAP ||
-                             texDescriptor._type == TextureType::TEXTURE_CUBE_ARRAY ||
-                             texDescriptor._type == TextureType::TEXTURE_3D);
 
     if (texDescriptor.getSampler().srgb()) {
         if (texDescriptor._internalFormat == GFXImageFormat::RGBA8) {
@@ -134,11 +170,13 @@ void glFramebuffer::initAttachment(AttachmentType type,
 
     Texture* tex = _attachmentTexture[slot];
     assert(tex != nullptr);
-    tex->setNumLayers(texDescriptor._layerCount);
+
     _mipMapLevel[slot].set(0,
-                           texDescriptor.getSampler().generateMipMaps()
-                              ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
-                              : 1);
+        texDescriptor.getSampler().generateMipMaps()
+        ? 1 + (I16)floorf(log2f(fmaxf(to_float(_width), to_float(_height))))
+        : 1);
+
+    tex->setNumLayers(texDescriptor._layerCount);
     if (resize) {
         tex->resize(NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
     } else {
@@ -147,30 +185,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
         tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), _mipMapLevel[slot]);
     }
 
-    // Attach to frame buffer
-    I32 offset = 0;
-    GLenum attachment;
-    if (type == AttachmentType::Depth) {
-        attachment = GL_DEPTH_ATTACHMENT;
-        _isLayeredDepth = isLayeredTexture;
-    } else {
-        if (slot > 0) {
-            offset = _attOffset[slot - 1];
-        }
-        attachment = GL_COLOR_ATTACHMENT0 + offset;
-    }
-    _attOffset[slot] = offset + 1;
-
-    _attachments[slot] = std::make_pair(attachment, tex->getHandle());
-    _attachmentChanged[slot] = false;
-    _attDirty[slot] = true;
-    if (!resize) {
-        if (type != AttachmentType::Depth) {
-            _colorBuffers.push_back(attachment);
-            _colorBufferEnabled.push_back(true);
-            assert(_colorBuffers.size() <= to_uint(AttachmentType::COUNT) - 1);
-        }
-    }
+    initAttachment(type, *tex, resize);
 }
 
 void glFramebuffer::toggleAttachment(TextureDescriptor::AttachmentType type, bool state) {

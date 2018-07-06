@@ -43,4 +43,9 @@ void d3dRenderTarget::blitFrom(Framebuffer* inputFB,
                                bool blitColor, bool blitDepth) {}
 
 void d3dRenderTarget::clear() const {}
+
+void d3dRenderTarget::initAttachment(TextureDescriptor::AttachmentType type,
+                                     Texture& texture,
+                                     bool resize) {}
+
 };

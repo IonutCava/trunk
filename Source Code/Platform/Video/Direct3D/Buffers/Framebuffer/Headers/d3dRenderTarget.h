@@ -64,6 +64,9 @@ class d3dRenderTarget : public Framebuffer {
                   bool blitColor = true, bool blitDepth = false);
     void clear() const override;
 
+    void initAttachment(TextureDescriptor::AttachmentType type,
+                        Texture& texture,
+                        bool resize) override;
    protected:
     bool checkStatus() const;
 };

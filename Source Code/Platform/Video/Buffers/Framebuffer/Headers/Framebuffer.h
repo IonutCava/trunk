@@ -100,6 +100,8 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
 
     virtual bool addAttachment(const TextureDescriptor& descriptor, TextureDescriptor::AttachmentType slot);
 
+    virtual void initAttachment(TextureDescriptor::AttachmentType type, Texture& texture, bool resize = false) = 0;
+
     /// If the FB is not initialized, it gets created, otherwise
     /// the attachements get resized.
     /// If any internal state was changed between calls (_shouldRebuild == true),
@@ -156,10 +158,14 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
         _disableColorWrites = !state;
     }
     // Enable/Disable the presence of a depth renderbuffer
-    virtual void toggleDepthBuffer(const bool state) {
-        _shouldRebuild = (_useDepthBuffer != state);
+    virtual void toggleDepthBuffer(const bool state, const bool shouldRebuilt = true) {
+        if (_useDepthBuffer != state) {
+            _shouldRebuild = shouldRebuilt;
+        }
+
         _useDepthBuffer = state;
     }
+    
     // Set the color the FB will clear to when drawing to it
     inline void setClearColor(const vec4<F32>& clearColor) {
         _clearColor.set(clearColor);

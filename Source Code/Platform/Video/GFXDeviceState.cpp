@@ -174,7 +174,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     depthDescriptor.setSampler(depthSampler);
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    //_renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->toggleDepthBuffer(false, false);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::SCREEN)]->setClearColor(DefaultColors::DIVIDE_BLUE());
 
@@ -184,7 +185,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     if (_enableAnaglyph) {
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)] = newFB(true);
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
-        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+        //_renderTarget[to_uint(RenderTarget::ANAGLYPH)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->toggleDepthBuffer(false, false);
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->create(resolution.width, resolution.height);
         _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->setClearColor(DefaultColors::DIVIDE_BLUE());
     }
@@ -201,7 +203,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_uint(RenderTarget::DEPTH)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color0);
 
     _renderTarget[to_uint(RenderTarget::DEPTH)]->create(resolution.width, resolution.height);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth)->lockAutomaticMipMapGeneration(true);
+    Texture* depthAttchment = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    depthAttchment->lockAutomaticMipMapGeneration(true);
+
+    _renderTarget[to_uint(RenderTarget::SCREEN)]->initAttachment(TextureDescriptor::AttachmentType::Depth, *depthAttchment);
+    if (_enableAnaglyph) {
+        _renderTarget[to_uint(RenderTarget::ANAGLYPH)]->initAttachment(TextureDescriptor::AttachmentType::Depth, *depthAttchment);
+    }
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
                                             GFXImageFormat::RGBA16F,
