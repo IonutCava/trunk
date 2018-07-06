@@ -7,10 +7,6 @@
 
 namespace Divide {
 
-namespace {
-    static const U32 g_bufferQueueLength = 3;
-};
-
 AnimationComponent::AnimationComponent(SceneAnimator& animator,
                                        SceneGraphNode& parentSGN)
 
@@ -20,18 +16,16 @@ AnimationComponent::AnimationComponent(SceneAnimator& animator,
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
       _currentAnimIndex(0),
-      _previousFrameIndex(-1)
+      _previousFrameIndex(-1),
+      _previousAnimationIndex(-1)
 {
     DIVIDE_ASSERT(_animator.boneCount() <= Config::MAX_BONE_COUNT_PER_NODE,
                   "AnimationComponent error: Too many bones for current node! "
                   "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    static const U32 uboBufferLimit = ParamHandler::getInstance().getParam<U32>("rendering.UBOSize");
-    const U32 bufferRequirement = to_uint(_animator.boneCount()) * sizeof(mat4<F32>);
-    DIVIDE_ASSERT(bufferRequirement <= uboBufferLimit, "AnimationComponent error: animation data does not fit in an UBO!");
-
-    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", g_bufferQueueLength, false, false);
-    _boneTransformBuffer->Create(to_uint(_animator.boneCount()), sizeof(mat4<F32>));
+    _boneTransformBuffer = GFX_DEVICE.newSB("dvd_BoneTransforms", 1, true, true);
+    _boneTransformBuffer->Create(to_uint(_animator.boneCount()) * _animator.getMaxAnimationFrames(),
+                                 sizeof(mat4<F32>));
 }
 
 AnimationComponent::~AnimationComponent()
@@ -41,6 +35,21 @@ AnimationComponent::~AnimationComponent()
 
 void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
     _parentTimeStamp += timestamp;
+}
+
+void AnimationComponent::uploadAnimationToGPU() {
+    const vectorImpl<vectorImpl<mat4<F32>>>& animationTransforms =
+        _animator.animationByIndex(_currentAnimIndex)->transforms();
+
+    vectorImpl<mat4<F32>> animationData;
+    animationData.reserve(_animator.boneCount() * animationTransforms.size());
+
+    for (const vectorImpl<mat4<F32>>& frameTransforms : animationTransforms) {
+        animationData.insert(std::cend(animationData), std::cbegin(frameTransforms), std::cend(frameTransforms));
+    }
+    vectorAlg::shrinkToFit(animationData);
+
+    _boneTransformBuffer->UpdateData(0, animationData.size(), (const bufferPtr)animationData.data());
 }
 
 void AnimationComponent::update(const U64 deltaTime) {
@@ -56,22 +65,13 @@ void AnimationComponent::update(const U64 deltaTime) {
         return;
     }
 
-    D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
-
     if (_parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN)) {
-        I32 resultingFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, animTimeStamp);
+        _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, 
+                                                               Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
 
-        bool updateBuffers = (resultingFrameIndex != _previousFrameIndex) &&
-                              resultingFrameIndex >= 0;
-
-        if (updateBuffers) {
-            _previousFrameIndex = resultingFrameIndex;
-
-            const vectorImpl<mat4<F32>>& animationTransforms = 
-                _animator.transforms(_currentAnimIndex, to_uint(_previousFrameIndex));
-
-
-            _boneTransformBuffer->SetData((const bufferPtr)animationTransforms.data());
+        if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
+            _previousAnimationIndex = _currentAnimIndex;
+            uploadAnimationToGPU();
             _boneTransformBuffer->incQueue();
         }
     }
@@ -147,9 +147,11 @@ bool AnimationComponent::onDraw(RenderStage currentStage) {
         return true;
     }
     
+    size_t boneCount = _animator.boneCount();
     _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(
         ShaderBufferLocation::BONE_TRANSFORMS,
-        vec2<U32>(0, _boneTransformBuffer->getPrimitiveCount()),
+        vec2<U32>(_previousFrameIndex * boneCount,
+                  boneCount),
         *_boneTransformBuffer);
 
     return true;
@@ -180,7 +182,6 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
         return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
     }
 
-    I32 boneIndex = _animator.boneIndex(name);
     I32 frameIndex = _animator.frameIndexForTimeStamp(animationID, timeStamp);
 
     if (frameIndex == -1) {
@@ -188,7 +189,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
         return cacheIdentity;
     }
 
-    return _animator.transforms(animationID, frameIndex).at(boneIndex);
+    return _animator.transforms(animationID, frameIndex).at(_animator.boneIndex(name));
 }
 
 Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {

@@ -104,6 +104,7 @@ class ParticleEmitter : public SceneNode {
     void uploadToGPU();
 
    private:
+    std::future<void> _updateTask;
     std::shared_ptr<ParticleData> _particles;
 
     vectorImpl<std::shared_ptr<ParticleSource>> _sources;

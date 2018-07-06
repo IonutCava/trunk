@@ -405,8 +405,8 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
     colGenerator->_minStartCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.4f, 0.4f, 1.0f)));
     colGenerator->_maxStartCol.set(Util::ToByteColor(vec4<F32>(1.0f, 0.8f, 0.8f, 1.0f)));
-    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.2f, 0.0f)));
-    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 0.5f, 0.0f)));
+    colGenerator->_minEndCol.set(Util::ToByteColor(vec4<F32>(0.5f, 0.2f, 0.2f, 0.5f)));
+    colGenerator->_maxEndCol.set(Util::ToByteColor(vec4<F32>(0.7f, 0.5f, 0.5f, 0.75f)));
     particleSource->addGenerator(colGenerator);
 
     std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();

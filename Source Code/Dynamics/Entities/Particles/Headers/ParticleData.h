@@ -48,10 +48,11 @@ class ParticleData {
         COUNT
     };
     /// helper array used for sorting
-    vectorImpl<U32> _indices;
+    vectorImpl<std::pair<U32, F32>> _indices;
     /// x,y,z = position; w = size
     vectorImpl<vec4<F32>> _position;
     vectorImpl<vec4<F32>> _renderingPositions;
+    vectorImpl<vec4<U8>>  _renderingColors;
     /// x,y,z = _velocity; w = angle;
     vectorImpl<vec4<F32>> _velocity;
     /// x,y,z = _acceleration; w = weight;
@@ -61,9 +62,9 @@ class ParticleData {
     /// r,g,b,a = color and transparency
     vectorImpl<vec4<U8>> _color;
     /// r,g,b,a = color and transparency
-    vectorImpl<vec4<U8>> _startColor;
+    vectorImpl<vec4<F32>> _startColor;
     /// r,g,b,a = color and transparency
-    vectorImpl<vec4<U8>> _endColor;
+    vectorImpl<vec4<F32>> _endColor;
     /// Alive flags
     vectorImpl<bool> _alive;
     /// Location of the texture file. Leave blank for color only
@@ -86,8 +87,6 @@ class ParticleData {
 
     /// Sort ALIVE particles only
     void sort();
-    /// Returns the sorted indices for ALIVE particles only
-    inline const vectorImpl<U32>& getSortedIndices() const { return _indices; }
 
    protected:
     U8 _lodLevel;

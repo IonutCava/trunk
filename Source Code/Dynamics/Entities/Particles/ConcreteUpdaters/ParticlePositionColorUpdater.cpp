@@ -3,7 +3,7 @@
 namespace Divide {
 
 void ParticlePositionColorUpdater::update(const U64 deltaTime,
-                                          ParticleData *p) {
+                                          std::shared_ptr<ParticleData> p) {
     const U32 endID = p->aliveCount();
     F32 diffr = _maxPos.x - _minPos.x;
     F32 diffg = _maxPos.y - _minPos.y;

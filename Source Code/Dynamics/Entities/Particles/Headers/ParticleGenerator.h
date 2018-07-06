@@ -41,7 +41,9 @@ class NOINITVTABLE ParticleGenerator {
     ParticleGenerator() {}
     virtual ~ParticleGenerator() {}
 
-    virtual void generate(const U64 deltaTime, ParticleData *p, U32 startIndex,
+    virtual void generate(const U64 deltaTime,
+                          std::shared_ptr<ParticleData> p,
+                          U32 startIndex,
                           U32 endIndex) = 0;
 };
 };

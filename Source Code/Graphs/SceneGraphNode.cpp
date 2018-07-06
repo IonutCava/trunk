@@ -15,17 +15,14 @@
 namespace Divide {
 
 bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
+    typedef SceneGraphNode::NodeChildren::value_type value_type;
     BoundingBox& bb = sgn.getBoundingBox();
+
     bb.reset();
-
-    const vectorImpl<BoundingBox>& bBoxes = 
-        GET_ACTIVE_SCENEGRAPH().getBBoxes();
-
-    for (const BoundingBox& bBox : bBoxes) {
-        bb.Add(bBox);
+    for (value_type it : sgn.getChildren()) {
+        SceneGraphNode_ptr child = it.second;
+        bb.Add(child->getBoundingBoxConst());
     }
-
-    bb.setComputed(true);
     return SceneNode::computeBoundingBox(sgn);
 }
 
@@ -79,12 +76,11 @@ SceneGraphNode::~SceneGraphNode()
 
     // delete child nodes recursively
     WriteLock w_lock(_childrenLock);
-     if (!_children.empty()) {
-        for (NodeChildren::value_type& iter : _children) {
-            DIVIDE_ASSERT(iter.second.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
-        }
-        _children.clear();
+    for (NodeChildren::value_type& iter : _children) {
+        DIVIDE_ASSERT(iter.second.unique(), "SceneGraphNode::~SceneGraphNode error: child still in use!");
     }
+    _children.clear();
+    
     w_lock.unlock();
 
     if (_node->getState() == ResourceState::RES_SPECIAL) {
@@ -103,17 +99,6 @@ void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
             parent->getBoundingBox().setComputed(false);
         }
     }
-}
-
-void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox>& boxes) const {
-    ReadLock r_lock(_childrenLock);
-
-    for (const NodeChildren::value_type& it : _children) {
-        it.second->getBBoxes(boxes);
-    }
-    r_lock.unlock();
-
-    boxes.push_back(_boundingBox);
 }
 
 void SceneGraphNode::useDefaultTransform(const bool state) {

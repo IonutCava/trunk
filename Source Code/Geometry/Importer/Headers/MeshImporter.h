@@ -43,7 +43,7 @@ namespace Divide {
             TextureEntry()
             {
                 _srgbSpace = false;
-                _wrapU = _wrapV = _wrapW = TextureWrap::CLAMP;
+                _wrapU = _wrapV = _wrapW = TextureWrap::REPEAT;
                 _operation = Material::TextureOperation::REPLACE;
             }
 

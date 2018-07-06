@@ -32,7 +32,8 @@ void calculateBoneToWorldTransform(Bone* child) {
 
 SceneAnimator::SceneAnimator()
     : _skeleton(nullptr),
-    _skeletonDepthCache(-1)
+    _skeletonDepthCache(-1),
+    _maximumAnimationFrames(0)
 {
 }
 
@@ -93,6 +94,7 @@ bool SceneAnimator::init() {
                 }
             }
         }
+        _maximumAnimationFrames = std::max(crtAnimation->frameCount(), _maximumAnimationFrames);
     }
 
     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);

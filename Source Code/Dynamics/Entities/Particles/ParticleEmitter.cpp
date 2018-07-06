@@ -97,15 +97,12 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
 
     U32 particleCount = _particles->totalCount();
 
-    _particleGPUBuffer->setBuffer(1, particleCount * 3, 4 * sizeof(F32), 1,
-                                  NULL, true, true, true);
-    _particleGPUBuffer->setBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL,
-                                  true, true, true);
+    _particleGPUBuffer->setBuffer(1, particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, true);
+    _particleGPUBuffer->setBuffer(2, particleCount * 3, 4 * sizeof(U8), 1, NULL, true, true, true);
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), 0, GFXDataFormat::FLOAT_32);
-    _particleGPUBuffer->getDrawAttribDescriptor(
-                            to_uint(AttribLocation::VERTEX_COLOR))
+    _particleGPUBuffer->getDrawAttribDescriptor(to_uint(AttribLocation::VERTEX_COLOR))
         .set(2, 1, 4, true, 4 * sizeof(U8), 0, GFXDataFormat::UNSIGNED_BYTE);
 
     for (U32 i = 0; i < particleCount; ++i) {
@@ -124,12 +121,12 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
         textureSampler.toggleSRGBColorSpace(true);
 
         ResourceDescriptor texture(_particles->_textureFileName);
+
         texture.setResourceLocation(
-            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") +
-            "/" +
-            ParamHandler::getInstance().getParam<stringImpl>(
-                "defaultTextureLocation") +
-            "/" + _particles->_textureFileName);
+            ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
+            ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
+            _particles->_textureFileName);
+
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
 
         _particleTexture = CreateResource<Texture>(texture);
@@ -260,6 +257,9 @@ void ParticleEmitter::uploadToGPU() {
     if (_uploaded || getAliveParticleCount() == 0) {
         return;
     }
+    
+    //_updateTask.wait();
+    //_updateTask.get();
 
     _particles->sort();
 
@@ -269,7 +269,7 @@ void ParticleEmitter::uploadToGPU() {
     _particleGPUBuffer->updateBuffer(1, _particles->aliveCount(), writeOffset,
                                         _particles->_renderingPositions.data());
     _particleGPUBuffer->updateBuffer(2, _particles->aliveCount(), writeOffset,
-                                        _particles->_color.data());
+                                        _particles->_renderingColors.data());
 
     _particleGPUBuffer->getDrawAttribDescriptor(13)
         .set(1, 1, 4, false, 4 * sizeof(F32), readOffset, GFXDataFormat::FLOAT_32);
@@ -297,43 +297,50 @@ bool ParticleEmitter::onDraw(SceneGraphNode& sgn,
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                                   SceneState& sceneState) {
-    if (!_enabled) {
+    if (!_enabled && !_uploaded) {
         return;
     }
 
-    
-    renderState().setDrawState(getAliveParticleCount() != 0);
+    bool validCount = getAliveParticleCount() > 0;
+    renderState().setDrawState(validCount);
 
-    PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
-    const vec3<F32>& eyePos =
-        sceneState.renderState().getCameraConst().getEye();
+    //if (validCount) {
+        _uploaded = false;
 
-    if (_updateParticleEmitterBB) {
-        sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
-        _updateParticleEmitterBB = false;
-    }
+        PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
+        if (_updateParticleEmitterBB) {
+            sgn.updateBoundingBoxTransform(transform->getWorldMatrix());
+            _updateParticleEmitterBB = false;
+        }
 
-    for (std::shared_ptr<ParticleSource>& source : _sources) {
-        source->emit(deltaTime, _particles.get());
-    }
+        const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
+        U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
 
-    U32 count = _particles->totalCount();
-    U8 lodLevel = sgn.getComponent<RenderingComponent>()->lodLevel();
-    for (U32 i = 0; i < count; ++i) {
-        _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
-        _particles->_position[i].w = 1.0f;
-        _particles->_acceleration[i].set(0.0f);
-        _particles->lodLevel(lodLevel);
-    }
+        //std::packaged_task<void()> task([this, &eyePos, &deltaTime, &lodLevel]() {
+        
+            for (std::shared_ptr<ParticleSource>& source : _sources) {
+                source->emit(deltaTime, _particles);
+            }
+            
+            U32 count = _particles->totalCount();
+            for (U32 i = 0; i < count; ++i) {
+                _particles->_misc[i].w =  _particles->_position[i].xyz().distanceSquared(eyePos);
+                _particles->_position[i].w = 1.0f;
+                _particles->_acceleration[i].set(0.0f);
+                _particles->lodLevel(lodLevel);
+            }
 
-    for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
-        up->update(deltaTime, _particles.get());
-    }
+            for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+                up->update(deltaTime, _particles);
+            }
 
-    // const vec3<F32>& origin = transform->getPosition();
-    // const Quaternion<F32>& orientation = transform->getOrientation();
+            // const vec3<F32>& origin = transform->getPosition();
+            // const Quaternion<F32>& orientation = transform->getOrientation();
+        //});
 
-    _uploaded = false;
+        //_updateTask = task.get_future();  // get a future
+        //std::thread(std::move(task)).detach(); // launch on a thread
+   // }
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }

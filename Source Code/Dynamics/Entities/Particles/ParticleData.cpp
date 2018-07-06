@@ -2,19 +2,6 @@
 
 namespace Divide {
 
-namespace {
-
-struct IndexComp {
-    IndexComp(ParticleData& refData) : _refData(refData._misc) {}
-
-    inline bool operator()(const U32& indexA, const U32& indexB) {
-        return _refData[indexA].w > _refData[indexB].w;
-    }
-
-    vectorImpl<vec4<F32>>& _refData;
-};
-};
-
 ParticleData::ParticleData(U32 particleCount, U32 optionsMask) {
     generateParticles(particleCount, optionsMask);
 }
@@ -95,15 +82,23 @@ void ParticleData::sort() {
 
     _indices.resize(count);
     _renderingPositions.resize(count);
+    _renderingColors.resize(count);
 
     for (U32 i = 0; i < count; ++i) {
-        _indices[i] = i;
+        _indices[i].first = i;
+        _indices[i].second = _misc[i].w;
     }
 
-    std::sort(std::begin(_indices), std::end(_indices), IndexComp(*this));
+    std::sort(std::begin(_indices), std::end(_indices),
+        [](const std::pair<U32, F32>& indexA,
+           const std::pair<U32, F32>& indexB) {
+               return indexA.second > indexB.second;
+        });
 
     for (U32 i = 0; i < count; ++i) {
-        _renderingPositions[i].set(_position[_indices[i]]);
+        U32 idx = _indices[i].first;
+        _renderingPositions[i].set(_position[idx]);
+        _renderingColors[i].set(_color[idx]);
     }
 }
 

@@ -3,7 +3,7 @@
 namespace Divide {
 
 void ParticleVelocityColorUpdater::update(const U64 deltaTime,
-                                          ParticleData *p) {
+                                          std::shared_ptr<ParticleData> p) {
     const U32 endID = p->aliveCount();
     F32 diffr = _maxVel.x - _minVel.x;
     F32 diffg = _maxVel.y - _minVel.y;
@@ -23,8 +23,8 @@ void ParticleVelocityColorUpdater::update(const U64 deltaTime,
         p->_color[i].set(
             Util::ToByteColor(floatColorRGB),
             to_ubyte(
-                Lerp(to_float(p->_startColor[i].a) / 255.0f,
-                     to_float(p->_endColor[i].a) / 255.0f,
+                Lerp(p->_startColor[i].a,
+                     p->_endColor[i].a,
                      p->_misc[i].y) *
                 255.0f));
     }

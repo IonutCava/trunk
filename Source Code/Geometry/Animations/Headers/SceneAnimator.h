@@ -171,6 +171,11 @@ class SceneAnimator {
     I32 boneIndex(const stringImpl& bname) const;
     const vectorImpl<Line>& skeletonLines(I32 animationIndex, const D32 dt);
 
+    /// Returns the frame count of the longest registered animation
+    inline U32 getMaxAnimationFrames() const {
+        return _maximumAnimationFrames;
+    }
+
     inline size_t boneCount() const {
         return _skeletonDepthCache;
     }
@@ -189,6 +194,8 @@ class SceneAnimator {
                        vectorImpl<Line>& lines);
 
    private:
+    /// Frame count of the longest registered animation
+    U32 _maximumAnimationFrames;
     /// Root node of the internal scene structure
     Bone* _skeleton;
     I32   _skeletonDepthCache;

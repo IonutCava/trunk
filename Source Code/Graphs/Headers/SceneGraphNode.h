@@ -176,8 +176,6 @@ class SceneGraphNode : public GUIDWrapper,
     inline const BoundingBox& getInitialBoundingBox() const {
         return _initialBoundingBox;
     }
-
-    void getBBoxes(vectorImpl<BoundingBox>& boxes) const;
     /*Bounding Box Management*/
 
     void useDefaultTransform(const bool state);

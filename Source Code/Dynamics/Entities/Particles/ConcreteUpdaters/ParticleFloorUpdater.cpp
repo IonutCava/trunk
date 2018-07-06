@@ -3,7 +3,7 @@
 
 namespace Divide {
 
-void ParticleFloorUpdater::update(const U64 deltaTime, ParticleData *p) {
+void ParticleFloorUpdater::update(const U64 deltaTime, std::shared_ptr<ParticleData> p) {
     const U32 endID = p->aliveCount();
 
     STUBBED("ToDo: add proper orientation support! -Ionut")

@@ -46,7 +46,7 @@ class ParticleAttractorUpdater : public ParticleUpdater {
 
     ~ParticleAttractorUpdater() {}
 
-    virtual void update(const U64 deltaTime, ParticleData* p) override;
+    virtual void update(const U64 deltaTime, std::shared_ptr<ParticleData> p) override;
 
     inline size_t collectionSize() const { return _attractors.size(); }
     inline void add(const vec4<F32>& attractor) {

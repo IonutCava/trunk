@@ -92,6 +92,9 @@ class AnimationComponent : public SGNComponent {
     const vectorImpl<Line>& skeletonLines() const;
 
    protected:
+    void uploadAnimationToGPU();
+
+   protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
     SceneAnimator& _animator;
     /// Current animation index for the current SGN
@@ -100,6 +103,8 @@ class AnimationComponent : public SGNComponent {
     U64 _currentTimeStamp;
     /// Previous frame index. Gets reset to -1 when animation changes
     I32 _previousFrameIndex;
+    /// Previous animation index
+    I32 _previousAnimationIndex;
     /// Parent time stamp (e.g. Mesh). 
     /// Should be identical for all nodes of the same level with the same parent
     U64 _parentTimeStamp;

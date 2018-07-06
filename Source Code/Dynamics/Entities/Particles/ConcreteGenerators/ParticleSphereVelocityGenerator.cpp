@@ -3,7 +3,8 @@
 namespace Divide {
 
 void ParticleSphereVelocityGenerator::generate(const U64 deltaTime,
-                                               ParticleData *p, U32 startIndex,
+                                               std::shared_ptr<ParticleData> p,
+                                               U32 startIndex,
                                                U32 endIndex) {
     DIVIDE_ASSERT(
         IS_VALID_CONTAINER_RANGE(to_uint(p->_position.size()),

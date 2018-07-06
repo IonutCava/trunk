@@ -55,13 +55,6 @@ class SceneGraph : private NonCopyable {
         return _root;
     }
 
-    inline vectorImpl<BoundingBox>& getBBoxes() {
-        _boundingBoxes.clear();
-        _boundingBoxes.reserve(_root->getChildren().size());
-        _root->getBBoxes(_boundingBoxes);
-        return _boundingBoxes;
-    }
-
     inline std::weak_ptr<SceneGraphNode> findNode(const stringImpl& name,
                                                   bool sceneNodeName = false) {
         return _root->findNode(name, sceneNodeName);
@@ -82,7 +75,6 @@ class SceneGraph : private NonCopyable {
 
    private:
     SceneGraphNode_ptr _root;
-    vectorImpl<BoundingBox> _boundingBoxes;
     vectorImpl<std::weak_ptr<SceneGraphNode>> _pendingDeletionNodes;
 };
 

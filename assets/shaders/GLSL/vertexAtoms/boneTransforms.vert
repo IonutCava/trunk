@@ -1,8 +1,7 @@
 #ifndef _BONE_TRANSFORM_VERT_
 #define _BONE_TRANSFORM_VERT_
 
-//layout(binding = BUFFER_BONE_TRANSFORMS, std430) coherent readonly buffer dvd_BoneTransforms
-layout(binding = BUFFER_BONE_TRANSFORMS, std140) uniform dvd_BoneTransforms
+layout(binding = BUFFER_BONE_TRANSFORMS, std430) coherent readonly buffer dvd_BoneTransforms
 {
     mat4 boneTransforms[MAX_BONE_COUNT_PER_NODE];
 };

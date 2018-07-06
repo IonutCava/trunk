@@ -47,7 +47,10 @@ class ParticleVelocityFromPositionGenerator : public ParticleGenerator {
     ParticleVelocityFromPositionGenerator(const vec3<F32>& offset, F32 minScale,
                                           F32 maxScale)
         : _offset(offset), _minScale(minScale), _maxScale(maxScale) {}
-    virtual void generate(const U64 deltaTime, ParticleData* p, U32 startIndex,
+
+    virtual void generate(const U64 deltaTime,
+                          std::shared_ptr<ParticleData> p,
+                          U32 startIndex,
                           U32 endIndex) override;
 };
 };

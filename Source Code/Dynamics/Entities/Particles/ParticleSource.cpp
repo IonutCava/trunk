@@ -8,7 +8,7 @@ ParticleSource::ParticleSource(F32 emitRate) : _emitRate(emitRate) {}
 
 ParticleSource::~ParticleSource() {}
 
-void ParticleSource::emit(const U64 deltaTime, ParticleData* p) {
+void ParticleSource::emit(const U64 deltaTime, std::shared_ptr<ParticleData> p) {
     const F32 dt = Time::MicrosecondsToSeconds<F32>(deltaTime);
     const U32 maxNewParticles = to_uint(dt * _emitRate);
     const U32 startID = p->aliveCount();

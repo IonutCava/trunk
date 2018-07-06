@@ -67,18 +67,18 @@ stringImpl StringFormat(const stringImpl fmt_str, ...) {
 
 vec4<U8> ToByteColor(const vec4<F32>& floatColor) {
     return vec4<U8>(ToByteColor(floatColor.rgb()),
-                    to_ubyte(floatColor.a * 255));
+                    FLOAT_TO_CHAR(floatColor.a));
 }
 
 vec3<U8> ToByteColor(const vec3<F32>& floatColor) {
-    return vec3<U8>(to_ubyte(floatColor.r * 255),
-                    to_ubyte(floatColor.g * 255),
-                    to_ubyte(floatColor.b * 255));
+    return vec3<U8>(FLOAT_TO_CHAR_SNORM(floatColor.r),
+                    FLOAT_TO_CHAR_SNORM(floatColor.g),
+                    FLOAT_TO_CHAR_SNORM(floatColor.b));
 }
 
 vec4<U32> ToUIntColor(const vec4<F32>& floatColor) {
     return vec4<U32>(ToUIntColor(floatColor.rgb()),
-                     to_uint(floatColor.a * 255));
+                     FLOAT_TO_CHAR_SNORM(floatColor.a));
 }
 
 vec3<U32> ToUIntColor(const vec3<F32>& floatColor) {
@@ -90,13 +90,13 @@ vec3<U32> ToUIntColor(const vec3<F32>& floatColor) {
 
 vec4<F32> ToFloatColor(const vec4<U8>& byteColor) {
     return vec4<F32>(ToFloatColor(byteColor.rgb()),
-                     byteColor.a / 255.0f);
+                     CHAR_TO_FLOAT_SNORM(byteColor.a));
 }
 
 vec3<F32> ToFloatColor(const vec3<U8>& byteColor) {
-    return vec3<F32>(byteColor.r / 255.0f,
-                     byteColor.g / 255.0f,
-                     byteColor.b / 255.0f);
+    return vec3<F32>(CHAR_TO_FLOAT_SNORM(byteColor.r),
+                     CHAR_TO_FLOAT_SNORM(byteColor.g),
+                     CHAR_TO_FLOAT_SNORM(byteColor.b));
 }
 
 vec4<F32> ToFloatColor(const vec4<U32>& uintColor) {
