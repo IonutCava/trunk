@@ -31,6 +31,12 @@
     <Filter Include="DetourTileCache\Headers">
       <UniqueIdentifier>{25d6007d-f5ee-45c0-9dfc-4ca058881661}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ReCastContrib">
+      <UniqueIdentifier>{64e62976-ff91-41ed-abd5-65bf594bc30a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ReCastContrib\Headers">
+      <UniqueIdentifier>{c5e10f1f-258c-4965-9954-41d66e96e826}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Source\DebugDraw.cpp">
@@ -117,6 +123,9 @@
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Source\DetourTileCacheBuilder.cpp">
       <Filter>DetourTileCache</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\fastlz\fastlz.c">
+      <Filter>ReCastContrib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DebugUtils\Include\DebugDraw.h">
@@ -187,6 +196,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\DetourTileCache\Include\DetourTileCacheBuilder.h">
       <Filter>DetourTileCache\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\fastlz\fastlz.h">
+      <Filter>ReCastContrib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\TileCacheCompressor\Headers\DivideTileCacheCompressor.h">
+      <Filter>ReCastContrib\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\TileCacheCompressor\Headers\DivideTileCacheUtil.h">
+      <Filter>ReCastContrib\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

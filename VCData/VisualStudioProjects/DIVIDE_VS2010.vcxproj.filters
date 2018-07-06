@@ -581,6 +581,12 @@
     <Filter Include="AI\PathFinding\Headers">
       <UniqueIdentifier>{4bcd89e4-207a-4655-9425-ac5e75cd943d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching">
+      <UniqueIdentifier>{c80de33e-c595-456f-8693-e35e4072b221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\PathFinding\NavMeshes\DetourTileCaching\Headers">
+      <UniqueIdentifier>{da3cc5f1-cca8-4c6f-9358-b06116ae6bb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -1162,6 +1168,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp">
       <Filter>AI\PathFinding\NavMeshes</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1852,6 +1861,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshDefines.h">
       <Filter>AI\PathFinding\NavMeshes\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -14,7 +14,27 @@
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+//
+// Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+//
+// This software is provided 'as-is', without any express or implied
+// warranty.  In no event will the authors be held liable for any damages
+// arising from the use of this software.
+// Permission is granted to anyone to use this software for any purpose,
+// including commercial applications, and to alter it and redistribute it
+// freely, subject to the following restrictions:
+// 1. The origin of this software must not be misrepresented; you must not
+//    claim that you wrote the original software. If you use this software
+//    in a product, an acknowledgment in the product documentation would be
+//    appreciated but is not required.
+// 2. Altered source versions must be plainly marked as such, and must not be
+//    misrepresented as being the original software.
+// 3. This notice may not be removed or altered from any source distribution.
+//
+// Changes, Additions and Refactoring : Copyright (c) 2010-2011 Lethal Concept, LLC
+// Changes, Additions and Refactoring Author: Simon Wittenberg (MD)
+// The above license is fully inherited.
+//
 //
 // T3D 1.1 NavMesh class and supporting methods.
 // Daniel Buckmaster, 2011
@@ -36,6 +56,7 @@
 class SceneGraphNode;
 
 namespace Navigation {
+
 	static const I32 NAVMESHSET_MAGIC = 'M'<<24 | 'S'<<16 | 'E'<<8 | 'T'; //'MSET';
 	static const I32 NAVMESHSET_VERSION = 1;
 
@@ -51,12 +72,14 @@ namespace Navigation {
 		I32 dataSize;
 	};
 
-    	/// @class NavigationMesh
+    /// @class NavigationMesh
 	/// Represents a set of bounds within which a Recast navigation mesh is generated.
 	class NavMeshDebugDraw;
+
 	class NavigationMesh : public GUIDWrapper/*,public SceneObject */{
 	      friend class NavigationPath;
     protected:
+
          enum RenderMode {
             RENDER_NAVMESH,
             RENDER_CONTOURS,
@@ -69,24 +92,25 @@ namespace Navigation {
         inline void setFileName(const std::string& fileName) {_fileName.append(fileName);}
 		/// Initiates the NavigationMesh build process, which includes notifying the
 		/// clients and posting a task.
-		bool build(SceneGraphNode* const sgn,bool threaded = true);
+		bool build(SceneGraphNode* const sgn, bool threaded = true);
 		/// Save the NavigationMesh to a file.
 		bool save();
-
 		/// Load a saved NavigationMesh from a file.
 		bool load(SceneGraphNode* const node);
+
         void render();
         inline void debugDraw(bool state) {_debugDraw = state;}
         inline bool debugDraw() {return _debugDraw;}
-        inline void setRenderMode(RenderMode mode) {_renderMode = mode;}
-        inline void setRenderConnections(bool state) {_renderConnections = state;}
+
+        inline void setRenderMode(const RenderMode& mode) {_renderMode = mode;}
+        inline void setRenderConnections(bool state)      {_renderConnections = state;}
 		
 		NavigationMesh();
 		~NavigationMesh();
 
 	protected:
 
-		dtNavMesh const* getNavigationMesh() { return nm; }
+		dtNavMesh const* getNavigationMesh() { return _navMesh; }
 
 	private:
 
@@ -114,13 +138,13 @@ namespace Navigation {
 		bool _buildThreaded;
 		/// @name Intermediate data
 		/// @{
-		rcHeightfield        *hf;
-		rcCompactHeightfield *chf;
-		rcContourSet         *cs;
-		rcPolyMesh           *pm;
-		rcPolyMeshDetail     *pmd;
-		dtNavMesh            *nm;
-		dtNavMesh            *tnm;
+		rcHeightfield        *_heightField;
+		rcCompactHeightfield *_compactHeightField;
+		rcContourSet         *_countourSet;
+		rcPolyMesh           *_polyMesh;
+		rcPolyMeshDetail     *_polyMeshDetail;
+		dtNavMesh            *_navMesh;
+		dtNavMesh            *_tempNavMesh;
 		/// Free all stored working data.
 		/// @param freeAll Force all data to be freed, retain none.
 		void freeIntermediates(bool freeAll);
@@ -143,7 +167,7 @@ namespace Navigation {
 		///SceneGraphNode from which to build
 		SceneGraphNode* _sgn;
         boost::atomic<bool> _debugDraw;
-        boost::atomic<bool> _renderConnections;
+        bool _renderConnections;
         RenderMode _renderMode;
 		///DebugDraw interface
 		NavMeshDebugDraw *_debugDrawInterface;

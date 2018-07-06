@@ -48,57 +48,68 @@
 namespace Navigation {
 
 	// This struct contains the vertices and triangles in recast coords
-	struct NavModelData {
-		NavModelData() {
-			verts = 0;
-			vert_ct = 0;
-			vert_cap = 0;
-			normals = 0;
-			tri_ct= 0;
-			tri_cap = 0;
-			tris = 0;
-            valid = false;
+	class NavModelData {
+
+	public:
+		NavModelData() : _vertices(0),
+						 _vertexCount(0),
+						 _vertexCapacity(0),
+						 _normals(0),
+						 _triangleCount(0),
+						 _triangleCapacity(0),
+						 _triangles(0),
+						 _valid(false)
+		{
 		}
 
 		void clear(bool del = true)  {
-            valid = false;
-			vert_ct = 0;
-			tri_ct = 0;
-			if(del)	SAFE_DELETE_ARRAY(verts)
-			else verts = 0;
-			vert_cap = 0;
-			vert_ct = 0;
-			if(del)	SAFE_DELETE_ARRAY(tris)
-			else tris = 0;
-			tri_cap = 0;
-			tri_ct = 0;
-			if(del)	SAFE_DELETE_ARRAY(normals)
-			else normals = 0;
-            triangleAreaType.clear();
-            navMeshName = "";
+            _valid = false;
+
+			_vertexCount = _triangleCount = 0;
+			_vertexCapacity = _vertexCount = 0;
+			_triangleCapacity = _triangleCount = 0;
+
+			if(del)	SAFE_DELETE_ARRAY(_vertices)
+			else	_vertices = 0;
+    		
+			if(del)	SAFE_DELETE_ARRAY(_triangles)
+			else    _triangles = 0;
+			
+			if(del)	SAFE_DELETE_ARRAY(_normals)
+			else _normals = 0;
+
+            _triangleAreaType.clear();
+            _navMeshName = "";
 		}
 
-		F32* verts;
-		U32  vert_cap;
-		U32  vert_ct;
-		F32* normals;
-		U32  tri_ct;
-		U32  tri_cap;
-		I32* tris;
-        vectorImpl<SamplePolyAreas > triangleAreaType;
-        bool valid;
-        std::string navMeshName;
+		inline bool  isValid()           const {return _valid;}
+		inline void  isValid(bool state)       {_valid = state;}
 
-        inline void  setName(const std::string& name) {navMeshName = name;}
-        inline const std::string& getName() {return navMeshName;}
-		inline const F32* getVerts() const { return verts; }
-		inline const F32* getNormals() const { return normals; }
-		inline const I32* getTris() const { return tris; }
-		inline U32 getVertCount() const { return vert_ct; }
-		inline U32 getTriCount() const { return tri_ct; }
-        inline vectorImpl<SamplePolyAreas >& getAreaTypes() {return triangleAreaType;}
+        inline void  setName(const std::string& name)      {_navMeshName = name;}
+        inline const std::string& getName()          const {return _navMeshName;}
+
+		inline const F32* getVerts()     const { return _vertices; }
+		inline const F32* getNormals()   const { return _normals; }
+		inline const I32* getTris()      const { return _triangles; }
+		inline       U32  getVertCount() const { return _vertexCount; }
+		inline       U32  getTriCount()  const { return _triangleCount; }
+
+        inline vectorImpl<SamplePolyAreas >& getAreaTypes() {return _triangleAreaType;}
+	
+		F32* _vertices;
+		F32* _normals;
+		I32* _triangles;
+
+		U32  _vertexCapacity;
+		U32  _vertexCount;
+		U32  _triangleCount;
+		U32  _triangleCapacity;
+
+	private:
+        bool _valid;
+		std::string _navMeshName;
+		vectorImpl<SamplePolyAreas > _triangleAreaType;
 	};
-
 
 
 	namespace NavigationMeshLoader {
@@ -112,9 +123,11 @@ namespace Navigation {
 		};
 
 		NavModelData loadMeshFile(const char* fileName);
-		NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals = false);
-		bool saveMeshFile(NavModelData data, const char* filename, const char* activeScene = NULL);
-        NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
+		bool         saveMeshFile(const NavModelData& data, const char* filename, const std::string& activeSceneName = "");
+
+		NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals = false);
+
+		        NavModelData parseNode(SceneGraphNode* sgn = NULL, const std::string& navMeshName = "");
 
 		NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* set = NULL);
 		void addVertex(NavModelData* modelData, const vec3<F32>& vertex);

@@ -39,7 +39,7 @@ public:
 							     vec2<F32>(1,1),
 							     vec2<F32>(0,0),
 							     vec2<F32>(1,0)};
-		U16 indices[] = {2, 0, 1, 1, 2, 3};
+		U16 indices[] = {2, 0, 1, 1, 2, 3, 1, 0, 2, 2, 1, 3};
 
 		_geometry->reservePositionCount(4);
 		_geometry->reserveNormalCount(4);
@@ -52,7 +52,7 @@ public:
 			_geometry->getTexcoord().push_back(texcoords[i]);
 		}
 
-		for(U8 i = 0; i < 6; i++){
+		for(U8 i = 0; i < 12; i++){
 			//CCW draw order
 			_geometry->addIndex(indices[i]);
 			//  v0----v1

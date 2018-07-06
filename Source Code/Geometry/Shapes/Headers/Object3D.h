@@ -26,14 +26,14 @@ class VertexBufferObject;
 class Object3D : public SceneNode {
 public:
 	enum ObjectType {
-		SPHERE_3D = 0,
-		BOX_3D,
-		QUAD_3D,
-		TEXT_3D,
-		MESH,
-		SUBMESH,
-		OBJECT_3D_FLYWEIGHT,
-        OBJECT_3D_PLACEHOLDER
+		SPHERE_3D = toBit(0),
+		BOX_3D    = toBit(1),
+		QUAD_3D   = toBit(2),
+		TEXT_3D   = toBit(3),
+		MESH      = toBit(4),
+		SUBMESH   = toBit(5),
+		FLYWEIGHT = toBit(6),
+		OBJECT_3D_PLACEHOLDER = toBit(7)
 	};
 
 	enum ObjectFlag {

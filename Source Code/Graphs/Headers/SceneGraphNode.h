@@ -146,7 +146,7 @@ public:
 	inline const NavigationContext& getNavigationContext() const {return _navigationContext;}
 
 	inline void  setUsageContext(const UsageContext& newContext)           {_usageContext = newContext;}
-	inline void  setNavigationContext(const NavigationContext& newContext) {_navigationContext = newContext;}
+	       void  setNavigationContext(const NavigationContext& newContext);
 	
     void addBoundingBox(const BoundingBox& bb, const SceneNodeType& type);
     void setBBExclusionMask(U32 bbExclusionMask) {_bbAddExclusionList = bbExclusionMask;}

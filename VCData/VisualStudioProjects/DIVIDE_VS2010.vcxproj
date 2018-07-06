@@ -201,6 +201,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavigationPath.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\DivideTileCache.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMesh.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshContext.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\NavMeshes\NavMeshDebugDraw.cpp" />
@@ -397,6 +401,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Headers\NavigationPath.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCache.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMesh.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshConfig.h" />
     <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\Headers\NavMeshContext.h" />

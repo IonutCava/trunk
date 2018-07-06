@@ -281,3 +281,10 @@ Transform* const SceneGraphNode::getTransform(){
 	}
 	return _transform;
 }
+
+void SceneGraphNode::setNavigationContext(const NavigationContext& newContext) {
+	_navigationContext = newContext;
+	for_each(NodeChildren::value_type& it, _children){
+		it.second->setNavigationContext(_navigationContext);
+	}
+}

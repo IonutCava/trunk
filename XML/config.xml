@@ -65,7 +65,7 @@
 	<anaglyphOffset>0.16</anaglyphOffset>
 	<enableNoise>false</enableNoise>
 	<enableDepthOfField>false</enableDepthOfField>
-	<enableBloom>false</enableBloom>
+	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>
 	<enableHDR>true</enableHDR>
 	<enableSSAO>false</enableSSAO>

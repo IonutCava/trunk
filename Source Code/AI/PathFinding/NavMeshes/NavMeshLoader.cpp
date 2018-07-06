@@ -64,14 +64,14 @@ namespace Navigation {
 				}
 				if (row[0] == 'f')  {
 					// Faces
-					nv = parseFace(row+1, face, 32, modelData.vert_ct);
+					nv = parseFace(row+1, face, 32, modelData._vertexCount);
 					for (I32 i = 2; i < nv; ++i) {
 						const I32 a = face[0];
 						const I32 b = face[i-1];
 						const I32 c = face[i];
-						if (a < 0 || a >= (I32)modelData.vert_ct || 
-							b < 0 || b >= (I32)modelData.vert_ct || 
-							c < 0 || c >= (I32)modelData.vert_ct) continue;
+						if (a < 0 || a >= (I32)modelData._vertexCount || 
+							b < 0 || b >= (I32)modelData._vertexCount || 
+							c < 0 || c >= (I32)modelData._vertexCount) continue;
 
 						addTriangle(&modelData, vec3<U32>(a, b, c));
 					}
@@ -81,12 +81,12 @@ namespace Navigation {
 			SAFE_DELETE_ARRAY(buf);
 
 			// Calculate normals.
-			modelData.normals = new F32[modelData.tri_ct*3];
+			modelData._normals = new F32[modelData._triangleCount*3];
 
-			for (I32 i = 0; i < (I32)modelData.tri_ct*3; i += 3)   {
-				const F32* v0 = &modelData.verts[modelData.tris[i]*3];
-				const F32* v1 = &modelData.verts[modelData.tris[i+1]*3];
-				const F32* v2 = &modelData.verts[modelData.tris[i+2]*3];
+			for (I32 i = 0; i < (I32)modelData._triangleCount*3; i += 3)   {
+				const F32* v0 = &modelData._vertices[modelData._triangles[i]*3];
+				const F32* v1 = &modelData._vertices[modelData._triangles[i+1]*3];
+				const F32* v2 = &modelData._vertices[modelData._triangles[i+2]*3];
 
 				F32 e0[3], e1[3];
 				for (I32 j = 0; j < 3; ++j)  {
@@ -94,7 +94,7 @@ namespace Navigation {
 					e1[j] = v2[j] - v0[j];
 				}
 
-				F32* n = &modelData.normals[i];
+				F32* n = &modelData._normals[i];
 				n[0] = e0[1]*e1[2] - e0[2]*e1[1];
 				n[1] = e0[2]*e1[0] - e0[0]*e1[2];
 				n[2] = e0[0]*e1[1] - e0[1]*e1[0];
@@ -109,15 +109,14 @@ namespace Navigation {
 
 			return modelData;
 		}
-		bool saveMeshFile(NavModelData data, const char* filename, const char* activeScene/* = NULL*/) {
-			if( ! data.getVertCount() || ! data.getTriCount())
-				return false;
+		bool saveMeshFile(const NavModelData& data, const char* filename, const std::string& activeSceneName/* = NULL*/) {
+			if(!data.getVertCount() || !data.getTriCount())	return false;
 
 			std::string path(ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/navMeshes/");
 			std::string filenamestring(filename);
 			//CreatePath //IsDirectory
 
-			if(activeScene) path +=  std::string(activeScene);
+			if(!activeSceneName.empty()) path +=  activeSceneName;
 		
 			path += std::string("/") + filenamestring + std::string(".obj");
 			// Create the file if it doesn't exists
@@ -129,8 +128,8 @@ namespace Navigation {
 			myfile.open(path.c_str());
 			if(!myfile.is_open()) return false;
 
-			F32* vstart = data.verts;
-			I32* tstart = data.tris;
+			F32* vstart = data._vertices;
+			I32* tstart = data._triangles;
 
 			for(U32 i = 0; i < data.getVertCount(); i++)  {
 				F32* vp = vstart + i*3;
@@ -146,44 +145,45 @@ namespace Navigation {
 			return true;
 		}
 
-		NavModelData mergeModels(NavModelData a, NavModelData b, bool delOriginals/* = false*/) {
+		NavModelData mergeModels(NavModelData& a,NavModelData& b, bool delOriginals/* = false*/) {
 
 			NavModelData mergedData;
-			if(a.verts || b.verts)  {
-				if(!a.verts)         return b;
-				else if (! b.verts ) return a;
+			if(a.getVerts() || b.getVerts())  {
+				if(!a.getVerts())         return b;
+				else if (! b.getVerts() ) return a;
 			
 				mergedData.clear();
 
-				I32 totalVertCt = (a.vert_ct + b.vert_ct);
+				I32 totalVertCt = (a.getVertCount() + b.getVertCount());
 				I32 newCap = 8;
 
 				while(newCap < totalVertCt)	newCap *= 2;
 
-				mergedData.verts = new F32[newCap*3];
-				mergedData.vert_cap = newCap;
-				mergedData.vert_ct = totalVertCt;
-				memcpy(mergedData.verts,               a.verts, a.vert_ct*3*sizeof(F32));
-				memcpy(mergedData.verts + a.vert_ct*3, b.verts, b.vert_ct*3*sizeof(F32));
+				mergedData._vertices = new F32[newCap*3];
+				mergedData._vertexCapacity = newCap;
+				mergedData._vertexCount = totalVertCt;
 
-				I32 totalTriCt = (a.tri_ct + b.tri_ct);
+				memcpy(mergedData._vertices,                      a.getVerts(), a.getVertCount()*3*sizeof(F32));
+				memcpy(mergedData._vertices + a.getVertCount()*3, b.getVerts(), b.getVertCount()*3*sizeof(F32));
+
+				I32 totalTriCt = (a.getTriCount() + b.getTriCount());
 				newCap = 8;
 
 				while(newCap < totalTriCt)	newCap *= 2;
 
-				mergedData.tris = new I32[newCap*3];
-				mergedData.tri_cap = newCap;
-				mergedData.tri_ct = totalTriCt;
-				I32 aFaceSize = a.tri_ct * 3;
-				memcpy(mergedData.tris, a.tris, aFaceSize*sizeof(I32));
+				mergedData._triangles = new I32[newCap*3];
+				mergedData._triangleCapacity = newCap;
+				mergedData._triangleCount = totalTriCt;
+				I32 aFaceSize = a.getTriCount() * 3;
+				memcpy(mergedData._triangles, a.getTris(), aFaceSize*sizeof(I32));
 
-				I32 bFaceSize = b.tri_ct * 3;
-				I32* bFacePt = mergedData.tris + a.tri_ct * 3;// i like pointing at faces
-				memcpy(bFacePt, b.tris, bFaceSize*sizeof(I32));
+				I32 bFaceSize = b.getTriCount() * 3;
+				I32* bFacePt = mergedData._triangles + a.getTriCount() * 3;// i like pointing at faces
+				memcpy(bFacePt, b.getTris(), bFaceSize*sizeof(I32));
 
-				for(U32 i = 0; i < (U32)bFaceSize;i++)	*(bFacePt + i) += a.vert_ct;
+				for(U32 i = 0; i < (U32)bFaceSize;i++)	*(bFacePt + i) += a.getVertCount();
 
-				if(mergedData.vert_ct > 0) {
+				if(mergedData._vertexCount > 0) {
 					if(delOriginals)  {
 						a.clear();
 						b.clear();
@@ -197,41 +197,42 @@ namespace Navigation {
 
 		void addVertex(NavModelData* modelData, const vec3<F32>& vertex){
 
-			if (modelData->vert_ct+1 > modelData->vert_cap)  {
-				modelData->vert_cap = ! modelData->vert_cap ? 8 : modelData->vert_cap*2;
+			if (modelData->getVertCount()+1 > modelData->_vertexCapacity)  {
+				modelData->_vertexCapacity = ! modelData->_vertexCapacity ? 8 : modelData->_vertexCapacity*2;
 
-				F32* nv = new F32[modelData->vert_cap*3];
+				F32* nv = new F32[modelData->_vertexCapacity*3];
 
-				if (modelData->vert_ct)	memcpy(nv, modelData->verts, modelData->vert_ct*3*sizeof(F32));
-				if( modelData->verts )	SAFE_DELETE_ARRAY(modelData->verts);
+				if(modelData->getVertCount())	memcpy(nv, modelData->getVerts(), modelData->getVertCount()*3*sizeof(F32));
+				if(modelData->getVerts() )	    SAFE_DELETE_ARRAY(modelData->_vertices);
 
-				modelData->verts = nv;
+				modelData->_vertices = nv;
 			}
 
-			F32* dst = &modelData->verts[modelData->vert_ct*3];
+			F32* dst = &modelData->_vertices[modelData->getVertCount()*3];
 			*dst++ = vertex.x;
 			*dst++ = vertex.y;
 			*dst++ = vertex.z;
-			modelData->vert_ct++;
+			modelData->_vertexCount++;
 		}
 			
 		void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices, const SamplePolyAreas& areaType){
-			if (modelData->tri_ct+1 > modelData->tri_cap)  {
-				modelData->tri_cap = !modelData->tri_cap ? 8 : modelData->tri_cap*2;
-				I32* nv = new I32[modelData->tri_cap*3];
 
-				if (modelData->tri_ct)	memcpy(nv, modelData->tris, modelData->tri_ct*3*sizeof(I32));
-				if( modelData->tris )	SAFE_DELETE_ARRAY(modelData->tris);
-				modelData->tris = nv;
+			if (modelData->getTriCount()+1 > modelData->_triangleCapacity)  {
+				modelData->_triangleCapacity = !modelData->_triangleCapacity ? 8 : modelData->_triangleCapacity*2;
+				I32* nv = new I32[modelData->_triangleCapacity*3];
+
+				if (modelData->getTriCount())	memcpy(nv, modelData->_triangles, modelData->getTriCount()*3*sizeof(I32));
+				if( modelData->getTris() )   	SAFE_DELETE_ARRAY(modelData->_triangles);
+				modelData->_triangles = nv;
 			}
 
-			I32* dst = &modelData->tris[modelData->tri_ct*3];
+			I32* dst = &modelData->_triangles[modelData->getTriCount()*3];
 			*dst++ = triangleIndices.x;
 			*dst++ = triangleIndices.y;
 			*dst++ = triangleIndices.z;
 
 			modelData->getAreaTypes().push_back(areaType);
-			modelData->tri_ct++;
+			modelData->_triangleCount++;
 		}
 
 		NavModelData parseNode(SceneGraphNode* sgn, const std::string& navMeshName){
@@ -240,7 +241,7 @@ namespace Navigation {
 			data.clear(false);
 			data.setName(navMeshName);
 
-			return parse(sgn->getBoundingBox(), data, sgn);;
+			return parse(sgn->getBoundingBox(), data, sgn);
 		}
 
 		NavModelData parse(const BoundingBox& box, NavModelData& data, SceneGraphNode* sgn) {
@@ -248,7 +249,7 @@ namespace Navigation {
 			//Ignore if specified
 			if(sgn->getNavigationContext() == SceneGraphNode::NODE_IGNORE)  goto next;
 			//Skip small objects
-			if(box.getWidth() < 0.05f || box.getDepth() < 0.05f || box.getHeight() < 0.05f)  goto next;
+			if(/*box.getWidth() < 0.05f || box.getDepth() < 0.05f || */box.getHeight() < 0.05f)  goto next;
 
 			SceneNode* sn = sgn->getNode<SceneNode>();
 			assert(sn != NULL);
@@ -263,6 +264,11 @@ namespace Navigation {
 				}else{
 					//we just ignore these types
 				}
+			}
+			
+			if(nodeType == TYPE_OBJECT3D) {
+				U32 ignored3DObjectType = Object3D::MESH | Object3D::TEXT_3D | Object3D::FLYWEIGHT;
+				if(bitCompare(ignored3DObjectType, dynamic_cast<Object3D*>(sn)->getType())) goto next;
 			}
 
 			U32 numVert = 1;
@@ -293,12 +299,12 @@ namespace Navigation {
 				else /*sn->getType() == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
 				assert(geometry != NULL);
 
-				const vectorImpl<vec3<F32> >& verts = geometry->getPosition();
+				const vectorImpl<vec3<F32> >& _vertices = geometry->getPosition();
 
 				vec4<F32> hPos;
-				for (U32 i = 0; i < verts.size(); ++i ){
+				for (U32 i = 0; i < _vertices.size(); ++i ){
 					//Convert the current vertex position to homogeneous coordinates
-					const vec3<F32>& pos = verts[i];
+					const vec3<F32>& pos = _vertices[i];
 					hPos.set(pos.x,pos.y,pos.z,1.0f);
 					//Apply the node's transform
 					hPos = sgn->getTransform()->getGlobalMatrix() * hPos;
@@ -312,11 +318,11 @@ namespace Navigation {
 
 			}else if(level == DETAIL_LOW || level == DETAIL_BOUNDINGBOX ){
            
-				const vectorImpl<vec3<F32> >& verts = box.getPoints();
+				const vectorImpl<vec3<F32> >& _vertices = box.getPoints();
 
 				for(U32 i = 0; i < 8; i++){
 					numVert++;
-					addVertex(&data, verts[i]);
+					addVertex(&data, _vertices[i]);
 				}
 
 				for(U32 f = 0; f < 6; f++){

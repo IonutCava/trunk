@@ -147,6 +147,7 @@
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshBuilder.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNavMeshQuery.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\Detour\Source\DetourNode.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\fastlz\fastlz.c" />
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\Recast.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastAlloc.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\src\ReCast\ReCast\Source\RecastArea.cpp" />
@@ -179,6 +180,9 @@
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNavMeshQuery.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourNode.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\Detour\Include\DetourStatus.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\fastlz\fastlz.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\TileCacheCompressor\Headers\DivideTileCacheUtil.h" />
+    <ClInclude Include="..\..\Source Code\Libs\src\ReCast\RecastContrib\TileCacheCompressor\Headers\DivideTileCacheCompressor.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\Recast.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAlloc.h" />
     <ClInclude Include="..\..\Source Code\Libs\src\ReCast\ReCast\Include\RecastAssert.h" />

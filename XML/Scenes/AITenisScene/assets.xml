@@ -19,6 +19,7 @@
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
 </Net>
 
 
@@ -74,6 +75,7 @@
 	<orientation x="-90" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
 </Sponza>
 
 <cylinder>
@@ -83,4 +85,5 @@
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
 	<staticObject>true</staticObject>
+	<addToNavigation>true</addToNavigation>
 </cylinder>

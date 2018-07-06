@@ -24,14 +24,23 @@ namespace Navigation{
 	
 	class rcContextDivide : public rcContext{
     public:
-        rcContextDivide(bool state) : rcContext(state) {}
+        rcContextDivide(bool state) : rcContext(state) {resetTimers();}
         ~rcContextDivide() {}
+
     private:
         /// Logs a message.
 	    ///  @param[in]		category	The category of the message.
 	    ///  @param[in]		msg			The formatted message.
 	    ///  @param[in]		len			The length of the formatted message.
 	    void doLog(const rcLogCategory /*category*/, const char* /*msg*/, const I32 /*len*/);
+		void doResetTimers();
+		void doStartTimer(const rcTimerLabel /*label*/);
+		void doStopTimer(const rcTimerLabel /*label*/);
+		I32 doGetAccumulatedTime(const rcTimerLabel /*label*/) const;
+
+	private:
+		U32 _startTime[RC_MAX_TIMERS];
+		I32 _accTime[RC_MAX_TIMERS];
     };
 };
 
