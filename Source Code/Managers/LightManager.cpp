@@ -20,7 +20,8 @@ LightManager::LightManager()
     : _init(false),
       _shadowMapsEnabled(true),
       _previewShadowMaps(false),
-      _currentShadowCastingLight(nullptr)
+      _currentShadowCastingLight(nullptr),
+      _lightImpostorShader(nullptr)
 {
     _activeLightCount.fill(0);
     _lightTypeState.fill(true);
@@ -83,6 +84,10 @@ void LightManager::init() {
 
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]
         ->create(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS, sizeof(Light::ShadowProperties));
+
+    ResourceDescriptor lightImpostorShader("lightImpostorShader");
+    lightImpostorShader.setThreadedLoading(false);
+    _lightImpostorShader = CreateResource<ShaderProgram>(lightImpostorShader);
 
     _init = true;
 }
@@ -356,6 +361,16 @@ void LightManager::uploadLightData(LightType lightsByType, ShaderBufferLocation 
 
     U32 range = _activeLightCount[to_uint(lightsByType)];
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->bindRange(location, offset, range);
+}
+
+void LightManager::drawLightImpostors() const {
+    assert(_lightImpostorShader);
+    const U32 directionalLightCount = _activeLightCount[to_uint(LightType::DIRECTIONAL)];
+    const U32 pointLightCount = _activeLightCount[to_uint(LightType::POINT)];
+    const U32 spotLightCount = _activeLightCount[to_uint(LightType::SPOT)];
+
+    GFX_DEVICE.drawPoints(directionalLightCount + pointLightCount + spotLightCount,
+                          GFX_DEVICE.getDefaultStateBlock(true), _lightImpostorShader);
 }
 
 };

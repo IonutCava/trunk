@@ -31,6 +31,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _EASTL_HASH_MAP_H_
 #define _EASTL_HASH_MAP_H_
+
+#ifndef EA_COMPILER_HAS_MOVE_SEMANTICS
+#define EA_COMPILER_HAS_MOVE_SEMANTICS
+#endif
+
 #include <EASTL/hash_map.h>
 
 namespace hashAlg = eastl;

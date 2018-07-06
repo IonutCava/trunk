@@ -882,5 +882,8 @@
     <None Include="..\..\assets\shaders\GLSL\lightCull.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>

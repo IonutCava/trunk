@@ -1,7 +1,7 @@
 -- Vertex
 
 layout(location = 13) in vec4 particleNormalData;
-// Output data ; will be interpolated for each fragment.
+// Output data will be interpolated for each fragment.
 out vec2 texCoord;
 out vec4 vertexVP;
 out vec4 particleColor;

@@ -713,6 +713,7 @@ void Scene::debugDraw(RenderStage stage) {
         GFX_DEVICE.debugDraw(renderState());
         // Show NavMeshes
         AI::AIManager::getInstance().debugDraw(false);
+        LightManager::getInstance().drawLightImpostors();
     }
 }
 

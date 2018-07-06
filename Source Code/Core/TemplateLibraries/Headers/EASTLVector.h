@@ -31,7 +31,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef _EASTL_VECTOR_H_
 #define _EASTL_VECTOR_H_
-
+#ifndef EA_COMPILER_HAS_MOVE_SEMANTICS
+#define EA_COMPILER_HAS_MOVE_SEMANTICS
+#endif
 #include <EASTL/vector.h>
 
 namespace vectorAlg = eastl;

@@ -210,6 +210,7 @@
     <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl" />
     <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lightCull.glsl" />
+    <None Include="..\..\assets\shaders\GLSL\lightImpostorShader.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl" />
     <None Include="..\..\assets\shaders\GLSL\particles.glsl" />
     <None Include="..\..\assets\shaders\GLSL\passThrough.glsl" />

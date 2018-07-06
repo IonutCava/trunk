@@ -121,6 +121,8 @@ DEFINE_SINGLETON(LightManager)
         };
     }
 
+    void drawLightImpostors() const;
+
   protected:
     friend class RenderPass;
     bool generateShadowMaps();
@@ -149,6 +151,7 @@ DEFINE_SINGLETON(LightManager)
     bool _previewShadowMaps;
     bool _shadowMapsEnabled;
     Light* _currentShadowCastingLight;
+    ShaderProgram* _lightImpostorShader;
     std::array<U32, to_const_uint(LightType::COUNT)> _activeLightCount;
 
     std::array<ShaderBuffer*, to_const_uint(ShaderBufferType::COUNT)>  _lightShaderBuffer;
