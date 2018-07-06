@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -298,7 +298,7 @@ DEFINE_SINGLETON( InputInterface )
     bool               _bMustStop;
     bool               _bIsInitialized;
 
-    I16 _nStatus;
+    I8 _nStatus;
 
     // App. hart beat frequency.
     static const U8 _nHartBeatFreq = 20; // Hz
@@ -325,7 +325,7 @@ DEFINE_SINGLETON( InputInterface )
 	}
 
 public:
-	U8 initialize(Kernel* const kernel, const std::string& windowTitle)
+	I8 initialize(Kernel* const kernel, const std::string& windowTitle)
     {
 		if(_bIsInitialized)
 			return NO_ERR;
@@ -423,7 +423,7 @@ public:
 	}
 #endif
 
-    U8 tick()
+    I8 tick()
     {
 	  const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
 	  U8 nEffectUpdateCnt = 0;

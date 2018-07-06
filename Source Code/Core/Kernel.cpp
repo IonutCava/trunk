@@ -159,7 +159,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 		return returnCode;
 	}
 	PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
-	returnCode =_PFX.initPhysics();
+	returnCode =_PFX.initPhysics(60);
 	if(returnCode < 0) {
 		return returnCode;
 	}

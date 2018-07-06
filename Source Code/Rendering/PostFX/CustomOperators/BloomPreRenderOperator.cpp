@@ -13,8 +13,8 @@ BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader,
 																			 _blur(bloomShader),
 																	         _outputFBO(result)
 {
-	F32 width = _resolution.width;
-	F32 height = _resolution.height;
+	U16 width = _resolution.width;
+	U16 height = _resolution.height;
 	_tempBloomFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	_tempBloomFBO->Create(width/4,height/4);
 	_outputFBO->Create(width, height);

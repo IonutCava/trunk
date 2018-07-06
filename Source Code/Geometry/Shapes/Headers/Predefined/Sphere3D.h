@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -24,16 +24,16 @@ class Sphere3D : public Object3D {
 
 public:
 
-	Sphere3D(F32 radius, F32 resolution) : Object3D(SPHERE_3D),
+	Sphere3D(F32 radius, U16 resolution) : Object3D(SPHERE_3D),
 										_radius(radius),
 										_resolution(resolution){
 										_dirty = true;
 										}
 	
 	inline F32	  getRadius()    {return _radius;}
-	inline F32    getResolution() {return _resolution;}
+	inline U16    getResolution() {return _resolution;}
 	inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; _refreshVBO = true;}
-	inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
+	inline void   setResolution(U16 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
 
 	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
 		if(sgn->getBoundingBox().isComputed()) return true;
@@ -58,8 +58,8 @@ private:
 		I32 rings = _resolution;
 		I32 sectors = _resolution;
 		
-	    F32 const R = 1./(F32)(rings-1);
-        F32 const S = 1./(F32)(sectors-1);
+	    F32 const R = 1.0f/(rings-1);
+        F32 const S = 1.0f/(sectors-1);
         I32 r, s;
 
         _geometry->getPosition().reserve(rings * sectors);
@@ -97,7 +97,8 @@ private:
 	
 
 protected:
-	F32 _radius, _resolution;
+	F32 _radius;
+	U16 _resolution;
 	U32 _vertexCount;
 	bool _dirty;
 	

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -31,7 +31,7 @@ public:
 	virtual void idle() = 0;
 	virtual void release() = 0;
 	virtual void update() = 0;
-	virtual void process() = 0;
+	virtual void process(F32 timeStep) = 0;
 
 protected:
 	Scene* _parentScene;

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ private:
 	I8 _score;
 	vec4<F32> _sunVector;
 	SceneGraphNode* _groundPlaceholder;
-	vec2<F32> _prevMouse;
+	vec2<I32> _prevMouse;
 	bool _mousePressed;
 
 private: //Joc

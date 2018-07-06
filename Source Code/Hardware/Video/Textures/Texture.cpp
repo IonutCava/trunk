@@ -3,7 +3,7 @@
 #include "Core/Headers/ParamHandler.h"
 
 bool Texture::_generateMipmaps = true;
-unordered_map<U8, U32> Texture::textureBoundMap;
+unordered_map<I16, U32> Texture::_textureBoundMap;
 
 Texture::Texture(bool flipped) : HardwareResource(),
 								_flipped(flipped),
@@ -13,10 +13,10 @@ Texture::Texture(bool flipped) : HardwareResource(),
 								_bound(false),
 								_hasTransparency(false)
 {
-	if(textureBoundMap.empty()){
+	if(_textureBoundMap.empty()){
 		for(U8 i = 0; i < 15; i++){
 			//Set all 16 texture slots to 0
-			textureBoundMap.insert(std::make_pair(i,0));
+			_textureBoundMap.insert(std::make_pair(i,0));
 		}
 	}
 	/// Defaults
@@ -66,9 +66,9 @@ void Texture::resize(U16 width, U16 height){
 	/// ToDo: use gluScaleImage if this is needed!
 }
 
-bool Texture::checkBinding(U16 unit, U32 handle){
-	if(textureBoundMap[unit] != handle){
-		textureBoundMap[unit] = handle;
+bool Texture::checkBinding(I16 unit, U32 handle){
+	if(_textureBoundMap[unit] != handle){
+		_textureBoundMap[unit] = handle;
 		return true;
 	}
 	//return false;

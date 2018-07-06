@@ -70,9 +70,9 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 		///Use the specified shader path
 	    glswSetPath(std::string(getResourceLocation()+"GLSL/").c_str(), ".glsl");
 		if(GFX_DEVICE.getApiVersion() == OpenGL2x){
-			glswAddDirectiveToken("", "#version 120\n/*“Copyright 2009-2012 DIVIDE-Studio”*/");
+			glswAddDirectiveToken("", "#version 120\n/*“Copyright 2009-2013 DIVIDE-Studio”*/");
 		}else{
-			glswAddDirectiveToken("", "#version 130\n/*“Copyright 2009-2012 DIVIDE-Studio”*/");
+			glswAddDirectiveToken("", "#version 130\n/*“Copyright 2009-2013 DIVIDE-Studio”*/");
 		}
 		///Split the shader name to get the effect file name and the effect properties 
 		std::string shaderName = name.substr(0,name.find_first_of("."));

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -51,10 +51,10 @@ public:
 	
 	inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
 
-	///Insert a new scene factory method for the give name
+	///Insert a new scene factory method for the given name
 	template<class DerivedScene>
 	inline bool registerScene(const std::string& sceneName) {
-		_sceneFactory[sceneName] = boost::factory<DerivedScene*>();	
+		_sceneFactory.insert(std::make_pair(sceneName,boost::factory<DerivedScene*>()));	
 		return true;
 	}
 

@@ -4,9 +4,16 @@
 
 using namespace physx;
 
+<<<<<<< .mine
+PhysX::PhysX() : _currentScene(NULL), 
+                 _gPhysicsSDK(NULL),
+				 _foundation(NULL), 
+				 _pvdConnection(NULL){}
+=======
 PhysX::PhysX() : _currentScene(NULL), _gPhysicsSDK(NULL), _foundation(NULL), _pvdConnection(NULL){}
+>>>>>>> .r140
 
-I8 PhysX::initPhysics(){
+I8 PhysX::initPhysics(U8 targetFrameRate){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;
   PRINT_FN(Locale::get("START_PHYSX_API"));
   // create foundation object with default error and allocator callbacks.
@@ -27,6 +34,7 @@ I8 PhysX::initPhysics(){
 	   PxVisualDebuggerExt::createConnection(_pvdConnection,"localhost",5425, 10000);
    }
 #endif
+   updateTimeStep(targetFrameRate);
    return NO_ERR;
 }
 
@@ -45,7 +53,7 @@ bool PhysX::exitPhysics(){
 ///Process results
 void PhysX::process(){
 	if(_currentScene){
-		_currentScene->process(); 
+		_currentScene->process(_timeStep); 
 	}
 }
 

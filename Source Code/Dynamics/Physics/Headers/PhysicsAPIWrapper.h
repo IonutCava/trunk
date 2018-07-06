@@ -22,7 +22,7 @@ enum PhysicsAPI {
 #include "Hardware/Platform/Headers/PlatformDefines.h"
 class Scene;
 class SceneGraphNode;
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -38,7 +38,7 @@ class SceneGraphNode;
    You should have received a copy of the GNU Lesser General Public License
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 class PhysicsSceneInterface;
 class PhysicsAPIWrapper {
 
@@ -48,8 +48,9 @@ protected:
 	inline void setId(PhysicsAPI api) {_apiId = api;}
 	inline PhysicsAPI getId() { return _apiId;}
 
-    virtual I8 initPhysics() = 0;  
+    virtual I8 initPhysics(U8 targetFrameRate) = 0;  
 	virtual bool exitPhysics() = 0;
+	virtual void updateTimeStep(U8 timeStepFactor)  = 0;
     virtual void update() = 0;
     virtual void process() = 0;
     virtual void idle() = 0;

@@ -8,8 +8,8 @@
 	<item>box</item>
 	<item>dwarf</item>
 	<item>rifle</item>
-	<item>copacel</item>
-	<item>copac</item>
+	<!--<item>copacel</item>
+	<item>copac</item>-->
 </geometry>
 
 

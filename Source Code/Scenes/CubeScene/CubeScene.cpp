@@ -73,14 +73,15 @@ void CubeScene::render(){
 
 void CubeScene::processEvents(F32 time){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
-	F32 updateLights = 0.005f;
-
+	F32 updateLights = 0.05f;
+	F32 currentTime = GETTIME();
+	F32 currentTimeMS = GETMSTIME();
 	if(time - _eventTimers[0] >= updateLights){
 		for(U8 row=0; row<3; row++)
 			for(U8 col=0; col < lights.size()/3.0f; col++){
-				F32 x = col * 150.0f - 5.0f + cos(GETMSTIME()*(col-row+2)*0.008f)*200.0f;
-				F32 y = cos(GETTIME()*(col-row+2)*0.01f)*200.0f+20;;
-				F32 z = row * 500.0f -500.0f - cos(GETMSTIME()*(col-row+2)*0.009f)*200.0f+10;
+				F32 x = col * 150.0f - 5.0f + cos(currentTimeMS*(col-row+2)*0.008f)*200.0f;
+				F32 y = cos(currentTime*(col-row+2)*0.01f)*200.0f+20;;
+				F32 z = row * 500.0f -500.0f - cos(currentTimeMS*(col-row+2)*0.009f)*200.0f+10;
 				F32 r = 1;
 				F32 g = 1.0f-(row/3.0f);
 				F32 b = col/(lights.size()/3.0f);

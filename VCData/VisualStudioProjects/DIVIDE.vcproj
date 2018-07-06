@@ -40,15 +40,22 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+<<<<<<< .mine
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
+				PreprocessorDefinitions="_DEBUG;_CRT_SECURE_NO_WARNINGS"
+=======
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS"
+>>>>>>> .r140
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
+				StructMemberAlignment="0"
 				EnableEnhancedInstructionSet="2"
 				OpenMP="false"
 				WarningLevel="3"
 				DebugInformationFormat="4"
+				ShowIncludes="false"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -63,12 +70,20 @@
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/Y3"
+<<<<<<< .mine
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib freeglut_static_d.lib OIS_static_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib freetype_d.lib ftgl_static_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib"
+=======
 				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking_d.lib SDL.lib SDL_mixer.lib freeglut_d.lib OIS_static_d.lib freetype_d.lib expat_d.lib SILLY.lib pcre_d.lib libpng_d.lib libtiff_d.lib zlib_d.lib jpeg_d.lib CEGUIBase_Static_d.lib CEGUIExpatParser_Static_d.lib CEGUISILLYImageCodec_Static_d.lib CEGUIOpenGLRenderer_Static_d.lib CEGUIFalagardWRBase_Static_d.lib"
+>>>>>>> .r140
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
+<<<<<<< .mine
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+=======
 				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+>>>>>>> .r140
 				IgnoreAllDefaultLibraries="false"
-				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; libcmtd.lib"
+				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; libcmtd.lib;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
@@ -124,8 +139,13 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+<<<<<<< .mine
+				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\ftgl\include&quot;;&quot;$(EngineLibraries)\freetype\include&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
+				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS"
+=======
 				AdditionalIncludeDirectories="&quot;$(OutDir)../Source Code/Libs\src\ReCast&quot;;&quot;$(EngineLibraries)\freeglut\include&quot;;&quot;$(EngineLibraries)\GLEW\include&quot;;&quot;$(EngineLibraries)\SimpleINI\include&quot;;&quot;$(EngineLibraries)\DevIL\include&quot;;&quot;$(EngineLibraries)\OIS\include&quot;;&quot;$(EngineLibraries)\sdl\include&quot;;&quot;$(EngineLibraries)\Threadpool\include&quot;;&quot;$(OutDir)../Source Code&quot;;&quot;$(OutDir)../Source Code/Libs\includes&quot;;&quot;$(EngineLibraries)\cegui\include&quot;;&quot;$(EngineLibraries)\boost&quot;;&quot;$(EngineLibraries)\assimp\include&quot;;&quot;$(EngineLibraries)\physx\include\&quot;;&quot;$(EngineLibraries)\physx\include\foundation&quot;;&quot;$(EngineLibraries)\physx\include\extensions&quot;;&quot;$(EngineLibraries)\physx\include\common&quot;;&quot;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include&quot;"
 				PreprocessorDefinitions="_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS"
+>>>>>>> .r140
 				StringPooling="true"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
@@ -146,9 +166,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib freeglut_static.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib"
+				AdditionalDependencies="glu32.lib opengl32.lib DevIL.lib ILU.lib ILUT.lib assimp.lib DIVIDE-Networking.lib SDL.lib SDL_mixer.lib freeglut_static.lib OIS_static.lib freetype.lib expat.lib SILLY.lib pcre.lib libpng.lib libtiff.lib zlib.lib jpeg.lib ftgl_static.lib CEGUIBase_Static.lib CEGUIExpatParser_Static.lib CEGUISILLYImageCodec_Static.lib CEGUIOpenGLRenderer_Static.lib CEGUIFalagardWRBase_Static.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
+<<<<<<< .mine
+				AdditionalLibraryDirectories="&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\ftgl\lib&quot;;&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+=======
 				AdditionalLibraryDirectories="&quot;$(EngineLibraries)\SILLY\lib&quot;;&quot;$(EngineLibraries)\libjpeg\lib&quot;;&quot;$(EngineLibraries)\zlib\lib&quot;;&quot;$(EngineLibraries)\libtiff\lib&quot;;&quot;$(EngineLibraries)\libpng\lib&quot;;&quot;$(EngineLibraries)\pcre\lib&quot;;&quot;$(EngineLibraries)\expat\lib&quot;;&quot;$(EngineLibraries)\freetype\lib&quot;;&quot;$(EngineLibraries)\OIS\lib&quot;;&quot;$(EngineLibraries)\GLEW\lib&quot;;&quot;$(EngineLibraries)\DevIL\lib&quot;;&quot;$(EngineLibraries)\sdl\lib&quot;;&quot;$(OutDir)../Source Code/Libs\lib&quot;;&quot;$(EngineLibraries)\cegui\lib&quot;;&quot;$(EngineLibraries)\boost\lib&quot;;&quot;$(EngineLibraries)\freeglut\lib&quot;;&quot;$(EngineLibraries)\assimp\lib&quot;;&quot;$(EngineLibraries)\physx\lib\win32&quot;"
+>>>>>>> .r140
 				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames="LIBCMT.lib; LIBCPMT.lib; LIBCMTD.lib"
 				GenerateDebugInformation="true"
@@ -2119,6 +2143,8 @@
 			Name="LIBS"
 			>
 			<Filter
+<<<<<<< .mine
+=======
 				Name="ReCast"
 				>
 				<File
@@ -2179,6 +2205,7 @@
 				</Filter>
 			</Filter>
 			<Filter
+>>>>>>> .r140
 				Name="Detour"
 				>
 				<File
@@ -2324,7 +2351,11 @@
 				Name="Camera"
 				>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Recast.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Camera\Camera.cpp"
+>>>>>>> .r140
 					>
 				</File>
 				<Filter
@@ -2356,19 +2387,36 @@
 				Name="PostFX"
 				>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastAlloc.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\PostFX\PostFX.cpp"
+>>>>>>> .r140
 					>
 				</File>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastArea.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStage.cpp"
+>>>>>>> .r140
 					>
 				</File>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastContour.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp"
+>>>>>>> .r140
 					>
 				</File>
+<<<<<<< .mine
+				<File
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastFilter.cpp"
+=======
 				<Filter
 					Name="Headers"
+>>>>>>> .r140
 					>
 					<File
 						RelativePath="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h"
@@ -2424,15 +2472,27 @@
 				Name="Headers"
 				>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastLayers.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Headers\FrameListener.h"
+>>>>>>> .r140
 					>
 				</File>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMesh.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Headers\Framerate.h"
+>>>>>>> .r140
 					>
 				</File>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastMeshDetail.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Headers\Frustum.h"
+>>>>>>> .r140
 					>
 				</File>
 			</Filter>
@@ -2440,18 +2500,30 @@
 				Name="Lighting"
 				>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRasterization.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Lighting\Light.cpp"
+>>>>>>> .r140
 					>
 				</File>
 				<File
+<<<<<<< .mine
+					RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\RecastRegion.cpp"
+=======
 					RelativePath="..\..\Source Code\Rendering\Lighting\LightShadowMapping.cpp"
+>>>>>>> .r140
 					>
 				</File>
 				<Filter
 					Name="Headers"
 					>
 					<File
+<<<<<<< .mine
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\Recast.h"
+=======
 						RelativePath="..\..\Source Code\Rendering\Lighting\Headers\Light.h"
+>>>>>>> .r140
 						>
 					</File>
 				</Filter>
@@ -2471,11 +2543,19 @@
 					Name="Headers"
 					>
 					<File
+<<<<<<< .mine
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAlloc.h"
+=======
 						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h"
+>>>>>>> .r140
 						>
 					</File>
 					<File
+<<<<<<< .mine
+						RelativePath="..\..\Source Code\Libs\src\ReCast\ReCast\Headers\RecastAssert.h"
+=======
 						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h"
+>>>>>>> .r140
 						>
 					</File>
 				</Filter>

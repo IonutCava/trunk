@@ -1,6 +1,4 @@
 #include "Headers/DXWrapper.h"
-
-#include "CEGUI.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
@@ -12,9 +10,8 @@ I8 DX_API::initHardware(const vec2<U16>& resolution){
 
 	PRINT_FN(Locale::get("START_D3D_API"));
 	D3D_ENUM_TABLE::fill();
-	///Build a Direct3D GUI renderer
-	//CEGUI::Direct3D10Renderer::bootstrapSystem( /*myD3D9Device*/NULL );
-	//GUI::getInstance().init();
+	//CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/NULL );
+	//GUI::getInstance().bindRenderer(renderer);
 	return DX_INIT_ERROR;
 }
 

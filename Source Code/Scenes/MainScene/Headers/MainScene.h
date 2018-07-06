@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -58,7 +58,7 @@ private:
 	vec2<F32> _sunAngle;
 	vec4<F32> _sunVector,_sunColor;
 	F32  _sun_cosy;
-	vec2<F32> _prevMouse;
+	vec2<I32> _prevMouse;
 	bool _mousePressed;
 	AudioDescriptor* _beep;
 	std::vector<Terrain*> _visibleTerrains;

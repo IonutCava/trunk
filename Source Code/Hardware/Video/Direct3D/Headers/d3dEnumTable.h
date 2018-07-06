@@ -1,7 +1,7 @@
 #ifndef _D3D_ENUM_TABLE_H_
 #define _D3D_ENUM_TABLE_H_
 
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify

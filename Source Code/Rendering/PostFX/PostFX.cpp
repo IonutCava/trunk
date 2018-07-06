@@ -150,12 +150,12 @@ void PostFX::init(const vec2<U16>& resolution){
 void PostFX::reshapeFBO(I32 width , I32 height){
 	
 	if((D32)width / (D32)height != 1.3333){
-		height = width/1.3333;
+		height = (I32)(width/1.3333);
 	}
 
 	_screenFBO->Create(width, height);
 	_depthFBO->Create(width, height);
-	_renderQuad->setDimensions(vec4<F32>(0,0,width,height));
+	_renderQuad->setDimensions(vec4<F32>(0,0,(F32)width,(F32)height));
 
 	if(!_enablePostProcessing) return;
 	if(_enableAnaglyph){

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -22,9 +22,10 @@
 	#pragma comment( linker,"/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 #endif
 
-#pragma warning(disable:4244)
-#pragma warning(disable:4996) ///< strcpy
+<<<<<<< .mine
 
+=======
+>>>>>>> .r140
 #define NEW_PARAM (__FILE__, __LINE__)
 #define PLACEMENTNEW_PARAM ,__FILE__, __LINE__
 #define NEW_DECL , char* zFile, int nLine

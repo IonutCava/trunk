@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -26,8 +26,7 @@ class Transform;
 class PhysXSceneInterface : public PhysicsSceneInterface{
 public:
 	PhysXSceneInterface(Scene* parentScene) : PhysicsSceneInterface(parentScene),
-											  _gScene(NULL),
-											  _timeStep(1.0f/60.0f){}
+											  _gScene(NULL){}
 	virtual ~PhysXSceneInterface(){exit();}
 
 	virtual bool init();
@@ -35,7 +34,7 @@ public:
 	virtual void idle();
 	virtual void release();
 	virtual void update();
-	virtual void process();
+	virtual void process(F32 timeStep);
 
 	void addRigidStaticActor(physx::PxRigidStatic* actor);
 	void addRigidDynamicActor(physx::PxRigidDynamic* actor);
@@ -47,8 +46,7 @@ protected:
 
 private:
 	physx::PxScene* _gScene;
-	physx::PxReal   _timeStep;
-	std::vector<physx::PxRigidStatic* > _sceneRigidStaticActors;
+	std::vector<physx::PxRigidStatic* >  _sceneRigidStaticActors;
 	std::vector<physx::PxRigidDynamic* > _sceneRigidDynamicActors;
 	boost::mutex _creationMutex;
 };

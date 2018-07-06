@@ -95,7 +95,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[0][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[12];
 
 	
-	t = Util::square_root( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
+	t = Util::square_root_f( _frustumPlanes[0][0] * _frustumPlanes[0][0] + _frustumPlanes[0][1] * _frustumPlanes[0][1] + _frustumPlanes[0][2] * _frustumPlanes[0][2] );
 	_frustumPlanes[0][0] /= t;
 	_frustumPlanes[0][1] /= t;
 	_frustumPlanes[0][2] /= t;
@@ -108,7 +108,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[1][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[12];
 
 	
-	t = Util::square_root( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
+	t = Util::square_root_f( _frustumPlanes[1][0] * _frustumPlanes[1][0] + _frustumPlanes[1][1] * _frustumPlanes[1][1] + _frustumPlanes[1][2] * _frustumPlanes[1][2] );
 	_frustumPlanes[1][0] /= t;
 	_frustumPlanes[1][1] /= t;
 	_frustumPlanes[1][2] /= t;
@@ -121,7 +121,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[2][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[13];
 
 	
-	t = Util::square_root( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
+	t = Util::square_root_f( _frustumPlanes[2][0] * _frustumPlanes[2][0] + _frustumPlanes[2][1] * _frustumPlanes[2][1] + _frustumPlanes[2][2] * _frustumPlanes[2][2] );
 	_frustumPlanes[2][0] /= t;
 	_frustumPlanes[2][1] /= t;
 	_frustumPlanes[2][2] /= t;
@@ -134,7 +134,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[3][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[13];
 
 	
-	t = Util::square_root( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
+	t = Util::square_root_f( _frustumPlanes[3][0] * _frustumPlanes[3][0] + _frustumPlanes[3][1] * _frustumPlanes[3][1] + _frustumPlanes[3][2] * _frustumPlanes[3][2] );
 	_frustumPlanes[3][0] /= t;
 	_frustumPlanes[3][1] /= t;
 	_frustumPlanes[3][2] /= t;
@@ -147,7 +147,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[4][3] = _modelViewProjectionMatrix[15] - _modelViewProjectionMatrix[14];
 
 	
-	t = Util::square_root( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
+	t = Util::square_root_f( _frustumPlanes[4][0] * _frustumPlanes[4][0] + _frustumPlanes[4][1] * _frustumPlanes[4][1] + _frustumPlanes[4][2] * _frustumPlanes[4][2] );
 	_frustumPlanes[4][0] /= t;
 	_frustumPlanes[4][1] /= t;
 	_frustumPlanes[4][2] /= t;
@@ -160,7 +160,7 @@ void Frustum::Extract(const vec3<F32>& eye){
 	_frustumPlanes[5][3] = _modelViewProjectionMatrix[15] + _modelViewProjectionMatrix[14];
 
 	
-	t = Util::square_root( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
+	t = Util::square_root_f( _frustumPlanes[5][0] * _frustumPlanes[5][0] + _frustumPlanes[5][1] * _frustumPlanes[5][1] + _frustumPlanes[5][2] * _frustumPlanes[5][2] );
 	_frustumPlanes[5][0] /= t;
 	_frustumPlanes[5][1] /= t;
 	_frustumPlanes[5][2] /= t;

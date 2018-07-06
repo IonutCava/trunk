@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -19,14 +19,19 @@
 #define _PHYSICS_DEVICE_H_
 #include "Dynamics/Physics/PhysX/Headers/PhysX.h"
 
+#ifndef _PHYSICS_API_FOUND_
+#error "No physics library implemented!"
+#endif 
+
 DEFINE_SINGLETON_EXT1(PXDevice, PhysicsAPIWrapper)
 
 public:
 	void setApi(PhysicsAPI api);
 	inline I8  getApi(){return _api.getId(); }
 
-	inline I8   initPhysics() {return _api.initPhysics();}
+	inline I8   initPhysics(U8 targetFrameRate) {return _api.initPhysics(targetFrameRate);}
 	inline bool exitPhysics() {return _api.exitPhysics();}
+	inline void updateTimeStep(U8 timeStepFactor) {_api.updateTimeStep(timeStepFactor);}
 	inline void update() {_api.update();}
 	inline void process() {_api.process();}
 	inline void idle() {_api.idle();}
@@ -37,7 +42,7 @@ public:
 	inline bool createActor(PhysicsSceneInterface* targetScene, SceneGraphNode* node, PhysicsActorMask mask,PhysicsCollisionGroup group){return _api.createActor(targetScene, node,mask,group);}
 private:
 	PXDevice() :
-	   _api(PhysX::getInstance()) //Defaulting to OpenGL if no api has been defined
+	   _api(PhysX::getInstance()) //Defaulting to nothig if no api has been defined
 	   {
 	   }
 	PhysicsAPIWrapper& _api;

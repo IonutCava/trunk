@@ -1,7 +1,8 @@
 #include <stdarg.h>
+#include "Headers/GUI.h"
 
 #include "CEGUI.h"
-#include "Headers/GUI.h"
+
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
@@ -243,6 +244,12 @@ void GUI::modifyText(const std::string& id, char* format, ...){
 	if(_guiStack[id]->getGuiType() == GUI_TEXT)
 		dynamic_cast<GUIText*>(_guiStack[id])->_text = fmt_text;
 	fmt_text.empty();
+}
+
+bool GUI::bindRenderer(CEGUI::Renderer& renderer){
+	///Build an OpenGL GUI renderer
+	CEGUI::System::create(renderer);
+	return true;
 }
 
 /*   void onRightMouseUp(const GuiEvent &event);

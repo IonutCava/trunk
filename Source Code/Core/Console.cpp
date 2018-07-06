@@ -7,7 +7,7 @@
 //! Do not remove the following license without express permission granted bu DIVIDE-Studio
 void Console::printCopyrightNotice(){
 	std::cout << "------------------------------------------------------------------------------" << std::endl;
-	std::cout << "“Copyright 2009-2012 DIVIDE-Studio”" << std::endl << std::endl;
+	std::cout << "“Copyright 2009-2013 DIVIDE-Studio”" << std::endl << std::endl;
 	std::cout << "This file is part of DIVIDE Framework." << std::endl;
 	std::cout << "DIVIDE Framework is free software: you can redistribute it and/or modify" << std::endl;
 	std::cout << "it under the terms of the GNU Lesser General Public License as published by" << std::endl;

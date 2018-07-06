@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -79,7 +79,7 @@ public:
 	inline void setScreenPercentage(F32 percentage) {_screenPercentage = percentage; CLAMP(_screenPercentage,0.1f, 100.0f);}
 	inline void setAnimationDuration(F32 durationInSeconds) {_animationDuration = durationInSeconds * 1000.0f;CLAMP(_animationDuration,0.0f,2000.0f); }
 	inline Quad3D* getRenderQuad() {return _consoleRect;}
-	inline vec2<F32>& getViewportDimensions() {return _viewportDimensions;}
+	inline vec2<I32>& getViewportDimensions() {return _viewportDimensions;}
 
 	F32 getConsoleHeight();
 
@@ -117,7 +117,7 @@ protected:
 
     std::string	m_commandLine;
 	Quad3D* _consoleRect;
-	vec2<F32> _viewportDimensions;
+	vec2<I32> _viewportDimensions;
 	F32 _lastCheck;
 	F32 _animationDuration;
 	F32 _screenPercentage;

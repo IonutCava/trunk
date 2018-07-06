@@ -80,7 +80,7 @@ void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
 	if(!t || !shape) return;
 	PxTransform pT = PxShapeExt::getGlobalPose(*shape);
 	if(shape->getGeometryType() == PxGeometryType::ePLANE){
-		t->scale(shape->getActor().getObjectSize());
+		t->scale((F32)shape->getActor().getObjectSize());
 		//ToDo: Remove hack! Find out why plane isn't rotating - Ionut
 		t->rotate(vec3<F32>(1,0,0),90);
 	}else{
@@ -91,9 +91,9 @@ void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
 	
 }
 
-void PhysXSceneInterface::process(){
+void PhysXSceneInterface::process(F32 timeStep){
 	if(!_gScene) return;
-	_gScene->simulate(_timeStep);  
+	_gScene->simulate((physx::PxReal)timeStep);  
 	_gScene->fetchResults(true);
 }
 

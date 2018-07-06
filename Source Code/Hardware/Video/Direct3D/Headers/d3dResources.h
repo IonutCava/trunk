@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -17,6 +17,12 @@
 
 #ifndef _D3D_RESOURCES_H_
 #define _D3D_RESOURCES_H_
+
+///Static link to CEGUI
+#ifndef CEGUI_STATIC
+#define CEGUI_STATIC
+#endif 
+
 #define D3D10_IGNORE_SDK_LAYERS
 //#include <D3D10.h>
 //#include <D3D11.h>

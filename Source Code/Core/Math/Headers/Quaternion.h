@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -39,9 +39,9 @@ public:
 	void  normalize() {
 		_dirty = true;
 		// Don't normalize if we don't have to
-		D32 mag2 = (D32)(_w * _w + _x * _x + _y * _y + _z * _z);
+		F32 mag2 = _w * _w + _x * _x + _y * _y + _z * _z;
 		if (  mag2!=0.f && (fabs(mag2 - 1.0f) > TOLERANCE)) {
-			D32 mag = Util::square_root(mag2);
+			F32 mag = Util::square_root_f(mag2);
 			_w /= mag;
 			_x /= mag;
 			_y /= mag;
@@ -101,9 +101,9 @@ public:
 	void  FromEuler(T pitch, T yaw, T roll) {
 		_dirty = true;
 	
- 		T p = pitch * M_PIDIV180 / 2.0;
-		T y = yaw * M_PIDIV180 / 2.0;
-		T r = roll * M_PIDIV180 / 2.0;
+ 		T p = pitch * M_PIDIV180 / 2.0f;
+		T y = yaw * M_PIDIV180 / 2.0f;
+		T r = roll * M_PIDIV180 / 2.0f;
 	 
 		T sinp = sin(p);
 		T siny = sin(y);
@@ -188,7 +188,7 @@ public:
 
 	//! Convert to Axis/Angles
 	void  getAxisAngle(vec3<T> *axis, T *angle,bool inDegrees){
-		T scale = Util::square_root(_x * _x + _y * _y + _z * _z);
+		T scale = Util::square_root_f(_x * _x + _y * _y + _z * _z);
 		axis->x = _x / scale;
 		axis->y = _y / scale;
 		axis->z = _z / scale;

@@ -59,8 +59,13 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
+<<<<<<< .mine
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_CRT_SECURE_NO_WARNINGS;</PreprocessorDefinitions>
+=======
       <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(OutDir)../Source Code;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_DEBUG;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+>>>>>>> .r140
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -75,10 +80,18 @@
     </ProjectReference>
     <Link>
       <AdditionalOptions>/Y3 %(AdditionalOptions)</AdditionalOptions>
+<<<<<<< .mine
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking_d.lib;SDL.lib;SDL_mixer.lib;freeglut_static_d.lib;OIS_static_d.lib;freetype_d.lib;expat_d.lib;SILLY.lib;pcre_d.lib;libpng_d.lib;libtiff_d.lib;zlib_d.lib;jpeg_d.lib;ftgl_static_d.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+=======
       <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking_d.lib;SDL.lib;SDL_mixer.lib;freeglut_static_d.lib;OIS_static_d.lib;freetype_d.lib;expat_d.lib;SILLY.lib;pcre_d.lib;libpng_d.lib;libtiff_d.lib;zlib_d.lib;jpeg_d.lib;CEGUIBase_Static_d.lib;CEGUIExpatParser_Static_d.lib;CEGUISILLYImageCodec_Static_d.lib;CEGUIOpenGLRenderer_Static_d.lib;CEGUIFalagardWRBase_Static_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+>>>>>>> .r140
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
+<<<<<<< .mine
+      <AdditionalLibraryDirectories>$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+=======
       <AdditionalLibraryDirectories>$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+>>>>>>> .r140
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib; LIBCPMT.lib;LIBCPMTD.lib;</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,8 +105,13 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+<<<<<<< .mine
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+=======
       <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\freeglut\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(OutDir)../Source Code;$(OutDir)../Source Code/Libs\includes;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;WIN32;_SCL_SECURE=0;FREEGLUT_STATIC;CEGUI_STATIC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+>>>>>>> .r140
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -103,11 +121,20 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
+      <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
+<<<<<<< .mine
+      <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;freeglut_static.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;ftgl_static.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+=======
       <AdditionalDependencies>glu32.lib;opengl32.lib;DevIL.lib;ILU.lib;ILUT.lib;assimp.lib;DIVIDE-Networking.lib;SDL.lib;SDL_mixer.lib;freeglut_static.lib;OIS_static.lib;freetype.lib;expat.lib;SILLY.lib;pcre.lib;libpng.lib;libtiff.lib;zlib.lib;jpeg.lib;CEGUIBase_Static.lib;CEGUIExpatParser_Static.lib;CEGUISILLYImageCodec_Static.lib;CEGUIOpenGLRenderer_Static.lib;CEGUIFalagardWRBase_Static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+>>>>>>> .r140
       <OutputFile>$(TargetPath)</OutputFile>
+<<<<<<< .mine
+      <AdditionalLibraryDirectories>$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+=======
       <AdditionalLibraryDirectories>$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\freeglut\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
+>>>>>>> .r140
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib;LIBCPMT.lib;LIBCMTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>false</GenerateDebugInformation>

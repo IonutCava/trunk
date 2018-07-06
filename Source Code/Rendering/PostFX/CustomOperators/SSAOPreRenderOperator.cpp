@@ -14,8 +14,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader,
 																			_stage1Shader(SSAOShader),
 																		    _outputFBO(result)
 {
-	F32 width = _resolution.width;
-	F32 height = _resolution.height;
+	U16 width = _resolution.width;
+	U16 height = _resolution.height;
 	ParamHandler& par = ParamHandler::getInstance();
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
 	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");

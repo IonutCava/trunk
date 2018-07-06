@@ -46,7 +46,7 @@ GUIConsole::~GUIConsole() {
 
 F32 GUIConsole::getConsoleHeight() {
 	//determine dimensions of scissor region
-	F32 height = _viewportDimensions.y, scissorWidth = _viewportDimensions.x;
+	I32 height = _viewportDimensions.y, scissorWidth = _viewportDimensions.x;
 	F32 currentMSTime = GETMSTIME();
 	F32 currentTime = currentMSTime - _lastCheck;
 	if(currentTime > (_animationDuration)){///convert to milliseconds 

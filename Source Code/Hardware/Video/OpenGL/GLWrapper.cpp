@@ -2,7 +2,6 @@
 #include "Headers/GLWrapper.h"
 #include "Headers/glRenderStateBlock.h"
 
-#include "CEGUI.h"
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "GUI/Headers/GUIFlash.h"
@@ -251,8 +250,8 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
 	SET_DEFAULT_STATE_BLOCK();
 	///Build an OpenGL GUI renderer
-	CEGUI::OpenGLRenderer::bootstrapSystem();
-	GUI::getInstance().init();
+	CEGUI::OpenGLRenderer& renderer = CEGUI::OpenGLRenderer::create();
+	GUI::getInstance().bindRenderer(renderer);
 	return _windowId;
 }
 

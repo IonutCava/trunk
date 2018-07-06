@@ -30,9 +30,9 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 	if(_resolutionFactor != resolutionFactor || firstPass){
 		///Initialize the FBO's with a variable resolution
 		PRINT_FN(Locale::get("LIGHT_INIT_SHADOW_FBO"), _id);
-		_depthMaps[0]->Create(2048/resolutionFactor,2048/resolutionFactor);
-		_depthMaps[1]->Create(1024/resolutionFactor,1024/resolutionFactor);
-		_depthMaps[2]->Create(512/resolutionFactor,512/resolutionFactor);
+		_depthMaps[0]->Create((U16)(2048/resolutionFactor),(U16)(2048/resolutionFactor));
+		_depthMaps[1]->Create((U16)(1024/resolutionFactor),(U16)(1024/resolutionFactor));
+		_depthMaps[2]->Create((U16)(512/resolutionFactor),(U16)(512/resolutionFactor));
 		_resolutionFactor = resolutionFactor;
 	}
 
@@ -225,7 +225,7 @@ void Light::renderFromLightViewSpot(U8 depthPass){
 
 void Light::renderFromLightViewDirectional(U8 depthPass){
 	///Some ortho values to create closer and closer light views
-	D32 lightOrtho[3] = {5.0, 10.0, 50.0};
+	F32 lightOrtho[3] = {5.0f, 10.0f, 50.0f};
 	///ToDo: Near and far planes. Should optimize later! -Ionut
 	_zPlanes = vec2<F32>(_zNear, _zFar);
 	///Set the current projection depending on the current depth pass

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#include "threadpool.hpp"
+#include <threadpool.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
 

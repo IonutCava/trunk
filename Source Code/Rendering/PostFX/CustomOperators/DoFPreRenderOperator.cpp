@@ -11,8 +11,8 @@ DoFPreRenderOperator::DoFPreRenderOperator(ShaderProgram* const DoFShader,
 																		  _dofShader(DoFShader),
 																	      _outputFBO(result)
 {
-	F32 width = _resolution.width;
-	F32 height = _resolution.height;
+	U16 width = _resolution.width;
+	U16 height = _resolution.height;
 	_tempDepthOfFieldFBO = GFX_DEVICE.newFBO(FBO_2D_COLOR);
 	_tempDepthOfFieldFBO->Create(width,height);
 	_outputFBO->Create(width, height);

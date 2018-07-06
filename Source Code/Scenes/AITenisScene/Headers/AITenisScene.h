@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -81,7 +81,7 @@ private:
 	SceneGraphNode* _ballSGN;
 	SceneGraphNode* _net;
 	SceneGraphNode* _floor;
-	vec2<F32> _prevMouse;
+	vec2<I32> _prevMouse;
 	bool _mousePressed;
 
 private: //Game stuff

@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -98,7 +98,7 @@ public:
 	
 protected:
 	Texture(bool flipped = false);
-	static bool checkBinding(U16 unit, U32 handle);
+	static bool checkBinding(I16 unit, U32 handle);
 
 protected:
 	U32	_handle;
@@ -111,7 +111,7 @@ protected:
 	mat4<F32>  _transformMatrix;
 	U32  _wrapU, _wrapV, _wrapW;
 	U8 _minFilter,_magFilter;
-	static unordered_map<U8/*slot*/, U32/*textureHandle*/> textureBoundMap;
+	static unordered_map<I16/*slot*/, U32/*textureHandle*/> _textureBoundMap;
 };
 
 

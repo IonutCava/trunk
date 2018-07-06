@@ -1,4 +1,4 @@
-/*“Copyright 2009-2012 DIVIDE-Studio”*/
+/*“Copyright 2009-2013 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
    DIVIDE Framework is free software: you can redistribute it and/or modify
@@ -17,8 +17,33 @@
 
 #ifndef PHYSX_H_
 #define PHYSX_H_
+#include "config.h"
+
+<<<<<<< .mine
+#ifdef _USE_PHYSX_API_
+
+=======
+>>>>>>> .r140
+#ifndef _PHYSICS_API_FOUND_
+#define _PHYSICS_API_FOUND_
+#endif
 
 //PhysX includes
+<<<<<<< .mine
+#ifdef _PLATFORM_DEFINES_H_
+#undef U8
+#undef U16
+#undef U32
+#undef U64
+#undef _PLATFORM_DEFINES_H_
+#define _P_D_TYPES_ONLY_
+#endif
+
+#include < PxPhysicsAPI.h >
+#include < PxDefaultErrorCallback.h >
+#include < PxDefaultAllocator.h > 
+#include < PxVisualDebuggerExt.h>
+=======
 #ifdef _PLATFORM_DEFINES_H_
 #undef U8
 #undef U16
@@ -32,6 +57,7 @@
 #include < PxDefaultErrorCallback.h >
 #include < PxDefaultAllocator.h > 
 #include < PxVisualDebuggerExt.h>
+>>>>>>> .r140
 //PhysX includes //
 #include "core.h"
 //PhysX libraries
@@ -43,6 +69,11 @@
 
 #include "Dynamics/Physics/Headers/PhysicsAPIWrapper.h"
 
+<<<<<<< .mine
+
+=======
+>>>>>>> .r140
+
 class SceneGraphNode;
 class PhysXSceneInterface;
 DEFINE_SINGLETON_EXT1( PhysX,PhysicsAPIWrapper)
@@ -52,11 +83,16 @@ private:
 
 public:
 	
-   I8   initPhysics();  
+   I8   initPhysics(U8 targetFrameRate);  
    bool exitPhysics(); 
    void update();
    void process();
    void idle();
+
+   inline void updateTimeStep(U8 timeStepFactor) {
+	   CLAMP<U8>(timeStepFactor,1,timeStepFactor);
+	   _timeStep = 1.0f / timeStepFactor;
+   }
 
    PhysicsSceneInterface* NewSceneInterface(Scene* scene);
 
@@ -77,7 +113,8 @@ private:
 	physx::PxSimulationFilterShader _gDefaultFilterShader;
 	physx::debugger::comm::PvdConnectionManager* _pvdConnection;
 	boost::mutex _physxMutex;
+	physx::PxReal _timeStep;
 
 END_SINGLETON
-
+#endif
 #endif
