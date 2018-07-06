@@ -56,10 +56,10 @@ public:
 	virtual ~Object3D(){};
 
 
-	virtual void						postLoad(SceneGraphNode* node) {}	
+	virtual void						postLoad(SceneGraphNode* const node) {}	
 	inline  PrimitiveType               getType()       const {return _geometryType;}
 	
-	virtual		void    render(SceneGraphNode* node);
+	virtual		void    render(SceneGraphNode* const node);
 	
 protected:
 	bool		   _update;

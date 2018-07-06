@@ -378,7 +378,7 @@ void PostFX::generateBloomTexture(){
 	_bloomFBO->End();
 
 
-	// ON BLUR LES SOURCES LUMINEUSES HORIZONTALEMENT
+	//Blur horizontally
 	_tempBloomFBO->Begin();
 	
 		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
@@ -400,7 +400,7 @@ void PostFX::generateBloomTexture(){
 	_tempBloomFBO->End();
 
 
-	// ON BLUR LES SOURCES LUMINEUSES VERTICALEMENT
+	//Blur vertically
 	_bloomFBO->Begin();
 	
 		_gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);

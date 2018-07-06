@@ -6,8 +6,8 @@
 
 using namespace std;
 
-void GUI::onResize(F32 newWidth, F32 newHeight)
-{
+void GUI::onResize(F32 newWidth, F32 newHeight){
+
 	vec2 difDimensions = Application::getInstance().getWindowDimensions() - vec2(newWidth,newHeight);
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
 		guiStackIterator.second->onResize(difDimensions);
@@ -15,8 +15,8 @@ void GUI::onResize(F32 newWidth, F32 newHeight)
 }
 
 void GUI::draw(){
+
 	GFXDevice& gfx = GFXDevice::getInstance();
-	//gfx.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
 	gfx.toggle2D(true);
 	
     //------------------------------------------------------------------------
@@ -44,25 +44,27 @@ void GUI::draw(){
 		
 }
 
-GUI::~GUI()
-{
+GUI::~GUI(){
+
 	close();
 }
 
-void GUI::close()
-{
+void GUI::close(){
+
 	_guiStack.clear();
 }
 
-void GUI::checkItem(U16 x, U16 y)
-{
+void GUI::checkItem(U16 x, U16 y){
+
 	GuiEvent event;
 	event.mousePoint.x = x;
 	event.mousePoint.y = y;
+
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+
 		GuiElement* gui = guiStackIterator.second;
-		switch(gui->getGuiType())
-		{
+		switch(gui->getGuiType()){
+
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(gui);
@@ -85,14 +87,16 @@ void GUI::checkItem(U16 x, U16 y)
 	}
 }
 
-void GUI::clickCheck()
-{
+void GUI::clickCheck(){
+
 	GuiEvent event;
 	event.mouseClickCount = 0;
+
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+
 		GuiElement* gui = guiStackIterator.second;
-		switch(gui->getGuiType())
-		{
+		switch(gui->getGuiType()){
+
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(gui);
@@ -118,10 +122,11 @@ void GUI::clickReleaseCheck()
 {
 	GuiEvent event;
 	event.mouseClickCount = 1;
+
 	for_each(guiMap::value_type& guiStackIterator,_guiStack){
+
 		GuiElement* gui = guiStackIterator.second;
-		switch(gui->getGuiType())
-		{
+		switch(gui->getGuiType()){
 			case GUI_BUTTON :
 			{
 				Button *b = dynamic_cast<Button*>(gui);
@@ -144,13 +149,13 @@ void GUI::clickReleaseCheck()
 	
 }
 
-void GUI::addButton(const string& id, string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback)
-{
+void GUI::addButton(const string& id, string text,const vec2& position,const vec2& dimensions,const vec3& color,ButtonCallback callback){
+
 	_guiStack[id] = New Button(id,text,position,dimensions,color,callback);
 }
 
-void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &color, char* format, ...)
-{
+void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &color, char* format, ...){
+
 	va_list args;
 	string fmt_text;
 
@@ -169,15 +174,15 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
 	fmt_text.empty();
 }
 
-void GUI::addFlash(const string& id, string movie, const vec2& position, const vec2& extent)
-{
+void GUI::addFlash(const string& id, string movie, const vec2& position, const vec2& extent){
+
 	GuiFlash *flash = New GuiFlash();
 	_resultGuiElement = _guiStack.insert(make_pair(id,dynamic_cast<GuiElement*>(flash)));
 	if(!_resultGuiElement.second) (_resultGuiElement.first)->second = dynamic_cast<GuiElement*>(flash);
 }
 
-void GUI::modifyText(const string& id, char* format, ...)
-{
+void GUI::modifyText(const string& id, char* format, ...){
+
 	va_list args;   
 	string fmt_text;
 
@@ -196,42 +201,40 @@ void GUI::modifyText(const string& id, char* format, ...)
 }
 
 
-void Button::onMouseMove(const GuiEvent &event)
-{
+void Button::onMouseMove(const GuiEvent &event){
+
 	if(event.mousePoint.x > _position.x   &&  event.mousePoint.x < _position.x+_dimensions.x &&
 	   event.mousePoint.y > _position.y   &&  event.mousePoint.y < _position.y+_dimensions.y )	{
 		if(isActive()) _highlight = true;
-	}
-	else
+	}else{
 		_highlight = false;
+	}
 }
 
-void Button::onMouseUp(const GuiEvent &event)
-{
+void Button::onMouseUp(const GuiEvent &event){
+
 	if (_pressed){
 		if (_callbackFunction) 	_callbackFunction();
 		_pressed = false;
 	}
 }
 
-void Button::onMouseDown(const GuiEvent &event)
-{
+void Button::onMouseDown(const GuiEvent &event){
+
 	if (_highlight) _pressed = true;
 	else _pressed = false;
 }
 
-void Text::onMouseMove(const GuiEvent &event)
-{
+void Text::onMouseMove(const GuiEvent &event){
 
 }
 
-void Text::onMouseUp(const GuiEvent &event)
-{
+void Text::onMouseUp(const GuiEvent &event){
 
 }
 
-void Text::onMouseDown(const GuiEvent &event)
-{
+void Text::onMouseDown(const GuiEvent &event){
+
 }
 
 /*   void onRightMouseUp(const GuiEvent &event);

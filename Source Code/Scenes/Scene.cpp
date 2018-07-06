@@ -173,7 +173,7 @@ bool Scene::removeGeometry(SceneNode* node){
 		Console::getInstance().errorfn("Trying to delete NULL scene node!");
 		return false;
 	}
-	SceneGraphNode* _graphNode = node->getSceneGraphNode();
+	SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
 	if(_graphNode){
 		delete _graphNode;
 		_graphNode = NULL;

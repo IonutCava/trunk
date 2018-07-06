@@ -891,6 +891,18 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Animations"
+				>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Animations\cAnimationController.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Geometry\Animations\cAnimationController.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Libs"
@@ -1088,10 +1100,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\assets\shaders\frag_color.frag"
-				>
-			</File>
-			<File
 				RelativePath="..\..\assets\shaders\lighting.frag"
 				>
 			</File>
@@ -1105,6 +1113,14 @@
 			</File>
 			<File
 				RelativePath="..\..\assets\shaders\OBJ.vert"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\postProcessing.frag"
+				>
+			</File>
+			<File
+				RelativePath="..\..\assets\shaders\postProcessing.vert"
 				>
 			</File>
 			<File
@@ -1133,14 +1149,6 @@
 			</File>
 			<File
 				RelativePath="..\..\assets\shaders\terrain_tree.vert"
-				>
-			</File>
-			<File
-				RelativePath="..\..\assets\shaders\texturing.frag"
-				>
-			</File>
-			<File
-				RelativePath="..\..\assets\shaders\vertex_transform.vert"
 				>
 			</File>
 			<File

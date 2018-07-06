@@ -68,7 +68,7 @@ void Sky::drawSkyAndSun() const {
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
 	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s);
+	GFXDevice::getInstance().setRenderState(s,true);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -76,9 +76,9 @@ void Sky::drawSkyAndSun() const {
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
-
+		GFXDevice::getInstance().setObjectState(_skyNode->getTransform());
 		GFXDevice::getInstance().drawSphere3D(_skyNode);
-		
+		GFXDevice::getInstance().releaseObjectState(_skyNode->getTransform());
 	
 	_skyShader->unbind();
 	_skybox->Unbind(0);
@@ -92,7 +92,7 @@ void Sky::drawSky() const {
 	GFXDevice::getInstance().ignoreStateChanges(true);
 
 	RenderState s(false,false,false,true);
-	GFXDevice::getInstance().setRenderState(s);
+	GFXDevice::getInstance().setRenderState(s,true);
 
 	_skybox->Bind(0);
 	_skyShader->bind();
@@ -100,11 +100,13 @@ void Sky::drawSky() const {
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", false);
 
+		GFXDevice::getInstance().setObjectState(_skyNode->getTransform());
 		GFXDevice::getInstance().drawSphere3D(_skyNode);
+		GFXDevice::getInstance().releaseObjectState(_skyNode->getTransform());
 	
 	_skyShader->unbind();
 	_skybox->Unbind(0);
-
+	
 	GFXDevice::getInstance().ignoreStateChanges(false);
 
 }
@@ -117,7 +119,9 @@ void Sky::drawSun() const {
 	RenderState s(false,false,false,true);
 	GFXDevice::getInstance().setRenderState(s);
 
+	GFXDevice::getInstance().setObjectState(_sunNode->getTransform());
 	GFXDevice::getInstance().drawSphere3D(_sunNode);
+	GFXDevice::getInstance().releaseObjectState(_sunNode->getTransform());
 
 	GFXDevice::getInstance().ignoreStateChanges(false);
 }

@@ -24,7 +24,8 @@ bool MainScene::updateLights(){
 }
 
 void MainScene::preRender(){
-
+	_waterGraphNode->setActive(false);
+	updateLights();
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	vec3 eye_pos = cam->getEye();
 	vec3 sun_pos = eye_pos - vec3(_sunVector);
@@ -72,6 +73,7 @@ void MainScene::preRender(){
 }
 
 void MainScene::render(){
+	_waterGraphNode->setActive(true);
 	renderEnvironment(false,false);
 	//renderEnvironment(true,false); //water reflection
 }
@@ -79,7 +81,6 @@ void MainScene::render(){
 bool _underwater = false;
 void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 	_GFX.ignoreStateChanges(true);
-	
 	if(!depthMap){
 		Camera* cam = CameraManager::getInstance().getActiveCamera();
 		if(cam->getEye().y < getWaterLevel()){
@@ -107,9 +108,7 @@ void MainScene::renderEnvironment(bool waterReflection, bool depthMap){
 			cam->RenderLookAt(true,true,getWaterLevel());
 			
 		}
-		updateLights();
 	}
-	_waterGraphNode->setActive(!waterReflection && !depthMap);
 	_sceneGraph->render(); //render the rest of the stuff
 	_GFX.ignoreStateChanges(false);
 }
@@ -193,6 +192,8 @@ bool MainScene::load(const string& name){
 	_water = _resManager.loadResource<WaterPlane>(infiniteWater);
 	_water->setParams(50.0f,10,0.1f,0.5f);
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
+	_waterGraphNode->useDefaultTransform(false);
+	_waterGraphNode->setTransform(NULL);
 	return state;
 }
 

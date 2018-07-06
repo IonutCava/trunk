@@ -1,9 +1,9 @@
-uniform mat4 transformMatrix;
-uniform mat4 parentTransformMatrix;
+uniform mat4 modelViewProjectionMatrix;
+uniform mat4 modelViewMatrix;
 
 void main(void)
 {
-	
+
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	vec4 vertex = gl_Vertex;
 	vec4 vertexMV = gl_ModelViewMatrix * gl_Vertex;

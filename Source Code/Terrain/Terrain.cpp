@@ -13,6 +13,7 @@
 #include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Predefined/Quad3D.h"
 #include "EngineGraphs/RenderQueue.h"
+#include "Utility/Headers/ParamHandler.h"
 #define COORD(x,y,w)	((y)*(w)+(x))
 
 Terrain::Terrain() : SceneNode(){
@@ -237,7 +238,7 @@ bool Terrain::load(const string& name){
 	return _loaded;
 }
 
-void Terrain::postLoad(SceneGraphNode* node){
+void Terrain::postLoad(SceneGraphNode* const node){
 	
 	if(!_loaded) node->setActive(false);
 	_planeSGN = node->addNode(_plane);
@@ -289,27 +290,27 @@ void Terrain::initializeVegetation(TerrainDescriptor* terrain) {
 	 _veg->initialize(_grassShader,_name);
 }
 
-void Terrain::prepareMaterial(){
-
+void Terrain::prepareMaterial(SceneGraphNode* const sgn){
+	changeSortKey(-1);
 }
 
 void Terrain::releaseMaterial(){
 }
 
-void Terrain::render(SceneGraphNode* node){
+void Terrain::render(SceneGraphNode* const node){
 	if(!GFXDevice::getInstance().getDepthMapRendering()){
 
 		Shader* terrainShader = getMaterial()->getShader();
+		
+
 		_terrainDiffuseMap->Bind(0);
 		_terrainTextures[0]->Bind(1); //Normal Map
 		_terrainTextures[1]->Bind(2); //Water Caustics
 		_terrainTextures[2]->Bind(3); //AlphaMap: RED
 		_terrainTextures[3]->Bind(4); //AlphaMap: GREEN
 		_terrainTextures[4]->Bind(5); //AlphaMap: BLUE
-		if(_alphaTexturePresent) _terrainTextures[5]->Bind(6); //AlphaMap: Alpha
-		changeSortKey(-1);
-		terrainShader->bind();
 
+		terrainShader->bind();
 			terrainShader->Uniform("water_height", SceneManager::getInstance().getActiveScene()->getWaterLevel());
 			terrainShader->Uniform("water_reflection_rendering", _drawInReflection);
 			terrainShader->Uniform("time", GETTIME());
@@ -320,7 +321,11 @@ void Terrain::render(SceneGraphNode* node){
 			terrainShader->UniformTexture("texDiffuse0", 3);
 			terrainShader->UniformTexture("texDiffuse1", 4);
 			terrainShader->UniformTexture("texDiffuse2", 5);
-			if(_alphaTexturePresent) terrainShader->UniformTexture("texDiffuse3",6);
+			if(_alphaTexturePresent){
+				_terrainTextures[5]->Bind(6); //AlphaMap: Alpha
+				terrainShader->UniformTexture("texDiffuse3",6);
+			}
+
 			drawGround();
 			drawInfinitePlain();
 
@@ -336,7 +341,6 @@ void Terrain::render(SceneGraphNode* node){
 	}
 
 	_veg->draw(_drawInReflection);
-
 }
 
 
@@ -346,8 +350,10 @@ void Terrain::drawInfinitePlain(){
 	_planeTransform->setPositionX(eyePos.x);
 	_planeTransform->setPositionZ(eyePos.z);
 	_planeSGN->getBoundingBox().Transform(_planeSGN->getInitialBoundingBox(),_planeTransform->getMatrix());
-	GFXDevice::getInstance().drawQuad3D(_planeSGN);
 
+	GFXDevice::getInstance().setObjectState(_planeTransform);
+	GFXDevice::getInstance().drawQuad3D(_planeSGN);
+	GFXDevice::getInstance().releaseObjectState(_planeTransform);
 
 }
 

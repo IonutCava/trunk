@@ -214,6 +214,7 @@ void glShader::bind() {
 	if(!_shaderId || GFXDevice::getInstance().wireframeRendering()) return;
 	glUseProgram(_shaderId);
 	_bound = true;
+	Shader::bind(); //send default uniforms to GPU;
 }
 
 void glShader::unbind() {
@@ -252,6 +253,10 @@ void glShader::Uniform(const std::string& ext, const mat3& value){
 
 void glShader::Uniform(const std::string& ext, const mat4& value){
 	glUniformMatrix4fv(glGetUniformLocation(_shaderId, ext.c_str()), 1,false, value);
+}
+
+void glShader::Uniform(const std::string& ext, const vector<mat4>& values){
+	glUniformMatrix4fv(glGetUniformLocation(_shaderId, ext.c_str()),values.size(),true, values[0]);
 }
 
 //For old shaders (v1.0) -Ionut

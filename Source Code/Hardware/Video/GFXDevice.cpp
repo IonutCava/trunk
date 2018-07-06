@@ -90,21 +90,24 @@ void GFXDevice::toggleWireframe(bool state){
 }
 
 void GFXDevice::processRenderQueue(){
+	SceneNode* sn = NULL;
+	SceneGraphNode* sgn = NULL;
+	Transform* t = NULL;
+
 	//Sort the render queue by the specified key
 	RenderQueue::getInstance().sort();
 	//Draw the entire queue;
-	SceneNode* sn = NULL;
-	SceneGraphNode* sgn = NULL;
-
 	for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
 		sgn = RenderQueue::getInstance().getItem(i)._node;
+		assert(sgn);
+		t = sgn->getTransform();
 		sn = sgn->getNode();
+		assert(sn);
 		sn->onDraw();
 		//draw bounding box if needed
 		if(!getDepthMapRendering()){
 			BoundingBox& bb = sgn->getBoundingBox();
 			if(bb.getVisibility() || SceneManager::getInstance().getActiveScene()->drawBBox()){
-				//sn->drawBBox();
 				drawBox3D(bb.getMin(),bb.getMax());
 			}
 		}
@@ -112,8 +115,11 @@ void GFXDevice::processRenderQueue(){
 		//setup materials and render the node
 		//Avoid changing states by not unbind old material/shader/states and checking agains default
 		//As nodes are sorted, this should be very fast
-		sn->prepareMaterial();
+		
+		setObjectState(t);
+		sn->prepareMaterial(sgn);
 		sn->render(sgn); 
 		sn->releaseMaterial();
+		releaseObjectState(t);
 	}
 }

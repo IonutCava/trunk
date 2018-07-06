@@ -36,16 +36,17 @@ inline void  setRadius(F32 radius) {_radius = radius;}
 inline Sphere3D* getImpostor() {return _light;}
 inline void      toggleImpostor(bool state) {_drawImpostor = state;}
 	void  getWindowRect(U16 & x, U16 & y, U16 & width, U16 & height);
-	void  render(SceneGraphNode* node);
+	void  render(SceneGraphNode* const node);
 	bool load(const std::string& name);
 	bool unload();
-	void postLoad(SceneGraphNode* node);	
+	void postLoad(SceneGraphNode* const node);	
 private:
 	unordered_map<std::string,vec4> _lightProperties;
 	U8 _slot;
 	F32 _radius;
 	Sphere3D *_light; //Used for debug rendering -Ionut
 	bool _drawImpostor;
+	SceneGraphNode* _sgn;
 };
 
 #endif

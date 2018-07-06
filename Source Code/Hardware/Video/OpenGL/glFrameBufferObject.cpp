@@ -187,6 +187,9 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
 		GLCheck(glTexParameterf(_textureType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+		/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);*/
 		_textureId.push_back(textureId);
 
 		U32 eTarget;
@@ -200,7 +203,7 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height){
 		}
 		for(U8 i=0; i<nFrames; i++){
 			if(type==FBO_2D_DEPTH)
-				GLCheck(glTexImage2D(eTarget+i, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0));
+				GLCheck(glTexImage2D(eTarget+i, 0, GL_DEPTH_COMPONENT24, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, 0));
 			else
 				GLCheck(glTexImage2D(eTarget+i, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0));
 		}

@@ -1,22 +1,24 @@
-
-
 varying vec4 vPixToLightTBN[1];	// Vecteur du pixel courant à la lumière
 varying vec3 vPixToEyeTBN;		// Vecteur du pixel courant à l'oeil
 varying vec3 vVertexMV;
-varying vec3 vNormalMV;
 varying vec3 vPixToLightMV;
 varying vec3 vLightDirMV;
 varying vec4 vVertexFromLightView;
+varying vec2 texCoord;
 
 //Textures
 uniform int textureCount;
+uniform bool hasOpacity;
+uniform bool hasSpecular;
 uniform sampler2D texDiffuse0;
 uniform sampler2D texDiffuse1;
 uniform sampler2D texBump;
-
+uniform sampler2D opacityMap;
+uniform sampler2D specularMap;
 //Material properties
 uniform mat4 material;
 
+#define MODE_DEPTH     -1
 #define MODE_PHONG		0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
@@ -46,27 +48,34 @@ vec4  NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParal
 float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB);
 vec4  ReliefMapping(vec2 uv);
 
-void main (void)
-{
+void main (void){
+
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
 	
 	vec4 color = vec4(1.0, 0.0, 0.0, 1.0);
 
-
-	if(mode == MODE_PHONG)
-		color = Phong(gl_TexCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
+	if(mode == MODE_DEPTH)
+		color =  vec4(1.0, 0.0, 0.0, 1.0);
+	else if(mode == MODE_PHONG)
+		color = Phong(texCoord*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
 
 	else if(mode == MODE_RELIEF)
-		color = ReliefMapping(gl_TexCoord[0].st*tile_factor);
+		color = ReliefMapping(texCoord*tile_factor);
 		
 	else if(mode == MODE_BUMP)
-		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
+		color = NormalMapping(texCoord*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
 	
 	else if(mode == MODE_PARALLAX)
-		color = NormalMapping(gl_TexCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
+		color = NormalMapping(texCoord*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 
-	if(color.a < 0.2) discard;
+	if(hasOpacity){
+		vec4 alpha = texture2D(opacityMap, texCoord*tile_factor);
+		if(alpha.a < 0.2) discard;
+	}else{
+		if(color.a < 0.2) discard;	
+	}
+
 	gl_FragColor = color;
 
 }
@@ -207,56 +216,46 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN)
 	vec4 cAmbient = gl_LightSource[0].ambient * material[0];
 	vec4 cDiffuse = gl_LightSource[0].diffuse * material[1] * iDiffuse;	
 	vec4 cSpecular = gl_LightSource[0].specular * material[2] * iSpecular;	
-	vec4 base = vec4(1.0,1.0,1.0,1.0);
+	vec4 tBase[2];
+	tBase[0]  = vec4(1.0,1.0,1.0,1.0);
 	if(textureCount > 0){
-		base = texture2D(texDiffuse0, uv);	// Couleur diffuse
-		if(base.a < 0.4) discard;
-	
-		cAmbient *= base;
-		cDiffuse *= base;
+		tBase[0] = texture2D(texDiffuse0, uv);	// Couleur diffuse
+		if(tBase[0].a < 0.4) discard;
 		if(textureCount > 1){
-			vec4 base2 = texture2D(texDiffuse1, uv);
-			cAmbient *= base2;
-			cDiffuse *= base2;
+			tBase[1] = texture2D(texDiffuse1, uv);
+			tBase[0] = tBase[0] + tBase[1];
 		} 
 	}
 
-
-		
+	
 	
 	// Si c'est une lumière SPOT
-	if(vLightTBN.w > 1.5)
-	{
+	if(vLightTBN.w > 1.5){
 		// Gestion du halo du spot
 		if(dot(normalize(vPixToLightMV.xyz), normalize(-vLightDirMV.xyz)) < gl_LightSource[0].spotCosCutoff)
 		{
 			cDiffuse = vec4(0.0, 0.0, 0.0, 1.0);
 			cSpecular = vec4(0.0, 0.0, 0.0, 1.0);
-		}
-		else
-		{
+		}else{
 			// Shadow mapping :
 			if(enable_shadow_mapping != 0) {
 				vec3 vPixPosInDepthMap;
 				float shadow = ShadowMapping(vVertexFromLightView, vPixPosInDepthMap);
 				cDiffuse = (shadow) * cDiffuse;
 				cSpecular = (shadow) * cSpecular;
-				
+			
 				// Texture projection :
 				if(enable_shadow_mapping == 2) {
 					vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
-					base.xyz = mix(base.xyz, cProjected.xyz, shadow/2.0);
+					tBase[0].xyz = mix(tBase[0].xyz, cProjected.xyz, shadow/2.0);
 				}
-
 			}
 		}
-	}
-	// Si c'est pas une lumière SPOT
-	else
-	{
+	//Si c'est pas une lumière SPOT
+	}else{
 
 	}
-	vec4 color = cAmbient + (cDiffuse + cSpecular) * att;
+	vec4 color = cAmbient * tBase[0] + (cDiffuse * tBase[0] + cSpecular) * att;
 
 	return color;	
 }

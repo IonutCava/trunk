@@ -291,6 +291,12 @@ namespace XML
 		if(boost::optional<ptree &> child = pt.get_child_optional("bumpMap")){
 			mat->setTexture(Material::TEXTURE_BUMP,loadTextureXML(pt.get("bumpMap.file","none")));
 		}
+		if(boost::optional<ptree &> child = pt.get_child_optional("opacityMap")){
+			mat->setTexture(Material::TEXTURE_OPACITY,loadTextureXML(pt.get("opacityMap.file","none")));
+		}
+		if(boost::optional<ptree &> child = pt.get_child_optional("specularMap")){
+			mat->setTexture(Material::TEXTURE_SPECULAR,loadTextureXML(pt.get("specularMap.file","none")));
+		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shader")){
 			std::string fragShader = pt.get<string>("shader.pixelShader","none");
 			std::string vertShader = pt.get<string>("shader.vertexShader","none");
@@ -337,7 +343,7 @@ namespace XML
 		pt.put("material.emissive.<xmlattr>.r",mat->getMaterialMatrix().getCol(3).y);
 		pt.put("material.emissive.<xmlattr>.g",mat->getMaterialMatrix().getCol(3).z);
 		pt.put("material.emissive.<xmlattr>.b",mat->getMaterialMatrix().getCol(3).w);
-		Texture* baseTexture = mat->getTexture(mat->TEXTURE_BASE);
+		Texture* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
 		if(baseTexture){
 			pt.put("diffuseTexture1.file",baseTexture->getResourceLocation());
 			pt.put("diffuseTexture1.MapU","CLAMP");
@@ -346,7 +352,7 @@ namespace XML
 			pt.put("diffuseTexture1.magFilter","LINEAR");
 			pt.put("diffuseTexture1.mipFilter",true);
 		}
-		Texture* secondTexture = mat->getTexture(mat->TEXTURE_SECOND);
+		Texture* secondTexture = mat->getTexture(Material::TEXTURE_SECOND);
 		if(secondTexture){
 			pt.put("diffuseTexture2.file",secondTexture->getResourceLocation());
 			pt.put("diffuseTexture2.MapU","CLAMP");
@@ -355,7 +361,7 @@ namespace XML
 			pt.put("diffuseTexture2.magFilter","LINEAR");
 			pt.put("diffuseTexture2.mipFilter",true);
 		}
-		Texture* bumpTexture = mat->getTexture(mat->TEXTURE_BUMP);
+		Texture* bumpTexture = mat->getTexture(Material::TEXTURE_BUMP);
 		if(bumpTexture){
 			pt.put("bumpMap.file",bumpTexture->getResourceLocation());
 			pt.put("bumpMap.MapU","CLAMP");
@@ -364,6 +370,25 @@ namespace XML
 			pt.put("bumpMap.magFilter","LINEAR");
 			pt.put("bumpMap.mipFilter",true);
 		}
+		Texture* opacityMap = mat->getTexture(Material::TEXTURE_OPACITY);
+		if(opacityMap){
+			pt.put("opacityMap.file",opacityMap->getResourceLocation());
+			pt.put("opacityMap.MapU","CLAMP");
+			pt.put("opacityMap.MapV","CLAMP");
+			pt.put("opacityMap.minFilter","LINEAR");
+			pt.put("opacityMap.magFilter","LINEAR");
+			pt.put("opacityMap.mipFilter",true);
+		}
+		Texture* specularMap = mat->getTexture(Material::TEXTURE_SPECULAR);
+		if(specularMap){
+			pt.put("specularMap.file",specularMap->getResourceLocation());
+			pt.put("specularMap.MapU","CLAMP");
+			pt.put("specularMap.MapV","CLAMP");
+			pt.put("specularMap.minFilter","LINEAR");
+			pt.put("specularMap.magFilter","LINEAR");
+			pt.put("specularMap.mipFilter",true);
+		}
+		
 		Shader* s = mat->getShader();
 		if(s){
 			pt.put("shader.pixelShader",s->getFragName());

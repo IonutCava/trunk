@@ -334,7 +334,6 @@
     <None Include="..\..\assets\shaders\DeferredShadingPass1_color.frag" />
     <None Include="..\..\assets\shaders\DeferredShadingPass2.frag" />
     <None Include="..\..\assets\shaders\DeferredShadingPass2.vert" />
-    <None Include="..\..\assets\shaders\frag_color.frag" />
     <None Include="..\..\assets\shaders\lighting.frag" />
     <None Include="..\..\assets\shaders\lighting.vert" />
     <None Include="..\..\assets\shaders\OBJ.frag" />
@@ -349,8 +348,6 @@
     <None Include="..\..\assets\shaders\terrain_ground.vert" />
     <None Include="..\..\assets\shaders\terrain_tree.frag" />
     <None Include="..\..\assets\shaders\terrain_tree.vert" />
-    <None Include="..\..\assets\shaders\texturing.frag" />
-    <None Include="..\..\assets\shaders\vertex_transform.vert" />
     <None Include="..\..\assets\shaders\water.frag" />
     <None Include="..\..\assets\shaders\water.vert" />
   </ItemGroup>

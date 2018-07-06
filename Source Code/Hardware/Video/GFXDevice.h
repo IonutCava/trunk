@@ -101,10 +101,8 @@ public:
 	inline void setPrevTextureId(const U32& id) {_prevTextureId = id;}
 	inline const U32& getPrevTextureId() {return _prevTextureId;}
 
-	inline void setPrevMaterialId(const U32& id) {_prevMaterialId = id;}
-	inline const U32& getPrevMaterialId() {return _prevMaterialId;}
-
-
+	inline void setPrevMaterialId(const I32& id) {_prevMaterialId = id;}
+	inline const I32& getPrevMaterialId() {return _prevMaterialId;}
 	void processRenderQueue();
 
 
@@ -117,6 +115,10 @@ public:
     inline void ignoreStateChanges(bool state) {
 		_api.ignoreStateChanges(state);
 	}
+
+	
+	void setObjectState(Transform* const transform){_api.setObjectState(transform); }
+	void releaseObjectState(Transform* const transform){_api.releaseObjectState(transform); }
 
 public:
 	enum BufferType
@@ -143,7 +145,8 @@ private:
 	RenderAPIWrapper& _api;
 	bool _wireframeMode,_deferredShading,_depthMapRendering;
 	mat4 _currentLightProjectionMatrix;
-    U32  _prevShaderId, _prevTextureId,_prevMaterialId;
+    U32  _prevShaderId, _prevTextureId;
+	I32  _prevMaterialId;
 END_SINGLETON
 
 #endif

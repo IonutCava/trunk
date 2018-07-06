@@ -144,6 +144,7 @@ void GL_API::initHardware(){
 	glDisable(GL_COLOR_MATERIAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 	glCullFace(GL_BACK);
+	//glEnable(GL_LINE_SMOOTH);
 	//glutCloseFunc(closeApplication);
 	glutSetOption(GLUT_ACTION_ON_WINDOW_CLOSE, GLUT_ACTION_GLUTMAINLOOP_RETURNS);
 	glutReshapeFunc(resizeWindowCallback);
@@ -194,6 +195,7 @@ void GL_API::initDevice(){
 	glutMainLoop();
 	closeApplication();
 }
+
 void GL_API::resizeWindow(U16 w, U16 h){
 
 	F32 zNear  = ParamHandler::getInstance().getParam<F32>("zNear");
@@ -220,8 +222,8 @@ void GL_API::resizeWindow(U16 w, U16 h){
 			  0.0f,1.0f,0.0f);
 }
 
-void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty)
-{
+void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty){
+
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	if(invertx){
@@ -232,8 +234,8 @@ void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool inve
 				up.x,		up.y,		up.z	);
 }
 
-void GL_API::idle()
-{
+void GL_API::idle(){
+
 	glutSetWindow(_windowId); 
 	glutPostRedisplay();
 }
@@ -247,8 +249,8 @@ void GL_API::getModelViewMatrix(mat4& mvMat){
 	glGetFloatv( GL_MODELVIEW_MATRIX, mvMat.mat );	
 }
 
-void GL_API::clearBuffers(U8 buffer_mask)
-{
+void GL_API::clearBuffers(U8 buffer_mask){
+
 	I32 buffers = 0;
 	if((buffer_mask & GFXDevice::COLOR_BUFFER ) == GFXDevice::COLOR_BUFFER) buffers |= GL_COLOR_BUFFER_BIT;
 	if((buffer_mask & GFXDevice::DEPTH_BUFFER) == GFXDevice::DEPTH_BUFFER) buffers |= GL_DEPTH_BUFFER_BIT;
@@ -256,8 +258,8 @@ void GL_API::clearBuffers(U8 buffer_mask)
 	glClear(buffers);
 }
 
-void GL_API::swapBuffers()
-{
+void GL_API::swapBuffers(){
+
 #ifdef USE_FREEGLUT
 	glutSwapBuffers();
 #else
@@ -265,8 +267,8 @@ void GL_API::swapBuffers()
 #endif
 }
 
-void GL_API::enableFog(F32 density, F32* color)
-{
+void GL_API::enableFog(F32 density, F32* color){
+
 	return; //Fog ... disabled. Really buggy - Ionut
 	glFogi (GL_FOG_MODE, GL_EXP2); 
 	glFogfv(GL_FOG_COLOR, color); 
@@ -278,6 +280,7 @@ void GL_API::enableFog(F32 density, F32* color)
 }
 
 void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
+
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(rect.x, rect.y, rect.z, rect.w, planes.x, planes.y);
@@ -285,6 +288,7 @@ void GL_API::setOrthoProjection(const vec4& rect, const vec2& planes){
 }
 
 void GL_API::drawTextToScreen(Text* text){
+
 	glPushMatrix();
 	glLoadIdentity();
 	glColor3f(text->_color.x,text->_color.y,text->_color.z);
@@ -298,8 +302,8 @@ void GL_API::drawTextToScreen(Text* text){
 	glPopMatrix();
 }
 
-void GL_API::drawCharacterToScreen(void* font,char text)
-{
+void GL_API::drawCharacterToScreen(void* font,char text){
+
 #ifdef USE_FREEGLUT
 	glutBitmapCharacter(font, (I32)text);
 #else
@@ -307,20 +311,18 @@ void GL_API::drawCharacterToScreen(void* font,char text)
 #endif
 }
 
-void GL_API::drawFlash(GuiFlash* flash)
-{
+void GL_API::drawFlash(GuiFlash* flash){
+
 	flash->playMovie();
 }
 
-void GL_API::drawButton(Button* b)
-{
-
+void GL_API::drawButton(Button* b){
+	
 	F32 fontx;
 	F32 fonty;
 	Text *t = NULL;	
 
-	if(b)
-	{
+	if(b){
 		glPushAttrib(GL_COLOR_BUFFER_BIT);
 		/*
 		 *	We will indicate that the mouse cursor is over the button by changing its
@@ -411,15 +413,18 @@ void GL_API::drawButton(Button* b)
 	t = NULL;
 
 }
+
 void GL_API::setDepthMapRendering(bool state) {
 	if(state){
-		//glCullFace(GL_FRONT);
+		GLCheck(glCullFace(GL_FRONT));
+		glShadeModel(GL_FLAT);
+		glColorMask(0, 0, 0, 0);
 		if(_currentRenderState.lightingEnabled()) GLCheck(glDisable(GL_LIGHTING));
-		if(_currentRenderState.cullingEnabled()) GLCheck(glDisable(GL_CULL_FACE));
 	}else{
-		//glCullFace(GL_BACK);
+		GLCheck(glCullFace(GL_BACK));
+		glShadeModel(GL_SMOOTH);
+		glColorMask(1, 1, 1, 1);
 		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
-		if(_currentRenderState.cullingEnabled()) GLCheck(glEnable(GL_CULL_FACE));
 	}
 }
 
@@ -454,15 +459,17 @@ void GL_API::setObjectState(Transform* const transform){
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	glPushMatrix();
 	if(transform){
+		//ToDo: Create separate shaders for this!!!! -Ionut 
+		//Performance is abismal
+		glPushMatrix();
 		glMultMatrixf(transform->getMatrix());
 		glMultMatrixf(transform->getParentMatrix());
 	}
 }
 
-void GL_API::releaseObjectState(){
-	glPopMatrix();
+void GL_API::releaseObjectState(Transform* const transform){
+	if(transform) glPopMatrix();
 }
 
 void GL_API::setMaterial(Material* mat){
@@ -532,28 +539,20 @@ void GL_API::drawText3D(Text3D* const text){
 
 void GL_API::drawBox3D(SceneGraphNode* node){
 	Box3D* model = dynamic_cast<Box3D*>(node->getNode<Object3D>());
-	setObjectState(node->getTransform());
 
 	glutSolidCube(model->getSize());
-
-	releaseObjectState();
 
 }
 
 void GL_API::drawSphere3D(SceneGraphNode* node){
 	Sphere3D* model = dynamic_cast<Sphere3D*>(node->getNode<Object3D>());
-	setObjectState(node->getTransform());
-	
+
 	glutSolidSphere(model->getSize(), model->getResolution(),model->getResolution());
-
-	releaseObjectState();
-
 }
 
 void GL_API::drawQuad3D(SceneGraphNode* node){
 	Quad3D* model = dynamic_cast<Quad3D*>(node->getNode<Object3D>());
 
-	setObjectState(node->getTransform());
 
 	glBegin(GL_TRIANGLE_STRIP); //GL_TRIANGLE_STRIP is slightly faster on newer HW than GL_QUAD,
 								//as GL_QUAD converts into a GL_TRIANGLE_STRIP at the driver level anyway
@@ -568,14 +567,10 @@ void GL_API::drawQuad3D(SceneGraphNode* node){
 		glVertex3fv(&model->getCorner(Quad3D::BOTTOM_RIGHT)[0]);
 	glEnd();
 
-	releaseObjectState();
-
 }
 
 void GL_API::drawText3D(SceneGraphNode* node){
 	Text3D* model = dynamic_cast<Text3D*>(node->getNode<Object3D>());
-
-	setObjectState(node->getTransform());
 
 	glPushAttrib(GL_ENABLE_BIT);
 	GLCheck(glEnable(GL_LINE_SMOOTH));
@@ -583,19 +578,14 @@ void GL_API::drawText3D(SceneGraphNode* node){
 
 	glutStrokeString(model->getFont(), (const U8*)model->getText().c_str());
 	glPopAttrib();
-
-	releaseObjectState();
-
 }
 
 void GL_API::renderModel(SceneGraphNode* node){
 
 	SubMesh* s = dynamic_cast<SubMesh*>(node->getNode<Object3D>());
-	setObjectState(node->getTransform());
 	s->getGeometryVBO()->Enable();
 		renderElements(TRIANGLES,_U32,s->getIndices().size(), &(s->getIndices()[0]));
 	s->getGeometryVBO()->Disable();
-	releaseObjectState();
 }
 
 void GL_API::renderElements(Type t, Format f, U32 count, const void* first_element){
@@ -627,7 +617,7 @@ void GL_API::renderElements(Type t, Format f, U32 count, const void* first_eleme
 bool _depthTestWasEnabled = false;
 void GL_API::toggle2D(bool state){
 	
-	if(state){
+	if(state){ //2D
 		F32 width = Application::getInstance().getWindowDimensions().width;
 		F32 height = Application::getInstance().getWindowDimensions().height;
 		if(glIsEnabled(GL_DEPTH_TEST) == GL_TRUE){
@@ -637,29 +627,22 @@ void GL_API::toggle2D(bool state){
 			_depthTestWasEnabled = false;
 		}
 		GLCheck(glDisable(GL_LIGHTING));
-		if(GFXDevice::getInstance().getDepthMapRendering()){
-			GLCheck(glCullFace(GL_BACK));
-		}
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
 		glOrtho(0,width,height,0,-1,1);
-
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix(); //2
 		glLoadIdentity();
 
-	}else{
+	}else{ //3D
 
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
 		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
-		if(GFXDevice::getInstance().getDepthMapRendering()){
-			GLCheck(glCullFace(GL_FRONT));
-		}
 		if(glIsEnabled(GL_DEPTH_TEST) == GL_FALSE && _depthTestWasEnabled){
-				//GLCheck(glEnable(GL_DEPTH_TEST));
+			//GLCheck(glEnable(GL_DEPTH_TEST));
 			glEnable(GL_DEPTH_TEST);
 		}
 	}
@@ -691,8 +674,8 @@ void GL_API::toggleWireframe(bool state){
 	_wireframeRendering = state;
 }
 
-void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional){
-	if(!directional){
+void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool togglePerspective){
+	if(togglePerspective){
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glLoadIdentity();
@@ -706,7 +689,7 @@ void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& ligh
 				lightTargetVector.x,	lightTargetVector.y,	lightTargetVector.z,
 				0.0,					1.0,					0.0	);
 
-	if(directional){
+	if(!togglePerspective){
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 	}
@@ -714,7 +697,7 @@ void GL_API::setLightCameraMatrices(const vec3& lightPosVector, const vec3& ligh
 }
 
 
-void GL_API::restoreLightCameraMatrices(bool directional){
+void GL_API::restoreLightCameraMatrices(bool togglePerspective){
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glMatrixMode(GL_MODELVIEW);

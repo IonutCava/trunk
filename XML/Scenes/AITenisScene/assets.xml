@@ -4,6 +4,7 @@
 	<item>Player2</item>
 	<item>Player3</item>
 	<item>Player4</item>
+	<!--<item>Sponza</item>-->
 </geometry>
 
 <primitives>
@@ -56,8 +57,16 @@
 <Podea>
 	<model>Quad3D</model>
 	<scale x="50" y="50" z="50" />
-	<position x="-25" y="-0.01" z="-25" />
+	<position x="-25" y="-0.01" z="25" />
 	<orientation x="0" y="0" z="-90" />
 	<color r="0.1" g="0.1" b="0.1"/>
 	<version>1.0</version>
 </Podea>
+
+<Sponza>
+	<model>models/sponza.obj</model>
+	<scale x="0.1" y="0.1" z="0.1" />
+	<position x="0" y="0" z="0" />
+	<orientation x="-90" y="0" z="0" />
+	<version>1.0</version>
+</Sponza>

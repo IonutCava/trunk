@@ -92,12 +92,7 @@ void SceneGraphNode::removeNode(SceneNode* node){
 }
 
 SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name){
-	//if(node->getSceneGraphNode()){
-	//	SceneGraphNode* pSGN = node->getSceneGraphNode()->getParent();
-	//	if(pSGN){
-	//		pSGN->removeNode(node);
-	//	}
-	//}
+
 	SceneGraphNode* sceneGraphNode = New SceneGraphNode(node);
 	SceneGraphNode* parentNode = this->getParent();
 	assert(sceneGraphNode);
@@ -123,7 +118,6 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* node,const std::string& name)
 		sgName = node->getName();
 	}
 	sceneGraphNode->setName(sgName);
-	node->setSceneGraphNode(sgName);
 	result = _children.insert(std::make_pair(sgName,sceneGraphNode));
 	if(!result.second){
 		delete (result.first)->second; 
@@ -223,9 +217,13 @@ void SceneGraphNode::updateVisualInformation(){
 		it.second->updateVisualInformation();
 	}
 }
+void SceneGraphNode::setTransform(Transform* const t) {
+	delete _transform; 
+	_transform = t;
+}
 
-Transform* SceneGraphNode::getTransform(){
-	if(!_transform && !_noDefaultTransform){
+Transform* const SceneGraphNode::getTransform(){
+	if(!_noDefaultTransform && !_transform){
 		_transform = New Transform();
 		assert(_transform);
 	}

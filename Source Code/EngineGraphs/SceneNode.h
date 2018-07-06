@@ -34,7 +34,7 @@ public:
 
 	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
-	virtual void render(SceneGraphNode* node) = 0; //Sounds are played, geometry is displayed etc.
+	virtual void render(SceneGraphNode* const node) = 0; //Sounds are played, geometry is displayed etc.
 			void setRenderState(bool state) {_renderState = state;}
 			bool getRenderState() {return _renderState;}
 	/*//Rendering/Processing*/	
@@ -45,31 +45,26 @@ public:
     virtual	void			setMaterial(Material* m);
 			void			clearMaterials();
 		    Material*		getMaterial();
-	virtual	void            prepareMaterial();
+	virtual	void            prepareMaterial(SceneGraphNode* const sgn);
 	virtual	void            releaseMaterial();
-			SceneGraphNode* getSceneGraphNode();
-			void            setSceneGraphNode(const std::string& name) {_sceneGraphNodeName = name;}
 	virtual	bool    computeBoundingBox(SceneGraphNode* node);
 	virtual void    onDraw();
-	virtual void    postLoad(SceneGraphNode* node) = 0; //Post insertion calls (Use this to setup child objects during creation)
+	virtual void    postLoad(SceneGraphNode* const node) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	
 
 	inline	void	setSelected(bool state)  {_selected = state;}
 	inline	bool    isSelected()			 {return _selected;}
-	inline  void    updateSceneGraphNode()   {_updateSceneGraphNode = true;}
 	virtual void    createCopy();
 	virtual void    removeCopy();
-	virtual void    changeSortKey(F32 key) {_sortKey = key;}
+	virtual void    changeSortKey(I32 key) {_sortKey = key;}
 private:
 	
 	Material*	_material;				   
 
 	bool		_renderState,_noDefaultMaterial;
-	bool        _selected, _updateSceneGraphNode;
-	F32         _sortKey;
-	std::string _sceneGraphNodeName;
-	SceneGraphNode* _sceneGraphNode;
+	bool        _selected;
+	I32         _sortKey;
 };
 
 #endif

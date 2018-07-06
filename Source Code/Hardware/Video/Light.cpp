@@ -7,7 +7,7 @@
 #include "Rendering/Frustum.h"
 #include "Rendering/Application.h"
 
-Light::Light(U8 slot, F32 radius) : SceneNode(), _slot(slot), _radius(radius),_drawImpostor(false){
+Light::Light(U8 slot, F32 radius) : SceneNode(), _slot(slot), _radius(radius),_drawImpostor(false), _sgn(NULL){
 	vec4 _white(1.0f,1.0f,1.0f,1.0f);
 	vec2 angle = vec2(0.0f, RADIANS(45.0f));
 	vec4 position = vec4(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
@@ -41,15 +41,17 @@ bool Light::load(const std::string& name){
 	return true;
 }
 
-void Light::postLoad(SceneGraphNode* node) {
+void Light::postLoad(SceneGraphNode* const node) {
 		_light->setRenderState(false);
 		node->addNode(_light);
+		_sgn = node;
 }	
 
 void Light::onDraw(){
 	GFXDevice& gfx = GFXDevice::getInstance();
 	if(_drawImpostor){
-		_light->getSceneGraphNode()->getTransform()->setPosition(_lightProperties["position"]);
+		_sgn->getTransform()->setPosition(_lightProperties["position"]);
+		
 	}
 	_light->getMaterial()->setDiffuse(getDiffuseColor());
 	_light->getMaterial()->setAmbient(getDiffuseColor());
@@ -66,7 +68,7 @@ void Light::setLightProperties(const std::string& name, vec4 values){
 		_lightProperties["spotDirection"] = values;
 }
 
-void Light::render(SceneGraphNode* node){
+void Light::render(SceneGraphNode* const node){
 	if(_drawImpostor){
 		GFXDevice& gfx = GFXDevice::getInstance();
 		RenderState s = gfx.getActiveRenderState();

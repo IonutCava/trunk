@@ -137,16 +137,13 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 }
 
 
-
 float ShadowMapping()
 {
-		
 	float fShadow = 0.0;
-
+						
 	float tOrtho[2];
 	tOrtho[0] = 20.0;
 	tOrtho[1] = 100.0;
-	
 
 	bool ok = false;
 	int id = 0;

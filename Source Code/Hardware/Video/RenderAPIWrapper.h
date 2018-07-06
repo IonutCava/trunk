@@ -108,6 +108,7 @@ class Text3D;
 class mat4;
 class Material;
 class SceneGraphNode;
+class Transform;
 
 //Renderer Programming Interface
 class RenderAPIWrapper
@@ -190,7 +191,8 @@ protected:
 	virtual void ignoreStateChanges(bool state) = 0;
 	virtual void toggleWireframe(bool state) = 0;
 	virtual ~RenderAPIWrapper(){};
-
+	virtual void setObjectState(Transform* const transform) = 0;
+	virtual void releaseObjectState(Transform* const transform) = 0;
 public: //RenderAPIWrapper global
 	
 	virtual void setRenderState(RenderState& state,bool force = false) = 0;

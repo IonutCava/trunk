@@ -20,12 +20,17 @@ void RenderQueue::sort(){
 	}
 }
 
-void RenderQueue::addNodeToQueue(SceneGraphNode* node){
+void RenderQueue::addNodeToQueue(SceneGraphNode* const node){
+		
+	I32 key = node->getNode()->_sortKey;
+	if(key > _highestKey) _highestKey = key;
+	if(key < _lowestKey) _lowestKey = key;
+
 	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
-	_renderQueue.push_back(RenderQueueItem(node->getNode()->_sortKey,node));
+	_renderQueue.push_back(RenderQueueItem(key,node));
 }
 
-RenderQueueItem& RenderQueue::getItem(I32 index) {
+const RenderQueueItem& RenderQueue::getItem(I32 index){
 	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
 	return _renderQueue[index];
 }
@@ -38,4 +43,27 @@ void RenderQueue::refresh(){
 U32 RenderQueue::getRenderQueueStackSize(){
 	boost::unique_lock< boost::mutex > lock_access_here(_renderQueueMutex);
 	return _renderQueue.size();
+}
+
+I32 RenderQueue::setPriority(RenderingPriority::Priority priority){
+	F32 key = -1;
+	switch(priority){
+		case RenderingPriority::FIRST:
+			key = _lowestKey - 2;
+			break;
+		case RenderingPriority::SECOND:
+			key = _lowestKey - 1;
+			break;
+		case RenderingPriority::BEFORE_LAST:
+			key = _highestKey + 1;
+			break;
+		case RenderingPriority::LAST:
+			key = _highestKey + 2;
+			break;
+		default:
+		case RenderingPriority::ANY:
+			I32 key = (I32)random(_lowestKey+1,_highestKey-1);
+			break;
+	};
+	return key;
 }

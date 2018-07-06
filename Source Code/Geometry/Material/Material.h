@@ -30,7 +30,16 @@ public:
   enum TextureUsage{
 	  TEXTURE_BASE = 0,
 	  TEXTURE_BUMP = 1,
-	  TEXTURE_SECOND = 2
+	  TEXTURE_NORMALMAP = 2,
+	  TEXTURE_SECOND = 3,
+	  TEXTURE_OPACITY = 4,
+	  TEXTURE_SPECULAR = 5,
+	  TEXTURE_DISPLACEMENT = 6,
+	  TEXTURE_EMISSIVE = 7,
+	  TEXTURE_AMBIENT = 8,
+	  TEXTURE_SHININESS = 9,
+	  TEXTURE_MIRROR = 10,
+	  TEXTURE_LIGHTMAP = 11
   };
 typedef unordered_map<TextureUsage, Texture2D*> textureMap;
 
@@ -42,7 +51,7 @@ public:
   bool unload();
   inline U8              getTextureCount() {return _textures.size();}
   Texture2D*	 const   getTexture(TextureUsage textureUsage);
-  inline Shader* const   getShader()   {return _shader;}
+  Shader*        const   getShader();
   inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* texture);
   void setShader(const std::string& shader);
@@ -55,7 +64,7 @@ public:
   void setShininess(F32 value) {_shininess = value; _materialMatrix.setCol(3,vec4(value,_emissive.x,_emissive.y,_emissive.z));}
 
   inline mat4& getMaterialMatrix() {return _materialMatrix;}
-  inline U8    getMaterialId()     {return _matId;}
+  inline I32   getMaterialId()     {return _matId;}
   void computeLightShaders(); //Set shaders;
   void createCopy();
   void removeCopy();
@@ -69,9 +78,9 @@ private:
   mat4 _materialMatrix; /* all properties bundled togheter */
 
   textureMap _textures;
-  Shader* _shader;
+  std::string _shader; /*shader name*/
   bool _computedLightShaders;
-  U8   _matId;
+  I32  _matId;
   bool _dirty;
   bool _twoSided;
   RenderState* _state;

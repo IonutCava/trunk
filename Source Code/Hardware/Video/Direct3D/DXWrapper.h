@@ -86,6 +86,9 @@ private:
 	void ignoreStateChanges(bool state){}
 
 	void setDepthMapRendering(bool state){};
+
+	void setObjectState(Transform* const transform);
+	void releaseObjectState(Transform* const transform);
 END_SINGLETON
 
 #endif

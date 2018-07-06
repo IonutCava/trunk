@@ -11,7 +11,6 @@ Material::Material() : Resource(),
 					   _emissive(0.0f,0.0f,0.0f),
 					   _shininess(50.0f),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4(_shininess,_emissive.x,_emissive.y,_emissive.z)),
-					   _shader(NULL),
 					   _computedLightShaders(false),
 					   _dirty(false),
 					   _twoSided(false),
@@ -20,6 +19,8 @@ Material::Material() : Resource(),
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
    _textures[TEXTURE_SECOND] = NULL;
+   _textures[TEXTURE_OPACITY] = NULL;
+   _textures[TEXTURE_SPECULAR] = NULL;
    _matId = GFXDevice::getInstance().getPrevMaterialId() + 1;
    GFXDevice::getInstance().setPrevMaterialId(_matId);
 }
@@ -32,12 +33,9 @@ Material::~Material(){
 
 void Material::removeCopy(){
 	decRefCount();
-	if(_shader){
-		_shader->removeCopy();
-		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
-	}
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
+			Console::getInstance().printfn("Removing texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
 			iter.second->removeCopy();
 		}
 	}
@@ -45,13 +43,9 @@ void Material::removeCopy(){
 void Material::createCopy(){
 	//increment all dependencies;
 	incRefCount();
-	if(_shader){
-		_shader->createCopy();
-		Console::getInstance().printfn("Shader [ %s ] new ref count: %d",_shader->getName().c_str(),_shader->getRefCount());
-	}
-
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
+			Console::getInstance().printfn("Adding texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
 			iter.second->createCopy();
 		}
 	}
@@ -67,18 +61,26 @@ void Material::setTexture(TextureUsage textureUsage, Texture2D* texture) {
 	_dirty = true;
 }
 
+//Here we set the shader's name
 void Material::setShader(const std::string& shader){
-	if(_shader){
-		Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader->getName().c_str(),shader.c_str());
-		if(_shader->getName().compare(shader) == 0) return;
-		RemoveResource(_shader);
+	//if we already had a shader assigned ...
+	if(!_shader.empty()){
+		//and we are trying to assing the same one again, return.
+		if(_shader.compare(shader) == 0) return;
+		else Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
 	}
-	if(!shader.empty()){
-		ResourceDescriptor shaderDescriptor(shader);
-		_shader = ResourceManager::getInstance().loadResource<Shader>(shaderDescriptor);
+
+	_shader = shader;
+	if(!ResourceManager::getInstance().find(_shader)){
+		ResourceManager::getInstance().loadResource<Shader>(ResourceDescriptor(_shader));
 	}
+	dumpToXML();
 	_dirty = true;
 	_computedLightShaders = true;
+}
+
+Shader* const Material::getShader(){
+	return dynamic_cast<Shader*>(ResourceManager::getInstance().find(_shader));
 }
 
 Texture2D* const  Material::getTexture(TextureUsage textureUsage)  {
@@ -89,7 +91,7 @@ void Material::computeLightShaders(){
 	//If the current material doesn't have a shader associated with it, then add the default ones.
 	//Manually setting a shader, overrides this function by setting _computedLightShaders to "true"
 	if(_computedLightShaders) return;
-	if(_shader == NULL){
+	if(_shader.empty()){
 		if(GFXDevice::getInstance().getDeferredShading()){
 			if(_textures[TEXTURE_BASE]){
 				setShader("DeferredShadingPass1");
@@ -97,7 +99,7 @@ void Material::computeLightShaders(){
 				setShader("DeferredShadingPass1_color.frag,DeferredShadingPass1.vert");
 			}
 		}else{
-			setShader("lighting");
+			setShader("lighting.frag,lighting.vert");
 		}
 	}
 	if(getName().compare("defaultMaterial") != 0){
@@ -107,10 +109,6 @@ void Material::computeLightShaders(){
 }
 
 bool Material::unload(){
-	if(_shader){
-		RemoveResource(_shader);
-	}
-	
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
 			RemoveResource(iter.second);

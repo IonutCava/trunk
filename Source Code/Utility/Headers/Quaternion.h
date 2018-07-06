@@ -41,6 +41,11 @@ public:
 	mat4&      getMatrix();
 	void       getAxisAngle(vec3 *axis, F32 *angle,bool inDegrees);
 	bool       compare(Quaternion& q);
+
+	F32        getX() {return _x;}
+	F32        getY() {return _y;}
+	F32        getZ() {return _z;}
+	F32        getW() {return _w;}
 private:
 	F32 _x,_y,_z,_w;
 	mat4 *_mat;

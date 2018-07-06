@@ -5,6 +5,8 @@
 #include <aiPostProcess.h> // Post processing flags
 #include "Managers/ResourceManager.h"
 #include "Utility/Headers/XMLParser.h"
+#include "Geometry/Animations/cAnimationController.h"
+#include "Utility/Headers/ParamHandler.h"
 
 using namespace std;
 
@@ -55,10 +57,12 @@ Mesh* DVDConverter::load(const string& file){
 				continue;
 		if(scene->mMeshes[n]->mNumVertices == 0) continue; 
 		SubMesh* s = loadSubMeshGeometry(scene->mMeshes[n], n);
-		Material* m = loadSubMeshMaterial(scene->mMaterials[scene->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
-		if(s && m) {
+		if(s){
+			if(s->getRefCount() == 1){
+				Material* m = loadSubMeshMaterial(scene->mMaterials[scene->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
+				s->setMaterial(m);
+			}//else the Resource manager created a copy of the material
 			s->getGeometryVBO()->Create();
-			s->setMaterial(m);
 			tempMesh->addSubMesh(s->getName());
 		}
 			
@@ -89,7 +93,6 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	SubMesh* tempSubMesh = ResourceManager::getInstance().loadResource<SubMesh>(submeshdesc);
 
 	if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
-		Console::getInstance().printfn("SubMesh geometry [ %s ] already exists. Skipping creation ...",temp.c_str());
 		return tempSubMesh;
 	}
 	temp.clear();
@@ -224,16 +227,16 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		if(result != AI_SUCCESS) break;
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-
+		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(path.find('/') == string::npos){
+			path = "../texturi/" + path;
+		}
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
-			string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-
 			Material::TextureUsage item;
 			if(count == 0) item = Material::TEXTURE_BASE;
 			else if(count == 1) item = Material::TEXTURE_SECOND;
-
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + "../texturi/"+img_name);
+			texture.setResourceLocation(pathName + path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(item,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
@@ -243,31 +246,70 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		if(count == 2) break; //ToDo: Only 2 texture for now. Fix This! -Ionut;
 	}//endwhile
 
+	result = source->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+	if(result == AI_SUCCESS){
+		string path = tName.data;
+		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		if(path.find('/') == string::npos){
+			path = "../texturi/" + path;
+		}
+		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(img_name.rfind('.') !=  string::npos){
+
+			ResourceDescriptor texture(img_name);
+			texture.setResourceLocation(pathName + path);
+			texture.setFlag(true);
+			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+		}//endif
+	}//endif
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		if(path.find('/') == string::npos){
+			path = "../texturi/" + path;
+		}
+		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  string::npos){
-			string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+
 			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + "../texturi/"+img_name);
+			texture.setResourceLocation(pathName + path);
 			texture.setFlag(true);
 			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+		}//endif
+	}//endif
+	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+	if(result == AI_SUCCESS){
+		string path = tName.data;
+		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(path.find('/') == string::npos){
+			path = "../texturi/" + path;
+		}
+		if(img_name.rfind('.') !=  string::npos){
+			ResourceDescriptor texture(img_name);
+			texture.setResourceLocation(pathName + path);
+			texture.setFlag(true);
+			tempMaterial->setTexture(Material::TEXTURE_OPACITY,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+			tempMaterial->getRenderState().blendingEnabled() = true;
+		}//endif
+	}//endif
+	result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+	if(result == AI_SUCCESS){
+		string path = tName.data;
+		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
+		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
+		if(path.find('/') == string::npos){
+			path = "../texturi/" + path;
+		}
+		if(img_name.rfind('.') !=  string::npos){
+			ResourceDescriptor texture(img_name);
+			texture.setResourceLocation(pathName + path);
+			texture.setFlag(true);
+			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,ResourceManager::getInstance().loadResource<Texture2D>(texture));
 		}//endif
 	}//endif
 
-	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-	if(result == AI_SUCCESS){
-		string path = tName.data;
-		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		if(img_name.rfind('.') !=  string::npos){
-			string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-			ResourceDescriptor texture(img_name);
-			texture.setResourceLocation(pathName + "../texturi/"+img_name);
-			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
-		}//endif
-	}//endif
 	max = 1;
 	I32 two_sided = 0;
 	if((result == aiGetMaterialIntegerArray(source, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided){

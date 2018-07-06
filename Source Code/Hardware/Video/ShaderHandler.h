@@ -28,7 +28,7 @@ public:
     virtual bool loadVertOnly(const std::string& name) = 0;
 	virtual bool loadFragOnly(const std::string& name) = 0;
 
-	virtual void bind() = 0;
+	virtual void bind();
 	virtual void unbind() = 0;
 	
 	virtual U16 getId() = 0;
@@ -40,6 +40,7 @@ public:
 	virtual void Uniform(const std::string& ext, const vec4& value) = 0;
 	virtual void Uniform(const std::string& ext, const mat3& value) = 0;
 	virtual void Uniform(const std::string& ext, const mat4& value) = 0;
+	virtual void Uniform(const std::string& ext, const std::vector<mat4>& values) = 0;
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
 
 	//Legacy

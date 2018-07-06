@@ -81,23 +81,19 @@ I8 Frustum::ContainsBoundingBox(BoundingBox& bbox) const
 
 
 
-void Frustum::Extract(const vec3& eye)
-{
+void Frustum::Extract(const vec3& eye){
+
 	_eyePos = eye;
+	F32 t;
 
 	GFXDevice& gfx = GFXDevice::getInstance();
+
 	gfx.getModelViewMatrix(_modelViewMatrix);
 	gfx.getProjectionMatrix(_projectionMatrix);
 	_modelViewMatrix.inverse(_modelViewMatrixInv);						
-	
-	F32 t;
-
-	
 	_modelViewProjectionMatrix = _projectionMatrix * _modelViewMatrix;
 	_inverseModelViewProjectionMatrix = _projectionMatrix * _modelViewMatrixInv;
 
-
-	
 	_frustumPlanes[0][0] = _modelViewProjectionMatrix[ 3] - _modelViewProjectionMatrix[ 0];
 	_frustumPlanes[0][1] = _modelViewProjectionMatrix[ 7] - _modelViewProjectionMatrix[ 4];
 	_frustumPlanes[0][2] = _modelViewProjectionMatrix[11] - _modelViewProjectionMatrix[ 8];

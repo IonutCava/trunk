@@ -83,8 +83,21 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 			w = xSize2; h = ySize2;
 		}
 	}
-
-	glTexImage2D(target, 0, d==3?GL_RGB:GL_RGBA, w, h, 0, d==3?GL_RGB:GL_RGBA, GL_UNSIGNED_BYTE, _img.data);
+	GLint depth = GL_RGB;
+	switch(d){
+		case 1:
+			depth = GL_LUMINANCE;
+			break;
+		case 2:
+		case 3:
+		default:
+			depth = GL_RGB;
+			break;
+		case 4:
+			depth = GL_RGBA;
+			break;
+	}
+	glTexImage2D(target, 0, depth, w, h, 0, depth, GL_UNSIGNED_BYTE, _img.data);
 }
 
 

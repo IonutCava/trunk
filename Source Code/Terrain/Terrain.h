@@ -43,9 +43,9 @@ public:
 	
 	void drawGround() const;
 	void drawInfinitePlain();
-	void render(SceneGraphNode* node);
+	void render(SceneGraphNode* const node);
 	void terrainSetParameters(const vec3& pos,const vec2& scale);
-	void prepareMaterial();
+	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
 
 	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;
@@ -54,7 +54,7 @@ public:
 	vec2  getDimensions(){return vec2((F32)_terrainWidth, (F32)_terrainHeight);}
 
 	void  setLoaded(bool state) {_loaded = state;}
-	void  postLoad(SceneGraphNode* node);	
+	void  postLoad(SceneGraphNode* const node);	
 
 	Vegetation* getVegetation() const {return _veg;}
 

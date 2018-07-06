@@ -5,6 +5,7 @@
 #include "Rendering/Application.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "EngineGraphs/RenderQueue.h"
+#include "Utility/Headers/ParamHandler.h"
 using namespace std;
 
 WaterPlane::WaterPlane() : SceneNode(), _plane(NULL), _texture(NULL), _shader(NULL){
@@ -43,7 +44,7 @@ bool WaterPlane::load(const std::string& name){
 	return true;
 }
 
-void WaterPlane::postLoad(SceneGraphNode* node){
+void WaterPlane::postLoad(SceneGraphNode* const node){
 	_node = node;
 	BoundingBox& bb = node->getBoundingBox();
 	_planeSGN = node->addNode(_plane);
@@ -98,28 +99,27 @@ void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 tr
 		_shader->Uniform("noise_factor", noiseFactor);
 	_shader->unbind();
 }
-void WaterPlane::prepareMaterial(){
+
+void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 	GFXDevice::getInstance().ignoreStateChanges(true);
 	RenderState s = GFXDevice::getInstance().getActiveRenderState();
 	s.blendingEnabled() = true;
 	s.cullingEnabled() = false;
 	GFXDevice::getInstance().setRenderState(s);
-
 }
 
 void WaterPlane::releaseMaterial(){
 	GFXDevice::getInstance().ignoreStateChanges(false);	
-	//GFXDevice::getInstance().restoreRenderState();
+	GFXDevice::getInstance().restoreRenderState();
 }
 
-void WaterPlane::render(SceneGraphNode* node){
+void WaterPlane::render(SceneGraphNode* const node){
 
 	const vec3& eyePos = CameraManager::getInstance().getActiveCamera()->getEye();
 	BoundingBox& bb = node->getBoundingBox();
 
 	_planeTransform->setPosition(vec3(eyePos.x,bb.getMax().y,eyePos.z));
-	changeSortKey(RenderQueue::getInstance().getRenderQueueStackSize());
-
+	changeSortKey(RenderQueue::getInstance().setPriority(RenderingPriority::LAST));
 
 	_reflectionFBO->Bind(0);
 	_texture->Bind(1);	
@@ -132,9 +132,10 @@ void WaterPlane::render(SceneGraphNode* node){
 		_shader->Uniform("win_height", (I32)Application::getInstance().getWindowDimensions().height);
 		_shader->Uniform("water_bb_min",bb.getMin());
 		_shader->Uniform("water_bb_max",bb.getMax());
-		_shader->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
 
-				GFXDevice::getInstance().drawQuad3D(_planeSGN);
+		GFXDevice::getInstance().setObjectState(_planeTransform);
+		GFXDevice::getInstance().drawQuad3D(_planeSGN);
+		GFXDevice::getInstance().releaseObjectState(_planeTransform);
 
 	_shader->unbind();
 	_texture->Unbind(1);

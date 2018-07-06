@@ -87,7 +87,7 @@ private:
 
 	void setLight(U8 slot, unordered_map<std::string,vec4>& properties);
 	void createLight(U8 slot);
-	void setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool directional = false);
+	void setLightCameraMatrices(const vec3& lightPosVector, const vec3& lightTargetVector,bool togglePerspective = true);
 	void restoreLightCameraMatrices(bool directional = false);
 
 	void toggleWireframe(bool state);
@@ -98,10 +98,12 @@ private:
 	void ignoreStateChanges(bool state);
 
 	void setDepthMapRendering(bool state);
-private: //OpenGL specific:
 
 	void setObjectState(Transform* const transform);
-	void releaseObjectState();
+	void releaseObjectState(Transform* const transform);
+private: //OpenGL specific:
+
+	
 	U8 _windowId;
 	bool _wireframeRendering;
 

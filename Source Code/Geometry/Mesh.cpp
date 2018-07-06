@@ -37,7 +37,7 @@ bool Mesh::computeBoundingBox(SceneGraphNode* node){
 	return SceneNode::computeBoundingBox(node);
 }
 
-void Mesh::postLoad(SceneGraphNode* node){
+void Mesh::postLoad(SceneGraphNode* const node){
 	for_each(std::string& it, _subMeshes){
 		ResourceDescriptor subMesh(it);
 		SubMesh* s = dynamic_cast<SubMesh*>(ResourceManager::getInstance().find(it));

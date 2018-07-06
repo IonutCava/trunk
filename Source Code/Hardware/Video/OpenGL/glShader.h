@@ -43,6 +43,7 @@ public:
 	void Uniform(const std::string& ext, const vec4& value);
 	void Uniform(const std::string& ext, const mat3& value);
     void Uniform(const std::string& ext, const mat4& value);
+	void Uniform(const std::string& ext, const std::vector<mat4>& values);
 	void UniformTexture(const std::string& ext, U16 slot);
 
 	//Legacy

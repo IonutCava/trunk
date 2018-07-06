@@ -7,15 +7,7 @@
 	<shininess v="1920"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
-<diffuseTexture1>
-	<file>Assets/models/../texturi/m_rifl.bmp</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</diffuseTexture1>
 <shader>
-	<pixelShader>DeferredShadingPass1.frag</pixelShader>
+	<pixelShader>DeferredShadingPass1_color.frag</pixelShader>
 	<vertexShader>DeferredShadingPass1.vert</vertexShader>
 </shader>

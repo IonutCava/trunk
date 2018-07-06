@@ -31,7 +31,7 @@ class WaterPlane : public SceneNode
 public:
 	WaterPlane();
 	~WaterPlane(){}
-	void render(SceneGraphNode* node);
+	void render(SceneGraphNode* const node);
 	bool load(const std::string& name);
 	bool unload();
 
@@ -39,8 +39,8 @@ public:
 	inline Quad3D*     getQuad()    {return _plane;}
 	inline FrameBufferObject* getReflectionFBO(){return _reflectionFBO;}
 	bool   isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
-	void   postLoad(SceneGraphNode* node);
-	void   prepareMaterial();
+	void   postLoad(SceneGraphNode* const node);
+	void   prepareMaterial(SceneGraphNode* const sgn);
 	void   releaseMaterial();
 private:
 	bool computeBoundingBox(SceneGraphNode* node);

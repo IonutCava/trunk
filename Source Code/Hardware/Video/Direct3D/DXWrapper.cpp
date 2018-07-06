@@ -183,3 +183,11 @@ void DX_API::toggleWireframe(bool state)
 void DX_API::Screenshot(char *filename, U16 xmin, U16 ymin, U16 xmax, U16 ymax)
 {
 }
+
+void DX_API::setObjectState(Transform* const transform)
+{
+}
+
+void DX_API::releaseObjectState(Transform* const transform)
+{
+}

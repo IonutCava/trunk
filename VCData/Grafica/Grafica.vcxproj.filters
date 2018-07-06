@@ -753,9 +753,6 @@
     <None Include="..\..\assets\shaders\DeferredShadingPass2.vert">
       <Filter>shaders</Filter>
     </None>
-    <None Include="..\..\assets\shaders\frag_color.frag">
-      <Filter>shaders</Filter>
-    </None>
     <None Include="..\..\assets\shaders\lighting.frag">
       <Filter>shaders</Filter>
     </None>
@@ -790,12 +787,6 @@
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\assets\shaders\terrain_tree.vert">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\texturing.frag">
-      <Filter>shaders</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\vertex_transform.vert">
       <Filter>shaders</Filter>
     </None>
     <None Include="..\..\assets\shaders\water.frag">

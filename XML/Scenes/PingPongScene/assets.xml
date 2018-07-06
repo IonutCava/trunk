@@ -29,7 +29,7 @@
 
 <test>
 	<model>models/sponza.obj</model>
-	<scale x="1" y="1" z="1" />
+	<scale x="0.02" y="0.02" z="0.02" />
 	<position x="0" y="0" z="0" />
 	<orientation x="-90" y="0" z="0" />
 	<version>1.0</version>

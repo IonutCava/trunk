@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <material>
 	<name>Podea_material</name>
-	<ambient r="1" g="1" b="1" a="1"/>
-	<diffuse r="1" g="1" b="1" a="1"/>
-	<specular r="0.2" g="0.2" b="0.2" a="0"/>
-	<shininess v="0.1"/>
-	<emissive r="0.1" g="0.1" b="0.1"/>
+	<ambient r="0.1" g="0.1" b="0.1" a="1"/>
+	<diffuse r="0.1" g="0.1" b="0.1" a="1"/>
+	<specular r="0.6666667" g="0.6666667" b="0.6666667" a="1"/>
+	<shininess v="0.6666667"/>
+	<emissive r="0.6666667" g="0.6666667" b="1"/>
 </material>
 <shader>
-	<pixelShader>OBJ.frag</pixelShader>
-	<vertexShader>OBJ.vert</vertexShader>
+	<pixelShader>lighting.frag</pixelShader>
+	<vertexShader>lighting.vert</vertexShader>
 </shader>

@@ -12,9 +12,9 @@ newmtl MatD3D26
 	Kd 1.0000 1.0000 1.0000
 	Ks 0.2970 0.2970 0.2970
 	Ke 0.0000 0.0000 0.0000
-	map_Ka C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard.png
-	map_Kd C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard.png
-	map_d C:\Users\k1ngp1n\Desktop\Divide-Framework\assets\texturi\gard_alpha.png
+	map_Ka ..\texturi\gard.png
+	map_Kd ..\texturi\gard.png
+	map_d ..\texturi\gard_alpha.png
 
 newmtl MatD3D27
 	Ns 0.0000

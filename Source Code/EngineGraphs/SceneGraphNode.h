@@ -25,10 +25,10 @@ class SceneGraph;
 class SceneRoot : public SceneNode{
 public:
 	SceneRoot() : SceneNode("root"){useDefaultMaterial(false);}
-	void render(SceneGraphNode* node) {return;}
+	void render(SceneGraphNode* const node) {return;}
 
 	bool load(const std::string& name) {;return true;}
-	void postLoad(SceneGraphNode* node) {};	
+	void postLoad(SceneGraphNode* const node) {};	
 	bool unload() {return true;}
 	void onDraw() {};
 	bool computeBoundingBox(SceneGraphNode* node){return true;}
@@ -47,9 +47,8 @@ private:
 };
 
 class SceneGraphNode{
-	typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
 public:
-
+	typedef unordered_map<std::string, SceneGraphNode*> NodeChildren;
 	SceneGraphNode(SceneNode* node);
 
 	~SceneGraphNode();
@@ -84,8 +83,8 @@ inline       BoundingBox&	  getBoundingBox()                {return _boundingBox
 /*Bounding Box Management*/
 
 /*Transform management*/
-inline       void			  setTransform(Transform* t) { if(_transform) delete _transform; _transform = t;}
-			 Transform*		  getTransform();
+	          void			  setTransform(Transform* const t);
+			 Transform*	const getTransform();
 inline       void             useDefaultTransform(bool state) {_noDefaultTransform = !state;}
 inline       void             silentDispose(bool state) {_silentDispose = state;}
 /*Transform management*/

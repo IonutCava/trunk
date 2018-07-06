@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <material>
 	<name>sponza.obj-submesh-3_material</name>
-	<ambient r="0" g="0" b="0" a="1"/>
-	<diffuse r="0.7373" g="0.7098" b="0.6706" a="1"/>
+	<ambient r="0.588" g="0.588" b="0.588" a="1"/>
+	<diffuse r="0.588" g="0.588" b="0.588" a="1"/>
 	<specular r="0" g="0" b="0" a="1"/>
 	<shininess v="50"/>
 	<emissive r="0" g="0" b="0"/>
 </material>
 <diffuseTexture1>
-	<file>Assets/models/../texturi/..\texturi\01_STUB.png</file>
+	<file>Assets/models/../texturi/sponza/background.tga</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>
@@ -16,7 +16,7 @@
 	<mipFilter>true</mipFilter>
 </diffuseTexture1>
 <bumpMap>
-	<file>Assets/models/../texturi/..\texturi\01_STUB.png</file>
+	<file>Assets/models/../texturi/sponza/background_ddn.tga</file>
 	<MapU>CLAMP</MapU>
 	<MapV>CLAMP</MapV>
 	<minFilter>LINEAR</minFilter>

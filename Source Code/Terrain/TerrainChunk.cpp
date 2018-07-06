@@ -28,6 +28,14 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
  		treeTransform->scale(scale * tree.scale);
 		treeTransform->rotateY(pos.w);
 		treeTransform->translate(vec3(pos));
+		for_each(SceneGraphNode::NodeChildren::value_type& it, treeNode->getChildren()){
+			assert(it.second);
+			Material* m = (it.second)->getNode()->getMaterial();
+			if(m){
+				m->setShader("terrain_tree.vert,lighting.frag");
+			}
+		}
+		
 	}else{
 		Console::getInstance().errorf("Can't add tree: %s\n",tree.ModelName.c_str());
 	}

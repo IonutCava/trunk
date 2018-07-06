@@ -5,70 +5,58 @@
 #include "Rendering/Frustum.h"
 #include "GUI/GUI.h"
 #include "Geometry/Predefined/Sphere3D.h"
+#include "Geometry/Predefined/Quad3D.h"
 #include "AITenisSceneAIActionList.h"
 #include "EngineGraphs/RenderQueue.h"
 using namespace std;
 
 //begin copy-paste: randarea scenei
 void AITenisScene::render(){
+
 	Sky& sky = Sky::getInstance();
 
-	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),_sunVector, false,true,true);
+	sky.setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,true);
 	sky.draw();
 
 	_sceneGraph->render();
+	
 }
 //end copy-paste
 
-//begin copy-paste: Desenam un cer standard
-
 void AITenisScene::preRender(){
-	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	vec2 _sunAngle = vec2(0.0f, RADIANS(45.0f));
+	_sunVector = vec4(	-cosf(_sunAngle.x) * sinf(_sunAngle.y),
+						-cosf(_sunAngle.y),
+						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
+						0.0f );
 
-	vec2 sunAngle(0.0f, RADIANS(45.0f));
-	_sunVector = vec4(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
 	getLights()[0]->setLightProperties(string("position"),_sunVector);
-	getLights()[0]->setLightProperties(string("ambient"),vec4(1.0f,1.0f,1.0f,1.0f));
-	getLights()[0]->setLightProperties(string("diffuse"),vec4(1.0f,1.0f,1.0f,1.0f));
-	getLights()[0]->setLightProperties(string("specular"),vec4(1.0f,1.0f,1.0f,1.0f));
+	getLights()[0]->setLightProperties(string("ambient"),_white);
+	getLights()[0]->setLightProperties(string("diffuse"),_white);
+	getLights()[0]->setLightProperties(string("specular"),_white);
 	getLights()[0]->onDraw(); //Force update between render passes
 
-
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
 	vec3 eye_pos = cam->getEye();
-	vec3 sun_pos = eye_pos - vec3(_sunVector);
-	F32 zNear = _paramHandler.getParam<F32>("zNear");
-	F32 zFar = _paramHandler.getParam<F32>("zFar");
-	vec2 zPlanes(zNear,zFar);
-	D32 tabOrtho[2] = {20.0, 100.0};
-	vec3 lightPos(eye_pos.x - 500*_sunVector.x,	
-				  eye_pos.y - 500*_sunVector.y,
-				  eye_pos.z - 500*_sunVector.z);
-	
-	_GFX.setLightCameraMatrices(lightPos,eye_pos,true);
-	//SHADOW MAPPING
-	/*_GFX.setDepthMapRendering(true);
-
-	for(U8 i=0; i<2; i++){
-		_GFX.setOrthoProjection(vec4(-tabOrtho[i], tabOrtho[i], -tabOrtho[i], tabOrtho[i]),zPlanes);
-		Frustum::getInstance().Extract(sun_pos);
-	
-		_depthMap[i]->Begin();
-			_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
-			_sceneGraph->render();
-		_depthMap[i]->End();
-	}
-
-	_GFX.setOrthoProjection(vec4(-1.0f,1.0f,-1.0f,1.0f),zPlanes);
+	vec3 sun_pos = - vec3(_sunVector);
+	vec3 lightPos(-50*_sunVector.x,	
+				  -50*_sunVector.y,
+				  -50*_sunVector.z);
+	//SHADOWS
+	_GFX.setDepthMapRendering(true);
+	_GFX.setLightCameraMatrices(lightPos,vec3(0,0,0),true);
 	Frustum::getInstance().Extract(sun_pos);
 	_GFX.setLightProjectionMatrix(Frustum::getInstance().getModelViewProjectionMatrix());
 
-	_GFX.setDepthMapRendering(false);
-	_GFX.restoreLightCameraMatrices(true);
+	_depthMap[0]->Begin();
+		_GFX.clearBuffers(GFXDevice::COLOR_BUFFER | GFXDevice::DEPTH_BUFFER);
+		_sceneGraph->render();
+	_depthMap[0]->End();
 	
+	_GFX.restoreLightCameraMatrices(true);
 	Frustum::getInstance().Extract(eye_pos);
-	*/
+	_GFX.setDepthMapRendering(false);
 }
-//<<end copy-paste
 
 void AITenisScene::processEvents(F32 time){
 	F32 FpsDisplay = 0.3f;
@@ -116,18 +104,15 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	SceneGraphNode* Player3 = _sceneGraph->findNode("Player3");
 	SceneGraphNode* Player4 = _sceneGraph->findNode("Player4");
 
-	//Shortcut catre elementele din graph aferente spatiului de joc
-	SceneGraphNode* Fileu = _sceneGraph->findNode("Fileu");
-	SceneGraphNode* Podea = _sceneGraph->findNode("Podea");
 
 	//Validarea pointerilor
 	assert(Player1);assert(Player2);assert(Player3);assert(Player4);
-	assert(Fileu);assert(Podea);assert(_mingeSGN);
+	assert(_fileu);assert(_podea);assert(_mingeSGN);
 
 	//Memoram (prin copie. thread-safe) pozitia actuala a mingii
 	Transform* mingeT = _mingeSGN->getTransform();
 	vec3 pozitieMinge = mingeT->getPosition();
-	vec3 pozitieFileu  = Fileu->getTransform()->getPosition();
+	vec3 pozitieFileu  = _fileu->getTransform()->getPosition();
 	//Mingea se deplaseaza de la Echipa 1 la Echipa 2?
 	_directieEchipa1SpreEchipa2 ? pozitieMinge.z -= 0.123f : pozitieMinge.z += 0.123f;
 	//Mingea se deplaseaza de jos in sus sau e in cadere?
@@ -144,7 +129,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 
 	//----------------------COLIZIUNI------------------------------//
 	//z = adancime. Descendent spre orizont;
-	if(Podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
+	if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
 		_aplicaImpulsLateral = true;
 		if(pozitieMinge.z > pozitieFileu.z){
 			_atinsTerenEchipa1 = true;
@@ -201,7 +186,7 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 	}
 
 	//A lovit Echipa 1 sau Echipa 2 fileul?
-	if(_mingeSGN->getBoundingBox().Collision(Fileu->getBoundingBox())){
+	if(_mingeSGN->getBoundingBox().Collision(_fileu->getBoundingBox())){
 		if(_directieEchipa1SpreEchipa2){
 			_pierdutEchipa1 = true;
 		}else{
@@ -209,10 +194,10 @@ void AITenisScene::procesareJoc(boost::any a, CallbackParam b){
 		}
 		updated = true;
     }
-	if(pozitieMinge.x + 1 < Fileu->getBoundingBox().getMin().x || pozitieMinge.x + 1 > Fileu->getBoundingBox().getMax().x){
+	if(pozitieMinge.x + 1 < _fileu->getBoundingBox().getMin().x || pozitieMinge.x + 1 > _fileu->getBoundingBox().getMax().x){
 		//Daca am lovit noi si am atins terenul adversarului
 		//Sau daca a lovit adversarul si nu a atins terenul nostru
-		if(Podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
+		if(_podea->getBoundingBox().Collision(_mingeSGN->getBoundingBox())){
 			if((_atinsTerenEchipa2 && _directieEchipa1SpreEchipa2) || (!_directieEchipa1SpreEchipa2 && !_atinsTerenEchipa1)){
 				_pierdutEchipa1 = false;
 			}else{
@@ -265,10 +250,8 @@ bool AITenisScene::load(const string& name){
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	
-	//_depthMap[0] =_GFX.newFBO();
-	//_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
-	//_depthMap[1] = _GFX.newFBO();
-	//_depthMap[1]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
+	_depthMap[0] =_GFX.newFBO();
+	_depthMap[0]->Create(FrameBufferObject::FBO_2D_DEPTH,2048,2048);
 	//Pozitionam camera
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
@@ -316,8 +299,8 @@ bool AITenisScene::load(const string& name){
 	AIManager::getInstance().addEntity(_aiPlayer2);
 	AIManager::getInstance().addEntity(_aiPlayer3);
 	AIManager::getInstance().addEntity(_aiPlayer4);
-
-
+	_fileu = _sceneGraph->findNode("Fileu");
+	_podea = _sceneGraph->findNode("Podea");
 	state = loadEvents(true);
 	return state;
 }

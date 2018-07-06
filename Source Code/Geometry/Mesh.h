@@ -46,8 +46,8 @@ public:
 
 	bool load(const std::string& file);
 	bool clean();
-	void postLoad(SceneGraphNode* node);
-	void render(SceneGraphNode* node){};
+	void postLoad(SceneGraphNode* const node);
+	void render(SceneGraphNode* const node){};
 	void createCopy();
 	void removeCopy();
 protected:

@@ -63,6 +63,8 @@ private:
 	vec4 _sunVector;
 	Sphere3D* _minge;
 	SceneGraphNode* _mingeSGN;
+	SceneGraphNode* _fileu;
+	SceneGraphNode* _podea;
 
 private: //Joc
 	F32 _impulsLateral;

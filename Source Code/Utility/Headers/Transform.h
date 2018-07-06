@@ -32,8 +32,7 @@ public:
 	}
 
 	Transform(const Quaternion& orientation, const vec3& translation, const vec3& scale) : 
-			  _orientation(orientation), _translation(translation), _scale(scale), _dirty(false){
-		_dirty = true;
+			  _orientation(orientation), _translation(translation), _scale(scale), _dirty(true){
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
