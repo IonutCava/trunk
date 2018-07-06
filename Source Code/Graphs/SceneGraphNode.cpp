@@ -370,7 +370,7 @@ bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
 
 void SceneGraphNode::inView(const bool state) {
     _inView = state;
-    if (state && getComponent<RenderingComponent>()) {
+    if (state) {
         getComponent<RenderingComponent>()->inViewCallback();
     }
 }

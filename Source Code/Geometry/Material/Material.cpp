@@ -72,7 +72,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_shadingMode = base._shadingMode;
     cloneMat->_shaderModifier = base._shaderModifier;
     cloneMat->_translucencyCheck = base._translucencyCheck;
-    cloneMat->_dirty = base._dirty;
     cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_useAlphaTest = base._useAlphaTest;
     cloneMat->_doubleSided = base._doubleSided;
@@ -81,7 +80,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_computedShaderTextures = base._computedShaderTextures;
     cloneMat->_operation = base._operation;
     cloneMat->_bumpMethod = base._bumpMethod;
-    cloneMat->_shaderData = base._shaderData;
     cloneMat->_parallaxFactor = base._parallaxFactor;
 
     cloneMat->_translucencySource.clear();
@@ -109,6 +107,8 @@ Material* Material::clone(const stringImpl& nameSuffix) {
             cloneMat->addCustomTexture(tex.first, tex.second);
         }
     }
+        
+    cloneMat->_shaderData = base._shaderData;
 
     return cloneMat;
 }
@@ -155,14 +155,10 @@ void Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     if (textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_UNIT1) {
         _operation = op;
     }
-    if (textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_UNIT0 ||
-        textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_UNIT1) {
-        texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
-    }
-    if (textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_UNIT0 ||
-        textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_OPACITY) {
-        _translucencyCheck = false;
-    }
+
+    _translucencyCheck =
+        (textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_UNIT0 ||
+         textureUsageSlot == ShaderProgram::TextureUsage::TEXTURE_OPACITY);
 
     if (computeShaders) {
         recomputeShaders();
@@ -275,6 +271,25 @@ bool Material::computeShader(RenderStage renderStage,
     DIVIDE_ASSERT(
         _shadingMode != ShadingMode::COUNT,
         "Material computeShader error: Invalid shading mode specified!");
+
+
+    U32 slot0 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT0);
+    U32 slot1 = to_uint(ShaderProgram::TextureUsage::TEXTURE_UNIT1);
+    U32 slotOpacity = to_uint(ShaderProgram::TextureUsage::TEXTURE_OPACITY);
+
+    if (_textures[slot0]) {
+        _shaderData._textureCount = 1;
+    }
+
+    if (_textures[slot1]) {
+        if (!_textures[slot0]) {
+            std::swap(_textures[slot0], _textures[slot1]);
+            _shaderData._textureCount = 1;
+            _translucencyCheck = true;
+        }  else {
+            _shaderData._textureCount = 2;
+        }
+    }
 
     bool deferredPassShader = GFX_DEVICE.getRenderer().getType() !=
                               RendererType::RENDERER_FORWARD_PLUS;

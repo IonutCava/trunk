@@ -28,7 +28,8 @@ void RenderPassCuller::cullSceneGraph(
         if (renderingLocked &&
             !RenderPassManager::getInstance().isResetQueued()) {
             GFX_DEVICE.buildDrawCommands(_visibleNodes,
-                                         sceneState.getRenderState());
+                                         sceneState.getRenderState(),
+                                         true);
             return;
         }
         refreshNodeList();
@@ -47,8 +48,9 @@ void RenderPassCuller::cullSceneGraph(
 
     cullSceneGraphGPU(sceneState, cullingFunction);
 
-    GFX_DEVICE.processVisibleNodes(_visibleNodes);
-    GFX_DEVICE.buildDrawCommands(_visibleNodes, sceneState.getRenderState());
+    SceneRenderState& renderState = sceneState.getRenderState();
+    GFX_DEVICE.processVisibleNodes(_visibleNodes, renderState);
+    GFX_DEVICE.buildDrawCommands(_visibleNodes, renderState, false);
 
     if (!renderingLocked) {
         refreshNodeList();

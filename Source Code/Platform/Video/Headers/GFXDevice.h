@@ -391,9 +391,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
 
    protected:
     friend class RenderPassCuller;
-    void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes);
+    void processVisibleNodes(const vectorImpl<SceneGraphNode*>& visibleNodes,
+                             SceneRenderState& sceneRenderState);
     void buildDrawCommands(const vectorImpl<SceneGraphNode*>& visibleNodes,
-                           SceneRenderState& sceneRenderState);
+                           SceneRenderState& sceneRenderState,
+                           bool preDrawCheck);
     bool batchCommands(GenericDrawCommand& previousIDC,
                        GenericDrawCommand& currentIDC) const;
 

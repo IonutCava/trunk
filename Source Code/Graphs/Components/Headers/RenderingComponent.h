@@ -47,6 +47,8 @@ class RenderingComponent : public SGNComponent {
                        SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
+    bool prepareDraw(const SceneRenderState& sceneRenderState,
+                     RenderStage renderStage);
     bool onDraw(RenderStage currentStage);
     void update(const U64 deltaTime);
 
@@ -87,7 +89,8 @@ class RenderingComponent : public SGNComponent {
 
     vectorImpl<GenericDrawCommand>& getDrawCommands(
         SceneRenderState& sceneRenderState,
-        RenderStage renderStage);
+        RenderStage renderStage,
+        bool preDrawCheck);
 
     void makeTextureResident(const Texture& texture, U8 slot);
 
@@ -116,6 +119,7 @@ class RenderingComponent : public SGNComponent {
     bool _renderWireframe;
     bool _renderBoundingBox;
     bool _renderSkeleton;
+    bool _drawReady;
     mat4<F32> _materialColorMatrix;
     mat4<F32> _materialPropertyMatrix;
 

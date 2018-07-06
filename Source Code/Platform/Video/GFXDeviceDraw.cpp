@@ -31,22 +31,29 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
                 return false;
             }
         }
+    } else {
+        return false;
     }
 
     vectorAlg::vecSize textureCount = other._textureData.size();
     if (_textureData.size() == textureCount) {
         U64 handle1 = 0, handle2 = 0;
         for (vectorAlg::vecSize i = 0; i < textureCount; i++) {
-            _textureData[i].getHandle(handle1);
-            other._textureData[i].getHandle(handle2);
-            if (handle1 != handle2) {
+            const TextureData& data1 = _textureData[i];
+            const TextureData& data2 = other._textureData[i];
+            data1.getHandle(handle1);
+            data2.getHandle(handle2);
+            if (handle1 != handle2 ||
+                data1._samplerHash != data2._samplerHash ||
+                data1._textureType != data2._textureType) {
                 return false;
             }
         }
+    } else {
+        return false;
     }
 
-    // return true; -Not currently working properly
-    return false;
+    return true;
 }
 
 /// A draw command is composed of a target buffer and a command. The command
@@ -106,12 +113,22 @@ void GFXDevice::submitRenderCommand(
 void GFXDevice::flushRenderQueue() {
     if (!_renderQueue.empty()) {
         for (RenderPackage& package : _renderQueue) {
-            for (ShaderBufferList::value_type& it : package._shaderBuffers) {
-                it.second->Bind(it.first);
-            }
+            vectorAlg::vecSize commandCount = package._drawCommands.size();
+            if (commandCount > 0) {
+                GenericDrawCommand& previousCmd = package._drawCommands[0];
+                for (vectorAlg::vecSize i = 1; i < commandCount; i++){
+                    GenericDrawCommand& currentCmd = package._drawCommands[i];
+                    //if (!batchCommands(previousCmd, currentCmd)) {
+                      //  previousCmd = currentCmd;
+                    //}
+                }
+                for (ShaderBufferList::value_type& it : package._shaderBuffers) {
+                    it.second->Bind(it.first);
+                }
 
-            makeTexturesResident(package._textureData);
-            submitRenderCommand(package._drawCommands);
+                makeTexturesResident(package._textureData);
+                submitRenderCommand(package._drawCommands);
+            }
         }
         _renderQueue.resize(0);
     }
@@ -129,14 +146,14 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
                 return;
             }
         }
+        _renderQueue.push_back(package);
     }
-
-    _renderQueue.push_back(package);
 }
 
 /// Prepare the list of visible nodes for rendering
 void GFXDevice::processVisibleNodes(
-    const vectorImpl<SceneGraphNode*>& visibleNodes) {
+    const vectorImpl<SceneGraphNode*>& visibleNodes,
+    SceneRenderState& sceneRenderState) {
     // If there aren't any nodes visible in the current pass, don't update
     // anything
     if (visibleNodes.empty()) {
@@ -152,6 +169,11 @@ void GFXDevice::processVisibleNodes(
     _matricesData.resize(1);
     // Loop over the list of nodes
     for (SceneGraphNode* const crtNode : visibleNodes) {
+        RenderingComponent* const renderable =
+            crtNode->getComponent<RenderingComponent>();
+        if (!renderable->prepareDraw(sceneRenderState, getRenderStage())) {
+            continue;
+        }
         NodeData temp;
         // Extract transform data
         const PhysicsComponent* const transform =
@@ -189,8 +211,6 @@ void GFXDevice::processVisibleNodes(
                 ? crtNode->getComponent<AnimationComponent>()->boneCount()
                 : 0);
 
-        RenderingComponent* const renderable =
-            crtNode->getComponent<RenderingComponent>();
         // Get the color matrix (diffuse, ambient, specular, etc.)
         renderable->getMaterialColorMatrix(temp._matrix[2]);
         // Get the material property matrix (alpha test, texture count,
@@ -199,14 +219,16 @@ void GFXDevice::processVisibleNodes(
 
         _matricesData.push_back(temp);
     }
+
     // Once the CPU-side buffer is filled, upload the buffer to the GPU
-    _nodeBuffer->UpdateData(0, (nodeCount + 1) * sizeof(NodeData),
+    _nodeBuffer->UpdateData(0, _matricesData.size() * sizeof(NodeData),
                             _matricesData.data());
 }
 
 void GFXDevice::buildDrawCommands(
     const vectorImpl<SceneGraphNode*>& visibleNodes,
-    SceneRenderState& sceneRenderState) {
+    SceneRenderState& sceneRenderState,
+    bool preDrawCheck) {
     // If there aren't any nodes visible in the current pass, don't update
     // anything (but clear the render queue
     if (visibleNodes.empty()) {
@@ -226,13 +248,16 @@ void GFXDevice::buildDrawCommands(
     for (SceneGraphNode* node : visibleNodes) {
         vectorImpl<GenericDrawCommand>& nodeDrawCommands =
             node->getComponent<RenderingComponent>()->getDrawCommands(
-                sceneRenderState, currentStage);
+            sceneRenderState, currentStage, preDrawCheck);
+
+        if (nodeDrawCommands.empty()){
+            continue;
+        }
 
         for (GenericDrawCommand& cmd : nodeDrawCommands) {
             cmd.drawID(drawID);
-            cmd.commandID(cmdID);
+            cmd.commandID(drawID);
             _nonBatchedCommands.push_back(cmd);
-            cmdID += 1;
         }
         drawID += 1;
     }
@@ -267,7 +292,8 @@ bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,
         previousIDC.stateHash() == currentIDC.stateHash() &&
         // We need the same primitive type
         previousIDC.primitiveType() == currentIDC.primitiveType() &&
-        previousIDC.renderWireframe() == currentIDC.renderWireframe()) {
+        previousIDC.renderWireframe() == currentIDC.renderWireframe())
+    {
         // If the rendering commands are batchable, increase the draw count for
         // the previous one
         previousIDC.drawCount(previousIDC.drawCount() + 1);
