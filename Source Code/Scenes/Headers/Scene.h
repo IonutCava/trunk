@@ -149,9 +149,9 @@ class Scene : public Resource {
         return _currentSelection[index];
     }
 
-    void findSelection();
+    void findSelection(U8 playerIndex);
 
-    inline void addSelectionCallback(const DELEGATE_CBK<void>& selectionCallback) {
+    inline void addSelectionCallback(const DELEGATE_CBK<void, U8>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
 
@@ -313,7 +313,7 @@ class Scene : public Resource {
        vectorImpl<TaskHandle> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState;
-       vectorImpl<DELEGATE_CBK<void> > _selectionChangeCallbacks;
+       vectorImpl<DELEGATE_CBK<void, U8 /*player index*/> > _selectionChangeCallbacks;
        vectorImpl<SceneGraphNode_cwptr> _sceneSelectionCandidates;
 
    protected:

@@ -113,7 +113,7 @@ public:
     inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
     bool bindRenderer(CEGUI::Renderer& renderer);
-    void selectionChangeCallback(Scene* const activeScene);
+    void selectionChangeCallback(Scene* const activeScene, U8 playerIndex);
     /// Return a pointer to the default, general purpose message box
     inline GUIMessageBox* const getDefaultMessageBox() const {
         return _defaultMsgBox;

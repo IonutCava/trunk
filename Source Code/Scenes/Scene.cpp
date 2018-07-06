@@ -559,7 +559,7 @@ U16 Scene::registerInputActions() {
     auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     auto toggleOctreeRegionRendering = [this](InputParams param) {renderState().toggleOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS);};
-    auto select = [this](InputParams  param) {findSelection(); };
+    auto select = [this](InputParams  param) {findSelection(getPlayerIndexForDevice(param._deviceIndex)); };
     auto lockCameraToMouse = [this](InputParams  param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(true); };
     auto releaseCameraFromMouse = [this](InputParams  param) {
         state().playerState(getPlayerIndexForDevice(param._deviceIndex)).cameraLockedToMouse(false);
@@ -722,7 +722,7 @@ bool Scene::load(const stringImpl& name) {
 
     loadBaseCamera();
     loadXMLAssets();
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this, std::placeholders::_1));
 
     WAIT_FOR_CONDITION(_loadingTasks == 0);
 
@@ -971,11 +971,12 @@ void Scene::updateSceneState(const U64 deltaTime) {
     _sceneTimer += deltaTime;
     updateSceneStateInternal(deltaTime);
     _sceneGraph->sceneUpdate(deltaTime, *_sceneState);
-    for (U8 i = 0; i < _scenePlayers.size(); ++i) {
-        findHoverTarget(i);
-        if (_flashLight.size() > i) {
-            PhysicsComponent* pComp = _flashLight[i]->get<PhysicsComponent>();
-            const Camera& cam = _scenePlayers[i]->getCamera();
+    for (U8 i = 0; i < to_ubyte(_scenePlayers.size()); ++i) {
+        U8 playerIndex = _scenePlayers[i]->index();
+        findHoverTarget(playerIndex);
+        if (_flashLight[playerIndex]) {
+            PhysicsComponent* pComp = _flashLight[playerIndex]->get<PhysicsComponent>();
+            const Camera& cam = _scenePlayers[playerIndex]->getCamera();
             pComp->setPosition(cam.getEye());
             pComp->setRotation(cam.getEuler());
         }
@@ -987,9 +988,7 @@ void Scene::onLostFocus() {
         state().playerState(_scenePlayers[i]->index()).resetMovement();
     }
 
-    if (!Config::Build::IS_DEBUG_BUILD) {
-        //_paramHandler.setParam(_ID("freezeLoopTime"), true);
-    }
+    _paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
 I64 Scene::registerTask(const TaskHandle& taskItem, bool start, U32 flags, Task::TaskPriority priority) {
@@ -1120,7 +1119,7 @@ void Scene::findHoverTarget(U8 playerIndex) {
 
     const vec2<U16>& displaySize = Application::instance().windowManager().getActiveWindow().getDimensions();
     const vec2<F32>& zPlanes = crtCamera.getZPlanes();
-    const vec2<I32>& aimPos = state().playerState(playerIndex).aimDelta();
+    const vec2<I32>& aimPos = state().playerState(playerIndex).aimPos();
 
     F32 aimX = to_float(aimPos.x);
     F32 aimY = displaySize.height - to_float(aimPos.y) - 1;
@@ -1176,23 +1175,23 @@ void Scene::resetSelection() {
     _currentSelection[0].reset();
 }
 
-void Scene::findSelection() {
-    bool hadTarget = !_currentSelection[0].expired();
-    bool haveTarget = !_currentHoverTarget[0].expired();
+void Scene::findSelection(U8 playerIndex) {
+    bool hadTarget = !_currentSelection[playerIndex].expired();
+    bool haveTarget = !_currentHoverTarget[playerIndex].expired();
 
-    I64 crtGUID = hadTarget ? _currentSelection[0].lock()->getGUID() : -1;
-    I64 GUID = haveTarget ? _currentHoverTarget[0].lock()->getGUID() : -1;
+    I64 crtGUID = hadTarget ? _currentSelection[playerIndex].lock()->getGUID() : -1;
+    I64 GUID = haveTarget ? _currentHoverTarget[playerIndex].lock()->getGUID() : -1;
 
     if (crtGUID != GUID) {
         resetSelection();
 
         if (haveTarget) {
-            _currentSelection[0] = _currentHoverTarget[0];
-            _currentSelection[0].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+            _currentSelection[playerIndex] = _currentHoverTarget[playerIndex];
+            _currentSelection[playerIndex].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
         }
 
-        for (DELEGATE_CBK<void>& cbk : _selectionChangeCallbacks) {
-            cbk();
+        for (DELEGATE_CBK<void, U8>& cbk : _selectionChangeCallbacks) {
+            cbk(playerIndex);
         }
     }
 }
@@ -1202,7 +1201,7 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
     outputBuffer << playerCount;
     for (U8 i = 0; i < playerCount; ++i) {
         const Camera& cam = _scenePlayers[i]->getCamera();
-        outputBuffer << i << cam.getEye() << cam.getEuler();
+        outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getEuler();
     }
 
     return true;

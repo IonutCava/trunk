@@ -51,9 +51,9 @@ WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager&
 
     _resetUnits = false;
 
-    addSelectionCallback([&]() {
-        if (!_currentSelection[0].expired()) {
-            _GUI->modifyText(_ID("entityState"), _currentSelection[0].lock()->getName().c_str());
+    addSelectionCallback([&](U8 playerIndex) {
+        if (!_currentSelection[playerIndex].expired()) {
+            _GUI->modifyText(_ID("entityState"), _currentSelection[playerIndex].lock()->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
