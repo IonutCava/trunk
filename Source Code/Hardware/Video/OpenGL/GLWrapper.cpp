@@ -253,13 +253,13 @@ void GL_API::closeApplication(){
 	
 }
 
-//clear up stuff ...
+///clear up stuff ...
 void GL_API::closeRenderingApi(){
 	SAFE_DELETE(_state2DRendering);
 	glutDestroyWindow(Application::getInstance().getMainWindowId());
 }
 
-void GL_API::initDevice(){
+void GL_API::initDevice(U32 targetFPS){
 	glutMainLoop();
 	closeApplication();
 }
@@ -488,7 +488,7 @@ void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
 /// If now shader is specified, fixed function multiplication are used for compatibility
 void GL_API::setObjectState(Transform* const transform, bool force, ShaderProgram* const shader){
 	if(transform){
-		if(shader){
+		if(shader && shader->isBound()){
 			shader->Uniform("transformMatrix",transform->getMatrix());
 			shader->Uniform("parentTransformMatrix",transform->getParentMatrix());
 		}
@@ -509,6 +509,7 @@ void GL_API::releaseObjectState(Transform* const transform, ShaderProgram* const
 }
 
 void GL_API::setMaterial(Material* mat){
+	assert(mat != NULL);
 	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,mat->getMaterialMatrix().getCol(1));
 	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,mat->getMaterialMatrix().getCol(0));
 	glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,mat->getMaterialMatrix().getCol(2));
@@ -525,8 +526,13 @@ void GL_API::renderInViewport(const vec4<F32>& rect, boost::function0<void> call
 
 }
 
-void GL_API::drawBox3D(vec3<F32> min, vec3<F32> max){
+void GL_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset){
 
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glDisable(GL_TEXTURE_2D);  
+    glDisable(GL_LIGHTING);  
+    glLineWidth(2.0f);
+	glColor3f(0.0f,0.0f,1.0f);
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( min.x, min.y, min.z );
 		glVertex3f( max.x, min.y, min.z );
@@ -551,6 +557,32 @@ void GL_API::drawBox3D(vec3<F32> min, vec3<F32> max){
 		glVertex3f( min.x, min.y, max.z );
 		glVertex3f( min.x, max.y, max.z );
 	glEnd();
+	glPopAttrib();
+
+}
+
+void GL_API::drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset){
+	/// We need a perfect pair of point A's to point B's
+	if(pointsA.size() != pointsB.size()) return;
+	/// We need a color for each line, even if it is the same one
+	if(pointsA.size() != colors.size()) return;
+	glPushMatrix();
+	//glLoadIdentity();
+	glMultMatrixf(globalOffset);
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+    glDisable(GL_DEPTH_TEST);  
+    glDisable(GL_TEXTURE_2D);  
+    glDisable(GL_LIGHTING);  
+    glLineWidth(5.0f);
+    glBegin(GL_LINES);
+	for(U16 i = 0; i < pointsA.size(); i++){
+		glColor4fv( &colors[i].r);
+		glVertex3fv( &pointsA[i].x);
+		glVertex3fv( &pointsB[i].x);
+	}
+    glEnd();
+	glPopAttrib();
+	glPopMatrix();
 }
 
 void GL_API::renderModel(Object3D* const model){
@@ -584,9 +616,13 @@ void GL_API::renderModel(Object3D* const model){
 	}
 
 	if(b_continue){	
-		model->getGeometryVBO()->Enable();
-			renderElements(type,_U16,model->getIndices().size(), &(model->getIndices()[0]));
-		model->getGeometryVBO()->Disable();
+
+		VertexBufferObject* vbo = model->getGeometryVBO();
+		std::vector<U16>& hwIndices = vbo->getHWIndices();
+
+		vbo->Enable();
+			glDrawRangeElements(type, model->getIndiceLimits().x, model->getIndiceLimits().y, hwIndices.size(), GL_UNSIGNED_SHORT, (const GLvoid*)(0) );
+		vbo->Disable();
 	}
 }
 
@@ -614,6 +650,7 @@ void GL_API::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, c
 			break;
 	}
 	glDrawElements(t, count, format, first_element );
+	
 }
 
 void GL_API::toggle2D(bool state){

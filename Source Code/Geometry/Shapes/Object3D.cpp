@@ -10,7 +10,15 @@ void Object3D::onDraw(){
 		_geometry->Refresh();
 		_refreshVBO = false;
 	}
+
 	SceneNode::onDraw();
+
+	if(getMaterial()){
+		if(getMaterial()->getShaderProgram() && getMaterial()->shaderProgramChanged()){
+			_geometry->setShaderProgram(getMaterial()->getShaderProgram());
+		}
+	}
+	
 }
 
 void Object3D::computeTangents(){

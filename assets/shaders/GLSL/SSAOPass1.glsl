@@ -1,5 +1,5 @@
 -- Vertex
-
+#include "vboInputData.vert"
 varying vec3 normals;
 varying float depth;
 
@@ -9,10 +9,11 @@ uniform float zFar;
 float LinearDepth(in float inDepth);
 
 void main(void){
-	gl_Position = ftransform();
-	normals = normalize(gl_NormalMatrix * gl_Normal);
-	vec4 vToEye = gl_ModelViewMatrix * gl_Vertex;	
+	computeData();
+	normals = normalize(gl_NormalMatrix * normalData);
+	vec4 vToEye = gl_ModelViewMatrix * vertexData;	
 	depth = LinearDepth(vToEye.z);
+	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 }
 
 float LinearDepth(in float inDepth){

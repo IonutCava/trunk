@@ -33,25 +33,28 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 
 #include "resource.h"
 #include "Object3D.h"
-
-class  AnimationController;
-struct aiScene;
+#include <assimp/anim.h>
 
 class Mesh : public Object3D {
 
 	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
-
 public:
 	Mesh() : Object3D(MESH), _visibleToNetwork(true),
 							 _loaded(false),
-							 _animator(NULL),
-							 _playAnimations(true)
-							 { _refreshVBO = false;}
+							 _playAnimations(true),
+							 _hasAnimations(false),
+							 _updateBB(false)
+	{
+		_refreshVBO = false;
+	}
+
 	~Mesh();
 	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
 	bool computeBoundingBox(SceneGraphNode* const sgn);
+	void updateTransform(SceneGraphNode* const sgn);
 	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
+	inline bool hasAnimations() {return _hasAnimations;}
 
 	bool load(const std::string& file);
 	void postLoad(SceneGraphNode* const sgn);
@@ -59,21 +62,25 @@ public:
 	void createCopy();
 	void removeCopy();
 
-	bool createAnimatorFromScene(const aiScene* scene);
 	void onDraw();
-	inline std::vector<mat4<F32> >& GetTransforms(){ return _transforms; }
+
+	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+	/// Called from SceneGraph "sceneUpdate"
+	void sceneUpdate(D32 sceneTime);
 
 protected:
+
+	friend class SubMesh;
+
 	void computeNormals(){}
 	void computeTangents(){}	
 	bool						 _visibleToNetwork, _loaded;
 	bool                         _playAnimations;
+	bool                         _hasAnimations;
+	bool                         _updateBB;
 	std::vector<std::string >	 _subMeshes;
-	unordered_map<U32, SubMesh*> _subMeshRefMap;
-	/// Animation player to animate the mesh if necessary
-	AnimationController* _animator;
-	/// bone transforms for the entire mesh
-	std::vector<mat4<F32> > _transforms;
+	typedef unordered_map<U32, SubMesh*> subMeshRefMap;
+	subMeshRefMap _subMeshRefMap;
 };
 
 #endif

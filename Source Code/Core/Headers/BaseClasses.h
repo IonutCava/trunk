@@ -115,7 +115,7 @@ class TerrainInfo
 public:
 	TerrainInfo(){position.set(0,0,0);}
 	///"variables" contains the various strings needed for each terrain such as texture names, terrain name etc.
-	std::map<std::string,std::string> variables;
+	unordered_map<std::string,std::string> variables;
 	U32    grassDensity;
 	U16    treeDensity;
 	F32  grassScale;

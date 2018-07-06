@@ -1,14 +1,14 @@
 -- Vertex
-
+#include "vboInputData.vert"
 varying vec3 vertex;
 varying vec3 vertexMV;
 
 void main(void){
-
-	vertex = normalize(gl_Vertex.xyz);
-	vertexMV = normalize(gl_ModelViewMatrix * vec4(-gl_Vertex.x, gl_Vertex.y, -gl_Vertex.z, 1.0)).xyz;	
+	computeData();
+	vertex = normalize(vertexData.xyz);
+	vertexMV = normalize(gl_ModelViewMatrix * vec4(-vertexData.x, vertexData.y, -vertexData.z, 1.0)).xyz;	
 	
-	gl_Position = ftransform();
+	gl_Position =  gl_ModelViewProjectionMatrix * vertexData;
 	
 }
 

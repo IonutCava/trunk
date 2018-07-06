@@ -1,5 +1,5 @@
 -- Vertex
-
+#include "vboInputData.vert"
 varying vec4 texCoord[2];
 varying vec3 vVertexMV;
 
@@ -14,15 +14,15 @@ uniform mat4 modelViewInvMatrix;
 uniform mat4 lightProjectionMatrix;
 
 void main(void){
+	computeData();
+	texCoord[0] = vec4(texCoordData,0,0);
 	
-	texCoord[0] = gl_MultiTexCoord0;
-	
-	vec4 vertex = gl_Vertex;
-	vec4 vertexMV = gl_ModelViewMatrix * gl_Vertex;
-	vec3 normalMV = gl_NormalMatrix * gl_Normal;
+	vec4 vertex = vertexData;
+	vec4 vertexMV = gl_ModelViewMatrix * vertexData;
+	vec3 normalMV = gl_NormalMatrix * normalData;
 	vVertexMV = vertexMV.xyz;
 
-	if(gl_Normal.y < 0.0 ) {
+	if(normalData.y < 0.0 ) {
 		normalMV = -normalMV;
 		vertex.x += ((0.5*scale)*cos(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionX;
 		vertex.z += ((0.5*scale)*sin(time*windSpeed) * cos(vertex.x) * sin(vertex.x))*windDirectionZ;
@@ -37,7 +37,7 @@ void main(void){
 	
 	if(enable_shadow_mapping != 0) {
 		// Transformed position 
-		vec4 pos = gl_ModelViewMatrix * gl_Vertex;
+		vec4 pos = gl_ModelViewMatrix * vertexData;
 		// position multiplied by the inverse of the camera matrix
 		pos = modelViewInvMatrix * pos;
 		// position multiplied by the light matrix. 

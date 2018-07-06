@@ -1,6 +1,7 @@
 #include "Headers/SceneGraphNode.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 
 void SceneGraphNode::checkBoundingBoxes(){
 	//Update order is very important!
@@ -15,8 +16,6 @@ void SceneGraphNode::checkBoundingBoxes(){
 	//Compute the BoundingBox if it isn't already
 	if(!getBoundingBox().isComputed()){
 		_node->computeBoundingBox(this);
-		//Add the newly transformed bounding box to the parent's bounding box to check total bounds
-		getParent()->getBoundingBox().Add(getBoundingBox());
 	}
 }
 
@@ -26,7 +25,6 @@ void SceneGraphNode::updateTransforms(){
 	//update every ten milliseconds - DISABLED. 
 	//Better version: move to new thread with DoubleBuffering?
 	//if(GETMSTIME() - _updateTimer  < 10) return; 
-	
 	//Get our transform and our parent's as well
 	Transform* transform = getTransform();
 	if(transform && getParent()){
@@ -36,9 +34,11 @@ void SceneGraphNode::updateTransforms(){
 			//Update the relationship between the two
 			transform->setParentMatrix(parentTransform->getMatrix());
 		}
+
 		//Transform the bounding box if we have a new transform 
 		if(transform->isDirty()){
-			getBoundingBox().Transform(_initialBoundingBox,transform->getMatrix() * transform->getParentMatrix());
+			_node->updateTransform(this);
+			getBoundingBox().Transform(_initialBoundingBox, transform->getGlobalMatrix());
 		}
 	}
 
@@ -105,5 +105,14 @@ void SceneGraphNode::updateVisualInformation(){
 		for_each(NodeChildren::value_type& it, _children){
 			it.second->updateVisualInformation();
 		}
+	}
+}
+
+void SceneGraphNode::sceneUpdate(D32 sceneTime) {
+	for_each(NodeChildren::value_type& it, _children){
+		it.second->sceneUpdate(sceneTime);
+	}
+	if(_node){
+		_node->sceneUpdate(sceneTime);
 	}
 }

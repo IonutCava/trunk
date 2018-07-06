@@ -29,7 +29,11 @@ public:
 	Impostor(const std::string& name, F32 radius = 1.0f);
 	~Impostor();
 
+	/// Render the impostor using SceneGraphData
 	void render(SceneGraphNode* const node);
+	/// Render the impostor using target transform
+	void render(Transform* const transform);
+
 	inline void setRadius(F32 radius) {_dummy->setRadius(radius);}
 	inline Sphere3D* const getDummy() {return _dummy;}
 

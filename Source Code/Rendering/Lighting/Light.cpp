@@ -7,7 +7,9 @@ Light::Light(U8 slot, F32 radius) : SceneNode(TYPE_LIGHT),    _slot(slot),
 													_radius(radius), _drawImpostor(false),
 													_lightSGN(NULL), _impostor(NULL),
 													_id(0),			 _impostorSGN(NULL),
-													_castsShadows(true),_resolutionFactor(1)
+													_castsShadows(true),_resolutionFactor(1),
+													_zNear(0.0f), _zFar(0.0f),
+													_par(ParamHandler::getInstance())
 {
 	vec4<F32> _white(1.0f,1.0f,1.0f,1.0f);
 	vec2<F32> angle = vec2<F32>(0.0f, RADIANS(45.0f));

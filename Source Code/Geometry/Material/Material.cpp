@@ -21,6 +21,7 @@ Material::Material() : Resource(),
 					   _doubleSided(false),
 					   _castsShadows(true),
 					   _receiveShadows(true),
+					   _shaderProgramChanged(false),
 					   _shadingMode(SHADING_PHONG), /// phong shading by default
 					   _shaderRef(NULL)
 {
@@ -187,6 +188,7 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 	}
 	_dirty = true;
 	_computedLightShaders = true;
+	_shaderProgramChanged = true;
 	return _shaderRef;
 }
 

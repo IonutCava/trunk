@@ -24,6 +24,7 @@ void AITenisSceneAIActionList::addEntityRef(AIEntity* entity){
 
 //Process message from sender to receiver
 void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, const boost::any& msg_content){
+	AICoordination* currentTeam = NULL;
 	switch(msg){
 		case REQUEST_DISTANCE_TO_TARGET:
 				updatePositions();
@@ -33,7 +34,9 @@ void AITenisSceneAIActionList::processMessage(AIEntity* sender, AI_MSG msg, cons
 			_membruDistanta[sender] = boost::any_cast<F32>(msg_content);
 			break;
 		case LOVESTE_MINGEA:
-			for_each(AICoordination::teamMap::value_type const& member, _entity->getTeam()){
+			currentTeam = _entity->getTeam();
+			assert(currentTeam);
+			for_each(AICoordination::teamMap::value_type const& member, currentTeam->getTeam()){
 				if(_entity->getGUID() != member.second->getGUID()){
 					_entity->sendMessage(member.second, NU_LOVI_MINGEA, 0);
 				}
@@ -82,7 +85,9 @@ void AITenisSceneAIActionList::updatePositions(){
 //Aflam pozitia noastra si pozitia mingii 
 void AITenisSceneAIActionList::processInput(){
 	updatePositions();
-	AICoordination::teamMap& team = _entity->getTeam();
+	AICoordination* currentTeam = _entity->getTeam();
+	assert(currentTeam != NULL);
+	AICoordination::teamMap& team = currentTeam->getTeam();
 	_membruDistanta.clear();
 	for_each(AICoordination::teamMap::value_type& member, team){
 		//Cerem tuturor coechipierilor sa ne transmita pozitia lor actuala

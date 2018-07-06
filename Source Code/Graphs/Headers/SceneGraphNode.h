@@ -32,6 +32,7 @@ public:
 	bool unload() {return true;}
 	void onDraw() {};
 	bool computeBoundingBox(SceneGraphNode* const sgn){return true;}
+	void updateTransform(SceneGraphNode* const sgn) {}
 	void createCopy(){}
 	void removeCopy(){}
 };
@@ -43,10 +44,16 @@ public:
 
 	~SceneGraphNode();
 	bool unload();
+	/// Recursivelly print information about this SGN and all it's children
 	void print();
+	/// Update bounding boxes
 	void checkBoundingBoxes();
+	/// Position, rotation, scale updates
 	void updateTransforms();
+	/// Culling and visibility checks
 	void updateVisualInformation();
+	/// Called from SceneGraph "sceneUpdate"
+	void sceneUpdate(D32 sceneTime);
 /*Node Management*/
 template<class T>
        T*                     getNode();

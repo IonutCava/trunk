@@ -34,6 +34,8 @@ END_SINGLETON
 #define D_PRINT_FN(x, ...) Console::getInstance().d_printfn(x, __VA_ARGS__);
 #define D_ERROR_F(x, ...) Console::getInstance().d_errorf(x, __VA_ARGS__);
 #define D_ERROR_FN(x, ...) Console::getInstance().d_errorfn(x, __VA_ARGS__);
-
+/// Misc
+#define CONSOLE_TIMESTAMP_OFF Console::getInstance().toggleTimeStamps(false);
+#define CONSOLE_TIMESTAMP_ON Console::getInstance().toggleTimeStamps(true);
 
 #endif

@@ -65,6 +65,7 @@ enum TEXTURE_FORMAT_INTERNAL {
 
 enum RENDER_API {
 	OpenGL,
+	OpenGLES,
 	Direct3D,///< not supported yet
 	Software,///< not supported yet
 	None,    ///< not supported yet

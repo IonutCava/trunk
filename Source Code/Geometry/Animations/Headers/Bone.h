@@ -20,26 +20,26 @@
 
 #ifndef BONE_H_
 #define BONE_H_
-#include "resource.h"
+
+#include "AnimationUtils.h"
 
 class Bone {
 public:
 
 	std::string _name;
 
-	mat4<F32> _offset, _localTransform, _globalTransform, _originalLocalTransform;
+	aiMatrix4x4 _offsetMatrix;
+	aiMatrix4x4 _localTransform;
+	aiMatrix4x4 _globalTransform;
+	aiMatrix4x4 _originalLocalTransform;
 
 	Bone* _parent;
-
 	std::vector<Bone*> _children;
 
-	Bone() : _parent(0){}
-
-	~Bone(){ 
-		for_each(Bone* bone, _children){
-			SAFE_DELETE(bone);
-		}
-	}
+    //index in the current animation's channel array.
+	Bone(const std::string& name) : _name(name), _parent(0){}
+	Bone() : _parent(0){ }
+	~Bone(){SAFE_DELETE_VECTOR(_children); }
 };
 
 #endif

@@ -86,7 +86,12 @@ void DX_API::drawButton(GuiElement* const button)
 void DX_API::drawFlash(GuiElement* const flash)
 {
 }
-void DX_API::drawBox3D(vec3<F32> min, vec3<F32> max)
+
+void DX_API::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset)
+{
+}
+
+void DX_API::drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset)
 {
 }
 
@@ -121,7 +126,7 @@ void DX_API::renderModel(Object3D* const model)
 
 	if(b_continue){	
 		model->getGeometryVBO()->Enable();
-			renderElements(type,_U16,model->getIndices().size(), &(model->getIndices()[0]));
+			renderElements(type,_U16,model->getGeometryVBO()->getHWIndices().size(), &(model->getGeometryVBO()->getHWIndices()[0]));
 		model->getGeometryVBO()->Disable();
 	}
 }
@@ -135,7 +140,7 @@ void DX_API::setMaterial(Material* mat)
 }
 
 
-void DX_API::initDevice()
+void DX_API::initDevice(U32 targetFPS)
 {
 }
 

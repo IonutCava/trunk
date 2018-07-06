@@ -1,23 +1,33 @@
 #include "Headers/Coordination.h"
 #include "AI/Headers/AIEntity.h"
 
+AICoordination::AICoordination(U32 id) : _teamID(id){
+	_team.clear();
+	_enemyTeam.clear();
+}
+
 bool AICoordination::addTeamMember(AIEntity* entity) {
-	_updateMutex.lock();
+	boost::mutex::scoped_lock(_updateMutex);
 	if(!entity){
-		_updateMutex.unlock();
 		return false;
 	}
+	///If entity already belongs to this team, no need to do anything
 	if(_team.find(entity->getGUID()) != _team.end()){
-		delete _team[entity->getGUID()];
+		return true;
 	}
-	_team[entity->getGUID()] = entity;
-	_updateMutex.unlock();
+	
+	_team.insert(std::make_pair(entity->getGUID(),entity));
+	
 	return true;
 }
 
+///Removes an enitity from this list
 bool AICoordination::removeTeamMember(AIEntity* entity) {
 	if(!entity) return false;
-	delete _team[entity->getGUID()];
+
+	if(_team.find(entity->getGUID()) != _team.end()){
+		_team.erase(entity->getGUID());
+	}
 	return true;
 }
 
@@ -27,13 +37,4 @@ bool AICoordination::addEnemyTeam(teamMap& enemyTeam){
 	}
 	_enemyTeam = enemyTeam;
 	return true;
-}
-
-void AICoordination::setTeamID(U32 value){
-	_teamID = value;
-	//for_each(teamMap::value_type member, _team){
-	//	if(member.second){
-	//		member.second->setTeamID(value);
-	//	}
-	//}
 }

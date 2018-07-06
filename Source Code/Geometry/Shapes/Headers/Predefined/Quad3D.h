@@ -50,7 +50,7 @@ public:
 		_geometry->getNormal().reserve(4);
 		_geometry->getTangent().reserve(4);
 		_geometry->getTexcoord().reserve(4);
-		_indices.reserve(4);
+		_geometry->getHWIndices().reserve(4);
 
 		for(U8 i = 0;  i < 4; i++){
 			_geometry->getPosition().push_back(vertices[i]);
@@ -60,10 +60,11 @@ public:
 		}
 
 	   //CW draw order
-	   _indices.push_back(2); //  v1----v2
-	   _indices.push_back(0); //   |    |
-	   _indices.push_back(1); //   |    |
-	   _indices.push_back(3); //  v0----v3
+	   _geometry->getHWIndices().push_back(2); //  v1----v2
+	   _geometry->getHWIndices().push_back(0); //   |    |
+	   _geometry->getHWIndices().push_back(1); //   |    |
+	   _geometry->getHWIndices().push_back(3); //  v0----v3
+	   _indiceLimits = vec2<U16>(0,3);
 	   _refreshVBO = true;
 	   //computeTangents();
 	}

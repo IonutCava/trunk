@@ -39,7 +39,7 @@ public:
 	RENDER_API_VERSION getApiVersion() {return _api.getVersionId();}
 
 	void initHardware(){_api.initHardware();}
-	void initDevice(){_api.initDevice();}
+	void initDevice(U32 targetFPS){_api.initDevice(targetFPS);}
 	void resizeWindow(U16 w, U16 h);
 	inline void lookAt(const vec3<F32>& eye,const vec3<F32>& center,const vec3<F32>& up = vec3<F32>(0,1,0), bool invertx = false, bool inverty = false){_api.lookAt(eye,center,up,invertx,inverty);}
 	inline void idle() {_api.idle();}
@@ -73,7 +73,9 @@ public:
 
 	void renderInViewport(const vec4<F32>& rect, boost::function0<void> callback);
 
-	void drawBox3D(vec3<F32> min, vec3<F32> max);
+	void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
+	void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset);
+
 	void renderModel(Object3D* const model);
 	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
 	void renderGUIElement(GuiElement* const guiElement);

@@ -45,3 +45,7 @@ void SceneGraph::startUpdateThread(){
 	//_updateRunning = true;
 	update();
 }
+
+void SceneGraph::sceneUpdate(D32 sceneTime){
+	_root->sceneUpdate(sceneTime);
+}

@@ -241,6 +241,17 @@ bool AITenisScene::load(const string& name){
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
 	
+	//------------------------ Restul elementelor jocului -----------------------------///
+	_fileu = _sceneGraph->findNode("Fileu");
+	_podea = _sceneGraph->findNode("Podea");
+	_podea->getNode()->getMaterial()->setCastsShadows(false);
+
+	state = loadEvents(true);
+	return state;
+}
+
+bool AITenisScene::initializeAI(bool continueOnErrors){
+	bool state = false;
 	//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
     _aiPlayer1 = New AIEntity("Player1");
 	_aiPlayer2 = New AIEntity("Player2");
@@ -251,14 +262,6 @@ bool AITenisScene::load(const string& name){
 	_aiPlayer2->attachNode(_sceneGraph->findNode("Player2"));
 	_aiPlayer3->attachNode(_sceneGraph->findNode("Player3"));
 	_aiPlayer4->attachNode(_sceneGraph->findNode("Player4"));
-	
-	
-	_aiPlayer1->addFriend(_aiPlayer2);
-	_aiPlayer3->addFriend(_aiPlayer4);
-
-	_aiPlayer1->addEnemyTeam(_aiPlayer3->getTeam());
-	_aiPlayer3->addEnemyTeam(_aiPlayer1->getTeam());
-
 
 	_aiPlayer1->addSensor(VISUAL_SENSOR,New VisualSensor());
 	_aiPlayer1->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiPlayer1));
@@ -274,34 +277,51 @@ bool AITenisScene::load(const string& name){
 	_aiPlayer3->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
 	_aiPlayer4->addActionProcessor(New AITenisSceneAIActionList(_mingeSGN));
 
-	_aiPlayer1->setTeamID(1);
-	_aiPlayer2->setTeamID(1);
-	_aiPlayer3->setTeamID(2);
-	_aiPlayer4->setTeamID(2);
+	_team1 = New AICoordination(1);
+	_team2 = New AICoordination(2);
 
-	AIManager::getInstance().addEntity(_aiPlayer1);
-	AIManager::getInstance().addEntity(_aiPlayer2);
-	AIManager::getInstance().addEntity(_aiPlayer3);
-	AIManager::getInstance().addEntity(_aiPlayer4);
+	_aiPlayer1->setTeam(_team1);
+	state = _aiPlayer2->addFriend(_aiPlayer1);
+	if(state || continueOnErrors){
+		_aiPlayer3->setTeam(_team2);
+		state = _aiPlayer4->addFriend(_aiPlayer3);
+	}
+	if(state || continueOnErrors){
+		state = AIManager::getInstance().addEntity(_aiPlayer1);
+	}
+	if(state || continueOnErrors) {
+		state = AIManager::getInstance().addEntity(_aiPlayer2);
+	}
+	if(state || continueOnErrors) {
+		state = AIManager::getInstance().addEntity(_aiPlayer3);
+	}
+	if(state || continueOnErrors) {
+		state = AIManager::getInstance().addEntity(_aiPlayer4);
+	}
+	if(state || continueOnErrors){
+		//----------------------- Unitati ce vor fi controlate de AI ---------------------//
+		_player1 = New NPC(_aiPlayer1);
+		_player2 = New NPC(_aiPlayer2);
+		_player3 = New NPC(_aiPlayer3);
+		_player4 = New NPC(_aiPlayer4);
 
-	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
-	_player1 = New NPC(_aiPlayer1);
-	_player2 = New NPC(_aiPlayer2);
-	_player3 = New NPC(_aiPlayer3);
-	_player4 = New NPC(_aiPlayer4);
+		_player1->setMovementSpeed(1.5);
+		_player2->setMovementSpeed(1.5);
+		_player3->setMovementSpeed(1.5);
+		_player4->setMovementSpeed(1.5);
+	}
 
-	_player1->setMovementSpeed(2); /// 2 m/s
-	_player2->setMovementSpeed(2); /// 2 m/s
-	_player3->setMovementSpeed(2); /// 2 m/s
-	_player4->setMovementSpeed(2); /// 2 m/s
-
-	//------------------------ Restul elementelor jocului -----------------------------///
-	_fileu = _sceneGraph->findNode("Fileu");
-	_podea = _sceneGraph->findNode("Podea");
-	_podea->getNode()->getMaterial()->setCastsShadows(false);
-
-	state = loadEvents(true);
 	return state;
+}
+
+bool AITenisScene::deinitializeAI(bool continueOnErrors){
+	SAFE_DELETE(_player1);
+	SAFE_DELETE(_player2);
+	SAFE_DELETE(_player3);
+	SAFE_DELETE(_player4);
+	SAFE_DELETE(_team1);
+	SAFE_DELETE(_team2);
+	return true;
 }
 
 bool AITenisScene::loadResources(bool continueOnErrors){
@@ -319,22 +339,30 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 	_minge->getMaterial()->setShininess(0.2f);
 	_minge->getMaterial()->setSpecular(vec4<F32>(0.7f,0.7f,0.7f,1.0f));
 
-	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-220 ,
-															 Application::getInstance().getWindowDimensions().height/1.1f),
-													    	 vec2<F32>(100,25),vec3<F32>(0.65f,0.65f,0.65f),
-															 boost::bind(&AITenisScene::startJoc,this));
+	GUI::getInstance().addButton("Serveste", "Serveste", vec2<F32>(Application::getInstance().getWindowDimensions().width-220,
+															       Application::getInstance().getWindowDimensions().height/1.1f),
+													     vec2<F32>(100,25),
+														 vec3<F32>(0.65f,0.65f,0.65f),
+														 boost::bind(&AITenisScene::startJoc,this));
 
-	GUI::getInstance().addText("ScorEchipa1",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.3f, 0),
-								BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Scor Echipa 1: %d",0);
-	GUI::getInstance().addText("ScorEchipa2",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.5f, 0),
-								BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Scor Echipa 2: %d",0);
-	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250, Application::getInstance().getWindowDimensions().height/1.7f, 0),
-							   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
-	GUI::getInstance().addText("fpsDisplay",           //Unique ID
-		                       vec3<F32>(60,60,0),          //Position
-							   BITMAP_8_BY_13,    //Font
-							   vec3<F32>(0.0f,0.2f, 1.0f),  //Color
-							   "FPS: %s",0);    //Text and arguments
+	GUI::getInstance().addText("ScorEchipa1",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+												       Application::getInstance().getWindowDimensions().height/1.3f, 0),
+											 BITMAP_8_BY_13,vec3<F32>(0,0.8f,0.8f), "Scor Echipa 1: %d",0);
+
+	GUI::getInstance().addText("ScorEchipa2",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+													   Application::getInstance().getWindowDimensions().height/1.5f, 0),
+								             BITMAP_8_BY_13,vec3<F32>(0.2f,0.8f,0), "Scor Echipa 2: %d",0);
+
+	GUI::getInstance().addText("Mesaj",vec3<F32>(Application::getInstance().getWindowDimensions().width - 250,
+		                                         Application::getInstance().getWindowDimensions().height/1.7f, 0),
+									   BITMAP_8_BY_13,vec3<F32>(0,1,0), "");
+
+	GUI::getInstance().addText("fpsDisplay",              //Unique ID
+		                       vec3<F32>(60,60,0),        //Position
+							   BITMAP_8_BY_13,            //Font
+							   vec3<F32>(0.0f,0.2f, 1.0f),//Color
+							   "FPS: %s",0);              //Text and arguments
+
 	GUI::getInstance().addText("RenderBinCount",
 								vec3<F32>(60,70,0),
 								BITMAP_8_BY_13,

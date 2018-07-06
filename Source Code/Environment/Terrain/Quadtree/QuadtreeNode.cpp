@@ -115,7 +115,7 @@ void QuadtreeNode::DrawGrass(){
 void QuadtreeNode::DrawBBox(){
 	if(!_children) {
 		assert(_terrainChunk);
-			GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax());
+			GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax(),mat4<F32>());
 	}else {
 		if( _LOD>=0 )
 			for(I8 i=0; i<4; i++)

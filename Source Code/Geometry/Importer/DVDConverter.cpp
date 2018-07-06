@@ -8,7 +8,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
-
+#include "Geometry/Animations/Headers/AnimationUtils.h"
 using namespace std;
 
 Mesh* DVDConverter::load(const string& file){	
@@ -27,34 +27,35 @@ Mesh* DVDConverter::load(const string& file){
 	bool removeLinesAndPoints = true;
 	Assimp::Importer importer;
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
+	importer.SetPropertyInteger(AI_CONFIG_IMPORT_TER_MAKE_UVS , 1);
+	importer.SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, 80.0f);
 
-	if(GFX_DEVICE.getApi() != OpenGL)
+	if(GFX_DEVICE.getApi() != OpenGL){
 		_ppsteps |= aiProcess_ConvertToLeftHanded;
+	}
+	_aiScenePointer = importer.ReadFile( file, _ppsteps );
 
-	scene = importer.ReadFile( file, _ppsteps );
 
-	if( !scene){
+	if( !_aiScenePointer){
 		ERROR_FN("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
 		return false;
 	}
-	// create animator
-	tempMesh->createAnimatorFromScene(scene);
-	for(U16 n = 0; n < scene->mNumMeshes; n++){
+	for(U16 n = 0; n < _aiScenePointer->mNumMeshes; n++){
 		
 		//Skip points and lines ... for now -Ionut
 		//ToDo: Fix this -Ionut
-		if(scene->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE || 
-			scene->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_POINT )
+		if(_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_LINE || 
+			_aiScenePointer->mMeshes[n]->mPrimitiveTypes == aiPrimitiveType_POINT ||
+			_aiScenePointer->mMeshes[n]->mNumVertices == 0)
 				continue;
-		if(scene->mMeshes[n]->mNumVertices == 0) continue; 
-		SubMesh* s = loadSubMeshGeometry(scene->mMeshes[n], n);
+
+		SubMesh* s = loadSubMeshGeometry(_aiScenePointer->mMeshes[n], n);
+
 		if(s){
 			if(s->getRefCount() == 1){
-				Material* m = loadSubMeshMaterial(scene->mMaterials[scene->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
+				Material* m = loadSubMeshMaterial(_aiScenePointer->mMaterials[_aiScenePointer->mMeshes[n]->mMaterialIndex],string(s->getName()+ "_material"));
 				s->setMaterial(m);
 			}//else the Resource manager created a copy of the material
-			/// If the mesh has animation data, use dynamic VBO's
-			s->getGeometryVBO()->Create(!scene->mMeshes[n]->HasBones());
 			tempMesh->addSubMesh(s->getName());
 		}
 			
@@ -64,9 +65,10 @@ Mesh* DVDConverter::load(const string& file){
 	return tempMesh;
 }
 
-SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
+SubMesh* DVDConverter::loadSubMeshGeometry(const aiMesh* source,U8 count){
 	string temp;
 	char a;
+
 	for(U16 j = 0; j < source->mName.length; j++){
 		a = source->mName.data[j];
 		temp += a;
@@ -92,20 +94,19 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	tempSubMesh->getGeometryVBO()->getNormal().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getTangent().reserve(source->mNumVertices);
 	tempSubMesh->getGeometryVBO()->getBiTangent().reserve(source->mNumVertices);
-	tempSubMesh->getGeometryVBO()->getBoneIndices().reserve(source->mNumVertices);
-	tempSubMesh->getGeometryVBO()->getBoneWeights().resize(source->mNumVertices,vec4<F32>(0.0f,0.0f,0.0f,0.0f));
-
 	std::vector< std::vector<aiVertexWeight> >   weightsPerVertex(source->mNumVertices);
 
 	if(source->HasBones()){
-		for(U16 a = 0; a < source->mNumBones; a++){
+		tempSubMesh->getGeometryVBO()->getBoneIndices().reserve(source->mNumVertices);
+		tempSubMesh->getGeometryVBO()->getBoneWeights().reserve(source->mNumVertices);	
+		for(U32 a = 0; a < source->mNumBones; a++){
 			const aiBone* bone = source->mBones[a];
-			for( U16 b = 0; b < bone->mNumWeights; b++)
+			for( U32 b = 0; b < bone->mNumWeights; b++){
 				weightsPerVertex[bone->mWeights[b].mVertexId].push_back(aiVertexWeight( a, bone->mWeights[b].mWeight));
+			}
 		}
 	}
-
-
+	  
 	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
@@ -129,24 +130,29 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 																		      source->mBitangents[j].z));
 		}
 		
-		vec4<U8> boneIndices( 0, 0, 0, 0 );
-		vec4<F32> boneWeights( 0, 0, 0, 0 );
-
 		if( source->HasBones())	{
+			vec4<U8>  boneIndices( 0, 0, 0, 0 );
+			vec4<F32> boneWeights( 0, 0, 0, 0 );
 			ai_assert( weightsPerVertex[j].size() <= 4);
 
 			for( U8 a = 0; a < weightsPerVertex[j].size(); a++){
 
-				boneIndices[a] = weightsPerVertex[j][a].mVertexId;
+				boneIndices[a] = static_cast<U8>(weightsPerVertex[j][a].mVertexId);
 				boneWeights[a] = weightsPerVertex[j][a].mWeight;
+
 			}
+			tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(boneIndices);
+			tempSubMesh->getGeometryVBO()->getBoneWeights().push_back(boneWeights);
 		}
 
-		tempSubMesh->getGeometryVBO()->getBoneIndices().push_back(vec4<I16>(boneIndices[0],boneIndices[1],boneIndices[2],boneIndices[3]));
-		tempSubMesh->getGeometryVBO()->getBoneWeights()[j] = boneWeights;
 
 
 	}//endfor
+
+	if(_aiScenePointer->HasAnimations() && source->HasBones()){
+		// create animator from current scene and current submesh pointer in that scene
+		tempSubMesh->createAnimatorFromScene(_aiScenePointer,count);
+	}
 
 	if(source->mTextureCoords[0] != NULL){
 		tempSubMesh->getGeometryVBO()->getTexcoord().reserve(source->mNumVertices);
@@ -156,16 +162,27 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 		}//endfor
 	}//endif
 
-	for(U32 k = 0; k < source->mNumFaces; k++)
-			for(U32 m = 0; m < source->mFaces[k].mNumIndices; m++)
-				tempSubMesh->getIndices().push_back(source->mFaces[k].mIndices[m]);
+	U16 currentIndice = 0;
+	U16 lowestInd = 0;
+	U16 highestInd = 0;
+	for(U32 k = 0; k < source->mNumFaces; k++){
+		for(U32 m = 0; m < source->mFaces[k].mNumIndices; m++){
+			currentIndice = source->mFaces[k].mIndices[m];
+			if(currentIndice < lowestInd)  lowestInd  = currentIndice;
+			if(currentIndice > highestInd) highestInd = currentIndice;
+
+			tempSubMesh->getGeometryVBO()->getHWIndices().push_back(currentIndice);
+		}
+	}
+	tempSubMesh->getIndiceLimits().x = lowestInd;
+	tempSubMesh->getIndiceLimits().y = highestInd;
 
 	return tempSubMesh;
 		 
 }
 
 /// Load the material for the current SubMesh
-Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& materialName){
+Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const string& materialName){
 
 	/// See if the material already exists in a cooked state (XML file)
 	Material* tempMaterial = XML::loadMaterial(materialName);

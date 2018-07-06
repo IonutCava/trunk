@@ -14,7 +14,7 @@
 
 <water>
 	<waterLevel>25</waterLevel>
-	<waterDepth>500</waterDepth>
+	<waterDepth>50</waterDepth>
 </water>
 
 <options>

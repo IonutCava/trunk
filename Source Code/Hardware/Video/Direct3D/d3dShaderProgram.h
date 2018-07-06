@@ -43,19 +43,21 @@ public:
 	void Uniform(const std::string& ext, const vec2<F32>& value){}
 	void Uniform(const std::string& ext, const vec3<F32>& value){}
 	void Uniform(const std::string& ext, const vec4<F32>& value){}
-	void Uniform(const std::string& ext, const mat3<F32>& value){}
-    void Uniform(const std::string& ext, const mat4<F32>& value){}
-	void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values){}
+	void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false){}
+    void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false){}
+	void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values, bool rowMajor = false){}
 	//Uniform Texture
 	void UniformTexture(const std::string& ext, U16 slot){}
 
+	I32 getAttributeLocation(const std::string& name);
+	I32 getUniformLocation(const std::string& name);
 
 private:
 	I32   cachedLoc(const std::string& name,bool uniform = true){return 0;}
 	bool flushLocCache(){return true;}
 
 private:
-	unordered_map<std::string, I32 > _shaderVars;
+	unordered_map<char*, I32 > _shaderVars;
 	bool _loaded;
 
 protected:

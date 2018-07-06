@@ -7,10 +7,11 @@
 #include "Core/Headers/Application.h" 
 
 U32 ShaderProgram::_prevShaderProgramId = 0;
+U32 ShaderProgram::_newShaderProgramId = 0;
 
 bool ShaderProgram::checkBinding(U32 newShaderProgramId){
 	if(_prevShaderProgramId != newShaderProgramId){
-		_prevShaderProgramId = newShaderProgramId;
+		_newShaderProgramId = newShaderProgramId;
 		return true;
 	}
 	return false;
@@ -36,6 +37,8 @@ bool ShaderProgram::load(const std::string& name){
 }
 
 void ShaderProgram::bind(){
+	_bound = true;
+	_prevShaderProgramId = _newShaderProgramId;
 	//Apply global shader values valid throughout current render call:
 	Frustum& frust = Frustum::getInstance();
 	ParamHandler& par = ParamHandler::getInstance();
@@ -68,6 +71,11 @@ void ShaderProgram::bind(){
 	this->Uniform("resolutionFactor", resolutionFactor);
 	this->Uniform("time", GETTIME());
 	this->Uniform("enableFog",true);
+}
+
+void ShaderProgram::unbind(){
+	_prevShaderProgramId = 0;
+	_bound = false;
 }
 
 std::vector<Shader* > ShaderProgram::getShaders(SHADER_TYPE type){

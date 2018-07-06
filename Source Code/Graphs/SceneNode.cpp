@@ -6,6 +6,7 @@
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Mesh.h" 
 #include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Managers/Headers/ShaderManager.h"
 
 SceneNode::SceneNode(SCENE_NODE_TYPE type) : Resource(),
 											 _material(NULL),
@@ -51,6 +52,7 @@ void SceneNode::onDraw(){
 	Material* mat = getMaterial();
 	if(mat){
 		mat->computeLightShaders();
+
 	}
 }
 
@@ -154,15 +156,14 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	s->bind();
 
 	s->Uniform("hasAnimations",false);
+	s->Uniform("shadowPass", false);
 	/// For 3D objects
 	if(getType() == TYPE_OBJECT3D){
 		Object3D* obj = dynamic_cast<Object3D* >(this);
 		/// For Mesh objects
 		if(obj->getType() == SUBMESH){
 			/// Apply bone transforms
-			SubMesh* submesh = dynamic_cast<SubMesh* >(obj);
-			Mesh* mesh = submesh->getParentMesh();
-			std::vector<mat4<F32> >& transforms = mesh->GetTransforms();
+			std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
 			if(!transforms.empty()){
 				s->Uniform("hasAnimations",	true);	
 				s->Uniform("boneTransforms", transforms);
@@ -241,33 +242,51 @@ void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
 			_shadowStateBlock = GFX_DEVICE.createStateBlock(shadowDesc);
 		}
 		SET_STATE_BLOCK(_shadowStateBlock);
+
 	}else{
+
 		SET_STATE_BLOCK(_material->getRenderState(SHADOW_STAGE));
 		GFX_DEVICE.setMaterial(_material);
+		ShaderProgram* s = _material->getShaderProgram();
 
-		/// For 3D objects: Animate them so shadows are also updated
-//		if(getType() == TYPE_OBJECT3D){
-//			Object3D* obj = dynamic_cast<Object3D* >(this);
-//			/// For Mesh objects
-//			if(obj->getType() == SUBMESH){
-//				/// Apply bone transforms
-//				SubMesh* submesh = dynamic_cast<SubMesh* >(obj);
-//				Mesh* mesh = submesh->getParentMesh();
-//				std::vector<mat4<F32> >& transforms = mesh->GetTransforms();
-//				if(!transforms.empty()){
-//					ShaderProgram* s = _material->getShaderProgram();
-//					s->bind();
-//					s->Uniform("hasAnimations",	true);	
-//					s->Uniform("boneTransforms", transforms);
-//					s->Uniform("mode", 4);
-//				}
-//			}
-//		}
+		if(s){
+			Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+
+			s->bind();
+			s->Uniform("mode", 0);
+			s->Uniform("shadowPass", true);
+		
+			if(opacityMap){
+				opacityMap->Bind(3);
+				s->UniformTexture("opacityMap",3);
+				s->Uniform("hasOpacity", true);
+			}else{
+				s->Uniform("hasOpacity", false);
+			}
+			/// For 3D objects: Animate them so shadows are also updated
+			if(getType() == TYPE_OBJECT3D){
+				Object3D* obj = dynamic_cast<Object3D* >(this);
+				/// For Mesh objects
+				if(obj->getType() == SUBMESH){
+					/// Apply bone transforms
+					std::vector<mat4<F32> >& transforms = dynamic_cast<SubMesh* >(obj)->GetTransforms();
+					if(transforms.empty()){
+						s->Uniform("hasAnimations",	false);	
+					}else{
+						///If we have transforms, use animations
+						s->Uniform("hasAnimations",	true);	
+						s->Uniform("boneTransforms", transforms);
+					}
+				}
+			}
+		}
 	}
 }
 
-void SceneNode::releaseShadowMaterial(){
 
+void SceneNode::releaseShadowMaterial(){
+	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+	if(opacityMap) opacityMap->Unbind(3);
 }
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
@@ -275,6 +294,9 @@ bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
 	sgn->setInitialBoundingBox(bb);
 	bb.isComputed() = true;
 	return true;
+}
+
+void SceneNode::updateTransform(SceneGraphNode* const sgn) {
 }
 
 bool SceneNode::unload(){
@@ -285,8 +307,13 @@ bool SceneNode::unload(){
 
 void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = sgn->getBoundingBox();
+	mat4<F32> boundingBoxTransformMatrix;
+	Transform* tempTransform = sgn->getTransform();
+	if(tempTransform){
+		boundingBoxTransformMatrix = tempTransform->getGlobalMatrix();
+	}
 	///This is the only immediate mode draw call left in the rendering api's
-	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax());
+	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax(),boundingBoxTransformMatrix);
 }
 
 void SceneNode::removeFromDrawExclusionMask(U8 stageMask) {
@@ -301,4 +328,7 @@ void SceneNode::addToDrawExclusionMask(U8 stageMask) {
 
 bool SceneNode::getDrawState(RENDER_STAGE currentStage)  const {
 	return (_exclusionMask & currentStage) == currentStage ? false : true;
+}
+
+void SceneNode::sceneUpdate(D32 sceneTime){
 }

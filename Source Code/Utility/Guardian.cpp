@@ -8,7 +8,7 @@ using namespace std;
 
 void Guardian::LoadApplication(const string& entryPoint){
 	Application& app = Application::getInstance();
-	//Target FPS is 60. So all movement is capped around that value
+	///Target FPS is 60. So all movement is capped around that value
 	Framerate::getInstance().Init(60);
 	Console::getInstance().printCopyrightNotice();
 	PRINT_FN("Starting the application!");
@@ -19,8 +19,12 @@ void Guardian::LoadApplication(const string& entryPoint){
 	PRINT_FN("Initializing the rendering engine");
 	SceneManager::getInstance().load(string(""));
 	PRINT_FN("Initial data loaded ... ");
+	PRINT_FN("Creating AI entities ...");
+	SceneManager::getInstance().initializeAI(true);
+	PRINT_FN("AI Entities created ...");
 	PRINT_FN("Entering main rendering loop ...");
-	GFX_DEVICE.initDevice();
+	//Target FPS is 60. So all movement is capped around that value
+	GFX_DEVICE.initDevice(60);
 	
 	_closing = false;
 }
@@ -39,6 +43,7 @@ void Guardian::TerminateApplication(){
 	PRINT_FN("Closing application!");
 	PostFX::getInstance().DestroyInstance();
 	PHYSICS_DEVICE.exitPhysics();
+	SceneManager::getInstance().deinitializeAI(true);
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
 	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");

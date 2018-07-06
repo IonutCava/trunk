@@ -40,7 +40,9 @@ void WarSceneAIActionList::updatePositions(){
 
 void WarSceneAIActionList::processInput(){
 	updatePositions();
-	AICoordination::teamMap& team = _entity->getTeam();
+	AICoordination* currentTeam = _entity->getTeam();
+	assert(currentTeam);
+	AICoordination::teamMap& team = currentTeam->getTeam();
 	for_each(AICoordination::teamMap::value_type& member, team){
 		if(_entity->getGUID() != member.second->getGUID()){
 			_entity->sendMessage(member.second, REQUEST_DISTANCE_TO_TARGET, 0);

@@ -103,19 +103,8 @@ bool WarScene::load(const string& name){
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(45));
 	CameraManager::getInstance().getActiveCamera()->RotateY(RADIANS(25));
 	CameraManager::getInstance().getActiveCamera()->setEye(vec3<F32>(14,5.5f,11.5f));
-	
-	//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
-    _aiSoldier1 = New AIEntity("Soldier1");
-	_aiSoldier1->attachNode(_sceneGraph->findNode("Soldier1"));
-	_aiSoldier1->addSensor(VISUAL_SENSOR,New VisualSensor());
-	_aiSoldier1->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(_aiSoldier1));
-	_aiSoldier1->addActionProcessor(New WarSceneAIActionList());
-	_aiSoldier1->setTeamID(1);
-	AIManager::getInstance().addEntity(_aiSoldier1);
-
-	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
-	_soldier1 = New NPC(_aiSoldier1);
-	_soldier1->setMovementSpeed(2); /// 2 m/s
+	_faction1 = New AICoordination(1);
+	_faction2 = New AICoordination(2);
 
 
 	//------------------------ Restul elementelor jocului -----------------------------///
@@ -124,6 +113,62 @@ bool WarScene::load(const string& name){
 
 	state = loadEvents(true);
 	return state;
+}
+
+bool WarScene::initializeAI(bool continueOnErrors){
+		//----------------------------INTELIGENTA ARTIFICIALA------------------------------//
+
+	AIEntity* aiSoldier = NULL;
+	SceneGraphNode* soldierMesh = _sceneGraph->findNode("Soldier1");
+	if(soldierMesh){
+		AIEntity* aiSoldier = New AIEntity("Soldier1");
+		aiSoldier->attachNode(soldierMesh);
+		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
+		aiSoldier->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(aiSoldier));
+		aiSoldier->addActionProcessor(New WarSceneAIActionList());
+		aiSoldier->setTeam(_faction1);
+		_army1.push_back(aiSoldier);
+	}
+
+	soldierMesh = _sceneGraph->findNode("Soldier2");
+	if(soldierMesh){
+		aiSoldier = New AIEntity("Soldier2");
+		aiSoldier->attachNode(soldierMesh);
+		aiSoldier->addSensor(VISUAL_SENSOR,New VisualSensor());
+		aiSoldier->addSensor(COMMUNICATION_SENSOR, New CommunicationSensor(aiSoldier));
+		aiSoldier->addActionProcessor(New WarSceneAIActionList());
+		aiSoldier->setTeam(_faction2);
+		_army2.push_back(aiSoldier);
+	}
+	//----------------------- Unitati ce vor fi controlate de AI ---------------------//
+	for(U8 i = 0; i < _army1.size(); i++){
+		NPC* soldier = New NPC(_army1[i]);
+		soldier->setMovementSpeed(2); /// 2 m/s
+		_army1NPCs.push_back(soldier);
+		AIManager::getInstance().addEntity(_army1[i]);
+	}
+
+	for(U8 i = 0; i < _army2.size(); i++){
+		NPC* soldier = New NPC(_army2[i]);
+		soldier->setMovementSpeed(2); /// 2 m/s
+		_army2NPCs.push_back(soldier);
+		AIManager::getInstance().addEntity(_army2[i]);
+	}
+	return !(_army1.empty() || _army2.empty());
+}
+
+bool WarScene::deinitializeAI(bool continueOnErrors){
+	for(U8 i = 0; i < _army1NPCs.size(); i++){
+		SAFE_DELETE(_army1NPCs[i]);
+	}
+	_army1NPCs.clear();
+	for(U8 i = 0; i < _army2NPCs.size(); i++){
+		SAFE_DELETE(_army2NPCs[i]);
+	}
+	_army2NPCs.clear();
+	SAFE_DELETE(_faction1);
+	SAFE_DELETE(_faction2);
+	return true;
 }
 
 bool WarScene::loadResources(bool continueOnErrors){

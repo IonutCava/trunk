@@ -71,7 +71,7 @@ void ShaderManager::removeShader(Shader* s){
 Shader* ShaderManager::findShader(const std::string& name){
 	if(_shaders.find(name) != _shaders.end()){
 		_shaders[name]->incRefCount();
-		PRINT_FN("ShaderManager: returning shader [ %s ]. New ref count [ %d ]",name.c_str(),_shaders[name]->getRefCount());
+		D_PRINT_FN("ShaderManager: returning shader [ %s ]. New ref count [ %d ]",name.c_str(),_shaders[name]->getRefCount());
 		return _shaders[name];
 	}
 	return NULL;

@@ -24,34 +24,45 @@
 DEFINE_SINGLETON_EXT1(SceneManager,Manager)
 
 public:
-	Scene* getActiveScene() {return _scene;}
-	inline void setActiveScene(Scene* scene) {if(_scene) delete _scene; _scene = scene;}
+	Scene* loadScene(const std::string& name);
+	void   registerScene(Scene* scenePointer);
+
+	inline Scene* getActiveScene()             { return _scene; }
+	inline void   setActiveScene(Scene* scene) { if(_scene) delete _scene; _scene = scene; }
 
 	/*Base Scene Operations*/
 	void render(RENDER_STAGE stage);
-	inline void preRender() {_scene->preRender();}
-	bool load(const std::string& name);
-	inline bool unload() {return _scene->unload();}
-	inline void processInput(){_scene->processInput();}
-	inline void processEvents(F32 time){_scene->processEvents(time);}
+	inline void clean()                               { _scene->clean(); }
+	inline bool unload()                              { return _scene->unload(); }
+	inline bool load(const std::string& name)         { return _scene->load(name); }
+	///Create AI entities, teams, NPC's etc
+	inline bool initializeAI(bool continueOnErrors)   { bool state = _scene->initializeAI(continueOnErrors); 
+													    _scene->_aiEvent.get()->startEvent();
+														return state;
+	                                                  }
+	///Destroy all AI entities, teams, NPC's createa in "initializeAI" (AIEntities are deleted automatically by the AIManager
+	inline bool deinitializeAI(bool continueOnErrors) { return _scene->deinitializeAI(continueOnErrors); }
+	/// Update animations, network data, sounds, triggers etc.
+	inline void updateSceneState(D32 sceneTime)     { _scene->updateSceneState(sceneTime); }
+	inline void preRender()                         { _scene->preRender(); }
+	inline void processInput()                      { _scene->processInput(); }
+	inline void processEvents(F32 time)             { _scene->processEvents(time); }
 	/*Base Scene Operations*/
 
-	inline std::vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
-	inline std::vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
-    inline U32 getNumberOfTerrains(){return _scene->getNumberOfTerrains();}
+	inline U32 getNumberOfTerrains()                       { return _scene->getNumberOfTerrains(); }
+	inline std::vector<FileData>& getModelDataArray()      { return _scene->getModelDataArray(); }
+	inline std::vector<FileData>& getVegetationDataArray() { return _scene->getVegetationDataArray(); }
    
-	Scene* loadScene(const std::string& name);
-
-	inline void addModel(FileData& model){_scene->addModel(model);}
-	inline void addTerrain(TerrainDescriptor* ter) {_scene->addTerrain(ter);}
-	void toggleBoundingBoxes();
-	inline void addPatch(std::vector<FileData>& data){_scene->addPatch(data);}
 	
+	inline void addModel(FileData& model)             { _scene->addModel(model); }
+	inline void addTerrain(TerrainDescriptor* ter)    { _scene->addTerrain(ter); }
+	inline void addPatch(std::vector<FileData>& data) { _scene->addPatch(data); }
+	inline void toggleSkeletons()                     { _scene->drawSkeletons(!_scene->drawSkeletons()); }
+		   void toggleBoundingBoxes();	
+
 	void findSelection(U32 x, U32 y);
 	void deleteSelection();
 
-	inline void clean(){_scene->clean();}
-	void registerScene(Scene* scenePointer);
 private:
 
 	SceneManager();

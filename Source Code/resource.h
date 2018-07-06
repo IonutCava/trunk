@@ -112,20 +112,5 @@ inline void CLAMP(T& n, T min, T max){
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
 
-/// Converts a point from world coordinates to projection coordinates
-///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const vec3<F32>& position,vec3<F32>& output){
-	output.x = position.x;
-	output.y = position.z;
-	output.z = position.y;
-}
-/// Converts a point from world coordinates to projection coordinates
-///(from Y = depth, Z = up to Y = up, Z = depth)
-inline void projectPoint(const vec3<I32>& position, vec3<I32>& output){
-	output.x = position.x;
-	output.y = position.z;
-	output.z = position.y;
-}
-
 
 #endif

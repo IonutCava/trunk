@@ -52,8 +52,8 @@ public:
 
 		_geometry->getPosition().reserve(8);
 		_geometry->getNormal().reserve(8);
-		_indices.reserve(36);
-
+		_geometry->getHWIndices().reserve(36);
+		_indiceLimits = vec2<U16>(0,7);
 		F32 halfExtent = size*0.5f;
 
 		for(U8 i = 0; i < 8; i++){
@@ -62,7 +62,7 @@ public:
 		}
 
 		for(U8 i = 0; i < 36; i++){
-			_indices.push_back(indices[i]);
+			_geometry->getHWIndices().push_back(indices[i]);
 		}
 
 		_refreshVBO = true;

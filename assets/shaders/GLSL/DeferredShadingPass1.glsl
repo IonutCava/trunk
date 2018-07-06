@@ -1,20 +1,20 @@
 -- Vertex
-
+#include "vboInputData.vert"
 varying vec3 normals;
 varying vec3 position;
 varying vec4 texCoord[2];
 varying mat4 TBN;
 
 void main( void ){
+	computeData();
+	gl_Position =  gl_ModelViewProjectionMatrix * vertexData;
 
-	gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;
+	texCoord[0].st = texCoordData;
+	position = vec3(transpose(gl_ModelViewMatrix) * vertexData);
+	normals = normalize(gl_NormalMatrix * normalData);
 
-	texCoord[0] = gl_MultiTexCoord0;
-	position = vec3(transpose(gl_ModelViewMatrix) * gl_Vertex);
-	normals = normalize(gl_NormalMatrix * gl_Normal);
-
-	vec3 t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);
-	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
+	vec3 t = normalize(gl_NormalMatrix * tangentData);
+	vec3 n = normalize(gl_NormalMatrix * normalData);
 	vec3 b = cross(n, t);
 
 	
@@ -27,9 +27,10 @@ void main( void ){
 
 -- Fragment.NoTexture
 
-varying vec3         normals;
-varying vec3         position;
-uniform mat4         material;
+varying vec3 normals;
+varying vec3 position;
+uniform mat4 material;
+varying mat4 TBN;
 
 void main( void ){
 
@@ -43,7 +44,7 @@ void main( void ){
 varying vec3  normals;
 varying vec3  position;
 varying vec4  texCoord[2];
-
+varying mat4  TBN;
 uniform sampler2D texDiffuse0;
 
 void main( void ){

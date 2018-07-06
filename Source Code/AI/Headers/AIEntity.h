@@ -40,14 +40,17 @@ public:
 	inline SceneGraphNode* getBoundNode() {return _node;}
 	inline bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
 	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
-	bool addFriend(AIEntity* entity);
-	bool addEnemyTeam(AICoordination::teamMap& enemyTeam);
 	bool addActionProcessor(ActionList* actionProcessor);
 	Sensor* getSensor(SENSOR_TYPE type);
-	inline AICoordination::teamMap& getTeam()  const {return _coordination->getTeam();}
-	inline void       setTeamID(U32 ID) {_coordination->setTeamID(ID);}
-	inline U32 const& getTeamID() const {return _coordination->getTeamID();}
-	inline U32 const& getGUID()   const {return _GUID;}
+
+	inline AICoordination* getTeam() {return _coordination; }
+	inline U32  getTeamID() const    {if(_coordination != NULL) { return _coordination->getTeamID();} return -1; }
+	inline U32  getGUID()   const    {return _GUID;}
+
+	///Set a team for this Entity. If the enitity belonged to a different team, remove it from that team first
+	void setTeam(AICoordination* const coordination);
+	///Add a friend to our team
+	bool addFriend(AIEntity* const friendEntity);
 
 	void sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content);
 	void receiveMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
@@ -56,6 +59,7 @@ public:
 
 	inline void addUnitRef(NPC* const npc) {_unitRef = npc;}
 	inline NPC* getUnitRef()               {return _unitRef;}
+
 private:
 	std::string     _name;
 	U32             _GUID;

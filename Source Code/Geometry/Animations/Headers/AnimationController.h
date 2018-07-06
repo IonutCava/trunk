@@ -22,94 +22,90 @@
 #ifndef ANIMATION_CONTROLLER_H_
 #define ANIMATION_CONTROLLER_H_
 
-#include <tuple>
-#include "Bone.h"
-#include <assimp/anim.h>
-
-class AnimationChannel{
-public:
-	std::string Name;
-	std::vector<aiVectorKey > mPositionKeys;
-	std::vector<aiQuatKey   > mRotationKeys;
-	std::vector<aiVectorKey > mScalingKeys;
-};
-
-struct aiAnimation;
-class AnimationEvaluator{
-public:
-
-	AnimationEvaluator(): mLastTime(0.0f), TicksPerSecond(0.0f), Duration(0.0f), PlayAnimationForward(true) {}
-	AnimationEvaluator( const aiAnimation* pAnim);
-	void Evaluate( F32 pTime, std::map<std::string, Bone*>& bones);
-	void Save(std::ofstream& file);
-	void Load(std::ifstream& file);
-	std::vector<mat4<F32> >& GetTransforms(F32 dt){ return Transforms[GetFrameIndexAt(dt)]; }
-	U32 GetFrameIndexAt(F32 time);
-
-	std::string Name;
-	std::vector<AnimationChannel> Channels;
-	bool PlayAnimationForward;// play forward == true, play backward == false
-	F32 mLastTime, TicksPerSecond, Duration;	
-	std::vector<tuple_impl<U32, U32, U32> > mLastPositions;
-	std::vector<std::vector<mat4<F32> >> Transforms;//, QuatTransforms;/** Array to return transformations results inside. */
-};
+#include <boost/cstdint.hpp>
+#include "AnimationEvaluator.h"
 
 struct aiNode; 
 struct aiScene;
-class AnimationController{
+class SceneAnimator{
 public:
 
-	AnimationController(): Skeleton(0), CurrentAnimIndex(-1) {}
-	~AnimationController(){ Release(); }
+	SceneAnimator(): _skeleton(0), _currentAnimIndex(-1){}
+	~SceneAnimator(){ Release(); }
 
-	void Init(const aiScene* pScene);// this must be called to fill the AnimationController with valid data
+	void Init(const aiScene* pScene, U8 meshPointer);// this must be called to fill the SceneAnimator with valid data
+	void setGlobalMatrix(const mat4<F32>& matrix); // update root matrix for mesh;
 	void Release();// frees all memory and initializes everything to a default state
 	void Save(std::ofstream& file);
 	void Load(std::ifstream& file);
-	inline bool HasSkeleton() const   { return !Bones.empty(); }// lets the caller know if there is a skeleton present
-	inline bool HasAnimations() const { return !Animations.empty(); }
-	// the set animation returns whether the animation changed or is still the same. 
+	inline bool HasSkeleton() const { return !_bones.empty(); }// lets the caller know if there is a skeleton present
+	/// the set animation returns whether the animation changed or is still the same. 
 	bool SetAnimIndex(I32 pAnimIndex);// this takes an index to set the current animation to
 	bool SetAnimation(const std::string& name);// this takes a string to set the animation to, i.e. SetAnimation("Idle");
-	// the next two functions are good if you want to change the direction of the current animation. You could use a forward walking animation and reverse it to get a walking backwards
-	inline void PlayAnimationForward() { Animations[CurrentAnimIndex].PlayAnimationForward = true; }
-	inline void PlayAnimationBackward() { Animations[CurrentAnimIndex].PlayAnimationForward = false; }
-	//this function will adjust the current animations speed by a percentage. So, passing 100, would do nothing, passing 50, would decrease the speed by half, and 150 increase it by 50%
-	inline void AdjustAnimationSpeedBy(F32 percent) { Animations[CurrentAnimIndex].TicksPerSecond*=percent/100.0f; }
-	//This will set the animation speed
-	inline void AdjustAnimationSpeedTo(F32 tickspersecond) { Animations[CurrentAnimIndex].TicksPerSecond=tickspersecond; }
-	// get the animationspeed...
-	inline F32 GetAnimationSpeed() const { return Animations[CurrentAnimIndex].TicksPerSecond; }
-	// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
-	inline std::vector<mat4<F32> >& GetTransforms(F32 dt){ return Animations[CurrentAnimIndex].GetTransforms(dt); }
-
-	inline I32 GetAnimationIndex() const { return CurrentAnimIndex; }
-	inline std::string GetAnimationName() const { return Animations[CurrentAnimIndex].Name;  }
-
-	std::vector<AnimationEvaluator> Animations;// a std::vector that holds each animation 
-	I32 CurrentAnimIndex;/** Current animation index */
-
-protected:		
-
+	/// the next two functions are good if you want to change the direction of the current animation. You could use a forward walking animation and reverse it to get a walking backwards
+	inline void PlayAnimationForward() { _animations[_currentAnimIndex]._playAnimationForward = true; }
+	inline void PlayAnimationBackward() { _animations[_currentAnimIndex]._playAnimationForward = false; }
+	///this function will adjust the current animations speed by a percentage. So, passing 100, would do nothing, passing 50, would decrease the speed by half, and 150 increase it by 50%
+	inline void AdjustAnimationSpeedBy(D32 percent) { _animations[_currentAnimIndex]._ticksPerSecond*=percent/100.0f; }
+	///This will set the animation speed
+	inline void AdjustAnimationSpeedTo(D32 tickspersecond) { _animations[_currentAnimIndex]._ticksPerSecond=tickspersecond; }
+	/// get the animationspeed... in ticks per second
+	inline F32 GetAnimationSpeed() const { return _animations[_currentAnimIndex]._ticksPerSecond; }
+	/// get the transforms needed to pass to the vertex shader. This will wrap the dt value passed, so it is safe to pass 50000000 as a valid number
+	inline std::vector<mat4<F32> >& GetTransforms(D32 dt){ return _animations[_currentAnimIndex].GetTransforms(dt); }
+	inline std::vector<mat4<F32> >& GetTransformsByIndex(U32 index){ return _animations[_currentAnimIndex]._transforms[index]; }
+	inline U32 GetFrameIndex() const { return _animations[_currentAnimIndex].GetFrameIndex(); }
+	inline U32 GetFrameCount() const {return _animations[_currentAnimIndex].GetFrameCount(); }
+	inline U32 GetAnimationIndex() const { return _currentAnimIndex; }
+	inline std::string GetAnimationName() const { return _animations[_currentAnimIndex]._name;  }
+	///GetBoneIndex will return the index of the bone given its name. The index can be used to index directly into the vector returned from GetTransform
+	inline I32 GetBoneIndex(const std::string& bname){ unordered_map<std::string, U32>::iterator found = _bonesToIndex.find(bname); if(found!=_bonesToIndex.end()) return found->second; else return -1;}
+	///GetBoneTransform will return the matrix of the bone given its name and the time. be careful with this to make sure and send the correct dt. If the dt is different from what the model is currently at, the transform will be off
+	inline mat4<F32> GetBoneTransform(D32 dt, const std::string& bname) { I32 bindex=GetBoneIndex(bname); if(bindex == -1) return mat4<F32>(); return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+	/// same as above, except takes the index
+	inline mat4<F32> GetBoneTransform(D32 dt, U32 bindex) {  return _animations[_currentAnimIndex].GetTransforms(dt)[bindex]; }
+	std::vector<AnimEvaluator> _animations;// a std::vector that holds each animation 
 	
-	Bone* Skeleton;/** Root node of the internal scene structure */
-	std::map<std::string, Bone*> BonesByName;/** Name to node map to quickly find nodes by their name */
-	std::map<std::string, U32> AnimationNameToId;// find animations quickly
-	std::vector<Bone*> Bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST COPIES!!
-	std::vector<mat4<F32> > Transforms;// temp array of transfrorms
+	I32 RenderSkeleton(D32 dt);
 
+private:		
+
+	///I/O operations
 	void SaveSkeleton(std::ofstream& file, Bone* pNode);
 	Bone* LoadSkeleton(std::ifstream& file, Bone* pNode);
 
 	void UpdateTransforms(Bone* pNode);
-	void CalculateBoneToWorldTransform(Bone* pInternalNode);/** Calculates the global transformation matrix for the given internal node */
-
-	void Calculate( F32 pTime);
+	void Calculate( D32 pTime);
 	void CalcBoneMatrices();
-
+	/// Calculates the global transformation matrix for the given internal node 
+	void CalculateBoneToWorldTransform(Bone* pInternalNode);
 	void ExtractAnimations(const aiScene* pScene);
-	Bone* CreateBoneTree( aiNode* pNode, Bone* pParent);// Recursively creates an internal node structure matching the current scene and animation. 
-	
+	/// Recursively creates an internal node structure matching the current scene and animation.
+	Bone* CreateBoneTree( aiNode* pNode, Bone* parent);
+
+	I32 SubmitSkeletonToGPU(U32 frameIndex);
+	I32 CreateSkeleton(Bone* piNode, const aiMatrix4x4& parent, std::vector<vec3<F32> >& pointsA, std::vector<vec3<F32> >& pointsB, std::vector<vec4<F32> >& colors);
+
+private:
+	I32 _currentAnimIndex;/** Current animation index */
+	Bone* _skeleton;/** Root node of the internal scene structure */
+
+	unordered_map<std::string, Bone*> _bonesByName;/** Name to node map to quickly find nodes by their name */
+	unordered_map<std::string, U32>   _bonesToIndex;/** Name to node map to quickly find nodes by their name */
+	unordered_map<std::string, U32>   _animationNameToId;// find animations quickly
+
+	std::vector<Bone*> _bones;// DO NOT DELETE THESE when the destructor runs... THEY ARE JUST COPIES!!
+	std::vector<aiMatrix4x4 > _transforms;// temp array of transforms
+
+	typedef unordered_map<U32/*frameIndex*/, std::vector<vec3<F32> >> pointMap;
+	typedef unordered_map<U32/*frameIndex*/, std::vector<vec4<F32> >> colorMap;
+		///I wanna use my unordered_map here :((((( -Ionut
+	unordered_map<U32 /*animationId*/, pointMap > _pointsA;
+	unordered_map<U32 /*animationId*/, pointMap > _pointsB;
+	unordered_map<U32 /*animationId*/, colorMap > _colors;
+
+	aiMatrix4x4 _rootTransform;
+	mat4<F32>  _rootTransformRender;
 };
 
 

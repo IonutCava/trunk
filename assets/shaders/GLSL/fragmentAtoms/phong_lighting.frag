@@ -22,20 +22,17 @@ uniform float opacity;
 #include "texturing.frag"
 #include "shadowMapping.frag"
 
-//true -> use opacity map
-uniform bool hasOpacity;
-//true -> use specular map 
-uniform bool hasSpecular;
-
-//Opacity and specular maps
-uniform sampler2D opacityMap;
-uniform sampler2D specularMap;
-uniform int mode;
-#define MODE_SHADOW 4
-
 vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
+	// discard material if it is bellow opacity threshold
 	if(opacity < 0.2) discard;
-	//if(mode == MODE_SHADOW) return vec4(0,0,0,0);
+
+	if(hasOpacity ){
+		vec4 alpha = texture2D(opacityMap, uv);
+		if(alpha.a < 0.2) discard;
+	}
+
+	if(shadowPass) return vec4(0,0,0,1);
+
 	float att = 1.0;
 	//If the light isn't directional, compute attenuation
 	if(vLightTBN.w != LIGHT_DIRECTIONAL) {
@@ -47,7 +44,6 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 	vec3 L = normalize(vLightTBN.xyz);
 	vec3 N = normalize(vNormalTBN.xyz);
 	vec3 V = normalize(vEyeTBN.xyz);
-	
 	//vec4 ambient = material[0];
 	//vec4 diffuse = material[1];
 	//vec4 specular = material[2];
@@ -88,7 +84,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 		//If the texture's alpha channel is less than 1/3, discard current fragment
 		if(tBase[0].a < 0.3) discard;
 	}
-	float shadow = 1.0;
+	
 	//If we have a spot light
 	if(vLightTBN.w > 1.5){
 		//Handle the spot's halo
@@ -96,22 +92,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 			cDiffuse = vec4(0.0, 0.0, 0.0, 1.0);
 			cSpecular = vec4(0.0, 0.0, 0.0, 1.0);
 		}else{
-			if(enable_shadow_mapping != 0) {
-				/////////////////////////
-				// SHADOW MAPS
-				vec3 vPixPosInDepthMap;
-				//Compute shadow value for current fragment
-				shadow = ShadowMapping(vPixPosInDepthMap);
-				//And add shadow value to current diffuse color and specular values
-				cDiffuse = (shadow) * cDiffuse;
-				cSpecular = (shadow) * cSpecular;
-				cAmbient = (shadow) * cAmbient;
-				// Texture projection :
-				if(enable_shadow_mapping == 2) {
-					vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
-					tBase[0].xyz = mix(tBase[0].xyz, cProjected.xyz, shadow/2.0);
-				}
-			}
+			applyShadow(cDiffuse, cAmbient, cSpecular, tBase[0]); 
 		}
 	//If it's not a spot light
 	}else{

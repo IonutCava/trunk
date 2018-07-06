@@ -3,7 +3,7 @@
 varying vec4 texCoord[2];
 
 void main(void){
-	gl_Position = ftransform();
+	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 	gl_Position = sign( gl_Position );
  
 	// Texture coordinate for screen aligned (in correct range):

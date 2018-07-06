@@ -2,6 +2,7 @@
 #include "Scenes/Headers/Scene.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Graphs/Headers/SceneNode.h"
 
 using namespace physx;
 
@@ -83,7 +84,7 @@ void PhysXSceneInterface::updateShape(PxShape* shape, Transform* t){
 		//ToDo: Remove hack! Find out why plane isn't rotating - Ionut
 		t->rotate(vec3<F32>(1,0,0),90);
 	}else{
-		t->rotateQuaternion(Quaternion(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
+		t->rotateQuaternion(Quaternion<F32>(pT.q.x,pT.q.y,pT.q.z,pT.q.w));
 	}
 	t->setPosition(vec3<F32>(pT.p.x,pT.p.y,pT.p.z));
 	
@@ -124,6 +125,7 @@ void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
 	addToSceneGraph(actor);
 }
 
+bool _addedPhysXPlane = false;
 void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 
 	if(!actor) return;
@@ -142,12 +144,23 @@ void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
 			PxBoxGeometry box;
 			shapes[0]->getBoxGeometry(box);
 			dynamic_cast<Box3D*>(actorGeometry)->setSize(box.halfExtents.x * 2);
+			dynamic_cast<SceneNode*>(actorGeometry)->getMaterial()->setDiffuse(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
+			dynamic_cast<SceneNode*>(actorGeometry)->getMaterial()->setAmbient(vec4<F32>(0.0f,0.0f,1.0f,1.0f));
 	   }
        break;
-	   case PxGeometryType::ePLANE:
-		   ss << "PlaneActor_" << nbActors;
-		   actorGeometry = CreateResource<Quad3D>(ResourceDescriptor(ss.str()));
-	   break;
+		 case PxGeometryType::ePLANE: {
+		   if(!_addedPhysXPlane){
+				ss << "PlaneActor_" << nbActors;
+				Material* planeMaterial = CreateResource<Material>(ResourceDescriptor("planeMaterial"));
+				ResourceDescriptor planeDescriptor(ss.str());
+				planeDescriptor.setFlag(true);
+				actorGeometry = CreateResource<Quad3D>(planeDescriptor);
+				planeMaterial->setDiffuse(vec4<F32>(1.0f,0.0f,0.0f,1.0f));
+				planeMaterial->setAmbient(vec4<F32>(1.0f,0.0f,0.0f,1.0f));
+				actorGeometry->setMaterial(planeMaterial);
+				_addedPhysXPlane = true;
+		   }
+		}break;
 	} 
     delete [] shapes;
 	if(actorGeometry){

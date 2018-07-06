@@ -31,6 +31,13 @@
 
 namespace Util {
 
+	template <typename T>
+	class mat4;
+	template <typename T>
+	class vec3;
+	template <typename T>
+	class Quaternion;
+
 	template<class T>
 	inline std::string toString(T data){
 		std::stringstream s;
@@ -377,7 +384,13 @@ namespace Util {
 		}
 	}
 #endif
-
+	namespace Mat4{
+		// ----------------------------------------------------------------------------------------
+		template <typename T>
+		void decompose (const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation,	vec3<T>& position);
+		template <typename T>
+		void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position);
+	}
 }
 
 #endif

@@ -13,7 +13,7 @@ void Framerate::Init(F32 tfps){
 #else //Linux
   gettimeofday(&_currentticks,NULL);
 #endif
-
+ _init = true;
 }
 
 void Framerate::SetSpeedFactor(){

@@ -20,13 +20,14 @@
 
 #include <iostream>
 #include "resource.h"
+
+class ShaderProgram;
 /// Vertex Buffer Object interface class  to allow API-independent implementation of data
 /// This class allow Vertex Array fallback if a VBO could not be generated
 class VertexBufferObject {
 
 public:
 	virtual bool Create(bool staticDraw = true) = 0;
-	virtual bool Create(U32 usage) = 0;
 	virtual void Destroy() = 0;
 	
 	virtual void Enable() = 0;
@@ -34,13 +35,17 @@ public:
 
 	virtual bool Refresh() = 0;
 
+	virtual void setShaderProgram(ShaderProgram* const shaderProgram) = 0;
+	inline  bool isShaderBased() {return (_currentShader != NULL);}
+
 	inline std::vector<vec3<F32> >&  getPosition()	  { _positionDirty  = true; return _dataPosition;}
 	inline std::vector<vec3<F32> >&  getNormal()	  { _normalDirty    = true; return _dataNormal;}
 	inline std::vector<vec2<F32> >&  getTexcoord()    { _texcoordDirty  = true; return _dataTexcoord;}
 	inline std::vector<vec3<F32> >&  getTangent()	  { _tangentDirty   = true; return _dataTangent;}
 	inline std::vector<vec3<F32> >&  getBiTangent()   { _bitangentDirty = true; return _dataBiTangent;}
-	inline std::vector<vec4<I16> >&  getBoneIndices() { _indicesDirty   = true; return _boneIndices;}
+	inline std::vector<vec4<U8>  >&  getBoneIndices() { _indicesDirty   = true; return _boneIndices;}
 	inline std::vector<vec4<F32> >&  getBoneWeights() { _weightsDirty   = true; return _boneWeights;}
+	inline std::vector<U16>&         getHWIndices()   {return _hardwareIndices; }
 
 	/*inline void updatePosition(const std::vector<vec3<F32> >& newPositionData) {
 		_dataPosition.clear(); 
@@ -78,7 +83,7 @@ public:
 		_indicesDirty = true;
 	}
 
-	inline void updateBoneWeights(const std::vector<vec4<U8> >& newBoneWeightsData) {
+	inline void updateBoneWeights(const std::vector<vec4<F32> >& newBoneWeightsData) {
 		_boneWeights.clear(); 
 		_boneWeights = newBoneWeightsData;
 		_weightsDirty = true;
@@ -98,6 +103,7 @@ public:
 		_dataBiTangent.clear();
 		_boneIndices.clear();
 		_boneWeights.clear();
+		_hardwareIndices.clear();
 	};
 
 	VertexBufferObject() : 	_positionDirty(true),
@@ -108,7 +114,9 @@ public:
 							_indicesDirty(true),
 							_weightsDirty(true),
 							_staticDraw(true),
-							_VBOid(0)
+							_currentShader(NULL),
+							_VBOid(0),
+							_IBOid(0)
 	{
 		_VBOoffsetPosition = 0;
 		_VBOoffsetNormal = 0;
@@ -121,15 +129,12 @@ public:
 
 
 protected:
-	
-	virtual void Enable_VA() = 0;	
-	virtual void Enable_VBO() = 0;	
-	virtual void Disable_VA() = 0;	
-	virtual void Disable_VBO() = 0;
+	virtual bool CreateInternal() = 0;
 
 protected:
 	
 	U32  		_VBOid;
+	U32         _IBOid;
 	ptrdiff_t	_VBOoffsetPosition;
 	ptrdiff_t	_VBOoffsetNormal;
 	ptrdiff_t	_VBOoffsetTexcoord;
@@ -139,13 +144,15 @@ protected:
 	ptrdiff_t   _VBOoffsetBoneWeights;
 
 	
+	///Used for creatinga "IBO". If it's empty, then an outside source should provide the indices
+	std::vector<U16>        _hardwareIndices;
 	std::vector<vec3<F32> >	_dataPosition;
 	std::vector<vec3<F32> >	_dataNormal;
 	std::vector<vec2<F32> >	_dataTexcoord;
 	std::vector<vec3<F32> >	_dataTangent;
 	std::vector<vec3<F32> >	_dataBiTangent;
-	std::vector<vec4<I16> > _boneIndices; ///< ToDo: use U8 data pointers here -Ionut
-	std::vector<vec4<F32> > _boneWeights; ///< ToDo: use U8 data pointers here -Ionut
+	std::vector<vec4<U8> >  _boneIndices;
+	std::vector<vec4<F32> > _boneWeights;
 
 	/// To change this, call Create again on the VBO
 	/// Update calls use this as reference!
@@ -159,6 +166,8 @@ protected:
 	bool _bitangentDirty;
 	bool _indicesDirty;
 	bool _weightsDirty;
+	///Used for VertexAttribPointer data. If shader is null, old style VBO/VA is used (TexCoordPointer for example)
+	ShaderProgram* _currentShader;
 	
 };
 

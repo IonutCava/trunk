@@ -46,6 +46,7 @@ enum LIGHT_F_PROPERTIES{
 };
 
 class Impostor;
+class ParamHandler;
 class FrameBufferObject;
 ///A light object placed in the scene at a certain position
 class Light : public SceneNode {
@@ -164,6 +165,11 @@ private: //Shadow Mapping
 	vec3<F32> _lightPos;
 	vec2<F32> _zPlanes;
 	vec3<F32> _eyePos;
+
+	///cached values
+	F32 _zNear;
+	F32 _zFar;
+	ParamHandler& _par;
 };
 
 #endif

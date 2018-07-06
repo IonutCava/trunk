@@ -105,10 +105,7 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
 				ERROR_FN("glShader: %s",str.str());
 			}
 			output << preprocessIncludes(include_string, include_file, level + 1) << endl;
-		}
-		else
-		{
-			//output << "#line "<< line_number << " \"" << filename << "\""  << endl;
+		}else{
 			output <<  line << endl;
 		}
 		++line_number;

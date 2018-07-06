@@ -260,7 +260,7 @@ void Scene::processInput(){
 bool Scene::loadEvents(bool continueOnErrors){
 	//Running the input manager through a separate thread degrades performance. Enable at your own risk - Ionut
 	//_inputEvent.reset(New Event(1,true,false,boost::bind(&InputManagerInterface::tick, boost::ref(InputManagerInterface::getInstance()))));
-	_aiEvent.reset(New Event(3,true,false,boost::bind(&AIManager::tick,boost::ref(AIManager::getInstance()))));
+	_aiEvent.reset(New Event(3,false,false,boost::bind(&AIManager::tick,boost::ref(AIManager::getInstance()))));
 	return true;
 }
 
@@ -331,10 +331,14 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_R:
 			Guardian::getInstance().ReloadEngine();
 			break;
+		case OIS::KC_F2:{
+			PRINT_FN("Toggling Skeleton Visibility");
+			SceneManager::getInstance().toggleSkeletons();
+			}break;
 		case OIS::KC_B:{
 			PRINT_FN("Toggling Bounding Boxes");
 			SceneManager::getInstance().toggleBoundingBoxes();
-					   }break;
+			}break;
 		case OIS::KC_ADD:
 			if (speedFactor < 10)  speedFactor += 0.1f;
 			break;
@@ -389,4 +393,8 @@ void Scene::OnJoystickMoveAxis(const OIS::JoyStickEvent& key,I8 axis){
 		else
 			Application::getInstance().angleUD = 0;
 	}
+}
+
+void Scene::updateSceneState(D32 sceneTime){
+	_sceneGraph->sceneUpdate(sceneTime);
 }

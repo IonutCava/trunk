@@ -36,8 +36,27 @@ void Impostor::render(SceneGraphNode* const node){
 	SET_STATE_BLOCK(_dummyStateBlock);
 	gfx.setObjectState(node->getTransform());
 	gfx.setMaterial(_dummy->getMaterial());
+	if(!_dummy->getMaterial()->getShaderProgram()) {
+		_dummy->onDraw();
+	}
 	_dummy->getMaterial()->getShaderProgram()->bind();
 	_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 		gfx.renderModel(_dummy);
 	gfx.releaseObjectState(node->getTransform());
+}
+
+/// Render dummy at target transform
+void Impostor::render(Transform* const transform){
+	GFXDevice& gfx = GFX_DEVICE;
+	if(gfx.getRenderStage() != FINAL_STAGE && gfx.getRenderStage() != DEFERRED_STAGE) return;
+	SET_STATE_BLOCK(_dummyStateBlock);
+	gfx.setObjectState(transform);
+	//gfx.setMaterial(_dummy->getMaterial());
+	//if(!_dummy->getMaterial()->getShaderProgram()) {
+	//	_dummy->onDraw();
+	//}
+	//_dummy->getMaterial()->getShaderProgram()->bind();
+	//_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
+		gfx.renderModel(_dummy);
+	gfx.releaseObjectState(transform);
 }

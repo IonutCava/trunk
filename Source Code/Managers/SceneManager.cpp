@@ -187,8 +187,3 @@ void SceneManager::render(RENDER_STAGE stage) {
 	GFX_DEVICE.setRenderStage(stage);
 	_scene->render();
 }
-
-
-bool SceneManager::load(const std::string& name) {
-	return _scene->load(name);
-}

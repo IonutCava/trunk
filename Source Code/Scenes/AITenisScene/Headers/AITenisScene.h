@@ -21,6 +21,7 @@
 #include "Scenes/Headers/Scene.h"
 
 class AIEntity;
+class AICoordination;
 class Sphere3D;
 class NPC;
 
@@ -57,6 +58,8 @@ public:
 
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
+	bool initializeAI(bool continueOnErrors);
+	bool deinitializeAI(bool continueOnErrors);
 	bool unload();
 	void processInput();
 	void processEvents(F32 time);
@@ -70,6 +73,7 @@ private:
 	void procesareJoc(boost::any a, CallbackParam b);
 	void startJoc();
 	void reseteazaJoc();
+
 private:
 	std::vector<F32> _eventTimers;
 	F32 angleLR,angleUD,moveFB,moveLR;
@@ -92,8 +96,12 @@ private: //Joc
 	bool _aplicaImpulsLateral;
 	I8 _scorEchipa1;
 	I8 _scorEchipa2;
+	///AIEntities are the "processors" behing the NPC's
 	AIEntity *_aiPlayer1, *_aiPlayer2, *_aiPlayer3, *_aiPlayer4;
+	///NPC's are the actual game entities
 	NPC *_player1, *_player2, *_player3, *_player4;
+	///Team's are factions for AIEntites so they can manage friend/foe situations
+	AICoordination *_team1, *_team2;
 };
 
 #endif

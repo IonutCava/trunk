@@ -72,12 +72,14 @@ public:
 
 	/// Every SceneNode computes a bounding box in it's own way. 
 	virtual	bool    computeBoundingBox(SceneGraphNode* const sgn);
+	virtual void    updateTransform(SceneGraphNode* const sgn);
 	virtual void    onDraw();
 	virtual void    postDraw();
 	virtual void    drawBoundingBox(SceneGraphNode* const sgn);
 	virtual void    postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
-	
+	/// Called from SceneGraph "sceneUpdate"
+	virtual void sceneUpdate(D32 sceneTime);
 
 	inline	void	setSelected(bool state)  {_selected = state;}
 	inline	bool    isSelected()	const	 {return _selected;}

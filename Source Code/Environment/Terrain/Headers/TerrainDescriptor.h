@@ -62,7 +62,7 @@ public:
 	void removeCopy(){decRefCount();}
 	
 private:
-	std::map<std::string,std::string> _variables;
+	unordered_map<std::string,std::string> _variables;
 	U32    _grassDensity;
 	U16    _treeDensity;
 	F32	   _grassScale;

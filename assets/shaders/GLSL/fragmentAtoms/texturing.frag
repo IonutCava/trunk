@@ -8,6 +8,14 @@ uniform int       texDiffuse0Op;
 uniform sampler2D texDiffuse1;
 uniform int       texDiffuse1Op;
 
+//true -> use opacity map
+uniform bool hasOpacity;
+//true -> use specular map 
+uniform bool hasSpecular;
+//Opacity and specular maps
+uniform sampler2D opacityMap;
+uniform sampler2D specularMap;
+
 const int REPLACE    = 0;
 const int MODULATE   = 1;
 const int DECAL      = 2;

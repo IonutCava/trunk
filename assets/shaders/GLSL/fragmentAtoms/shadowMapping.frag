@@ -1,4 +1,4 @@
-
+uniform bool shadowPass;
 // SHADOW MAPPING //
 // 0->no  1->shadow mapping  2->shadow mapping + projected texture
 uniform int enable_shadow_mapping;
@@ -13,7 +13,11 @@ uniform sampler2DShadow texDepthMapFromLight2;
 uniform sampler2D texDiffuseProjected;
 #define Z_TEST_SIGMA 0.0001
 ////////////////////
+
+void applyShadow(inout vec4 cDiffuse, inout vec4 cAmbient, inout vec4 cSpecular, inout vec4 diffuseTexture);
+
 float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution);
+
 float ShadowMapping(out vec3 vPixPosInDepthMap){
 
 	float fShadow = 1.0;
@@ -76,4 +80,24 @@ float filterFinalShadow(sampler2DShadow depthMap,vec3 vPosInDM, float resolution
 		fShadow = 1.0;
 	}
 	return fShadow;
+}
+
+void applyShadow(inout vec4 cDiffuse, inout vec4 cAmbient, inout vec4 cSpecular, inout vec4 diffuseTexture) {
+	float shadow = 1.0;
+	if(enable_shadow_mapping != 0) {
+		/////////////////////////
+		// SHADOW MAPS
+		vec3 vPixPosInDepthMap;
+		//Compute shadow value for current fragment
+		shadow = ShadowMapping(vPixPosInDepthMap);
+		//And add shadow value to current diffuse color and specular values
+		cDiffuse = (shadow) * cDiffuse;
+		cSpecular = (shadow) * cSpecular;
+		cAmbient = (shadow) * cAmbient;
+		// Texture projection :
+		if(enable_shadow_mapping == 2) {
+			vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
+			diffuseTexture.xyz = mix(diffuseTexture.xyz, cProjected.xyz, shadow/2.0);
+		}
+	}
 }

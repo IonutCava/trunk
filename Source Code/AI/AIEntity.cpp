@@ -5,12 +5,11 @@
 #include "PathFinding/Headers/NavigationMesh.h" ///< For NavMesh movement
 
 AIEntity::AIEntity(const std::string& name) : _name(name),
-											  _coordination(New AICoordination()),
 											  _actionProcessor(NULL),
-											  _unitRef(NULL)
+											  _unitRef(NULL),
+											  _coordination(NULL)
 {
 	_GUID = GETMSTIME() * random(55);
-	_coordination->addTeamMember(this);
 }
 
 void AIEntity::sendMessage(AIEntity* receiver, AI_MSG msg,const boost::any& msg_content){
@@ -43,25 +42,6 @@ bool AIEntity::addSensor(SENSOR_TYPE type, Sensor* sensor){
 	return true;
 }
 
-bool AIEntity::addFriend(AIEntity* entity){
-	bool state = false;
-	state = _coordination->addTeamMember(entity);
-	if(state){
-		state = entity->_coordination->addTeamMember(this);
-	}
-
-	return state;
-}
-
-bool AIEntity::addEnemyTeam(AICoordination::teamMap& enemyTeam){
-	for_each(AICoordination::teamMap::value_type& member, _coordination->getTeam()){
-		if(!member.second->_coordination->addEnemyTeam(enemyTeam)){
-			ERROR_FN("AI: Error adding enemy team to member [ %s ]", member.second->_name.c_str());
-			return false;
-		}
-	}
-	return true;
-}
 
 bool AIEntity::addActionProcessor(ActionList* actionProcessor){
 	if(_actionProcessor){
@@ -93,3 +73,36 @@ void AIEntity::update(){
 	_updateMutex.unlock();
 }
 
+
+void AIEntity::setTeam(AICoordination* const coordination) {
+	if(_coordination){
+		///Remove from old team
+		_coordination->removeTeamMember(this);
+	}
+	///Update our team
+	_coordination = coordination;
+	///Add ourself to the new team
+	_coordination->addTeamMember(this);
+}
+
+bool AIEntity::addFriend(AIEntity* const friendEntity){
+	AICoordination* friendTeam = friendEntity->getTeam();
+	///If no team, check if our friend has a team and add ourself to it
+	if(!_coordination){
+		///If our friend has a team ...
+		if(friendTeam){
+			///Create friendship
+			friendTeam->addTeamMember(this);
+			_coordination = friendTeam;
+			return true;
+		}
+		return false;
+	}
+	///If we have team, add friend to our team
+	_coordination->addTeamMember(friendEntity);
+	///If our friend isn't on our team, add him
+	if(!friendTeam){
+		friendEntity->setTeam(_coordination);
+	}
+	return true;
+}

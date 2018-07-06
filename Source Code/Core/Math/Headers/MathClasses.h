@@ -32,7 +32,42 @@
  * vec4 : added methods : set, reset, compare
  ***************************************************************************
  */
+/*
+/**
+ * MathLibrary
+ * Copyright (c) 2011 NoLimitsDesigns
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
 
+ * If there are any concerns or questions about the code, please e-mail smasherprog@gmail.com or visit www.nolimitsdesigns.com
+ */
+
+/**
+ * Author: Scott Lee
+ */
 /*“Copyright 2009-2012 DIVIDE-Studio”*/
 /* This file is part of DIVIDE Framework.
 
@@ -365,7 +400,7 @@ public:
 	I32 operator==(const vec4 &_v) { return (fabs(this->x - _v.x) < EPSILON && fabs(this->y - _v.y) < EPSILON && fabs(this->z - _v.z) < EPSILON && fabs(this->w - _v.w) < EPSILON); }
 	I32 operator!=(const vec4 &_v) { return !(*this == _v); }
 
-	vec4 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this); }
+	vec4 &operator=(T _f) { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);  xyz = vec3<T>(x,y,z);}
 	const vec4 operator*(T _f) const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
 	const vec4 operator/(T _f) const {
 		if(fabs(_f) < EPSILON) return *this;
@@ -376,10 +411,10 @@ public:
 	const vec4 operator-() const { return vec4(-x,-y,-z,-w); }
 	const vec4 operator-(const vec4 &_v) const { return vec4(this->x - _v.x,this->y - _v.y,this->z - _v.z,this->w - _v.w); }
 
-	vec4 &operator*=(T _f) { return *this = *this * _f; xyz = vec3<T>(x,y,z);}
-	vec4 &operator/=(T _f) { return *this = *this / _f; xyz = vec3<T>(x,y,z);}
-	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; }
-	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; }
+	vec4 &operator*=(T _f)           { return *this = *this * _f; xyz.set(x,y,z);}
+	vec4 &operator/=(T _f)           { return *this = *this / _f; xyz.set(x,y,z);}
+	vec4 &operator+=(const vec4 &_v) { return *this = *this + _v; xyz.set(x,y,z);}
+	vec4 &operator-=(const vec4 &_v) { return *this = *this - _v; xyz.set(x,y,z);}
 
 	T operator*(const vec3<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w; }
 	T operator*(const vec4<T> &_v) const { return this->x * _v.x + this->y * _v.y + this->z * _v.z + this->w * _v.w; }
@@ -389,14 +424,15 @@ public:
 //	T &operator[](I32 _i) { return this->v[_i]; }
 //	const T &operator[](I32 _i) const { return this->v[_i]; }
 
-	void set(T _x,T _y,T _z,T _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz = vec3<T>(x,y,z);}
-	void reset(void) { this->x = this->y = this->z = this->w = 0; xyz = vec3<T>(x,y,z);}
+	void set(T _x,T _y,T _z,T _w) { this->x=_x; this->y=_y; this->z=_z; this->w=_w; xyz.set(x,y,z);}
+
+	void reset(void) { this->x = this->y = this->z = this->w = 0; xyz.set(x,y,z);}
+
 	bool compare(const vec4 &_v,F32 epsi=EPSILON) { return (fabs(this->x - _v.x) < epsi && fabs(this->y - _v.y) < epsi && fabs(this->z - _v.z) < epsi && fabs(this->w - _v.w) < epsi); }
 
 	vec4 lerp(const vec4 &u, const vec4 &v, T factor) { return ((u * (1 - factor)) + (v * factor)); }
-	vec3<T> xyz; 
 
-	void swap(vec4 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; tmp=w; w=iv.w; iv.w=tmp; }
+	void swap(vec4 &iv) { T tmp=x; x=iv.x; iv.x=tmp; tmp=y; y=iv.y; iv.y=tmp; tmp=z; z=iv.z; iv.z=tmp; tmp=w; w=iv.w; iv.w=tmp;  xyz.set(x,y,z);}
 	void swap(vec4 *iv) { this->swap(*iv); }
 
 	union {
@@ -407,6 +443,7 @@ public:
 		struct {T width,height,depth,key;};
 		T v[4];
 	};
+	vec3<T> xyz; 
 };
 
 template<class T>
@@ -622,6 +659,7 @@ public:
 		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
 		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
 	}
+
 	mat4(T m0, T m1, T m2, T m3,
 		 T m4, T m5, T m6, T m7,
 		 T m8, T m9, T m10,T m11,
@@ -631,6 +669,7 @@ public:
 		this->mat[2] = m2; this->mat[6] = m6; this->mat[10] = m10; this->mat[14] = m14;
 		this->mat[3] = m3; this->mat[7] = m7; this->mat[11] = m11; this->mat[15] = m15;
 	}
+
 	mat4(const vec4<T> &col1,const vec4<T> &col2,const vec4<T> &col3,const vec4<T> &col4){
 		this->mat[0] = col1.x; this->mat[4] = col2.x; this->mat[8]  = col3.x; this->mat[12] = col4.x;
 		this->mat[1] = col1.y; this->mat[5] = col2.y; this->mat[9]  = col3.y; this->mat[13] = col4.y;
@@ -641,27 +680,33 @@ public:
 	mat4(const vec3<T> &v) {
 		translate(v);
 	}
+
 	mat4(T x,T y,T z) {
 		translate(x,y,z);
 	}
+
 	mat4(const vec3<T> &axis,F32 angle) {
 		rotate(axis,angle);
 	}
+
 	mat4(F32 x,F32 y,F32 z,F32 angle) {
 		rotate(x,y,z,angle);
 	}
+
 	mat4(const mat3<T> &m) {
 		this->mat[0] = m[0]; this->mat[4] = m[3]; this->mat[8]  = m[6]; this->mat[12] = 0.0;
 		this->mat[1] = m[1]; this->mat[5] = m[4]; this->mat[9]  = m[7]; this->mat[13] = 0.0;
 		this->mat[2] = m[2]; this->mat[6] = m[5]; this->mat[10] = m[8]; this->mat[14] = 0.0;
 		this->mat[3] = 0.0;  this->mat[7] = 0.0;  this->mat[11] = 0.0;  this->mat[15] = 1.0;
 	}
+
 	mat4(const T *m) {
 		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
 		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
 		this->mat[2] = m[2]; this->mat[6] = m[6]; this->mat[10] = m[10]; this->mat[14] = m[14];
 		this->mat[3] = m[3]; this->mat[7] = m[7]; this->mat[11] = m[11]; this->mat[15] = m[15];
 	}
+
 	mat4(const mat4 &m) {
 		this->mat[0] = m[0]; this->mat[4] = m[4]; this->mat[8]  = m[8];  this->mat[12] = m[12];
 		this->mat[1] = m[1]; this->mat[5] = m[5]; this->mat[9]  = m[9];  this->mat[13] = m[13];
@@ -674,46 +719,32 @@ public:
 					   this->mat[1] * v[0] + this->mat[5] * v[1] + this->mat[9]  * v[2] + this->mat[13],
 					   this->mat[2] * v[0] + this->mat[6] * v[1] + this->mat[10] * v[2] + this->mat[14]);
 	}
+
 	vec4<T> operator*(const vec4<T> &v) const {
 		return vec4<T>(this->mat[0] * v[0] + this->mat[4] * v[1] + this->mat[8]  * v[2] + this->mat[12] * v[3],
 					   this->mat[1] * v[0] + this->mat[5] * v[1] + this->mat[9]  * v[2] + this->mat[13] * v[3],
 					   this->mat[2] * v[0] + this->mat[6] * v[1] + this->mat[10] * v[2] + this->mat[14] * v[3],
 					   this->mat[3] * v[0] + this->mat[7] * v[1] + this->mat[11] * v[2] + this->mat[15] * v[3]);
 	}
+
 	mat4<T> operator*(F32 f) const {
 		return mat4<T>(this->mat[0]  * f, this->mat[1]  * f, this->mat[2]  * f, this->mat[3]  * f,
 					   this->mat[4]  * f, this->mat[5]  * f, this->mat[6]  * f, this->mat[7]  * f,
 					   this->mat[8]  * f, this->mat[9]  * f, this->mat[10] * f, this->mat[11] * f,
 					   this->mat[12] * f, this->mat[13] * f, this->mat[14] * f, this->mat[15] * f);
 	}
-	mat4 operator*(const mat4 &m) const {
-		mat4 ret;
+
+	mat4<T> operator*(const mat4<T> &m) const {
+		mat4<T> ret;
 		Util::Mat4::mmul(this->mat,m.mat,ret.mat);
 		return ret;
-		/*return mat4(this->mat[0] * m[0]  + this->mat[4] * m[1]  + this->mat[8]  * m[2]  + this->mat[12] * m[3],
-					this->mat[1] * m[0]  + this->mat[5] * m[1]  + this->mat[9]  * m[2]  + this->mat[13] * m[3],
-					this->mat[2] * m[0]  + this->mat[6] * m[1]  + this->mat[10] * m[2]  + this->mat[14] * m[3],
-					this->mat[3] * m[0]  + this->mat[7] * m[1]  + this->mat[11] * m[2]  + this->mat[15] * m[3],
-					this->mat[0] * m[4]  + this->mat[4] * m[5]  + this->mat[8]  * m[6]  + this->mat[12] * m[7],
-					this->mat[1] * m[4]  + this->mat[5] * m[5]  + this->mat[9]  * m[6]  + this->mat[13] * m[7],
-					this->mat[2] * m[4]  + this->mat[6] * m[5]  + this->mat[10] * m[6]  + this->mat[14] * m[7],
-					this->mat[3] * m[4]  + this->mat[7] * m[5]  + this->mat[11] * m[6]  + this->mat[15] * m[7],
-					this->mat[0] * m[8]  + this->mat[4] * m[9]  + this->mat[8]  * m[10] + this->mat[12] * m[11],
-					this->mat[1] * m[8]  + this->mat[5] * m[9]  + this->mat[9]  * m[10] + this->mat[13] * m[11],
-					this->mat[2] * m[8]  + this->mat[6] * m[9]  + this->mat[10] * m[10] + this->mat[14] * m[11],
-					this->mat[3] * m[8]  + this->mat[7] * m[9]  + this->mat[11] * m[10] + this->mat[15] * m[11],
-					this->mat[0] * m[12] + this->mat[4] * m[13] + this->mat[8]  * m[14] + this->mat[12] * m[15],
-					this->mat[1] * m[12] + this->mat[5] * m[13] + this->mat[9]  * m[14] + this->mat[13] * m[15],
-					this->mat[2] * m[12] + this->mat[6] * m[13] + this->mat[10] * m[14] + this->mat[14] * m[15],
-					this->mat[3] * m[12] + this->mat[7] * m[13] + this->mat[11] * m[14] + this->mat[15] * m[15]);
-		*/
 	}
 
 	vec4<T> getCol(int index){
 		return vec4<T>(this->mat[0 + (index*4)],this->mat[1 + (index*4)],this->mat[2 + (index*4)],this->mat[3 + (index*4)]);
 	}
 
-	void setCol(int index, const vec4<T>& value){
+	void setCol(I32 index, const vec4<T>& value){
 		this->mat[0 + (index*4)] = value.x;
 		this->mat[1 + (index*4)] = value.y;
 		this->mat[2 + (index*4)] = value.z;
@@ -748,8 +779,8 @@ public:
 					this->mat[12] - m[12], this->mat[13] - m[13], this->mat[14] - m[14], this->mat[15] - m[15]);
 	}
 
-	T &element(I8 i, I8 j)	{	return this->mat[i+j*4]; }
-	const T element(I8 i, I8 j)	const {	return this->mat[i+j*4]; }
+	inline T &element(I8 i, I8 j, bool columnMajor = true)	{return (columnMajor ? this->data[i][j] : this->data[j][i]);}//this->mat[i+j*4]; }
+	inline const T &element(I8 i, I8 j, bool columnMajor = true)	const {return (columnMajor ? this->data[i][j] : this->data[j][i]);}//this->mat[i+j*4]; }
 
 	mat4 &operator*=(F32 f) { return *this = *this * f; }
 	mat4 &operator*=(const mat4 &m) { return *this = *this * m; }
@@ -760,7 +791,7 @@ public:
 	operator const T*() const { return this->mat; }
 	
 	T &operator[](I32 i) { return this->mat[i]; }
-	const T operator[](I32 i) const { return this->mat[i]; }
+	const T &operator[](I32 i) const { return this->mat[i]; }
 	
 	mat4 rotation(void) const {
 		return mat4(this->mat[0], this->mat[1], this->mat[2], 0,
@@ -782,6 +813,7 @@ public:
 					this->mat[2], this->mat[6], this->mat[10], this->mat[14],
 					this->mat[3], this->mat[7], this->mat[11], this->mat[15]);
 	}
+
 	mat4 transpose_rotation(void) const {
 		return mat4(this->mat[0],  this->mat[4],  this->mat[8],  this->mat[3],
 					this->mat[1],  this->mat[5],  this->mat[9],  this->mat[7],
@@ -800,23 +832,6 @@ public:
 	
 	void inverse(mat4& ret) {
 		Util::Mat4::_mm_inverse_ps(this->mat,ret.mat);
-/*		F32 idet = 1.0f / det();
-		ret[0]  =  (this->mat[5] * this->mat[10] - this->mat[9] * this->mat[6]) * idet;
-		ret[1]  = -(this->mat[1] * this->mat[10] - this->mat[9] * this->mat[2]) * idet;
-		ret[2]  =  (this->mat[1] * this->mat[6]  - this->mat[5] * this->mat[2]) * idet;
-		ret[3]  = 0.0;
-		ret[4]  = -(this->mat[4] * this->mat[10] - this->mat[8] * this->mat[6]) * idet;
-		ret[5]  =  (this->mat[0] * this->mat[10] - this->mat[8] * this->mat[2]) * idet;
-		ret[6]  = -(this->mat[0] * this->mat[6]  - this->mat[4] * this->mat[2]) * idet;
-		ret[7]  = 0.0;
-		ret[8]  =  (this->mat[4] * this->mat[9] - this->mat[8] * this->mat[5]) * idet;
-		ret[9]  = -(this->mat[0] * this->mat[9] - this->mat[8] * this->mat[1]) * idet;
-		ret[10] =  (this->mat[0] * this->mat[5] - this->mat[4] * this->mat[1]) * idet;
-		ret[11] = 0.0;
-		ret[12] = -(this->mat[12] * (ret)[0] + this->mat[13] * (ret)[4] + this->mat[14] * (ret)[8]);
-		ret[13] = -(this->mat[12] * (ret)[1] + this->mat[13] * (ret)[5] + this->mat[14] * (ret)[9]);
-		ret[14] = -(this->mat[12] * (ret)[2] + this->mat[13] * (ret)[6] + this->mat[14] * (ret)[10]);
-		ret[15] = 1.0;*/
 	}
 
 	void zero(void) {
@@ -825,12 +840,14 @@ public:
 		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 0.0; this->mat[14] = 0.0;
 		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 0.0;
 	}
+
 	void identity(void) {
 		this->mat[0] = 1.0; this->mat[4] = 0.0; this->mat[8]  = 0.0; this->mat[12] = 0.0;
 		this->mat[1] = 0.0; this->mat[5] = 1.0; this->mat[9]  = 0.0; this->mat[13] = 0.0;
 		this->mat[2] = 0.0; this->mat[6] = 0.0; this->mat[10] = 1.0; this->mat[14] = 0.0;
 		this->mat[3] = 0.0; this->mat[7] = 0.0; this->mat[11] = 0.0; this->mat[15] = 1.0;
 	}
+
 	void rotate(const vec3<T> &axis,F32 angle) {
 		DegToRad(angle);
 		F32 c = (F32)cos(angle);
@@ -862,6 +879,7 @@ public:
 		mat[5] =  c;  mat[9]  = -s; 
 		mat[6] =  s;  mat[10] =  c;
 	}
+
 	void rotate_y(F32 angle) {
 		DegToRad(angle);
 		F32 c = (F32)cos(angle);
@@ -869,6 +887,7 @@ public:
 		mat[0] =  c; mat[8]  =  s;
 		mat[2] = -s; mat[10] =  c;
 	}
+
 	void rotate_z(F32 angle) {
 		DegToRad(angle);
 		F32 c = (F32)cos(angle);
@@ -887,14 +906,17 @@ public:
 	void scale(F32 x,F32 y,F32 z) {
 		scale(vec3(x,y,z));
 	}
+
 	void translate(const vec3<T> &v) {
 		this->mat[12] = v.x;
 		this->mat[13] = v.y;
 		this->mat[14] = v.z;
 	}
+
 	void translate(F32 x,F32 y,F32 z) {
 		translate(vec3(x,y,z));
 	}
+
 	void reflect(const vec4<T> &plane) {
 		F32 x = plane.x;
 		F32 y = plane.y;
@@ -907,6 +929,7 @@ public:
 		this->mat[2] = -x * z2;       this->mat[6] = -y * z2;       this->mat[10] = 1.0f - z * z2; this->mat[14] = -plane.w * z2;
 		this->mat[3] = 0.0;           this->mat[7] = 0.0;           this->mat[11] = 0.0;           this->mat[15] = 1.0;
 	}
+
 	void reflect(F32 x,F32 y,F32 z,F32 w) {
 		reflect(vec4<F32>(x,y,z,w));
 	}
@@ -919,6 +942,7 @@ public:
 		this->mat[2] = 0.0;      this->mat[6] = 0.0;      this->mat[10] = -(zfar + znear) / (zfar - znear); this->mat[14] = -(2.0f * zfar * znear) / (zfar - znear);
 		this->mat[3] = 0.0;      this->mat[7] = 0.0;      this->mat[11] = -1.0;                             this->mat[15] = 0.0;
 	}
+
 	void look_at(const vec3<T> &eye,const vec3<T> &dir,const vec3<T> &up) {
 		vec3<T> x,y,z;
 		mat4<T> m0,m1;
@@ -935,11 +959,19 @@ public:
 		m1.translate(-eye);
 		*this = m0 * m1;
 	}
+
 	void look_at(const F32 *eye,const F32 *dir,const F32 *up) {
 		look_at(vec3(eye),vec3(dir),vec3(up));
 	}
 
-	T mat[16];
+	union{
+		T mat[16];
+		T data[4][4];
+		T a1, a2, a3, a4;
+		T b1, b2, b3, b4;
+		T c1, c2, c3, c4;
+		T d1, d2, d3, d4;
+	};
 	//Eigen::Matrix<T,4,4> _emat;
 };
 template<class T>
@@ -947,6 +979,21 @@ inline mat3<T>::mat3(const mat4<T> &m) {
 	this->mat[0] = m[0]; this->mat[3] = m[4]; this->mat[6] = m[8];
 	this->mat[1] = m[1]; this->mat[4] = m[5]; this->mat[7] = m[9];
 	this->mat[2] = m[2]; this->mat[5] = m[6]; this->mat[8] = m[10];
+}
+
+/// Converts a point from world coordinates to projection coordinates
+///(from Y = depth, Z = up to Y = up, Z = depth)
+inline void projectPoint(const vec3<F32>& position,vec3<F32>& output){
+	output.x = position.x;
+	output.y = position.z;
+	output.z = position.y;
+}
+/// Converts a point from world coordinates to projection coordinates
+///(from Y = depth, Z = up to Y = up, Z = depth)
+inline void projectPoint(const vec3<I32>& position, vec3<I32>& output){
+	output.x = position.x;
+	output.y = position.z;
+	output.z = position.y;
 }
 
 #endif

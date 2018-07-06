@@ -70,7 +70,8 @@ void Light::generateShadowMaps(){
 	gfx.lockProjection();
 	///Lock our model view matrix so no camera transforms will be saved beyond this light's scope
 	gfx.lockModelView();
-
+	_zNear = _par.getParam<F32>("zNear");
+	_zFar  = _par.getParam<F32>("zFar");
 	///Set the camera to the light's view
 	setCameraToLightView();
 	///For each depth pass
@@ -238,16 +239,15 @@ void Light::renderFromLightViewSpot(U8 depthPass){
 }
 
 void Light::renderFromLightViewDirectional(U8 depthPass){
-	ParamHandler& par = ParamHandler::getInstance();
 	///Some ortho values to create closer and closer light views
 	D32 lightOrtho[3] = {5.0, 10.0, 50.0};
 	///ToDo: Near and far planes. Should optimize later! -Ionut
-	_zPlanes = vec2<F32>(par.getParam<F32>("zNear"),par.getParam<F32>("zFar"));
+	_zPlanes = vec2<F32>(_zNear, _zFar);
 	///Set the current projection depending on the current depth pass
 	GFX_DEVICE.setOrthoProjection(vec4<F32>(-lightOrtho[depthPass], 
-													  lightOrtho[depthPass],
-													 -lightOrtho[depthPass], 
-													  lightOrtho[depthPass]),
-												_zPlanes);
+											 lightOrtho[depthPass],
+											-lightOrtho[depthPass], 
+											 lightOrtho[depthPass]),
+											_zPlanes);
 	Frustum::getInstance().Extract(_eyePos - _lightPos);
 }

@@ -41,9 +41,9 @@ namespace Navigation {
 		U32 _id;
 		bool _loop;
 
-		std::vector<vec3<F32> >   _positions;
-		std::vector<Quaternion>   _rotations;
-		std::vector<U32>          _times;
+		std::vector<vec3<F32> >         _positions;
+		std::vector<Quaternion<F32> >   _rotations;
+		std::vector<U32>                _times;
 	};
 };
 

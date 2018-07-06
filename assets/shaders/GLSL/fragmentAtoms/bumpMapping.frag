@@ -4,7 +4,7 @@ uniform float parallax_factor;
 uniform float relief_factor;
 uniform float zNear;
 uniform float zFar;
-
+uniform int mode;
 #define MODE_PHONG      0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2

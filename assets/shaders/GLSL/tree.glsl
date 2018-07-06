@@ -7,12 +7,12 @@ uniform float windSpeed;
 
 uniform mat4 modelViewInvMatrix;
 uniform mat4 modelViewProjectionMatrix;
-
+#include "vboInputData.vert"
 #include "lightingDefaults.vert"
 
 void main(void){
-	
-	vec4 position = gl_Vertex;
+	computeData();
+	vec4 position = vertexData;
 	
 	vec4 vertexM = gl_TextureMatrix[0] * gl_ModelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
 	position.x += 0.05 * cos(time*windSpeed) * cos(position.x) * sin(position.x) *windDirectionX;
@@ -25,8 +25,6 @@ void main(void){
 
 -- Fragment.Texture
 
-uniform bool enableFog;
-
 #include "phong_lighting.frag"
 #include "fog.frag"
 
@@ -35,24 +33,12 @@ void main (void){
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
 
-	if(hasOpacity ){
-		vec4 alpha = texture2D(opacityMap, texCoord[0].st);
-		if(alpha.a < 0.2) discard;
-	}
-
 	vec4 color = Phong(texCoord[0].st, vNormalMV, vPixToEyeTBN, vPixToLightTBNcurrent);
 	
-	if(color.a < 0.2) discard;	
-	
-	if(enableFog){
-		color = applyFog(color);
-	}
-	gl_FragData[0] = color;
+	gl_FragData[0] = applyFog(color);
 }
 	
 -- Fragment.Bump
-
-uniform bool enableFog;
 
 #include "phong_lighting.frag"
 #include "bumpMapping.frag"
@@ -62,10 +48,7 @@ void main (void){
 
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
-	if(hasOpacity ){
-		vec4 alpha = texture2D(opacityMap, texCoord[0].st);
-		if(alpha.a < 0.2) discard;
-	}
+
 	vec4 color;
 	//Else, use appropriate lighting / bump mapping / relief mapping / normal mapping
 	if(mode == MODE_PHONG)
@@ -77,10 +60,5 @@ void main (void){
 	else if(mode == MODE_PARALLAX)
 		color = NormalMapping(texCoord[0].st, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 	
-	if(color.a < 0.2) discard;	
-	
-	if(enableFog){
-		color = applyFog(color);
-	}
-	gl_FragData[0] = color;
+	gl_FragData[0] = applyFog(color);
 }

@@ -19,31 +19,35 @@
 #define BOUNDINGBOX_H_
 
 #include "Core/Math/Headers/Ray.h"
+#include "Utility/Headers/CRC.h"
 ///ToDo: -Add BoundingSphere -Ionut
 class BoundingBox {
 public:
-	BoundingBox() {
+	BoundingBox() : _computed(false),
+				    _visibility(false),
+				    _dirty(true)
+	{
 		_min.reset();
 		_max.reset();
-		_computed = false;
-		_visibility = false;
-		_dirty = true;
+		_points.resize(8, vec3<F32>());
+		_guid = Util::CRC32(this,sizeof(BoundingBox));
 	}
 
-	BoundingBox(const vec3<F32>& min, const vec3<F32>& max){
-		_min = min;
-		_max = max;
-		_computed = false;
-		_visibility = false;
-		_dirty = true;
+	BoundingBox(const vec3<F32>& min, const vec3<F32>& max) : _computed(false),
+														      _visibility(false),
+															  _dirty(true),
+															  _min(min),
+															  _max(max)
+	{
+		_points.resize(8, vec3<F32>());
+		_guid = Util::CRC32(this,sizeof(BoundingBox));
 	}
 
 	inline bool ContainsPoint(const vec3<F32>& point) const	{
 		return (point.x>=_min.x && point.y>=_min.y && point.z>=_min.z && point.x<=_max.x && point.y<=_max.y && point.z<=_max.z);
 	};
 
-	bool  Collision(const BoundingBox& AABB2)
-	{
+	inline bool  Collision(const BoundingBox& AABB2) {
 
 		if(_max.x < AABB2._min.x) return false;
 		if(_max.y < AABB2._min.y) return false;
@@ -55,6 +59,8 @@ public:
 
         return true;
 	}
+
+	inline bool Compare(const BoundingBox& bb) {return _guid == bb._guid;}
 
 	/// Optimized method
 	inline bool intersect(const Ray &r, F32 t0, F32 t1) const {
@@ -86,7 +92,7 @@ public:
 			t_max = tz_max;
 
 		return ( (t_min < t1) && (t_max > t0) );
-}
+	}
 	
 	inline void Add(const vec3<F32>& v)	{
 		if(v.x > _max.x)	_max.x = v.x;
@@ -136,6 +142,7 @@ public:
 		_max.z *= v.z;
 		_dirty = true;
 	}
+
 	inline void MultiplyMin(const vec3<F32>& v){
 		_min.x *= v.x;
 		_min.y *= v.y;
@@ -143,21 +150,16 @@ public:
 		_dirty = true;
 	}
 
-	bool ComputePoints()  const
-	{
-		/*
-		if(!points)	return false;
+	void ComputePoints()  {
 
-		points[0] = vec3<F32>(_min.x, _min.y, _min.z);
-		points[1] = vec3<F32>(_max.x, _min.y, _min.z);
-		points[2] = vec3<F32>(_max.x, _max.y, _min.z);
-		points[3] = vec3<F32>(_min.x, _max.y, _min.z);
-		points[4] = vec3<F32>(_min.x, _min.y, _max.z);
-		points[5] = vec3<F32>(_max.x, _min.y, _max.z);
-		points[6] = vec3<F32>(_max.x, _max.y, _max.z);
-		points[7] = vec3<F32>(_min.x, _max.y, _max.z);
-		*/
-		return true;
+		_points[0].set(_min.x, _min.y, _min.z);
+		_points[1].set(_max.x, _min.y, _min.z);
+		_points[2].set(_max.x, _max.y, _min.z);
+		_points[3].set(_min.x, _max.y, _min.z);
+		_points[4].set(_min.x, _min.y, _max.z);
+		_points[5].set(_max.x, _min.y, _max.z);
+		_points[6].set(_max.x, _max.y, _max.z);
+		_points[7].set(_min.x, _max.y, _max.z);
 	}
 
 	void Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
@@ -171,8 +173,8 @@ public:
 
 		for (U8 i = 0; i < 3; ++i)		{
 			for (U8 j = 0; j < 3; ++j)			{
-				a = mat.element(i,j) * old_min[j];
-				b = mat.element(i,j) * old_max[j];
+				a = mat.element(i,j,false) * old_min[j];
+				b = mat.element(i,j,false) * old_max[j]; /// Transforms are usually row major
 
 				if (a < b) {
 					_min[i] += a;
@@ -196,6 +198,7 @@ public:
 	void clean(){
 		_extent = (_max-_min);
 		_center = (_max+_min)*0.5f;
+		ComputePoints();
 		_dirty = false;
 	}
 
@@ -242,6 +245,8 @@ private:
 	vec3<F32> _min, _max;
 	vec3<F32> _center, _extent;
 	mat4<F32> _oldMatrix;
+	std::vector<vec3<F32> > _points;
+	U32 _guid;
 };
 
 #endif

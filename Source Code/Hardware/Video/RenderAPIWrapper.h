@@ -21,6 +21,8 @@
 #include "Core/Math/Headers/MathClasses.h"
 #include "RenderAPIEnums.h"
 #include <boost/function.hpp>
+#include <vector>
+
 ///Simple frustum representation
 struct frustum{
 
@@ -90,7 +92,7 @@ protected:
 	
 	virtual void initHardware() = 0;
 	virtual void closeRenderingApi() = 0;
-	virtual void initDevice() = 0;
+	virtual void initDevice(U32 targetFPS) = 0;
 
 	/*Rendering States*/
 	virtual void clearBuffers(U8 buffer_mask) = 0;
@@ -121,7 +123,8 @@ protected:
 	/*Object viewing*/
 
 	/*Primitives Rendering*/
-	virtual void drawBox3D(vec3<F32> min, vec3<F32> max) = 0;
+	virtual void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) = 0;
+	virtual void drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset) = 0;
 	/*Primitives Rendering*/
 
 	/*Mesh Rendering*/

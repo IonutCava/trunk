@@ -1,6 +1,6 @@
 -- Vertex
 //based on: http://yannick.gerometta.free.fr/base.php?id=glsldemo
-
+#include "vboInputData.vert"
 varying vec4 vPixToLightTBN[1];
 varying vec3 vPixToEyeTBN;
 varying vec3 vPosition;
@@ -24,25 +24,24 @@ uniform mat4 modelViewProjectionMatrix;
 #define LIGHT_SPOT				2.0
 				
 void main(void){
-
-	gl_Position = ftransform();
+	computeData();
 	
 	// Position du vertex
-	vPosition = gl_Vertex.xyz;
+	vPosition = vertexData.xyz;
 	
 	// Position du vertex si le terrain est compris entre 0.0 et 1.0
-	vPositionNormalized = (gl_Vertex.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
+	vPositionNormalized = (vertexData.xyz - bbox_min.xyz) / (bbox_max.xyz - bbox_min.xyz);
 	
 	texCoord[0].st = vPositionNormalized.xz;
-	
-	vec3 vTangent = gl_MultiTexCoord0.xyz;
-	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
-	vec3 t = normalize(gl_NormalMatrix * vTangent);
+
+	vec3 vTangent = tangentData;
+	vec3 n = normalize(gl_NormalMatrix * normalData);
+	vec3 t = normalize(gl_NormalMatrix * tangentData);
 	vec3 b = cross(n, t);
 	//Get the light's position in model's space
 	vec4 vLightPosMV = gl_LightSource[0].position;	
 	//Get the vertex's position in model's space
-	vVertexMV = vec3(gl_ModelViewMatrix * gl_Vertex);	
+	vVertexMV = vec3(gl_ModelViewMatrix * vertexData);	
 	if(length(vTangent) > 0){
 		vNormalMV = b;
 	}else{
@@ -86,8 +85,10 @@ void main(void){
 		// position multiplied by the inverse of the camera matrix
 		//pos = modelViewInvMatrix * pos;
 		// position multiplied by the light matrix. The vertex's position from the light's perspective
-		texCoord[1] = lightProjectionMatrix * gl_Vertex;
+		texCoord[1] = lightProjectionMatrix * vertexData;
 	}
+
+	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 }
 
 -- Fragment
@@ -131,7 +132,6 @@ vec4 ReliefMapping(vec2 uv);
 vec4 CausticsColor();
 bool isUnderWater();
 
-uniform bool enableFog;
 #include "fog.frag"
 #include "shadowMapping.frag"
 
@@ -145,16 +145,13 @@ void main (void)
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
 	
 	vec4 color = NormalMapping(texCoord[0].st, vPixToEyeTBN, vPixToLightTBNcurrent, false);
-
-	if(enableFog){
-		color = applyFog(color);
-	}
-
+	
 	if(isUnderWater()) {
 		float alpha = (water_height - vPosition.y) / (2*(water_height - bbox_min.y));
 		color = (1-alpha) * color + alpha * CausticsColor();
 	}
-	gl_FragColor = color;
+
+	gl_FragData[0] = applyFog(color);
 }
 
 bool isUnderWater(){
@@ -223,23 +220,7 @@ vec4 NormalMapping(vec2 uv, vec3 vPixToEyeTBN, vec4 vPixToLightTBN, bool bParall
 	vec4 cDiffuse = gl_LightSource[0].diffuse * gl_FrontMaterial.diffuse * iDiffuse;	
 	vec4 cSpecular = gl_LightSource[0].specular * gl_FrontMaterial.specular * iSpecular;
 	
-	float shadow = 1.0;
-	if(enable_shadow_mapping != 0) {
-		/////////////////////////
-		// SHADOW MAPS
-		vec3 vPixPosInDepthMap;
-		//Compute shadow value for current fragment
-		shadow = ShadowMapping(vPixPosInDepthMap);
-		//And add shadow value to current diffuse color and specular values
-		cDiffuse = (shadow) * cDiffuse;
-		cSpecular = (shadow) * cSpecular;
-		// Texture projection :
-		if(enable_shadow_mapping == 2) {
-			vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
-			cDiffuse.xyz = mix(cDiffuse.xyz, cProjected.xyz, shadow/2.0);
-		}
-	}
-	
+	applyShadow(cDiffuse, cAmbient, cSpecular, cDiffuse);
 
 	return cAmbient * cBase + cDiffuse * cBase + cSpecular;
 }

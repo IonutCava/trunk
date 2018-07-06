@@ -338,8 +338,8 @@ namespace Navigation {
 
 		U32 numVert = 1;
 
-		std::map<U32, vec3<F32> > globalPointIdxMap;
-		std::map<U32, U32> translationMap;
+		unordered_map<U32, vec3<F32> > globalPointIdxMap;
+		unordered_map<U32, U32> translationMap;
 		std::vector<vec3<F32> > vertexVector;
 		std::vector<vec3<I32> > faceVector;
 

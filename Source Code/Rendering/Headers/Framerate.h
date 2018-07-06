@@ -55,7 +55,8 @@ private:
 		_maxFps(1.175494351e-38F),
 		_minFps(3.402823466e+38F),
 		_targetFps(60),
-		_speedfactor(1){}
+		_speedfactor(1),
+		_init(false){}
   F32           _targetFps;
   F32           _fps;
   F32           _speedfactor;
@@ -66,7 +67,7 @@ private:
   LI			_currentticks;
   LI			_framedelay;
   LI			_startupTime;
-	
+  bool          _init;	
   
 
 public:
@@ -74,7 +75,7 @@ public:
   void          SetSpeedFactor();
   F32           getFps(){return _fps;}
   F32           getSpeedfactor(){boost::mutex::scoped_lock lock(_speedLockMutex); return _speedfactor;}
-  F32           getElapsedTime(){QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
+  F32           getElapsedTime(){if(!_init) return 0.0f; QueryPerformanceCounter(&_currentticks); return (F32)(_currentticks.QuadPart-_startupTime.QuadPart) *1000/(F32)_tickspersecond.QuadPart;}
   void          benchmark();
   boost::mutex  _speedLockMutex;
 END_SINGLETON

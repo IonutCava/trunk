@@ -1,17 +1,16 @@
 -- Vertex
+#include "vboInputData.vert"
+varying vec2 texCoord[2];
 
-varying vec4 texCoord[2];
-
-void main(){
-
-  texCoord[0] = gl_MultiTexCoord0;
-  gl_Position = ftransform();
-
+void main(void){
+    computeData();
+    texCoord[0] = texCoordData;
+    gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 } 
 
 -- Fragment
 
-varying vec4 texCoord[2];
+varying vec2 texCoord[2];
 uniform sampler2D texScreen;
 uniform vec2 size;
 uniform bool horizontal;
@@ -20,7 +19,7 @@ uniform int kernel_size;
 void main(){
 
 	vec2 pas = 1.0/size;
-	vec2 uv = texCoord[0].st;
+	vec2 uv = texCoord[0];
 	vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
 	float j = 0;
 	

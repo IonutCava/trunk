@@ -24,10 +24,8 @@ class d3dVertexBufferObject : public VertexBufferObject {
 
 public:
 	bool        Create(bool staticDraw = true) {return true;}
-	bool		Create(U32 usage) {return true;}
 
 	void		Destroy() {}
-
 	
 	void		Enable() {}
 	void		Disable() {}
@@ -37,11 +35,10 @@ public:
 	d3dVertexBufferObject() : VertexBufferObject(), _created(false) {}
 	~d3dVertexBufferObject() {Destroy();}
 
+     void setShaderProgram(ShaderProgram* const shaderProgram);
+
 private:
-	void Enable_VA() {}	
-	void Enable_VBO() {}	
-	void Disable_VA() {}	
-	void Disable_VBO() {}
+	bool CreateInternal() {return true;}
 
 private:
 	bool _created; 

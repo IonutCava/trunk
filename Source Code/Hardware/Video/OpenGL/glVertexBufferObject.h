@@ -35,19 +35,29 @@ public:
 
 	glVertexBufferObject();
 	~glVertexBufferObject() {Destroy();}
+	void setShaderProgram(ShaderProgram* const shaderProgram);
 
 private:
+	/// Internally create the VBO
+	bool CreateInternal();
 	void Enable_VA();	
 	void Enable_VBO();	
+	void Enable_Shader_VBO();
 	void Disable_VA();	
 	void Disable_VBO();
-
-	/// Internally create the VBO
-	bool Create(U32 usage);
+	void Disable_Shader_VBO();
 
 private:
 	bool _created; ///< VBO's can be auto-created as GL_STATIC_DRAW if Enable() is called before Create();
 				   ///< Tis helps with multi-threaded asset loading without creating separate GL contexts for each thread
+
+	I32 _positionDataLocation;
+	I32 _normalDataLocation;
+	I32 _texCoordDataLocation;
+	I32 _tangentDataLocation;
+	I32 _biTangentDataLocation;
+	I32 _boneIndiceDataLocation;
+	I32 _boneWeightDataLocation;
 
 };
 

@@ -66,9 +66,12 @@ public:
 	
 	virtual		void    render(SceneGraphNode* const sgn);
 
-	inline VertexBufferObject* const getGeometryVBO() {return _geometry;}
-	inline std::vector<U16>&   getIndices()     {return _indices; }
+	inline VertexBufferObject* const getGeometryVBO() {return _geometry;} ///<Please use IBO's ...
+	inline vec2<U16>&          getIndiceLimits()      {return _indiceLimits; }
 	virtual void onDraw();
+
+	/// Called from SceneGraph "sceneUpdate"
+	virtual void sceneUpdate(D32 sceneTime) {}
 
 protected:
 	virtual void computeNormals() {};
@@ -78,7 +81,7 @@ protected:
 	bool		   _update, _refreshVBO;
 	PrimitiveType  _geometryType;
 	VertexBufferObject*   _geometry;
-	std::vector<U16>      _indices;
+	vec2<U16>             _indiceLimits;
 };
 
 #endif

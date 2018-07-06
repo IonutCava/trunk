@@ -87,8 +87,8 @@ public:
 	void updateTickInterval(F32 tickInterval){_tickInterval = tickInterval;}
 	void updateTickCounter(U32 numberOfTicks){_numberOfTicks = numberOfTicks;}
 	void startEvent();
-	void stopEvent(){if(_end == true) return; assert(_thisThread); _end = true; _thisThread->join();}
-	void interruptEvent(){assert(_thisThread); _end = true; _thisThread->interrupt(); _thisThread->join();}
+	void stopEvent(){if(_end == true) return; _end = true; _thisThread->join();}
+	void interruptEvent(){ _end = true; _thisThread->interrupt(); _thisThread->join();}
 
 private:
 	std::string _name;

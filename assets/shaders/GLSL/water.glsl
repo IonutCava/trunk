@@ -1,5 +1,5 @@
 -- Vertex
-
+#include "vboInputData.vert"
 varying vec3 vPixToLight;		
 varying vec3 vPixToEye;	
 varying vec4 vPosition;
@@ -12,16 +12,18 @@ uniform mat4 lightProjectionMatrix;
 
 void main(void)
 {
-	gl_Position = ftransform();
+	computeData();
 	
-	vPosition = gl_Vertex;
-	vec3 vPositionNormalized = (gl_Vertex.xyz - water_bb_min.xyz) / (water_bb_max.xyz - water_bb_min.xyz);
+	
+	vPosition = vertexData;
+	vec3 vPositionNormalized = (vertexData.xyz - water_bb_min.xyz) / (water_bb_max.xyz - water_bb_min.xyz);
 	texCoord[0].st = vPositionNormalized.xz;
 	
 	vPixToLight = -(gl_LightSource[0].position.xyz);
-	vPixToEye = -vec3(gl_ModelViewMatrix * gl_Vertex);	
+	vPixToEye = -vec3(gl_ModelViewMatrix * vertexData);	
 
-	vVertexFromLightView = lightProjectionMatrix * gl_Vertex;	
+	vVertexFromLightView = lightProjectionMatrix * vertexData;
+	gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 	
 }
 

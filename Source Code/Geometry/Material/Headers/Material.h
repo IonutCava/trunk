@@ -120,6 +120,16 @@ public:
   inline bool isDoubleSided() {return _doubleSided;}
          bool isTranslucent();
 
+  inline bool shaderProgramChanged() {
+	  if(_shaderProgramChanged) {
+		  _shaderProgramChanged = false;
+		  return true;
+	  }else{
+		  return false;
+	  }
+  }
+
+
   TextureOperation getTextureOperation(U32 op);
 
   void computeLightShaders(); //Set shaders;
@@ -143,6 +153,7 @@ private:
   bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;
+  bool _shaderProgramChanged;
   ShaderProgram* _shaderRef;
 
   /// use this map to add more render states mapped to a specific state

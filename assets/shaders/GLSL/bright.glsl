@@ -1,21 +1,21 @@
 -- Vertex
-
-varying vec4 texCoord[2];
+#include "vboInputData.vert"
+varying vec2 texCoord[2];
 
 void main(){
-
-  texCoord[0] = gl_MultiTexCoord0;
-  gl_Position = ftransform();
+  computeData();
+  texCoord[0] = texCoordData;
+  gl_Position = gl_ModelViewProjectionMatrix * vertexData;
 } 
 
 -- Fragment
 
-varying vec4 texCoord[2];
+varying vec2 texCoord[2];
 uniform sampler2D texScreen;
 uniform float threshold;
 
 void main(){	
-	vec4 value = texture2D(texScreen, texCoord[0].st);
+	vec4 value = texture2D(texScreen, texCoord[0]);
 		
 	if( (value.r + value.g + value.b)/3.0 > threshold )
 		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);

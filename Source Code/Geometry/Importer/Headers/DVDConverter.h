@@ -40,12 +40,14 @@
 #include "resource.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Hardware/Video/Texture.h"
+#include <assimp/types.h>
 
 class  Mesh;
 class  SubMesh;
 struct aiScene;
 struct aiMesh;
 struct aiMaterial;
+struct aiNode;
 enum   aiTextureOp;
 enum   aiTextureMapMode;
 DEFINE_SINGLETON( DVDConverter )
@@ -53,14 +55,14 @@ DEFINE_SINGLETON( DVDConverter )
 public:
     Mesh* load(const std::string& file);
 private:
-	SubMesh* loadSubMeshGeometry(aiMesh* source, U8 count);
-	Material* loadSubMeshMaterial(aiMaterial* source, const std::string& materialName);
+	SubMesh* loadSubMeshGeometry(const aiMesh* source, U8 count);
+	Material* loadSubMeshMaterial(const aiMaterial* source, const std::string& materialName);
 	Material::TextureOperation aiTextureOpToTextureOperation(aiTextureOp op);
 	Material::ShadingMode      shadingModeInternal(I32 mode);
 	Texture::TextureWrap       aiTextureMapModeToInternal(aiTextureMapMode mode);
 
 private:
-	const aiScene* scene;
+	const aiScene* _aiScenePointer;
 	U32   _ppsteps;
 	std::string _fileLocation;
 	std::string _modelName;

@@ -382,7 +382,7 @@ Resource* ResourceManager::loadResource(const string& name){
 	if(_resDB.find(name) != _resDB.end()){
 		value = _resDB[name];
 		value->createCopy(); 
-		PRINT_FN("ResourceManager: returning resource [ %s ]. Ref count: %d",name.c_str(),value->getRefCount());
+		D_PRINT_FN("ResourceManager: returning resource [ %s ]. Ref count: %d",name.c_str(),value->getRefCount());
 	}else{
 		PRINT_FN("ResourceManager: loading resource [ %s ]",name.c_str());
 	}

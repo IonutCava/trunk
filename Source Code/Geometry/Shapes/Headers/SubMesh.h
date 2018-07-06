@@ -37,6 +37,8 @@ and a name.
 #include "Hardware/Video/VertexBufferObject.h"
 
 class Mesh;
+class SceneAnimator;
+struct aiScene;
 class SubMesh : public Object3D {
 
 public:
@@ -44,35 +46,70 @@ public:
 									   _visibleToNetwork(true),
 									   _render(true),
 									   _id(0),
-									   _parentMesh(NULL)
+									   _parentMesh(NULL),
+									   _renderSkeleton(false),
+									   _softwareSkinning(false),
+							           _deltaTime(0),
+									   _hasAnimations(false),
+									   _currentAnimationID(-1),
+									   _currentFrameIndex(-1),
+									   _animator(NULL)
 	{
 		/// 3D objects usually requires the VBO to be recomputed on creation. mesh objects do not.
 		_refreshVBO = false;
 	}
 
-
-
-	~SubMesh(){}
+	~SubMesh();
 
 	bool load(const std::string& name) {return true;}
 	bool unload();
 	bool computeBoundingBox(SceneGraphNode* const sgn);
+	void updateTransform(SceneGraphNode* const sgn);
 	inline U32  getId() {return _id;}
 	/// When loading a submesh, the ID is the node index from the imported scene
 	/// scene->mMeshes[n] == (SubMesh with _id == n)
 	inline void setId(U32 id) {_id = id;}
-
+	void postLoad(SceneGraphNode* const sgn);
 	inline Mesh* getParentMesh() {return _parentMesh;}
 
 	void onDraw();
+
+	/// Called from SceneGraph "sceneUpdate"
+	void sceneUpdate(D32 sceneTime);
+	std::vector<mat4<F32> >& GetTransforms();
+	bool createAnimatorFromScene(const aiScene* scene,U8 subMeshPointer);
+	void renderSkeleton();
+	void setSceneMatrix(const mat4<F32>& sceneMatrix);
+	void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+
 protected:
 	friend class Mesh;
 	inline void setParentMesh(Mesh* const parentMesh) {_parentMesh = parentMesh;}
+	bool _hasAnimations;
+	friend class DVDConverter;
+	mat4<F32> _sceneRootMatrix;
 
 private:
 	bool _visibleToNetwork, _render;
 	U32 _id;
 	Mesh* _parentMesh;
+	std::vector<vec3<F32> > _origVerts;
+	/// Animation player to animate the mesh if necessary
+	SceneAnimator* _animator;
+	/// bone transforms for the entire submesh
+	std::vector<mat4<F32> > _transforms;
+	D32 _deltaTime;
+	bool _renderSkeleton;
+	bool _softwareSkinning;
+	/// Current animation ID
+	U32 _currentAnimationID;
+	/// Current animation frame wrapped in animation time [0 ... 1]
+	U32 _currentFrameIndex;
+	///BoundingBoxes for every frame
+	typedef unordered_map<U32 /*frame index*/, BoundingBox>  boundingBoxPerFrame;
+	boundingBoxPerFrame tempHolder;
+	///store a map of bounding boxes for every animation at every frame
+	unordered_map<U32 /*animation ID*/, boundingBoxPerFrame> _boundingBoxes;
 };
 
 #endif

@@ -32,7 +32,7 @@ namespace Navigation {
 
 	public: //ToDo: add accessors 
 		vec3<F32>  _position;
-		Quaternion _orientation;
+		Quaternion<F32> _orientation;
 		U32        _time;
 
 	private:

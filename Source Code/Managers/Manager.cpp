@@ -43,7 +43,7 @@ bool Manager::remove(Resource* const resource,bool force){
 	if(find(name)){
 		if(resource->getRefCount() > 1 && !force) {
 			resource->removeCopy();
-			PRINT_FN("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
+			D_PRINT_FN("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
 			return false; //do not delete pointer
 		}else{
 			PRINT_FN("Removing resource: [ %s ].",name.c_str());

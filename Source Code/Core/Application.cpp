@@ -73,9 +73,13 @@ void Application::DrawSceneStatic(){
 
 bool Application::DrawScene(){
 	_camera->RenderLookAt();	
-	PHYSICS_DEVICE.update();
-	_scene.preRender();
 
+	_scene.updateSceneState(_currentTime);
+
+	PHYSICS_DEVICE.update();
+
+	_scene.preRender();
+	
 	/// Inform listeners that we finished pre-rendering
 	FrameEvent evt;
 	FrameListenerManager::getInstance().createEvent(FRAME_PRERENDER_END,evt);

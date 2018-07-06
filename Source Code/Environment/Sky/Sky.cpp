@@ -43,6 +43,7 @@ bool Sky::load() {
 	ResourceDescriptor skyShaderDescriptor("sky");
 	_skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
 	assert(_skyShader);
+	//_sky->getGeometryVBO()->setShaderProgram(_skyShader);
 	PRINT_FN("Generated sky cubemap and sun OK!");
 	///The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
 	addToDrawExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
@@ -89,6 +90,7 @@ void Sky::drawSkyAndSun() const {
 		_skyShader->UniformTexture("texSky", 0);
 		_skyShader->Uniform("enable_sun", true);
 		_skyShader->Uniform("sun_vector", _sunVect);
+
 		GFX_DEVICE.setObjectState(_skyNode->getTransform());
 		GFX_DEVICE.renderModel(_sky);
 		GFX_DEVICE.releaseObjectState(_skyNode->getTransform());

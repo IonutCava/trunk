@@ -29,16 +29,18 @@ public:
 		_scaleMatrix.identity();
 		_translationMatrix.identity();
 		_parentMatrix.identity();
+		_globalMatrix.identity();
 		_scale = vec3<F32>(1,1,1);
 	}
 
-	Transform(const Quaternion& orientation, const vec3<F32>& translation, const vec3<F32>& scale) : 
+	Transform(const Quaternion<F32>& orientation, const vec3<F32>& translation, const vec3<F32>& scale) : 
 			  _orientation(orientation), _translation(translation), _scale(scale), _dirty(true){
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();
 		_translationMatrix.identity();
 		_parentMatrix.identity();
+		_globalMatrix.identity();
 	}
 
 	void setPosition(const vec3<F32>& position){
@@ -119,7 +121,7 @@ public:
 		_dirty = true;
 	}
 
-	void rotateQuaternion(const Quaternion& quat){
+	void rotateQuaternion(const Quaternion<F32>& quat){
 		_orientation = quat; 
 		_rotationMatrix = _orientation.getMatrix();
 		_dirty = true;
@@ -128,15 +130,14 @@ public:
 	inline void rotateX(F32 angle){this->rotate(vec3<F32>(1,0,0),angle);}
 	inline void rotateY(F32 angle){this->rotate(vec3<F32>(0,1,0),angle);}
 	inline void rotateZ(F32 angle){this->rotate(vec3<F32>(0,0,1),angle);}
-
-	inline mat4<F32> const& getRotationMatrix() {return _orientation.getMatrix();}
-
+	inline mat4<F32> const& getRotationMatrix() { return _orientation.getMatrix();}
 	inline mat4<F32> const& getParentMatrix()   const {return _parentMatrix;}
 	inline vec3<F32> const& getPosition()       const {return _translation;}
 	inline vec3<F32> const& getScale()          const {return _scale;}
 
-	inline Quaternion const& getOrientation() const {return _orientation;}
-	mat4<F32> const& getMatrix() {this->applyTransforms(); return _worldMatrix;}
+	inline Quaternion<F32> const& getOrientation() const {return _orientation;}
+	inline mat4<F32> const& getMatrix()       {this->applyTransforms(); return this->_worldMatrix;}
+	inline mat4<F32> const& getGlobalMatrix() {this->applyTransforms(); return this->_globalMatrix;}
 
 	void applyTransforms(){
 		if(isDirty()){
@@ -144,6 +145,7 @@ public:
 			_worldMatrix *= _translationMatrix;
 			_worldMatrix *= _rotationMatrix;
 			_worldMatrix *= _scaleMatrix;
+			_globalMatrix = _worldMatrix * _parentMatrix; 
 			this->clean();
 		}
 	}
@@ -175,12 +177,15 @@ private:
 	inline void clean()   {_dirty = false;} 
 
 private:
-	Quaternion _orientation;
+	Quaternion<F32> _orientation;
 	vec3<F32> _axis;
 	F32 _angle;
 	vec3<F32> _translation;
 	vec3<F32> _scale;
-	mat4<F32> _worldMatrix,_scaleMatrix,_rotationMatrix,_translationMatrix,_parentMatrix;
+	mat4<F32> _worldMatrix;
+	mat4<F32> _parentMatrix;
+	mat4<F32> _globalMatrix; /// world * parent
+	mat4<F32> _scaleMatrix,_rotationMatrix,_translationMatrix;
 	bool _dirty;
 };
 

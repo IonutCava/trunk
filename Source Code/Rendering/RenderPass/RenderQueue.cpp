@@ -47,8 +47,9 @@ RenderQueueItem::RenderQueueItem(P32 sortKey, SceneGraphNode *node ) : _node( no
 struct RenderQueueKeyCompare{
 	///Sort 
 	bool operator()( const RenderQueueItem &a, const RenderQueueItem &b ) const{
-		/// No need to sort by shaders in shadow stage
-		if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){
+		/// No need to sort by shaders in shadow stage -Update: Since animation update, shadow stage uses shaders as well
+		//if(GFX_DEVICE.getRenderStage() != SHADOW_STAGE){ ///Sort by shader in all states
+
 			/// The sort key is the shader id (for now)
 			if(  a._sortKey.i < b._sortKey.i ) 
 				return true;
@@ -58,9 +59,10 @@ struct RenderQueueKeyCompare{
 				return a._stateHash < b._stateHash;
 			/// different shaders
 			return false;
-		}
+
+		//}
 		/// In shadow stage, sort by state!
-		return a._stateHash < b._stateHash;
+		//return a._stateHash < b._stateHash;
 	}
 };
 

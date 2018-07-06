@@ -139,6 +139,7 @@
     <ClCompile Include="..\..\Source Code\AI\PathFinding\ReCast\RecastRegion.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoint.cpp" />
     <ClCompile Include="..\..\Source Code\AI\PathFinding\WaypointGraph.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\ParamHandler.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
@@ -157,6 +158,10 @@
     <ClCompile Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Weapon.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationControllerFileIO.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationEvaluator.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationUtils.cpp" />
+    <ClCompile Include="..\..\Source Code\Geometry\Animations\Bone.cpp" />
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\GenericShape.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SGNRenderCalls.cpp" />
     <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
@@ -292,6 +297,8 @@
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
+    <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationUtils.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\GenericShape.h" />
     <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.h" />
@@ -448,6 +455,7 @@
     <None Include="..\..\assets\shaders\GLSL\tree.glsl" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\lightingDefaults.vert" />
+    <None Include="..\..\assets\shaders\GLSL\vertexAtoms\vboInputData.vert" />
     <None Include="..\..\assets\shaders\GLSL\water.glsl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

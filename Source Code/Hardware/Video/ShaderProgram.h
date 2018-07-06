@@ -19,6 +19,7 @@
 #define _SHADER_HANDLER_H_
 
 #include "Core/Headers/BaseClasses.h"
+#include <assimp/anim.h>
 class Shader;
 enum SHADER_TYPE;
 class ShaderProgram : public Resource {
@@ -27,7 +28,7 @@ public:
 	virtual bool load(const std::string& name);
 	
 	virtual void bind();
-	virtual void unbind() = 0;
+	virtual void unbind();
 	
 	inline U32 getId() { return _shaderProgramId; }
 
@@ -45,11 +46,14 @@ public:
 	virtual void Uniform(const std::string& ext, const vec2<F32>& value) = 0;
 	virtual void Uniform(const std::string& ext, const vec3<F32>& value) = 0;
 	virtual void Uniform(const std::string& ext, const vec4<F32>& value) = 0;
-	virtual void Uniform(const std::string& ext, const mat3<F32>& value) = 0;
-	virtual void Uniform(const std::string& ext, const mat4<F32>& value) = 0;
-	virtual void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values) = 0;
+	virtual void Uniform(const std::string& ext, const mat3<F32>& value, bool rowMajor = false) = 0;
+	virtual void Uniform(const std::string& ext, const mat4<F32>& value, bool rowMajor = false) = 0;
+	virtual void Uniform(const std::string& ext, const std::vector<mat4<F32> >& values, bool rowMajor = false) = 0;
 	///Uniform Texture
 	virtual void UniformTexture(const std::string& ext, U16 slot) = 0;
+
+	virtual I32 getAttributeLocation(const std::string& name) = 0;
+	virtual I32 getUniformLocation(const std::string& name) = 0;
 
 	virtual ~ShaderProgram();
 	virtual void createCopy() {incRefCount();}
@@ -57,6 +61,7 @@ public:
 
 	inline void commit() {if(!_compiled) {link(); validate();}}
 
+	inline bool isBound() {return _bound;}
 protected:
 	virtual void validate() = 0;
 	virtual void link() = 0;
@@ -65,9 +70,11 @@ protected:
 	static bool checkBinding(U32 newShaderProgramId);
 protected:
 	bool _compiled;
+	bool _bound;
 	U32 _shaderProgramId;
 	std::vector<Shader* > _shaders;
 	static U32 _prevShaderProgramId;
+	static U32 _newShaderProgramId;
 };
 
 

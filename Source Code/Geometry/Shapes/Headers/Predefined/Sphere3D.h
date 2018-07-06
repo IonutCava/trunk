@@ -20,7 +20,7 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 
-class Sphere3D : public Object3D{
+class Sphere3D : public Object3D {
 
 public:
 
@@ -67,7 +67,7 @@ private:
         _geometry->getPosition().reserve(rings * sectors);
         _geometry->getNormal().reserve(rings * sectors);
         _geometry->getTexcoord().reserve(rings * sectors);
-        _indices.resize(rings * sectors * 4);
+        _geometry->getHWIndices().resize(rings * sectors * 4);
 
  		for(r = 0; r < rings; r++){
 			for(s = 0; s < sectors; s++) {
@@ -84,11 +84,15 @@ private:
 
 		for(r = 0; r < rings; r++){
 			for(s = 0; s < sectors; s++) {
-				_indices.push_back(r * sectors + s);
-                _indices.push_back(r * sectors + (s+1));
-                _indices.push_back((r+1) * sectors + (s+1));
-                _indices.push_back((r+1) * sectors + s);
+				_geometry->getHWIndices().push_back(r * sectors + s);
+                _geometry->getHWIndices().push_back(r * sectors + (s+1));
+                _geometry->getHWIndices().push_back((r+1) * sectors + (s+1));
+                _geometry->getHWIndices().push_back((r+1) * sectors + s);
 	        }
+		}
+		for(U16 i = 0 ; i < _geometry->getHWIndices().size(); i++){
+			if(_indiceLimits.x > _geometry->getHWIndices()[i]) _indiceLimits.x = _geometry->getHWIndices()[i];
+			if(_indiceLimits.y < _geometry->getHWIndices()[i]) _indiceLimits.y = _geometry->getHWIndices()[i];
 		}
 		_refreshVBO = true;
 	}

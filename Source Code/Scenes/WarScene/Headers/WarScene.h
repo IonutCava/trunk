@@ -20,6 +20,7 @@
 
 #include "Scenes/Headers/Scene.h"
 
+class AICoordination;
 class AIEntity;
 class NPC;
 
@@ -27,9 +28,9 @@ class WarScene : public Scene {
 
 public:
 	WarScene() : Scene(),
-		_aiSoldier1(NULL),
-		_soldier1(NULL),
-		_groundPlaceholder(NULL){
+		_groundPlaceholder(NULL),
+		_faction1(NULL),
+		_faction2(NULL){
 		_scorTeam1 = 0;
 		_scorTeam2 = 0;
 		_mousePressed = false;
@@ -40,6 +41,8 @@ public:
 
 	bool load(const std::string& name);
 	bool loadResources(bool continueOnErrors);
+	bool initializeAI(bool continueOnErrors);
+	bool deinitializeAI(bool continueOnErrors);
 	bool unload();
 	void processInput();
 	void processEvents(F32 time);
@@ -65,8 +68,14 @@ private:
 private: //Joc
 	I8 _scorTeam1;
 	I8 _scorTeam2;
-	AIEntity *_aiSoldier1;
-	NPC *_soldier1;
+	///AIEntities are the "processors" behing the NPC's
+	std::vector<AIEntity *> _army1;
+	std::vector<AIEntity *> _army2;
+	///NPC's are the actual game entities
+	std::vector<NPC *> _army1NPCs;
+	std::vector<NPC *> _army2NPCs;
+	///Team's are factions for AIEntites so they can manage friend/foe situations
+	AICoordination *_faction1, *_faction2;
 };
 
 #endif

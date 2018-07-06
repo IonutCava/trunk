@@ -34,7 +34,7 @@ public:
 
 	void setParam(const std::string& name, const boost::any& value){
 		_mutex.lock();
-		std::pair<ParamMap::iterator, bool> result = _params.insert(make_pair(name,value));
+		std::pair<ParamMap::iterator, bool> result = _params.insert(std::make_pair(name,value));
 		if(!result.second) (result.first)->second = value;
 		if (_logState) printOutput(name,value,result.second);
 		_mutex.unlock();

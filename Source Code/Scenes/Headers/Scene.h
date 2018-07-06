@@ -42,6 +42,7 @@ public:
 	  _GFX(GFX_DEVICE),
 	  _paramHandler(ParamHandler::getInstance()),
 	  _drawBB(false),
+	  _drawSkeletons(false),
 	  _drawObjects(true),
 	  _lightTexture(NULL),
 	  _deferredBuffer(NULL),
@@ -69,14 +70,17 @@ public:
 	virtual void processInput();
 	virtual void processEvents(F32 time) = 0;
 
-	inline F32& getWindSpeed(){return _windSpeed;}
-	inline F32& getWindDirX(){return _windDirX;}
-	inline F32& getWindDirZ(){return _windDirZ;}
-	inline F32&  getGrassVisibility()		    {return _grassVisibility;}
-	inline F32&  getTreeVisibility()		    {return _treeVisibility;}
-	inline F32&  getGeneralVisibility()	  	{return _generalVisibility;}
-	inline F32&  getWaterLevel()               {return _waterHeight;}
-	inline F32&  getWaterDepth()               {return _waterDepth;}
+	/// Update animations, network data, sounds, triggers etc.
+	virtual void updateSceneState(D32 sceneTime);
+
+	inline F32&  getWindSpeed()         {return _windSpeed;}
+	inline F32&  getWindDirX()          {return _windDirX;}
+	inline F32&  getWindDirZ()          {return _windDirZ;}
+	inline F32&  getGrassVisibility()	{return _grassVisibility;}
+	inline F32&  getTreeVisibility()	{return _treeVisibility;}
+	inline F32&  getGeneralVisibility()	{return _generalVisibility;}
+	inline F32&  getWaterLevel()        {return _waterHeight;}
+	inline F32&  getWaterDepth()        {return _waterDepth;}
 
    
    inline U32 getNumberOfTerrains(){return TerrainInfoArray.size();}
@@ -99,6 +103,8 @@ public:
 
    inline bool drawBBox() {return _drawBB;}
    inline void drawBBox(bool visibility) {_drawBB = visibility;}
+   inline bool drawSkeletons() {return  _drawSkeletons;}
+   inline void drawSkeletons(bool visibility) {_drawSkeletons = visibility;}
    inline bool drawObjects() {return _drawObjects;}
    inline void drawObjects(bool visibility) {_drawObjects=visibility;}
 
@@ -111,13 +117,14 @@ protected:
 	Name_Object_map::iterator GeometryIterator;*/
 
 	///Datablocks for models,vegetation and terrains
-	std::vector<FileData> ModelDataArray, PendingDataArray;
-	std::vector<FileData> VegetationDataArray;
+	std::vector<FileData>           ModelDataArray;
+	std::vector<FileData>           VegetationDataArray;
+	std::vector<FileData>           PendingDataArray;
 	std::vector<TerrainDescriptor*> TerrainInfoArray;
 	
 	std::vector<F32> _eventTimers;
 
-	bool _drawBB,_drawObjects;
+	bool _drawBB,_drawObjects, _drawSkeletons;
 	boost::mutex _mutex;
 
 	vec4<F32> _white, _black;
@@ -138,7 +145,12 @@ private:
 protected:
 
 	friend class SceneManager;
-	virtual bool loadResources(bool continueOnErrors){return true;}
+	///Description in SceneManager
+	virtual bool initializeAI(bool continueOnErrors)   {return true;}
+	///Description in SceneManager
+	virtual bool deinitializeAI(bool continueOnErrors) {return true;}
+	///Description in SceneManager
+	virtual bool loadResources(bool continueOnErrors)  {return true;}
 	virtual bool loadEvents(bool continueOnErrors);
 	virtual void setInitialData();
 	void clearEvents();

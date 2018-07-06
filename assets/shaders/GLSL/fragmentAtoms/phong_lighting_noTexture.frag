@@ -13,22 +13,22 @@ varying vec3 vNormalMV;
 //float shininess = material[3].x;
 //vec4 emmissive = vec4(material[3].yzw,1.0f);
 uniform mat4  material;
-uniform int mode;
 uniform float opacity;
 
 #define LIGHT_DIRECTIONAL		0.0
 #define LIGHT_OMNIDIRECTIONAL	1.0
 #define LIGHT_SPOT				2.0
 
-#define MODE_SHADOW 4
 
 #include "shadowMapping.frag"
-
 
 vec4 Phong(vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 	// discard material if it is bellow opacity threshold
 	if(opacity < 0.2) discard;
-	if(mode == MODE_SHADOW) return vec4(0,0,0,0);
+
+	vec4 defaultOutValue = vec4(0,0,0,1);
+	if(shadowPass) return defaultOutValue;
+
 	float att = 1.0;
 	//If the light isn't directional, compute attenuation
 	if(vLightTBN.w != LIGHT_DIRECTIONAL) {
@@ -50,7 +50,7 @@ vec4 Phong(vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 	//Diffuse intensity
 	float iDiffuse = max(dot(L, N), 0.0);
 	//Specular intensity based on material shininess
-	float iSpecular = pow(max(dot(reflect(-L, N), V), 0.0), material[3].x );
+	float iSpecular = pow(clamp(dot(reflect(-L, N), V), 0.0, 1.0), material[3].x );
 	//Ambient color	
 	vec4 cAmbient = gl_LightSource[0].ambient * material[0];
 	//Diffuse color
@@ -65,29 +65,15 @@ vec4 Phong(vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 			cDiffuse = vec4(0.0, 0.0, 0.0, 1.0);
 			cSpecular = vec4(0.0, 0.0, 0.0, 1.0);
 		}else{
-			float shadow = 1.0;
-			if(enable_shadow_mapping != 0) {
-				/////////////////////////
-				// SHADOW MAPS
-				vec3 vPixPosInDepthMap;
-				//Compute shadow value for current fragment
-				shadow = ShadowMapping(vPixPosInDepthMap);
-				//And add shadow value to current diffuse color and specular values
-				cDiffuse = (shadow) * cDiffuse;
-				cSpecular = (shadow) * cSpecular;
-				cAmbient = (shadow) * cAmbient;
-				// Texture projection :
-				if(enable_shadow_mapping == 2) {
-					vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
-					cDiffuse.xyz = mix(cDiffuse.xyz, cProjected.xyz, shadow/2.0);
-				}
-			}
+			applyShadow(cDiffuse, cAmbient, cSpecular, defaultOutValue); 
 		}
 	//If it's not a spot light
 	}else{
 		//ToDo
 	}
 	cAmbient = cAmbient + gl_FrontLightModelProduct.sceneColor * material[0];
+	//Add all values togheter to compute the final fragment color
+	vec4 color = cAmbient + (cDiffuse + cSpecular) * att;
 
-	return  cAmbient  + (cDiffuse + cSpecular) * att;	
+	return color;	
 }

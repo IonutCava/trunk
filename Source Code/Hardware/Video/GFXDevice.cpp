@@ -13,6 +13,8 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
@@ -61,7 +63,7 @@ void GFXDevice::resizeWindow(U16 w, U16 h){
 void GFXDevice::renderModel(Object3D* const model){
 	///All geometry is stored in VBO format
 	if(!model) return;
-	if(model->getIndices().empty()){
+	if(model->getGeometryVBO()->getHWIndices().empty()){
 		model->onDraw(); ///<something wrong! Re-run pre-draw tests!
 	}
 	if(_stateBlockDirty){
@@ -78,11 +80,18 @@ void GFXDevice::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count
 	_api.renderElements(t,f,count,first_element);
 }
 
-void GFXDevice::drawBox3D(vec3<F32> min, vec3<F32> max){
+void GFXDevice::drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset){
 	if(_stateBlockDirty){
 		updateStates();
 	}
-	_api.drawBox3D(min,max);
+	_api.drawBox3D(min,max,globalOffset);
+}
+
+void GFXDevice::drawLines(const std::vector<vec3<F32> >& pointsA,const std::vector<vec3<F32> >& pointsB,const std::vector<vec4<F32> >& colors, const mat4<F32>& globalOffset){
+	if(_stateBlockDirty){
+		updateStates();
+	}
+	_api.drawLines(pointsA,pointsB,colors,globalOffset);
 }
 
 void GFXDevice::renderGUIElement(GuiElement* const element){
@@ -111,6 +120,7 @@ void GFXDevice::setRenderStage(RENDER_STAGE stage){
 }
 
 bool _drawBBoxes = false;
+bool _drawSkeleton = false;
 void GFXDevice::processRenderQueue(){
 
 	///Sort the render queue by the specified key
@@ -154,6 +164,18 @@ void GFXDevice::processRenderQueue(){
 				///Transform the Object (Rot, Trans, Scale)
 				if(!excludeFromStateChange(sn->getType())){ ///< only if the node is not in the exclusion mask
 					setObjectState(t,false,s);
+					///Recreate bounding boxes for current frame	
+					if(sgn->getNode()->getType() == TYPE_OBJECT3D){
+						Object3D* obj = dynamic_cast<Object3D*>(sgn->getNode());
+						assert(obj != NULL);
+						/// For SubMesh objects
+						if(obj->getType() == SUBMESH){
+							dynamic_cast<SubMesh*>(obj)->updateBBatCurrentFrame(sgn);
+						}
+						if(obj->getType() == MESH){
+							dynamic_cast<Mesh*>(obj)->updateBBatCurrentFrame(sgn);
+						}
+					}
 				}
 				///setup materials and render the node
 				///As nodes are sorted, this should be very fast
@@ -196,13 +218,14 @@ void GFXDevice::processRenderQueue(){
 	///Unbind all shaders after every render pass
 	ShaderManager::getInstance().unbind();
 
-	if(getRenderStage() == FINAL_STAGE || getRenderStage() == DEFERRED_STAGE){ 
+	if(getRenderStage() == FINAL_STAGE || getRenderStage() == DEFERRED_STAGE){
 		///Unbind all depth maps 
 		LightManager::getInstance().unbindDepthMaps();
 
         ///Dump render states
 		///Draw all BBoxes
 		_drawBBoxes = SceneManager::getInstance().getActiveScene()->drawBBox();
+		_drawSkeleton = SceneManager::getInstance().getActiveScene()->drawSkeletons();
 		for(U16 i = 0; i < RenderQueue::getInstance().getRenderQueueStackSize(); i++){
 			///Get the current scene node
 			sgn = RenderQueue::getInstance().getItem(i)._node;
@@ -213,10 +236,19 @@ void GFXDevice::processRenderQueue(){
 			if(bb.getVisibility() || _drawBBoxes){
 				sgn->getNode()->drawBoundingBox(sgn);
 			}
+			if(_drawSkeleton){
+				if(sgn->getNode()->getType() == TYPE_OBJECT3D){
+					Object3D* obj = dynamic_cast<Object3D*>(sgn->getNode());
+					assert(obj != NULL);
+					/// For SubMesh objects
+					if(obj->getType() == SUBMESH){
+						dynamic_cast<SubMesh*>(obj)->renderSkeleton();
+					}
+				}
+			}
 		}
 	}
 }
-
 
 void GFXDevice::renderInViewport(const vec4<F32>& rect, boost::function0<void> callback){
 	_api.renderInViewport(rect,callback);
