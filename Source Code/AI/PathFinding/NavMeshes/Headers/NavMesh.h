@@ -68,6 +68,7 @@ namespace Navigation {
         I32 magic;
         I32 version;
         I32 numTiles;
+        F32 extents[3];
         dtNavMeshParams params;
     };
 
@@ -101,7 +102,9 @@ namespace Navigation {
         bool save();
         /// Load a saved NavigationMesh from a file.
         bool load(SceneGraphNode* const node);
-
+        /// Called once per frame with the time diff between this and the last frame
+        void tick(U32 deltaMsTime);
+        /// Render the debug mesh if debug drawing is enabled
         void render();
         inline void debugDraw(bool state)       {_debugDraw = state;}
         inline bool debugDraw()           const {return _debugDraw;}

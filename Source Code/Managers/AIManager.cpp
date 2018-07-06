@@ -1,7 +1,7 @@
 #include "Headers/AIManager.h"
 #include "AI/PathFinding/Headers/NavigationPath.h"
 
-AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true)
+AIManager::AIManager() : _navMeshDebugDraw(false), _pauseUpdate(true), _deltaTimeMS(0)
 {
     Navigation::DivideRecast::createInstance();
 }
@@ -21,16 +21,17 @@ void AIManager::Destroy(){
     Navigation::DivideRecast::destroyInstance();
 }
 
-#pragma message("ToDo: Maybe create the \"Unit\" class and agregate it with AIEntity? -Ionut")
 U8 AIManager::tick(){
     ///Lock the entities during tick() adding or deleting entities is suspended until this returns
     ReadLock r_lock(_updateMutex);
+    _deltaTimeMS = GETMSTIME() - _deltaTimeMS;
     if(_aiEntities.empty() || _pauseUpdate){
         boost::this_thread::sleep(boost::posix_time::milliseconds(10));
         return 1; //nothing to do
     }
     if(!_sceneCallback.empty())
         _sceneCallback();
+
     processInput();  //sensors
     processData();   //think
     updateEntities();//react
@@ -103,6 +104,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
 void AIManager::debugDraw(bool forceAll){
     ReadLock r_lock(_navMeshMutex);
     for_each(Navigation::NavigationMesh* navMesh, _navMeshes){
+        navMesh->tick(_deltaTimeMS);
         if(forceAll || navMesh->debugDraw()){
             navMesh->render();
         }

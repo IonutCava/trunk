@@ -100,7 +100,6 @@ namespace Navigation {
         F32* _vertices;
         F32* _normals;
         I32* _triangles;
-
         U32  _vertexCapacity;
         U32  _vertexCount;
         U32  _triangleCount;

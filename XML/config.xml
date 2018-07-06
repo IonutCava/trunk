@@ -15,7 +15,7 @@
 	<!-- This value sets the y-position (height) of the "safety-net" for PhysX actors -->
 	<groundPos>-100</groundPos>
 	<!-- PhysX simulation speed multiplayer. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
-	<simSpeed>1.0</simSpeed>
+	<simSpeed>0.0</simSpeed>
 	<resolutionWidth>800</resolutionWidth>
 	<resolutionHeight>600</resolutionHeight>
 	<windowedMode>true</windowedMode>

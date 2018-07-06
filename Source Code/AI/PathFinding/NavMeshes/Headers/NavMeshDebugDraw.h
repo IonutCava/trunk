@@ -47,7 +47,7 @@ namespace Navigation {
 
           void depthMask(bool state);
           void texture(bool state);
-
+          void paused(bool state);
           void overrideColor(U32 col);
           void cancelOverride();
           void beginBatch();
@@ -60,9 +60,11 @@ namespace Navigation {
           void vertex(const F32 x, const F32 y, const F32 z, U32 color, const F32 u, const F32 v);
           void end();
 
-          inline void setDirty(const bool state)       {_dirty = state;}
-          inline bool isDirty()                  const {return _dirty; }
+          inline void setDirty(bool state)       {_dirty = state;}
+          inline bool isDirty()            const {return _dirty; }
 
+         
+          inline bool paused()             const {return _paused;}
     protected:
         void prepareMaterial();
         void releaseMaterial();
@@ -75,6 +77,7 @@ namespace Navigation {
         PrimitiveType _primType;
         bool _overrideColor;
         bool _dirty;
+        bool _paused;
     };
 };
 #endif

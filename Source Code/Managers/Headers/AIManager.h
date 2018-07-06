@@ -63,6 +63,7 @@ private:
     void updateEntities();///< react
 
 private:
+    U32 _deltaTimeMS;
     boost::atomic<bool> _navMeshDebugDraw;
     boost::atomic<bool> _pauseUpdate;
     AIEntityMap _aiEntities;

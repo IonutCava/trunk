@@ -23,6 +23,8 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
+#include <limits>
+
 ///Data Types
 #ifndef U8
 #define U8   unsigned char
@@ -66,11 +68,20 @@
 #endif
 #ifndef _P_D_TYPES_ONLY_
 
-#define TEST_EPSILON std::numeric_limits<F32>::epsilon()
-#define IS_ZERO(X)  (fabs((F32)X) < TEST_EPSILON)
-#define IS_TOLERANCE(X,TOLERANCE) (fabs(X) < TOLERANCE)
-#define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
-#define FLOAT_COMPARE_TOLERANCE(X,Y,TOLERANCE) (fabs(X - Y) < TOLERANCE)
+static const F32 TEST_EPSILON     = std::numeric_limits<F32>::epsilon();
+static const D32 TEST_EPSILON_D32 = std::numeric_limits<D32>::epsilon();
+
+inline bool IS_ZERO(F32 X) { return  (fabs(X) < TEST_EPSILON); }
+inline bool IS_ZERO(D32 X) { return  (fabs(X) < TEST_EPSILON_D32); }
+
+inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) { return (fabs(X) < TOLERANCE); }
+inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) { return (fabs(X) < TOLERANCE); }
+
+inline bool FLOAT_COMPARE(F32 X, F32 Y)  { return (fabs(X/Y - 1) < TEST_EPSILON); }
+inline bool DOUBLE_COMPARE(D32 X, D32 Y) { return (fabs(X/Y - 1) < TEST_EPSILON_D32); }
+
+inline bool FLOAT_COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE)  { return (fabs(X/Y - 1) < TOLERANCE); }
+inline bool DOUBLE_COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) { return (fabs(X/Y - 1) < TOLERANCE); }
 
 #define SAFE_DELETE(R)	           if(R){ delete R; R=NULL; }
 #define SAFE_DELETE_ARRAY(R)	   if(R){ delete [] R; R=NULL; }

@@ -11,7 +11,7 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
 namespace Navigation {
-    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _color(0), _primitive(NULL)
+    NavMeshDebugDraw::NavMeshDebugDraw() : _overrideColor(false), _dirty(true), _paused(false), _color(0), _primitive(NULL)
     {
         ///Generate a render state
         RenderStateBlockDescriptor navigationDebugDesc;
@@ -25,6 +25,12 @@ namespace Navigation {
        SAFE_DELETE(_navMeshStateBlock);
        //Allow the primitive to be deleted
        _primitive->_canZombify = true;
+   }
+
+   void NavMeshDebugDraw::paused(bool state) {
+       _paused = state;
+       if(_primitive)
+           _primitive->paused(_paused);
    }
 
    void NavMeshDebugDraw::depthMask(bool state){

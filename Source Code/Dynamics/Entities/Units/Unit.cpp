@@ -5,7 +5,7 @@
 
 Unit::Unit(UnitType type, SceneGraphNode* const node) : _type(type),
                                                         _node(node),
-                                                        _moveSpeed(1 metre),
+                                                        _moveSpeed(metre(1)),
                                                         _moveTolerance(0.1f),
                                                         _prevTime(0){}
 Unit::~Unit(){}
@@ -33,18 +33,17 @@ bool Unit::moveTo(const vec3<F32>& targetPosition){
     // distance = timeDif * 0.001 * moveSpeed
     F32 moveDistance = _moveSpeed * (getMsToSec(timeDif));
     CLAMP<F32>(moveDistance, EPSILON, _moveSpeed);
-    // apply framerate variance
-    moveDistance *= FRAME_SPEED_FACTOR;
 
-    F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
-    F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
-    F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
-
-    bool returnValue = IS_ZERO(_moveSpeed);
+    bool returnValue = IS_TOLERANCE(moveDistance, centimetre(1));
     if(!returnValue){
+        F32 xDelta = _currentTargetPosition.x - _currentPosition.x;
+        F32 yDelta = _currentTargetPosition.y - _currentPosition.y;
+        F32 zDelta = _currentTargetPosition.z - _currentPosition.z;
         bool xTolerance = IS_TOLERANCE(xDelta, _moveTolerance);
         bool yTolerance = IS_TOLERANCE(yDelta, _moveTolerance);
         bool zTolerance = IS_TOLERANCE(zDelta, _moveTolerance);
+        // apply framerate variance
+        //moveDistance *= FRAME_SPEED_FACTOR;
         // Compute the destination point for current frame step
         vec3<F32> interpPosition;
         if(!yTolerance && !IS_ZERO( yDelta ) )

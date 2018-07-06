@@ -282,7 +282,12 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr){
 
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-    _aiTask.reset(New Task(kernel->getThreadPool(),10,false,false,DELEGATE_BIND(&AIManager::tick, DELEGATE_REF(AIManager::getInstance()))));
+    _aiTask.reset(New Task(kernel->getThreadPool(),
+                           10,
+                           false,
+                           false,
+                           DELEGATE_BIND(&AIManager::tick,
+                           DELEGATE_REF(AIManager::getInstance()))));
     _loadComplete = true;
     return _loadComplete;
 }

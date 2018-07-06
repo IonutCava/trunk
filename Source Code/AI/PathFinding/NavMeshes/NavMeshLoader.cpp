@@ -70,7 +70,8 @@ namespace Navigation {
 
         bool loadMeshFile(NavModelData& outData, const char* filename) {
             FILE* fp = fopen(filename, "rb");
-            if (!fp) return false;
+            if (!fp)
+                return false;
 
             outData.setName(filename);
             fseek(fp, 0, SEEK_END);
@@ -100,6 +101,7 @@ namespace Navigation {
                 src = parseRow(src, srcEnd, row, sizeof(row)/sizeof(char));
                 // Skip comments
                 if (row[0] == '#') continue;
+
                 if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
                     // Vertex pos
                     sscanf(row+1, "%f %f %f", &x, &y, &z);
@@ -156,7 +158,8 @@ namespace Navigation {
         }
 
         bool saveMeshFile(const NavModelData& inData, const char* filename) {
-            if(!inData.getVertCount() || !inData.getTriCount())	return false;
+            if(!inData.getVertCount() || !inData.getTriCount())
+                return false;
 
             // Create the file if it doesn't exists
             FILE *fp = NULL;
@@ -165,11 +168,11 @@ namespace Navigation {
 
             std::ofstream myfile;
             myfile.open(filename);
-            if(!myfile.is_open()) return false;
+            if(!myfile.is_open())
+                return false;
 
             F32* vstart = inData._vertices;
             I32* tstart = inData._triangles;
-
             for(U32 i = 0; i < inData.getVertCount(); i++)  {
                 F32* vp = vstart + i*3;
                 myfile << "v " << (*(vp)) << " " << *(vp+1) << " " << (*(vp+2)) << "\n";

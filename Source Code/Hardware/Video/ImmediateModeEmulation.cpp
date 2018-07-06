@@ -5,6 +5,7 @@ IMPrimitive::IMPrimitive() : _inUse(false),
                              _hasLines(false),
                              _canZombify(true),
                              _forceWireframe(false),
+                             _paused(false),
                              _zombieCounter(0),
                              _lineWidth(1.0f),
                              _texture(NULL)

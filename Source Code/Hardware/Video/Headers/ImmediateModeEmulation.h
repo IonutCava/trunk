@@ -48,6 +48,8 @@ public:
     virtual void endBatch() = 0;
     virtual void clear() = 0;
 
+    inline void paused(bool state)                 {_paused = state;}
+    inline bool paused()                     const {return _paused;}
     inline void inUse(bool state)                  {_inUse = state;}
     inline bool inUse()                      const {return _inUse;}
     inline void zombieCounter(U8 count)            {_zombieCounter = count;}
@@ -76,6 +78,8 @@ protected:
     ///If a new primitive is to be rendered, it first looks for a zombie primitive
     ///If none are found, it adds a new one
     bool                 _inUse; //<For caching
+    ///If _pause is true, rendering for the current primitive is skipped and nothing is modified (e.g. zombie counters)
+    bool                 _paused;
     //render in wireframe mode
     bool                 _forceWireframe;
     ///2 functions used to setup or reset states

@@ -115,7 +115,8 @@ namespace Navigation {
 
         _sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENEGRAPH()->getRoot();
 
-        if(_buildThreaded && threaded) return buildThreaded();
+        if(_buildThreaded && threaded)
+            return buildThreaded();
 
         boost::mutex::scoped_lock(_buildLock);
 
@@ -129,12 +130,18 @@ namespace Navigation {
 
     bool NavigationMesh::buildThreaded(){
         boost::mutex::scoped_lock(_buildLock);
-        if(!_buildLock.owns_lock()) return false;
+        if(!_buildLock.owns_lock()) 
+            return false;
 
-        if(_buildThread) _buildThread->stopTask();
+        if(_buildThread) 
+            _buildThread->stopTask();
 
         Kernel* kernel = Application::getInstance().getKernel();
-        _buildThread.reset(New Task(kernel->getThreadPool(),3,true,true,DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
+        _buildThread.reset(New Task(kernel->getThreadPool(),
+                                    3,
+                                    true,
+                                    true,
+                                    DELEGATE_BIND(&NavigationMesh::launchThreadedBuild,this)));
 
         return true;
     }
@@ -148,12 +155,11 @@ namespace Navigation {
         // Create mesh
         U32 timeStart = GETMSTIME();
         bool success = generateMesh();
-        U32 timeEnd = GETMSTIME();
-        U32 timeDiff = timeEnd - timeStart;
+
         if(success){
-            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),getMsToSec(timeDiff));
+            PRINT_FN(Locale::get("NAV_MESH_GENERATION_COMPLETE"),getMsToSec(GETMSTIME() - timeStart));
         }else{
-            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),getMsToSec(timeDiff));
+            ERROR_FN(Locale::get("NAV_MESH_GENERATION_INCOMPLETE"),getMsToSec(GETMSTIME() - timeStart));
         }
 
         _navigationMeshLock.lock();
@@ -473,6 +479,10 @@ namespace Navigation {
         return true;
     }
 
+    void NavigationMesh::tick(U32 deltaMsTime) {
+       _debugDrawInterface->paused(!_debugDraw);
+    }
+
     void NavigationMesh::render(){
          RenderMode mode = _renderMode;
 
@@ -513,7 +523,9 @@ namespace Navigation {
     }
 
     bool NavigationMesh::load(SceneGraphNode* const sgn){
-        if(!_fileName.length()) return false;
+        if(!_fileName.length()) 
+            return false;
+
         std::string file = _fileName;
 
         if(sgn == NULL){
@@ -525,7 +537,8 @@ namespace Navigation {
         file.append(".nm");
         // Parse objects from level into RC-compatible format
         FILE* fp = fopen(file.c_str(), "rb");
-        if(!fp) return false;
+        if(!fp)
+            return false;
 
         // Read header.
         NavMeshSetHeader header;
@@ -543,7 +556,8 @@ namespace Navigation {
 
         boost::mutex::scoped_lock(_navigationMeshLock);
 
-        if(_navMesh) dtFreeNavMesh(_navMesh);
+        if(_navMesh) 
+            dtFreeNavMesh(_navMesh);
 
         _navMesh = dtAllocNavMesh();
 
@@ -575,22 +589,29 @@ namespace Navigation {
             _navMesh->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA, tileHeader.tileRef, 0);
         }
 
+        _extents.set(header.extents[0],
+                     header.extents[1],
+                     header.extents[2]);
         fclose(fp);
 
         return true;
     }
 
     bool NavigationMesh::save(){
-        if(!_fileName.length() || !_navMesh) return false;
+        if(!_fileName.length() || !_navMesh)
+            return false;
 
         // Save our NavigationMesh into a file to load from next time
         FILE* fp = fopen(_fileName.c_str(), "wb");
-        if(!fp)	 return false;
+        if(!fp)	
+            return false;
 
         boost::mutex::scoped_lock(_navigationMeshLock);
 
         // Store header.
         NavMeshSetHeader header;
+        memcpy(header.extents, &_extents[0], sizeof(F32) * 3);
+
         header.magic = NAVMESHSET_MAGIC;
         header.version = NAVMESHSET_VERSION;
         header.numTiles = 0;

@@ -46,11 +46,11 @@
 #define RADIANS(a)	((a)*M_PIDIV180)
 #define DEGREES(a)	((a)*M_180DIVPI)
 
-#define kilometre    *1000
-#define metre		 *1
-#define decimetre    *0.1f
-#define centimetre   *0.01f
-#define millimeter   *0.001f
+#define kilometre(a)    a*1000
+#define metre(a)		a*1
+#define decimetre(a)    a*0.1f
+#define centimetre(a)   a*0.01f
+#define millimeter(a)   a*0.001f
 
 #define getMsToSec(a) a*0.001f
 #define getSecToMs(a) a*1000.0f
