@@ -8,7 +8,7 @@
 0
 
 [INT:selectedButtonIndex]
-3
+0
 
 [INT:numPaneButtons]
 10
@@ -17,10 +17,10 @@
 1
 
 [FLOAT:sizeFactor]
--1.000
+0.078
 
 [FLOAT:hoverModeSizeFactor]
--1.000
+0.063
 
 [ENUM:extraWindowFlags]
 0
@@ -35,7 +35,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.200
+0.020
 
 [ENUM:extraWindowFlags]
 0
@@ -50,7 +50,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
--1.000
+0.063
 
 [ENUM:extraWindowFlags]
 0
@@ -62,10 +62,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.107
+0.052
 
 [FLOAT:hoverModeSizeFactor]
-0.050
+0.005
 
 [ENUM:extraWindowFlags]
 8
@@ -143,7 +143,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.200
+0.020
 
 [ENUM:extraWindowFlags]
 0
@@ -158,7 +158,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.200
+0.020
 
 [ENUM:extraWindowFlags]
 0
@@ -173,7 +173,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.200
+0.020
 
 [ENUM:extraWindowFlags]
 0
@@ -185,10 +185,10 @@
 1
 
 [FLOAT:sizeFactor]
-0.037
+0.025
 
 [FLOAT:hoverModeSizeFactor]
-0.006
+0.001
 
 [ENUM:extraWindowFlags]
 8
@@ -239,13 +239,13 @@
 -1
 
 [INT:numPaneButtons]
-10
+11
 
 [INT:isWindowPresent]
 1
 
 [FLOAT:sizeFactor]
-0.043
+-1.000
 
 [FLOAT:hoverModeSizeFactor]
 0.089
@@ -319,11 +319,17 @@
 [INT:toggleButtonIsPressed]
 0
 
+[INT:isWindowPresent]
+0
+
+[INT:toggleButtonIsPressed]
+0
+
 [ENUM:pos]
 3
 
 [INT:selectedButtonIndex]
-2
+1
 
 [INT:numPaneButtons]
 10
@@ -335,37 +341,37 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.015
-
-[ENUM:extraWindowFlags]
-0
-
-[INT:toggleButtonIsPressed]
-0
-
-[INT:isWindowPresent]
-1
-
-[FLOAT:sizeFactor]
-0.146
-
-[FLOAT:hoverModeSizeFactor]
-0.015
-
-[ENUM:extraWindowFlags]
-0
-
-[INT:toggleButtonIsPressed]
-0
-
-[INT:isWindowPresent]
-1
-
-[FLOAT:sizeFactor]
 0.239
 
+[ENUM:extraWindowFlags]
+0
+
+[INT:toggleButtonIsPressed]
+0
+
+[INT:isWindowPresent]
+1
+
+[FLOAT:sizeFactor]
+0.232
+
 [FLOAT:hoverModeSizeFactor]
-0.107
+0.182
+
+[ENUM:extraWindowFlags]
+0
+
+[INT:toggleButtonIsPressed]
+0
+
+[INT:isWindowPresent]
+1
+
+[FLOAT:sizeFactor]
+0.243
+
+[FLOAT:hoverModeSizeFactor]
+0.019
 
 [ENUM:extraWindowFlags]
 0
@@ -380,7 +386,7 @@
 -1.000
 
 [FLOAT:hoverModeSizeFactor]
-0.015
+0.003
 
 [ENUM:extraWindowFlags]
 8

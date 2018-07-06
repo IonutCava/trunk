@@ -45,9 +45,11 @@ namespace Divide {
 namespace Attorney {
     class EditorWindowManager;
     class EditorPanelManager;
+    class EditorOutputWindow;
 };
 
 class MenuBar;
+class OutputWindow;
 class PanelManager;
 class DisplayWindow;
 class PlatformContext;
@@ -62,6 +64,7 @@ class Editor : public PlatformContextComponent,
 
     friend class Attorney::EditorWindowManager;
     friend class Attorney::EditorPanelManager;
+    friend class Attorney::EditorOutputWindow;
 
   public:
     // Basically, the IMGUI default themes
@@ -194,6 +197,15 @@ namespace Attorney {
         friend class Divide::ImwWindowManagerDivide;
     };
 
+    class EditorOutputWindow {
+        private:
+        static void drawOutputWindow(Editor& editor) {
+            editor.drawOutputWindow();
+        }
+
+        friend class Divide::OutputWindow;
+    };
+
     class EditorPanelManager {
         //private:
         public: //ToDo: fix this -Ionut
@@ -211,9 +223,6 @@ namespace Attorney {
         }
         static void loadTabLayout(Editor& editor) {
             editor.loadTabLayout();
-        }
-        static void drawOutputWindow(Editor& editor) {
-            editor.drawOutputWindow();
         }
         static void showDebugWindow(Editor& editor, bool state) {
             editor.showDebugWindow(state);

@@ -38,14 +38,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     namespace Attorney {
         class PanelManagerWidgets;
+        class PanelManagerDockedWindows;
     };
 
+    class DockedWindow;
     class TabbedWindow;
     class PanelManagerPane;
     class ResourceCache;
+    class PreferencesWindow;
     FWD_DECLARE_MANAGED_CLASS(Texture);
     class PanelManager : public PlatformContextComponent {
         friend class Attorney::PanelManagerWidgets;
+        friend class Attorney::PanelManagerDockedWindows;
 
       protected:
         enum class TextureUsage : U8 {
@@ -80,7 +84,7 @@ namespace Divide {
         void idle();
         void draw(const U64 deltaTime);
         void resize(int w, int h);
-        void drawDockedWindows(ImGui::PanelManagerWindowData& wd);
+        void drawToggleWindows(ImGui::PanelManagerWindowData& wd);
         void setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX = -1, int displayY = -1);
 
         inline ImGui::PanelManager& ImGuiPanelManager() { return *_manager; }
@@ -112,6 +116,7 @@ namespace Divide {
 
      public:
         static vectorImpl<ImGui::TabWindow> s_tabWindows;
+        static vectorImpl<DockedWindow*> s_dockedWindows;
         static ResourceCache* s_globalCache;
         static hashMapImpl<U32, Texture_ptr> s_imageEditorCache;
     }; //class PanelManager
@@ -130,6 +135,15 @@ namespace Divide {
 
             friend class Divide::TabbedWindow;
             friend class Divide::PanelManagerPane;
+        };
+
+        class PanelManagerDockedWindows {
+            private:
+              static bool* showCentralWindow(Divide::PanelManager& mgr) {
+                  return mgr._showCentralWindow;
+              }
+
+              friend class Divide::PreferencesWindow;
         };
     };
 
