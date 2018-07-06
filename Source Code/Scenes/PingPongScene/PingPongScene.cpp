@@ -10,8 +10,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(PingPongScene);
-
 // begin copy-paste
 void PingPongScene::preRender() {
     vec2<F32> _sunAngle = vec2<F32>(0.0f, Angle::DegreesToRadians(45.0f));

@@ -7,8 +7,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(PhysXScene);
-
 enum class PhysXState : U32 {
     STATE_ADDING_ACTORS = 0,
     STATE_IDLE = 2,

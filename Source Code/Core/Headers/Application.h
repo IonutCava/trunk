@@ -33,7 +33,7 @@
 #define _CORE_APPLICATION_H_
 
 #include "WindowManager.h"
-#include "Platform/Threading/Headers/Thread.h"
+#include <thread>
 
 namespace Divide {
 
@@ -75,6 +75,7 @@ const char* getErrorCodeName(ErrorCode code);
 DEFINE_SINGLETON(Application)
 
   public:
+    static bool initStaticData();
     /// Startup and shutdown
     ErrorCode initialize(const stringImpl& entryPoint, I32 argc, char** argv);
     void run();
@@ -88,8 +89,9 @@ DEFINE_SINGLETON(Application)
     inline WindowManager& windowManager();
     inline const WindowManager& windowManager() const;
 
-    inline bool isMainThread() const;
-    inline const std::thread::id& mainThreadID() const;
+    bool             isMainThread() const;
+    std::thread::id  mainThreadID() const;
+
     inline void setMemoryLogFile(const stringImpl& fileName);
 
     inline bool mainLoopActive() const;

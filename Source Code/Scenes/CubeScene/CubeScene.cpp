@@ -9,8 +9,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(CubeScene);
-
 void CubeScene::render() {}
 
 void CubeScene::processTasks(const U64 deltaTime) {

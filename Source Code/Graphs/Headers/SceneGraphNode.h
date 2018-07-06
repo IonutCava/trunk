@@ -33,6 +33,7 @@
 #define _SCENE_GRAPH_NODE_H_
 
 #include "SceneNode.h"
+#include "SGNRelationshipCache.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/IKComponent.h"
 #include "Graphs/Components/Headers/BoundsComponent.h"
@@ -308,7 +309,11 @@ class SceneGraphNode : public GUIDWrapper,
     inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
         return _components[getComponentIdx(type)].get();
     }
-
+   private:
+    friend class SGNRelationshipCache;
+    inline const SGNRelationshipCache& relationshipCache() const {
+        return _relationshipCache;
+    }
    private:
     // An SGN doesn't exist outside of a scene graph
     SceneGraph& _sceneGraph;
@@ -335,6 +340,7 @@ class SceneGraphNode : public GUIDWrapper,
     DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
 
     std::array<std::unique_ptr<SGNComponent>, to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
+    SGNRelationshipCache _relationshipCache;
 };
 
 template <>

@@ -34,7 +34,6 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
-#include <boost/functional/factory.hpp>
 
 namespace Divide {
 
@@ -103,28 +102,11 @@ namespace Attorney {
     class SceneManagerKernel;
 };
 
-DEFINE_SINGLETON(SceneFactory)
-    public:
-        inline Scene* getScene(ULL sceneName) {
-            return _sceneFactory[sceneName]();
-        }
-
-        template<typename DerivedScene>
-        bool registerScene(ULL sceneName) {
-            static_assert(std::is_base_of<Scene, DerivedScene>::value, "Invalid scene factory entry");
-            _sceneFactory[sceneName] = boost::factory<DerivedScene*>();
-            return true;
-        }
-
-    protected:
-      /// Scene_Name -Scene_Factory table
-      hashMapImpl<ULL, std::function<Scene*()> > _sceneFactory;
-END_SINGLETON
-
 DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
                       Input::InputAggregatorInterface)
     friend class Attorney::SceneManagerKernel;
   public:
+    static bool initStaticData();
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
     Scene* createScene(const stringImpl& name);

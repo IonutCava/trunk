@@ -5,12 +5,12 @@
 
 int main(int argc, char **argv) {
 
-    Divide::Console::toggle(false);
+    //Divide::Console::toggle(false);
 
-    std::cout << "Running Platform Unit Tests!" << std::endl;
+    //std::cout << "Running Platform Unit Tests!" << std::endl;
 
     int state = 0;
-    if (TEST_HAS_FAILED) {
+    /*if (TEST_HAS_FAILED) {
         std::cout << "Errors detected!" << std::endl;
         state = -1;
     } else {
@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
 
     if (argc == 1) {
         system("pause");
-    }
+    }*/
     
     return state;
 }

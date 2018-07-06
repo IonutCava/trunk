@@ -34,9 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/DisplayWindow.h"
 
-#define HAVE_M_PI
-#include <SDL.h>
-
 namespace Divide {
 
 static const U32 WINDOW_COUNT = 1;

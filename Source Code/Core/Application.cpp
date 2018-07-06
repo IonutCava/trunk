@@ -10,7 +10,11 @@
 #include "Utility/Headers/MemoryTracker.h"
 #endif
 
+#include <thread>
+
 namespace Divide {
+
+
 
 #if defined(_DEBUG)
 bool MemoryManager::MemoryTracker::Ready = false;
@@ -18,13 +22,17 @@ bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 #endif
 
-Application::Application() : _kernel(nullptr)
-{
-
+bool Application::initStaticData() {
 #if defined(_DEBUG)
     MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
     MemoryManager::MemoryTracker::LogAllAllocations = true;
 #endif
+    
+    return Kernel::initStaticData();
+}
+
+Application::Application() : _kernel(nullptr)
+{
     _requestShutdown = false;
     _mainLoopPaused = false;
     _mainLoopActive = false;
@@ -129,6 +137,14 @@ void Application::onChangeWindowSize(U16 w, U16 h) const {
 
 void Application::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::KernelApplication::onChangeRenderResolution(*_kernel, w, h);
+}
+
+std::thread::id Application::mainThreadID() const {
+    return _threadID;
+}
+
+bool Application::isMainThread() const {
+    return (_threadID == std::this_thread::get_id());
 }
 
 }; //namespace Divide

@@ -252,6 +252,7 @@ struct SysInfo;
 extern void getWindowHandle(void* window, SysInfo& info);
 
 
+bool PlatformInitStatic();
 bool PlatformInit();
 bool PlatformClose();
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);

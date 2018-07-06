@@ -16,8 +16,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(TenisScene);
-
 namespace {
     std::atomic_bool s_gameStarted;
 };

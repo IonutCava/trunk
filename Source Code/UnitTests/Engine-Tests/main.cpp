@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv) {
 
-    Divide::Console::toggle(false);
+    //Divide::Console::toggle(false);
 
     std::cout << "Running Engine Unit Tests!" << std::endl;
 

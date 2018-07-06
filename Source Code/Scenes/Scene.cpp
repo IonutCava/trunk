@@ -75,6 +75,10 @@ Scene::~Scene()
 #endif
 }
 
+bool Scene::initStaticData() {
+    return true;
+}
+
 bool Scene::frameStarted() { return true; }
 
 bool Scene::frameEnded() { return true; }

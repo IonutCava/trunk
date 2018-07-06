@@ -78,10 +78,10 @@ namespace Attorney {
     class SceneLoadSave;
 };
 
-/// The scene is a resource (to enforce load/unload and setName) and it has a 2
-/// states:
+/// The scene is a resource (to enforce load/unload and setName) and it has a 2 states:
 /// one for game information and one for rendering information
-class NOINITVTABLE Scene : public Resource {
+
+class Scene : public Resource {
     friend class Attorney::SceneManager;
     friend class Attorney::SceneGraph;
     friend class Attorney::SceneRenderPass;
@@ -89,6 +89,7 @@ class NOINITVTABLE Scene : public Resource {
 
    protected:
     typedef std::stack<FileData, vectorImpl<FileData> > FileDataStack;
+    static bool initStaticData();
 
    public:
     Scene();
@@ -294,6 +295,9 @@ class SceneManager {
         scene.postLoad();
     }
 
+    static bool initStaticData() {
+        return Scene::initStaticData();
+    }
     friend class Divide::SceneManager;
 };
 
@@ -331,14 +335,5 @@ private:
 };
 };  // namespace Attorney
 };  // namespace Divide
-
-/// usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
-///                                    -B is the name used to refer to that
-///                                      scene in the XML files
-/// Call this function after each scene declaration
-#define REGISTER_SCENE_W_NAME(scene, sceneName) \
-    bool g_registered_##scene = SceneFactory::instance().registerScene<scene>(_ID(sceneName));
-/// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
-#define REGISTER_SCENE(scene) REGISTER_SCENE_W_NAME(scene, #scene)
 
 #endif

@@ -5,8 +5,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(FlashScene);
-
 void FlashScene::render() {}
 
 void FlashScene::preRender() {}

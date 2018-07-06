@@ -14,6 +14,8 @@
 
 namespace Divide {
 
+INIT_SCENE_FACTORY
+
 namespace {
     // if culled count exceeds this limit, culling becomes multithreaded in the next frame
     const U32 g_asyncCullThreshold = 75;
@@ -39,6 +41,10 @@ namespace {
 
 };
 
+bool SceneManager::initStaticData() {
+    return Attorney::SceneManager::initStaticData();
+}
+
 SceneManager::SceneManager()
     : FrameListener(),
       _GUI(nullptr),
@@ -51,8 +57,8 @@ SceneManager::SceneManager()
       _elapsedTime(0ULL),
       _elapsedTimeMS(0),
       _saveTimer(0ULL)
-
 {
+    assert(!g_sceneFactory.empty());
     AI::AIManager::createInstance();
 
     ADD_FILE_DEBUG_GROUP();
@@ -119,11 +125,9 @@ Scene* SceneManager::createScene(const stringImpl& name) {
     Scene* scene = nullptr;
     
     ULL nameHash = _ID_RT(name);
-    SceneFactory& test = SceneFactory::instance();
-    test.registerScene<Scene>(_ID_RT("PlaceholderScene"));
 
     if (!name.empty()) {
-        scene = test.getScene(nameHash);
+        scene = g_sceneFactory[nameHash]();
     }
 
     if (scene != nullptr) {

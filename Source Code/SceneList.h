@@ -40,4 +40,40 @@
 #include "Scenes/TenisScene/Headers/TenisScene.h"
 #include "Scenes/PhysXScene/Headers/PhysXScene.h"
 #include "Scenes/WarScene/Headers/WarScene.h"
+
+
+#include <boost/functional/factory.hpp>
+#include <boost/preprocessor/cat.hpp>
+
+#define STRUCT_NAME(M) BOOST_PP_CAT(M, RegisterStruct)
+#define VAR_NAME(M) BOOST_PP_CAT(M, RegisterVariable)
+
+ /// usage: REGISTER_SCENE(A,B) where: - A is the scene's class name
+ ///                                    -B is the name used to refer to that
+ ///                                      scene in the XML files
+ /// Call this function after each scene declaration
+#define REGISTER_SCENE_W_NAME(scene, sceneName)                 \
+static struct STRUCT_NAME(scene) {                              \
+  STRUCT_NAME(scene)();                                         \
+} VAR_NAME(scene);                                              \
+                                                                \
+STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {                     \
+    g_sceneFactory[_ID(sceneName)]  = boost::factory<scene*>(); \
+}
+ /// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
+#define REGISTER_SCENE(scene) REGISTER_SCENE_W_NAME(scene, #scene)
+
+#define INIT_SCENE_FACTORY \
+    namespace { \
+        hashMapImpl<ULL, std::function<Scene*()> > g_sceneFactory; \
+    };\
+    REGISTER_SCENE(MainScene)\
+    REGISTER_SCENE(CubeScene)\
+    REGISTER_SCENE(NetworkScene)\
+    REGISTER_SCENE(PingPongScene)\
+    REGISTER_SCENE(FlashScene)\
+    REGISTER_SCENE(TenisScene)\
+    REGISTER_SCENE(PhysXScene)\
+    REGISTER_SCENE(WarScene)
+
 #endif

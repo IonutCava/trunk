@@ -27,7 +27,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _visibilityLocked(false),
       _isSelectable(false),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
-      _usageContext(UsageContext::NODE_DYNAMIC)
+      _usageContext(UsageContext::NODE_DYNAMIC),
+      _relationshipCache(*this)
 {
     assert(_node != nullptr);
     _children.resize(INITIAL_CHILD_COUNT);
@@ -139,6 +140,7 @@ void SceneGraphNode::setParent(SceneGraphNode& parent) {
     _parent = parent.shared_from_this();
     // Add ourselves in the new parent's children map
     parent.registerNode(shared_from_this());
+    _relationshipCache.invalidate();
     // That's it. Parent Transforms will be updated in the next render pass;
 }
 
@@ -161,8 +163,7 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
     return node;
 }
 
-/// Add a new SceneGraphNode to the current node's child list based on a
-/// SceneNode
+/// Add a new SceneGraphNode to the current node's child list based on a SceneNode
 SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, const stringImpl& name) {
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
@@ -188,6 +189,7 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, c
             }
         );
     }
+    _relationshipCache.invalidate();
     // return the newly created node
     return sceneGraphNode;
 }
@@ -200,6 +202,7 @@ void SceneGraphNode::removeNode(const stringImpl& nodeName, bool recursive) {
             _children[i].reset();
             _childCount = _childCount - 1;
             std::swap(_children[_childCount], _children[i]);
+            _relationshipCache.invalidate();
             return;
         }
     }
@@ -235,38 +238,22 @@ bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
 
 bool SceneGraphNode::isRelated(const SceneGraphNode& target) const {
     I64 targetGUID = target.getGUID();
-    //is same node?
-    if (getGUID() == targetGUID) {
-        return true;
-    }
-    SceneGraphNode_ptr parent = getParent().lock();
-    //is target parent?
-    if (parent && parent->getGUID() == target.getGUID()) {
-        return true;
-    }
-    //is sibling
-    if (parent && parent->isChild(target, true)) {
-        return true;
-    }
-    //is target child?
-    return isChild(target, true);
+
+    SGNRelationshipCache::RelationShipType type = _relationshipCache.clasifyNode(targetGUID);
+
+    // We also ignore grandparents as this will usually be the root;
+    return type != SGNRelationshipCache::RelationShipType::COUNT;
 }
 
 bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const {
-    U32 childCount = getChildCount();
-    for (U32 i = 0; i < childCount; ++i) {
-        const SceneGraphNode& child = getChild(i, childCount);
-        if (child.getGUID() == target.getGUID()) {
-            return true;
-        } else {
-            if (recursive) {
-                if (child.isChild(target, true)) {  
-                    return true;
-                }
-            }
-        }
+    I64 targetGUID = target.getGUID();
+
+    SGNRelationshipCache::RelationShipType type = _relationshipCache.clasifyNode(targetGUID);
+    if (type == SGNRelationshipCache::RelationShipType::GRANDCHILD && recursive) {
+        return true;
     }
-    return false;
+
+    return type == SGNRelationshipCache::RelationShipType::CHILD;
 }
 
 SceneGraphNode_wptr SceneGraphNode::findChild(I64 GUID, bool recursive) {
@@ -440,6 +427,9 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
          }
     }
 
+    if (!_relationshipCache.isValid()) {
+        _relationshipCache.rebuild();
+    }
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
 }
 

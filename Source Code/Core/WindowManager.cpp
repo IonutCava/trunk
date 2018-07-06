@@ -3,6 +3,9 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+#define HAVE_M_PI
+#include <SDL.h>
+
 namespace Divide {
 
 WindowManager::WindowManager() : _displayIndex(0),

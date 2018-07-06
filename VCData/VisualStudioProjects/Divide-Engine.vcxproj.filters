@@ -533,6 +533,9 @@
     <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\SGNRelationshipCache.cpp">
+      <Filter>Graphs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -942,6 +945,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Managers\Headers\SceneManager.h">
       <Filter>Managers\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SGNRelationshipCache.h">
+      <Filter>Graphs\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

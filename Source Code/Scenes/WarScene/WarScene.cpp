@@ -31,8 +31,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(WarScene);
-
 namespace {
     vec2<F32> g_sunAngle(0.0f, Angle::DegreesToRadians(45.0f));
     bool g_direction = false;
@@ -45,6 +43,7 @@ WarScene::WarScene()
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)
 {
+
     for (U8 i = 0; i < 2; ++i) {
         _faction[i] = nullptr;
     }

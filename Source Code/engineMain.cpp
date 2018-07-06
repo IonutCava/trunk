@@ -1,11 +1,23 @@
+#include "engineMain.h"
+
 #include "Core/Headers/Console.h"
 #include "Core/Headers/Application.h"
+
+#include <iostream>
 
 namespace Divide {
 
 static void out_of_memory()
 {
     assert(0);
+}
+
+bool initStaticData() {
+    bool status = PlatformInitStatic();
+    if (status) {
+        status = Application::initStaticData();
+    }
+    return status;
 }
 
 int engineMain(int argc, char** argv) {

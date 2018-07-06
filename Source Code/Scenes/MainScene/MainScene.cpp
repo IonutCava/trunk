@@ -12,8 +12,6 @@
 
 namespace Divide {
 
-REGISTER_SCENE(MainScene);
-
 void MainScene::updateLights() {
     if (!_updateLights) return;
 

@@ -35,6 +35,10 @@ LoopTimingData::LoopTimingData() : _previousTime(0ULL),
 
 static Time::ProfileTimer* s_appLoopTimer = nullptr;
 
+bool Kernel::initStaticData() {
+    return SceneManager::initStaticData();
+}
+
 Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),

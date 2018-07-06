@@ -157,14 +157,6 @@ inline const WindowManager& Application::windowManager() const {
     return _windowManager;
 }
 
-inline const std::thread::id& Application::mainThreadID() const {
-    return _threadID;
-}
-
-inline bool Application::isMainThread() const {
-    return (_threadID == std::this_thread::get_id());
-}
-
 inline void Application::setMemoryLogFile(const stringImpl& fileName) {
     _memLogBuffer = fileName;
 }

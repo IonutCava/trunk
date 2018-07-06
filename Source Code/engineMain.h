@@ -33,7 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ENGINE_MAIN_HEADER_
 
 namespace Divide {
+#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
+
 extern int engineMain(int argc, char **argv);
+extern bool initStaticData();
+
 };
 
 #endif  //_ENGINE_MAIN_HEADER_

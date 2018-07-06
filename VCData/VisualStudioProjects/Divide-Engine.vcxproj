@@ -120,7 +120,7 @@
       <FloatingPointModel>Strict</FloatingPointModel>
       <ExceptionHandling>Sync</ExceptionHandling>
       <SDLCheck>false</SDLCheck>
-      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
     </ClCompile>
     <ProjectReference>
@@ -289,6 +289,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\IntersectionRecord.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\Octree.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNodeRenderState.cpp" />
+    <ClCompile Include="..\..\Source Code\Graphs\SGNRelationshipCache.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIFormattedListBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIInput.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUI.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\SGNComponent.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\IntersectionRecord.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNodeRenderState.h" />
+    <ClInclude Include="..\..\Source Code\Graphs\Headers\SGNRelationshipCache.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h" />
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIInput.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUI.h" />
