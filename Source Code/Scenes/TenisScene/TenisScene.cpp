@@ -42,7 +42,7 @@ void TenisScene::processTasks(const U64 deltaTime) {
     checkCollisions();
 
     if (s_gameStarted && !_gamePlaying && _scoreTeam1 < 10 && _scoreTeam2 < 10)
-        startGame();
+        startGame(-1);
 
     if (_scoreTeam1 == 10 || _scoreTeam2 == 10) {
         s_gameStarted = false;
@@ -81,7 +81,7 @@ void TenisScene::resetGame() {
     s_gameStarted = true;
 }
 
-void TenisScene::startGame() {
+void TenisScene::startGame(I64 btnGUID) {
     resetGame();
 
     TaskHandle newGame(CreateTask(getGUID(),
@@ -407,14 +407,13 @@ bool TenisScene::loadResources(bool continueOnErrors) {
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);
 
-    const vec2<U16>& resolution
-        = Application::instance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& resolution = _GUI->getDisplayResolution();
 
     GUIElement* btn = _GUI->addButton(
         _ID("Serve"), "Serve",
         vec2<I32>(resolution.width - 220, 60),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
-        DELEGATE_BIND(&TenisScene::startGame, this));
+        DELEGATE_BIND(&TenisScene::startGame, this, std::placeholders::_1));
     btn->setTooltip("Start a new game!");
 
     _GUI->addText(

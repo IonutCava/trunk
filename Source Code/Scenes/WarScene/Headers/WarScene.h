@@ -63,7 +63,7 @@ class WarScene : public Scene {
     void printMessage(U8 eventId, const stringImpl& unitName);
 
    private:
-    void startSimulation();
+    void startSimulation(I64 btnGUID);
     void toggleCamera();
     bool removeUnits(bool removeNodesOnCall);
     bool addUnits();

@@ -107,14 +107,11 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     friend class Attorney::SceneManagerKernel;
   public:
     static bool initStaticData();
-    /// Lookup the factory methods table and return the pointer to a newly
-    /// constructed scene bound to that name
-    Scene* createScene(const stringImpl& name);
+
+    vectorImpl<stringImpl> sceneNameList() const;
 
     inline Scene& getActiveScene() { return *_activeScene; }
-    inline void setActiveScene(Scene& scene) {
-        _activeScene.reset(&scene);
-    }
+    void setActiveScene(Scene& scene);
 
     bool init(GUI* const gui);
 
@@ -133,7 +130,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     inline void idle() { _activeScene->idle(); }
     bool unloadCurrentScene();
-    bool load(const stringImpl& name);
+    Scene* load(stringImpl name);
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(*_activeScene);
@@ -201,6 +198,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
 
   protected:
     void initPostLoadState();
+    /// Lookup the factory methods table and return the pointer to a newly
+    /// constructed scene bound to that name
+    Scene* createScene(const stringImpl& name);
 
   protected:
     bool frameStarted(const FrameEvent& evt) override;
@@ -212,11 +212,12 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     ~SceneManager();
 
   private:
-    typedef hashMapImpl<ULL, Scene*> SceneMap;
+    typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
     /// Pointer to the currently active scene
-    std::unique_ptr<Scene> _activeScene;
+    Scene* _activeScene;
+
     std::unique_ptr<Scene> _defaultScene;
     /// Pointer to the GUI interface
     GUI* _GUI;

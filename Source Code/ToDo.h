@@ -36,6 +36,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ==================== Change scene system ===============================================
 Always load a default scene that will never be unloaded
 - Default scene will handle both  main menu and scene transition screen
+-- Add a button for each DETECTED scene
+-- Create a list of needed assets for each scene. Flag common assets to avoid unloading when switching scenes
+-- Never unload shaders from ShaderManager.
+-- Show animated Loading text when scene button is pressed. Hide scene buttons. Load scene in separate thread. Switch active scene on load finish
+-- Add quite scene dialog (Yes/No). Switch to default scene on Yes.
 Remove SceneManager. Default scene will handle loading/unloading/reloading of scenes
 Move scene load from XML / save to XML to the scene code (Scene::loadFromXML / Scene::saveToXML)
 - saveToXML will run on a timer in PROFILE and DEBUG code only and check every n seconds/minutes if anything changed (e.g. added/deleted nodes)

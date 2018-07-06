@@ -105,41 +105,58 @@ bool SceneManager::init(GUI* const gui) {
     return true;
 }
 
-bool SceneManager::load(const stringImpl& sceneName) {
-    ParamHandler& par = ParamHandler::instance();
-    assert(_init == true && _GUI != nullptr);
-    Console::printfn(Locale::get(_ID("SCENE_MANAGER_LOAD_SCENE_DATA")));
-    par.setParam(_ID("currentScene"), sceneName);
-    Scene *scene = createScene(sceneName);
+Scene* SceneManager::load(stringImpl sceneName) {
+    bool loadDefaultScene = sceneName.empty();
+
+    Scene *scene = _defaultScene.get();
+    if (loadDefaultScene) {
+        sceneName = "defaultScene";
+    } else {
+        scene = createScene(sceneName);
+    }
+
+    ParamHandler::instance().setParam(_ID("currentScene"), sceneName);
     if (!scene) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return false;
     }
-    setActiveScene(*scene);
+    if (!loadDefaultScene) {
+        XML::loadScene(sceneName, scene);
+    }
 
-    XML::loadScene(sceneName, scene);
-
-    bool state = Attorney::SceneManager::load(*_activeScene, sceneName, _GUI);
+    bool state = Attorney::SceneManager::load(*scene, sceneName, _GUI);
     if (state) {
-        state = LoadSave::loadScene(*_activeScene);
+        state = LoadSave::loadScene(*scene);
     }
     if (state) {
-        Attorney::SceneManager::postLoad(*_activeScene);
+        Attorney::SceneManager::postLoad(*scene);
     }
-    return state;
+
+    return state ? scene : nullptr;
+}
+
+void SceneManager::setActiveScene(Scene& scene) {
+    _activeScene = &scene;
+    ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
+}
+
+vectorImpl<stringImpl> SceneManager::sceneNameList() const {
+    vectorImpl<stringImpl> scenes;
+    for (SceneFactory::value_type it : g_sceneFactory) {
+        scenes.push_back(it.first);
+    }
+    return scenes;
 }
 
 Scene* SceneManager::createScene(const stringImpl& name) {
     Scene* scene = nullptr;
     
-    ULL nameHash = _ID_RT(name);
-
     if (!name.empty()) {
-        scene = g_sceneFactory[nameHash](name);
+        scene = g_sceneFactory[name](name);
     }
 
     if (scene != nullptr) {
-        hashAlg::emplace(_sceneMap, nameHash, scene);
+        hashAlg::emplace(_sceneMap, name, scene);
     }
 
     return scene;
@@ -147,12 +164,24 @@ Scene* SceneManager::createScene(const stringImpl& name) {
 
 bool SceneManager::unloadCurrentScene() {
     AI::AIManager::instance().pauseUpdate(true);
-    RemoveResource(_defaultMaterial);
+
+    bool isDefaultScene = _activeScene->getGUID() == _defaultScene->getGUID();
+    if (isDefaultScene) {
+        RemoveResource(_defaultMaterial);
+    }
+
     bool state = Attorney::SceneManager::deinitializeAI(*_activeScene);
     if (state) {
         state = Attorney::SceneManager::unload(*_activeScene);
-        _sceneMap.erase(_sceneMap.find(_ID_RT(_activeScene->getName())));
-        _activeScene.reset(nullptr);
+
+        if (!isDefaultScene) {
+            _sceneMap.erase(_sceneMap.find(_activeScene->getName()));
+        }
+
+        if (!isDefaultScene && _activeScene != nullptr) {
+            delete _activeScene;
+            _activeScene = nullptr;
+        }
     }
     return state;
 }

@@ -67,7 +67,7 @@ void GUIButton::setFont(const stringImpl& fontName,
 
 bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
     if (_callbackFunction) {
-        _callbackFunction();
+        _callbackFunction(getGUID());
         return true;
     }
     return false;

@@ -60,7 +60,7 @@ void PingPongScene::resetGame() {
     _ballSGN.lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(0, 2, 2));
 }
 
-void PingPongScene::serveBall() {
+void PingPongScene::serveBall(I64 btnGUID) {
     _GUI->modifyText(_ID("insults"), "");
     resetGame();
 
@@ -277,7 +277,7 @@ U16 PingPongScene::registerInputActions() {
     //ToDo: Move these to per-scene XML file
     PressReleaseActions actions;
 
-    _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall();});
+    _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1);});
     actions._onReleaseAction = actionID;
     _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElement(Input::JoystickElementType::BUTTON_PRESS, 0), actions);
     actionID++;
@@ -322,14 +322,13 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));
     */
-    const vec2<U16>& resolution
-        = Application::instance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& resolution = _GUI->getDisplayResolution();
     // Buttons and text labels
     _GUI->addButton(_ID("Serve"), "Serve",
                     vec2<I32>(to_int(resolution.width - 120),
                               to_int(resolution.height / 1.1f)),
                     vec2<U32>(100, 25), vec3<F32>(0.65f),
-                    DELEGATE_BIND(&PingPongScene::serveBall, this));
+                    DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
 
     _GUI->addText(_ID("Score"),
                   vec2<I32>(to_int(resolution.width - 120),

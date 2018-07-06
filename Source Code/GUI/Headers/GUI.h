@@ -70,7 +70,7 @@ class Scene;
 
 DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     typedef hashMapImpl<ULL, GUIElement*> guiMap;
-    typedef DELEGATE_CBK<> ButtonCallback;
+    typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
 
   public:
     /// Create the GUI
@@ -152,6 +152,10 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
+    // GUI may render at a different resoltuion
+    inline const vec2<U16>& getDisplayResolution() const {
+        return _resolutionCache;
+    }
   private:
     GUI();            //< Constructor
     ~GUI();           //< Destructor

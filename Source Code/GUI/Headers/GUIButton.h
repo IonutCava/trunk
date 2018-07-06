@@ -44,7 +44,7 @@ class EventArgs;
 namespace Divide {
 
 class GUIButton : public GUIElement {
-    typedef DELEGATE_CBK<> ButtonCallback;
+    typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
     friend class GUI;
 
    protected:

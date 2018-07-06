@@ -82,7 +82,7 @@ class TenisScene : public Scene {
     // ToDo: replace with Physics system collision detection
     void checkCollisions();
     void playGame(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
-    void startGame();
+    void startGame(I64 btnGUID);
     void resetGame();
 
    private:

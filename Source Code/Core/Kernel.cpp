@@ -508,9 +508,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     _sceneMgr.init(&_GUI);
 
-    if (!_sceneMgr.load(startupScene)) {  //< Load the scene
+    Scene* loadedScene = _sceneMgr.load(startupScene);
+    if (loadedScene == nullptr) {  //< Load the scene
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
+    } else {
+        _sceneMgr.setActiveScene(*loadedScene);
     }
 
     if (!_sceneMgr.checkLoadFlag()) {

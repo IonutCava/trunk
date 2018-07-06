@@ -33,6 +33,7 @@
 #define _GUI_ELEMENT_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include "Utility/Headers/GUIDWrapper.h"
 
 namespace CEGUI {
 class Window;
@@ -64,7 +65,7 @@ struct GUIEvent {
 };
 
 class RenderStateBlock;
-class GUIElement {
+class GUIElement : public GUIDWrapper {
     friend class GUI;
 
    public:

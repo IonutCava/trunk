@@ -423,7 +423,7 @@ bool WarScene::deinitializeAI(bool continueOnErrors) {
     return false;
 }
 
-void WarScene::startSimulation() {
+void WarScene::startSimulation(I64 btnGUID) {
     if (g_navMeshStarted) {
         return;
     }

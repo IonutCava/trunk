@@ -219,7 +219,7 @@ stringImpl loadScripts(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file.c_str(), pt);
-    stringImpl activeScene("MainScene");
+
     par.setParam(_ID("testInt"), 2);
     par.setParam(_ID("testFloat"), 3.2f);
     par.setParam(_ID("scriptLocation"),
@@ -233,9 +233,8 @@ stringImpl loadScripts(const stringImpl &file) {
     read_xml(std::string(par.getParam<stringImpl>(_ID("scriptLocation"), "XML").c_str()) + "/" +
              pt.get("startupScene", "scenes.xml"),
              pt);
-    activeScene = pt.get("StartupScene", activeScene);
 
-    return activeScene;
+    return pt.get<stringImpl>("StartupScene", "");;
 }
 
 void loadConfig(const stringImpl &file) {
@@ -1024,7 +1023,7 @@ void dumpMaterial(Material &mat) {
 
     stringImpl location(par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                         par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
-                        par.getParam<stringImpl>(_ID("currentScene")) +
+                        par.getParam<stringImpl>(_ID("activeScene")) +
                         "/materials/");
 
     stringImpl fileLocation(

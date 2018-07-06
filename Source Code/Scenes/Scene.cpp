@@ -221,8 +221,7 @@ bool Scene::loadGeometry(const FileData& data) {
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
-    Material* tempMaterial =
-        nullptr /*XML::loadMaterial(data.ItemName + "_material")*/;
+    Material* tempMaterial = nullptr /*XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
@@ -593,8 +592,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
     }
 
-    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.move")));
-    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.turn")));
+    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.move"), 1.0f));
+    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID("options.cameraSpeed.turn"), 1.0f));
 
     addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback,
                                        &GUI::instance(), this));
@@ -631,7 +630,7 @@ bool Scene::loadPhysics(bool continueOnErrors) {
     // Initialize the physics scene
     PHYSICS_DEVICE.initScene();
     // Cook geometry
-    if (_paramHandler.getParam<bool>(_ID("options.autoCookPhysicsAssets"))) {
+    if (_paramHandler.getParam<bool>(_ID("options.autoCookPhysicsAssets"), true)) {
         _cookCollisionMeshesScheduled = true;
     }
     return true;

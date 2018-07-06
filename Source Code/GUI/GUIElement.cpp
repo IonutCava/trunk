@@ -4,7 +4,8 @@
 namespace Divide {
 
 GUIElement::GUIElement(ULL ID, CEGUI::Window* const parent, const GUIType& type)
-    : _guiType(type),
+    : GUIDWrapper(),
+      _guiType(type),
       _parent(parent),
       _active(false),
       _ID(ID)

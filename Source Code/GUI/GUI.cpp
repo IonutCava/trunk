@@ -365,7 +365,7 @@ GUIButton* GUI::addButton(ULL ID,
                           const vec3<F32>& color,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
-    vec2<F32> relOffset(((_resolutionCache.width - position.x) * 100.0f) / _resolutionCache.width,
+    vec2<F32> relOffset((position.x * 100.0f) / _resolutionCache.width,
                         (position.y * 100.0f) / _resolutionCache.height);
 
     vec2<F32> relDim((dimensions.x * 100.0f) / _resolutionCache.width,

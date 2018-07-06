@@ -64,7 +64,7 @@ class PingPongScene : public Scene {
     U16 registerInputActions() override;
    private:
     void test(const std::atomic_bool& stopRequested, cdiggins::any a, CallbackParam b);
-    void serveBall();
+    void serveBall(I64 btnGUID);
     void resetGame();
 
    private:

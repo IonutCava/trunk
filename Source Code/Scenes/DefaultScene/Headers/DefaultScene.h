@@ -44,6 +44,13 @@ public:
     bool loadResources(bool continueOnErrors) override;
     void processInput(const U64 deltaTime) override;
     void processTasks(const U64 deltaTime) override;
+    void processGUI(const U64 deltaTime) override;
+
+private:
+    void loadScene(I64 btnGUID);
+
+private:
+    hashMapImpl<I64, stringImpl> _buttonToSceneMap;
 };
 };
 

@@ -681,14 +681,13 @@ void WarScene::toggleCamera() {
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    const vec2<U16>& resolution
-        = Application::instance().windowManager().getActiveWindow().getDimensions();
+    const vec2<U16>& resolution = _GUI->getDisplayResolution();
 
     _GUI->addButton(_ID("Simulate"), "Simulate",
                     vec2<I32>(resolution.width - 220, 60),
                     vec2<U32>(100, 25), 
                     vec3<F32>(0.65f),
-                    DELEGATE_BIND(&WarScene::startSimulation, this));
+                    DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
                   vec2<I32>(60, 63),  // Position

@@ -62,14 +62,15 @@ static struct STRUCT_NAME(scene) {                              \
 } VAR_NAME(scene);                                              \
                                                                 \
 STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {                     \
-    g_sceneFactory[_ID(sceneName)]  = boost::factory<scene*>(); \
+    g_sceneFactory[sceneName]  = boost::factory<scene*>(); \
 }
  /// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be the same as the class name
 #define REGISTER_SCENE(scene) REGISTER_SCENE_W_NAME(scene, #scene)
 
 #define INIT_SCENE_FACTORY \
     namespace { \
-        hashMapImpl<ULL, std::function<Scene*(const stringImpl& name)> > g_sceneFactory; \
+        typedef hashMapImpl<stringImpl, std::function<Scene*(const stringImpl& name)> > SceneFactory; \
+        SceneFactory g_sceneFactory; \
     };\
     REGISTER_SCENE(MainScene)\
     REGISTER_SCENE(CubeScene)\

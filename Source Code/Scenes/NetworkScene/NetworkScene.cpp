@@ -45,7 +45,7 @@ void NetworkScene::processGUI(const U64 deltaTime) {
     }
 }
 
-void NetworkScene::checkPatches() {
+void NetworkScene::checkPatches(I64 btnGUID) {
     if (_modelDataArray.empty()) return;
     WorldPacket p(OPCodesEx::CMSG_GEOMETRY_LIST);
     p << stringImpl("NetworkScene");
@@ -74,18 +74,18 @@ bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
     return loadState;
 }
 
-void NetworkScene::test() {
+void NetworkScene::test(I64 btnGUID) {
     WorldPacket p(OPCodesEx::CMSG_PING);
     p << Time::ElapsedMilliseconds();
     ASIOImpl::instance().sendPacket(p);
 }
 
-void NetworkScene::connect() {
+void NetworkScene::connect(I64 btnGUID) {
     _GUI->modifyText(_ID("statusText"), "Connecting to server ...");
     ASIOImpl::instance().connect(_paramHandler.getParam<stringImpl>(_ID("serverAddress")), "443");
 }
 
-void NetworkScene::disconnect() {
+void NetworkScene::disconnect(I64 btnGUID) {
     if (!ASIOImpl::instance().isConnected()) {
         _GUI->modifyText(_ID("statusText"), "Disconnecting to server ...");
     }
@@ -127,22 +127,22 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
         _ID("getPing"), "ping me",
         vec2<I32>(60, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.6f, 0.6f, 0.6f),
-        DELEGATE_BIND(&NetworkScene::test, this));
+        DELEGATE_BIND(&NetworkScene::test, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("disconnect"), "disconnect",
         vec2<I32>(180, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.5f, 0.5f, 0.5f),
-        DELEGATE_BIND(&NetworkScene::disconnect, this));
+        DELEGATE_BIND(&NetworkScene::disconnect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("connect"), "connect",
         vec2<I32>(300, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
-        DELEGATE_BIND(&NetworkScene::connect, this));
+        DELEGATE_BIND(&NetworkScene::connect, this, std::placeholders::_1));
     _GUI->addButton(
         _ID("patch"), "patch",
         vec2<I32>(420, to_int(resolution.height / 1.1f)),
         vec2<U32>(100, 25), vec3<F32>(0.65f, 0.65f, 0.65f),
-        DELEGATE_BIND(&NetworkScene::checkPatches, this));
+        DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
 
     _guiTimers.push_back(0.0f);  // Fps
     _guiTimers.push_back(0.0f);  // Time

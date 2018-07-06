@@ -50,10 +50,10 @@ class NetworkScene : public Scene {
     void processInput(const U64 deltaTime);
 
    private:
-    void test();
-    void connect();
-    void disconnect();
-    void checkPatches();
+    void test(I64 btnGUID);
+    void connect(I64 btnGUID);
+    void disconnect(I64 btnGUID);
+    void checkPatches(I64 btnGUID);
 
    private:
     vec2<F32> _sunAngle;
