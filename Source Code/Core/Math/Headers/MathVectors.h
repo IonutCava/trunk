@@ -91,6 +91,7 @@ public:
     const vec2 operator-(const vec2 &v)    const { return vec2(this->x - v.x,this->y - v.y); }
           vec2 &operator*=(T _f)                 { return *this = *this * _f; }
           vec2 &operator/=(T _f)                 { return *this = *this / _f; }
+          vec2 &operator*=(const vec2 &v)        { return *this = *this * v;  }
           vec2 &operator+=(const vec2 &_v)       { return *this = *this + _v; }
           vec2 &operator-=(const vec2 &_v)       { return *this = *this - _v; }
           T     operator*(const vec2 &_v)  const { return this->x * _v.x + this->y * _v.y; }
@@ -108,7 +109,7 @@ public:
     /// set the 2 components of the vector manually
     inline void set(T _x,T _y)             { this->x = _x; this->y = _y; }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2& source)    { this->x = source.x; this->y = source.y; }
+    inline void set(const vec2<T> v)    { this->x = v.x; this->y =v.y; }
      /// set the 2 components of the vector using the first 2 components of the source vector
     inline void set(const vec3<T>& v)   { this->set(t.xy()); }
      /// set the 2 components of the vector using the first 2 components of the source vector
@@ -134,9 +135,9 @@ public:
     /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
     inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB) const;
     /// lerp between the 2 specified vectors by the specified ammount
-    inline vec2 lerp(vec2 &u, vec2 &v, T factor) const;
+    inline vec2 lerp(const vec2 &u, const vec2 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified ammount for each component
-    inline vec2 lerp(vec2 &u, vec2 &v, vec2& factor) const;
+    inline vec2 lerp(const vec2 &u, const vec2 &v, const vec2& factor) const;
 
     union {
         struct {T x,y;};
@@ -178,6 +179,7 @@ public:
     const vec3  operator*(const vec3 &v)   const { return vec3(this->x * v.x,this->y * v.y,this->z * v.z);}
           vec3 &operator*=(T _f)                 { return *this = *this * _f; }
           vec3 &operator/=(T _f)                 { return *this = *this / _f; }
+          vec3 &operator*=(const vec3 &v)        { return *this = *this * v;  }
           vec3 &operator+=(const vec3 &v)        { return *this = *this + v; }
           vec3 &operator-=(const vec3 &v)        { return *this = *this - v; }
     //    T     operator*(const vec3 &v)   const { return this->x * v.x + this->y * v.y + this->z * v.z; }
@@ -201,7 +203,7 @@ public:
     /// set the 3 components of the vector using a smaller source vector
     inline void set(const vec2<T>& v)   { this->x = v.x; this->y = v.y; this->z = 0.0;}
     /// set the 3 components of the vector using a source vector
-    inline void set(const vec3& v)      { this->x = v.x; this->y = v.y; this->z = v.z; }
+    inline void set(const vec3<T>& v)   { this->x = v.x; this->y = v.y; this->z = v.z; }
     /// set the 3 components of the vector using the first 3 components of the source vector
     inline void set(const vec4<T>& v)   { this->set(v.xyz()); }
     /// set all the components back to 0
@@ -235,13 +237,13 @@ public:
     /// return the closest point on the line segment created between the 2 points (A, B) and this vector
     inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB) const;
     /// lerp between the 2 specified vectors by the specified ammount
-    inline vec3 lerp(vec3 &u, vec3 &v, T factor) const;
+    inline vec3 lerp(const vec3 &u, const vec3 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified ammount for each component
-    inline vec3 lerp(vec3 &u, vec3 &v, vec3& factor) const;
+    inline vec3 lerp(const vec3 &u, const vec3 &v, const vec3& factor) const;
     /// lerp between this and the specified vector by the specified ammount
-    inline void lerp(vec3 &v, T factor) const;
+    inline void lerp(const vec3 &v, T factor);
     /// lerp between this and the specified vector by the specified ammount for each component
-    inline void lerp(vec3 &v, vec3& factor) const;
+    inline void lerp(const vec3 &v, const vec3& factor);
     /// this calculates a vector between the two specified points and returns the result
     inline vec3 vector(const vec3 &vp1, const vec3 &vp2) const;
     /// set this vector to be equal to the cross of the 2 specified vectors
@@ -301,6 +303,7 @@ public:
     const vec4  operator-(const vec4 &v)    const { return vec4(this->x - v.x,this->y - v.y,this->z - v.z,this->w - v.w); }
           vec4 &operator*=(T _f)                  { return *this = *this * _f; }
           vec4 &operator/=(T _f)                  { return *this = *this / _f; }
+          vec4 &operator*=(const vec4 &v)         { return *this = *this * v; }
           vec4 &operator+=(const vec4 &v)         { return *this = *this + v; }
           vec4 &operator-=(const vec4 &v)         { return *this = *this - v; }
           T     operator*(const vec3<T> &v) const { return this->x * v.x + this->y * v.y + this->z * v.z + this->w; }
@@ -315,10 +318,10 @@ public:
     /// GLSL like accessors
     inline vec2<T> rg()  const {return vec2<T>(this->r,this->g);}
     inline vec2<T> xy()  const {return this->rg();}
-    inline vec2<T> rb() const { return vec2<T>(this->r, this->b);}
-    inline vec2<T> xz() const { return this->rb();}
-    inline vec2<T> gb() const { return vec2<T>(this->g, this->b);}
-    inline vec2<T> yz() const { return this->gb();}
+    inline vec2<T> rb()  const { return vec2<T>(this->r, this->b);}
+    inline vec2<T> xz()  const { return this->rb();}
+    inline vec2<T> gb()  const { return vec2<T>(this->g, this->b);}
+    inline vec2<T> yz()  const { return this->gb();}
     inline vec3<T> rgb() const {return vec3<T>(this->r,this->g,this->b);}
     inline vec3<T> xyz() const {return this->rgb();}
     inline vec3<T> bgr() const {return vec3<T>(this->b,this->g,this->r);}
@@ -341,7 +344,7 @@ public:
     /// lerp between the 2 specified vectors by the specified ammount
     inline vec4 lerp(const vec4 &u, const vec4 &v, T factor) const;
     /// lerp between the 2 specified vectors by the specified ammount for each component
-    inline vec4 lerp(vec4 &u, vec4 &v, vec4& factor) const;
+    inline vec4 lerp(const vec4 &u, const vec4 &v, const vec4& factor) const;
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec4 *iv);
     /// swap the components  of this vector with that of the specified one
@@ -370,9 +373,25 @@ inline vec4<T> normalize(vec4<T>& vector) {
 }
 
 ///Quaternion multiplications require these to be floats
+extern vec2<F32> VECTOR2_ZERO;
+extern vec3<F32> VECTOR3_ZERO;
+extern vec4<F32> VECTOR4_ZERO;
 extern vec3<F32> WORLD_X_AXIS;
 extern vec3<F32> WORLD_Y_AXIS;
 extern vec3<F32> WORLD_Z_AXIS;
+extern vec3<F32> WORLD_X_NEG_AXIS;
+extern vec3<F32> WORLD_Y_NEG_AXIS;
+extern vec3<F32> WORLD_Z_NEG_AXIS;
+
+extern vec2<I32> iVECTOR2_ZERO;
+extern vec3<I32> iVECTOR3_ZERO;
+extern vec4<I32> iVECTOR4_ZERO;
+extern vec3<I32> iWORLD_X_AXIS;
+extern vec3<I32> iWORLD_Y_AXIS;
+extern vec3<I32> iWORLD_Z_AXIS;
+extern vec3<I32> iWORLD_X_NEG_AXIS;
+extern vec3<I32> iWORLD_Y_NEG_AXIS;
+extern vec3<I32> iWORLD_Z_NEG_AXIS;
 
 //Inline definitions
 #include "MathVectors-Inl.h"

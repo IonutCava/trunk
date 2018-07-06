@@ -169,8 +169,8 @@ void WarScene::updateSceneState(const U64 deltaTime){
     Navigation::NavigationMesh* navMesh = AIManager::getInstance().getNavMesh(0);
 #ifdef _DEBUG
     U32 characterCount = _army1.size() + _army2.size();
-    _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
-    _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec3<F32>(0.0f));
+    _pointsA[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
+    _pointsB[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, VECTOR3_ZERO);
     _colors[DEBUG_LINE_OBJECT_TO_TARGET].resize(characterCount, vec4<U8>(255,0,255,128));
 
     renderState().drawDebugLines(true);

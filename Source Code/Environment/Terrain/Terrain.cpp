@@ -218,7 +218,7 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
 
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
     if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f)
-        return vec3<F32>(0.0f);
+        return VECTOR3_ZERO;
 
     vec2<F32>  posF(	x_clampf * _terrainWidth, z_clampf * _terrainHeight );
     vec2<U32>  posI(	(I32)(posF.x), (I32)(posF.y) );
@@ -237,7 +237,7 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
 }
 
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
-    if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return vec3<F32>(0.0f, 1.0f, 0.0f);
+    if(x_clampf<.0f || z_clampf<.0f || x_clampf>1.0f || z_clampf>1.0f) return WORLD_Y_AXIS;
 
     vec2<F32>  posF(	x_clampf * _terrainWidth, z_clampf * _terrainHeight );
     vec2<U32>  posI(	(I32)(x_clampf * _terrainWidth), (I32)(z_clampf * _terrainHeight) );

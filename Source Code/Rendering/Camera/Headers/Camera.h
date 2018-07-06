@@ -40,7 +40,7 @@ public:
     };
 
 public:
-    Camera(const CameraType& type);
+    Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
     virtual ~Camera() {}
 
     virtual void update(const U64 deltaTime);

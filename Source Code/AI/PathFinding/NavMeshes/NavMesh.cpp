@@ -163,8 +163,12 @@ namespace Navigation {
         dtFreeNavMesh(old);
         _debugDrawInterface->setDirty(true);
         _tempNavMesh = NULL;
+#ifdef _DEBUG
         bool navQueryComplete = createNavigationQuery();
         assert(navQueryComplete);
+#else
+        createNavigationQuery();
+#endif
         _navigationMeshLock.unlock();
 
         // Free structs used during build

@@ -390,6 +390,6 @@ private:
 };
 
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'(from Ogre3D!)
-Quaternion<F32> rotationFromVToU(const vec3<F32>& v, const vec3<F32>& u, const vec3<F32> fallbackAxis = vec3<F32>(0.0));
+Quaternion<F32> rotationFromVToU(const vec3<F32>& v, const vec3<F32>& u, const vec3<F32> fallbackAxis = VECTOR3_ZERO);
 
 #endif

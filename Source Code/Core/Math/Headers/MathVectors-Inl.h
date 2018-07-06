@@ -121,13 +121,13 @@ inline T vec2<T>::projectionOnLine(const vec2 &vA, const vec2 &vB) const {
 
 /// linear interpolation between 2 vectors
 template<class T>
-inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, T factor) const {
+inline vec2<T> vec2<T>::lerp(const vec2 &u, const vec2 &v, T factor) const {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// linear interpolation between 2 vectors based on separate x and y factors
 template<class T>
-inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, vec2& factor) const {
+inline vec2<T> vec2<T>::lerp(const vec2 &u, const vec2 &v, const vec2& factor) const {
     return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
                  (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
@@ -267,13 +267,13 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
 
 /// lerp between the 2 specified vectors by the specified ammount
 template<class T>
-inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, T factor) const {
+inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, T factor) const {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// lerp between the 2 specified vectors by the specified ammount for each component
 template<class T>
-inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, vec3& factor) const {
+inline vec3<T> vec3<T>::lerp(const vec3 &u, const vec3 &v, const vec3& factor) const {
     return (vec3((u.x * (1 - factor.x)) + (v.x * factor.x),
                  (u.y * (1 - factor.y)) + (v.y * factor.y),
                  (u.z * (1 - factor.z)) + (v.z * factor.z)));
@@ -281,16 +281,14 @@ inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, vec3& factor) const {
 
  /// lerp between this and the specified vector by the specified ammount
 template<class T>
-inline void vec3<T>::lerp(vec3 &v, T factor) const{
-    set((this->x * (1 - factor.x)) + (v.x * factor.x),
-        (this->y * (1 - factor.y)) + (v.y * factor.y),
-        (this->z * (1 - factor.z)) + (v.z * factor.z));
+inline void vec3<T>::lerp(const vec3 &v, T factor) {
+    set((*this * (1 - factor)) + (v * factor));
 }
 
 /// lerp between this and the specified vector by the specified ammount for each component
 template<class T>
-inline void vec3<T>::lerp(vec3 &v, vec3& factor) const {
-    set((this * (1 - factor)) + (v * factor));
+inline void vec3<T>::lerp(const vec3 &v,const vec3& factor) {
+    set((*this * (1 - factor)) + (v * factor));
 }
 
 /// rotate this vector on the X axis
@@ -372,7 +370,7 @@ inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const {
 
 /// lerp between the 2 specified vectors by the specified ammount for each componet
 template<class T>
-inline vec4<T> vec4<T>::lerp(vec4 &u, vec4 &v, vec4& factor) const {
+inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, const vec4& factor) const {
     return (vec4((u.x * (1 - factor.x)) + (v.x * factor.x),
                  (u.y * (1 - factor.y)) + (v.y * factor.y),
                  (u.z * (1 - factor.z)) + (v.z * factor.z),

@@ -22,5 +22,5 @@ void SpotLight::setCameraToLightView(const vec3<F32>& eyePos){
 }
 
 void SpotLight::renderFromLightView(const U8 depthPass,const F32 sceneHalfExtent){
-	GFX_DEVICE.lookAt(_lightPos,vec3<F32>(0.0f)/*target*/);
+	GFX_DEVICE.lookAt(_lightPos, VECTOR3_ZERO/*target*/);
 }

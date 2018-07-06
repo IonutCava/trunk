@@ -836,69 +836,69 @@ inline void projectPoint(const vec3<T>& position,vec3<T>& output){
 
 
 namespace Util{
-	namespace Mat4 {
-				// ----------------------------------------------------------------------------------------
-			template <typename T>
-			inline void decompose(const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position) {
-	
-				// extract translation
-				position.x = matrix.m[0][3];
-				position.y = matrix.m[1][3];
-				position.z = matrix.m[2][3];
+    namespace Mat4 {
+                // ----------------------------------------------------------------------------------------
+            template <typename T>
+            inline void decompose(const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position) {
+    
+                // extract translation
+                position.x = matrix.m[0][3];
+                position.y = matrix.m[1][3];
+                position.z = matrix.m[2][3];
 
-				// extract the rows of the matrix
-				vec3<T> vRows[3] = {
-					vec3<T>(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0]),
-					vec3<T>(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1]),
-					vec3<T>(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2])
-				};
+                // extract the rows of the matrix
+                vec3<T> vRows[3] = {
+                    vec3<T>(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0]),
+                    vec3<T>(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1]),
+                    vec3<T>(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2])
+                };
 
-				// extract the scaling factors
-				scale.x = vRows[0].length();
-				scale.y = vRows[1].length();
-				scale.z = vRows[2].length();
+                // extract the scaling factors
+                scale.x = vRows[0].length();
+                scale.y = vRows[1].length();
+                scale.z = vRows[2].length();
 
-				// and the sign of the scaling
-				if (matrix.det() < 0) {
-					scale.x = -scale.x;
-					scale.y = -scale.y;
-					scale.z = -scale.z;
-				}
+                // and the sign of the scaling
+                if (matrix.det() < 0) {
+                    scale.x = -scale.x;
+                    scale.y = -scale.y;
+                    scale.z = -scale.z;
+                }
 
-				// and remove all scaling from the matrix
-				if(!IS_ZERO(scale.x))
-				{
-					vRows[0] /= scale.x;
-				}
-				if(!IS_ZERO(scale.y))
-				{
-					vRows[1] /= scale.y;
-				}
-				if(!IS_ZERO(scale.z))
-				{
-					vRows[2] /= scale.z;
-				}
+                // and remove all scaling from the matrix
+                if(!IS_ZERO(scale.x))
+                {
+                    vRows[0] /= scale.x;
+                }
+                if(!IS_ZERO(scale.y))
+                {
+                    vRows[1] /= scale.y;
+                }
+                if(!IS_ZERO(scale.z))
+                {
+                    vRows[2] /= scale.z;
+                }
 
-				// build a 3x3 rotation matrix
-				mat3<T> m(vRows[0].x,vRows[1].x,vRows[2].x,
-					      vRows[0].y,vRows[1].y,vRows[2].y,
-					      vRows[0].z,vRows[1].z,vRows[2].z);
+                // build a 3x3 rotation matrix
+                mat3<T> m(vRows[0].x,vRows[1].x,vRows[2].x,
+                          vRows[0].y,vRows[1].y,vRows[2].y,
+                          vRows[0].z,vRows[1].z,vRows[2].z);
 
-				// and generate the rotation quaternion from it
-				rotation = Quaternion<T>(m);
-			}
+                // and generate the rotation quaternion from it
+                rotation = Quaternion<T>(m);
+            }
 
-			// ----------------------------------------------------------------------------------------
-			template <typename T>
-			inline void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position) {
-				// extract translation
-				position.x = matrix.m[0][3];
-				position.y = matrix.m[1][3];
-				position.z = matrix.m[2][3];
+            // ----------------------------------------------------------------------------------------
+            template <typename T>
+            inline void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position) {
+                // extract translation
+                position.x = matrix.m[0][3];
+                position.y = matrix.m[1][3];
+                position.z = matrix.m[2][3];
 
-				// extract rotation
-				rotation = Quaterion<T>(mat3<T>(matrix));
-			}
-	};//Mat4
+                // extract rotation
+                rotation = Quaterion<T>(mat3<T>(matrix));
+            }
+    };//Mat4
 };//Util
 #endif

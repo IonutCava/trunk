@@ -50,6 +50,8 @@ class GUIConsole{
        ///add text to the console Window. Uses a text buffer if the console isn't ready for display yet
        void printText(const char* output,bool error);
 
+       void update(const U64 deltaTime);
+
     protected:
 
        void RegisterHandlers();                                   //< Register our handler functions

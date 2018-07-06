@@ -28,7 +28,7 @@
 ///Fixed camera that orbits a certain point. It's position can't change.
 class OrbitCamera : public Camera {
 public:
-	OrbitCamera(const CameraType& type = ORBIT);
+	OrbitCamera(const CameraType& type = ORBIT, const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 #endif

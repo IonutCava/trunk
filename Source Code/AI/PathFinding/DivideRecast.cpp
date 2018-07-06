@@ -115,8 +115,8 @@ namespace Navigation {
     }
 
     vec3<F32> DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh){
-		if(navMesh.getNavQuery().getAttachedNavMesh() == NULL)
-			return vec3<F32>(0.0f);
+        if(navMesh.getNavQuery().getAttachedNavMesh() == NULL)
+            return VECTOR3_ZERO;
 
         F32 resultPoint[3];
         dtPolyRef resultPoly;
@@ -131,10 +131,10 @@ namespace Navigation {
     }
 
     bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh, const vec3<F32>& position, vec3<F32>& resultPt, dtPolyRef &resultPoly){
-		if(navMesh.getNavQuery().getAttachedNavMesh() == NULL){
-			resultPt.set(vec3<F32>(0.0f));
-			return false;
-		}
+        if(navMesh.getNavQuery().getAttachedNavMesh() == NULL){
+            resultPt.set(VECTOR3_ZERO);
+            return false;
+        }
 
         F32 pt[] = {position.x, position.y, position.z};
         F32 rPt[3];

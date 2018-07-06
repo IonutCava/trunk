@@ -2,6 +2,6 @@
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
-ThirdPersonCamera::ThirdPersonCamera() : OrbitCamera(THIRD_PERSON)
+ThirdPersonCamera::ThirdPersonCamera(const vec3<F32>& eye) : OrbitCamera(THIRD_PERSON, eye)
 {
 }

@@ -4,7 +4,8 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 
-Camera::Camera(const CameraType& type) : Resource(),
+Camera::Camera(const CameraType& type, const vec3<F32>& eye) :
+                                         Resource(),
                                          _saved(false),
                                          _viewMatrixDirty(true),
                                          _mouseSensitivity(1.0f),
@@ -19,11 +20,11 @@ Camera::Camera(const CameraType& type) : Resource(),
     _savedFloats[1] = 0.0f;
     _savedFloats[2] = 0.0f;
     _savedFloats[3] = 0.0f;
-    _eye.set(0.0f, 0.0f, 0.0f);
-    _xAxis.set(1.0f, 0.0f, 0.0f);
-    _yAxis.set(0.0f, 1.0f, 0.0f);
-    _zAxis.set(0.0f, 0.0f, 1.0f);
-    _viewDir.set(0.0f, 0.0f, -1.0f);
+    _eye.set(eye);
+    _xAxis.set(WORLD_X_AXIS);
+    _yAxis.set(WORLD_Y_AXIS);
+    _zAxis.set(WORLD_Z_AXIS);
+    _viewDir.set(WORLD_Z_NEG_AXIS);
     _fixedYawAxis.set(WORLD_Y_AXIS);
     _accumPitchDegrees = 0.0f;
     _orientation.identity();

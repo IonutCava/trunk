@@ -262,12 +262,12 @@ void  GFXDevice::generateCubeMap(FrameBufferObject& cubeMap,
     }
 
     static vec3<F32> TabUp[6] = {
-        vec3<F32>(0.0f,	-1.0f,	0.0f),
-        vec3<F32>(0.0f,	-1.0f,	0.0f),
-        vec3<F32>(0.0f,	 0.0f,	1.0f),
-        vec3<F32>(0.0f,  0.0f, -1.0f),
-        vec3<F32>(0.0f,	-1.0f,	0.0f),
-        vec3<F32>(0.0f,	-1.0f,	0.0f)
+        WORLD_Y_NEG_AXIS,
+        WORLD_Y_NEG_AXIS,
+        WORLD_Z_AXIS,
+        WORLD_Z_NEG_AXIS,
+        WORLD_Y_NEG_AXIS,
+        WORLD_Y_NEG_AXIS
     };
 
     ///Get the center and up vectors for each cube face

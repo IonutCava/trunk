@@ -60,9 +60,9 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     _cameraMgr->addCameraChangeListener(DELEGATE_BIND(&SceneManager::updateCameras, //update camera
                                                       DELEGATE_REF(SceneMgr)));
     // force all lights to update on camera change (to keep them still actually)
-	_cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::update, 
-		                                               DELEGATE_REF(LightManager::getInstance()),
-													   true));
+    _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::update, 
+                                                       DELEGATE_REF(LightManager::getInstance()),
+                                                       true));
     //We have an A.I. thread, a networking thread, a PhysX thread, the main update/rendering thread
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
@@ -463,6 +463,7 @@ void Kernel::updateResolutionCallback(I32 w, I32 h){
     _renderingPaused = (w == 0 || h == 0);
     app.setResolutionWidth(w);
     app.setResolutionHeight(h);
+    app.isFullScreen(!ParamHandler::getInstance().getParam<bool>("runtime.windowedMode"));
     //Update post-processing render targets and buffers
     PostFX::getInstance().reshapeFBO(w, h);
     vec2<U16> newResolution(w,h);

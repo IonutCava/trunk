@@ -39,7 +39,7 @@ public:
 
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a NULL unit as a param, we use the camera position
-    bool check(Unit* const unit,const vec3<F32>& camEyePos = vec3<F32>(0.0f));
+    bool check(Unit* const unit,const vec3<F32>& camEyePos = VECTOR3_ZERO);
     /// Sets a new Task for this trigger
     void updateTriggeredTask(Task_ptr triggeredTask);
     /// Trigger's the Task regardless of position

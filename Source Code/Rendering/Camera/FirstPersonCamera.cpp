@@ -5,6 +5,6 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 
-FirstPersonCamera::FirstPersonCamera() : Camera(FIRST_PERSON)
+FirstPersonCamera::FirstPersonCamera(const vec3<F32>& eye) : Camera(FIRST_PERSON, eye)
 {
 }

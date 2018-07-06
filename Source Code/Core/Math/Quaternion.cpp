@@ -16,7 +16,7 @@ Quaternion<F32> rotationFromVToU(const vec3<F32>& v, const vec3<F32>& u, const v
     if (d >= 1.0f) {
          return q;
     } else if (d < (1e-6f - 1.0f)) {
-        if(!fallbackAxis.compare(vec3<F32>(0.0))) {
+        if(!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
             q.fromAxisAngle(fallbackAxis,RADIANS(M_PI));
         } else {

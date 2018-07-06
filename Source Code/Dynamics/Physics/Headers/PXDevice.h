@@ -48,11 +48,11 @@ public:
         return _api.NewSceneInterface(scene);
     }
 
-    inline bool createPlane(const vec3<F32>& position = vec3<F32>(0.0f), U32 size = 1){
+    inline bool createPlane(const vec3<F32>& position = VECTOR3_ZERO, U32 size = 1){
         return _api.createPlane(position,size);
     }
 
-    inline bool createBox(const vec3<F32>& position = vec3<F32>(0.0f), F32 size = 1.0f){
+    inline bool createBox(const vec3<F32>& position = VECTOR3_ZERO, F32 size = 1.0f){
         return _api.createBox(position,size);
     }
 

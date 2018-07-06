@@ -46,6 +46,7 @@ void GUI::onResize(const vec2<U16>& newResolution){
 
 void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
     if(!_init) return;
+    if(_console) _console->update(deltaTime);
 
     GFXDevice& gfx = GFX_DEVICE;
 

@@ -27,7 +27,7 @@
 // A "god-mode" camera. It can move freely around the world
 class FreeFlyCamera : public Camera {
 public:
-	FreeFlyCamera();
+	FreeFlyCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 #endif

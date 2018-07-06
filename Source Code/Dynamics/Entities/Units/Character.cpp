@@ -7,7 +7,7 @@ Character::Character(CharacterType type, SceneGraphNode* const node) : Unit(Unit
                                                                        _positionDirty(false),
                                                                        _velocityDirty(false)
 {
-    setRelativeLookingDirection(-WORLD_Z_AXIS);
+    setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.set(0,0,0);
     if(node && node->getTransform()){
         _newPosition = node->getTransform()->getPosition();
@@ -24,8 +24,10 @@ void Character::update(const U64 deltaTime) {
         Transform* t = getBoundNode()->getTransform();
         assert(t != NULL);
 
-        if(_positionDirty)
+        if(_positionDirty){
+            _newPosition.lerp(t->getPosition(), getUsToSec(deltaTime));
             t->setPosition(_newPosition);
+        }
 
         if(_velocityDirty){
             if(_newVelocity.length() > 0){

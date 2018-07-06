@@ -89,7 +89,7 @@ public:
     inline void reserveBiTangentCount(U32 size) {_dataBiTangent.reserve(size);}
     inline void reserveIndexCount(U32 size)     {_largeIndices ? _hardwareIndicesL.reserve(size) :_hardwareIndicesS.reserve(size);}
 
-    inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))  {
+    inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO)  {
         _dataPosition.resize(size,defaultValue);
     }
 
@@ -97,15 +97,15 @@ public:
         _dataColor.resize(size,defaultValue);
     }
 
-    inline void resizeNormalCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))    {
+    inline void resizeNormalCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO)    {
         _dataNormal.resize(size,defaultValue);
     }
 
-    inline void resizeTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f))   {
+    inline void resizeTangentCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO)   {
         _dataTangent.resize(size,defaultValue);
     }
 
-    inline void resizeBiTangentCount(U32 size, const vec3<F32>& defaultValue = vec3<F32>(0.0f)) {
+    inline void resizeBiTangentCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO) {
         _dataBiTangent.resize(size,defaultValue);
     }
 

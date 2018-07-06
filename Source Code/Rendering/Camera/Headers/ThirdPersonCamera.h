@@ -28,7 +28,7 @@
 ///Movable camera that orbits a certain point
 class ThirdPersonCamera : public OrbitCamera {
 public:
-	ThirdPersonCamera();
+	ThirdPersonCamera(const vec3<F32>& eye = VECTOR3_ZERO);
 };
 
 #endif

@@ -39,15 +39,17 @@ public:
     void run();
 
     ///Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution() const {return _resolution;}
-    inline void setResolutionWidth(U16 w)         {_resolution.x = w;}
-    inline void setResolutionHeight(U16 h)        {_resolution.y = h;}
-    inline void RequestShutdown()                 {_requestShutdown = true;}
-    inline void CancelShutdown()                  {_requestShutdown = false;}
-    inline bool ShutdownRequested()         const {return _requestShutdown;}
+    inline const vec2<U16>& getResolution()   const {return _resolution;}
+    inline const vec2<U16>& getScreenCenter() const {return _screenCenter;}
+    inline void setResolutionWidth(U16 w)           {_resolution.width = w; _screenCenter.x = w / 2;}
+    inline void setResolutionHeight(U16 h)          {_resolution.height = h; _screenCenter.y = h / 2;}
+    inline void setResolution(U16 w, U16 h)         {_resolution.set(w,h); _screenCenter.set(_resolution / 2);}
+    inline void RequestShutdown()                   {_requestShutdown = true;}
+    inline void CancelShutdown()                    {_requestShutdown = false;}
+    inline bool ShutdownRequested()           const {return _requestShutdown;}
     ///Application window ID
-    inline I8            getMainWindowId()  const {return _mainWindowId;}
-    inline Kernel* const getKernel()        const {return _kernel;}
+    inline I8            getMainWindowId()    const {return _mainWindowId;}
+    inline Kernel* const getKernel()          const {return _kernel;}
 
     inline const boost::thread::id&  getMainThreadId()               const {return _threadId;}
     inline bool isMainThread()                                       const {return (_threadId == boost::this_thread::get_id());}
@@ -57,6 +59,9 @@ public:
 
     inline bool hasFocus()                 const {return _hasFocus;}
     inline void hasFocus(const bool state)       {_hasFocus = state;}
+
+    inline bool isFullScreen()                 const {return _isFullscreen;}
+    inline void isFullScreen(const bool state)       {_isFullscreen = state;}
 
 protected:
     friend class InputInterface;
@@ -71,9 +76,12 @@ private:
     bool      _requestShutdown;
     /// this is false if the window/application lost focus (e.g. clicked another window, alt + tab, etc)
     bool      _hasFocus; 
+    /// this is false if the application is running in windowed mode
+    bool      _isFullscreen;
     /// size in bytes of currently allocated memory by the "New" override (delete calls are taken in consideration)
     size_t    _totalMemoryOcuppied;
     vec2<U16> _resolution;
+    vec2<U16> _screenCenter;
     Kernel*   _kernel;
     ///buffer to register all of the memory allocations recorded via "New"
     std::ofstream _memLogBuffer;

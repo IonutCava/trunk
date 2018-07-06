@@ -21,6 +21,9 @@ AIEntity::AIEntity(const vec3<F32>& currentPosition, const std::string& name)  :
                                               _detourCrowd(NULL),
                                               _agent(NULL),
                                               _agentID(-1),
+                                              _distanceToTarget(-1.f),
+                                              _previousDistanceToTarget(-1.f),
+                                              _moveWaitTimer(0ULL),
                                               _stopped(false)
 {
     _currentPosition.set(currentPosition);
@@ -224,6 +227,20 @@ void AIEntity::setPosition(const vec3<F32> position) {
 
 void AIEntity::updatePosition(const U64 deltaTime){
     if(isAgentLoaded() && getAgent()->active){
+        _previousDistanceToTarget = _distanceToTarget;
+        _distanceToTarget = _currentPosition.distanceSquared(_destination);
+
+        // if we are walking but did not change distance
+        if(abs(_previousDistanceToTarget - _distanceToTarget) < DESTINATION_RADIUS){
+            _moveWaitTimer += deltaTime;
+            if(getUsToSec(_moveWaitTimer) > 5){
+                _moveWaitTimer = 0;
+                updateDestination(Navigation::DivideRecast::getInstance().getRandomNavMeshPoint(_detourCrowd->getNavMesh()));
+                return;
+            }
+        }else{
+            _moveWaitTimer = 0;
+        }
         _currentPosition.setV(getAgent()->npos);
         _currentVelocity.setV(getAgent()->nvel);
     }
@@ -279,7 +296,7 @@ void AIEntity::setDestination(const vec3<F32>& destination) {
 }
 
 void AIEntity::moveForward(){
-    vec3<F32> lookDirection = _unitRef != NULL ? _unitRef->getLookingDirection() : vec3<F32>(0.0f, 0.0f, -1.0f);
+    vec3<F32> lookDirection = _unitRef != NULL ? _unitRef->getLookingDirection() : WORLD_Z_NEG_AXIS;
     lookDirection.normalize();
 
     setVelocity(lookDirection * getMaxSpeed());

@@ -170,6 +170,9 @@ private:
     vec3<F32> _destination;
     vec3<F32> _currentPosition;  
     vec3<F32> _currentVelocity;
+    F32       _distanceToTarget;
+    F32       _previousDistanceToTarget;
+    U64       _moveWaitTimer;
     /// True if this character is stopped.
     bool _stopped;
 };
