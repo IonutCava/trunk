@@ -15,9 +15,6 @@ ApplicationTimer::ApplicationTimer()
       _benchmark(false),
       _elapsedTimeUs(0UL)
 {
-    _ticksPerSecond = static_cast<TimeValue>(0);
-    _frameDelay = static_cast<TimeValue>(0);
-    _startupTicks = static_cast<TimeValue>(0);
 }
 
 ApplicationTimer::~ApplicationTimer()
@@ -43,30 +40,18 @@ void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);  //<prevent double init
 
     _targetFrameRate = to_uint(targetFrameRate);
-    getTicksPerSecond(_ticksPerSecond);
-    getCurrentTime(_startupTicks);
-    _startupTicks =  std::max(_startupTicks, static_cast<TimeValue>(0));
+    _startupTicks = getCurrentTicksInternal();
     _frameDelay = _startupTicks;
+
     _init = true;
-}
-
-TimeValue ApplicationTimer::getCurrentTicksInternal() const {
-    TimeValue currentTicks;
-    getCurrentTime(currentTicks);
-    return currentTicks;
-}
-
-U64 ApplicationTimer::getElapsedTimeInternal(TimeValue currentTicks) const {
-    U64 microseconds = Time::SecondsToMicroseconds(currentTicks - _startupTicks);
-    return microseconds / _ticksPerSecond;
 }
 
 void ApplicationTimer::update(U32 frameCount) {
     TimeValue currentTicks = getCurrentTicksInternal();
     _elapsedTimeUs = getElapsedTimeInternal(currentTicks);
 
-    _speedfactor = to_float(currentTicks - _frameDelay) /
-                   (_ticksPerSecond / to_float(_targetFrameRate));
+    USec duration = std::chrono::duration_cast<USec>(currentTicks - _frameDelay);
+    _speedfactor = Time::MicrosecondsToSeconds<F32>(static_cast<U64>(duration.count() * _targetFrameRate));
 
     _frameDelay = currentTicks;
 

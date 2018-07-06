@@ -76,8 +76,6 @@ namespace Divide {
         int _systemResolutionWidth;
         int _systemResolutionHeight;
     };
-
-typedef long int TimeValue;
 }; //namespace Divide
 
 template <typename T>

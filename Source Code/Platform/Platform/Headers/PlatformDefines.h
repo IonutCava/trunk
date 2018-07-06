@@ -189,11 +189,8 @@ D32 to_double(const T value) {
 
 struct SysInfo;
 
-extern void getCurrentTime(TimeValue& timeOut);
-extern void getTicksPerSecond(TimeValue& ticksPerSecond);
 extern void getWindowHandle(void* window, SysInfo& info);
 
-TimeValue getTickDifference(const TimeValue& end, const TimeValue& begin);
 bool CheckMemory(const U32 physicalRAMNeeded, SysInfo& info);
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 template<typename T>

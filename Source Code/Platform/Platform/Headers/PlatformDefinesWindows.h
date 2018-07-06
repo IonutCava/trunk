@@ -96,8 +96,6 @@ namespace Divide {
         int _systemResolutionWidth;
         int _systemResolutionHeight;
     };
-
-    typedef LONGLONG TimeValue;
 }; //namespace Divide
 
 

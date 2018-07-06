@@ -33,14 +33,20 @@
 #define _CORE_APPLICATION_TIMER_H_
 
 #include "Core/Math/Headers/MathHelper.h"
-
+#include <chrono>
 // Code from http://www.gamedev.net/reference/articles/article1382.asp
 // Copyright: "Frame Rate Independent Movement" by Ben Dilts
-
 namespace Divide {
 namespace Time {
+
+typedef std::chrono::time_point<std::chrono::steady_clock> TimeValue;
+
 class ProfileTimer;
 DEFINE_SINGLETON(ApplicationTimer)
+    typedef std::chrono::microseconds USec;
+    typedef std::chrono::milliseconds MSec;
+    typedef std::chrono::seconds Sec;
+
   public:
     void init(U8 targetFrameRate);
     void update(U32 frameCount);
@@ -57,9 +63,9 @@ DEFINE_SINGLETON(ApplicationTimer)
     ~ApplicationTimer();
 
     void benchmarkInternal(U32 frameCount);
-    U64 getElapsedTimeInternal(TimeValue currentTicks) const;
-    TimeValue getCurrentTicksInternal() const;
-    U64 getElapsedTimeInternal() const;
+
+    inline TimeValue getCurrentTicksInternal() const;
+    inline U64 getElapsedTimeInternal(const TimeValue& currentTicks) const;
 
     friend class ProfileTimer;
     void addTimer(ProfileTimer* const timer);
@@ -71,10 +77,12 @@ DEFINE_SINGLETON(ApplicationTimer)
     F32 _frameTime;
     F32 _speedfactor;
     U32 _targetFrameRate;
-    TimeValue _ticksPerSecond;  // Processor's ticks per second
-    TimeValue _frameDelay;      // Previous frame's number of ticks
-    TimeValue _startupTicks;    // Ticks at class initialization
-    bool _benchmark;            // Measure average FPS and output max/min/average fps to console
+    // Previous frame's time stamp
+    TimeValue _frameDelay;
+    // Time stamp at class initialization
+    TimeValue _startupTicks;
+    // Measure average FPS and output max/min/average fps to console
+    bool _benchmark;
     bool _init;
 
     std::atomic<U64> _elapsedTimeUs;

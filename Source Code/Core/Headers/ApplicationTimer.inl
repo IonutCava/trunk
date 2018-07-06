@@ -45,16 +45,21 @@ inline F32 ApplicationTimer::getFrameTime() const { return _frameTime; }
 
 inline F32 ApplicationTimer::getSpeedfactor() const { return _speedfactor; }
 
+
+inline TimeValue ApplicationTimer::getCurrentTicksInternal() const {
+    return std::chrono::high_resolution_clock::now();
+}
+
+inline U64 ApplicationTimer::getElapsedTimeInternal(const TimeValue& currentTicks) const {
+    return static_cast<U64>(std::chrono::duration_cast<USec>(currentTicks - _startupTicks).count());
+}
+
 inline U64 ApplicationTimer::getElapsedTime(bool forceUpdate) {
     if (forceUpdate) {
-        return getElapsedTimeInternal();
+        return getElapsedTimeInternal(getCurrentTicksInternal());
     }
      
     return _elapsedTimeUs;
-}
-
-inline U64 ApplicationTimer::getElapsedTimeInternal() const {
-    return getElapsedTimeInternal(getCurrentTicksInternal());
 }
 
 inline F32 FRAME_SPEED_FACTOR() {

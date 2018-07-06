@@ -161,20 +161,6 @@ namespace Divide {
         return false;
     }
 
-    void getTicksPerSecond(TimeValue& ticksPerSecond) {
-        LARGE_INTEGER time;
-        bool queryAvailable = QueryPerformanceFrequency(&time) != 0;
-        DIVIDE_ASSERT(queryAvailable,
-            "Current system does not support 'QueryPerformanceFrequency calls!");
-        ticksPerSecond = time.QuadPart;
-    }
-
-    void getCurrentTime(TimeValue& timeOut) {
-        LARGE_INTEGER time;
-        QueryPerformanceCounter(&time);
-        timeOut = time.QuadPart;
-    }
-
 }; //namespace Divide
 
 #endif //defined(_WIN32)

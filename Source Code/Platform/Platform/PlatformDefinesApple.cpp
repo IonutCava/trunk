@@ -36,16 +36,6 @@ namespace Divide {
         info._windowHandle = wmInfo.info.cocoa.window;
     }
 
-    void getTicksPerSecond(TimeValue& ticksPerSecond) {
-        ticksPerSecond = Time::SecondsToMicroseconds(1);
-    }
-
-    void getCurrentTime(TimeValue& timeOut) {
-        timeval time;
-        gettimeofday(&time, nullptr);
-        timeOut = time.tv_usec;
-    }
-
 }; //namespace Divide
 
 #endif //defined(__APPLE_CC__)
