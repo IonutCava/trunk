@@ -59,7 +59,6 @@ CascadedShadowMaps::CascadedShadowMaps(GFXDevice& context, Light* light, const S
     blurMapSampler.setFilters(TextureFilter::LINEAR);
     blurMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     blurMapSampler.setAnisotropy(0);
-    blurMapSampler.toggleMipMaps(false);
 
     TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY,
                                         GFXImageFormat::RG32F,
@@ -244,7 +243,7 @@ void CascadedShadowMaps::postRender() {
 
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
     _blurBuffer._rt->begin(RenderTarget::defaultPolicy());
-    depthMap.bind(0, RTAttachment::Type::Colour, 0, false);
+    depthMap.bind(0, RTAttachment::Type::Colour, 0);
         _context.draw(pointsCmd);
     depthMap.end();
 

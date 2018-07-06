@@ -44,33 +44,29 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
     
     SamplerDescriptor noiseSampler;
-    noiseSampler.toggleMipMaps(false);
     noiseSampler.setAnisotropy(0);
     noiseSampler.setFilters(TextureFilter::NEAREST);
     noiseSampler.setWrapMode(TextureWrap::REPEAT);
     noiseSampler.toggleSRGBColourSpace(true);
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
+    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D,
+                                      GFXImageFormat::RGB16F);
+    noiseDescriptor.setSampler(noiseSampler);
+
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
-    textureAttachment.setPropertyDescriptor(noiseSampler);
-    textureAttachment.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    textureAttachment.setPropertyDescriptor(noiseDescriptor);
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
-    TextureDescriptor noiseDescriptor;
-    noiseDescriptor._internalFormat = GFXImageFormat::RGB16F;
-    noiseDescriptor._samplerDescriptor = noiseSampler;
-    noiseDescriptor._type = TextureType::TEXTURE_2D;
+   
     _noiseTexture->loadData(Texture::TextureLoadInfo(),
-                            noiseDescriptor,
                             noiseData.data(),
-                            vec2<U16>(ssaoNoiseSize),
-                            vec2<U16>(0, 1));
+                            vec2<U16>(ssaoNoiseSize));
 
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
-    screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
     _ssaoOutput = _context.allocateRT("SSAO_Out");

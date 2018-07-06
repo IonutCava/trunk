@@ -63,7 +63,6 @@ void EnvironmentProbe::onStartup(GFXDevice& context) {
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setFilters(TextureFilter::NEAREST);
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.toggleMipMaps(false);
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP,
                                             GFXImageFormat::RGB8,

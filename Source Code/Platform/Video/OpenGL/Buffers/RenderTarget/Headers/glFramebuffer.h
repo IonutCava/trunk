@@ -52,9 +52,7 @@ class glFramebuffer : public RenderTarget,
 
     bool create(U16 width, U16 height) override;
 
-    const RTAttachment& getAttachment(RTAttachment::Type type,
-                                      U8 index,
-                                      bool flushStateOnRequest = true) override;
+    const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const override;
 
     void drawToLayer(RTAttachment::Type type,
                      U8 index,
@@ -68,8 +66,7 @@ class glFramebuffer : public RenderTarget,
 
     void bind(U8 unit,
               RTAttachment::Type type,
-              U8 index,
-              bool flushStateOnRequest = true) override;
+              U8 index) override;
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,

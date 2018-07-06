@@ -85,22 +85,29 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
     _shaderFunctionSelection.resize(
         _postProcessingShader->GetSubroutineUniformCount(ShaderType::FRAGMENT), 0);
     
+
+    SamplerDescriptor defaultSampler;
+    defaultSampler.setWrapMode(TextureWrap::REPEAT);
+    
+    TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
+    texDescriptor.setSampler(defaultSampler);
+
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.setResourceName("terrain_water_NM.jpg");
     textureWaterCaustics.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    textureWaterCaustics.setPropertyDescriptor(texDescriptor);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics);
 
      ResourceDescriptor noiseTexture("noiseTexture");
      noiseTexture.setResourceName("bruit_gaussien.jpg");
      noiseTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     noiseTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+     noiseTexture.setPropertyDescriptor(texDescriptor);
      _noise = CreateResource<Texture>(cache, noiseTexture);
 
      ResourceDescriptor borderTexture("borderTexture");
      borderTexture.setResourceName("vignette.jpeg");
      borderTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-     borderTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+     borderTexture.setPropertyDescriptor(texDescriptor);
      _screenBorder = CreateResource<Texture>(cache, borderTexture);
 
      PipelineDescriptor pipelineDescriptor;

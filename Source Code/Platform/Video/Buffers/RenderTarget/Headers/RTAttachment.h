@@ -53,10 +53,7 @@ class RTAttachment {
         RTAttachment();
         virtual ~RTAttachment();
 
-        TextureDescriptor& descriptor();
         const TextureDescriptor& descriptor() const;
-
-        void flush();
 
         bool used() const;
         

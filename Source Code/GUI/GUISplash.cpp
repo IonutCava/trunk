@@ -19,19 +19,22 @@ GUISplash::GUISplash(ResourceCache& cache,
     : _dimensions(dimensions)
 {
     SamplerDescriptor splashSampler;
-    splashSampler.toggleMipMaps(false);
+    splashSampler.setMinFilter(TextureFilter::NEAREST);
     splashSampler.setAnisotropy(0);
     splashSampler.setWrapMode(TextureWrap::CLAMP);
     // splash shader doesn't do gamma correction since that's a post processing step
     // so fake gamma correction by loading an sRGB image as a linear one.
     splashSampler.toggleSRGBColourSpace(false);
 
+    TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
+    splashDescriptor.setSampler(splashSampler);
+
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.setThreadedLoading(false);
-    splashImage.setPropertyDescriptor<SamplerDescriptor>(splashSampler);
     splashImage.setResourceName(splashImageName);
     splashImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    splashImage.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    splashImage.setPropertyDescriptor(splashDescriptor);
+
     _splashImage = CreateResource<Texture>(cache, splashImage);
 
     ResourceDescriptor splashShader("fbPreview");

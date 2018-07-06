@@ -18,18 +18,23 @@ bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res, const
 
     SamplerDescriptor defaultSampler;
     defaultSampler.setWrapMode(TextureWrap::REPEAT);
-    defaultSampler.toggleMipMaps(false);
+    defaultSampler.setMinFilter(TextureFilter::LINEAR);
 
     ResourceDescriptor waterShader("water");
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     ResourceDescriptor waterTexture("waterTexture_" + name);
     ResourceDescriptor waterTextureDUDV("waterTextureDUDV_" + name);
+
+    TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
+    texDescriptor.setSampler(defaultSampler);
+
     waterTexture.setResourceName("terrain_water_NM.jpg");
     waterTexture.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTexture.setPropertyDescriptor(defaultSampler);
+    waterTexture.setPropertyDescriptor(texDescriptor);
+
     waterTextureDUDV.setResourceName("water_dudv.jpg");
     waterTextureDUDV.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    waterTextureDUDV.setPropertyDescriptor(defaultSampler);
+    waterTextureDUDV.setPropertyDescriptor(texDescriptor);
 
     Texture_ptr waterNM = CreateResource<Texture>(_cache, waterTexture);
     assert(waterNM != nullptr);

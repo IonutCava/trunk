@@ -58,7 +58,6 @@ DeferredShadingRenderer::DeferredShadingRenderer(PlatformContext& context, Resou
     SamplerDescriptor depthSampler;
     depthSampler.setFilters(TextureFilter::NEAREST);
     depthSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthSampler.toggleMipMaps(false);
     depthDescriptor.setSampler(depthSampler);
 
     for (U8 i = 0; i < 4; ++i) {

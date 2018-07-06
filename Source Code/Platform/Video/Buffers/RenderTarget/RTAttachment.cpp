@@ -29,17 +29,8 @@ void RTAttachment::setTexture(const Texture_ptr& tex) {
     _texture = tex;
 }
 
-TextureDescriptor& RTAttachment::descriptor() {
-    return _descriptor;
-}
-
 const TextureDescriptor& RTAttachment::descriptor() const {
     return _descriptor;
-}
-
-void RTAttachment::flush() {
-    assert(_texture != nullptr);
-    _texture->flushTextureState();
 }
 
 bool RTAttachment::used() const {

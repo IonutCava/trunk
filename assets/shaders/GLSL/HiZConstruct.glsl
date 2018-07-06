@@ -14,9 +14,10 @@ void main(void)
 
 -- Fragment
 
-
-
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
+
+out float _colourOut;
+
 uniform ivec2 depthInfo;
 
 void main() {
@@ -75,7 +76,6 @@ void main() {
 
     gl_FragDepth = depth;
 
-
     /*-----------------------------------------------------------------------
     Copyright (c) 2014, NVIDIA. All rights reserved.
     Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ void main() {
 
 //http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
 
 void main(void)
 {

@@ -43,16 +43,16 @@ class d3dTexture final : public Texture {
                         const stringImpl& name,
                         const stringImpl& resourceName,
                         const stringImpl& resourceLocation,
-                        TextureType type,
                         bool isFlipped,
-                        bool asyncLoad);
-    ~d3dTexture() {}
+                        bool asyncLoad,
+                        const TextureDescriptor& texDescriptor);
+    ~d3dTexture();
 
     bool unload() override { return Texture::unload(); }
 
-    void bind(U8 unit, bool flushStateOnRequest = true) override {}
+    void bind(U8 unit) override {}
     
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override {};
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override {};
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) override { Texture::setMipMapRange(base, max); }
 
@@ -60,19 +60,14 @@ class d3dTexture final : public Texture {
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) override {}
 
-    void updateMipMaps() override {}
-
-    bool flushTextureState() override { return true; }
+    void updateMipMaps() override { Texture::updateMipMaps(); }
 
     void loadData(const TextureLoadInfo& info,
-                  const TextureDescriptor& descriptor,
-                  const vectorImpl<ImageTools::ImageLayer>& imageLayers,
-                  const vec2<U16>& mipLevels) override {}
+                  const vectorImpl<ImageTools::ImageLayer>& imageLayers) override {}
+
     void loadData(const TextureLoadInfo& info,
-                  const TextureDescriptor& descriptor,
                   const bufferPtr data,
-                  const vec2<U16>& dimensions,
-                  const vec2<U16>& mipLevels) override {}
+                  const vec2<U16>& dimensions) override {}
 
     void copy(const Texture_ptr& other) override {}
 

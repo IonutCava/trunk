@@ -175,8 +175,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
     RenderTarget& cubeMapTarget = renderTarget(cubeMap);
-    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Colour, 0, false);
-    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Depth, 0, false);
+    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Colour, 0);
+    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachment::Type::Depth, 0);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();
@@ -257,8 +257,8 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     }
 
     RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
-    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Colour, 0, false);
-    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Depth, 0, false);
+    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Colour, 0);
+    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachment::Type::Depth, 0);
     // Colour attachment takes precedent over depth attachment
     bool hasColour = colourAttachment.used();
     bool hasDepth = depthAttachment.used();

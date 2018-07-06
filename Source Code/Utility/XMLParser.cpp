@@ -211,9 +211,12 @@ Texture_ptr loadTextureXML(ResourceCache& targetCache,
     sampDesc.setFilters(minFilterValue, magFilterValue);
     sampDesc.setAnisotropy(anisotropy);
 
+    TextureDescriptor texDesc(TextureType::TEXTURE_2D);
+    texDesc.setSampler(sampDesc);
+
     ResourceDescriptor texture(img_name);
     texture.setResourceLocation(pathName + img_name);
-    texture.setPropertyDescriptor<SamplerDescriptor>(sampDesc);
+    texture.setPropertyDescriptor(texDesc);
 
     return CreateResource<Texture>(targetCache, texture);
 }

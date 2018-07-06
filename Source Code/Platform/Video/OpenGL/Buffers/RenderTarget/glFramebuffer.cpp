@@ -68,7 +68,8 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
         return;
     }
 
-    TextureDescriptor& texDescriptor = attachment->descriptor();
+    TextureDescriptor texDescriptor(attachment->descriptor());
+    SamplerDescriptor samplerDescriptor(texDescriptor.getSampler());
 
     bool multisampled = _resolveBuffer != nullptr;
     if ((type == RTAttachment::Type::Colour && index == 0) ||
@@ -78,38 +79,19 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
         multisampled = multisampled && GL_API::s_msaaSamples > 0;
     }
 
+
     if (multisampled) {
-        texDescriptor.getSampler().toggleMipMaps(false);
         if (!_resolveBuffer) {
              _resolveBuffer = MemoryManager_NEW glFramebuffer(_context, _name + "_resolve");
         }
     }
-
-    if (texDescriptor.getSampler().srgb()) {
-        if (texDescriptor._internalFormat == GFXImageFormat::RGBA8) {
-            texDescriptor._internalFormat = GFXImageFormat::SRGB_ALPHA8;
-        }
-        if (texDescriptor._internalFormat == GFXImageFormat::RGB8) {
-            texDescriptor._internalFormat = GFXImageFormat::SRGB8;
-        }
-    } else {
-        if (texDescriptor._internalFormat == GFXImageFormat::SRGB_ALPHA8) {
-            texDescriptor._internalFormat = GFXImageFormat::RGBA8;
-        }
-        if (texDescriptor._internalFormat == GFXImageFormat::SRGB8) {
-            texDescriptor._internalFormat = GFXImageFormat::RGB8;
-        }
-    }
-
 }
 
 void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachment::Type type, U8 index, U8 copyCount) {
-    TextureDescriptor& texDescriptor = attachment->descriptor();
-
     assert(_width != 0 && _height != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
 
     vec2<U16> mipLevel(0,
-                       texDescriptor.getSampler().generateMipMaps()
+                       attachment->descriptor().getSampler().generateMipMaps()
                             ? 1 + Texture::computeMipCount(_width, _height)
                             : 1);
 
@@ -128,15 +110,13 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
                                              copyCount,
                                              getGUID()));
         textureAttachment.setThreadedLoading(false);
-        textureAttachment.setPropertyDescriptor(texDescriptor.getSampler());
-        textureAttachment.setEnumValue(to_U32(texDescriptor._type));
-        textureAttachment.setID(texDescriptor._layerCount);
+        textureAttachment.setPropertyDescriptor(attachment->descriptor());
+
         Texture_ptr tex = CreateResource<Texture>(_context.parent().resourceCache(), textureAttachment);
         assert(tex);
+
         Texture::TextureLoadInfo info;
-        info._type = texDescriptor._type;
-        tex->lockAutomaticMipMapGeneration(!texDescriptor.automaticMipMapGeneration());
-        tex->loadData(info, texDescriptor, NULL, vec2<U16>(_width, _height), mipLevel);
+        tex->loadData(info, NULL, vec2<U16>(_width, _height));
         attachment->setTexture(tex);
     }
 
@@ -144,11 +124,13 @@ void glFramebuffer::initAttachment(const RTAttachment_ptr& attachment, RTAttachm
     GLenum attachmentEnum;
     if (type == RTAttachment::Type::Depth) {
         attachmentEnum = GL_DEPTH_ATTACHMENT;
-        _isLayeredDepth = (texDescriptor._type == TextureType::TEXTURE_2D_ARRAY ||
-                           texDescriptor._type == TextureType::TEXTURE_2D_ARRAY_MS ||
-                           texDescriptor._type == TextureType::TEXTURE_CUBE_MAP ||
-                           texDescriptor._type == TextureType::TEXTURE_CUBE_ARRAY ||
-                           texDescriptor._type == TextureType::TEXTURE_3D);
+
+        TextureType texType = attachment->descriptor().type();
+        _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
+                           texType == TextureType::TEXTURE_2D_ARRAY_MS ||
+                           texType == TextureType::TEXTURE_CUBE_MAP ||
+                           texType == TextureType::TEXTURE_CUBE_ARRAY ||
+                           texType == TextureType::TEXTURE_3D);
     } else {
         attachmentEnum = GLenum((U32)GL_COLOR_ATTACHMENT0 + index);
     }
@@ -375,19 +357,18 @@ void glFramebuffer::blitFrom(RenderTarget* inputFB,
     GL_API::setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, previousFB);
 }
 
-const RTAttachment& glFramebuffer::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
+const RTAttachment& glFramebuffer::getAttachment(RTAttachment::Type type, U8 index) const {
     if (_resolveBuffer) {
-        resolve();
-        return _resolveBuffer->getAttachment(type, index, flushStateOnRequest);
+        return _resolveBuffer->getAttachment(type, index);
     }
 
-    return RenderTarget::getAttachment(type, index, flushStateOnRequest);
+    return RenderTarget::getAttachment(type, index);
 }
 
-void glFramebuffer::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
-    const RTAttachment& attachment = getAttachment(type, index, flushStateOnRequest);
+void glFramebuffer::bind(U8 unit, RTAttachment::Type type, U8 index) {
+    const RTAttachment& attachment = getAttachment(type, index);
     if (attachment.used()) {
-        attachment.asTexture()->bind(unit, false);
+        attachment.asTexture()->bind(unit);
     }
 }
 
@@ -545,7 +526,10 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
         _attachmentPool->get(static_cast<RTAttachment::Type>(i), _activeAttachmentsCache);
         for (const RTAttachment_ptr& attachment : _activeAttachmentsCache) {
             const Texture_ptr& texture = attachment->asTexture();
-            if (texture->getMaxMipLevel() > writeLevel) {
+            if (texture->getMaxMipLevel() > writeLevel ||
+                texture->getTextureType() == TextureType::TEXTURE_2D_MS ||
+                texture->getTextureType() == TextureType::TEXTURE_2D_ARRAY_MS)
+            {
                 if (attachment->writeLayer() > 0) {
                     glNamedFramebufferTextureLayer(_framebufferHandle,
                                                    static_cast<GLenum>(attachment->binding()),

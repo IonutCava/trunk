@@ -110,9 +110,8 @@ ErrorCode GL_API::destroyGLContext() {
 }
 
 
-/// Try and create a valid OpenGL context taking in account the specified
-/// resolution and command line arguments
-ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration& config) {
+/// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
+ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 
@@ -231,8 +230,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     _context.setGPURenderer(renderer);
     _context.setGPUVendor(vendor);
     // Cap max anisotropic level to what the hardware supports
+    CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(1), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
-    CLAMP(GL_API::s_anisoLevel, 1u, to_U32(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
                      GLUtil::getIntegerv(GL_MAJOR_VERSION),
@@ -248,7 +247,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     // override user set MSAA levels
     GL_API::s_msaaSamples = config.rendering.msaaSamples;
     if (samplerBuffers == 0 || sampleCount == 0) {
-        GL_API::s_msaaSamples = 0;
+        GL_API::s_msaaSamples = config.rendering.msaaSamples = 0;
     }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders

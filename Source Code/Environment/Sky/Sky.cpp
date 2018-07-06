@@ -45,17 +45,19 @@ bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     }
 
     SamplerDescriptor skyboxSampler;
-    skyboxSampler.toggleMipMaps(false);
     skyboxSampler.setFilters(TextureFilter::LINEAR);
     skyboxSampler.setAnisotropy(0);
     skyboxSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     skyboxSampler.toggleSRGBColourSpace(true);
 
+    TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
+    skyboxTexture.setSampler(skyboxSampler);
+
     ResourceDescriptor skyboxTextures("SkyboxTextures");
     skyboxTextures.setResourceName("skybox_1.jpg, skybox_2.jpg, skybox_3.jpg, skybox_4.jpg, skybox_5.jpg, skybox_6.jpg");
     skyboxTextures.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    skyboxTextures.setEnumValue(to_base(TextureType::TEXTURE_CUBE_MAP));
-    skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
+    skyboxTextures.setPropertyDescriptor(skyboxTexture);
+
     _skybox = CreateResource<Texture>(_parentCache, skyboxTextures);
 
     F32 radius = _diameter * 0.5f;
@@ -94,8 +96,6 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     if (renderable) {
         renderable->castsShadows(false);
-
-        _skybox->flushTextureState();
         TextureData skyTextureData = _skybox->getData();
         skyTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
         renderable->registerTextureDependency(skyTextureData);

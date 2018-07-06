@@ -22,14 +22,13 @@ Texture::Texture(GFXDevice& context,
                  const stringImpl& name,
                  const stringImpl& resourceName,
                  const stringImpl& resourceLocation,
-                 TextureType type,
                  bool isFlipped,
-                 bool asyncLoad)
+                 bool asyncLoad,
+                 const TextureDescriptor& texDescriptor)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
-      _numLayers(1),
-      _lockMipMaps(false),
-      _samplerDirty(true),
+      _descriptor(texDescriptor),
+      _numLayers(texDescriptor._layerCount),
       _mipMapsDirty(true),
       _hasTransparency(false),
       _hasTranslucency(false),
@@ -37,8 +36,7 @@ Texture::Texture(GFXDevice& context,
       _asyncLoad(asyncLoad)
 {
     _width = _height = 0;
-    _mipMaxLevel = _mipMinLevel = 0;
-    _textureData._textureType = type;
+    _textureData._textureType = _descriptor.type();
     _textureData._samplerHash = _descriptor._samplerDescriptor.getHash();
 }
 
@@ -60,7 +58,6 @@ bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback
 /// Load texture data using the specified file name
 void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
     TextureLoadInfo info;
-    info._type = _textureData._textureType;
 
     // Each texture face/layer must be in a comma separated list
     stringstreamImpl textureLocationList(getResourceLocation());
@@ -90,7 +87,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
                     return;
                 }
                 info._layerIndex++;
-                if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+                if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
                     if (info._layerIndex == 6) {
                         info._layerIndex = 0;
                         info._cubeMapCount++;
@@ -100,8 +97,8 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
     }
 
     if (loadFromFile) {
-        if (info._type == TextureType::TEXTURE_CUBE_MAP ||
-            info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
+            _textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._layerIndex != 6) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
@@ -110,8 +107,8 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
             }
         }
 
-        if (info._type == TextureType::TEXTURE_2D_ARRAY ||
-            info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (_textureData._textureType == TextureType::TEXTURE_2D_ARRAY ||
+            _textureData._textureType == TextureType::TEXTURE_2D_ARRAY_MS) {
             if (info._layerIndex != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -120,7 +117,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
             }
         }
 
-        if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
             if (info._cubeMapCount != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -185,81 +182,86 @@ bool Texture::loadFile(const TextureLoadInfo& info, const stringImpl& name) {
                        _hasTransparency ? "yes" : "no");
 
     // Create a new Rendering API-dependent texture object
-    _descriptor._type = info._type;
-    _descriptor._internalFormat = GFXImageFormat::RGB8;
+    _descriptor._type = _textureData._textureType;
+    _descriptor._mipLevels.max = to_U16(img.mipCount());
+
+    _descriptor.internalFormat(img.format());
+    
+    // Uploading to the GPU dependents on the rendering API
+    loadData(info, img.imageLayers());
+    
+    // We will always return true because we load the "missing_texture.jpg" in case of errors
+    return true;
+    
+}
+
+void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
+    // This can be called at any time
+    _descriptor.setSampler(descriptor);
+    _textureData._samplerHash = descriptor.getHash();
+}
+
+void Texture::validateDescriptor() {
+    // DEPTH_COMPONENT defaults to DEPTH_COMPONENT32
+    if (_descriptor.internalFormat() == GFXImageFormat::DEPTH_COMPONENT) {
+        _descriptor.internalFormat(GFXImageFormat::DEPTH_COMPONENT32);
+    }
+
     // Select the proper colour space internal format
     bool srgb = _descriptor._samplerDescriptor.srgb();
     // We only support 8 bit per pixel, 1/2/3/4 channel textures
-    switch (img.format()) {
-        case GFXImageFormat::LUMINANCE:
+    switch (_descriptor.internalFormat()) {
+        case GFXImageFormat::LUMINANCE: {
             assert(!srgb);
-            _descriptor._internalFormat = GFXImageFormat::LUMINANCE;
-            break;
-        case GFXImageFormat::RED:
+            _descriptor.internalFormat(GFXImageFormat::LUMINANCE);
+        }break;
+        case GFXImageFormat::RED: {
             assert(!srgb);
-            _descriptor._internalFormat = GFXImageFormat::RED8;
-            break;
-        case GFXImageFormat::RG:
+            _descriptor.internalFormat(GFXImageFormat::RED8);
+        }break;
+        case GFXImageFormat::RG: {
             assert(!srgb);
-            _descriptor._internalFormat = GFXImageFormat::RG8;
-            break;
+            _descriptor.internalFormat(GFXImageFormat::RG8);
+        } break;
         case GFXImageFormat::BGR:
-        case GFXImageFormat::RGB:
-            _descriptor._internalFormat =
-                srgb ? GFXImageFormat::SRGB8 : 
-                       GFXImageFormat::RGB8;
-            break;
+        case GFXImageFormat::RGB: {
+            _descriptor.internalFormat(srgb ? GFXImageFormat::SRGB8 : GFXImageFormat::RGB8);
+        }break;
         case GFXImageFormat::BGRA:
-        case GFXImageFormat::RGBA:
-            _descriptor._internalFormat =
-                srgb ? GFXImageFormat::SRGB_ALPHA8 :
-                       GFXImageFormat::RGBA8;
-            break;
+        case GFXImageFormat::RGBA: {
+            _descriptor.internalFormat(srgb ? GFXImageFormat::SRGB_ALPHA8 : GFXImageFormat::RGBA8);
+        }break;
         case GFXImageFormat::COMPRESSED_RGB_DXT1: {
-            _descriptor._internalFormat = 
-                srgb ? GFXImageFormat::COMPRESSED_SRGB_DXT1 :
-                       GFXImageFormat::COMPRESSED_RGB_DXT1;
+            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_DXT1 :
+                                              GFXImageFormat::COMPRESSED_RGB_DXT1);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT1: {
-            _descriptor._internalFormat =
-                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT1 :
-                       GFXImageFormat::COMPRESSED_RGBA_DXT1;
+            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT1 :
+                                              GFXImageFormat::COMPRESSED_RGBA_DXT1);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT3: {
-            _descriptor._internalFormat =
-                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT3 :
-                       GFXImageFormat::COMPRESSED_RGBA_DXT3;
+            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT3 :
+                                              GFXImageFormat::COMPRESSED_RGBA_DXT3);
             _descriptor._compressed = true;
         } break;
         case GFXImageFormat::COMPRESSED_RGBA_DXT5: {
-            _descriptor._internalFormat =
-                srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT5 :
-                       GFXImageFormat::COMPRESSED_RGBA_DXT5;
+            _descriptor.internalFormat(srgb ? GFXImageFormat::COMPRESSED_SRGB_ALPHA_DXT5 :
+                                              GFXImageFormat::COMPRESSED_RGBA_DXT5);
             _descriptor._compressed = true;
         } break;
     }
 
-    U16 mipMaxLevel = to_U16(img.mipCount());
-    
     if (!_descriptor._compressed) {
         if (_descriptor._samplerDescriptor.generateMipMaps()) {
-            if (mipMaxLevel <= 1) {
-                mipMaxLevel = computeMipCount(width, height);
+            if (_descriptor._mipLevels.max <= 1) {
+                _descriptor._mipLevels.max = computeMipCount(_width, _height) + 1;
             }
-
-            mipMaxLevel += 1;
         }
     }
-    // Uploading to the GPU dependents on the rendering API
-    loadData(info,
-             _descriptor,
-             img.imageLayers(),
-             vec2<U16>(0, mipMaxLevel));
 
-    // We will always return true because we load the "missing_texture.jpg" in case of errors
-    return true;
+    _textureData._textureType = _descriptor.type();
 }
 
 U16 Texture::computeMipCount(U16 width, U16 height) {

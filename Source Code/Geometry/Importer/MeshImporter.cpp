@@ -323,17 +323,22 @@ namespace Import {
         tempMaterial->setDoubleSided(importData._doubleSided);
 
         SamplerDescriptor textureSampler;
+
+        TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
+
         for (U32 i = 0; i < to_base(ShaderProgram::TextureUsage::COUNT); ++i) {
             const Import::TextureEntry& tex = importData._textures[i];
             if (!tex._textureName.empty()) {
                 textureSampler.toggleSRGBColourSpace(tex._srgbSpace);
                 textureSampler.setWrapMode(tex._wrapU, tex._wrapV, tex._wrapW);
 
+                textureDescriptor.setSampler(textureSampler);
+
                 ResourceDescriptor texture(tex._textureName);
                 texture.setResourceName(tex._textureName);
                 texture.setResourceLocation(tex._texturePath);
-                texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-                texture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+                texture.setPropertyDescriptor(textureDescriptor);
+                
                 Texture_ptr textureRes = CreateResource<Texture>(cache, texture);
                 assert(textureRes != nullptr);
 

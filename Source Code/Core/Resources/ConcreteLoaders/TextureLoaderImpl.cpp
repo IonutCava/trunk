@@ -25,13 +25,17 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     assert((!_descriptor.getResourceLocation().empty() && !_descriptor.getResourceName().empty()) ||
             _descriptor.getResourceLocation().empty());
 
+    // Samplers are not optional!
+    assert(_descriptor.hasPropertyDescriptor());
+
+    const std::shared_ptr<TextureDescriptor>& texDescriptor = _descriptor.getPropertyDescriptor<TextureDescriptor>();
+
     if (Texture::s_missingTextureFileName == nullptr) {
         Texture::s_missingTextureFileName = "missing_texture.jpg";
     }
 
-    bool threadedLoad = _descriptor.getThreaded();
+    TextureType type = texDescriptor->type();
 
-    TextureType type = static_cast<TextureType>(_descriptor.getEnumValue());
     if ((type == TextureType::TEXTURE_2D_MS || type == TextureType::TEXTURE_2D_ARRAY_MS) && _context.config().rendering.msaaSamples == 0) {
         if (type == TextureType::TEXTURE_2D_MS) {
             type = TextureType::TEXTURE_2D;
@@ -48,6 +52,7 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     size_t crtNumCommas = std::count(std::cbegin(resourceLocation),
                           std::cend(resourceLocation),
                           ',');
+
     if (crtNumCommas < numCommas ) {
         if (!resourceLocation.empty()) {
             stringstreamImpl textureLocationList(resourceLocation);
@@ -67,19 +72,10 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
                                               _descriptor.getName(),
                                               _descriptor.getResourceName(),
                                               _descriptor.getResourceLocation(),
-                                              type,
                                               !_descriptor.getFlag(),
-                                              threadedLoad),
+                                              _descriptor.getThreaded(),
+                                              *texDescriptor),
                     DeleteResource(_cache));
-
-    if (_descriptor.getID() > 0) {
-        ptr->setNumLayers(to_U8(_descriptor.getID()));
-    }
-    // Add the specified sampler, if any
-    if (_descriptor.hasPropertyDescriptor()) {
-        // cast back to a SamplerDescriptor from a PropertyDescriptor
-        ptr->setCurrentSampler(*_descriptor.getPropertyDescriptor<SamplerDescriptor>());
-    }
 
     if (!load(ptr, _descriptor.onLoadCallback())) {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),

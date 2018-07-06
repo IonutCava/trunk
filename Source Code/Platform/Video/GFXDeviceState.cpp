@@ -41,7 +41,7 @@ namespace Divide {
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
     ErrorCode hardwareState = createAPIInstance();
-    const Configuration& config = _parent.platformContext().config();
+    Configuration& config = _parent.platformContext().config();
 
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
@@ -153,7 +153,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     SamplerDescriptor hiZSampler;
     hiZSampler.setFilters(TextureFilter::NEAREST_MIPMAP_NEAREST);
     hiZSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.toggleMipMaps(true);
 
     hiZDescriptor.setSampler(hiZSampler);
     hiZDescriptor.toggleAutomaticMipMapGeneration(false);
@@ -161,7 +160,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     SamplerDescriptor screenSampler;
     screenSampler.setFilters(TextureFilter::NEAREST);
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.toggleMipMaps(false);
     screenDescriptor.setSampler(screenSampler);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D,
@@ -188,7 +186,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setFilters(TextureFilter::NEAREST);
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.toggleMipMaps(false);
 
     TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY,
                                                 GFXImageFormat::RGBA8,
@@ -409,18 +406,15 @@ void GFXDevice::resizeHistory(U8 historySize) {
 
     while (_prevDepthBuffers.size() < historySize) {
         const Texture_ptr& src = renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachment::Type::Depth, 0).asTexture();
-        const TextureDescriptor& srcDesc = src->getDescriptor();
 
         ResourceDescriptor prevDepthTex(Util::StringFormat("PREV_DEPTH_%d", _prevDepthBuffers.size()));
-        prevDepthTex.setPropertyDescriptor(srcDesc.getSampler());
-        prevDepthTex.setEnumValue(to_U32(srcDesc._type));
+        prevDepthTex.setPropertyDescriptor(src->getDescriptor());
+        
         Texture_ptr tex = CreateResource<Texture>(parent().resourceCache(), prevDepthTex);
         assert(tex);
         Texture::TextureLoadInfo info;
-        info._type = srcDesc._type;
-        tex->setNumLayers(srcDesc._layerCount);
-        tex->lockAutomaticMipMapGeneration(!srcDesc.automaticMipMapGeneration());
-        tex->loadData(info, srcDesc, NULL, vec2<U16>(src->getWidth(), src->getHeight()), vec2<U16>(src->getMinMipLevel(), src->getMaxMipLevel()));
+        
+        tex->loadData(info, NULL, vec2<U16>(src->getWidth(), src->getHeight()));
 
         _prevDepthBuffers.push_back(tex);
     }

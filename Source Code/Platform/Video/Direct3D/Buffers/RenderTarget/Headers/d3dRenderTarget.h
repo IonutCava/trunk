@@ -57,8 +57,7 @@ class d3dRenderTarget : public RenderTarget {
 
     void bind(U8 unit,
               RTAttachment::Type type,
-              U8 index,
-              bool flushStateOnRequest = true) override;
+              U8 index) override;
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,

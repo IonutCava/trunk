@@ -57,7 +57,6 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             case ShadowType::SINGLE: {
                 SamplerDescriptor depthMapSampler;
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.toggleMipMaps(false);
                 depthMapSampler.setFilters(TextureFilter::LINEAR);
                 depthMapSampler._useRefCompare = true;
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;
@@ -109,7 +108,6 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 SamplerDescriptor depthMapSampler;
                 depthMapSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
                 depthMapSampler.setFilters(TextureFilter::LINEAR);
-                depthMapSampler.toggleMipMaps(false);
                 depthMapSampler._useRefCompare = true;  //< Use compare function
                 depthMapSampler._cmpFunc = ComparisonFunction::LEQUAL;  //< Use less or equal
 

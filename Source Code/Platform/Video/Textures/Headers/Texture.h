@@ -51,13 +51,11 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     public:
        struct TextureLoadInfo {
            TextureLoadInfo() :
-               _type(TextureType::COUNT),
                _layerIndex(0),
                _cubeMapCount(0)
            {
            }
 
-           TextureType _type;
            U32 _layerIndex;
            U32 _cubeMapCount;
        };
@@ -68,19 +66,18 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
                      const stringImpl& name,
                      const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
-                     TextureType type,
                      bool isFlipped,
-                     bool asyncLoad);
+                     bool asyncLoad,
+                     const TextureDescriptor& texDescriptor);
+
     virtual ~Texture();
 
     /// Bind the texture to the specified texture unit
-    virtual void bind(U8 slot, bool flushStateOnRequest = true) = 0;
+    virtual void bind(U8 slot) = 0;
     /// Bind a single level
-    virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) = 0;
+    virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) {
-        _mipMinLevel = base;
-        _mipMaxLevel = max;
     }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const bufferPtr ptr,
@@ -89,40 +86,32 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     // API-dependent loading function that uploads ptr data to the GPU using the
     // specified parameters
     virtual void loadData(const TextureLoadInfo& info,
-                          const TextureDescriptor& descriptor,
-                          const vectorImpl<ImageTools::ImageLayer>& imageLayers,
-                          const vec2<U16>& mipLevels) = 0;
+                          const vectorImpl<ImageTools::ImageLayer>& imageLayers) = 0;
+
     virtual void loadData(const TextureLoadInfo& info,
-                          const TextureDescriptor& descriptor,
                           const bufferPtr data,
-                          const vec2<U16>& dimensions,
-                          const vec2<U16>& mipLevels) = 0;
+                          const vec2<U16>& dimensions) = 0;
 
     // Other must have same size!
     virtual void copy(const Texture_ptr& other) = 0;
 
-    /// Specify the sampler descriptor used to sample from this texture in the
-    /// shaders
-    inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
-        // This can be called at any time
-        _descriptor._samplerDescriptor = descriptor;
-        _textureData._samplerHash = descriptor.getHash();
-        // The sampler will be updated before the next bind call and used in
-        // that bind
-        _samplerDirty = true;
-    }
+    /// Specify the sampler descriptor used to sample from this texture in the shaders
+    virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
+
     /// Get the sampler descriptor used by this texture
     inline const SamplerDescriptor& getCurrentSampler() const {
         return _descriptor._samplerDescriptor;
     }
 
-    inline TextureData& getData() {
-        return _textureData;
+    inline TextureData getData() const {
+        TextureData ret;
+        ret.setHandleLow(_textureData.getHandleLow());
+        ret.setHandleHigh(_textureData.getHandleHigh());
+        ret._textureType = _descriptor.type();
+        ret._samplerHash = _descriptor.getSampler().getHash();
+        return ret;
     }
 
-    inline const TextureData& getData() const {
-        return _textureData;
-    }
     /// Set/Get the number of layers (used by texture arrays)
     inline void setNumLayers(U32 numLayers) { _numLayers = numLayers; }
     inline U32 getNumLayers() const { return _numLayers; }
@@ -131,9 +120,9 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     /// Texture height depth as returned by STB/DDS loader
     inline U16 getHeight() const { return _height; }
     /// Texture min mip level
-    inline U16 getMinMipLevel() const { return _mipMinLevel; }
+    inline U16 getMinMipLevel() const { return _descriptor._mipLevels.min; }
     /// Texture ax mip level
-    inline U16 getMaxMipLevel() const { return _mipMaxLevel; }
+    inline U16 getMaxMipLevel() const { return _descriptor._mipLevels.max; }
     /// A rendering API level handle used to uniquely identify this texture
     /// (e.g. for OpenGL, it's the texture object)
     inline U32 getHandle() const { return _textureData.getHandleHigh(); }
@@ -145,18 +134,9 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     /// Get the type of the texture
     inline TextureType getTextureType() const { return _textureData._textureType; }
     /// Force a full refresh of the mip chain on the next texture bind
-    inline void refreshMipMaps() { _mipMapsDirty = !_lockMipMaps; }
-    /// Disable/enable automatic calls to mipmap generation calls (e.g. glGenerateMipmaps)
-    /// Useful if we compute our own mipmaps
-    inline void lockAutomaticMipMapGeneration(bool state) { _lockMipMaps = state; }
-    /// Force a full update of the texture (all pending changes and mipmap refresh);
-    /// Returns false if the texture is not ready or in an invalid state
-    virtual bool flushTextureState() = 0;
+    inline void refreshMipMaps() { _mipMapsDirty = true; }
 
-    const TextureDescriptor& getDescriptor() const {
-        return _descriptor;
-    }
-
+    const TextureDescriptor& getDescriptor() const { return _descriptor; }
 
     static U16 computeMipCount(U16 width, U16 height);
 
@@ -167,18 +147,16 @@ class NOINITVTABLE Texture : public GraphicsResource, public CachedResource {
     virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback);
     /// Force a refresh of the entire mipmap chain
-    virtual void updateMipMaps() = 0;
+    virtual void updateMipMaps() { _mipMapsDirty = false; }
+
+    virtual void validateDescriptor();
 
    protected:
     U32 _numLayers;
     U16 _width;
     U16 _height;
-    U16 _mipMaxLevel;
-    U16 _mipMinLevel;
     bool _flipped;
-    bool _lockMipMaps;
     bool _mipMapsDirty;
-    bool _samplerDirty;
     bool _hasTransparency;
     bool _hasTranslucency;
     bool _asyncLoad;

@@ -527,8 +527,8 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
     U32 slotValue = to_U32(slot);
     Texture_ptr& crtTexture = _textures[slotValue];
-    if (crtTexture && crtTexture->flushTextureState()) {
-        TextureData& data = crtTexture->getData();
+    if (crtTexture) {
+        TextureData data = crtTexture->getData();
         data.setHandleLow(slotValue);
         container.addTexture(data);
     }
@@ -549,11 +549,9 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::REFRACTION_CUBE, textureData);
 
         for (std::pair<Texture_ptr, U8>& tex : _customTextures) {
-            if (tex.first->flushTextureState()) {
-                TextureData& data = tex.first->getData();
-                data.setHandleLow(to_U32(tex.second));
-                textureData.addTexture(data);
-            }
+            TextureData data = tex.first->getData();
+            data.setHandleLow(to_U32(tex.second));
+            textureData.addTexture(data);
         }
     } else {
         getTextureData(ShaderProgram::TextureUsage::NORMALMAP, textureData);

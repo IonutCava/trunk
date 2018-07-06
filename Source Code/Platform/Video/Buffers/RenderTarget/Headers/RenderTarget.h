@@ -95,9 +95,9 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     static RTDrawDescriptor& defaultPolicyDepthOnly();
 
     /// If the FB is not initialized, it gets created, otherwise
-    /// the attachements get resized.
+    /// the attachments get resized.
     virtual bool create(U16 width, U16 height) = 0;
-    virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest = true);
+
     virtual const RTAttachment& getAttachment(RTAttachment::Type type, U8 index) const;
 
     /// Use by multilayered FB's
@@ -107,13 +107,13 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual void setMipLevel(U16 writeLevel) = 0;
     virtual void begin(const RTDrawDescriptor& drawPolicy) = 0;
     virtual void end() = 0;
-    virtual void bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest = true) = 0;
+    virtual void bind(U8 unit, RTAttachment::Type type, U8 index) = 0;
     virtual void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) = 0;
     virtual void clear(const RTDrawDescriptor& drawPolicy) const = 0;
     virtual void blitFrom(RenderTarget* inputFB, bool blitColour = true, bool blitDepth = false) = 0;
     virtual void blitFrom(RenderTarget* inputFB, U8 index, bool blitColour = true, bool blitDepth = false) = 0;
 
-    TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
+    const TextureDescriptor& getDescriptor(RTAttachment::Type type, U8 index);
     void addAttachment(const TextureDescriptor& descriptor, RTAttachment::Type type, U8 index);
     /// Used by cubemap FB's
     void drawToFace(RTAttachment::Type type, U8 index, U16 nFace, bool includeDepth = true);

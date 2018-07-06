@@ -37,24 +37,22 @@
 #include "Utility/Headers/Colours.h"
 
 namespace Divide {
-/// This class is used to define all of the sampler settings needed to use a
-/// texture
-/// Apply a sampler descriptor to either a texture's ResourceDescriptor or to a
-/// TextureDescriptor to use it
-/// We do not define copy constructors as we must define descriptors only with
-/// POD
-class SamplerDescriptor : public PropertyDescriptor {
+/// This class is used to define all of the sampler settings needed to use a texture
+/// We do not define copy constructors as we must define descriptors only with POD
+class SamplerDescriptor {
    public:
     /// The constructor specifies the type so it can be used later for
     /// down-casting if needed
-    SamplerDescriptor() : PropertyDescriptor(DescriptorType::DESCRIPTOR_SAMPLER)
+    SamplerDescriptor()
     {
         setDefaultValues();
     }
+
     virtual ~SamplerDescriptor()
     {
 
     }
+
     /// All of these are default values that should be safe for any kind of
     /// texture usage
     inline void setDefaultValues() {
@@ -67,7 +65,6 @@ class SamplerDescriptor : public PropertyDescriptor {
         // The following 2 are mainly used by depthmaps for hardware comparisons
         _cmpFunc = ComparisonFunction::LEQUAL;
         _useRefCompare = false;
-        _mipmaps = true;
         _borderColour.set(DefaultColours::BLACK());
     }
 
@@ -146,18 +143,13 @@ class SamplerDescriptor : public PropertyDescriptor {
         _magFilter = magFilter;
     }
 
-    inline void toggleMipMaps(const bool state) {
-        _mipmaps = state;
-    }
-
     inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
-    inline size_t getHash() const override {
+    inline size_t getHash() const {
         size_t hash = 0;
         Util::Hash_combine(hash, to_U32(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
         Util::Hash_combine(hash, _srgb);
-        Util::Hash_combine(hash, _mipmaps);
         Util::Hash_combine(hash, to_U32(_wrapU));
         Util::Hash_combine(hash, to_U32(_wrapV));
         Util::Hash_combine(hash, to_U32(_wrapW));
@@ -171,7 +163,6 @@ class SamplerDescriptor : public PropertyDescriptor {
         Util::Hash_combine(hash, _borderColour.g);
         Util::Hash_combine(hash, _borderColour.b);
         Util::Hash_combine(hash, _borderColour.a);
-        Util::Hash_combine(hash, PropertyDescriptor::getHash());
 
         return hash;
     }
@@ -194,7 +185,9 @@ class SamplerDescriptor : public PropertyDescriptor {
     inline bool srgb() const { return _srgb; }
     inline U8 anisotropyLevel() const { return _anisotropyLevel; }
     inline bool generateMipMaps() const { 
-        return _mipmaps;
+        return _minFilter != TextureFilter::LINEAR &&
+               _minFilter != TextureFilter::NEAREST &&
+               _minFilter != TextureFilter::COUNT;
     }
 
     inline vec4<F32> borderColour() const { return _borderColour; }
@@ -207,8 +200,6 @@ class SamplerDescriptor : public PropertyDescriptor {
     TextureWrap _wrapU, _wrapV, _wrapW;
     /// Use SRGB colour space
     bool _srgb;
-    /// Use mipmapping
-    bool _mipmaps;
     /// The value must be in the range [0...255] and is automatically clamped by
     /// the max HW supported level
     U8 _anisotropyLevel;
@@ -216,8 +207,7 @@ class SamplerDescriptor : public PropertyDescriptor {
     F32 _minLOD, _maxLOD;
     /// OpenGL eg: used by TEXTURE_LOD_BIAS
     F32 _biasLOD;
-    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture
-    /// border
+    /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
     vec4<F32> _borderColour;
 };
 
@@ -233,6 +223,12 @@ class TextureDescriptor : public PropertyDescriptor {
     {
     }
 
+    TextureDescriptor(TextureType type)
+         : TextureDescriptor(type,
+                             GFXImageFormat::COUNT)
+    {
+    }
+
     TextureDescriptor(TextureType type,
                       GFXImageFormat internalFormat)
         : TextureDescriptor(type,
@@ -242,18 +238,18 @@ class TextureDescriptor : public PropertyDescriptor {
     }
 
     TextureDescriptor(TextureType type,
-                      GFXImageFormat internalFormat,
+                      GFXImageFormat internalFmt,
                       GFXDataFormat dataType)
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
           _layerCount(1),
           _baseFormat(GFXImageFormat::COUNT),
-          _internalFormat(internalFormat),
           _dataType(dataType),
           _type(type),
           _compressed(false),
-          _automaticMipMaps(true)
+          _automaticMipMaps(true),
+          _mipLevels(0u, 1u)
     {
-        _baseFormat = baseFromInternalFormat(internalFormat);
+        internalFormat(internalFmt);
     }
 
     virtual ~TextureDescriptor()
@@ -274,6 +270,7 @@ class TextureDescriptor : public PropertyDescriptor {
         _dataType = GFXDataFormat::UNSIGNED_BYTE;
         _type = TextureType::TEXTURE_2D;
         _automaticMipMaps = true;
+        _mipLevels.set(0u, 1u);
     }
 
     inline void setLayerCount(U32 layerCount) { 
@@ -295,26 +292,27 @@ class TextureDescriptor : public PropertyDescriptor {
         _samplerDescriptor = descriptor;
     }
 
-    inline SamplerDescriptor& getSampler() {
-        return _samplerDescriptor;
+    inline GFXImageFormat internalFormat() const {
+        return _internalFormat;
+    }
+
+    inline void internalFormat(GFXImageFormat internalFormat) {
+        _internalFormat = internalFormat;
+        _baseFormat = baseFromInternalFormat(internalFormat);
+        _dataType = dataTypeForInternalFormat(internalFormat);
     }
 
     inline const SamplerDescriptor& getSampler() const {
         return _samplerDescriptor;
     }
 
-    inline GFXDataFormat dataType() {
-        if (_dataType == GFXDataFormat::COUNT) {
-            _dataType = dataTypeForInternalFormat(_internalFormat);
-        }
-
+    inline GFXDataFormat dataType() const {
+        assert(_dataType != GFXDataFormat::COUNT);
         return _dataType;
     }
 
-    inline GFXImageFormat baseFormat() {
-        if (_baseFormat == GFXImageFormat::COUNT) {
-            _baseFormat = baseFromInternalFormat(_internalFormat);
-        }
+    inline GFXImageFormat baseFormat() const {
+        assert(_baseFormat != GFXImageFormat::COUNT);
 
         return _baseFormat;
     }
@@ -326,6 +324,8 @@ class TextureDescriptor : public PropertyDescriptor {
     inline void toggleAutomaticMipMapGeneration(const bool state) {
         _automaticMipMaps = state;
     }
+
+    inline void type(TextureType type) { _type = type; }
 
     inline TextureType type() const { return _type; }
 
@@ -343,23 +343,28 @@ class TextureDescriptor : public PropertyDescriptor {
 
         Util::Hash_combine(hash, _samplerDescriptor.getHash());
         Util::Hash_combine(hash, PropertyDescriptor::getHash());
+
+        Util::Hash_combine(hash, _mipLevels.min);
+        Util::Hash_combine(hash, _mipLevels.max);
+
         return hash;
     }
 
     U32 _layerCount;
-    /// Texture data information
-    GFXImageFormat _internalFormat;
     TextureType _type;
     bool _compressed;
     /// Automatically compute mipmaps
     bool _automaticMipMaps;
     /// The sampler used to initialize this texture with
     SamplerDescriptor _samplerDescriptor;
+    /// Mip levels
+    vec2<U16> _mipLevels;
 
-    private:
-        GFXImageFormat _baseFormat;
-        GFXDataFormat  _dataType;
-
+  private:
+     GFXImageFormat _baseFormat;
+     GFXDataFormat  _dataType;
+     /// Texture data information
+     GFXImageFormat _internalFormat;
 };
 
 };  // namespace Divide

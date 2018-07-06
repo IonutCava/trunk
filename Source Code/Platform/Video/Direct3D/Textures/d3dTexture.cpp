@@ -10,12 +10,16 @@ d3dTexture::d3dTexture(GFXDevice& context,
                        const stringImpl& name,
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
-                       TextureType type,
                        bool isFlipped,
-                       bool asyncLoad)
-    : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad)
+                       bool asyncLoad,
+                       const TextureDescriptor& texDescriptor)
+    : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor)
 {
-    _type = d3dTextureTypeTable[to_U32(type)];
+    _type = d3dTextureTypeTable[to_U32(texDescriptor.type())];
+}
+
+d3dTexture::~d3dTexture()
+{
 }
 
 };

@@ -88,7 +88,7 @@ public:
 protected:
     /// Try and create a valid OpenGL context taking in account the specified
     /// command line arguments
-    ErrorCode initRenderingAPI(I32 argc, char** argv, const Configuration& config) override;
+    ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() override;
     /// Prepare the GPU for rendering a frame

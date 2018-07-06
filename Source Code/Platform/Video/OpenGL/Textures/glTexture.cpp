@@ -19,16 +19,28 @@ glTexture::glTexture(GFXDevice& context,
                      const stringImpl& name,
                      const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
-                     TextureType type,
                      bool isFlipped,
-                     bool asyncLoad)
-    : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, isFlipped, asyncLoad),
+                     bool asyncLoad,
+                     const TextureDescriptor& texDescriptor)
+
+    : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor),
       glObject(glObjectType::TYPE_TEXTURE),
      _lockManager(MemoryManager_NEW glLockManager())
 {
+    if (GL_API::s_msaaSamples == 0) {
+        if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
+            _descriptor.type(TextureType::TEXTURE_2D);
+        }
+        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
+            _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
+        }
+    }
+
+    GL_API::getOrCreateSamplerObject(_descriptor.getSampler());
+
     _allocatedStorage = false;
 
-    _type = GLUtil::glTextureTypeTable[to_U32(type)];
+    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
 
     U32 tempHandle = 0;
     glCreateTextures(_type, 1, &tempHandle);
@@ -58,23 +70,25 @@ bool glTexture::unload() {
 }
 
 void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
-	if (_asyncLoad) {
-		GL_API::createOrValidateContextForCurrentThread();
-	}
+    if (_asyncLoad) {
+        GL_API::createOrValidateContextForCurrentThread();
+    }
 
-    updateSampler();
     Texture::threadedLoad(onLoadCallback);
     _lockManager->Lock();
     CachedResource::load(onLoadCallback);
 }
 
-void glTexture::setMipMapRange(GLushort base, GLushort max) {
-    if (_mipMinLevel == base && _mipMaxLevel == max) {
+void glTexture::setMipMapRange(U16 base, U16 max) {
+    if (_descriptor._mipLevels == vec2<U16>(base, max)) {
         return;
     }
 
+    setMipRangeInternal(base, max);
     Texture::setMipMapRange(base, max);
+}
 
+void glTexture::setMipRangeInternal(U16 base, U16 max) {
     glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_BASE_LEVEL, base);
     glTextureParameteri(_textureData.getHandleHigh(), GL_TEXTURE_MAX_LEVEL, max);
 }
@@ -95,39 +109,33 @@ void glTexture::resize(const bufferPtr ptr,
 
     _textureData.setHandleHigh(textureID);
     _allocatedStorage = false;
+    _descriptor._mipLevels.set(mipLevels);
+
     TextureLoadInfo info;
-    loadData(info, _descriptor, ptr, dimensions, mipLevels);
+    loadData(info, ptr, dimensions);
 }
 
 void glTexture::updateMipMaps() {
-    if (_mipMapsDirty && _descriptor._samplerDescriptor.generateMipMaps()) {
+    if (_mipMapsDirty && _descriptor.automaticMipMapGeneration() && _descriptor.getSampler().generateMipMaps()) {
         glGenerateTextureMipmap(_textureData.getHandleHigh());
     }
-    _mipMapsDirty = false;
+    Texture::updateMipMaps();
 }
 
-void glTexture::updateSampler() {
-    if (_samplerDirty) {
-        _textureData._samplerHash = GL_API::getOrCreateSamplerObject(_descriptor._samplerDescriptor);
-        _samplerDirty = false;
-    }
-}
-
-void glTexture::reserveStorage(const TextureLoadInfo& info) {
+void glTexture::reserveStorage() {
     assert(
         !(_textureData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
-    GLenum glInternalFormat = _descriptor._internalFormat == GFXImageFormat::DEPTH_COMPONENT
-                            ? GL_DEPTH_COMPONENT32
-                            : GLUtil::glImageFormatTable[to_U32(_descriptor._internalFormat)];
+    GLenum glInternalFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())];
     GLuint handle = _textureData.getHandleHigh();
+    GLushort mipMaxLevel = _descriptor._mipLevels.max;
 
     switch (_textureData._textureType) {
         case TextureType::TEXTURE_1D: {
             glTextureStorage1D(
                 handle,
-                _mipMaxLevel,
+                mipMaxLevel,
                 glInternalFormat,
                 _width);
 
@@ -135,7 +143,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
         case TextureType::TEXTURE_2D: {
             glTextureStorage2D(
                 handle,
-                _mipMaxLevel,
+                mipMaxLevel,
                 glInternalFormat,
                 _width,
                 _height);
@@ -170,7 +178,7 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
             }
             glTextureStorage3D(
                 handle,
-                _mipMaxLevel,
+                mipMaxLevel,
                 glInternalFormat,
                 _width,
                 _height,
@@ -184,24 +192,20 @@ void glTexture::reserveStorage(const TextureLoadInfo& info) {
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const TextureDescriptor& descriptor,
                          const bufferPtr data,
-                         const vec2<U16>& dimensions,
-                         const vec2<U16>& mipLevels) {
+                         const vec2<U16>& dimensions) {
     // This should never be called for compressed textures                            
-    assert(!descriptor._compressed);
-    _descriptor = descriptor;
-
+    assert(!_descriptor._compressed);
     if (info._layerIndex == 0) {
-
-        setMipMapRange(mipLevels.x, mipLevels.y);
-
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
         } else {
             _width = dimensions.width;
             _height = dimensions.height;
         }
+
+        validateDescriptor();
+        setMipRangeInternal(_descriptor._mipLevels.min, _descriptor._mipLevels.max);
 
         assert(_width > 0 && _height > 0);
     } else {
@@ -212,7 +216,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
     }
 
     if (!_allocatedStorage) {
-        reserveStorage(info);
+        reserveStorage();
     }
     assert(_allocatedStorage);
 
@@ -224,15 +228,8 @@ void glTexture::loadData(const TextureLoadInfo& info,
 }
 
 void glTexture::loadData(const TextureLoadInfo& info,
-                         const TextureDescriptor& descriptor,
-                         const vectorImpl<ImageTools::ImageLayer>& imageLayers,
-                         const vec2<GLushort>& mipLevels) {
-    _descriptor = descriptor;
-
+                         const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
     if (info._layerIndex == 0) {
-            
-        setMipMapRange(mipLevels.x, mipLevels.y);
-
         if (Config::Profile::USE_2x2_TEXTURES) {
             _width = _height = 2;
         } else {
@@ -241,6 +238,9 @@ void glTexture::loadData(const TextureLoadInfo& info,
         }
 
         assert(_width > 0 && _height > 0);
+
+        validateDescriptor();
+        setMipRangeInternal(_descriptor._mipLevels.min, _descriptor._mipLevels.max);
     } else {
         assert(
             _width == imageLayers[0]._dimensions.width && 
@@ -249,7 +249,7 @@ void glTexture::loadData(const TextureLoadInfo& info,
     }
 
     if (!_allocatedStorage) {
-        reserveStorage(info);
+        reserveStorage();
     }
     assert(_allocatedStorage);
 
@@ -259,11 +259,15 @@ void glTexture::loadData(const TextureLoadInfo& info,
         loadDataUncompressed(info, (bufferPtr)imageLayers[0]._data.data());
     }
 
+    // Loading from file usually involves data that doesn't change, so call this here.
+    updateMipMaps();
+
     assert(_width > 0 && _height > 0 && "glTexture error: Invalid texture dimensions!");
 }
 
 void glTexture::loadDataCompressed(const TextureLoadInfo& info,
                                    const vectorImpl<ImageTools::ImageLayer>& imageLayers) {
+
     GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
     GLint numMips = static_cast<GLint>(imageLayers.size());
 
@@ -369,47 +373,66 @@ void glTexture::copy(const Texture_ptr& other) {
     }
 
     U32 numFaces = 1;
-    if (_textureData._textureType == TextureType::TEXTURE_CUBE_MAP ||
-        _textureData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+    TextureType type = other->getTextureType();
+    if (type == TextureType::TEXTURE_CUBE_MAP || type == TextureType::TEXTURE_CUBE_ARRAY) {
         numFaces = 6;
     }
 
-    glCopyImageSubData(other->getData().getHandleHigh(), GLUtil::glTextureTypeTable[to_U32(other->getTextureType())], 0, 0, 0, 0,
-                       _textureData.getHandleHigh(), _type, 0, 0, 0, 0,
-                       getWidth(), getHeight(), _numLayers * numFaces);
+    glTexture* otherTex = std::dynamic_pointer_cast<glTexture>(other).get();
+
+    GLuint srcHandle = otherTex->getData().getHandleHigh();
+    GLuint destHandle = _textureData.getHandleHigh();
+
+    glCopyImageSubData(//Source
+                       srcHandle,
+                       GLUtil::glTextureTypeTable[to_U32(type)],
+                       0, //Level
+                       0, //X
+                       0, //Y
+                       0, //Z
+                       //Destination
+                       destHandle,
+                       _type,
+                       0, //Level
+                       0, //X
+                       0, //Y
+                       0, //Z
+                       //Source Dim
+                       otherTex->getWidth(),
+                       otherTex->getHeight(),
+                       otherTex->_numLayers * numFaces);
+}
+
+void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
+    Texture::setCurrentSampler(descriptor);
+    GL_API::getOrCreateSamplerObject(descriptor);
 }
 
 bool glTexture::flushTextureState() {
-    WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
-
     if (_lockManager) {
+        WAIT_FOR_CONDITION(getState() == ResourceState::RES_LOADED);
         _lockManager->Wait(true);
         MemoryManager::DELETE(_lockManager);
     }
 
-    updateSampler();
     updateMipMaps();
 
     return true;
 }
 
-void glTexture::bind(U8 unit, bool flushStateOnRequest) {
-    if (flushStateOnRequest) {
-        flushTextureState();
-    }
+void glTexture::bind(U8 unit) {
+    flushTextureState();
 
     GL_API::bindTexture(unit, _textureData.getHandleHigh(), _type, _textureData._samplerHash);
 }
 
-void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest) {
-    if (flushStateOnRequest) {
-        flushTextureState();
-    }
+void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
+    flushTextureState();
 
     GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                             : (write ? GL_WRITE_ONLY : GL_NONE);
     GL_API::bindTextureImage(slot, _textureData.getHandleHigh(), level, layered, layer, access, 
-                                GLUtil::glImageFormatTable[to_U32(_descriptor._internalFormat)]);
+                                GLUtil::glImageFormatTable[to_U32(_descriptor.internalFormat())]);
 }
 
 };

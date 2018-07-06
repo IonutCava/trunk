@@ -89,17 +89,20 @@ void LightPool::init() {
     _lightImpostorShader = CreateResource<ShaderProgram>(_parentScene.resourceCache(), lightImpostorShader);
 
     SamplerDescriptor iconSampler;
-    iconSampler.toggleMipMaps(false);
+    iconSampler.setMinFilter(TextureFilter::LINEAR);
     iconSampler.setAnisotropy(0);
     iconSampler.setWrapMode(TextureWrap::REPEAT);
     iconSampler.toggleSRGBColourSpace(true);
 
+    TextureDescriptor iconDescriptor(TextureType::TEXTURE_2D);
+    iconDescriptor.setSampler(iconSampler);
+
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.setThreadedLoading(false);
-    iconImage.setPropertyDescriptor<SamplerDescriptor>(iconSampler);
     iconImage.setResourceLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     iconImage.setResourceName("lightIcons.png");
-    iconImage.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    iconImage.setPropertyDescriptor(iconDescriptor);
+
     _lightIconsTexture = CreateResource<Texture>(_parentScene.resourceCache(), iconImage);
 
     _init = true;

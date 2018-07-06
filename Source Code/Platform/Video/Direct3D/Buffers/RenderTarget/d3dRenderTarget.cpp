@@ -24,7 +24,7 @@ void d3dRenderTarget::begin(const RTDrawDescriptor& drawPolicy) {}
 
 void d3dRenderTarget::end() {}
 
-void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index, bool flushStateOnRequest) {}
+void d3dRenderTarget::bind(U8 unit, RTAttachment::Type type, U8 index) {}
 
 void d3dRenderTarget::drawToLayer(RTAttachment::Type type,
                                   U8 index,

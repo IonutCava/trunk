@@ -45,48 +45,49 @@ class glTexture final : public Texture,
                        const stringImpl& name,
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
-                       TextureType type,
                        bool isFlipped,
-                       bool asyncLoad);
+                       bool asyncLoad,
+                       const TextureDescriptor& texDescriptor);
     ~glTexture();
 
     bool unload() override;
 
-    void bind(U8 unit, bool flushStateOnRequest = true) override;
+    void bind(U8 unit) override;
 
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write, bool flushStateOnRequest = true) override;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
 
-    void setMipMapRange(GLushort base = 0, GLushort max = 1000) override;
+    void setMipMapRange(U16 base = 0, U16 max = 1000) override;
 
     void resize(const bufferPtr ptr,
                 const vec2<U16>& dimensions,
                 const vec2<U16>& mipLevels) override;
 
     void loadData(const TextureLoadInfo& info,
-                  const TextureDescriptor& descriptor,
-                  const vectorImpl<ImageTools::ImageLayer>& imageLayers,
-                  const vec2<GLushort>& mipLevels) override;
+                  const vectorImpl<ImageTools::ImageLayer>& imageLayers) override;
+
     void loadData(const TextureLoadInfo& info,
-                  const TextureDescriptor& descriptor,
                   const bufferPtr data,
-                  const vec2<U16>& dimensions,
-                  const vec2<U16>& mipLevels) override;
+                  const vec2<U16>& dimensions) override;
 
     void copy(const Texture_ptr& other) override;
 
-    bool flushTextureState() override;
+    void setCurrentSampler(const SamplerDescriptor& descriptor) override;
 
    protected:
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
-    void reserveStorage(const TextureLoadInfo& info);
+    void reserveStorage();
     void updateMipMaps();
-    void updateSampler();
 
     void loadDataCompressed(const TextureLoadInfo& info,
                             const vectorImpl<ImageTools::ImageLayer>& imageLayers);
 
     void loadDataUncompressed(const TextureLoadInfo& info,
                               bufferPtr data);
+
+    void setMipRangeInternal(U16 base, U16 max);
+
+    bool flushTextureState();
+
    private:
     GLenum _type;
     std::atomic_bool _allocatedStorage;

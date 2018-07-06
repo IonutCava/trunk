@@ -23,49 +23,21 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
                                 bool threadedLoading,
                                 const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback ) {
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
-
-    SamplerDescriptor blendMapSampler;
-    blendMapSampler.setWrapMode(TextureWrap::CLAMP);
-    blendMapSampler.setAnisotropy(0);
-    blendMapSampler.toggleMipMaps(false);
-
-    SamplerDescriptor albedoSampler;
-    albedoSampler.setWrapMode(TextureWrap::REPEAT);
-    albedoSampler.setAnisotropy(8);
-    albedoSampler.toggleMipMaps(true);
-    albedoSampler.toggleSRGBColourSpace(true);
-
-    SamplerDescriptor normalSampler;
-    normalSampler.setWrapMode(TextureWrap::REPEAT);
-    normalSampler.setAnisotropy(8);
-    normalSampler.toggleMipMaps(true);
-
-    SamplerDescriptor heightMapSampler;
-    heightMapSampler.setWrapMode(TextureWrap::CLAMP);
-    heightMapSampler.setAnisotropy(0);
-    heightMapSampler.toggleMipMaps(false);
-
     const stringImpl& terrainMapLocation = terrainDescriptor->getVariable("textureLocation");
 
     // Blend map
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
-    textureBlendMap.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
     textureBlendMap.setResourceLocation(terrainMapLocation);
-    textureBlendMap.setPropertyDescriptor(blendMapSampler);
     textureBlendMap.setFlag(true);
 
     // Albedo map
     ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name);
-    textureTileMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
     textureTileMaps.setResourceLocation(terrainMapLocation);
-    textureTileMaps.setPropertyDescriptor(albedoSampler);
     textureTileMaps.setFlag(true);
 
     // Normal map
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
-    textureNormalMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
     textureNormalMaps.setResourceLocation(terrainMapLocation);
-    textureNormalMaps.setPropertyDescriptor(normalSampler);
     textureNormalMaps.setFlag(true);
 
     //temp data
@@ -170,14 +142,48 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
         }
     }
 
-    textureBlendMap.setID(layerCount);
+    SamplerDescriptor blendMapSampler;
+    blendMapSampler.setWrapMode(TextureWrap::CLAMP);
+    blendMapSampler.setAnisotropy(0);
+    blendMapSampler.setMinFilter(TextureFilter::LINEAR);
+
+    SamplerDescriptor albedoSampler;
+    albedoSampler.setWrapMode(TextureWrap::REPEAT);
+    albedoSampler.setAnisotropy(8);
+    albedoSampler.toggleSRGBColourSpace(true);
+
+    SamplerDescriptor normalSampler;
+    normalSampler.setWrapMode(TextureWrap::REPEAT);
+    normalSampler.setAnisotropy(8);
+
+    SamplerDescriptor heightMapSampler;
+    heightMapSampler.setWrapMode(TextureWrap::CLAMP);
+    heightMapSampler.setAnisotropy(0);
+    heightMapSampler.setMinFilter(TextureFilter::LINEAR);
+
+    TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D);
+    heightMapDescriptor.setSampler(heightMapSampler);
+
+    TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
+    blendMapDescriptor.setSampler(blendMapSampler);
+    blendMapDescriptor._layerCount = layerCount;
+
+    TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
+    albedoDescriptor.setSampler(albedoSampler);
+    albedoDescriptor._layerCount = albedoCount;
+
+    TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
+    normalDescriptor.setSampler(normalSampler);
+    normalDescriptor._layerCount = normalCount;
+
     textureBlendMap.setResourceName(blendMapArray);
+    textureBlendMap.setPropertyDescriptor(blendMapDescriptor);
 
-    textureTileMaps.setID(albedoCount);
     textureTileMaps.setResourceName(albedoMapArray);
-
-    textureNormalMaps.setID(normalCount);
+    textureTileMaps.setPropertyDescriptor(albedoDescriptor);
+    
     textureNormalMaps.setResourceName(normalMapArray);
+    textureNormalMaps.setPropertyDescriptor(normalDescriptor);
 
     textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
     textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
@@ -218,33 +224,33 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderProgram("terrainTess.Shadow." + name, RenderStage::SHADOW, true);
     terrainMaterial->setShaderProgram("terrainTess.PrePass." + name, RenderPassType::DEPTH_PASS, true);
 
+    TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
+    miscTexDescriptor.setSampler(albedoSampler);
+
     ResourceDescriptor textureWaterCaustics("Terrain Water Caustics_" + name);
     textureWaterCaustics.setResourceLocation(terrainMapLocation);
     textureWaterCaustics.setResourceName(terrainDescriptor->getVariable("waterCaustics"));
-    textureWaterCaustics.setPropertyDescriptor(albedoSampler);
-    textureWaterCaustics.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    textureWaterCaustics.setPropertyDescriptor(miscTexDescriptor);
+    
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
 
     ResourceDescriptor underwaterAlbedoTexture("Terrain Underwater Albedo_" + name);
     underwaterAlbedoTexture.setResourceLocation(terrainMapLocation);
     underwaterAlbedoTexture.setResourceName(terrainDescriptor->getVariable("underwaterAlbedoTexture"));
-    underwaterAlbedoTexture.setPropertyDescriptor(albedoSampler);
-    underwaterAlbedoTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    underwaterAlbedoTexture.setPropertyDescriptor(miscTexDescriptor);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), underwaterAlbedoTexture));
 
     ResourceDescriptor underwaterDetailTexture("Terrain Underwater Detail_" + name);
     underwaterDetailTexture.setResourceLocation(terrainMapLocation);
     underwaterDetailTexture.setResourceName(terrainDescriptor->getVariable("underwaterDetailTexture"));
-    underwaterDetailTexture.setPropertyDescriptor(albedoSampler);
-    underwaterDetailTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+    underwaterDetailTexture.setPropertyDescriptor(miscTexDescriptor);
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::NORMALMAP, CreateResource<Texture>(terrain->parentResourceCache(), underwaterDetailTexture));
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.setResourceLocation(terrainDescriptor->getVariable("heightmapLocation"));
     heightMapTexture.setResourceName(terrainDescriptor->getVariable("heightmap"));
-    heightMapTexture.setPropertyDescriptor(heightMapSampler);
+    heightMapTexture.setPropertyDescriptor(heightMapDescriptor);
     heightMapTexture.setFlag(true);
-    heightMapTexture.setEnumValue(to_base(TextureType::TEXTURE_2D));
 
     terrainMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
     terrainMaterial->setShaderLoadThreaded(false);
@@ -533,12 +539,14 @@ void TerrainLoader::initializeVegetation(std::shared_ptr<Terrain> terrain,
     grassSampler.setWrapMode(TextureWrap::CLAMP);
     grassSampler.toggleSRGBColourSpace(true);
 
+    TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
+    grassTexDescriptor._layerCount = textureCount;
+    grassTexDescriptor.setSampler(grassSampler);
+
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
-    textureDetailMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
-    textureDetailMaps.setID(textureCount);
     textureDetailMaps.setResourceLocation(terrainDescriptor->getVariable("grassMapLocation"));
     textureDetailMaps.setResourceName(textureName);
-    textureDetailMaps.setPropertyDescriptor(grassSampler);
+    textureDetailMaps.setPropertyDescriptor(grassTexDescriptor);
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps);
 
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);

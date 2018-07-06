@@ -42,9 +42,8 @@ class NOINITVTABLE PropertyDescriptor {
    public:
     enum class DescriptorType : U32 {
         DESCRIPTOR_TEXTURE = 0,
-        DESCRIPTOR_SAMPLER = 1,
-        DESCRIPTOR_PARTICLE = 2,
-        DESCRIPTOR_TERRAIN_INFO = 3,
+        DESCRIPTOR_PARTICLE = 1,
+        DESCRIPTOR_TERRAIN_INFO = 2,
         DESCRIPTOR_COUNT
     };
 
@@ -96,6 +95,7 @@ class ResourceDescriptor {
 
     template <typename T>
     inline const std::shared_ptr<T> getPropertyDescriptor() const {
+        static_assert(std::is_base_of<PropertyDescriptor, T>::value, "Invalid Property Descriptor");
         return std::dynamic_pointer_cast<T>(_propertyDescriptor);
     }
 
@@ -135,6 +135,7 @@ class ResourceDescriptor {
 
     template <typename T>
     inline void setPropertyDescriptor(const T& descriptor) {
+        static_assert(std::is_base_of<PropertyDescriptor, T>::value, "Invalid Property Descriptor");
         _propertyDescriptor.reset(MemoryManager_NEW T(descriptor));
     }
 

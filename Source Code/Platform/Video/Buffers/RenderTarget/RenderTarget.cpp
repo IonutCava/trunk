@@ -53,14 +53,6 @@ void RenderTarget::addAttachment(const TextureDescriptor& descriptor,
     _attachmentPool->add(type, index, descriptor);
 }
 
-const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index, bool flushStateOnRequest) {
-    RTAttachment&  att = *_attachmentPool->get(type, index);
-    if (flushStateOnRequest) {
-        att.flush();
-    }
-    return att;
-}
-
 const RTAttachment& RenderTarget::getAttachment(RTAttachment::Type type, U8 index) const {
     return *_attachmentPool->get(type, index);
 }
@@ -77,7 +69,7 @@ RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
     return _policyDepthOnly;
 }
 
-TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {
+const TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {
     return _attachmentPool->get(type, index)->descriptor();
 }
 

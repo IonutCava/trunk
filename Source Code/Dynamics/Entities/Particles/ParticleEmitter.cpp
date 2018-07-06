@@ -163,10 +163,13 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
     if (!_particles->_textureFileName.empty()) {
         SamplerDescriptor textureSampler;
         textureSampler.toggleSRGBColourSpace(true);
-        ResourceDescriptor texture(_particles->_textureFileName);
 
-        texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-        texture.setEnumValue(to_base(TextureType::TEXTURE_2D));
+        TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
+        textureDescriptor.setSampler(textureSampler);
+
+        ResourceDescriptor texture(_particles->_textureFileName);
+        texture.setPropertyDescriptor(textureDescriptor);
+
         _particleTexture = CreateResource<Texture>(_parentCache, texture);
     }
 
@@ -185,7 +188,7 @@ bool ParticleEmitter::unload() {
 }
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
-    if (_particleTexture && _particleTexture->flushTextureState()) {
+    if (_particleTexture) {
         TextureData particleTextureData = _particleTexture->getData();
         particleTextureData.setHandleLow(to_base(ShaderProgram::TextureUsage::UNIT0));
         sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);

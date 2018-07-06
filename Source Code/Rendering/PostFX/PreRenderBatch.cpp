@@ -50,7 +50,6 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);
-    screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
@@ -63,7 +62,6 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     SamplerDescriptor lumaSampler;
     lumaSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     lumaSampler.setMinFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-    lumaSampler.toggleMipMaps(true);
 
     TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D,
                                      GFXImageFormat::RED16F,
@@ -73,7 +71,6 @@ void PreRenderBatch::init(RenderTargetID renderTarget) {
     _currentLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
 
     lumaSampler.setFilters(TextureFilter::LINEAR);
-    lumaSampler.toggleMipMaps(false);
     lumaDescriptor.setSampler(lumaSampler);
     _previousLuminance._rt->addAttachment(lumaDescriptor, RTAttachment::Type::Colour, 0);
     _previousLuminance._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
