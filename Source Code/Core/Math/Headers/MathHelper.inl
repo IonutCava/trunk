@@ -35,17 +35,17 @@
 namespace Divide {
 
 template <typename T>
-T random(T max) {
+T Random(T max) {
     return max * rand() * static_cast<T>(INV_RAND_MAX);
 }
 
 template <>
-inline I32 random(I32 max) {
+inline I32 Random(I32 max) {
     return rand() % (max + 1);
 }
 
 template <typename T>
-inline T random(T min, T max) {
+inline T Random(T min, T max) {
     return min + (max - min) * static_cast<T>(INV_RAND_MAX) * rand();
 }
 
@@ -62,12 +62,12 @@ inline T CLAMPED(const T& n, T min, T max) {
 
 
 template<typename T>
-inline bool bitCompare(T bitMask, T bit) {
-    return bitCompare(to_uint(bitMask), to_uint(bit));
+inline bool BitCompare(T bitMask, T bit) {
+    return BitCompare(to_uint(bitMask), to_uint(bit));
 }
 
 template<>
-inline bool bitCompare<U32>(U32 bitMask, U32 bit) {
+inline bool BitCompare<U32>(U32 bitMask, U32 bit) {
     return ((bitMask & bit) == bit);
 }
 
@@ -246,12 +246,12 @@ template <typename T>
 namespace Util {
 /// a la Boost
 template <typename T>
-void hash_combine(std::size_t& seed, const T& v) {
+void Hash_combine(std::size_t& seed, const T& v) {
     std::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-inline void replaceStringInPlace(stringImpl& subject, const stringImpl& search,
+inline void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
                                  const stringImpl& replace) {
     stringAlg::stringSize pos = 0;
     while ((pos = subject.find(search, pos)) != stringImpl::npos) {
@@ -262,7 +262,7 @@ inline void replaceStringInPlace(stringImpl& subject, const stringImpl& search,
 
 // U = to data type, T = from data type
 template <typename U, typename T>
-U convertData(const T& data) {
+U ConvertData(const T& data) {
     U targetValue;
     std::istringstream iss(data);
     iss >> targetValue;
@@ -271,14 +271,14 @@ U convertData(const T& data) {
 }
 
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-inline stringImpl& ltrim(stringImpl& s) {
+inline stringImpl& Ltrim(stringImpl& s) {
     s.erase(std::begin(s),
             std::find_if(std::begin(s), std::end(s),
                          std::not1(std::ptr_fun<int, int>(std::isspace))));
     return s;
 }
 
-inline stringImpl& rtrim(stringImpl& s) {
+inline stringImpl& Rtrim(stringImpl& s) {
     s.erase(
         std::find_if(std::rbegin(s), std::rend(s),
                      std::not1(std::ptr_fun<int, int>(std::isspace))).base(),
@@ -286,12 +286,14 @@ inline stringImpl& rtrim(stringImpl& s) {
     return s;
 }
 
-inline stringImpl& trim(stringImpl& s) { return ltrim(rtrim(s)); }
+inline stringImpl& Trim(stringImpl& s) {
+    return Ltrim(Rtrim(s));
+}
 
 namespace Mat4 {
 
 template <typename T>
-__forceinline T det(const T* mat) {
+__forceinline T Det(const T* mat) {
     return ((mat[0] * mat[5] * mat[10]) + (mat[4] * mat[9] * mat[2]) +
             (mat[8] * mat[1] * mat[6]) - (mat[8] * mat[5] * mat[2]) -
             (mat[4] * mat[1] * mat[10]) - (mat[0] * mat[9] * mat[6]));
@@ -299,7 +301,7 @@ __forceinline T det(const T* mat) {
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template <typename T>
-__forceinline void inverse(const T* in, T* out) {
+__forceinline void Inverse(const T* in, T* out) {
     T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
     T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
     T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];
@@ -342,7 +344,7 @@ __forceinline void inverse(const T* in, T* out) {
 }
 
 template <typename T>
-__forceinline void add(const T a[16], const T b[16], T r[16]) {
+__forceinline void Add(const T a[16], const T b[16], T r[16]) {
     T rTemp[] = {
         a[0]  + b[0],  a[1]  + b[1],  a[2]  + b[2],  a[3]  + b[3],
         a[4]  + b[4],  a[5]  + b[5],  a[6]  + b[6],  a[7]  + b[7],
@@ -353,7 +355,7 @@ __forceinline void add(const T a[16], const T b[16], T r[16]) {
 }
 
 template <typename T>
-__forceinline void substract(const T a[16], const T b[16], T r[16]) {
+__forceinline void Substract(const T a[16], const T b[16], T r[16]) {
     T rTemp[] = {
         a[0]  - b[0],  a[1]  - b[1],  a[2]  - b[2],  a[3]  - b[3],
         a[4]  - b[4],  a[5]  - b[5],  a[6]  - b[6],  a[7]  - b[7],
@@ -364,7 +366,7 @@ __forceinline void substract(const T a[16], const T b[16], T r[16]) {
 }
 
 template <typename T>
-__forceinline void multiply(const T a[16], const T b[16], T r[16]) {
+__forceinline void Multiply(const T a[16], const T b[16], T r[16]) {
     T rTemp[] = 
         {(a[0]  * b[0]) + (a[1]  * b[4]) + (a[2]  * b[8] ) + (a[3]  * b[12]),
          (a[0]  * b[1]) + (a[1]  * b[5]) + (a[2]  * b[9] ) + (a[3]  * b[13]),
@@ -387,7 +389,7 @@ __forceinline void multiply(const T a[16], const T b[16], T r[16]) {
 }
 
 template <typename T>
-__forceinline void multiplyScalar(const T a[16], T b, T r[16]){
+__forceinline void MultiplyScalar(const T a[16], T b, T r[16]){
     T rTemp[] = { (a[0]  * b), (a[1]  * b), (a[2]  * b), (a[3]  * b),
                   (a[4]  * b), (a[5]  * b), (a[6]  * b), (a[7]  * b),
                   (a[8]  * b), (a[9]  * b), (a[10] * b), (a[11] * b),

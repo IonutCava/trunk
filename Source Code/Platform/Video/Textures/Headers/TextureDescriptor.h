@@ -168,22 +168,22 @@ class SamplerDescriptor : public PropertyDescriptor {
 
     inline size_t getHash() const {
         size_t hash = 0;
-        Util::hash_combine(hash, _cmpFunc);
-        Util::hash_combine(hash, _useRefCompare);
-        Util::hash_combine(hash, _srgb);
-        Util::hash_combine(hash, _wrapU);
-        Util::hash_combine(hash, _wrapV);
-        Util::hash_combine(hash, _wrapW);
-        Util::hash_combine(hash, _minFilter);
-        Util::hash_combine(hash, _magFilter);
-        Util::hash_combine(hash, _minLOD);
-        Util::hash_combine(hash, _maxLOD);
-        Util::hash_combine(hash, _biasLOD);
-        Util::hash_combine(hash, _anisotropyLevel);
-        Util::hash_combine(hash, _borderColor.r);
-        Util::hash_combine(hash, _borderColor.g);
-        Util::hash_combine(hash, _borderColor.b);
-        Util::hash_combine(hash, _borderColor.a);
+        Util::Hash_combine(hash, _cmpFunc);
+        Util::Hash_combine(hash, _useRefCompare);
+        Util::Hash_combine(hash, _srgb);
+        Util::Hash_combine(hash, _wrapU);
+        Util::Hash_combine(hash, _wrapV);
+        Util::Hash_combine(hash, _wrapW);
+        Util::Hash_combine(hash, _minFilter);
+        Util::Hash_combine(hash, _magFilter);
+        Util::Hash_combine(hash, _minLOD);
+        Util::Hash_combine(hash, _maxLOD);
+        Util::Hash_combine(hash, _biasLOD);
+        Util::Hash_combine(hash, _anisotropyLevel);
+        Util::Hash_combine(hash, _borderColor.r);
+        Util::Hash_combine(hash, _borderColor.g);
+        Util::Hash_combine(hash, _borderColor.b);
+        Util::Hash_combine(hash, _borderColor.a);
         return hash;
     }
     /*

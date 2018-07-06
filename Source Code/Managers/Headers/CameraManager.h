@@ -54,6 +54,8 @@ class CameraManager : private NonCopyable, public FrameListener {
         return _camera;
     }
 
+    void update(const U64 deltaTime);
+
     void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 
     void addCameraChangeListener(const DELEGATE_CBK_PARAM<Camera>& f) {

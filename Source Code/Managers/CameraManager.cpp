@@ -26,6 +26,11 @@ CameraManager::~CameraManager() {
     _cameraPoolGUID.clear();
 }
 
+void CameraManager::update(const U64 deltaTime) {
+    assert(_camera);
+    _camera->update(deltaTime);
+}
+
 bool CameraManager::frameStarted(const FrameEvent& evt) {
     assert(_camera);
 
@@ -40,9 +45,6 @@ bool CameraManager::frameStarted(const FrameEvent& evt) {
         }
         _addNewListener = false;
     }
-
-    U64 timeDelta = _kernelPtr->getCurrentTimeDelta();
-    _camera->update(timeDelta);
 
     return true;
 }

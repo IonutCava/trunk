@@ -205,10 +205,10 @@ void Vegetation::uploadGrassData() {
         vectorImpl<F32> angles;
         angles.resize(18, 0.0f);
         for (U8 i = 0; i < 18; ++i) {
-            F32 temp = random(360.0f);
+            F32 temp = Random(360.0f);
             while (std::find(std::begin(angles), std::end(angles), temp) !=
                    std::end(angles)) {
-                temp = random(360.0f);
+                temp = Random(360.0f);
             }
             angles[i] = temp;
         }
@@ -472,8 +472,8 @@ void Vegetation::generateGrass() {
                 if (_stopLoadingRequest) {
                     continue;
                 }
-                F32 x = width + random(densityFactor) + chunkPos.x;
-                F32 y = height + random(densityFactor) + chunkPos.y;
+                F32 x = width + Random(densityFactor) + chunkPos.x;
+                F32 y = height + Random(densityFactor) + chunkPos.y;
                 CLAMP<F32>(x, 0.0f, (F32)mapWidth - 1.0f);
                 CLAMP<F32>(y, 0.0f, (F32)mapHeight - 1.0f);
                 F32 x_fac = x / _map.dimensions().width;
@@ -497,7 +497,7 @@ void Vegetation::generateGrass() {
                     mat4<F32> matRot1;
                     matRot1.scale(vec3<F32>(grassScale));
                     mat4<F32> matRot2;
-                    matRot2.rotate_y(random(360.0f));
+                    matRot2.rotate_y(Random(360.0f));
                     _grassMatricesTemp.push_back(matRot1 * matRot2 *
                     rotationFromVToU(WORLD_Y_AXIS, N).getMatrix());*/
 

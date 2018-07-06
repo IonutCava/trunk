@@ -28,11 +28,14 @@ PhysicsComponent::~PhysicsComponent()
     MemoryManager::DELETE(_transform);
 }
 
+void PhysicsComponent::update(const U64 deltaTime) {
+    if (_transform) {
+        _prevTransformValues = _transform->getValues();
+    }
+}
+
 void PhysicsComponent::reset() {
     _worldMatrix.identity();
-    _scaleCache.set(1.0f);
-    _positionCache.set(0.0f);
-    _orientationCache.identity();
     _prevTransformValues._translation.set(0.0f);
     _prevTransformValues._scale.set(1.0f);
     _prevTransformValues._orientation.identity();
@@ -88,228 +91,221 @@ void PhysicsComponent::setTransformDirty() {
 void PhysicsComponent::setPosition(const vec3<F32>& position) {
     if (_transform) {
         _transform->setPosition(position);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setScale(const vec3<F32>& scale) {
     if (_transform) {
         _transform->setScale(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
+}
+
+void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
+    if (_transform) {
+        _transform->setRotation(quat);
+    }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& axis, F32 degrees,
                                    bool inDegrees) {
     if (_transform) {
         _transform->setRotation(axis, degrees, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setRotation(const vec3<F32>& euler, bool inDegrees) {
     if (_transform) {
         _transform->setRotation(euler, inDegrees);
-        setTransformDirty();
     }
-}
-
-void PhysicsComponent::setRotation(const Quaternion<F32>& quat) {
-    if (_transform) {
-        _transform->setRotation(quat);
-        setTransformDirty();
-    }
+    setTransformDirty();
 }
 
 void PhysicsComponent::translate(const vec3<F32>& axisFactors) {
     if (_transform) {
         _transform->translate(axisFactors);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::scale(const vec3<F32>& axisFactors) {
     if (_transform) {
         _transform->scale(axisFactors);
-        setTransformDirty();
     }
+     setTransformDirty();
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& axis, F32 degrees,
                               bool inDegrees) {
     if (_transform) {
         _transform->rotate(axis, degrees, inDegrees);
-        setTransformDirty();
     }
+     setTransformDirty();
 }
 
 void PhysicsComponent::rotate(const vec3<F32>& euler, bool inDegrees) {
     if (_transform) {
         _transform->rotate(euler, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
     if (_transform) {
         _transform->rotate(quat);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat,
                                    const D32 deltaTime) {
     if (_transform) {
         _transform->rotateSlerp(quat, deltaTime);
-        setTransformDirty();
     }
+   setTransformDirty();
 }
 
 void PhysicsComponent::setScale(const F32 scale) {
     if (_transform) {
         _transform->setScale(scale);
-        setTransformDirty();
     }
+     setTransformDirty();
 }
 
 void PhysicsComponent::setScaleX(const F32 scale) {
     if (_transform) {
         _transform->setScaleX(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setScaleY(const F32 scale) {
     if (_transform) {
         _transform->setScaleY(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setScaleZ(const F32 scale) {
     if (_transform) {
         _transform->setScaleZ(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::scale(const F32 scale) {
     if (_transform) {
         _transform->scale(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::scaleX(const F32 scale) {
     if (_transform) {
         _transform->scaleX(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::scaleY(const F32 scale) {
     if (_transform) {
         _transform->scaleY(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::scaleZ(const F32 scale) {
     if (_transform) {
         _transform->scaleZ(scale);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::rotateX(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateX(angle, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::rotateY(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateY(angle, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::rotateZ(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->rotateZ(angle, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setRotationX(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationX(angle, inDegrees);
-        setTransformDirty();
     }
-}
-
-void PhysicsComponent::setRotationXEuler(const F32 angle, bool inDegrees) {
-    if (_transform) {
-        _transform->setRotationXEuler(angle, inDegrees);
-        setTransformDirty();
-    }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setRotationY(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationY(angle, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setRotationZ(const F32 angle, bool inDegrees) {
     if (_transform) {
         _transform->setRotationZ(angle, inDegrees);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::translateX(const F32 positionX) {
     if (_transform) {
         _transform->translateX(positionX);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::translateY(const F32 positionY) {
     if (_transform) {
         _transform->translateY(positionY);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::translateZ(const F32 positionZ) {
     if (_transform) {
         _transform->translateZ(positionZ);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setPositionX(const F32 positionX) {
     if (_transform) {
         _transform->setPositionX(positionX);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setPositionY(const F32 positionY) {
     if (_transform) {
         _transform->setPositionY(positionY);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::setPositionZ(const F32 positionZ) {
     if (_transform) {
         _transform->setPositionZ(positionZ);
-        setTransformDirty();
     }
+    setTransformDirty();
 }
 
 void PhysicsComponent::pushTransforms() {
@@ -321,11 +317,11 @@ void PhysicsComponent::pushTransforms() {
 bool PhysicsComponent::popTransforms() {
     if (!_transformStack.empty()) {
         if (_transform) {
-            _transform->setValues(_transformStack.top());
-            _prevTransformValues = _transform->getValues();
+            _prevTransformValues = _transformStack.top();
+            _transform->setValues(_prevTransformValues);
             _transformStack.pop();
-            setTransformDirty();
         }
+        setTransformDirty();
         return true;
     }
     return false;
@@ -333,26 +329,18 @@ bool PhysicsComponent::popTransforms() {
 
 const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
                                                   const bool local) {
+    _worldMatrix.identity();
+
     if (_transform) {
-        if (interpolationFactor < 0.95) {
-            _worldMatrix.identity();
-            _worldMatrix.setScale(lerp(_prevTransformValues._scale,
-                                       _transform->getScale(),
-                                       (F32)interpolationFactor));
-            _worldMatrix *= Divide::getMatrix(
-                slerp(_prevTransformValues._orientation,
-                      _transform->getOrientation(), (F32)interpolationFactor));
-            _worldMatrix.setTranslation(lerp(_prevTransformValues._translation,
-                                             _transform->getPosition(),
-                                             (F32)interpolationFactor));
+        if (interpolationFactor < 0.975) {
+            _worldMatrix.setScale(getScale(interpolationFactor, true));
+            _worldMatrix *= GetMatrix(getOrientation(interpolationFactor, true));
+            _worldMatrix.setTranslation(getPosition(interpolationFactor, true));
         } else {
             _worldMatrix.set(_transform->getMatrix());
         }
-        _prevTransformValues = _transform->getValues();
-    } else {
-        _worldMatrix.identity();
     }
-
+  
     const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
         _worldMatrix *=
@@ -364,55 +352,78 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor,
 }
 
 /// Return the scale factor
-const vec3<F32>& PhysicsComponent::getScale(const bool local) {
+const vec3<F32>& PhysicsComponent::getScale(D32 interpolationFactor,
+                                            const bool local) {
+    vec3<F32>& scale = _cacheTransformValues._scale;
     if (_transform) {
-        _scaleCache.set(_transform->getScale());
+        if (interpolationFactor < 0.975 && false) {
+            scale.set(Lerp(_prevTransformValues._scale, _transform->getScale(),
+                           static_cast<F32>(interpolationFactor)));
+        } else {
+            scale.set(_transform->getScale());
+        }
     } else {
-        _scaleCache.set(1.0f);
+        scale.set(1.0f);
     }
 
     const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
-        _scaleCache *=
-            parent->getComponent<PhysicsComponent>()->getScale(local);
+        scale *= parent->getComponent<PhysicsComponent>()->getScale(
+            interpolationFactor, local);
     }
 
-    return _scaleCache;
+    return scale;
 }
 
 /// Return the position
-const vec3<F32>& PhysicsComponent::getPosition(const bool local) {
+const vec3<F32>& PhysicsComponent::getPosition(D32 interpolationFactor,
+                                               const bool local) {
+    vec3<F32>& position = _cacheTransformValues._translation;
     if (_transform) {
-        _positionCache.set(_transform->getPosition());
+        if (interpolationFactor < 0.975) {
+            position.set(Lerp(_prevTransformValues._translation,
+                              _transform->getPosition(),
+                              static_cast<F32>(interpolationFactor)));
+        } else {
+            position.set(_transform->getPosition());
+        }
     } else {
-        _positionCache.set(0.0f);
+        position.set(0.0f);
     }
 
     const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
-        _positionCache +=
-            parent->getComponent<PhysicsComponent>()->getPosition(local);
+        position += parent->getComponent<PhysicsComponent>()->getPosition(
+            interpolationFactor, local);
     }
 
-    return _positionCache;
+    return position;
 }
 
 /// Return the orientation quaternion
-const Quaternion<F32>& PhysicsComponent::getOrientation(const bool local) {
+const Quaternion<F32>& PhysicsComponent::getOrientation(D32 interpolationFactor, const bool local) {
+    Quaternion<F32>& orientation = _cacheTransformValues._orientation;
+    
     if (_transform) {
-        _orientationCache.set(_transform->getOrientation());
+        if (interpolationFactor < 0.975) {
+            orientation.set(Slerp(_prevTransformValues._orientation,
+                                  _transform->getOrientation(),
+                                  static_cast<F32>(interpolationFactor)));
+        } else {
+            orientation.set(_transform->getOrientation());
+        }
     } else {
-        _orientationCache.identity();
+        orientation.identity();
     }
 
     const SceneGraphNode* const parent = _parentSGN.getParent();
     if (!local && parent) {
-        _orientationCache.set(parent->getComponent<PhysicsComponent>()
-                                  ->getOrientation(local)
-                                  .inverse() *
-                              _orientationCache);
+        orientation.set(parent->getComponent<PhysicsComponent>()
+                            ->getOrientation(interpolationFactor, local)
+                            .inverse() *
+                        orientation);
     }
 
-    return _orientationCache;
+    return orientation;
 }
 };

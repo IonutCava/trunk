@@ -58,20 +58,20 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
     cbks.second = [this]() {
         if (!_hasGroundPlane) {
             PHYSICS_DEVICE.createPlane(vec3<F32>(0, 0, 0),
-                                       random(100.0f, 200.0f));
+                                       Random(100.0f, 200.0f));
             _hasGroundPlane = true;
         }
     };
     _input->addKeyMapping(Input::KeyCode::KC_1, cbks);
     cbks.second =
         DELEGATE_BIND(&PXDevice::createBox, &PHYSICS_DEVICE,
-                      vec3<F32>(0, random(10, 30), 0), random(0.5f, 2.0f));
+                      vec3<F32>(0, Random(10, 30), 0), Random(0.5f, 2.0f));
     _input->addKeyMapping(Input::KeyCode::KC_2, cbks);
     cbks.second = [this]() {
         Kernel& kernel = Application::getInstance().getKernel();
         Task_ptr e(kernel.AddTask(
             0, 1,
-            DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
+            DELEGATE_BIND(&PhysXScene::createTower, this, (U32)Random(5, 20))));
         registerTask(e);
         e->startTask();
     };
@@ -80,7 +80,7 @@ bool PhysXScene::load(const stringImpl& name, GUI* const gui) {
         Kernel& kernel = Application::getInstance().getKernel();
         Task_ptr e(kernel.AddTask(
             0, 1,
-            DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
+            DELEGATE_BIND(&PhysXScene::createStack, this, (U32)Random(5, 10))));
         registerTask(e);
         e->startTask();
     };

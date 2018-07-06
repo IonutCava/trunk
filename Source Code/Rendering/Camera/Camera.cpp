@@ -67,17 +67,10 @@ void Camera::fromCamera(const Camera& camera) {
 }
 
 void Camera::update(const U64 deltaTime) {
-    if (Config::USE_FIXED_TIMESTEP) {
-        F32 timeFactor = Time::MicrosecondsToSeconds<D32>(Config::SKIP_TICKS);
-        _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
-        _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
-        _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
-    } else {
-        F32 timeFactor = Time::MicrosecondsToSeconds<D32>(deltaTime);
-        _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
-        _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
-        _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
-    }
+    F32 timeFactor = Time::MicrosecondsToSeconds<D32>(deltaTime);
+    _cameraMoveSpeed = _moveSpeedFactor * timeFactor;
+    _cameraTurnSpeed = _turnSpeedFactor * timeFactor;
+    _cameraZoomSpeed = _zoomSpeedFactor * timeFactor;
 }
 
 void Camera::updateProjection(bool force) {
@@ -187,9 +180,12 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     if (_movementLocked) {
         return;
     }
+    dx *= _cameraMoveSpeed;
+    dy *= _cameraMoveSpeed;
+    dz *= _cameraMoveSpeed;
 
-    _eye += _xAxis * dx * _cameraMoveSpeed;
-    _eye += WORLD_Y_AXIS * dy * _cameraMoveSpeed;
+    _eye += _xAxis * dx;
+    _eye += WORLD_Y_AXIS * dy;
 
     if (_type == CameraType::FIRST_PERSON) {
         // Calculate the forward direction. Can't just use the camera's local
@@ -198,9 +194,9 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
         vec3<F32> forward;
         forward.cross(WORLD_Y_AXIS, _xAxis);
         forward.normalize();
-        _eye += forward * dz * _cameraMoveSpeed;
+        _eye += forward * dz;
     } else {
-        _eye += _viewDir * dz * _cameraMoveSpeed;
+        _eye += _viewDir * dz;
     }
 
     _viewMatrixDirty = true;

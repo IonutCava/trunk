@@ -179,7 +179,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
 
     // Did we hit the opponent? Then change ball direction ... BUT ...
     // Add a small chance that we win
-    if (random(30) != 2)
+    if (Random(30) != 2)
         if (_ballSGN->getBoundingBox().Collision(opponent->getBoundingBox())) {
             _sideDrift =
                 ballPosition.x -
@@ -226,11 +226,11 @@ void PingPongScene::processInput(const U64 deltaTime) {
     // Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     // Camera controls
-    if (state().angleLR()) {
-        _paddleCam->rotateYaw(state().angleLR());
+    if (state().angleLR() != SceneState::MoveDirection::NONE) {
+        _paddleCam->rotateYaw(to_int(state().angleLR()));
     }
-    if (state().angleUD()) {
-        _paddleCam->rotatePitch(state().angleUD());
+    if (state().angleUD() != SceneState::MoveDirection::NONE) {
+        _paddleCam->rotatePitch(to_int(state().angleUD()));
     }
 
     SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
@@ -238,21 +238,19 @@ void PingPongScene::processInput(const U64 deltaTime) {
     vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
-    if (state().moveFB()) {
-        if ((state().moveFB() > 0 && pos.y >= 3) ||
-            (state().moveFB() < 0 && pos.y <= 0.5f))
+    if (state().moveFB() != SceneState::MoveDirection::NONE) {
+        if ((state().moveFB() == SceneState::MoveDirection::POSITIVE && pos.y >= 3) ||
+            (state().moveFB() == SceneState::MoveDirection::NEGATIVE && pos.y <= 0.5f))
             return;
-        paddle->getComponent<PhysicsComponent>()->translateY(
-            state().moveFB() / paddleMovementDivisor);
+        paddle->getComponent<PhysicsComponent>()->translateY(to_int(state().moveFB()) / paddleMovementDivisor);
     }
 
-    if (state().moveLR()) {
+    if (state().moveLR() != SceneState::MoveDirection::NONE) {
         // Left/right movement is flipped for proper control
-        if ((state().moveLR() < 0 && pos.x >= 3) ||
-            (state().moveLR() > 0 && pos.x <= -3))
+        if ((state().moveLR() == SceneState::MoveDirection::NEGATIVE && pos.x >= 3) ||
+            (state().moveLR() == SceneState::MoveDirection::POSITIVE && pos.x <= -3))
             return;
-        paddle->getComponent<PhysicsComponent>()->translateX(
-            state().moveLR() / paddleMovementDivisor);
+        paddle->getComponent<PhysicsComponent>()->translateX(to_int(state().moveLR()) / paddleMovementDivisor);
     }
 }
 

@@ -115,7 +115,7 @@ void glFramebuffer::InitAttachment(AttachmentType type,
         RemoveResource(_attachmentTexture[slot]);
     }
 
-    stringImpl attachmentName = Util::stringFormat(
+    stringImpl attachmentName = Util::StringFormat(
         "Framebuffer_Att_%s_%d", getAttachmentName(type), getGUID());
 
     ResourceDescriptor textureAttachment(attachmentName);

@@ -57,7 +57,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
     for (SubMeshRefMap::value_type it : _subMeshRefMap) {
         sgn.addNode(
             *(it.second),
-            Util::stringFormat("%s_%d", sgn.getName().c_str(), it.first));
+            Util::StringFormat("%s_%d", sgn.getName().c_str(), it.first));
     }
 
     Object3D::postLoad(sgn);

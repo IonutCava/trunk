@@ -93,9 +93,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }
     PXDevice& getPXDevice() const { return _PFX; }
-    /// Get elapsed time since kernel initialization
-    inline U64 getCurrentTime() const { return _currentTime; }
-    inline U64 getCurrentTimeDelta() const { return _currentTimeDelta; }
     
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
@@ -178,7 +175,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     static U64 _currentTimeFrozen;
     static U64 _currentTimeDelta;
     static U64 _previousTime;
-    static D32 _nextGameTick;
+    static U64 _nextGameTick;
 
     typedef hashMapImpl<I64, DELEGATE_CBK<> > CallbackFunctions;
 

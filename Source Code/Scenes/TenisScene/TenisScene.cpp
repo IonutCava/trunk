@@ -74,7 +74,7 @@ void TenisScene::resetGame() {
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
     _ballSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(
-        (random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
+        (Random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
     s_gameStarted = true;

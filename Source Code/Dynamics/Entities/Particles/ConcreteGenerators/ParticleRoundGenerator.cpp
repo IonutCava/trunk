@@ -10,7 +10,7 @@ void ParticleRoundGenerator::generate(const U64 deltaTime, ParticleData *p,
         "ParticleBoxGenerator::generate error: Invalid Range!");
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        D32 ang = random(0.0, M_2PI);
+        D32 ang = Random(0.0, M_2PI);
         p->_position[i].set(_center + vec4<F32>(_radX * std::sin(ang),
                                                 _radY * std::cos(ang), 
                                                 0.0f,

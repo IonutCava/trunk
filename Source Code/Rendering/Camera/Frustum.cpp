@@ -110,10 +110,10 @@ void Frustum::Extract() {
 
 void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
                                 const Plane<F32>& c, vec3<F32>& outResult) {
-    outResult.set((a.getDistance() * (cross(b.getNormal(), c.getNormal()))) +
-                  (b.getDistance() * (cross(c.getNormal(), a.getNormal()))) +
-                  (c.getDistance() * (cross(a.getNormal(), b.getNormal()))) /
-                      -dot(a.getNormal(), cross(b.getNormal(), c.getNormal())));
+    outResult.set((a.getDistance() * (Cross(b.getNormal(), c.getNormal()))) +
+                  (b.getDistance() * (Cross(c.getNormal(), a.getNormal()))) +
+                  (c.getDistance() * (Cross(a.getNormal(), b.getNormal()))) /
+                      -Dot(a.getNormal(), Cross(b.getNormal(), c.getNormal())));
 }
 
 void Frustum::updatePoints() {

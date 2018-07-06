@@ -80,7 +80,7 @@ class Object3D : public SceneNode {
     virtual bool onDraw(RenderStage currentStage);
 
     inline bool isSkinned() const {
-        return bitCompare(getFlagMask(),
+        return BitCompare(getFlagMask(),
                           to_uint(ObjectFlag::OBJECT_FLAG_SKINNED));
     }
 

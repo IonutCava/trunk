@@ -196,6 +196,13 @@ class SceneRenderState {
 class SceneState {
     friend class Attorney::SceneStateScene;
    public:
+       enum class MoveDirection : I32 {
+           NONE = 0,
+           NEGATIVE = -1,
+           POSITIVE = 1
+       };
+
+   public:
     /// Background music map : trackName - track
     typedef hashMapImpl<stringImpl, AudioDescriptor*> MusicPlaylist;
 
@@ -218,7 +225,7 @@ class SceneState {
     }
 
     inline void resetMovement() {
-        _moveFB = _moveLR = _angleUD = _angleLR = _roll= 0;
+        _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
     }
 
     inline FogDescriptor& fogDescriptor()   { return _fog; }
@@ -258,20 +265,20 @@ class SceneState {
     inline void cameraUpdated(bool state) { _cameraUpdated = state; }
     inline bool cameraUpdated()     const { return _cameraUpdated; }
 
-    inline void moveFB(I32 factor) { _moveFB = factor; }
-    inline I32  moveFB()     const { return _moveFB; }
+    inline void moveFB(MoveDirection factor) { _moveFB = factor; }
+    inline MoveDirection  moveFB()     const { return _moveFB; }
 
-    inline void moveLR(I32 factor) { _moveLR = factor; }
-    inline I32  moveLR()     const { return _moveLR; }
+    inline void moveLR(MoveDirection factor) { _moveLR = factor; }
+    inline MoveDirection  moveLR()     const { return _moveLR; }
 
-    inline void angleUD(I32 factor) { _angleUD = factor; }
-    inline I32  angleUD()     const { return _angleUD; }
+    inline void angleUD(MoveDirection factor) { _angleUD = factor; }
+    inline MoveDirection  angleUD()     const { return _angleUD; }
 
-    inline void angleLR(I32 factor) { _angleLR = factor; }
-    inline I32  angleLR()     const { return _angleLR; }
+    inline void angleLR(MoveDirection factor) { _angleLR = factor; }
+    inline MoveDirection  angleLR()     const { return _angleLR; }
 
-    inline void roll(I32 factor) { _roll = factor; }
-    inline I32  roll()     const { return _roll; }
+    inline void roll(MoveDirection factor) { _roll = factor; }
+    inline MoveDirection  roll()     const { return _roll; }
 
     inline void mouseXDelta(F32 depth) { _mouseXDelta = depth; }
     inline F32  mouseXDelta()    const { return _mouseXDelta; }
@@ -284,11 +291,11 @@ protected:
 
     F32 _mouseXDelta;
     F32 _mouseYDelta;
-    I32 _moveFB;   ///< forward-back move change detected
-    I32 _moveLR;   ///< left-right move change detected
-    I32 _angleUD;  ///< up-down angle change detected
-    I32 _angleLR;  ///< left-right angle change detected
-    I32 _roll;     ///< roll left or right change detected
+    MoveDirection _moveFB;   ///< forward-back move change detected
+    MoveDirection _moveLR;   ///< left-right move change detected
+    MoveDirection _angleUD;  ///< up-down angle change detected
+    MoveDirection _angleLR;  ///< left-right angle change detected
+    MoveDirection _roll;     ///< roll left or right change detected
 
     F32 _waterHeight;
     F32 _waterDepth;

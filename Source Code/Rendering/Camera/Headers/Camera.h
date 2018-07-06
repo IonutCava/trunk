@@ -154,15 +154,15 @@ class Camera : public Resource {
     }
     /// Moves the camera forward or backwards
     inline void moveForward(F32 factor) {
-        move(0.0f, 0.0f, factor * _cameraMoveSpeed);
+        move(0.0f, 0.0f, factor);
     }
     /// Moves the camera left or right
     inline void moveStrafe(F32 factor) {
-        move(factor * _cameraMoveSpeed, 0.0f, 0.0f);
+        move(factor, 0.0f, 0.0f);
     }
     /// Moves the camera up or down
     inline void moveUp(F32 factor) {
-        move(0.0f, factor * _cameraMoveSpeed, 0.0f);
+        move(0.0f, factor, 0.0f);
     }
     /// Anaglyph rendering: Set intra-ocular distance
     inline void setIOD(F32 distance) { _camIOD = distance; }

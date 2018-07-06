@@ -149,8 +149,8 @@ inline Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& rq) {
 template <typename T>
 vec3<T> Quaternion<T>::operator*(const vec3<T>& vec) const {
     // nVidia SDK implementation
-    vec3<T> uv(cross(_elements.xyz(), vec));
-    return vec + (uv * (2.0f * W())) + (cross(_elements.xyz(), uv) * 2.0f);
+    vec3<T> uv(Cross(_elements.xyz(), vec));
+    return vec + (uv * (2.0f * W())) + (Cross(_elements.xyz(), uv) * 2.0f);
 }
 
 template <typename T>
@@ -466,7 +466,7 @@ inline const vec4<T>& Quaternion<T>::asVec4() const {
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector
 /// 'u'(from Ogre3D!)
 template <typename T>
-inline Quaternion<T> rotationFromVToU(
+inline Quaternion<T> RotationFromVToU(
     const vec3<T>& v, const vec3<T>& u,
     const vec3<T> fallbackAxis) {
     // Based on Stan Melax's article in Game Programming Gems
@@ -500,7 +500,7 @@ inline Quaternion<T> rotationFromVToU(
         F32 s = std::sqrtf((1 + d) * 2);
         F32 invs = 1 / s;
 
-        vec3<T> c(cross(v0, v1) * invs);
+        vec3<T> c(Cross(v0, v1) * invs);
         q.set(c.x, c.y, c.z, s * 0.5f);
         q.normalize();
     }
@@ -509,7 +509,7 @@ inline Quaternion<T> rotationFromVToU(
 }
 
 template <typename T>
-inline Quaternion<T> slerp(const Quaternion<T>& q0, const Quaternion<T>& q1,
+inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1,
                            F32 t) {
     Quaternion<T> temp;
     temp.slerp(q0, q1, t);
@@ -517,14 +517,14 @@ inline Quaternion<T> slerp(const Quaternion<T>& q0, const Quaternion<T>& q1,
 }
 
 template <typename T>
-inline mat4<T> getMatrix(const Quaternion<T>& q) {
+inline mat4<T> GetMatrix(const Quaternion<T>& q) {
     mat4<T> temp;
     q.getMatrix(temp);
     return temp;
 }
 
 template <typename T>
-inline vec3<T> getEuler(const Quaternion<T>& q, const bool toDegrees) {
+inline vec3<T> GetEuler(const Quaternion<T>& q, const bool toDegrees) {
     vec3<T> euler;
     q.getEuler(&euler, toDegrees);
     return euler;

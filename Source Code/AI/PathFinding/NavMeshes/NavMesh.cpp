@@ -86,7 +86,7 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
 
 namespace {
 inline F32 charToFloat(const char* val) {
-    return Util::convertData<F32, const char*>(val);
+    return Util::ConvertData<F32, const char*>(val);
 }
 
 inline bool charToBool(const char* val) {
@@ -279,7 +279,7 @@ bool NavigationMesh::generateMesh() {
 
     NavModelData data;
     stringImpl geometrySaveFile(_fileName);
-    Util::replaceStringInPlace(geometrySaveFile, ".nm", ".ig");
+    Util::ReplaceStringInPlace(geometrySaveFile, ".nm", ".ig");
 
     data.clear(false);
     data.setName(nodeName);

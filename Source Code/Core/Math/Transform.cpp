@@ -30,8 +30,7 @@ const mat4<F32>& Transform::getMatrix() {
                 //    1. Scale
                 _worldMatrix.setScale(_transformValues._scale);
                 //    2. Rotate
-                _worldMatrix *=
-                    Divide::getMatrix(_transformValues._orientation);
+                _worldMatrix *= GetMatrix(_transformValues._orientation);
             }
             _rebuildMatrix = false;
         }

@@ -345,8 +345,8 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                               to_uint(SceneNodeType::TYPE_OBJECT3D) |
                               to_uint(SceneNodeType::TYPE_VEGETATION_TREES);
 
-        if (!bitCompare(allowedNodeType, to_uint(nodeType))) {
-            if (!bitCompare(ignoredNodeType, to_uint(nodeType))) {
+        if (!BitCompare(allowedNodeType, to_uint(nodeType))) {
+            if (!BitCompare(ignoredNodeType, to_uint(nodeType))) {
                 Console::printfn(Locale::get("WARN_NAV_UNSUPPORTED"),
                                  sn->getName().c_str());
                 goto next;

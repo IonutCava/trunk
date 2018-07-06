@@ -57,16 +57,16 @@ static const D32 M_PIDIV360 = M_PIDIV180 / 2;
 const F32 INV_RAND_MAX = 1.0f / (RAND_MAX + 1);
 
 template <typename T>
-T random(T max = RAND_MAX);
+T Random(T max = RAND_MAX);
 
 template <>
-I32 random(I32 max);
+I32 Random(I32 max);
 
 template <typename T>
-T random(T min, T max);
+T Random(T min, T max);
 
 template<typename T>
-bool bitCompare(T bitMask, T bit);
+bool BitCompare(T bitMask, T bit);
 
 /// Clamps value n between min and max
 template <typename T>
@@ -216,45 +216,45 @@ struct GlobalFloatEvent {
     U64 _timeStamp;
 };
 
-void flushFloatEvents();
+void FlushFloatEvents();
 
-void recordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp);
+void RecordFloatEvent(const stringImpl& eventName, F32 eventValue, U64 timestamp);
 
-const vectorImpl<GlobalFloatEvent>& getFloatEvents();
+const vectorImpl<GlobalFloatEvent>& GetFloatEvents();
 
-void plotFloatEvents(const stringImpl& eventName,
+void PlotFloatEvents(const stringImpl& eventName,
                      vectorImpl<GlobalFloatEvent> eventsCopy,
                      GraphPlot2D& targetGraph);
 
 /// a la Boost
 template <typename T>
-void hash_combine(std::size_t& seed, const T& v);
+void Hash_combine(std::size_t& seed, const T& v);
 
-void replaceStringInPlace(stringImpl& subject, const stringImpl& search,
+void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search,
                           const stringImpl& replace);
 
-void getPermutations(const stringImpl& inputString,
+void GetPermutations(const stringImpl& inputString,
                      vectorImpl<stringImpl>& permutationContainer);
 
-bool isNumber(const stringImpl& s);
+bool IsNumber(const stringImpl& s);
 
 // U = to data type, T = from data type
 template <typename U, typename T>
-U convertData(const T& data);
+U ConvertData(const T& data);
 
 /// http://stackoverflow.com/questions/236129/split-a-string-in-c
-vectorImpl<stringImpl> split(const stringImpl& input, char delimiter);
-vectorImpl<stringImpl>& split(const stringImpl& input, char delimiter,
+vectorImpl<stringImpl> Split(const stringImpl& input, char delimiter);
+vectorImpl<stringImpl>& Split(const stringImpl& input, char delimiter,
                               vectorImpl<stringImpl>& elems);
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
-stringImpl& ltrim(stringImpl& s);
+stringImpl& Ltrim(stringImpl& s);
 
-stringImpl& rtrim(stringImpl& s);
+stringImpl& Rtrim(stringImpl& s);
 
-stringImpl& trim(stringImpl& s);
+stringImpl& Trim(stringImpl& s);
 //fmt_str is passed by value to conform with the requirements of va_start.
 //http://stackoverflow.com/questions/2342162/stdstring-formatting-like-sprintf
-stringImpl stringFormat(const stringImpl fmt_str, ...);
+stringImpl StringFormat(const stringImpl fmt_str, ...);
 
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.
@@ -265,36 +265,36 @@ becomes 170.
 @param normPitch If false, the pitch isn't normalized.
 @param normRoll If false, the roll isn't normalized.
 */
-void normalize(vec3<F32>& inputRotation, bool degrees = false,
+void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true);
 
-vec4<U8> toByteColor(const vec4<F32>& floatColor);
-vec3<U8> toByteColor(const vec3<F32>& floatColor);
-vec4<U32> toUIntColor(const vec4<F32>& floatColor);
-vec3<U32> toUIntColor(const vec3<F32>& floatColor);
-vec4<F32> toFloatColor(const vec4<U8>& byteColor);
-vec3<F32> toFloatColor(const vec3<U8>& byteColor);
-vec4<F32> toFloatColor(const vec4<U32>& uintColor);
-vec3<F32> toFloatColor(const vec3<U32>& uintColor);
+vec4<U8>  ToByteColor(const vec4<F32>& floatColor);
+vec3<U8>  ToByteColor(const vec3<F32>& floatColor);
+vec4<U32> ToUIntColor(const vec4<F32>& floatColor);
+vec3<U32> ToUIntColor(const vec3<F32>& floatColor);
+vec4<F32> ToFloatColor(const vec4<U8>& byteColor);
+vec3<F32> ToFloatColor(const vec3<U8>& byteColor);
+vec4<F32> ToFloatColor(const vec4<U32>& uintColor);
+vec3<F32> ToFloatColor(const vec3<U32>& uintColor);
 
 F32 PACK_VEC3(const vec3<F32>& value);
 vec3<F32> UNPACK_VEC3(F32 value);
 
 namespace Mat4 {
 template <typename T>
-__forceinline void add(const T* a, const T* b, T* r);
+__forceinline void Add(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void subtract(const T* a, const T* b, T* r);
+__forceinline void Subtract(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void multiply(const T* a, const T* b, T* r);
+__forceinline void Multiply(const T* a, const T* b, T* r);
 template <typename T>
-__forceinline void multiplyScalar(const T* a, T b, T* r);
+__forceinline void MultiplyScalar(const T* a, T b, T* r);
 template <typename T>
-__forceinline T det(const T* mat);
+__forceinline T Det(const T* mat);
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template <typename T>
-__forceinline void inverse(const T* in, T* out);
+__forceinline void Inverse(const T* in, T* out);
 };  // namespace Mat4
 };  // namespace Util
 };  // namespace Divide

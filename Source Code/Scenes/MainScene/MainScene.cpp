@@ -19,7 +19,7 @@ void MainScene::updateLights() {
 
     _sun_cosy = cosf(_sunAngle.y);
     _sunColor =
-        lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
+        Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
     _sun->setDirection(_sunvector);

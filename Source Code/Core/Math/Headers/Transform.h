@@ -225,11 +225,6 @@ class Transform : public GUIDWrapper, private NonCopyable {
     inline void setRotationX(const F32 angle, bool inDegrees = true) {
         this->setRotation(vec3<F32>(1, 0, 0), angle, inDegrees);
     }
-    /// Set the rotation on the X axis (Euler used) by the specified angle
-    /// (either degrees or radians)
-    inline void setRotationXEuler(const F32 angle, bool inDegrees = true) {
-        this->setRotation(angle, inDegrees);
-    }
     /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
     inline void setRotationY(const F32 angle, bool inDegrees = true) {

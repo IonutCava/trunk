@@ -10,8 +10,8 @@ void ParticleColorGenerator::generate(const U64 deltaTime, ParticleData *p,
         "ParticleColorGenerator::generate error: Invalid Range!");
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        p->_startColor[i].set(random(_minStartCol, _maxStartCol));
-        p->_endColor[i].set(random(_minEndCol, _maxEndCol));
+        p->_startColor[i].set(Random(_minStartCol, _maxStartCol));
+        p->_endColor[i].set(Random(_minEndCol, _maxEndCol));
     }
 }
 };

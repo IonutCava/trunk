@@ -7,7 +7,10 @@
 
 namespace Divide {
 
-static const I16 axisDeadZone = 256;
+namespace {
+    static const I16 g_axisDeadZone = 256;
+    static const bool g_recordInput = true;
+};
 
 SceneInput::SceneInput(Scene& parentScene) 
     : _parentScene(parentScene)
@@ -48,6 +51,11 @@ bool SceneInput::onKeyDown(const Input::KeyEvent& arg) {
         cbks.first();
     }
 
+    if (g_recordInput) {
+        vectorAlg::emplace_back(
+            _keyLog, vectorAlg::makePair(arg._key, InputState::PRESSED));
+    }
+
     return true;
 }
 
@@ -57,6 +65,12 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
     if (getKeyMapping(arg._key, cbks) && cbks.second){
         cbks.second();
     }
+
+    if (g_recordInput) {
+        vectorAlg::emplace_back(
+            _keyLog, vectorAlg::makePair(arg._key, InputState::RELEASED));
+    }
+
     return true;
 }
 
@@ -91,40 +105,40 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 
     switch (axis) {
         case 0: {
-            if (axisABS > axisDeadZone) {
-                state.angleUD(1);
-            } else if (axisABS < -axisDeadZone) {
-                state.angleUD(-1);
+            if (axisABS > g_axisDeadZone) {
+                state.angleUD(SceneState::MoveDirection::POSITIVE);
+            } else if (axisABS < -g_axisDeadZone) {
+                state.angleUD(SceneState::MoveDirection::NEGATIVE);
             } else {
-                state.angleUD(0);
+                state.angleUD(SceneState::MoveDirection::NONE);
             }
         } break;
         case 1: {
-            if (axisABS > axisDeadZone) {
-                state.angleLR(1);
-            } else if (axisABS < -axisDeadZone) {
-                state.angleLR(-1);
+            if (axisABS > g_axisDeadZone) {
+                state.angleLR(SceneState::MoveDirection::POSITIVE);
+            } else if (axisABS < -g_axisDeadZone) {
+                state.angleLR(SceneState::MoveDirection::NEGATIVE);
             } else {
-                state.angleLR(0);
+                state.angleLR(SceneState::MoveDirection::NONE);
             }
         } break;
 
         case 2: {
-            if (axisABS < -axisDeadZone) {
-                state.moveFB(1);
-            } else if (axisABS > axisDeadZone) {
-                state.moveFB(-1);
+            if (axisABS < -g_axisDeadZone) {
+                state.moveFB(SceneState::MoveDirection::POSITIVE);
+            } else if (axisABS > g_axisDeadZone) {
+                state.moveFB(SceneState::MoveDirection::NEGATIVE);
             } else {
-                state.moveFB(0);
+                state.moveFB(SceneState::MoveDirection::NONE);
             }
         } break;
         case 3: {
-            if (axisABS < -axisDeadZone) {
-                state.moveLR(-1);
-            } else if (axisABS > axisDeadZone) {
-                state.moveLR(1);
+            if (axisABS < -g_axisDeadZone) {
+                state.moveLR(SceneState::MoveDirection::NEGATIVE);
+            } else if (axisABS > g_axisDeadZone) {
+                state.moveLR(SceneState::MoveDirection::POSITIVE);
             } else {
-                state.moveLR(0);
+                state.moveLR(SceneState::MoveDirection::NONE);
             }
         } break;
     }
@@ -134,20 +148,20 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg, I8 axis) {
 bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     SceneState& state = _parentScene.state();
     if (arg.state.mPOV[pov].direction & OIS::Pov::North) {  // Going up
-        state.moveFB(1);
+        state.moveFB(SceneState::MoveDirection::POSITIVE);
     }
     if (arg.state.mPOV[pov].direction & OIS::Pov::South) {  // Going down
-        state.moveFB(-1);
+        state.moveFB(SceneState::MoveDirection::NEGATIVE);
     }
     if (arg.state.mPOV[pov].direction & OIS::Pov::East) {  // Going right
-        state.moveLR(1);
+        state.moveLR(SceneState::MoveDirection::POSITIVE);
     }
     if (arg.state.mPOV[pov].direction & OIS::Pov::West) {  // Going left
-        state.moveLR(-1);
+        state.moveLR(SceneState::MoveDirection::NEGATIVE);
     }
     if (arg.state.mPOV[pov].direction == OIS::Pov::Centered) {  // stopped/centered out
-        state.moveLR(0);
-        state.moveFB(0);
+        state.moveLR(SceneState::MoveDirection::NONE);
+        state.moveFB(SceneState::MoveDirection::NONE);
     }
     return true;
 }
@@ -167,10 +181,13 @@ bool SceneInput::mouseMoved(const Input::MouseEvent& arg) {
     state.mouseYDelta(_mousePos.y - arg.state.Y.abs);
     _mousePos.set(arg.state.X.abs, arg.state.Y.abs);
 
-    if (getMouseButtonState(Input::MouseButton::MB_Right) ==
-        InputState::PRESSED) {
-        state.angleLR(-state.mouseXDelta());
-        state.angleUD(-state.mouseYDelta());
+    if (getMouseButtonState(Input::MouseButton::MB_Right) == InputState::PRESSED) {
+        state.angleLR(state.mouseXDelta() < 0 
+                        ? SceneState::MoveDirection::POSITIVE
+                        : SceneState::MoveDirection::NEGATIVE);
+        state.angleUD(state.mouseYDelta() < 0 
+                        ? SceneState::MoveDirection::POSITIVE
+                        : SceneState::MoveDirection::NEGATIVE);
     }
 
     return true;
@@ -183,6 +200,13 @@ bool SceneInput::mouseButtonPressed(const Input::MouseEvent& arg,
     if (getMouseMapping(id, cbks) && cbks.first){
         cbks.first();
     }
+
+    if (g_recordInput) {
+        vectorAlg::emplace_back(
+            _mouseBtnLog,
+            vectorAlg::make_tuple(id, InputState::PRESSED, getMousePosition()));
+    }
+
     return true;
 }
 
@@ -193,6 +217,13 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
     if (getMouseMapping(id, cbks) && cbks.second){
         cbks.second();
     }
+
+    if (g_recordInput) {
+        vectorAlg::emplace_back(_mouseBtnLog,
+                                vectorAlg::make_tuple(id, InputState::RELEASED,
+                                                      getMousePosition()));
+    }
+
     return true;
 }
 

@@ -387,7 +387,10 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.second = DELEGATE_BIND(&Scene::findSelection, this);
     /// Input
     _input->addMouseMapping(Input::MouseButton::MB_Left, cbks);
-    cbks.second = [this](){ state().angleLR(0); state().angleUD(0); };
+    cbks.second = [this](){
+        state().angleLR(SceneState::MoveDirection::NONE);
+        state().angleUD(SceneState::MoveDirection::NONE);
+    };
     _input->addMouseMapping(Input::MouseButton::MB_Right, cbks);
     
     cbks.first = DELEGATE_BIND(&Scene::deleteSelection, this);
@@ -414,39 +417,35 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     };
     _input->addKeyMapping(Input::KeyCode::KC_SUBTRACT, cbks);
 
-    cbks.first = [this]() {state().moveFB(1); };
-    cbks.second = [this]() {state().moveFB(0); };
+    cbks.first = [this]() {state().moveFB(SceneState::MoveDirection::POSITIVE);};
+    cbks.second = [this]() {state().moveFB(SceneState::MoveDirection::NONE);};
     _input->addKeyMapping(Input::KeyCode::KC_W, cbks);
-    cbks.first = [this]() {state().moveFB(-1); };
-    cbks.second = [this]() {state().moveFB(0); };
+
+    cbks.first = [this]() {state().moveFB(SceneState::MoveDirection::NEGATIVE); };
     _input->addKeyMapping(Input::KeyCode::KC_S, cbks);
 
-    cbks.first = [this]() {state().moveLR(-1); };
-    cbks.second = [this]() {state().moveLR(0); };
+    cbks.first = [this]() {state().moveLR(SceneState::MoveDirection::NEGATIVE);};
+    cbks.second = [this]() {state().moveLR(SceneState::MoveDirection::NONE);};
     _input->addKeyMapping(Input::KeyCode::KC_A, cbks);
-    cbks.first = [this]() {state().moveLR(1); };
-    cbks.second = [this]() {state().moveLR(0); };
+    cbks.first = [this]() {state().moveLR(SceneState::MoveDirection::POSITIVE);};
     _input->addKeyMapping(Input::KeyCode::KC_D, cbks);
 
-    cbks.first = [this]() { state().roll(1); };
-    cbks.second = [this]() {state().roll(0); };
+    cbks.first = [this]() { state().roll(SceneState::MoveDirection::POSITIVE); };
+    cbks.second = [this]() {state().roll(SceneState::MoveDirection::NONE); };
     _input->addKeyMapping(Input::KeyCode::KC_Q, cbks);
-    cbks.first = [this]() { state().roll(-1); };
-    cbks.second = [this]() {state().roll(0); };
+    cbks.first = [this]() { state().roll(SceneState::MoveDirection::NEGATIVE); };
     _input->addKeyMapping(Input::KeyCode::KC_E, cbks);
 
-    cbks.first = [this]() { state().angleLR(1); };
-    cbks.second = [this]() {state().angleLR(0); };
+    cbks.first = [this]() { state().angleLR(SceneState::MoveDirection::POSITIVE); };
+    cbks.second = [this]() {state().angleLR(SceneState::MoveDirection::NONE); };
     _input->addKeyMapping(Input::KeyCode::KC_RIGHT, cbks);
-    cbks.first = [this]() { state().angleLR(-1); };
-    cbks.second = [this]() {state().angleLR(0); };
+    cbks.first = [this]() { state().angleLR(SceneState::MoveDirection::NEGATIVE); };
     _input->addKeyMapping(Input::KeyCode::KC_LEFT, cbks);
 
-     cbks.first = [this]() { state().angleUD(-1); };
-     cbks.second = [this]() {state().angleUD(0); };
+     cbks.first = [this]() { state().angleUD(SceneState::MoveDirection::NEGATIVE); };
+     cbks.second = [this]() {state().angleUD(SceneState::MoveDirection::NONE); };
     _input->addKeyMapping(Input::KeyCode::KC_UP, cbks);
-    cbks.first = [this]() { state().angleUD(1); };
-    cbks.second = [this]() {state().angleUD(0); };
+    cbks.first = [this]() { state().angleUD(SceneState::MoveDirection::POSITIVE); };
     _input->addKeyMapping(Input::KeyCode::KC_DOWN, cbks);
 
     cbks.first = [](){};
@@ -583,30 +582,34 @@ void Scene::clearLights() { LightManager::getInstance().clear(); }
 
 bool Scene::updateCameraControls() {
     Camera& cam = renderState().getCamera();
+
+    state().cameraUpdated(false);
     switch (cam.getType()) {
         default:
         case Camera::CameraType::FREE_FLY: {
-            if (state().angleLR()) {
-                cam.rotateYaw(CLAMPED<I32>(state().angleLR(), -1, 1));
+            if (state().angleLR() != SceneState::MoveDirection::NONE) {
+                cam.rotateYaw(to_int(state().angleLR()));
+                state().cameraUpdated(true);
             }
-            if (state().angleUD()) {
-                cam.rotatePitch(CLAMPED<I32>(state().angleUD(), -1, 1));
+            if (state().angleUD() != SceneState::MoveDirection::NONE) {
+                cam.rotatePitch(to_int(state().angleUD()));
+                state().cameraUpdated(true);
             }
-            if (state().roll()) {
-                cam.rotateRoll(CLAMPED<I32>(state().roll(), -1, 1));
+            if (state().roll() != SceneState::MoveDirection::NONE) {
+                cam.rotateRoll(to_int(state().roll()));
+                state().cameraUpdated(true);
             }
-            if (state().moveFB()) {
-                cam.moveForward(CLAMPED<I32>(state().moveFB(), -1, 1));
+            if (state().moveFB() != SceneState::MoveDirection::NONE) {
+                cam.moveForward(to_int(state().moveFB()));
+                state().cameraUpdated(true);
             }
-            if (state().moveLR()) {
-                cam.moveStrafe(CLAMPED<I32>(state().moveLR(), -1, 1));
+            if (state().moveLR() != SceneState::MoveDirection::NONE) {
+                cam.moveStrafe(to_int(state().moveLR()));
+                state().cameraUpdated(true);
             }
         } break;
     }
 
-    state().cameraUpdated((state().moveFB() || state().moveLR() ||
-                           state().angleLR() || state().angleUD() ||
-                           state().roll()));
     return state().cameraUpdated();
 }
 

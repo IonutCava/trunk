@@ -30,14 +30,14 @@ Object3D::Object3D(const stringImpl& name, ObjectType type, U32 flagMask)
       _geometryPartitionID(0)
 {
     _buffer =
-        bitCompare(_geometryFlagMask, to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
+        BitCompare(_geometryFlagMask, to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))
             ? nullptr
             : GFX_DEVICE.newVB();
 }
 
 Object3D::~Object3D()
 {
-    if (!bitCompare(_geometryFlagMask,
+    if (!BitCompare(_geometryFlagMask,
                     to_uint(ObjectFlag::OBJECT_FLAG_NO_VB))) {
         MemoryManager::DELETE(_buffer);
     }

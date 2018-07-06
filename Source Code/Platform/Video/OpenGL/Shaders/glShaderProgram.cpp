@@ -454,7 +454,7 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
                 if (!sourceCode.empty()) {
                     // And replace in place with our program's headers created
                     // earlier
-                    Util::replaceStringInPlace(
+                    Util::ReplaceStringInPlace(
                         sourceCode, "//__CUSTOM_DEFINES__", shaderSourceHeader);
                     // Load our shader from the final string and save it in the
                     // manager in case a new Shader Program needs it

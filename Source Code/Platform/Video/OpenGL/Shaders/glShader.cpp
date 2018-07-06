@@ -52,7 +52,7 @@ bool glShader::load(const stringImpl& source) {
         return false;
     }
     stringImpl parsedSource = preprocessIncludes(source, getName(), 0);
-    Util::trim(parsedSource);
+    Util::Trim(parsedSource);
 
 #if !defined(_DEBUG)
 

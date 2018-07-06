@@ -139,7 +139,10 @@ bool SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
         const boundingBoxPerFrame& bbPerFrame = it3->second;
 
         boundingBoxPerFrame::const_iterator it4 = bbPerFrame.find(frameIndex);
-        sgn.setInitialBoundingBox(it4->second);
+        STUBBED("REMOVE THIS HACK!!!!!! -Ionut");
+        if (it4 != std::end(bbPerFrame)) {
+            sgn.setInitialBoundingBox(it4->second);
+        }
     }
     return true;
 }

@@ -26,7 +26,7 @@ U64 Kernel::_previousTime = 0ULL;
 U64 Kernel::_currentTime = 0ULL;
 U64 Kernel::_currentTimeFrozen = 0ULL;
 U64 Kernel::_currentTimeDelta = 0ULL;
-D32 Kernel::_nextGameTick = 0.0;
+U64 Kernel::_nextGameTick = 0ULL;
 
 bool Kernel::_keepAlive = true;
 bool Kernel::_renderingPaused = false;
@@ -188,7 +188,7 @@ void Kernel::mainLoopApp() {
 
 #if defined(_DEBUG) || defined(_PROFILE)
     if (GFX_DEVICE.getFrameCount() % Config::TARGET_FRAME_RATE == 0) {
-        Util::plotFloatEvents("kernel.mainLoopApp", Util::getFloatEvents(), _appTimeGraph);
+        Util::PlotFloatEvents("kernel.mainLoopApp", Util::GetFloatEvents(), _appTimeGraph);
     }
     if (_appTimeGraph._coords.size() % 2 == 0) {
         GFX::ScopedViewport viewport(0, 256, 256, 256);
@@ -200,73 +200,68 @@ void Kernel::mainLoopApp() {
             Time::MicrosecondsToSeconds<F32>(GFX_DEVICE.getFrameDurationGPU()),
             GFX_DEVICE.getDrawCallCount());
 
-        Util::flushFloatEvents();
+        Util::FlushFloatEvents();
     }
-    Util::recordFloatEvent("kernel.mainLoopApp", s_appLoopTimer->get(), _currentTime);
+    Util::RecordFloatEvent("kernel.mainLoopApp", s_appLoopTimer->get(), _currentTime);
 #endif
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt) {
-    if (_renderingPaused) {
-        idle();
-        return true;
-    }
-
     _tasks.erase(std::remove_if(std::begin(_tasks), std::end(_tasks),
                                 [](const Task_ptr& task)
                                     -> bool { return task->isFinished(); }),
                  std::end(_tasks));
 
+    U64 deltaTime = Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS : _currentTimeDelta;
+    _cameraMgr->update(deltaTime);
+
+    if (_renderingPaused) {
+        idle();
+        return true;
+    }
+
     // Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
     U8 loops = 0;
-
-    U64 deltaTime =
-        Config::USE_FIXED_TIMESTEP ? Config::SKIP_TICKS : _currentTimeDelta;
     while (_currentTime > _nextGameTick && loops < Config::MAX_FRAMESKIP) {
+
         if (!_freezeGUITime) {
             _sceneMgr.processGUI(deltaTime);
         }
 
         if (!_freezeLoopTime) {
             // Update scene based on input
-            _sceneMgr.processInput(_currentTimeDelta);
+            _sceneMgr.processInput(deltaTime);
             // process all scene events
             _sceneMgr.processTasks(deltaTime);
+            // Update the scene state based on current time (e.g. animation matrices)
+            _sceneMgr.updateSceneState(deltaTime);
         }
 
         _nextGameTick += deltaTime;
         loops++;
 
         if (Config::USE_FIXED_TIMESTEP) {
-            if (loops == Config::MAX_FRAMESKIP &&
-                _currentTime > _nextGameTick) {
+            if (loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick) {
                 _nextGameTick = _currentTime;
             }
         } else {
             _nextGameTick = _currentTime;
         }
+
     }  // while
 
-    if (Config::USE_FIXED_TIMESTEP) {
-        _GFX.setInterpolation(std::min(
-            static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) /
-                static_cast<D32>(deltaTime),
-            1.0));
-    }
+    D32 interpolationFactor = static_cast<D32>(_currentTime + deltaTime - _nextGameTick);
+    interpolationFactor /= static_cast<D32>(deltaTime);
+    assert(interpolationFactor <= 1.0);
 
+    _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
+    
     // Get input events
-    _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
-
-    // Call this to avoid interpolating 60 bone matrices per entity every render
-    // call
-    // Update the scene state based on current time (e.g. animation matrices)
-    _sceneMgr.updateSceneState(_freezeLoopTime ? 0ULL : _currentTimeDelta);
-
+    _APP.hasFocus() ? _input.update(_currentTimeDelta) : _sceneMgr.onLostFocus();
     // Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
-
     // Update the graphical user interface
     GUI::getInstance().update(_freezeGUITime ? 0ULL : _currentTimeDelta);
 

@@ -28,7 +28,7 @@ size_t SceneNodeRenderState::getShadowStateBlock() {
 
 bool SceneNodeRenderState::getDrawState(RenderStage currentStage) const {
     return _drawState &&
-            !bitCompare(_exclusionMask,
+            !BitCompare(_exclusionMask,
                         (to_bitwise(to_uint(currentStage) + 1)));
 }
 

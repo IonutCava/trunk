@@ -17,9 +17,9 @@ void WarScene::registerPoint(U8 teamID) {
     _resetUnits = true;
 
     for (U8 i = 0; i < 2; ++i) {
-        PhysicsComponent* flagPComp = _flag[0]->getComponent<PhysicsComponent>();
+        PhysicsComponent* flagPComp = _flag[i]->getComponent<PhysicsComponent>();
         WAIT_FOR_CONDITION(!flagPComp->popTransforms());
-        _flag[0]->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
+        _flag[i]->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
         AI::WarSceneAISceneImpl::reset();
     }
@@ -210,17 +210,17 @@ bool WarScene::addUnits() {
                 currentMesh = lightNodeMesh;
                 currentScale =
                     lightNode->getComponent<PhysicsComponent>()->getScale();
-                currentName = Util::stringFormat("Soldier_1_%d_%d", k, i);
-                speed = Metric::Base(random(6.5f, 8.5f));
-                acc = Metric::Base(random(4.0f, 8.0f));
+                currentName = Util::StringFormat("Soldier_1_%d_%d", k, i);
+                speed = Metric::Base(Random(6.5f, 8.5f));
+                acc = Metric::Base(Random(4.0f, 8.0f));
                 type = AI::WarSceneAISceneImpl::AIType::LIGHT;
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
                     animalNode->getComponent<PhysicsComponent>()->getScale();
-                currentName = Util::stringFormat("Soldier_2_%d_%d", k, i % 5);
-                speed = Metric::Base(random(8.5f, 10.5f));
-                acc = Metric::Base(random(6.0f, 8.0f));
+                currentName = Util::StringFormat("Soldier_2_%d_%d", k, i % 5);
+                speed = Metric::Base(Random(8.5f, 10.5f));
+                acc = Metric::Base(Random(6.0f, 8.0f));
                 zFactor = 1.0f;
                 type = AI::WarSceneAISceneImpl::AIType::ANIMAL;
                 damage = 10;
@@ -228,9 +228,9 @@ bool WarScene::addUnits() {
                 currentMesh = heavyNodeMesh;
                 currentScale =
                     heavyNode->getComponent<PhysicsComponent>()->getScale();
-                currentName = Util::stringFormat("Soldier_3_%d_%d", k, i % 10);
-                speed = Metric::Base(random(4.5f, 6.5f));
-                acc = Metric::Base(random(4.0f, 6.0f));
+                currentName = Util::StringFormat("Soldier_3_%d_%d", k, i % 10);
+                speed = Metric::Base(Random(4.5f, 6.5f));
+                acc = Metric::Base(Random(4.0f, 6.0f));
                 zFactor = 2.0f;
                 type = AI::WarSceneAISceneImpl::AIType::HEAVY;
                 damage = 15;

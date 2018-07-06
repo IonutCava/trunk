@@ -104,7 +104,7 @@ void GUIEditor::TrackSelection() {
         const vec3<F32> &localPosition = selectionTransform->getPosition();
         const vec3<F32> &localScale = selectionTransform->getScale();
         vec3<F32> localOrientation =
-            Divide::getEuler(selectionTransform->getOrientation(), true);
+            GetEuler(selectionTransform->getOrientation(), true);
 
         currentValues(TransformFields::TRANSFORM_POSITION,
                       ControlFields::CONTROL_FIELD_X) = localPosition.x;

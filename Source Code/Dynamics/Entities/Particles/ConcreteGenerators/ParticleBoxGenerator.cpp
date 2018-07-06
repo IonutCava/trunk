@@ -18,7 +18,7 @@ void ParticleBoxGenerator::generate(const U64 deltaTime, ParticleData *p,
                      _pos.z + _maxStartPosOffset.z, 1.0);
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        p->_position[i].set(random(posMin, posMax));
+        p->_position[i].set(Random(posMin, posMax));
     }
 }
 };

@@ -150,9 +150,9 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 
 bool QuadtreeNode::isInView(U32 options,
                             const SceneRenderState& sceneRenderState) const {
-    if (bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
+    if (BitCompare(options, to_uint(ChunkBit::CHUNK_BIT_TESTCHILDREN))) {
         const Camera& cam = sceneRenderState.getCameraConst();
-        if (!bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
+        if (!BitCompare(options, to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance =
                 GET_ACTIVE_SCENE()->state().generalVisibility() +
@@ -215,7 +215,7 @@ void QuadtreeNode::createDrawCommand(
     if (isALeaf()) {
         assert(_terrainChunk);
         _terrainChunk->createDrawCommand(
-            bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION))
+            BitCompare(options, to_uint(ChunkBit::CHUNK_BIT_WATERREFLECTION))
                 ? Config::TERRAIN_CHUNKS_LOD - 1
                 : _LOD,
             drawCommandsOut);

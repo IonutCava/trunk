@@ -584,13 +584,13 @@ class mat4 {
 
     mat4<T> operator*(T f) const {
         mat4<T> retValue;
-        Util::Mat4::multiplyScalar(this->mat, f, retValue.mat);
+        Util::Mat4::MultiplyScalar(this->mat, f, retValue.mat);
         return retValue;
     }
 
     mat4<T> operator*(const mat4<T> &m) const {
         mat4<T> retValue;
-        Util::Mat4::multiply(this->mat, m.mat, retValue.mat);
+        Util::Mat4::Multiply(this->mat, m.mat, retValue.mat);
         return retValue;
     }
 
@@ -704,13 +704,13 @@ class mat4 {
 
     mat4 operator+(const mat4 &matrix) const {
         mat4<T> retValue;
-        Util::Mat4::add(this->mat, matrix.mat, retValue.mat);
+        Util::Mat4::Add(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
 
     mat4 operator-(const mat4 &matrix) const {
          mat4<T> retValue;
-        Util::Mat4::subtract(this->mat, matrix.mat, retValue.mat);
+        Util::Mat4::Subtract(this->mat, matrix.mat, retValue.mat);
         return retValue;
     }
 
@@ -725,22 +725,22 @@ class mat4 {
     }
 
     mat4 &operator*=(T f) {
-        Util::Mat4::multiplyScalar(this->mat, f, this->mat);
+        Util::Mat4::MultiplyScalar(this->mat, f, this->mat);
         return *this;
     }
 
     mat4 &operator*=(const mat4 &matrix) {
-        Util::Mat4::multiply(this->mat, matrix.mat, this->mat);
+        Util::Mat4::Multiply(this->mat, matrix.mat, this->mat);
         return *this;
     }
 
     mat4 &operator+=(const mat4 &matrix) {
-        Util::Mat4::add(this->mat, matrix.mat, this->mat);
+        Util::Mat4::Add(this->mat, matrix.mat, this->mat);
         return *this;
     }
 
     mat4 &operator-=(const mat4 &matrix) {
-        Util::Mat4::subtract(this->mat, matrix.mat, this->mat);
+        Util::Mat4::Subtract(this->mat, matrix.mat, this->mat);
         return *this;
     }
 
@@ -786,7 +786,9 @@ class mat4 {
                     this->mat[12], this->mat[13], this->mat[14], this->mat[15]);
     }
 
-    inline T det(void) const { return Util::Mat4::det(this->mat); }
+    inline T det(void) const {
+        return Util::Mat4::Det(this->mat);
+    }
 
     inline mat4 getInverse() const {
         mat4 ret(this->mat);
@@ -795,12 +797,16 @@ class mat4 {
     }
 
     inline void getInverse(mat4 &ret) const {
-        Util::Mat4::inverse(this->mat, ret.mat);
+        Util::Mat4::Inverse(this->mat, ret.mat);
     }
 
-    inline void inverse() { Util::Mat4::inverse(this->mat, this->mat); }
+    inline void inverse() {
+        Util::Mat4::Inverse(this->mat, this->mat);
+    }
 
-    inline void zero() { memset(this->mat, 0.0, sizeof(T) * 16); }
+    inline void zero() {
+        memset(this->mat, 0.0, sizeof(T) * 16);
+    }
 
     inline mat4 getInverseTranspose() const {
         return this->getInverse().getTranspose();
@@ -981,9 +987,9 @@ class mat4 {
     void lookAt(const vec3<T> &eye, const vec3<T> &target, const vec3<T> &up) {
         vec3<T> zAxis(eye - target);
         zAxis.normalize();
-        vec3<T> xAxis(cross(up, zAxis));
+        vec3<T> xAxis(Cross(up, zAxis));
         xAxis.normalize();
-        vec3<T> yAxis(cross(zAxis, xAxis));
+        vec3<T> yAxis(Cross(zAxis, xAxis));
         yAxis.normalize();
 
         this->m[0][0] = xAxis.x;
@@ -1103,17 +1109,16 @@ struct Line {
         : _startPoint(startPoint), _endPoint(endPoint), _color(color) {}
 };
 
-namespace Util {
 /// Converts a point from world coordinates to projection coordinates
 ///(from Y = depth, Z = up to Y = up, Z = depth)
 template <typename T>
-inline void projectPoint(const vec3<T> &position, vec3<T> &output) {
+inline void ProjectPoint(const vec3<T> &position, vec3<T> &output) {
     output.set(position.x, position.z, position.y);
 }
-inline F32 Lerp(const F32 v1, const F32 v2, const F32 t) {
+template <typename T, typename U>
+inline T Lerp(const T v1, const T v2, const U t) {
     return v1 + (v2 - v1 * t);
 }
-};  // Util
 
 };  // namespace Divide
 

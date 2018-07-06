@@ -49,7 +49,7 @@ bool ThirdPersonCamera::mouseMoved(const Input::MouseEvent& arg) {
     }
 
     if (_rotationDirty) {
-        Util::normalize(_cameraRotation, false, true, false, true);
+        Util::Normalize(_cameraRotation, false, true, false, true);
     }
 
     return OrbitCamera::mouseMoved(arg);

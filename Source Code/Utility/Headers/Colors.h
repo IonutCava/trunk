@@ -53,7 +53,10 @@ inline vec4<U8> RANDOM() {
     return vec4<U8>(rand() % 256, rand() % 256, rand() % 256, 255);
 }
 
-inline vec4<F32> RANDOM_NORMALIZED() { return Util::toFloatColor(RANDOM()); }
+inline vec4<F32> RANDOM_NORMALIZED() {
+    return Util::ToFloatColor(RANDOM());
+}
+
 };  // namespace DefaultColors
 };  // namespace Divide
 

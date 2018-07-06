@@ -116,6 +116,9 @@ class SceneInput : public Input::InputAggregatorInterface {
     MouseBtnState _mouseStateMap;
     JoystickBtnState _joystickStateMap;
     vec2<I32> _mousePos;
+
+    vectorImpl<std::pair<Input::KeyCode, InputState>> _keyLog;
+    vectorImpl<std::tuple<Input::MouseButton, InputState, vec2<I32>>> _mouseBtnLog;
 };  // SceneInput
 
 };  // namespace Divide

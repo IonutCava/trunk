@@ -216,7 +216,7 @@ void GUIConsoleCommandParser::handleShaderRecompileCommand(
 }
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
-    if (!Util::isNumber(args)) {
+    if (!Util::IsNumber(args)) {
         Console::errorfn(Locale::get("CONSOLE_INVALID_NUMBER"));
         return;
     }
@@ -237,7 +237,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     std::getline(ss, args2, ',');
 
     float scale = 1.0f;
-    if (!Util::isNumber(args2.c_str())) {
+    if (!Util::IsNumber(args2.c_str())) {
         Console::errorfn(Locale::get("CONSOLE_INVALID_NUMBER"));
     } else {
         scale = (F32)atof(args2.c_str());

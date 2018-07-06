@@ -79,7 +79,7 @@ SceneGraphNode::~SceneGraphNode() {
 
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
-    if (!bitCompare(_bbAddExclusionList, to_uint(type))) {
+    if (!BitCompare(_bbAddExclusionList, to_uint(type))) {
         _boundingBox.Add(bb);
         if (_parent) {
             _parent->getBoundingBox().setComputed(false);

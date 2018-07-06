@@ -291,7 +291,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     flagPComp->setScale(
         baseFlagNode->getComponent<PhysicsComponent>()->getScale() *
-        vec3<F32>(0.05f, 1.1f, 0.05f));
+        vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
     _flag[1] = &_sceneGraph.getRoot().addNode(*cylinderMeshNW, "Team2Flag");
@@ -306,7 +306,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     flagPComp->setScale(
         baseFlagNode->getComponent<PhysicsComponent>()->getScale() *
-        vec3<F32>(0.05f, 1.1f, 0.05f));
+        vec3<F32>(0.05f, 2.1f, 0.05f));
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
 
     AI::WarSceneAISceneImpl::registerFlags(*_flag[0], *_flag[1]);

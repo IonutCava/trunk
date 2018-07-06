@@ -10,7 +10,7 @@ void ParticleVelocityGenerator::generate(const U64 deltaTime, ParticleData *p,
         "ParticleVelocityGenerator::generate error: Invalid Range!");
 
     for (U32 i = startIndex; i < endIndex; ++i) {
-        p->_velocity[i].set(random(_minStartVel, _maxStartVel));
+        p->_velocity[i].set(Random(_minStartVel, _maxStartVel));
     }
 }
 };

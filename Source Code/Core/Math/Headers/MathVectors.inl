@@ -37,13 +37,19 @@ namespace Divide {
 */
 /// general vec2 cross function
 template <typename T>
-inline vec2<T> cross(const vec2<T> &v1, const vec2<T> &v2) {
+inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) {
     return v1.x * v2.y - v1.y * v2.x;
 }
 
 template <typename T>
-inline vec2<T> inverse(const vec2<T> &v) {
+inline vec2<T> Inverse(const vec2<T> &v) {
     return vec2<T>(v.y, v.x);
+}
+
+template <typename T>
+inline vec2<T> Normalize(vec2<T> &vector) {
+    vector.normalize();
+    return vector;
 }
 
 /// multiply a vector by a value
@@ -54,8 +60,14 @@ inline vec2<T> operator*(T fl, const vec2<T> &v) {
 
 /// general vec2 dot product
 template <typename T>
-inline T dot(const vec2<T> &a, const vec2<T> &b) {
+inline T Dot(const vec2<T> &a, const vec2<T> &b) {
     return (a.x * b.x + a.y * b.y);
+}
+
+template <typename T>
+inline vec3<T> Normalize(vec3<T> &vector) {
+    vector.normalize();
+    return vector;
 }
 
 /// multiply a vector by a value
@@ -66,21 +78,41 @@ inline vec3<T> operator*(T fl, const vec3<T> &v) {
 
 /// general vec3 dot product
 template <typename T>
-inline T dot(const vec3<T> &a, const vec3<T> &b) {
+inline T Dot(const vec3<T> &a, const vec3<T> &b) {
     return (a.x * b.x + a.y * b.y + a.z * b.z);
 }
 
 /// general vec3 cross function
 template <typename T>
-inline vec3<T> cross(const vec3<T> &v1, const vec3<T> &v2) {
+inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
     return vec3<T>(v1.y * v2.z - v1.z * v2.y, v1.z * v2.x - v1.x * v2.z,
                    v1.x * v2.y - v1.y * v2.x);
 }
 
 template <typename T>
-inline vec3<T> inverse(const vec3<T> &v) {
+inline vec3<T> Inverse(const vec3<T> &v) {
     return vec3<T>(v.z, v.y, v.x);
 }
+
+/// min/max functions
+template <typename T>
+inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) {
+    return vec4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y),
+                   std::min(v1.z, v2.z), std::min(v1.w, v2.w));
+}
+
+template <typename T>
+inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) {
+    return vec4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y),
+                   std::max(v1.z, v2.z), std::max(v1.w, v2.w));
+}
+
+template <typename T>
+inline vec4<T> Normalize(vec4<T> &vector) {
+    vector.normalize();
+    return vector;
+}
+
 /// multiply a vector by a value
 template <typename T>
 inline vec4<T> operator*(T fl, const vec4<T> &v) {
@@ -144,14 +176,14 @@ inline void vec2<T>::get(T *v) const {
 /// return the coordinates of the closest point from *this to the line
 /// determined by points vA and vB
 template <typename T>
-inline vec2<T> closestPointOnLine(const vec2<T> &vA, const vec2<T> &vB) {
+inline vec2<T> ClosestPointOnLine(const vec2<T> &vA, const vec2<T> &vB) {
     return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
 /// return the coordinates of the closest point from *this to the segment
 /// determined by points vA and vB
 template <typename T>
-inline vec2<T> closestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB) {
+inline vec2<T> ClosestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB) {
     T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0) return vA;
@@ -175,13 +207,13 @@ inline void vec2<T>::lerp(const vec2 &v, const vec2 &factor) {
 
 /// linear interpolation between 2 vectors
 template <typename T>
-inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, T factor) {
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, T factor) {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// linear interpolation between 2 vectors based on separate x and y factors
 template <typename T>
-inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) {
     return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
                  (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
@@ -240,7 +272,7 @@ inline void vec3<T>::cross(const vec3 &v2) {
 /// calculate the dot product between this vector and the specified one
 template <typename T>
 inline T vec3<T>::dot(const vec3 &v) const {
-    return Divide::dot(*this, v);
+    return Divide::Dot(*this, v);
 }
 
 /// compute the vector's distance to another specified vector
@@ -365,14 +397,14 @@ inline vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const {
 /// return the closest point on the line defined by the 2 points (A, B) and this
 /// vector
 template <typename T>
-inline vec3<T> closestPointOnLine(const vec3<T> &vA, const vec3<T> &vB) {
+inline vec3<T> ClosestPointOnLine(const vec3<T> &vA, const vec3<T> &vB) {
     return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
 /// return the closest point on the line segment created between the 2 points
 /// (A, B) and this vector
 template <typename T>
-inline vec3<T> closestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB) {
+inline vec3<T> ClosestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB) {
     T factor = this->projectionOnLine(vA, vB);
 
     if (factor <= 0.0f) return vA;
@@ -384,14 +416,14 @@ inline vec3<T> closestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB) {
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T>
-inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, T factor) {
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, T factor) {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) {
     return (vec3<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
                     (u.y * (1 - factor.y)) + (v.y * factor.y),
                     (u.z * (1 - factor.z)) + (v.z * factor.z)));
@@ -437,14 +469,14 @@ inline void vec4<T>::swap(vec4 &iv) {
 
 /// general vec4 dot product
 template <typename T>
-inline T dot(const vec4<T> &a, const vec4<T> &b) {
+inline T Dot(const vec4<T> &a, const vec4<T> &b) {
     return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
 }
 
 /// calculate the dot product between this vector and the specified one
 template <typename T>
 inline T vec4<T>::dot(const vec4 &v) const {
-    return Divide::dot(*this, v);
+    return Divide::Dot(*this, v);
 }
 
 /// return the squared distance of the vector
@@ -479,14 +511,14 @@ inline void vec4<T>::lerp(const vec4 &v, const vec4 &factor) {
 }
 /// lerp between the 2 vectors by the specified amount
 template <typename T>
-inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, T factor) {
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) {
     return ((u * (1 - factor)) + (v * factor));
 }
 
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) {
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) {
     return (vec4<T>((u.x * (1 - factor.x)) + (v.x * factor.x),
                     (u.y * (1 - factor.y)) + (v.y * factor.y),
                     (u.z * (1 - factor.z)) + (v.z * factor.z),
@@ -494,20 +526,20 @@ inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) {
 }
 
 template <typename Type>
-inline vec2<Type> random(vec2<Type> min, vec2<Type> max) {
-    return vec2<Type>(random(min.x, max.x), random(min.y, max.y));
+inline vec2<Type> Random(vec2<Type> min, vec2<Type> max) {
+    return vec2<Type>(Random(min.x, max.x), Random(min.y, max.y));
 }
 
 template <typename Type>
-inline vec3<Type> random(vec3<Type> min, vec3<Type> max) {
-    return vec3<Type>(random(min.x, max.x), random(min.y, max.y),
-                      random(min.z, max.z));
+inline vec3<Type> Random(vec3<Type> min, vec3<Type> max) {
+    return vec3<Type>(Random(min.x, max.x), Random(min.y, max.y),
+                      Random(min.z, max.z));
 }
 
 template <typename Type>
-inline vec4<Type> random(vec4<Type> min, vec4<Type> max) {
-    return vec4<Type>(random(min.x, max.x), random(min.y, max.y),
-                      random(min.z, max.z), random(min.w, max.w));
+inline vec4<Type> Random(vec4<Type> min, vec4<Type> max) {
+    return vec4<Type>(Random(min.x, max.x), Random(min.y, max.y),
+                      Random(min.z, max.z), Random(min.w, max.w));
 }
 };  // namespace Divide
 #endif

@@ -147,16 +147,16 @@ class Quaternion {
 /// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'
 /// (from Ogre3D!)
 template <typename T>
-inline Quaternion<T> rotationFromVToU(const vec3<T>& v, const vec3<T>& u,
+inline Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u,
                                       const vec3<T> fallbackAxis = VECTOR3_ZERO);
 template <typename T>
-inline Quaternion<T> slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t);
+inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t);
 
 template <typename T>
-inline mat4<T> getMatrix(const Quaternion<T>& q);
+inline mat4<T> GetMatrix(const Quaternion<T>& q);
 
 template <typename T>
-inline vec3<T> getEuler(const Quaternion<T>& q, const bool toDegrees = false);
+inline vec3<T> GetEuler(const Quaternion<T>& q, const bool toDegrees = false);
 
 };  // namespace Divide
 

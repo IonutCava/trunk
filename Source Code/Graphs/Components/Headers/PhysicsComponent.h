@@ -48,15 +48,17 @@ class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsComponent : public SGNComponent {
     friend class Attorney::PXCompPXAsset;
-   public:
-    PhysicsComponent(SceneGraphNode& parentSGN);
-    ~PhysicsComponent();
-
+  public:
     enum class PhysicsGroup : U32 {
         NODE_COLLIDE_IGNORE = 0,
         NODE_COLLIDE_NO_PUSH,
         NODE_COLLIDE
     };
+   public:
+    PhysicsComponent(SceneGraphNode& parentSGN);
+    ~PhysicsComponent();
+
+    void update(const U64 deltaTime);
 
     inline const PhysicsGroup& physicsGroup() const {
         return _physicsCollisionGroup;
@@ -102,7 +104,6 @@ class PhysicsComponent : public SGNComponent {
     void rotateY(const F32 angle, bool inDegrees = true);
     void rotateZ(const F32 angle, bool inDegrees = true);
     void setRotationX(const F32 angle, bool inDegrees = true);
-    void setRotationXEuler(const F32 angle, bool inDegrees = true);
     void setRotationY(const F32 angle, bool inDegrees = true);
     void setRotationZ(const F32 angle, bool inDegrees = true);
     void translateX(const F32 positionX);
@@ -115,12 +116,18 @@ class PhysicsComponent : public SGNComponent {
     inline bool isUniformScaled() const {
         return _transform != nullptr ? _transform->isUniformScaled() : true;
     }
+
     /// Return the scale factor
-    const vec3<F32>& getScale(const bool local = false);
+    const vec3<F32>& getScale(D32 interpolationFactor = 1.0,
+                              const bool local = false);
+
     /// Return the position
-    const vec3<F32>& getPosition(const bool local = false);
+    const vec3<F32>& getPosition(D32 interpolationFactor = 1.0,
+                                 const bool local = false);
+
     /// Return the orientation quaternion
-    const Quaternion<F32>& getOrientation(const bool local = false);
+    const Quaternion<F32>& getOrientation(D32 interpolationFactor = 1.0,
+                                          const bool local = false);
 
     void pushTransforms();
     bool popTransforms();
@@ -142,16 +149,14 @@ class PhysicsComponent : public SGNComponent {
     PhysicsGroup _physicsCollisionGroup;
     Transform* _transform;
     TransformValues _prevTransformValues;
-
+    TransformValues _cacheTransformValues;
     typedef std::stack<TransformValues> TransformStack;
     TransformStack _transformStack;
     bool _transformUpdated;
     /// Transform cache values
     mat4<F32> _worldMatrix;
-    vec3<F32> _scaleCache;
-    vec3<F32> _positionCache;
-    Quaternion<F32> _orientationCache;
 };
+
 namespace Attorney {
 class PXCompPXAsset {
    private:

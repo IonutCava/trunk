@@ -21,11 +21,11 @@ void ParticleVelocityColorUpdater::update(const U64 deltaTime,
                          // scaleb),
 
         p->_color[i].set(
-            Util::toByteColor(floatColorRGB),
+            Util::ToByteColor(floatColorRGB),
             static_cast<U8>(
-                Util::Lerp(static_cast<F32>(p->_startColor[i].a) / 255.0f,
-                           static_cast<F32>(p->_endColor[i].a) / 255.0f,
-                           p->_misc[i].y) *
+                Lerp(static_cast<F32>(p->_startColor[i].a) / 255.0f,
+                     static_cast<F32>(p->_endColor[i].a) / 255.0f,
+                     p->_misc[i].y) *
                 255.0f));
     }
 }

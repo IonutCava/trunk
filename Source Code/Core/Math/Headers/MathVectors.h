@@ -234,25 +234,29 @@ class vec2 {
 /// return the closest point on the line defined by the 2 points (A, B) and this
 /// vector
 template <typename T>
-inline vec2<T> closestPointOnLine(const vec2<T> &vA, const vec2<T> &vB);
+inline vec2<T> ClosestPointOnLine(const vec2<T> &vA, const vec2<T> &vB);
 /// return the closest point on the line segment defined between the 2 points
 /// (A, B) and this vector
 template <typename T>
-inline vec2<T> closestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB);
+inline vec2<T> ClosestPointOnSegment(const vec2<T> &vA, const vec2<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
-template <typename T>
-inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, T factor);
+template <typename T, typename U>
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor);
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec2<T> lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor);
-
+inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor);
 template <typename T>
-inline vec2<T> normalize(vec2<T> &vector) {
-    vector.normalize();
-    return vector;
-}
-
+inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2);
+template <typename T>
+inline vec2<T> Inverse(const vec2<T> &v);
+template <typename T>
+inline vec2<T> Normalize(vec2<T> &vector);
+template <typename T>
+inline T Dot(const vec2<T> &a, const vec2<T> &b);
+/// multiply a vector by a value
+template <typename T>
+inline vec2<T> operator*(T fl, const vec2<T> &v);
 /***********************************************************************
 /* vec3 -  A 3-tuple used to represent things like a vector in 3D space,
 /* a point in 3D space or just 3 values linked together
@@ -467,25 +471,30 @@ class vec3 {
 /// return the closest point on the line defined by the 2 points (A, B) and this
 /// vector
 template <typename T>
-inline vec3<T> closestPointOnLine(const vec3<T> &vA, const vec3<T> &vB);
+inline vec3<T> ClosestPointOnLine(const vec3<T> &vA, const vec3<T> &vB);
 /// return the closest point on the line segment created between the 2 points
 /// (A, B) and this vector
 template <typename T>
-inline vec3<T> closestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB);
+inline vec3<T> ClosestPointOnSegment(const vec3<T> &vA, const vec3<T> &vB);
 /// lerp between the 2 specified vectors by the specified amount
-template <typename T>
-inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, T factor);
+template <typename T, typename U>
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor);
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec3<T> lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor);
-
+inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor);
 template <typename T>
-inline vec3<T> normalize(vec3<T> &vector) {
-    vector.normalize();
-    return vector;
-}
-
+inline vec3<T> Normalize(vec3<T> &vector);
+/// general vec3 dot product
+template <typename T>
+inline T Dot(const vec3<T> &a, const vec3<T> &b);
+/// general vec3 cross function
+template <typename T>
+inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2);
+template <typename T>
+inline vec3<T> Inverse(const vec3<T> &v);
+template <typename T>
+inline vec3<T> operator*(T fl, const vec3<T> &v);
 /*************************************************************************************
 /* vec4 -  A 4-tuple used to represent things like a vector in 4D space
 (w-component)
@@ -755,27 +764,21 @@ class vec4 {
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T>
-inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, T factor);
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor);
 /// lerp between the 2 specified vectors by the specified amount for each
 /// component
 template <typename T>
-inline vec4<T> lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor);
+inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor);
 /// min/max functions
 template <typename T>
-inline vec4<T> min(const vec4<T> &v1, const vec4<T> &v2) {
-    return vec4<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y),
-                   std::min(v1.z, v2.z), std::min(v1.w, v2.w));
-}
+inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2);
 template <typename T>
-inline vec4<T> max(const vec4<T> &v1, const vec4<T> &v2) {
-    return vec4<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y),
-                   std::max(v1.z, v2.z), std::max(v1.w, v2.w));
-}
+inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2);
 template <typename T>
-inline vec4<T> normalize(vec4<T> &vector) {
-    vector.normalize();
-    return vector;
-}
+inline vec4<T> Normalize(vec4<T> &vector);
+/// multiply a vector by a value
+template <typename T>
+inline vec4<T> operator*(T fl, const vec4<T> &v);
 
 /// Quaternion multiplications require these to be floats
 extern vec2<F32> VECTOR2_ZERO;

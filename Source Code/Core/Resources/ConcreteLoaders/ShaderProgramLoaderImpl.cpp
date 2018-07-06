@@ -28,7 +28,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     // get all of the preprocessor defines
     if (!_descriptor.getPropertyListString().empty()) {
         vectorImpl<stringImpl> defines =
-            Util::split(_descriptor.getPropertyListString(), ',');
+            Util::Split(_descriptor.getPropertyListString(), ',');
         for (U8 i = 0; i < defines.size(); i++) {
             if (!defines[i].empty()) {
                 ptr->addShaderDefine(defines[i]);

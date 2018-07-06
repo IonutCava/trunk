@@ -58,12 +58,12 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
 }
 
 void GFXDevice::uploadGlobalBufferData() {
-    if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
+    if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] && _lastNodeCount > 0) {
         _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
         _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
     }
 
-    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
+    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] && _lastCmdCount > 0) {
         uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
         _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
     }
@@ -245,8 +245,6 @@ void GFXDevice::processVisibleNode(const RenderPassCuller::RenderableNode& node,
     // Get the material property matrix (alpha test, texture count,
     // texture operation, etc.)
     renderable->getMaterialPropertyMatrix(dataOut._matrix[3]);
-
-    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = true;
 }
 
 void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
@@ -304,6 +302,7 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     _lastCmdCount = lastCmdCount;
     _lastNodeCount = lastNodeCount;
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
+    _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = refreshNodeData;
 }
 
 bool GFXDevice::batchCommands(GenericDrawCommand& previousIDC,

@@ -12,9 +12,9 @@ void ParticleSphereVelocityGenerator::generate(const U64 deltaTime,
 
     F32 phi, theta, v, r;
     for (U32 i = startIndex; i < endIndex; ++i) {
-        phi = random(-M_PI, M_PI);
-        theta = random(-M_PI, M_PI);
-        v = random(_minVel, _maxVel);
+        phi = Random(-M_PI, M_PI);
+        theta = Random(-M_PI, M_PI);
+        v = Random(_minVel, _maxVel);
         r = v * std::sinf(phi);
         p->_velocity[i].z = v * std::cosf(phi);
         p->_velocity[i].x = r * std::cosf(theta);

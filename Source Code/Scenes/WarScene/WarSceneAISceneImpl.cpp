@@ -56,7 +56,7 @@ void WarSceneAISceneImpl::reset() {
 void WarSceneAISceneImpl::initInternal() {
 #if defined(PRINT_AI_TO_FILE)
     _WarAIOutputStream.open(
-        Util::stringFormat("AILogs/%s_.txt", _entity->getName().c_str()),
+        Util::StringFormat("AILogs/%s_.txt", _entity->getName().c_str()),
         std::ofstream::out | std::ofstream::trunc);
 #endif
 
@@ -284,21 +284,21 @@ void WarSceneAISceneImpl::requestOrders() {
     GOAPGoal* goal = findRelevantGoal();
     
     if (goal != nullptr) {
-        _planStatus = Util::stringFormat("Current goal: [ %s ]\n", goal->getName().c_str());
+        _planStatus = Util::StringFormat("Current goal: [ %s ]\n", goal->getName().c_str());
 
         // Hack to loop in idle
         worldState().setVariable(GOAPFact(Fact::IDLING), GOAPValue(false));
         worldState().setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG) , GOAPValue(nearEnemyF));
 
         if (replanGoal()) {
-            _planStatus += Util::stringFormat(
+            _planStatus += Util::StringFormat(
                 "The plan for goal [ %s ] involves [ %d ] actions.\n",
                 goal->getName().c_str(),
                 goal->getCurrentPlan().size());
             beginPlan(*goal);
         } else {
-            _planStatus += Util::stringFormat("%s\n", getPlanLog().c_str());
-            _planStatus += Util::stringFormat("Can't generate plan for goal [ %s ]\n",
+            _planStatus += Util::StringFormat("%s\n", getPlanLog().c_str());
+            _planStatus += Util::StringFormat("Can't generate plan for goal [ %s ]\n",
                   goal->getName().c_str());
         }
 
@@ -333,7 +333,7 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
         } break;
         case ActionType::SCORE_FLAG: {
             PRINT("Starting score action");
-            if (_globalWorkingMemory._flagsAtBase[ownTeamID].value()) {
+            if (_globalWorkingMemory._flagsAtBase[ownTeamID].value() == false) {
                 invalidateCurrentPlan();
                 return false;
             }
@@ -401,9 +401,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
         case ActionType::SCORE_FLAG: {
             PRINT("Score flag action over");
             assert(_localWorkingMemory._hasEnemyFlag.value());
-
-            U8 score = _globalWorkingMemory._score[ownTeamID].value();
-            _globalWorkingMemory._score[ownTeamID].value(score + 1);
+            _globalWorkingMemory._score[ownTeamID].value(_globalWorkingMemory._score[ownTeamID].value() + 1);
             _localWorkingMemory._hasEnemyFlag.value(false);
 
             _globalWorkingMemory._flags[enemyTeamID].value()->setParent(
@@ -437,7 +435,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
                 pComp->setPosition(vec3<F32>(0.0f, 0.75f, 1.5f));
                 pComp->setScale(
                     (prevScale /
-                    targetNode->getComponent<PhysicsComponent>()->getScale()) * vec3<F32>(1.0f, 2.0f, 1.0f));
+                    targetNode->getComponent<PhysicsComponent>()->getScale()));
             }
 
             _localWorkingMemory._hasEnemyFlag.value(true);
@@ -815,13 +813,13 @@ stringImpl WarSceneAISceneImpl::toString() const {
     U8 ownTeamID = currentTeam->getTeamID();
     U8 enemyTeamID = 1 - ownTeamID;
 
-    stringImpl ret(Util::stringFormat("Unit: [ %s ]\n", _entity->getName().c_str()));
+    stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->getName().c_str()));
     ret +="--------------- Working memory state BEGIN ----------------------------\n";
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Current position: - [ %4.1f , %4.1f, %4.1f]\n",
         _entity->getPosition().x, _entity->getPosition().y,
         _entity->getPosition().z);
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Flag Positions - OwnTeam : [ %4.1f , %4.1f, %4.1f] | Enemy Team : [ %4.1f , "
         "%4.1f, %4.1f]\n",
         _globalWorkingMemory._teamFlagPosition[ownTeamID].value().x,
@@ -830,39 +828,39 @@ stringImpl WarSceneAISceneImpl::toString() const {
         _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().x,
         _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().y,
         _globalWorkingMemory._teamFlagPosition[enemyTeamID].value().z);
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Flags at base - OwnTeam : [ %s ] | Enemy Team : [ %s ]\n",
         _globalWorkingMemory._flagsAtBase[ownTeamID].value() ? "true" : "false",
         _globalWorkingMemory._flagsAtBase[enemyTeamID].value() ? "true" : "false");
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Flags carriers - OwnTeam : [ %s ] | Enemy Team : [ %s ]\n",
         _globalWorkingMemory._flagCarriers[ownTeamID].value() ? _globalWorkingMemory._flagCarriers[ownTeamID].value()->getName().c_str() : "none",
         _globalWorkingMemory._flagCarriers[enemyTeamID].value() ? _globalWorkingMemory._flagCarriers[enemyTeamID].value()->getName().c_str() : "none");
 
     
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Score - OwnTeam : [ %d ] | Enemy Team : [ %d ]\n",
         _globalWorkingMemory._score[ownTeamID].value(),
         _globalWorkingMemory._score[enemyTeamID].value());
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Has enemy flag: [ %s ]\n",
         _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Enemy has flag: [ %s ]\n",
         _localWorkingMemory._enemyHasFlag.value() ? "true" : "false");
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Is flag retriever: [ %s ]\n",
         _localWorkingMemory._isFlagRetriever.value() ? "true" : "false");
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "        Flag retriever count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._flagRetrieverCount[ownTeamID].value(),
         _globalWorkingMemory._flagRetrieverCount[enemyTeamID].value());
-    ret += Util::stringFormat(
+    ret += Util::StringFormat(
         "       Team count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._teamAliveCount[ownTeamID].value(),
         _globalWorkingMemory._teamAliveCount[enemyTeamID].value());
     for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
-        ret += Util::stringFormat("        World state fact [ %s ] : [ %s ]\n",
+        ret += Util::StringFormat("        World state fact [ %s ] : [ %s ]\n",
                                   WarSceneFactName(var.first),
                                   var.second ? "true" : "false");
     }
