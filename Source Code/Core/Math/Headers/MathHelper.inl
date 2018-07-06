@@ -168,12 +168,12 @@ namespace Metric {
 namespace Time {
     template<typename T>
     T MicrosecondsToSeconds(T a) { 
-        return Metric::Pico(a); 
+        return Metric::Micro(a); 
     }
 
     template<typename T>
     T MicrosecondsToMilliseconds(T a)  { 
-        return MicrosecondsToSeconds(a); 
+        return Metric::Milli(a); 
     }
 
     template<typename T>

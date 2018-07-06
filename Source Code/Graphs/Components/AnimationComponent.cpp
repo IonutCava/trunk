@@ -12,7 +12,7 @@ AnimationComponent::AnimationComponent(SceneAnimator* animator,
                                                                           _animator(animator),
                                                                           _skeletonAvailable(false),
                                                                           _playAnimations(true),
-                                                                          _currentTimeStamp(-1.0),
+                                                                          _currentTimeStamp(0.0),
                                                                           _currentAnimIndex(0)
 {
     assert(_animator != nullptr);
@@ -55,7 +55,7 @@ void AnimationComponent::update(const U64 deltaTime) {
 }
 
 void AnimationComponent::resetTimers() {
-    _currentTimeStamp = -1.0;
+    _currentTimeStamp = 0.0;
     SGNComponent::resetTimers();
 }
 
