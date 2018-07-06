@@ -597,8 +597,8 @@ DEFINE_SINGLETON(GFXDevice)
     Time::ProfileTimer* _commandBuildTimer;
     std::unique_ptr<ShaderBuffer> _gfxDataBuffer;
     typedef std::array<std::unique_ptr<ShaderBuffer>, MAX_PASSES_PER_STAGE> RenderStageBuffer;
-    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT)> _indirectCommandBuffers;
-    // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFER
+    // Z_PRE_PASS and display SHOULD SHARE THE SAME BUFFERS
+    std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _indirectCommandBuffers;
     std::array<RenderStageBuffer, to_const_uint(RenderStage::COUNT) - 1> _nodeBuffers;
     GenericDrawCommand _defaultDrawCmd;
 END_SINGLETON

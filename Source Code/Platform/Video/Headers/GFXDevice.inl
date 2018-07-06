@@ -255,8 +255,18 @@ inline void GFXDevice::submitIndirectRenderCommands(const vectorImpl<GenericDraw
 }
 
 inline ShaderBuffer& GFXDevice::getCommandBuffer(RenderStage stage, U32 pass) const {
-    assert(pass < MAX_PASSES_PER_STAGE && _indirectCommandBuffers[to_uint(stage)][pass]);
-    return *_indirectCommandBuffers[to_uint(stage)][pass].get();
+    U32 bufferIdx = 0;
+    switch (stage) {
+    case RenderStage::REFLECTION:
+        bufferIdx = 1;
+        break;
+    case RenderStage::SHADOW:
+        bufferIdx = 2;
+        break;
+    };
+
+    assert(pass < MAX_PASSES_PER_STAGE && _indirectCommandBuffers[bufferIdx][pass]);
+    return *_indirectCommandBuffers[bufferIdx][pass].get();
 }
 
 inline ShaderBuffer& GFXDevice::getNodeBuffer(RenderStage stage, U32 pass) const {
