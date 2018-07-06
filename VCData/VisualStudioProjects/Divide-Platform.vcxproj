@@ -220,7 +220,6 @@
     <None Include="..\..\assets\shaders\GLSL\README" />
     <None Include="..\..\assets\shaders\GLSL\sky.glsl" />
     <None Include="..\..\assets\shaders\GLSL\SMAA.glsl" />
-    <None Include="..\..\assets\shaders\GLSL\SSAOApply.glsl" />
     <None Include="..\..\assets\shaders\GLSL\SSAOPass.glsl" />
     <None Include="..\..\assets\shaders\GLSL\terrain.glsl" />
     <None Include="..\..\assets\shaders\GLSL\vertexAtoms\boneTransforms.vert" />

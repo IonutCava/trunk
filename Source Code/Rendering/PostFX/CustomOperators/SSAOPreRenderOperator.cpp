@@ -22,25 +22,44 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
         noise.normalize();
     }
 
+    U16 kernelSize = 16;
+    vectorImpl<vec3<F32>> kernel(kernelSize);
+    for (U16 i = 0; i < kernelSize; ++i) {
+        vec3<F32>& k = kernel[i];
+        k.set(Random(-1.0f, 1.0f),
+              Random(-1.0f, 1.0f),
+              Random( 0.0f, 1.0f));
+        k.normalize();
+        F32 scale = to_float(i) / to_float(kernelSize);
+        k *= Lerp(0.1f, 1.0f, scale * scale);
+    }
+    
     SamplerDescriptor noiseSampler;
     noiseSampler.toggleMipMaps(false);
     noiseSampler.setAnisotropy(0);
     noiseSampler.setWrapMode(TextureWrap::CLAMP);
     stringImpl attachmentName("SSAOPreRenderOperator_NoiseTexture");
+
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.setThreadedLoading(false);
     textureAttachment.setPropertyDescriptor(noiseSampler);
     textureAttachment.setEnumValue(to_uint(TextureType::TEXTURE_2D));
     _noiseTexture = CreateResource<Texture>(textureAttachment);
+
     TextureDescriptor noiseDescriptor;
     noiseDescriptor._internalFormat = GFXImageFormat::RGB32F;
     noiseDescriptor._samplerDescriptor = noiseSampler;
     noiseDescriptor._type = TextureType::TEXTURE_2D;
-    _noiseTexture->loadData(Texture::TextureLoadInfo(), noiseDescriptor, noiseData.data(), vec2<U16>(ssaoNoiseSize), vec2<U16>(0, 1));
+    noiseDescriptor.getSampler().setFilters(TextureFilter::NEAREST);
+    _noiseTexture->loadData(Texture::TextureLoadInfo(),
+                            noiseDescriptor,
+                            noiseData.data(),
+                            vec2<U16>(ssaoNoiseSize),
+                            vec2<U16>(0, 1));
 
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.setFilters(TextureFilter::NEAREST);
+    screenSampler.setFilters(TextureFilter::LINEAR);
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
@@ -52,19 +71,29 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Framebuffer* hdrTarget, Framebuffer
     
     //Color0 holds the AO texture
     _ssaoOutput->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
+
+    _ssaoOutputBlurred = GFX_DEVICE.newFB();
+    _ssaoOutputBlurred->addAttachment(outputDescriptor, TextureDescriptor::AttachmentType::Color0);
     //Color1 holds a copy of the screen
     TextureDescriptor screenCopyDescriptor(_hdrTarget->getDescriptor());
-    _ssaoOutput->addAttachment(screenCopyDescriptor, TextureDescriptor::AttachmentType::Color1);
-
-    _ssaoOutput->create(_hdrTarget->getWidth(), _hdrTarget->getHeight());
+    _ssaoOutputBlurred->addAttachment(screenCopyDescriptor, TextureDescriptor::AttachmentType::Color1);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");
     ssaoGenerate.setThreadedLoading(false);
+    ssaoGenerate.setPropertyList(Util::StringFormat("USE_SCENE_ZPLANES,KERNEL_SIZE %d", kernelSize));
     _ssaoGenerateShader = CreateResource<ShaderProgram>(ssaoGenerate);
 
     ResourceDescriptor ssaoApply("SSAOPass.SSAOApply");
     ssaoApply.setThreadedLoading(false);
     _ssaoApplyShader = CreateResource<ShaderProgram>(ssaoApply);
+
+
+    ResourceDescriptor ssaoBlur("SSAOPass.SSAOBlur");
+    ssaoBlur.setThreadedLoading(false);
+    ssaoBlur.setPropertyList(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize));
+    _ssaoBlurShader = CreateResource<ShaderProgram>(ssaoBlur);
+    
+    _ssaoGenerateShader->Uniform("sampleKernel", kernel);
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
@@ -72,6 +101,7 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     MemoryManager::DELETE(_ssaoOutput);
     RemoveResource(_ssaoGenerateShader);
     RemoveResource(_ssaoApplyShader);
+    RemoveResource(_ssaoBlurShader);
     RemoveResource(_noiseTexture);
 }
 
@@ -80,26 +110,40 @@ void SSAOPreRenderOperator::idle() {
 
 void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
     _ssaoOutput->create(width, height);
+    _ssaoOutputBlurred->create(width, height);
 }
 
 void SSAOPreRenderOperator::execute() {
-    STUBBED("SSAO implementation is incomplete! -Ionut");
     return;
 
-    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                     TextureDescriptor::AttachmentType::Color0);  // screen
-    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
-                      TextureDescriptor::AttachmentType::Depth);  // depth
+    const Framebuffer::FramebufferDisplaySettings& settings = _hdrTarget->displaySettings();
 
+    _ssaoGenerateShader->Uniform("projectionMatrix", settings._projectionMatrix);
+    _ssaoGenerateShader->Uniform("invProjectionMatrix", settings._projectionMatrix.getInverse());
+
+    _noiseTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0)); // noise texture
+    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH),
+                      TextureDescriptor::AttachmentType::Depth);  // depth
+    _inputFB[0]->bind(to_ubyte(ShaderProgram::TextureUsage::NORMALMAP),
+                      TextureDescriptor::AttachmentType::Color0);  // normals
+    
     _ssaoOutput->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoGenerateShader);
     _ssaoOutput->end();
 
 
-    _ssaoOutput->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
-                      TextureDescriptor::AttachmentType::Color1);  // screen
+    _hdrTarget->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                     TextureDescriptor::AttachmentType::Color0);  // screen
     _ssaoOutput->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
                       TextureDescriptor::AttachmentType::Color0);  // AO texture
+    _ssaoOutputBlurred->begin(Framebuffer::defaultPolicy());
+        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoBlurShader);
+    _ssaoOutputBlurred->end();
+
+    _ssaoOutputBlurred->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
+                             TextureDescriptor::AttachmentType::Color1);  // screen
+    _ssaoOutputBlurred->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT1),
+                             TextureDescriptor::AttachmentType::Color0);  // AO texture
 
     _hdrTarget->begin(Framebuffer::defaultPolicy());
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _ssaoApplyShader);
@@ -107,7 +151,7 @@ void SSAOPreRenderOperator::execute() {
 }
 
 void SSAOPreRenderOperator::debugPreview(U8 slot) const {
-    _ssaoOutput->bind(slot);
+    _ssaoOutputBlurred->bind(slot);
 }
 
 };

@@ -31,6 +31,42 @@ vec4 applyFog(in vec4 color) {
     return vec4(mix(applyFogColor(color.rgb), color.rgb, dvd_fogDensity), color.a);
 }
 
+float ToLinearDepth(in float depthIn) {
+#if defined(USE_SCENE_ZPLANES)
+    float n = dvd_ZPlanesCombined.z;
+    float f = dvd_ZPlanesCombined.w * 0.5;
+#else
+    float n = dvd_ZPlanesCombined.x;
+    float f = dvd_ZPlanesCombined.y * 0.5;
+#endif
+
+    return (2 * n) / (f + n - (depthIn)* (f - n));
+}
+
+float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
+    return projMatrix[3][2] / (depthIn - projMatrix[2][2]);
+}
+
+vec4 positionFromDepth(in float depth,
+                       in mat4 invProjectionMatrix,
+                       in vec2 uv) {
+
+    vec4 pos = vec4(2.0 * uv.x - 1.0,
+                    2.0 * uv.y - 1.0,
+                    2.0 * depth - 1.0,
+                    1.0);
+
+    pos = invProjectionMatrix * pos;
+    pos /= pos.w;
+
+    return pos;
+}
+
+float luminance(in vec3 rgb) {
+    const vec3 kLum = vec3(0.299, 0.587, 0.114);
+    return max(dot(rgb, kLum), 0.0001); // prevent zero result
+}
+
 const float gamma = 2.2;
 const float invGamma = 1.0 / gamma;
 const vec3 invGammaVec = vec3(invGamma);

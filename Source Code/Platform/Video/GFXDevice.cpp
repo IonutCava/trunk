@@ -418,8 +418,8 @@ F32* GFXDevice::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& eyePos) {
 
     GPUBlock::GPUData& data = _gpuBlock._data;
 
-    if (eyePos != _gpuBlock._data._cameraPosition) {
-        data._cameraPosition.set(eyePos);
+    if (eyePos != _gpuBlock._data._cameraPosition.xyz()) {
+        data._cameraPosition.xyz(eyePos);
         updated = true;
     }
 
@@ -464,7 +464,9 @@ F32* GFXDevice::setProjection(F32 FoV, F32 aspectRatio,
                                        planes.x, planes.y);
 
     data._ZPlanesCombined.xy(planes);
-
+    data._cameraPosition.w = aspectRatio;
+    data._renderProperties.z = FoV;
+    data._renderProperties.w = std::tan(FoV * 0.5f);
     Util::Mat4::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
 
     _gpuBlock._updated = true;

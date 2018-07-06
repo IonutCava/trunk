@@ -33,6 +33,8 @@ void main()
 
 -- Fragment.LinearDepth
 
+#include "utility.frag"
+
 out vec4 _colorOut;
 uniform float lodLevel = 0;
 
@@ -40,16 +42,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-#if defined(USE_SCENE_ZPLANES)
-	float n = dvd_ZPlanesCombined.z;
-	float f = dvd_ZPlanesCombined.w * 0.5;
-#else
-	float n = dvd_ZPlanesCombined.x;
-    float f = dvd_ZPlanesCombined.y * 0.5;
-#endif
-
-    float depth = textureLod(texDiffuse0, VAR._texCoord, uint(lodLevel)).r;
-    float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
+    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, uint(lodLevel)).r);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
@@ -68,6 +61,8 @@ void main()
 
 -- Fragment.Layered.LinearDepth
 
+#include "utility.frag"
+
 out vec4 _colorOut;
 
 
@@ -77,20 +72,13 @@ uniform float lodLevel = 0;
 
 void main()
 {
-#if defined(USE_SCENE_ZPLANES)
-	float n = dvd_ZPlanesCombined.z;
-	float f = dvd_ZPlanesCombined.w * 0.5;
-#else
-	float n = dvd_ZPlanesCombined.x;
-    float f = dvd_ZPlanesCombined.y * 0.5;
-#endif
-
-    float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
-	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
+    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Layered.LinearDepth.ESM
+
+#include "utility.frag"
 
 out vec4 _colorOut;
 
@@ -98,27 +86,17 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform uint layer;
 uniform float lodLevel = 0.0;
 
-#if !defined(USE_SCENE_ZPLANES)
-uniform vec2 dvd_zPlanes;
-#endif
-
 void main()
 {
-#if defined(USE_SCENE_ZPLANES)
-	float n = dvd_ZPlanesCombined.z;
-	float f = dvd_ZPlanesCombined.w * 0.5;
-#else
-	float n = dvd_zPlanes.x;
-    float f = dvd_zPlanes.y * 0.5;
-#endif
-
     float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-	float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
+	float linearDepth = ToLinearDepth(depth);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Cube.LinearDepth
+
+#include "utility.frag"
 
 out vec4 _colorOut;
 
@@ -127,27 +105,18 @@ uniform uint layer;
 uniform uint face;
 uniform float lodLevel = 0.0;
 
-#if !defined(USE_SCENE_ZPLANES)
-uniform vec2 dvd_zPlanes;
-#endif
-
 void main()
 {
-#if defined(USE_SCENE_ZPLANES)
-    float n = dvd_ZPlanesCombined.z;
-    float f = dvd_ZPlanesCombined.w * 0.5;
-#else
-    float n = dvd_zPlanes.x;
-    float f = dvd_zPlanes.y * 0.5;
-#endif
 
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0).r;
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-    float linearDepth = (2 * n) / (f + n - (depth)* (f - n));
+    float linearDepth = ToLinearDepth(depth);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }
 
 --Fragment.Single.LinearDepth
+
+#include "utility.frag"
 
 out vec4 _colorOut;
 
@@ -157,14 +126,7 @@ uniform float lodLevel = 0;
 
 void main()
 {
-#if defined(USE_SCENE_ZPLANES)
-    float n = dvd_ZPlanesCombined.z;
-    float f = dvd_ZPlanesCombined.w * 0.5;
-#else
-    float n = dvd_ZPlanesCombined.x;
-    float f = dvd_ZPlanesCombined.y * 0.5;
-#endif
     float depth = texture(texDiffuse0, vec4(VAR._texCoord, layer, 1.0)).r;
-    float linearDepth = (2 * n) / (f + n - (depth)* (f - n));
+    float linearDepth = ToLinearDepth(depth);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }

@@ -64,4 +64,11 @@ void Framebuffer::resetMipLevel() {
     }
 }
 
+void Framebuffer::end() {
+    _displaySettings._aspectRatio = GFX_DEVICE.renderingData().aspectRatio();
+    _displaySettings._zPlanes.set(GFX_DEVICE.renderingData().currentZPlanes());
+    GFX_DEVICE.getMatrix(MATRIX::PROJECTION, _displaySettings._projectionMatrix);
+    GFX_DEVICE.getMatrix(MATRIX::VIEW, _displaySettings._viewMatrix);
+}
+
 };

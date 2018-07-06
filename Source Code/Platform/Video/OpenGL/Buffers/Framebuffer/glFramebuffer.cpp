@@ -521,6 +521,7 @@ void glFramebuffer::end() {
 
     setInitialAttachments();
     resolve();
+    Framebuffer::end();
     glFramebuffer::_bufferBound = false;
 }
 

@@ -40,6 +40,23 @@ namespace Divide {
 class Texture;
 class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper {
    public:
+    struct FramebufferDisplaySettings {
+        F32 _aspectRatio;
+        F32 _FoV;
+        F32 _tanHFoV;
+        vec2<F32> _zPlanes;
+        mat4<F32> _projectionMatrix;
+        mat4<F32> _viewMatrix;
+
+        FramebufferDisplaySettings() 
+        {
+            _aspectRatio = 1.0f;
+            _FoV = 90;
+            _tanHFoV = std::tan(_FoV * 0.5f);
+            _zPlanes.set(0.1f, 1.0f);
+        }
+    };
+
     struct FramebufferTarget {
         enum class BufferMask : U32 {
             COLOR = 0,
@@ -111,7 +128,7 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
 
     virtual void begin(const FramebufferTarget& drawPolicy) = 0;
 
-    virtual void end() = 0;
+    virtual void end();
 
     virtual void bind(U8 unit = 0,
                       TextureDescriptor::AttachmentType
@@ -167,10 +184,15 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     Framebuffer(GFXDevice& context, bool multiSample);
     virtual ~Framebuffer();
 
+    inline const FramebufferDisplaySettings& displaySettings() const {
+        return _displaySettings;
+    }
+
    protected:
     virtual bool checkStatus() const = 0;
 
    protected:
+    
     bool _shouldRebuild;
     bool _useDepthBuffer;
     bool _disableColorWrites;
@@ -182,6 +204,9 @@ class NOINITVTABLE Framebuffer : protected GraphicsResource, public GUIDWrapper 
     std::array<TextureDescriptor, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachment;
     std::array<Texture*, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentTexture;
     std::array<bool, to_const_uint(TextureDescriptor::AttachmentType::COUNT)> _attachmentChanged;
+
+    // Remember some of the settings used to render into this framebuffer
+    FramebufferDisplaySettings _displaySettings;
 };
 
 };  // namespace Divide

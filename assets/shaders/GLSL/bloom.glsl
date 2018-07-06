@@ -27,13 +27,14 @@ void main() {
 
 -- Fragment.BloomCalc
 
+#include "utility.frag"
 out vec4 _bloomOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 
 void main() {    
     vec4 screenColor = texture(texScreen, VAR._texCoord);
-    float luma = dot(screenColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+    float luma = luminance(screenColor.rgb);
     if (luma > 1.0) {
         _bloomOut = screenColor;
     }
@@ -83,10 +84,12 @@ void main() {
     _colorOut.rgb = ToSRGB(Uncharted2Tonemap(screenColor * exposure) / Uncharted2Tonemap(vec3(whitePoint)));
 #endif
 
-    _colorOut.a = dot(_colorOut.rgb, vec3(0.299, 0.587, 0.114));
+    _colorOut.a = luminance(_colorOut.rgb);
 }
 
 --Fragment.LuminanceCalc
+
+#include "utility.frag"
 
 out float _colorOut;
 
@@ -99,7 +102,7 @@ void main() {
     // - complete dark -> bright sunlight: 5 min
     // - speed diff ~5
     vec3 screenColor = texture(texScreen, VAR._texCoord).rgb;
-    float crtluminance = clamp(dot(screenColor, vec3(0.299, 0.587, 0.114)), 0.35, 0.75);
+    float crtluminance = clamp(luminance(screenColor), 0.35, 0.75);
     float prevLuminance = clamp(exp(texture(texPrevLuminance, VAR._texCoord).r), 0.35, 0.75);
     // Slowly change luminance by mimicking human eye behaviour:
     // bright->dark 5 times faster than dark->bright

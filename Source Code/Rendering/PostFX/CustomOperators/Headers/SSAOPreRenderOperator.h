@@ -57,7 +57,9 @@ class SSAOPreRenderOperator : public PreRenderOperator {
    private:
     ShaderProgram* _ssaoGenerateShader;
     ShaderProgram* _ssaoApplyShader;
+    ShaderProgram* _ssaoBlurShader;
     Framebuffer* _ssaoOutput;
+    Framebuffer* _ssaoOutputBlurred;
     Texture* _noiseTexture;
 };
 

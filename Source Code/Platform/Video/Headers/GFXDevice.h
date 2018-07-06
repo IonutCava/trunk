@@ -207,12 +207,18 @@ DEFINE_SINGLETON(GFXDevice)
            mat4<F32> _ProjectionMatrix;
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
-           vec4<F32> _cameraPosition;
+           vec4<F32> _cameraPosition; // xyz - position, w - aspect ratio
            vec4<F32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _renderProperties;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+
+           inline F32 aspectRatio() const;
+           inline vec2<F32> currentZPlanes() const;
+           inline F32 FoV() const;
+           inline F32 tanHFoV() const;
+
         } _data;
 
         bool _updated;
@@ -307,16 +313,15 @@ DEFINE_SINGLETON(GFXDevice)
     void getMatrix(const MATRIX& mode, mat4<F32>& mat);
     /// Alternative to the normal version of getMatrix
     inline const mat4<F32>& getMatrix(const MATRIX& mode);
-    inline vec2<F32> getCurrentZPlanes() const;
+    /// Access (Read Only) rendering data used by the GFX
+    inline const GPUBlock::GPUData& renderingData() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
     /// routine. Use callOrder for sorting purposes
     inline void add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder);
 
     void restoreViewport();
     void setViewport(const vec4<I32>& viewport);
-    inline void setViewport(I32 x, I32 y, I32 width, I32 height) {
-        setViewport(vec4<I32>(x,y,width,height));
-    }
+    inline void setViewport(I32 x, I32 y, I32 width, I32 height);
     /// Switch between fullscreen rendering
     void toggleFullScreen();
     void increaseResolution();

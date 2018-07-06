@@ -34,6 +34,22 @@
 
 namespace Divide {
 
+inline F32 GFXDevice::GPUBlock::GPUData::aspectRatio() const {
+    return _cameraPosition.w;
+}
+
+inline vec2<F32> GFXDevice::GPUBlock::GPUData::currentZPlanes() const {
+    return _ZPlanesCombined.xy();
+}
+
+inline F32 GFXDevice::GPUBlock::GPUData::FoV() const {
+    return _renderProperties.z;
+}
+
+inline F32 GFXDevice::GPUBlock::GPUData::tanHFoV() const {
+    return _renderProperties.w;
+}
+
 inline void 
 GFXDevice::NodeData::set(const GFXDevice::NodeData& other) {
     this->_worldMatrix.set(other._worldMatrix);
@@ -139,6 +155,16 @@ GFXDevice::RenderQueue::resize(U16 size) {
     _packages.resize(size);
 }
 
+inline const GFXDevice::GPUBlock::GPUData&
+GFXDevice::renderingData() const {
+    return _gpuBlock._data;
+}
+
+inline void
+GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
+    setViewport(vec4<I32>(x, y, width, height));
+}
+
 inline bool 
 GFXDevice::isDepthStage() const {
     return getRenderStage() == RenderStage::SHADOW ||
@@ -220,11 +246,6 @@ inline const mat4<F32>&
 GFXDevice::getMatrix(const MATRIX& mode) {
     getMatrix(mode, _mat4Cache);
     return _mat4Cache;
-}
-
-inline vec2<F32> 
-GFXDevice::getCurrentZPlanes() const {
-    return _gpuBlock._data._ZPlanesCombined.xy();
 }
 
 inline void 
