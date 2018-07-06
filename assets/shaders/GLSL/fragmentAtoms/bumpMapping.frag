@@ -2,8 +2,7 @@
 uniform sampler2D texBump;
 uniform float parallax_factor;
 uniform float relief_factor;
-uniform int   mode;
-
+uniform int mode;
 #define MODE_PHONG      0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2

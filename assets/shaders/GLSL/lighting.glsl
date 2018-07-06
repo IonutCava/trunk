@@ -47,15 +47,15 @@ void main (void){
 
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
-	
-	vec4 color = Phong(texCoord[0].st*tile_factor, vec3(0.0, 0.0, 1.0), vPixToEyeTBN, vPixToLightTBNcurrent);
-	
+
 	if(hasOpacity ){
-		vec4 alpha = texture2D(opacityMap, texCoord[0].st*tile_factor);
+		vec4 alpha = texture2D(opacityMap, texCoord[0].st);
 		if(alpha.a < 0.2) discard;
-	}else{
-		if(color.a < 0.2) discard;	
 	}
+
+	vec4 color = Phong(texCoord[0].st, vNormalMV, vPixToEyeTBN, vPixToLightTBNcurrent);
+	if(color.a < 0.2) discard;	
+	
 	if(enableFog){
 		color = applyFog(color);
 	}
@@ -74,24 +74,24 @@ void main (void){
 
 	gl_FragDepth = gl_FragCoord.z;
 	vec4 vPixToLightTBNcurrent = vPixToLightTBN[0];
-	
+	if(hasOpacity ){
+		vec4 alpha = texture2D(opacityMap, texCoord[0].st);
+		if(alpha.a < 0.2) discard;
+	}
+
 	vec4 color;
 	//Else, use appropriate lighting / bump mapping / relief mapping / normal mapping
 	if(mode == MODE_PHONG)
-		color = Phong(texCoord[0].st*tile_factor, vNormalMV, vPixToEyeTBN, vPixToLightTBNcurrent);
+		color = Phong(texCoord[0].st, vNormalMV, vPixToEyeTBN, vPixToLightTBNcurrent);
 	else if(mode == MODE_RELIEF)
-		color = ReliefMapping(texCoord[0].st*tile_factor);
+		color = ReliefMapping(texCoord[0].st);
 	else if(mode == MODE_BUMP)
-		color = NormalMapping(texCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, false);
+		color = NormalMapping(texCoord[0].st, vPixToEyeTBN, vPixToLightTBNcurrent, false);
 	else if(mode == MODE_PARALLAX)
-		color = NormalMapping(texCoord[0].st*tile_factor, vPixToEyeTBN, vPixToLightTBNcurrent, true);
+		color = NormalMapping(texCoord[0].st, vPixToEyeTBN, vPixToLightTBNcurrent, true);
 	
-	if(hasOpacity ){
-		vec4 alpha = texture2D(opacityMap, texCoord[0].st*tile_factor);
-		if(alpha.a < 0.2) discard;
-	}else{
-		if(color.a < 0.2) discard;	
-	}
+	if(color.a < 0.2) discard;	
+	
 	if(enableFog){
 		color = applyFog(color);
 	}

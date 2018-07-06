@@ -21,7 +21,6 @@ uniform mat4 material;
 #include "texturing.frag"
 #include "shadowMapping.frag"
 
-uniform float tile_factor;
 //true -> use opacity map
 uniform bool hasOpacity;
 //true -> use specular map 
@@ -101,6 +100,7 @@ vec4 Phong(vec2 uv, vec3 vNormalTBN, vec3 vEyeTBN, vec4 vLightTBN){
 				//And add shadow value to current diffuse color and specular values
 				cDiffuse = (shadow) * cDiffuse;
 				cSpecular = (shadow) * cSpecular;
+				cAmbient = (shadow) * cAmbient;
 				// Texture projection :
 				if(enable_shadow_mapping == 2) {
 					vec4 cProjected = texture2D(texDiffuseProjected, vec2(vPixPosInDepthMap.s, 1.0-vPixPosInDepthMap.t));
