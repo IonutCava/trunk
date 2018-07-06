@@ -139,7 +139,7 @@ bool DVDConverter::load(Import::ImportData& target, const stringImpl& file) {
     const aiScene* aiScenePointer = importer.ReadFile(file.c_str(), ppsteps);
 
     if (!aiScenePointer) {
-        Console::errorfn(Locale::get("ERROR_IMPORTER_FILE"), file.c_str(),
+        Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), file.c_str(),
                          importer.GetErrorString());
         return nullptr;
     }
@@ -262,7 +262,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                                              source->mTangents[j].z);
         }
     } else {
-        Console::d_printfn(Locale::get("SUBMESH_NO_TANGENT"), subMeshData._name.c_str());
+        Console::d_printfn(Locale::get(_ID("SUBMESH_NO_TANGENT")), subMeshData._name.c_str());
     }
 
     if (source->mNumBones > 0) {
@@ -330,7 +330,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
         data._diffuse.setV(&diffuse.r);
     } else {
-        Console::d_printfn(Locale::get("MATERIAL_NO_DIFFUSE"), materialName.c_str());
+        Console::d_printfn(Locale::get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
     }
 
     // Ignore ambient color
@@ -349,7 +349,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_SPECULAR, &specular)) {
         data._specular.setV(&specular.r);
     } else {
-        Console::d_printfn(Locale::get("MATERIAL_NO_SPECULAR"), materialName.c_str());
+        Console::d_printfn(Locale::get(_ID("MATERIAL_NO_SPECULAR")), materialName.c_str());
     }
 
     // default emissive color

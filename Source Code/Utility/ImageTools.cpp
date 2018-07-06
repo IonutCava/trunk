@@ -51,11 +51,11 @@ ImageData::~ImageData()
 }
 
 void ImageData::throwLoadError(const stringImpl& fileName) {
-    Console::errorfn(Locale::get("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE"),
+    Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")),
                      fileName.c_str());
     ILenum error;
     while ((error = ilGetError()) != IL_NO_ERROR) {
-        Console::errorfn(Locale::get("ERROR_IMAGETOOLS_DEVIL"), error);
+        Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_DEVIL")), error);
     }
 }
 

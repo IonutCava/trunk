@@ -24,7 +24,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate) {
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 
         default: {
-            Console::errorfn(Locale::get("ERROR_PFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_API")));
             return ErrorCode::PFX_NON_SPECIFIED;
         } break;
     };

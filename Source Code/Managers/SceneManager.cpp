@@ -38,9 +38,9 @@ SceneManager::~SceneManager()
     AI::AIManager::destroyInstance();
     Time::REMOVE_TIMER(_sceneGraphCullTimer);
     UNREGISTER_FRAME_LISTENER(&(this->getInstance()));
-    Console::printfn(Locale::get("STOP_SCENE_MANAGER"));
+    Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
     // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
-    Console::printfn(Locale::get("SCENE_MANAGER_REMOVE_SCENES"));
+    Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
     MemoryManager::DELETE_HASHMAP(_sceneMap);
     MemoryManager::DELETE(_renderPassCuller);
     _renderer.reset(nullptr);
@@ -50,7 +50,7 @@ bool SceneManager::init(GUI* const gui) {
     REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
 
     // Load default material
-    Console::printfn(Locale::get("LOAD_DEFAULT_MATERIAL"));
+    Console::printfn(Locale::get(_ID("LOAD_DEFAULT_MATERIAL")));
     _defaultMaterial = XML::loadMaterialXML(
         ParamHandler::getInstance().getParam<stringImpl>("scriptLocation") +
             "/defaultMaterial",
@@ -73,7 +73,7 @@ bool SceneManager::init(GUI* const gui) {
 bool SceneManager::load(const stringImpl& sceneName,
                         const vec2<U16>& resolution) {
     assert(_init == true && _GUI != nullptr);
-    Console::printfn(Locale::get("SCENE_MANAGER_LOAD_SCENE_DATA"));
+    Console::printfn(Locale::get(_ID("SCENE_MANAGER_LOAD_SCENE_DATA")));
     XML::loadScene(sceneName, *this);
     if (!_activeScene) {
         return false;
@@ -84,13 +84,13 @@ bool SceneManager::load(const stringImpl& sceneName,
 
 Scene* SceneManager::createScene(const stringImpl& name) {
     Scene* scene = nullptr;
-
+    ULL nameHash = _ID_RT(name);
     if (!name.empty()) {
-        scene = _sceneFactory[name]();
+        scene = _sceneFactory[nameHash]();
     }
 
     if (scene != nullptr) {
-        hashAlg::emplace(_sceneMap, name, scene);
+        hashAlg::emplace(_sceneMap, nameHash, scene);
     }
 
     return scene;
@@ -102,7 +102,7 @@ bool SceneManager::unloadCurrentScene() {
     bool state = Attorney::SceneManager::unload(*_activeScene);
     if (state) {
         state = Attorney::SceneManager::deinitializeAI(*_activeScene);
-        _sceneMap.erase(_sceneMap.find(_activeScene->getName()));
+        _sceneMap.erase(_sceneMap.find(_ID_RT(_activeScene->getName())));
         _activeScene.reset(nullptr);
     }
     return state;
@@ -130,7 +130,7 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
     LightManager& lightMgr = LightManager::getInstance();
 
     // Shadow splits are only visible in debug builds
-    _sceneData.enableDebugRender(par.getParam<bool>("rendering.debug.displayShadowDebugInfo"));
+    _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData.elapsedTime(_elapsedTimeMS);
 
@@ -138,8 +138,8 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 
     _sceneData.toggleShadowMapping(lightMgr.shadowMappingEnabled());
 
-    _sceneData.fogDensity(par.getParam<bool>("rendering.enableFog")
-                            ? par.getParam<F32>("rendering.sceneState.fogDensity")
+    _sceneData.fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))
+                            ? par.getParam<F32>(_ID("rendering.sceneState.fogDensity"))
                             : 0.0f);
 
     const SceneState& activeSceneState = _activeScene->state();
@@ -154,13 +154,13 @@ void SceneManager::updateSceneState(const U64 deltaTime) {
 /// Update fog values
 void SceneManager::enableFog(F32 density, const vec3<F32>& color) {
     ParamHandler& par = ParamHandler::getInstance();
-    par.setParam("rendering.sceneState.fogColor.r", color.r);
-    par.setParam("rendering.sceneState.fogColor.g", color.g);
-    par.setParam("rendering.sceneState.fogColor.b", color.b);
-    par.setParam("rendering.sceneState.fogDensity", density);
+    par.setParam(_ID("rendering.sceneState.fogColor.r"), color.r);
+    par.setParam(_ID("rendering.sceneState.fogColor.g"), color.g);
+    par.setParam(_ID("rendering.sceneState.fogColor.b"), color.b);
+    par.setParam(_ID("rendering.sceneState.fogDensity"), density);
 
     _sceneData.fogDetails(color.r, color.g, color.b,
-                          par.getParam<bool>("rendering.enableFog") ? density : 0.0f);
+                          par.getParam<bool>(_ID("rendering.enableFog")) ? density : 0.0f);
 }
 
 const RenderPassCuller::VisibleNodeList&  SceneManager::cullSceneGraph(RenderStage stage) {

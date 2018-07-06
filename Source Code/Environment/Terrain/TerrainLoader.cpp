@@ -312,7 +312,7 @@ bool TerrainLoader::loadThreadedResources(
     if (dimensions.y % 2 == 0) {
         dimensions.y++;
     }
-    Console::d_printfn(Locale::get("TERRAIN_INFO"), dimensions.x, dimensions.y);
+    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), dimensions.x, dimensions.y);
 
     I32 terrainWidth = (I32)dimensions.x;
     I32 terrainHeight = (I32)dimensions.y;
@@ -456,7 +456,7 @@ bool TerrainLoader::loadThreadedResources(
     groundVB->create();
     Attorney::TerrainLoader::buildQuadtree(*terrain);
     initializeVegetation(terrain, terrainDescriptor);
-    Console::printfn(Locale::get("TERRAIN_LOAD_END"),
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")),
                      terrain->getName().c_str());
     return true;
 }

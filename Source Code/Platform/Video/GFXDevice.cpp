@@ -136,7 +136,7 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
         // Future formats must be added later (e.g. cube map arrays)
-        Console::errorfn(Locale::get("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP"));
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP")));
         return;
     }
     // No dual-paraboloid rendering here. Just draw once for each face.
@@ -324,7 +324,7 @@ void GFXDevice::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) {
         mat.set(_gpuBlock._data._ProjectionMatrix);
     } else if (mode == MATRIX_MODE::TEXTURE) {
         mat.identity();
-        Console::errorfn(Locale::get("ERROR_TEXTURE_MATRIX_ACCESS"));
+        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_MATRIX_ACCESS")));
     } else if (mode == MATRIX_MODE::VIEW_INV) {
         _gpuBlock._data._ViewMatrix.getInverse(mat);
     } else if (mode == MATRIX_MODE::PROJECTION_INV) {

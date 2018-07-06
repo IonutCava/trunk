@@ -64,10 +64,10 @@ void glShaderProgram::validateInternal() {
     // the validation log is only retrieved if we request it. (i.e. in release,
     // if the shader is validated, it isn't retrieved)
     if (status == 0) {
-        Console::errorfn(Locale::get("GLSL_VALIDATING_PROGRAM"),
+        Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
                          getName().c_str(), getLog().c_str());
     } else {
-        Console::d_printfn(Locale::get("GLSL_VALIDATING_PROGRAM"),
+        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
                            getName().c_str(), getLog().c_str());
     }
     _validated = true;
@@ -155,7 +155,7 @@ stringImpl glShaderProgram::getLog() const {
             // On some systems, the program's disassembly is printed, and that
             // can get quite large
             validationBuffer.resize(static_cast<stringAlg::stringSize>(
-                4096 * 16 - strlen(Locale::get("GLSL_LINK_PROGRAM_LOG")) - 10));
+                4096 * 16 - strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) - 10));
             // Use the simple "truncate and inform user" system (a.k.a. add dots
             // and delete the rest)
             validationBuffer.append(" ... ");
@@ -193,7 +193,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh) {
             // and detach the shader
             detachShader(shader);
         } else {
-            Console::errorfn(Locale::get("ERROR_RECOMPILE_NOT_FOUND_ATOM"),
+            Console::errorfn(Locale::get(_ID("ERROR_RECOMPILE_NOT_FOUND_ATOM")),
                              shader->getName().c_str());
         }
     } else {
@@ -253,7 +253,7 @@ void glShaderProgram::link() {
                             GL_PROGRAM_BINARY_RETRIEVABLE_HINT, 1);
     }
 #endif
-    Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(),
+    Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM")), getName().c_str(),
                        _shaderProgramIDTemp);
 
     /*glProgramParameteri(_shaderProgramIDTemp,
@@ -268,10 +268,10 @@ void glShaderProgram::link() {
     // If linking failed, show an error, else print the result in debug builds.
     // Same getLog() method is used
     if (linkStatus == 0) {
-        Console::errorfn(Locale::get("GLSL_LINK_PROGRAM_LOG"),
+        Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")),
                          getName().c_str(), getLog().c_str());
     } else {
-        Console::d_printfn(Locale::get("GLSL_LINK_PROGRAM_LOG"),
+        Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")),
                            getName().c_str(), getLog().c_str());
         // The linked flag is set to true only if linking succeeded
         _linked = true;
@@ -452,13 +452,13 @@ bool glShaderProgram::load() {
             // Show a message, in debug, if we don't have a shader for this
             // stage
             if (!_shaderStage[i]) {
-                Console::d_printfn(Locale::get("WARN_GLSL_LOAD"),
+                Console::d_printfn(Locale::get(_ID("WARN_GLSL_LOAD")),
                                    shaderCompileName.c_str());
             } else {
                 // Try to compile the shader (it doesn't double compile shaders,
                 // so it's safe to call it multiple types)
                 if (!_shaderStage[i]->compile()) {
-                    Console::errorfn(Locale::get("ERROR_GLSL_COMPILE"),
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")),
                                      _shaderStage[i]->getShaderID());
                 }
             }
@@ -497,13 +497,13 @@ I32 glShaderProgram::getUniformLocation(const stringImpl& name) {
     if (!isValid() || _shaderProgramID == 0) {
         return -1;
     }
-    
     DIVIDE_ASSERT(_threadedLoadComplete,
                   "glShaderProgram error: tried to query a shader program "
                   "before threaded load completed!");
 
     // Check the cache for the location
-    ShaderVarMap::const_iterator it = _shaderVarLocation.find(name);
+    ULL nameHash = _ID_RT(name);
+    ShaderVarMap::const_iterator it = _shaderVarLocation.find(nameHash);
     if (it != std::end(_shaderVarLocation)) {
         return it->second;
     }
@@ -512,7 +512,7 @@ I32 glShaderProgram::getUniformLocation(const stringImpl& name) {
     GLint location = glGetUniformLocation(_shaderProgramID, name.c_str());
 
     // Save it for later reference
-    hashAlg::emplace(_shaderVarLocation, name, location);
+    hashAlg::emplace(_shaderVarLocation, nameHash, location);
 
     // Return the location
     return location;

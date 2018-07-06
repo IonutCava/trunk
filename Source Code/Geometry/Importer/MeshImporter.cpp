@@ -172,25 +172,25 @@ namespace Import {
 
         bool success = false;
         if (!dataOut.loadFromFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
-            Console::printfn(Locale::get("MESH_NOT_LOADED_FROM_FILE"), modelName.c_str());
+            Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), modelName.c_str());
 
             DVDConverter converter(dataOut, meshFilePath, success);
             if (success) {
                 dataOut._modelName = modelName;
                 dataOut._modelPath = path;
                 if (dataOut.saveToFile(path + "/" + g_parsedAssetLocation + "/" + modelName)) {
-                    Console::printfn(Locale::get("MESH_SAVED_TO_FILE"), modelName.c_str());
+                    Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), modelName.c_str());
                 } else {
-                    Console::printfn(Locale::get("MESH_NOT_SAVED_TO_FILE"), modelName.c_str());
+                    Console::printfn(Locale::get(_ID("MESH_NOT_SAVED_TO_FILE")), modelName.c_str());
                 }
             }
         } else {
-            Console::printfn(Locale::get("MESH_LOADED_FROM_FILE"), modelName.c_str());
+            Console::printfn(Locale::get(_ID("MESH_LOADED_FROM_FILE")), modelName.c_str());
             success = true;
         }
 
         elapsed = Time::ElapsedMilliseconds(true) - start;
-        Console::d_printfn(Locale::get("LOAD_MESH_TIME"), modelName.c_str(), Time::MillisecondsToSeconds(elapsed));
+        Console::d_printfn(Locale::get(_ID("LOAD_MESH_TIME")), modelName.c_str(), Time::MillisecondsToSeconds(elapsed));
 
         return success;
     }
@@ -279,7 +279,7 @@ namespace Import {
         mesh->getGeometryVB()->create(!mesh->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         
         elapsed = Time::ElapsedMilliseconds(true) - start;
-        Console::d_printfn(Locale::get("PARSE_MESH_TIME"), dataIn._modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
+        Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")), dataIn._modelName.c_str(),Time::MillisecondsToSeconds(elapsed));
 
         return mesh;
     }

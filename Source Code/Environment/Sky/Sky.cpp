@@ -78,7 +78,7 @@ bool Sky::load() {
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
     _skyShader->Uniform("enable_sun", true);
 
-    Console::printfn(Locale::get("CREATE_SKY_RES_OK"));
+    Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
     return true;
 }
 

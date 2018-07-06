@@ -45,9 +45,9 @@ enum class ShaderType : U32;
 
 DEFINE_SINGLETON(ShaderManager)
 
-    typedef hashMapImpl<stringImpl, Shader*> ShaderMap;
-    typedef hashMapImpl<stringImpl, ShaderProgram*> ShaderProgramMap;
-    typedef hashMapImpl<stringImpl, stringImpl> AtomMap;
+    typedef hashMapImpl<ULL, Shader*> ShaderMap;
+    typedef hashMapImpl<ULL, ShaderProgram*> ShaderProgramMap;
+    typedef hashMapImpl<ULL, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram*> > ShaderQueue;
 
   private:

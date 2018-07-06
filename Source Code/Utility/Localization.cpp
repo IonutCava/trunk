@@ -30,7 +30,7 @@ bool init(const stringImpl& newLanguage) {
     CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
     for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
         hashAlg::emplace(g_languageTable,
-                         stringImpl(keyValuePairIt->first.pItem),
+                         _ID_RT(keyValuePairIt->first.pItem),
                          stringImpl(keyValuePairIt->second));
     }
 
@@ -53,8 +53,8 @@ void changeLanguage(const stringImpl& newLanguage) {
     clear();
 }
 
-const char* get(const stringImpl& key, const stringImpl& defaultValue) {
-    typedef hashMapImpl<stringImpl, stringImpl>::const_iterator citer;
+const char* get(ULL key, const stringImpl& defaultValue) {
+    typedef hashMapImpl<ULL, stringImpl>::const_iterator citer;
     assert(g_initialized == true &&
            "Locale::get error: Get() called without initializing the language "
            "subsytem");

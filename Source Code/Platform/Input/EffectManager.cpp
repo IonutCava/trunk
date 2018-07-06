@@ -30,12 +30,12 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pConstForce->envelope.fadeLevel = (unsigned short)pConstForce->level;
 
     mapVars.clear();
-    mapVars["Force"] = MemoryManager_NEW TriangleVariable(
+    mapVars[_ID("Force")] = MemoryManager_NEW TriangleVariable(
         0.0,                              // F0
         4 * 10000 / _nUpdateFreq / 20.0,  // dF for a 20s-period triangle
         -10000.0,                         // Fmin
         10000.0);                         // Fmax
-    mapVars["AttackFactor"] = MemoryManager_NEW Constant(1.0);
+    mapVars[_ID("AttackFactor")] = MemoryManager_NEW Constant(1.0);
 
     _vecEffects.push_back(MemoryManager_NEW VariableEffect(
         "Constant force on 1 axis with 20s-period triangle oscillations "
@@ -61,12 +61,12 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pConstForce->envelope.fadeLevel = to_ushort(pConstForce->level);  // Idem
 
     mapVars.clear();
-    mapVars["Force"] = MemoryManager_NEW TriangleVariable(
+    mapVars[_ID("Force")] = MemoryManager_NEW TriangleVariable(
         0.0,                              // F0
         4 * 10000 / _nUpdateFreq / 20.0,  // dF for a 20s-period triangle
         -10000.0,                         // Fmin
         10000.0);                         // Fmax
-    mapVars["AttackFactor"] = MemoryManager_NEW Constant(0.1);
+    mapVars[_ID("AttackFactor")] = MemoryManager_NEW Constant(0.1);
 
     _vecEffects.push_back(MemoryManager_NEW VariableEffect(
         "Constant force on 1 axis with noticeable attack (app update period / "
@@ -96,7 +96,7 @@ EffectManager::EffectManager(JoystickInterface* pJoystickInterface,
     pPeriodForce->envelope.fadeLevel = (unsigned short)pPeriodForce->magnitude;
 
     mapVars.clear();
-    mapVars["Period"] = MemoryManager_NEW TriangleVariable(
+    mapVars[_ID("Period")] = MemoryManager_NEW TriangleVariable(
         1 * 1000.0,  // P0
         4 * (400 - 10) * 1000.0 / _nUpdateFreq /
             40.0,       // dP for a 40s-period triangle
@@ -149,9 +149,9 @@ void EffectManager::checkPlayableEffects() {
 
     // Print details about playable effects
     if (_vecPlayableEffectInd.empty()) {
-        Console::d_errorfn(Locale::get("INPUT_EFFECT_TEST_FAIL"));
+        Console::d_errorfn(Locale::get(_ID("INPUT_EFFECT_TEST_FAIL")));
     } else {
-        Console::printfn(Locale::get("INPUT_DEVICE_EFFECT_SUPPORT"));
+        Console::printfn(Locale::get(_ID("INPUT_DEVICE_EFFECT_SUPPORT")));
 
         vectorAlg::vecSize nEffIndInd = 0;
         for (; nEffIndInd < _vecPlayableEffectInd.size(); ++nEffIndInd) {
@@ -165,13 +165,13 @@ void EffectManager::checkPlayableEffects() {
 void EffectManager::selectEffect(EWhichEffect eWhich) {
     // Nothing to do if no joystick currently selected
     if (!_pJoystickInterface->getCurrentFFDevice()) {
-        Console::d_printfn(Locale::get("INPUT_NO_JOYSTICK_SELECTED"));
+        Console::d_printfn(Locale::get(_ID("INPUT_NO_JOYSTICK_SELECTED")));
         return;
     }
 
     // Nothing to do if joystick cannot play any effect
     if (_vecPlayableEffectInd.empty()) {
-        Console::d_printfn(Locale::get("INPUT_NO_PLAYABLE_EFFECTS"));
+        Console::d_printfn(Locale::get(_ID("INPUT_NO_PLAYABLE_EFFECTS")));
         return;
     }
 

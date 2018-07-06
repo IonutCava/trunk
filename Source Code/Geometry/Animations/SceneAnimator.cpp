@@ -59,7 +59,7 @@ void SceneAnimator::release(bool releaseAnimations)
 }
 
 bool SceneAnimator::init() {
-    Console::d_printfn(Locale::get("LOAD_ANIMATIONS_BEGIN"));
+    Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_BEGIN")));
 
     _transforms.resize(_skeletonDepthCache);
 
@@ -106,7 +106,7 @@ bool SceneAnimator::init() {
         crtAnimation->initBuffers();
     }
 
-     Console::d_printfn(Locale::get("LOAD_ANIMATIONS_END"), _skeletonDepthCache);
+     Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_END")), _skeletonDepthCache);
 
     return !_transforms.empty();
 }
@@ -122,7 +122,7 @@ bool SceneAnimator::init(Bone* skeleton, const vectorImpl<Bone*>& bones) {
 }
 
 void SceneAnimator::registerAnimation(std::shared_ptr<AnimEvaluator> animation) {
-    hashAlg::emplace(_animationNameToID, animation->name(), to_uint(_animations.size()));
+    hashAlg::emplace(_animationNameToID, _ID_RT(animation->name()), to_uint(_animations.size()));
     _animations.push_back(animation);
 }
 

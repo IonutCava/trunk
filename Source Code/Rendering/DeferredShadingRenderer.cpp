@@ -78,7 +78,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
 
     ParamHandler& par = ParamHandler::getInstance();
     STUBBED("Shadow maps are currently disabled for Deferred Rendering! -Ionut")
-    par.setParam("rendering.enableShadows", false);
+    par.setParam(_ID("rendering.enableShadows"), false);
 
     vec2<U16> resolution = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution();
     U16 width = resolution.width;
@@ -110,7 +110,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
 }
 
 DeferredShadingRenderer::~DeferredShadingRenderer() {
-    Console::printfn(Locale::get("DEFERRED_RT_DELETE"));
+    Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
     RemoveResource(_renderQuads[0]);
     RemoveResource(_renderQuads[1]);
     RemoveResource(_renderQuads[2]);

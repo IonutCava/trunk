@@ -56,11 +56,11 @@ GUIEditor::~GUIEditor() { _init = false; }
 
 bool GUIEditor::init() {
     if (_init) {
-        Console::errorfn(Locale::get("ERROR_EDITOR_DOUBLE_INIT"));
+        Console::errorfn(Locale::get(_ID("ERROR_EDITOR_DOUBLE_INIT")));
         return false;
     }
 
-    Console::printfn(Locale::get("GUI_EDITOR_INIT"));
+    Console::printfn(Locale::get(_ID("GUI_EDITOR_INIT")));
     // Get a local pointer to the CEGUI Window Manager, Purely for convenience
     // to reduce typing
     CEGUI::WindowManager *pWindowManager =
@@ -79,7 +79,7 @@ bool GUIEditor::init() {
         // Loading layout from file, failed, so output an error Message.
         CEGUI::Logger::getSingleton().logEvent(
             "Error: Unable to load the Editor from .layout");
-        Console::errorfn(Locale::get("ERROR_EDITOR_LAYOUT_FILE"),
+        Console::errorfn(Locale::get(_ID("ERROR_EDITOR_LAYOUT_FILE")),
                          layoutFile.c_str());
         return false;
     }
@@ -87,7 +87,7 @@ bool GUIEditor::init() {
     setVisible(false);
 
     _init = true;
-    Console::printfn(Locale::get("GUI_EDITOR_CREATED"));
+    Console::printfn(Locale::get(_ID("GUI_EDITOR_CREATED")));
     return true;
 }
 
@@ -216,10 +216,10 @@ void GUIEditor::UpdateControls() {
         ->setSelected(GFX_DEVICE.postProcessingEnabled());
     toggleButton(ToggleButtons::TOGGLE_FOG)
         ->setSelected(ParamHandler::getInstance().getParam<bool>(
-            "rendering.enableFog", false));
+            _ID("rendering.enableFog"), false));
 
     bool depthPreview = ParamHandler::getInstance().getParam<bool>(
-        "postProcessing.fullScreenDepthBuffer", false);
+        _ID("postProcessing.fullScreenDepthBuffer"), false);
     toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)
         ->setSelected(depthPreview);
 }
@@ -978,7 +978,7 @@ bool GUIEditor::Handle_DepthPreviewToggle(const CEGUI::EventArgs &e) {
         Console::d_printfn("[Editor]: Depth Preview disabled!");
     }
     ParamHandler::getInstance().setParam(
-        "postProcessing.fullScreenDepthBuffer",
+        _ID("postProcessing.fullScreenDepthBuffer"),
         toggleButton(ToggleButtons::TOGGLE_DEPTH_PREVIEW)->isSelected());
     return true;
 }
@@ -1005,7 +1005,7 @@ bool GUIEditor::Handle_FogToggle(const CEGUI::EventArgs &e) {
     }
 
     ParamHandler::getInstance().setParam(
-        "rendering.enableFog",
+        _ID("rendering.enableFog"),
         toggleButton(ToggleButtons::TOGGLE_FOG)->isSelected());
 
     return true;

@@ -31,7 +31,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* listener) {
     if (it != std::end(_listeners)) {
         _listeners.erase(it);
     } else {
-        Console::errorfn(Locale::get("ERROR_FRAME_LISTENER_REMOVE"),
+        Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")),
                          listener->getName().c_str());
     }
 }

@@ -47,7 +47,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt) {
     if (!_createdFB) {
         if (!build()) {
             // Something wrong. Exit application!
-            Console::errorfn(Locale::get("ERROR_REFLECTOR_INIT_FB"));
+            Console::errorfn(Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));
             return false;
         }
     }
@@ -64,7 +64,7 @@ bool Reflector::framePreRenderEnded(const FrameEvent& evt) {
 }
 
 bool Reflector::build() {
-    Console::printfn(Locale::get("REFLECTOR_INIT_FB"), _resolution.x,
+    Console::printfn(Locale::get(_ID("REFLECTOR_INIT_FB")), _resolution.x,
                      _resolution.y);
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);

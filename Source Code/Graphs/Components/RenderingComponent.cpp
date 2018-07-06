@@ -34,7 +34,7 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
         _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
     }
     for (GFXDevice::RenderPackage& pkg : _renderData) {
-        pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
+        pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>(_ID("rendering.maxTextureSlots"), 16));
     }
 
     // Prepare it for rendering lines

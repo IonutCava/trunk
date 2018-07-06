@@ -49,7 +49,7 @@ void ShaderManager::destroy() {
 bool ShaderManager::init() {
     // Avoid double init requests
     if (_init) {
-        Console::errorfn(Locale::get("WARNING_MANAGER_DOUBLE_INIT"));
+        Console::errorfn(Locale::get(_ID("WARNING_MANAGER_DOUBLE_INIT")));
         return false;
     }
     // Initialize the rendering-API specific shader loading system
@@ -72,26 +72,26 @@ bool ShaderManager::init() {
 /// Whenever a new program is created, it's registered with the manager
 void ShaderManager::registerShaderProgram(const stringImpl& name,
                                           ShaderProgram* const shaderProgram) {
-    ShaderProgramMap::iterator it = _shaderPrograms.find(name);
+    ULL nameHash = _ID_RT(name);
+    ShaderProgramMap::iterator it = _shaderPrograms.find(nameHash);
     // Either update an existing shader
     if (it != std::end(_shaderPrograms)) {
         MemoryManager::SAFE_UPDATE(it->second, shaderProgram);
     } else {
         // Or register a new one
-        hashAlg::emplace(_shaderPrograms, name, shaderProgram);
+        hashAlg::emplace(_shaderPrograms, nameHash, shaderProgram);
     }
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
 void ShaderManager::unregisterShaderProgram(const stringImpl& name) {
     // The shader program must be registered in order to unregister it
-    ShaderProgramMap::iterator it = _shaderPrograms.find(name);
+    ShaderProgramMap::iterator it = _shaderPrograms.find(_ID_RT(name));
     if (it != std::end(_shaderPrograms)) {
         _shaderPrograms.erase(it);
     } else {
         // Show an error if this isn't the case
-        Console::errorfn(Locale::get("ERROR_REMOVE_NOT_FOUND"),
-                         name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_REMOVE_NOT_FOUND")), name.c_str());
     }
 }
 
@@ -126,7 +126,7 @@ bool ShaderManager::recompileShaderProgram(const stringImpl& name) {
     }
     // If no shaders were found, show an error
     if (!state) {
-        Console::errorfn(Locale::get("ERROR_RECOMPILE_NOT_FOUND"),
+        Console::errorfn(Locale::get(_ID("ERROR_RECOMPILE_NOT_FOUND")),
                          name.c_str());
     }
 
@@ -149,8 +149,9 @@ void ShaderManager::idle() {
 const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
                                                 const stringImpl& location) {
     static std::ifstream inFile;
+    ULL atomNameHash = _ID_RT(atomName);
     // See if the atom was previously loaded and still in cache
-    AtomMap::iterator it = _atoms.find(atomName);
+    AtomMap::iterator it = _atoms.find(atomNameHash);
     // If that's the case, return the code from cache
     if (it != std::end(_atoms)) {
         return it->second;
@@ -173,7 +174,7 @@ const stringImpl& ShaderManager::shaderFileRead(const stringImpl& atomName,
     assert(inFile.good());
     // Add the code to the atom cache for future reference
     std::pair<AtomMap::iterator, bool> result =
-        hashAlg::emplace(_atoms, atomName, code);
+        hashAlg::emplace(_atoms, atomNameHash, code);
     assert(result.second);
 
     // Return the source code
@@ -200,13 +201,14 @@ void ShaderManager::removeShader(Shader* s) {
     // Keep a copy of it's name
     stringImpl name(s->getName());
     // Try to find it
-    ShaderMap::iterator it = _shaderNameMap.find(name);
+    ULL nameHash = _ID_RT(name);
+    ShaderMap::iterator it = _shaderNameMap.find(nameHash);
     if (it != std::end(_shaderNameMap)) {
         // Subtract one reference from it.
         if (s->SubRef()) {
             // If the new reference count is 0, delete the shader
             MemoryManager::DELETE(it->second);
-            _shaderNameMap.erase(name);
+            _shaderNameMap.erase(nameHash);
         }
     }
 }
@@ -214,12 +216,12 @@ void ShaderManager::removeShader(Shader* s) {
 /// Return a new shader reference
 Shader* ShaderManager::getShader(const stringImpl& name, const bool recompile) {
     // Try to find the shader
-    ShaderMap::iterator it = _shaderNameMap.find(name);
+    ShaderMap::iterator it = _shaderNameMap.find(_ID_RT(name));
     if (it != std::end(_shaderNameMap)) {
         if (!recompile) {
             // We don't need a ref count increase if we just recompile the shader
             it->second->AddRef();
-            Console::d_printfn(Locale::get("SHADER_MANAGER_GET_INC"),
+            Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")),
                                name.c_str(), it->second->GetRef());
         }
         return it->second;
@@ -248,12 +250,13 @@ Shader* ShaderManager::loadShader(const stringImpl& name,
         // If loading the source code failed, delete it
         MemoryManager::DELETE(shader);
     } else {
+        ULL nameHash = _ID_RT(name);
         // If we loaded the source code successfully, either update it (if we
         // recompiled) or register it
         if (recompile) {
-            _shaderNameMap[name] = shader;
+            _shaderNameMap[nameHash] = shader;
         } else {
-            hashAlg::emplace(_shaderNameMap, name, shader);
+            hashAlg::emplace(_shaderNameMap, nameHash, shader);
         }
     }
 

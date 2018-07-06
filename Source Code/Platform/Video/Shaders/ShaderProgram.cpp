@@ -24,7 +24,7 @@ ShaderProgram::ShaderProgram()
 
 ShaderProgram::~ShaderProgram()
 {
-    Console::d_printfn(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
+    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
     // Remove every shader attached to this program
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
         ShaderManager::getInstance().removeShader(it.second);
@@ -50,7 +50,7 @@ void ShaderProgram::addShaderDefine(const stringImpl& define) {
     } else {
         // If we did find it, we'll show an error message in debug builds about
         // double add
-        Console::d_errorfn(Locale::get("ERROR_INVALID_DEFINE_ADD"),
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")),
                            define.c_str(), getName().c_str());
     }
 }
@@ -65,7 +65,7 @@ void ShaderProgram::removeShaderDefine(const stringImpl& define) {
         _definesList.erase(it);
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get("ERROR_INVALID_DEFINE_DELETE"),
+        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")),
                            define.c_str(), getName().c_str());
     }
 }

@@ -75,7 +75,7 @@ class EffectManager {
     void selectEffect(EWhichEffect eWhich);
 
     inline void printEffect(vectorAlg::vecSize nEffInd) {
-        Console::printfn(Locale::get("INPUT_PRINT_EFFECT"), nEffInd,
+        Console::printfn(Locale::get(_ID("INPUT_PRINT_EFFECT")), nEffInd,
                          _vecEffects[nEffInd]->getDescription());
     }
 

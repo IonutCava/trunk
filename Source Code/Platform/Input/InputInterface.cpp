@@ -9,7 +9,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         return ErrorCode::NO_ERR;
     }
 
-    Console::printfn(Locale::get("INPUT_CREATE_START"));
+    Console::printfn(Locale::get(_ID("INPUT_CREATE_START")));
 
     OIS::ParamList pl;
 
@@ -31,7 +31,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
     DIVIDE_ASSERT(_pInputInterface != nullptr,
                   "InputInterface error: Could not create OIS Input Interface");
 
-    Console::printfn(Locale::get("INPUT_CREATE_OK"),
+    Console::printfn(Locale::get(_ID("INPUT_CREATE_OK")),
                      _pInputInterface->inputSystemName().c_str());
 
     // Create the event handler.
@@ -45,7 +45,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
             _pInputInterface->createInputObject(OIS::OISKeyboard, true));
         _pKeyboard->setEventCallback(_pEventHdlr);
     } catch (OIS::Exception& ex) {
-        Console::printfn(Locale::get("ERROR_INPUT_CREATE_KB"), ex.eText);
+        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_KB")), ex.eText);
     }
 
     // Limit max joysticks to MAX_ALLOWED_JOYSTICKS
@@ -65,8 +65,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
                 (*it)->setEventCallback(_pEventHdlr);
             }
         } catch (OIS::Exception& ex) {
-            Console::printfn(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),
-                             ex.eText);
+            Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_JOYSTICK")), ex.eText);
         }
 
         // Create the joystick manager.
@@ -79,7 +78,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
             _pJoystickInterface->setJoystickData(static_cast<Joystick>(i), JoystickData(max / 10, max));
         }
         if (!_pJoystickInterface->wasFFDetected()) {
-            Console::printfn(Locale::get("WARN_INPUT_NO_FORCE_FEEDBACK"));
+            Console::printfn(Locale::get(_ID("WARN_INPUT_NO_FORCE_FEEDBACK")));
         } else {
             // Create force feedback effect manager.
             _pEffectMgr.reset(
@@ -97,7 +96,7 @@ ErrorCode InputInterface::init(Kernel& kernel) {
         ms.width = Application::getInstance().getWindowManager().getResolution().width;
         ms.height = Application::getInstance().getWindowManager().getResolution().height;
     } catch (OIS::Exception& ex) {
-        Console::printfn(Locale::get("ERROR_INPUT_CREATE_MOUSE"), ex.eText);
+        Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_MOUSE")), ex.eText);
     }
 
     _bIsInitialized = true;

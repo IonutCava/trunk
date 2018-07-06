@@ -53,7 +53,7 @@ WaterPlane::WaterPlane()
     // The water doesn't cast shadows, doesn't need ambient occlusion and
     // doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
-    Console::printfn(Locale::get("REFRACTION_INIT_FB"), _resolution.x,
+    Console::printfn(Locale::get(_ID("REFRACTION_INIT_FB")), _resolution.x,
                      _resolution.y);
     SamplerDescriptor refractionSampler;
     refractionSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -94,8 +94,8 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
     bb.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
            vec3<F32>(_farPlane, _waterLevel, _farPlane));
     planeSGN.getBoundingBox().add(bb);
-    Console::printfn(Locale::get("WATER_CREATE_DETAILS_1"), bb.getMax().y);
-    Console::printfn(Locale::get("WATER_CREATE_DETAILS_2"), bb.getMin().y);
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_1")), bb.getMax().y);
+    Console::printfn(Locale::get(_ID("WATER_CREATE_DETAILS_2")), bb.getMin().y);
 
     TextureDescriptor::AttachmentType att = TextureDescriptor::AttachmentType::Color0;
     RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();

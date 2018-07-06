@@ -55,11 +55,11 @@ class TerrainDescriptor : public Resource {
     bool unload() { return true; }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
-        hashAlg::insert(_variables, std::make_pair(name, value));
+        hashAlg::insert(_variables, std::make_pair(_ID_RT(name), value));
     }
 
     void addVariable(const stringImpl& name, F32 value) {
-        hashAlg::insert(_variablesf, std::make_pair(name, value));
+        hashAlg::insert(_variablesf, std::make_pair(_ID_RT(name), value));
     }
 
     void setTextureLayerCount(U8 count) { _textureLayers = count; }
@@ -92,8 +92,8 @@ class TerrainDescriptor : public Resource {
     const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) {
-        hashMapImpl<stringImpl, stringImpl>::const_iterator it =
-            _variables.find(name);
+        hashMapImpl<ULL, stringImpl>::const_iterator it =
+            _variables.find(_ID_RT(name));
         if (it != std::end(_variables)) {
             return it->second;
         }
@@ -101,8 +101,8 @@ class TerrainDescriptor : public Resource {
     }
 
     F32 getVariablef(const stringImpl& name) {
-        hashMapImpl<stringImpl, F32>::const_iterator it =
-            _variablesf.find(name);
+        hashMapImpl<ULL, F32>::const_iterator it =
+            _variablesf.find(_ID_RT(name));
         if (it != std::end(_variablesf)) {
             return it->second;
         }
@@ -110,8 +110,8 @@ class TerrainDescriptor : public Resource {
     }
 
    private:
-    hashMapImpl<stringImpl, stringImpl> _variables;
-    hashMapImpl<stringImpl, F32> _variablesf;
+    hashMapImpl<ULL, stringImpl> _variables;
+    hashMapImpl<ULL, F32> _variablesf;
     F32 _grassDensity;
     U32 _chunkSize;
     F32 _treeDensity;

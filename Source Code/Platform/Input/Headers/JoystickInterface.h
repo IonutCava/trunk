@@ -78,7 +78,7 @@ class JoystickInterface {
                     _pInputInterface->createInputObject(OIS::OISJoyStick,
                                                         true));
                 if (pJoy) {
-                    Console::printfn(Locale::get("INPUT_CREATE_BUFF_JOY"),
+                    Console::printfn(Locale::get(_ID("INPUT_CREATE_BUFF_JOY")),
                                      nJoyInd, pJoy->vendor().empty()
                                                   ? "unknown vendor"
                                                   : pJoy->vendor().c_str(),
@@ -88,7 +88,7 @@ class JoystickInterface {
                         OIS::Interface::ForceFeedback);
                 }
             } catch (OIS::Exception& ex) {
-                Console::printfn(Locale::get("ERROR_INPUT_CREATE_JOYSTICK"),
+                Console::printfn(Locale::get(_ID("ERROR_INPUT_CREATE_JOYSTICK")),
                                  ex.eText);
             }
 
@@ -100,13 +100,13 @@ class JoystickInterface {
                 // Keep also the associated FF device
                 _vecFFDev.push_back(pFFDev);
                 // Dump FF supported effects and other info.
-                Console::printfn(Locale::get("INPUT_JOY_NUM_FF_AXES"),
+                Console::printfn(Locale::get(_ID("INPUT_JOY_NUM_FF_AXES")),
                                  pFFDev->getFFAxesNumber());
                 const OIS::ForceFeedback::SupportedEffectList& lstFFEffects =
                     pFFDev->getSupportedEffects();
 
                 if (lstFFEffects.size() > 0) {
-                    Console::printf(Locale::get("INPUT_JOY_SUPPORTED_EFFECTS"));
+                    Console::printf(Locale::get(_ID("INPUT_JOY_SUPPORTED_EFFECTS")));
                     OIS::ForceFeedback::SupportedEffectList::const_iterator
                         itFFEff;
                     for (itFFEff = std::begin(lstFFEffects);
@@ -115,10 +115,10 @@ class JoystickInterface {
                                                      itFFEff->second));
                 } else {
                     Console::d_printfn(
-                        Locale::get("WARN_INPUT_NO_SUPPORTED_EFFECTS"));
+                        Locale::get(_ID("WARN_INPUT_NO_SUPPORTED_EFFECTS")));
                 }
             } else {
-                Console::d_printfn(Locale::get("WARN_INPUT_NO_FF_EFFECTS"));
+                Console::d_printfn(Locale::get(_ID("WARN_INPUT_NO_FF_EFFECTS")));
             }
         }
     }

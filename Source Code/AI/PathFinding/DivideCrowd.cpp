@@ -14,7 +14,7 @@ DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
     assert(_recast);
     _crowd = dtAllocCrowd();
     if (!_crowd) {
-        Console::errorfn(Locale::get("ERROR_DETOUR_CROWD_INSTANCE"));
+        Console::errorfn(Locale::get(_ID("ERROR_DETOUR_CROWD_INSTANCE")));
         assert(_crowd != nullptr);
     }
     _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;

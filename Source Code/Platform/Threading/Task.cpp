@@ -26,7 +26,7 @@ Task::Task(ThreadPool& tp, U64 tickInterval, I32 numberOfTicks,
 Task::~Task()
 {
     if (_end != true) {
-        Console::errorfn(Locale::get("TASK_DELETE_ACTIVE"));
+        Console::errorfn(Locale::get(_ID("TASK_DELETE_ACTIVE")));
         stopTask();
     }
 
@@ -35,7 +35,7 @@ Task::~Task()
 
 void Task::startTask(TaskPriority priority) {
     if (!_tp.schedule(PoolTask(to_uint(priority), [&](){ run(); }))) {
-        Console::errorfn(Locale::get("TASK_SCHEDULE_FAIL"));
+        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
     }
 }
 
@@ -48,7 +48,7 @@ void Task::pauseTask(bool state) {
 }
 
 void Task::run() {
-    Console::d_printfn(Locale::get("TASK_START_THREAD"), getGUID(), std::this_thread::get_id());
+    Console::d_printfn(Locale::get(_ID("TASK_START_THREAD")), getGUID(), std::this_thread::get_id());
 
     U64 lastCallTime = Time::ElapsedMicroseconds(true);
     // 0 == run forever
@@ -83,7 +83,7 @@ void Task::run() {
 
    }
 
-    Console::d_printfn(Locale::get("TASK_DELETE_THREAD"), getGUID(), std::this_thread::get_id());
+    Console::d_printfn(Locale::get(_ID("TASK_DELETE_THREAD")), getGUID(), std::this_thread::get_id());
 
     if (_onCompletionCbk) {
         _onCompletionCbk(getGUID());

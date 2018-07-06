@@ -40,8 +40,8 @@ PostFX::PostFX()
       _gfx(nullptr)
 {
     PreRenderStageBuilder::createInstance();
-    ParamHandler::getInstance().setParam<bool>("postProcessing.enableVignette", false);
-    ParamHandler::getInstance().setParam<bool>("postProcessing.fullScreenDepthBuffer", false);
+    ParamHandler::getInstance().setParam<bool>(_ID("postProcessing.enableVignette"), false);
+    ParamHandler::getInstance().setParam<bool>(_ID("postProcessing.fullScreenDepthBuffer"), false);
 }
 
 PostFX::~PostFX()
@@ -59,7 +59,7 @@ PostFX::~PostFX()
 }
 
 void PostFX::init(const vec2<U16>& resolution) {
-    Console::printfn(Locale::get("START_POST_FX"));
+    Console::printfn(Locale::get(_ID("START_POST_FX")));
     ParamHandler& par = ParamHandler::getInstance();
     _gfx = &GFX_DEVICE;
     _enableBloom = par.getParam<bool>("postProcessing.enableBloom");
@@ -254,14 +254,14 @@ void PostFX::idle() {
     ParamHandler& par = ParamHandler::getInstance();
     // Update states
     _underwater = GET_ACTIVE_SCENE().state().cameraUnderwater();
-    _enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
-    _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
-    _enableVignette = par.getParam<bool>("postProcessing.enableVignette");
-    _depthPreview = par.getParam<bool>("postProcessing.fullScreenDepthBuffer");
+    _enableDOF = par.getParam<bool>(_ID("postProcessing.enableDepthOfField"));
+    _enableNoise = par.getParam<bool>(_ID("postProcessing.enableNoise"));
+    _enableVignette = par.getParam<bool>(_ID("postProcessing.enableVignette"));
+    _depthPreview = par.getParam<bool>(_ID("postProcessing.fullScreenDepthBuffer"));
     _enableFXAA = _gfx->gpuState().FXAAEnabled();
 
     bool recompileShader = false;
-    if (_enableBloom != par.getParam<bool>("postProcessing.enableBloom")) {
+    if (_enableBloom != par.getParam<bool>(_ID("postProcessing.enableBloom"))) {
         _enableBloom = !_enableBloom;
         if (_enableBloom) {
             _postProcessingShader->addShaderDefine("POSTFX_ENABLE_BLOOM");
@@ -271,7 +271,7 @@ void PostFX::idle() {
         recompileShader = true;
     }
 
-    if (_enableSSAO != par.getParam<bool>("postProcessing.enableSSAO")) {
+    if (_enableSSAO != par.getParam<bool>(_ID("postProcessing.enableSSAO"))) {
         _enableSSAO = !_enableSSAO;
         if (_enableSSAO) {
             _postProcessingShader->addShaderDefine("POSTFX_ENABLE_SSAO");
@@ -301,7 +301,7 @@ void PostFX::idle() {
 
     if (_enableBloom) {
         _postProcessingShader->Uniform(
-            "bloomFactor", par.getParam<F32>("postProcessing.bloomFactor"));
+            "bloomFactor", par.getParam<F32>(_ID("postProcessing.bloomFactor")));
     }
 
     if (_enableNoise) {

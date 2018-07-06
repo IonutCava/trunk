@@ -15,7 +15,7 @@ Shader::Shader(const stringImpl& name, const ShaderType& type,
 
 Shader::~Shader()
 {
-    Console::d_printfn(Locale::get("SHADER_DELETE"), getName().c_str());
+    Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), getName().c_str());
 }
 
 };

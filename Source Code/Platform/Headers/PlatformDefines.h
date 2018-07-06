@@ -66,6 +66,8 @@ typedef int64_t I64;
 typedef float F32;
 typedef double D32;
 typedef void* bufferPtr;
+typedef unsigned long long ULL;
+
 }; //namespace Divide
 
 #if defined(_WIN32)
@@ -92,18 +94,32 @@ do {                                                \
 
 namespace Divide {
 
-/// Data Types
-typedef uint8_t U8;
-typedef uint16_t U16;
-typedef uint32_t U32;
-typedef uint64_t U64;
-typedef int8_t I8;
-typedef int16_t I16;
-typedef int32_t I32;
-typedef int64_t I64;
-typedef float F32;
-typedef double D32;
-typedef void* bufferPtr;
+static constexpr ULL basis = 14695981039346656037ULL;
+static constexpr ULL prime = 1099511628211ULL;
+constexpr ULL hash_one(char c, const char* remain, ULL value)
+{
+    return c == 0 ? value : hash_one(remain[0], remain + 1, (value ^ c) * prime);
+}
+
+constexpr ULL _ID(const char* str)
+{
+    return hash_one(str[0], str + 1, basis);
+}
+
+FORCE_INLINE ULL _ID_RT(const char* str)
+{
+    ULL hash = basis;
+    while (*str != 0) {
+        hash ^= str[0];
+        hash *= prime;
+        ++str;
+    }
+    return hash;
+}
+
+FORCE_INLINE ULL _ID_RT(const stringImpl& str) {
+    return _ID_RT(str.c_str());
+}
 
 inline bufferPtr bufferOffset(size_t offset) {
     return ((char *)NULL + (offset));

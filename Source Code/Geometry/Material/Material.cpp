@@ -213,7 +213,7 @@ void Material::setShaderProgramInternal(
         // and we are trying to assign the same one again, return.
         info._shaderRef = FindResourceImpl<ShaderProgram>(info._shader);
         if (info._shader.compare(shader) != 0) {
-            Console::printfn(Locale::get("REPLACE_SHADER"),
+            Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
                              info._shader.c_str(), shader.c_str());
             UNREGISTER_TRACKED_DEPENDENCY(info._shaderRef);
             RemoveResource(info._shaderRef);

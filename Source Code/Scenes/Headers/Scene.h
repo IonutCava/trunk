@@ -238,22 +238,22 @@ class NOINITVTABLE Scene : public Resource {
                            const bool contOnErrorRes,
                            const bool contOnErrorTasks) {
         if (!Scene::load(name, gui)) {
-            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
                              "scene load function");
             return false;
         }
         if (!loadResources(contOnErrorRes)) {
-            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
                              "scene load resources");
             if (!contOnErrorRes) return false;
         }
         if (!loadTasks(contOnErrorTasks)) {
-            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
                              "scene load tasks");
             if (!contOnErrorTasks) return false;
         }
         if (!loadPhysics(contOnErrorTasks)) {
-            Console::errorfn(Locale::get("ERROR_SCENE_LOAD"),
+            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")),
                              "scene load physics");
             if (!contOnErrorTasks) return false;
         }
@@ -323,11 +323,11 @@ private:
 /// Call this function after each scene declaration
 #define REGISTER_SCENE_W_NAME(scene, sceneName) \
     bool scene##_registered =                   \
-        SceneManager::getInstance().registerScene<scene>(#sceneName);
+        SceneManager::getInstance().registerScene<scene>(_ID(#sceneName));
 /// same as REGISTER_SCENE(A,B) but in this case the scene's name in XML must be
 /// the same as the class name
 #define REGISTER_SCENE(scene) \
     bool scene##_registered = \
-        SceneManager::getInstance().registerScene<scene>(#scene);
+        SceneManager::getInstance().registerScene<scene>(_ID(#scene));
 
 #endif

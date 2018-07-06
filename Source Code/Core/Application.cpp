@@ -47,7 +47,7 @@ Application::~Application()
     for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
         cbk();
     }
-    Console::printfn(Locale::get("STOP_APPLICATION"));
+    Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
 
 #if defined(_DEBUG)
     MemoryManager::MemoryTracker::Ready = false;
@@ -56,7 +56,7 @@ Application::~Application()
     stringImpl allocLog =
         MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
     if (leakDetected) {
-        Console::errorfn(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"),
+        Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")),
                          to_int(std::ceil(sizeLeaked / 1024.0f)));
     }
     std::ofstream memLog;
@@ -83,7 +83,7 @@ ErrorCode Application::initialize(const stringImpl& entryPoint, I32 argc,
     if (!Locale::init()) {
         return errorCode();
     }
-    Console::printfn(Locale::get("START_APPLICATION"));
+    Console::printfn(Locale::get(_ID("START_APPLICATION")));
 
     // Create a new kernel
     _kernel.reset(new Kernel(argc, argv, this->getInstance()));

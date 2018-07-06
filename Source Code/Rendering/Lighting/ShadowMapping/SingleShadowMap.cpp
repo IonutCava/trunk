@@ -13,7 +13,7 @@ namespace Divide {
 
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
     : ShadowMap(light, shadowCamera, ShadowType::SINGLE) {
-    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(),
+    Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(),
                      "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth");
     shadowPreviewShader.setThreadedLoading(false);

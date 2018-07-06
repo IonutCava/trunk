@@ -73,7 +73,7 @@ void SceneGraphNode::usageContext(const UsageContext& newContext) {
 SceneGraphNode::~SceneGraphNode()
 {
     Attorney::SceneGraphSGN::onNodeDestroy(GET_ACTIVE_SCENEGRAPH(), *this);
-    Console::printfn(Locale::get("REMOVE_SCENEGRAPH_NODE"),
+    Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")),
                      getName().c_str(), _node->getName().c_str());
 
 #if defined(_DEBUG)

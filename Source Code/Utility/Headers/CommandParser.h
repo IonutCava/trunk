@@ -45,7 +45,7 @@ class NOINITVTABLE CommandParser {
     virtual bool processCommand(const stringImpl& commandString) = 0;
 
    protected:
-    hashMapImpl<stringImpl /*command name*/,
+    hashMapImpl<ULL /*command name*/,
                 std::function<void(stringImpl /*args*/)> > _commandMap;
 };
 };

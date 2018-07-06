@@ -17,8 +17,8 @@ CameraManager::CameraManager(Kernel* const kernelPtr)
 
 CameraManager::~CameraManager() {
     UNREGISTER_FRAME_LISTENER(this);
-    Console::printfn(Locale::get("CAMERA_MANAGER_DELETE"));
-    Console::printfn(Locale::get("CAMERA_MANAGER_REMOVE_CAMERAS"));
+    Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
+    Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
     for (CameraPool::value_type& it : _cameraPool) {
         it.second->unload();
     }
@@ -64,7 +64,7 @@ void CameraManager::setActiveCamera(Camera* cam) {
 void CameraManager::addNewCamera(const stringImpl& cameraName,
                                  Camera* const camera) {
     if (camera == nullptr) {
-        Console::errorfn(Locale::get("ERROR_CAMERA_MANAGER_CREATION"),
+        Console::errorfn(Locale::get(_ID("ERROR_CAMERA_MANAGER_CREATION")),
                          cameraName.c_str());
         return;
     }
@@ -77,12 +77,12 @@ void CameraManager::addNewCamera(const stringImpl& cameraName,
         camera->addUpdateListener(listener);
     }
 
-    hashAlg::emplace(_cameraPool, cameraName, camera);
+    hashAlg::emplace(_cameraPool, _ID_RT(cameraName), camera);
     hashAlg::emplace(_cameraPoolGUID, camera->getGUID(), camera);
 }
 
 Camera* CameraManager::findCamera(const stringImpl& name) {
-    const CameraPool::const_iterator& it = _cameraPool.find(name);
+    const CameraPool::const_iterator& it = _cameraPool.find(_ID_RT(name));
     assert(it != std::end(_cameraPool));
 
     return it->second;

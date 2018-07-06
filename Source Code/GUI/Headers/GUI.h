@@ -69,7 +69,7 @@ class Scene;
 /// Graphical User Interface
 
 DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
-    typedef hashMapImpl<stringImpl, GUIElement*> guiMap;
+    typedef hashMapImpl<ULL, GUIElement*> guiMap;
     typedef DELEGATE_CBK<> ButtonCallback;
 
   public:
@@ -99,9 +99,9 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
     inline GUIConsole* const getConsole() { return _console; }
     inline const GUIEditor& getEditor() { return GUIEditor::getInstance(); }
     /// Get a const pointer to an element by name/id
-    inline GUIElement* const getItem(const stringImpl& id) { return _guiStack[id]; }
+    inline GUIElement* const getItem(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
     /// Get a pointer to an element by name/id
-    inline GUIElement* getGuiElement(const stringImpl& id) { return _guiStack[id]; }
+    inline GUIElement* getGuiElement(const stringImpl& id) { return _guiStack[_ID_RT(id)]; }
     /// Create the GUI
     bool init(const vec2<U16>& resolution);
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)

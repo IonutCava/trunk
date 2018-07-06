@@ -69,7 +69,7 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
         DELEGATE_BIND(&Attorney::SceneManagerKernel::onCameraUpdate, std::placeholders::_1));
     _cameraMgr->addCameraUpdateListener(
         DELEGATE_BIND(&Attorney::GFXDeviceKernel::onCameraUpdate, std::placeholders::_1));
-    ParamHandler::getInstance().setParam<stringImpl>("language", Locale::currentLanguage());
+    ParamHandler::getInstance().setParam<stringImpl>(_ID("language"), Locale::currentLanguage());
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     RenderPassManager::getInstance().addRenderPass("environmentPass", 0, {RenderStage::REFLECTION}).specialFlag(true);
@@ -120,15 +120,15 @@ void Kernel::idle() {
 
     ParamHandler& par = ParamHandler::getInstance();
 
-    _timingData._freezeGUITime = par.getParam("freezeGUITime", false);
-    bool freezeLoopTime = par.getParam("freezeLoopTime", false);
+    _timingData._freezeGUITime = par.getParam(_ID("freezeGUITime"), false);
+    bool freezeLoopTime = par.getParam(_ID("freezeLoopTime"), false);
     if (freezeLoopTime != _timingData._freezeLoopTime) {
         _timingData._freezeLoopTime = freezeLoopTime;
         _timingData._currentTimeFrozen = _timingData._currentTime;
         Application::getInstance().mainLoopPaused(_timingData._freezeLoopTime);
     }
 
-    const stringImpl& pendingLanguage = par.getParam<stringImpl>("language");
+    const stringImpl& pendingLanguage = par.getParam<stringImpl>(_ID("language"));
     if (pendingLanguage.compare(Locale::currentLanguage()) != 0) {
         Locale::changeLanguage(pendingLanguage);
     }
@@ -352,21 +352,21 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 
 void Kernel::firstLoop() {
     ParamHandler& par = ParamHandler::getInstance();
-    bool shadowMappingEnabled = par.getParam<bool>("rendering.enableShadows");
+    bool shadowMappingEnabled = par.getParam<bool>(_ID("rendering.enableShadows"));
     // Skip two frames, one without and one with shadows, so all resources can
     // be built while
     // the splash screen is displayed
-    par.setParam("freezeGUITime", true);
-    par.setParam("freezeLoopTime", true);
-    par.setParam("rendering.enableShadows", false);
+    par.setParam(_ID("freezeGUITime"), true);
+    par.setParam(_ID("freezeLoopTime"), true);
+    par.setParam(_ID("rendering.enableShadows"), false);
     mainLoopApp();
     if (shadowMappingEnabled) {
-        par.setParam("rendering.enableShadows", true);
+        par.setParam(_ID("rendering.enableShadows"), true);
         mainLoopApp();
     }
     mainLoopApp();
-    par.setParam("freezeGUITime", false);
-    par.setParam("freezeLoopTime", false);
+    par.setParam(_ID("freezeGUITime"), false);
+    par.setParam(_ID("freezeLoopTime"), false);
 #if defined(_DEBUG) || defined(_PROFILE)
     Time::ApplicationTimer::getInstance().benchmark(true);
 #endif
@@ -413,7 +413,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Create mem log file
     const stringImpl& mem = par.getParam<stringImpl>("memFile");
     _APP.setMemoryLogFile(mem.compare("none") == 0 ? "mem.log" : mem);
-    Console::printfn(Locale::get("START_RENDER_INTERFACE"));
+    Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
     WindowManager& winManager = _APP.getWindowManager();
     WindowType windowType = winManager.mainWindowType();
 
@@ -429,7 +429,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-    Console::printfn(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
+    Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
     _mainCamera = MemoryManager_NEW FreeFlyCamera();
     _mainCamera->setProjection(aspectRatio,
                                par.getParam<F32>("rendering.verticalFOV"),
@@ -449,12 +449,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _GFX.endFrame();
 
     winManager.mainWindowType(windowType);
-    Console::printfn(Locale::get("START_SOUND_INTERFACE"));
+    Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
     if ((initError = _SFX.initAudioAPI()) != ErrorCode::NO_ERR) {
         return initError;
     }
 
-    Console::printfn(Locale::get("START_PHYSICS_INTERFACE"));
+    Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
     if ((initError = _PFX.initPhysicsAPI(Config::TARGET_FRAME_RATE)) !=
         ErrorCode::NO_ERR) {
         return initError;
@@ -473,12 +473,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _sceneMgr.init(&_GUI);
 
     if (!_sceneMgr.load(startupScene, resolution)) {  //< Load the scene
-        Console::errorfn(Locale::get("ERROR_SCENE_LOAD"), startupScene.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
 
     if (!_sceneMgr.checkLoadFlag()) {
-        Console::errorfn(Locale::get("ERROR_SCENE_LOAD_NOT_CALLED"),
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_NOT_CALLED")),
                          startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
@@ -486,17 +486,17 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _mainCamera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
     _mainCamera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
 
-    Console::printfn(Locale::get("INITIAL_DATA_LOADED"));
-    Console::printfn(Locale::get("CREATE_AI_ENTITIES_START"));
+    Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
     // Initialize and start the AI
     _sceneMgr.initializeAI(true);
-    Console::printfn(Locale::get("CREATE_AI_ENTITIES_END"));
+    Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
 
     return initError;
 }
 
 void Kernel::runLogicLoop() {
-    Console::printfn(Locale::get("START_RENDER_LOOP"));
+    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
     _timingData._nextGameTick = Time::ElapsedMicroseconds();
     // lock the scene
     GET_ACTIVE_SCENE().state().runningState(true);
@@ -506,7 +506,7 @@ void Kernel::runLogicLoop() {
 
     _timingData._keepAlive = true;
     _APP.mainLoopActive(true);
-    Console::printfn(Locale::get("START_MAIN_LOOP"));
+    Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     while (_APP.mainLoopActive()) {
         mainLoopApp();
     }
@@ -515,7 +515,7 @@ void Kernel::runLogicLoop() {
 }
 
 void Kernel::shutdown() {
-    Console::printfn(Locale::get("STOP_KERNEL"));
+    Console::printfn(Locale::get(_ID("STOP_KERNEL")));
     _mainTaskPool.clear();
     WAIT_FOR_CONDITION(_mainTaskPool.active() == 0);
 
@@ -529,15 +529,15 @@ void Kernel::shutdown() {
     try {
         CEGUI::System::destroy();
     } catch (...) {
-        Console::d_errorfn(Locale::get("ERROR_CEGUI_DESTROY"));
+        Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
     }
     _cameraMgr.reset(nullptr);
     LightManager::destroyInstance();
-    Console::printfn(Locale::get("STOP_ENGINE_OK"));
-    Console::printfn(Locale::get("STOP_PHYSICS_INTERFACE"));
+    Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
+    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
     _PFX.closePhysicsAPI();
     PXDevice::destroyInstance();
-    Console::printfn(Locale::get("STOP_HARDWARE"));
+    Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
     OpenCLInterface::getInstance().deinit();
     _SFX.closeAudioAPI();
     _GFX.closeRenderingAPI();

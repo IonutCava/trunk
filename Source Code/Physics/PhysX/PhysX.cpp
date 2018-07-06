@@ -46,7 +46,7 @@ PhysX::PhysX()
 }
 
 ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
-    Console::printfn(Locale::get("START_PHYSX_API"));
+    Console::printfn(Locale::get(_ID("START_PHYSX_API")));
 
     // create foundation object with default error and allocator callbacks.
     _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
@@ -69,7 +69,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
                         recordMemoryAllocations, _zoneManager);
 
     if (_gPhysicsSDK == nullptr) {
-        Console::errorfn(Locale::get("ERROR_START_PHYSX_API"));
+        Console::errorfn(Locale::get(_ID("ERROR_START_PHYSX_API")));
         return ErrorCode::PHYSX_INIT_ERROR;
     }
 
@@ -86,13 +86,13 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
                                                          "localhost",
                                                          5425, 10000) 
                                                          != nullptr) {
-            Console::d_printfn(Locale::get("CONNECT_PVD_OK"));
+            Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
         }
     }
 #endif
 
     if (!PxInitExtensions(*_gPhysicsSDK)) {
-        Console::errorfn(Locale::get("ERROR_EXTENSION_PHYSX_API"));
+        Console::errorfn(Locale::get(_ID("ERROR_EXTENSION_PHYSX_API")));
         return ErrorCode::PHYSX_EXTENSION_ERROR;
     }
 
@@ -106,7 +106,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate) {
     }
 
     updateTimeStep(targetFrameRate);
-    Console::printfn(Locale::get("START_PHYSX_API_OK"));
+    Console::printfn(Locale::get(_ID("START_PHYSX_API_OK")));
 
     return ErrorCode::NO_ERR;
 }
@@ -116,7 +116,7 @@ bool PhysX::closePhysicsAPI() {
         return false;
     }
 
-    Console::printfn(Locale::get("STOP_PHYSX_API"));
+    Console::printfn(Locale::get(_ID("STOP_PHYSX_API")));
 
     DIVIDE_ASSERT(_targetScene == nullptr,
                   "PhysX error: target scene not destroyed before calling "
@@ -140,7 +140,7 @@ inline void PhysX::updateTimeStep(U8 timeStepFactor) {
     CLAMP<U8>(timeStepFactor, 1, timeStepFactor);
     _timeStepFactor = timeStepFactor;
     _timeStep = 1.0f / _timeStepFactor;
-    _timeStep *= ParamHandler::getInstance().getParam<F32>("simSpeed");
+    _timeStep *= ParamHandler::getInstance().getParam<F32>(_ID("simSpeed"));
 }
 
 /// Process results
@@ -241,12 +241,12 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         }
 
         if (!_cooking->cookTriangleMesh(meshDesc, stream)) {
-            Console::errorfn(Locale::get("ERROR_COOK_TRIANGLE_MESH"));
+            Console::errorfn(Locale::get(_ID("ERROR_COOK_TRIANGLE_MESH")));
             return;
         }
 
     } else {
-        Console::printfn(Locale::get("COLLISION_MESH_LOADED_FROM_FILE"),
+        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_FILE")),
                          nodeName.c_str());
     }
 
@@ -296,7 +296,7 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
         _gPhysicsSDK->createTriangleMesh(stream);
 
     if (!triangleMesh) {
-        Console::errorfn(Locale::get("ERROR_CREATE_TRIANGLE_MESH"));
+        Console::errorfn(Locale::get(_ID("ERROR_CREATE_TRIANGLE_MESH")));
         return;
     }
 

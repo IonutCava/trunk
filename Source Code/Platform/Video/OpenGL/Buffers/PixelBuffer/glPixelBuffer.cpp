@@ -45,7 +45,7 @@ glPixelBuffer::glPixelBuffer(PBType type) : PixelBuffer(type) {
             _textureType = to_uint(GL_TEXTURE_3D);
             break;
         default:
-            Console::errorfn(Locale::get("ERROR_PB_INVALID_TYPE"));
+            Console::errorfn(Locale::get(_ID("ERROR_PB_INVALID_TYPE")));
             break;
     };
 }
@@ -126,7 +126,7 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
     _dataType = GLUtil::glDataFormat[to_uint(dataTypeEnum)];
 
     Destroy();
-    Console::printfn(Locale::get("GL_PB_GEN"), width, height);
+    Console::printfn(Locale::get(_ID("GL_PB_GEN")), width, height);
     _width = width;
     _height = height;
     _depth = depth;

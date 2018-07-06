@@ -42,7 +42,7 @@ class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
 class CameraManager : private NonCopyable, public FrameListener {
-    typedef hashMapImpl<stringImpl, Camera*> CameraPool;
+    typedef hashMapImpl<ULL, Camera*> CameraPool;
     typedef hashMapImpl<I64, Camera*> CameraPoolGUID;
 
    public:
@@ -77,7 +77,11 @@ class CameraManager : private NonCopyable, public FrameListener {
     }
 
     inline void pushActiveCamera(const stringImpl& name) {
-        _cameraStack.push(findCamera(name));
+        pushActiveCamera(_ID_RT(name));
+    }
+
+    inline void pushActiveCamera(ULL nameHash) {
+        _cameraStack.push(findCamera(nameHash));
         setActiveCamera(_cameraStack.top());
     }
 

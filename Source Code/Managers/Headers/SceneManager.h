@@ -141,8 +141,8 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     }
     /// Insert a new scene factory method for the given name
     template <typename DerivedScene>
-    inline bool registerScene(const stringImpl& sceneName) {
-        _sceneFactory[sceneName] = boost::factory<DerivedScene*>();
+    inline bool registerScene(ULL sceneNameHash) {
+        _sceneFactory[sceneNameHash] = boost::factory<DerivedScene*>();
         return true;
     }
 
@@ -192,7 +192,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     ~SceneManager();
 
   private:
-    typedef hashMapImpl<stringImpl, Scene*> SceneMap;
+    typedef hashMapImpl<ULL, Scene*> SceneMap;
     bool _init;
     bool _processInput;
     /// Pointer to the currently active scene
@@ -209,7 +209,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     /// Scene pool
     SceneMap _sceneMap;
     /// Scene_Name -Scene_Factory table
-    hashMapImpl<stringImpl, std::function<Scene*()> > _sceneFactory;
+    hashMapImpl<ULL, std::function<Scene*()> > _sceneFactory;
     Material* _defaultMaterial;
     SceneShaderData _sceneData;
     Time::ProfileTimer* _sceneGraphCullTimer;

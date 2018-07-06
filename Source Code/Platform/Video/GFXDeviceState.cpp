@@ -37,7 +37,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     vectorAlg::vecSize displayCount = gpuState().getDisplayCount();
     for (vectorAlg::vecSize idx = 0; idx < displayCount; ++idx) {
         const vectorImpl<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
-        Console::printfn(Locale::get("AVAILABLE_VIDEO_MODES"), idx, registeredModes.size());
+        Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
         for (const GPUState::GPUVideoMode& mode : registeredModes) {
             // Optionally, output to console/file each display mode
@@ -46,7 +46,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
             for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
                 refreshRates += Util::StringFormat(", %d", mode._refreshRate[i]);
             }
-            Console::printfn(Locale::get("CURRENT_DISPLAY_MODE"),
+            Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
                 mode._resolution.width,
                 mode._resolution.height,
                 mode._bitDepth,
@@ -232,7 +232,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
-    ParamHandler::getInstance().setParam<bool>("rendering.previewDepthBuffer", false);
+    ParamHandler::getInstance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
     PostFX::getInstance().init(resolution);
 
@@ -257,10 +257,10 @@ void GFXDevice::closeRenderingAPI() {
     RemoveResource(_HIZConstructProgram);
     RemoveResource(_HIZCullProgram);
     // Destroy our post processing system
-    Console::printfn(Locale::get("STOP_POST_FX"));
+    Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();
     // Delete the renderer implementation
-    Console::printfn(Locale::get("CLOSING_RENDERER"));
+    Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
     // Delete our default render state blocks
     _stateBlockMap.clear();
     // Destroy all of the immediate mode emulation primitives created during
@@ -316,8 +316,8 @@ void GFXDevice::closeRenderingAPI() {
 void GFXDevice::idle() {
     // Update the zPlanes if needed
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
-        ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
-        ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
+        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zNear")),
+        ParamHandler::getInstance().getParam<F32>(_ID("rendering.zFar"))));
     // Pass the idle call to the post processing system
     PostFX::getInstance().idle();
     // And to the shader manager
@@ -435,19 +435,19 @@ ErrorCode GFXDevice::createAPIInstance() {
         } break;
         case RenderAPI::Direct3D: {
             _api = &DX_API::getInstance();
-            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         case RenderAPI::Vulkan: {
-            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         case RenderAPI::None: {
-            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             return ErrorCode::GFX_NOT_SUPPORTED;
         } break;
         default: {
-            Console::errorfn(Locale::get("ERROR_GFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             return ErrorCode::GFX_NON_SPECIFIED;
         } break;
     };

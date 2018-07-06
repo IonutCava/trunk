@@ -26,7 +26,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
     if (_name.empty()) {
         _name = Util::StringFormat("unnamed_anim_%d", idx);
     }
-    Console::d_printfn(Locale::get("CREATE_ANIMATION_BEGIN"), _name.c_str());
+    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), _name.c_str());
 
     _channels.resize(pAnim->mNumChannels);
     for (U32 a = 0; a < pAnim->mNumChannels; a++) {
@@ -50,7 +50,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
 
     _lastPositions.resize(pAnim->mNumChannels, vec3<U32>());
 
-    Console::d_printfn(Locale::get("CREATE_ANIMATION_END"), _name.c_str());
+    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_END")), _name.c_str());
 }
 
 AnimEvaluator::~AnimEvaluator()
@@ -130,7 +130,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
         Bone* bonenode = skeleton->find(channel->_name);
 
         if (bonenode == nullptr) {
-            Console::d_errorfn(Locale::get("ERROR_BONE_FIND"),
+            Console::d_errorfn(Locale::get(_ID("ERROR_BONE_FIND")),
                                channel->_name.c_str());
             continue;
         }

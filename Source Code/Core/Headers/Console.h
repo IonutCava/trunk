@@ -41,8 +41,8 @@
 
 namespace Divide {
 
-static const int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
-static const int MAX_CONSOLE_ENTRIES = 5;
+constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;
+constexpr int MAX_CONSOLE_ENTRIES = 5;
 
 class Console : private NonCopyable {
     typedef std::function<void(const char*, bool)> consolePrintCallback;

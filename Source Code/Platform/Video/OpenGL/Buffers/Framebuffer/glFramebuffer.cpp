@@ -604,43 +604,43 @@ bool glFramebuffer::checkStatus() const {
             return true;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-            Console::errorfn(Locale::get("ERROR_FB_ATTACHMENT_INCOMPLETE"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_ATTACHMENT_INCOMPLETE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-            Console::errorfn(Locale::get("ERROR_FB_NO_IMAGE"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_NO_IMAGE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_DRAW_BUFFER"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_DRAW_BUFFER")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_READ_BUFFER"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_READ_BUFFER")));
             return false;
         }
         case GL_FRAMEBUFFER_UNSUPPORTED: {
-            Console::errorfn(Locale::get("ERROR_FB_UNSUPPORTED"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_UNSUPPORTED")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_MULTISAMPLE"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_MULTISAMPLE")));
             return false;
         }
         case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-            Console::errorfn(Locale::get("ERROR_FB_INCOMPLETE_LAYER_TARGETS"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_INCOMPLETE_LAYER_TARGETS")));
             return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-            Console::errorfn(Locale::get("ERROR_FB_DIMENSIONS"));
+            Console::errorfn(Locale::get(_ID("ERROR_FB_DIMENSIONS")));
             return false;
         }
         case glext::GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-             Console::errorfn(Locale::get("ERROR_FB_FORMAT"));
+             Console::errorfn(Locale::get(_ID("ERROR_FB_FORMAT")));
              return false;
         }
         default: {
-            Console::errorfn(Locale::get("ERROR_UNKNOWN"));
+            Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
             return false;
         }
     };

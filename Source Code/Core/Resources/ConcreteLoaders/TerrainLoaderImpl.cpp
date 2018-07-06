@@ -12,12 +12,12 @@ bool ImplResourceLoader<Terrain>::load(Terrain* const res,
                                        const stringImpl& name) {
     res->setState(ResourceState::RES_LOADING);
 
-    Console::printfn(Locale::get("TERRAIN_LOAD_START"), name.c_str());
+    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), name.c_str());
 
     TerrainDescriptor* terrain = GET_ACTIVE_SCENE().getTerrainInfo(name);
 
     if (!terrain || !TerrainLoader::loadTerrain(res, terrain)) {
-        Console::errorfn(Locale::get("ERROR_TERRAIN_LOAD"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_TERRAIN_LOAD")), name.c_str());
         return false;
     }
     return true;

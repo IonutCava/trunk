@@ -29,7 +29,7 @@ OpenCLInterface::~OpenCLInterface()
 }
 
 ErrorCode OpenCLInterface::init() {
-    Console::printfn(Locale::get("START_OPENCL_BEGIN"));
+    Console::printfn(Locale::get(_ID("START_OPENCL_BEGIN")));
     bool timestamps = Console::timeStampsEnabled();
     bool threadid = Console::threadIDEnabled();
     Console::toggleTimeStamps(false);
@@ -43,14 +43,14 @@ ErrorCode OpenCLInterface::init() {
     sclPrintDeviceNamePlatforms(_hardware, _deviceCount);
     Console::togglethreadID(threadid);
     Console::toggleTimeStamps(timestamps);
-    Console::printfn(Locale::get("START_OPENCL_END"));
+    Console::printfn(Locale::get(_ID("START_OPENCL_END")));
     
 
     return _deviceCount > 0 ? ErrorCode::NO_ERR : ErrorCode::OCL_INIT_ERROR;
 }
 
 bool OpenCLInterface::deinit() {
-    Console::printfn(Locale::get("STOP_OPENCL"));
+    Console::printfn(Locale::get(_ID("STOP_OPENCL")));
     sclReleaseAllHardware(_hardware, _deviceCount);
     
     return _deviceCount > 0;

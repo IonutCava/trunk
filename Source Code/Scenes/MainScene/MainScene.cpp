@@ -133,7 +133,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
                 _visibleTerrains.push_back(terrainNode);
             }
         } else {
-            Console::errorfn(Locale::get("ERROR_MISSING_TERRAIN"),
+            Console::errorfn(Locale::get(_ID("ERROR_MISSING_TERRAIN")),
                              _terrainInfoArray[i]->getVariable("terrainName").c_str());
         }
     }
@@ -167,7 +167,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
         _musicPlaying = !_musicPlaying;
         if (_musicPlaying) {
             SceneState::MusicPlaylist::const_iterator it;
-            it = state().backgroundMusic().find("generalTheme");
+            it = state().backgroundMusic().find(_ID("generalTheme"));
             if (it != std::end(state().backgroundMusic())) {
                 SFX_DEVICE.playMusic(it->second);
             }
@@ -287,7 +287,7 @@ bool MainScene::loadResources(bool continueOnErrors) {
         _paramHandler.getParam<stringImpl>("assetsLocation") +
         "/sounds/beep.wav");
     beepSound.setFlag(false);
-    hashAlg::emplace(state().backgroundMusic(), stringImpl("generalTheme"),
+    hashAlg::emplace(state().backgroundMusic(), _ID("generalTheme"),
                      CreateResource<AudioDescriptor>(backgroundMusic));
     _beep = CreateResource<AudioDescriptor>(beepSound);
 

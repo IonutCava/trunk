@@ -90,7 +90,7 @@ bool Scene::idle() {  // Called when application is idle
 
     Attorney::SceneRenderStateScene::playAnimations(
         renderState(),
-        ParamHandler::getInstance().getParam<bool>("mesh.playAnimations", true));
+        ParamHandler::getInstance().getParam<bool>(_ID("mesh.playAnimations"), true));
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
@@ -136,7 +136,7 @@ bool Scene::loadModel(const FileData& data) {
     model.setFlag(true);
     Mesh* thisObj = CreateResource<Mesh>(model);
     if (!thisObj) {
-        Console::errorfn(Locale::get("ERROR_SCENE_LOAD_MODEL"),
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")),
                          data.ModelName.c_str());
         return false;
     }
@@ -202,7 +202,7 @@ bool Scene::loadGeometry(const FileData& data) {
         thisObj = CreateResource<Text3D>(item);
         static_cast<Text3D*>(thisObj)->getWidth() = data.data;
     } else {
-        Console::errorfn(Locale::get("ERROR_SCENE_UNSUPPORTED_GEOM"),
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")),
                          data.ModelName.c_str());
         return false;
     }
@@ -440,16 +440,16 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     cbks.first = [](){};
     cbks.second = []() {
         ParamHandler::getInstance().setParam(
-            "freezeLoopTime",
-            !ParamHandler::getInstance().getParam("freezeLoopTime", false));
+            _ID("freezeLoopTime"),
+            !ParamHandler::getInstance().getParam(_ID("freezeLoopTime"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_P, cbks);
 
     cbks.second = []() {
         ParamHandler::getInstance().setParam(
-            "postProcessing.enableDepthOfField",
+            _ID("postProcessing.enableDepthOfField"),
             !ParamHandler::getInstance().getParam(
-                "postProcessing.enableDepthOfField", false));
+                _ID("postProcessing.enableDepthOfField"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_F2, cbks);
 
@@ -483,8 +483,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         ParamHandler& param = ParamHandler::getInstance();
         LightManager::getInstance().togglePreviewShadowMaps();
         param.setParam<bool>(
-            "rendering.previewDepthBuffer",
-            !param.getParam<bool>("rendering.previewDepthBuffer", false));
+            _ID("rendering.previewDepthBuffer"),
+            !param.getParam<bool>(_ID("rendering.previewDepthBuffer"), false));
     };
     _input->addKeyMapping(Input::KeyCode::KC_F10, cbks);
 
@@ -619,14 +619,14 @@ void Scene::deleteSelection() {
 void Scene::onLostFocus() {
     state().resetMovement();
 #ifndef _DEBUG
-    //_paramHandler.setParam("freezeLoopTime", true);
+    //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 #endif
 }
 
 void Scene::registerTask(Task_ptr taskItem) { _tasks.push_back(taskItem); }
 
 void Scene::clearTasks() {
-    Console::printfn(Locale::get("STOP_SCENE_TASKS"));
+    Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
     // Calls the destructor for each task killing it's associated thread
     _tasks.clear();
 }

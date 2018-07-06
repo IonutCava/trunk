@@ -37,7 +37,7 @@ LightManager::LightManager()
     _shadowLocation[to_uint(ShadowType::SINGLE)] = startOffset + 2;
     _shadowLocation[to_uint(ShadowType::LAYERED)] = startOffset + 3;
 
-    ParamHandler::getInstance().setParam<bool>("rendering.debug.displayShadowDebugInfo", false);
+    ParamHandler::getInstance().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 }
 
 LightManager::~LightManager()
@@ -118,7 +118,7 @@ bool LightManager::addLight(Light& light) {
 
     if (findLight(light.getGUID(), type) != std::end(_lights[lightTypeIdx])) {
 
-        Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_DUPLICATE"),
+        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_MANAGER_DUPLICATE")),
                          light.getGUID());
         return false;
     }
@@ -136,7 +136,7 @@ bool LightManager::removeLight(I64 lightGUID, LightType type) {
     Light::LightList::const_iterator it = findLight(lightGUID, type);
 
     if (it == std::end(_lights[to_uint(type)])) {
-        Console::errorfn(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"),
+        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_MANAGER_REMOVE_LIGHT")),
                          lightGUID);
         return false;
     }
@@ -147,7 +147,7 @@ bool LightManager::removeLight(I64 lightGUID, LightType type) {
 
 void LightManager::idle() {
     _shadowMapsEnabled =
-        ParamHandler::getInstance().getParam<bool>("rendering.enableShadows");
+        ParamHandler::getInstance().getParam<bool>(_ID("rendering.enableShadows"));
 
     s_shadowPassTimer->pause(!_shadowMapsEnabled);
 }
@@ -199,12 +199,12 @@ void LightManager::togglePreviewShadowMaps() {
     if (!_shadowMapsEnabled ||
         GFX_DEVICE.getRenderStage() != RenderStage::DISPLAY) {
         ParamHandler::getInstance().setParam(
-            "rendering.debug.displayShadowDebugInfo", false);
+            _ID("rendering.debug.displayShadowDebugInfo"), false);
         return;
     }
 
     ParamHandler::getInstance().setParam(
-        "rendering.debug.displayShadowDebugInfo", _previewShadowMaps);
+        _ID("rendering.debug.displayShadowDebugInfo"), _previewShadowMaps);
 }
 
 void LightManager::previewShadowMaps(Light* light) {

@@ -207,7 +207,7 @@ inline stringImpl getRendererTypeName(RendererType type) {
 
 stringImpl loadScripts(const stringImpl &file) {
     ParamHandler &par = ParamHandler::getInstance();
-    Console::printfn(Locale::get("XML_LOAD_SCRIPTS"));
+    Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
     read_xml(file, pt);
     stringImpl activeScene("MainScene");
     par.setParam("testInt", 2);
@@ -231,7 +231,7 @@ stringImpl loadScripts(const stringImpl &file) {
 void loadConfig(const stringImpl &file) {
     ParamHandler &par = ParamHandler::getInstance();
     pt.clear();
-    Console::printfn(Locale::get("XML_LOAD_CONFIG"), file.c_str());
+    Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), file.c_str());
     read_xml(file, pt);
     par.setParam("locale", pt.get("language", "enGB"));
     par.setParam("logFile", pt.get("debug.logFile", "none"));
@@ -321,14 +321,14 @@ void loadConfig(const stringImpl &file) {
 void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     ParamHandler &par = ParamHandler::getInstance();
     pt.clear();
-    Console::printfn(Locale::get("XML_LOAD_SCENE"), sceneName.c_str());
+    Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), sceneName.c_str());
     stringImpl sceneLocation(
         par.getParam<stringImpl>("scriptLocation") + "/" +
         par.getParam<stringImpl>("scenesLocation") + "/" + sceneName);
     try {
         read_xml(sceneLocation + ".xml", pt);
     } catch (boost::property_tree::xml_parser_error &e) {
-        Console::errorfn(Locale::get("ERROR_XML_INVALID_SCENE"),
+        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")),
                          sceneName.c_str());
         stringImpl error(e.what());
         error += " [check error log!]";
@@ -339,7 +339,7 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
     Scene *scene = sceneMgr.createScene(sceneName);
 
     if (!scene) {
-        Console::errorfn(Locale::get("ERROR_XML_LOAD_INVALID_SCENE"));
+        Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return;
     }
 
@@ -421,7 +421,7 @@ void loadScene(const stringImpl &sceneName, SceneManager &sceneMgr) {
 void loadTerrain(const stringImpl &file, Scene *const scene) {
     U8 count = 0;
     pt.clear();
-    Console::printfn(Locale::get("XML_LOAD_TERRAIN"), file.c_str());
+    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), file.c_str());
     read_xml(file, pt);
     ptree::iterator itTerrain;
     ptree::iterator itTexture;
@@ -585,12 +585,12 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
         count++;
     }
 
-    Console::printfn(Locale::get("XML_TERRAIN_COUNT"), count);
+    Console::printfn(Locale::get(_ID("XML_TERRAIN_COUNT")), count);
 }
 
 void loadGeometry(const stringImpl &file, Scene *const scene) {
     pt.clear();
-    Console::printfn(Locale::get("XML_LOAD_GEOMETRY"), file.c_str());
+    Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
     read_xml(file, pt);
     ptree::iterator it;
     stringImpl assetLocation =
@@ -863,7 +863,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
 
     inp.close();
     bool skip = false;
-    Console::printfn(Locale::get("XML_LOAD_MATERIAL"), matName.c_str());
+    Console::printfn(Locale::get(_ID("XML_LOAD_MATERIAL")), matName.c_str());
     read_xml(materialFile, pt);
 
     stringImpl materialName =

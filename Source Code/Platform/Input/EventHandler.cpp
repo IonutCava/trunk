@@ -89,10 +89,10 @@ bool EventHandler::keyReleased(const OIS::KeyEvent &arg) {
 // Variable force "Force" + optional "AttackFactor" constant, on a
 // OIS::ConstantEffect
 void forceVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
-    D32 dForce = mapVars["Force"]->getValue();
+    D32 dForce = mapVars[_ID("Force")]->getValue();
     D32 dAttackFactor = 1.0;
-    if (mapVars.find("AttackFactor") != std::end(mapVars))
-        dAttackFactor = mapVars["AttackFactor"]->getValue();
+    if (mapVars.find(_ID("AttackFactor")) != std::end(mapVars))
+        dAttackFactor = mapVars[_ID("AttackFactor")]->getValue();
 
     OIS::ConstantEffect *pConstForce =
         dynamic_cast<OIS::ConstantEffect *>(pEffect->getForceEffect());
@@ -104,7 +104,7 @@ void forceVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
 
 // Variable "Period" on an OIS::PeriodicEffect
 void periodVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
-    D32 dPeriod = mapVars["Period"]->getValue();
+    D32 dPeriod = mapVars[_ID("Period")]->getValue();
 
     OIS::PeriodicEffect *pPeriodForce =
         dynamic_cast<OIS::PeriodicEffect *>(pEffect->getForceEffect());

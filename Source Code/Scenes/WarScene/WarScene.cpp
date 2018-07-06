@@ -531,7 +531,7 @@ void WarScene::toggleCamera() {
             if (fpsCameraActive) {
                 renderState().getCameraMgr().popActiveCamera();
             }
-            renderState().getCameraMgr().pushActiveCamera("tpsCamera");
+            renderState().getCameraMgr().pushActiveCamera(_ID("tpsCamera"));
             static_cast<ThirdPersonCamera&>(renderState().getCamera())
                 .setTarget(_currentSelection);
             flyCameraActive = false;
@@ -540,7 +540,7 @@ void WarScene::toggleCamera() {
         }
     }
     if (tpsCameraActive) {
-        renderState().getCameraMgr().pushActiveCamera("defaultCamera");
+        renderState().getCameraMgr().pushActiveCamera(_ID("defaultCamera"));
         tpsCameraActive = false;
         flyCameraActive = true;
     }

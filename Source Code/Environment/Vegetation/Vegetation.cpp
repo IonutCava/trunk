@@ -60,7 +60,7 @@ Vegetation::Vegetation(const VegetationDetails& details)
 
 Vegetation::~Vegetation()
 {
-    Console::printfn(Locale::get("UNLOAD_VEGETATION_BEGIN"), getName().c_str());
+    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), getName().c_str());
     _stopLoadingRequest = true;
     U32 timer = 0;
     while (!_threadedLoadComplete) {
@@ -79,7 +79,7 @@ Vegetation::~Vegetation()
     MemoryManager::DELETE(_grassGPUBuffer[1]);
     MemoryManager::DELETE(_treeGPUBuffer[0]);
     MemoryManager::DELETE(_treeGPUBuffer[1]);
-    Console::printfn(Locale::get("UNLOAD_VEGETATION_END"));
+    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
 }
 
 void Vegetation::initialize(TerrainChunk* const terrainChunk) {
@@ -440,7 +440,7 @@ void Vegetation::generateGrass() {
     const U16 mapHeight = _map.dimensions().height;
     const U32 grassElements = to_uint(_grassDensity * chunkSize.x * chunkSize.y);
 
-    Console::printfn(Locale::get("CREATE_GRASS_BEGIN"), grassElements);
+    Console::printfn(Locale::get(_ID("CREATE_GRASS_BEGIN")), grassElements);
 
     STUBBED("We really need blue noise or casey muratori's special circle/hex for a nice distribution. Use Poisson disk sampling and optimise from there? -Ionut");
     /*
@@ -542,6 +542,6 @@ void Vegetation::generateGrass() {
         }
     }
 
-    Console::printfn(Locale::get("CREATE_GRASS_END"));
+    Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }
 };

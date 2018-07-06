@@ -58,7 +58,7 @@ DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
             gl_severity = "Info";
         }
 
-        g_tempOutputString = Util::StringFormat(Locale::get("ERROR_GENERIC_GL_DEBUG"),
+        g_tempOutputString = Util::StringFormat(Locale::get(_ID("ERROR_GENERIC_GL_DEBUG")),
                                                  userParam == nullptr
                                                      ? " [Main Thread] "
                                                      : " [Loader Thread] ",

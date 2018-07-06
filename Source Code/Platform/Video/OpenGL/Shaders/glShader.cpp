@@ -14,7 +14,7 @@ glShader::glShader(const stringImpl& name,
     : Shader(name, type, optimise) {
     switch (type) {
         default:
-            Console::errorfn(Locale::get("ERROR_GLSL_UNKNOWN_ShaderType"),
+            Console::errorfn(Locale::get(_ID("ERROR_GLSL_UNKNOWN_ShaderType")),
                              type);
             break;
         case ShaderType::VERTEX:
@@ -44,7 +44,7 @@ glShader::~glShader() {
 
 bool glShader::load(const stringImpl& source) {
     if (source.empty()) {
-        Console::errorfn(Locale::get("ERROR_GLSL_NOT_FOUND"),
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")),
                          getName().c_str());
         return false;
     }
@@ -85,10 +85,10 @@ void glShader::validate() {
     glGetShaderInfoLog(_shader, length, NULL, &shaderLog[0]);
     shaderLog.push_back('\n');
     if (status == 0) {
-        Console::errorfn(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),
+        Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
                          &shaderLog[0]);
     } else {
-        Console::d_printfn(Locale::get("GLSL_VALIDATING_SHADER"), _name.c_str(),
+        Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_SHADER")), _name.c_str(),
                            &shaderLog[0]);
     }
 #endif
@@ -98,7 +98,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                                         const stringImpl& filename,
                                         I32 level /*= 0 */) {
     if (level > 32) {
-        Console::errorfn(Locale::get("ERROR_GLSL_INCLUD_LIMIT"));
+        Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
 
     static const std::regex re("^[ ]*#[ ]*include[ ]+[\"<](.*)[\">].*");
@@ -113,8 +113,8 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
     stringImpl include_file, include_string, loc;
     ParamHandler& par = ParamHandler::getInstance();
     stringImpl shaderAtomLocationPrefix(
-        par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
-        par.getParam<stringImpl>("shaderLocation", "shaders") + "/GLSL/");
+        par.getParam<stringImpl>(_ID("assetsLocation"), "assets") + "/" +
+        par.getParam<stringImpl>(_ID("shaderLocation"), "shaders") + "/GLSL/");
     while (std::getline(input, line)) {
         if (std::regex_search(line, matches, re)) {
             include_file = matches[1].str();
@@ -139,7 +139,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
                 include_file, shaderAtomLocationPrefix + loc);
 
             if (include_string.empty()) {
-                Console::errorfn(Locale::get("ERROR_GLSL_NO_INCLUDE_FILE"),
+                Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
                                  getName().c_str(), line_number,
                                  include_file.c_str());
             }

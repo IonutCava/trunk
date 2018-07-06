@@ -247,7 +247,7 @@ void glGenericVertexData::setIndexBuffer(U32 indicesCount, bool dynamic,  bool s
                 NULL);
         _indexBufferSize = indicesCount;
         // Assert if the IB creation failed
-        DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
+        DIVIDE_ASSERT(_indexBuffer != 0, Locale::get(_ID("ERROR_IB_INIT")));
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }

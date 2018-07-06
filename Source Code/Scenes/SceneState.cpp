@@ -21,18 +21,18 @@ SceneRenderState::SceneRenderState()
 }
 
 void SceneRenderState::toggleSkeletons() {
-    Console::d_printfn(Locale::get("TOGGLE_SCENE_SKELETONS"));
+    Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")));
     drawSkeletons(!drawSkeletons());
 }
 
 void SceneRenderState::toggleBoundingBoxes() {
-    Console::d_printfn(Locale::get("TOGGLE_SCENE_BOUNDING_BOXES"));
+    Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")));
     drawBoundingBoxes(!drawBoundingBoxes());
 }
 
 void SceneRenderState::toggleAxisLines() {
     static U32 selection = 0;
-    Console::d_printfn(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
+    Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
     selection = ++selection % 4;
     switch (selection) {
         case 0:

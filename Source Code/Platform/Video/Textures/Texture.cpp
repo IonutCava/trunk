@@ -63,7 +63,7 @@ bool Texture::load() {
         info._type == TextureType::TEXTURE_CUBE_ARRAY) {
         if (info._layerIndex != 6) {
             Console::errorfn(
-                Locale::get("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT"),
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
                 getResourceLocation().c_str());
             return false;
         }
@@ -73,7 +73,7 @@ bool Texture::load() {
         info._type == TextureType::TEXTURE_2D_ARRAY_MS) {
         if (info._layerIndex != _numLayers) {
             Console::errorfn(
-                Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"),
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                 getResourceLocation().c_str());
             return false;
         }
@@ -82,7 +82,7 @@ bool Texture::load() {
     if (info._type == TextureType::TEXTURE_CUBE_ARRAY) {
         if (info._cubeMapCount != _numLayers) {
             Console::errorfn(
-                Locale::get("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT"),
+                Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                 getResourceLocation().c_str());
             return false;
         }
@@ -104,14 +104,14 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
 
     // Validate data
     if (!img.data()) {
-        Console::errorfn(Locale::get("ERROR_TEXTURE_LOAD"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
         // Missing texture fallback.
         ParamHandler& par = ParamHandler::getInstance();
         img.flip(false);
         // missing_texture.jpg must be something that really stands out
         ImageTools::ImageDataInterface::CreateImageData(
-            par.getParam<stringImpl>("assetsLocation", "assets") + "/" +
-            par.getParam<stringImpl>("defaultTextureLocation", "textures") +
+            par.getParam<stringImpl>(_ID("assetsLocation"), "assets") + "/" +
+            par.getParam<stringImpl>(_ID("defaultTextureLocation"), "textures") +
             "/" + "missing_texture.jpg", img);
     }
 

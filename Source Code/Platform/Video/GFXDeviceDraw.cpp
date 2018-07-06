@@ -371,9 +371,9 @@ void GFXDevice::drawRenderTarget(Framebuffer* renderTarget, const vec4<I32>& vie
 void GFXDevice::drawPoints(U32 numPoints, U32 stateHash,
                            ShaderProgram* const shaderProgram) {
     // We need a valid amount of points. Check lower limit
-    DIVIDE_ASSERT(numPoints != 0, Locale::get("ERROR_GFX_POINTS_UNDERFLOW"));
+    DIVIDE_ASSERT(numPoints != 0, Locale::get(_ID("ERROR_GFX_POINTS_UNDERFLOW")));
     // Also check upper limit
-    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, Locale::get("ERROR_GFX_POINTS_OVERFLOW"));
+    DIVIDE_ASSERT(numPoints <= Config::MAX_POINTS_PER_BATCH, Locale::get(_ID("ERROR_GFX_POINTS_OVERFLOW")));
 
     // We require a state hash value to set proper states
     _defaultDrawCmd.stateHash(stateHash);

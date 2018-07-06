@@ -194,7 +194,7 @@ class SceneState {
 
    public:
     /// Background music map : trackName - track
-    typedef hashMapImpl<stringImpl, AudioDescriptor*> MusicPlaylist;
+    typedef hashMapImpl<ULL, AudioDescriptor*> MusicPlaylist;
 
     SceneState()
         : _cameraUnderwater(false), 

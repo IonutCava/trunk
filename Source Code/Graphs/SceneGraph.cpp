@@ -35,7 +35,7 @@ SceneGraph::SceneGraph() : FrameListener(),
 SceneGraph::~SceneGraph()
 { 
     UNREGISTER_FRAME_LISTENER(this);
-    Console::d_printfn(Locale::get("DELETE_SCENEGRAPH"));
+    Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     assert(_root.unique());
     _root.reset();

@@ -153,22 +153,22 @@ constexpr T Radians(const T radians) {
 namespace Metric {
 template <typename T>
 constexpr T Tera(const T a) {
-    return static_cast<T>(a * 1000000000000.0);
+    return static_cast<T>(a * 1'000'000'000'000.0);
 }
 
 template <typename T>
 constexpr T Giga(const T a) {
-    return static_cast<T>(a * 1000000000.0);
+    return static_cast<T>(a * 1'000'000'000.0);
 }
 
 template <typename T>
 constexpr T Mega(const T a) {
-    return static_cast<T>(a * 1000000.0);
+    return static_cast<T>(a * 1'000'000.0);
 }
 
 template <typename T>
 constexpr T Kilo(const T a) {
-    return static_cast<T>(a * 1000.0);
+    return static_cast<T>(a * 1'000.0);
 }
 
 template <typename T>
@@ -203,17 +203,17 @@ constexpr T Milli(const T a) {
 
 template <typename T>
 constexpr T Micro(const T a) {
-    return static_cast<T>(a * 0.000001);
+    return static_cast<T>(a * 0.000'001);
 }
 
 template <typename T>
 constexpr T Nano(const T a) {
-    return static_cast<T>(a * 0.000000001);
+    return static_cast<T>(a * 0.000'000'001);
 }
 
 template <typename T>
 constexpr T Pico(const T a) {
-    return static_cast<T>(a * 0.000000000001);
+    return static_cast<T>(a * 0.000'000'000'001);
 }
 };  // namespace Metric
 

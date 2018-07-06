@@ -49,8 +49,8 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
 
 {
     _updated = false;
-    _alignmentRequirement = _unbound ? ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 32)
-                                     : ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
+    _alignmentRequirement = _unbound ? ParamHandler::getInstance().getParam<I32>(_ID("rendering.SSBOAligment"), 32)
+                                     : ParamHandler::getInstance().getParam<I32>(_ID("rendering.UBOAligment"), 32);
 }
 
 glUniformBuffer::~glUniformBuffer() 

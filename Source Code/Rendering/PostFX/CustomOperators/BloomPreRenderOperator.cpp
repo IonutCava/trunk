@@ -89,7 +89,7 @@ void BloomPreRenderOperator::operation() {
     if (!_enabled) return;
 
     if (_inputFB.empty()) {
-        Console::errorfn(Locale::get("ERROR_BLOOM_INPUT_FB"));
+        Console::errorfn(Locale::get(_ID("ERROR_BLOOM_INPUT_FB")));
         return;
     }
 

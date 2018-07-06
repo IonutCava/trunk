@@ -82,9 +82,9 @@ ErrorCode GL_API::createWindow() {
       // Check if we have a valid window
     if (!GLUtil::_mainWindow) {
         SDL_Quit();
-        Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-                         Locale::get("ERROR_SDL_WINDOW"));
-        Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
+        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
+                         Locale::get(_ID("ERROR_SDL_WINDOW")));
+        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
         return ErrorCode::SDL_WINDOW_INIT_ERROR;
     }
 
@@ -102,10 +102,10 @@ ErrorCode GL_API::createGLContext() {
     GLUtil::_glRenderContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
     if (GLUtil::_glRenderContext == nullptr)
     {
-    	Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
-    					 Locale::get("ERROR_GL_OLD_VERSION"));
-    	Console::printfn(Locale::get("WARN_SWITCH_D3D"));
-    	Console::printfn(Locale::get("WARN_APPLICATION_CLOSE"));
+    	Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
+    					 Locale::get(_ID("ERROR_GL_OLD_VERSION")));
+    	Console::printfn(Locale::get(_ID("WARN_SWITCH_D3D")));
+    	Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
    		return ErrorCode::OGL_OLD_HARDWARE;
     }
 
@@ -284,11 +284,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // Maximum addressable texture image units in the fragment shader
     _maxTextureUnits = GLUtil::getIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS);
 
-    Console::printfn(Locale::get("GL_MAX_TEX_UNITS_FRAG"), _maxTextureUnits);
+    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS_FRAG")), _maxTextureUnits);
     
-    par.setParam<I32>("rendering.maxTextureSlots", _maxTextureUnits);
+    par.setParam<I32>(_ID("rendering.maxTextureSlots"), _maxTextureUnits);
     // Maximum number of color attachments per framebuffer
-    par.setParam<I32>("rendering.maxRenderTargetOutputs",
+    par.setParam<I32>(_ID("rendering.maxRenderTargetOutputs"),
                       GLUtil::getIntegerv(GL_MAX_COLOR_ATTACHMENTS));
     // Query GPU vendor to enable/disable vendor specific features
     const char* gpuVendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
@@ -308,12 +308,12 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // Cap max anisotropic level to what the hardware supports
     par.setParam(
-        "rendering.anisotropicFilteringLevel",
+        _ID("rendering.anisotropicFilteringLevel"),
         std::min(
             GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT),
-            par.getParam<GLint>("rendering.anisotropicFilteringLevel", 1)));
+            par.getParam<GLint>(_ID("rendering.anisotropicFilteringLevel"), 1)));
 
-    Console::printfn(Locale::get("GL_MAX_VERSION"),
+    Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
                      GLUtil::getIntegerv(GL_MAJOR_VERSION),
                      GLUtil::getIntegerv(GL_MINOR_VERSION));
 
@@ -321,7 +321,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     // count
     GLint samplerBuffers = GLUtil::getIntegerv(GL_SAMPLES);
     GLint sampleCount = GLUtil::getIntegerv(GL_SAMPLE_BUFFERS);
-    Console::printfn(Locale::get("GL_MULTI_SAMPLE_INFO"), sampleCount,
+    Console::printfn(Locale::get(_ID("GL_MULTI_SAMPLE_INFO")), sampleCount,
                      samplerBuffers);
     // If we do not support MSAA on a hardware level for whatever reason,
     // override user set MSAA levels
@@ -333,23 +333,23 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
                                  to_ubyte(msaaSamples));
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
-    Console::printfn(Locale::get("GL_MAX_UNIFORM"),
+    Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),
                      GLUtil::getIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
     // How many uniforms can we send to vertex shaders
-    Console::printfn(Locale::get("GL_MAX_VERT_UNIFORM"),
+    Console::printfn(Locale::get(_ID("GL_MAX_VERT_UNIFORM")),
                      GLUtil::getIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
     // How many attributes can we send to a vertex shader
-    Console::printfn(Locale::get("GL_MAX_VERT_ATTRIB"),
+    Console::printfn(Locale::get(_ID("GL_MAX_VERT_ATTRIB")),
                      GLUtil::getIntegerv(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-    Console::printfn(Locale::get("GL_MAX_TEX_UNITS"),
+    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
                      GLUtil::getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
                      par.getParam<I32>("rendering.maxTextureSlots", 16));
     // Query shading language version support
-    Console::printfn(Locale::get("GL_GLSL_SUPPORT"),
+    Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
-    Console::printfn(Locale::get("GL_VENDOR_STRING"), gpuVendor,
+    Console::printfn(Locale::get(_ID("GL_VENDOR_STRING")), gpuVendor,
                      glGetString(GL_RENDERER), glGetString(GL_VERSION));
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
@@ -357,12 +357,12 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     GLint uboffset = GLUtil::getIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT);
     GLint uboSize = GLUtil::getIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE);
 
-    Console::printfn(Locale::get("GL_UBO_INFO"),
+    Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
                      GLUtil::getIntegerv(GL_MAX_UNIFORM_BUFFER_BINDINGS),
                      uboSize / 1024,
                      uboffset);
-    par.setParam<I32>("rendering.UBOAligment", uboffset);
-    par.setParam<U32>("rendering.UBOSize", to_uint(uboSize));
+    par.setParam<I32>(_ID("rendering.UBOAligment"), uboffset);
+    par.setParam<U32>(_ID("rendering.UBOSize"), to_uint(uboSize));
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
     //           maximum total number of active shader storage blocks that may
@@ -371,15 +371,15 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     //           offset.
     GLint sboffset = GLUtil::getIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT);
     Console::printfn(
-        Locale::get("GL_SSBO_INFO"),
+        Locale::get(_ID("GL_SSBO_INFO")),
         GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
         (GLUtil::getIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
         GLUtil::getIntegerv(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
         sboffset);
-    par.setParam<I32>("rendering.SSBOAligment", sboffset);
+    par.setParam<I32>(_ID("rendering.SSBOAligment"), sboffset);
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
-    Console::printfn(Locale::get("GL_SUBROUTINE_INFO"),
+    Console::printfn(Locale::get(_ID("GL_SUBROUTINE_INFO")),
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINES),
                      GLUtil::getIntegerv(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
 
@@ -425,7 +425,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
 
     // Prepare font rendering subsystem
     if (!createFonsContext()) {
-        Console::errorfn(Locale::get("ERROR_FONT_INIT"));
+        Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));
         return ErrorCode::FONT_INIT_ERROR;
     }
 
@@ -470,7 +470,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     glClearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 
     // That's it. Everything should be ready for draw calls
-    Console::printfn(Locale::get("START_OGL_API_OK"));
+    Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
 
     return ErrorCode::NO_ERR;
 }

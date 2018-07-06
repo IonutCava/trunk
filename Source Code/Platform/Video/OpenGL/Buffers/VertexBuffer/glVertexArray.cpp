@@ -234,7 +234,7 @@ bool glVertexArray::refresh() {
         if (_vaoCaches[i] == 0) {
             // Generate a "Vertex Array Object"
             glCreateVertexArrays(1, &_vaoCaches[i]);
-            DIVIDE_ASSERT(_vaoCaches[i] != 0, Locale::get("ERROR_VAO_INIT"));
+            DIVIDE_ASSERT(_vaoCaches[i] != 0, Locale::get(_ID("ERROR_VAO_INIT")));
             setVao(crtHash, _vaoCaches[i]);
             vaoCachesDirty[i] = true;
         }
@@ -266,11 +266,11 @@ bool glVertexArray::refresh() {
         }
         // Generate a new Vertex Buffer Object
         GLUtil::commitVBO(countRequirement,_usage, _VBHandle._id, _VBHandle._offset);
-        DIVIDE_ASSERT(_VBHandle._id != 0, Locale::get("ERROR_VB_INIT"));
+        DIVIDE_ASSERT(_VBHandle._id != 0, Locale::get(_ID("ERROR_VB_INIT")));
     }
     // Refresh buffer data (if this is the first call to refresh, this will be true)
     if (sizeChanged) {
-        Console::d_printfn(Locale::get("DISPLAY_VB_METRICS"),
+        Console::d_printfn(Locale::get(_ID("DISPLAY_VB_METRICS")),
                            _VBHandle._id,
                            size,
                            countRequirement * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
@@ -316,7 +316,7 @@ bool glVertexArray::createInternal() {
                   "glVertexArray error: Attempted to double create a VB");
     // Position data is a minim requirement
     if (_data.empty()) {
-        Console::errorfn(Locale::get("ERROR_VB_POSITION"));
+        Console::errorfn(Locale::get(_ID("ERROR_VB_POSITION")));
         return false;
     }
 
@@ -325,7 +325,7 @@ bool glVertexArray::createInternal() {
     glCreateBuffers(1, &_IBid);
     // Validate buffer creation
     // Assert if the IB creation failed
-    DIVIDE_ASSERT(_IBid != 0, Locale::get("ERROR_IB_INIT"));
+    DIVIDE_ASSERT(_IBid != 0, Locale::get(_ID("ERROR_IB_INIT")));
     // Calling refresh updates all stored information and sends it to the GPU
     return queueRefresh();
 }

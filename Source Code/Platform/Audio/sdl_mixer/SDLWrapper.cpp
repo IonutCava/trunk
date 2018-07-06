@@ -68,13 +68,13 @@ void SDL_API::playSound(AudioDescriptor* sound) {
     Mix_Volume(sound->getChannel(), sound->getVolume());
 
     if (_chunk == nullptr) {
-        Console::errorfn(Locale::get("ERROR_SDL_LOAD_SOUND"),
+        Console::errorfn(Locale::get(_ID("ERROR_SDL_LOAD_SOUND")),
                          sound->getName().c_str());
     }
 
     if (Mix_PlayChannel(sound->getChannel(), _chunk,
                         sound->isLooping() ? -1 : 0) == -1) {
-        Console::errorfn(Locale::get("ERROR_SDL_CANT_PLAY"),
+        Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")),
                          sound->getName().c_str(), Mix_GetError());
     }
 }

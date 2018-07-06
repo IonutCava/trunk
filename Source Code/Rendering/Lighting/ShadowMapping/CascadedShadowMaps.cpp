@@ -49,7 +49,7 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
     _blurDepthMapShader->Uniform("layerCount", (I32)_numSplits - 1);
     _blurDepthMapShader->Uniform("layerOffset", (I32)getArrayOffset());
 
-    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "EVCSM");
+    Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "EVCSM");
 
     SamplerDescriptor blurMapSampler;
     blurMapSampler.setFilters(TextureFilter::LINEAR);

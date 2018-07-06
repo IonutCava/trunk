@@ -122,7 +122,7 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType) {
         } break;
         default:
         case RenderBin::RenderBinType::COUNT: {
-            Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_CREATION"));
+            Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
         } break;
     };
 

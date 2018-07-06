@@ -15,7 +15,7 @@ void GFXDevice::previewDepthBuffer() {
 #ifdef _DEBUG
     // Early out if we didn't request the preview
     if (!ParamHandler::getInstance().getParam<bool>(
-            "rendering.previewDepthBuffer", false)) {
+        _ID("rendering.previewDepthBuffer"), false)) {
         return;
     }
     // Lazy-load preview shader

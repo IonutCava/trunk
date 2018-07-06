@@ -11,7 +11,7 @@ namespace Divide {
 
 CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera)
     : ShadowMap(light, shadowCamera, ShadowType::CUBEMAP) {
-    Console::printfn(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
+    Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), light->getGUID(), "Single Shadow Map");
 
 }
 

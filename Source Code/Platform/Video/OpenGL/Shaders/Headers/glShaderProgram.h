@@ -164,7 +164,7 @@ class glShaderProgram final : public ShaderProgram {
     bool checkSlotUsage(GLint location, GLushort slot);
 
    private:
-    typedef hashMapImpl<stringImpl, I32> ShaderVarMap;
+    typedef hashMapImpl<ULL, I32> ShaderVarMap;
     typedef hashMapImpl<I32, U32> ShaderVarU32Map;
     typedef hashMapImpl<I32, I32> ShaderVarI32Map;
     typedef hashMapImpl<I32, F32> ShaderVarF32Map;

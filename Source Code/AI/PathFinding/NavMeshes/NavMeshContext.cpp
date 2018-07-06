@@ -12,13 +12,13 @@ void rcContextDivide::doLog(const rcLogCategory category, const char* msg,
     switch (category) {
         default:
         case RC_LOG_PROGRESS:
-            Console::printfn(Locale::get("RECAST_CTX_LOG_PROGRESS"), msg);
+            Console::printfn(Locale::get(_ID("RECAST_CTX_LOG_PROGRESS")), msg);
             break;
         case RC_LOG_WARNING:
-            Console::printfn(Locale::get("RECAST_CTX_LOG_WARNING"), msg);
+            Console::printfn(Locale::get(_ID("RECAST_CTX_LOG_WARNING")), msg);
             break;
         case RC_LOG_ERROR:
-            Console::errorfn(Locale::get("RECAST_CTX_LOG_ERROR"), msg);
+            Console::errorfn(Locale::get(_ID("RECAST_CTX_LOG_ERROR")), msg);
             break;
     }
 }

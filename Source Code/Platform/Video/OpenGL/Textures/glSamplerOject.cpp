@@ -48,7 +48,7 @@ glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor) {
         GLfloat anisoLevel =
             std::min<GLfloat>(to_float(descriptor.anisotropyLevel()),
                               to_float(ParamHandler::getInstance().getParam<GLint>(
-                                    "rendering.anisotropicFilteringLevel")));
+                                  _ID("rendering.anisotropicFilteringLevel"))));
 
         glSamplerParameterf(_samplerID, gl::GL_TEXTURE_MAX_ANISOTROPY_EXT,
                             anisoLevel);

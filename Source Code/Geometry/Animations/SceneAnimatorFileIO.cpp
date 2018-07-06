@@ -63,7 +63,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
 }
 
 void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
-    Console::d_printfn(Locale::get("CREATE_ANIMATION_BEGIN"), evaluator._name.c_str());
+    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), evaluator._name.c_str());
     // the animation name
     dataIn >> evaluator._name;
     // the duration
@@ -166,7 +166,7 @@ void SceneAnimator::load(ByteBuffer& dataIn) {
         anim = std::make_shared<AnimEvaluator>();
         AnimEvaluator::load(*anim, dataIn);
         // get all the animation names so I can reference them by name and get the correct id
-        hashAlg::emplace(_animationNameToID, anim->name(), idx++);
+        hashAlg::emplace(_animationNameToID, _ID_RT(anim->name()), idx++);
     }
     
     init();

@@ -34,12 +34,39 @@
 
 #include "Core/Math/Headers/MathHelper.h"
 #include <chrono>
+
 // Code from http://www.gamedev.net/reference/articles/article1382.asp
 // Copyright: "Frame Rate Independent Movement" by Ben Dilts
 namespace Divide {
 namespace Time {
 
-typedef std::chrono::time_point<std::chrono::steady_clock> TimeValue;
+    namespace {
+        struct HighResolutionRimer {
+            HighResolutionRimer() : _startTime(takeTimeStamp())
+            {
+            }
+
+            void restart() {
+                _startTime = takeTimeStamp();
+            }
+
+            D32 elapsed() const {
+                return D32(takeTimeStamp() - _startTime) * 1e-9;
+            }
+
+            U64 elapsedNanoseconds() const {
+                return takeTimeStamp() - _startTime;
+            }
+        protected:
+            static U64 takeTimeStamp() {
+                return U64(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+            }
+        private:
+            U64 _startTime;
+        };
+    };
+
+typedef std::chrono::time_point<std::chrono::high_resolution_clock> TimeValue;
 
 class ProfileTimer;
 DEFINE_SINGLETON(ApplicationTimer)

@@ -39,21 +39,31 @@ inline void ParamHandler::setDebugOutput(bool logState) {
 }
 
 template <typename T>
-inline bool ParamHandler::isParam(const stringImpl& param) const {
+inline bool ParamHandler::isParam(ULL paramID) const {
     ReadLock r_lock(_mutex);
-    return _params.find(param) != std::cend(_params);
+    return _params.find(paramID) != std::cend(_params);
+}
+
+template <typename T>
+inline bool ParamHandler::isParam(const stringImpl& param) const {
+    return isParam<T>(_ID_RT(param.c_str()));
 }
 
 template <typename T>
 inline T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
+    return getParam<T>(_ID_RT(name.c_str()));
+}
+
+template <typename T>
+inline T ParamHandler::getParam(ULL nameID, T defaultValue) const {
     ReadLock r_lock(_mutex);
-    ParamMap::const_iterator it = _params.find(name);
+    ParamMap::const_iterator it = _params.find(nameID);
     if (it != std::cend(_params)) {
         bool success = false;
         const T& ret = it->second.constant_cast<T>(success);
 #ifdef _DEBUG
         if (!success) {
-            Console::errorfn(Locale::get("ERROR_PARAM_CAST"), name.c_str());
+            Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
             DIVIDE_ASSERT(success,
                           "ParamHandler error: Can't cast requested param to "
                           "specified type!");
@@ -63,16 +73,21 @@ inline T ParamHandler::getParam(const stringImpl& name, T defaultValue) const {
         return ret;
     }
 
-    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);
     return defaultValue;  // integers will be 0, string will be empty, etc;
 }
 
 template <typename T>
 inline void ParamHandler::setParam(const stringImpl& name, const T& value) {
+    setParam<T>(_ID_RT(name), value);
+}
+
+template <typename T>
+inline void ParamHandler::setParam(ULL nameID, const T& value) {
     WriteLock w_lock(_mutex);
-    ParamMap::iterator it = _params.find(name);
+    ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_params, name, cdiggins::any(value)).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_params, nameID, cdiggins::any(value)).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = cdiggins::any(value);
@@ -81,36 +96,40 @@ inline void ParamHandler::setParam(const stringImpl& name, const T& value) {
 
 template <typename T>
 inline void ParamHandler::delParam(const stringImpl& name) {
-    if (isParam<T>(name)) {
+    delParam<T>(_ID_RT(name));
+}
+
+template <typename T>
+inline void ParamHandler::delParam(ULL nameID) {
+    if (isParam<T>(nameID)) {
         WriteLock w_lock(_mutex);
-        _params.erase(name);
+        _params.erase(nameID);
         if (_logState) {
-            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);
         }
     } else {
-        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), nameID);
     }
 }
 
 template <>
-inline stringImpl ParamHandler::getParam(const stringImpl& name,
-                                         stringImpl defaultValue) const {
+inline stringImpl ParamHandler::getParam(ULL paramID, stringImpl defaultValue) const {
     ReadLock r_lock(_mutex);
-    ParamStringMap::const_iterator it = _paramsStr.find(name);
+    ParamStringMap::const_iterator it = _paramsStr.find(paramID);
     if (it != std::cend(_paramsStr)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(const stringImpl& name, const stringImpl& value) {
+inline void ParamHandler::setParam(ULL paramID, const stringImpl& value) {
     WriteLock w_lock(_mutex);
-    ParamStringMap::iterator it = _paramsStr.find(name);
+    ParamStringMap::iterator it = _paramsStr.find(paramID);
     if (it == std::end(_paramsStr)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramsStr, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramsStr, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -118,43 +137,43 @@ inline void ParamHandler::setParam(const stringImpl& name, const stringImpl& val
 }
 
 template <>
-inline bool ParamHandler::isParam<stringImpl>(const stringImpl& param) const {
+inline bool ParamHandler::isParam<stringImpl>(ULL paramID) const {
     ReadLock r_lock(_mutex);
-    return _paramsStr.find(param) != std::cend(_paramsStr);
+    return _paramsStr.find(paramID) != std::cend(_paramsStr);
 }
 
 
 template <>
-inline void ParamHandler::delParam<stringImpl>(const stringImpl& name) {
-    if (isParam<stringImpl>(name)) {
+inline void ParamHandler::delParam<stringImpl>(ULL paramID) {
+    if (isParam<stringImpl>(paramID)) {
         WriteLock w_lock(_mutex);
-        _paramsStr.erase(name);
+        _paramsStr.erase(paramID);
         if (_logState) {
-            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
         }
     } else {
-        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
     }
 }
 
 template <>
-inline bool ParamHandler::getParam(const stringImpl& name, bool defaultValue) const {
+inline bool ParamHandler::getParam(ULL paramID, bool defaultValue) const {
     ReadLock r_lock(_mutex);
-    ParamBoolMap::const_iterator it = _paramBool.find(name);
+    ParamBoolMap::const_iterator it = _paramBool.find(paramID);
     if (it != std::cend(_paramBool)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(const stringImpl& name, const bool& value) {
+inline void ParamHandler::setParam(ULL paramID, const bool& value) {
     WriteLock w_lock(_mutex);
-    ParamBoolMap::iterator it = _paramBool.find(name);
+    ParamBoolMap::iterator it = _paramBool.find(paramID);
     if (it == std::end(_paramBool)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramBool, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramBool, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -162,42 +181,42 @@ inline void ParamHandler::setParam(const stringImpl& name, const bool& value) {
 }
 
 template <>
-inline bool ParamHandler::isParam<bool>(const stringImpl& param) const {
+inline bool ParamHandler::isParam<bool>(ULL paramID) const {
     ReadLock r_lock(_mutex);
-    return _paramBool.find(param) != std::cend(_paramBool);
+    return _paramBool.find(paramID) != std::cend(_paramBool);
 }
 
 template <>
-inline void ParamHandler::delParam<bool>(const stringImpl& name) {
-    if (isParam<bool>(name)) {
+inline void ParamHandler::delParam<bool>(ULL paramID) {
+    if (isParam<bool>(paramID)) {
         WriteLock w_lock(_mutex);
-        _paramBool.erase(name);
+        _paramBool.erase(paramID);
         if (_logState) {
-            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
         }
     } else {
-        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
     }
 }
 
 template <>
-inline F32 ParamHandler::getParam(const stringImpl& name, F32 defaultValue) const {
+inline F32 ParamHandler::getParam(ULL paramID, F32 defaultValue) const {
     ReadLock r_lock(_mutex);
-    ParamFloatMap::const_iterator it = _paramsFloat.find(name);
+    ParamFloatMap::const_iterator it = _paramsFloat.find(paramID);
     if (it != std::cend(_paramsFloat)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get("ERROR_PARAM_GET"), name.c_str());
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(const stringImpl& name, const F32& value) {
+inline void ParamHandler::setParam(ULL paramID, const F32& value) {
     WriteLock w_lock(_mutex);
-    ParamFloatMap::iterator it = _paramsFloat.find(name);
+    ParamFloatMap::iterator it = _paramsFloat.find(paramID);
     if (it == std::end(_paramsFloat)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_paramsFloat, name, value).second,
+        DIVIDE_ASSERT(hashAlg::emplace(_paramsFloat, paramID, value).second,
                       "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -205,21 +224,21 @@ inline void ParamHandler::setParam(const stringImpl& name, const F32& value) {
 }
 
 template <>
-inline bool ParamHandler::isParam<F32>(const stringImpl& param) const {
+inline bool ParamHandler::isParam<F32>(ULL paramID) const {
     ReadLock r_lock(_mutex);
-    return _paramsFloat.find(param) != std::cend(_paramsFloat);
+    return _paramsFloat.find(paramID) != std::cend(_paramsFloat);
 }
 
 template <>
-inline void ParamHandler::delParam<F32>(const stringImpl& name) {
-    if (isParam<F32>(name)) {
+inline void ParamHandler::delParam<F32>(ULL paramID) {
+    if (isParam<F32>(paramID)) {
         WriteLock w_lock(_mutex);
-        _paramsFloat.erase(name);
+        _paramsFloat.erase(paramID);
         if (_logState) {
-            Console::printfn(Locale::get("PARAM_REMOVE"), name.c_str());
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
         }
     } else {
-        Console::errorfn(Locale::get("ERROR_PARAM_REMOVE"), name.c_str());
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
     }
 }
 

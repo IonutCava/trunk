@@ -35,7 +35,7 @@ Texture* ImplResourceLoader<Texture>::operator()() {
     }
 
     if (!load(ptr, _descriptor.getName())) {
-        Console::errorfn(Locale::get("ERROR_TEXTURE_LOADER_FILE"),
+        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.getResourceLocation().c_str(),
                          _descriptor.getName().c_str());
         MemoryManager::DELETE(ptr);

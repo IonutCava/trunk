@@ -127,7 +127,7 @@ class TriangleVariable : public LimitedVariable {
 //////////// Variable effect class
 /////////////////////////////////////////////////////////////
 
-typedef hashMapImpl<stringImpl, Variable*> MapVariables;
+typedef hashMapImpl<ULL, Variable*> MapVariables;
 typedef void (*EffectVariablesApplier)(MapVariables& mapVars,
                                        OIS::Effect* pEffect);
 

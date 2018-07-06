@@ -36,15 +36,15 @@ static const char* DEFAULT_LANG = "enGB";
 
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace Locale {
 /// Each string key in the map matches a key in the language ini file
-/// each string value in the map matches the value in the ini file for the given
-/// key
+/// each string value in the map matches the value in the ini file for the given key
 /// Basicly, the hashMapImpl is a direct copy of the [language] section of the
 /// give ini file
-static hashMapImpl<stringImpl, stringImpl> g_languageTable;
+static hashMapImpl<ULL, stringImpl> g_languageTable;
 /// Default language can be set at compile time
 static stringImpl g_localeFile = DEFAULT_LANG;
 /// Reset everything and load the specified language file.
@@ -56,11 +56,10 @@ void clear();
 void changeLanguage(const stringImpl& newLanguage);
 /// Query the current language code to detect changes
 inline const stringImpl& currentLanguage() { return g_localeFile; }
-/// usage: Locale::get("A_B_C") or Locale::get("A_B_C","X") where "A_B_C" is the
+/// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the
 /// language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
-const char* get(const stringImpl& key,
-               const stringImpl& defaultValue = stringImpl("String not found!"));
+const char* get(ULL key, const stringImpl& defaultValue = stringImpl("String not found!"));
 };  // namespace Locale
 };  // namespace Divide
 

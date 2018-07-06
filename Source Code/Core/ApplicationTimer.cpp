@@ -8,6 +8,7 @@
 namespace Divide {
 namespace Time {
 
+//USE THIS: http://gamedev.stackexchange.com/questions/83159/simple-framerate-counter
 ApplicationTimer::ApplicationTimer()
     : _targetFrameRate(Config::TARGET_FRAME_RATE),
       _speedfactor(1.0f),
@@ -96,8 +97,7 @@ void ApplicationTimer::benchmarkInternal() {
         g_averageFpsTotal += g_averageFps;
 
         F32 avgFPS = g_averageFpsTotal / g_averageCount;
-        Console::printfn(Locale::get("FRAMERATE_FPS_OUTPUT"), avgFPS, g_maxFps,
-                         g_minFps, 1000.0f / avgFPS);
+        Console::printfn(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")), avgFPS, g_maxFps, g_minFps, 1000.0f / avgFPS);
 
 #if !defined(_RELEASE)
         for (ProfileTimer* const timer : _profileTimers) {

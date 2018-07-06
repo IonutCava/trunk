@@ -17,8 +17,8 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
                                Application::getInstance().mainLoopActive());
     if (_descriptor.getResourceLocation().compare("default") == 0) {
         ptr->setResourceLocation(
-            par.getParam<stringImpl>("assetsLocation") + "/" +
-            par.getParam<stringImpl>("shaderLocation") + "/");
+            par.getParam<stringImpl>(_ID("assetsLocation")) + "/" +
+            par.getParam<stringImpl>(_ID("shaderLocation")) + "/");
     } else {
         ptr->setResourceLocation(_descriptor.getResourceLocation());
     }

@@ -34,7 +34,7 @@ ErrorCode SFXDevice::initAudioAPI() {
             _api = &SDL_API::getInstance();
         } break;
         default: {
-            Console::errorfn(Locale::get("ERROR_SFX_DEVICE_API"));
+            Console::errorfn(Locale::get(_ID("ERROR_SFX_DEVICE_API")));
             return ErrorCode::SFX_NON_SPECIFIED;
         } break;
     };

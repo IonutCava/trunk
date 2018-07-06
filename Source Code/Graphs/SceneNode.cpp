@@ -101,7 +101,7 @@ void SceneNode::setMaterialTpl(Material* const mat) {
             if (_materialTemplate->getGUID() !=
                 mat->getGUID()) {  // if the old material isn't the same as the
                                    // new one
-                Console::printfn(Locale::get("REPLACE_MATERIAL"),
+                Console::printfn(Locale::get(_ID("REPLACE_MATERIAL")),
                                  _materialTemplate->getName().c_str(),
                                  mat->getName().c_str());
                 // UpgradeToWriteLock uw_lock(ur_lock);

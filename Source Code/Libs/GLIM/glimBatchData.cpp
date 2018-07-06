@@ -225,7 +225,7 @@ void glimBatchData::GenerateSignature(void) {
 
     m_Signature.push_back(sig);
 
-    hashMapImpl<stringImpl, GlimArrayData>::const_iterator it, itend;
+    hashMapImpl<ULL, GlimArrayData>::const_iterator it, itend;
     itend = m_Attributes.end();
 
     unsigned int uiOffset = sizeof(float) * 3;

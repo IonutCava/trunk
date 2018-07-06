@@ -42,13 +42,13 @@ void ASIOImpl::HandlePongOpCode(WorldPacket& p) {
 void ASIOImpl::HandleDisconnectOpCode(WorldPacket& p) {
     U8 code;
     p >> code;
-    Console::printfn(Locale::get("ASIO_CLOSE"));
+    Console::printfn(Locale::get(_ID("ASIO_CLOSE")));
     if (code == 0) close();
     // else handleError(code);
 }
 
 void ASIOImpl::HandleGeometryAppendOpCode(WorldPacket& p) {
-    Console::printfn(Locale::get("ASIO_PAK_REC_GEOM_APPEND"));
+    Console::printfn(Locale::get(_ID("ASIO_PAK_REC_GEOM_APPEND")));
     U8 size;
     p >> size;
     vectorImpl<FileData> patch;
