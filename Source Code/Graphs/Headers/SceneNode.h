@@ -67,18 +67,17 @@ enum class NodeUsageContext : U8 {
 };
 
 enum class SceneNodeType : U16 {
-    TYPE_ROOT = toBit(1),       //< root node
-    TYPE_OBJECT3D = toBit(2),   //< 3d objects in the scene
-    TYPE_TRANSFORM = toBit(3),  //< dummy node to stack multiple transforms
-    TYPE_WATER = toBit(4),      //< water node
-    TYPE_LIGHT = toBit(5),      //< a scene light
-    TYPE_TRIGGER = toBit(6),    //< a scene trigger (perform action on contact)
-    TYPE_PARTICLE_EMITTER = toBit(7),   //< a particle emitter
-    TYPE_SKY = toBit(8),                //< sky node
-    TYPE_VEGETATION_GRASS = toBit(9),   //< grass node
-    TYPE_VEGETATION_TREES = toBit(10),  //< trees node (to do later)
-    COUNT                               //< Place types above
-                                        
+    TYPE_ROOT = 0,           //< root node
+    TYPE_OBJECT3D,           //< 3d objects in the scene
+    TYPE_TRANSFORM,          //< dummy node to stack multiple transforms
+    TYPE_WATER,              //< water node
+    TYPE_LIGHT,              //< a scene light
+    TYPE_TRIGGER,            //< a scene trigger (perform action on contact)
+    TYPE_PARTICLE_EMITTER,   //< a particle emitter
+    TYPE_SKY,                //< sky node
+    TYPE_VEGETATION_GRASS,   //< grass node
+    TYPE_VEGETATION_TREES,   //< trees node (to do later)
+    COUNT
 };
 
 class NOINITVTABLE SceneNode : public CachedResource {
@@ -124,6 +123,7 @@ class NOINITVTABLE SceneNode : public CachedResource {
 
 
     inline const BoundingBox& getBoundsInternal() const { return _boundingBox; }
+
    protected:
     friend class BoundsSystem;
     /// Called from SceneGraph "sceneUpdate"

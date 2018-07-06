@@ -14,9 +14,8 @@ Mesh::Mesh(GFXDevice& context,
            size_t descriptorHash,
            const stringImpl& name,
            const stringImpl& resourceName,
-           const stringImpl& resourceLocation, 
-           ObjectFlag flag)
-    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, flag),
+           const stringImpl& resourceLocation)
+    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, 0),
       _visibleToNetwork(true),
       _animator(nullptr)
 {
