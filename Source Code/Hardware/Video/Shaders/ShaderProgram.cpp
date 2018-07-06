@@ -25,8 +25,6 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     
     memset(_refreshStage, false, ShaderType_PLACEHOLDER * sizeof(bool));
 
-    _maxCombinedTextureUnits = ParamHandler::getInstance().getParam<I32>("GFX_DEVICE.maxTextureCombinedUnits",16);
-
     _sceneDataDirty = true;
     _timeLoc             = -1;
     _enableFogLoc        = -1;

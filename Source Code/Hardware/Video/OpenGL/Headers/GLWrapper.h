@@ -54,25 +54,12 @@ DEFINE_SINGLETON_EXT1(GL_API, RenderAPIWrapper)
     friend class glGenericVertexData;
 
 protected:
+    GL_API();
+    ~GL_API();
 
-    GL_API() : RenderAPIWrapper(),
-               _prevWidthNode(0),
-               _prevWidthString(0),
-               _prevSizeNode(0),
-               _prevSizeString(0),
-               _lineWidthLimit(1),
-               _pointDummyVAO(0)
-    {
-        _closeLoadingThread = false;
-        _loaderThreadAvailable = false;
-    }
-
-    void exitRenderLoop(bool killCommand = false);
-
-    GLbyte initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv);
+    I8   initRenderingApi(const vec2<GLushort>& resolution, GLint argc, char **argv);
     void closeRenderingApi();
-    void initDevice(GLuint targetFrameRate);
-    bool initShaders();
+    void initDevice(GLuint targetFrameRate);   bool initShaders();
     bool deInitShaders();
 
     ///Change the window's position
@@ -81,7 +68,6 @@ protected:
 
     void beginFrame();
     void endFrame();
-    void idle();
     void flush();
 
     IMPrimitive*        newIMP() const;
@@ -106,7 +92,7 @@ protected:
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     void drawPoints(GLuint numPoints);
 
-    void loadInContextInternal();
+    void createLoaderThread();
 
     inline GLuint64 getFrameDurationGPU() const { 
 #ifdef _DEBUG
@@ -153,7 +139,9 @@ public:
     static GLuint getSamplerHandle(size_t samplerHash);
 
 private:
+    /// createFonsContext only exists so that we do not include the fontstash headers in GLFWWrapper as well
     void createFonsContext();
+    /// deleteFonsContext only exists so that we do not include the fontstash headers in GLFWWrapper as well
     void deleteFonsContext();
     
 private: //OpenGL specific:
@@ -178,7 +166,6 @@ private: //OpenGL specific:
     FontCache  _fonts;
 
     boost::atomic_bool _closeLoadingThread;
-    boost::atomic_bool _loaderThreadAvailable;
 
     static glslopt_ctx* _GLSLOptContex;
     static GLuint _activeVAOId;

@@ -40,6 +40,31 @@ GLuint64 GL_API::FRAME_DURATION_GPU = 0;
 
 #include <glim.h>
 
+GL_API::GL_API() : RenderAPIWrapper(),
+                   _prevWidthNode(0),
+                   _prevWidthString(0),
+                   _prevSizeNode(0),
+                   _prevSizeString(0),
+                   _lineWidthLimit(1),
+                   _pointDummyVAO(0)
+{
+    _closeLoadingThread = false;
+
+    for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i) {
+        for (U8 j = 0; j < PERFORMANCE_COUNTERS; ++j) {
+            _queryID[i][j] = 0;
+        }
+    }
+
+    for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index){
+        _activeClipPlanes[index] = false;
+    }
+}
+
+GL_API::~GL_API()
+{
+}
+
 void GL_API::createFonsContext() {
     _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
 }
@@ -65,6 +90,7 @@ void GL_API::endFrame(){
     clearStates(false,false,false);
 
     glfwSwapBuffers(Divide::GLUtil::_mainWindow);
+    glfwPollEvents();
 
 #ifdef _DEBUG
     glEndQuery(GL_TIME_ELAPSED);

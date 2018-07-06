@@ -143,8 +143,6 @@ protected:
     ///Clear buffers,shaders, etc.
     virtual void flush() = 0;
 
-    virtual void idle() = 0;
-
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
@@ -163,10 +161,8 @@ protected:
     virtual bool                initShaders() = 0;
     virtual bool                deInitShaders() = 0;
 
-    virtual I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
-    virtual void exitRenderLoop(bool killCommand = false) = 0;
+    virtual I8   initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) = 0;
     virtual void closeRenderingApi() = 0;
-    virtual void initDevice(U32 targetFrameRate) = 0;
 
     virtual void toggleRasterization(bool state) = 0;
     virtual void setLineWidth(F32 width) = 0;
@@ -187,7 +183,7 @@ protected:
     ///Change the resolution and reshape all graphics data
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
-    virtual void loadInContextInternal() = 0;
+    virtual void createLoaderThread() = 0;
 
 private:
     RenderAPI        _apiId;

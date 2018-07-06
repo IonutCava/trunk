@@ -35,7 +35,7 @@ public:
 
     ///Create a new buffer object to hold our uniform shader data
     virtual void Create(U32 primitiveCount, ptrdiff_t primitiveSize);
-    virtual void UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer = false) const;
+    virtual void UpdateData(GLintptr offset, GLsizeiptr size, const void *data, const bool invalidateBuffer = false) const;
 
     virtual bool BindRange(Divide::ShaderBufferLocation bindIndex, U32 offsetElementCount, U32 rangeElementCount) const;
     virtual bool Bind(Divide::ShaderBufferLocation bindIndex) const;
@@ -45,7 +45,7 @@ public:
 protected:
     GLuint _UBOid;
     GLenum _target;
-    GLvoid* _mappedBuffer;
+    void*  _mappedBuffer;
     glBufferLockManager* _lockManager;
 };
 #endif

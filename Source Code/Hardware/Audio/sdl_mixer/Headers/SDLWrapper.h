@@ -29,7 +29,7 @@
 DEFINE_SINGLETON_EXT1(SDL_API,AudioAPIWrapper)
 
 public:
-	I8 initHardware();
+	I8 initAudioApi();
 
 	void closeAudioApi(){
 		if(_music != nullptr){
@@ -40,8 +40,6 @@ public:
 			Mix_FreeChunk(_chunk);
 		Mix_Quit();
 	}
-
-	void initDevice(){}
 
 	void playSound(AudioDescriptor* sound);
 	void playMusic(AudioDescriptor* music);

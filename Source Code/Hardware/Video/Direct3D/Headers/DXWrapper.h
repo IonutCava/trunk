@@ -41,16 +41,13 @@ DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 protected:
     DX_API() : RenderAPIWrapper() {}
 
-    I8   initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
-    void exitRenderLoop(bool killCommand = false);
+    I8   initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
     void closeRenderingApi();
-    void initDevice(U32 targetFrameRate);
     void changeResolutionInternal(U16 w, U16 h);
     void changeViewport(const vec4<I32>& newViewport) const;
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
-    void idle();
     void flush();
     void beginFrame();
     void endFrame();
@@ -86,7 +83,7 @@ protected:
     typedef void (*callback)();
     void dxCommand(callback f){(*f)();};
 
-    void loadInContextInternal();
+    void createLoaderThread();
 
     U64 getFrameDurationGPU() const { return 0; }
 

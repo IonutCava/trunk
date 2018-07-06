@@ -110,7 +110,7 @@ void glGenericVertexData::Create(U8 numBuffers, U8 numQueries){
     _bufferPersistent = new bool[numBuffers];
     memset(_bufferPersistent, false, numBuffers * sizeof(bool));
 
-    _bufferPersistentData = (GLvoid**)malloc(sizeof(GLvoid*) * numBuffers);
+    _bufferPersistentData = (void**)malloc(sizeof(void*) * numBuffers);
 
 }
 
@@ -243,7 +243,7 @@ void glGenericVertexData::SetAttributeInternal(AttributeDescriptor& descriptor){
         GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[descriptor.bufferIndex()]);
     }
     glVertexAttribPointer(descriptor.attribIndex(), descriptor.componentsPerElement(), glDataFormat[descriptor.dataType()], descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                          (GLsizei)descriptor.stride(), (GLvoid*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
+                          (GLsizei)descriptor.stride(), (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
     if (descriptor.instanceDivisor() > 0) glVertexAttribDivisor(descriptor.attribIndex(), descriptor.instanceDivisor());
 
     descriptor.clean();

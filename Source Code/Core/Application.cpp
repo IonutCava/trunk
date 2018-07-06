@@ -46,12 +46,10 @@ void Application::setMousePosition(U16 x, U16 y) const {
 }
 
 void Application::run(){
-    _kernel->beginLogicLoop();
+    _kernel->runLogicLoop();
 }
 
 void Application::deinitialize(){
-    _kernel->shutdown();
-
     if(_totalMemoryOcuppied != 0)
         ERROR_FN(Locale::get("ERROR_MEMORY_NEW_DELETE_MISMATCH"), _totalMemoryOcuppied);
 }

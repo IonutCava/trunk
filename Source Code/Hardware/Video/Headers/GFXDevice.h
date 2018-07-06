@@ -43,11 +43,12 @@ class SceneRenderState;
 
 class GFXDevice;
 
-///Rough around the edges Adapter pattern
+/// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
-    friend class Frustum; ///< For matrix recovery operations
     typedef Unordered_map<size_t, RenderStateBlock* > RenderStateMap;
+    typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
     typedef boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > LoadQueue;
+
 public:
     struct NodeData{
         mat4<F32> _matrix[4];
@@ -70,6 +71,21 @@ public:
         vec4<F32> _ZPlanesCombined; //xy - current, zw - main scene 
         vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
     };
+    
+    struct GPUVideoMode {
+        // width x height
+        vec2<U16> _resolution; 
+        // R,G,B
+        vec3<U8>  _bitDepth;
+        // Max supported
+        U8        _refreshRate;
+ 
+        bool operator==(const GPUVideoMode &other) const { 
+            return _resolution == other._resolution && 
+                   _bitDepth == other._bitDepth && 
+                   _refreshRate == other._refreshRate; 
+        }
+    };
 
     enum RenderTarget {
         RENDER_TARGET_SCREEN = 0,
@@ -86,16 +102,14 @@ public:
 
     inline void setApi(const RenderAPI& api);
 
-    inline RenderAPI        getApi()        {return _api.getId(); }
-    inline GPUVendor        getGPUVendor()  {return _api.getGPUVendor();}
+    inline RenderAPI getApi()        {return _api.getId(); }
+    inline GPUVendor getGPUVendor()  {return _api.getGPUVendor();}
 
-    I8 initHardware(const vec2<U16>& resolution, I32 argc, char **argv);
+    I8   initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv);
     void idle();
 
     inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
-    inline void      initDevice(U32 targetFrameRate)                {_api.initDevice(targetFrameRate);}
     inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
-    inline void      exitRenderLoop(bool killCommand = false)       {_api.exitRenderLoop(killCommand);}
            void      closeRenderingApi();
            void      changeResolution(U16 w, U16 h);
     inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
@@ -106,10 +120,7 @@ public:
     inline void flush();
            void beginFrame();
            void endFrame();
-    /// Rendering buffer management
-    inline ShaderBuffer*       newSB(const bool unbound = false, const bool persistentMapped = true) const {
-        return _api.newSB(unbound, persistentMapped); 
-    }
+    
     inline Framebuffer*        getRenderTarget(RenderTarget target)          const { return _renderTarget[target]; }
     inline IMPrimitive*        newIMP()                                      const { return _api.newIMP(); }
     inline Framebuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
@@ -123,9 +134,13 @@ public:
     inline Shader*             newShader(const std::string& name, const  ShaderType& type, const bool optimise = false) const {
         return _api.newShader(name,type,optimise); 
     }
+    inline ShaderBuffer* newSB(const bool unbound = false, const bool persistentMapped = true) const {
+        return _api.newSB(unbound, persistentMapped); 
+    }
 
     void enableFog(F32 density, const vec3<F32>& color);
     void toggle2D(bool state);
+
     inline void toggleRasterization(bool state);
     inline void setLineWidth(F32 width) { _previousLineWidth = _currentLineWidth; _currentLineWidth = width; _api.setLineWidth(width); }
     inline void restoreLineWidth()      { setLineWidth(_previousLineWidth); }
@@ -172,15 +187,19 @@ public:
     inline U32          getPrevShaderId()                {return _prevShaderId;}
     inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
     inline U32          getPrevTextureId()               {return _prevTextureId;}
-           void         closeRenderer();
-    inline Renderer*    getRenderer()                         {
+
+           void      closeRenderer();
+
+    inline Renderer* getRenderer()  {
         DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!"); 
         return _renderer;
     }
-    inline void         setRenderer(Renderer* const renderer) {
+
+    inline void      setRenderer(Renderer* const renderer) {
         DIVIDE_ASSERT(renderer != nullptr, "GFXDevice error: Tried to create an invalid renderer!"); 
         SAFE_UPDATE(_renderer, renderer);
     }
+
     /*
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
     */
@@ -261,11 +280,6 @@ public:
     inline bool FXAAEnabled() const { return _FXAASamples > 0; }
     inline U8   FXAASamples() const { return _FXAASamples; }
 
-    inline void initAA(U8 fxaaSamples, U8 msaaSamples){
-        _FXAASamples = fxaaSamples;
-        _MSAASamples = msaaSamples;
-    }
-
     RenderDetailLevel generalDetailLevel()                             const { return _generalDetailLevel; }
     void              generalDetailLevel(RenderDetailLevel detailLevel)      { _generalDetailLevel = detailLevel; }
     RenderDetailLevel shadowDetailLevel()                              const { return _shadowDetailLevel; }
@@ -286,11 +300,33 @@ public:
     inline U32  getFrameCount()       const { return FRAME_COUNT; }
     inline I32  getDrawCallCount()    const { return FRAME_DRAW_CALLS_PREV; }
     inline void registerDrawCall()          { FRAME_DRAW_CALLS++; }
+    inline U32  getMaxTextureSlots()     const { return _maxTextureSlots; }
+    inline bool loadingThreadAvailable() const { return _loadingThreadAvailable && _loaderThread;  }
+
+
+protected:
+    /// Some functions should only be accessable from the rendering api itself
+    friend class GL_API;
+    friend class DX_API;
 
     inline LoadQueue& getLoadQueue() { return _loadQueue; }
 
-    inline void setMaxTextureSlots(U32 textureSlots)       { _maxTextureSlots = textureSlots; }
-    inline U32  getMaxTextureSlots()                 const { return _maxTextureSlots; }
+    inline void initAA(U8 fxaaSamples, U8 msaaSamples){
+        _FXAASamples = fxaaSamples;
+        _MSAASamples = msaaSamples;
+    }
+
+    /// register a new display mode (resolution, bitdepth, etc).
+    inline void registerDisplayMode(const GPUVideoMode& mode) {
+        // this is terribly slow, but should only be called a couple of times and only on video hardware init
+        if (std::find(_supportedDislpayModes.begin(), _supportedDislpayModes.end(), mode) != _supportedDislpayModes.end()) {
+            _supportedDislpayModes.push_back(mode);
+        }
+    }
+
+    inline void setMaxTextureSlots(U32 textureSlots)  { _maxTextureSlots = textureSlots; }
+
+    inline void loadingThreadAvailable(bool state)    { _loadingThreadAvailable = state; }
 
 protected:
     friend class Kernel;
@@ -298,7 +334,7 @@ protected:
     inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
     inline void changeResolutionInternal(U16 width, U16 height)       { _api.changeResolutionInternal(width, height); }
     inline void changeViewport(const vec4<I32>& newViewport)    const { _api.changeViewport(newViewport); }
-    inline void loadInContextInternal()                               { _api.loadInContextInternal(); }
+    inline void createLoaderThread()                                  { _api.createLoaderThread(); }
     inline void drawPoints(U32 numPoints)                             { _api.drawPoints(numPoints); }
            void drawDebugAxis(const SceneRenderState& sceneRenderState);
 
@@ -340,6 +376,7 @@ private:
     bool _isDepthPrePass;
     bool _viewportUpdate;
     LoadQueue _loadQueue;
+    boost::atomic_bool _loadingThreadAvailable;
     boost::thread *_loaderThread;
     ShaderProgram* _activeShaderProgram;
      
@@ -393,17 +430,18 @@ protected:
 
     vectorImpl<std::pair<U32, DELEGATE_CBK> > _2dRenderQueue;
 
-    //Immediate mode emulation
+    ///Immediate mode emulation
     ShaderProgram*             _imShader;     //<The shader used to render VB data
     vectorImpl<IMPrimitive* >  _imInterfaces; //<The interface that coverts IM calls to VB data
 
     ///Current viewport stack
-    typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > viewportStack;
-    viewportStack _viewport;
+    ViewportStack _viewport;
 
     GPUBlock                _gpuBlock;
-    vectorImpl<NodeData >   _matricesData;
-    Unordered_map<I64, I32> _sgnToDrawIDMap;
+
+    vectorImpl<NodeData >     _matricesData;
+    vectorImpl<GPUVideoMode > _supportedDislpayModes;
+    Unordered_map<I64, I32>   _sgnToDrawIDMap;
 
     ShaderBuffer*  _gfxDataBuffer;
     ShaderBuffer*  _nodeBuffer;

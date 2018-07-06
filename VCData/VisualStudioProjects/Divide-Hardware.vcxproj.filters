@@ -473,9 +473,6 @@
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp">
-      <Filter>Video\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp">
       <Filter>Video\OpenGL</Filter>
     </ClCompile>
@@ -589,6 +586,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDeviceState.cpp">
       <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glResources.cpp">
+      <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

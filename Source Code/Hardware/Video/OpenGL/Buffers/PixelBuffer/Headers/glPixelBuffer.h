@@ -38,8 +38,8 @@ public:
 
 	void Destroy();
 
-	GLvoid* Begin(GLubyte nFace=0) const;
-	void    End() const;
+	void* Begin(GLubyte nFace=0) const;
+	void  End() const;
 
 	void Bind(GLubyte unit=0) const;
 

@@ -45,6 +45,7 @@ GFXDevice::GFXDevice() : _api(GL_API::getOrCreateInstance()),
    _previewDepthMapShader = _imShader = _activeShaderProgram = nullptr;
    _HIZConstructProgram = _depthRangesConstructProgram = nullptr;
    _rasterizationEnabled = true;
+   _loadingThreadAvailable = false;
    _generalDetailLevel = _shadowDetailLevel = DETAIL_HIGH;
    _state2DRenderingHash = _stateDepthOnlyRenderingHash = _defaultStateBlockHash = 0;
    _defaultStateNoDepthHash = _currentStateBlockHash = 0;
@@ -462,7 +463,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK&
     if (callback.empty())
         return false;
 
-    if (context == GFX_LOADING_CONTEXT && _loaderThread != nullptr){
+    if (context == GFX_LOADING_CONTEXT && loadingThreadAvailable()){
         while (!_loadQueue.push(callback));
     }else{
         callback();

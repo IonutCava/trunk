@@ -226,18 +226,16 @@ namespace XML {
             par.setParam("rendering.enableShadows", true);
         }
 
-        U8 msaaSamples = (U8)std::max(pt.get<I32>("rendering.MSAAsamples", 2), 0);
-        U8 fxaaSamples = (U8)std::max(pt.get<I32>("rendering.FXAAsamples", 2), 0);
         GFX_DEVICE.postProcessingEnabled(pt.get("rendering.enablePostFX", false));
         GFX_DEVICE.anaglyphEnabled(pt.get("rendering.enable3D",false));
         GFX_DEVICE.hdrEnabled(pt.get("rendering.enableHDR",false));
-        GFX_DEVICE.initAA(fxaaSamples, msaaSamples);
+        par.setParam("rendering.MSAAsampless",(U8)std::max(pt.get<I32>("rendering.MSAAsamples", 2), 0));
+        par.setParam("rendering.FXAAsamples",(U8)std::max(pt.get<I32>("rendering.FXAAsamples", 2), 0));
         par.setParam("GUI.CEGUI.ExtraStates",pt.get("GUI.CEGUI.ExtraStates",false));
         par.setParam("GUI.CEGUI.SkipRendering",pt.get("GUI.CEGUI.SkipRendering",false));
         par.setParam("GUI.defaultScheme",pt.get("GUI.defaultGUIScheme","GWEN"));
         par.setParam("GUI.consoleLayout",pt.get("GUI.consoleLayoutFile","console.layout"));
         par.setParam("GUI.editorLayout",pt.get("GUI.editorLayoutFile","editor.layout"));
-        par.setParam("rendering.detailLevel",pt.get<U8>("rendering.detailLevel",DETAIL_HIGH));
         par.setParam("rendering.anisotropicFilteringLevel", std::max(pt.get<GLint>("rendering.anisotropicFilteringLevel", 1), 1));
         par.setParam("rendering.shadowDetailLevel",shadowDetailLevel);
         par.setParam("rendering.enableFog", pt.get("rendering.enableFog",true));

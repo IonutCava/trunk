@@ -1,7 +1,7 @@
 #include "Headers/SDLWrapper.h"
 #include <stdexcept>
 
-I8 SDL_API::initHardware() {
+I8 SDL_API::initAudioApi() {
     Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
     _music = nullptr;
     _chunk = nullptr;

@@ -65,12 +65,8 @@ public:
     ~Kernel();
 
     I8 initialize(const std::string& entryPoint);
-    void shutdown();
 
-    ///This sets the _mainLoopCallback and starts the main loop
-    void beginLogicLoop();
-    ///Our main loop entry function. The actual callback can be changed at runtime (i.e. pausing rendering in some menus, or pre-rendering a frame offscreen)
-    inline  static void mainLoopStatic() {_mainLoopCallback();}
+    void runLogicLoop();
     ///Our main application rendering loop. Call input requests, physics calculations, pre-rendering, rendering,post-rendering etc
             static void mainLoopApp();
     ///Called after a swap-buffer call and before a clear-buffer call.
@@ -78,8 +74,6 @@ public:
             static void idle();
     ///Update all engine components that depend on the current resolution
             static void updateResolutionCallback(I32 w, I32 h);
-
-public:
 
     GFXDevice& getGFXDevice() const {return _GFX;}
     SFXDevice& getSFXDevice() const {return _SFX;}
@@ -92,7 +86,6 @@ public:
 
     CameraManager& getCameraMgr() { return *_cameraMgr; }
 
-public: ///Input
     ///Key pressed
     bool onKeyDown(const OIS::KeyEvent& key);
     ///Key released
@@ -134,6 +127,7 @@ public: ///Input
 
 private:
    static void firstLoop();
+   void shutdown();
    void renderScene();
    void renderSceneAnaglyph();
    bool mainLoopScene(FrameEvent& evt);
@@ -165,7 +159,6 @@ private:
     static bool   _renderingPaused;
     static bool   _freezeLoopTime;
     static bool   _freezeGUITime;
-   static DELEGATE_CBK      _mainLoopCallback;
    boost::threadpool::pool* _mainTaskPool;
    // both are in ms
    static U64 _currentTime;

@@ -9,8 +9,8 @@
 //Max number of frames before an unused primitive is deleted (default: 180 - 3 seconds at 60 fps)
 const I32 IM_MAX_FRAMES_ZOMBIE_COUNT = 180;
 
-I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
-    I8 hardwareState = _api.initHardware(resolution,argc,argv);
+I8 GFXDevice::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv) {
+    I8 hardwareState = _api.initRenderingApi(resolution,argc,argv);
 
     if(hardwareState != NO_ERR)
         return hardwareState;
@@ -126,7 +126,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     _gpuBlock._ZPlanesCombined.z = ParamHandler::getInstance().getParam<F32>("rendering.zNear");
     _gpuBlock._ZPlanesCombined.w = ParamHandler::getInstance().getParam<F32>("rendering.zFar");
     
-    _loaderThread = New boost::thread(&GFXDevice::loadInContextInternal, this);
+    _loaderThread = New boost::thread(&GFXDevice::createLoaderThread, this);
 
     return NO_ERR;
 }
@@ -174,7 +174,6 @@ void GFXDevice::idle() {
 
     _postFX.idle();
     _shaderManager.idle();
-    _api.idle();
 }
 
 void GFXDevice::beginFrame()    {

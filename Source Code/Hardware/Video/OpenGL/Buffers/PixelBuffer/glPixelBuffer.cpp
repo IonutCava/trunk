@@ -48,7 +48,7 @@ void glPixelBuffer::Destroy() {
     _depth = 0;
 }
 
-GLvoid* glPixelBuffer::Begin(GLubyte nFace) const {
+void* glPixelBuffer::Begin(GLubyte nFace) const {
     DIVIDE_ASSERT(nFace < 6, "glPixelBuffer error: Tried to map an invalid PBO texture's face!");
 
     GL_API::bindTexture(0, _textureId, _textureType);

@@ -95,7 +95,7 @@ private:
     GLuint*  _elementCount;
     size_t*  _readOffset;
     size_t*  _elementSize;
-    GLvoid** _bufferPersistentData;
+    void**   _bufferPersistentData;
     GLuint*  _prevResult;
     GLuint*  _feedbackQueries[2];
     bool*    _resultAvailable[2];

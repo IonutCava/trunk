@@ -34,9 +34,8 @@
 DEFINE_SINGLETON_EXT1(FMOD_API,AudioAPIWrapper)
 
 public:
-	I8 initHardware(){return FMOD_AUDIO_INIT_ERROR;}
+	I8   initAudioApi() {return FMOD_AUDIO_INIT_ERROR;}
 	void closeAudioApi(){}
-	void initDevice(){}
 
 	void playSound(AudioDescriptor* sound){}
 	void playMusic(AudioDescriptor* music){}

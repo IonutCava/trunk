@@ -180,7 +180,6 @@ protected:
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
     U64 _elapsedTime;
     F32 _elapsedTimeMS;
-    I32 _maxCombinedTextureUnits;
     U8  _outputCount;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;

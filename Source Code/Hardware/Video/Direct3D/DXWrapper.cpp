@@ -7,16 +7,12 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Text3D.h"
 
-I8 DX_API::initHardware(const vec2<U16>& resolution, I32 argc, char **argv){
+I8 DX_API::initRenderingApi(const vec2<U16>& resolution, I32 argc, char **argv){
     PRINT_FN(Locale::get("START_D3D_API"));
     D3D_ENUM_TABLE::fill();
     //CEGUI::Direct3D10Renderer& renderer = CEGUI::Direct3D10Renderer::create( /*myD3D10Device*/nullptr );
     //GUI::getInstance().bindRenderer(renderer);
     return DX_INIT_ERROR;
-}
-
-void DX_API::exitRenderLoop(bool killCommand)
-{
 }
 
 void DX_API::closeRenderingApi()
@@ -44,10 +40,6 @@ void DX_API::beginFrame()
 }
 
 void DX_API::endFrame()
-{
-}
-
-void DX_API::idle()
 {
 }
 
@@ -89,10 +81,6 @@ void DX_API::drawPoints(U32 numPoints)
 {
 }
 
-void DX_API::initDevice(U32 targetFrameRate)
-{
-}
-
 bool DX_API::initShaders()
 {
     return true;
@@ -103,7 +91,7 @@ bool DX_API::deInitShaders()
     return true;
 }
 
-void DX_API::loadInContextInternal()
+void DX_API::createLoaderThread()
 {
 }
 

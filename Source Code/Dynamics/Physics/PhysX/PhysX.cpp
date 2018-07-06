@@ -40,7 +40,7 @@ PhysX::PhysX() : _gPhysicsSDK(nullptr),
 {
 }
 
-I8 PhysX::initPhysics(U8 targetFrameRate) {
+I8 PhysX::initPhysicsApi(U8 targetFrameRate) {
     PRINT_FN(Locale::get("START_PHYSX_API"));
 
     // create foundation object with default error and allocator callbacks.
@@ -94,7 +94,7 @@ I8 PhysX::initPhysics(U8 targetFrameRate) {
     return NO_ERR;
 }
 
-bool PhysX::exitPhysics() {
+bool PhysX::closePhysicsApi() {
     if(!_gPhysicsSDK)
         return false;
         

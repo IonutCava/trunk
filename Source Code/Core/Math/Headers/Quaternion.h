@@ -110,8 +110,8 @@ public:
         return vec + (uv * (2.0f * W())) + (::cross(_elements.xyz(),uv) * 2.0f);
     }
 
-    inline bool operator==(const Quaternion& rq) const { return compare(rq); }
-    inline bool operator!=(const Quaternion& rq) const { return !(*this == rq); }
+    bool operator==(const Quaternion& rq) const { return compare(rq); }
+    bool operator!=(const Quaternion& rq) const { return !(*this == rq); }
 
     inline Quaternion& operator+=(const Quaternion& rq) {
         _elements += rq._elements;

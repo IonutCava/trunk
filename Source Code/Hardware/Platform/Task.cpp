@@ -30,10 +30,10 @@ void Task::run(){
             if(_end) break;
 
             while(_paused) 
-                boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickInterval));
 
             if(_tickInterval > 0) 
-                boost::this_thread::sleep(boost::posix_time::milliseconds(_tickInterval));
+                boost::this_thread::sleep_for(boost::chrono::milliseconds(_tickInterval));
 
             _callback();
 

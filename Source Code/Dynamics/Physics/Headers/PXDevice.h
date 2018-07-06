@@ -34,8 +34,8 @@ public:
     void setApi(PhysicsAPI api);
     inline I8  getApi() const {return _api.getId(); }
 
-    inline I8   initPhysics(U8 targetFrameRate) {return _api.initPhysics(targetFrameRate);}
-    inline bool exitPhysics() {return _api.exitPhysics();}
+    inline I8   initPhysicsApi(U8 targetFrameRate) {return _api.initPhysicsApi(targetFrameRate);}
+    inline bool closePhysicsApi() {return _api.closePhysicsApi();}
     inline void updateTimeStep(U8 timeStepFactor) {_api.updateTimeStep(timeStepFactor);}
     inline void updateTimeStep()                  {_api.updateTimeStep();}
     inline void update(const U64 deltaTime) {_api.update(deltaTime);}

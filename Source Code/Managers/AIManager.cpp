@@ -35,7 +35,7 @@ U8 AIManager::update(){
     _deltaTime = _currentTime - _previousTime;
 
     if(_aiEntities.empty() || _pauseUpdate){
-        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
         return 1; //nothing to do
     }
     if(!_sceneCallback.empty())

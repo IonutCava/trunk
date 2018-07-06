@@ -30,7 +30,6 @@ bool Kernel::_keepAlive = true;
 bool Kernel::_renderingPaused = false;
 bool Kernel::_freezeLoopTime = false;
 bool Kernel::_freezeGUITime = false;
-DELEGATE_CBK Kernel::_mainLoopCallback;
 ProfileTimer* s_appLoopTimer = nullptr;
 
 boost::lockfree::queue<U64, boost::lockfree::capacity<Config::THREAD_LIMIT + 1> >  Kernel::_callbackBuffer;
@@ -81,7 +80,7 @@ Kernel::~Kernel(){
 
 void Kernel::threadPoolCompleted(U64 onExitTaskID){
     while (!_callbackBuffer.push(onExitTaskID)){
-        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+        boost::this_thread::sleep_for(boost::chrono::milliseconds(10));
     }
 }
 
@@ -113,45 +112,48 @@ void Kernel::idle(){
 }
 
 void Kernel::mainLoopApp(){
+    if(!_keepAlive) {
+        // exiting the rendering loop will return us to the last control point (i.e. Kernel::runLogicLoop)
+        Application::getInstance().mainLoopActive(false);
+        return;
+    }
+
     // Update internal timer
     ApplicationTimer::getInstance().update(GFX_DEVICE.getFrameCount());
 
     START_TIMER(s_appLoopTimer);
 
     // Update time at every render loop
-    Kernel::_previousTime    = Kernel::_currentTime;
+    Kernel::_previousTime     = Kernel::_currentTime;
     Kernel::_currentTime      = GETUSTIME();
     Kernel::_currentTimeDelta = Kernel::_currentTime - Kernel::_previousTime;
 
+    FrameEvent evt;
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
     Application& APP = Application::getInstance();
 
-    if(!_keepAlive || APP.ShutdownRequested()) {
-        //exiting the graphical rendering loop will return us to the current control point
-        //if we return here, the next valid control point is in main() thus shutting down the application neatly
-        GFX_DEVICE.exitRenderLoop(true);
-        Application::getInstance().mainLoopActive(false);
-        return;
-    }
-
     Kernel::idle();
+
     //Restore GPU to default state: clear buffers and set default render state
     GFX_DEVICE.beginFrame();
-    //Launch the FRAME_STARTED event
-    FrameEvent evt;
-    frameMgr.createEvent(_currentTime, FRAME_EVENT_STARTED, evt);
-    _keepAlive = frameMgr.frameEvent(evt);
+    {
+        //Launch the FRAME_STARTED event
+        frameMgr.createEvent(_currentTime, FRAME_EVENT_STARTED, evt);
+        _keepAlive = frameMgr.frameEvent(evt);
 
-    //Process the current frame
-    _keepAlive = APP.getKernel()->mainLoopScene(evt);
-    //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
-    frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS,evt);
-    _keepAlive = frameMgr.frameEvent(evt);
-
+        //Process the current frame
+        _keepAlive = APP.getKernel()->mainLoopScene(evt);
+        //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
+        frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS,evt);
+        _keepAlive = frameMgr.frameEvent(evt);
+    }
     GFX_DEVICE.endFrame();
+
     //Launch the FRAME_ENDED event (buffers have been swapped)
     frameMgr.createEvent(_currentTime, FRAME_EVENT_ENDED,evt);
     _keepAlive = frameMgr.frameEvent(evt);
+
+    _keepAlive = APP.ShutdownRequested();
 
     STOP_TIMER(s_appLoopTimer);
 
@@ -342,8 +344,7 @@ void Kernel::firstLoop(){
     GFX_DEVICE.setWindowPos(150, 350);
     par.setParam("freezeGUITime", false);
     par.setParam("freezeLoopTime", false);
-    Application::getInstance().mainLoopActive(true);
-    _mainLoopCallback = DELEGATE_REF(Kernel::mainLoopApp);
+
     GFX_DEVICE.changeResolution(Application::getInstance().getResolution() * 2);
 #if defined(_DEBUG) || defined(_PROFILE)
     ApplicationTimer::getInstance().benchmark(true);
@@ -388,7 +389,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
 
     _GFX.registerKernel(this);
-    I8 windowId = _GFX.initHardware(resolution/2, _argc, _argv);
+    I8 windowId = _GFX.initRenderingApi(resolution/2, _argc, _argv);
 
     //If we could not initialize the graphics device, exit
     if(windowId < 0) return windowId;
@@ -413,11 +414,11 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     LightManager::getInstance().init();
 
     PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
-    if((returnCode = _SFX.initHardware()) != NO_ERR)
+    if((returnCode = _SFX.initAudioApi()) != NO_ERR)
         return returnCode;
 
     PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
-    if((returnCode =_PFX.initPhysics(Config::TARGET_FRAME_RATE)) != NO_ERR)
+    if((returnCode =_PFX.initPhysicsApi(Config::TARGET_FRAME_RATE)) != NO_ERR)
         return returnCode;
 
     //Bind the kernel with the input interface
@@ -449,19 +450,23 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     return windowId;
 }
 
-void Kernel::beginLogicLoop(){
+void Kernel::runLogicLoop(){
     PRINT_FN(Locale::get("START_RENDER_LOOP"));
     Kernel::_nextGameTick = GETUSTIME();
     //lock the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(true);
     //The first loops compiles all the visible data, so do not render the first couple of frames
-    _mainLoopCallback = DELEGATE_REF(Kernel::firstLoop);
-    //Target FPS is define in "config.h". So all movement is capped around that value
-    _GFX.initDevice(Config::TARGET_FRAME_RATE);
+    firstLoop();
+    _keepAlive = true;
+    _APP.mainLoopActive(true);
+    while (_APP.mainLoopActive()) {
+        Kernel::mainLoopApp();
+    }
+
+    shutdown();
 }
 
 void Kernel::shutdown(){
-    _keepAlive = false;
     //release the scene
     GET_ACTIVE_SCENE()->state().toggleRunningState(false);
     Console::getInstance().bindConsoleOutput(boost::function2<void, const char*, bool>());
@@ -469,6 +474,12 @@ void Kernel::shutdown(){
     _sceneMgr.unloadCurrentScene();
     _sceneMgr.deinitializeAI(true);
     _sceneMgr.destroyInstance();
+    // Close CEGUI
+    try { 
+        CEGUI::System::destroy();
+    } catch( ... ) { 
+        D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
+    }
     SAFE_DELETE(_cameraMgr);
     _GFX.closeRenderer();
     ResourceCache::getInstance().destroyInstance();
@@ -476,7 +487,7 @@ void Kernel::shutdown(){
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
     FrameListenerManager::getInstance().destroyInstance();
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
-    _PFX.exitPhysics();
+    _PFX.closePhysicsApi();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
     InputInterface::getInstance().destroyInstance();
     _SFX.closeAudioApi();
