@@ -111,14 +111,6 @@ protected:
     bool _bMustStop;
     bool _bIsInitialized;
 
-    // App. heart beat frequency.
-    static const U8 _nHartBeatFreq = 30;  // Hz
-
-    // Effects update frequency (Hz) : Needs to be quite lower than app. hart beat
-    // frequency,
-    // if we want to be able to calmly study effect changes ...
-    static const U8 _nEffectUpdateFreq = 5;  // Hz
-
     KeyEvent _keys[KeyCode_PLACEHOLDER];
 
 };

@@ -6,7 +6,17 @@ namespace Input {
 
 typedef std::map<stringImpl, OIS::KeyCode> KeyByNameMap;
 static KeyByNameMap initKeyByNameMap();
-static KeyByNameMap g_keysByNameMap = initKeyByNameMap();
+namespace {
+    // App. heart beat frequency.
+    const U8 g_nHartBeatFreq = 30;  // Hz
+
+    // Effects update frequency (Hz) : Needs to be quite lower than app. 
+    // heart beat frequency,
+    // if we want to be able to calmly study effect changes ...
+    const U8 g_nEffectUpdateFreq = 5;  // Hz
+
+    KeyByNameMap g_keysByNameMap = initKeyByNameMap();
+};
 
 InputInterface::InputInterface(Kernel& parent)
      : KernelComponent(parent), 
@@ -110,7 +120,7 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
         } else {
             // Create force feedback effect manager.
             assert(_pEffectMgr == nullptr);
-            _pEffectMgr = MemoryManager_NEW EffectManager(_pJoystickInterface, _nEffectUpdateFreq);
+            _pEffectMgr = MemoryManager_NEW EffectManager(_pJoystickInterface, g_nEffectUpdateFreq);
             // Initialize the event handler.
             _pEventHdlr->initialize(_pJoystickInterface, _pEffectMgr);
         }
@@ -153,7 +163,7 @@ void InputInterface::terminate() {
 }
 
 U8 InputInterface::update(const U64 deltaTime) {
-    const U8 nMaxEffectUpdateCnt = _nHartBeatFreq / _nEffectUpdateFreq;
+    const U8 nMaxEffectUpdateCnt = g_nHartBeatFreq / g_nEffectUpdateFreq;
     U8 nEffectUpdateCnt = 0;
 
     if (!_bIsInitialized) {

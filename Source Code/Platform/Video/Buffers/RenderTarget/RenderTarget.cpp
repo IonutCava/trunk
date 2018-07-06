@@ -1,12 +1,20 @@
 #include "Headers/RenderTarget.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
 
-// We don't need more than 4 colour attachments for now.
-U8 RenderTarget::g_maxColourAttachments = 4;
+namespace {
+    // We don't need more than 4 colour attachments for now.
+    const U8 g_maxColourAttachments = 4;
+    bool g_policiesInitialised = false;
+};
+
+RTDrawDescriptor RenderTarget::_policyDefault;
+RTDrawDescriptor RenderTarget::_policyKeepDepth;
+RTDrawDescriptor RenderTarget::_policyDepthOnly;
 
 RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
     : GUIDWrapper(),
@@ -17,6 +25,15 @@ RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
       _name(name)
 {
     _attachmentPool = MemoryManager_NEW RTAttachmentPool(*this, g_maxColourAttachments);
+
+    if (!g_policiesInitialised) {
+        assert(ParamHandler::instance().getParam<I32>(_ID("rendering.maxRenderTargetOutputs"), 32) > g_maxColourAttachments);
+
+        _policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        _policyDepthOnly.drawMask().disableAll();
+        _policyDepthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
+        g_policiesInitialised = true;
+    }
 }
 
 RenderTarget::~RenderTarget()
@@ -75,22 +92,15 @@ void RenderTarget::resetMipLevel() {
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicy() {
-    static RTDrawDescriptor default;
-    return default;
+    return _policyDefault;
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicyKeepDepth() {
-    static RTDrawDescriptor policyKeepDepth;
-    policyKeepDepth.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-    return policyKeepDepth;
+    return _policyKeepDepth;
 }
 
 RTDrawDescriptor& RenderTarget::defaultPolicyDepthOnly() {
-    static RTDrawDescriptor depthOnly;
-    depthOnly.drawMask().disableAll();
-    depthOnly.drawMask().setEnabled(RTAttachment::Type::Depth, 0, true);
-
-    return depthOnly;
+    return _policyDepthOnly;
 }
 
 TextureDescriptor& RenderTarget::getDescriptor(RTAttachment::Type type, U8 index) {

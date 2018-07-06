@@ -39,8 +39,6 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const stringImpl& name)
       _framebufferHandle(0)
 {
     _previousMask.enableAll();
-
-    assert(ParamHandler::instance().getParam<I32>(_ID("rendering.maxRenderTargetOutputs"), 32) > RenderTarget::g_maxColourAttachments);
 }
 
 glFramebuffer::~glFramebuffer()

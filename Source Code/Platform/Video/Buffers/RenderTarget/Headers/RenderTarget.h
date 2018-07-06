@@ -137,7 +137,9 @@ class NOINITVTABLE RenderTarget : public GraphicsResource, public GUIDWrapper {
     virtual bool checkStatus() const = 0;
 
    protected:
-    static U8 g_maxColourAttachments;
+    static RTDrawDescriptor _policyDefault;
+    static RTDrawDescriptor _policyKeepDepth;
+    static RTDrawDescriptor _policyDepthOnly;
 
     U16 _width, _height;
     F32 _depthValue;

@@ -134,15 +134,13 @@ U32 EnvironmentProbe::getRTIndex() const {
 }
 
 void EnvironmentProbe::debugDraw(RenderSubPassCmds& subPassesInOut) {
-    static RenderStateBlock stateBlock;
-
     _boundingBoxPrimitive->paused(false);
 
     const Texture_ptr& reflectTex = s_reflection._rt->getAttachment(RTAttachment::Type::Colour, 0).asTexture();
 
     VertexBuffer* vb = _impostor->getGeometryVB();
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
-    cmd.stateHash(stateBlock.getHash());
+    cmd.stateHash(_context.getDefaultStateBlock(false));
     cmd.shaderProgram(_impostorShader);
     cmd.sourceBuffer(vb);
 
