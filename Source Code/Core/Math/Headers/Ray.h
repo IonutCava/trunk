@@ -9,7 +9,7 @@
  */
 
 /*
-   Copyright (c) 2015 DIVIDE-Studio
+   Copyright (c) 2016 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.

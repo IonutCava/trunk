@@ -27,8 +27,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _spatialPartitionFlag(false),
       _isSelectable(false),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
-      _boundingBoxDirty(true),
-      _lockBBTransforms(false),
       _usageContext(UsageContext::NODE_DYNAMIC)
 {
     assert(_node != nullptr);
@@ -38,6 +36,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 
     _components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].reset(new PhysicsComponent(*this));
     _components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].reset(new NavigationComponent(*this));
+    _components[to_const_uint(SGNComponent::ComponentType::BOUNDS)].reset(new BoundsComponent(*this));
 
     Material* const materialTpl = _node->getMaterialTpl();
 
@@ -79,7 +78,7 @@ SceneGraphNode::~SceneGraphNode()
 }
 
 void SceneGraphNode::useDefaultTransform(const bool state) {
-    getComponent<PhysicsComponent>()->useDefaultTransform(!state);
+    get<PhysicsComponent>()->useDefaultTransform(!state);
 }
 
 /// Change current SceneGraphNode's parent
@@ -305,8 +304,10 @@ void SceneGraphNode::intersect(const Ray& ray,
                                vectorImpl<SceneGraphNode_cwptr>& selectionHits,
                                bool recursive) const {
 
-    if (isSelectable() && _boundingBox.intersect(ray, start, end)) {
-        selectionHits.push_back(shared_from_this());
+    if (isSelectable()) {
+        if (get<BoundsComponent>()->getBoundingBoxConst().intersect(ray, start, end)) {
+            selectionHits.push_back(shared_from_this());
+        }
     }
 
     if (recursive) {
@@ -391,38 +392,18 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
         }
     }
 
-    PhysicsComponent* pComp = getComponent<PhysicsComponent>();
+    PhysicsComponent* pComp = get<PhysicsComponent>();
     if (pComp->parseTransformUpdateMask()) {
         Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
-        _boundingBoxDirty = true;
+        get<BoundsComponent>()->flagBoundingBoxDirty();
     }
 
     SceneNode::BoundingBoxPair& pair = Attorney::SceneNodeSceneGraph::getBoundingBox(*_node, *this);
 
-    if (_boundingBoxDirty || pair.second) {
-        SceneGraphNode_ptr parent = getParent().lock();
-        if (parent) {
-            parent->_boundingBoxDirty = true;
-        }
+    get<BoundsComponent>()->parseBounds(pair.first, pair.second, pComp->getWorldMatrix());
+    pair.second = false;
 
-        _boundingBox.set(pair.first);
-        for (U32 i = 0; i < childCount; ++i) {
-            _boundingBox.add(getChild(i, childCount).getBoundingBoxConst());
-        }
-
-        if (!_lockBBTransforms) {
-            _boundingBox.transform(pComp->getWorldMatrix());
-        }
-
-        _boundingSphere.fromBoundingBox(_boundingBox);
-        _boundingBoxDirty = false;
-        pair.second = false;
-    }
-
-    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node,
-    		                                   deltaTime,
-    		                                   *this,
-    		                                   sceneState);
+    Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTime, *this, sceneState);
 }
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
@@ -452,11 +433,11 @@ void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,
         getChild(i, childCount).onCameraUpdate(cameraGUID, posOffset, rotationOffset);
     }
 
-    PhysicsComponent* pComp = getComponent<PhysicsComponent>();
+    PhysicsComponent* pComp = get<PhysicsComponent>();
     if (pComp && pComp->ignoreView(cameraGUID)) {
         U32 childCount2 = getChildCount();
         for (U32 i = 0; i < childCount2; ++i) {
-            getChild(i, childCount2)._boundingBoxDirty = true;
+            getChild(i, childCount2).get<BoundsComponent>()->flagBoundingBoxDirty();
         }
         pComp->setViewOffset(posOffset, rotationOffset);
     }
@@ -490,8 +471,8 @@ bool SceneGraphNode::cullNode(const Camera& currentCamera,
     }
 
     bool distanceCheck = currentStage != RenderStage::SHADOW;
-    const BoundingBox& boundingBox = getBoundingBoxConst();
-    const BoundingSphere& sphere = getBoundingSphereConst();
+    const BoundingBox& boundingBox = get<BoundsComponent>()->getBoundingBoxConst();
+    const BoundingSphere& sphere = get<BoundsComponent>()->getBoundingSphereConst();
 
     F32 radius = sphere.getRadius();
     const vec3<F32>& eye = currentCamera.getEye();

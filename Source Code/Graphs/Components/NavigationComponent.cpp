@@ -18,7 +18,7 @@ void NavigationComponent::navigationContext(
     
     U32 childCount = _parentSGN.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
-        _parentSGN.getChild(i, childCount).getComponent<NavigationComponent>()->navigationContext(_navigationContext);
+        _parentSGN.getChild(i, childCount).get<NavigationComponent>()->navigationContext(_navigationContext);
     }
 }
 
@@ -27,7 +27,7 @@ void NavigationComponent::navigationDetailOverride(const bool detailOverride) {
     
     U32 childCount = _parentSGN.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
-        _parentSGN.getChild(i, childCount).getComponent<NavigationComponent>()->navigationDetailOverride(detailOverride);
+        _parentSGN.getChild(i, childCount).get<NavigationComponent>()->navigationDetailOverride(detailOverride);
     }
 }
 };

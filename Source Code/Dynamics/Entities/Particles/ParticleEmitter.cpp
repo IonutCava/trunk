@@ -166,16 +166,16 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     TextureData depthBufferData = depthTexture->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
-    sgn.getComponent<RenderingComponent>()->registerTextureDependency(depthBufferData);
+    sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
 
     if (_particleTexture && _particleTexture->flushTextureState()) {
         TextureData particleTextureData = _particleTexture->getData();
         particleTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
-        sgn.getComponent<RenderingComponent>()->registerTextureDependency(particleTextureData);
+        sgn.get<RenderingComponent>()->registerTextureDependency(particleTextureData);
     }
 
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, 4, 1);
@@ -187,7 +187,7 @@ void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     }
     computeBoundingBox();
 
-    sgn.lockBBTransforms(true);
+    sgn.get<BoundsComponent>()->lockBBTransforms(true);
 
     SceneNode::postLoad(sgn);
 }
@@ -215,7 +215,7 @@ bool ParticleEmitter::getDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
 
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* renderable = sgn.get<RenderingComponent>();
 
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
@@ -247,7 +247,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
     bool validCount = aliveCount > 0;
     renderState().setDrawState(validCount);
 
-    PhysicsComponent* transform = sgn.getComponent<PhysicsComponent>();
+    PhysicsComponent* transform = sgn.get<PhysicsComponent>();
     const vec3<F32>& eyePos = sceneState.renderState().getCameraConst().getEye();
 
     const vec3<F32>& pos = transform->getPosition();

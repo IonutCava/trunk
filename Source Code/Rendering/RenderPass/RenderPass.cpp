@@ -108,8 +108,8 @@ void RenderPass::render(SceneRenderState& renderState, bool anaglyph) {
                         break;
                     }
                     SceneGraphNode_cptr nodePtr = node.second.lock();
-                    RenderingComponent* const rComp = nodePtr->getComponent<RenderingComponent>();
-                    PhysicsComponent* const pComp = nodePtr->getComponent<PhysicsComponent>();
+                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                    PhysicsComponent* const pComp = nodePtr->get<PhysicsComponent>();
                     Attorney::RenderingCompRenderPass::updateReflection(*rComp, pComp->getPosition(), zPlanes);
                     ReflectionUtil::updateBudget();
                 }

@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015 DIVIDE-Studio
+   Copyright (c) 2016 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -64,6 +64,7 @@ class BoundingBox : public GUIDWrapper {
     bool intersect(const Ray& r, F32 t0, F32 t1) const;
 
     void createFromPoints(const vectorImpl<vec3<F32>>& points);
+    void createFromSphere(const vec3<F32>& center, F32 radius);
 
     void add(const vec3<F32>& v);
     void add(const BoundingBox& bb);

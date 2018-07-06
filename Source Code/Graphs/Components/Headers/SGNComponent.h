@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 DIVIDE-Studio
+/* Copyright (c) 2016 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
@@ -46,6 +46,7 @@ class SGNComponent : private NonCopyable {
         NAVIGATION = 1,
         PHYSICS = 2,
         RENDERING = 3,
+        BOUNDS = 4,
         COUNT
     };
     

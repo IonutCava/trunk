@@ -38,17 +38,27 @@ void AnimationComponent::update(const U64 deltaTime) {
 
     _currentTimeStamp = _parentTimeStamp;
 
-    if (!_playAnimations) {
-        return;
+    // Update Animations
+    if (_playAnimations) {
+        _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
+        _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex,
+            Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
+
+        if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
+            _previousAnimationIndex = _currentAnimIndex;
+        }
     }
 
-    _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
-    _previousFrameIndex = _animator.frameIndexForTimeStamp(_currentAnimIndex, 
-                                                            Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
+    // Resolve IK
+    //if (_resolveIK) {
+        /// Use CCD to move target joints to target positions
+    //}
 
-    if ((_currentAnimIndex != _previousAnimationIndex) &&  _currentAnimIndex >= 0) {
-        _previousAnimationIndex = _currentAnimIndex;
-    }
+    // Resolve ragdoll
+    // if (_resolveRagdoll) {
+        /// Use PhysX actor from PhysicsComponent to feed new bone positions/orientation
+        /// And read back ragdoll results to update transforms accordingly
+    //}
 }
 
 void AnimationComponent::resetTimers() {
@@ -123,9 +133,9 @@ bool AnimationComponent::onRender(RenderStage currentStage) {
 
     if (_previousAnimationIndex != -1) {
         ShaderBuffer& boneBuffer = getAnimationByIndex(_previousAnimationIndex).getBoneBuffer();
-        _parentSGN.getComponent<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS,
-                                                                            vec2<U32>(_previousFrameIndex, 1),
-                                                                            boneBuffer);
+        _parentSGN.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS,
+                                                                   vec2<U32>(_previousFrameIndex, 1),
+                                                                   boneBuffer);
     }
 
     return true;
@@ -153,7 +163,7 @@ const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
     if (node->getObjectType() != Object3D::ObjectType::SUBMESH ||
         (node->getObjectType() == Object3D::ObjectType::SUBMESH &&
          !node->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
-        return _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix();
+        return _parentSGN.get<PhysicsComponent>()->getWorldMatrix();
     }
 
     I32 frameIndex = _animator.frameIndexForTimeStamp(animationID, timeStamp);

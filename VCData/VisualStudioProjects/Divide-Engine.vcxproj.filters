@@ -521,6 +521,9 @@
     <ClCompile Include="..\..\Source Code\Graphs\IntersectionRecord.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Graphs\Components\BoundsComponent.cpp">
+      <Filter>Graphs\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -915,6 +918,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\IntersectionRecord.h">
       <Filter>Graphs\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Graphs\Components\Headers\BoundsComponent.h">
+      <Filter>Graphs\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

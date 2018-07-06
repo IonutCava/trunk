@@ -17,7 +17,7 @@ Unit::Unit(UnitType type, SceneGraphNode_ptr node)
 {
     REGISTER_FRAME_LISTENER(this, 5);
     _currentPosition =
-        _node.lock()->getComponent<PhysicsComponent>()->getPosition();
+        _node.lock()->get<PhysicsComponent>()->getPosition();
 }
 
 Unit::~Unit()
@@ -37,7 +37,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     WriteLock w_lock(_unitUpdateMutex);
     // We receive move request every frame for now (or every task tick)
     // Start plotting a course from our current position
-    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
     _currentTargetPosition = targetPosition;
 
     if (_prevTime <= 0) {
@@ -104,7 +104,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
                          : moveDistance);
             }
             // commit transformations
-            sgn->getComponent<PhysicsComponent>()->translate(interpPosition);
+            sgn->get<PhysicsComponent>()->translate(interpPosition);
         }
     }
 
@@ -119,7 +119,7 @@ bool Unit::moveToX(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(targetPosition,
                             _currentPosition.y,
@@ -134,7 +134,7 @@ bool Unit::moveToY(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(_currentPosition.x,
                             targetPosition,
@@ -149,7 +149,7 @@ bool Unit::moveToZ(const F32 targetPosition) {
     }
     /// Update current position
     WriteLock w_lock(_unitUpdateMutex);
-    _currentPosition = sgn->getComponent<PhysicsComponent>()->getPosition();
+    _currentPosition = sgn->get<PhysicsComponent>()->getPosition();
     w_lock.unlock();
     return moveTo(vec3<F32>(_currentPosition.x,
                             _currentPosition.y,
@@ -171,7 +171,7 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
         _currentTargetPosition = targetPosition;
     }
     PhysicsComponent* nodePhysicsComponent =
-        sgn->getComponent<PhysicsComponent>();
+        sgn->get<PhysicsComponent>();
     /// Start plotting a course from our current position
     _currentPosition = nodePhysicsComponent->getPosition();
     /// teleport to desired position

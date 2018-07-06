@@ -124,11 +124,11 @@ void WarSceneAIProcessor::initInternal() {
 
     _initialFlagPositions[0].set(_globalWorkingMemory._flags[0]
                                      .value().lock()
-                                     ->getComponent<PhysicsComponent>()
+                                     ->get<PhysicsComponent>()
                                      ->getPosition());
     _initialFlagPositions[1].set(_globalWorkingMemory._flags[1]
                                      .value().lock()
-                                     ->getComponent<PhysicsComponent>()
+                                     ->get<PhysicsComponent>()
                                      ->getPosition());
 
     
@@ -154,7 +154,7 @@ bool WarSceneAIProcessor::DIE() {
         _globalWorkingMemory._flags[enemyTeamID].value().lock()->setParent(GET_ACTIVE_SCENEGRAPH().getRoot());
         PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
-                                  ->getComponent<PhysicsComponent>();
+                                  ->get<PhysicsComponent>();
          pComp->popTransforms();
          pComp->pushTransforms();
          pComp->setPosition(_entity->getPosition());
@@ -391,7 +391,7 @@ bool WarSceneAIProcessor::preAction(ActionType type,
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
                     SceneGraphNode_wptr enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
-                    _entity->updateDestination(enemy.lock()->getComponent<PhysicsComponent>()->getPosition(), true);
+                    _entity->updateDestination(enemy.lock()->get<PhysicsComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 } else {
                     if (_globalWorkingMemory._flagCarriers[enemyTeamID].value() == nullptr) {
@@ -403,11 +403,11 @@ bool WarSceneAIProcessor::preAction(ActionType type,
                             .value()
                             ->getUnitRef()
                             ->getBoundNode();
-                    _entity->updateDestination(enemy.lock()->getComponent<PhysicsComponent>()->getPosition(), true);
+                    _entity->updateDestination(enemy.lock()->get<PhysicsComponent>()->getPosition(), true);
                     _localWorkingMemory._currentTarget.value(enemy);
                 }
             } else {
-                _entity->updateDestination(_localWorkingMemory._currentTarget.value().lock()->getComponent<PhysicsComponent>()->getPosition());
+                _entity->updateDestination(_localWorkingMemory._currentTarget.value().lock()->get<PhysicsComponent>()->getPosition());
             }
         } break;
         case ActionType::RECOVER_FLAG: {
@@ -449,7 +449,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 GET_ACTIVE_SCENEGRAPH().getRoot());
             PhysicsComponent* pComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value().lock()
-                                  ->getComponent<PhysicsComponent>();
+                                  ->get<PhysicsComponent>();
             pComp->popTransforms();
 
             for (const AITeam::TeamMap::value_type& member : currentTeam->getTeamMembers()) {
@@ -466,8 +466,8 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             {
                 SceneGraphNode_wptr targetNode = _entity->getUnitRef()->getBoundNode();
                 SceneGraphNode_ptr flag = _globalWorkingMemory._flags[enemyTeamID].value().lock();
-                PhysicsComponent* pComp = flag->getComponent<PhysicsComponent>();
-                PhysicsComponent* parentPComp = targetNode.lock()->getComponent<PhysicsComponent>();
+                PhysicsComponent* pComp = flag->get<PhysicsComponent>();
+                PhysicsComponent* parentPComp = targetNode.lock()->get<PhysicsComponent>();
                 flag->setParent(*targetNode.lock());
                 vec3<F32> prevScale(pComp->getScale(1.0, true));
                 vec3<F32> parentScale(parentPComp->getScale(1.0, true));
@@ -706,7 +706,7 @@ void WarSceneAIProcessor::updatePositions() {
                 PhysicsComponent* pComp =
                     _globalWorkingMemory._flags[teamID]
                         .value().lock()
-                        ->getComponent<PhysicsComponent>();
+                        ->get<PhysicsComponent>();
                 pComp->popTransforms();
                 _globalWorkingMemory._flagsAtBase[teamID].value(true);
             
@@ -723,10 +723,10 @@ void WarSceneAIProcessor::updatePositions() {
     }
 
     if (_type != AIType::HEAVY) {
-        BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode().lock()->getBoundingSphereConst());
+        BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode().lock()->get<BoundsComponent>()->getBoundingSphereConst());
         const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
         for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-            if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode().lock()->getBoundingSphereConst())) {
+            if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode().lock()->get<BoundsComponent>()->getBoundingSphereConst())) {
                 SceneGraphNode_ptr currentTarget(_localWorkingMemory._currentTarget.value().lock());
                 if (!currentTarget ||
                     currentTarget->getGUID() != enemy.second->getGUID()) {

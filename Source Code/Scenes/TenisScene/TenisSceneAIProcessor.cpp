@@ -83,7 +83,7 @@ void TenisSceneAIProcessor::updatePositions() {
         _prevBallPosition = _ballPosition;
         _tickCount = 0;
     }
-    _ballPosition = _target.lock()->getComponent<PhysicsComponent>()->getPosition();
+    _ballPosition = _target.lock()->get<PhysicsComponent>()->getPosition();
     _entityPosition = _entity->getUnitRef()->getCurrentPosition();
     if (_prevBallPosition.z != _ballPosition.z) {
         _prevBallPosition.z < _ballPosition.z ? _ballToTeam2 = false

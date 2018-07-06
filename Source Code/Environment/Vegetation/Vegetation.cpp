@@ -298,7 +298,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
             _windZ = sceneState.windDirZ();
             _windS = sceneState.windSpeed();
             Material* mat =
-                sgn.getComponent<RenderingComponent>()->getMaterialInstance();
+                sgn.get<RenderingComponent>()->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i) {
                 RenderStage stage =
                     (i == 0 ? RenderStage::DISPLAY
@@ -401,7 +401,7 @@ bool Vegetation::getDrawCommands(SceneGraphNode& sgn,
     buffer->getDrawAttribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->getDrawAttribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
     drawCommandsOut.resize(1);

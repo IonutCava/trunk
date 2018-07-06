@@ -99,7 +99,7 @@ void Octree::update(const U64 deltaTime) {
         SceneGraphNode_ptr movedObj = movedObjPtr.lock();
         assert(movedObj);
 
-        const BoundingBox& bb = movedObj->getBoundingBoxConst();
+        const BoundingBox& bb = movedObj->get<BoundsComponent>()->getBoundingBoxConst();
         while(!current->_region.containsBox(bb)) {
             if (current->_parent != nullptr) {
                 current = current->_parent.get();
@@ -197,7 +197,7 @@ void Octree::insert(SceneGraphNode_wptr object) {
     childOctant[6].set((_childNodes[6] != nullptr) ? _childNodes[6]->_region : BoundingBox(center, _region.getMax()));
     childOctant[7].set((_childNodes[7] != nullptr) ? _childNodes[7]->_region : BoundingBox(vec3<F32>(_region.getMin().x, center.y, center.z), vec3<F32>(center.x, _region.getMax().y, _region.getMax().z)));
 
-    const BoundingBox& bb = object.lock()->getBoundingBoxConst();
+    const BoundingBox& bb = object.lock()->get<BoundsComponent>()->getBoundingBoxConst();
 
     //First, is the item completely contained within the root bounding box?
     //note2: I shouldn't actually have to compensate for this. If an object is out of our predefined bounds, then we have a problem/error.
@@ -274,7 +274,7 @@ void Octree::buildTree() {
     for (SceneGraphNode_wptr obj : _objects) {
         SceneGraphNode_ptr objPtr = obj.lock();
         if (objPtr) {
-            const BoundingBox& bb = objPtr->getBoundingBoxConst();
+            const BoundingBox& bb = objPtr->get<BoundsComponent>()->getBoundingBoxConst();
             for (U8 i = 0; i < 8; ++i) {
                 if (octant[i].containsBox(bb)) {
                     octList[i].push_back(objPtr);
@@ -343,7 +343,7 @@ void Octree::findEnclosingBox()
     for (SceneGraphNode_wptr obj : _objects) {
         SceneGraphNode_ptr objPtr = obj.lock();
         if (objPtr) {
-            const BoundingBox& bb = objPtr->getBoundingBoxConst();
+            const BoundingBox& bb = objPtr->get<BoundsComponent>()->getBoundingBoxConst();
             const vec3<F32>& localMin = bb.getMin();
             const vec3<F32>& localMax = bb.getMax();
 
@@ -503,7 +503,7 @@ vectorImpl<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay, 
             continue;
         }
 
-        if (obj->getBoundingBoxConst().intersect(intersectRay, start, end)) {
+        if (obj->get<BoundsComponent>()->getBoundingBoxConst().intersect(intersectRay, start, end)) {
             IntersectionRecord ir = getIntersection(*obj, intersectRay, start, end);
             if (!ir.isEmpty()) {
                 ret.push_back(ir);
@@ -666,7 +666,7 @@ bool Octree::isStatic(const SceneGraphNode& node) const {
 }
 
 IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum) const {
-    const BoundingBox& bb = node.getBoundingBoxConst();
+    const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBoxConst();
 
     if (frustum.ContainsBoundingBox(bb) != Frustum::FrustCollision::FRUSTUM_OUT) {
         IntersectionRecord ir(node.shared_from_this());
@@ -679,9 +679,11 @@ IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Frustum& 
 
 IntersectionRecord Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2) const {
     if (node1.getGUID() != node2.getGUID()) {
-        if (node1.getBoundingSphereConst().collision(node2.getBoundingSphereConst())) {
-            const BoundingBox& bb1 = node1.getBoundingBoxConst();
-            const BoundingBox& bb2 = node2.getBoundingBoxConst();
+        if (node1.get<BoundsComponent>()->getBoundingSphereConst().collision(
+            node2.get<BoundsComponent>()->getBoundingSphereConst()))
+        {
+            const BoundingBox& bb1 = node1.get<BoundsComponent>()->getBoundingBoxConst();
+            const BoundingBox& bb2 = node2.get<BoundsComponent>()->getBoundingBoxConst();
             if (bb1.collision(bb2)) {
                 IntersectionRecord ir(node1.shared_from_this());
                 ir._intersectedObject2 = node2.shared_from_this();
@@ -695,7 +697,7 @@ IntersectionRecord Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode
 }
 
 IntersectionRecord Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end) const {
-    const BoundingBox& bb = node.getBoundingBoxConst();
+    const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBoxConst();
     IntersectionRecord ir;
     if (bb.intersect(intersectRay, start, end)) {
         ir._intersectedObject1 = node.shared_from_this();

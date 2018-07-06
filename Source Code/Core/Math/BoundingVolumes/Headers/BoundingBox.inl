@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015 DIVIDE-Studio
+   Copyright (c) 2016 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -57,6 +57,11 @@ inline void BoundingBox::createFromPoints(const vectorImpl<vec3<F32>>& points) {
     for (vec3<F32> p : points) {
         add(p);
     }
+}
+
+inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) {
+    _max.set(center + radius);
+    _min.set(center - radius);
 }
 
 inline void BoundingBox::add(const vec3<F32>& v) {

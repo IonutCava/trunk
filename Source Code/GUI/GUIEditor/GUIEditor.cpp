@@ -104,7 +104,7 @@ void GUIEditor::TrackSelection() {
 
     if (node && !_pauseSelectionTracking) {
         PhysicsComponent *const selectionTransform =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         const vec3<F32> &localPosition = selectionTransform->getPosition();
         const vec3<F32> &localScale = selectionTransform->getScale();
         vec3<F32> localOrientation =
@@ -144,7 +144,7 @@ void GUIEditor::TrackSelection() {
         }
 
         RenderingComponent *rComp =
-            node->getComponent<RenderingComponent>();
+            node->get<RenderingComponent>();
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)
             ->setSelected(rComp->renderSkeleton());
         toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)
@@ -162,7 +162,7 @@ void GUIEditor::UpdateControls() {
     bool hasValidTransform = false;
     if (node) {
         hasValidTransform =
-            (node->getComponent<PhysicsComponent>() != nullptr);
+            (node->get<PhysicsComponent>() != nullptr);
         toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->setEnabled(true);
         toggleButton(ToggleButtons::TOGGLE_SKELETONS)->setEnabled(true);
@@ -968,7 +968,7 @@ bool GUIEditor::Handle_WireframeToggle(const CEGUI::EventArgs &e) {
     }
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<RenderingComponent>()->renderWireframe(
+        node->get<RenderingComponent>()->renderWireframe(
             toggleButton(ToggleButtons::TOGGLE_WIREFRAME)->isSelected());
     }
     return true;
@@ -992,7 +992,7 @@ bool GUIEditor::Handle_ShadowMappingToggle(const CEGUI::EventArgs &e) {
     }
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<RenderingComponent>()->castsShadows(
+        node->get<RenderingComponent>()->castsShadows(
             toggleButton(ToggleButtons::TOGGLE_SHADOW_MAPPING)->isSelected());
     }
     return true;
@@ -1030,7 +1030,7 @@ bool GUIEditor::Handle_BoundingBoxesToggle(const CEGUI::EventArgs &e) {
     }
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        RenderingComponent *rComp = node->getComponent<RenderingComponent>();
+        RenderingComponent *rComp = node->get<RenderingComponent>();
         rComp->renderBoundingBox(
             toggleButton(ToggleButtons::TOGGLE_BOUNDING_BOXES)->isSelected());
     }
@@ -1057,7 +1057,7 @@ bool GUIEditor::Handle_SkeletonsToggle(const CEGUI::EventArgs &e) {
 
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<RenderingComponent>()->renderSkeleton(
+        node->get<RenderingComponent>()->renderSkeleton(
             toggleButton(ToggleButtons::TOGGLE_SKELETONS)->isSelected());
     }
     return true;
@@ -1072,7 +1072,7 @@ bool GUIEditor::Handle_PositionXChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_X) = x;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionX(
+        node->get<PhysicsComponent>()->setPositionX(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1089,7 +1089,7 @@ bool GUIEditor::Handle_PositionYChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_Y) = y;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionY(
+        node->get<PhysicsComponent>()->setPositionY(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1106,7 +1106,7 @@ bool GUIEditor::Handle_PositionZChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_Z) = z;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionZ(
+        node->get<PhysicsComponent>()->setPositionZ(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Z));
     }
@@ -1149,7 +1149,7 @@ bool GUIEditor::Handle_RotationXChange(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1179,7 +1179,7 @@ bool GUIEditor::Handle_RotationYChange(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1209,7 +1209,7 @@ bool GUIEditor::Handle_RotationZChange(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1249,7 +1249,7 @@ bool GUIEditor::Handle_ScaleXChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_X) = x;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleX(
+        node->get<PhysicsComponent>()->setScaleX(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1266,7 +1266,7 @@ bool GUIEditor::Handle_ScaleYChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_Y) = y;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleY(
+        node->get<PhysicsComponent>()->setScaleY(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1283,7 +1283,7 @@ bool GUIEditor::Handle_ScaleZChange(const CEGUI::EventArgs &e) {
                   ControlFields::CONTROL_FIELD_Z) = z;
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleZ(
+        node->get<PhysicsComponent>()->setScaleZ(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Z));
     }
@@ -1318,7 +1318,7 @@ bool GUIEditor::Handle_IncrementPositionX(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionX(
+        node->get<PhysicsComponent>()->setPositionX(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1334,7 +1334,7 @@ bool GUIEditor::Handle_DecrementPositionX(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionX(
+        node->get<PhysicsComponent>()->setPositionX(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1350,7 +1350,7 @@ bool GUIEditor::Handle_IncrementPositionY(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionY(
+        node->get<PhysicsComponent>()->setPositionY(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1366,7 +1366,7 @@ bool GUIEditor::Handle_DecrementPositionY(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionY(
+        node->get<PhysicsComponent>()->setPositionY(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1382,7 +1382,7 @@ bool GUIEditor::Handle_IncrementPositionZ(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionZ(
+        node->get<PhysicsComponent>()->setPositionZ(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Z));
     }
@@ -1398,7 +1398,7 @@ bool GUIEditor::Handle_DecrementPositionZ(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setPositionZ(
+        node->get<PhysicsComponent>()->setPositionZ(
             currentValues(TransformFields::TRANSFORM_POSITION,
             ControlFields::CONTROL_FIELD_Z));
     }
@@ -1448,7 +1448,7 @@ bool GUIEditor::Handle_IncrementRotationX(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1469,7 +1469,7 @@ bool GUIEditor::Handle_DecrementRotationX(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1492,7 +1492,7 @@ bool GUIEditor::Handle_IncrementRotationY(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1513,7 +1513,7 @@ bool GUIEditor::Handle_DecrementRotationY(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1535,7 +1535,7 @@ bool GUIEditor::Handle_IncrementRotationZ(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1557,7 +1557,7 @@ bool GUIEditor::Handle_DecrementRotationZ(const CEGUI::EventArgs &e) {
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
         PhysicsComponent *pComp =
-            node->getComponent<PhysicsComponent>();
+            node->get<PhysicsComponent>();
         pComp->setRotation(
             vec3<F32>(currentValues(TransformFields::TRANSFORM_ROTATION,
             ControlFields::CONTROL_FIELD_X),
@@ -1614,7 +1614,7 @@ bool GUIEditor::Handle_IncrementScaleX(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleX(
+        node->get<PhysicsComponent>()->setScaleX(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1630,7 +1630,7 @@ bool GUIEditor::Handle_DecrementScaleX(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleX(
+        node->get<PhysicsComponent>()->setScaleX(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_X));
     }
@@ -1646,7 +1646,7 @@ bool GUIEditor::Handle_IncrementScaleY(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleY(
+        node->get<PhysicsComponent>()->setScaleY(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1662,7 +1662,7 @@ bool GUIEditor::Handle_DecrementScaleY(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleY(
+        node->get<PhysicsComponent>()->setScaleY(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Y));
     }
@@ -1677,7 +1677,7 @@ bool GUIEditor::Handle_IncrementScaleZ(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleZ(
+        node->get<PhysicsComponent>()->setScaleZ(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Z));
     }
@@ -1692,7 +1692,7 @@ bool GUIEditor::Handle_DecrementScaleZ(const CEGUI::EventArgs &e) {
                       ControlFields::CONTROL_FIELD_GRANULARITY);
     SceneGraphNode_ptr node = _currentSelection.lock();
     if (node) {
-        node->getComponent<PhysicsComponent>()->setScaleZ(
+        node->get<PhysicsComponent>()->setScaleZ(
             currentValues(TransformFields::TRANSFORM_SCALE,
             ControlFields::CONTROL_FIELD_Z));
     }

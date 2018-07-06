@@ -83,7 +83,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     DIVIDE_ASSERT(reflectorBuilt, Locale::get(_ID("ERROR_REFLECTOR_INIT_FB")));
 
     TextureDescriptor::AttachmentType att = TextureDescriptor::AttachmentType::Color0;
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* renderable = sgn.get<RenderingComponent>();
     
     TextureData reflectionData = _reflectedTexture->getAttachment(att)->getData();
     TextureData refractionData = _refractionTexture->getAttachment(att)->getData();
@@ -96,7 +96,7 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneGraphNode& planeSGN = sgn.getChild(0, temp);
     _waterLevel = GET_ACTIVE_SCENE().state().waterLevel();
     _waterDepth = GET_ACTIVE_SCENE().state().waterDepth();
-    planeSGN.getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
+    planeSGN.get<PhysicsComponent>()->setPositionY(_waterLevel);
     
     updatePlaneEquation();
 
@@ -135,11 +135,13 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     _cameraUnderWater =
         isPointUnderWater(sceneState.renderState().getCamera().getEye());
     if (_dirty) {
-        sgn.getBoundingSphere().fromBoundingBox(sgn.getBoundingBoxConst());
+        sgn.get<BoundsComponent>()
+            ->getBoundingSphere().fromBoundingBox(sgn.get<BoundsComponent>()
+                                                    ->getBoundingBoxConst());
         _dirty = false;
     }
     if (_paramsDirty) {
-        RenderingComponent* rComp = sgn.getComponent<RenderingComponent>();
+        RenderingComponent* rComp = sgn.get<RenderingComponent>();
         ShaderProgram* shader = rComp->getMaterialInstance()
                                     ->getShaderInfo(RenderStage::DISPLAY)
                                     .getProgram();
@@ -153,7 +155,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 
 bool WaterPlane::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     const Quaternion<F32>& orientation =
-        sgn.getComponent<PhysicsComponent>()->getOrientation();
+        sgn.get<PhysicsComponent>()->getOrientation();
     if (!_orientation.compare(orientation)) {
         _orientation.set(orientation);
         updatePlaneEquation();
@@ -167,7 +169,7 @@ bool WaterPlane::getDrawCommands(SceneGraphNode& sgn,
                                  const SceneRenderState& sceneRenderState,
                                  vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
     ShaderProgram* drawShader =

@@ -229,7 +229,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
             if (FindResourceImpl<Quad3D>(sgnName)) {
                 targetNode = GET_ACTIVE_SCENEGRAPH().findNode(sgnName).lock();
                 assert(targetNode);
-                actor.setParent(targetNode->getComponent<PhysicsComponent>());
+                actor.setParent(targetNode->get<PhysicsComponent>());
                 return;
             }
 
@@ -254,7 +254,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
             sceneNode->renderState().setDrawState(true);
             targetNode =
                 _parentScene->getSceneGraph().getRoot().addNode(*sceneNode, sgnName);
-            targetNode->getComponent<RenderingComponent>()->castsShadows(
+            targetNode->get<RenderingComponent>()->castsShadows(
                 shadowState);
         }
 
@@ -264,6 +264,6 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
     } 
 
     assert(targetNode != nullptr);
-    actor.setParent(targetNode->getComponent<PhysicsComponent>());
+    actor.setParent(targetNode->get<PhysicsComponent>());
 }
 };

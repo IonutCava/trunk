@@ -108,7 +108,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
 }
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
-    RenderingComponent* const renderingCmp = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     RenderBin* rb = getBinForNode(sgn.getNode(),
                                   renderingCmp
                                     ? renderingCmp->getMaterialInstance()

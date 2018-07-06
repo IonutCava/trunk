@@ -252,7 +252,7 @@ void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
 
     PhysXSceneInterface* targetScene =
         dynamic_cast<PhysXSceneInterface*>(_targetScene);
-    PhysicsComponent* nodePhysics = node.getComponent<PhysicsComponent>();
+    PhysicsComponent* nodePhysics = node.get<PhysicsComponent>();
 
     PhysXActor* tempActor = targetScene->getOrCreateRigidActor(node.getName());
     assert(tempActor != nullptr);

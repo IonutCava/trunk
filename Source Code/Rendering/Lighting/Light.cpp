@@ -75,8 +75,8 @@ void Light::postLoad(SceneGraphNode& sgn) {
         "Light error: Lights can only be bound to a single SGN node!");
 
     _lightSGN = &sgn;
-    _lightSGN->getComponent<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
-    _lightSGN->lockBBTransforms(true);
+    _lightSGN->get<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
+    _lightSGN->get<BoundsComponent>()->lockBBTransforms(true);
     computeBoundingBox();
     SceneNode::postLoad(sgn);
 }
@@ -100,10 +100,10 @@ void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
-    vec3<F32> dir(_lightSGN->getComponent<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    vec3<F32> dir(_lightSGN->get<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
     dir.normalize();
     _spotProperties.xyz(dir);
-    _positionAndRange.xyz(_lightSGN->getComponent<PhysicsComponent>()->getPosition());
+    _positionAndRange.xyz(_lightSGN->get<PhysicsComponent>()->getPosition());
     computeBoundingBox();
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
@@ -141,7 +141,7 @@ bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
         _impostorSGN.lock()->setActive(true);
     }
 
-    Material* const impostorMaterialInst = _impostorSGN.lock()->getComponent<RenderingComponent>()->getMaterialInstance();
+    Material* const impostorMaterialInst = _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance();
     impostorMaterialInst->setDiffuse(getDiffuseColor());
 
     updateImpostor();
@@ -161,7 +161,7 @@ void Light::updateImpostor() {
             // Spot light's bounding sphere extends from the middle of the light's range outwards,
             // touching the light's position on one end and the cone at the other
             // so we need to offest the impostor's position a bit
-            PhysicsComponent* pComp = _impostorSGN.lock()->getComponent<PhysicsComponent>();
+            PhysicsComponent* pComp = _impostorSGN.lock()->get<PhysicsComponent>();
             pComp->setPosition(getSpotDirection() * range);
         }
         _impostor->setRadius(range);

@@ -46,7 +46,7 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
 
 /// update possible animations
 void SkinnedSubMesh::updateAnimations(SceneGraphNode& sgn) {
-    assert(sgn.getComponent<AnimationComponent>());
+    assert(sgn.get<AnimationComponent>());
 
     computeBoundingBoxForCurrentFrame(sgn);
 }
@@ -94,7 +94,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(U32 animationIndex, AnimationComp
 }
 
 void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
-    AnimationComponent* animComp = sgn.getComponent<AnimationComponent>();
+    AnimationComponent* animComp = sgn.get<AnimationComponent>();
     // If animations are paused or unavailable, keep the current BB
     if (!animComp->playAnimations()) {
         return;
@@ -123,7 +123,7 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
 
 SceneNode::BoundingBoxPair&
 SkinnedSubMesh::getBoundingBox(const SceneGraphNode& sgn) {
-    AnimationComponent* animComp = sgn.getComponent<AnimationComponent>();
+    AnimationComponent* animComp = sgn.get<AnimationComponent>();
     // If animations are paused or unavailable, keep the current BB
     if (animComp->playAnimations()) {
         // Attempt to get the map of BBs for the current animation

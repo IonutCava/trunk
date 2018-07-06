@@ -166,7 +166,7 @@ void WarScene::processTasks(const U64 deltaTime) {
                             -cosf(g_sunAngle.y),
                             -sinf(g_sunAngle.x) * sinf(g_sunAngle.y));
 
-        _sun.lock()->getComponent<PhysicsComponent>()->setPosition(sunVector);
+        _sun.lock()->get<PhysicsComponent>()->setPosition(sunVector);
         vec4<F32> sunColor = vec4<F32>(1.0f, 1.0f, 0.2f, 1.0f);
 
         _sun.lock()->getNode<Light>()->setDiffuseColor(sunColor);
@@ -191,10 +191,10 @@ void WarScene::processTasks(const U64 deltaTime) {
 
     if (!initPosSetLight) {
         for (U8 i = 0; i < 16; ++i) {
-            initPosLight[i].set(_lightNodes[i].lock()->getComponent<PhysicsComponent>()->getPosition());
+            initPosLight[i].set(_lightNodes[i].lock()->get<PhysicsComponent>()->getPosition());
         }
         for (U8 i = 0; i < 80; ++i) {
-            initPosLight2[i].set(_lightNodes2[i].first.lock()->getComponent<PhysicsComponent>()->getPosition());
+            initPosLight2[i].set(_lightNodes2[i].first.lock()->get<PhysicsComponent>()->getPosition());
         }
         initPosSetLight = true;
     }
@@ -214,7 +214,7 @@ void WarScene::processTasks(const U64 deltaTime) {
             F32 c = i % 2 == 0 ? c1 : c2;
             F32 s = i % 2 == 0 ? s1 : s2;
             SceneGraphNode_ptr light = _lightNodes[i].lock();
-            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            PhysicsComponent* pComp = light->get<PhysicsComponent>();
             pComp->setPositionX(radius * c + initPosLight[i].x);
             pComp->setPositionZ(radius * s + initPosLight[i].z);
             pComp->setPositionY((radius * 0.5f) * s + initPosLight[i].y);
@@ -222,7 +222,7 @@ void WarScene::processTasks(const U64 deltaTime) {
 
         for (U8 i = 0; i < 80; ++i) {
             SceneGraphNode_ptr light = _lightNodes2[i].first.lock();
-            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            PhysicsComponent* pComp = light->get<PhysicsComponent>();
             F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
             vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
             pComp->setPositionX(position.x);
@@ -231,7 +231,7 @@ void WarScene::processTasks(const U64 deltaTime) {
 
         for (U8 i = 0; i < 40; ++i) {
             SceneGraphNode_ptr light = _lightNodes3[i].lock();
-            PhysicsComponent* pComp = light->getComponent<PhysicsComponent>();
+            PhysicsComponent* pComp = light->get<PhysicsComponent>();
             pComp->rotateY(phiLight);
         }
         _taskTimers[3] = 0.0;
@@ -265,7 +265,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime) {
             phi = 0.0f;
         }
 
-        PhysicsComponent* pComp = particles->getComponent<PhysicsComponent>();
+        PhysicsComponent* pComp = particles->get<PhysicsComponent>();
         if (!initPosSet) {
             initPos.set(pComp->getPosition());
             initPosSet = true;
@@ -336,13 +336,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     U32 temp = 0;
     for (U8 i = 0; i < 5; ++i) {
         RenderingComponent* const renderable =
-            cylinder[i]->getChild(0, temp).getComponent<RenderingComponent>();
+            cylinder[i]->getChild(0, temp).get<RenderingComponent>();
         renderable->getMaterialInstance()->setDoubleSided(true);
         cylinder[i]->getChild(0, temp).getNode()->getMaterialTpl()->setDoubleSided(true);
     }
 
     // Make the center cylinder reflective
-    Material* matInstance = cylinder[0]->getChild(0, temp).getComponent<RenderingComponent>()->getMaterialInstance();
+    Material* matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
     SceneNode* cylinderMeshNW = cylinder[1]->getNode();
@@ -392,19 +392,19 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
         SceneGraphNode_ptr crtNode = _sceneGraph.getRoot().addNode(*currentMesh, currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
-        PhysicsComponent* pComp = crtNode->getComponent<PhysicsComponent>();
+        PhysicsComponent* pComp = crtNode->get<PhysicsComponent>();
         NavigationComponent* nComp =
-            crtNode->getComponent<NavigationComponent>();
+            crtNode->get<NavigationComponent>();
         pComp->physicsGroup(
-            baseNode->getComponent<PhysicsComponent>()->physicsGroup());
+            baseNode->get<PhysicsComponent>()->physicsGroup());
         nComp->navigationContext(
-            baseNode->getComponent<NavigationComponent>()->navigationContext());
+            baseNode->get<NavigationComponent>()->navigationContext());
         nComp->navigationDetailOverride(
-            baseNode->getComponent<NavigationComponent>()
+            baseNode->get<NavigationComponent>()
             ->navMeshDetailOverride());
 
         vec3<F32> position(to_float(currentPos.first), -0.01f, to_float(currentPos.second));
-        pComp->setScale(baseNode->getComponent<PhysicsComponent>()->getScale());
+        pComp->setScale(baseNode->get<PhysicsComponent>()->getScale());
         pComp->setPosition(position);
 
         {
@@ -416,7 +416,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setCastShadows(i == 0 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
         {
@@ -428,7 +428,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
+            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
         {
@@ -440,15 +440,15 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setCastShadows(i == 1 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
-            lightSGN->getComponent<PhysicsComponent>()->rotateX(-20);
+            lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
+            lightSGN->get<PhysicsComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
         }
     }
 
     SceneGraphNode_ptr flag;
     flag = _sceneGraph.findNode("flag").lock();
-    RenderingComponent* const renderable = flag->getChild(0, temp).getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = flag->getChild(0, temp).get<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
     Material* mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
@@ -460,13 +460,13 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
     flag0->usageContext(flag->usageContext());
-    PhysicsComponent* flagPComp = flag0->getComponent<PhysicsComponent>();
-    NavigationComponent* flagNComp = flag0->getComponent<NavigationComponent>();
-    RenderingComponent* flagRComp = flag0->getChild(0, temp).getComponent<RenderingComponent>();
+    PhysicsComponent* flagPComp = flag0->get<PhysicsComponent>();
+    NavigationComponent* flagNComp = flag0->get<NavigationComponent>();
+    RenderingComponent* flagRComp = flag0->getChild(0, temp).get<RenderingComponent>();
 
     flagPComp->physicsGroup(
-        flag->getComponent<PhysicsComponent>()->physicsGroup());
-    flagPComp->setScale(flag->getComponent<PhysicsComponent>()->getScale());
+        flag->get<PhysicsComponent>()->physicsGroup());
+    flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, -206.0f));
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
@@ -478,15 +478,15 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
 
-    flagPComp = flag1->getComponent<PhysicsComponent>();
-    flagNComp = flag1->getComponent<NavigationComponent>();
-    flagRComp = flag1->getChild(0, temp).getComponent<RenderingComponent>();
+    flagPComp = flag1->get<PhysicsComponent>();
+    flagNComp = flag1->get<NavigationComponent>();
+    flagRComp = flag1->getChild(0, temp).get<RenderingComponent>();
 
     flagPComp->physicsGroup(
-        flag->getComponent<PhysicsComponent>()->physicsGroup());
+        flag->get<PhysicsComponent>()->physicsGroup());
 
     flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, 206.0f));
-    flagPComp->setScale(flag->getComponent<PhysicsComponent>()->getScale());
+    flagPComp->setScale(flag->get<PhysicsComponent>()->getScale());
 
     flagNComp->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
 
@@ -496,12 +496,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     firstPersonFlag->lockVisibility(true);
     firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
-    flagPComp = firstPersonFlag->getComponent<PhysicsComponent>();
+    flagPComp = firstPersonFlag->get<PhysicsComponent>();
     flagPComp->ignoreView(true, renderState().getCamera().getGUID());
     flagPComp->setScale(0.0015f);
     flagPComp->setPosition(1.25f, -1.5f, 0.15f);
     flagPComp->rotate(-20.0f, -70.0f, 50.0f);
-    flagRComp = firstPersonFlag->getChild(0, temp).getComponent<RenderingComponent>();
+    flagRComp = firstPersonFlag->getChild(0, temp).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::GREEN());
     flagRComp->getMaterialInstance()->setHighPriority(true);
     _firstPersonWeapon = firstPersonFlag;
@@ -558,11 +558,11 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph.getRoot());
     SceneGraphNode_ptr testSGN = _particleEmitter.lock();
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
-    testSGN->getComponent<PhysicsComponent>()->translateY(10);
+    testSGN->get<PhysicsComponent>()->translateY(10);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
     test->addSource(particleSource);
-    boxGenerator->pos(vec4<F32>(testSGN->getComponent<PhysicsComponent>()->getPosition()));
+    boxGenerator->pos(vec4<F32>(testSGN->get<PhysicsComponent>()->getPosition()));
 
     std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
     eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
@@ -586,7 +586,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
             SceneGraphNode_ptr lightSGN = _sceneGraph.getRoot().addNode(*light);
-            lightSGN->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
+            lightSGN->get<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }
     }

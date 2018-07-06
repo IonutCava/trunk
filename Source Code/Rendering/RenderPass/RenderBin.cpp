@@ -132,7 +132,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
     I32 keyA = to_uint(_renderBinStack.size() + 1);
     I32 keyB = keyA;
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
 
     Material* nodeMaterial = renderable->getMaterialInstance();
     if (nodeMaterial) {
@@ -143,7 +143,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
                             stage,
                             keyA,
                             keyB,
-                            sgn.getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
+                            sgn.get<BoundsComponent>()->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos),
                             *renderable);
 }
 

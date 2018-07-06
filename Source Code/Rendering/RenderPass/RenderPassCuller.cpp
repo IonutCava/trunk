@@ -130,7 +130,7 @@ void RenderPassCuller::frustumCullNode(const SceneGraphNode& currentNode,
 
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     bool isVisible = !(currentStage == RenderStage::SHADOW &&
-                       !currentNode.getComponent<RenderingComponent>()->castsShadows());
+                       !currentNode.get<RenderingComponent>()->castsShadows());
 
     isVisible = isVisible &&
                 currentNode.isActive() &&
@@ -162,7 +162,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode_cptr child = currentNode.getChild(i, childCount).shared_from_this();
         if (!(currentStage == RenderStage::SHADOW &&
-              !currentNode.getComponent<RenderingComponent>()->castsShadows())) {
+              !currentNode.get<RenderingComponent>()->castsShadows())) {
         
             if (child->isActive() && !_cullingFunction(*child)) {
                 vectorAlg::emplace_back(nodes, 0, child);

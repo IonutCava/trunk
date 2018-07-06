@@ -322,7 +322,7 @@ void addTriangle(NavModelData* modelData,
 
 const vec3<F32> borderOffset(BORDER_PADDING);
 bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
-    if (sgn.getComponent<NavigationComponent>()->navigationContext() !=
+    if (sgn.get<NavigationComponent>()->navigationContext() !=
             NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if
                                                                     // specified
         box.getHeight() > 0.05f)  // Skip small objects
@@ -365,13 +365,13 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 
         switch (nodeType) {
             case SceneNodeType::TYPE_WATER: {
-                if (!sgn.getComponent<NavigationComponent>()->navMeshDetailOverride())
+                if (!sgn.get<NavigationComponent>()->navMeshDetailOverride())
                     level = MeshDetailLevel::BOUNDINGBOX;
                 areaType = SamplePolyAreas::SAMPLE_POLYAREA_WATER;
             } break;
             case SceneNodeType::TYPE_OBJECT3D: {
                 // Check if we need to override detail level
-                if (!sgn.getComponent<NavigationComponent>()->navMeshDetailOverride() &&
+                if (!sgn.get<NavigationComponent>()->navMeshDetailOverride() &&
                      sgn.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
@@ -419,7 +419,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                  dynamic_cast<Object3D*>(sn)->getObjectType() !=
                      Object3D::ObjectType::TERRAIN)) {
                 mat4<F32> nodeTransform =
-                    nodeSGN->getComponent<PhysicsComponent>()->getWorldMatrix();
+                    nodeSGN->get<PhysicsComponent>()->getWorldMatrix();
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the
                     // NavMesh
@@ -468,7 +468,7 @@ next:
     U32 childCount = sgn.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode& child = sgn.getChild(i, childCount);
-        if (!parse(child.getBoundingBoxConst(), outData, child)) {
+        if (!parse(child.get<BoundsComponent>()->getBoundingBoxConst(), outData, child)) {
             return false;
         }
     }

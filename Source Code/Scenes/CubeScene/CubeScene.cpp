@@ -37,7 +37,7 @@ void CubeScene::processTasks(const U64 deltaTime) {
                 F32 b = col / (_lightNodes.size() / 3.0f);
 
                 _lightNodes[row * 10 + col].lock()->getNode<Light>()->setDiffuseColor(vec3<F32>(r, g, b));
-                _lightNodes[row * 10 + col].lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
+                _lightNodes[row * 10 + col].lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(x, y, z));
             }
 
         _taskTimers[0] = 0.0;
@@ -66,12 +66,12 @@ void CubeScene::preRender() {
     SceneGraphNode_ptr bila(_sceneGraph.findNode("Bila").lock());
     SceneGraphNode_ptr dwarf(_sceneGraph.findNode("dwarf").lock());
 
-    cutia1->getComponent<PhysicsComponent>()->rotate(
+    cutia1->get<PhysicsComponent>()->rotate(
         vec3<F32>(0.3f * g_i, 0.6f * g_i, 0));
-    hellotext->getComponent<PhysicsComponent>()->rotate(
+    hellotext->get<PhysicsComponent>()->rotate(
         vec3<F32>(0.6f, 0.2f, 0.4f), g_i);
-    bila->getComponent<PhysicsComponent>()->translateY(g_j * 0.25f);
-    dwarf->getComponent<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
+    bila->get<PhysicsComponent>()->translateY(g_j * 0.25f);
+    dwarf->get<PhysicsComponent>()->rotate(vec3<F32>(0, 1, 0), g_i);
 }
 
 void CubeScene::processInput(const U64 deltaTime) {}

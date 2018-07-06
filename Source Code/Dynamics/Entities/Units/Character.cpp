@@ -12,7 +12,7 @@ Character::Character(CharacterType type, SceneGraphNode_ptr node)
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-    PhysicsComponent* const transform = node->getComponent<PhysicsComponent>();
+    PhysicsComponent* const transform = node->get<PhysicsComponent>();
     if (transform) {
         _newPosition.set(transform->getPosition());
         _oldPosition.set(_newPosition);
@@ -44,7 +44,7 @@ void Character::update(const U64 deltaTime) {
     }
 
     PhysicsComponent* const nodePhysicsComponent =
-        getBoundNode().lock()->getComponent<PhysicsComponent>();
+        getBoundNode().lock()->get<PhysicsComponent>();
 
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
@@ -83,7 +83,7 @@ vec3<F32> Character::getLookingDirection() {
     SceneGraphNode_ptr node(getBoundNode().lock());
 
     if (node) {
-        return node->getComponent<PhysicsComponent>()->getOrientation() *
+        return node->get<PhysicsComponent>()->getOrientation() *
                getRelativeLookingDirection();
     }
 
@@ -98,7 +98,7 @@ void Character::lookAt(const vec3<F32>& targetPos) {
     }
 
     _newVelocity.set(
-        node->getComponent<PhysicsComponent>()->getPosition().direction(
+        node->get<PhysicsComponent>()->getPosition().direction(
             targetPos));
     _velocityDirty = true;
 }
@@ -107,13 +107,13 @@ void Character::lookAt(const vec3<F32>& targetPos) {
 void Character::playAnimation(I32 index) {
     SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
-        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
             anim->playAnimation(index);
         } else {
             U32 childCount = node->getChildCount();
             for (U32 i = 0; i < childCount; ++i) {
-                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
+                anim = node->getChild(i, childCount).get<AnimationComponent>();
                 if (anim) {
                     anim->playAnimation(index);
                 }
@@ -125,13 +125,13 @@ void Character::playAnimation(I32 index) {
 void Character::playNextAnimation() {
     SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
-        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
             anim->playNextAnimation();
         } else {
             U32 childCount = node->getChildCount();
             for (U32 i = 0; i < childCount; ++i) {
-                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
+                anim = node->getChild(i, childCount).get<AnimationComponent>();
                 if (anim) {
                     anim->playNextAnimation();
                 }
@@ -143,13 +143,13 @@ void Character::playNextAnimation() {
 void Character::playPreviousAnimation() {
     SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
-        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
             anim->playPreviousAnimation();
         } else {
             U32 childCount = node->getChildCount();
             for (U32 i = 0; i < childCount; ++i) {
-                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
+                anim = node->getChild(i, childCount).get<AnimationComponent>();
                 if (anim) {
                     anim->playPreviousAnimation();
                 }
@@ -161,13 +161,13 @@ void Character::playPreviousAnimation() {
 void Character::pauseAnimation(bool state) {
     SceneGraphNode_ptr node(getBoundNode().lock());
     if (node) {
-        AnimationComponent* anim = node->getComponent<AnimationComponent>();
+        AnimationComponent* anim = node->get<AnimationComponent>();
         if (anim) {
             anim->playAnimations(state);
         } else {
             U32 childCount = node->getChildCount();
             for (U32 i = 0; i < childCount; ++i) {
-                anim = node->getChild(i, childCount).getComponent<AnimationComponent>();
+                anim = node->getChild(i, childCount).get<AnimationComponent>();
                 if (anim) {
                     anim->playAnimations(state);
                 }

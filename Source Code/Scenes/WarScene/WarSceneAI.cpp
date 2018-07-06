@@ -88,7 +88,7 @@ void WarScene::checkGameCompletion() {
         if (timeReason) {
             _resetUnits = true;
             for (U8 i = 0; i < 2; ++i) {
-                PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
+                PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
                 flagPComp->popTransforms();
                 _flag[i].lock()->setParent(_sceneGraph.getRoot());
                 flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
@@ -104,7 +104,7 @@ void WarScene::registerPoint(U8 teamID, const stringImpl& unitName) {
         _resetUnits = true;
 
         for (U8 i = 0; i < 2; ++i) {
-            PhysicsComponent* flagPComp = _flag[i].lock()->getComponent<PhysicsComponent>();
+            PhysicsComponent* flagPComp = _flag[i].lock()->get<PhysicsComponent>();
             WAIT_FOR_CONDITION(!flagPComp->popTransforms());
             _flag[i].lock()->setParent(_sceneGraph.getRoot());
             flagPComp->setPosition(vec3<F32>(25.0f, 0.1f, i == 0 ? -206.0f : 206.0f));
@@ -294,7 +294,7 @@ bool WarScene::addUnits() {
             if (IS_IN_RANGE_INCLUSIVE(i, 0, 4)) {
                 currentMesh = lightNodeMesh;
                 currentScale =
-                    lightNode->getComponent<PhysicsComponent>()->getScale();
+                    lightNode->get<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_1_%d_%d", k, i);
                 speed = Metric::Base(Random(6.5f, 9.5f));
                 acc = Metric::Base(Random(4.5f, 8.0f));
@@ -302,7 +302,7 @@ bool WarScene::addUnits() {
             } else if (IS_IN_RANGE_INCLUSIVE(i, 5, 9)) {
                 currentMesh = animalNodeMesh;
                 currentScale =
-                    animalNode->getComponent<PhysicsComponent>()->getScale();
+                    animalNode->get<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_2_%d_%d", k, i % 5);
                 speed = Metric::Base(Random(8.5f, 11.5f));
                 acc = Metric::Base(Random(6.0f, 9.0f));
@@ -312,7 +312,7 @@ bool WarScene::addUnits() {
             } else {
                 currentMesh = heavyNodeMesh;
                 currentScale =
-                    heavyNode->getComponent<PhysicsComponent>()->getScale();
+                    heavyNode->get<PhysicsComponent>()->getScale();
                 currentName = Util::StringFormat("Soldier_3_%d_%d", k, i % 10);
                 speed = Metric::Base(Random(4.5f, 7.5f));
                 acc = Metric::Base(Random(4.0f, 6.5f));
@@ -326,7 +326,7 @@ bool WarScene::addUnits() {
             currentNode->setSelectable(true);
 
             PhysicsComponent* pComp =
-                currentNode->getComponent<PhysicsComponent>();
+                currentNode->get<PhysicsComponent>();
             pComp->setScale(currentScale);
 
             if (k == 0) {
@@ -349,9 +349,9 @@ bool WarScene::addUnits() {
                                                        currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             k == 0
-                ? currentNode->getComponent<RenderingComponent>()
+                ? currentNode->get<RenderingComponent>()
                       ->renderBoundingBox(true)
-                : currentNode->getComponent<RenderingComponent>()
+                : currentNode->get<RenderingComponent>()
                       ->renderSkeleton(true);
 
             AI::WarSceneAIProcessor* brain =

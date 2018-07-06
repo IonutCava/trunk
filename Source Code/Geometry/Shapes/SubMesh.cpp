@@ -29,7 +29,7 @@ SubMesh::~SubMesh()
 void SubMesh::postLoad(SceneGraphNode& sgn) {
     Object3D::postLoad(sgn);
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
@@ -55,7 +55,7 @@ bool SubMesh::getDrawCommands(SceneGraphNode& sgn,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
 

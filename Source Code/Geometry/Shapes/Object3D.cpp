@@ -84,7 +84,7 @@ bool Object3D::getDrawCommands(SceneGraphNode& sgn,
         drawCommandsOut.resize(1);
         GenericDrawCommand& cmd = drawCommandsOut.front();
 
-        RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+        RenderingComponent* const renderable = sgn.get<RenderingComponent>();
         VertexBuffer* const vb = getGeometryVB();
 
         cmd.renderGeometry(renderable->renderGeometry());

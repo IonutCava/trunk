@@ -19,7 +19,7 @@ void PingPongScene::preRender() {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, vec4<F32>(1.0f));
 }
 //<<end copy-paste
@@ -55,7 +55,7 @@ void PingPongScene::processTasks(const U64 deltaTime) {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
                                                          _sun.lock()->getNode<Light>()->getDiffuseColor());
 
@@ -70,7 +70,7 @@ void PingPongScene::resetGame() {
     _lost = false;
     _sideDrift = 0;
     clearTasks();
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(0, 2, 2));
+    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(0, 2, 2));
 }
 
 void PingPongScene::serveBall() {
@@ -93,7 +93,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     bool updated = false;
     stringImpl message;
     PhysicsComponent* ballTransform =
-        _ballSGN.lock()->getComponent<PhysicsComponent>();
+        _ballSGN.lock()->get<PhysicsComponent>();
     vec3<F32> ballPosition = ballTransform->getPosition();
 
     SceneGraphNode_ptr table(_sceneGraph.findNode("table").lock());
@@ -102,11 +102,11 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
 
     vec3<F32> paddlePosition =
-        paddle->getComponent<PhysicsComponent>()->getPosition();
+        paddle->get<PhysicsComponent>()->getPosition();
     vec3<F32> opponentPosition =
-        opponent->getComponent<PhysicsComponent>()->getPosition();
+        opponent->get<PhysicsComponent>()->getPosition();
     vec3<F32> tablePosition =
-        table->getComponent<PhysicsComponent>()->getPosition();
+        table->get<PhysicsComponent>()->getPosition();
 
     // Is the ball coming towards us or towards the opponent?
     _directionTowardsAdversary ? ballPosition.z -= 0.11f : ballPosition.z +=
@@ -117,13 +117,16 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     // Is the ball moving to the right or to the left?
     ballPosition.x += _sideDrift * 0.15f;
     if (opponentPosition.x != ballPosition.x)
-        opponent->getComponent<PhysicsComponent>()->translateX(
+        opponent->get<PhysicsComponent>()->translateX(
             ballPosition.x - opponentPosition.x);
 
     ballTransform->translate(ballPosition - ballTransform->getPosition());
 
     // Did we hit the table? Bounce then ...
-    if (table->getBoundingBox().collision(_ballSGN.lock()->getBoundingBox())) {
+    if (table->get<BoundsComponent>()
+             ->getBoundingBox().collision(_ballSGN.lock()->get<BoundsComponent>()
+                                                         ->getBoundingBox()))
+    {
         if (ballPosition.z > tablePosition.z) {
             _touchedOwnTableHalf = true;
             _touchedAdversaryTableHalf = false;
@@ -137,7 +140,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     if (ballPosition.y > 2.1f) _upwardsDirection = false;
 
     // Did we hit the paddle?
-    if (_ballSGN.lock()->getBoundingBox().collision(paddle->getBoundingBox())) {
+    if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(paddle->get<BoundsComponent>()->getBoundingBox())) {
         _sideDrift = ballPosition.x - paddlePosition.x;
         // If we hit the ball with the upper margin of the paddle, add a slight
         // impuls to the ball
@@ -146,7 +149,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
         _directionTowardsAdversary = true;
     }
 
-    if (ballPosition.y + 0.75f < table->getBoundingBox().getMax().y) {
+    if (ballPosition.y + 0.75f < table->get<BoundsComponent>()->getBoundingBox().getMax().y) {
         // If we hit the ball and it landed on the opponent's table half
         // Or if the opponent hit the ball and it landed on our table half
         if ((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
@@ -167,7 +170,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
         updated = true;
     }
 
-    if (_ballSGN.lock()->getBoundingBox().collision(net->getBoundingBox())) {
+    if (_ballSGN.lock()->get<BoundsComponent>()->getBoundingBox().collision(net->get<BoundsComponent>()->getBoundingBox())) {
         if (_directionTowardsAdversary) {
             // Did we hit the net?
             _lost = true;
@@ -181,10 +184,12 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     // Did we hit the opponent? Then change ball direction ... BUT ...
     // Add a small chance that we win
     if (Random(30) != 2)
-        if (_ballSGN.lock()->getBoundingBox().collision(opponent->getBoundingBox())) {
+        if (_ballSGN.lock()->get<BoundsComponent>()
+                           ->getBoundingBox().collision(opponent->get<BoundsComponent>()
+                                                                ->getBoundingBox())) {
             _sideDrift =
                 ballPosition.x -
-                opponent->getComponent<PhysicsComponent>()->getPosition().x;
+                opponent->get<PhysicsComponent>()->getPosition().x;
             _directionTowardsAdversary = false;
         }
     // Add a spin effect to the ball
@@ -236,14 +241,14 @@ void PingPongScene::processInput(const U64 deltaTime) {
 
     SceneGraphNode_ptr paddle(_sceneGraph.findNode("paddle").lock());
 
-    vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
+    vec3<F32> pos = paddle->get<PhysicsComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
     if (state().moveFB() != SceneState::MoveDirection::NONE) {
         if ((state().moveFB() == SceneState::MoveDirection::POSITIVE && pos.y >= 3) ||
             (state().moveFB() == SceneState::MoveDirection::NEGATIVE && pos.y <= 0.5f))
             return;
-        paddle->getComponent<PhysicsComponent>()->translateY(to_int(state().moveFB()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateY(to_int(state().moveFB()) / paddleMovementDivisor);
     }
 
     if (state().moveLR() != SceneState::MoveDirection::NONE) {
@@ -251,7 +256,7 @@ void PingPongScene::processInput(const U64 deltaTime) {
         if ((state().moveLR() == SceneState::MoveDirection::NEGATIVE && pos.x >= 3) ||
             (state().moveLR() == SceneState::MoveDirection::POSITIVE && pos.x <= -3))
             return;
-        paddle->getComponent<PhysicsComponent>()->translateX(to_int(state().moveLR()) / paddleMovementDivisor);
+        paddle->get<PhysicsComponent>()->translateX(to_int(state().moveLR()) / paddleMovementDivisor);
     }
 }
 
@@ -299,7 +304,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
     _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "PingPongBallSGN");
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
+    _ballSGN.lock()->get<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);

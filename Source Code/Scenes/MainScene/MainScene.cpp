@@ -22,7 +22,7 @@ void MainScene::updateLights() {
         Lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
              vec4<F32>(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + _sun_cosy * 0.75f);
 
-    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _sun.lock()->getNode<Light>()->setDiffuseColor(_sunColor);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector, _sunColor);
 
@@ -147,7 +147,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
 
     waterGraphNode->useDefaultTransform(false);
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
-    waterGraphNode->getComponent<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
+    waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
     // Render the scene for water reflection FB generation
     _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes,
                                                 &SceneManager::getInstance(),
@@ -217,7 +217,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b) {
         box = boxNode->getNode<Object3D>();
     }
     if (box) {
-        pos = boxNode->getComponent<PhysicsComponent>()->getPosition();
+        pos = boxNode->get<PhysicsComponent>()->getPosition();
     }
 
     if (!switchAB) {
@@ -239,7 +239,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b) {
             }
         }
     }
-    if (box) boxNode->getComponent<PhysicsComponent>()->setPosition(pos);
+    if (box) boxNode->get<PhysicsComponent>()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors) {

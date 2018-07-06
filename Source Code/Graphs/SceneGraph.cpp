@@ -22,7 +22,7 @@ SceneGraph::SceneGraph() : FrameListener(),
 {
     REGISTER_FRAME_LISTENER(this, 1);
     _root = std::make_shared<SceneGraphNode>(*this, *_rootNode, "ROOT");
-    _root->lockBBTransforms(true);
+    _root->get<BoundsComponent>()->lockBBTransforms(true);
     _rootNode->postLoad(*_root);
 
     onNodeAdd(*_root);

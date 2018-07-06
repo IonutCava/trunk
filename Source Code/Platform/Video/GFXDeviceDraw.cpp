@@ -180,9 +180,9 @@ I32 GFXDevice::reserveRenderQueue() {
 GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U32 dataIndex) {
     NodeData& dataOut = _matricesData[dataIndex];
 
-    RenderingComponent* const renderable = node.getComponent<RenderingComponent>();
-    AnimationComponent* const animComp = node.getComponent<AnimationComponent>();
-    PhysicsComponent* const transform = node.getComponent<PhysicsComponent>();
+    RenderingComponent* const renderable = node.get<RenderingComponent>();
+    AnimationComponent* const animComp = node.get<AnimationComponent>();
+    PhysicsComponent* const transform = node.get<PhysicsComponent>();
 
     // Extract transform data (if available)
     // (Nodes without transforms are considered as using identity matrices)
@@ -206,7 +206,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     dataOut._normalMatrixWV.element(0, 3) = to_float(animComp ? animComp->boneCount() : 0);
-    dataOut._normalMatrixWV.setRow(3, node.getBoundingSphereConst().asVec4());
+    dataOut._normalMatrixWV.setRow(3, node.get<BoundsComponent>()->getBoundingSphereConst().asVec4());
     // Get the color matrix (diffuse, specular, etc.)
     renderable->getMaterialColorMatrix(dataOut._colorMatrix);
     // Get the material property matrix (alpha test, texture count,
@@ -253,7 +253,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         [&](RenderPassCuller::VisibleNode& node) -> void {
         SceneGraphNode_cptr nodeRef = node.second.lock();
 
-        RenderingComponent* renderable = nodeRef->getComponent<RenderingComponent>();
+        RenderingComponent* renderable = nodeRef->get<RenderingComponent>();
         RenderPackage& pkg = 
             refreshNodeData ? Attorney::RenderingCompGFXDevice::getDrawPackage(*renderable,
                                                                                sceneRenderState,

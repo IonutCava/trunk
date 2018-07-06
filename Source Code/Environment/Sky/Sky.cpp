@@ -95,10 +95,10 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     }
 
     _sky->renderState().setDrawState(false);
-    sgn.addNode(*_sky)->getComponent<PhysicsComponent>()->physicsGroup(
+    sgn.addNode(*_sky)->get<PhysicsComponent>()->physicsGroup(
         PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
 
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->castsShadows(false);
 
     GenericDrawCommand cmd;
@@ -114,7 +114,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     _skybox->flushTextureState();
     TextureData skyTextureData = _skybox->getData();
     skyTextureData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::UNIT0));
-    sgn.getComponent<RenderingComponent>()->registerTextureDependency(skyTextureData);
+    sgn.get<RenderingComponent>()->registerTextureDependency(skyTextureData);
 
     SceneNode::postLoad(sgn);
 }
@@ -123,7 +123,7 @@ void Sky::sceneUpdate(const U64 deltaTime,
                        SceneGraphNode& sgn,
                       SceneState& sceneState) {
 
-    sgn.getComponent<PhysicsComponent>()->setPosition(sceneState.renderState().getCameraConst().getEye());
+    sgn.get<PhysicsComponent>()->setPosition(sceneState.renderState().getCameraConst().getEye());
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
@@ -139,7 +139,7 @@ bool Sky::getDrawCommands(SceneGraphNode& sgn,
 
     GenericDrawCommand& cmd = drawCommandsOut.front();
 
-    RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* renderable = sgn.get<RenderingComponent>();
     cmd.renderGeometry(renderable->renderGeometry());
     cmd.renderWireframe(renderable->renderWireframe());
     cmd.stateHash(renderStage == RenderStage::REFLECTION

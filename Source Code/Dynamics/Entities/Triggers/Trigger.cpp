@@ -32,7 +32,7 @@ bool Trigger::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
     }
     /// update dummy position if it is so
     U32 temp = 0;
-    sgn.getChild(0, temp).getComponent<PhysicsComponent>()->setPosition(_triggerPosition);
+    sgn.getChild(0, temp).get<PhysicsComponent>()->setPosition(_triggerPosition);
     _triggerImpostor->setRadius(_radius);
     _triggerImpostor->renderState().setDrawState(true);
     sgn.getChild(0, temp).setActive(true);

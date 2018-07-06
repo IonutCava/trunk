@@ -117,7 +117,7 @@ bool Terrain::getDrawCommands(SceneGraphNode& sgn,
                               const SceneRenderState& sceneRenderState,
                               vectorImpl<GenericDrawCommand>& drawCommandsOut) {
 
-    RenderingComponent* const renderable = sgn.getComponent<RenderingComponent>();
+    RenderingComponent* const renderable = sgn.get<RenderingComponent>();
     assert(renderable != nullptr);
 
     drawCommandsOut.resize(0);

@@ -23,10 +23,10 @@ namespace {
 
         bool operator()(const RenderPassCuller::VisibleNode& a,
             const RenderPassCuller::VisibleNode& b) const {
-            F32 distASQ = a.second.lock()->getBoundingSphereConst()
+            F32 distASQ = a.second.lock()->get<BoundsComponent>()->getBoundingSphereConst()
                 .getCenter()
                 .distanceSquared(_camPos);
-            F32 distBSQ = b.second.lock()->getBoundingSphereConst()
+            F32 distBSQ = b.second.lock()->get<BoundsComponent>()->getBoundingSphereConst()
                 .getCenter()
                 .distanceSquared(_camPos);
             return distASQ < distBSQ;
@@ -310,7 +310,7 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
     
     queue.sort(stage);
     for (RenderPassCuller::VisibleNode& node : visibleNodes) {
-        node.first = node.second.lock()->getComponent<RenderingComponent>()->drawOrder();
+        node.first = node.second.lock()->get<RenderingComponent>()->drawOrder();
     }
 
     std::sort(std::begin(visibleNodes), std::end(visibleNodes),

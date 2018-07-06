@@ -41,7 +41,7 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                         sgn.getName().c_str(),
                                         submesh->getID()));
     }
-    sgn.lockBBTransforms(true);
+    sgn.get<BoundsComponent>()->lockBBTransforms(true);
     Object3D::postLoad(sgn);
 }
 
@@ -52,7 +52,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
         bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
         U32 childCount = sgn.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            AnimationComponent* comp = sgn.getChild(i, childCount).getComponent<AnimationComponent>();
+            AnimationComponent* comp = sgn.getChild(i, childCount).get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (comp) {
                 comp->playAnimations(playAnimations && comp->playAnimations());

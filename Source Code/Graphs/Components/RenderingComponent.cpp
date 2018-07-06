@@ -212,7 +212,7 @@ void RenderingComponent::renderGeometry(const bool state) {
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
             RenderingComponent* const renderable = 
-                _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+                _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->renderGeometry(state);
             }
@@ -226,7 +226,7 @@ void RenderingComponent::renderWireframe(const bool state) {
     
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->renderWireframe(state);
             }
@@ -243,7 +243,7 @@ void RenderingComponent::renderBoundingBox(const bool state) {
         }
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->renderBoundingBox(state);
             }
@@ -259,7 +259,7 @@ void RenderingComponent::renderBoundingSphere(const bool state) {
         }
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->renderBoundingSphere(state);
             }
@@ -275,7 +275,7 @@ void RenderingComponent::renderSkeleton(const bool state) {
         }
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->renderSkeleton(state);
             }
@@ -289,7 +289,7 @@ void RenderingComponent::castsShadows(const bool state) {
     
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->castsShadows(_castsShadows);
             }
@@ -303,7 +303,7 @@ void RenderingComponent::receivesShadows(const bool state) {
     
         U32 childCount = _parentSGN.getChildCount();
         for (U32 i = 0; i < childCount; ++i) {
-            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).getComponent<RenderingComponent>();
+            RenderingComponent* const renderable = _parentSGN.getChild(i, childCount).get<RenderingComponent>();
             if (renderable) {
                 renderable->receivesShadows(_receiveShadows);
             }
@@ -384,7 +384,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
     // Draw bounding box if needed and only in the final stage to prevent
     // Shadow/PostFX artifacts
     if (renderBoundingBox() || sceneRenderState.drawBoundingBoxes()) {
-        const BoundingBox& bb = _parentSGN.getBoundingBoxConst();
+        const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBoxConst();
         GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[0], bb.getMin(), bb.getMax(), vec4<U8>(0, 0, 255, 255));
 
 
@@ -401,7 +401,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             bool renderParentBB = parentStates.getTrackedValue(StateTracker<bool>::State::BOUNDING_BOX_RENDERED,
                                    renderParentBBFlagInitialized);
             if (!renderParentBB || !renderParentBBFlagInitialized) {
-                const BoundingBox& bbGrandParent = grandParent->getBoundingBoxConst();
+                const BoundingBox& bbGrandParent = grandParent->get<BoundsComponent>()->getBoundingBoxConst();
                 GFX_DEVICE.drawBox3D(*_boundingBoxPrimitive[1],
                                      bbGrandParent.getMin(),
                                      bbGrandParent.getMax(),
@@ -416,7 +416,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
 
     
     if (renderBoundingSphere()) {
-        const BoundingSphere& bs = _parentSGN.getBoundingSphereConst();
+        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphereConst();
         GFX_DEVICE.drawSphere3D(*_boundingSpherePrimitive, bs.getCenter(), bs.getRadius(),
                                 vec4<U8>(0, 255, 0, 255));
     } else {
@@ -435,10 +435,10 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
             if (!renderSkeleton || !renderSkeletonFlagInitialized) {
                 // Get the animation component of any submesh. They should be synced anyway.
                 AnimationComponent* childAnimComp =
-                    _parentSGN.getComponent<AnimationComponent>();
+                    _parentSGN.get<AnimationComponent>();
                 // Get the skeleton lines from the submesh's animation component
                 const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
-                _skeletonPrimitive->worldMatrix(_parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix());
+                _skeletonPrimitive->worldMatrix(_parentSGN.get<PhysicsComponent>()->getWorldMatrix());
                 // Submit the skeleton lines to the GPU for rendering
                 GFX_DEVICE.drawLines(*_skeletonPrimitive, skeletonLines,
                                      vec4<I32>(),
@@ -546,7 +546,8 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState,
                                                   pkg._drawCommands)) {
             F32 cameraDistanceSQ =
                 _parentSGN
-                    .getBoundingSphereConst()
+                    .get<BoundsComponent>()
+                    ->getBoundingSphereConst()
                     .getCenter()
                     .distanceSquared(sceneRenderState
                                      .getCameraConst()
@@ -617,7 +618,7 @@ bool RenderingComponent::updateReflection(const vec3<F32>& camPos, const vec2<F3
 void RenderingComponent::drawDebugAxis() {
    
     PhysicsComponent* const transform =
-        _parentSGN.getComponent<PhysicsComponent>();
+        _parentSGN.get<PhysicsComponent>();
     if (transform) {
         mat4<F32> tempOffset(GetMatrix(transform->getOrientation()));
         tempOffset.setTranslation(transform->getPosition());

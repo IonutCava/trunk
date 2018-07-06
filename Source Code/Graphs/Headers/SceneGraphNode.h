@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015 DIVIDE-Studio
+   Copyright (c) 2016 DIVIDE-Studio
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
@@ -35,6 +35,7 @@
 #include "SceneNode.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/SGNComponent.h"
+#include "Graphs/Components/Headers/BoundsComponent.h"
 #include "Graphs/Components/Headers/PhysicsComponent.h"
 #include "Graphs/Components/Headers/AnimationComponent.h"
 #include "Graphs/Components/Headers/NavigationComponent.h"
@@ -171,15 +172,6 @@ class SceneGraphNode : public GUIDWrapper,
     void setParent(SceneGraphNode& parent);
 
     /*Parent <-> Children*/
-
-    /*Bounding Box Management*/
-    inline BoundingBox& getBoundingBox() { return _boundingBox; }
-    inline const BoundingBox& getBoundingBoxConst() const { return _boundingBox;  }
-    inline BoundingSphere& getBoundingSphere() { return _boundingSphere; }
-    inline const BoundingSphere& getBoundingSphereConst() const { return _boundingSphere;  }
-    void computeBoundingBox();
-    /*Bounding Box Management*/
-
     void useDefaultTransform(const bool state);
 
     /*Node State*/
@@ -189,10 +181,6 @@ class SceneGraphNode : public GUIDWrapper,
     inline const UsageContext& usageContext() const { return _usageContext; }
     void usageContext(const UsageContext& newContext);
 
-    inline bool lockBBTransforms() const { return _lockBBTransforms; }
-
-    inline void lockBBTransforms(const bool state) { _lockBBTransforms = state; }
-
     inline U64 getElapsedTime() const { return _elapsedTime; }
 
     inline void setComponent(SGNComponent::ComponentType type,
@@ -201,7 +189,7 @@ class SceneGraphNode : public GUIDWrapper,
     }
 
     template <typename T>
-    inline T* getComponent() const {
+    inline T* get() const {
         assert(false && "INVALID COMPONENT");
         return nullptr;
     }
@@ -321,11 +309,6 @@ class SceneGraphNode : public GUIDWrapper,
     bool _isSelectable;
     SelectionFlag _selectionFlag;
 
-    std::atomic<bool> _boundingBoxDirty;
-    bool _lockBBTransforms;
-    BoundingBox _boundingBox;
-    BoundingSphere _boundingSphere;
-
     UsageContext _usageContext;
     std::array<std::unique_ptr<SGNComponent>, 
                to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
@@ -336,24 +319,60 @@ class SceneGraphNode : public GUIDWrapper,
 };
 
 template <>
-inline AnimationComponent* SceneGraphNode::getComponent() const {
+inline AnimationComponent* SceneGraphNode::get() const {
 	return static_cast<AnimationComponent*>(
 		_components[to_const_uint(SGNComponent::ComponentType::ANIMATION)].get());
 }
 template <>
-inline NavigationComponent* SceneGraphNode::getComponent() const {
+inline BoundsComponent* SceneGraphNode::get() const {
+    return static_cast<BoundsComponent*>(
+        _components[to_const_uint(SGNComponent::ComponentType::BOUNDS)].get());
+}
+template <>
+inline NavigationComponent* SceneGraphNode::get() const {
 	return static_cast<NavigationComponent*>(
 		_components[to_const_uint(SGNComponent::ComponentType::NAVIGATION)].get());
 }
 template <>
-inline PhysicsComponent* SceneGraphNode::getComponent() const {
+inline PhysicsComponent* SceneGraphNode::get() const {
 	return static_cast<PhysicsComponent*>(
 		_components[to_const_uint(SGNComponent::ComponentType::PHYSICS)].get());
 }
 template <>
-inline RenderingComponent* SceneGraphNode::getComponent() const {
+inline RenderingComponent* SceneGraphNode::get() const {
 	return static_cast<RenderingComponent*>(
 		_components[to_const_uint(SGNComponent::ComponentType::RENDERING)].get());
+}
+
+template <typename T>
+inline T* get(const SceneGraphNode& node) {
+    assert(false && "INVALID COMPONENT");
+    return nullptr;
+}
+
+template <>
+inline AnimationComponent* get(const SceneGraphNode& node) {
+    return node.get<AnimationComponent>();
+}
+
+template <>
+inline BoundsComponent* get(const SceneGraphNode& node) {
+    return node.get<BoundsComponent>();
+}
+
+template <>
+inline NavigationComponent* get(const SceneGraphNode& node) {
+    return node.get<NavigationComponent>();
+}
+
+template <>
+inline PhysicsComponent* get(const SceneGraphNode& node) {
+    return node.get<PhysicsComponent>();
+}
+
+template <>
+inline RenderingComponent* get(const SceneGraphNode& node) {
+    return node.get<RenderingComponent>();
 }
 };  // namespace Divide
 #endif

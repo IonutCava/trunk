@@ -26,7 +26,7 @@ void TenisScene::preRender() {
         vec3<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y));
 
-    _sun.lock()->getComponent<PhysicsComponent>()->setPosition(_sunvector);
+    _sun.lock()->get<PhysicsComponent>()->setPosition(_sunvector);
     _currentSky.lock()->getNode<Sky>()->setSunProperties(_sunvector,
                                                          _sun.lock()->getNode<Light>()->getDiffuseColor());
 }
@@ -73,7 +73,7 @@ void TenisScene::resetGame() {
     _applySideImpulse = false;
     _sideImpulseFactor = 0;
     WriteLock w_lock(_gameLock);
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->setPosition(vec3<F32>(
+    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(vec3<F32>(
         (Random(0, 10) >= 5) ? 3.0f : -3.0f, 0.2f, _lostTeam1 ? -7.0f : 7.0f));
     _directionTeam1ToTeam2 = !_lostTeam1;
     _lostTeam1 = false;
@@ -97,15 +97,15 @@ void TenisScene::checkCollisions() {
     SceneGraphNode_ptr Player3(_aiPlayer3->getUnitRef()->getBoundNode().lock());
     SceneGraphNode_ptr Player4(_aiPlayer4->getUnitRef()->getBoundNode().lock());
 
-    BoundingBox ballBB = _ballSGN.lock()->getBoundingBoxConst();
-    BoundingBox floorBB = _floor.lock()->getBoundingBoxConst();
+    BoundingBox ballBB = _ballSGN.lock()->get<BoundsComponent>()->getBoundingBoxConst();
+    BoundingBox floorBB = _floor.lock()->get<BoundsComponent>()->getBoundingBoxConst();
 
     WriteLock w_lock(_gameLock);
-    _collisionPlayer1 = ballBB.collision(Player1->getBoundingBox());
-    _collisionPlayer2 = ballBB.collision(Player2->getBoundingBox());
-    _collisionPlayer3 = ballBB.collision(Player3->getBoundingBox());
-    _collisionPlayer4 = ballBB.collision(Player4->getBoundingBox());
-    _collisionNet = ballBB.collision(_net.lock()->getBoundingBox());
+    _collisionPlayer1 = ballBB.collision(Player1->get<BoundsComponent>()->getBoundingBoxConst());
+    _collisionPlayer2 = ballBB.collision(Player2->get<BoundsComponent>()->getBoundingBoxConst());
+    _collisionPlayer3 = ballBB.collision(Player3->get<BoundsComponent>()->getBoundingBoxConst());
+    _collisionPlayer4 = ballBB.collision(Player4->get<BoundsComponent>()->getBoundingBoxConst());
+    _collisionNet = ballBB.collision(_net.lock()->get<BoundsComponent>()->getBoundingBoxConst());
     _collisionFloor = floorBB.collision(ballBB);
 }
 
@@ -128,19 +128,19 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
     // Store by copy (thread-safe) current ball position (getPosition()) should
     // be threadsafe
     vec3<F32> netPosition =
-        _net.lock()->getComponent<PhysicsComponent>()->getPosition();
+        _net.lock()->get<PhysicsComponent>()->getPosition();
     vec3<F32> ballPosition =
-        _ballSGN.lock()->getComponent<PhysicsComponent>()->getPosition();
+        _ballSGN.lock()->get<PhysicsComponent>()->getPosition();
     vec3<F32> player1Pos =
-        Player1->getComponent<PhysicsComponent>()->getPosition();
+        Player1->get<PhysicsComponent>()->getPosition();
     vec3<F32> player2Pos =
-        Player2->getComponent<PhysicsComponent>()->getPosition();
+        Player2->get<PhysicsComponent>()->getPosition();
     vec3<F32> player3Pos =
-        Player3->getComponent<PhysicsComponent>()->getPosition();
+        Player3->get<PhysicsComponent>()->getPosition();
     vec3<F32> player4Pos =
-        Player4->getComponent<PhysicsComponent>()->getPosition();
-    vec3<F32> netBBMax = _net.lock()->getBoundingBox().getMax();
-    vec3<F32> netBBMin = _net.lock()->getBoundingBox().getMin();
+        Player4->get<PhysicsComponent>()->getPosition();
+    vec3<F32> netBBMax = _net.lock()->get<BoundsComponent>()->getBoundingBoxConst().getMax();
+    vec3<F32> netBBMin = _net.lock()->get<BoundsComponent>()->getBoundingBoxConst().getMin();
 
     UpgradeToWriteLock uw_lock(ur_lock);
     // Is the ball traveling from team 1 to team 2?
@@ -153,9 +153,9 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b) {
 
     // After we finish our computations, apply the new transform
     // setPosition/getPosition should be thread-safe
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->setPosition(ballPosition);
+    _ballSGN.lock()->get<PhysicsComponent>()->setPosition(ballPosition);
     // Add a spin to the ball just for fun ...
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->rotate(
+    _ballSGN.lock()->get<PhysicsComponent>()->rotate(
         vec3<F32>(ballPosition.z, 1, 1));
 
     //----------------------COLLISIONS------------------------------//
@@ -292,7 +292,7 @@ bool TenisScene::load(const stringImpl& name, GUI* const gui) {
     //    child.setReceivesShadows(false);
     //}
     _floor = _sceneGraph.findNode("Floor");
-    _floor.lock()->getComponent<RenderingComponent>()->castsShadows(false);
+    _floor.lock()->get<RenderingComponent>()->castsShadows(false);
 
     AI::AIManager::getInstance().pauseUpdate(false);
     return loadState;
@@ -313,13 +313,13 @@ bool TenisScene::initializeAI(bool continueOnErrors) {
     player[3]->setSelectable(true);
 
     _aiPlayer1 = MemoryManager_NEW AI::AIEntity(
-        player[0]->getComponent<PhysicsComponent>()->getPosition(), "Player1");
+        player[0]->get<PhysicsComponent>()->getPosition(), "Player1");
     _aiPlayer2 = MemoryManager_NEW AI::AIEntity(
-        player[1]->getComponent<PhysicsComponent>()->getPosition(), "Player2");
+        player[1]->get<PhysicsComponent>()->getPosition(), "Player2");
     _aiPlayer3 = MemoryManager_NEW AI::AIEntity(
-        player[2]->getComponent<PhysicsComponent>()->getPosition(), "Player3");
+        player[2]->get<PhysicsComponent>()->getPosition(), "Player3");
     _aiPlayer4 = MemoryManager_NEW AI::AIEntity(
-        player[3]->getComponent<PhysicsComponent>()->getPosition(), "Player4");
+        player[3]->get<PhysicsComponent>()->getPosition(), "Player4");
     _aiPlayer1->addSensor(AI::SensorType::VISUAL_SENSOR);
     _aiPlayer2->addSensor(AI::SensorType::VISUAL_SENSOR);
     _aiPlayer3->addSensor(AI::SensorType::VISUAL_SENSOR);
@@ -397,7 +397,7 @@ bool TenisScene::loadResources(bool continueOnErrors) {
     _ball->setResolution(16);
     _ball->setRadius(0.3f);
     _ballSGN = _sceneGraph.getRoot().addNode(*_ball, "TenisBallSGN");
-    _ballSGN.lock()->getComponent<PhysicsComponent>()->translate(
+    _ballSGN.lock()->get<PhysicsComponent>()->translate(
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);
 
