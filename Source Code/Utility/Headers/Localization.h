@@ -41,13 +41,23 @@ namespace Divide {
 enum class ErrorCode : I32;
 
 namespace Locale {
-/// Each string key in the map matches a key in the language ini file
-/// each string value in the map matches the value in the ini file for the given key
-/// Basicly, the hashMapImpl is a direct copy of the [language] section of the
-/// give ini file
-static hashMapImpl<U64, stringImpl> g_languageTable;
-/// Default language can be set at compile time
-static stringImpl g_localeFile = DEFAULT_LANG;
+    namespace detail {
+        /// Is everything loaded and ready for use?
+        static bool s_initialized = false;
+        /// Default language can be set at compile time
+        static stringImpl s_localeFile = DEFAULT_LANG;
+
+        /// Each string key in the map matches a key in the language ini file
+        /// each string value in the map matches the value in the ini file for the given key
+        /// Basicly, the hashMapImpl is a direct copy of the [language] section of the
+        /// give ini file
+        static hashMapImpl<U64, stringImpl> s_languageTable;
+        static vectorImpl<DELEGATE_CBK_PARAM<const char* /*new language*/>> s_languageChangeCallbacks;
+
+        /// Callback for external file changes. 
+        void onLanguageFileModify(const char* languageFile);
+    }; //detail
+
 /// Reset everything and load the specified language file.
 ErrorCode init(const stringImpl& newLanguage = DEFAULT_LANG);
 /// clear the language table
@@ -57,16 +67,15 @@ void idle();
 /// Altough the language can be set at compile time, in-game options may support
 /// language changes
 void changeLanguage(const stringImpl& newLanguage);
+/// Add a function to be called on each language change
+void addChangeLanguageCallback(const DELEGATE_CBK_PARAM<const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
-inline const stringImpl& currentLanguage() { return g_localeFile; }
+inline const stringImpl& currentLanguage() { return detail::s_localeFile; }
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the
 /// language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
 const char* get(U64 key, const char* defaultValue);
 const char* get(U64 key);
-
-/// Callback for external file changes. 
-void onLanguageFileModify(const char* languageFile);
 
 };  // namespace Locale
 };  // namespace Divide

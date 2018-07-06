@@ -42,16 +42,16 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
 
 GUI::GUI(Kernel& parent)
     : GUIInterface(*this, vec2<U16>(1, 1)), //<dangerous, but better than a Singleton
-      KernelComponent(parent),
-      _init(false),
-      _rootSheet(nullptr),
-      _defaultMsgBox(nullptr),
-      _enableCEGUIRendering(false),
-      _debugVarCacheCount(0),
-      _activeScene(nullptr),
-      _guiEditor(nullptr),
-      _console(nullptr),
-      _textRenderInterval(Time::MillisecondsToMicroseconds(10))
+    KernelComponent(parent),
+    _init(false),
+    _rootSheet(nullptr),
+    _defaultMsgBox(nullptr),
+    _enableCEGUIRendering(false),
+    _debugVarCacheCount(0),
+    _activeScene(nullptr),
+    _guiEditor(nullptr),
+    _console(nullptr),
+    _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
     // 500ms
     _ceguiInput.setInitialDelay(0.500f);

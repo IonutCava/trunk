@@ -53,6 +53,8 @@ public:
     virtual void onChangeResolution(U16 w, U16 h);
     virtual const vec2<U16>& getDisplayResolution() const;
 
+    virtual void onLanguageChange(const char* newLanguage);
+
     /// Get a pointer to an element by name/id
     template<typename T = GUIElement>
     inline T* getGUIElement(U64 elementName) const {

@@ -17,6 +17,9 @@ GUIInterface::GUIInterface(GUI& context, const vec2<U16>& resolution)
     : _context(&context),
       _resolutionCache(resolution)
 {
+    Locale::addChangeLanguageCallback([this](const char* newLanguage) { 
+        onLanguageChange(newLanguage);
+    });
 }
 
 GUIInterface::~GUIInterface()
@@ -37,6 +40,9 @@ void GUIInterface::onChangeResolution(U16 w, U16 h) {
     _resolutionCache.set(w, h);
 }
 
+void GUIInterface::onLanguageChange(const char* newLanguage) {
+    ACKNOWLEDGE_UNUSED(newLanguage);
+}
 
 void GUIInterface::addElement(U64 id, GUIElement* element) {
     assert(Application::instance().isMainThread());

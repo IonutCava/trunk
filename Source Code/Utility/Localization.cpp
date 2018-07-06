@@ -9,7 +9,11 @@ namespace Divide {
 namespace Locale {
 
 namespace {
+    CSimpleIni g_languageFile;
     constexpr char* g_languageFileExtension = ".ini";
+
+    /// External modification monitoring system
+    std::unique_ptr<FW::FileWatcher> s_LanguageFileWatcher = nullptr;
 
     class UpdateListener : public FW::FileWatchListener
     {
@@ -25,7 +29,7 @@ namespace {
             case FW::Actions::Add: break;
             case FW::Actions::Delete: break;
             case FW::Actions::Modified:
-                onLanguageFileModify(filename.c_str());
+                detail::onLanguageFileModify(filename.c_str());
                 break;
 
             default:
@@ -35,25 +39,28 @@ namespace {
     } s_fileWatcherListener;
 };
 
-static CSimpleIni g_languageFile;
-/// Is everything loaded and ready for use?
-static bool g_initialized = false;
-
-static std::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
+namespace detail {
+    void onLanguageFileModify(const char* languageFile) {
+        // If we modify our currently active language, reinit the Locale system
+        if (strcmp((s_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
+            changeLanguage(s_localeFile);
+        }
+    }
+};
 
 ErrorCode init(const stringImpl& newLanguage) {
     clear();
-    if (!g_LanguageFileWatcher) {
-        g_LanguageFileWatcher.reset(new FW::FileWatcher());
-        g_LanguageFileWatcher->addWatch(Paths::g_LocalisationPath.c_str(), &s_fileWatcherListener);
+    if (!s_LanguageFileWatcher) {
+         s_LanguageFileWatcher.reset(new FW::FileWatcher());
+         s_LanguageFileWatcher->addWatch(Paths::g_LocalisationPath.c_str(), &s_fileWatcherListener);
     }
 
-    g_localeFile = newLanguage;
+    detail::s_localeFile = newLanguage;
     // Use SimpleIni library for cross-platform INI parsing
     g_languageFile.SetUnicode();
     g_languageFile.SetMultiLine(true);
 
-    stringImpl file = Paths::g_LocalisationPath + g_localeFile + g_languageFileExtension;
+    stringImpl file = Paths::g_LocalisationPath + detail::s_localeFile + g_languageFileExtension;
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;
@@ -69,24 +76,24 @@ ErrorCode init(const stringImpl& newLanguage) {
     for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
         stringImpl value(keyValuePairIt->second);
         
-        hashAlg::emplace(g_languageTable,
+        hashAlg::emplace(detail::s_languageTable,
                          _ID_RT(keyValuePairIt->first.pItem),
                          value);
     }
 
-    g_initialized = true;
+    detail::s_initialized = true;
     return ErrorCode::NO_ERR;
 }
 
 void clear() {
-    g_languageTable.clear();
+    detail::s_languageTable.clear();
     g_languageFile.Reset();
-    g_initialized = false;
+    detail::s_initialized = false;
 }
 
 void idle() {
-    if (g_LanguageFileWatcher) {
-        g_LanguageFileWatcher->update();
+    if (s_LanguageFileWatcher) {
+        s_LanguageFileWatcher->update();
     }
 }
 
@@ -95,14 +102,18 @@ void idle() {
 void changeLanguage(const stringImpl& newLanguage) {
     /// Set the new language code
     init(newLanguage);
+
+    for (const DELEGATE_CBK_PARAM<const char* /*new language*/>& languageChangeCbk : detail::s_languageChangeCallbacks) {
+        languageChangeCbk(newLanguage.c_str());
+    }
 }
 
 const char* get(U64 key, const char* defaultValue) {
-    if (g_initialized) {
+    if (detail::s_initialized) {
         typedef hashMapImpl<U64, stringImpl>::const_iterator citer;
         // When we ask for a string for the given key, we check our language cache first
-        citer entry = g_languageTable.find(key);
-        if (entry != std::cend(g_languageTable)) {
+        citer entry = detail::s_languageTable.find(key);
+        if (entry != std::cend(detail::s_languageTable)) {
             // Usually, the entire language table is loaded.
             return entry->second.c_str();
         }
@@ -116,11 +127,8 @@ const char* get(U64 key) {
     return get(key, "key not found");
 }
 
-void onLanguageFileModify(const char* languageFile) {
-    // If we modify our currently active language, reinit the Locale system
-    if (strcmp((g_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
-        init(g_localeFile);
-    }
+void addChangeLanguageCallback(const DELEGATE_CBK_PARAM<const char* /*new language*/>& cbk) {
+    detail::s_languageChangeCallbacks.emplace_back(cbk);
 }
 
 };  // namespace Locale
