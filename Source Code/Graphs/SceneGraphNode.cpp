@@ -17,6 +17,7 @@
 
 #include "ECS/Events/Headers/EntityEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
+#include "ECS/Systems/Headers/ECSManager.h"
 
 namespace Divide {
 
@@ -697,12 +698,13 @@ bool SceneGraphNode::save(ByteBuffer& outputBuffer) const {
         }
     }
 
-    return !forEachChildInterruptible([&outputBuffer](const SceneGraphNode& child) {
-                if (child.save(outputBuffer)) {
-                    return false;
-                }
-                return true;
-            });
+    if (!ECSManager::save(*this, outputBuffer)) {
+        return false;
+    }
+
+    return forEachChildInterruptible([&outputBuffer](const SceneGraphNode& child) {
+        return child.save(outputBuffer);
+    });
 }
 
 bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
@@ -712,12 +714,13 @@ bool SceneGraphNode::load(ByteBuffer& inputBuffer) {
         }
     }
 
-    return !forEachChildInterruptible([&inputBuffer](SceneGraphNode& child) {
-                if (child.load(inputBuffer)) {
-                    return false;
-                }
-                return true;
-            });
+    if (!ECSManager::load(*this, inputBuffer)) {
+        return false;
+    }
+
+    return forEachChildInterruptible([&inputBuffer](SceneGraphNode& child) {
+        return child.load(inputBuffer);
+    });
 }
 
 };

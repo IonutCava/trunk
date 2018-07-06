@@ -95,7 +95,7 @@ class NOINITVTABLE ShadowMap {
    protected:
     GFXDevice& _context;
 
-    typedef std::array<bool, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> LayerUsageMask;
+    typedef vectorImpl<bool> LayerUsageMask;
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> _depthMapUsage;
     
     ShadowType _shadowMapType;

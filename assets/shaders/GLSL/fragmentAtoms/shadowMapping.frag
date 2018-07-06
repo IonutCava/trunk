@@ -42,7 +42,7 @@ float shadow_loop(){
         for (int j = 0; j < int(dvd_lightCountPerType[i]); ++j) {
             int lightIndex = j + offset;
             dvd_private_light = dvd_LightSource[lightIndex];
-            if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && dvd_private_light._options.y == 1) {
+            if (dvd_private_light._options.y == 1) {
                 shadow *= getShadowFactor(fragDepth);
                 shadowLights++;
             }

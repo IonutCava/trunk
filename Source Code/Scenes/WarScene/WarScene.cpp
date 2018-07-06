@@ -520,7 +520,12 @@ bool WarScene::load(const stringImpl& name) {
     flagtComp->setScale(0.0015f);
     flagtComp->setPosition(1.25f, -1.5f, 0.15f);
     flagtComp->rotate(-20.0f, -70.0f, 50.0f);
-    firstPersonFlag->get<RigidBodyComponent>()->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
+
+    auto collision = [this](const RigidBodyComponent& collider) {
+        weaponCollision(collider);
+    };
+    RigidBodyComponent* rComp = firstPersonFlag->get<RigidBodyComponent>();
+    rComp->onCollisionCbk(collision);
     flagRComp = firstPersonFlag->getChild(0).get<RenderingComponent>();
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColours::GREEN);
     flagRComp->getMaterialInstance()->setHighPriority(true);

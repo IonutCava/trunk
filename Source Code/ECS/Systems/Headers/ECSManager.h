@@ -38,11 +38,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "BoundsSystem.h"
 
 namespace Divide {
-
+    class ByteBuffer;
+    class SceneGraphNode;
     class ECSManager {
         public:
             static void init(ECS::ECSEngine& engine);
             static void destroy(ECS::ECSEngine& engine);
+
+            static bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer);
+            static bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
+
+        protected:
+            static ECS::ECSEngine* s_ecsEngine;
     };
 }; //namespace Divide
 

@@ -218,16 +218,14 @@ namespace Assert {
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
-constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 5;
+constexpr unsigned int MAX_SHADOW_CASTING_LIGHTS = 16;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
 /// And cube map shadows as well
 constexpr unsigned int MAX_SPLITS_PER_LIGHT = 6;
-/// How many "units" away should a directional light source be from the camera's
-/// position
+/// How many "units" away should a directional light source be from the camera's position
 constexpr unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
 
-/// the maximum number of lights supported, this is limited by constant buffer
-/// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...
+/// Used mainly for caching/memory efficiency reasons
 constexpr unsigned int MAX_POSSIBLE_LIGHTS = 1024;
 
 /// The following parameters control the behaviour of the Forward+ renderer

@@ -13,7 +13,7 @@ const int LIGHT_SPOT = 2;
 
 struct Light {
     /// rgb = colour
-    /// w = reserved
+    /// w = cosOuterConeAngle
     vec4   _colour;
     /// xyz = light positon (or direction for Directional lights)
     /// w = range
@@ -21,7 +21,7 @@ struct Light {
     /// xyz = spot direction
     /// w = spot angle   
     vec4   _directionWV;
-    /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot
+    /// x = light type: 0 - directional, 1  - point, 2 - spot
     /// y = casts shadows
     /// z = shadow block index
     /// w = if directional light : csm split count else : reserved
@@ -30,7 +30,7 @@ struct Light {
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
-    Light dvd_LightSource[MAX_POSSIBLE_LIGHTS];
+    Light dvd_LightSource[];
 };
 
 layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
@@ -48,7 +48,7 @@ struct Shadow {
 
 layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent ACCESS buffer dvd_ShadowBlock
 {
-    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
+    Shadow dvd_ShadowSource[];
 };
 
 #endif 

@@ -60,10 +60,10 @@ class LightPool : public SceneComponent {
           /// xyz = spot direction
           /// w = spot angle
           vec4<F32> _direction;
-          /// x = light type: 0.0 - directional, 1.0  - point, 2.0 - spot#
+          /// x = light type: 0 - directional, 1 - point, 2 - spot
           /// y = casts shadows, 
           /// z - shadow block index
-          /// w - reserved;
+          /// w = if directional light : csm split count else : reserved
           vec4<I32> _options;
 
           inline void set(const LightProperties& other) {

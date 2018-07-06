@@ -38,7 +38,7 @@ void ShadowMap::resetShadowMaps(GFXDevice& context) {
     ACKNOWLEDGE_UNUSED(context);
 
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
-        _depthMapUsage[i].fill(false);
+        _depthMapUsage[i].resize(0);
     }
 }
 
@@ -154,7 +154,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             s_shadowMaps.push_back(crtTarget);
         };
 
-        _depthMapUsage[i].fill(false);
+        _depthMapUsage[i].resize(0);
     }
 }
 
@@ -189,11 +189,17 @@ void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {
 U16 ShadowMap::findDepthMapLayer(ShadowType shadowType) {
     LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     U16 layer = std::numeric_limits<U16>::max();
-    for (U16 i = 0; i < to_base(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS); ++i) {
+    U16 usageCount = (U16)usageMask.size();
+    for (vectorAlg::vecSize i = 0; i < usageCount; ++i) {
         if (usageMask[i] == false) {
             layer = i;
             break;
         }
+    }
+
+    if (layer > usageCount) {
+        layer = usageCount;
+        usageMask.push_back(true);
     }
 
     return layer;
@@ -216,15 +222,11 @@ const RenderTarget& ShadowMap::getDepthMap() const {
 }
 
 void ShadowMap::commitDepthMapLayer(ShadowType shadowType, U32 layer) {
-    DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
-        "ShadowMap::commitDepthMapLayer error: Insufficient texture layers for shadow mapping");
     LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = true;
 }
 
 bool ShadowMap::freeDepthMapLayer(ShadowType shadowType, U32 layer) {
-    DIVIDE_ASSERT(layer < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS,
-        "ShadowMap::freeDepthMapLayer error: Invalid layer value");
     LayerUsageMask& usageMask = _depthMapUsage[to_U32(shadowType)];
     usageMask[layer] = false;
 

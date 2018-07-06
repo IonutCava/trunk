@@ -369,12 +369,6 @@ bool GL_API::initShaders() {
         to_stringImpl(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";",
         lineOffsets);
 
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "const uint MAX_POSSIBLE_LIGHTS = " +
-        to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS) + ";",
-        lineOffsets);
-
     appendToShaderHeader(ShaderType::COUNT,
         "const int MAX_VISIBLE_NODES = " +
         to_stringImpl(Config::MAX_VISIBLE_NODES) + ";",
@@ -402,13 +396,6 @@ bool GL_API::initShaders() {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MAX_SHADOW_CASTING_LIGHTS " +
-        to_stringImpl(
-        Config::Lighting::MAX_SHADOW_CASTING_LIGHTS),
         lineOffsets);
 
     appendToShaderHeader(
@@ -459,12 +446,6 @@ bool GL_API::initShaders() {
         to_stringImpl(to_base(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);
 
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_PUSH_CONSTANTS " +
-        to_stringImpl(to_base(ShaderBufferLocation::PUSH_CONSTANTS)),
-        lineOffsets);
-    
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + to_stringImpl(Config::Lighting::FORWARD_PLUS_TILE_RES),

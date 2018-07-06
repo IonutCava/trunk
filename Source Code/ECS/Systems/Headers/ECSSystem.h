@@ -33,8 +33,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ECS_SYSTEM_H_
 
 #include <ECS.h>
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
+    class ByteBuffer;
+    class SceneGraphNode;
+
     template<class T>
     class ECSSystem : public ECS::System<T> {
     public:
@@ -46,6 +50,17 @@ namespace Divide {
         {
         }
 
+        virtual bool save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+            ACKNOWLEDGE_UNUSED(sgn);
+            ACKNOWLEDGE_UNUSED(outputBuffer);
+            return true;
+        }
+
+        virtual bool load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+            ACKNOWLEDGE_UNUSED(sgn);
+            ACKNOWLEDGE_UNUSED(inputBuffer);
+            return true;
+        }
     protected:
         ECS::ECSEngine& _engine;
     };

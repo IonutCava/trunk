@@ -31,4 +31,12 @@ namespace Divide {
     void AnimationSystem::PostUpdate(F32 dt) {
 
     }
+
+    bool AnimationSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+        return ECSSystem<AnimationSystem>::save(sgn, outputBuffer);
+    }
+
+    bool AnimationSystem::load(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+        return ECSSystem<AnimationSystem>::load(sgn, inputBuffer);
+    }
 };//namespace Divide
