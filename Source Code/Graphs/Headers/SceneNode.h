@@ -63,13 +63,13 @@ public:
     /*Rendering/Processing*/
     virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
 
-    virtual	bool getDrawState()  const {return _renderState.getDrawState();}
+    virtual	bool getDrawState() const {return _renderState.getDrawState();}
     /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage)  const {return _renderState.getDrawState(currentStage); }
     /*//Rendering/Processing*/
 
     virtual	bool	  unload();
-    virtual bool	  isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere,const bool distanceCheck = true);
+    virtual bool	  isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
             void	  clearMaterials();
             Material* getMaterial();
@@ -110,6 +110,12 @@ public:
     inline U8   getCurrentLOD() const {return (_lodLevel < (_LODcount-1) ? _lodLevel : (_LODcount-1));}
 
 protected:
+    friend class SceneGraphNode;
+    inline I8   getReferenceCount() const {return _sgnReferenceCount;}
+    inline void incReferenceCount()       {_sgnReferenceCount++;}
+    inline void decReferenceCount()       {_sgnReferenceCount--;}
+
+protected:
     ShaderProgram*        _customShader;
     ///The various states needed for rendering
     SceneNodeRenderState  _renderState;
@@ -118,13 +124,14 @@ protected:
     ///LOD level is updated at every visibility check (SceneNode::isInView(...));
     U8                    _lodLevel; ///<Relative to camera distance
     U8                    _LODcount; ///<Maximum available LOD levels
+    I8                    _sgnReferenceCount;
 
 private:
     //mutable SharedLock _materialLock;
     Material*	  _material;
     bool          _refreshMaterialData;
     SceneNodeType _type;
-    char   _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
+    char          _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
 };
 
 #endif

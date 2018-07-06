@@ -82,14 +82,14 @@ bool ResourceCache::remove(Resource* const resource,bool force){
         U32 refCount = resource->getRefCount();
         if(refCount > 1 && !force) {
             resource->SubRef();
-            D_PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES_DEC"),name.c_str(),refCount);
+            D_PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES_DEC"),name.c_str(),resource->getRefCount());
             return false; //do not delete pointer
         }else{
             PRINT_FN(Locale::get("RESOURCE_CACHE_REM_RES"),name.c_str());
             resource->setState(RES_LOADING);
             if(resource->unload()){
                 resource->setState(RES_CREATED);
-                return !resource->hasParents(); //<do not delete it if we have parents;
+                return true;
             }else{
                 ERROR_FN(Locale::get("ERROR_RESOURCE_REM"), name.c_str());
                 resource->setState(RES_UNKNOWN);

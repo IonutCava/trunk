@@ -43,12 +43,9 @@ class SubMesh;
 class Mesh : public Object3D {
 public:
 
-    Mesh(ObjectFlag flag = OBJECT_FLAG_NONE) : Object3D(MESH,TRIANGLES,flag),
-                                              _visibleToNetwork(true)
-    {
-    }
+    Mesh(ObjectFlag flag = OBJECT_FLAG_NONE);
 
-    virtual ~Mesh() {}
+    virtual ~Mesh();
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
@@ -59,8 +56,11 @@ public:
     inline  void render(SceneGraphNode* const sgn){};
     virtual void preFrameDrawEnd() {}
 
-    inline void  addSubMesh(const std::string& subMesh) {_subMeshes.push_back(subMesh);}
     inline const BoundingBox& getMaxBoundingBox() const { return _maxBoundingBox; }
+
+    virtual void  addSubMesh(SubMesh* const subMesh);
+
+    void refModifyCallback(bool increase);
 
 protected:
     typedef Unordered_map<std::string, SceneGraphNode*> childrenNodes;

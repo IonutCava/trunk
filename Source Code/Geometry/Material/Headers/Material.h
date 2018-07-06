@@ -35,7 +35,7 @@ class RenderStateBlockDescriptor;
 typedef Texture Texture2D;
 enum RenderStage;
 enum BlendProperty;
-class Material : public Resource{
+class Material : public Resource {
 public:
     struct ShaderData{
         vec4<F32> _diffuse;  /* diffuse component */
@@ -86,9 +86,9 @@ public:
   };
 
   enum GeometryShaderType {
-	  GS_TRIANGLES = 0,
-	  GS_LINES,
-	  GS_POINTS
+      GS_TRIANGLES = 0,
+      GS_LINES,
+      GS_POINTS
   };
 
   enum TranslucencySource {

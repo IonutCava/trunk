@@ -31,7 +31,7 @@ void LightManager::init(){
 
 bool LightManager::clear(){
     //Lights are removed by the sceneGraph
-    for_each(LightMap::value_type& it, _lights){
+    for_each(LightMap::value_type it, _lights){
         //in case we had some light hanging
         RemoveResource(it.second);
     }
@@ -53,22 +53,24 @@ bool LightManager::addLight(Light* const light){
     }
 
     light->setSlot(_lights.size());
-
     _lights.insert(std::make_pair(light->getId(),light));
     
     return true;
 }
 
+// try to remove any leftover lights
 bool LightManager::removeLight(U32 lightId){
-    LightMap::const_iterator it = _lights.find(lightId);
+    /// we can't remove a light if the light list is empty. That light has to exist somewhere!
+    assert(!_lights.empty());
+
+    LightMap::iterator it = _lights.find(lightId);
 
     if(it == _lights.end()){
         ERROR_FN(Locale::get("ERROR_LIGHT_MANAGER_REMOVE_LIGHT"),lightId);
         return false;
     }
 
-    (it->second)->removeShadowMapInfo();
-    _lights.erase(lightId); //remove it from the map
+    _lights.erase(it); //remove it from the map
     return true;
 }
 

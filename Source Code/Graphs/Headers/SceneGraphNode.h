@@ -64,7 +64,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn) {return true;}
 };
 
-class SceneGraphNode{
+class SceneGraphNode : private boost::noncopyable {
 public:
     typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 

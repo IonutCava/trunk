@@ -35,10 +35,12 @@ SceneGraphNode::SceneGraphNode(SceneNode* const node) : _node(node),
 {
     _animationTransforms.clear();
     _animationTransforms.reserve(60);
+    assert(_node != NULL);
 }
 
 ///If we are destroyng the current graph node
 SceneGraphNode::~SceneGraphNode(){
+    PRINT_FN(Locale::get("DELETE_SCENEGRAPH_NODE"), getName().c_str());
     //delete children nodes recursively
     for_each(NodeChildren::value_type it, _children){
         SAFE_DELETE(it.second);
@@ -88,8 +90,10 @@ bool SceneGraphNode::unload(){
     }
     //if not root
     if(getParent()){
-        //Remove the SceneNode that we own
-        RemoveResource(_node);
+        _node->decReferenceCount();
+        if(_node->getReferenceCount() == 0) {
+            RemoveResource(_node);
+        }
     }
     return true;
 }
@@ -185,6 +189,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
     //Set the current node as the new node's parrent
     sceneGraphNode->setParent(this);
     sceneGraphNode->setSceneGraph(_sceneGraph);
+    node->incReferenceCount();
     //Do all the post load operations on the SceneNode
     //Pass a reference to the newly created SceneGraphNode in case we need transforms or bounding boxes
     node->postLoad(sceneGraphNode);

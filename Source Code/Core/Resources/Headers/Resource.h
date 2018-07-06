@@ -82,6 +82,7 @@ protected:
     template<class X>
     friend class ImplResourceLoader;
     inline void setState(const ResourceState& currentState) {_resourceState = currentState;}
+    virtual void refModifyCallback(bool increase);
 
 protected:
     std::string	  _name;

@@ -4,6 +4,16 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
+SkinnedMesh::SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED), _playAnimation(true)
+{
+
+}
+
+SkinnedMesh::~SkinnedMesh()
+{
+
+}
+
 void SkinnedMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     bool playAnimation = (_playAnimation && ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
 

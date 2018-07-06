@@ -17,7 +17,7 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
                                                    _slot(slot),
                                                    _drawImpostor(false),
                                                    _updateLightBB(false),
-	                                               _lightSGN(NULL),
+                                                   _lightSGN(NULL),
                                                    _impostor(NULL),
                                                    _id(0),
                                                    _impostorSGN(NULL),
@@ -40,21 +40,30 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     _dirty = true;
     _enabled = true;
     _bias.bias();
+
+    assert(LightManager::hasInstance());
+    LightManager::getInstance().addLight(this);
 }
 
 Light::~Light()
 {
+    unload();
 }
 
 bool Light::unload(){
-    if(LightManager::hasInstance()){
-        LightManager::getInstance().removeLight(getId());
-    }
+    if(getState() != RES_LOADED && getState() != RES_LOADING)
+        return true;
 
     if(_impostor){
         _lightSGN->removeNode(_impostorSGN);
         SAFE_DELETE(_impostor);
     }
+
+    assert(LightManager::hasInstance());
+    LightManager::getInstance().removeLight(getId());
+        
+    removeShadowMapInfo();
+
     return SceneNode::unload();
 }
 
@@ -62,13 +71,12 @@ void Light::postLoad(SceneGraphNode* const sgn) {
     //Hold a pointer to the light's location in the SceneGraph
     _lightSGN = sgn;
     _updateLightBB = true;
-    LightManager::getInstance().addLight(this);
 }
 
 void Light::updateState(const bool force){
     assert(_lightSGN != NULL);
 
-	if(force) _dirty = true;
+    if(force) _dirty = true;
 
     if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
@@ -191,10 +199,10 @@ void Light::setLightProperties(const LightPropertiesF& key, F32 value){
         case LIGHT_PROPERTY_LIN_ATT       : _properties._attenuation.y = value; break;
         case LIGHT_PROPERTY_QUAD_ATT      : _properties._attenuation.z = value; break;
         case LIGHT_PROPERTY_BRIGHTNESS    : {
-			_properties._specular.w = value; 
-		    if(_impostor)
-				_impostor->setRadius(value);
-		}break;
+            _properties._specular.w = value; 
+            if(_impostor)
+                _impostor->setRadius(value);
+        }break;
         case LIGHT_PROPERTY_AMBIENT       :	_properties._diffuse.w = value;	break;
     };
 
@@ -223,8 +231,8 @@ F32 Light::getFProperty(const LightPropertiesF& key) const {
         case LIGHT_PROPERTY_CONST_ATT     : return _properties._attenuation.x;
         case LIGHT_PROPERTY_LIN_ATT       : return _properties._attenuation.y;
         case LIGHT_PROPERTY_QUAD_ATT      : return _properties._attenuation.z;
-		case LIGHT_PROPERTY_SPOT_CUTOFF   : return _properties._attenuation.w;
-	    case LIGHT_PROPERTY_SPOT_EXPONENT : return _properties._direction.w;
+        case LIGHT_PROPERTY_SPOT_CUTOFF   : return _properties._attenuation.w;
+        case LIGHT_PROPERTY_SPOT_EXPONENT : return _properties._direction.w;
         case LIGHT_PROPERTY_BRIGHTNESS    : return _properties._specular.w;
         case LIGHT_PROPERTY_AMBIENT       : return _properties._diffuse.w;
     };

@@ -255,11 +255,11 @@ void Terrain::addTexture(TerrainTextureUsage channel, Texture2D* const texture) 
     //If we had a collision (same name?)
     if(!result.second){
         if((result.first)->second){
-            UNREGISTER_TRACKED_DEPENDENCY(dynamic_cast<TrackedObject*>((result.first)->second));
+            UNREGISTER_TRACKED_DEPENDENCY((result.first)->second);
             RemoveResource((result.first)->second);
         }
         //And add this one instead
         (result.first)->second = texture;
     }
-    REGISTER_TRACKED_DEPENDENCY(dynamic_cast<TrackedObject*>(texture));
+    REGISTER_TRACKED_DEPENDENCY(texture);
 }

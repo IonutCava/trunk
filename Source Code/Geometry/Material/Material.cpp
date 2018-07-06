@@ -103,12 +103,13 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
     if(textureUsageSlot >= TEXTURE_UNIT0)
         _operations[textureUsageSlot - TEXTURE_UNIT0] = op;
 
-    REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
-
     if(textureUsageSlot >= TEXTURE_UNIT0){
         texture ? _shaderData._textureCount++ : _shaderData._textureCount--;
     }
 
+    if(texture){
+        REGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
+    }
     _dirty = true;
 }
 
@@ -228,12 +229,12 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
             shader += ".Triangles";
             addShaderDefines(id, "USE_GEOMETRY_TRIANGLE_INPUT");
         }else if(_gsInputType == GS_LINES){
-			shader += ".Lines";
+            shader += ".Lines";
             addShaderDefines(id, "USE_GEOMETRY_LINE_INPUT");
-		}else{
-			shader += ".Points";
+        }else{
+            shader += ".Points";
             addShaderDefines(id, "USE_GEOMETRY_POINT_INPUT");
-		}
+        }
 
         //Add the GPU skinnig module to the vertex shader?
         if(_hardwareSkinning){

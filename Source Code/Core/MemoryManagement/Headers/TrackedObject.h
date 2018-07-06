@@ -38,37 +38,26 @@ class TrackedObject : private boost::noncopyable  {
       ///Increase reference count
       void AddRef();
       ///Decrease reference count
-      bool SubRef();
+      bool SubRef(bool recursive = true);
       ///Add object dependency (dependent objects are ref counted with the parent object)
       void addDependency(TrackedObject* const obj);
       ///Remove an object dependency
       void removeDependency(TrackedObject* const obj);
       ///How many references does this object belong to
       inline const long getRefCount() const {return _refCount;}
-      ///Did the object reach 0 refs? If so, it's marked for deleton
-      virtual const bool shouldDelete() const {return _shouldDelete;}
-      ///Do we have any parent object? (if so, do not delete the object. The parent should handle that)
-      virtual const bool hasParents()  const {return !_parentList.empty();}
-      ///We can manually force a deletion
-      virtual void scheduleDeletion(){_shouldDelete = true;}
-      ///Or we can cancel the deletion before it happens
-      virtual void cancelDeletion()  {_shouldDelete = false;}
       ///For memory consumption later on
       virtual const unsigned long size() const {return sizeof(*this);}
 
     protected:
       TrackedObject();
       virtual ~TrackedObject();
-      ///Keep track if we have a parent or not
-      virtual void addParent(TrackedObject* const obj);
-      ///Remove a parent
-      virtual void removeParent(TrackedObject* const obj);
+      ///A callback that's called when the ref count is modified. If increase is true, the ref count was incremented, else it was decremented
+      virtual void refModifyCallback(bool increase);
+
    private:
       //mutable SharedLock _dependencyLock;
       boost::atomic<long> _refCount;
-      boost::atomic<bool> _shouldDelete;
       std::list<TrackedObject* > _dependencyList;
-      std::list<TrackedObject* > _parentList;
 };
 //define a quickmacro to make things easier on derived classes
 #define AUTO_SIZE unsigned long size(){return sizeof(*this);}

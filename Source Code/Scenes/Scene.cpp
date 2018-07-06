@@ -107,7 +107,7 @@ bool Scene::loadModel(const FileData& data){
     if(data.type == PRIMITIVE)	
         return loadGeometry(data);
 
-    ResourceDescriptor model(data.ItemName);
+    ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);
     Mesh *thisObj = CreateResource<Mesh>(model);
@@ -115,7 +115,7 @@ bool Scene::loadModel(const FileData& data){
         ERROR_FN(Locale::get("ERROR_SCENE_LOAD_MODEL"),  data.ModelName.c_str());
         return false;
     }
-    SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj);
+    SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj, data.ItemName);
 
     meshNode->getTransform()->scale(data.scale);
     meshNode->getTransform()->rotateEuler(data.orientation);
@@ -191,13 +191,13 @@ bool Scene::loadGeometry(const FileData& data){
 }
 
 SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const parentNode){
-	SceneGraphNode* returnNode = NULL;
-	if(parentNode)
-		returnNode = parentNode->addNode(lightItem);
-	else
-		returnNode = _sceneGraph->getRoot()->addNode(lightItem);
+    SceneGraphNode* returnNode = NULL;
+    if(parentNode)
+        returnNode = parentNode->addNode(lightItem);
+    else
+        returnNode = _sceneGraph->getRoot()->addNode(lightItem);
 
-	return returnNode;
+    return returnNode;
 }
 
 Camera* Scene::addDefaultCamera(){

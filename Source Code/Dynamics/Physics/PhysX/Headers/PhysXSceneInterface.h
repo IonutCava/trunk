@@ -39,7 +39,9 @@ public:
     {
     }
 
-    virtual ~PhysXSceneInterface(){exit();}
+    virtual ~PhysXSceneInterface()
+    {
+    }
 
     virtual bool init();
     virtual bool exit();

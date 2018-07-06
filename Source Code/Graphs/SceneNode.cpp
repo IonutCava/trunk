@@ -16,6 +16,7 @@ SceneNode::SceneNode(const SceneNodeType& type) : Resource(),
                                            _type(type),
                                            _lodLevel(0),
                                            _LODcount(1), ///<Defaults to 1 LOD level
+                                           _sgnReferenceCount(0),
                                            _physicsAsset(NULL)
 {
     U8 i = 0, j = 0;
@@ -33,6 +34,7 @@ SceneNode::SceneNode(const std::string& name,const SceneNodeType& type) : Resour
                                                              _type(type),
                                                              _lodLevel(0),
                                                              _LODcount(1), ///<Defaults to 1 LOD level
+                                                             _sgnReferenceCount(0),
                                                              _physicsAsset(NULL)
 {
     U8 i = 0, j = 0;
@@ -261,9 +263,9 @@ void SceneNode::releaseDepthMaterial(){
     if(_material->isTranslucent()){
     
         Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-        if(opacityMap)
+        if(opacityMap){
             opacityMap->Unbind(Material::TEXTURE_OPACITY);
-        else{
+        }else{
             // maybe the diffuse texture has an alpha channel so use it as an opacity map
             Texture2D* diffuse = _material->getTexture(Material::TEXTURE_UNIT0);
             diffuse->Unbind(Material::TEXTURE_OPACITY);

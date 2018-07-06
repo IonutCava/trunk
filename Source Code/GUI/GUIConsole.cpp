@@ -22,9 +22,11 @@ namespace {
 #	ifndef CEGUI_DEFAULT_CONTEXT
 #		define CEGUI_DEFAULT_CONTEXT CEGUI::System::getSingleton().getDefaultGUIContext()
 #	endif
-
+     
     static const I32 messageQueueCapacity = 512;
     static const I32 messageQueueTimeoutInSec = 3;
+    static vectorImpl<CEGUI::FormattedListboxTextItem* > _newItem;
+
     class MessageStruct {
     public:
         MessageStruct(const char* msg, bool error) : _error(error)
@@ -44,7 +46,7 @@ namespace {
     };
 
     /// Used to queue output text to be displayed when '_init' becomes true
-    static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<messageQueueCapacity> >  _outputBuffer;
+    static boost::lockfree::queue<MessageStruct* , boost::lockfree::capacity<messageQueueCapacity> >  _outputBuffer;
 };
 
 #if defined(_MSC_VER)
@@ -62,7 +64,15 @@ GUIConsole::GUIConsole() : _consoleWindow(NULL),
                            _inputHistoryIndex(0)
 {
     // we need a default command parser, so just create it here
-   _cmdParser = New GUIConsoleCommandParser();
+    _cmdParser = New GUIConsoleCommandParser();
+
+    for(U16 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i){
+        _newItem.push_back(New CEGUI::FormattedListboxTextItem("",CEGUI::HTF_WORDWRAP_LEFT_ALIGNED));
+         // Disable any parsing of the text
+        _newItem[i]->setTextParsingEnabled(false);
+        _newItem[i]->setAutoDeleted(false);
+    }
+    
 }
 
 GUIConsole::~GUIConsole()
@@ -73,6 +83,11 @@ GUIConsole::~GUIConsole()
         CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
 
     SAFE_DELETE(_cmdParser);
+    for(U16 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i){
+        _outputWindow->removeItem(_newItem[i]);
+        SAFE_DELETE(_newItem[i]);
+    }
+    _newItem.clear();
 }
 
 void GUIConsole::CreateCEGUIWindow(){
@@ -177,31 +192,30 @@ bool GUIConsole::isVisible(){
 }
 
 void GUIConsole::printText(const char* output, bool error){
-    MessageStruct* msg = New MessageStruct(output, error);
     U64 startTimer = GETUSTIME(true);
+    MessageStruct* msg = New MessageStruct(output, error);
     while(!_outputBuffer.push(msg)){
         if(getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
-            SAFE_DELETE(msg);
             break;
         }
     }
  }
 
+static I32 currentItem = 0;
 void GUIConsole::OutputText(const char* inMsg, const bool error){
     // Create a new List Box item that uses wordwrap. This will hold the output from the command
     // Append the response with left wordwrap alignement
-    CEGUI::FormattedListboxTextItem *newItem = New CEGUI::FormattedListboxTextItem(inMsg,CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
-    // Disable any parsing of the text
-    newItem->setTextParsingEnabled(false);
+    //CEGUI::FormattedListboxTextItem *newItem = New CEGUI::FormattedListboxTextItem(inMsg,CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
+    _newItem[currentItem]->setText(inMsg);
     // Set the correct color (e.g. red for errors)
-    newItem->setTextColours(error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f));
+    _newItem[currentItem]->setTextColours(error ? CEGUI::Colour(1.0f,0.0f,0.0f) : CEGUI::Colour(0.4f,0.4f,0.3f));
     // Add the new ListBoxTextItem to the ListBox
-    _outputWindow->addItem(newItem);
+    _outputWindow->removeItem(_newItem[currentItem]);
+    _outputWindow->addItem(_newItem[currentItem]);
     // Always make sure the last item is visible (auto-scroll)
-    _outputWindow->ensureItemIsVisible(newItem);
-    // Try to not overfill the listbox but make room for the new item
-    if(_outputWindow->getItemCount() > _CEGUI_MAX_CONSOLE_ENTRIES)
-         _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
+    _outputWindow->ensureItemIsVisible(_newItem[currentItem]);
+
+    currentItem = ++currentItem % _CEGUI_MAX_CONSOLE_ENTRIES;
 }
 
 void GUIConsole::update(const U64 deltaTime){
@@ -210,8 +224,8 @@ void GUIConsole::update(const U64 deltaTime){
         return;
     }
 
-    //print 2 lines per update call 
-    for(U8 i = 0; i < 2; ++i){
+    //print 5 lines per update call 
+    for(U8 i = 0; i < 5; ++i){
         MessageStruct* outMsg = NULL;
         if(_outputBuffer.pop(outMsg)){
             if(outMsg){

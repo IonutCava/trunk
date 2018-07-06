@@ -3,6 +3,12 @@
 #include "core.h"
 #include "Core/Headers/Application.h"
 
+
+void Resource::refModifyCallback(bool increase){
+    PRINT_FN(" ---------------- Modified [%s] to ref count: [ %d ][ %s ]  ----------------  ", getName().c_str(), getRefCount(), increase ? "increment" : "decrement");
+    TrackedObject::refModifyCallback(increase);
+}
+
 namespace Divide {
     namespace Memory {
         char outputLogBuffer[512];

@@ -383,7 +383,6 @@
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors.h" />
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\Plane.h" />
-    <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\SmartPointer.h" />
     <ClInclude Include="..\..\Source Code\Core\MemoryManagement\Headers\TrackedObject.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\HardwareResource.h" />
     <ClInclude Include="..\..\Source Code\Core\Resources\Headers\Resource.h" />

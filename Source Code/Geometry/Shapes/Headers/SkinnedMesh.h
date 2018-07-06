@@ -27,13 +27,8 @@
 
 class SkinnedMesh : public Mesh {
 public:
-    SkinnedMesh() : Mesh(OBJECT_FLAG_SKINNED), _playAnimation(true)
-    {
-    }
-
-    ~SkinnedMesh()
-    {
-    }
+    SkinnedMesh();
+    ~SkinnedMesh();
 
     void sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
 
