@@ -177,7 +177,7 @@ protected:
 private:
     I32 _numNodes;
     U16 _renderDepth;
-    U16 _maxRenderDepth;
+    const U16 _maxRenderDepth;
     vec3<F32> _cameraEyeCache;
     TreeVector _tree;
     RenderDataVector _renderData;

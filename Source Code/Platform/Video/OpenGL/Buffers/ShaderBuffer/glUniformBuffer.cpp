@@ -137,6 +137,7 @@ void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
     _buffer->writeData(offset, range, data);
 }
 
+
 bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
     GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
     GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);

@@ -32,22 +32,40 @@ GUIButton::GUIButton(U64 guiID,
 
     _btnWindow->setText(text.c_str());
 
+
+
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseMove,
-                               CEGUI::Event::Subscriber(&GUIButton::onMove, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseMove, e);
+                               }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseEntersArea,
-                               CEGUI::Event::Subscriber(&GUIButton::onHoverEnter, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::HoverEnter, e);
+                               }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseLeavesArea,
-                               CEGUI::Event::Subscriber(&GUIButton::onHoverLeave, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::HoverLeave, e);
+                                }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonDown,
-                               CEGUI::Event::Subscriber(&GUIButton::onButtonDown, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseDown, e);
+                                }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseButtonUp,
-                               CEGUI::Event::Subscriber(&GUIButton::onButtonUp, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseUp, e);
+                                }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseClick,
-                               CEGUI::Event::Subscriber(&GUIButton::onClick, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseClick, e);
+                                }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
-                               CEGUI::Event::Subscriber(&GUIButton::onDoubleClick, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseDoubleClick, e);
+                                }));
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventMouseDoubleClick,
-                               CEGUI::Event::Subscriber(&GUIButton::onTripleClick, this));
+                               CEGUI::Event::Subscriber([this](const CEGUI::EventArgs& e) ->bool {
+                                    return onEvent(Event::MouseTripleClick, e);
+                                }));
     _parent->addChild(_btnWindow);
 
     setActive(true);
@@ -111,38 +129,6 @@ bool GUIButton::onEvent(Event event, const CEGUI::EventArgs& /*e*/) {
         return true;
     }
     return false;
-}
-
-bool GUIButton::onMove(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseMove, e);
-}
-
-bool GUIButton::onHoverEnter(const CEGUI::EventArgs& e) {
-    return onEvent(Event::HoverEnter, e);
-}
-
-bool GUIButton::onHoverLeave(const CEGUI::EventArgs& e) {
-    return onEvent(Event::HoverLeave, e);
-}
-
-bool GUIButton::onButtonDown(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseDown, e);
-}
-
-bool GUIButton::onButtonUp(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseUp, e);
-}
-
-bool GUIButton::onClick(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseClick, e);
-}
-
-bool GUIButton::onDoubleClick(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseDoubleClick, e);
-}
-
-bool GUIButton::onTripleClick(const CEGUI::EventArgs& e) {
-    return onEvent(Event::MouseTripleClick, e);
 }
 
 void GUIButton::setEventCallback(Event event, ButtonCallback callback) {

@@ -17,7 +17,7 @@ namespace {
 TerrainTessellator::TerrainTessellator()
    : _numNodes(0),
      _renderDepth(0),
-     _maxRenderDepth(10)
+     _maxRenderDepth(Terrain::MAX_RENDER_NODES)
 {
     _tree.resize(Terrain::MAX_RENDER_NODES);
     _renderData.resize(Terrain::MAX_RENDER_NODES);
@@ -190,7 +190,7 @@ void TerrainTessellator::renderNode(TessellatedTerrainNode& node) {
 
 void TerrainTessellator::renderRecursive(TessellatedTerrainNode& node) {
     if (_renderDepth >= _maxRenderDepth) {
-        //return;
+        return;
     }
 
     // If all children are null, render this node
@@ -201,7 +201,7 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode& node) {
         return;
     }
 
-    // Otherwise, recruse to the children.
+    // Otherwise, recurse to the children.
     if (node.c1) {
         renderRecursive(*node.c1);
         renderRecursive(*node.c2);

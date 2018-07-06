@@ -90,6 +90,19 @@ struct PushConstant {
     {
     }
 
+    template<typename T, size_t N>
+    PushConstant(const stringImplFast& binding,
+                 PushConstantType type,
+                 const std::array<T, N>& values,
+                 bool flag = false)
+        : _binding(binding),
+        _type(type),
+        _values(std::begin(values), std::end(values)),
+        _flag(flag),
+        _transpose(false)
+    {
+    }
+
     PushConstant(const PushConstant& other)
     {
         assign(other);
@@ -151,6 +164,15 @@ public:
     inline void set(const stringImplFast& binding,
                     PushConstantType type,
                     const vectorImpl<T>& values,
+                    bool flag = false) {
+
+        _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, values, flag };
+    }
+
+    template<typename T, size_t N>
+    inline void set(const stringImplFast& binding,
+                    PushConstantType type,
+                    const std::array<T, N>& values,
                     bool flag = false) {
 
         _data[_ID_RT(binding.c_str())] = PushConstant{ binding, type, values, flag };

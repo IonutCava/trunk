@@ -92,14 +92,6 @@ class GUIButton : public GUIElement {
     ~GUIButton();
 
     bool onEvent(Event event, const CEGUI::EventArgs& /*e*/);
-    bool onMove(const CEGUI::EventArgs& e);
-    bool onHoverEnter(const CEGUI::EventArgs& e);
-    bool onHoverLeave(const CEGUI::EventArgs& e);
-    bool onButtonDown(const CEGUI::EventArgs& e);
-    bool onButtonUp(const CEGUI::EventArgs& e);
-    bool onClick(const CEGUI::EventArgs& e);
-    bool onDoubleClick(const CEGUI::EventArgs& e);
-    bool onTripleClick(const CEGUI::EventArgs& e);
 
    protected:;
     /// A pointer to a function to call if the button is pressed

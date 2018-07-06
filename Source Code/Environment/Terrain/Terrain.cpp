@@ -73,21 +73,20 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 }
 
 void Terrain::buildQuadtree() {
-    reserveTriangleCount((_terrainDimensions.x - 1) *
-                         (_terrainDimensions.y - 1) * 2);
-    _terrainQuadtree.Build(
-        _context,
-        _boundingBox,
-        vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
-        _chunkSize, this);
+    reserveTriangleCount((_terrainDimensions.x - 1) * (_terrainDimensions.y - 1) * 2);
+    _terrainQuadtree.Build(_context,
+                           _boundingBox,
+                           vec2<U32>(_terrainDimensions.x, _terrainDimensions.y),
+                           _chunkSize,
+                           this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
     TerrainTextureLayer* textureLayer = _terrainTextures;
-    getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0/*, true*/);
+    getMaterialTpl()->addExternalTexture(textureLayer->blendMaps(),  to_U8(ShaderProgram::TextureUsage::COUNT) + 0);
     getMaterialTpl()->addExternalTexture(textureLayer->tileMaps(),   to_U8(ShaderProgram::TextureUsage::COUNT) + 1);
-    getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2/*, true*/);
+    getMaterialTpl()->addExternalTexture(textureLayer->normalMaps(), to_U8(ShaderProgram::TextureUsage::COUNT) + 2);
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS,
@@ -148,7 +147,6 @@ bool Terrain::onRender(SceneGraphNode& sgn,
     STUBBED("This may cause stalls. Profile! -Ionut");
     _shaderData->writeData(offset, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
 
-
     sgn.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::TERRAIN_DATA,
                                                         vec2<U32>(offset, Terrain::MAX_RENDER_NODES),
                                                         *_shaderData);
@@ -186,10 +184,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     TerrainTextureLayer* textureLayer = _terrainTextures;
 
     PushConstants constants = pkgInOut.pushConstants(0);
-    constants.set("bbox_min", PushConstantType::VEC3, bbMin);
-    constants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
-    constants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector<AnyParam>(textureLayer->getDiffuseScales()));
-    constants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector<AnyParam>(textureLayer->getDetailScales()));
+    constants.set("bbox_min",     PushConstantType::VEC3, bbMin);
+    constants.set("bbox_extent",  PushConstantType::VEC3, bbExtent);
+    constants.set("diffuseScale", PushConstantType::VEC4, textureLayer->getDiffuseScales());
+    constants.set("detailScale",  PushConstantType::VEC4, textureLayer->getDetailScales());
     pkgInOut.pushConstants(0, constants);
 
     GFX::SetClipPlanesCommand clipPlanesCommand;
@@ -265,8 +263,7 @@ vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {
 }
 
 vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f ||
-             z_clampf > 1.0f));
+    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
     vec2<F32> posF(x_clampf * _terrainDimensions.x,
                    z_clampf * _terrainDimensions.y);
@@ -305,13 +302,12 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const {
 }
 
 vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f ||
-             z_clampf > 1.0f));
+    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _terrainDimensions.x,
-                   z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x),
-                   to_I32(z_clampf * _terrainDimensions.y));
+    vec2<F32> posF(x_clampf * _terrainDimensions.x, z_clampf * _terrainDimensions.y);
+
+    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x), to_I32(z_clampf * _terrainDimensions.y));
+
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
     if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
@@ -337,21 +333,20 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const {
 }
 
 vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f ||
-             z_clampf > 1.0f));
+    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
 
-    vec2<F32> posF(x_clampf * _terrainDimensions.x,
-                   z_clampf * _terrainDimensions.y);
-    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x),
-                   to_I32(z_clampf * _terrainDimensions.y));
+    vec2<F32> posF(x_clampf * _terrainDimensions.x, z_clampf * _terrainDimensions.y);
+    vec2<I32> posI(to_I32(x_clampf * _terrainDimensions.x), to_I32(z_clampf * _terrainDimensions.y));
     vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
 
     if (posI.x >= to_I32(_terrainDimensions.x) - 1) {
         posI.x = to_I32(_terrainDimensions.x) - 2;
     }
+
     if (posI.y >= to_I32(_terrainDimensions.y) - 1) {
         posI.y = to_I32(_terrainDimensions.y) - 2;
     }
+
     assert(posI.x >= 0 && posI.x < to_I32(_terrainDimensions.x) - 1 &&
            posI.y >= 0 && posI.y < to_I32(_terrainDimensions.y) - 1);
 
@@ -371,4 +366,5 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
 TerrainTextureLayer::~TerrainTextureLayer()
 {
 }
+
 };

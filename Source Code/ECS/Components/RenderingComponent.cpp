@@ -266,8 +266,6 @@ void RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
     _textureCache.clear();
 
     // Call any pre-draw operations on the SceneNode (refresh VB, update materials, get list of textures, etc)
-
-    
     for (auto texture : _textureDependencies.textures()) {
         _textureCache.addTexture(texture);
     }
