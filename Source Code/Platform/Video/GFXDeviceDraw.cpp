@@ -24,6 +24,7 @@ void GFXDevice::uploadGPUBlock() {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->setData(&_gpuBlock._data);
+        _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _gpuBlock._needsUpload = false;
     }
 }

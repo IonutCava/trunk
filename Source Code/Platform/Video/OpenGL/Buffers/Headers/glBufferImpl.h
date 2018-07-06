@@ -53,6 +53,7 @@ protected:
     GLenum _target;
     GLuint _handle;
     size_t _alignedSize;
+    BufferUpdateFrequency _updateFrequency;
 };
 
 class glRegularBuffer : public glBufferImpl {
@@ -77,6 +78,7 @@ public:
     void readData(size_t offset, size_t range, const bufferPtr data) override;
     bool bindRange(GLuint bindIndex, size_t offset, size_t range) override;
     void lockRange(size_t offset, size_t range) override;
+    void waitRange(size_t offset, size_t range, bool blockClient);
 
 private:
     bufferPtr _mappedBuffer;

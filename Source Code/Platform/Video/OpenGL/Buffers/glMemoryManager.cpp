@@ -203,8 +203,7 @@ bufferPtr createAndAllocPersistentBuffer(GLsizeiptr bufferSize,
     }
     assert(bufferIdOut != 0 && "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
-    return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask,
-                                 data);
+    return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask, data);
 }
 
 void createAndAllocBuffer(GLsizeiptr bufferSize,

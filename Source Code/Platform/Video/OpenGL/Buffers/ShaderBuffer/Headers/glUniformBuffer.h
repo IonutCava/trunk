@@ -88,7 +88,6 @@ class glUniformBuffer final : public ShaderBuffer {
     glBufferImpl* _buffer;
     size_t     _allignedBufferSize;
     GLsizeiptr _alignment;
-    bufferPtr _mappedBuffer;
     bool _updated;
     const GLenum _target;
     vectorImpl<AtomicCounter*> _atomicCounters;

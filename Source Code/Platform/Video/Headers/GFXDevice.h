@@ -318,17 +318,17 @@ public:
     PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
     GenericVertexData* newGVD(const U32 ringBufferLength) const;
     Texture*           newTexture(const stringImpl& name,
-        const stringImpl& resourceLocation,
-        TextureType type,
-        bool asyncLoad) const;
+                                  const stringImpl& resourceLocation,
+                                  TextureType type,
+                                  bool asyncLoad) const;
     ShaderProgram*     newShaderProgram(const stringImpl& name,
-        const stringImpl& resourceLocation,
-        bool asyncLoad) const;
+                                        const stringImpl& resourceLocation,
+                                        bool asyncLoad) const;
     ShaderBuffer*      newSB(const U32 ringBufferLength = 1,
-        const bool unbound = false,
-        const bool persistentMapped = true,
-        BufferUpdateFrequency frequency =
-        BufferUpdateFrequency::ONCE) const;
+                             const bool unbound = false,
+                             const bool persistentMapped = true,
+                             BufferUpdateFrequency frequency =
+                             BufferUpdateFrequency::ONCE) const;
 
 public:  // Direct API calls
 

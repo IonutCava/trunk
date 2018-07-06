@@ -61,7 +61,6 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  bool persistentMapped,
                                  BufferUpdateFrequency frequency)
     : ShaderBuffer(context, ringBufferLength, unbound, persistentMapped, frequency),
-      _mappedBuffer(nullptr),
       _alignment(0),
       _allignedBufferSize(0),
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
@@ -99,6 +98,7 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize, U32 si
 void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
                               ptrdiff_t rangeElementCount,
                               bufferPtr result) const {
+
     if (rangeElementCount > 0) {
         ptrdiff_t range = rangeElementCount * _primitiveSize;
         ptrdiff_t offset = offsetElementCount * _primitiveSize;
@@ -109,7 +109,7 @@ void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
 
         offset += queueWriteIndex() * _allignedBufferSize;
 
-        glGetNamedBufferSubData(bufferID(), offset, range, result);
+        _buffer->readData(offset, range, result);
     }
 }
 
@@ -138,10 +138,6 @@ void glUniformBuffer::updateData(ptrdiff_t offsetElementCount,
 }
 
 bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
-    if (rangeElementCount == 0)  {
-        return false;
-    }
-
     GLuint range = static_cast<GLuint>(rangeElementCount * _primitiveSize);
     GLuint offset = static_cast<GLuint>(offsetElementCount * _primitiveSize);
     offset += static_cast<GLuint>(queueReadIndex() * _allignedBufferSize);

@@ -59,6 +59,9 @@ class GFXShaderData {
         inline F32 FoV() const;
         inline F32 tanHFoV() const;
 
+        bool operator==(const GPUData& other) const;
+        bool operator!=(const GPUData& other) const;
+
     } _data;
 
     mat4<F32> _viewMatrixInv;

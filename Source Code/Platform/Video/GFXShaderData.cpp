@@ -24,4 +24,38 @@ GFXShaderData::GPUData::GPUData()
     }
 }
 
+bool GFXShaderData::GPUData::operator==(const GPUData& other) const {
+    for (U32 i = 0; i < to_const_uint(Frustum::FrustPlane::COUNT); ++i) {
+        if (_frustumPlanes[i] != other._frustumPlanes[i] || _clipPlanes[i] != other._clipPlanes[i]) {
+            return false;
+        }
+    }
+
+    return _cameraPosition == other._cameraPosition &&
+           _ViewPort == other._ViewPort &&
+           _ZPlanesCombined == other._ZPlanesCombined &&
+           _renderProperties == other._renderProperties &&
+           _ProjectionMatrix == other._ProjectionMatrix &&
+           _InvProjectionMatrix == other._InvProjectionMatrix &&
+           _ViewMatrix == other._ViewMatrix &&
+           _ViewProjectionMatrix == other._ViewProjectionMatrix;
+}
+
+bool GFXShaderData::GPUData::operator!=(const GPUData& other) const {
+    for (U32 i = 0; i < to_const_uint(Frustum::FrustPlane::COUNT); ++i) {
+        if (_frustumPlanes[i] != other._frustumPlanes[i] || _clipPlanes[i] != other._clipPlanes[i]) {
+            return true;
+        }
+    }
+
+    return _cameraPosition != other._cameraPosition ||
+           _ViewPort != other._ViewPort ||
+           _ZPlanesCombined != other._ZPlanesCombined ||
+           _renderProperties != other._renderProperties ||
+           _ProjectionMatrix != other._ProjectionMatrix ||
+           _InvProjectionMatrix != other._InvProjectionMatrix ||
+           _ViewMatrix != other._ViewMatrix ||
+           _ViewProjectionMatrix != other._ViewProjectionMatrix;
+}
+
 }; //namespace Divide

@@ -29,7 +29,8 @@ namespace {
 glBufferImpl::glBufferImpl(GLenum target) 
     : _target(target),
       _handle(0),
-      _alignedSize(0)
+      _alignedSize(0),
+      _updateFrequency(BufferUpdateFrequency::ONCE)
 {
 }
 
@@ -45,6 +46,7 @@ GLuint glBufferImpl::bufferID() const {
 void glBufferImpl::create(BufferUpdateFrequency frequency, size_t size, const char* name)
 {
     assert(_handle == 0 && "BufferImpl::Create error: Tried to double create current UBO");
+    _updateFrequency = frequency;
     _alignedSize = size;
 }
 
@@ -123,7 +125,7 @@ glPersistentBuffer::glPersistentBuffer(GLenum target)
 glPersistentBuffer::~glPersistentBuffer()
 {
     if (_handle > 0) {
-        _lockManager->WaitForLockedRange(0, _alignedSize, false);
+        waitRange(0, _alignedSize, false);
         GLUtil::freeBuffer(_handle, _mappedBuffer);
     }
     MemoryManager::DELETE(_lockManager);
@@ -133,42 +135,48 @@ void glPersistentBuffer::create(BufferUpdateFrequency frequency, size_t size, co
 {
     glBufferImpl::create(frequency, size, name);
     
-    _mappedBuffer =
-        GLUtil::createAndAllocPersistentBuffer(size,
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
-            GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
-            _handle,
-            NULL,
-            name);
+    gl::BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+    if (frequency != BufferUpdateFrequency::ONCE) {
+        storageMask |= GL_DYNAMIC_STORAGE_BIT;
+    }
+
+    gl::BufferAccessMask accessMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+
+    _mappedBuffer = GLUtil::createAndAllocPersistentBuffer(size, storageMask, accessMask, _handle, NULL, name);
 
     assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
 }
 
 void glPersistentBuffer::updateData(size_t offset, size_t range, const bufferPtr data)
 {
-    _lockManager->WaitForLockedRange(offset, range, true);
+    waitRange(offset, range, true);
     assert(_mappedBuffer != nullptr && "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
+    void* dst = (U8*)_mappedBuffer + offset;
     if (data) {
-        memcpy((U8*)(_mappedBuffer)+offset, data, range);
+        memcpy(dst, data, range);
     } else {
-        memset((U8*)(_mappedBuffer)+offset, NULL, range);
+        memset(dst, 0, range);
     }
 }
 
 void glPersistentBuffer::readData(size_t offset, size_t range, const bufferPtr data)
 {
-    _lockManager->WaitForLockedRange(offset, range, true);
-    memcpy((U8*)data, (U8*)(_mappedBuffer)+offset, range);
+    memcpy(data, ((U8*)(_mappedBuffer)+offset), range);
 }
 
 bool glPersistentBuffer::bindRange(GLuint bindIndex, size_t offset, size_t range)
 {
-    if (glBufferImpl::bindRange(bindIndex, offset, range)) {
-        _lockManager->LockRange(offset, range);
-        return true;
+    if (range > 0) {
+        bool ret = glBufferImpl::bindRange(bindIndex, offset, range);
+        lockRange(offset, range);
+        return ret;
     }
 
     return false;
+}
+
+void glPersistentBuffer::waitRange(size_t offset, size_t range, bool blockClient) {
+    _lockManager->WaitForLockedRange(offset, range, blockClient);
 }
 
 void glPersistentBuffer::lockRange(size_t offset, size_t range) {

@@ -83,6 +83,10 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
         const vectorImplAligned<mat4<F32> >& transforms = currentAnimation[i++];
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
+            if (parentTask.stopRequested()) {
+                return;
+            }
+
             U32 idx = parentVB->getIndex(j + partitionOffset);
             P32 ind = parentVB->getBoneIndices(idx);
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);

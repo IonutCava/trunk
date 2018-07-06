@@ -79,13 +79,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     ShaderProgram::onStartup(cache);
     EnvironmentProbe::onStartup(*this);
     PostFX::createInstance();
-    // Create a shader buffer to store the following info:
-    // ViewMatrix, ProjectionMatrix, ViewProjectionMatrix, CameraPositionVec, ViewportRec, zPlanesVec4 and ClipPlanes[MAX_CLIP_PLANES]
-    // It should translate to (as seen by OpenGL) a uniform buffer without persistent mapping.
-    // (Many small updates with BufferSubData are recommended with the target usage of the buffer)
-    _gfxDataBuffer = newSB(1, false, false, BufferUpdateFrequency::OFTEN);
+    // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
+    _gfxDataBuffer = newSB(1, false, true, BufferUpdateFrequency::OFTEN);
     _gfxDataBuffer->create(1, sizeof(GFXShaderData::GPUData));
-    _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 

@@ -38,13 +38,10 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
         U8 retryCount = 0;
         while (true) {
             GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, waitDuration);
-            assert(waitRet != GL_WAIT_FAILED &&
-                   "Not sure what to do here. Probably raise an exception or something.");
-            if (waitRet == GL_ALREADY_SIGNALED ||
-                waitRet == GL_CONDITION_SATISFIED) {
+            if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
                 return;
             }
-
+            assert(waitRet != GL_WAIT_FAILED && "Not sure what to do here. Probably raise an exception or something.");
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;

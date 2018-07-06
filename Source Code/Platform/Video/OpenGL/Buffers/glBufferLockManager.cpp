@@ -56,10 +56,10 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes,
             }
         }
 
-        _bufferLocks.push_back({testRange,
-                                glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT)
-                               });
+        GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
         glFlush();
+
+        _bufferLocks.push_back({testRange, sync});
     }
 }
 
