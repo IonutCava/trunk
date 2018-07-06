@@ -32,14 +32,4 @@ bool RenderingComponent::renderOptionsEnabled(U32 mask) const{
     return BitCompare(_renderMask, mask);
 }
 
-void RenderingComponent::setActive(const bool state) {
-    if (!state) {
-        toggleRenderOption(RenderOptions::RENDER_SKELETON, false);
-        toggleRenderOption(RenderOptions::RENDER_BOUNDS_AABB, false);
-        toggleRenderOption(RenderOptions::RENDER_BOUNDS_SPHERE, false);
-    }
-
-    SGNComponent::setActive(state);
-}
-
 }; //namespace Divide

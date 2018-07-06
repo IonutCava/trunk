@@ -29,8 +29,8 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _octreeChanged(false),
      _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
 {
-    static const U32 rootMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                to_base(SGNComponent::ComponentType::BOUNDS);
+    static const U32 rootMask = to_base(ComponentType::TRANSFORM) |
+                                to_base(ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
     _root = SceneGraphNode::CreateSceneGraphNode(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
@@ -73,8 +73,6 @@ void SceneGraph::unload()
     }
 
     _root->processDeleteQueue();
-
-    ECS::ECS_Engine->GetEntityManager()->RemoveDestroyedEntities();
 }
 
 
@@ -167,17 +165,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     _root->getOrderedNodeList(_orderedNodeList);
     for (SceneGraphNode* node : _orderedNodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);
-        node->sgnUpdate(deltaTimeUS, sceneState);
     }
-
-    // Split updates into 2 passes to allow for better parallelism:
-    // - Start threaded tasks in the sceneUpdate pass
-    // - Wait on the results in the sgnUpdate pass
-    // - Allows, for example, to recompute bounding boxes in parallel
-    // First pass
-    //_root->sceneUpdate(deltaTime, sceneState);
-    // Second pass
-    //_root->sgnUpdate(deltaTime, sceneState);
 
     if (_loadComplete) {
         CreateTask(parentScene().platformContext(),

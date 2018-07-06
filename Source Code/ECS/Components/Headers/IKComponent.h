@@ -29,34 +29,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _UNIT_COMPONENT_H_
-#define _UNIT_COMPONENT_H_
+#ifndef _IK_COMPONENT_H_
+#define _IK_COMPONENT_H_
+
 
 #include "SGNComponent.h"
 
 namespace Divide {
-
-FWD_DECLARE_MANAGED_CLASS(Unit);
-class UnitComponent : public SGNComponent {
-public:
-    // This call will take ownership of the specified pointer!
-    bool setUnit(Unit_ptr unit);
-
-    template <typename T = Unit>
-    inline std::shared_ptr<T> getUnit() const {
-        static_assert(std::is_base_of<Unit, T>::value,
-            "UnitComponent::getUnit error: Invalid target unit type!");
-        return std::static_pointer_cast<T>(_unit);
-    }
-
-protected:
-    friend class SceneGraphNode;
-    UnitComponent(SceneGraphNode& parentSGN);
-    ~UnitComponent();
-
-private:
-    Unit_ptr _unit;
-};
+    class IKComponent : public SGNComponent<IKComponent>{
+        public:
+            IKComponent(SceneGraphNode& parentSGN);
+    };
 };
 
-#endif //_UNIT_COMPONENT_H_
+#endif //_IK_COMPONENT_H_

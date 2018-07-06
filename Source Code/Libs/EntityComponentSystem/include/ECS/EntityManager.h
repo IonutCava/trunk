@@ -217,6 +217,7 @@ namespace ECS
 
 			// create entity inplace
 			IEntity* entity = new (pObjectMemory)T(std::forward<ARGS>(args)...);	
+            (void)entity;
 
 			return entityId;
 		}

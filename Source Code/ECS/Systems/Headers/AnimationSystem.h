@@ -29,17 +29,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _IK_COMPONENT_H_
-#define _IK_COMPONENT_H_
+#ifndef _ANIMATION_SYSTEM_H_
+#define _ANIMATION_SYSTEM_H_
 
-
-#include "SGNComponent.h"
-
+#include <ECS.h>
 namespace Divide {
-    class IKComponent : public SGNComponent {
-        public:
-            IKComponent(SceneGraphNode& parentSGN);
+    class AnimationSystem : public ECS::System<AnimationSystem> {
+      public:
+        AnimationSystem();
+        virtual ~AnimationSystem();
+
+        virtual void PreUpdate(F32 dt) override;
+        virtual void Update(F32 dt) override;
+        virtual void PostUpdate(F32 dt) override;
     };
 };
 
-#endif //_IK_COMPONENT_H_
+#endif //_ANIMATION_SYSTEM_H_

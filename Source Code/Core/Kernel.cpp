@@ -26,6 +26,7 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "ECS/Systems/Headers/ECSManager.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Platform/Input/Headers/InputInterface.h"
@@ -645,6 +646,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Locale::changeLanguage(config.language.c_str());
     ECS::Initialize();
+    ECSManager::init();
 
     _platformContext->gfx().shadowDetailLevel(config.rendering.shadowDetailLevel);
     _platformContext->gfx().renderDetailLevel(config.rendering.renderDetailLevel);
@@ -754,6 +756,9 @@ void Kernel::shutdown() {
     SceneManager::onShutdown();
     Script::onShutdown();
     _sceneManager.reset();
+    ECSManager::destroy();
+    ECS::Terminate();
+
     // release the scene
     _platformContext->gui().destroy();  /// Deactivate GUI 
     Camera::destroyPool();
@@ -768,7 +773,6 @@ void Kernel::shutdown() {
     _platformContext->gfx().closeRenderingAPI();
     _platformContext->terminate();
     _resCache->clear();
-    ECS::Terminate();
     FrameListenerManager::destroyInstance();
     Camera::destroyPool();
 }

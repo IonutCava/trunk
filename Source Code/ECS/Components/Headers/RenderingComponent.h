@@ -95,7 +95,7 @@ enum class ReflectorType : U32 {
 
 typedef DELEGATE_CBK<void, RenderCbkParams&, GFX::CommandBuffer&> RenderCallback;
 
-class RenderingComponent : public SGNComponent {
+class RenderingComponent : public SGNComponent<RenderingComponent> {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
     friend class Attorney::RenderingCompRenderBin;
@@ -113,12 +113,15 @@ class RenderingComponent : public SGNComponent {
        };
 
    public:
-    bool onRender(const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
-    void update(const U64 deltaTimeUS) override;
+    explicit RenderingComponent(GFXDevice& context,
+                                Material_ptr materialInstance,
+                                SceneGraphNode& parentSGN);
+    ~RenderingComponent();
 
-    void setActive(const bool state) override;
-    void postLoad() override;
+    void onRender(const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass);
+
+    void update(const U64 deltaTimeUS);
 
     inline PushConstants& pushConstants() { return _globalPushConstants; }
     inline const PushConstants& pushConstants() const { return _globalPushConstants; }
@@ -161,14 +164,6 @@ class RenderingComponent : public SGNComponent {
     inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis();
-
-    
-   protected:
-    friend class SceneGraphNode;
-    explicit RenderingComponent(GFXDevice& context,
-                                Material_ptr materialInstance,
-                                SceneGraphNode& parentSGN);
-    ~RenderingComponent();
 
    protected:
     bool canDraw(const RenderStagePass& renderStagePass);

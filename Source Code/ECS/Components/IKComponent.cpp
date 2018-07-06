@@ -5,7 +5,7 @@
 namespace Divide {
 
 IKComponent::IKComponent(SceneGraphNode& parentSGN)
- : SGNComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, parentSGN)
+ : SGNComponent(parentSGN)
 {
 }
 

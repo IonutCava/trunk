@@ -1,5 +1,4 @@
-/*
-Copyright (c) 2017 DIVIDE-Studio
+/* Copyright (c) 2017 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
@@ -29,48 +28,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _NETWORKING_COMPONENT_H_
-#define _NETWORKING_COMPONENT_H_
+#ifndef _ECS_MANAGER_H_
+#define _ECS_MANAGER_H_
 
-
-#include "SGNComponent.h"
-
-#include "Networking/Headers/WorldPacket.h"
+#include "TransformSystem.h"
+#include "AnimationSystem.h"
+#include "UpdateSystem.h"
+#include "RenderingSystem.h"
 
 namespace Divide {
 
-class LocalClient;
-class NetworkingComponent : public SGNComponent {
-public:
-    NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient);
-    ~NetworkingComponent();
-
-    void update(const U64 deltaTimeUS);
-    void onNetworkSend(U32 frameCountIn);
-
-    void flagDirty();
-
-    static NetworkingComponent* getReceiver(I64 guid);
-
-private:
-    friend void UpdateEntities(WorldPacket& p);
-    void onNetworkReceive(WorldPacket& dataIn);
-
-private:
-    WorldPacket deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const;
-    WorldPacket deltaDecompress(const WorldPacket& crt, const WorldPacket& previous) const;
-
-private:
-    LocalClient& _parentClient;
-
-    bool _resendRequired;
-    WorldPacket _previousSent;
-    WorldPacket _previousReceived;
-    
-
-    static hashMapImpl<I64, NetworkingComponent*> s_NetComponents;
-};
-
+    class ECSManager {
+        public:
+            static void init();
+            static void destroy();
+    };
 }; //namespace Divide
 
-#endif //_NETWORKING_COMPONENT_H_
+#endif //_ECS_MANAGER_H_

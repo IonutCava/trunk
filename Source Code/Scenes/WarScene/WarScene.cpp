@@ -328,14 +328,14 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 }
 
 bool WarScene::load(const stringImpl& name) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                 to_base(SGNComponent::ComponentType::BOUNDS) |
-                                 to_base(SGNComponent::ComponentType::RENDERING);
+    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
+                                 to_base(ComponentType::BOUNDS) |
+                                 to_base(ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
-                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
-                                  to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::NETWORKING);
+                                  to_base(ComponentType::RIGID_BODY) |
+                                  to_base(ComponentType::NAVIGATION) |
+                                  to_base(ComponentType::NETWORKING);
 
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);

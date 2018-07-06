@@ -10,7 +10,7 @@ namespace Divide {
 hashMapImpl<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
 
 NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient)
-    : SGNComponent(SGNComponent::ComponentType::NETWORKING, parentSGN),
+    : SGNComponent(parentSGN),
      _parentClient(parentClient),
      _resendRequired(true)
 {
@@ -27,10 +27,6 @@ NetworkingComponent::~NetworkingComponent()
 
 void NetworkingComponent::flagDirty() {
     _resendRequired = true;
-}
-
-void NetworkingComponent::update(const U64 deltaTimeUS) {
-
 }
 
 WorldPacket NetworkingComponent::deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const {

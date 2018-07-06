@@ -9,7 +9,7 @@
 namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::ANIMATION, parentSGN),
+    : SGNComponent(parentSGN),
       _playAnimations(true),
       _currentTimeStamp(0UL),
       _parentTimeStamp(0UL),
@@ -28,8 +28,6 @@ void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
 }
 
 void AnimationComponent::update(const U64 deltaTimeUS) {
-    SGNComponent::update(deltaTimeUS);
-
     if (!_animator || _parentTimeStamp == _currentTimeStamp) {
         return;
     }
@@ -62,7 +60,6 @@ void AnimationComponent::update(const U64 deltaTimeUS) {
 void AnimationComponent::resetTimers() {
     _currentTimeStamp = _parentTimeStamp = 0UL;
     _previousFrameIndex = 0;
-    SGNComponent::resetTimers();
 }
 
 /// Select an animation by name
@@ -142,23 +139,18 @@ const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
     return  _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
 }
 
-bool AnimationComponent::onRender(const SceneRenderState& sceneRenderState,
-                                  const RenderStagePass& renderStagePass) {
-    ACKNOWLEDGE_UNUSED(sceneRenderState);
+std::pair<vec2<U32>, ShaderBuffer*> AnimationComponent::getAnimationData() const {
+    std::pair<vec2<U32>, ShaderBuffer*> ret(vec2<U32>(), nullptr);
 
-    if (!_playAnimations) {
-        return true;
+    if (_playAnimations) {
+        if (_previousAnimationIndex != -1) {
+            ret.first.set(_previousFrameIndex, 1);
+            ret.second = &getAnimationByIndex(_previousAnimationIndex).getBoneBuffer();
+        }
     }
 
-    if (_previousAnimationIndex != -1) {
-        _parentSGN.get<RenderingComponent>()->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS,
-                                                                   vec2<U32>(_previousFrameIndex, 1),
-                                                                   getAnimationByIndex(_previousAnimationIndex).getBoneBuffer());
-    }
-
-    return true;
+    return ret;
 }
-
 I32 AnimationComponent::frameCount(U32 animationID) const {
     return _animator != nullptr ? _animator->frameCount(animationID) : -1;
 }

@@ -49,11 +49,11 @@ WaterPlane::~WaterPlane()
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                  to_base(SGNComponent::ComponentType::BOUNDS) |
-                                  to_base(SGNComponent::ComponentType::RENDERING) |
-                                  to_base(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                                  to_base(ComponentType::TRANSFORM) |
+                                  to_base(ComponentType::BOUNDS) |
+                                  to_base(ComponentType::RENDERING) |
+                                  to_base(ComponentType::NETWORKING);
 
     F32 halfWidth = _dimensions.width * 0.5f;
     F32 halfLength = _dimensions.height * 0.5f;

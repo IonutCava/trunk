@@ -84,10 +84,10 @@ bool CubeScene::load(const stringImpl& name) {
 
 bool CubeScene::loadResources(bool continueOnErrors) {
     // 30 lights? >:)
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                  to_base(SGNComponent::ComponentType::BOUNDS) |
-                                  to_base(SGNComponent::ComponentType::RENDERING) |
-                                  to_base(SGNComponent::ComponentType::NETWORKING);
+    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                                  to_base(ComponentType::BOUNDS) |
+                                  to_base(ComponentType::RENDERING) |
+                                  to_base(ComponentType::NETWORKING);
 
     for (U8 row = 0; row < 3; row++) {
         for (U8 col = 0; col < 10; col++) {

@@ -102,7 +102,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <set>
 #include <new>
-#include <gsl/gsl>
+//#include <gsl/gsl>
 
 #if !defined(CPP_17_SUPPORT)
 #include "Core/Headers/cdigginsAny.h"

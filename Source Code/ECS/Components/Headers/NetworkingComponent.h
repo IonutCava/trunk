@@ -29,41 +29,47 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _NAVIGATION_COMPONENT_H_
-#define _NAVIGATION_COMPONENT_H_
+#ifndef _NETWORKING_COMPONENT_H_
+#define _NETWORKING_COMPONENT_H_
+
 
 #include "SGNComponent.h"
-#include "Core/Math/Headers/MathMatrices.h"
+
+#include "Networking/Headers/WorldPacket.h"
 
 namespace Divide {
 
-class SceneGraphNode;
-class NavigationComponent : public SGNComponent {
-   public:
-    enum class NavigationContext :U32 {
-        NODE_OBSTACLE = 0,
-        NODE_IGNORE
-    };
+class LocalClient;
+class NetworkingComponent : public SGNComponent<NetworkingComponent> {
+public:
+    NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient);
+    ~NetworkingComponent();
 
-    inline const NavigationContext& navigationContext() const {
-        return _navigationContext;
-    }
+    void onNetworkSend(U32 frameCountIn);
 
-    inline bool navMeshDetailOverride() const { return _overrideNavMeshDetail; }
+    void flagDirty();
 
-    void navigationContext(const NavigationContext& newContext);
+    static NetworkingComponent* getReceiver(I64 guid);
 
-    void navigationDetailOverride(const bool detailOverride);
+private:
+    friend void UpdateEntities(WorldPacket& p);
+    void onNetworkReceive(WorldPacket& dataIn);
 
-   protected:
-    friend class SceneGraphNode;
-    NavigationComponent(SceneGraphNode& sgn);
-    ~NavigationComponent();
+private:
+    WorldPacket deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const;
+    WorldPacket deltaDecompress(const WorldPacket& crt, const WorldPacket& previous) const;
 
-   protected:
-    NavigationContext _navigationContext;
-    bool _overrideNavMeshDetail;
+private:
+    LocalClient& _parentClient;
+
+    bool _resendRequired;
+    WorldPacket _previousSent;
+    WorldPacket _previousReceived;
+    
+
+    static hashMapImpl<I64, NetworkingComponent*> s_NetComponents;
 };
 
-};  // namespace Divide
-#endif
+}; //namespace Divide
+
+#endif //_NETWORKING_COMPONENT_H_

@@ -7,7 +7,7 @@
 #include "Managers/Headers/SceneManager.h"
 
 #include "Geometry/Animations/Headers/SceneAnimator.h"
-#include "Graphs/Components/Headers/AnimationComponent.h"
+#include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
 

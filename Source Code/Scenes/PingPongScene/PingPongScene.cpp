@@ -314,14 +314,14 @@ U16 PingPongScene::registerInputActions() {
 }
 
 bool PingPongScene::loadResources(bool continueOnErrors) {
-    static const U32 lightMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                 to_base(SGNComponent::ComponentType::BOUNDS) |
-                                 to_base(SGNComponent::ComponentType::RENDERING);
+    static const U32 lightMask = to_base(ComponentType::TRANSFORM) |
+                                 to_base(ComponentType::BOUNDS) |
+                                 to_base(ComponentType::RENDERING);
 
     static const U32 normalMask = lightMask |
-                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
-                                  to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::NETWORKING);
+                                  to_base(ComponentType::RIGID_BODY) |
+                                  to_base(ComponentType::NAVIGATION) |
+                                  to_base(ComponentType::NETWORKING);
         
 
     // Create a ball

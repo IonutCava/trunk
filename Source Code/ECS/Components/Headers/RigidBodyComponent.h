@@ -32,11 +32,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RIGID_BODY_COMPONENT_H_
 #define _RIGID_BODY_COMPONENT_H_
 
+#include "SGNComponent.h"
 #include "Core/Math/Headers/Transform.h"
-#include "Graphs/Components/Headers/SGNComponent.h"
 #include "Physics/Headers/PhysicsAsset.h"
 
-#include <ECS.h>
 
 namespace Divide {
     enum class PhysicsGroup : U32 {
@@ -51,8 +50,7 @@ namespace Divide {
 
     class PXDevice;
     
-    class RigidBodyComponent : public SGNComponent, 
-                               public ECS::Component<RigidBodyComponent> {
+    class RigidBodyComponent : public SGNComponent<RigidBodyComponent> {
       public:
         RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
         ~RigidBodyComponent();

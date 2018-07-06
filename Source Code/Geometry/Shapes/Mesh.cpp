@@ -40,17 +40,17 @@ void Mesh::updateBoundsInternal(SceneGraphNode& sgn) {
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void Mesh::postLoad(SceneGraphNode& sgn) {
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                  to_base(SGNComponent::ComponentType::RIGID_BODY) |
-                                  to_base(SGNComponent::ComponentType::BOUNDS) |
-                                  to_base(SGNComponent::ComponentType::RENDERING) |
-                                  to_base(SGNComponent::ComponentType::NAVIGATION);
+    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                                  to_base(ComponentType::TRANSFORM) |
+                                  to_base(ComponentType::RIGID_BODY) |
+                                  to_base(ComponentType::BOUNDS) |
+                                  to_base(ComponentType::RENDERING) |
+                                  to_base(ComponentType::NAVIGATION);
 
     static const U32 skinnedMask = normalMask | 
-                                   to_base(SGNComponent::ComponentType::ANIMATION) |
-                                   to_base(SGNComponent::ComponentType::INVERSE_KINEMATICS) |
-                                   to_base(SGNComponent::ComponentType::RAGDOLL);
+                                   to_base(ComponentType::ANIMATION) |
+                                   to_base(ComponentType::INVERSE_KINEMATICS) |
+                                   to_base(ComponentType::RAGDOLL);
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
         sgn.addNode(submesh,

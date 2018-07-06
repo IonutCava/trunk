@@ -160,11 +160,11 @@ bool MainScene::load(const stringImpl& name) {
     _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     _currentSky = addSky();
 
-    static const U32 normalMask = to_base(SGNComponent::ComponentType::NAVIGATION) |
-                                  to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                  to_base(SGNComponent::ComponentType::BOUNDS) |
-                                  to_base(SGNComponent::ComponentType::RENDERING) |
-                                  to_base(SGNComponent::ComponentType::NAVIGATION);
+    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
+                                  to_base(ComponentType::TRANSFORM) |
+                                  to_base(ComponentType::BOUNDS) |
+                                  to_base(ComponentType::RENDERING) |
+                                  to_base(ComponentType::NAVIGATION);
 
     g_waterDimensions.x = baseCamera->getZPlanes().y;
     g_waterDimensions.z = baseCamera->getZPlanes().y;

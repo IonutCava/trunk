@@ -29,20 +29,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _TRANSFORM_SYSTEM_H_
-#define _TRANSFORM_SYSTEM_H_
+#ifndef _RAGDOLL_COMPONENT_H_
+#define _RAGDOLL_COMPONENT_H_
 
-#include <ECS.h>
+
+#include "SGNComponent.h"
+
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
-      public:
-        TransformSystem();
-        virtual ~TransformSystem();
-
-        virtual void PreUpdate(F32 dt) override;
-        virtual void Update(F32 dt) override;
-        virtual void PostUpdate(F32 dt) override;
+    class RagdollComponent : public SGNComponent<RagdollComponent>{
+        public:
+            RagdollComponent(SceneGraphNode& parentSGN);
     };
 };
 
-#endif //_TRANSFORM_SYSTEM_H_
+#endif //_RAGDOLL_COMPONENT_H_

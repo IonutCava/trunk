@@ -1,5 +1,4 @@
-/*
-Copyright (c) 2017 DIVIDE-Studio
+/* Copyright (c) 2017 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
@@ -29,20 +28,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _TRANSFORM_SYSTEM_H_
-#define _TRANSFORM_SYSTEM_H_
+#ifndef _SGN_COMPONENT_INL_
+#define _SGN_COMPONENT_INL_
 
-#include <ECS.h>
+#include "ECS/Events/Headers/EntityEvents.h"
+
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
-      public:
-        TransformSystem();
-        virtual ~TransformSystem();
 
-        virtual void PreUpdate(F32 dt) override;
-        virtual void Update(F32 dt) override;
-        virtual void PostUpdate(F32 dt) override;
-    };
-};
+    template<typename T>
+    SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN)
+      : _parentSGN(parentSGN)
+    {
+        RegisterEventCallbacks();
+    }
 
-#endif //_TRANSFORM_SYSTEM_H_
+    template<typename T>
+    SGNComponent<T>::~SGNComponent()
+    {
+        UnregisterAllEventCallbacks();
+    }
+
+    template<typename T>
+    void SGNComponent<T>::RegisterEventCallbacks() {
+    }
+
+};//namespace Divide
+
+#endif

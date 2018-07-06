@@ -78,15 +78,14 @@ class NOINITVTABLE SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeNetworkComponent;
 
-   public:
-      enum class UpdateFlag : U32 {
+    public:
+    enum class UpdateFlag : U32 {
         BOUNDS_CHANGED = 0,
         COUNT
-      };
+    };
 
-   protected:
     class SGNParentData {
-    public:
+        public:
         explicit SGNParentData(I64 sgnGUID) : _GUID(sgnGUID)
         {
             _updateFlags.fill(true);
@@ -98,12 +97,12 @@ class NOINITVTABLE SceneNode : public CachedResource {
         inline void clearFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = false; }
         inline void setFlag(UpdateFlag flag) { _updateFlags[to_U32(flag)] = true; }
 
-    private:
+        private:
         I64 _GUID;
         std::array<bool, to_base(UpdateFlag::COUNT)> _updateFlags;
     };
 
-   public:
+    public:
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type);
     explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
@@ -140,13 +139,14 @@ class NOINITVTABLE SceneNode : public CachedResource {
     ResourceCache& parentResourceCache() { return _parentCache; }
     const ResourceCache& parentResourceCache() const { return _parentCache; }
 
+
+    inline const BoundingBox& refBoundingBox() const { return _boundingBox; }
    protected:
+    friend class BoundsSystem;
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                              SceneState& sceneState);
-    /// Called as a second pass after sceneUpdate
-    virtual void sgnUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
-                           SceneState& sceneState);
+
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode& sgn);
     virtual void updateBoundsInternal(SceneGraphNode& sgn);
@@ -211,11 +211,6 @@ class SceneNodeSceneGraph {
         node.sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void sgnUpdate(SceneNode& node, const U64 deltaTimeUS,
-                          SceneGraphNode& sgn, SceneState& sceneState) {
-        node.sgnUpdate(deltaTimeUS, sgn, sceneState);
-    }
-    
     static void registerSGNParent(SceneNode& node, I64 sgnGUID) {
         // prevent double add
         vectorImpl<SceneNode::SGNParentData>::const_iterator it;

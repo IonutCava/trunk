@@ -32,10 +32,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TRANSFORM_COMPONENT_H_
 #define _TRANSFORM_COMPONENT_H_
 
-#include "Graphs/Components/Headers/SGNComponent.h"
+#include "SGNComponent.h"
 #include "Core/Math/Headers/Transform.h"
-
-#include <ECS.h>
 
 namespace Divide {
     struct ParentTransformDirty;
@@ -122,10 +120,8 @@ namespace Divide {
         mat4<F32> _transformOffset;
     };
 
-    class TransformComponent : public ECS::Component<TransformComponent>,
-                               public TransformInterface,
-                               public SGNComponent,
-                               protected ECS::Event::IEventListener
+    class TransformComponent : public TransformInterface,
+                               public SGNComponent<TransformComponent>
     {
         public:
          TransformComponent(SceneGraphNode& parentSGN);
@@ -221,11 +217,6 @@ namespace Divide {
 
          void ignoreView(const bool state, const I64 cameraGUID);
 
-
-         inline void addTransformUpdateCbk(DELEGATE_CBK<void> cbk) {
-             _transformCallbacks.push_back(cbk);
-         }
-
          // Local transform interface access
          void getScale(vec3<F32>& scaleOut) const override;
          void getPosition(vec3<F32>& posOut) const override;
@@ -235,7 +226,6 @@ namespace Divide {
          friend class TransformSystem;
          void setTransformDirty(TransformType type);
          void snapshot();
-         void notifyListeners();
          bool dirty() const;
          void clean(bool interp);
 
@@ -252,8 +242,6 @@ namespace Divide {
         TransformValues _prevTransformValues;
         TransformStack _transformStack;
         TransformMask  _transformUpdatedMask;
-
-        vectorImpl<DELEGATE_CBK<void> > _transformCallbacks;
 
         /// Transform cache values
         std::atomic_bool _dirty;

@@ -38,7 +38,6 @@ namespace Divide {
         auto transformEnd = ECS::ECS_Engine->GetComponentManager()->end<TransformComponent>();
         for (;transform != transformEnd; ++transform)
         {
-            transform->notifyListeners();
             transform->snapshot();
         }
     }

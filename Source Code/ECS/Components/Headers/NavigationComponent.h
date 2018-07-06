@@ -29,20 +29,39 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _TRANSFORM_SYSTEM_H_
-#define _TRANSFORM_SYSTEM_H_
+#ifndef _NAVIGATION_COMPONENT_H_
+#define _NAVIGATION_COMPONENT_H_
 
-#include <ECS.h>
+#include "SGNComponent.h"
+#include "Core/Math/Headers/MathMatrices.h"
+
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
-      public:
-        TransformSystem();
-        virtual ~TransformSystem();
 
-        virtual void PreUpdate(F32 dt) override;
-        virtual void Update(F32 dt) override;
-        virtual void PostUpdate(F32 dt) override;
+class SceneGraphNode;
+class NavigationComponent : public SGNComponent<NavigationComponent>{
+   public:
+    enum class NavigationContext :U32 {
+        NODE_OBSTACLE = 0,
+        NODE_IGNORE
     };
+
+    NavigationComponent(SceneGraphNode& sgn);
+    ~NavigationComponent();
+
+    inline const NavigationContext& navigationContext() const {
+        return _navigationContext;
+    }
+
+    inline bool navMeshDetailOverride() const { return _overrideNavMeshDetail; }
+
+    void navigationContext(const NavigationContext& newContext);
+
+    void navigationDetailOverride(const bool detailOverride);
+
+   protected:
+    NavigationContext _navigationContext;
+    bool _overrideNavMeshDetail;
 };
 
-#endif //_TRANSFORM_SYSTEM_H_
+};  // namespace Divide
+#endif

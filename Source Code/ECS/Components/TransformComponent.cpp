@@ -6,24 +6,25 @@
 
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
-      : SGNComponent(SGNComponent::ComponentType::TRANSFORM, parentSGN),
+      : SGNComponent(parentSGN),
         _dirty(true),
         _dirtyInterp(true),
         _parentDirty(true),
         _prevInterpValue(0.0)
     {
         _transformInterface = std::make_unique<Transform>();
-        RegisterEventCallbacks();
+        
     }
 
     TransformComponent::~TransformComponent()
     {
-        UnregisterAllEventCallbacks();
+        
     }
 
     void TransformComponent::RegisterEventCallbacks() {
         RegisterEventCallback(&TransformComponent::OnParentTransformDirty);
         RegisterEventCallback(&TransformComponent::OnParentTransformClean);
+        SGNComponent::RegisterEventCallbacks();
     }
 
     void TransformComponent::OnParentTransformDirty(const ParentTransformDirty* event) {
@@ -53,19 +54,12 @@ namespace Divide {
     }
 
     void TransformComponent::snapshot() {
-        ReadLock r_lock(_lock);
-        _transformInterface->getValues(_prevTransformValues);
-    }
-
-
-    void TransformComponent::notifyListeners() {
         if (_transformUpdatedMask.hasSetFlags()) {
-            for (DELEGATE_CBK<void>& cbk : _transformCallbacks) {
-                cbk();
-            }
-
             _transformUpdatedMask.clearAllFlags();
         }
+
+        ReadLock r_lock(_lock);
+        _transformInterface->getValues(_prevTransformValues);
     }
 
     void TransformComponent::ignoreView(const bool state, const I64 cameraGUID) {

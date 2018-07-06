@@ -44,16 +44,14 @@ class ShaderBuffer;
 class AnimEvaluator;
 class SceneAnimator;
 class SceneGraphNode;
-class AnimationComponent : public SGNComponent {
+class AnimationComponent : public SGNComponent<AnimationComponent>{
    public:
+    AnimationComponent(SceneGraphNode& parentSGN);
+    ~AnimationComponent();
+
     inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) {
         _animator = animator;
     }
-
-    bool onRender(const SceneRenderState& sceneRenderState,
-                  const RenderStagePass& renderStagePass) override;
-
-    void update(const U64 deltaTimeUS) override;
 
     /// Select an animation by name
     bool playAnimation(const stringImpl& name);
@@ -97,10 +95,13 @@ class AnimationComponent : public SGNComponent {
     void incParentTimeStamp(const U64 timestamp);
 
     const vectorImpl<Line>& skeletonLines() const;
+
+
+    std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;
+
    protected:
-    friend class SceneGraphNode;
-    AnimationComponent(SceneGraphNode& parentSGN);
-    ~AnimationComponent();
+    friend class AnimationSystem;
+    void update(const U64 deltaTimeUS);
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!

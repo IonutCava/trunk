@@ -35,21 +35,19 @@
 #include "SceneNode.h"
 #include "SGNRelationshipCache.h"
 #include "Utility/Headers/StateTracker.h"
-#include "Graphs/Components/Headers/IKComponent.h"
-#include "Graphs/Components/Headers/UnitComponent.h"
-#include "Graphs/Components/Headers/BoundsComponent.h"
-#include "Graphs/Components/Headers/RagdollComponent.h"
-#include "Graphs/Components/Headers/RenderingComponent.h"
-#include "Graphs/Components/Headers/AnimationComponent.h"
-#include "Graphs/Components/Headers/NavigationComponent.h"
-#include "Graphs/Components/Headers/NetworkingComponent.h"
-
+#include "ECS/Components/Headers/IKComponent.h"
+#include "ECS/Components/Headers/UnitComponent.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/RagdollComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/AnimationComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
-
-#include <ECS.h>
+#include "ECS/Components/Headers/NavigationComponent.h"
+#include "ECS/Components/Headers/NetworkingComponent.h"
 
 namespace Divide {
+
 class Transform;
 class SceneGraph;
 class SceneState;
@@ -201,8 +199,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     template <typename T>
     inline T* get() const {
-        static_assert(false, "INVALID COMPONENT");
-        return nullptr;
+        // ToDo: Optimise this -Ionut
+        return ECS::ECS_Engine->GetComponentManager()->GetComponent<T>(GetEntityID());
     }
 
     inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
@@ -327,8 +325,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
         _updateFlags[to_U32(flag)] = true;
     }
 
-    void sgnUpdate(const U64 deltaTimeUS, SceneState& sceneState);
-
     void getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList);
 
     void processDeleteQueue();
@@ -336,20 +332,8 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
    private:
     void addToDeleteQueue(U32 idx);
 
-    void onTransform();
-
     inline void setName(const stringImpl& name) { 
         _name = name;
-    }
-
-    void setComponent(SGNComponent::ComponentType type, SGNComponent* component);
-
-    inline U32 getComponentIdx(SGNComponent::ComponentType type) const {
-        return powerOfTwo(to_U32(type)) - 1;
-    }
-
-    inline SGNComponent* getComponent(SGNComponent::ComponentType type) const {
-        return _components[getComponentIdx(type)];
     }
 
     void RegisterEventCallbacks();
@@ -369,6 +353,7 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     mutable I8 _frustPlaneCache;
     U64 _elapsedTimeUS;
+    U32 _componentMask;
     stringImpl _name;
     SceneNode_ptr _node;
     SceneGraphNode* _parent;
@@ -385,62 +370,11 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     StateTracker<bool> _trackedBools;
 
-    vectorImpl<SGNComponent*> _components;
     SGNRelationshipCache _relationshipCache;
 
     mutable SharedLock _childrenDeletionLock;
     vectorImpl<vectorAlg::vecSize> _childrenPendingDeletion;
 };
-
-template <>
-inline AnimationComponent* SceneGraphNode::get() const {
-    return static_cast<AnimationComponent*>(getComponent(SGNComponent::ComponentType::ANIMATION));
-}
-
-template <>
-inline IKComponent* SceneGraphNode::get() const {
-    return static_cast<IKComponent*>(getComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS));
-}
-
-template <>
-inline RagdollComponent* SceneGraphNode::get() const {
-    return static_cast<RagdollComponent*>(getComponent(SGNComponent::ComponentType::RAGDOLL));
-}
-
-template <>
-inline BoundsComponent* SceneGraphNode::get() const {
-    return static_cast<BoundsComponent*>(getComponent(SGNComponent::ComponentType::BOUNDS));
-}
-
-template <>
-inline NavigationComponent* SceneGraphNode::get() const {
-    return static_cast<NavigationComponent*>(getComponent(SGNComponent::ComponentType::NAVIGATION));
-}
-
-template <>
-inline TransformComponent* SceneGraphNode::get() const {
-    return static_cast<TransformComponent*>(getComponent(SGNComponent::ComponentType::TRANSFORM));
-}
-
-template <>
-inline RigidBodyComponent* SceneGraphNode::get() const {
-    return static_cast<RigidBodyComponent*>(getComponent(SGNComponent::ComponentType::RIGID_BODY));
-}
-
-template <>
-inline RenderingComponent* SceneGraphNode::get() const {
-    return static_cast<RenderingComponent*>(getComponent(SGNComponent::ComponentType::RENDERING));
-}
-
-template <>
-inline NetworkingComponent* SceneGraphNode::get() const {
-    return static_cast<NetworkingComponent*>(getComponent(SGNComponent::ComponentType::NETWORKING));
-}
-
-template <>
-inline UnitComponent* SceneGraphNode::get() const {
-    return static_cast<UnitComponent*>(getComponent(SGNComponent::ComponentType::UNIT));
-}
 
 };  // namespace Divide
 #endif

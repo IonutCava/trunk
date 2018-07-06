@@ -29,20 +29,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _TRANSFORM_SYSTEM_H_
-#define _TRANSFORM_SYSTEM_H_
+#ifndef _ENTITY_EVENTS_H_
+#define _ENTITY_EVENTS_H_
 
 #include <ECS.h>
+
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
-      public:
-        TransformSystem();
-        virtual ~TransformSystem();
 
-        virtual void PreUpdate(F32 dt) override;
-        virtual void Update(F32 dt) override;
-        virtual void PostUpdate(F32 dt) override;
+    struct EntityPostLoad : public ECS::Event::Event<EntityPostLoad>
+    {
+        ECS::EntityId ownerID;
+
+        EntityPostLoad(ECS::EntityId id) : ownerID(id)
+        {}
     };
-};
 
-#endif //_TRANSFORM_SYSTEM_H_
+    struct EntityActiveStateChange : public ECS::Event::Event<EntityActiveStateChange>
+    {
+        ECS::EntityId ownerID;
+        bool _state = false;
+
+        EntityActiveStateChange(ECS::EntityId id, bool state) : ownerID(id), _state(state)
+        {}
+    };
+
+}; //namespace Divide
+
+#endif //_ENTITY_EVENTS_H_

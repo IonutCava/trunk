@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/SceneGraph.h"
+#include "Headers/SceneGraphNode.h"
 
 #include "Core/Headers/PlatformContext.h"
 #include "Scenes/Headers/SceneState.h"
@@ -15,8 +16,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#include "ECS/Events/Headers/EntityEvents.h"
 #include "ECS/Events/Headers/TransformEvents.h"
-#include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
 
@@ -34,13 +35,13 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
       _active(true),
       _visibilityLocked(false),
       _isSelectable(false),
+      _componentMask(componentMask),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _usageContext(UsageContext::NODE_DYNAMIC),
       _relationshipCache(*this)
 {
     assert(_node != nullptr);
     _children.reserve(INITIAL_CHILD_COUNT);
-    _components.resize(to_base(SGNComponent::ComponentType::COUNT), nullptr);
     RegisterEventCallbacks();
 
     for (std::atomic_bool& flag : _updateFlags) {
@@ -49,56 +50,49 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
 
     setName(name);
 
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::ANIMATION))) {
-        setComponent(SGNComponent::ComponentType::ANIMATION, MemoryManager_NEW AnimationComponent(*this));
+    if (BitCompare(componentMask, to_U32(ComponentType::ANIMATION))) {
+        AddComponent<AnimationComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::INVERSE_KINEMATICS))) {
-        setComponent(SGNComponent::ComponentType::INVERSE_KINEMATICS, MemoryManager_NEW IKComponent(*this));
+
+    if (BitCompare(componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
+        AddComponent<IKComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NETWORKING))) {
+    if (BitCompare(componentMask, to_U32(ComponentType::NETWORKING))) {
         LocalClient& client = _sceneGraph.parentScene().platformContext().client();
-        setComponent(SGNComponent::ComponentType::NETWORKING, MemoryManager_NEW NetworkingComponent(*this, client));
+        AddComponent<NetworkingComponent>(*this, client);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RAGDOLL))) {
-        setComponent(SGNComponent::ComponentType::RAGDOLL, MemoryManager_NEW RagdollComponent(*this));
+    if (BitCompare(componentMask, to_U32(ComponentType::RAGDOLL))) {
+        AddComponent<RagdollComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::NAVIGATION))) {
-        setComponent(SGNComponent::ComponentType::NAVIGATION, MemoryManager_NEW NavigationComponent(*this));
+    if (BitCompare(componentMask, to_U32(ComponentType::NAVIGATION))) {
+        AddComponent<NavigationComponent>(*this);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RIGID_BODY))) {
+    if (BitCompare(componentMask, to_U32(ComponentType::RIGID_BODY))) {
         STUBBED("Rigid body physics disabled for now - Ionut");
         physicsGroup = PhysicsGroup::GROUP_IGNORE;
         PXDevice& pxContext = _sceneGraph.parentScene().platformContext().pfx();
-        RigidBodyComponent* rComp = AddComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
-        setComponent(SGNComponent::ComponentType::RIGID_BODY, rComp);
+        AddComponent<RigidBodyComponent>(*this, physicsGroup, pxContext);
     }
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::TRANSFORM))) {
-
-        TransformComponent* tComp = AddComponent<TransformComponent>(*this);
-
-        setComponent(SGNComponent::ComponentType::TRANSFORM, tComp);
-
-        tComp->addTransformUpdateCbk([this]() { Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this); });
-        tComp->addTransformUpdateCbk([this]() { onTransform(); });
+    if (BitCompare(componentMask, to_U32(ComponentType::TRANSFORM))) {
+        AddComponent<TransformComponent>(*this);
     }
 
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::BOUNDS))) {
-        setComponent(SGNComponent::ComponentType::BOUNDS, MemoryManager_NEW BoundsComponent(*this));
+    if (BitCompare(componentMask, to_U32(ComponentType::BOUNDS))) {
+        AddComponent<BoundsComponent>(*this);
     }
 
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::UNIT))) {
-        setComponent(SGNComponent::ComponentType::UNIT, MemoryManager_NEW UnitComponent(*this));
+    if (BitCompare(componentMask, to_U32(ComponentType::UNIT))) {
+        AddComponent<UnitComponent>(*this);
     }
     
-    if (BitCompare(componentMask, to_U32(SGNComponent::ComponentType::RENDERING))) {
+    if (BitCompare(componentMask, to_U32(ComponentType::RENDERING))) {
         GFXDevice& gfxContext = _sceneGraph.parentScene().platformContext().gfx();
 
         const Material_ptr& materialTpl = _node->getMaterialTpl();
-        setComponent(SGNComponent::ComponentType::RENDERING, 
-                     MemoryManager_NEW RenderingComponent(gfxContext,
-                                            materialTpl ? materialTpl->clone("_instance_" + name)
-                                                        : nullptr,
-                                            *this));
+        AddComponent<RenderingComponent>(gfxContext,
+                                         materialTpl ? materialTpl->clone("_instance_" + name)
+                                                     : nullptr,
+                                         *this);
     }
 
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, getGUID());
@@ -112,6 +106,7 @@ SceneGraphNode::~SceneGraphNode()
     if (getParent()) {
         Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
     }
+
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), getName().c_str(), _node->getName().c_str());
 
     for (U32 i = 0; i < getChildCount(); ++i) {
@@ -119,12 +114,37 @@ SceneGraphNode::~SceneGraphNode()
     }
     _children.clear();
 
-    for (SGNComponent* comp : _components) {
-        if (comp && !(comp->getType() == SGNComponent::ComponentType::TRANSFORM ||
-                      comp->getType() == SGNComponent::ComponentType::RIGID_BODY))
-        {
-            MemoryManager::SAFE_DELETE(comp);
-        }
+
+    if (BitCompare(_componentMask, to_U32(ComponentType::ANIMATION))) {
+        RemoveComponent<AnimationComponent>();
+    }
+
+    if (BitCompare(_componentMask, to_U32(ComponentType::INVERSE_KINEMATICS))) {
+        RemoveComponent<IKComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::NETWORKING))) {
+        RemoveComponent<NetworkingComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::RAGDOLL))) {
+        RemoveComponent<RagdollComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::NAVIGATION))) {
+        RemoveComponent<NavigationComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::RIGID_BODY))) {
+        RemoveComponent<RigidBodyComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::TRANSFORM))) {
+        RemoveComponent<TransformComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::BOUNDS))) {
+        RemoveComponent<BoundsComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::UNIT))) {
+        RemoveComponent<UnitComponent>();
+    }
+    if (BitCompare(_componentMask, to_U32(ComponentType::RENDERING))) {
+         RemoveComponent<RenderingComponent>();
     }
 
     Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, getGUID());
@@ -133,6 +153,7 @@ SceneGraphNode::~SceneGraphNode()
         _node.reset();
     }
 }
+
 
 void SceneGraphNode::RegisterEventCallbacks()
 {
@@ -143,6 +164,8 @@ void SceneGraphNode::RegisterEventCallbacks()
 void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
     // are we targeted by the event?
     if (GetEntityID() == event->ownerID) {
+        Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
+
         ReadLock r_lock(_childLock);
         U32 childCount = getChildCountLocked();
         for (U32 i = 0; i < childCount; ++i) {
@@ -160,21 +183,6 @@ void SceneGraphNode::OnTransformClean(const TransformClean* event) {
             ECS::ECS_Engine->SendEvent<ParentTransformClean>(_children[i]->GetEntityID());
         }
     }
-}
-
-void SceneGraphNode::setComponent(SGNComponent::ComponentType type, SGNComponent* component) {
-    // We have a component registered for the specified slot
-    if (getComponent(type) != nullptr) {
-        if (component != nullptr) {
-            // We want to replace the existing entry, so keep the same index
-        } else {
-            // We want to delete the existing entry, so destroy the index as well
-        }
-    } else {
-        // We are adding a new component type
-    }
-
-    _components[getComponentIdx(type)] = component;
 }
 
 void SceneGraphNode::usageContext(const UsageContext& newContext) {
@@ -310,11 +318,7 @@ bool SceneGraphNode::removeNode(const SceneGraphNode& node) {
 }
 
 void SceneGraphNode::postLoad() {
-    for (auto& component : _components) {
-        if (component != nullptr) {
-            component->postLoad();
-        }
-    }
+    ECS::ECS_Engine->SendEvent<EntityPostLoad>(GetEntityID());
 }
 
 bool SceneGraphNode::isChildOfType(U32 typeMask, bool ignoreRoot) const {
@@ -445,11 +449,7 @@ void SceneGraphNode::lockVisibility(const bool state) {
 void SceneGraphNode::setActive(const bool state) {
     if (_active != state) {
         _active = state;
-        for (auto& component : _components) {
-            if (component != nullptr) {
-                component->setActive(state);
-            }
-        }
+        ECS::ECS_Engine->SendEvent<EntityActiveStateChange>(GetEntityID(), _active);
 
         forEachChild([state](SceneGraphNode& child) {
             child.setActive(state);
@@ -467,10 +467,6 @@ void SceneGraphNode::getOrderedNodeList(vectorImpl<SceneGraphNode*>& nodeList) {
     if (!node || (node && node->getState() == ResourceState::RES_LOADED)) {
         nodeList.push_back(this);
     }
-}
-
-void SceneGraphNode::sgnUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
-    Attorney::SceneNodeSceneGraph::sgnUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
 
 void SceneGraphNode::processDeleteQueue() {
@@ -510,13 +506,6 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     // update local time
     _elapsedTimeUS += deltaTimeUS;
 
-    // update all of the internal components (animation, physics, etc)
-    for (auto& component : _components) {
-        if (component != nullptr) {
-            component->update(deltaTimeUS);
-         }
-    }
-
     if (!_relationshipCache.isValid()) {
         _relationshipCache.rebuild();
     }
@@ -524,26 +513,20 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
     Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
 }
 
-void SceneGraphNode::onTransform() {
-    forEachChild([](SceneGraphNode& child) {
-        child.onTransform();
-    });
-
-    TransformComponent* tComp = get<TransformComponent>();
-    BoundsComponent* bComp = get<BoundsComponent>();
-    if (tComp != nullptr && bComp != nullptr) {
-        bComp->onTransform(tComp->getWorldMatrix());
-    }
-}
-
 bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
                                    const RenderStagePass& renderStagePass) {
-    for (auto& component : _components) {
-        if (component && !component->onRender(sceneRenderState, renderStagePass)) {
-            return false;
+    
+    RenderingComponent* rComp = ECS::ECS_Engine->GetComponentManager()->GetComponent<RenderingComponent>(GetEntityID());
+    if (rComp != nullptr) {
+        AnimationComponent* aComp = ECS::ECS_Engine->GetComponentManager()->GetComponent<AnimationComponent>(GetEntityID());
+        if (aComp) {
+            std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
+            if (data.second != nullptr) {
+                rComp->registerShaderBuffer(ShaderBufferLocation::BONE_TRANSFORMS, data.first, *data.second);
+            }
         }
+        rComp->onRender(sceneRenderState, renderStagePass);
     }
-
     return _node->onRender(*this, sceneRenderState, renderStagePass);
 }
 

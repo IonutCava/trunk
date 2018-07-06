@@ -22,7 +22,7 @@ namespace Divide {
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
                                        SceneGraphNode& parentSGN)
-    : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
+    : SGNComponent(parentSGN),
       _context(context),
       _lodLevel(0),
       _commandIndex(0),
@@ -200,9 +200,6 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
 }
 
-void RenderingComponent::postLoad() {
-}
-
 void RenderingComponent::update(const U64 deltaTimeUS) {
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
@@ -261,7 +258,7 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
     _textureDependencies.removeTexture(additionalTexture);
 }
 
-bool RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
+void RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
                                   const RenderStagePass& renderStagePass) {
 
     ACKNOWLEDGE_UNUSED(sceneRenderState);
@@ -306,8 +303,6 @@ bool RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
     if (bufferDirty) {
         pkg->descriptorSet(0, set);
     }
-
-    return true;
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {

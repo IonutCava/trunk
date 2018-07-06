@@ -37,8 +37,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
 namespace Divide {
-    class BoundsComponent : public SGNComponent {
+    struct TransformDirty;
+    class BoundsComponent : public SGNComponent<BoundsComponent>{
     public:
+        BoundsComponent(SceneGraphNode& sgn);
+        ~BoundsComponent();
+
         inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
         inline const BoundingSphere& getBoundingSphere() const { return _boundingSphere; }
         inline bool lockBBTransforms() const { return _lockBBTransforms; }
@@ -50,11 +54,6 @@ namespace Divide {
     protected:
         friend class SceneGraph;
         void onTransform(const mat4<F32>& worldMatrix);
-
-    protected:
-        friend class SceneGraphNode;
-        BoundsComponent(SceneGraphNode& sgn);
-        ~BoundsComponent();
         
         void update(const U64 deltaTimeUS);
 
@@ -62,6 +61,7 @@ namespace Divide {
             _boundingBoxDirty = true;
         }
 
+        void OnTransformDirty(const TransformDirty* event);
 
     private:
         std::atomic<bool> _boundingBoxDirty;

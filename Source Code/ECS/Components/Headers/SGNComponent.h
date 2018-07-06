@@ -33,6 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 
+#include <ECS.h>
+
 namespace Divide {
 
 /// A generic component for the SceneGraphNode class
@@ -41,60 +43,44 @@ class SceneGraphNode;
 class RenderStagePass;
 class SceneRenderState;
 
-class SGNComponent : private NonCopyable {
+enum class ComponentType : U32 {
+    ANIMATION = toBit(1),
+    INVERSE_KINEMATICS = toBit(2),
+    RAGDOLL = toBit(3),
+    NAVIGATION = toBit(4),
+    TRANSFORM = toBit(5),
+    BOUNDS = toBit(6),
+    RENDERING = toBit(7),
+    NETWORKING = toBit(8),
+    UNIT = toBit(9),
+    RIGID_BODY = toBit(10),
+    COUNT = 11
+};
+
+struct EntityOnUpdate;
+struct EntityActiveStateChange;
+
+template <typename T>
+class SGNComponent : private NonCopyable,
+                     public ECS::Component<T>,
+                     protected ECS::Event::IEventListener
+{
    public:
-    enum class ComponentType : U32 {
-        ANIMATION = toBit(1),
-        INVERSE_KINEMATICS = toBit(2),
-        RAGDOLL = toBit(3),
-        NAVIGATION = toBit(4),
-        TRANSFORM = toBit(5),
-        BOUNDS = toBit(6),
-        RENDERING = toBit(7),
-        NETWORKING = toBit(8),
-        UNIT = toBit(9),
-        RIGID_BODY = toBit(10),
-        COUNT = 11
-    };
-    
-    SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
+
+    SGNComponent(SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 
-    virtual bool onRender(const SceneRenderState& sceneRenderState,
-                          const RenderStagePass& renderStagePass) {
-        ACKNOWLEDGE_UNUSED(sceneRenderState);
-        ACKNOWLEDGE_UNUSED(renderStagePass);
-        return true;
-    }
-
-    virtual void update(const U64 deltaTimeUS) {
-        _deltaTimeUS = deltaTimeUS;
-        _elapsedTimeUS += deltaTimeUS;
-    }
-
-    virtual void resetTimers() {
-        _deltaTimeUS = 0UL;
-        _elapsedTimeUS = 0UL;
-    }
-
-    virtual void setActive(const bool state) {
-        _parentNodeActive = state;
-    }
-
-    virtual void postLoad() {
-    }
-
-    inline ComponentType getType() const { return _type; }
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
     
    protected:
-    std::atomic_bool _parentNodeActive;
+    void RegisterEventCallbacks();
+
+   protected:
     /// Pointer to the SGN owning this instance of AnimationComponent
     SceneGraphNode& _parentSGN;
-    ComponentType _type;
-    U64 _elapsedTimeUS;
-    U64 _deltaTimeUS;
 };
 
 };  // namespace Divide
 #endif
+
+#include "SGNComponent.inl"

@@ -29,15 +29,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _TRANSFORM_SYSTEM_H_
-#define _TRANSFORM_SYSTEM_H_
+#ifndef _BOUNDS_SYSTEM_H_
+#define _BOUNDS_SYSTEM_H_
 
 #include <ECS.h>
 namespace Divide {
-    class TransformSystem : public ECS::System<TransformSystem>{
-      public:
-        TransformSystem();
-        virtual ~TransformSystem();
+    class BoundsSystem : public ECS::System<BoundsSystem> {
+        BoundsSystem();
+        virtual ~BoundsSystem();
 
         virtual void PreUpdate(F32 dt) override;
         virtual void Update(F32 dt) override;
@@ -45,4 +44,4 @@ namespace Divide {
     };
 };
 
-#endif //_TRANSFORM_SYSTEM_H_
+#endif //_BOUNDS_SYSTEM_H_

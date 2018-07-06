@@ -29,17 +29,32 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _RAGDOLL_COMPONENT_H_
-#define _RAGDOLL_COMPONENT_H_
-
+#ifndef _UNIT_COMPONENT_H_
+#define _UNIT_COMPONENT_H_
 
 #include "SGNComponent.h"
 
 namespace Divide {
-    class RagdollComponent : public SGNComponent {
-        public:
-            RagdollComponent(SceneGraphNode& parentSGN);
-    };
+
+FWD_DECLARE_MANAGED_CLASS(Unit);
+class UnitComponent : public SGNComponent<UnitComponent> {
+public:
+    UnitComponent(SceneGraphNode& parentSGN);
+    ~UnitComponent();
+
+    // This call will take ownership of the specified pointer!
+    bool setUnit(Unit_ptr unit);
+
+    template <typename T = Unit>
+    inline std::shared_ptr<T> getUnit() const {
+        static_assert(std::is_base_of<Unit, T>::value,
+            "UnitComponent::getUnit error: Invalid target unit type!");
+        return std::static_pointer_cast<T>(_unit);
+    }
+
+private:
+    Unit_ptr _unit;
+};
 };
 
-#endif //_RAGDOLL_COMPONENT_H_
+#endif //_UNIT_COMPONENT_H_

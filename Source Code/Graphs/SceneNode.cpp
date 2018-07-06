@@ -56,24 +56,6 @@ void SceneNode::sceneUpdate(const U64 deltaTimeUS,
     ACKNOWLEDGE_UNUSED(sceneState);
 }
 
-void SceneNode::sgnUpdate(const U64 deltaTimeUS,
-                          SceneGraphNode& sgn,
-                          SceneState& sceneState) {
-    vectorImpl<SceneNode::SGNParentData>::iterator it;
-    it = getSGNData(sgn.getGUID());
-    assert(it != std::cend(_sgnParents));
-    SGNParentData& parentData = *it;
-
-    if (parentData.getFlag(UpdateFlag::BOUNDS_CHANGED)) {
-        updateBoundsInternal(sgn);
-        BoundsComponent* bComp = sgn.get<BoundsComponent>();
-        if (bComp) {
-            bComp->onBoundsChange(_boundingBox);
-        }
-        parentData.clearFlag(UpdateFlag::BOUNDS_CHANGED);
-    }
-}
-
 bool SceneNode::onRender(SceneGraphNode& sgn,
                          const SceneRenderState& sceneRenderState,
                          const RenderStagePass& renderStagePass) {
@@ -88,8 +70,7 @@ void SceneNode::updateBoundsInternal(SceneGraphNode& sgn) {
 }
 
 void SceneNode::postLoad(SceneGraphNode& sgn) {
-    updateBoundsInternal(sgn);
-    sgn.get<BoundsComponent>()->onBoundsChange(_boundingBox);
+    setFlag(UpdateFlag::BOUNDS_CHANGED);
     sgn.postLoad();
 }
 

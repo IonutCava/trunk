@@ -136,9 +136,9 @@ bool Light::onRender(SceneGraphNode& sgn,
     }
 
     if (!_impostor) {
-        static const U32 normalMask = to_base(SGNComponent::ComponentType::TRANSFORM) |
-                                      to_base(SGNComponent::ComponentType::BOUNDS) |
-                                      to_base(SGNComponent::ComponentType::RENDERING);
+        static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                                      to_base(ComponentType::BOUNDS) |
+                                      to_base(ComponentType::RENDERING);
 
         _impostor = CreateResource<ImpostorSphere>(_parentCache, ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
