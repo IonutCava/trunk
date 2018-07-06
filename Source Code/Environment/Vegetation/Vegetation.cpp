@@ -300,6 +300,8 @@ void Vegetation::gpuCull(){
         //_cullShader->SetSubroutine(VERTEX_SHADER, _instanceRoutineIdx[HI_Z_CULL]);
         _cullShader->Uniform("cullType", /*queryId*/(U32)0);
         _cullShader->uploadNodeMatrices();
+        buffer->setShaderProgram(_cullShader);
+
         GFX_DEVICE.toggleRasterization(false);
         GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(0, TextureDescriptor::Depth);
         buffer->BindFeedbackBufferRange(CulledPositionBuffer, _instanceCountGrass * queryId, _instanceCountGrass);
@@ -327,12 +329,8 @@ bool Vegetation::setMaterialInternal(SceneGraphNode* const sgn) {
         _drawShader->ApplyMaterial(getMaterial());
         _drawShader->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
     }
-    if (_drawShader->bind()){
-        _drawShader->SetLOD(1);
-        _drawShader->uploadNodeMatrices();
-        return true;
-    }
-    return false;
+    
+    return _drawShader->bind();
 }
 
 void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
@@ -343,14 +341,17 @@ void Vegetation::render(SceneGraphNode* const sgn, const SceneRenderState& scene
     if (instanceCount == 0)
         return;
 
-    SET_STATE_BLOCK(_grassStateBlockHash, true);
-
     _grassBillboards->Bind(0);
     if(setMaterialInternal(sgn)){
+        GenericVertexData::GenericDrawCommand cmd(TRIANGLES, _grassStateBlockHash, 0, 12 * 3, instanceCount);
+        cmd.setLoD(1);
+
+        SET_STATE_BLOCK(_grassStateBlockHash, true);
+        buffer->setShaderProgram(_drawShader);
         buffer->getDrawAttribDescriptor(posLocation).setOffset(_instanceCountGrass * queryId);
         buffer->getDrawAttribDescriptor(scaleLocation).setOffset(_instanceCountGrass * queryId);
         buffer->getDrawAttribDescriptor(instLocation).setOffset(_instanceCountGrass * queryId);
-        buffer->Draw(GenericVertexData::GenericDrawCommand(TRIANGLES, _grassStateBlockHash, 0, 12 * 3, instanceCount));
+        buffer->Draw(cmd);
     }
 }
 

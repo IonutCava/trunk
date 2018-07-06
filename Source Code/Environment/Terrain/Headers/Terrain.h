@@ -23,7 +23,7 @@
 #ifndef _TERRAIN_H_
 #define _TERRAIN_H_
 
-#include "Graphs/Headers/SceneNode.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
@@ -71,7 +71,7 @@ class VertexBuffer;
 class ShaderProgram;
 class TerrainDescriptor;
 
-class Terrain : public SceneNode {
+class Terrain : public Object3D {
     friend class TerrainLoader;
 public:
 
@@ -80,7 +80,6 @@ public:
 
     bool unload();
 
-    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
     void drawBoundingBox(SceneGraphNode* const sgn) const;
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
@@ -93,7 +92,6 @@ public:
            void  terrainSmooth(F32 k);
            void  initializeVegetation(TerrainDescriptor* const terrain, SceneGraphNode* const terrainSGN);
 
-    inline VertexBuffer* const getGeometryVB() {return _groundVB;}
     inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
@@ -129,8 +127,7 @@ protected:
     U16           _terrainHeight;
     U32           _chunkSize;
     Quadtree*	  _terrainQuadtree;
-    VertexBuffer* _groundVB;
-
+ 
     vec2<F32> _terrainScaleFactor;
     F32	 _farPlane;
     bool _alphaTexturePresent;
@@ -139,7 +136,6 @@ protected:
     SceneGraphNode*   _vegetationGrassNode;
     BoundingBox       _boundingBox;
     Quad3D*		      _plane;
-    Transform*        _terrainTransform;
     VegetationDetails _vegDetails;
     Texture*          _causticsTex;
     Texture*          _underwaterAlbedoTex;

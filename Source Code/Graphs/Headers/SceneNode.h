@@ -33,16 +33,15 @@ enum SceneNodeType {
     TYPE_ROOT             = toBit(1), //< root node
     TYPE_OBJECT3D         = toBit(2), //< 3d objects in the scene
     TYPE_TRANSFORM        = toBit(3), //< dummy node to stack multiple transforms
-    TYPE_TERRAIN          = toBit(4), //< terrain node
-    TYPE_WATER            = toBit(5), //< water node
-    TYPE_LIGHT            = toBit(6), //< a scene light
-    TYPE_TRIGGER          = toBit(7), //< a scene trigger (perform action on contact)
-    TYPE_PARTICLE_EMITTER = toBit(8), //< a particle emitter
-    TYPE_SKY              = toBit(9), //< sky node
-    TYPE_VEGETATION_GRASS = toBit(10), //< grass node
-    TYPE_VEGETATION_TREES = toBit(11), //< trees node (to do later)
+    TYPE_WATER            = toBit(4), //< water node
+    TYPE_LIGHT            = toBit(5), //< a scene light
+    TYPE_TRIGGER          = toBit(6), //< a scene trigger (perform action on contact)
+    TYPE_PARTICLE_EMITTER = toBit(7), //< a particle emitter
+    TYPE_SKY              = toBit(8), //< sky node
+    TYPE_VEGETATION_GRASS = toBit(9), //< grass node
+    TYPE_VEGETATION_TREES = toBit(10), //< trees node (to do later)
     ///Place types above
-    TYPE_PLACEHOLDER      = toBit(12)
+    TYPE_PLACEHOLDER      = toBit(11)
 };
 
 class Scene;

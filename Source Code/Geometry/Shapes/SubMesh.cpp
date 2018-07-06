@@ -48,9 +48,9 @@ void SubMesh::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRen
     drawCmd._cmd.count = vb->getPartitionCount(_geometryPartitionId);
     drawCmd._cmd.firstIndex = vb->getPartitionOffset(_geometryPartitionId);
     drawCmd._unsignedData = _geometryPartitionId;
-
+    drawCmd._lodIndex = getCurrentLOD();
     _parentMesh->addDrawCommand(drawCmd, _drawShader);
-    _renderInstance->deferredDrawCommand(drawCmd);
+    _renderInstance->addDeferredDrawCommand(drawCmd);
 
     Object3D::render(sgn, sceneRenderState);
 }

@@ -11,10 +11,9 @@
 
 U32 TerrainChunk::_chunkID = 0;
 
-TerrainChunk::TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _terrainVB(groundVB),
-                                                                                                                         _parentTerrain(parentTerrain),
-                                                                                                                         _parentNode(parentNode),
-                                                                                                                         _vegetation(nullptr)
+TerrainChunk::TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode) : _parentTerrain(parentTerrain),
+                                                                                           _parentNode(parentNode),
+                                                                                           _vegetation(nullptr)
 {
     _chunkID++;
     _LoD = 0;
@@ -22,6 +21,9 @@ TerrainChunk::TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTe
     _chunkIndOffset = 0;
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+
+     _terrainVB = _parentTerrain->getGeometryVB();
+
     VegetationDetails vegDetails = _parentTerrain->_vegDetails;
     vegDetails.name += "_chunk_" + Util::toString(_chunkID);
     _vegetation = New Vegetation(vegDetails); //<Deleted by the sceneGraph on "unload"

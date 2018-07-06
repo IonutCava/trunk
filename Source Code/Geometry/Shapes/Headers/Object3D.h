@@ -38,8 +38,9 @@ public:
         TEXT_3D   = toBit(3),
         MESH      = toBit(4),
         SUBMESH   = toBit(5),
-        FLYWEIGHT = toBit(6),
-        OBJECT_3D_PLACEHOLDER = toBit(7)
+        TERRAIN   = toBit(6), 
+        FLYWEIGHT = toBit(7),
+        OBJECT_3D_PLACEHOLDER = toBit(8)
     };
 
     enum ObjectFlag {

@@ -148,8 +148,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         return false;
 
     _drawShader->ApplyMaterial(_material);
-    _drawShader->SetLOD(getCurrentLOD());
-
+ 
     bool temp = sgn->isSelected();
     if(shaderInfo.getTrackedBool(0) != temp){
         shaderInfo.setTrackedBool(0, temp);
@@ -179,7 +178,7 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     assert(_nodeReady);
 
-    if(getType() != TYPE_OBJECT3D && getType() != TYPE_TERRAIN)
+    if(getType() != TYPE_OBJECT3D)
         return true;
 
     bool shadowStage = GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE);
@@ -200,7 +199,7 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
         return false;
 
     _drawShader->ApplyMaterial(_material);
-    _drawShader->SetLOD(getCurrentLOD());
+
     if (_material->isTranslucent()){
         if (_material->getTexture(Material::TEXTURE_OPACITY)) 
             _material->getTexture(Material::TEXTURE_OPACITY)->Bind(Material::TEXTURE_OPACITY);

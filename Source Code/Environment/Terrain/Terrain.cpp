@@ -17,16 +17,14 @@
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Hardware/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
-Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
+Terrain::Terrain() : Object3D(TERRAIN, TRIANGLE_STRIP),
     _alphaTexturePresent(false),
     _terrainWidth(0),
     _terrainHeight(0),
-    _groundVB(nullptr),
     _terrainQuadtree(New Quadtree()),
     _plane(nullptr),
     _drawBBoxes(false),
     _vegetationGrassNode(nullptr),
-    _terrainTransform(nullptr),
     _causticsTex(nullptr),
     _underwaterAlbedoTex(nullptr),
     _underwaterDetailTex(nullptr),
@@ -35,13 +33,11 @@ Terrain::Terrain() : SceneNode(TYPE_TERRAIN),
     _terrainDepthRenderStateHash(0),
     _terrainReflectionRenderStateHash(0)
 {
-    _groundVB = GFX_DEVICE.newVB(TRIANGLE_STRIP);
-    _groundVB->useLargeIndices(true);//<32bit indices
+    _geometry->useLargeIndices(true);//<32bit indices
 }
 
 Terrain::~Terrain()
 {
-    SAFE_DELETE(_groundVB);
 }
 
 bool Terrain::unload(){
@@ -62,8 +58,10 @@ bool Terrain::unload(){
 void Terrain::postLoad(SceneGraphNode* const sgn){
     assert(getState() == RES_LOADED);
 
-    _groundVB->Create();
-    _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, _groundVB, this, sgn);
+    _geometry->Create();
+    _geometry->computeTriangles(false);
+    _geometry->reserveTriangleCount((_terrainWidth - 1) * (_terrainHeight - 1) * 2);
+    _terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), _chunkSize, sgn);
 
     _drawShader = getMaterial()->getShaderInfo().getProgram();
     _drawShader->Uniform("dvd_waterHeight", GET_ACTIVE_SCENE()->state().getWaterLevel());
@@ -87,7 +85,6 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
         _drawShader->Uniform("detailScale[" + layerIndex + "]", textureLayer->getDetailScales());
 
     }
-    _groundVB->setShaderProgram(_drawShader);
 
     ResourceDescriptor infinitePlane("infinitePlane");
     infinitePlane.setFlag(true); //No default material
@@ -119,8 +116,6 @@ bool Terrain::computeBoundingBox(SceneGraphNode* const sgn){
 
 void Terrain::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
     _terrainQuadtree->sceneUpdate(deltaTime, sgn, sceneState);
-    _terrainTransform = sgn->getTransform();
-
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -141,7 +136,6 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
     SET_STATE_BLOCK(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _terrainReflectionRenderStateHash : _terrainRenderStateHash);
 
     Material::ShaderInfo& shaderInfo = getMaterial()->getShaderInfo();
-    _drawShader = shaderInfo.getProgram();
     _drawShader->ApplyMaterial(getMaterial());
     bool temp = lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows();
     if(shaderInfo.getTrackedBool(1) != temp){
@@ -149,7 +143,6 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
         _drawShader->Uniform("dvd_enableShadowMapping", temp);
     }        
 
-    _groundVB->setShaderProgram(_drawShader);
     _plane->setCustomShader(_drawShader);
 
     return _drawShader->bind();
@@ -159,39 +152,31 @@ bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
     SET_STATE_BLOCK(depthPrePass ? _terrainRenderStateHash : _terrainDepthRenderStateHash);
-    _drawShader = getMaterial()->getShaderInfo(depthPrePass ? Z_PRE_PASS_STAGE : SHADOW_STAGE).getProgram();
-
-    _groundVB->setShaderProgram(_drawShader);
-    _plane->setCustomShader(_drawShader);
+     _plane->setCustomShader(_drawShader);
 
     return _drawShader->bind();
 }
 
 void Terrain::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
-    GFX_DEVICE.pushWorldMatrix(_terrainTransform->getGlobalMatrix(), _terrainTransform->isUniformScaled());
-    GFX_DEVICE.updateStates();
     // draw ground
     _terrainQuadtree->CreateDrawCommands(sceneRenderState);
 
-    if(!_groundVB->SetActive())
-        return;
-
-    if (!_drawCommands[0].empty()){
-        _groundVB->currentShader()->SetLOD(0);
-        _groundVB->Draw(_drawCommands[0], true);
-        _drawCommands[0].resize(0);
+    for(VertexBuffer::DeferredDrawCommand& cmd : _drawCommands[0]){
+        cmd._lodIndex = 0;
+        _renderInstance->addDeferredDrawCommand(cmd);
     }
-
-    if (!_drawCommands[1].empty()){
-        _groundVB->currentShader()->SetLOD(1);
-        _groundVB->Draw(_drawCommands[1], true);
-        _drawCommands[1].resize(0);
+    _drawCommands[0].resize(0);
+    for(VertexBuffer::DeferredDrawCommand& cmd : _drawCommands[1]){
+        cmd._lodIndex = 1;
+        _renderInstance->addDeferredDrawCommand(cmd);
     }
+    _drawCommands[1].resize(0);
+
+    Object3D::render(sgn, sceneRenderState);
+
     // draw infinite plane
     if (GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE | Z_PRE_PASS_STAGE))
         GFX_DEVICE.renderInstance(_plane->renderInstance());
-
-    GFX_DEVICE.popWorldMatrix();
 }
 
 void Terrain::drawBoundingBox(SceneGraphNode* const sgn) const {
@@ -226,7 +211,7 @@ vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf) const{
     vec3<F32> pos(_boundingBox.getMin().x + x_clampf * (_boundingBox.getMax().x - _boundingBox.getMin().x), 0.0f,
                   _boundingBox.getMin().z + z_clampf * (_boundingBox.getMax().z - _boundingBox.getMin().z));
 
-    const vectorImpl<vec3<F32> >& position = _groundVB->getPosition();
+    const vectorImpl<vec3<F32> >& position = _geometry->getPosition();
 
     pos.y = (position[TER_COORD(posI.x,     posI.y,     (I32)_terrainWidth)].y) * (1.0f - posD.x) * (1.0f - posD.y)
           + (position[TER_COORD(posI.x + 1, posI.y,     (I32)_terrainWidth)].y) *         posD.x  * (1.0f - posD.y)
@@ -248,7 +233,7 @@ vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf) const{
 
     assert(posI.x >= 0 && posI.x < (I32)(_terrainWidth)-1 && posI.y >= 0 && posI.y < (I32)(_terrainHeight)-1);
 
-    const vectorImpl<vec3<F32> >& normals = _groundVB->getNormal();
+    const vectorImpl<vec3<F32> >& normals = _geometry->getNormal();
 
     return (normals[TER_COORD(posI.x,     posI.y,     (I32)_terrainWidth)]) * (1.0f - posD.x) * (1.0f - posD.y)
          + (normals[TER_COORD(posI.x + 1, posI.y,     (I32)_terrainWidth)]) *         posD.x  * (1.0f - posD.y)
@@ -268,7 +253,7 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const{
 
     assert(posI.x >= 0 && posI.x < (I32)(_terrainWidth)-1 && posI.y >= 0 && posI.y < (I32)(_terrainHeight)-1);
 
-    const vectorImpl<vec3<F32> >& tangents = _groundVB->getTangent();
+    const vectorImpl<vec3<F32> >& tangents = _geometry->getTangent();
 
     return (tangents[TER_COORD(posI.x,     posI.y,     (I32)_terrainWidth)]) * (1.0f - posD.x) * (1.0f - posD.y)
          + (tangents[TER_COORD(posI.x + 1, posI.y,     (I32)_terrainWidth)]) *         posD.x  * (1.0f - posD.y)

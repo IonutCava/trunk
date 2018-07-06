@@ -31,6 +31,7 @@
 /// Use this class to create precise VB data with specific usage (such as particle systems)
 /// Use IMPrimitive for on-the-fly geometry creation
 
+class ShaderProgram;
 class GenericVertexData : private boost::noncopyable, public FrameListener {
 public:
     struct GenericDrawCommand {
@@ -40,13 +41,16 @@ public:
         I64 _stateHash;
         U32 _instanceCount;
         bool _drawToBuffer;
+        U8   _lod;
         PrimitiveType _type;
 
+        inline void setLoD(U8 lod) { _lod = lod; }
         GenericDrawCommand(const PrimitiveType& type, I64 stateHash, U32 min, U32 max, U32 instanceCount = 1,
                            U8 queryID = 0, bool drawToBuffer = false) : _type(type),
                                                                         _stateHash(stateHash),
                                                                         _min(min),
                                                                         _max(max),
+                                                                        _lod(0),
                                                                         _queryID(queryID),
                                                                         _drawToBuffer(drawToBuffer),                         
                                                                         _instanceCount(instanceCount)
@@ -100,6 +104,7 @@ public:
     {
         REGISTER_FRAME_LISTENER(this, 4);
         _doubleBufferedQuery = true;
+        _currentShader = nullptr;
     }
 
     virtual ~GenericVertexData()
@@ -127,6 +132,8 @@ public:
     inline AttributeDescriptor& getDrawAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapDraw[attribIndex]; desc._index = attribIndex; return desc; }
     inline AttributeDescriptor& getFdbkAttribDescriptor(U32 attribIndex) { AttributeDescriptor& desc = _attributeMapFdbk[attribIndex]; desc._index = attribIndex; return desc; }
 
+    inline void setShaderProgram(ShaderProgram* const shaderProgram) { _currentShader = shaderProgram;}
+
 protected:
     typedef Unordered_map<U32, AttributeDescriptor > attributeMap;
     bool _persistentMapped;
@@ -135,6 +142,7 @@ protected:
     vectorImpl<U32 > _bufferObjects;
     attributeMap _attributeMapDraw;
     attributeMap _attributeMapFdbk;
+    ShaderProgram* _currentShader;
 };
 
 #endif

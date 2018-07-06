@@ -18,12 +18,12 @@ PhysicsComponent::~PhysicsComponent()
 void PhysicsComponent::cookCollisionMesh(const std::string& sceneName){
     STUBBED("ToDo: add terrain heightfield and water cooking support! -Ionut")
     SceneNodeType nodeType = _parentSGN->getNode()->getType();
-    if (nodeType != TYPE_SKY && nodeType != TYPE_WATER && nodeType != TYPE_TERRAIN)
+    if (nodeType != TYPE_SKY && nodeType != TYPE_WATER)
         FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, _parentSGN->getChildren()){
             it.second->getComponent<PhysicsComponent>()->cookCollisionMesh(sceneName);
         }
 
-    if (!bitCompare(/*TYPE_WATER | TYPE_TERRAIN | */TYPE_OBJECT3D, nodeType))
+    if (!bitCompare(/*TYPE_WATER | */TYPE_OBJECT3D, nodeType))
         return;
 
     if (nodeType == TYPE_OBJECT3D) {

@@ -297,7 +297,8 @@ void GFXDevice::renderInstance(RenderInstance* const instance){
     assert(modelVB != nullptr);
 
     //Render our current vertex array object
-    modelVB->Draw(instance->deferredDrawCommand() , false);
+    modelVB->Draw(instance->deferredDrawCommands() , false);
+    instance->clearDrawCommands();
 
     if (transform) popWorldMatrix();
 }

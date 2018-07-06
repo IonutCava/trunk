@@ -59,10 +59,9 @@ public:
     bool preDraw()                   const {return _preDraw;}
     void preDraw(const bool preDraw)       {_preDraw = preDraw;}
     ///Draw Command
-    inline void deferredDrawCommand(const VertexBuffer::DeferredDrawCommand& drawCommand)       { _drawCommand = drawCommand;}
-    inline const VertexBuffer::DeferredDrawCommand& deferredDrawCommand()                 const { return _drawCommand; }
-    ///LoD management
-    inline void lodIndex(U8 currentLod) { _drawCommand._lodIndex = currentLod; }
+    inline void addDeferredDrawCommand(const VertexBuffer::DeferredDrawCommand& drawCommand)       { _drawCommands.push_back(drawCommand);}
+    inline const vectorImpl<VertexBuffer::DeferredDrawCommand >& deferredDrawCommands()      const { return _drawCommands; }
+    inline void  clearDrawCommands() { _drawCommands.clear(); }
     ///State management
     inline I64  stateHash()              const { return _stateHash; }
     inline void stateHash(I64 hashValue)       { _stateHash = hashValue; }
@@ -79,7 +78,7 @@ private:
     ///Perform a preDraw operation on the model
     bool       _preDraw;
     ///The draw command associated with this render instance
-    VertexBuffer::DeferredDrawCommand _drawCommand;
+    vectorImpl<VertexBuffer::DeferredDrawCommand > _drawCommands;
     ///The state hash associated with this render instance
     I64       _stateHash;
 };

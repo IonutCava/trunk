@@ -289,7 +289,7 @@ namespace Navigation {
 
             SceneNodeType nodeType = sn->getType();
             U32 ignoredNodeType = TYPE_LIGHT | TYPE_ROOT | TYPE_PARTICLE_EMITTER | TYPE_TRIGGER | TYPE_SKY | TYPE_VEGETATION_GRASS;
-            U32 allowedNodeType = TYPE_WATER | TYPE_TERRAIN | TYPE_OBJECT3D | TYPE_VEGETATION_TREES;
+            U32 allowedNodeType = TYPE_WATER | TYPE_OBJECT3D | TYPE_VEGETATION_TREES;
 
             if(!bitCompare(allowedNodeType, nodeType)){
                 if(!bitCompare(ignoredNodeType, nodeType)){
@@ -313,12 +313,13 @@ namespace Navigation {
                         level = DETAIL_BOUNDINGBOX;
                     areType = SAMPLE_POLYAREA_WATER;
                     }break;
-                case TYPE_TERRAIN  : { areType = SAMPLE_POLYAREA_GROUND;  }break;
                 case TYPE_OBJECT3D : {
                     //Check if we need to override detail level
                     if (!sgn->getComponent<NavigationComponent>()->getNavMeshDetailOverride() && sgn->getUsageContext() == SceneGraphNode::NODE_STATIC){
                         level = DETAIL_BOUNDINGBOX;
                     }
+                    if(dynamic_cast<Object3D*>(sn)->getType() == Object3D::TERRAIN)
+                        areType = SAMPLE_POLYAREA_GROUND;
                     }break;
                 default:{
                     assert(false);//we should never reach this due to the bit checks above
@@ -333,7 +334,6 @@ namespace Navigation {
             
             if(level == DETAIL_ABSOLUTE){
                 if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVB();
-                else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVB();
                 else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVB();
                 assert(geometry != nullptr);
 
@@ -341,7 +341,7 @@ namespace Navigation {
                 if(vertices.empty()) return false;
                 
                 const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
-                if(nodeType != TYPE_TERRAIN){
+                if(nodeType != TYPE_OBJECT3D || (nodeType == TYPE_OBJECT3D && dynamic_cast<Object3D* >(sn)->getType() != Object3D::TERRAIN)){
                     mat4<F32> nodeTransform = sgn->getTransform()->getGlobalMatrix();
                     for (U32 i = 0; i < vertices.size(); ++i ){
                         //Apply the node's transform and add the vertex to the NavMesh

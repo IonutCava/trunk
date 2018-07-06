@@ -118,7 +118,6 @@ RenderBin* RenderQueue::getOrCreateBin(const RenderBin::RenderBinType& rbType){
 
 RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
     switch(node->getType()){
-        case TYPE_TERRAIN          : return getOrCreateBin(RenderBin::RBT_TERRAIN);
         case TYPE_LIGHT            : return getOrCreateBin(RenderBin::RBT_IMPOSTOR);
         case TYPE_WATER            : return getOrCreateBin(RenderBin::RBT_WATER);
         case TYPE_PARTICLE_EMITTER : return getOrCreateBin(RenderBin::RBT_PARTICLES);
@@ -126,6 +125,9 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
         case TYPE_VEGETATION_TREES : return getOrCreateBin(RenderBin::RBT_VEGETATION_TREES);
         case TYPE_SKY              : return getOrCreateBin(RenderBin::RBT_SKY);
         case TYPE_OBJECT3D         : { 
+            if(dynamic_cast<Object3D*>(node)->getType() == Object3D::TERRAIN){
+                return getOrCreateBin(RenderBin::RBT_TERRAIN);
+            }
             //Check if the object has a material with translucency
             Material* nodeMaterial = node->getMaterial();
             if(nodeMaterial && nodeMaterial->isTranslucent()){

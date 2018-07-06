@@ -143,6 +143,8 @@ bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     const mat4<F32>& viewMatrixCache = GFX_DEVICE.getMatrix(VIEW_MATRIX);
     _particleDepthShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
     _particleDepthShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+    _particleGPUBuffer->setShaderProgram(_particleDepthShader);
+
     return true;
 }
 
@@ -159,6 +161,8 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     _particleShader->Uniform("size", vec2<F32>(Application::getInstance().getResolution().width, Application::getInstance().getResolution().height));
     _particleShader->Uniform("CameraRight_worldspace", vec3<F32>(viewMatrixCache.m[0][0], viewMatrixCache.m[1][0], viewMatrixCache.m[2][0]));
     _particleShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
+    _particleGPUBuffer->setShaderProgram(_particleShader);
+
     _particleTexture->Bind(Material::TEXTURE_UNIT0);
     GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
     return true;

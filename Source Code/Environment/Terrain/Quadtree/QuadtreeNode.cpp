@@ -27,7 +27,7 @@ QuadtreeNode::~QuadtreeNode()
     SAFE_DELETE(_terrainChunk);
 }
 
-void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, SceneGraphNode* const parentTerrainSGN, U32& chunkCount){
+void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, SceneGraphNode* const parentTerrainSGN, U32& chunkCount){
     _LOD = 0;
     _minHMSize = minHMSize;
     U32 div = (U32)pow(2.0f, (F32)depth);
@@ -39,7 +39,7 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
     _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
 
     if (std::max(newsize.x, newsize.y) < _minHMSize)	{
-        _terrainChunk = New TerrainChunk(groundVB, parentTerrain, this);
+        _terrainChunk = New TerrainChunk(parentTerrainSGN->getNode<Terrain>(), this);
         _terrainChunk->Load(depth, pos, _minHMSize, HMsize, parentTerrainSGN);
 		chunkCount++;
         return;
@@ -63,10 +63,10 @@ void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize
     tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
     tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
     tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
-    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
-    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
-    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize, _minHMSize, groundVB, parentTerrain, parentTerrainSGN, chunkCount);
+    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize, _minHMSize, parentTerrainSGN, chunkCount);
+    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize, _minHMSize, parentTerrainSGN, chunkCount);
+    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize, _minHMSize, parentTerrainSGN, chunkCount);
+    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize, _minHMSize, parentTerrainSGN, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox(){

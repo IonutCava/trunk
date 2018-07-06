@@ -126,9 +126,16 @@ void glGenericVertexData::BindFeedbackBufferRange(U32 buffer, size_t elementCoun
 }
 
 void glGenericVertexData::Draw(const GenericDrawCommand& command) {
+    DIVIDE_ASSERT(_currentShader != nullptr, "glGenericVertexData error: No draw shader specified for generic vertex data draw command!");
+
     if (command._instanceCount == 0) return;
 
     GFX_DEVICE.setStateBlock(command._stateHash);
+    
+    DIVIDE_ASSERT(_currentShader->isBound() && _currentShader->getId() != 0, "glGenericVertexData error: Draw shader state is not valid for the current draw operation!");
+
+    _currentShader->SetLOD(command._lod);
+    _currentShader->uploadNodeMatrices();
 
     bool feedbackActive = (command._drawToBuffer && !_feedbackBuffers.empty());
 

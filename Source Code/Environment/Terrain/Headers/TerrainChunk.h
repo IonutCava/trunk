@@ -37,7 +37,7 @@ struct FileData;
 
 class TerrainChunk{
 public:
-    TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain, QuadtreeNode* const parentNode);
+    TerrainChunk(Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
     void Load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize, SceneGraphNode* const parentTerrainSGN);
     void Destroy();

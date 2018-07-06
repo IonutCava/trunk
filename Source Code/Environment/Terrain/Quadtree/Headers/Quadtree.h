@@ -38,7 +38,7 @@ class SceneRenderState;
 class Quadtree {
 public:
 
-    void Build(BoundingBox& terrainBBox, const vec2<U32>& HMSize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, SceneGraphNode* const parentTerrainSGN);
+    void Build(BoundingBox& terrainBBox, const vec2<U32>& HMSize, U32 minHMSize, SceneGraphNode* const parentTerrainSGN);
     BoundingBox& computeBoundingBox();
 
 	inline U32  getChunkCount() const { return _chunkCount;}

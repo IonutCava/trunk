@@ -64,6 +64,7 @@ protected:
     void checkStatus();
 
 protected:
+    U8 _prevLoD;
     GLenum _formatInternal;
     GLenum _typeInternal;
     GLuint _IBid;
@@ -80,6 +81,7 @@ protected:
     GLsizei _prevSizeIndices;
 
     const static U32 MAX_DRAW_COMMANDS = 128 * 8;
+    vectorImpl<U32> _lodBatches[Config::SCENE_NODE_LOD];
     vectorImpl<GLsizei > _multiCount;
     vectorImpl<const GLvoid* > _multiIndices;
 };
