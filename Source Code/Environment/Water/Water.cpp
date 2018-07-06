@@ -12,8 +12,8 @@ namespace {
     ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_5;
 };
 
-WaterPlane::WaterPlane(ResourceCache& parentCache, const stringImpl& name, I32 sideLength)
-    : SceneNode(parentCache, name, SceneNodeType::TYPE_WATER),
+WaterPlane::WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, I32 sideLength)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _sideLength(std::max(sideLength, 1)),
       _paramsDirty(true),

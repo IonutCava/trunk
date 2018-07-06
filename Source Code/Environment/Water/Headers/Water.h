@@ -43,7 +43,7 @@ class ShaderProgram;
 
 class WaterPlane : public SceneNode {
    public:
-    explicit WaterPlane(ResourceCache& parentCache, const stringImpl& name, I32 sideLength);
+    explicit WaterPlane(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, I32 sideLength);
     ~WaterPlane();
 
     /// Resource inherited "unload"

@@ -349,12 +349,14 @@ public:
     VertexBuffer*      newVB() const;
     PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D) const;
     GenericVertexData* newGVD(const U32 ringBufferLength) const;
-    Texture*           newTexture(const stringImpl& name,
+    Texture*           newTexture(size_t descriptorHash,
+                                  const stringImpl& name,
                                   const stringImpl& resourceName,
                                   const stringImpl& resourceLocation,
                                   TextureType type,
                                   bool asyncLoad) const;
-    ShaderProgram*     newShaderProgram(const stringImpl& name,
+    ShaderProgram*     newShaderProgram(size_t descriptorHash,
+                                        const stringImpl& name,
                                         const stringImpl& resourceName,
                                         const stringImpl& resourceLocation,
                                         bool asyncLoad) const;

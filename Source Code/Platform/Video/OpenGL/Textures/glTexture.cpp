@@ -13,12 +13,13 @@
 namespace Divide {
 
 glTexture::glTexture(GFXDevice& context,
+                     size_t descriptorHash,
                      const stringImpl& name,
                      const stringImpl& resourceName,
                      const stringImpl& resourceLocation,
                      TextureType type,
                      bool asyncLoad)
-    : Texture(context, name, resourceName, resourceLocation, type, asyncLoad),
+    : Texture(context, descriptorHash, name, resourceName, resourceLocation, type, asyncLoad),
      _lockManager(MemoryManager_NEW glLockManager())
 {
     _allocatedStorage = false;
@@ -52,11 +53,11 @@ bool glTexture::unload() {
     return true;
 }
 
-void glTexture::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) {
+void glTexture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
     updateSampler();
     Texture::threadedLoad(onLoadCallback);
     _lockManager->Lock();
-    Resource::load(onLoadCallback);
+    CachedResource::load(onLoadCallback);
 }
 
 void glTexture::setMipMapRange(GLushort base, GLushort max) {

@@ -40,6 +40,7 @@ class glLockManager;
 class glTexture final : public Texture {
    public:
     explicit glTexture(GFXDevice& context,
+                       size_t descriptorHash,
                        const stringImpl& name,
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
@@ -74,7 +75,7 @@ class glTexture final : public Texture {
     bool flushTextureState() override;
 
    protected:
-    void threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) override;
+    void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) override;
     void reserveStorage(const TextureLoadInfo& info);
     void updateMipMaps();
     void updateSampler();

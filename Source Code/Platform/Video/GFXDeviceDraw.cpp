@@ -249,8 +249,16 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
                     dataOut._properties.w = pkg.isOcclusionCullable() ? 1.0f : -1.0f;
                 }
 
-                for (GenericDrawCommand& cmd : pkg._drawCommands) {
-                    _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                if (refreshNodeData) {
+                    for (GenericDrawCommand& cmd : pkg._drawCommands) {
+                        _drawCommandsCache[cmdCount++].set(cmd.cmd());
+                    }
+                } else {
+                    if (Config::Build::IS_DEBUG_BUILD) {
+                        for (GenericDrawCommand& cmd : pkg._drawCommands) {
+                            assert(_drawCommandsCache[cmdCount++] == cmd.cmd());
+                        }
+                    }
                 }
             }
             nodeCount++;
@@ -276,6 +284,10 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM
         bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO);
+    } else {
+        if (Config::Build::IS_DEBUG_BUILD) {
+            assert(!bufferData._renderData->bind(ShaderBufferLocation::NODE_INFO));
+        }
     }
 }
 
@@ -298,8 +310,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData, const Te
 }
 
 U32 GFXDevice::getLastCullCount() const {
-    const RenderPass::BufferData& bufferData = 
-        parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
+    const RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(RenderStage::DISPLAY, 0);
 
     U32 cullCount = bufferData._cmdBuffer->getAtomicCounter();
     if (cullCount > 0) {

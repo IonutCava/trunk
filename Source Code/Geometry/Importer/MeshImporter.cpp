@@ -300,17 +300,17 @@ namespace Import {
             }
         }
 
-        // If it's not defined in an XML File, see if it was previously loaded by
-        // the Resource Cache
-        tempMaterial = FindResourceImpl<Material>(cache, importData._name);
-        if (tempMaterial) {
-            return tempMaterial;
-        }
-
         // If we found it in the Resource Cache, return a copy of it
         ResourceDescriptor materialDesc(importData._name);
         if (skinned) {
             materialDesc.setEnumValue(to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
+        }
+
+        // If it's not defined in an XML File, see if it was previously loaded by
+        // the Resource Cache
+        tempMaterial = FindResourceImpl<Material>(cache, materialDesc.getHash());
+        if (tempMaterial) {
+            return tempMaterial;
         }
 
         tempMaterial = CreateResource<Material>(cache, materialDesc);

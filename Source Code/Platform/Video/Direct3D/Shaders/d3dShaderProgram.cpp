@@ -3,8 +3,8 @@
 namespace Divide {
 
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dShaderProgram, 0, 0);
-d3dShaderProgram::d3dShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad) :
-    ShaderProgram(context, name, resourceName, resourceLocation, asyncLoad)
+d3dShaderProgram::d3dShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad) :
+    ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad)
 {
 }
 
@@ -95,7 +95,7 @@ void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {}
 void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 }
 
-bool d3dShaderProgram::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+bool d3dShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     return ShaderProgram::load(onLoadCallback);
 }
 };

@@ -778,11 +778,13 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
     stringImpl materialName =
         matName.substr(matName.rfind("/") + 1, matName.length());
 
-    if (!FindResourceImpl<Material>(cache, materialName)) {
+    ResourceDescriptor desc(materialName);
+
+    if (!FindResourceImpl<Material>(cache, desc.getHash())) {
         skip = true;
     }
 
-    Material_ptr mat = CreateResource<Material>(cache, ResourceDescriptor(materialName));
+    Material_ptr mat = CreateResource<Material>(cache, desc);
     if (skip) {
         return mat;
     }

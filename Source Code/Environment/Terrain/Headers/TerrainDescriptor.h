@@ -103,8 +103,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) const {
-        hashMapImpl<U64, stringImpl>::const_iterator it =
-            _variables.find(_ID_RT(name));
+        hashMapImpl<U64, stringImpl>::const_iterator it = _variables.find(_ID_RT(name));
         if (it != std::end(_variables)) {
             return it->second;
         }
@@ -112,12 +111,43 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     F32 getVariablef(const stringImpl& name) const {
-        hashMapImpl<U64, F32>::const_iterator it =
-            _variablesf.find(_ID_RT(name));
+        hashMapImpl<U64, F32>::const_iterator it = _variablesf.find(_ID_RT(name));
         if (it != std::end(_variablesf)) {
             return it->second;
         }
         return 0.0f;
+    }
+
+    inline size_t getHash() const override {
+        size_t hash = 0;
+        for (hashMapImpl<U64, stringImpl>::value_type it : _variables) {
+            Util::Hash_combine(hash, it.first);
+            Util::Hash_combine(hash, it.second);
+        }
+        for (hashMapImpl<U64, F32>::value_type it : _variablesf) {
+            Util::Hash_combine(hash, it.first);
+            Util::Hash_combine(hash, it.second);
+        }
+        Util::Hash_combine(hash, _grassDensity);
+        Util::Hash_combine(hash, _chunkSize);
+        Util::Hash_combine(hash, _treeDensity);
+        Util::Hash_combine(hash, _grassScale);
+        Util::Hash_combine(hash, _treeScale);
+        Util::Hash_combine(hash, _is16Bit);
+        Util::Hash_combine(hash, _active);
+        Util::Hash_combine(hash, _textureLayers);
+        Util::Hash_combine(hash, _position.x);
+        Util::Hash_combine(hash, _position.y);
+        Util::Hash_combine(hash, _position.z);
+        Util::Hash_combine(hash, _scale.x);
+        Util::Hash_combine(hash, _scale.y);
+        Util::Hash_combine(hash, _altitudeRange.x);
+        Util::Hash_combine(hash, _altitudeRange.y);
+        Util::Hash_combine(hash, _dimensions.x);
+        Util::Hash_combine(hash, _dimensions.y);
+        Util::Hash_combine(hash, PropertyDescriptor::getHash());
+
+        return hash;
     }
 
    private:

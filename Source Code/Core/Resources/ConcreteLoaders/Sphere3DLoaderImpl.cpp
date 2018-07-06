@@ -6,9 +6,10 @@
 
 namespace Divide {
 
-    Resource_ptr ImplResourceLoader<Sphere3D>::operator()() {
+CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
     std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_context.gfx(),
                                                              _cache,
+                                                             _loadingDescriptorHash,
                                                              _descriptor.getName(),
                                                              _descriptor.getEnumValue() == 0
                                                                                          ? 1.0f

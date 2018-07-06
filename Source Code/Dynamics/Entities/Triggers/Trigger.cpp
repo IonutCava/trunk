@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-Trigger::Trigger(ResourceCache& parentCache, const stringImpl& name)
-    : SceneNode(parentCache, name, SceneNodeType::TYPE_TRIGGER),
+Trigger::Trigger(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_TRIGGER),
       _drawImpostor(false),
       _triggerImpostor(nullptr),
       _enabled(true),

@@ -39,6 +39,7 @@ namespace Divide {
 class d3dTexture final : public Texture {
    public:
     explicit d3dTexture(GFXDevice& context,
+                        size_t descriptorHash,
                         const stringImpl& name,
                         const stringImpl& resourceName,
                         const stringImpl& resourceLocation,

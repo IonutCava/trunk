@@ -57,6 +57,7 @@ class glShaderProgram final : public ShaderProgram {
 
    public:
     explicit glShaderProgram(GFXDevice& context,
+                             size_t descriptorHash,
                              const stringImpl& name,
                              const stringImpl& resourceName,
                              const stringImpl& resourceLocation,
@@ -144,13 +145,13 @@ class glShaderProgram final : public ShaderProgram {
     bool recompileInternal() override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     /// Linking a shader program also sets up all pre-link properties for the
     /// shader (varying locations, attrib bindings, etc)
     void link();
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
-    void threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback, bool skipRegister);
+    void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
     /// Cache uniform/attribute locations for shader programs
     I32 getUniformLocation(const char* name) override;
 

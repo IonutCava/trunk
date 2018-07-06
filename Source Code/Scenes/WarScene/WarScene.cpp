@@ -39,7 +39,7 @@ namespace {
 };
 
 WarScene::WarScene(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)
-    : Scene(context, cache, parent, name),
+   : Scene(context, cache, parent, name),
     _infoBox(nullptr),
     _sceneReady(false),
     _lastNavMeshBuildTime(0UL)

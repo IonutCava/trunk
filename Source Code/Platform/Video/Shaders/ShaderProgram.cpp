@@ -25,8 +25,8 @@ SharedLock ShaderProgram::_programLock;
 
 std::unique_ptr<FW::FileWatcher> ShaderProgram::s_shaderFileWatcher;
 
-ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
-    : Resource(ResourceType::GPU_OBJECT, name, resourceName, resourceLocation),
+ShaderProgram::ShaderProgram(GFXDevice& context, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, bool asyncLoad)
+    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
       _asyncLoad(asyncLoad)
 {
@@ -40,17 +40,17 @@ ShaderProgram::~ShaderProgram()
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
 }
 
-bool ShaderProgram::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
-    registerShaderProgram(getName(), std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
+bool ShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
+    registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()));
 
-    return Resource::load(onLoadCallback);
+    return CachedResource::load(onLoadCallback);
 }
 
 bool ShaderProgram::unload() {
     // Unregister the program from the manager
     ReadLock r_lock(_programLock);
     if (!_shaderPrograms.empty()) {
-        unregisterShaderProgram(getName());
+        unregisterShaderProgram(getDescriptorHash());
     }
 
     return true;
@@ -263,17 +263,18 @@ bool ShaderProgram::updateAll(const U64 deltaTime) {
 }
 
 /// Whenever a new program is created, it's registered with the manager
-void ShaderProgram::registerShaderProgram(const stringImpl& name, const ShaderProgram_ptr& shaderProgram) {
-    unregisterShaderProgram(name);
+void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram) {
+    size_t shaderHash = shaderProgram->getDescriptorHash();
+    unregisterShaderProgram(shaderHash);
 
     WriteLock w_lock(_programLock);
-    hashAlg::emplace(_shaderPrograms, _ID_RT(name), shaderProgram);
+    hashAlg::emplace(_shaderPrograms, shaderHash, shaderProgram);
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
-bool ShaderProgram::unregisterShaderProgram(const stringImpl& name) {
+bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     UpgradableReadLock ur_lock(_programLock);
-    ShaderProgramMap::const_iterator it = _shaderPrograms.find(_ID_RT(name));
+    ShaderProgramMap::const_iterator it = _shaderPrograms.find(shaderHash);
     if (it != std::cend(_shaderPrograms)) {
         UpgradeToWriteLock w_lock(ur_lock);
         _shaderPrograms.erase(it);

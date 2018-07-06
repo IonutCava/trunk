@@ -6,7 +6,7 @@
 namespace Divide {
 
 template <>
-Resource_ptr ImplResourceLoader<Box3D>::operator()() {
+CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
     D64 size = 1.0;
     if (!_descriptor.getPropertyListString().empty()) {
         size = atof(_descriptor.getPropertyListString().c_str());  //<should work
@@ -14,6 +14,7 @@ Resource_ptr ImplResourceLoader<Box3D>::operator()() {
 
     std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_context.gfx(),
                                                        _cache,
+                                                       _loadingDescriptorHash,
                                                        _descriptor.getName(),
                                                        vec3<F32>(to_float(size))),
                                 DeleteResource(_cache));

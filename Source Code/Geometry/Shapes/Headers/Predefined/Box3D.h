@@ -39,8 +39,8 @@ namespace Divide {
 
 class Box3D : public Object3D {
    public:
-    explicit Box3D(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, const vec3<F32>& size)
-        : Object3D(context, parentCache, name, ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE)
+    explicit Box3D(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const vec3<F32>& size)
+        : Object3D(context, parentCache, descriptorHash, name, ObjectType::BOX_3D, ObjectFlag::OBJECT_FLAG_NONE)
     {
         _halfExtent.set(size / 2);
 

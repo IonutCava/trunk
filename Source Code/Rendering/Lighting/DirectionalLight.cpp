@@ -6,8 +6,8 @@
 
 namespace Divide {
 
-DirectionalLight::DirectionalLight(ResourceCache& parentCache, const stringImpl& name, LightPool& parentPool)
-    : Light(parentCache, name, -1, LightType::DIRECTIONAL, parentPool),
+DirectionalLight::DirectionalLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, LightPool& parentPool)
+    : Light(parentCache, descriptorHash, name, -1, LightType::DIRECTIONAL, parentPool),
       _csmSplitCount(3),
       _csmSplitLogFactor(0.95f),
       _csmNearClipOffset(100.0f)

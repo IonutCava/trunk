@@ -39,7 +39,7 @@ namespace Divide {
 
 class SpotLight : public Light {
    public:
-    explicit SpotLight(ResourceCache& parentCache, const stringImpl& name, F32 range, LightPool& parentPool);
+    explicit SpotLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool);
 };
 
 };  // namespace Divide

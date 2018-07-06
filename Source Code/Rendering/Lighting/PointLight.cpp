@@ -6,8 +6,8 @@
 
 namespace Divide {
 
-PointLight::PointLight(ResourceCache& parentCache, const stringImpl& name, F32 range, LightPool& parentPool)
-     : Light(parentCache, name, range, LightType::POINT, parentPool)
+PointLight::PointLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool)
+     : Light(parentCache, descriptorHash, name, range, LightType::POINT, parentPool)
 {
     // +x
     _direction[0].set(WORLD_X_AXIS);

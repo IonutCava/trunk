@@ -86,29 +86,32 @@ RenderPass::BufferData::~BufferData()
 }
 
 RenderPass::BufferDataPool::BufferDataPool(GFXDevice& context, U32 maxBuffers)
+    : _context(context)
 {
     // Every visible node will first update this buffer with required data (WorldMatrix, NormalMatrix, Material properties, Bone count, etc)
     // Due to it's potentially huge size, it translates to (as seen by OpenGL) a Shader Storage Buffer that's persistently and coherently mapped
     // We make sure the buffer is large enough to hold data for all of our rendering stages to minimize the number of writes per frame
     // Create a shader buffer to hold all of our indirect draw commands
     // Useful if we need access to the buffer in GLSL/Compute programs
-    for (U32 j = 0; j < maxBuffers; ++j) {
-        BufferData* data = MemoryManager_NEW BufferData(context);
-        _buffers.push_back(data);
-    }
+    _buffers.resize(maxBuffers, nullptr);
 }
 
 RenderPass::BufferDataPool::~BufferDataPool()
 {
-    for (BufferData* buffer : _buffers) {
-        MemoryManager::DELETE(buffer);
-    }
+    _buffers.clear();
 }
 
 RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex) {
-    assert(bufferIndex >= 0);
+    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_int(_buffers.size())));
 
-    return *_buffers[bufferIndex];
+    std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
+    // More likely case
+    if (buffer) {
+        return *buffer;
+    }
+
+    buffer = std::make_shared<BufferData>(_context);
+    return *buffer;
 }
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)

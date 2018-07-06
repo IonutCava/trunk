@@ -70,7 +70,7 @@ enum class SceneNodeType : U32 {
                                         
 };
 
-class NOINITVTABLE SceneNode : public Resource {
+class NOINITVTABLE SceneNode : public CachedResource {
     friend class Attorney::SceneNodeSceneGraph;
     friend class Attorney::SceneNodeNetworkComponent;
 
@@ -100,8 +100,8 @@ class NOINITVTABLE SceneNode : public Resource {
     };
 
    public:
-    explicit SceneNode(ResourceCache& parentCache, const stringImpl& name, const SceneNodeType& type);
-    explicit SceneNode(ResourceCache& parentCache, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const SceneNodeType& type);
+    explicit SceneNode(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const stringImpl& resourceName, const stringImpl& resourceLocation, const SceneNodeType& type);
     virtual ~SceneNode();
 
     /// Perform any pre-draw operations (this is after sort and transform updates)

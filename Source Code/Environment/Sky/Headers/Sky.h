@@ -47,7 +47,7 @@ enum class RenderStage : U32;
 
 class Sky : public SceneNode {
    public:
-    explicit Sky(ResourceCache& parentCache, const stringImpl& name, U32 diameter);
+    explicit Sky(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
     ~Sky();
 
     bool onRender(const RenderStagePass& renderStagePass) override;
@@ -71,7 +71,7 @@ class Sky : public SceneNode {
     template <typename T>
     friend class ImplResourceLoader;
 
-    bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
 
     void onCameraUpdate(SceneGraphNode& sgn,
                         const I64 cameraGUID,

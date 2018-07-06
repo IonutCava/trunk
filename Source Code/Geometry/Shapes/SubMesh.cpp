@@ -9,9 +9,10 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name, ObjectFlag flag)
+SubMesh::SubMesh(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, ObjectFlag flag)
     : Object3D(context,
                parentCache,
+               descriptorHash,
                name,
                ObjectType::SUBMESH,
                to_uint(flag) | to_const_uint(ObjectFlag::OBJECT_FLAG_NO_VB)),

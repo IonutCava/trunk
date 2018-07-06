@@ -20,6 +20,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\main.cpp" />
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ByteBufferTests.cpp" />
+    <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\HashTests.cpp" />
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\MathMatrixTests.cpp" />
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\MathVectorTests.cpp" />
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ScriptingTests.cpp" />

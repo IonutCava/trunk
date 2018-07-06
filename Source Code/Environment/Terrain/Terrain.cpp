@@ -20,8 +20,8 @@ namespace {
     size_t g_PlaneCommandIndex = 0;
 };
 
-Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
-    : Object3D(context, parentCache, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
+Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
+    : Object3D(context, parentCache, descriptorHash, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _plane(nullptr),
       _drawBBoxes(false),
       _underwaterDiffuseScale(100.0f),

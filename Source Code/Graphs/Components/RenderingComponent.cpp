@@ -89,9 +89,13 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
     
     if (Config::Build::IS_DEBUG_BUILD) {
 
-        ResourceDescriptor previewReflectionRefraction("fbPreview");
-        previewReflectionRefraction.setThreadedLoading(true);
-        _previewRenderTarget = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefraction);
+        ResourceDescriptor previewReflectionRefractionColour("fbPreview");
+        previewReflectionRefractionColour.setThreadedLoading(true);
+        _previewRenderTargetColour = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionColour);
+
+        ResourceDescriptor previewReflectionRefractionDepth("fbPreview.LinearDepth.ScenePlanes");
+        previewReflectionRefractionDepth.setPropertyList("USE_SCENE_ZPLANES");
+        _previewRenderTargetDepth = CreateResource<ShaderProgram>(context.parent().resourceCache(), previewReflectionRefractionDepth);
 
         // Red X-axis
         _axisLines.push_back(
@@ -655,15 +659,24 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[0][reflectionIndex];
+        RenderTarget& target = _context.renderTarget(reflectRTID);
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
-            RenderTarget& target = _context.renderTarget(reflectRTID);
             viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-            viewPtr->_shader = _previewRenderTarget;
+            viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             _context.addDebugView(viewPtr);
+        } else {
+            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
+                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                viewPtr->_shader = _previewRenderTargetColour;
+            } else {
+                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                viewPtr->_shader = _previewRenderTargetDepth;
+            }
+
         }
     }
 
@@ -721,15 +734,25 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
 
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
+        RenderTarget& target = _context.renderTarget(refractRTID);
+
         if (!viewPtr) {
             viewPtr = std::make_shared<GFXDevice::DebugView>();
-            RenderTarget& target = _context.renderTarget(refractRTID);
             viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
-            viewPtr->_shader = _previewRenderTarget;
+            viewPtr->_shader = _previewRenderTargetColour;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
             _context.addDebugView(viewPtr);
+        } else {
+            if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 5) == 0) {
+                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
+                viewPtr->_shader = _previewRenderTargetColour;
+            } else {
+                viewPtr->_texture = target.getAttachment(RTAttachment::Type::Depth, 0).asTexture();
+                viewPtr->_shader = _previewRenderTargetDepth;
+            }
+
         }
     }
 

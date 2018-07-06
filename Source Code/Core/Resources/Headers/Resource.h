@@ -69,58 +69,76 @@ enum class ResourceType : U32 {
 class Resource;
 TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
 
-class NOINITVTABLE Resource : public GUIDWrapper,
-                              public std::enable_shared_from_this<Resource>
+class CachedResource;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(CachedResource);
+
+class Resource : public GUIDWrapper
+{
+   public:
+    explicit Resource(ResourceType type,
+                      const stringImpl& name);
+    virtual ~Resource();
+
+    /// Name management
+    const stringImpl& getName() const;
+    ResourceType getType() const;
+    ResourceState getState() const;
+
+   protected:
+    virtual void setState(ResourceState currentState);
+
+   protected:
+    stringImpl   _name;
+    ResourceType _resourceType;
+    std::atomic<ResourceState> _resourceState;
+};
+
+class CachedResource : public Resource,
+                       public std::enable_shared_from_this<CachedResource>
 {
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename X>
     friend class ImplResourceLoader;
 
-   public:
-    explicit Resource(ResourceType type, 
-                      const stringImpl& name);
-    explicit Resource(ResourceType type, 
-                      const stringImpl& name,
-                      const stringImpl& resourceName);
-    explicit Resource(ResourceType type,
-                      const stringImpl& name,
-                      const stringImpl& resourceName,
-                      const stringImpl& resourceLocation);
+public:
+    explicit CachedResource(ResourceType type,
+                            size_t descriptorHash,
+                            const stringImpl& name);
+    explicit CachedResource(ResourceType type,
+                            size_t descriptorHash,
+                            const stringImpl& name,
+                            const stringImpl& resourceName);
+    explicit CachedResource(ResourceType type,
+                            size_t descriptorHash,
+                            const stringImpl& name,
+                            const stringImpl& resourceName,
+                            const stringImpl& resourceLocation);
 
-    virtual ~Resource();
+    virtual ~CachedResource();
+
 
     /// Loading and unloading interface
-    virtual bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback);
-
+    virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback);
     virtual bool unload();
 
-    /// Name management
-    const stringImpl& getName() const;
-
+    size_t getDescriptorHash() const;
     /// Physical file location
     const stringImpl& getResourceLocation() const;
-
     /// Physical file name
     const stringImpl& getResourceName() const;
 
-    ResourceState getState() const;
-
-    ResourceType getType() const;
-
     void setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk);
 
-   protected:
-    void setState(ResourceState currentState);
+protected:
+    void setState(ResourceState currentState) override;
     void setResourceName(const stringImpl& name);
     void setResourceLocation(const stringImpl& location);
 
-   protected:
-    stringImpl   _name;
-    ResourceType _resourceType;
+protected:
+    size_t _descriptorHash;
     stringImpl   _resourceLocation;  ///< Physical file location
     stringImpl   _resourceName;      ///< Physical file name
-    std::atomic<ResourceState> _resourceState;
     std::array<DELEGATE_CBK<void, Resource_wptr>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
     mutable SharedLock _callbackLock;
 };

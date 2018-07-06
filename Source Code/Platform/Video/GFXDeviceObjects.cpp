@@ -160,7 +160,8 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength) const {
     return temp;
 }
 
-Texture* GFXDevice::newTexture(const stringImpl& name,
+Texture* GFXDevice::newTexture(size_t descriptorHash,
+                               const stringImpl& name,
                                const stringImpl& resourceName,
                                const stringImpl& resourceLocation,
                                TextureType type,
@@ -171,10 +172,10 @@ Texture* GFXDevice::newTexture(const stringImpl& name,
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new texture. The callee is responsible for it's deletion!
-            temp = MemoryManager_NEW glTexture(refThis(this), name, resourceName, resourceLocation, type, asyncLoad);
+            temp = MemoryManager_NEW glTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            temp = MemoryManager_NEW d3dTexture(refThis(this), name, resourceName, resourceLocation, type, asyncLoad);
+            temp = MemoryManager_NEW d3dTexture(refThis(this), descriptorHash, name, resourceName, resourceLocation, type, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
@@ -184,7 +185,8 @@ Texture* GFXDevice::newTexture(const stringImpl& name,
     return temp;
 }
 
-ShaderProgram* GFXDevice::newShaderProgram(const stringImpl& name,
+ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
+                                           const stringImpl& name,
                                            const stringImpl& resourceName,
                                            const stringImpl& resourceLocation,
                                            bool asyncLoad) const {
@@ -195,10 +197,10 @@ ShaderProgram* GFXDevice::newShaderProgram(const stringImpl& name,
         case RenderAPI::OpenGLES: {
             /// Create and return a new shader program.
             /// The callee is responsible for it's deletion!
-            temp = MemoryManager_NEW glShaderProgram(refThis(this), name, resourceName, resourceLocation, asyncLoad);
+            temp = MemoryManager_NEW glShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
         case RenderAPI::Direct3D: {
-            temp = MemoryManager_NEW d3dShaderProgram(refThis(this), name, resourceName, resourceLocation, asyncLoad);
+            temp = MemoryManager_NEW d3dShaderProgram(refThis(this), descriptorHash, name, resourceName, resourceLocation, asyncLoad);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

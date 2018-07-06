@@ -67,7 +67,11 @@ class RenderPass : private NonCopyable {
         ~BufferDataPool();
 
         BufferData& getBufferData(I32 bufferIndex);
-        vectorImpl<BufferData*> _buffers;
+
+    private:
+        GFXDevice& _context;
+        vectorImpl<std::shared_ptr<BufferData>> _buffers;
+
     };
 
    public:

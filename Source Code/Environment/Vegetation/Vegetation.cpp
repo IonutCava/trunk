@@ -16,8 +16,8 @@ namespace Divide {
 
 bool Vegetation::_staticDataUpdated = false;
 
-Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, const VegetationDetails& details)
-    : SceneNode(parentCache, details.name, SceneNodeType::TYPE_VEGETATION_GRASS),
+Vegetation::Vegetation(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const VegetationDetails& details)
+    : SceneNode(parentCache, descriptorHash, details.name, SceneNodeType::TYPE_VEGETATION_GRASS),
       _context(context),
       _billboardCount(details.billboardCount),
       _grassDensity(details.grassDensity),

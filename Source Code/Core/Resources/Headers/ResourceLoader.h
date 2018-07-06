@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class Resource;
+class CachedResource;
 // Used to delete resources
 struct DeleteResource {
     DeleteResource(ResourceCache& context)
@@ -45,7 +45,7 @@ struct DeleteResource {
     {
     }
 
-    void operator()(Resource* res);
+    void operator()(CachedResource* res);
 
     ResourceCache& _context;
 };
@@ -53,34 +53,36 @@ struct DeleteResource {
 class PlatformContext;
 class NOINITVTABLE ResourceLoader : private NonCopyable {
    public:
-    ResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor)
+    ResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
         : _cache(cache),
           _context(context),
-          _descriptor(descriptor) 
+          _descriptor(descriptor),
+          _loadingDescriptorHash(loadingDescriptorHash)
     {
     }
 
-    virtual Resource_ptr operator()() = 0;
+    virtual CachedResource_ptr operator()() = 0;
 
    protected:
     ResourceCache& _cache;
     PlatformContext& _context;
     ResourceDescriptor _descriptor;
+    size_t _loadingDescriptorHash;
 };
 
 template <typename ResourceType>
 class ImplResourceLoader : public ResourceLoader {
    public:
-    ImplResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor)
-        : ResourceLoader(cache, context, descriptor)
+    ImplResourceLoader(ResourceCache& cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
+        : ResourceLoader(cache, context, descriptor, loadingDescriptorHash)
     {
     }
 
-    Resource_ptr operator()();
+    CachedResource_ptr operator()();
 
    protected:
 
-    bool load(std::shared_ptr<ResourceType> res, const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+    bool load(std::shared_ptr<ResourceType> res, const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
         if (!res) {
             return false;
         }

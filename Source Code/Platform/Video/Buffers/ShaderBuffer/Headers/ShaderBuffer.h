@@ -80,6 +80,7 @@ class NOINITVTABLE ShaderBuffer : public GraphicsResource,
                            U32 offsetElementCount,
                            U32 rangeElementCount) = 0;
 
+    /// Bind return false if the buffer was already bound
     virtual bool bind(U32 bindIndex) = 0;
 
     inline bool bind(ShaderBufferLocation bindIndex) {

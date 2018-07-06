@@ -55,6 +55,9 @@ class NOINITVTABLE PropertyDescriptor {
     virtual ~PropertyDescriptor()
     {
     }
+
+    virtual size_t getHash() const;
+
    protected:
     friend class ResourceDescriptor;
     /// Initialize descriptor values to their safe defaults
@@ -67,8 +70,9 @@ class NOINITVTABLE PropertyDescriptor {
     DescriptorType _type;
 };
 
+class CachedResource;
+FWD_DECLARE_MANAGED_CLASS(CachedResource);
 
-FWD_DECLARE_MANAGED_CLASS(Resource);
 class ResourceDescriptor {
    public:
     explicit ResourceDescriptor(const stringImpl& resourceName);
@@ -105,7 +109,7 @@ class ResourceDescriptor {
     inline P32  getMask() const { return _mask; }
     inline void* getUserPtr() const { return _userPtr; }
 
-    const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback() const {
+    const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback() const {
         return _onLoadCallback;
     }
 
@@ -134,9 +138,11 @@ class ResourceDescriptor {
         _propertyDescriptor.reset(MemoryManager_NEW T(descriptor));
     }
 
-    void setOnLoadCallback(const DELEGATE_CBK<void, Resource_wptr>& callback) {
+    void setOnLoadCallback(const DELEGATE_CBK<void, CachedResource_wptr>& callback) {
         _onLoadCallback = callback;
     }
+
+    size_t getHash() const;
 
    private:
     /// Item name
@@ -156,7 +162,7 @@ class ResourceDescriptor {
     /// Use for extra resource properties: textures, samplers, terrain etc.
     std::shared_ptr<PropertyDescriptor> _propertyDescriptor;
     /// Callback to use when the resource finished loading (includes threaded loading)
-    DELEGATE_CBK<void, Resource_wptr> _onLoadCallback;
+    DELEGATE_CBK<void, CachedResource_wptr> _onLoadCallback;
     /// General Data
     void *_userPtr;
 };

@@ -257,7 +257,8 @@ class RenderingComponent : public SGNComponent {
 
     ReflectorType _reflectorType;
     hashMapImpl<U32, GFXDevice::DebugView_ptr> _debugViews[2];
-    ShaderProgram_ptr _previewRenderTarget;
+    ShaderProgram_ptr _previewRenderTargetColour;
+    ShaderProgram_ptr _previewRenderTargetDepth;
 };
 
 namespace Attorney {

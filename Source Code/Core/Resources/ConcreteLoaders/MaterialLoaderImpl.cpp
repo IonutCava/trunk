@@ -7,8 +7,8 @@
 namespace Divide {
 
 template<>
-Resource_ptr ImplResourceLoader<Material>::operator()() {
-    Material_ptr ptr(MemoryManager_NEW Material(_context.gfx(), _cache, _descriptor.getName()), DeleteResource(_cache));
+CachedResource_ptr ImplResourceLoader<Material>::operator()() {
+    Material_ptr ptr(MemoryManager_NEW Material(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName()), DeleteResource(_cache));
     assert(ptr != nullptr);
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

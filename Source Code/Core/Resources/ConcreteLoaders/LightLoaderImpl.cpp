@@ -9,7 +9,7 @@
 namespace Divide {
 
 template<>
-Resource_ptr ImplResourceLoader<Light>::operator()() {
+CachedResource_ptr ImplResourceLoader<Light>::operator()() {
     void* userPtr = _descriptor.getUserPtr();
     assert(userPtr != nullptr && "ImplResourceLoader error : No target light pool specified!");
 
@@ -20,15 +20,15 @@ Resource_ptr ImplResourceLoader<Light>::operator()() {
     switch (static_cast<LightType>(_descriptor.getEnumValue())) {
         default:
         case LightType::POINT:
-            ptr.reset(MemoryManager_NEW PointLight(_cache, _descriptor.getName(), 1, pool),
+            ptr.reset(MemoryManager_NEW PointLight(_cache, _loadingDescriptorHash, _descriptor.getName(), 1, pool),
                       DeleteResource(_cache));
             break;
         case LightType::DIRECTIONAL:
-            ptr.reset(MemoryManager_NEW DirectionalLight(_cache, _descriptor.getName(), pool),
+            ptr.reset(MemoryManager_NEW DirectionalLight(_cache, _loadingDescriptorHash, _descriptor.getName(), pool),
                       DeleteResource(_cache));
             break;
         case LightType::SPOT:
-            ptr.reset(MemoryManager_NEW SpotLight(_cache, _descriptor.getName(), 1, pool),
+            ptr.reset(MemoryManager_NEW SpotLight(_cache, _loadingDescriptorHash, _descriptor.getName(), 1, pool),
                       DeleteResource(_cache));
             break;
     };

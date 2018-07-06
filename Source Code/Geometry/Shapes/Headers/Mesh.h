@@ -59,6 +59,7 @@ class Mesh : public Object3D {
    public:
     explicit Mesh(GFXDevice& context,
                   ResourceCache& parentCache,
+                  size_t descriptorHash,
                   const stringImpl& name,
                   const stringImpl& resourceName,
                   const stringImpl& resourceLocation,

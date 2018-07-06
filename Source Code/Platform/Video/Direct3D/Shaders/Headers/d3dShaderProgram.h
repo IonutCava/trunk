@@ -40,6 +40,7 @@ class d3dShaderProgram final : public ShaderProgram {
     USE_CUSTOM_ALLOCATOR
    public:
     explicit d3dShaderProgram(GFXDevice& context,
+                              size_t descriptorHash,
                               const stringImpl& name,
                               const stringImpl& resourceName,
                               const stringImpl& resourceLocation,
@@ -122,7 +123,7 @@ class d3dShaderProgram final : public ShaderProgram {
      bool recompileInternal() override;
 
    protected:
-    bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
+    bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
 };
 
 };  // namespace Divide

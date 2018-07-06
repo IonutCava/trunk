@@ -151,7 +151,7 @@ class SamplerDescriptor : public PropertyDescriptor {
 
     inline void toggleSRGBColourSpace(const bool state) { _srgb = state; }
 
-    inline size_t getHash() const {
+    inline size_t getHash() const override {
         size_t hash = 0;
         Util::Hash_combine(hash, to_uint(_cmpFunc));
         Util::Hash_combine(hash, _useRefCompare);
@@ -170,6 +170,8 @@ class SamplerDescriptor : public PropertyDescriptor {
         Util::Hash_combine(hash, _borderColour.g);
         Util::Hash_combine(hash, _borderColour.b);
         Util::Hash_combine(hash, _borderColour.a);
+        Util::Hash_combine(hash, PropertyDescriptor::getHash());
+
         return hash;
     }
     /*
@@ -325,6 +327,23 @@ class TextureDescriptor : public PropertyDescriptor {
     }
 
     inline TextureType type() const { return _type; }
+
+    inline size_t getHash() const override {
+        size_t hash = 0;
+        Util::Hash_combine(hash, _layerCount);
+        Util::Hash_combine(hash, to_uint(_internalFormat));
+        Util::Hash_combine(hash, to_uint(_type));
+        Util::Hash_combine(hash, _compressed);
+        Util::Hash_combine(hash, _automaticMipMaps);
+
+        // Not needed as these will always be the same when everything else matches
+        //Util::Hash_combine(hash, _baseFormat); 
+        //Util::Hash_combine(hash, _dataType);
+
+        Util::Hash_combine(hash, _samplerDescriptor.getHash());
+        Util::Hash_combine(hash, PropertyDescriptor::getHash());
+        return hash;
+    }
 
     U32 _layerCount;
     /// Texture data information

@@ -48,10 +48,11 @@ void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
 }
 
 template<>
-Resource_ptr ImplResourceLoader<Mesh>::operator()() {
+CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     Import::ImportData tempMeshData(_descriptor.getResourceLocation());
     Mesh_ptr ptr(MemoryManager_NEW Mesh(_context.gfx(),
                                         _cache,
+                                        _loadingDescriptorHash,
                                         _descriptor.getName(),
                                         tempMeshData._modelName,
                                         tempMeshData._modelPath),

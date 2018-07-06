@@ -826,7 +826,7 @@ void Scene::addPlayerInternal(bool queue) {
     SceneGraphNode_ptr playerSGN(_sceneGraph->findNode(playerName).lock());
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
-        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, g_PlayerExtents)),
+        playerSGN = root.addNode(SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents)),
                                 to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                 to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS) |

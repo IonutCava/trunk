@@ -4,8 +4,8 @@
 
 namespace Divide {
 
-SpotLight::SpotLight(ResourceCache& parentCache, const stringImpl& name, F32 range, LightPool& parentPool)
-     : Light(parentCache, name, range, LightType::SPOT, parentPool)
+SpotLight::SpotLight(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, F32 range, LightPool& parentPool)
+     : Light(parentCache, descriptorHash, name, range, LightType::SPOT, parentPool)
 {
     setRange(2.0f);
     setSpotAngle(35.0f);

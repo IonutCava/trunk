@@ -10,8 +10,8 @@
 
 namespace Divide {
 
-Light::Light(ResourceCache& parentCache, const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool)
-    : SceneNode(parentCache, name, SceneNodeType::TYPE_LIGHT),
+Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, const F32 range, const LightType& type, LightPool& parentPool)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_LIGHT),
       _parentPool(parentPool),
       _type(type),
       _rangeChanged(true),
@@ -46,7 +46,7 @@ Light::~Light()
 {
 }
 
-bool Light::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+bool Light::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     _shadowCamera = Camera::createCamera(getName() + "_shadowCamera", Camera::CameraType::FREE_FLY);
 
     _shadowCamera->setMoveSpeedFactor(0.0f);
@@ -54,7 +54,7 @@ bool Light::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     _shadowCamera->setFixedYawAxis(true);
 
     if (_parentPool.addLight(*this)) {
-        return Resource::load(onLoadCallback);
+        return SceneNode::load(onLoadCallback);
     }
 
     return false;

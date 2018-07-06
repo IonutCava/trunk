@@ -22,11 +22,12 @@ std::array<U32, to_const_uint(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glShaderProgram, 0, 0);
 glShaderProgram::glShaderProgram(GFXDevice& context,
+                                 size_t descriptorHash,
                                  const stringImpl& name,
                                  const stringImpl& resourceName,
                                  const stringImpl& resourceLocation,
                                  bool asyncLoad)
-    : ShaderProgram(context, name, resourceName, resourceLocation, asyncLoad),
+    : ShaderProgram(context, descriptorHash, name, resourceName, resourceLocation, asyncLoad),
       _loadedFromBinary(false),
       _validated(false),
       _shaderProgramIDTemp(0),
@@ -214,7 +215,7 @@ void glShaderProgram::attachShader(glShader* const shader) {
 
 /// This should be called in the loading thread, but some issues are still
 /// present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback, bool skipRegister) {
+void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister) {
     // Loading from binary gives us a linked program ready for usage.
     if (!_loadedFromBinary) {
         // If this wasn't loaded from binary, we need a new API specific object
@@ -420,7 +421,7 @@ std::pair<bool, stringImpl> glShaderProgram::loadSourceCode(ShaderType stage,
 
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
-bool glShaderProgram::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+bool glShaderProgram::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_resourceName.compare("NULL") == 0) {

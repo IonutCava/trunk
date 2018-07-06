@@ -53,8 +53,8 @@ class SceneState;
 // This is the scene root node. All scene node's are added to it as child nodes
 class SceneRoot : public SceneNode {
    public:
-    SceneRoot(ResourceCache& parentCache)
-        : SceneNode(parentCache, "root", SceneNodeType::TYPE_ROOT)
+    SceneRoot(ResourceCache& parentCache, size_t descriptorHash)
+        : SceneNode(parentCache, descriptorHash, "root", SceneNodeType::TYPE_ROOT)
     {
         _renderState.useDefaultMaterial(false);
         setState(ResourceState::RES_LOADED);
@@ -68,8 +68,8 @@ TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
    public:
-    SceneTransform(ResourceCache& parentCache, vec3<F32> extents) 
-        : SceneNode(parentCache, "TransformNode", SceneNodeType::TYPE_TRANSFORM),
+    SceneTransform(ResourceCache& parentCache, size_t descriptorHash, vec3<F32> extents)
+        : SceneNode(parentCache, descriptorHash, "TransformNode", SceneNodeType::TYPE_TRANSFORM),
           _extents(extents)
     {
         _renderState.useDefaultMaterial(false);

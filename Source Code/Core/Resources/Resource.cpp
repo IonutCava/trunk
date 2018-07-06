@@ -4,6 +4,7 @@
 
 namespace Divide {
 
+//---------------------------- Resource ------------------------------------------//
 Resource::Resource(ResourceType type,
                    const stringImpl& name)
     : GUIDWrapper(),
@@ -11,30 +12,63 @@ Resource::Resource(ResourceType type,
       _name(name),
       _resourceState(ResourceState::RES_CREATED)
 {
-    _loadingCallbacks.fill(DELEGATE_CBK<void, Resource_wptr>());
-}
-Resource::Resource(ResourceType type,
-                  const stringImpl& name,
-                  const stringImpl& resourceName)
-    : Resource(type, name)
-{
-    _resourceName = resourceName;
-}
-
-Resource::Resource(ResourceType type, 
-                   const stringImpl& name,
-                   const stringImpl& resourceName,
-                   const stringImpl& resourceLocation)
-    : Resource(type, name, resourceName)
-{
-    _resourceLocation = resourceLocation;
 }
 
 Resource::~Resource()
 {
 }
 
-bool Resource::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+/// Name management
+const stringImpl& Resource::getName() const {
+    return _name;
+}
+
+ResourceType Resource::getType() const {
+    return _resourceType;
+}
+
+ResourceState Resource::getState() const {
+    return _resourceState;
+}
+
+void Resource::setState(ResourceState currentState) {
+    _resourceState = currentState;
+}
+
+//---------------------------- Cached Resource ------------------------------------//
+CachedResource::CachedResource(ResourceType type,
+                               size_t descriptorHash,
+                               const stringImpl& name)
+    : Resource(type, name),
+      _descriptorHash(descriptorHash)
+{
+    _loadingCallbacks.fill(DELEGATE_CBK<void, Resource_wptr>());
+}
+
+CachedResource::CachedResource(ResourceType type,
+                               size_t descriptorHash,
+                               const stringImpl& name,
+                               const stringImpl& resourceName)
+    : CachedResource(type, descriptorHash, name)
+{
+    _resourceName = resourceName;
+}
+
+CachedResource::CachedResource(ResourceType type,
+                               size_t descriptorHash,
+                               const stringImpl& name,
+                               const stringImpl& resourceName,
+                               const stringImpl& resourceLocation)
+    : CachedResource(type, descriptorHash, name, resourceName)
+{
+    _resourceLocation = resourceLocation;
+}
+
+CachedResource::~CachedResource()
+{
+}
+
+bool CachedResource::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     setState(ResourceState::RES_LOADED);
     if (onLoadCallback) {
         onLoadCallback(shared_from_this());
@@ -43,49 +77,39 @@ bool Resource::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     return true;
 }
 
-bool Resource::unload() {
+bool CachedResource::unload() {
     return true;
 }
 
-/// Name management
-const stringImpl& Resource::getName() const {
-    return _name;
+size_t CachedResource::getDescriptorHash() const {
+    return _descriptorHash;
 }
 
 /// Physical file path
-const stringImpl& Resource::getResourceLocation() const {
+const stringImpl& CachedResource::getResourceLocation() const {
     return _resourceLocation;
 }
 
-void Resource::setResourceLocation(const stringImpl& location) {
+void CachedResource::setResourceLocation(const stringImpl& location) {
     _resourceLocation = location;
 }
 
 /// Physical file name
-const stringImpl& Resource::getResourceName() const {
+const stringImpl& CachedResource::getResourceName() const {
     return _resourceName;
 }
 
-void Resource::setResourceName(const stringImpl& name) {
+void CachedResource::setResourceName(const stringImpl& name) {
     _resourceName = name;
 }
 
-
-ResourceState Resource::getState() const {
-    return _resourceState;
-}
-
-ResourceType Resource::getType() const {
-    return _resourceType;
-}
-
-void Resource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk) {
+void CachedResource::setStateCallback(ResourceState targetState, const DELEGATE_CBK<void, Resource_wptr>& cbk) {
     WriteLock w_lock(_callbackLock);
     _loadingCallbacks[to_uint(targetState)] = cbk;
 }
 
-void Resource::setState(ResourceState currentState) {
-    _resourceState = currentState;
+void CachedResource::setState(ResourceState currentState) {
+    Resource::setState(currentState);
 
     ReadLock r_lock(_callbackLock);
     const DELEGATE_CBK<void, Resource_wptr>& cbk = _loadingCallbacks[to_uint(currentState)];

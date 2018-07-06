@@ -15,12 +15,13 @@ namespace {
 const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
+                 size_t descriptorHash,
                  const stringImpl& name,
                  const stringImpl& resourceName,
                  const stringImpl& resourceLocation,
                  TextureType type,
                  bool asyncLoad)
-    : Resource(ResourceType::GPU_OBJECT, name, resourceName, resourceLocation),
+    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, resourceName, resourceLocation),
       GraphicsResource(context, getGUID()),
       _numLayers(1),
       _lockMipMaps(false),
@@ -39,7 +40,7 @@ Texture::~Texture()
 {
 }
 
-bool Texture::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+bool Texture::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     _context.loadInContext(_asyncLoad ? CurrentContext::GFX_LOADING_CTX
                                       : CurrentContext::GFX_RENDERING_CTX,
         [this, onLoadCallback](const Task& parent) {
@@ -51,7 +52,7 @@ bool Texture::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
 }
 
 /// Load texture data using the specified file name
-void Texture::threadedLoad(DELEGATE_CBK<void, Resource_wptr> onLoadCallback) {
+void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback) {
     TextureLoadInfo info;
     info._type = _textureData._textureType;
 

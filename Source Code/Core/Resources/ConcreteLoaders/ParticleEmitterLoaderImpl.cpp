@@ -6,8 +6,8 @@
 namespace Divide {
 
 template<>
-Resource_ptr ImplResourceLoader<ParticleEmitter>::operator()() {
-    std::shared_ptr<ParticleEmitter> ptr(MemoryManager_NEW ParticleEmitter(_context.gfx(), _cache, _descriptor.getName()),
+CachedResource_ptr ImplResourceLoader<ParticleEmitter>::operator()() {
+    std::shared_ptr<ParticleEmitter> ptr(MemoryManager_NEW ParticleEmitter(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName()),
                                          DeleteResource(_cache));
 
     if (!load(ptr, _descriptor.onLoadCallback())) {

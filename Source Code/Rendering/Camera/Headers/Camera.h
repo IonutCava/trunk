@@ -384,6 +384,7 @@ class Camera : public Resource {
       static Camera* s_previousCamera;
 
       typedef hashMapImpl<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
+
       static U32 s_changeCameraId;
       static U32 s_updateCameraId;
       static ListenerMap s_changeCameraListeners;

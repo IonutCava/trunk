@@ -9,8 +9,8 @@
 
 namespace Divide {
 
-Sky::Sky(ResourceCache& parentCache, const stringImpl& name, U32 diameter)
-    : SceneNode(parentCache, name, SceneNodeType::TYPE_SKY),
+Sky::Sky(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_SKY),
       _sky(nullptr),
       _skyShader(nullptr),
       _skyShaderPrePass(nullptr),
@@ -33,7 +33,7 @@ Sky::~Sky()
 {
 }
 
-bool Sky::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
+bool Sky::load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) {
     if (_sky != nullptr) {
         return false;
     }
@@ -72,7 +72,7 @@ bool Sky::load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) {
     _boundingBox.set(vec3<F32>(-radius), vec3<F32>(radius));
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
 
-    return Resource::load(onLoadCallback);
+    return SceneNode::load(onLoadCallback);
 }
 
 void Sky::postLoad(SceneGraphNode& sgn) {

@@ -27,8 +27,8 @@ namespace {
     static const U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
-ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
-    : SceneNode(parentCache, name, SceneNodeType::TYPE_PARTICLE_EMITTER),
+ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name)
+    : SceneNode(parentCache, descriptorHash, name, SceneNodeType::TYPE_PARTICLE_EMITTER),
       _context(context),
       _drawImpostor(false),
       _particleStateBlockHash(0),

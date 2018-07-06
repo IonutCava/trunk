@@ -19,8 +19,8 @@ namespace {
 
         if (crtConfig.x != static_cast<size_t>(UBOid) ||
             crtConfig.y != offset ||
-            crtConfig.z != range ||
-            true) {
+            crtConfig.z != range)
+        {
             crtConfig.set(static_cast<size_t>(UBOid), offset, range);
             return true;
         }
@@ -98,17 +98,17 @@ GLuint glBufferImpl::bufferID() const {
 bool glBufferImpl::bindRange(GLuint bindIndex, size_t offset, size_t range) {
     assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
-    bool success = false;
+    bool wasBound = true;
     if (setIfDifferentBindRange(_handle, bindIndex, offset, range))
     {
         glBindBufferRange(_target, bindIndex, _handle, offset, range);
-        success = true;
+        wasBound = false;
     }
     if (_mappedBuffer) {
         lockRange(offset, range);
     }
 
-    return success;
+    return !wasBound;
 }
 
 void glBufferImpl::updateData(size_t offset, size_t range, const bufferPtr data)

@@ -54,10 +54,10 @@ enum class FileUpdateEvent : U8;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
-class NOINITVTABLE ShaderProgram : public Resource, 
+class NOINITVTABLE ShaderProgram : public CachedResource,
                                    public GraphicsResource {
    public:
-    typedef hashMapImpl<U64, ShaderProgram_ptr> ShaderProgramMap;
+    typedef hashMapImpl<size_t, ShaderProgram_ptr> ShaderProgramMap;
     typedef hashMapImpl<U64, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram_ptr, vectorImpl<ShaderProgram_ptr> > ShaderQueue;
     /// A list of built-in sampler slots. Use these if possible
@@ -96,6 +96,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     };
 
     explicit ShaderProgram(GFXDevice& context,
+                           size_t descriptorHash,
                            const stringImpl& name,
                            const stringImpl& resourceName,
                            const stringImpl& resourceLocation,
@@ -108,7 +109,7 @@ class NOINITVTABLE ShaderProgram : public Resource,
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
     virtual bool update(const U64 deltaTime);
-    virtual bool load(const DELEGATE_CBK<void, Resource_wptr>& onLoadCallback) override;
+    virtual bool load(const DELEGATE_CBK<void, CachedResource_wptr>& onLoadCallback) override;
     virtual bool unload() override;
 
     /// Uniforms (update constant buffer for D3D. Use index as location in
@@ -263,9 +264,9 @@ class NOINITVTABLE ShaderProgram : public Resource,
     static void shaderFileRead(const stringImpl& filePath, bool buildVariant, stringImpl& sourceCodeOut);
     static void shaderFileWrite(const stringImpl& atomName, const char* sourceCode);
     /// Remove a shaderProgram from the program cache
-    static bool unregisterShaderProgram(const stringImpl& name);
+    static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
-    static void registerShaderProgram(const stringImpl& name, const ShaderProgram_ptr& shaderProgram);
+    static void registerShaderProgram(const ShaderProgram_ptr& shaderProgram);
     /// Bind the null shader
     static bool unbind();
     /// Return a default shader used for general purpose rendering

@@ -10,8 +10,8 @@
 namespace Divide {
 
 template<>
-Resource_ptr ImplResourceLoader<Terrain>::operator()() {
-    std::shared_ptr<Terrain> ptr(MemoryManager_NEW Terrain(_context.gfx(), _cache, _descriptor.getName()),
+CachedResource_ptr ImplResourceLoader<Terrain>::operator()() {
+    std::shared_ptr<Terrain> ptr(MemoryManager_NEW Terrain(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.getName()),
                                  DeleteResource(_cache));
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_START")), _descriptor.getName().c_str());

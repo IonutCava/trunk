@@ -15,7 +15,7 @@ namespace Divide {
 
 
 template<>
-Resource_ptr ImplResourceLoader<Texture>::operator()() {
+CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     assert(_descriptor.getEnumValue() >= to_const_uint(TextureType::TEXTURE_1D) &&
            _descriptor.getEnumValue() < to_const_uint(TextureType::COUNT));
 
@@ -61,7 +61,8 @@ Resource_ptr ImplResourceLoader<Texture>::operator()() {
         _descriptor.setResourceLocation(resourceLocation);
     }
 
-    Texture_ptr ptr(_context.gfx().newTexture(_descriptor.getName(),
+    Texture_ptr ptr(_context.gfx().newTexture(_loadingDescriptorHash,
+                                              _descriptor.getName(),
                                               _descriptor.getResourceName(),
                                               _descriptor.getResourceLocation(),
                                               type,

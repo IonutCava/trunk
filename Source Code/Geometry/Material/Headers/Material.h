@@ -51,7 +51,7 @@ class RenderStateBlock;
 enum class BlendProperty : U32;
 enum class ReflectorType : U32;
 
-class Material : public Resource {
+class Material : public CachedResource {
    public:
     enum class BumpMethod : U32 {
         NONE = 0,    //<Use phong
@@ -128,7 +128,7 @@ class Material : public Resource {
     };
 
    public:
-    explicit Material(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name);
+    explicit Material(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Material();
 
     /// Return a new instance of this material with the name composed of the

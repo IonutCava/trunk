@@ -10,11 +10,12 @@ namespace Divide {
 
 Mesh::Mesh(GFXDevice& context,
            ResourceCache& parentCache,
+           size_t descriptorHash,
            const stringImpl& name,
            const stringImpl& resourceName,
            const stringImpl& resourceLocation, 
            ObjectFlag flag)
-    : Object3D(context, parentCache, name, resourceName, resourceLocation, ObjectType::MESH, flag),
+    : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, flag),
       _visibleToNetwork(true),
       _animator(nullptr)
 {

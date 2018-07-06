@@ -44,7 +44,7 @@ class Trigger : public SceneNode {
     typedef std::shared_ptr<Task> Task_ptr;
 
    public:
-    explicit Trigger(ResourceCache& parentCache, const stringImpl& name);
+    explicit Trigger(ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~Trigger();
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
