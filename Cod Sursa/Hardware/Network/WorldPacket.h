@@ -30,7 +30,7 @@ class WorldPacket : public ByteBuffer
 
         void SetOpcode(U16 opcode) { m_opcode = opcode; }
 
- 		template <class Archive>
+		template <class Archive>
 		void serialize(Archive& ar,  unsigned int version  )
 		{
 			ar & _rpos;
@@ -38,8 +38,12 @@ class WorldPacket : public ByteBuffer
 			ar & m_opcode;
 			ar & _storage;
 		}
+
    protected:
         U16 m_opcode;
 };
-
+//Remove Archive header / Warning: no more version updates ... hmmm
+BOOST_CLASS_IMPLEMENTATION(WorldPacket, boost::serialization::object_serializable);
+//Remove pointer tracking and duplication checking. Leave it up to me, why not? 8-|
+BOOST_CLASS_TRACKING(WorldPacket, boost::serialization::track_never)
 #endif

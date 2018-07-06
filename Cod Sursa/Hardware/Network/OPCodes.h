@@ -3,10 +3,12 @@
 
 enum Opcodes
 {
-   	MSG_HEARTBEAT   = 0x000,
-    CMSG_PING       = 0x001,
-	SMSG_PONG       = 0x002,
-	NUM_MSG_TYPES   = 0x003
+   	MSG_HEARTBEAT							 = 0x000,
+    CMSG_PING						         = 0x001,
+	SMSG_PONG								 = 0x002,
+	CMSG_REQUEST_DISCONNECT					 = 0x003,
+	SMSG_DISCONNECT							 = 0x004,
+	NUM_MSG_TYPES							 = 0x005
 };
 
 #endif;

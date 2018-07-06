@@ -6,7 +6,7 @@
 #endif
  
 #define GETTIME() ((F32)glutGet(GLUT_ELAPSED_TIME)/1000.0f)
-
+#define GETMSTIME() ((F32)glutGet(GLUT_ELAPSED_TIME))
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif

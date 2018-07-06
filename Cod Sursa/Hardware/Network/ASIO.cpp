@@ -1,5 +1,6 @@
 #include "ASIO.h"
 #include <boost/archive/text_iarchive.hpp>
+#include "Utility/Headers/MathHelper.h"
 
 	void ASIO::init()
 	{
@@ -21,7 +22,14 @@
 			cout << t << endl;
 			par.setParam("asioStatus", t); 
 		}
-		
+	}
+
+	void ASIO::disconnect()
+	{
+		if(!_connected) return;
+		WorldPacket p(CMSG_REQUEST_DISCONNECT);
+		p << c->getSocket().local_endpoint().address().to_string();
+		sendPacket(p);
 	}
 
 	void ASIO::sendPacket(WorldPacket& p)
@@ -39,32 +47,44 @@
 
 	void client::readPacket(WorldPacket& p)
 	{
-		bool changed = false;
-		string response = "Server says: ";
-		U32 time = 0;
-		char code[4];
 		switch(p.getOpcode())
 		{
 			case MSG_HEARTBEAT:
-				//nothing. Heartbeats keep us alive \:D/
+				HandleHeartBeatOpCode(p);
 				break;
 			case SMSG_PONG:
-				p >> time;
-				_itoa(time,code,4);
-				response += "Pinged at : " ; 
-				response += code; 
-				response += " server time";
-				changed = true;
+				HandlePongOpCode(p);
+				break;
+			case SMSG_DISCONNECT:
+				HandleDisconnectOpCode(p);
 				break;
 			default:
-				response += "Unknown OpCode: [ 0x";
-				response += _itoa(p.getOpcode(),code,3);
-				response += " ]";
-				changed = true;
+				ParamHandler::getInstance().setParam("serverResponse",
+					string("Unknown OpCode: [ 0x") + Util::toString(p.getOpcode()) + string(" ]"));
 				break;
 		};
-		if(changed)ParamHandler::getInstance().setParam("serverResponse",response);
-		free(code);
-		response.clear();
 	}
 
+	void client::HandlePongOpCode(WorldPacket& p)
+	{
+
+		F32 time = 0;
+		p >> time;
+		F32 result = GETMSTIME() - time;
+		ParamHandler::getInstance().setParam("serverResponse",string("Server says: Pinged with : ") + 
+					Util::toString(floor(result+0.5f)) + string(" ms latency"));
+	}
+
+	void client::HandleDisconnectOpCode(WorldPacket& p)
+	{
+		U8 code;
+		p >> code;
+		cout << "CLOSING" << endl;
+		if(code == 0) ASIO::getInstance().close();
+		// else handleError(code);
+	}
+
+	void client::HandleHeartBeatOpCode(WorldPacket& p)
+	{
+		//nothing. Heartbeats keep us alive \:D/
+	}

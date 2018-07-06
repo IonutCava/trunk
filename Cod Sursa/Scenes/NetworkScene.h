@@ -18,7 +18,8 @@ public:
 	void processInput();
 private: 
 	void test();
-
+	void connect();
+	void disconnect();
 private:
 	vector<F32> _eventTimers;
 

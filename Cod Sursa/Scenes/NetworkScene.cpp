@@ -64,8 +64,21 @@ bool NetworkScene::load(const string& name)
 void NetworkScene::test()
 {
 	WorldPacket p(CMSG_PING);
-	p << (U32)GETTIME();
+	p << GETMSTIME();
 	ASIO::getInstance().sendPacket(p);
+}
+
+void NetworkScene::connect()
+{
+	GUI::getInstance().modifyText("statusText",(char*)string("Connecting to server ...").c_str());
+	ASIO::getInstance().connect();
+}
+
+void NetworkScene::disconnect()
+{
+	if(!ASIO::getInstance().isConnected())
+		GUI::getInstance().modifyText("statusText",(char*)string("Disconnecting to server ...").c_str());
+	ASIO::getInstance().disconnect();
 }
 
 bool NetworkScene::loadResources(bool continueOnErrors)
@@ -100,8 +113,14 @@ bool NetworkScene::loadResources(bool continueOnErrors)
 								"");
 
 	gui.addButton("getPing", "ping me", vec2(60 , Engine::getInstance().getWindowHeight()/1.1f),
-										vec2(100,25),vec3(0.6f,0.2f,0.4f),
+										vec2(100,25),vec3(0.6f,0.6f,0.6f),
 										boost::bind(&NetworkScene::test,this));
+	gui.addButton("disconnect", "disconnect", vec2(180 , Engine::getInstance().getWindowHeight()/1.1f),
+										vec2(100,25),vec3(0.5f,0.5f,0.5f),
+										boost::bind(&NetworkScene::disconnect,this));
+	gui.addButton("connect", "connect", vec2(300 , Engine::getInstance().getWindowHeight()/1.1f),
+										vec2(100,25),vec3(0.65f,0.65f,0.65f),
+										boost::bind(&NetworkScene::connect,this));
 
 	_eventTimers.push_back(0.0f); //Fps
 	_eventTimers.push_back(0.0f); //Time

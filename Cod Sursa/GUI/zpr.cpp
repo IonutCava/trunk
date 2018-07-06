@@ -3,7 +3,6 @@
 
 #include "PhysX/PhysX.h"
 #include "GLUIManager.h"
-#include "Utility/Headers/MathHelper.h"
 #include "Utility/Headers/Guardian.h"
 #include "Utility/Headers/ParamHandler.h"
 #include "Rendering/common.h"

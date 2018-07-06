@@ -2,7 +2,6 @@
 #define TERRAIN_H_
 
 #include "Utility/Headers/BoundingBox.h"
-#include "Utility/Headers/MathHelper.h"
 #include "Utility/Headers/DataTypes.h"
 #include "TextureManager/ImageTools.h"
 #include "Hardware/Video/FrameBufferObject.h"

@@ -56,6 +56,11 @@ public:
     deadline_.cancel();
     heartbeat_timer_.cancel();
   }
+
+  tcp::socket& getSocket()
+  {
+	  return socket_;
+  }
 	void sendPacket(WorldPacket& p)
 	{
 		packetQueue.push_back(p);
@@ -196,7 +201,7 @@ void handle_read_body(const boost::system::error_code& ec,size_t bytes_transfere
 	if(packetQueue.empty())
 	{
 		WorldPacket heart(MSG_HEARTBEAT);
-		heart << (U32)GETTIME();
+		heart << (I8)0;
 		ParamHandler::getInstance().setParam("asioStatus",string("Sending HeartBeat"));
 		packetQueue.push_back(heart);
 	}
@@ -254,6 +259,11 @@ void handle_read_body(const boost::system::error_code& ec,size_t bytes_transfere
     // Put the actor back to sleep.
     deadline_.async_wait(boost::bind(&client::check_deadline, this));
   }
+
+private:
+	void HandlePongOpCode(WorldPacket& p);
+	void HandleHeartBeatOpCode(WorldPacket& p);
+	void HandleDisconnectOpCode(WorldPacket& p);
 
 private:
   bool stopped_;

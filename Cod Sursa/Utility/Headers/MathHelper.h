@@ -1,21 +1,18 @@
-#pragma once
+#ifndef _MATH_HELPER_H_
+#define _MATH_HELPER_H_
+
 #include "resource.h"
 
-namespace Math
+namespace Util
 {
-
-	void invertMatrix(const GLdouble *m, GLdouble *out );
-	D32 vlen(D32 x,D32 y,D32 z);
-	void addVector3(F32 *a, F32 *b);
-
-	template <class T>
-	inline T clamp(T x, T min, T max)
-	{ 
-		return (x < min) ? min : (x > max) ? max : x;
-	}
-
-	inline int round(F32 f)
+	template<class T>
+	string toString(T data)
 	{
-		return int(f + 0.5f);
+		stringstream s;
+		s << data;
+		return s.str();
 	}
+
 }
+
+#endif

@@ -21,9 +21,15 @@ public:
 	ASIO() {_connected = false; c = NULL; init();}
 	~ASIO() {work.reset(); t->join(); c->stop(); io_service.stop(); delete c; c = NULL;}
 	void sendPacket(WorldPacket& p);
+	void disconnect();
+	void connect(){if(!_connected)init();}
+	bool isConnected() {return _connected;}
 	
 private:
 	void init();
+
+	friend class client;
+	void close(){c->stop(); _connected = false;}
  private:  	
 	auto_ptr<boost::asio::io_service::work> work;
 	boost::thread *t;

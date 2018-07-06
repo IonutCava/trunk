@@ -49,6 +49,12 @@ public:
 	
 };
 
+class InputText
+{
+friend class GUI;
+public:
+	InputText(){}
+};
 SINGLETON_BEGIN( GUI )
 
 public:
