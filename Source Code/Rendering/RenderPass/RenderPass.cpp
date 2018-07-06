@@ -227,13 +227,12 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
 
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedReflectiveNodes();
+                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedReflectiveNodes(*params._camera, RenderStage::REFLECTION, true);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
-                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                    const SceneGraphNode* nodePtr = node._node;
-                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                for (RenderPassCuller::VisibleNode& node : nodes) {
+                    RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         // Excluse node from rendering itself into the pass
                         bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
@@ -277,12 +276,11 @@ void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer&
                 beginDebugScopeCmd._scopeName = "Planar Refraction Render Stage";
                 GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-                const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
+                RenderPassCuller::VisibleNodeList nodes = mgr.getSortedRefractiveNodes(*params._camera, RenderStage::REFRACTION, true);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
-                for (const RenderPassCuller::VisibleNode& node : nodeCache) {
-                    const SceneGraphNode* nodePtr = node._node;
-                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
+                for (RenderPassCuller::VisibleNode& node : nodes) {
+                    RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (RefractionUtil::isInBudget()) {
                         bool isVisile = rComp->renderOptionEnabled(RenderingComponent::RenderOptions::IS_VISIBLE);
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::IS_VISIBLE, false);

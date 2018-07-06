@@ -447,7 +447,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState.windDirZ(),
                             activeSceneState.windSpeed());
 
-    const vector<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorEASTL<SceneGraphNode*>& waterBodies = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
     U8 index = 0;
     for (SceneGraphNode* body : waterBodies) {
         const SceneGraphNode* water(body);
@@ -534,49 +534,46 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), idx);
 }
 
-const RenderPassCuller::VisibleNodeList&
-SceneManager::getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction) {
-    // Get list of nodes in view from the previous frame
-    RenderPassCuller::VisibleNodeList& nodeCache = getVisibleNodesCache(RenderStage::DISPLAY);
+RenderPassCuller::VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+    const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
+    vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
+    vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+    otherNodes.erase(eastl::remove_if(eastl::begin(otherNodes),
+                                      eastl::end(otherNodes),
+                                      [](SceneGraphNode* node) -> bool {
+                                          RenderingComponent* rComp = node->get<RenderingComponent>();
+                                          return !(rComp->getMaterialInstance() && rComp->getMaterialInstance()->isReflective());
+                                      }),
+                    eastl::end(otherNodes));
 
-    RenderPassCuller::VisibleNodeList waterNodes;
-    _tempNodesCache.resize(0);
-    _tempNodesCache.insert(eastl::begin(_tempNodesCache), eastl::cbegin(nodeCache), eastl::cend(nodeCache));
+    allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
 
-    // Cull nodes that are not valid reflection targets
-    _tempNodesCache.erase(eastl::remove_if(eastl::begin(_tempNodesCache),
-                                          eastl::end(_tempNodesCache),
-                                          cullingFunction),
-                                          eastl::end(_tempNodesCache));
+    if (inView) {
+        return _renderPassCuller->frustumCull(camera, camera.getZPlanes().y, stage, allNodes);
+    }
 
-    // Sort the nodes from front to back
-    eastl::sort(eastl::begin(_tempNodesCache),
-                eastl::end(_tempNodesCache),
-                [](const RenderPassCuller::VisibleNode& a, const RenderPassCuller::VisibleNode& b) -> bool {
-                    return a._distanceToCameraSq < b._distanceToCameraSq;
-                });
-
-    return _tempNodesCache;
+    return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
-// Enable just for water nodes for now (we should flag mirrors somehow):
-const RenderPassCuller::VisibleNodeList& SceneManager::getSortedReflectiveNodes() {
-    STUBBED("ToDo: Currently, only water nodes have reflections. Add a specularity based cull function! -Ionut")
-    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        return  node._node->getNode()->getType() != SceneNodeType::TYPE_WATER;
-    };
+RenderPassCuller::VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+    const SceneGraph& activeSceneGraph = getActiveScene().sceneGraph();
+    vectorEASTL<SceneGraphNode*> allNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_WATER);
+    vectorEASTL<SceneGraphNode*> otherNodes = activeSceneGraph.getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+    otherNodes.erase(eastl::remove_if(eastl::begin(otherNodes),
+                                      eastl::end(otherNodes),
+                                      [](SceneGraphNode* node) -> bool {
+                                          RenderingComponent* rComp = node->get<RenderingComponent>();
+                                          return !(rComp->getMaterialInstance() && rComp->getMaterialInstance()->isRefractive());
+                                      }),
+                    eastl::end(otherNodes));
 
-    return getSortedCulledNodes(cullingFunction);
-}
+    allNodes.insert(eastl::end(allNodes), eastl::begin(otherNodes), eastl::end(otherNodes));
 
-// Enable just for water nodes for now (we should flag mirrors somehow):
-const RenderPassCuller::VisibleNodeList& SceneManager::getSortedRefractiveNodes() {
-    STUBBED("ToDo: Currently, only water nodes have refractions. Add a specularity based cull function! -Ionut")
-    auto cullingFunction = [](const RenderPassCuller::VisibleNode& node) -> bool {
-        return  node._node->getNode()->getType() != SceneNodeType::TYPE_WATER;
-    };
+    if (inView) {
+        return _renderPassCuller->frustumCull(camera, camera.getZPlanes().y, stage, allNodes);
+    }
 
-    return getSortedCulledNodes(cullingFunction);
+    return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
 namespace {

@@ -110,12 +110,9 @@ public:
     // cull the scenegraph against the current view frustum
     const RenderPassCuller::VisibleNodeList& cullSceneGraph(RenderStagePass stage);
     // get the full list of reflective nodes
-    const RenderPassCuller::VisibleNodeList& getSortedReflectiveNodes();
+    RenderPassCuller::VisibleNodeList getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
     // get the full list of refractive nodes
-    const RenderPassCuller::VisibleNodeList& getSortedRefractiveNodes();
-
-    const RenderPassCuller::VisibleNodeList&
-        getSortedCulledNodes(const std::function<bool(const RenderPassCuller::VisibleNode&)>& cullingFunction);
+    RenderPassCuller::VisibleNodeList getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const;
 
     void onLostFocus();
     /// Check if the scene was loaded properly
@@ -232,7 +229,6 @@ private:
     U32 _elapsedTimeMS;
     U64 _saveTimer;
     Material_ptr _defaultMaterial;
-    RenderPassCuller::VisibleNodeList _tempNodesCache;
 
     typedef std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> CullTimersPerPass;
     std::array<CullTimersPerPass, to_base(RenderPassType::COUNT)> _sceneGraphCullTimers;

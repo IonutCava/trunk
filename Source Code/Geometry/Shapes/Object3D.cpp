@@ -238,6 +238,19 @@ vector<SceneGraphNode*> Object3D::filterByType(const vector<SceneGraphNode*>& no
     return result;
 }
 
+vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter) {
+    vectorEASTL<SceneGraphNode*> result;
+    result.reserve(nodes.size());
+
+    for (SceneGraphNode* ptr : nodes) {
+        if (ptr && ptr->getNode<Object3D>()->getObjectType() == filter) {
+            result.push_back(ptr);
+        }
+    };
+
+    return result;
+}
+
 void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
     if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
         AnimationComponent* animComp = sgn.get<AnimationComponent>();

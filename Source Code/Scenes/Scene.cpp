@@ -1218,7 +1218,7 @@ void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX
 }
 
 bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
-    const vector<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorEASTL<SceneGraphNode*>& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
 
     if (!waterBodies.empty()) {
         const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();

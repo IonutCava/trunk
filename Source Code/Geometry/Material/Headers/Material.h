@@ -159,6 +159,9 @@ class Material : public CachedResource {
     void setHighPriority(const bool state);
 
     void setDoubleSided(const bool state);
+    void setReflective(const bool state);
+    void setRefractive(const bool state);
+
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     const TextureOperation& op = TextureOperation::REPLACE);
@@ -268,6 +271,9 @@ class Material : public CachedResource {
     void dumpToFile(bool state);
     bool isDirty() const;
     bool isDoubleSided() const;
+    bool isReflective() const;
+    bool isRefractive() const;
+
     // Checks if the shader needed for the current stage is already constructed.
     // Returns false if the shader was already ready.
     bool computeShader(RenderStagePass renderStagePass, const bool computeOnAdd);
@@ -316,6 +322,8 @@ class Material : public CachedResource {
     bool _dumpToFile;
     bool _translucencyCheck;
     bool _doubleSided;
+    bool _isReflective;
+    bool _isRefractive;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
     std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;

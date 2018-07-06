@@ -146,7 +146,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
     currentNode.forEachChild([this, &currentNode, &stage, &cameraEye, &nodes](const SceneGraphNode& child) {
         if (!(stage == RenderStage::SHADOW && !currentNode.get<RenderingComponent>()->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS))) {
             if (child.isActive() && !_cullingFunction[to_U32(stage)](child)) {
-                F32 distanceSqToCamera = 0.0f;
+                F32 distanceSqToCamera = std::numeric_limits<F32>::max();
                 BoundsComponent* bComp = child.get<BoundsComponent>();
                 if (bComp != nullptr) {
                     distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
@@ -158,4 +158,32 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, RenderS
     });
 }
 
+RenderPassCuller::VisibleNodeList RenderPassCuller::frustumCull(const Camera& camera, F32 maxDistanceSq, RenderStage stage, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    RenderPassCuller::VisibleNodeList ret;
+
+    F32 distanceSqToCamera = std::numeric_limits<F32>::max();
+    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+    for (SceneGraphNode* node : nodes) {
+        // Internal node cull (check against camera frustum and all that ...)
+        if (!node->cullNode(camera, maxDistanceSq, stage, collisionResult, distanceSqToCamera)) {
+            ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
+        }
+    }
+    return ret;
+}
+
+RenderPassCuller::VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
+    RenderPassCuller::VisibleNodeList ret;
+
+    const vec3<F32> cameraEye = camera.getEye();
+    for (SceneGraphNode* node : nodes) {
+        F32 distanceSqToCamera = std::numeric_limits<F32>::max();
+        BoundsComponent* bComp = node->get<BoundsComponent>();
+        if (bComp != nullptr) {
+            distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
+        }
+        ret.emplace_back(VisibleNode{ distanceSqToCamera, node });
+    }
+    return ret;
+}
 };

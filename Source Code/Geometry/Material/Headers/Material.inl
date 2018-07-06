@@ -241,6 +241,14 @@ inline bool Material::isDoubleSided() const {
     return _doubleSided;
 }
 
+inline bool Material::isReflective() const {
+    return _colourData._shininess > 100 || _isReflective;
+}
+
+inline bool Material::isRefractive() const {
+    return hasTransparency() && _isRefractive;
+}
+
 inline U32 Material::defaultReflectionTextureIndex() const {
     return _reflectionIndex > -1 ? to_U32(_reflectionIndex)
                                  : _defaultReflection.second;

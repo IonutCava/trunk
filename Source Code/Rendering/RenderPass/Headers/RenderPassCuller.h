@@ -86,6 +86,9 @@ class RenderPassCuller {
 
     RenderPassCuller::VisibleNodeList& frustumCull(const CullParams& params);
 
+    RenderPassCuller::VisibleNodeList frustumCull(const Camera& camera, F32 maxDistanceSq, RenderStage stage, const vectorEASTL<SceneGraphNode*>& nodes) const;
+    RenderPassCuller::VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
+
     bool wasNodeInView(I64 GUID, RenderStage stage) const;
 
    protected:

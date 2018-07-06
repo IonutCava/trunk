@@ -107,14 +107,14 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, vec_size childIdx) {
 void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
     I64 guid = oldNode.getGUID();
 
-    vector<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
+    vectorEASTL<SceneGraphNode*>& nodesByType = _nodesByType[to_base(oldNode.getNode()->getType())];
 
-    nodesByType.erase(std::remove_if(std::begin(nodesByType), std::end(nodesByType), 
+    nodesByType.erase(eastl::remove_if(eastl::begin(nodesByType), eastl::end(nodesByType), 
                                      [guid](SceneGraphNode* node)-> bool
                                      {
                                          return node && node->getGUID() == guid;
                                      }),
-                      std::end(nodesByType));
+                      eastl::end(nodesByType));
 
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
@@ -258,7 +258,7 @@ void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
     }
 }
 
-const vector<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
+const vectorEASTL<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
     return _nodesByType[to_base(type)];
 }
 

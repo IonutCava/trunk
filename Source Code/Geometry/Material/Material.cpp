@@ -29,6 +29,8 @@ Material::Material(GFXDevice& context, ResourceCache& parentCache, size_t descri
       _parallaxFactor(1.0f),
       _dirty(false),
       _doubleSided(false),
+      _isReflective(false),
+      _isRefractive(false),
       _shaderThreadedLoad(true),
       _hardwareSkinning(false),
       _dumpToFile(true),
@@ -125,6 +127,8 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_translucencyCheck = base._translucencyCheck;
     cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_doubleSided = base._doubleSided;
+    cloneMat->_isReflective = base._isReflective;
+    cloneMat->_isRefractive = base._isRefractive;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_shaderThreadedLoad = base._shaderThreadedLoad;
     cloneMat->_operation = base._operation;
@@ -468,9 +472,19 @@ bool Material::computeShader(RenderStagePass renderStagePass, const bool compute
         setShaderDefines(renderStagePass, "USE_ALPHA_DISCARD");
     }
 
-    if (_doubleSided) {
+    if (isDoubleSided()) {
         shader += ".DoubleSided";
         setShaderDefines(renderStagePass, "USE_DOUBLE_SIDED");
+    }
+
+    if (isRefractive()) {
+        shader += ".Refractive";
+        setShaderDefines(renderStagePass, "IS_REFRACTIVE");
+    }
+
+    if (isReflective()) {
+        shader += ".Reflective";
+        setShaderDefines(renderStagePass, "IS_REFLECTIVE");
     }
 
     // Add the GPU skinning module to the vertex shader?
@@ -576,6 +590,28 @@ bool Material::unload() {
     _shaderInfo.fill(ShaderProgramInfo());
 
     return true;
+}
+
+void Material::setReflective(const bool state) {
+    if (_isReflective == state) {
+        return;
+    }
+
+    _isReflective = state;
+
+    _dirty = true;
+    recomputeShaders();
+}
+
+void Material::setRefractive(const bool state) {
+    if (_isRefractive == state) {
+        return;
+    }
+
+    _isRefractive = state;
+
+    _dirty = true;
+    recomputeShaders();
 }
 
 void Material::setDoubleSided(const bool state) {

@@ -134,6 +134,7 @@ class Object3D : public SceneNode {
     bool computeTriangleList(bool force = false);
 
     static vector<SceneGraphNode*> filterByType(const vector<SceneGraphNode*>& nodes, ObjectType filter);
+    static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
 
    protected:
     void rebuild();

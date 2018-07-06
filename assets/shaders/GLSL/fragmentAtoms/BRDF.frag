@@ -44,10 +44,6 @@ uint GetNumLightsInThisTile(uint nTileIndex)
     return nNumLightsInThisTile;
 }
 
-bool isReflective(float specularCoeff) {
-    return specularCoeff > 0.75 && dvd_lodLevel < 1;
-}
-
 vec4 getPixelColour(const in vec2 texCoord) {
     //Occlusion culling visibility debug code
 #if defined(USE_HIZ_CULLING) && defined(DEBUG_HIZ_CULLING)
@@ -100,14 +96,16 @@ vec4 getPixelColour(const in vec2 texCoord) {
         vec3 colour = mix(getEmissive(), lightColour, DIST_TO_ZERO(length(lightColour)));
 #endif
 
-    if (isReflective(reflectionCoeff)) {
-        vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
-        reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
-        /*colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
-                    colour,
-                    vec3(reflectionCoeff));*/
+#if defined(IS_REFLECTIVE)
+        if (dvd_lodLevel < 1) {
+            vec3 reflectDirection = reflect(normalize(VAR._vertexWV.xyz), processedNormal);
+            reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0));
+            /*colour = mix(texture(texEnvironmentCube, vec4(reflectDirection, dvd_reflectionIndex)).rgb,
+                        colour,
+                        vec3(reflectionCoeff));*/
+        }
 
-    }
+#endif
 
     colour *= mix(mix(1.0, 2.0, dvd_isHighlighted), 3.0, dvd_isSelected);
     // Apply shadowing

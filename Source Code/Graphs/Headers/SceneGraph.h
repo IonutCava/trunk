@@ -113,13 +113,14 @@ class SceneGraph : private NonCopyable,
     // If this function returns true, nodes of the specified type were successfully removed (or queued for removal)
     bool removeNodesByType(SceneNodeType nodeType);
 
+    const vectorEASTL<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
+
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
     void onNetworkSend(U32 frameCount);
 
     void postLoad();
 
-    const vector<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
     ECSManager& GetECSManager() { return *_ecsManager; }
     const ECSManager& GetECSManager() const { return *_ecsManager; }
@@ -155,7 +156,7 @@ class SceneGraph : private NonCopyable,
     vector<SceneGraphNode*> _allNodes;
     vector<SceneGraphNode*> _orderedNodeList;
 
-    std::array<vector<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
+    std::array<vectorEASTL<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 
     mutable SharedLock _pendingDeletionLock;
     hashMap<SceneGraphNode*, vector<vec_size>> _pendingDeletion;
