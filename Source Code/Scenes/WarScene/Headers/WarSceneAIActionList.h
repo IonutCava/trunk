@@ -15,15 +15,31 @@
    along with DIVIDE Framework.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _DIVIDE_SCENE_LIST_H_
-#define _DIVIDE_SCENE_LIST_H_
+#ifndef _WAR_SCENE_AI_ACTION_LIST_H_
+#define _WAR_SCENE_AI_ACTION_LIST_H_
+#include "AI/ActionInterface/Headers/ActionList.h"
 
-#include "Scenes/MainScene/Headers/MainScene.h"
-#include "Scenes/CubeScene/Headers/CubeScene.h"
-#include "Scenes/NetworkScene/Headers/NetworkScene.h"
-#include "Scenes/PingPongScene/Headers/PingPongScene.h"
-#include "Scenes/FlashScene/Headers/FlashScene.h"
-#include "Scenes/AITenisScene/Headers/AITenisScene.h"
-#include "Scenes/PhysXScene/Headers/PhysXScene.h"
-#include "Scenes/WarScene/Headers/WarScene.h"
+enum AI_MSG{
+	REQUEST_DISTANCE_TO_TARGET = 0,
+	RECEIVE_DISTANCE_TO_TARGET = 1,
+};
+
+class WarSceneAIActionList : public ActionList{
+
+public:
+	WarSceneAIActionList();
+	void processData();
+	void processInput();
+	void update(SceneGraphNode* node = NULL, NPC* unitRef = NULL);
+	void addEntityRef(AIEntity* entity);
+	void processMessage(AIEntity* sender, AI_MSG msg,const boost::any& msg_content);
+
+private:
+	void updatePositions();
+
+private:
+	SceneGraphNode* _node;
+	U16 _tickCount;
+};
+
 #endif

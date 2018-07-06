@@ -12,7 +12,7 @@ void main(void){
 	
 	vec4 position = gl_Vertex ;
 	vec4 normal = vec4(normalize(gl_NormalMatrix * gl_Normal),0);
-	//applyBoneTransforms(position,normal);
+	applyBoneTransforms(position,normal);
 	//Compute the final vert position
 	gl_Position = gl_ModelViewProjectionMatrix * position;
 	

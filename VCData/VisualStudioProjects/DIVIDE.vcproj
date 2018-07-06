@@ -968,6 +968,30 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="WarScene"
+				>
+				<File
+					RelativePath="..\..\Source Code\Scenes\WarScene\WarScene.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Hardware"

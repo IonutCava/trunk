@@ -2,8 +2,8 @@
 #include "Core/Math/Headers/Quaternion.h"
 #include "Hardware/Video/GFXDevice.h"
 #include <assimp/scene.h>
-
-void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in){// there is some type of alignment issue with my mat4 and the aimatrix4x4 class, so the copy must be manually
+/// there is some type of alignment issue with my mat4 and the aimatrix4x4 class, so the copy must be manually
+void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in){
 	//out._11=in.a1;
 	//out._12=in.a2;
 	//out._13=in.a3;
@@ -31,7 +31,7 @@ void TransformMatrix(mat4<F32>& out,const aiMatrix4x4& in){// there is some type
 }
 
 // ------------------------------------------------------------------------------------------------
-// Constructor on a given animation. 
+/// Constructor on a given animation. 
 AnimationEvaluator::AnimationEvaluator( const aiAnimation* pAnim) {
 	mLastTime = 0.0;
 	TicksPerSecond = static_cast<F32>(pAnim->mTicksPerSecond != 0.0f ? pAnim->mTicksPerSecond : 100.0f);
@@ -146,7 +146,7 @@ void AnimationEvaluator::Load(std::ifstream& file){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Evaluates the animation tracks for a given time stamp. 
+/// Evaluates the animation tracks for a given time stamp. 
 void AnimationEvaluator::Evaluate( F32 pTime, std::map<std::string, Bone*>& bones) {
 
 	pTime *= TicksPerSecond;
@@ -403,7 +403,7 @@ bool AnimationController::SetAnimIndex( I32  pAnimIndex){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Calculates the node transformations for the scene. 
+/// Calculates the node transformations for the scene. 
 void AnimationController::Calculate(F32 pTime){
 	if( (CurrentAnimIndex < 0) | (CurrentAnimIndex >= (I32)Animations.size()) ) return;// invalid animation
 	
@@ -424,7 +424,7 @@ void UQTtoUDQ(vec4<F32>* dual, const Quaternion& q, vec4<F32>& tran ) {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Calculates the bone matrices for the given mesh. 
+/// Calculates the bone matrices for the given mesh. 
 void AnimationController::CalcBoneMatrices(){
 	for( size_t a = 0; a < Transforms.size(); ++a){
 		Transforms[a] =  Bones[a]->_offset * Bones[a]->_globalTransform;
@@ -443,7 +443,7 @@ void AnimationController::CalcBoneMatrices(){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Recursively creates an internal node structure matching the current scene and animation.
+/// Recursively creates an internal node structure matching the current scene and animation.
 Bone* AnimationController::CreateBoneTree( aiNode* pNode, Bone* pParent){
 	Bone* internalNode = New Bone();// create a node
 	internalNode->_name = pNode->mName.data;// get the name of the bone
@@ -466,7 +466,7 @@ Bone* AnimationController::CreateBoneTree( aiNode* pNode, Bone* pParent){
 }
 
 // ------------------------------------------------------------------------------------------------
-// Recursively updates the internal node transformations from the given matrix array
+/// Recursively updates the internal node transformations from the given matrix array
 void AnimationController::UpdateTransforms(Bone* pNode) {
 	CalculateBoneToWorldTransform( pNode);// update global transform as well
 	for_each(Bone* b, pNode->_children){
@@ -476,7 +476,7 @@ void AnimationController::UpdateTransforms(Bone* pNode) {
 }
 
 // ------------------------------------------------------------------------------------------------
-// Calculates the global transformation matrix for the given internal node
+/// Calculates the global transformation matrix for the given internal node
 void AnimationController::CalculateBoneToWorldTransform(Bone* child){
 	child->_globalTransform = child->_localTransform;
 	Bone* parent = child->_parent;

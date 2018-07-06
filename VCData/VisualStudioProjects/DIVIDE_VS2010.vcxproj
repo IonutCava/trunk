@@ -173,6 +173,8 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderStageBuilder.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp" />
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\CRC.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Event.cpp" />
     <ClCompile Include="..\..\Source Code\Utility\Guardian.cpp" />
@@ -289,6 +291,8 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderStageBuilder.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h" />
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\BoundingBox.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h" />
     <ClInclude Include="..\..\Source Code\Utility\Headers\Event.h" />

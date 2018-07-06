@@ -332,6 +332,12 @@
     <Filter Include="Dynamics\WeaponSystem\Weapons\Headers">
       <UniqueIdentifier>{0401b4d0-9646-40f3-aa9c-e287cfae52c5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scenes\WarScene">
+      <UniqueIdentifier>{f839ada1-d29d-4d8e-b5a9-c7d1230eb99e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scenes\WarScene\Headers">
+      <UniqueIdentifier>{cad67937-abca-410d-90d5-b6144e943546}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -655,6 +661,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Geometry\Animations\AnimationController.cpp">
       <Filter>Geometry\Animations</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarScene.cpp">
+      <Filter>Scenes\WarScene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scenes\WarScene\WarSceneAIActionList.cpp">
+      <Filter>Scenes\WarScene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1090,6 +1102,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\Bone.h">
       <Filter>Geometry\Animations\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarScene.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scenes\WarScene\Headers\WarSceneAIActionList.h">
+      <Filter>Scenes\WarScene\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

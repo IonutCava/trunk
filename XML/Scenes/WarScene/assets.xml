@@ -1,0 +1,25 @@
+<geometry>
+	<item>Soldier1</item>
+	<!--<item>Sponza</item>-->
+</geometry>
+
+<primitives>
+	<item>Ground_placeholder</item>
+</primitives>
+
+<Soldier1>
+	<model>models/dwarf.x</model>
+	<scale x="0.03" y="0.03" z="0.03" />
+	<position x="3.5" y="0" z="7.5" />
+	<orientation x="-180" y="0" z="0" />
+	<version>1.0</version>
+</Soldier1>
+
+<Ground_placeholder>
+	<model>Quad3D</model>
+	<scale x="50" y="50" z="50" />
+	<position x="-25" y="0" z="-25" />
+	<orientation x="0" y="0" z="90" />
+	<color r="0.1" g="0.4" b="0.1"/>
+	<version>1.0</version>
+</Ground_placeholder>

@@ -36,6 +36,9 @@ Scene* SceneManager::loadScene(const string& name){
 	}else if(name.compare("PhysXScene") == 0){
 		scene = New PhysXScene();
 		_resDB.insert(make_pair("PhysXScene", scene));
+	}else if(name.compare("WarScene") == 0){
+		scene = New WarScene();
+		_resDB.insert(make_pair("WarScene", scene));
 	}else{
 		scene = NULL;
 	}
