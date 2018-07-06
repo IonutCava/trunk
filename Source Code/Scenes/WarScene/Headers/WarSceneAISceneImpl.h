@@ -39,6 +39,7 @@
 
 #ifndef PRINT_AI_TO_FILE
 #define PRINT_AI_TO_FILE
+#include "Core/Headers/Console.h"
 #endif
 
 namespace Divide {
@@ -236,11 +237,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     AIEntity* getUnitForNode(U32 teamID, std::weak_ptr<SceneGraphNode> node) const;
 
     template <typename... T>
-    inline void PRINT(const char* format, T&&... args) const {
-        #if defined(PRINT_AI_TO_FILE)
-        Console::d_printfn(_WarAIOutputStream, format, std::forward<T>(args)...);
-        #endif
-    }
+    void PRINT(const char* format, T&&... args) const;
 
     bool atHomeBase() const;
     bool nearOwnFlag() const;
@@ -268,6 +265,13 @@ class WarSceneAISceneImpl : public AISceneImpl {
     mutable std::ofstream _WarAIOutputStream;
 #endif
 };
+
+template <typename... T>
+void WarSceneAISceneImpl::PRINT(const char* format, T&&... args) const {
+    #if defined(PRINT_AI_TO_FILE)
+    Console::d_printfn(_WarAIOutputStream, format, std::forward<T>(args)...);
+    #endif
+}
 
 namespace Attorney {
 class WarAISceneWarAction {

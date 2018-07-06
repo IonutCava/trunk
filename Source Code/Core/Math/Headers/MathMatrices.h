@@ -659,7 +659,9 @@ class mat4 {
         this->mat[15] = m15;
     }
 
-    inline void set(T const *m) { memcpy(this->mat, m, sizeof(T) * 16); }
+    inline void set(T const *m) {
+        std::memcpy(this->mat, m, sizeof(T) * 16);
+    }
 
     inline void set(const mat4 &matrix) { this->set(matrix.mat); }
 

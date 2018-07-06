@@ -140,8 +140,13 @@ class NOINITVTABLE SceneNode : public Resource {
 
 namespace Attorney {
 class SceneNodeGraph {
+    friend class SceneGraphNode;
+
    private:
-    static bool hasSGNParent(SceneNode& node) { return node.hasSGNParent(); }
+    static bool hasSGNParent(SceneNode& node) {
+        return false;
+    }
+
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
         node.postLoad(sgn);
     }
@@ -160,8 +165,6 @@ class SceneNodeGraph {
                          SceneGraphNode& sgn, const bool distanceCheck = true) {
         return node.isInView(sceneRenderState, sgn, distanceCheck);
     }
-
-    friend class SceneGraphNode;
 };
 };  // namespace Attorney
 };  // namespace Divide

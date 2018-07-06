@@ -14,13 +14,13 @@ vec4<U32> glUniformBuffer::_currentBindConfig(Config::PRIMITIVE_RESTART_INDEX_L)
 glUniformBuffer::glUniformBuffer(const stringImpl& bufferName, bool unbound,
                                  bool persistentMapped)
     : ShaderBuffer(bufferName, unbound, persistentMapped),
-      _mappedBuffer(nullptr),
       _UBOid(0),
+      _mappedBuffer(nullptr),
+      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER),
       _lockManager(_persistentMapped
                        ? MemoryManager_NEW glBufferLockManager(true)
-                       : nullptr),
+                       : nullptr)
 
-      _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER)
 {
    if (ShaderBuffer::_targetDataAlignment[0] == -1) {
         ShaderBuffer::_targetDataAlignment[0] = ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 256);

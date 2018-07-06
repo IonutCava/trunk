@@ -10,7 +10,7 @@
 
 #include <Samples/PxToolkit/include/PxToolkit.h>
 #include <Samples/PxToolkit/include/PxTkNamespaceMangle.h>
-#include <PsFile.h>
+#include <Source/foundation/include/PsFile.h>
 
 namespace Divide {
 

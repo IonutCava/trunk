@@ -1,3 +1,5 @@
+#if defined(__APPLE_CC__)
+
 #include "Headers/PlatformDefinesApple.h"
 
 #include <SDL_syswm.h>
@@ -42,3 +44,5 @@ namespace Divide {
     }
 
 }; //namespace Divide
+
+#endif //defined(__APPLE_CC__)

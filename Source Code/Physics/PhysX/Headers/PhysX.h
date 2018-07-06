@@ -55,6 +55,8 @@
 namespace Divide {
 
 class Transform;
+class PhysX;
+class PhysXSceneInterface;
 class PhysXActor : public PhysicsAsset {
    public:
     PhysXActor()
@@ -88,7 +90,6 @@ class PxDefaultAllocator : public physx::PxAllocatorCallback {
 };
 
 class SceneGraphNode;
-class PhysXSceneInterface;
 DEFINE_SINGLETON_EXT2_W_SPECIFIER(PhysX, PhysicsAPIWrapper,
                       physx::debugger::comm::PvdConnectionHandler,
                       final)

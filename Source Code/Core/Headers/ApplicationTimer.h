@@ -32,14 +32,14 @@
 #ifndef _CORE_APPLICATION_TIMER_H_
 #define _CORE_APPLICATION_TIMER_H_
 
-#include "Core\Math\Headers\MathHelper.h"
+#include "Core/Math/Headers/MathHelper.h"
 
 // Code from http://www.gamedev.net/reference/articles/article1382.asp
 // Copyright: "Frame Rate Independent Movement" by Ben Dilts
 
 namespace Divide {
 namespace Time {
-
+class ProfileTimer;
 DEFINE_SINGLETON(ApplicationTimer)
   public:
     void init(U8 targetFrameRate);

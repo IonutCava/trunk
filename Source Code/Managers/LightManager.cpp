@@ -115,7 +115,7 @@ bool LightManager::addLight(Light& light) {
         return false;
     }
 
-    vectorAlg::emplace_back(_lights, light.getGUID(), &light);
+    vectorAlg::emplace_back(_lights, &light);
 
     GET_ACTIVE_SCENE().renderState().getCameraMgr().addNewCamera(
         light.getName(), light.shadowCamera());

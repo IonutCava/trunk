@@ -30,7 +30,7 @@ public:
     SkinnedMesh();
     ~SkinnedMesh();
 
-    void sceneUpdate(const U64 deltaTime,SceneGraphNode* const sgn, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     /// Use playAnimations() to toggle animation playback for the current mesh (and all submeshes) on or off
     inline void playAnimation(const bool state)       {_playAnimation = state;}
@@ -39,4 +39,5 @@ public:
 protected:
     bool _playAnimation;
 };
-#endif;
+
+#endif

@@ -66,7 +66,7 @@ class glBufferLockManager : public glLockManager {
     void WaitForLockedRange(size_t _lockBeginBytes, size_t _lockLength);
     void LockRange(size_t _lockBeginBytes, size_t _lockLength);
 
-    inline void glBufferLockManager::WaitForLockedRange() {
+    inline void WaitForLockedRange() {
         if (_lastLockRange != 0)
             WaitForLockedRange(_lastLockOffset, _lastLockRange);
     }

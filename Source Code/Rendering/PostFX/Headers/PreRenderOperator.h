@@ -33,10 +33,13 @@ class NOINITVTABLE PreRenderOperator {
     /// operation to generate the result
     PreRenderOperator(PostFXRenderStage stage, const vec2<U16>& resolution,
                       SamplerDescriptor* const sampler)
-        : _internalSampler(sampler),
-          _stage(stage),
+        : _enabled(false),
+          _genericFlag(false),
           _resolution(resolution),
-          _genericFlag(false) {}
+          _internalSampler(sampler),
+          _stage(stage)
+    {
+    }
 
     virtual ~PreRenderOperator() {}
 

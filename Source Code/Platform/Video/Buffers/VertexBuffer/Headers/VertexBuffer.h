@@ -176,21 +176,19 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                                   : _hardwareIndicesS[index];
     }
 
-    //template<typename T> struct fake_dependency: public std::false_type {};
     template<typename T>
     const vectorImpl<T>& getIndices() const;/* {
-        static_assert(fake_dependency::value,
+        static_assert(false,
                 "VertexBuffer::getIndices error: Need valid index data type!");
     }*/
 
-    inline void addIndex(U32 index) {
-    	assert(usesLargeIndices());
-    	_hardwareIndicesL.push_back(index);
-    }
-
-    inline void addIndex(U16 index) {
-    	assert(!usesLargeIndices());
-    	_hardwareIndicesS.push_back(index);
+    template <typename T>
+    inline void addIndex(T index) {
+        if (usesLargeIndices()) {
+            _hardwareIndicesL.push_back(static_cast<U32>(index));
+        } else {
+            _hardwareIndicesS.push_back(static_cast<U16>(index));
+        }
     }
 
     inline void addRestartIndex() {

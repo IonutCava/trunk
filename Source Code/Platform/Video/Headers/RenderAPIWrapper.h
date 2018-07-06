@@ -257,8 +257,8 @@ class TextureData {
     public:
     TextureData()
         : _textureType(TextureType::TEXTURE_2D),
-          _textureHandle(0),
-          _samplerHash(0)
+          _samplerHash(0),
+          _textureHandle(0)
     {
     }
 

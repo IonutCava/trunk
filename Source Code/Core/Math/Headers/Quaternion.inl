@@ -58,13 +58,13 @@ Quaternion<T>::Quaternion(const mat3<T>& rotationMatrix)
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(const vec3<T>& axis, T angle, bool inDegrees = true)
+Quaternion<T>::Quaternion(const vec3<T>& axis, T angle, bool inDegrees)
 {
     fromAxisAngle(axis, angle, inDegrees);
 }
 
 template <typename T>
-Quaternion<T>::Quaternion(T pitch, T yaw, T roll, bool inDegrees = true)
+Quaternion<T>::Quaternion(T pitch, T yaw, T roll, bool inDegrees)
 {
     fromEuler(pitch, yaw, roll, inDegrees);
 }
@@ -92,7 +92,7 @@ inline T Quaternion<T>::magnituteSq() const {
 
 template <typename T>
 inline bool Quaternion<T>::compare(const Quaternion<T>& rq,
-                                   F32 tolerance = 1e-3f) const {
+                                   F32 tolerance) const {
     T angleRad = Angle::DegreesToRadians((T)std::acos(to_double(dot(rq))));
     F32 toleranceRad = Angle::DegreesToRadians(tolerance);
 
@@ -246,7 +246,7 @@ void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 
 
 template <typename T>
 void Quaternion<T>::fromAxisAngle(const vec3<T>& v, T angle,
-                                  bool inDegrees = true) {
+                                  bool inDegrees) {
     if (inDegrees) {
         angle = Angle::DegreesToRadians(angle);
     }
@@ -258,12 +258,12 @@ void Quaternion<T>::fromAxisAngle(const vec3<T>& v, T angle,
 }
 
 template <typename T>
-inline void Quaternion<T>::fromEuler(const vec3<T>& v, bool inDegrees = true) {
+inline void Quaternion<T>::fromEuler(const vec3<T>& v, bool inDegrees) {
     fromEuler(v.pitch, v.yaw, v.roll, inDegrees);
 }
 
 template <typename T>
-void Quaternion<T>::fromEuler(T pitch, T yaw, T roll, bool inDegrees = true) {
+void Quaternion<T>::fromEuler(T pitch, T yaw, T roll, bool inDegrees) {
     T attitude = pitch;
     T heading = yaw;
     T bank = roll;
@@ -303,7 +303,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
 
     if (fTrace > 0.0) {
         // |w| > 1/2, may as well choose w > 1/2
-        fRoot = (T)std::sqrtf(to_float(fTrace) + 1.0f);  // 2w
+        fRoot = (T)std::sqrt(to_float(fTrace) + 1.0f);  // 2w
         W(0.5f * fRoot);
         fRoot = 0.5f / fRoot;  // 1/(4w)
         X((rotationMatrix.m[2][1] - rotationMatrix.m[1][2]) * fRoot);
@@ -322,7 +322,7 @@ void Quaternion<T>::fromMatrix(const mat3<T>& rotationMatrix) {
         size_t j = s_iNext[i];
         size_t k = s_iNext[j];
 
-        fRoot = static_cast<T>(std::sqrtf(
+        fRoot = static_cast<T>(std::sqrt(
                     to_float(rotationMatrix.m[i][i] - rotationMatrix.m[j][j] -
                              rotationMatrix.m[k][k] + 1.0f)));
         T* apkQuat[3] = {&_elements.x, &_elements.y, &_elements.z};
@@ -369,7 +369,7 @@ void Quaternion<T>::getAxisAngle(vec3<T>* axis, T* angle, bool inDegrees) const 
 }
 
 template <typename T>
-void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees = false) const {
+void Quaternion<T>::getEuler(vec3<T>* euler, bool toDegrees) const {
     T heading = 0, attitude = 0, bank = 0;
     const T& x = X();
     const T& y = Y();
@@ -497,7 +497,7 @@ inline Quaternion<T> RotationFromVToU(
             q.fromAxisAngle(axis, Angle::DegreesToRadians(to_float(M_PI)));
         }
     } else {
-        F32 s = std::sqrtf((1 + d) * 2);
+        F32 s = std::sqrt((1 + d) * 2);
         F32 invs = 1 / s;
 
         vec3<T> c(Cross(v0, v1) * invs);

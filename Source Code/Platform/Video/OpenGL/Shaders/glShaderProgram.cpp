@@ -263,7 +263,7 @@ void glShaderProgram::link() {
         // This isn't as optimised as it should/could be, but it works
         vectorImpl<const char*> vars;
         for (U32 i = 0; i < _outputCount; ++i) {
-            vars.push_back(_strdup(("outData" + std::to_string(i)).c_str()));
+            vars.push_back(strdup(("outData" + std::to_string(i)).c_str()));
         }
         // Only separate attributes are supported for now. Interleaved not top
         // prio

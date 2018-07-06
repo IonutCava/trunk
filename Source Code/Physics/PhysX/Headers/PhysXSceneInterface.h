@@ -40,6 +40,7 @@ namespace Divide {
 
 class Scene;
 class Transform;
+
 class PhysXSceneInterface : public PhysicsSceneInterface {
     typedef boost::lockfree::spsc_queue<
         PhysXActor*, boost::lockfree::capacity<128> > LoadQueue;
@@ -79,4 +80,4 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
 
 };  // namespace Divide
 
-#endif
+#endif //_PHYSX_SCENE_INTERFACE_H_

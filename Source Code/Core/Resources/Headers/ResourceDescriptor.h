@@ -47,7 +47,9 @@ class NOINITVTABLE PropertyDescriptor {
     };
 
     explicit PropertyDescriptor(const DescriptorType& type) : _type(type) {}
-
+    virtual ~PropertyDescriptor()
+    {
+    }
    protected:
     friend class ResourceDescriptor;
     /// Initialize descriptor values to their safe defaults

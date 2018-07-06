@@ -70,8 +70,6 @@ struct aiScene;
 struct aiMesh;
 struct aiMaterial;
 struct aiNode;
-enum aiTextureOp;
-enum aiTextureMapMode;
 
 namespace Assimp {
 class Importer;

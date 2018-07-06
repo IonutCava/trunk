@@ -73,3 +73,4 @@ void CRC32::Hash(const void* buf, size_t siz) {
 }
 };  // namespace Util
 };  // namespace Divide
+

@@ -159,7 +159,6 @@ bool WarScene::addUnits() {
         goapPackage._goalList.push_back(recoverOwnFlag);
     }
 
-    GOAPPackage& animalPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::ANIMAL)];
     GOAPPackage& lightPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::LIGHT)];
     GOAPPackage& heavyPackage = goapPackages[to_uint(WarSceneAISceneImpl::AIType::HEAVY)];
 

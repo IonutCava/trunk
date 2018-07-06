@@ -1,5 +1,4 @@
 #include "Headers/ResourceCache.h"
-#include "Headers/HardwareResource.h"
 #include "Core/Headers/ParamHandler.h"
 
 #include "Geometry/Importer/Headers/DVDConverter.h"

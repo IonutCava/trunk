@@ -71,6 +71,11 @@
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
+			<name>Networking</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Physics</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -197,6 +202,11 @@
 		</link>
 		<link>
 			<name>Core/Resources</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -346,12 +356,22 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Graphs/SceneNodeRenderState.cpp</locationURI>
 		</link>
 		<link>
-			<name>Libs/includes</name>
+			<name>Libs/CPPGoap</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src</name>
+			<name>Libs/GLIM</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -389,6 +409,31 @@
 			<name>Managers/SceneManager.cpp</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Managers/SceneManager.cpp</locationURI>
+		</link>
+		<link>
+			<name>Networking/ASIO.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/ASIO.cpp</locationURI>
+		</link>
+		<link>
+			<name>Networking/ByteBuffer.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/ByteBuffer.cpp</locationURI>
+		</link>
+		<link>
+			<name>Networking/Client.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Client.cpp</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Networking/tcp_session_tpl.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/tcp_session_tpl.cpp</locationURI>
 		</link>
 		<link>
 			<name>Physics/Headers</name>
@@ -806,6 +851,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/Resources/ResourceDescriptor.cpp</locationURI>
 		</link>
 		<link>
+			<name>Core/TemplateLibraries/Headers</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
 			<name>Dynamics/Entities/Headers</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
@@ -1106,29 +1156,234 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Graphs/Headers/SpatialGraph.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/includes/DivideNetworking</name>
+			<name>Libs/CPPGoap/Action.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Action.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/Action.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Action.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/LICENSE</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/LICENSE</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/Node.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Node.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/Node.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Node.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/Planner.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Planner.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/Planner.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/Planner.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/README.md</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/WorldState.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/WorldState.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/CPPGoap/WorldState.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/CPPGoap/WorldState.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/Declarations.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/Declarations.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/Readme.txt</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/Readme.txt</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/Stuff.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/Stuff.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glim.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glim.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimBatch.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimBatch.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimBatch.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimBatch.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimBatchAttributes.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimBatchAttributes.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimBatchData.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimBatchData.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimBatchData.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimBatchData.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimD3D11.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimD3D11.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/GLIM/glimInterface.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/GLIM/glimInterface.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/CPPGoap</name>
+			<name>Libs/ReCast/Detour</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/DivideNetworking</name>
+			<name>Libs/ReCast/DetourCrowd</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/GLIM</name>
+			<name>Libs/ReCast/DetourTileCache</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast</name>
+			<name>Libs/ReCast/README.md</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/README.md</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/RECAST-License.txt</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RECAST-License.txt</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/RecastContrib</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Engine.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Engine.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Engine_d.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Engine_d.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Engine_p.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Engine_p.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Engine_p.lib.lastcodeanalysissucceeded</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Engine_p.lib.lastcodeanalysissucceeded</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Game_p.lib.lastcodeanalysissucceeded</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Game_p.lib.lastcodeanalysissucceeded</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Networking.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Networking.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Networking_d.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Networking_d.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Networking_p.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Networking_p.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Networking_p.lib.lastcodeanalysissucceeded</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Networking_p.lib.lastcodeanalysissucceeded</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Platform.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Platform.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Platform_d.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Platform_d.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Platform_p.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Platform_p.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-Platform_p.lib.lastcodeanalysissucceeded</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-Platform_p.lib.lastcodeanalysissucceeded</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-ReCast.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-ReCast.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-ReCast_d.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-ReCast_d.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-ReCast_p.lib</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-ReCast_p.lib</locationURI>
+		</link>
+		<link>
+			<name>Libs/lib/Divide-ReCast_p.lib.lastcodeanalysissucceeded</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/lib/Divide-ReCast_p.lib.lastcodeanalysissucceeded</locationURI>
 		</link>
 		<link>
 			<name>Managers/Headers/AIManager.h</name>
@@ -1159,6 +1414,41 @@
 			<name>Managers/Headers/SceneManager.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Managers/Headers/SceneManager.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/ASIO.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/ASIO.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/ByteBuffer.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/ByteBuffer.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/ByteConverter.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/ByteConverter.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/Client.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/Client.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/OPCodesTpl.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/OPCodesTpl.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/WorldPacket.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/WorldPacket.h</locationURI>
+		</link>
+		<link>
+			<name>Networking/Headers/tcp_session_tpl.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Networking/Headers/tcp_session_tpl.h</locationURI>
 		</link>
 		<link>
 			<name>Physics/Headers/PXDevice.h</name>
@@ -1701,11 +1991,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/GUIDWrapper.h</locationURI>
 		</link>
 		<link>
-			<name>Utility/Headers/HashMap.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/HashMap.h</locationURI>
-		</link>
-		<link>
 			<name>Utility/Headers/ImageTools.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/ImageTools.h</locationURI>
@@ -1726,19 +2011,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/StateTracker.h</locationURI>
 		</link>
 		<link>
-			<name>Utility/Headers/String.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/String.h</locationURI>
-		</link>
-		<link>
 			<name>Utility/Headers/TextLabel.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/TextLabel.h</locationURI>
-		</link>
-		<link>
-			<name>Utility/Headers/Vector.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Utility/Headers/Vector.h</locationURI>
 		</link>
 		<link>
 			<name>Utility/Headers/XMLParser.h</name>
@@ -2026,6 +2301,61 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/Resources/Headers/ResourceLoader.h</locationURI>
 		</link>
 		<link>
+			<name>Core/TemplateLibraries/Headers/BoostHashMap.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/BoostHashMap.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/BoostVector.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/BoostVector.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/EASTLHashMap.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/EASTLHashMap.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/EASTLString.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/EASTLString.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/EASTLVector.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/EASTLVector.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/HashMap.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/HashMap.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/STLHashMap.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/STLHashMap.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/STLString.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/STLString.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/STLVector.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/STLVector.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/String.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/String.h</locationURI>
+		</link>
+		<link>
+			<name>Core/TemplateLibraries/Headers/Vector.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Core/TemplateLibraries/Headers/Vector.h</locationURI>
+		</link>
+		<link>
 			<name>Dynamics/Entities/Headers/Impostor.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Dynamics/Entities/Headers/Impostor.h</locationURI>
@@ -2281,207 +2611,72 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Graphs/Components/Headers/SGNComponent.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/includes/DivideNetworking/ASIO.h</name>
+			<name>Libs/ReCast/DebugUtils/CMakeLists.txt</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/ASIO.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/CMakeLists.txt</locationURI>
 		</link>
 		<link>
-			<name>Libs/includes/DivideNetworking/ByteBuffer.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/ByteBuffer.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/ByteConverter.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/ByteConverter.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/Client.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/Client.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/OPCodesTpl.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/OPCodesTpl.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/Singleton.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/Singleton.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/WorldPacket.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/WorldPacket.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/includes/DivideNetworking/tcp_session_tpl.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/includes/DivideNetworking/tcp_session_tpl.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Action.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Action.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Action.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Action.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/LICENSE</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/LICENSE</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Node.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Node.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Node.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Node.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Planner.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Planner.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/Planner.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/Planner.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/README.md</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/README.md</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/WorldState.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/WorldState.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/CPPGoap/WorldState.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/CPPGoap/WorldState.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/DivideNetworking/ASIO.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/DivideNetworking/ASIO.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/DivideNetworking/ByteBuffer.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/DivideNetworking/ByteBuffer.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/DivideNetworking/Client.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/DivideNetworking/Client.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/DivideNetworking/tcp_session_tpl.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/DivideNetworking/tcp_session_tpl.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/Declarations.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/Declarations.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/Readme.txt</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/Readme.txt</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/Stuff.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/Stuff.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glim.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glim.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimBatch.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimBatch.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimBatch.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimBatch.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimBatchAttributes.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimBatchAttributes.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimBatchData.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimBatchData.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimBatchData.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimBatchData.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimD3D11.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimD3D11.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/GLIM/glimInterface.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/GLIM/glimInterface.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils</name>
+			<name>Libs/ReCast/DebugUtils/Include</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/Detour</name>
+			<name>Libs/ReCast/DebugUtils/Source</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DetourCrowd</name>
+			<name>Libs/ReCast/Detour/Include</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DetourTileCache</name>
+			<name>Libs/ReCast/Detour/Source</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/README.md</name>
+			<name>Libs/ReCast/DetourCrowd/Include</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourTileCache/CMakeLists.txt</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/README.md</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourTileCache/CMakeLists.txt</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/RECAST-License.txt</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RECAST-License.txt</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast</name>
+			<name>Libs/ReCast/DetourTileCache/Include</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/RecastContrib</name>
+			<name>Libs/ReCast/DetourTileCache/Source</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Include</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/RecastContrib/TileCacheCompressor</name>
+			<type>2</type>
+			<locationURI>virtual:/virtual</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/RecastContrib/fastlz</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
@@ -3351,74 +3546,284 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Geometry/Shapes/Headers/Predefined/Text3D.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DebugUtils/CMakeLists.txt</name>
+			<name>Libs/ReCast/DebugUtils/Include/DebugDraw.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/CMakeLists.txt</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Include/DebugDraw.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DebugUtils/Include</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Source</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourTileCache/CMakeLists.txt</name>
+			<name>Libs/ReCast/DebugUtils/Include/DetourDebugDraw.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourTileCache/CMakeLists.txt</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Include/DetourDebugDraw.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Include</name>
+			<name>Libs/ReCast/DebugUtils/Include/RecastDebugDraw.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Include/RecastDebugDraw.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils/Include/RecastDump.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Include/RecastDump.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils/Source/DebugDraw.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Source/DebugDraw.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils/Source/DetourDebugDraw.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Source/DetourDebugDraw.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils/Source/RecastDebugDraw.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Source/RecastDebugDraw.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DebugUtils/Source/RecastDump.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DebugUtils/Source/RecastDump.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourAlloc.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourAlloc.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourAssert.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourAssert.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourCommon.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourCommon.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourMath.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourMath.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourNavMesh.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourNavMesh.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourNavMeshBuilder.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourNavMeshBuilder.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourNavMeshQuery.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourNavMeshQuery.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourNode.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourNode.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Include/DetourStatus.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Include/DetourStatus.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourAlloc.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourAlloc.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourCommon.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourCommon.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourNavMesh.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourNavMesh.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourNavMeshBuilder.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourNavMeshBuilder.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourNavMeshQuery.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourNavMeshQuery.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/Detour/Source/DetourNode.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/Detour/Source/DetourNode.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourCrowd.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourCrowd.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourLocalBoundary.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourLocalBoundary.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourObstacleAvoidance.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourObstacleAvoidance.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourPathCorridor.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourPathCorridor.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourPathQueue.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourPathQueue.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Include/DetourProximityGrid.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Include/DetourProximityGrid.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourCrowd.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourCrowd.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourLocalBoundary.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourLocalBoundary.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourObstacleAvoidance.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourObstacleAvoidance.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourPathCorridor.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourPathCorridor.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourPathQueue.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourPathQueue.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourCrowd/Source/DetourProximityGrid.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourCrowd/Source/DetourProximityGrid.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourTileCache/Include/DetourTileCache.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourTileCache/Include/DetourTileCache.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourTileCache/Include/DetourTileCacheBuilder.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourTileCache/Include/DetourTileCacheBuilder.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourTileCache/Source/DetourTileCache.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourTileCache/Source/DetourTileCache.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/DetourTileCache/Source/DetourTileCacheBuilder.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/DetourTileCache/Source/DetourTileCacheBuilder.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Include/Recast.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Include/Recast.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Include/RecastAlloc.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Include/RecastAlloc.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Include/RecastAssert.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Include/RecastAssert.h</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/Recast.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/Recast.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastAlloc.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastAlloc.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastArea.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastArea.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastContour.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastContour.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastFilter.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastFilter.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastLayers.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastLayers.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastMesh.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastMesh.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastMeshDetail.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastMeshDetail.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastRasterization.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastRasterization.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/ReCast/Source/RecastRegion.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/ReCast/Source/RecastRegion.cpp</locationURI>
+		</link>
+		<link>
+			<name>Libs/ReCast/RecastContrib/TileCacheCompressor/Headers</name>
 			<type>2</type>
 			<locationURI>virtual:/virtual</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Source</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>Libs/ReCast/RecastContrib/fastlz/README.TXT</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/fastlz/README.TXT</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/ReCast/Include</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>Libs/ReCast/RecastContrib/fastlz/fastlz.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/fastlz/fastlz.c</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/ReCast/Source</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/TileCacheCompressor</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/fastlz</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
+			<name>Libs/ReCast/RecastContrib/fastlz/fastlz.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/fastlz/fastlz.h</locationURI>
 		</link>
 		<link>
 			<name>Physics/PhysX/Actors/Headers/pxShapeScaling.h</name>
@@ -3811,284 +4216,14 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleVelocityColorUpdater.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DebugUtils/Include/DebugDraw.h</name>
+			<name>Libs/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheCompressor.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Include/DebugDraw.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheCompressor.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/DebugUtils/Include/DetourDebugDraw.h</name>
+			<name>Libs/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Include/DetourDebugDraw.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Include/RecastDebugDraw.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Include/RecastDebugDraw.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Include/RecastDump.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Include/RecastDump.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Source/DebugDraw.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Source/DebugDraw.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Source/DetourDebugDraw.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Source/DetourDebugDraw.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Source/RecastDebugDraw.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Source/RecastDebugDraw.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DebugUtils/Source/RecastDump.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DebugUtils/Source/RecastDump.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourAlloc.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourAlloc.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourAssert.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourAssert.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourCommon.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourCommon.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourMath.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourMath.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourNavMesh.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourNavMesh.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourNavMeshBuilder.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourNavMeshBuilder.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourNavMeshQuery.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourNavMeshQuery.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourNode.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourNode.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Include/DetourStatus.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Include/DetourStatus.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourAlloc.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourAlloc.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourCommon.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourCommon.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourNavMesh.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourNavMesh.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourNavMeshBuilder.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourNavMeshBuilder.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourNavMeshQuery.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourNavMeshQuery.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/Detour/Source/DetourNode.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/Detour/Source/DetourNode.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourCrowd.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourCrowd.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourLocalBoundary.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourLocalBoundary.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourObstacleAvoidance.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourObstacleAvoidance.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourPathCorridor.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourPathCorridor.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourPathQueue.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourPathQueue.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Include/DetourProximityGrid.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Include/DetourProximityGrid.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourCrowd.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourCrowd.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourLocalBoundary.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourLocalBoundary.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourObstacleAvoidance.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourObstacleAvoidance.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourPathCorridor.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourPathCorridor.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourPathQueue.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourPathQueue.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourCrowd/Source/DetourProximityGrid.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourCrowd/Source/DetourProximityGrid.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Include/DetourTileCache.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourTileCache/Include/DetourTileCache.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Include/DetourTileCacheBuilder.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourTileCache/Include/DetourTileCacheBuilder.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Source/DetourTileCache.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourTileCache/Source/DetourTileCache.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/DetourTileCache/Source/DetourTileCacheBuilder.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/DetourTileCache/Source/DetourTileCacheBuilder.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Include/Recast.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Include/Recast.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Include/RecastAlloc.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Include/RecastAlloc.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Include/RecastAssert.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Include/RecastAssert.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/Recast.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/Recast.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastAlloc.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastAlloc.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastArea.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastArea.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastContour.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastContour.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastFilter.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastFilter.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastLayers.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastLayers.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastMesh.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastMesh.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastMeshDetail.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastMeshDetail.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastRasterization.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastRasterization.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/ReCast/Source/RecastRegion.cpp</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/ReCast/Source/RecastRegion.cpp</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/TileCacheCompressor/Headers</name>
-			<type>2</type>
-			<locationURI>virtual:/virtual</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/fastlz/README.TXT</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RecastContrib/fastlz/README.TXT</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/fastlz/fastlz.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RecastContrib/fastlz/fastlz.c</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/fastlz/fastlz.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RecastContrib/fastlz/fastlz.h</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h</locationURI>
 		</link>
 		<link>
 			<name>Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h</name>
@@ -4281,16 +4416,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Platform/Video/OpenGL/glsw/Headers/glsw.h</locationURI>
 		</link>
 		<link>
-			<name>Libs/src/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheCompressor.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheCompressor.h</locationURI>
-		</link>
-		<link>
-			<name>Libs/src/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Libs/src/ReCast/RecastContrib/TileCacheCompressor/Headers/DivideTileCacheUtil.h</locationURI>
-		</link>
-		<link>
 			<name>Platform/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Platform/Video/Direct3D/Buffers/Framebuffer/Headers/d3dRenderTarget.h</locationURI>
@@ -4341,4 +4466,10 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Source%20Code/Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>EngineLibraries</name>
+			<value>file:/home/ionut/Custom/Divide/Libraries</value>
+		</variable>
+	</variableList>
 </projectDescription>

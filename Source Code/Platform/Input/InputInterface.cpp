@@ -172,12 +172,6 @@ void InputInterface::terminate() {
     }
 
     MemoryManager::DELETE(_pEventHdlr);
-
-#if defined OIS_LINUX_PLATFORM
-    // Be nice to X and clean up the x window
-    XDestroyWindow(_pXDisp, _xWin);
-    XCloseDisplay(_pXDisp);
-#endif
 }
 
 };  // namespace Input

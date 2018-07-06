@@ -33,11 +33,11 @@
 #define RESOURCE_LOADER_H_
 
 #include "ResourceDescriptor.h"
+#include "HardwareResource.h"
 
 namespace Divide {
 
 class Resource;
-class HardwareResource;
 class NOINITVTABLE ResourceLoader : private NonCopyable {
    public:
     ResourceLoader(const ResourceDescriptor& descriptor)

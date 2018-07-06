@@ -1,3 +1,5 @@
+#if defined(_UNIX)
+
 #include "Headers/PlatformDefinesUnix.h"
 
 #include <SDL_syswm.h>
@@ -36,3 +38,5 @@ namespace Divide {
     }
 
 }; //namespace Divide
+
+#endif //defined(_UNIX)

@@ -142,7 +142,7 @@ class AITeam : public GUIDWrapper {
             });
     }
 
-    inline vectorImpl<U32>::iterator AITeam::findEnemyTeamEntry(U32 enemyTeamID) {
+    inline vectorImpl<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
         return vectorAlg::find_if(
             std::begin(_enemyTeams), std::end(_enemyTeams),
             [&enemyTeamID](U32 id) -> bool { return id == enemyTeamID; });

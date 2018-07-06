@@ -181,26 +181,26 @@ void RenderStateBlock::clean() {
     _cachedHash = 0;
     Util::Hash_combine(_cachedHash, _colorWrite.i);
     Util::Hash_combine(_cachedHash, _blendEnable);
-    Util::Hash_combine(_cachedHash, _blendSrc);
-    Util::Hash_combine(_cachedHash, _blendDest);
-    Util::Hash_combine(_cachedHash, _blendOp);
+    Util::Hash_combine(_cachedHash, to_uint(_blendSrc));
+    Util::Hash_combine(_cachedHash, to_uint(_blendDest));
+    Util::Hash_combine(_cachedHash, to_uint(_blendOp));
     Util::Hash_combine(_cachedHash, lineWidth);
-    Util::Hash_combine(_cachedHash, _cullMode);
+    Util::Hash_combine(_cachedHash, to_uint(_cullMode));
     Util::Hash_combine(_cachedHash, _cullEnabled);
     Util::Hash_combine(_cachedHash, _zEnable);
     Util::Hash_combine(_cachedHash, _zWriteEnable);
-    Util::Hash_combine(_cachedHash, _zFunc);
+    Util::Hash_combine(_cachedHash, to_uint(_zFunc));
     Util::Hash_combine(_cachedHash, zBias);
     Util::Hash_combine(_cachedHash, zUnits);
     Util::Hash_combine(_cachedHash, _stencilEnable);
     Util::Hash_combine(_cachedHash, _stencilRef);
     Util::Hash_combine(_cachedHash, _stencilMask);
     Util::Hash_combine(_cachedHash, _stencilWriteMask);
-    Util::Hash_combine(_cachedHash, _stencilFailOp);
-    Util::Hash_combine(_cachedHash, _stencilZFailOp);
-    Util::Hash_combine(_cachedHash, _stencilPassOp);
-    Util::Hash_combine(_cachedHash, _stencilFunc);
-    Util::Hash_combine(_cachedHash, _fillMode);
+    Util::Hash_combine(_cachedHash, to_uint(_stencilFailOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilZFailOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilPassOp));
+    Util::Hash_combine(_cachedHash, to_uint(_stencilFunc));
+    Util::Hash_combine(_cachedHash, to_uint(_fillMode));
 
     if (previousCache != _cachedHash) {
         Attorney::GFXDeviceRenderStateBlock::registerStateBlock(GFX_DEVICE, *this);

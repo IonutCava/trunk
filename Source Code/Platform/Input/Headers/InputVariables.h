@@ -81,7 +81,12 @@ class LimitedVariable : public Variable {
 
    public:
     LimitedVariable(D32 dInitValue, D32 dMinValue, D32 dMaxValue)
-        : _dMinValue(dMinValue), _dMaxValue(dMaxValue), Variable(dInitValue) {}
+        : Variable(dInitValue),
+          _dMinValue(dMinValue),
+          _dMaxValue(dMaxValue)
+   {
+
+   }
 
     virtual void setValue(D32 dValue) {
         _dValue = dValue;

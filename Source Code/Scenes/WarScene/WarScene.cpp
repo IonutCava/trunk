@@ -317,7 +317,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     AI::WarSceneAISceneImpl::registerScoreCallback([&](U8 teamID) {
         registerPoint(teamID);
     });
-
+    /*
 #ifdef _DEBUG
     const U32 particleCount = 200;
 #else
@@ -326,7 +326,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     const F32 emitRate = particleCount / 4;
 
-    /*ParticleData particles(
+    ParticleData particles(
         particleCount,
         to_uint(ParticleData::Properties::PROPERTIES_POS) |
         to_uint(ParticleData::Properties::PROPERTIES_VEL) |

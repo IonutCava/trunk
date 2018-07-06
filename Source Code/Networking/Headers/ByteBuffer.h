@@ -30,10 +30,11 @@
 namespace Divide {
 
 namespace Networking {
+template <typename T>
 class vector3 {
    public:
-    vector3(F32 x, F32 y, F32 z) : _x(x), _y(y), _z(z) {}
-    F32 _x, _y, _z;
+    explicit vector3(T x, T y, T z) : _x(x), _y(y), _z(z) {}
+    T _x, _y, _z;
 };
 };
 
@@ -407,18 +408,18 @@ class ByteBuffer {
 };
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3 const &v) {
-    b << v.x;
-    b << v.y;
-    b << v.z;
+inline ByteBuffer &operator<<(ByteBuffer &b, Networking::vector3<T> const &v) {
+    b << v._x;
+    b << v._y;
+    b << v._z;
     return b;
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, Networking::vector3 &v) {
-    b >> v.x;
-    b >> v.y;
-    b >> v.z;
+inline ByteBuffer &operator>>(ByteBuffer &b, Networking::vector3<T> &v) {
+    b >> v._x;
+    b >> v._y;
+    b >> v._z;
     return b;
 }
 
@@ -469,7 +470,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
 template <typename K, typename V>
 inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
     b << to_uint(m.size());
-    for (std::map<K, V>::value_type i : m) {
+    for (typename std::map<K, V>::value_type i : m) {
         b << i.first;
         b << i.second;
     }

@@ -7,15 +7,15 @@ namespace Divide {
 
 Framebuffer::Framebuffer(bool multiSampled)
     : GUIDWrapper(),
-      _multisampled(multiSampled),
-      _framebufferHandle(0),
-      _width(0),
-      _height(0),
+      _shouldRebuild(true),
+      _layeredRendering(false),
+      _clearBuffersState(true),
       _useDepthBuffer(false),
       _disableColorWrites(false),
-      _clearBuffersState(true),
-      _layeredRendering(false),
-      _shouldRebuild(true)
+      _multisampled(multiSampled),
+      _width(0),
+      _height(0),
+      _framebufferHandle(0)
 {
     _clearColor.set(DefaultColors::WHITE());
     for (U8 i = 0; i < to_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {

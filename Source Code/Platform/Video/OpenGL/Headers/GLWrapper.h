@@ -322,7 +322,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// Did we resize the window via an OS call?
     bool _externalResizeEvent;
     /// Current state of all available clipping planes
-    bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
+    std::array<bool, Config::MAX_CLIP_PLANES> _activeClipPlanes;
     /// Performance counters: front x 2 and back x 2
     static const GLint PERFORMANCE_COUNTER_BUFFERS = 4;
     /// Number of queries
@@ -333,7 +333,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     GLuint _queryBackBuffer;
     /// Current query ID used for reading from
     GLuint _queryFrontBuffer;
-    /// Duration in nanoseconds to render a frane
+    /// Duration in nanoseconds to render a frame
     GLuint64 FRAME_DURATION_GPU;
     /// FontStash's context
     FONScontext* _fonsContext;

@@ -1,7 +1,7 @@
 #include "Headers/SFXDevice.h"
 
 #include "Platform/Audio/fmod/Headers/FmodWrapper.h"
-#include "Platform/Audio/SDL_mixer/Headers/SDLWrapper.h"
+#include "Platform/Audio/sdl_mixer/Headers/SDLWrapper.h"
 #include "Platform/Audio/openAl/Headers/ALWrapper.h"
 
 #include "Core/Headers/Console.h"

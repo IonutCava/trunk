@@ -1,3 +1,5 @@
+#if defined(_WIN32)
+
 #include "Headers/PlatformDefines.h"
 
 // We are actually importing GL specific libraries in code mainly for
@@ -85,6 +87,11 @@ void* malloc_aligned(const size_t size, size_t alignment) {
 void  malloc_free(void*& ptr) {
 	_aligned_free(ptr);
 }
+
+LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    return FALSE;
+}
+
 namespace Divide {
     void getWindowHandle(void* window, SysInfo& info) {
         SDL_SysWMinfo wmInfo;
@@ -113,3 +120,5 @@ namespace Divide {
     }
 
 }; //namespace Divide
+
+#endif //defined(_WIN32)

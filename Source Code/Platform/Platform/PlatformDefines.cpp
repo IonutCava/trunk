@@ -60,7 +60,7 @@ void* operator new(size_t size) {
     return ptr;
 }
 
-void operator delete(void* ptr) {
+void operator delete(void* ptr) noexcept {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }
@@ -72,7 +72,7 @@ void* operator new[](size_t size) {
     return ptr;
 }
 
-void operator delete[](void* ptr) {
+void operator delete[](void* ptr) noexcept {
     Divide::MemoryManager::log_delete(ptr);
     free(ptr);
 }

@@ -89,8 +89,8 @@ DEFINE_SINGLETON(InputInterface)
         : _pInputInterface(nullptr),
           _pEventHdlr(nullptr),
           _pKeyboard(nullptr),
-          _pJoystickInterface(nullptr),
           _pMouse(nullptr),
+          _pJoystickInterface(nullptr),
           _pEffectMgr(nullptr),
           _bMustStop(false),
           _bIsInitialized(false)

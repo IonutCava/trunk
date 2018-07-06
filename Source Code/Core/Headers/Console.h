@@ -34,7 +34,7 @@
 
 #include "Core/Headers/NonCopyable.h"
 
-#include <boost/thread/mutex.hpp>
+#include <mutex>
 #include <functional>
 #include <atomic>
 #include <fstream>
@@ -108,7 +108,7 @@ class Console : private NonCopyable {
 
    private:
     static std::atomic<int> _bufferEntryCount;
-    static boost::mutex io_mutex;
+    static std::mutex io_mutex;
     static consolePrintCallback _guiConsoleCallback;
     static bool _timestamps;
 };

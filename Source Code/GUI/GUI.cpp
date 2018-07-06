@@ -357,7 +357,7 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title,
 
 GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
-                      char* format, ...) {
+                      const char* format, ...) {
 
     const vec2<U16>& displaySize
         = Application::getInstance().getWindowManager().getWindowDimensions();

@@ -131,7 +131,7 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
         } break;
         case RenderingOrder::List::COUNT: {
             Console::errorfn(Locale::get("ERROR_INVALID_RENDER_BIN_SORT_ORDER"),
-                             renderBinTypeToNameMap[to_uint(_rbType)]);
+                             renderBinTypeToNameMap[to_uint(_rbType)].c_str());
         } break;
     };
 

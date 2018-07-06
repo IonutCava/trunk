@@ -8,18 +8,19 @@ namespace Divide {
 
 glGenericVertexData::glGenericVertexData(bool persistentMapped)
     : GenericVertexData(persistentMapped),
-      _prevResult(nullptr),
       _bufferSet(nullptr),
       _bufferPersistent(nullptr),
-      _bufferPersistentData(nullptr),
       _elementCount(nullptr),
-      _elementSize(nullptr),
       _sizeFactor(nullptr),
-      _startDestOffset(nullptr),
       _readOffset(nullptr),
+      _elementSize(nullptr),
+      _bufferPersistentData(nullptr),
+      _prevResult(nullptr),
+      _startDestOffset(nullptr),
       _lockManager(_persistentMapped
                        ? MemoryManager_NEW glBufferLockManager(true)
-                       : nullptr) {
+                       : nullptr)
+{
     _numQueries = 0;
     _indexBuffer = 0;
     _currentReadQuery = 0;

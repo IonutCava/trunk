@@ -111,9 +111,5 @@ void periodVariableApplier(MapVariables &mapVars, OIS::Effect *pEffect) {
     pPeriodForce->period = to_uint(dPeriod);
 }
 
-LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-    return FALSE;
-}
-
 };  // namespace Input
 };  // namespace Divide

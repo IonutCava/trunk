@@ -8,13 +8,15 @@ namespace Divide {
 class SceneNodeRenderState {
    public:
     SceneNodeRenderState()
-        : _drawState(true),
+        : _hasWaterReflection(true),
+          _isVisible(true),
+          _drawState(true),
           _noDefaultMaterial(false),
           _exclusionMask(0),
           _depthStateBlockHash(0),
-          _shadowStateBlockHash(0),
-          _isVisible(true),
-          _hasWaterReflection(true) {}
+          _shadowStateBlockHash(0)
+    {
+    }
 
     ~SceneNodeRenderState();
 

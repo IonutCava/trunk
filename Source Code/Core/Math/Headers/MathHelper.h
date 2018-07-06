@@ -40,10 +40,10 @@
 #define _CORE_MATH_MATH_HELPER_H_
 
 #include "Platform/Platform/Headers/PlatformDefines.h"
-#include <boost/thread/tss.hpp>
 
 #include <sstream>
 #include <cctype>
+#include <cstring>
 
 namespace Divide {
 

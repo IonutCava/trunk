@@ -408,9 +408,9 @@ Divide::I32 Vsnprintf8(char* pDestination, size_t n, const char* pFormat,
 #define MemoryManager_NEW new
 #else
 void* operator new(size_t size);
-void operator delete(void* p);
+void operator delete(void* p) noexcept;
 void* operator new[](size_t size);
-void operator delete[](void* p);
+void operator delete[](void* p) noexcept;
 
 void* operator new(size_t size, const char* zFile, Divide::I32 nLine);
 void operator delete(void* ptr, const char* zFile, Divide::I32 nLine);

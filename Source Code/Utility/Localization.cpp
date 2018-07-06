@@ -53,7 +53,7 @@ void changeLanguage(const stringImpl& newLanguage) {
     clear();
 }
 
-char* get(const stringImpl& key, const stringImpl& defaultValue) {
+const char* get(const stringImpl& key, const stringImpl& defaultValue) {
     assert(g_initialized == true &&
            "Locale::get error: Get() called without initializing the language "
            "subsytem");
@@ -61,7 +61,7 @@ char* get(const stringImpl& key, const stringImpl& defaultValue) {
     // first
     if (g_languageTable.find(key) != std::end(g_languageTable)) {
         // Usually, the entire language table is loaded.
-        return const_cast<char*>(g_languageTable[key].c_str());
+        return g_languageTable[key].c_str();
     }
 
     g_languageTable[key] = defaultValue;

@@ -32,7 +32,7 @@
 #ifndef _PLATFORM_DEFINES_UNIX_H_
 #define _PLATFORM_DEFINES_UNIX_H_
 
-//#pragma GCC diagnostic ignored "-Wall"
+#define _UNIX
 
 #ifndef NOINITVTABLE
 #define NOINITVTABLE
@@ -53,6 +53,14 @@
 #ifdef None
 #undef None
 #endif //None
+
+#ifdef True
+#undef True
+#endif //True
+
+#ifdef False
+#undef False
+#endif //False
 
 #ifdef Success
 #undef Success
@@ -76,10 +84,13 @@ namespace Divide {
 typedef timeval TimeValue;
 }; //namespace Divide
 
-
 template<typename T>
 inline bool isfinite(T val) {
 	return std::isfinite(val);
+}
+
+inline int vsnprintf_s(char * s, unsigned long maxlen, const char * format, va_list arg) {
+    return vsnprintf(s, maxlen, format, arg);
 }
 
 // HACK FOR MISSING C++1y features:

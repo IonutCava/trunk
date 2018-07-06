@@ -53,6 +53,7 @@ class SceneGraphNode;
 class PhysicsSceneInterface;
 typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
 
+class PhysicsComponent;
 class PhysicsAsset {
     friend class PhysicsComponent;
 

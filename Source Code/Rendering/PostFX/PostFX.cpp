@@ -15,18 +15,28 @@
 namespace Divide {
 
 PostFX::PostFX()
-    : _underwaterTexture(nullptr),
-      _anaglyphShader(nullptr),
-      _postProcessingShader(nullptr),
-      _noise(nullptr),
-      _screenBorder(nullptr),
+    : _enableBloom(false),
+      _enableDOF(false),
+      _enableNoise(false),
+      _enableVignette(false),
+      _enableSSAO(false),
+      _enableFXAA(false),
+      _underwater(false),
+      _depthPreview(false),
       _bloomFB(nullptr),
+      _bloomOP(nullptr),
       _SSAO_FB(nullptr),
       _fxaaOP(nullptr),
       _dofOP(nullptr),
-      _bloomOP(nullptr),
-      _underwater(false),
-      _depthPreview(false),
+      _screenBorder(nullptr),
+      _noise(nullptr),
+      _randomNoiseCoefficient(0.0f),
+      _randomFlashCoefficient(0.0f),
+      _timer(0.0),
+      _tickInterval(1),
+      _anaglyphShader(nullptr),
+      _postProcessingShader(nullptr),
+      _underwaterTexture(nullptr),
       _gfx(nullptr)
 {
     PreRenderStageBuilder::createInstance();
@@ -134,8 +144,6 @@ void PostFX::init(const vec2<U16>& resolution) {
 }
 
 void PostFX::updateOperators() {
-    ParamHandler& par = ParamHandler::getInstance();
-
     PreRenderStageBuilder& stageBuilder = PreRenderStageBuilder::getInstance();
     Framebuffer* screenBuffer = _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN);
     Framebuffer* depthBuffer =  _gfx->getRenderTarget(GFXDevice::RenderTarget::DEPTH);

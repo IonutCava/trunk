@@ -16,17 +16,21 @@
  */
 
 #ifndef _PHYSX_PROCESSOR_H_
-#define _PHYSX_PROCESSPR_H_
+#define _PHYSX_PROCESSOR_H_
 
 #include "Physics/Headers/PXDevice.h"
 #include "Physics/PhysX/Headers/PhysXSceneInterface.h"
 
+namespace Divide {
+
 class PhysXImplementation : public PhysXSceneInterface {
 public:
-	PhysXImplementation(Scene* currentScene);
+    PhysXImplementation(Scene* currentScene);
 	~PhysXImplementation();
 	///This is a dummy class to show a demo implementation
 	///With a class like this you could override any of the idle/process/update and so forth subroutines for the physics interface;
 };
 
-#endif
+}; //namespace Divide
+
+#endif //_PHYSX_PROCESSOR_H_

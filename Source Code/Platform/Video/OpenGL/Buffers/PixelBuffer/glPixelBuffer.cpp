@@ -24,6 +24,8 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const {
             return sizeof(GLshort);
         case GL_INT:
             return sizeof(GLint);
+        default:
+            break;
     };
     return 0;
 }
@@ -133,6 +135,8 @@ bool glPixelBuffer::Create(GLushort width, GLushort height, GLushort depth,
         case GL_INT:
         case GL_UNSIGNED_INT:
             _dataSizeBytes = 4;
+            break;
+        default:
             break;
     }
     _bufferSize *= _dataSizeBytes;

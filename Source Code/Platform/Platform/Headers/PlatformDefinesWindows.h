@@ -73,7 +73,18 @@
 #define WIN32
 #endif
 
+#undef strdup
+#define strdup _strdup
+#endif
+
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
+#ifdef FORCE_HIGHPERFORMANCE_GPU
+extern "C" {
+_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+_declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
 
 namespace Divide {
     struct SysInfo {

@@ -59,8 +59,8 @@ inline const stringImpl& currentLanguage() { return g_localeFile; }
 /// usage: Locale::get("A_B_C") or Locale::get("A_B_C","X") where "A_B_C" is the
 /// language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
-char* get(const stringImpl& key,
-          const stringImpl& defaultValue = stringImpl("String not found!"));
+const char* get(const stringImpl& key,
+               const stringImpl& defaultValue = stringImpl("String not found!"));
 };  // namespace Locale
 };  // namespace Divide
 

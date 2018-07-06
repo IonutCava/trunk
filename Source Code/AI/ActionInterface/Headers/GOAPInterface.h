@@ -34,7 +34,7 @@
 #include "Platform/Platform/Headers/PlatformDefines.h"
 
 #include <CPPGoap/Planner.h>
-#include <CPPGOAP/Action.h>
+#include <CPPGoap/Action.h>
 #include <CPPGoap/WorldState.h>
 
 namespace Divide {

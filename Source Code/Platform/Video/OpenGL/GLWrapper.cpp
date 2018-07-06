@@ -11,7 +11,7 @@
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "GUI/Headers/GUIText.h"
-#include "core/Headers/Application.h"
+#include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -23,7 +23,7 @@
 #include "Text/Headers/glfontstash.h"
 #endif
 
-#include <sdl/include/SDL_video.h>
+#include <SDL_video.h>
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -35,18 +35,20 @@ namespace Divide {
 
 GL_API::GL_API()
     : RenderAPIWrapper(),
-      _prevWidthNode(0),
-      _prevWidthString(0),
+      _crtWindowType(WindowType::COUNT),
       _prevSizeNode(0),
       _prevSizeString(0),
+      _prevWidthNode(0),
+      _prevWidthString(0),
       _lineWidthLimit(1),
       _pointDummyVAO(0),
-      _GUIGLrenderer(nullptr),
-      _fonsContext(nullptr),
       _enableCEGUIRendering(false),
       _internalMoveEvent(false),
       _externalResizeEvent(false),
-      _crtWindowType(WindowType::COUNT)
+      _queryBackBuffer(0),
+      _queryFrontBuffer(0),
+      _fonsContext(nullptr),
+      _GUIGLrenderer(nullptr)
 {
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
@@ -57,10 +59,7 @@ GL_API::GL_API()
         }
     }
     // All clip planes are disabled at first (default OpenGL state)
-    for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index) {
-        _activeClipPlanes[index] = false;
-    }
-
+    _activeClipPlanes.fill(false);
     _fontCache.second = -1;
 }
 

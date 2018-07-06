@@ -140,7 +140,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
             }
         } else {
             Console::errorfn(Locale::get("ERROR_MISSING_TERRAIN"),
-                             _terrainInfoArray[i]->getVariable("terrainName"));
+                             _terrainInfoArray[i]->getVariable("terrainName").c_str());
         }
     }
 

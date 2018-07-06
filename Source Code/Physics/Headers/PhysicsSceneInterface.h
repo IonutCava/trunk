@@ -45,7 +45,7 @@ class NOINITVTABLE PhysicsSceneInterface {
     PhysicsSceneInterface(Scene* parentScene) : _parentScene(parentScene) {}
 
     virtual ~PhysicsSceneInterface() {}
-    /// Pre PHYSICS_DEVICE initialization call
+    /// Pre PHYSICS_DEVICE initialisation call
     virtual bool init() = 0;
     /// Called on interface destruction
     virtual void release() = 0;
