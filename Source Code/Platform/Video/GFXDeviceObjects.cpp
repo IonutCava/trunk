@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GFXDevice.h"
 
 #include "Utility/Headers/Localization.h"

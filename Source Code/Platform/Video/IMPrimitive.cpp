@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"

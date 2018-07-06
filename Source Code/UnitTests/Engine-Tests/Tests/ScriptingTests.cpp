@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Defines.h"
 
 #include "Scripting/Headers/Script.h"

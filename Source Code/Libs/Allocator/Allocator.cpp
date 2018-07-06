@@ -1,7 +1,7 @@
+#include "stdafx.h"
+
 #include "Allocator.h"
 #include "DataTypes.h"
-#include <new>
-#include <assert.h>
 
 //------------------------------------------------------------------------------
 // Constructor
@@ -134,8 +134,3 @@ void* Allocator::Pop()
 
     return (void*)pBlock;
 }
-
-
-
-
-

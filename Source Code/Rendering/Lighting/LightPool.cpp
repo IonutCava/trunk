@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/LightPool.h"
 
 #include "Core/Headers/ParamHandler.h"
@@ -188,7 +190,7 @@ bool LightPool::generateShadowMaps(GFXDevice& context, SceneRenderState& sceneRe
 void LightPool::togglePreviewShadowMaps(GFXDevice& context) {
     _previewShadowMaps = !_previewShadowMaps;
     // Stop if we have shadows disabled
-    if (context.shadowDetailLevel() == RenderDetailLevel::OFF || context.getRenderStage()._stage != RenderStage::DISPLAY) {
+    if (context.shadowDetailLevel() == RenderDetailLevel::OFF || context.getRenderStage().stage() != RenderStage::DISPLAY) {
         ParamHandler::instance().setParam( _ID("rendering.debug.displayShadowDebugInfo"), false);
         _previewShadowMaps = false;
     } else {

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NPC.h"
 #include "AI/Headers/AIEntity.h"
 

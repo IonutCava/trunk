@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ResourceCache.h"
 
 #include "Core/Headers/Console.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleEulerUpdater.h"
 #include "Core/Headers/EngineTaskPool.h"
 

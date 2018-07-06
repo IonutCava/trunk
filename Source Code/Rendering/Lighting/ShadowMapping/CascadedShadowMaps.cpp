@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/CascadedShadowMaps.h"
 
 #include "Rendering/Headers/Renderer.h"

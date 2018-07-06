@@ -110,8 +110,8 @@ class glVertexArray : public VertexBuffer {
     AttribValues _attributeOffset;
 
     // Both for forward pass and pre-pass
-    std::array<size_t, to_base(RenderStage::COUNT)> _vaoHashes[to_base(RenderPassType::COUNT)];
-    std::array<GLuint, to_base(RenderStage::COUNT)> _vaoCaches[to_base(RenderPassType::COUNT)];
+    std::array<size_t, to_base(RenderStagePass::count())> _vaoHashes;
+    std::array<GLuint, to_base(RenderStagePass::count())> _vaoCaches;
     typedef hashMapImpl<size_t, GLuint> VAOMap;
     static VAOMap _VAOMap;
 };

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SFXDevice.h"
 
 #include "Platform/Audio/fmod/Headers/FmodWrapper.h"

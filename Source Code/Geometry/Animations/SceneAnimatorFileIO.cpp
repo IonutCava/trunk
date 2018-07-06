@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SceneAnimator.h"
 #include "Core/Headers/ByteBuffer.h"
 #include "Platform/Video/Headers/GFXDevice.h"

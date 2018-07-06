@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Lighting/Headers/PointLight.h"

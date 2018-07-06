@@ -1,6 +1,10 @@
+#include "stdafx.h"
+
 #include "Headers/InputInterface.h"
 
 #include "Core/Headers/StringHelper.h"
+#include "Utility/Headers/Localization.h"
+#include "Core/Headers/Console.h"
 
 namespace Divide {
 namespace Input {

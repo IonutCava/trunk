@@ -1,4 +1,6 @@
-﻿#include "Headers/GLWrapper.h"
+﻿#include "stdafx.h"
+
+#include "Headers/GLWrapper.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/Console.h"

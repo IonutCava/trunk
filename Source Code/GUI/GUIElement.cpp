@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIElement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"

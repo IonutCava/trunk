@@ -236,6 +236,7 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Patch3DLoaderImpl.cpp">
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-core.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
@@ -401,5 +402,6 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\ByteBuffer.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\stdafx.h" />
   </ItemGroup>
 </Project>

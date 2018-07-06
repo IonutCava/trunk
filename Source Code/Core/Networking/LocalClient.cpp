@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/LocalClient.h"
 
 #include "Core/Headers/ParamHandler.h"

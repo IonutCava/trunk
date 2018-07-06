@@ -323,6 +323,7 @@
       <Filter>Physics\PhysX</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
+	<ClCompile Include="..\..\Source Code\stdafx-engine.cpp"/>
     <ClCompile Include="..\..\Source Code\Physics\PXDevice.cpp">
       <Filter>Physics</Filter>
     </ClCompile>

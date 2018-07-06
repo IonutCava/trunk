@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PreRenderOperator.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 

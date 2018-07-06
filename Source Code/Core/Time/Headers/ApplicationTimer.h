@@ -34,8 +34,6 @@
 
 #include "FrameRateHandler.h"
 
-#include <chrono>
-
 // Code from http://www.gamedev.net/reference/articles/article1382.asp
 // Copyright: "Frame Rate Independent Movement" by Ben Dilts
 namespace Divide {

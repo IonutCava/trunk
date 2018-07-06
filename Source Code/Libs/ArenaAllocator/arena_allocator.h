@@ -6,11 +6,6 @@
 
 #pragma once
 
-
-#include <new>
-#include <boost/intrusive/slist.hpp>
-
-
 //! one direction linked list; base item
 typedef boost::intrusive::slist_base_hook<> slist_item;
 

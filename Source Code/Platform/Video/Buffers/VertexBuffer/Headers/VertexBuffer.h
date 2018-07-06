@@ -36,12 +36,11 @@
 
 #include "VertexDataInterface.h"
 #include "Core/Headers/ByteBuffer.h"
-#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 
 class ShaderProgram;
-struct RenderStagePass;
 /// Vertex Buffer interface class to allow API-independent implementation of
 /// data
 /// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER /
@@ -392,7 +391,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual void computeTangents();
 
    protected:
-    static std::array<AttribFlags, to_base(RenderStage::COUNT)> _attribMaskPerStage[to_base(RenderPassType::COUNT)];
+    static std::array<AttribFlags, to_base(RenderStagePass::count())> _attribMaskPerStage;
 
     virtual void checkStatus() = 0;
     virtual bool refresh() = 0;

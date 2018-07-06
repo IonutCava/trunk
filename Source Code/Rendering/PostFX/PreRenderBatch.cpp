@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PreRenderBatch.h"
 #include "Headers/PreRenderOperator.h"
 

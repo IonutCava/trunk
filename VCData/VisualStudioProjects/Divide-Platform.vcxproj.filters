@@ -617,6 +617,10 @@
     <ClCompile Include="..\..\Source Code\Platform\Threading\ThreadPoolImpl.cpp">
       <Filter>Threading</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-platform.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Input\JoystickInterface.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

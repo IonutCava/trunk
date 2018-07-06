@@ -1,5 +1,6 @@
+#include "stdafx.h"
+
 #include "Headers/RTDrawDescriptor.h"
-#include <numeric>
 
 namespace Divide {
 

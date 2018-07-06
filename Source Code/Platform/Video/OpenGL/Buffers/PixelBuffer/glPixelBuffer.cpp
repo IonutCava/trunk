@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 #include "Headers/glPixelBuffer.h"
 

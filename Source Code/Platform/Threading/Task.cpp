@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Task.h"
 
 #include "Core/Headers/TaskPool.h"

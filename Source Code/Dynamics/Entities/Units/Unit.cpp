@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Unit.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Time/Headers/ApplicationTimer.h"

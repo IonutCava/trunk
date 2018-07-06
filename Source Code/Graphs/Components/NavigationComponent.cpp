@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NavigationComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIEditor.h"
 
 #include "GUI/Headers/GUI.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/AutoKeyRepeat.h"
 #include "Platform/Input/Headers/InputInterface.h"
 

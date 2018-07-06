@@ -1,8 +1,7 @@
+#include "stdafx.h"
+
 #include "Headers/MathMatrices.h"
 #include "Headers/Quaternion.h"
-
-#include <boost/thread/tss.hpp>
-
 
 namespace Divide {
 namespace Util {

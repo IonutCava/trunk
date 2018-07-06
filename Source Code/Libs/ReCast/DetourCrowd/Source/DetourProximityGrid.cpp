@@ -16,8 +16,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <string.h>
-#include <new>
+#include "stdafx.h"
+
 #include "DetourProximityGrid.h"
 #include "DetourCommon.h"
 #include "DetourMath.h"

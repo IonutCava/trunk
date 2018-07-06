@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/d3dGenericVertexData.h"
 
 namespace Divide {

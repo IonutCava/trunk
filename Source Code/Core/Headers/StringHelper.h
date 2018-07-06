@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_STRING_HELPER_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include <sstream>
 
 namespace Divide {
     namespace Util {

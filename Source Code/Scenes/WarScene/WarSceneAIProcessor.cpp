@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/WarSceneAIProcessor.h"
 
 #include "Headers/WarScene.h"

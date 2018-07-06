@@ -1,7 +1,7 @@
+#include "stdafx.h"
+
 #include "Headers/Server.h"
 #include "Headers/Session.h"
-
-#include <iostream>
 
 using namespace boost::asio;
 

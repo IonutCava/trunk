@@ -4,8 +4,9 @@
 ** For more details, see the included Readme.txt.
 */
 
+#include "stdafx.h"
+
 #include "glimBatch.h"
-#include <sstream>
 
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/TerrainTessellator.h"
 
 #include "Headers/Terrain.h"
@@ -31,10 +33,12 @@ TerrainTessellator::~TerrainTessellator()
     _treeTail = nullptr;
 }
 
-U16 TerrainTessellator::render() {
+void TerrainTessellator::updateRenderData() {
     _renderDepth = 0;
     renderRecursive(_tree);
+}
 
+U16 TerrainTessellator::renderDepth() const {
     return _renderDepth;
 }
 
@@ -50,15 +54,15 @@ void TerrainTessellator::clearTree() {
 
 bool TerrainTessellator::checkDivide(const vec3<F32>& camPos, TessellatedTerrainNode *node) {
     // Distance from current origin to camera
-    F32 d = camPos.xz().distance(node->origin.xz());
+    F32 d = camPos.xz().distanceSquared(node->origin.xz());
 
     // Check base case:
     // Distance to camera is greater than twice the length of the diagonal
     // from current origin to corner of current square.
     // OR
     // Max recursion level has been hit
-    if (d > 2.5f * std::sqrtf(std::pow(0.5f * node->dimensions.width, 2.0f) +
-        std::pow(0.5f * node->dimensions.height, 2.0f)) ||
+    if (d > 2.5f * (std::pow(0.5f * node->dimensions.width, 2.0f) +
+                    std::pow(0.5f * node->dimensions.height, 2.0f)) ||
         node->dimensions.width < TERRAIN_CUTOFF_DISTANCE)
     {
         return false;

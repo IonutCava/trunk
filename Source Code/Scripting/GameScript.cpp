@@ -1,9 +1,9 @@
+#include "stdafx.h"
+
 #include "Headers/GameScript.h"
 #include "Headers/ScriptBindings.h"
 
 #include "Managers/Headers/FrameListenerManager.h"
-
-#include <chaiscript/utility/utility.hpp>
 
 namespace Divide {
 

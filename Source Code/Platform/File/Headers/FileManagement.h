@@ -32,10 +32,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_H_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
-#include "Platform/Headers/PlatformDataTypes.h"
 #include "Core/TemplateLibraries/Headers/String.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
-
+#include "Platform/Headers/PlatformDataTypes.h"
 #include <regex>
 
 namespace Divide {

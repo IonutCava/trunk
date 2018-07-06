@@ -1,11 +1,11 @@
+#include "stdafx.h"
+
 #include "Headers/SDLWrapper.h"
 
 #include "Core/Headers/Console.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
-
-#include <stdexcept>
 
 namespace Divide {
 

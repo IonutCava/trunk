@@ -15,9 +15,6 @@
     <ClCompile Include="..\..\Source Code\UnitTests\Platform-Tests\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source Code\UnitTests\Platform-Tests\Headers\TestList.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\UnitTests\Headers\Defines.h">
       <Filter>Headers</Filter>
     </ClInclude>

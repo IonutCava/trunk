@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/VisualSensor.h"
 
 #include "AI/Headers/AIEntity.h"

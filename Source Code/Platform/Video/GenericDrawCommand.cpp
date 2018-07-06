@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GenericDrawCommand.h"
 
 #include "Core/Math/Headers/MathHelper.h"

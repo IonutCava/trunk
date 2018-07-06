@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/glBufferLockManager.h"
 
 namespace Divide {

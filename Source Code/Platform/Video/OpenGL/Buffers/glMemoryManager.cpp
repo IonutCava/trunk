@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/glMemoryManager.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 

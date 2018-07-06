@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Application.h"
 
 #include "Headers/Kernel.h"

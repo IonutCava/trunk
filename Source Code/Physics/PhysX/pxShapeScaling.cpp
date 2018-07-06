@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/pxShapeScaling.h"
 
 using namespace physx;

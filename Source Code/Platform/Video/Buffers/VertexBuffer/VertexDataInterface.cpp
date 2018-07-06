@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/VertexDataInterface.h"
 
 namespace Divide {

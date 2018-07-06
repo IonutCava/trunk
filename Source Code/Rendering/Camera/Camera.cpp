@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Camera.h"
 
 namespace Divide {

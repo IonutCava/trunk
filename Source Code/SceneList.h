@@ -47,9 +47,6 @@
 #include "Scenes/ShadowScene/Headers/ShadowScene.h"
 #include "Scenes/ReflectionScene/Headers/ReflectionScene.h"
 
-#include <boost/functional/factory.hpp>
-#include <boost/preprocessor/cat.hpp>
-
 #define STRUCT_NAME(M) BOOST_PP_CAT(M, RegisterStruct)
 #define VAR_NAME(M) BOOST_PP_CAT(M, RegisterVariable)
 

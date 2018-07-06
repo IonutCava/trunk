@@ -534,6 +534,7 @@
     <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainTessellator.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-game.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\AudioSensor.h">

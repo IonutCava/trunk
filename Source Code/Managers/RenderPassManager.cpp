@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/RenderPassManager.h"
 
 #include "Core/Headers/TaskPool.h"
@@ -167,7 +169,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     if (params.doPrePass) {
         _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::DEPTH_PASS));
 
-        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)).c_str(), 0);
+        GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage)), 0);
 
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
                                                               *params.camera,
@@ -202,7 +204,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     }
 
     _context.setRenderStagePass(RenderStagePass(params.stage, RenderPassType::COLOUR_PASS));
-    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)).c_str(), 1);
+    GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage)), 1);
 
     // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,

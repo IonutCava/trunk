@@ -34,8 +34,6 @@
 
 #include "Platform/Headers/PlatformDataTypes.h"
 
-#include <array>
-
 namespace Divide {
 
 template <typename T>

@@ -209,5 +209,6 @@
     <ClCompile Include="..\..\Source Code\Libs\ReCast\RecastContrib\fastlz\fastlz.c">
       <Filter>ReCastContrib</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-recast.cpp" />
   </ItemGroup>
 </Project>

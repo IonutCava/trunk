@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Threadpool.hpp"
 
 #include <functional>

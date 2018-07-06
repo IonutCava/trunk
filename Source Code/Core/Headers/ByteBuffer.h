@@ -21,9 +21,6 @@
 
 #include "Platform/Headers/ByteConverter.h"
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
-
 namespace Divide {
 
 class ByteBufferException {

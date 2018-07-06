@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "glimBatch.h"
 
 #ifdef AE_RENDERAPI_D3D11

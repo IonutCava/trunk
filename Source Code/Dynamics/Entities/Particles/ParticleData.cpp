@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleData.h"
 
 #include "Core/Headers/Kernel.h"

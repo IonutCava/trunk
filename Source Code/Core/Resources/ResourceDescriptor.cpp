@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ResourceDescriptor.h"
 
 #include "Core/Math/Headers/MathHelper.h"

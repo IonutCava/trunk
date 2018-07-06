@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/MathMatrices.h"
 
 namespace Divide {

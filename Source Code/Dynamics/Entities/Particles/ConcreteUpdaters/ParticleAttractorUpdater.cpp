@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleAttractorUpdater.h"
 
 namespace Divide {

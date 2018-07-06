@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SpotLight.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "ShadowMapping/Headers/ShadowMap.h"

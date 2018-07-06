@@ -65,7 +65,7 @@ class ScopedViewport : private NonCopyable {
 
 class ScopedDebugMessage : private NonCopyable {
 public:
-    explicit ScopedDebugMessage(GFXDevice& context, const char* message, I32 id);
+    explicit ScopedDebugMessage(GFXDevice& context, const stringImpl& message, I32 id);
     ~ScopedDebugMessage();
 
 private:

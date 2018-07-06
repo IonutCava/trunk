@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/FrameListenerManager.h"
 
 #include "Core/Headers/Console.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/Material.h"
@@ -117,13 +119,11 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_defaultRefraction = base._defaultRefraction;
     cloneMat->_translucencySource = base._translucencySource;
 
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U8 i = 0; i < to_base(RenderStage::COUNT); i++) {
-            cloneMat->_shaderModifier[pass][i] = base._shaderModifier[pass][i];
-            cloneMat->_shaderInfo[pass][i] = _shaderInfo[pass][i];
-            for (U8 j = 0; j < _defaultRenderStates[pass][i].size(); ++j) {
-                cloneMat->_defaultRenderStates[pass][i][j] = _defaultRenderStates[pass][i][j];
-            }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        cloneMat->_shaderModifier[i] = base._shaderModifier[i];
+        cloneMat->_shaderInfo[i] = _shaderInfo[i];
+        for (U8 j = 0; j < _defaultRenderStates[i].size(); ++j) {
+            cloneMat->_defaultRenderStates[i][j] = _defaultRenderStates[i][j];
         }
     }
 
@@ -148,11 +148,9 @@ Material_ptr Material::clone(const stringImpl& nameSuffix) {
 }
 
 void Material::update(const U64 deltaTime) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (ShaderProgramInfo& info : _shaderInfo[pass]) {
-            if (info.update()) {
-                _dirty = true;
-            }
+    for (ShaderProgramInfo& info : _shaderInfo) {
+        if (info.update()) {
+            _dirty = true;
         }
     }
 
@@ -275,24 +273,18 @@ void Material::clean() {
 }
 
 void Material::recomputeShaders() {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (ShaderProgramInfo& info : _shaderInfo[pass]) {
-            if (!info._customShader) {
-                info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
-            }
+    for (ShaderProgramInfo& info : _shaderInfo) {
+        if (!info._customShader) {
+            info.computeStage(ShaderProgramInfo::BuildStage::REQUESTED);
         }
     }
 }
 
 bool Material::canDraw(const RenderStagePass& renderStage) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        const std::array<ShaderProgramInfo, to_base(RenderStage::COUNT)>& passInfo = _shaderInfo[pass];
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            const ShaderProgramInfo& info = passInfo[i];
-            if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
-                computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
-                return false;
-            }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        if (_shaderInfo[i].computeStage() != ShaderProgramInfo::BuildStage::READY) {
+            computeShader(RenderStagePass::stagePass(i), _highPriority);
+            return false;
         }
     }
 
@@ -392,8 +384,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
 
     bool deferredPassShader = _context.getRenderer().getType() !=
                               RendererType::RENDERER_TILED_FORWARD_SHADING;
-    bool depthPassShader = renderStagePass._stage == RenderStage::SHADOW ||
-                           renderStagePass._passType == RenderPassType::DEPTH_PASS;
+    bool depthPassShader = renderStagePass.stage() == RenderStage::SHADOW ||
+                           renderStagePass.pass() == RenderPassType::DEPTH_PASS;
 
     // the base shader is either for a Deferred Renderer or a Forward  one ...
     stringImpl shader =
@@ -406,7 +398,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         return false;
     }
 
-    if (depthPassShader && renderStagePass._stage == RenderStage::SHADOW) {
+    if (depthPassShader && renderStagePass.stage() == RenderStage::SHADOW) {
         setShaderDefines(renderStagePass, "SHADOW_PASS");
         shader += ".Shadow";
     } else {
@@ -496,7 +488,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass, const bool 
         } break;
     }
     // Add any modifiers you wish
-    stringImpl& modifier = _shaderModifier[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)];
+    stringImpl& modifier = _shaderModifier[renderStagePass.index()];
     if (!modifier.empty()) {
         shader += ".";
         shader += modifier;
@@ -568,12 +560,9 @@ void Material::getTextureData(TextureDataContainer& textureData) {
 }
 
 bool Material::unload() {
-
     _textures.fill(nullptr);
     _customTextures.clear();
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        _shaderInfo[pass].fill(ShaderProgramInfo());
-    }
+    _shaderInfo.fill(ShaderProgramInfo());
 
     return true;
 }
@@ -586,17 +575,17 @@ void Material::setDoubleSided(const bool state, const bool useAlphaTest) {
     _useAlphaTest = useAlphaTest;
     // Update all render states for this item
     if (_doubleSided) {
-        for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-            for (U32 index = 0; index < to_base(RenderStage::COUNT); ++index) {
-                for (U8 variant = 0; variant < to_U8(_defaultRenderStates[pass][index].size()); ++variant) {
-                    size_t hash = _defaultRenderStates[pass][index][variant];
-                    RenderStateBlock descriptor(RenderStateBlock::get(hash));
-                    descriptor.setCullMode(CullMode::NONE);
-                    if (_translucencySource != TranslucencySource::COUNT) {
-                        descriptor.setBlend(true);
-                    }
-                    setRenderStateBlock(descriptor.getHash(), RenderStagePass(static_cast<RenderStage>(index), static_cast<RenderPassType>(pass)), variant);
+        for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+            const U8 variantCount = to_U8(_defaultRenderStates[i].size());
+
+            for (U8 variant = 0; variant < variantCount; ++variant) {
+                const size_t hash = _defaultRenderStates[i][variant];
+                RenderStateBlock descriptor(RenderStateBlock::get(hash));
+                descriptor.setCullMode(CullMode::NONE);
+                if (_translucencySource != TranslucencySource::COUNT) {
+                    descriptor.setBlend(true);
                 }
+                setRenderStateBlock(descriptor.getHash(), RenderStagePass::stagePass(i), variant);
             }
         }
     }
@@ -664,11 +653,9 @@ void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
 void Material::rebuild() {
     recomputeShaders();
 
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
-            _shaderInfo[pass][i]._shaderRef->recompile();
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        computeShader(RenderStagePass::stagePass(i), _highPriority);
+        _shaderInfo[i]._shaderRef->recompile();
     }
 }
 

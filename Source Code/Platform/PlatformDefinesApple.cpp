@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #if defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesApple.h"

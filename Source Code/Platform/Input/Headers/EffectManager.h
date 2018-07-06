@@ -74,17 +74,9 @@ class EffectManager {
     void checkPlayableEffects();
     void selectEffect(EWhichEffect eWhich);
 
-    inline void printEffect(vectorAlg::vecSize nEffInd) {
-        Console::printfn(Locale::get(_ID("INPUT_PRINT_EFFECT")), nEffInd,
-                         _vecEffects[nEffInd]->getDescription());
-    }
+    void printEffect(vectorAlg::vecSize nEffInd);
 
-    inline void printEffects() {
-        for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size();
-             nEffInd++) {
-            printEffect(nEffInd);
-        }
-    }
+    void printEffects();
 };
 };  // namespace Input
 };  // namespace Divide

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ALWrapper.h"
 
 #include <al.h>

@@ -299,7 +299,7 @@ class Material : public CachedResource {
     ResourceCache& _parentCache;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
-    std::array<stringImpl, to_base(RenderStage::COUNT)> _shaderModifier[to_base(RenderPassType::COUNT)];
+    std::array<stringImpl, to_base(RenderStagePass::count())> _shaderModifier;
     TranslucencySource _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
@@ -311,8 +311,8 @@ class Material : public CachedResource {
     bool _doubleSided;
     /// Use shaders that have bone transforms implemented
     bool _hardwareSkinning;
-    std::array<ShaderProgramInfo, to_base(RenderStage::COUNT)> _shaderInfo[to_base(RenderPassType::COUNT)];
-    std::array<std::array<size_t, 3>,  to_base(RenderStage::COUNT)> _defaultRenderStates[to_base(RenderPassType::COUNT)];
+    std::array<ShaderProgramInfo, to_base(RenderStagePass::count())> _shaderInfo;
+    std::array<std::array<size_t, 3>,  to_base(RenderStagePass::count())> _defaultRenderStates;
 
     bool _shaderThreadedLoad;
     bool _highPriority;

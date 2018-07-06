@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NavMeshLoader.h"
 
 #include "Core/Math/Headers/Transform.h"

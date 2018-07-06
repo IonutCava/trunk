@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ShaderProgramInfo.h"
 
 namespace Divide {

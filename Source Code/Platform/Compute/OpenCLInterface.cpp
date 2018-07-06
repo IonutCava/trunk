@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/OpenCLInterface.h"
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"

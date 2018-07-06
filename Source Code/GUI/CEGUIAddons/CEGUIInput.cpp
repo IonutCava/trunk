@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/CEGUIInput.h"
 
 #ifndef CEGUI_STATIC

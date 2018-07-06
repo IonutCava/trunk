@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/RenderPackage.h"
 
 #include "Headers/GFXDevice.h"

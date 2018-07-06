@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DEFINES_H_
 
 //Using: https://github.com/cppocl/cppocl
-#include "Platform/Headers/PlatformDefines.h"
 #include <Test.hpp>
 
 void PreparePlatform();

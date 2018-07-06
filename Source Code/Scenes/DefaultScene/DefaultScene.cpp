@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/DefaultScene.h"
 
 #include "GUI/Headers/GUIButton.h"

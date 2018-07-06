@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
 

@@ -32,47 +32,7 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
-#ifndef BOOST_EXCEPTION_DISABLE
-#define BOOST_EXCEPTION_DISABLE
-#endif
-
-#include "Core/TemplateLibraries/Headers/HashMap.h"
-#include "Core/Headers/Singleton.h"
-#include "Core/Headers/NonCopyable.h"
-#include "Core/Headers/GUIDWrapper.h"
-#include "Platform/Threading/Headers/SharedMutex.h"
-#include "Platform/File/Headers/FileManagement.h"
-#include "ConditionalWait.h"
-
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif //_USE_MATH_DEFINES
-
-#include <cmath>
-#include <functional>
-#include <atomic>
-#include <array>
-#include <memory>
-#include <bitset>
-#include <limits>
-#include <stdarg.h>
-#include <cmath>
-#include <cstdio>
-
-#if !defined(CPP_VERSION)
-#   define CPP_VERSION __cplusplus
-#endif
-
-#if defined(_WIN32)
-#include "PlatformDefinesWindows.h"
-#elif defined(__APPLE_CC__) 
-#include "PlatformDefinesApple.h"
-#else //defined(__linux) || defined (__unix)
-#include "PlatformDefinesUnix.h"
-#endif
-
 #ifdef _DEBUG
-#include <assert.h>
 
 #define STUBBED(x)                                  \
 do {                                                \
@@ -102,26 +62,6 @@ do {                                                \
 #define FWD_DECLARE_MANAGED_CLASS(T)      \
     class T;                              \
     TYPEDEF_SMART_POINTERS_FOR_CLASS(T);
-
-#if CPP_VERSION > 1
-#   define CPP_98_SUPPORT
-#   define CPP_03_SUPPORT
-#   if CPP_VERSION >= 201103L
-#       define CPP_11_SUPPORT
-#           if CPP_VERSION >= 201402L
-#               define CPP_14_SUPPORT
-#               if CPP_VERSION > 201402L
-#                   if HAS_CPP17
-#                       define CPP_17_SUPPORT
-#                   endif
-#               endif
-#           endif
-#   endif
-#endif 
-
-#if !defined(CPP_11_SUPPORT)
-#error "Divide Framework requires C++11 support at a minimum!."
-#endif 
 
 namespace Divide {
 
@@ -569,34 +509,13 @@ inline bool COMPARE(D64 X, D64 Y) {
     return COMPARE_TOLERANCE(X, Y, EPSILON_D64);
 }
 
+/// should be fast enough as the first condition is almost always true
 template <typename T>
 inline bool IS_GEQUAL(T X, T Y) {
-    return X >= Y;
-}
-
-template <>
-/// should be fast enough as the first condition is almost always true
-inline bool IS_GEQUAL(F32 X, F32 Y) {
     return X > Y || COMPARE(X, Y);
 }
-
-template <>
-inline bool IS_GEQUAL(D64 X, D64 Y) {
-    return X > Y || COMPARE(X, Y);
-}
-
 template <typename T>
 inline bool IS_LEQUAL(T X, T Y) {
-    return X <= Y;
-}
-
-template <>
-inline bool IS_LEQUAL(F32 X, F32 Y) {
-    return X < Y || COMPARE(X, Y);
-}
-
-template <>
-inline bool IS_LEQUAL(D64 X, D64 Y) {
     return X < Y || COMPARE(X, Y);
 }
 

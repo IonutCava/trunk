@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Sky.h"
 
 #include "Core/Math/Headers/Transform.h"
@@ -128,11 +130,11 @@ void Sky::updateDrawCommands(SceneGraphNode& sgn,
                              GenericDrawCommands& drawCommandsInOut) {
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
-    if (renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         cmd.stateHash(_skyboxRenderStateHashPrePass);
         cmd.shaderProgram(_skyShaderPrePass);
     }  else {
-        cmd.stateHash(renderStagePass._stage == RenderStage::REFLECTION
+        cmd.stateHash(renderStagePass.stage() == RenderStage::REFLECTION
                                               ? _skyboxRenderStateReflectedHash
                                               : _skyboxRenderStateHash);
         cmd.shaderProgram(_skyShader);

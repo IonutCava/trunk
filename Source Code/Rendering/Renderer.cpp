@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Renderer.h"
 
 #include "Core/Headers/PlatformContext.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Vegetation.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -301,7 +303,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
 }
 
 U32 Vegetation::getQueryID() {
-    switch (_context.getRenderStage()._stage) {
+    switch (_context.getRenderStage().stage()) {
         case RenderStage::SHADOW:
             return 0;
         case RenderStage::REFLECTION:
@@ -410,7 +412,7 @@ bool Vegetation::onRender(const RenderStagePass& renderStagePass) {
     return !(!_render || !_success || !_threadedLoadComplete ||
              _parentLoD > 0 ||
              (renderStagePass == _context.getPrevRenderStage() &&
-              renderStagePass._stage == RenderStage::SHADOW));
+              renderStagePass.stage() == RenderStage::SHADOW));
 }
 
 void Vegetation::generateTrees(const Task& parentTask) {

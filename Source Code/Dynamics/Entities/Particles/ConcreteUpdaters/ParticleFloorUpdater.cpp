@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleFloorUpdater.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/EngineTaskPool.h"

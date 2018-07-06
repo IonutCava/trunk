@@ -62,7 +62,11 @@
     <ClCompile Include="..\..\Source Code\Libs\ReCast\Detour\Source\DetourNavMeshBuilder.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\Detour\Source\DetourNavMeshQuery.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\Detour\Source\DetourNode.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ReCast\RecastContrib\fastlz\fastlz.c" />
+    <ClCompile Include="..\..\Source Code\Libs\ReCast\RecastContrib\fastlz\fastlz.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\Recast.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\RecastAlloc.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\RecastArea.cpp" />
@@ -73,6 +77,11 @@
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\RecastMeshDetail.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\RecastRasterization.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\ReCast\ReCast\Source\RecastRegion.cpp" />
+    <ClCompile Include="..\..\Source Code\stdafx-recast.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1ED21303-434E-46DA-8050-2DF2684BE74E}</ProjectGuid>
@@ -147,7 +156,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -170,6 +179,7 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -193,7 +203,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -212,6 +222,8 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -235,7 +247,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
@@ -253,6 +265,8 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <FloatingPointExceptions>false</FloatingPointExceptions>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <LanguageStandard>stdcpp14</LanguageStandard>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

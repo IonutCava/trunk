@@ -1,4 +1,8 @@
+#include "stdafx.h"
+
 #include "Headers/EffectManager.h"
+#include "Utility/Headers/Localization.h"
+#include "Core/Headers/Console.h"
 
 namespace Divide {
 namespace Input {
@@ -204,6 +208,18 @@ void EffectManager::selectEffect(EWhichEffect eWhich) {
         OIS::Effect* effect =
             _vecEffects[_vecPlayableEffectInd[_nCurrEffectInd]]->getFFEffect();
         _pJoystickInterface->getCurrentFFDevice()->upload(effect);
+    }
+}
+
+void EffectManager::printEffect(vectorAlg::vecSize nEffInd) {
+    Console::printfn(Locale::get(_ID("INPUT_PRINT_EFFECT")), nEffInd,
+        _vecEffects[nEffInd]->getDescription());
+}
+
+void EffectManager::printEffects() {
+    for (vectorAlg::vecSize nEffInd = 0; nEffInd < _vecEffects.size();
+        nEffInd++) {
+        printEffect(nEffInd);
     }
 }
 

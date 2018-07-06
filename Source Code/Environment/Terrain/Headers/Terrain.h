@@ -158,13 +158,18 @@ class Terrain : public Object3D {
     ShaderBuffer* _shaderData;
     VegetationDetails _vegDetails;
 
+    typedef std::array<TerrainTessellator, to_base(RenderStage::COUNT)> TessellatorArray;
+    typedef std::array<bool, to_base(RenderStage::COUNT)> CameraUpdateFlagArray;
+
     U32 _chunkSize;
-    bool _cameraUpdated;
     vec3<F32> _offsetPosition;
     vec2<F32> _altitudeRange;
     vec2<U16> _terrainDimensions;
     Quadtree _terrainQuadtree;
-    TerrainTessellator _terrainTessellator;
+
+    CameraUpdateFlagArray _cameraUpdated;
+    TessellatorArray _terrainTessellator;
+
 
     F32 _waterHeight;
     bool _drawBBoxes;

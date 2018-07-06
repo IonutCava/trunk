@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/WaypointGraph.h"
 
 #include "Core/Headers/Console.h"

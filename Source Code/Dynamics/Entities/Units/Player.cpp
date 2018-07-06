@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Player.h"
 
 #include "Core/Headers/StringHelper.h"

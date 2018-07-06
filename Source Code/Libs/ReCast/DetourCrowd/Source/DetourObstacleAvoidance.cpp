@@ -16,14 +16,13 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "stdafx.h"
+
 #include "DetourObstacleAvoidance.h"
 #include "DetourCommon.h"
 #include "DetourMath.h"
 #include "DetourAlloc.h"
 #include "DetourAssert.h"
-#include <string.h>
-#include <float.h>
-#include <new>
 
 static const float DT_PI = 3.14159265f;
 

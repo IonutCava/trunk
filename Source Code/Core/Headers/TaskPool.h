@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TASK_POOL_H_
 
 #include "Platform/Threading/Headers/Task.h"
-#include <boost/lockfree/queue.hpp>
 
 namespace Divide {
 

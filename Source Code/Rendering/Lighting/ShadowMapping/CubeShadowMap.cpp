@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/CubeShadowMap.h"
 
 #include "Graphs/Headers/SceneGraph.h"

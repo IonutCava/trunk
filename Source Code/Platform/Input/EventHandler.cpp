@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/EventHandler.h"
 #include "Headers/InputInterface.h"
 #include "Core/Headers/Kernel.h"

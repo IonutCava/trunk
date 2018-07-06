@@ -3,6 +3,8 @@
 // And thanks to  Daniel Buckmaster, 2011 for his
 // T3D 1.1 implementation of Recast's DebugUtils.
 
+#include "stdafx.h"
+
 #include "Headers/NavMeshDebugDraw.h"
 #include "Headers/NavMesh.h"
 

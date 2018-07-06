@@ -3,7 +3,6 @@
 
 #include "Core/Headers/ByteBuffer.h"
 #include "OPCodesTpl.h"
-#include <boost/serialization/base_object.hpp>
 
 namespace Divide {
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Light.h"
 #include "Headers/LightPool.h"
 

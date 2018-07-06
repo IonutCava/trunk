@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/FlashScene.h"
 
 #include "Core/Headers/StringHelper.h"

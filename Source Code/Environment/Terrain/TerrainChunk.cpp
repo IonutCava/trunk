@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/TerrainChunk.h"
 #include "Headers/Terrain.h"
 #include "Quadtree/Headers/QuadtreeNode.h"

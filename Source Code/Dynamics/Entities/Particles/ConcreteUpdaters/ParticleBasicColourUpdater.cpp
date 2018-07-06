@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleBasicColourUpdater.h"
 #include "Core/Headers/EngineTaskPool.h"
 

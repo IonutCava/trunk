@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/AIProcessor.h"
 
 #include "AI/Headers/AIManager.h"

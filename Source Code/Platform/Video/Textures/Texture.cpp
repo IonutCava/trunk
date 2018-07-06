@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Texture.h"
 
 #include "Core/Headers/Console.h"

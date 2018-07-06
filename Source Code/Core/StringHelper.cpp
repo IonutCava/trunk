@@ -1,6 +1,6 @@
-#include "Headers/StringHelper.h"
+#include "stdafx.h"
 
-#include <cstdarg>
+#include "Headers/StringHelper.h"
 
 namespace Divide {
 namespace Util {

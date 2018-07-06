@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/Kernel.h"
@@ -22,7 +24,6 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/File/Headers/FileManagement.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Platform/Input/Headers/InputInterface.h"

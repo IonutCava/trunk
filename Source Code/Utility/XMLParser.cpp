@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/XMLParser.h"
 
 #include "Core/Headers/Application.h"
@@ -851,16 +853,14 @@ Material_ptr loadMaterialXML(PlatformContext& context, const stringImpl &matName
             loadTextureXML(cache, "specularMap", pt.get("specularMap.file", "none").c_str(), pt));
     }
 
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            RenderStage stage = static_cast<RenderStage>(i);
-            RenderPassType passType = static_cast<RenderPassType>(pass);
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        RenderStage stage = RenderStagePass::stage(i);
+        RenderPassType passType = RenderStagePass::pass(i);
 
-            stringImpl shader = Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType));
+        stringImpl shader = Util::StringFormat("shaderProgram.%s.%s", TypeUtil::renderStageToString(stage), TypeUtil::renderPassTypeToString(passType));
 
-            if (boost::optional<ptree &> child = pt.get_child_optional(shader.c_str())) {
-                mat->setShaderProgram(pt.get(shader.c_str(), "NULL").c_str(), RenderStagePass(stage, passType), false);
-            }
+        if (boost::optional<ptree &> child = pt.get_child_optional(shader.c_str())) {
+            mat->setShaderProgram(pt.get(shader.c_str(), "NULL").c_str(), RenderStagePass(stage, passType), false);
         }
     }
 

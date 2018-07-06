@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Defines.h"
 #include "Platform/Headers/PlatformDefines.h"
 #include "Core/Math/Headers/MathHelper.h"

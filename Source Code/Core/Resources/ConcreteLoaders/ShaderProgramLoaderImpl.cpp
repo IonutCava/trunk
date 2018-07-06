@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticlePositionColourUpdater.h"
 
 namespace Divide {

@@ -1,7 +1,4 @@
 #include "Headers/Defines.h"
-#include "Core/Headers/Console.h"
-
-#include <iostream>
 
 int main(int argc, char **argv) {
 
@@ -23,3 +20,4 @@ int main(int argc, char **argv) {
     
     return state;
 }
+

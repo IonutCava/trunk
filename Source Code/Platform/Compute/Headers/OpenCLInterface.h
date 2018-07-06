@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _OPENCL_INTERFACE_H_
 
 #include "Core/Headers/Application.h"
-#include <simpleCL.h>
 
 //ref: https://github.com/morousg/simple-opencl
 namespace Divide {

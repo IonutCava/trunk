@@ -35,9 +35,6 @@
 #include "Core/Math/Headers/MathVectors.h"
 #include "Core/Headers/NonCopyable.h"
 
-#include <boost/lockfree/spsc_queue.hpp>
-#include <thread>
-#include <condition_variable>
 #include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {

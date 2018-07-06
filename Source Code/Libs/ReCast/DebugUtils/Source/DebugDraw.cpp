@@ -16,8 +16,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#define _USE_MATH_DEFINES
-#include <string.h>
+#include "stdafx.h"
+
 #include "DebugDraw.h"
 #include "DetourMath.h"
 

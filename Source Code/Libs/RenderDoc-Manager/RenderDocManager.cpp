@@ -22,8 +22,9 @@
 * THE SOFTWARE.
 ******************************************************************************/
 
+#include "stdafx.h"
+
 #include "RenderDocManager.h"
-#include <string>
 
 RenderDocManager::RenderDocManager(HWND p_Handle, LPCSTR pRenderDocPath, LPCWSTR pCapturePath)
 {

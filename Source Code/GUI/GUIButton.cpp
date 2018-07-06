@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIButton.h"
 
 #include "Platform/Audio/Headers/SFXDevice.h"

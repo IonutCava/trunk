@@ -34,18 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "WorldPacket.h"
 
-#include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/read_until.hpp>
-#include <boost/asio/streambuf.hpp>
-#include <boost/asio/write.hpp>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-#include <iostream>
-#include <fstream>
-#include <deque>
-
 using boost::asio::deadline_timer;
 using boost::asio::ip::tcp;
 

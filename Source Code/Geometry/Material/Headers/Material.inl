@@ -84,14 +84,12 @@ inline void Material::setHighPriority(const bool state) {
 }
 
 inline void Material::addShaderModifier(const RenderStagePass& renderStagePass, const stringImpl& shaderModifier) {
-    _shaderModifier[to_U32(renderStagePass._passType)][to_U32(renderStagePass._stage)] = shaderModifier;
+    _shaderModifier[renderStagePass.index()] = shaderModifier;
 }
 
 inline void Material::addShaderModifier(const stringImpl& shaderModifier) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            addShaderModifier(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderModifier);
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        addShaderModifier(RenderStagePass::stagePass(i), shaderModifier);
     }
 }
 
@@ -103,10 +101,8 @@ inline void Material::setShaderDefines(const RenderStagePass& renderStagePass, c
 }
 
 inline void Material::setShaderDefines(const stringImpl& shaderDefines) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            setShaderDefines(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), shaderDefines);
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        setShaderDefines(RenderStagePass::stagePass(i), shaderDefines);
     }
 }
 
@@ -117,27 +113,21 @@ inline void Material::setShaderLoadThreaded(const bool state) {
 
 inline void Material::setShaderProgram(const stringImpl& shader,
                                        const bool computeOnAdd) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), computeOnAdd);
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        setShaderProgram(shader, RenderStagePass::stagePass(i), computeOnAdd);
     }
 }
 
 inline void Material::setShaderProgram(const ShaderProgram_ptr& shader) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            setShaderProgram(shader, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)));
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        setShaderProgram(shader, RenderStagePass::stagePass(i));
     }
 }
 
 inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
                                           I32 variant) {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            setRenderStateBlock(renderStateBlockHash, RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), variant);
-        }
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        setRenderStateBlock(renderStateBlockHash, RenderStagePass::stagePass(i), variant);
     }
 }
 
@@ -274,11 +264,11 @@ inline ShaderProgramInfo& Material::getShaderInfo(const RenderStagePass& renderS
 }
 
 inline ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) {
-    return _shaderInfo[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)];
+    return _shaderInfo[renderStagePass.index()];
 }
 
 inline const ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& renderStagePass) const {
-    return _shaderInfo[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)];
+    return _shaderInfo[renderStagePass.index()];
 }
 
 // Here we set the shader's name
@@ -326,7 +316,7 @@ inline void Material::setShaderProgram(const ShaderProgram_ptr& shader,
 }
 
 inline std::array<size_t, 3>& Material::defaultRenderStates(const RenderStagePass& renderStagePass) {
-    return _defaultRenderStates[to_base(renderStagePass._passType)][to_base(renderStagePass._stage)];
+    return _defaultRenderStates[renderStagePass.index()];
 }
 
 }; //namespace Divide

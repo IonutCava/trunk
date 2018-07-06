@@ -34,7 +34,6 @@
 
 #include "PhysX.h"
 #include "Physics/Headers/PhysicsSceneInterface.h"
-#include <boost/lockfree/spsc_queue.hpp>
 
 namespace Divide {
 

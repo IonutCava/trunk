@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/RenderingComponent.h"
@@ -147,13 +149,11 @@ RenderingComponent::~RenderingComponent()
 }
 
 void RenderingComponent::postLoad() {
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            RenderStagePass stagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass));
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        const RenderStagePass& stagePass = RenderStagePass::stagePass(i);
 
-            RenderPackage& pkg = renderData(stagePass);
-            _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, stagePass, pkg._drawCommands);
-        }
+        RenderPackage& pkg = renderData(stagePass);
+        _parentSGN.getNode()->initialiseDrawCommands(_parentSGN, stagePass, pkg._drawCommands);
     }
 }
 
@@ -371,7 +371,7 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 /// Called after the current node was rendered
 void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
     
-    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (renderStagePass.stage() != RenderStage::DISPLAY || renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         return;
     }
 
@@ -525,8 +525,8 @@ ShaderProgram_ptr RenderingComponent::getDrawShader(const RenderStagePass& rende
 }
 
 size_t RenderingComponent::getDrawStateHash(const RenderStagePass& renderStagePass) {
-    bool shadowStage = renderStagePass._stage == RenderStage::SHADOW;
-    bool depthPass   = renderStagePass._passType == RenderPassType::DEPTH_PASS || shadowStage;
+    bool shadowStage = renderStagePass.stage() == RenderStage::SHADOW;
+    bool depthPass   = renderStagePass.pass() == RenderPassType::DEPTH_PASS || shadowStage;
 
     if (!getMaterialInstance() && depthPass) {
         
@@ -560,7 +560,7 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, const RenderStageP
     _lodLevel = to_U8(_parentSGN.getNode()->getLODcount() - 1);
 
     // ToDo: Hack for lower LoD rendering in reflection and refraction passes
-    if (renderStagePass._stage != RenderStage::REFLECTION && renderStagePass._stage != RenderStage::REFRACTION) {
+    if (renderStagePass.stage() != RenderStage::REFLECTION && renderStagePass.stage() != RenderStage::REFRACTION) {
         const vec3<F32>& eyePos = camera.getEye();
         const BoundingSphere& bSphere = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
         F32 cameraDistanceSQ = bSphere.getCenter().distanceSquared(eyePos);

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #if !defined(_WIN32) && !defined(__APPLE_CC__)
 
 #include "Headers/PlatformDefinesUnix.h"

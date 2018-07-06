@@ -32,10 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ENGINE_MAIN_HEADER_
 #define _ENGINE_MAIN_HEADER_
 
-#if defined(_WIN32)
-#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-#endif
-
 namespace Divide {
 
 class Application;

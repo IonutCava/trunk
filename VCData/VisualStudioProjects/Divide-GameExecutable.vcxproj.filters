@@ -11,6 +11,7 @@
     <ClCompile Include="..\..\Source Code\HotReloading\HotReloadingWindows.cpp">
       <Filter>HotReloading</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\stdafx-executable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\ToDo.h" />

@@ -1,5 +1,6 @@
+#include "stdafx.h"
+
 #include "Headers/glLockManager.h"
-#include <assert.h>
 
 namespace Divide {
 

@@ -34,7 +34,6 @@
 
 #include "SceneState.h"
 #include "SceneInput.h"
-#include "Core/Headers/cdigginsAny.h"
 #include "Platform/Threading/Headers/Task.h"
 
 /*All these includes are useful for a scene, so instead of forward declaring the

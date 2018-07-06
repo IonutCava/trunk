@@ -204,7 +204,7 @@ class RenderingComponent : public SGNComponent {
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
     inline RenderPackage& renderData(const RenderStagePass& stagePass) {
-        return _renderData[to_U32(stagePass._passType)][to_U32(stagePass._stage)];
+        return _renderData[to_U32(stagePass.pass())][to_U32(stagePass.stage())];
     }
 
    protected:

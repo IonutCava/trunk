@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Terrain.h"
 #include "Headers/TerrainLoader.h"
 #include "Headers/TerrainDescriptor.h"

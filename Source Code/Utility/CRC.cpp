@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Utility/Headers/CRC.h"
 
 namespace Divide {

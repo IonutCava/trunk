@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/glIMPrimitive.h"
 #include "Headers/glResources.h"
 #include "Headers/GLWrapper.h"

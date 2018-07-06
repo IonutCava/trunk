@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SceneState.h"
 
 #include "Core/Headers/Kernel.h"

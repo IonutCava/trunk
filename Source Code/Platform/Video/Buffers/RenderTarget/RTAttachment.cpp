@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/RTAttachment.h"
 
 #include "Platform/Video/Textures/Headers/Texture.h"

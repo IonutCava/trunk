@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Defines.h"
 
 #include "Core/Math/Headers/MathVectors.h"

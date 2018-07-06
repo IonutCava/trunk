@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"

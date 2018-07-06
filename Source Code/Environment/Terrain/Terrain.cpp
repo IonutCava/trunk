@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Terrain.h"
 #include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
@@ -22,11 +24,12 @@ Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, size_t descript
       _plane(nullptr),
       _shaderData(nullptr),
       _drawBBoxes(false),
-      _cameraUpdated(true),
       _chunkSize(1),
       _waterHeight(0.0f),
       _altitudeRange(0.0f, 1.0f)
 {
+    _cameraUpdated.fill(true);
+    _terrainTessellator.fill(TerrainTessellator());
 }
 
 Terrain::~Terrain()
@@ -87,34 +90,30 @@ void Terrain::buildQuadtree() {
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbExtent = _boundingBox.getExtent();
 
-    for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
-        for (U32 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            RenderStage stage = static_cast<RenderStage>(i);
+    for (RenderStagePass::PassIndex i = 0; i < RenderStagePass::count(); ++i) {
+        const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass::stagePass(i)).getProgram();
 
-            const ShaderProgram_ptr& drawShader = mat->getShaderInfo(RenderStagePass(stage, static_cast<RenderPassType>(pass))).getProgram();
+        drawShader->Uniform("bbox_min", bbMin);
+        drawShader->Uniform("bbox_extent", bbExtent);
 
-            drawShader->Uniform("bbox_min", bbMin);
-            drawShader->Uniform("bbox_extent", bbExtent);
+        U8 textureOffset = to_U8(ShaderProgram::TextureUsage::COUNT);
+        U8 layerOffset = 0;
+        stringImpl layerIndex;
+        for (U8 k = 0; k < _terrainTextures.size(); ++k) {
+            layerOffset = k * 3 + textureOffset;
+            layerIndex = to_stringImpl(k);
+            TerrainTextureLayer* textureLayer = _terrainTextures[k];
 
-            U8 textureOffset = to_U8(ShaderProgram::TextureUsage::COUNT);
-            U8 layerOffset = 0;
-            stringImpl layerIndex;
-            for (U8 k = 0; k < _terrainTextures.size(); ++k) {
-                layerOffset = k * 3 + textureOffset;
-                layerIndex = to_stringImpl(k);
-                TerrainTextureLayer* textureLayer = _terrainTextures[k];
+            drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
+            drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
+            drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
+            drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
+            drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
 
-                drawShader->Uniform(("texBlend[" + layerIndex + "]").c_str(), layerOffset);
-                drawShader->Uniform(("texTileMaps[" + layerIndex + "]").c_str(), layerOffset + 1);
-                drawShader->Uniform(("texNormalMaps[" + layerIndex + "]").c_str(), layerOffset + 2);
-                drawShader->Uniform(("diffuseScale[" + layerIndex + "]").c_str(), textureLayer->getDiffuseScales());
-                drawShader->Uniform(("detailScale[" + layerIndex + "]").c_str(), textureLayer->getDetailScales());
-
-                if (pass == 0 && i == 0 ) {
-                    getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
-                    getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
-                    getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
-                }
+            if (i == 0) {
+                getMaterialTpl()->addCustomTexture(textureLayer->blendMap(), layerOffset);
+                getMaterialTpl()->addCustomTexture(textureLayer->tileMaps(), layerOffset + 1);
+                getMaterialTpl()->addCustomTexture(textureLayer->normalMaps(), layerOffset + 2);
             }
         }
     }
@@ -137,7 +136,7 @@ void Terrain::onCameraUpdate(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(posOffset);
     ACKNOWLEDGE_UNUSED(rotationOffset);
 
-    _cameraUpdated = true;
+    _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
 }
 
 void Terrain::onCameraChange(SceneGraphNode& sgn,
@@ -145,7 +144,7 @@ void Terrain::onCameraChange(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(cam);
 
-    _cameraUpdated = true;
+    _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
 }
 
 void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
@@ -160,7 +159,7 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
     drawCommandsInOut.push_back(cmd);
 
-    if (renderStagePass._stage == RenderStage::DISPLAY) {
+    if (renderStagePass.stage() == RenderStage::DISPLAY) {
         //infinite plane
         GenericDrawCommand planeCmd;
         planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
@@ -168,9 +167,9 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
         planeCmd.LoD(0);
         planeCmd.sourceBuffer(_plane->getGeometryVB());
-        planeCmd.shaderProgram(renderStagePass._passType == RenderPassType::DEPTH_PASS
-                                                          ? _planeDepthShader
-                                                          : _planeShader);
+        planeCmd.shaderProgram(renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                                      ? _planeDepthShader
+                                                      : _planeShader);
         drawCommandsInOut.push_back(planeCmd);
 
         //BoundingBoxes
@@ -184,6 +183,8 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     }
 
     Object3D::initialiseDrawCommands(sgn, renderStagePass, drawCommandsInOut);
+
+    _cameraUpdated[to_base(renderStagePass.stage())] = true;
 }
 
 void Terrain::updateDrawCommands(SceneGraphNode& sgn,
@@ -192,30 +193,34 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  GenericDrawCommands& drawCommandsInOut) {
     _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
 
-    if (_cameraUpdated) {
-        _terrainTessellator.createTree(Camera::activeCamera()->getEye(),
-                                       vec3<F32>(0),
-                                       _terrainDimensions);
-        _cameraUpdated = false;
+    const U8 stageIndex = to_U8(renderStagePass.stage());
+    bool& cameraUpdated = _cameraUpdated[stageIndex];
+    TerrainTessellator& tessellator = _terrainTessellator[stageIndex];
+
+    if (cameraUpdated) {
+        tessellator.createTree(Camera::activeCamera()->getEye(),
+                               vec3<F32>(0),
+                               _terrainDimensions);
+        tessellator.updateRenderData();
+        cameraUpdated = false;
     }
 
-    U16 depth = _terrainTessellator.render();
-    drawCommandsInOut.front().drawCount(depth);
+    drawCommandsInOut.front().drawCount(tessellator.renderDepth());
     STUBBED("This may cause stalls. Profile! -Ionut");
 #if 0
-    _shaderData->updateData(0, depth, (bufferPtr)_terrainTessellator.renderData().data());
+    _shaderData->updateData(0, depth, (bufferPtr)tessellator.renderData().data());
 #else
-    _shaderData->setData((bufferPtr)_terrainTessellator.renderData().data());
+    _shaderData->setData((bufferPtr)tessellator.renderData().data());
 #endif
 
-    if (renderStagePass._stage == RenderStage::DISPLAY) {
+    if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
        assert(drawCommandsInOut[1].drawCount() == 1);
 
        drawCommandsInOut[1].shaderProgram(
-            renderStagePass._passType == RenderPassType::DEPTH_PASS
-                                       ? _planeDepthShader
-                                       : _planeShader);
+            renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                   ? _planeDepthShader
+                                   : _planeShader);
         size_t i = 2;
 
         if (_drawBBoxes) {

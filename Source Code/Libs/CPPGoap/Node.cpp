@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Node.h"
 
 int goap::Node::last_id_ = 0;

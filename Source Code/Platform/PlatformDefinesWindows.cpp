@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #if defined(_WIN32)
 
 #if defined(_DEBUG)
@@ -7,7 +9,7 @@
 
 #include "Headers/PlatformDefines.h"
 #include "Core/Headers/StringHelper.h"
-#include <iostream>
+
 #if defined(USE_VLD)
 #include <vld.h>
 #endif

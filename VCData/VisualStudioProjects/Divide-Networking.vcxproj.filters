@@ -10,6 +10,7 @@
     <ClCompile Include="..\..\Source Code\Networking\ASIO.cpp" />
     <ClCompile Include="..\..\Source Code\Networking\Client.cpp" />
     <ClCompile Include="..\..\Source Code\Networking\tcp_session_tpl.cpp" />
+    <ClCompile Include="..\..\Source Code\stdafx-networking.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Networking\Headers\ASIO.h">

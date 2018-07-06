@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/AITeam.h"
 
 #include "AI/Headers/AIEntity.h"

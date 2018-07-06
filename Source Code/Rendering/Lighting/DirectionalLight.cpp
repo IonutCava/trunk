@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/DirectionalLight.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/d3dConstantBuffer.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 

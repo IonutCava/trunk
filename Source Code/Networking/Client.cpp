@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #ifndef OPCODE_ENUM
 #define OPCODE_ENUM OPcodes
 #endif
@@ -5,8 +7,6 @@
 #include "Headers/Client.h"
 #include "Headers/ASIO.h"
 #include "Headers/OPCodesTpl.h"
-
-#include <boost/archive/text_iarchive.hpp>
 
 namespace Divide {
 

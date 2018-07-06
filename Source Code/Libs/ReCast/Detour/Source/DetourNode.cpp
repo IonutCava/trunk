@@ -16,11 +16,12 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "stdafx.h"
+
 #include "DetourNode.h"
 #include "DetourAlloc.h"
 #include "DetourAssert.h"
 #include "DetourCommon.h"
-#include <string.h>
 
 #ifdef DT_POLYREF64
 // From Thomas Wang, https://gist.github.com/badboy/6267743

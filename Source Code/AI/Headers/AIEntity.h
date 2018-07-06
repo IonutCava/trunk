@@ -34,8 +34,6 @@
 #include "AI/Sensors/Headers/AudioSensor.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 
-#include "Core/Headers/cdigginsAny.h"
-
 struct dtCrowdAgent;
 
 namespace Divide {

@@ -32,8 +32,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TERRAIN_LOADER_H_
 #define _TERRAIN_LOADER_H_
 
-#include <memory>
-
 namespace Divide {
 
 class Terrain;

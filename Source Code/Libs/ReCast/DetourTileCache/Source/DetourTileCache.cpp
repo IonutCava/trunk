@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "DetourTileCache.h"
 #include "DetourTileCacheBuilder.h"
 #include "DetourNavMeshBuilder.h"
@@ -6,8 +8,6 @@
 #include "DetourMath.h"
 #include "DetourAlloc.h"
 #include "DetourAssert.h"
-#include <string.h>
-#include <new>
 
 dtTileCache* dtAllocTileCache()
 {

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PhysXScene.h"
 
 #include "Managers/Headers/SceneManager.h"

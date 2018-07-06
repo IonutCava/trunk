@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIConsoleCommandParser.h"
 
 #include "Headers/GUI.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Platform/Headers/PlatformDefines.h"
 
 #if HASH_MAP_IMP == EASTL_IMP || VECTOR_IMP == EASTL_IMP

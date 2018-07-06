@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/DXWrapper.h"
 
 #include "GUI/Headers/GUI.h"

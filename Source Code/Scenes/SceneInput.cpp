@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Scene.h"
 #include "Headers/SceneInput.h"
 

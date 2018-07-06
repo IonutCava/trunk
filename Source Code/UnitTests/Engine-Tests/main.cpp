@@ -1,5 +1,8 @@
+#include "stdafx.h"
+
 #include "Headers/Defines.h"
 #include "Core/Headers/Console.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 #include <iostream>
 
@@ -31,3 +34,4 @@ int main(int argc, char **argv) {
 
     return state;
 }
+

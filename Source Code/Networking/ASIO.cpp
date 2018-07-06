@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #ifndef OPCODE_ENUM
 #define OPCODE_ENUM OPcodes
 #endif

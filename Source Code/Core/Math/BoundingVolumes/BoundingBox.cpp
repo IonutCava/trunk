@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/BoundingBox.h"
 #include "Headers/BoundingSphere.h"
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PostAAPreRenderOperator.h"
 
 #include "Core/Headers/Console.h"

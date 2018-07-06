@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/d3dTexture.h"
 #include "Platform/Video/Direct3D/Headers/d3dEnumTable.h"
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Core/Headers/Console.h"
 
 #include "Core/Headers/StringHelper.h"

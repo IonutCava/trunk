@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/IntersectionRecord.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 

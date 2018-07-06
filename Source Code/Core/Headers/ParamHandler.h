@@ -36,12 +36,6 @@
 #include "Utility/Headers/Localization.h"
 #include "Platform/Headers/PlatformDefines.h"
 
-#if !defined(CPP_17_SUPPORT)
-#include "cdigginsAny.h"
-#else
-#include <any>
-#endif
-
 namespace Divide {
 
 DEFINE_SINGLETON(ParamHandler)

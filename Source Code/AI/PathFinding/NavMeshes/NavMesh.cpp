@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NavMesh.h"
 #include "Headers/NavMeshDebugDraw.h"
 #include "../Headers/DivideRecast.h"

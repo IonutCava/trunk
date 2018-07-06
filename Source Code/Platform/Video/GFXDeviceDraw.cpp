@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/GFXDevice.h"
@@ -181,7 +183,7 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         bufferData._lasNodeCount = 0;
     }
 
-    if (currentStage._stage == RenderStage::SHADOW) {
+    if (currentStage.stage() == RenderStage::SHADOW) {
         Light* shadowLight = LightPool::currentShadowCastingLight();
         assert(shadowLight != nullptr);
         if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {

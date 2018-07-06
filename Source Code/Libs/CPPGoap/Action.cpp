@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Action.h"
 #include "WorldState.h"
 

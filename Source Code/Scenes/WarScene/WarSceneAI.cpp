@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/WarScene.h"
 #include "Headers/WarSceneAIProcessor.h"
 
@@ -347,7 +349,7 @@ bool WarScene::addUnits() {
                                                        currentNode->getName());
             aiSoldier->addSensor(AI::SensorType::VISUAL_SENSOR);
             currentNode->get<RenderingComponent>()->renderBoundingBox(k == 0);
-			currentNode->get<RenderingComponent>()->renderSkeleton(k != 0);
+            currentNode->get<RenderingComponent>()->renderSkeleton(k != 0);
 
             AI::WarSceneAIProcessor* brain = MemoryManager_NEW AI::WarSceneAIProcessor(type, *_aiManager);
 

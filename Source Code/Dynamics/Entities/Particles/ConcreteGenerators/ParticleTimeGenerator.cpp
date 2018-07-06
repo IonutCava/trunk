@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ParticleTimeGenerator.h"
 
 namespace Divide {

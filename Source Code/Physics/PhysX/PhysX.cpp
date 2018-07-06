@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PhysX.h"
 #include "Headers/PhysXSceneInterface.h"
 #include "Core/Headers/Console.h"

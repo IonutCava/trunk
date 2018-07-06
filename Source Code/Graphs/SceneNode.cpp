@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SceneNode.h"
 
 #include "Core/Math/Headers/Transform.h"

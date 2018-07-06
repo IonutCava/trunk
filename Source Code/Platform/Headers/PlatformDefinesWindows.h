@@ -32,6 +32,8 @@
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
+#include "Platform/File/Headers/FileManagement.h"
+
 #pragma warning(disable : 4127)  //< Constant conditional expressions
 #pragma warning(disable : 4201)  //< nameless struct
 
@@ -84,17 +86,18 @@
 
 #if defined(CPP_VERSION)
 #   undef CPP_VERSION
-#   if _MSC_VER == 1600 || _MSC_VER == 1700
-#       define CPP_VERSION 1
-#   elif _MSC_VER == 1800
-#       define CPP_VERSION 201103L
-#   elif _MSC_VER == 1900
-#       define CPP_VERSION 201402L
-#   elif _MSC_VER > 1900
-#       define CPP_VERSION 201500L //This may change for C++17
-#   else
-#       define CPP_VERSION 0
-#   endif
+#endif
+
+#if _MSC_VER == 1600 || _MSC_VER == 1700
+#   define CPP_VERSION 1
+#elif _MSC_VER == 1800
+#   define CPP_VERSION 201103L
+#elif _MSC_VER == 1900
+#   define CPP_VERSION 201402L
+#elif _MSC_VER > 1900
+#   define CPP_VERSION 201500L //This may change for C++17
+#else
+#   define CPP_VERSION 0
 #endif
 
 #ifndef HAS_CPP17

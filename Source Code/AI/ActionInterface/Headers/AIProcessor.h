@@ -34,7 +34,6 @@
 
 #include "GOAPInterface.h"
 #include "AI/Headers/AIEntity.h"
-#include "Core/Headers/cdigginsAny.h"
 
 namespace Divide {
 class Texture;

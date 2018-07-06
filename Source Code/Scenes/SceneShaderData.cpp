@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SceneShaderData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"

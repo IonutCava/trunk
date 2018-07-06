@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Projectile.h"
 
 namespace Divide {

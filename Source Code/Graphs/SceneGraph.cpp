@@ -1,4 +1,8 @@
+#include "stdafx.h"
+
 #include "Headers/SceneGraph.h"
+#include "Core/Headers/Console.h"
+#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/FrameListenerManager.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/TenisSceneAIProcessor.h"
 
 #include "AI/Sensors/Headers/VisualSensor.h"

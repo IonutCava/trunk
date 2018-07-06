@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NetworkScene.h"
 
 #include "Core/Headers/ParamHandler.h"

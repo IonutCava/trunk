@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Scene.h"
 
 #include "Core/Headers/ParamHandler.h"
@@ -1059,7 +1061,7 @@ void Scene::processTasks(const U64 deltaTime) {
 }
 
 void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
-    if (stagePass._stage != RenderStage::DISPLAY || stagePass._passType == RenderPassType::DEPTH_PASS) {
+    if (stagePass.stage() != RenderStage::DISPLAY || stagePass.pass() == RenderPassType::DEPTH_PASS) {
         return;
     }
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SkinnedSubMesh.h"
 #include "Headers/Mesh.h"
 

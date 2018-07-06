@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/glGenericVertexData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glBufferImpl.h"

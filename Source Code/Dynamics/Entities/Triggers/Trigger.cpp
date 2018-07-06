@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Trigger.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"

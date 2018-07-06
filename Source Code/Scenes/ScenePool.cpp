@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ScenePool.h"
 
 #include "SceneList.h"

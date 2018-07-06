@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PXDevice.h"
 #include "Headers/PhysicsAsset.h"
 

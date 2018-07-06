@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SceneManager.h"
 #include "Headers/RenderPassManager.h"
 #include "Headers/FrameListenerManager.h"
@@ -15,7 +17,6 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
-#include "Platform/File/Headers/FileManagement.h"
 
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Importer/Headers/DVDConverter.h"
@@ -462,7 +463,7 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
     gfx.getRenderer().preRender(target, *lightPool);
 
-    if (gfx.getRenderStage()._stage == RenderStage::DISPLAY) {
+    if (gfx.getRenderStage().stage() == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx);
     }
 }
@@ -605,16 +606,16 @@ const RenderPassCuller::VisibleNodeList& SceneManager::cullSceneGraph(const Rend
 
     _renderPassCuller->frustumCull(activeScene.sceneGraph(),
                                    activeScene.state(),
-                                   stage._stage,
+                                   stage.stage(),
                                    cullingFunction);
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage._stage);
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
 
     visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
                                       std::end(visibleNodes),
                                       meshCullingFunction),
                        std::end(visibleNodes));
 
-    if (stage._stage == RenderStage::SHADOW) {
+    if (stage.stage() == RenderStage::SHADOW) {
         visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
                                           std::end(visibleNodes),
                                           shadowCullingFunction),
@@ -633,7 +634,7 @@ SceneManager::getVisibleNodesCache(RenderStage stage) {
 void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refreshNodeData, U32 pass) {
     RenderQueue& queue = parent().renderPassManager().getQueue();
 
-    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage._stage);
+    RenderPassCuller::VisibleNodeList& visibleNodes = _renderPassCuller->getNodeCache(stage.stage());
 
     if (refreshNodeData) {
         queue.refresh();
@@ -662,7 +663,7 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
         }
     );
 
-    RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(stage._stage, pass);
+    RenderPass::BufferData& bufferData = parent().renderPassManager().getBufferData(stage.stage(), pass);
 
     _platformContext->gfx().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
 }
@@ -673,13 +674,13 @@ bool SceneManager::populateRenderQueue(const Camera& camera,
 
     const RenderStagePass& stage = _platformContext->gfx().getRenderStage();
 
-    if (stage._passType != RenderPassType::DEPTH_PASS) {
+    if (stage.pass() != RenderPassType::DEPTH_PASS) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
         lightPool->prepareLightData(camera.getEye(), camera.getViewMatrix());
     }
 
     if (doCulling) {
-        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage._passType)][to_U32(stage._stage)]);
+        Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage.pass())][to_U32(stage.stage())]);
         cullSceneGraph(stage);
     }
 

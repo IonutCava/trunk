@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PostFX.h"
 #include "Headers/PreRenderOperator.h"
 

@@ -93,8 +93,11 @@ public:
     // Builds a terrain quadtree based on specified parameters and current camera position.
     void createTree(const vec3<F32>& camPos, const vec3<F32>& origin, const vec2<U16>& terrainDimensions);
 
-    // Draw the terrrain. Returns the final render depth
-    U16 render();
+    // Prepare data to draw the terrrain.
+    void updateRenderData();
+
+    // Returns the final render depth
+    U16 renderDepth() const;
 
     // Search for a node in the tree.
     // x, z == the point we are searching for (trying to find the node with an origin closest to that point)

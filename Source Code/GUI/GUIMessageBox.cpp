@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIMessageBox.h"
 
 #ifndef CEGUI_STATIC

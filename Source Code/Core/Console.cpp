@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Console.h"
 
 #include "Core/Time/Headers/ApplicationTimer.h"

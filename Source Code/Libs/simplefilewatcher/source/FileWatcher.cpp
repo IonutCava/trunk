@@ -20,6 +20,8 @@
 	THE SOFTWARE.
 */
 
+#include "stdafx.h"
+
 #include <includes/FileWatcher.h>
 #include <includes/FileWatcherImpl.h>
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/GFXDevice.h"
@@ -216,10 +218,10 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = stagePass._stage != RenderStage::SHADOW;
+    params.doPrePass = stagePass.stage() != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
     params.camera = camera;
-    params.stage = stagePass._stage;
+    params.stage = stagePass.stage();
     params.target = cubeMap;
     // We do our own binding
     params.bindTargets = false;
@@ -282,10 +284,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = stagePass._stage != RenderStage::SHADOW;
+    params.doPrePass = stagePass.stage() != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
     params.camera = camera;
-    params.stage = stagePass._stage;
+    params.stage = stagePass.stage();
     params.target = targetBuffer;
     params.bindTargets = false;
     // Enable our render target

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GFXRTPool.h"
 #include "Headers/GFXDevice.h"
 

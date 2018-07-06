@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Object3D.h"
 
 #include "Core/Headers/PlatformContext.h"

@@ -35,9 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/Singleton.h"
 #include "Networking/Headers/tcp_session_tpl.h"
 
-#include <boost/asio.hpp>
-#include <thread>
-
 //----------------------------------------------------------------------
 namespace Divide {
 

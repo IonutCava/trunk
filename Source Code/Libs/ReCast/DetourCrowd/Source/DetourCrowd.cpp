@@ -16,11 +16,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#define _USE_MATH_DEFINES
-#include <string.h>
-#include <float.h>
-#include <stdlib.h>
-#include <new>
+#include "stdafx.h"
+
 #include "DetourCrowd.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"

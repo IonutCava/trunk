@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"

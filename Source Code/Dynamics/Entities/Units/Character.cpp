@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Character.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"

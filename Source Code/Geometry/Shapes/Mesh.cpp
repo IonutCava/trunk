@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Mesh.h"
 #include "Headers/SubMesh.h"
 

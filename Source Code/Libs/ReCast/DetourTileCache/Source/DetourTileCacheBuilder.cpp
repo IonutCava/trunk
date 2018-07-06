@@ -16,12 +16,13 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
+#include "stdafx.h"
+
 #include "DetourCommon.h"
 #include "DetourMath.h"
 #include "DetourStatus.h"
 #include "DetourAssert.h"
 #include "DetourTileCacheBuilder.h"
-#include <string.h>
 
 
 template<class T> class dtFixedArray

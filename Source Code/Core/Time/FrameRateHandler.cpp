@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/FrameRateHandler.h"
 #include "Headers/ApplicationTimer.h"
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/IKComponent.h"
 
 namespace Divide {

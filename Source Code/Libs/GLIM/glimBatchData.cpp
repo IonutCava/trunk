@@ -4,6 +4,8 @@
 ** For more details, see the included Readme.txt.
 */
 
+#include "stdafx.h"
+
 #include "glimBatchData.h"
 #include "glimInterface.h"
 

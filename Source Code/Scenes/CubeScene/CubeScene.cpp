@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/CubeScene.h"
 
 #include "Managers/Headers/SceneManager.h"

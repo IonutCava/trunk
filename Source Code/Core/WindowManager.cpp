@@ -1,11 +1,10 @@
+#include "stdafx.h"
+
 #include "Headers/WindowManager.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-
-#define HAVE_M_PI
-#include <SDL.h>
 
 namespace Divide {
 

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Localization.h"
 
 #include "Core/Headers/ErrorCodes.h"

@@ -1,7 +1,7 @@
+#include "stdafx.h"
+
 #include "Headers/ScriptBindings.h"
 #include "Headers/GameScript.h"
-
-#include <chaiscript/chaiscript_stdlib.hpp>
 
 namespace Divide {
 

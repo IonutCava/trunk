@@ -1,9 +1,10 @@
+#include "stdafx.h"
+
 #include "Headers/glShader.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
-#include "Platform/File/Headers/FileManagement.h"
 
 #include "Core/Headers/Console.h"
 #include "Core/Headers/StringHelper.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/ParticleEmitter.h"
@@ -212,7 +214,7 @@ void ParticleEmitter::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
-    if (renderStagePass._passType != RenderPassType::DEPTH_PASS) {
+    if (renderStagePass.pass() != RenderPassType::DEPTH_PASS) {
         return;
     }
 
@@ -234,7 +236,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
             // invalidateCache means that the existing particle data is no longer partially sorted
             _particles->sort(true);
-            _buffersDirty[to_U32(renderStagePass._stage)] = true;
+            _buffersDirty[to_U32(renderStagePass.stage())] = true;
         }));
     
     _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
@@ -249,12 +251,12 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     }
     _bufferUpdate.clear();
 
-    if (renderStagePass._passType != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass._stage)]) {
-        GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass());
+    if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
+        GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
         buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
         buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
         buffer.incQueue();
-        _buffersDirty[to_U32(renderStagePass._stage)] = false;
+        _buffersDirty[to_U32(renderStagePass.stage())] = false;
     }
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
@@ -262,7 +264,7 @@ void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
     cmd.stateHash(_context.isDepthStage() ? _particleStateBlockHashDepth
                                           : _particleStateBlockHash);
 
-    cmd.sourceBuffer(&getDataBuffer(renderStagePass._stage, sceneRenderState.playerPass()));
+    cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
     SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 

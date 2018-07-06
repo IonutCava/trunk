@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/BoundsComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 

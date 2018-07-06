@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Frustum.h"
 #include "Headers/Camera.h"
 

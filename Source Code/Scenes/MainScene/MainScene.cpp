@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/MainScene.h"
 
 #include "Core/Headers/ParamHandler.h"

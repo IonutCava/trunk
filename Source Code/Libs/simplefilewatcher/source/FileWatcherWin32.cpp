@@ -20,12 +20,11 @@
 	THE SOFTWARE.
 */
 
+#include "stdafx.h"
+
 #include <includes/FileWatcherWin32.h>
 
 #if FILEWATCHER_PLATFORM == FILEWATCHER_PLATFORM_WIN32
-
-#define _WIN32_WINNT 0x0550
-#include <windows.h>
 
 #if defined(_MSC_VER)
 #pragma comment(lib, "comctl32.lib")

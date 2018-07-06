@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ShadowMap.h"
 #include "Headers/CubeShadowMap.h"
 #include "Headers/SingleShadowMap.h"

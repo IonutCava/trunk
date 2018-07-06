@@ -1,7 +1,8 @@
+#include "stdafx.h"
+
 #include "xallocator.h"
 #include "allocator.h"
 #include "Fault.h"
-#include <iostream>
 
 using namespace std;
 
@@ -10,6 +11,17 @@ using namespace std;
 #endif
 
 #if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif  // WIN32_LEAN_AND_MEAN
+
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif  //VC_EXTRALEAN
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif  //NOMINMAX
 #include <windows.h>
 static CRITICAL_SECTION _criticalSection; 
 #else
@@ -422,5 +434,4 @@ extern "C" void xalloc_stats()
 
 	lock_release();
 }
-
 

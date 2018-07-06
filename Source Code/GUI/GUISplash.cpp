@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUISplash.h"
 
 #include "Core/Headers/Kernel.h"

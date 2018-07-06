@@ -33,8 +33,6 @@
 #define _SCENE_GRAPH_H_
 
 #include "Octree.h"
-#include "Core/Headers/Console.h"
-#include "Utility/Headers/Localization.h"
 #include "Scenes/Headers/SceneComponent.h"
 #include "Rendering/Headers/FrameListener.h"
 

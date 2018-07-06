@@ -1,4 +1,4 @@
-#include "Headers/FileManagement.h"
+#include "stdafx.h"
 
 #include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"

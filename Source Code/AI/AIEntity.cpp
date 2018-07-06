@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/AIEntity.h"
 
 #include "AI/PathFinding/Headers/DivideCrowd.h"

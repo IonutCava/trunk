@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "config.h"
 
 #include "Headers/PlatformDefines.h"
@@ -12,9 +14,6 @@
 #endif
 
 #include "Utility/Headers/MemoryTracker.h"
-
-#include <boost/filesystem/operations.hpp>
-#include <boost/filesystem/path.hpp>
 
 namespace Divide {
 

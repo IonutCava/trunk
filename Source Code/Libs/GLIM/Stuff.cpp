@@ -4,9 +4,9 @@
 ** For more details, see the included Readme.txt.
 */
 
+#include "stdafx.h"
+
 #include "glim.h"
-#include <iostream>
-#include <stdio.h>
 
 namespace NS_GLIM
 {

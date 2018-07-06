@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Ammunition.h"
 
 namespace Divide {

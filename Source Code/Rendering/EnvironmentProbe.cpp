@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/EnvironmentProbe.h"
 
 #include "Scenes/Headers/Scene.h"

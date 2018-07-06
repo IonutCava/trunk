@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/AttributeDescriptor.h"
 
 namespace Divide {

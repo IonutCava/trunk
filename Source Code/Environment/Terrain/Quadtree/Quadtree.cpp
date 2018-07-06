@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Quadtree.h"
 #include "Headers/QuadtreeNode.h"
 #include "Environment/Terrain/Headers/Terrain.h"
@@ -39,6 +41,7 @@ void Quadtree::drawBBox(GFXDevice& context, GenericDrawCommands& commandsOut) {
     _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
                           _root->getBoundingBox().getMax(),
                           vec4<U8>(0, 64, 255, 255));
+
     commandsOut.push_back(_bbPrimitive->toDrawCommand());
 }
 

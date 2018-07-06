@@ -3,9 +3,6 @@
 
 #include "WorldPacket.h"
 
-#include <boost/asio.hpp>
-#include <thread>
-
 namespace Divide {
 
 #ifndef OPCODE_ENUM

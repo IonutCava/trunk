@@ -16,7 +16,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <string.h>
+#include "stdafx.h"
+
 #include "DetourPathQueue.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshQuery.h"

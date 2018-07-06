@@ -3178,6 +3178,18 @@ public:
 # endif
 #endif
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#endif  // WIN32_LEAN_AND_MEAN
+
+#ifndef VC_EXTRALEAN
+#define VC_EXTRALEAN
+#endif  //VC_EXTRALEAN
+
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif  //NOMINMAX
+
 #include <windows.h>
 #ifdef SI_NO_MBCS
 # define SI_NoCase   SI_GenericNoCase

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/GUI.h"
 #include "Headers/SceneGUIElements.h"
 

@@ -34,8 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 
-#include <simplefilewatcher/includes/FileWatcher.h>
-
 namespace Divide {
 
 enum class FileUpdateEvent : U8 {

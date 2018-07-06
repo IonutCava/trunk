@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/NetworkingComponent.h"
 
 #include "Core/Networking/Headers/LocalClient.h"

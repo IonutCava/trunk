@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/Session.h"
 #include "Headers/Server.h"
 #include "Headers/OPCodesImpl.h"

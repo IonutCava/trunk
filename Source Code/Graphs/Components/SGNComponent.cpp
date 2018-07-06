@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SGNComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 

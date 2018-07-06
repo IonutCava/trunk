@@ -32,15 +32,6 @@
 #ifndef _CORE_CONSOLE_H_
 #define _CORE_CONSOLE_H_
 
-#include "Core/Headers/NonCopyable.h"
-#include "Platform/Headers/PlatformDefines.h"
-
-#include <mutex>
-#include <functional>
-#include <atomic>
-#include <fstream>
-#include <ConcurrentQueue/concurrentqueue.h>
-
 namespace Divide {
 
 constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16;

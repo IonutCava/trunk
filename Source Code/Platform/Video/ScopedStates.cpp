@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/ScopedStates.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -26,15 +28,19 @@ ScopedViewport::~ScopedViewport()
     _context.restoreViewport();
 }
 
-ScopedDebugMessage::ScopedDebugMessage(GFXDevice& context, const char* message, I32 id)
+ScopedDebugMessage::ScopedDebugMessage(GFXDevice& context, const stringImpl& message, I32 id)
     : _context(context)
 {
-    _context.pushDebugMessage(message, id);
+    if (Config::ENABLE_GPU_VALIDATION) {
+        _context.pushDebugMessage(message.c_str(), id);
+    }
 }
 
 ScopedDebugMessage::~ScopedDebugMessage()
 {
-    _context.popDebugMessage();
+    if (Config::ENABLE_GPU_VALIDATION) {
+        _context.popDebugMessage();
+    }
 }
 
 };  // namespace GFX

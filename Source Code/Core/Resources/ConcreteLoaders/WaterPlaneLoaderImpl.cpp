@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/StringHelper.h"
 #include "Environment/Water/Headers/Water.h"

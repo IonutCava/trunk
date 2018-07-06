@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/FirstPersonCamera.h"
 
 #include "Core/Headers/Application.h"

@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/QuadtreeNode.h"
 
 #include "Managers/Headers/SceneManager.h"

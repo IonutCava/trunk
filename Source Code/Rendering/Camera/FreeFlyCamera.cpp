@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/FreeFlyCamera.h"
 
 namespace Divide {

@@ -144,6 +144,8 @@ struct RenderStagePass {
     {
     }
 
+    typedef U8 PassIndex;
+
     inline bool operator==(const RenderStagePass& other) const {
         return _passType == other._passType &&
                _stage == other._stage;
@@ -154,6 +156,39 @@ struct RenderStagePass {
                _stage != other._stage;
     }
 
+    inline RenderStage stage() const {
+        return _stage;
+    }
+
+    inline RenderPassType pass() const {
+        return _passType;
+    }
+
+    inline PassIndex index() const {
+        return index(_stage, _passType);
+    }
+
+    constexpr static PassIndex count()  {
+        return static_cast<PassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
+    }
+
+    static PassIndex index(const RenderStage stage, const RenderPassType type) {
+        return static_cast<PassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
+    }
+
+    static RenderStage stage(PassIndex index) {
+        return static_cast<RenderStage>(index % to_base(RenderStage::COUNT));
+    }
+
+    static RenderPassType pass(PassIndex index) {
+        return static_cast<RenderPassType>(index / to_base(RenderStage::COUNT));
+    }
+
+    static RenderStagePass stagePass(PassIndex index) {
+        return RenderStagePass(stage(index), pass(index));
+    }
+
+private:
     RenderStage _stage;
     RenderPassType _passType;
 };

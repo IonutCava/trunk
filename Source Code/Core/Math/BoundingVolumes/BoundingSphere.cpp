@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {

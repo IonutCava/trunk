@@ -16,17 +16,14 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <float.h>
-#include <string.h>
-#include <stdio.h>
+#include "stdafx.h"
+
 #include "DetourNavMesh.h"
 #include "DetourNode.h"
 #include "DetourCommon.h"
 #include "DetourMath.h"
 #include "DetourAlloc.h"
 #include "DetourAssert.h"
-#include <new>
-
 
 inline bool overlapSlabs(const float* amin, const float* amax,
                          const float* bmin, const float* bmax,

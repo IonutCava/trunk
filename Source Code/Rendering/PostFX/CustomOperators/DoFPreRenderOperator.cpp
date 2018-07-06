@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/DoFPreRenderOperator.h"
 
 #include "Core/Headers/Console.h"

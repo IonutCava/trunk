@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/PlatformContext.h"
 #include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"

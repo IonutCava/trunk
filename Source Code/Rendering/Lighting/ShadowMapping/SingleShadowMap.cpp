@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/SingleShadowMap.h"
 
 #include "Scenes/Headers/SceneState.h"

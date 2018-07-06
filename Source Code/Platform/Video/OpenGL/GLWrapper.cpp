@@ -1,4 +1,6 @@
-﻿#include "Headers/GLWrapper.h"
+﻿#include "stdafx.h"
+
+#include "Headers/GLWrapper.h"
 #include "Headers/glIMPrimitive.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"

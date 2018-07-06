@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "Headers/glBufferImpl.h"
 #include "Headers/glMemoryManager.h"
 #include "Headers/glBufferLockManager.h"
