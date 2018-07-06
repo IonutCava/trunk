@@ -147,13 +147,13 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
                 GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
             }
 
-            for (U32 i = 0; i < to_U32(RenderBinType::COUNT); ++i) {
+            for (RenderBinType type : RenderBinType::_values()) {
                 if (std::find(std::begin(depthExclusionList),
                     std::end(depthExclusionList),
-                    RenderBinType::_from_integral(i)) == std::cend(depthExclusionList))
+                    type) == std::cend(depthExclusionList))
                 {
-                    if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
+                    if (type._value != RenderBinType::RBT_TRANSLUCENT) {
+                        _context.renderQueueToSubPasses(type, bufferInOut);
                     }
                 }
             }
@@ -179,7 +179,6 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
         RenderBinType::RBT_SKY,
         RenderBinType::RBT_TRANSLUCENT
     };
-    constexpr U32 binCount = to_U32(RenderBinType::COUNT);
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
@@ -236,20 +235,20 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
         }
 
         if (params.stage == RenderStage::SHADOW) {
-            for (U32 i = 0; i < binCount; ++i) {
+            for (RenderBinType type : RenderBinType::_values()) {
                 if (std::find(std::begin(shadowExclusionList),
                               std::end(shadowExclusionList),
-                               RenderBinType::_from_integral(i)) == std::cend(shadowExclusionList))
+                              type) == std::cend(shadowExclusionList))
                 {
-                    if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                        _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
+                    if (type._value != RenderBinType::RBT_TRANSLUCENT) {
+                        _context.renderQueueToSubPasses(type, bufferInOut);
                     }
                 }
             }
         } else {
-            for (U32 i = 0; i < binCount; ++i) {
-                if (i != to_U32(RenderBinType::RBT_TRANSLUCENT)) {
-                    _context.renderQueueToSubPasses(RenderBinType::_from_integral(i), bufferInOut);
+            for (RenderBinType type : RenderBinType::_values()) {
+                if (type._value != RenderBinType::RBT_TRANSLUCENT) {
+                    _context.renderQueueToSubPasses(type, bufferInOut);
                 }
             }
         }

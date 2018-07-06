@@ -509,7 +509,7 @@ protected:
 
     vector<DebugView_ptr> _debugViews;
 
-    std::array<std::unique_ptr<RenderPackageQueue>, to_base(RenderBinType::COUNT)> _renderQueues;
+    std::array<std::unique_ptr<RenderPackageQueue>, RenderBinType::_size_constant> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
     std::deque<DELEGATE_CBK<void, const Task&>> _GFXLoadQueue;

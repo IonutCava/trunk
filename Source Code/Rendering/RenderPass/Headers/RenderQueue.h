@@ -45,8 +45,8 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue {
    public:
-    typedef std::array<RenderBin*, RenderBinType::COUNT> RenderBinArray;
-    typedef std::array<vector<SceneGraphNode*>, to_base(RenderBinType::COUNT)> SortedQueues;
+    typedef std::array<RenderBin*, RenderBinType::_size_constant> RenderBinArray;
+    typedef std::array<vector<SceneGraphNode*>, RenderBinType::_size_constant> SortedQueues;
 
   public:
     RenderQueue(GFXDevice& context);

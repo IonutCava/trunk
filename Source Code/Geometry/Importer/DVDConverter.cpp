@@ -192,6 +192,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
     U32 numMeshes = aiScenePointer->mNumMeshes;
     target._subMeshData.reserve(numMeshes);
 
+    stringImpl prevName = "";
     for (U16 n = 0; n < numMeshes; ++n) {
         aiMesh* currentMesh = aiScenePointer->mMeshes[n];
         // Skip points and lines ... for now -Ionut
@@ -208,7 +209,11 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target, co
                                                    file.substr(file.rfind("/") + 1, file.length()).c_str(),
                                                    n);
         }
-       
+        if (subMeshTemp._name == prevName) {
+            subMeshTemp._name += "_" + to_stringImpl(n);
+        }
+
+        prevName = subMeshTemp._name;
         subMeshTemp._boneCount = currentMesh->mNumBones;
         loadSubMeshGeometry(currentMesh, 
                             target._vertexBuffer,

@@ -416,6 +416,10 @@ void GFXDevice::closeRenderingAPI() {
 
     _prevDepthBuffers.clear();
 
+    for (RenderBinType type : RenderBinType::_values()) {
+        clearRenderQueue(type);
+    }
+
     MemoryManager::DELETE(_renderer);
 
     // Close the shader manager

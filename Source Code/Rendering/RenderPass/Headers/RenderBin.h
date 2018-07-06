@@ -84,8 +84,7 @@ BETTER_ENUM(RenderBinType, U32,
     RBT_TRANSPARENT, //< Transparent items use a simple 0/1 alpha value supplied via an opacity map or the albedo's alpha channel
     RBT_TRANSLUCENT, //< Translucent items use a [0.0...1.0] alpha values supplied via an opacity map or the albedo's alpha channel
     RBT_DECAL,       //< Decals are drawn over everything
-    RBT_IMPOSTOR,    //< Impostors should be overlayed over everything since they are a debugging tool
-    COUNT)
+    RBT_IMPOSTOR)    //< Impostors should be overlayed over everything since they are a debugging tool
 
 class SceneRenderState;
 class RenderStagePass;
