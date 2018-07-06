@@ -186,7 +186,6 @@ void DeferredShadingRenderer::secondPass(
     cmd.stateHash(GFX_DEVICE.getDefaultStateBlock(true));
     cmd.shaderProgram(_previewDeferredShader);
     if (_debugView) {
-        _previewDeferredShader->bind();
         _previewDeferredShader->Uniform("texDiffuse0", 4);
         if (_renderQuads[1]->onDraw(GFX_DEVICE.getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
@@ -203,7 +202,7 @@ void DeferredShadingRenderer::secondPass(
             GFX_DEVICE.submitRenderCommand(cmd);
         }
     }
-    _deferredShader->bind();
+
     _deferredShader->Uniform("lightCount", (I32)_cachedLightCount);
 
     cmd.shaderProgram(_deferredShader);

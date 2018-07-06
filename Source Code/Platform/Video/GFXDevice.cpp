@@ -598,7 +598,6 @@ void GFXDevice::constructHIZ() {
         _renderTarget[to_uint(RenderTarget::SCREEN)]
             ->getResolution();
     // We use a special shader that downsamples the buffer
-    _HIZConstructProgram->bind();
     // We will use a state block that disables color writes as we will render
     // only a depth image,
     // disables depth testing but allows depth writes

@@ -110,11 +110,16 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor) {
             GFX_DEVICE.getRenderTarget(
                            GFXDevice::RenderTarget::SCREEN)
                 ->getResolution();
+
+        _blurDepthMapShader->bind();
         _horizBlur = _blurDepthMapShader->GetSubroutineIndex(
             ShaderType::GEOMETRY, "computeCoordsH");
         _vertBlur = _blurDepthMapShader->GetSubroutineIndex(
             ShaderType::GEOMETRY, "computeCoordsV");
         _blurBuffer->Create(_resolution, _resolution);
+
+        _blurDepthMapShader->Uniform("blurSize", vec2<F32>(1.0f / (_depthMap->getWidth() * 1.0f),
+                                                           1.0f / (_depthMap->getHeight() * 1.0f)));
     }
 
     ShadowMap::resolution(resolution, resolutionFactor);
@@ -265,14 +270,9 @@ void CascadedShadowMaps::postRender() {
         return;
     }
 
-    GFX::Scoped2DRendering scoped2D(true);
-
-    _blurDepthMapShader->bind();
-
     // Blur horizontally
+    _blurDepthMapShader->bind();
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _horizBlur);
-    _blurDepthMapShader->Uniform("blurSize",
-                                 1.0f / (_depthMap->getWidth() * 1.0f));
     _blurBuffer->Begin(*_renderPolicy);
     _depthMap->Bind(0, TextureDescriptor::AttachmentType::Color0, false);
     for (U8 i = 0; i < _numSplits - 1; ++i) {
@@ -284,12 +284,11 @@ void CascadedShadowMaps::postRender() {
                               _blurDepthMapShader);
     }
     _blurBuffer->End();
+
     // Blur vertically
     _blurDepthMapShader->SetSubroutine(ShaderType::GEOMETRY, _vertBlur);
     _depthMap->Begin(*_renderPolicy);
     _blurBuffer->Bind();
-    _blurDepthMapShader->Uniform("blurSize",
-                                 1.0f / (_depthMap->getHeight() * 1.0f));
     for (U8 i = 0; i < _numSplits - 1; ++i) {
         _blurDepthMapShader->Uniform("layer", (I32)i);
         _depthMap->DrawToLayer(TextureDescriptor::AttachmentType::Color0, i,

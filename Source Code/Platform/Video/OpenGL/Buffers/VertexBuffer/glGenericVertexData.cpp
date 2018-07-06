@@ -471,13 +471,17 @@ void glGenericVertexData::setAttributeInternal(
                                 _bufferObjects[descriptor.bufferIndex()]);
     //}
     // Update the attribute data
-    bool isIntegerType = descriptor.dataType() != GFXDataFormat::FLOAT_16 &&
-                         descriptor.dataType() != GFXDataFormat::FLOAT_32;
+
+    GFXDataFormat format = descriptor.dataType();
+
+    bool isIntegerType = format != GFXDataFormat::FLOAT_16 &&
+                         format != GFXDataFormat::FLOAT_32;
+    
     if (!isIntegerType || (isIntegerType && descriptor.normalized())) {
         glVertexAttribPointer(
             descriptor.attribIndex(),
             descriptor.componentsPerElement(),
-            GLUtil::glDataFormat[to_uint(descriptor.dataType())],
+            GLUtil::glDataFormat[to_uint(format)],
             descriptor.normalized() ? GL_TRUE : GL_FALSE,
             (GLsizei)descriptor.stride(),
             (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
@@ -485,7 +489,7 @@ void glGenericVertexData::setAttributeInternal(
         glVertexAttribIPointer(
             descriptor.attribIndex(),
             descriptor.componentsPerElement(),
-            GLUtil::glDataFormat[to_uint(descriptor.dataType())],
+            GLUtil::glDataFormat[to_uint(format)],
             (GLsizei)descriptor.stride(),
             (void*)(descriptor.offset() * _elementSize[descriptor.bufferIndex()]));
     }

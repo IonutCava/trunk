@@ -156,13 +156,13 @@ void ForwardPlusRenderer::downSampleDepthBuffer(
 
     _depthRanges->Begin(Framebuffer::defaultPolicy());
     {
-        _depthRangesConstructProgram->bind();
-        _depthRangesConstructProgram->Uniform(
-            "dvd_ProjectionMatrixInverse",
-            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+        _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse",
+                                              GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+
         GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
             ->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0),
                    TextureDescriptor::AttachmentType::Depth);
+
         GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true),
                                 _depthRangesConstructProgram);
 

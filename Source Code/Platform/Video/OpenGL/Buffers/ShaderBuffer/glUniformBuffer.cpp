@@ -41,6 +41,7 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
       _UBOid(0),
       _mappedBuffer(nullptr),
       _alignment(0),
+      _allignedBufferSize(0),
       _target(_unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER),
       _lockManager(_persistentMapped
                        ? std::make_unique<glBufferLockManager>(true)
@@ -48,8 +49,8 @@ glUniformBuffer::glUniformBuffer(const stringImpl& bufferName,
 
 {
     _updated = false;
-    _alignment = _unbound ? ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 32)
-                          : ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
+    _alignmentRequirement = _unbound ? ParamHandler::getInstance().getParam<I32>("rendering.SSBOAligment", 32)
+                                     : ParamHandler::getInstance().getParam<I32>("rendering.UBOAligment", 32);
 }
 
 glUniformBuffer::~glUniformBuffer() 
@@ -73,7 +74,7 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 
     ShaderBuffer::create(primitiveCount, primitiveSize);
 
-    _allignedBufferSize = realign_offset(_bufferSize, _alignment);
+    _allignedBufferSize = realign_offset(_bufferSize, _alignmentRequirement);
 
     if (_persistentMapped) {
         _mappedBuffer = 
@@ -93,7 +94,7 @@ void glUniformBuffer::create(U32 primitiveCount, ptrdiff_t primitiveSize) {
                                                   ? GL_DYNAMIC_DRAW
                                                   : GL_STREAM_DRAW;
         GLUtil::createAndAllocBuffer(_allignedBufferSize * queueLength(),
-                                      _usage,
+                                     _usage,
                                      _UBOid);
     }
 }
@@ -166,7 +167,7 @@ void glUniformBuffer::addAtomicCounter(U32 sizeFactor) {
 }
 
 U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
-    if (counterIndex > to_uint(_atomicCounters.size())) {
+    if (counterIndex >= to_uint(_atomicCounters.size())) {
         return 0;
     }
 
@@ -177,7 +178,7 @@ U32 glUniformBuffer::getAtomicCounter(U32 counterIndex) {
 }
 
 void glUniformBuffer::bindAtomicCounter(U32 counterIndex, U32 bindIndex) {
-    if (counterIndex > to_uint(_atomicCounters.size())) {
+    if (counterIndex >= to_uint(_atomicCounters.size())) {
         return;
     }
     AtomicCounter& counter = _atomicCounters.at(counterIndex);

@@ -97,7 +97,6 @@ void BloomPreRenderOperator::operation() {
 
     size_t defaultStateHash = GFX_DEVICE.getDefaultStateBlock(true);
 
-    _bright->bind();
     toneMapScreen();
 
     // render all of the "bright spots"
@@ -133,7 +132,9 @@ void BloomPreRenderOperator::operation() {
 }
 
 void BloomPreRenderOperator::toneMapScreen() {
-    if (!_genericFlag) return;
+    if (!_genericFlag) {
+        return;
+    }
 
     if (!_tempHDRFB) {
         _tempHDRFB = GFX_DEVICE.newFB();

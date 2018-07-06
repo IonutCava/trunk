@@ -205,7 +205,6 @@ void PostFX::displayScene(bool applyFilters) {
         STUBBED("ToDo: Add PostFX support for anaglyph rendering! -Ionut")
 
         drawShader = _anaglyphShader;
-        _anaglyphShader->bind();
         _gfx->getRenderTarget(GFXDevice::RenderTarget::SCREEN)
             ->Bind(to_ubyte(TexOperatorBindPoint::TEX_BIND_POINT_RIGHT_EYE));
 
