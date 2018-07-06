@@ -72,9 +72,11 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const ShaderBufferDescriptor& descriptor)
     : ShaderBuffer(context, descriptor)
 {
-    _maxSize = _unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
+    bool unbound = BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE);
 
-    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_unbound));
+    _maxSize = unbound ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
+
+    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(unbound));
 
     assert(_allignedBufferSize < _maxSize);
 
@@ -82,10 +84,11 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._dataSizeInBytes = _allignedBufferSize * queueLength();
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
-    implParams._target = _unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
+    implParams._target = unbound ? GL_SHADER_STORAGE_BUFFER : GL_UNIFORM_BUFFER;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._zeroMem = descriptor._initialData == nullptr;
-    
+    implParams._forcePersistentMap = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 }
 
@@ -224,7 +227,7 @@ void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram, U8 bindIndex
     GLuint prog = shaderProgram->getID();
     GLuint block_index = bindIndex;
 
-    if (prog <= 0 || _unbound) {
+    if (prog <= 0 || BitCompare(_flags, ShaderBuffer::Flags::UNBOUND_STORAGE)) {
         return;
     }
 

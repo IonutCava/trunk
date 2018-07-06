@@ -193,12 +193,12 @@ TEST(TestStringSplit) {
     const stringImpl input1("a b c d");
     const vector<stringImpl> result = {"a", "b", "c", "d"};
 
-    CHECK_EQUAL(Util::Split(input1, ' '), result);
-    CHECK_TRUE(Util::Split(input1, ',').size() == 1);
-    CHECK_TRUE(Util::Split(input1, ',')[0] == input1);
+    CHECK_EQUAL((Util::Split<vector<stringImpl>, stringImpl>(input1.c_str(), ' ')), result);
+    CHECK_TRUE((Util::Split<vector<stringImpl>, stringImpl>(input1.c_str(), ',').size()) == 1);
+    CHECK_TRUE((Util::Split<vector<stringImpl>, stringImpl>(input1.c_str(), ',')[0]) == input1);
 
     const stringImpl input2("a,b,c,d");
-    CHECK_EQUAL(Util::Split(input2, ','), result);
+    CHECK_EQUAL((Util::Split<vector<stringImpl>, stringImpl>(input2.c_str(), ',')), result);
 }
 
 TEST(TestFilePathSplit) {

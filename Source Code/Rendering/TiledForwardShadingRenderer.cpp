@@ -33,7 +33,7 @@ TiledForwardShadingRenderer::TiledForwardShadingRenderer(PlatformContext& contex
     bufferDescriptor._primitiveCount = maxNumLightsPerTile * numTiles;
     bufferDescriptor._primitiveSizeInBytes = sizeof(U32);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = true;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
     _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);

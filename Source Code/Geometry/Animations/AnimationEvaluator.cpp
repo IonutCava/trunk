@@ -107,7 +107,10 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._primitiveCount = frameCount();
     bufferDescriptor._primitiveSizeInBytes = bufferSize;
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = useUnboundBuffer;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    if (useUnboundBuffer) {
+        bufferDescriptor._flags |= to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE);
+    }
     bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._name = Util::StringFormat("BONE_BUFFER_%d_BONES", boneCount);

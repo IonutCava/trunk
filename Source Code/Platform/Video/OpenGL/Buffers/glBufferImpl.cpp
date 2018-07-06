@@ -3,6 +3,7 @@
 #include "Headers/glBufferImpl.h"
 #include "Headers/glMemoryManager.h"
 #include "Headers/glBufferLockManager.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 namespace {
@@ -57,10 +58,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     }
 
     bool usePersistentMapping = !Config::Profile::DISABLE_PERSISTENT_BUFFER &&  // For debugging
-                                (_alignedSize > g_persistentMapSizeThreshold || // Driver might be faster?
-                                  Config::USE_THREADED_COMMAND_GENERATION);     // For ease-of-use
-                                
-
+                                _alignedSize > g_persistentMapSizeThreshold;    // Driver might be faster?
     if (!usePersistentMapping && !params._forcePersistentMap) {
         GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
     } else {
@@ -131,6 +129,8 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bu
                      data,
                      rangeInBytes);
     } else {
+        assert(Runtime::isMainThread());
+
         clearData(offsetInBytes, rangeInBytes);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, data, _usage);
@@ -145,6 +145,8 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const buf
     if (_mappedBuffer) {
         memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
+        assert(Runtime::isMainThread());
+
         glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
     }
 }
@@ -154,6 +156,7 @@ void glBufferImpl::clearData(size_t offsetInBytes, size_t rangeInBytes) {
         waitRange(offsetInBytes, rangeInBytes, true);
         std::memset(((Byte*)_mappedBuffer) + offsetInBytes, 0, rangeInBytes);
     } else {
+        assert(Runtime::isMainThread());
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);
         } else {
@@ -166,6 +169,7 @@ void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
     if (_mappedBuffer) {
         clearData(offsetInBytes, rangeInBytes);
     } else {
+        assert(Runtime::isMainThread());
         vector<Byte> newData(rangeInBytes, 0);
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, newData.data(), _usage);

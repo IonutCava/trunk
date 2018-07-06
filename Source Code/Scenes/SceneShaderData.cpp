@@ -14,7 +14,6 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._primitiveCount = 1;
     bufferDescriptor._primitiveSizeInBytes = sizeof(SceneShaderBufferData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = false;
     bufferDescriptor._initialData = &_bufferData;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = "SCENE_SHADER_DATA";

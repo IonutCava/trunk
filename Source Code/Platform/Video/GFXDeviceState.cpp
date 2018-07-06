@@ -92,7 +92,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     bufferDescriptor._primitiveCount = 1;
     bufferDescriptor._primitiveSizeInBytes = sizeof(GFXShaderData::GPUData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = false;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._initialData = &_gpuBlock._data;
     bufferDescriptor._name = "DVD_GPU_DATA";

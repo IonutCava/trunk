@@ -73,7 +73,7 @@ void LightPool::init() {
     bufferDescriptor._primitiveCount = 1;
     bufferDescriptor._primitiveSizeInBytes = sizeof(vec4<I32>) + (Config::Lighting::MAX_POSSIBLE_LIGHTS * sizeof(LightProperties));
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = true;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
 
     // NORMAL holds general info about the currently active lights: position, colour, etc.

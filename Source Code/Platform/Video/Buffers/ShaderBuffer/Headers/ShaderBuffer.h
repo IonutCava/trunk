@@ -44,16 +44,16 @@ struct ShaderBufferDescriptor {
         : _ringBufferLength(1),
           _primitiveCount(0),
           _primitiveSizeInBytes(0),
-          _unbound(false),
+          _flags(0),
           _initialData(nullptr),
           _updateFrequency(BufferUpdateFrequency::ONCE)
     {
     }
 
+    U32 _flags;
     U32 _ringBufferLength;
     U32 _primitiveCount;
     size_t _primitiveSizeInBytes;
-    bool _unbound;
     BufferUpdateFrequency _updateFrequency;
     bufferPtr _initialData;
     stringImpl _name;
@@ -65,6 +65,13 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
                                   public RingBuffer
 {
     USE_CUSTOM_ALLOCATOR
+   public:
+       enum class Flags : U8 {
+           UNBOUND_STORAGE = toBit(1),
+           ALLOW_THREADED_WRITES = toBit(2),
+           COUNT = 2
+       };
+
    public:
     explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& params);
 
@@ -123,7 +130,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     static size_t _boundAlignmentRequirement;
     static size_t _unboundAlignmentRequirement;
 
-    const bool _unbound;
+    const U32 _flags;
     const BufferUpdateFrequency _frequency;
 
     stringImpl _name;

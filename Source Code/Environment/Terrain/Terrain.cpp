@@ -64,7 +64,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     bufferDescriptor._primitiveCount = Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
     bufferDescriptor._primitiveSizeInBytes = sizeof(TessellatedNodeData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = true;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._name = "TERRAIN_RENDER_NODES";
     _shaderData = _context.newSB(bufferDescriptor);

@@ -319,7 +319,7 @@ bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) {
 template<typename Type>
 inline typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const U32 bitMask, const Type bit) {
-    return BitCompare(bitmask, to_base(bit));
+    return BitCompare(bitMask, to_base(bit));
 }
 
 template<typename Type>

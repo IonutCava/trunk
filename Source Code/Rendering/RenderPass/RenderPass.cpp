@@ -70,7 +70,7 @@ RenderPass::BufferData::BufferData(GFXDevice& context, I32 index)
     bufferDescriptor._primitiveCount = Config::MAX_VISIBLE_NODES;
     bufferDescriptor._primitiveSizeInBytes = sizeof(GFXDevice::NodeData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._unbound = true;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::UNBOUND_STORAGE) | to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
     bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%d", index).c_str();
     // This do not need to be persistently mapped as, hopefully, they will only be update once per frame

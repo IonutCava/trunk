@@ -144,6 +144,8 @@ constexpr bool USE_HIZ_CULLING = true;
 /// If true, Hi-Z culling is disabled and potentially culled nodes are drawn in bright red and double in size
 constexpr bool DEBUG_HIZ_CULLING = false;
 
+static_assert(!DEBUG_HIZ_CULLING || USE_HIZ_CULLING, "Debugging HiZ-Culling requires HiZ-Culling to be enabled!");
+
 /// Compute related options
 namespace Compute {
 
@@ -178,6 +180,8 @@ constexpr bool USE_2x2_TEXTURES = false;
 /// disable persistently mapped buffers
 constexpr bool DISABLE_PERSISTENT_BUFFER = false;
 };  // namespace Profile
+
+static_assert(!Profile::DISABLE_PERSISTENT_BUFFER || !USE_THREADED_COMMAND_GENERATION, "Threaded command generation does not work without persistently mapped buffers!");
 
 namespace Assert {
 #if defined(_DEBUG)
