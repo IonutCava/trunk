@@ -74,16 +74,16 @@ struct InputEvent {
 struct MouseEvent : public InputEvent {
     explicit MouseEvent(U8 deviceIndex, const OIS::MouseEvent& arg);
 
-    OIS::MouseEvent _event;
+    const OIS::MouseEvent& _event;
 };
 
 struct JoystickEvent : public InputEvent {
     explicit JoystickEvent(U8 deviceIndex, const OIS::JoyStickEvent& arg);
 
-    OIS::JoyStickEvent _event;
+    const OIS::JoyStickEvent& _event;
 };
 
-typedef I8 JoystickButton;
+typedef int JoystickButton;
 
 static const U32 KeyCode_PLACEHOLDER = 0xEE;
 
@@ -106,13 +106,12 @@ enum class JoystickElementType : U32 {
 
 struct JoystickElement {
     JoystickElement(JoystickElementType elementType);
-    JoystickElement(JoystickElementType elementType, I8 data);
+    JoystickElement(JoystickElementType elementType, JoystickButton data);
 
     bool operator==(const JoystickElement &other) const;
 
     JoystickElementType _type;
-    I8 _data; //< e.g. button index
-
+    JoystickButton _data; //< e.g. button index
 };
 
 enum class InputState : U32 {
@@ -127,13 +126,13 @@ class InputAggregatorInterface {
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;
     /// Joystick or Gamepad: return true if input was consumed
-    virtual bool joystickButtonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
-    virtual bool joystickButtonReleased(const JoystickEvent &arg,
+    virtual bool buttonPressed(const JoystickEvent &arg, JoystickButton button) = 0;
+    virtual bool buttonReleased(const JoystickEvent &arg,
                                         JoystickButton button) = 0;
     virtual bool joystickAxisMoved(const JoystickEvent &arg, I8 axis) = 0;
     virtual bool joystickPovMoved(const JoystickEvent &arg, I8 pov) = 0;
     virtual bool joystickSliderMoved(const JoystickEvent &, I8 index) = 0;
-    virtual bool joystickVector3DMoved(const JoystickEvent &arg, I8 index) = 0;
+    virtual bool joystickvector3Moved(const JoystickEvent &arg, I8 index) = 0;
     /// Mouse: return true if input was consumed
     virtual bool mouseMoved(const MouseEvent &arg) = 0;
     virtual bool mouseButtonPressed(const MouseEvent &arg, MouseButton id) = 0;

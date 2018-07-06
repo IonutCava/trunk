@@ -31,7 +31,7 @@ GUIButton::GUIButton(U64 guiID,
                                      CEGUI::UDim(relativeDimensions.y / 100, 0.0f)));
     _btnWindow->setText(text.c_str());
     _btnWindow->subscribeEvent(CEGUI::PushButton::EventClicked,
-                               CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
+                               CEGUI::Event::Subscriber(&GUIButton::buttonPressed, this));
     _parent->addChild(_btnWindow);
     _btnWindow->setEnabled(true);
 
@@ -80,7 +80,7 @@ void GUIButton::setFont(const stringImpl& fontName,
     }
 }
 
-bool GUIButton::joystickButtonPressed(const CEGUI::EventArgs& /*e*/) {
+bool GUIButton::buttonPressed(const CEGUI::EventArgs& /*e*/) {
     if (_callbackFunction) {
         _callbackFunction(getGUID());
         if (_onClickSound && _soundCallback) {

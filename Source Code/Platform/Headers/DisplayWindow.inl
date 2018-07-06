@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
     inline SDL_Window* DisplayWindow::getRawWindow() const {
-        return _mainWindow;
+        return _sdlWindow;
     }
 
     inline const vec2<U16>& DisplayWindow::getPreviousDimensions(WindowType windowType) const {

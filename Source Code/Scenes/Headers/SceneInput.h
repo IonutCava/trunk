@@ -89,14 +89,14 @@ class SceneInput : public Input::InputAggregatorInterface {
     bool onKeyDown(const Input::KeyEvent &arg);
     bool onKeyUp(const Input::KeyEvent &arg);
     /// Joystick or Gamepad: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent &arg,
+    bool buttonPressed(const Input::JoystickEvent &arg,
                                Input::JoystickButton button);
-    bool joystickButtonReleased(const Input::JoystickEvent &arg,
+    bool buttonReleased(const Input::JoystickEvent &arg,
                                 Input::JoystickButton button);
     bool joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis);
     bool joystickPovMoved(const Input::JoystickEvent &arg, I8 pov);
     bool joystickSliderMoved(const Input::JoystickEvent &, I8 index);
-    bool joystickVector3DMoved(const Input::JoystickEvent &arg, I8 index);
+    bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index);
     /// Mouse: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent &arg);
     bool mouseButtonPressed(const Input::MouseEvent &arg,

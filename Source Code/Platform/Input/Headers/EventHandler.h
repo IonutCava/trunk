@@ -63,51 +63,47 @@ class EventHandler : public OIS::KeyListener,
     /// Key pressed - Engine: return true if input was consumed
     bool onKeyDown(const KeyEvent& arg);
     /// Key pressed - OIS
-    bool keyPressed(const OIS::KeyEvent& arg);
+    bool keyPressed(const OIS::KeyEvent& arg) override;
     /// Key released - Engine: return true if input was consumed
     bool onKeyUp(const KeyEvent& arg);
     /// Key released - OIS
-    bool keyReleased(const OIS::KeyEvent& arg);
+    bool keyReleased(const OIS::KeyEvent& arg) override;
     /// Joystick button pressed - Engine: return true if input was consumed
-    bool joystickButtonPressed(const JoystickEvent& arg,
-                               JoystickButton button);
+    bool buttonPressed(const JoystickEvent& arg, JoystickButton button);
     /// Joystick button pressed - OIS
-    bool buttonPressed(const OIS::JoyStickEvent& arg,
-                       JoystickButton button);
+    bool buttonPressed(const OIS::JoyStickEvent& arg, JoystickButton button) override;
     /// Joystick button released - Engine: return true if input was consumed
-    bool joystickButtonReleased(const JoystickEvent& arg,
-                                JoystickButton button);
+    bool buttonReleased(const JoystickEvent& arg, JoystickButton button);
     /// Joystick button released - OIS
-    bool buttonReleased(const OIS::JoyStickEvent& arg,
-                        JoystickButton button);
+    bool buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) override;
     /// Joystick axis change - Engine: return true if input was consumed
     bool joystickAxisMoved(const JoystickEvent& arg, I8 axis);
     /// Joystick axis change - OIS
-    bool axisMoved(const OIS::JoyStickEvent& arg, I8 axis);
+    bool axisMoved(const OIS::JoyStickEvent& arg, int axis) override;
     /// Joystick direction change - Engine: return true if input was consumed
     bool joystickPovMoved(const JoystickEvent& arg, I8 pov);
     /// Joystick direction change - OIS
-    bool povMoved(const OIS::JoyStickEvent& arg, I8 pov);
+    bool povMoved(const OIS::JoyStickEvent& arg, int pov) override;
     /// Joystick slider change - Engine: return true if input was consumed
     bool joystickSliderMoved(const JoystickEvent& arg, I8 index);
     /// Joystick slider change - OIS
-    bool sliderMoved(const OIS::JoyStickEvent& arg, I8 index);
+    bool sliderMoved(const OIS::JoyStickEvent& arg, int index) override;
     /// Joystick 3D vector changed - Engine: return true if input was consumed
-    bool joystickVector3DMoved(const JoystickEvent& arg, I8 index);
+    bool joystickvector3Moved(const JoystickEvent& arg, I8 index);
     /// Joystick 3D vector changed - OIS
-    bool vector3DMoved(const OIS::JoyStickEvent& arg, I8 index);
+    bool vector3Moved(const OIS::JoyStickEvent& arg, int index) override;
     /// Mouse moved - OIS
-    bool mouseMoved(const OIS::MouseEvent& arg);
+    bool mouseMoved(const OIS::MouseEvent& arg) override;
     /// Mouse moved - Engine: return true if input was consumed
     bool mouseMoved(const MouseEvent& arg);
     /// Mouse button pressed - Engine: return true if input was consumed
     bool mouseButtonPressed(const MouseEvent& arg, MouseButton button);
     /// Mouse button pressed - OIS
-    bool mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id);
+    bool mousePressed(const OIS::MouseEvent& arg, OIS::MouseButtonID id) override;
     /// Mouse button released - Engine: return true if input was consumed
     bool mouseButtonReleased(const MouseEvent& arg, MouseButton button);
     /// Mouse button released - OIS
-    bool mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id);
+    bool mouseReleased(const OIS::MouseEvent& arg, OIS::MouseButtonID id) override;
 };
 };  // namespace Input
 };  // namespace Divide;

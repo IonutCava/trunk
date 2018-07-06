@@ -190,7 +190,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
     return false;
 }
 
-bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
+bool SceneInput::buttonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
 
     Input::Joystick joy = _context.joystick(arg._deviceIndex);
@@ -202,7 +202,7 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg,
     return false;
 }
 
-bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg,
+bool SceneInput::buttonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     
     Input::Joystick joy = _context.joystick(arg._deviceIndex);
@@ -258,7 +258,7 @@ bool SceneInput::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) 
     return false;
 }
 
-bool SceneInput::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
+bool SceneInput::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
     Input::Joystick joy = _context.joystick(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;

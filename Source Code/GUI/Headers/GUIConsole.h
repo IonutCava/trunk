@@ -34,6 +34,9 @@
 
 #define CEGUI_MAX_INPUT_HISTORY 5
 
+#if !defined(CEGUI_STATIC)
+#define CEGUI_STATIC
+#endif
 #include <CEGUI/CEGUI.h>
 
 #include "Platform/Headers/PlatformDefines.h"

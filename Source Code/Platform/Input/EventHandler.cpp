@@ -30,55 +30,52 @@ bool EventHandler::onKeyUp(const KeyEvent &arg) {
     return _kernel->onKeyUp(arg);
 }
 
-bool EventHandler::joystickButtonPressed(const JoystickEvent &arg,
-                                         JoystickButton button) {
-    return _kernel->joystickButtonPressed(arg, button);
+bool EventHandler::buttonPressed(const JoystickEvent &arg, JoystickButton button) {
+    return _kernel->buttonPressed(arg, button);
 }
 
-bool EventHandler::buttonPressed(const OIS::JoyStickEvent& arg,
-                                 JoystickButton button) {
-    return joystickButtonPressed(JoystickEvent(to_U8(arg.device->getID()), arg), button);
+bool EventHandler::buttonPressed(const OIS::JoyStickEvent& arg, JoystickButton button) {
+    return buttonPressed(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
-bool EventHandler::joystickButtonReleased(const JoystickEvent &arg,
-                                          JoystickButton button) {
-    return _kernel->joystickButtonReleased(arg, button);
+bool EventHandler::buttonReleased(const JoystickEvent &arg, JoystickButton button) {
+    return _kernel->buttonReleased(arg, button);
 }
 
-bool EventHandler::buttonReleased(const OIS::JoyStickEvent& arg,
-    JoystickButton button) {
-    return joystickButtonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
+bool EventHandler::buttonReleased(const OIS::JoyStickEvent& arg, JoystickButton button) {
+    return buttonReleased(JoystickEvent(to_U8(arg.device->getID()), arg), button);
 }
 
 bool EventHandler::joystickAxisMoved(const JoystickEvent &arg, I8 axis) {
     return _kernel->joystickAxisMoved(arg, axis);
 }
 
-bool EventHandler::axisMoved(const OIS::JoyStickEvent& arg, I8 axis) {
-    return joystickAxisMoved(JoystickEvent(to_U8(arg.device->getID()), arg), axis);
+bool EventHandler::axisMoved(const OIS::JoyStickEvent& arg, int axis) {
+    return joystickAxisMoved(JoystickEvent(to_U8(arg.device->getID()), arg), to_I8(axis));
 }
 
 bool EventHandler::joystickPovMoved(const JoystickEvent &arg, I8 pov) {
     return _kernel->joystickPovMoved(arg, pov);
 }
 
-bool EventHandler::povMoved(const OIS::JoyStickEvent& arg, I8 pov) {
-    return joystickPovMoved(JoystickEvent(to_U8(arg.device->getID()), arg), pov);
+bool EventHandler::povMoved(const OIS::JoyStickEvent& arg, int pov) {
+    return joystickPovMoved(JoystickEvent(to_U8(arg.device->getID()), arg), to_I8(pov));
 }
+
 bool EventHandler::joystickSliderMoved(const JoystickEvent &arg, I8 index) {
     return _kernel->joystickSliderMoved(arg, index);
 }
 
-bool EventHandler::sliderMoved(const OIS::JoyStickEvent& arg, I8 index) {
-    return joystickSliderMoved(JoystickEvent(to_U8(arg.device->getID()), arg), index);
+bool EventHandler::sliderMoved(const OIS::JoyStickEvent& arg, int index) {
+    return joystickSliderMoved(JoystickEvent(to_U8(arg.device->getID()), arg), to_I8(index));
 }
 
-bool EventHandler::joystickVector3DMoved(const JoystickEvent &arg, I8 index) {
-    return _kernel->joystickVector3DMoved(arg, index);
+bool EventHandler::joystickvector3Moved(const JoystickEvent &arg, I8 index) {
+    return _kernel->joystickvector3Moved(arg, index);
 }
 
-bool EventHandler::vector3DMoved(const OIS::JoyStickEvent& arg, I8 index) {
-    return joystickVector3DMoved(JoystickEvent(to_U8(arg.device->getID()), arg), index);
+bool EventHandler::vector3Moved(const OIS::JoyStickEvent& arg, int index) {
+    return joystickvector3Moved(JoystickEvent(to_U8(arg.device->getID()), arg), to_I8(index));
 }
 
 bool EventHandler::mouseMoved(const MouseEvent &arg) {

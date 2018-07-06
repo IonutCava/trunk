@@ -47,7 +47,7 @@ JoystickElement::JoystickElement(JoystickElementType elementType)
 {
 }
 
-JoystickElement::JoystickElement(JoystickElementType elementType, I8 data)
+JoystickElement::JoystickElement(JoystickElementType elementType, JoystickButton data)
     : _type(elementType),
       _data(data)
 {

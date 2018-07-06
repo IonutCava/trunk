@@ -43,6 +43,13 @@ void log_delete(void* p) {
 }
 };  // namespace MemoryManager
 
+SysInfo::SysInfo() : _availableRam(0),
+                     _systemResolutionWidth(0),
+                     _systemResolutionHeight(0)
+{
+    _focusedWindowHandle = std::make_unique<WindowHandle>();
+}
+
 SysInfo& sysInfo() {
     return g_sysInfo;
 }
@@ -50,6 +57,7 @@ SysInfo& sysInfo() {
 const SysInfo& const_sysInfo() {
     return g_sysInfo;
 }
+
 
 ErrorCode PlatformPreInit(int argc, char** argv) {
     InitSysInfo(sysInfo(), argc, argv);

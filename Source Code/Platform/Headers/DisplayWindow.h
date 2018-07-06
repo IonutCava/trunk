@@ -172,6 +172,8 @@ private:
 private:
     WindowManager& _parent;
     PlatformContext& _context;
+    SDL_Window* _sdlWindow;
+
     /// The current rendering window type
     WindowType _type;
     WindowType _previousType;
@@ -188,7 +190,6 @@ private:
     bool _internalMoveEvent;
     /// Did we resize the window via an OS call?
     bool _externalResizeEvent;
-    SDL_Window* _mainWindow;
 
     PositionByType   _windowPosition;
     ResolutionByType _prevDimensions;
@@ -198,7 +199,8 @@ private:
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;
 
     // Varies from OS to OS
-    WindowHandle     _handle;
+    WindowHandle _handle;
+
 }; //DisplayWindow
 
 }; //namespace Divide

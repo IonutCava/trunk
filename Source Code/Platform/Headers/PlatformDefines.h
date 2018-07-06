@@ -99,9 +99,18 @@ FORCE_INLINE bufferPtr bufferOffset(size_t offset) {
     return ((char *)NULL + (offset));
 }
 
-struct SysInfo;
 struct WindowHandle;
-    
+
+struct SysInfo {
+    SysInfo();
+
+    size_t _availableRam;
+    int _systemResolutionWidth;
+    int _systemResolutionHeight;
+    FileWithPath _pathAndFilename;
+    std::unique_ptr<WindowHandle> _focusedWindowHandle;
+};
+
 SysInfo& sysInfo();
 const SysInfo& const_sysInfo();
 

@@ -18,8 +18,11 @@
 #include "Platform/Video/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 
+#if !defined(CEGUI_STATIC)
+#define CEGUI_STATIC
+#endif
 #include <CEGUI/CEGUI.h>
-#include <CEGUI/RendererModules/OpenGL/GL3Renderer.h>
+#include <GL3Renderer.h>
 
 #include <AntTweakBar/include/AntTweakBar.h>
 

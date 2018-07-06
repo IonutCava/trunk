@@ -52,13 +52,13 @@ class CEGUIInput : public Input::InputAggregatorInterface,
     /// Joystick direction change: return true if input was consumed
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg,
+    bool buttonPressed(const Input::JoystickEvent& arg,
                                Input::JoystickButton button);
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg,
+    bool buttonReleased(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
-    bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
     /// Mouse moved: return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
     /// Mouse button pressed: return true if input was consumed

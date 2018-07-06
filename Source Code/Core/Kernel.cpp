@@ -843,20 +843,20 @@ bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
     return false;
 }
 
-bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg,
+bool Kernel::buttonPressed(const Input::JoystickEvent& arg,
                                    Input::JoystickButton button) {
-    if (!_platformContext->gui().joystickButtonPressed(arg, button)) {
-        return _sceneManager->joystickButtonPressed(arg, button);
+    if (!_platformContext->gui().buttonPressed(arg, button)) {
+        return _sceneManager->buttonPressed(arg, button);
     }
 
     // InputInterface needs to know when this is completed
     return false;
 }
 
-bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg,
+bool Kernel::buttonReleased(const Input::JoystickEvent& arg,
                                     Input::JoystickButton button) {
-    if (!_platformContext->gui().joystickButtonReleased(arg, button)) {
-        return _sceneManager->joystickButtonReleased(arg, button);
+    if (!_platformContext->gui().buttonReleased(arg, button)) {
+        return _sceneManager->buttonReleased(arg, button);
     }
 
     // InputInterface needs to know when this is completed
@@ -872,9 +872,9 @@ bool Kernel::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
     return false;
 }
 
-bool Kernel::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
-    if (!_platformContext->gui().joystickVector3DMoved(arg, index)) {
-        return _sceneManager->joystickVector3DMoved(arg, index);
+bool Kernel::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
+    if (!_platformContext->gui().joystickvector3Moved(arg, index)) {
+        return _sceneManager->joystickvector3Moved(arg, index);
     }
 
     // InputInterface needs to know when this is completed

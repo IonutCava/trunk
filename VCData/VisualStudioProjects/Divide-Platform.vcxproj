@@ -344,7 +344,7 @@
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Divide-Platform</ProjectName>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -417,8 +417,8 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -468,8 +468,8 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -512,9 +512,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(EngineLibraries)\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\include\foundation\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PhysX_3.4\include\extensions\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\boost\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\OpenAL\include\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>

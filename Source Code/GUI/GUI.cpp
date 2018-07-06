@@ -21,6 +21,9 @@
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
+#if !defined(CEGUI_STATIC)
+#define CEGUI_STATIC
+#endif
 #include <CEGUI/CEGUI.h>
 
 #include <stdarg.h>
@@ -441,20 +444,20 @@ bool GUI::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 // Return true if input was consumed
-bool GUI::joystickButtonPressed(const Input::JoystickEvent& arg,
+bool GUI::buttonPressed(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        return _ceguiInput.joystickButtonPressed(arg, button);
+        return _ceguiInput.buttonPressed(arg, button);
     }
 
     return false;
 }
 
 // Return true if input was consumed
-bool GUI::joystickButtonReleased(const Input::JoystickEvent& arg,
+bool GUI::buttonReleased(const Input::JoystickEvent& arg,
                                  Input::JoystickButton button) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        return _ceguiInput.joystickButtonReleased(arg, button);
+        return _ceguiInput.buttonReleased(arg, button);
     }
 
     return false;
@@ -470,9 +473,9 @@ bool GUI::joystickSliderMoved(const Input::JoystickEvent& arg, I8 index) {
 }
 
 // Return true if input was consumed
-bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
+bool GUI::joystickvector3Moved(const Input::JoystickEvent& arg, I8 index) {
     if (parent().platformContext().config().gui.cegui.enabled) {
-        return _ceguiInput.joystickVector3DMoved(arg, index);
+        return _ceguiInput.joystickvector3Moved(arg, index);
     }
 
     return false;

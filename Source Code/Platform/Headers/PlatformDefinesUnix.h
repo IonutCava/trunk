@@ -73,19 +73,6 @@ namespace Divide {
         Window _handle;
     };
 
-    struct SysInfo {
-        SysInfo() : _availableRam(0),
-                    _systemResolutionWidth(0),
-                    _systemResolutionHeight(0)
-        {
-        }
-
-        WindowHandle _focusedWindowHandle;
-        size_t _availableRam;
-        int _systemResolutionWidth;
-        int _systemResolutionHeight;
-        FileWithPath _pathAndFilename;
-    };
 }; //namespace Divide
 
 template <typename T>

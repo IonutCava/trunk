@@ -38,7 +38,7 @@
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Test-Engine</ProjectName>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -116,7 +116,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -175,7 +175,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -223,7 +223,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/UnitTests/;$(SolutionDir)../Source Code/Libs/SimpleCL/include/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)../Source Code/Libs/ReCast/RecastContrib/include/;$(EngineLibraries)\;$(EngineLibraries)\test\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\RepX\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glfw\include\;$(EngineLibraries)\glslopt\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\GLEW\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_UNIT_TEST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>

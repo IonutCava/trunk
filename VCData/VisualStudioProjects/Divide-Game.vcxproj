@@ -230,7 +230,7 @@
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Divide-Game</ProjectName>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -304,7 +304,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -354,7 +354,7 @@
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
@@ -398,7 +398,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)../Source Code/;$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../Source Code/Libs/EASTL/include/;$(SolutionDir)../Source Code/Libs/ReCast/;$(SolutionDir)../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)../Source Code/Libs/ReCast/ReCast/include/;$(EngineLibraries)\boost\;$(EngineLibraries)\DevIL\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\physx\PxShared\include\;$(EngineLibraries)\physx\PhysX_3.4\include\;$(EngineLibraries)\physx\PhysX_3.4\include\common\;$(EngineLibraries)\physx\PhysX_3.4\\include\foundation\;$(EngineLibraries)\physx\PhysX_3.4\\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include\;$(EngineLibraries)\freetype\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\ftgl\include\;$(EngineLibraries)\glm\;$(EngineLibraries)\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>

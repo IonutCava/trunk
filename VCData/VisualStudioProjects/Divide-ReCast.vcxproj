@@ -87,7 +87,7 @@
     <ProjectGuid>{1ED21303-434E-46DA-8050-2DF2684BE74E}</ProjectGuid>
     <RootNamespace>DivideReCast</RootNamespace>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -154,7 +154,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -202,7 +202,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -245,7 +245,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalIncludeDirectories>$(EngineLibraries)\;$(EngineLibraries)\sdl\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\chaiscript\include\;$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\simplefilewatcher\;$(SolutionDir)..\Source Code\Libs\ReCast\ReCast\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourTileCache\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DetourCrowd\Include;$(SolutionDir)..\Source Code\Libs\ReCast\DebugUtils\Include;$(SolutionDir)..\Source Code\Libs\ReCast\Detour\Include;$(SolutionDir)..\Source Code\Libs\ReCast\RecastContrib\fastlz</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>

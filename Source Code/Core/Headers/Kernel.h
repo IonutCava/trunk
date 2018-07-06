@@ -120,13 +120,13 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// Joystick direction change
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg,
+    bool buttonPressed(const Input::JoystickEvent& arg,
                                Input::JoystickButton button);
     /// Joystick button released
-    bool joystickButtonReleased(const Input::JoystickEvent& arg,
+    bool buttonReleased(const Input::JoystickEvent& arg,
                                 Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
-    bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
+    bool joystickvector3Moved(const Input::JoystickEvent& arg, I8 index);
     /// Mouse moved
     bool mouseMoved(const Input::MouseEvent& arg);
     /// Mouse button pressed

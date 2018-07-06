@@ -72,7 +72,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _type(WindowType::COUNT),
    _previousType(WindowType::COUNT),
    _queuedType(WindowType::COUNT),
-   _mainWindow(nullptr),
+   _sdlWindow(nullptr),
    _internalMoveEvent(false),
    _externalResizeEvent(false)
 {
@@ -87,11 +87,11 @@ DisplayWindow::~DisplayWindow()
 
 ErrorCode DisplayWindow::destroyWindow() {
     if (_type != WindowType::COUNT) {
-        DIVIDE_ASSERT(_mainWindow != nullptr,
+        DIVIDE_ASSERT(_sdlWindow != nullptr,
             "DisplayWindow::destroyWindow error: Tried to double-delete the same window!");
 
-        SDL_DestroyWindow(_mainWindow);
-        _mainWindow = nullptr;
+        SDL_DestroyWindow(_sdlWindow);
+        _sdlWindow = nullptr;
     }
 
     return ErrorCode::NO_ERR;
@@ -106,22 +106,22 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 
     _windowDimensions = initialResolutions;
 
-    _mainWindow = SDL_CreateWindow(windowTitle,
-                                   SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
-                                   SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
-                                   1,
-                                   1,
-                                   windowFlags);
+    _sdlWindow = SDL_CreateWindow(windowTitle,
+                                  SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
+                                  SDL_WINDOWPOS_CENTERED_DISPLAY(_parent.targetDisplay()),
+                                  1,
+                                  1,
+                                  windowFlags);
     
     I32 positionX, positionY;
-    SDL_GetWindowPosition(_mainWindow, &positionX, &positionY);
+    SDL_GetWindowPosition(_sdlWindow, &positionX, &positionY);
     setPosition(type(), positionX, positionY);
 
-    getWindowHandle(_mainWindow, _handle);
+    getWindowHandle(_sdlWindow, _handle);
     _title = windowTitle;
 
     // Check if we have a valid window
-    if (!_mainWindow) {
+    if (!_sdlWindow) {
         SDL_Quit();
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")),
                          Locale::get(_ID("ERROR_SDL_WINDOW")));
@@ -373,7 +373,7 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
         mode.w = w;
         mode.h = h;
         SDL_GetClosestDisplayMode(_parent.targetDisplay(), &mode, &closestMode);
-        SDL_SetWindowDisplayMode(_mainWindow, &closestMode);
+        SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
     } else {
         if (_externalResizeEvent) {
             // Find a decent resolution close to our dragged dimensions
@@ -386,14 +386,14 @@ void DisplayWindow::setDimensionsInternal(U16 w, U16 h) {
             h = to_U16(closestMode.h);
         }
 
-        SDL_SetWindowSize(_mainWindow, w, h);
+        SDL_SetWindowSize(_sdlWindow, w, h);
     }
 }
 
 /// Window positioning is handled by SDL
 void DisplayWindow::setPositionInternal(I32 w, I32 h) {
     _internalMoveEvent = true;
-    SDL_SetWindowPosition(_mainWindow, w, h);
+    SDL_SetWindowPosition(_sdlWindow, w, h);
 }
 
 /// Centering is also easier via SDL
@@ -407,7 +407,7 @@ void DisplayWindow::centerWindowPosition() {
 
 /// Mouse positioning is handled by SDL
 void DisplayWindow::setCursorPosition(I32 x, I32 y) const {
-    SDL_WarpMouseInWindow(_mainWindow, x, y);
+    SDL_WarpMouseInWindow(_sdlWindow, x, y);
 }
 
 void DisplayWindow::setCursorStyle(CursorStyle style) const {
@@ -415,36 +415,36 @@ void DisplayWindow::setCursorStyle(CursorStyle style) const {
 }
 
 void DisplayWindow::hidden(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_SHOWN)) == state)
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_SHOWN)) == state)
     {
         if (state) {
-            SDL_HideWindow(_mainWindow);
+            SDL_HideWindow(_sdlWindow);
         } else {
-            SDL_ShowWindow(_mainWindow);
+            SDL_ShowWindow(_sdlWindow);
         }
         _hidden = state;
     }
 }
 
 void DisplayWindow::minimized(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state)
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MINIMIZED)) != state)
     {
         if (state) {
-            SDL_MinimizeWindow(_mainWindow);
+            SDL_MinimizeWindow(_sdlWindow);
         } else {
-            SDL_RestoreWindow(_mainWindow);
+            SDL_RestoreWindow(_sdlWindow);
         }
         _minimized = state;
     }
 }
 
 void DisplayWindow::maximized(const bool state) {
-    if (BitCompare(SDL_GetWindowFlags(_mainWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state)
+    if (BitCompare(SDL_GetWindowFlags(_sdlWindow), to_U32(SDL_WINDOW_MAXIMIZED)) != state)
     {
         if (state) {
-            SDL_MaximizeWindow(_mainWindow);
+            SDL_MaximizeWindow(_sdlWindow);
         } else {
-            SDL_RestoreWindow(_mainWindow);
+            SDL_RestoreWindow(_sdlWindow);
         }
         _maximized = state;
     }
@@ -452,7 +452,7 @@ void DisplayWindow::maximized(const bool state) {
 
 void DisplayWindow::title(const stringImpl& title) {
     if (title != _title) {
-        SDL_SetWindowTitle(_mainWindow, title.c_str());
+        SDL_SetWindowTitle(_sdlWindow, title.c_str());
         _title = title;
     }
 }
@@ -463,32 +463,32 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
     I32 switchState = 0;
     switch (newWindowType) {
         case WindowType::SPLASH: {
-            switchState = SDL_SetWindowFullscreen(_mainWindow, 0);
+            switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
             assert(switchState >= 0);
 
-            SDL_SetWindowBordered(_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_mainWindow, SDL_FALSE);
+            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
+            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
         } break;
         case WindowType::WINDOW: {
-            switchState = SDL_SetWindowFullscreen(_mainWindow, 0);
+            switchState = SDL_SetWindowFullscreen(_sdlWindow, 0);
             assert(switchState >= 0);
 
-            SDL_SetWindowBordered(_mainWindow, SDL_TRUE);
-            SDL_SetWindowGrab(_mainWindow, SDL_FALSE);
+            SDL_SetWindowBordered(_sdlWindow, SDL_TRUE);
+            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
         } break;
         case WindowType::FULLSCREEN_WINDOWED: {
-            switchState = SDL_SetWindowFullscreen(_mainWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
             assert(switchState >= 0);
 
-            SDL_SetWindowBordered(_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_mainWindow, SDL_FALSE);
+            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
+            SDL_SetWindowGrab(_sdlWindow, SDL_FALSE);
         } break;
         case WindowType::FULLSCREEN: {
-            switchState = SDL_SetWindowFullscreen(_mainWindow, SDL_WINDOW_FULLSCREEN);
+            switchState = SDL_SetWindowFullscreen(_sdlWindow, SDL_WINDOW_FULLSCREEN);
             assert(switchState >= 0);
 
-            SDL_SetWindowBordered(_mainWindow, SDL_FALSE);
-            SDL_SetWindowGrab(_mainWindow, SDL_TRUE);
+            SDL_SetWindowBordered(_sdlWindow, SDL_FALSE);
+            SDL_SetWindowGrab(_sdlWindow, SDL_TRUE);
         } break;
     };
 

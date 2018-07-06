@@ -2,6 +2,9 @@
 
 #include "Headers/CEGUIInput.h"
 
+#if !defined(CEGUI_STATIC)
+#define CEGUI_STATIC
+#endif
 #include <CEGUI/CEGUI.h>
 
 #include "GUI/Headers/GUI.h"
@@ -124,7 +127,7 @@ bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg, I8 pov) {
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
+bool CEGUIInput::buttonPressed(const Input::JoystickEvent& arg,
                                        Input::JoystickButton button) {
     bool consumed = false;
 
@@ -132,7 +135,7 @@ bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg,
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg,
+bool CEGUIInput::buttonReleased(const Input::JoystickEvent& arg,
                                         Input::JoystickButton button) {
     bool consumed = false;
 
@@ -148,7 +151,7 @@ bool CEGUIInput::joystickSliderMoved(const Input::JoystickEvent& arg,
 }
 
 // Return true if input was consumed
-bool CEGUIInput::joystickVector3DMoved(const Input::JoystickEvent& arg,
+bool CEGUIInput::joystickvector3Moved(const Input::JoystickEvent& arg,
                                        I8 index) {
     bool consumed = false;
 

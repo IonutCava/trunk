@@ -53,18 +53,22 @@ ErrorCode InputInterface::init(Kernel& kernel, const vec2<U16>& inputAreaDimensi
     OIS::ParamList pl;
     
     std::stringstream ss;
-    ss << (size_t)(const_sysInfo()._focusedWindowHandle._handle);
+#if defined(_WIN32)
+    ss << (size_t)(const_sysInfo()._focusedWindowHandle->_handle);
     // Create OIS input manager
     pl.insert(std::make_pair("WINDOW", ss.str()));
-    pl.insert(std::make_pair("GLXWINDOW", ss.str()));
     pl.insert(std::make_pair("w32_mouse", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_mouse", "DISCL_NONEXCLUSIVE"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_FOREGROUND"));
     pl.insert(std::make_pair("w32_keyboard", "DISCL_NONEXCLUSIVE"));
+#else
+    ss << const_sysInfo()._focusedWindowHandle->_handle;
+    pl.insert(std::make_pair("GLXWINDOW", ss.str()));
+    pl.insert(std::make_pair("XAutoRepeatOn", "true"));
     pl.insert(std::make_pair("x11_mouse_grab", "false"));
     pl.insert(std::make_pair("x11_mouse_hide", "false"));
     pl.insert(std::make_pair("x11_keyboard_grab", "false"));
-    pl.insert(std::make_pair("XAutoRepeatOn", "true"));
+#endif
 
     _pInputInterface = OIS::InputManager::createInputSystem(pl);
     assert(_pInputInterface != nullptr && "InputInterface error: Could not create OIS Input Interface");

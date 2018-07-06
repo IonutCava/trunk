@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F85687BA-FB44-3120-993D-3266FD9CF9BA}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>CEGUIOpenGLRenderer</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)_CEGUIRendererOpenGL\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)_d</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)_CEGUIRendererOpenGL\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\Source Code\Libs\lib\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(Configuration)_CEGUIRendererOpenGL\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(ProjectName)_p</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Debug/</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions); CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Release/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR="Release";%(PreprocessorDefinitions); CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\CEGUIRenderer\OpenGL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\</AdditionalIncludeDirectories>
+      <AssemblerListingLocation>Profile/</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR="Profile";%(PreprocessorDefinitions); CEGUI_STATIC;TINYXML_STATIC</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Profile\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>H:\Libs\cegui-0.8.7\build\cegui\include;H:\Libs\cegui-0.8.7\cegui\include;H:\Libs\cegui-0.8.7\cegui\include\RendererModules\OpenGL;H:\Libs\cegui-0.8.7\dependencies\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="H:\Libs\cegui-0.8.7\build\ZERO_CHECK.vcxproj">
+      <Project>{1CE12AA1-9A17-314F-848F-8C651C43A155}</Project>
+      <Name>ZERO_CHECK</Name>
+    </ProjectReference>
+    <ProjectReference Include="H:\Libs\cegui-0.8.7\build\cegui\src\CEGUIBase-0_Static.vcxproj">
+      <Project>{6D5C7B9A-170F-3505-9B6E-79850095A5F8}</Project>
+      <Name>CEGUIBase-0_Static</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\ApplePBTextureTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GeometryBufferBase.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GL.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GL3FBOTextureTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GL3GeometryBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GL3Renderer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GLFBOTextureTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GLGeometryBuffer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GlmPimpl.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GLRenderer.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\GLXPBTextureTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RendererBase.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RenderTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\Shader.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\ShaderManager.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\StandardShaderFrag.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\StandardShaderVert.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\StateChangeWrapper.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\Texture.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\TextureTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\ViewportTarget.h" />
+    <ClInclude Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\WGLPBTextureTarget.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\ApplePBTextureTarget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GL.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GL3Renderer.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GLFBOTextureTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GLGeometryBuffer.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GLRenderer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\GLXPBTextureTarget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\RendererBase.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\Shader.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\ShaderManager.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\StateChangeWrapper.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\stdafx-cegui-renderer-opengl.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\Texture.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\WGLPBTextureTarget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\RenderTarget.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -127,7 +127,7 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
 void WindowManager::setActiveWindow(U32 index) {
     index = std::min(index, to_U32(_windows.size() -1));
     _activeWindowGUID = _windows[index]->getGUID();
-    SysInfo()._focusedWindowHandle = _windows[index]->handle();
+    *sysInfo()._focusedWindowHandle = _windows[index]->handle();
 }
 
 U32 WindowManager::createAPIFlags(RenderAPI api) {
