@@ -79,7 +79,6 @@ private:
 
 protected:
     inline bool generateHWResource(const std::string& name){return ShaderProgram::generateHWResource(name);}
-    void validate(){}
 };
 
 #endif

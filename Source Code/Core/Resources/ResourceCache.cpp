@@ -51,7 +51,7 @@ void ResourceCache::Destroy(){
     PRINT_FN(Locale::get("STOP_RESOURCE_CACHE"));
 
     FOR_EACH(ResourceMap::value_type& it, _resDB){
-        if(remove(it.second, true)){
+        if (removeInternal(it.second, true)) {
             SAFE_DELETE(it.second);
         }
     }
@@ -67,22 +67,30 @@ Resource* const ResourceCache::find(const std::string& name){
     return nullptr;
 }
 
-bool ResourceCache::scheduleDeletion(Resource* const resource,bool force){
-    if(_resDB.empty()) return false;
-    if(resource == nullptr) return false;
-    ResourceMap::const_iterator resDBiter = _resDB.find(resource->getName());
-     /// it's already deleted. Double-deletion should be safe
-    if(resDBiter == _resDB.end())
-        return true;
-    ///If we can't remove it right now ...
-    if(remove(resource,force)){
-        _resDB.erase(resDBiter);
+bool ResourceCache::remove(Resource* const res, bool force){
+    if (res == nullptr) {
+        return false;
+    }
+    if (_resDB.empty()) {
+        ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NO_DB"), res->getName().c_str());
+        return false;
+    }
+    ResourceMap::const_iterator resDBiter = _resDB.find(res->getName());
+    // If it's not in the resource database, it must've been created manually
+    if (resDBiter == _resDB.end()) {
         return true;
     }
+    // If we can't remove it right now ...
+    if(removeInternal(res, force)){
+        _resDB.erase(resDBiter);
+        delete res;
+        return true;
+    }
+
     return force;
 }
 
-bool ResourceCache::remove(Resource* const resource,bool force){
+bool ResourceCache::removeInternal(Resource* const resource,bool force){
     assert(resource != nullptr);
 
     std::string name(resource->getName());

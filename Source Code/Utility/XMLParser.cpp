@@ -147,7 +147,7 @@ namespace XML {
             std::string fileLocation = texture->getResourceLocation();
             DIVIDE_ASSERT(!fileLocation.empty(), "INVALID TEXTURE SAVE FILE -------------------------------------");
             tree.put(textureNode+".file",fileLocation);
-            tree.put(textureNode+".flip",texture->isFlipped());
+            tree.put(textureNode+".flip",texture->isVerticallyFlipped());
             tree.put(textureNode+".MapU", getWrapModeName(sampler.wrapU()));
             tree.put(textureNode+".MapV", getWrapModeName(sampler.wrapV()));
             tree.put(textureNode+".MapW", getWrapModeName(sampler.wrapW()));

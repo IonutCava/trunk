@@ -44,59 +44,61 @@ typedef Unordered_map<std::string, ShaderProgram* > ShaderProgramMap;
 typedef Unordered_map<std::string, const char* >    AtomMap;
 typedef std::stack<ShaderProgram*, vectorImpl<ShaderProgram* > > ShaderQueue;
 
-public:
-    ///Create rendering API specific initialization of shader libraries
-    bool    init();
-    void    destroy();
-    ///Called once per frame
-    U8      update(const U64 deltaTime);
-    ///Called once per frame after a swap buffer request
-    U8      idle();
-    ///Calling refresh will mark all shader programs as dirty
-    void    refresh();
-    ///Calling refreshSceneData will mark all shader programs as dirty(scene specific data only)
-    void    refreshSceneData();
-    ///Remove a shader from the cache
-    void    removeShader(Shader* s);
-    ///Find a shader in a cache
-    Shader* findShader(const std::string& name, const bool recompile = false );
-    ///Add or refresh a shader from the cache
-    Shader* loadShader(const std::string& name, const std::string& location,const ShaderType& type,const bool recompile = false);
-    ///Remove a shaderProgram from the program cache
-    void    unregisterShaderProgram(const std::string& name);
-    ///Add a shaderProgram to the program cache
-    void    registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram);
-    ///Queue a shaderProgram recompile request
-    bool    recompileShaderProgram(const std::string& name);
-    ///Load a shader from file
-    char*   shaderFileRead(const std::string &atomName, const std::string& location);
-    ///Save a shader to file
-    I8      shaderFileWrite(char *atomName, const char *s);
-    ///Bind the null shader
-    bool    unbind();
-    ///Return a default shader if we try to render something with a material that is missing a valid shader
-    ShaderProgram* const getDefaultShader() const {return _imShader;}
-
-private:
-    ///Shader cache
-    ShaderMap        _shaderNameMap;
-    ///Shader program cache
-    ShaderProgramMap _shaderPrograms;
-    ///Only 1 shader program per frame should be recompiled to avoid a lot of stuttering
-    ShaderQueue      _recompileQueue;
-    ///Shaders loaded from files are kept as atoms
-    AtomMap          _atoms;
-    ///Pointer to a shader that we will perform operations on
-    ShaderProgram* _nullShader;
-    ///Used to render geometry without valid materials.
-    ///Should emmulate the basic fixed pipeline functions (no lights, just color and texture)
-    ShaderProgram* _imShader;
-    ///A simple check to see if the manager is ready to process commands
-    bool             _init;
-
 private:
     ShaderManager();
     ~ShaderManager();
 
+public:
+    /// Create rendering API specific initialization of shader libraries
+    bool init();
+    /// Remove default shaders and and destroy API specific shader loading code (programs can still be unloaded, but not loaded)
+    void destroy();
+    /// Called once per frame
+    U8 update(const U64 deltaTime);
+    /// Called once per frame after a swap buffer request
+    U8 idle();
+    /// Calling refreshShaderData will mark all shader programs as dirty (general data)
+    void refreshShaderData();
+    /// Calling refreshSceneData will mark all shader programs as dirty (scene specific data only)
+    void refreshSceneData();
+    /// Remove a shader from the cache
+    void removeShader(Shader* s);
+    /// Return a new shader reference
+    Shader* getShader(const std::string& name, const bool recompile = false );
+    /// Add or refresh a shader from the cache
+    Shader* loadShader(const std::string& name, const std::string& location,const ShaderType& type,const bool recompile = false);
+    /// Remove a shaderProgram from the program cache
+    void unregisterShaderProgram(const std::string& name);
+    /// Add a shaderProgram to the program cache
+    void registerShaderProgram(const std::string& name, ShaderProgram* const shaderProgram);
+    /// Queue a shaderProgram recompile request
+    bool recompileShaderProgram(const std::string& name);
+    /// Load a shader from file
+    const char* shaderFileRead(const std::string &atomName, const std::string& location);
+    /// Save a shader to file
+    I8 shaderFileWrite(char *atomName, const char *s);
+    /// Bind the null shader
+    bool unbind();
+    /// Return a default shader if we try to render something with a material that is missing a valid shader
+    ShaderProgram* const getDefaultShader() const {return _imShader;}
+
+private:
+    /// A simple check to see if the manager is ready to process commands
+    bool _init;
+    /// Shaders loaded from files are kept as atoms
+    AtomMap _atoms;
+    /// Shader cache
+    ShaderMap _shaderNameMap;
+    /// Pointer to a shader that we will perform operations on
+    ShaderProgram* _nullShader;
+    /// Only 1 shader program per frame should be recompiled to avoid a lot of stuttering
+    ShaderQueue _recompileQueue;
+    /// Shader program cache
+    ShaderProgramMap _shaderPrograms;
+    /// Used to render geometry without valid materials.
+    /// Should emulate the basic fixed pipeline functions (no lights, just color and texture)
+    ShaderProgram* _imShader;
+
 END_SINGLETON
+
 #endif

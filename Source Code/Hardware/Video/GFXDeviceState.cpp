@@ -130,10 +130,6 @@ void GFXDevice::closeRenderingApi() {
     // Destroy our post processing system
     PRINT_FN(Locale::get("STOP_POST_FX"));
     PostFX::destroyInstance();
-    // Close the shader manager
-    _shaderManager.destroy();
-    // Destroy the shader manager
-    ShaderManager::destroyInstance();
     // Delete the renderer implementation
     PRINT_FN(Locale::get("CLOSING_RENDERER"));
     SAFE_DELETE(_renderer);
@@ -162,6 +158,8 @@ void GFXDevice::closeRenderingApi() {
     // Delete our shader buffers
     SAFE_DELETE(_gfxDataBuffer);
     SAFE_DELETE(_nodeBuffer);
+    // Close the shader manager
+    _shaderManager.destroy();
 }
 
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing

@@ -494,10 +494,8 @@ void Kernel::shutdown(){
         D_ERROR_FN(Locale::get("ERROR_CEGUI_DESTROY")); 
     }
     SAFE_DELETE(_cameraMgr);
-    ResourceCache::destroyInstance();
     LightManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_ENGINE_OK"));
-    FrameListenerManager::destroyInstance();
     PRINT_FN(Locale::get("STOP_PHYSICS_INTERFACE"));
     _PFX.closePhysicsApi();
     PRINT_FN(Locale::get("STOP_HARDWARE"));
@@ -507,6 +505,10 @@ void Kernel::shutdown(){
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
     Locale::clear();
+    ResourceCache::destroyInstance();
+    // Destroy the shader manager
+    ShaderManager::destroyInstance();
+    FrameListenerManager::destroyInstance();
 }
 
 void Kernel::updateResolutionCallback(I32 w, I32 h){

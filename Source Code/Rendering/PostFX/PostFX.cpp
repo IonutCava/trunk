@@ -178,7 +178,6 @@ void PostFX::updateResolution(I32 width, I32 height){
     }
 
     _resolutionCache.set(width, height);
-    _postProcessingShader->refresh();
 
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->reshape(width,height);
 }

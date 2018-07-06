@@ -54,8 +54,8 @@ public:
     }
 
     Resource* const find(const std::string& name);
-    bool scheduleDeletion(Resource* resource, bool force = false);
     void add(const std::string& name, Resource* const resource);
+    bool remove(Resource* const res, bool force = false);
     bool load(Resource* const res, const std::string& name);
     bool loadHW(Resource* const res, const std::string& name);
 
@@ -67,7 +67,7 @@ protected:
     ///this method handles cache lookups and reference counting
     Resource* loadResource(const std::string& name);
     ///unload a single resource and pend deletion
-    bool remove(Resource* const resource,bool force);
+    bool removeInternal(Resource* const resource, bool force);
     ///multithreaded resource creation
     SharedLock _creationMutex;
 
@@ -79,9 +79,14 @@ END_SINGLETON
 
 template<class T>
 inline void RemoveResource(T*& resource, bool force = false){
-    if(ResourceCache::hasInstance() && ResourceCache::getInstance().scheduleDeletion(resource,force)){
-        SAFE_DELETE(resource);
-    }
+    DIVIDE_ASSERT(ResourceCache::hasInstance(), "ResourceCache error: RemoveResource called without a valid ResourceCache available!");
+    try {
+        if (ResourceCache::getInstance().remove(dynamic_cast<Resource*>(resource), force)) {
+            resource = nullptr;
+        }
+	} catch (const std::bad_cast& ) {
+		ERROR_FN(Locale::get("RESOURCE_CACHE_REMOVE_NOT_RESOURCE"));
+	}
 }
 
 template<class T>

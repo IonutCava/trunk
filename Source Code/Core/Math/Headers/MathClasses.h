@@ -207,7 +207,7 @@ public:
     }
 
     inline void set(const mat4<T> &matrix) {
-		this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
+        this->mat[0] = matrix[0]; this->mat[3] = matrix[4]; this->mat[6] = matrix[8];
         this->mat[1] = matrix[1]; this->mat[4] = matrix[5]; this->mat[7] = matrix[9];
         this->mat[2] = matrix[2]; this->mat[5] = matrix[6]; this->mat[8] = matrix[10];
     }
@@ -759,43 +759,43 @@ public:
         this->m[3][2] = -zAxis.dot(eye);
     }
 
-	void ortho(T left, T right, T bottom, T top, T zNear, T zFar ) {
-		identity();
+    void ortho(T left, T right, T bottom, T top, T zNear, T zFar ) {
+        identity();
 
-		m[0][0] = static_cast<T>(2) / (right - left);
-		m[1][1] = static_cast<T>(2) / (top - bottom);
-		m[2][2] = - T(2) / (zFar - zNear);
-		m[3][0] = - (right + left) / (right - left);
-		m[3][1] = - (top + bottom) / (top - bottom);
-		m[3][2] = - (zFar + zNear) / (zFar - zNear);
-	}
+        m[0][0] = static_cast<T>(2) / (right - left);
+        m[1][1] = static_cast<T>(2) / (top - bottom);
+        m[2][2] = - T(2) / (zFar - zNear);
+        m[3][0] = - (right + left) / (right - left);
+        m[3][1] = - (top + bottom) / (top - bottom);
+        m[3][2] = - (zFar + zNear) / (zFar - zNear);
+    }
 
-	void perspective(T fovyRad, T aspect, T zNear,T zFar) {
-		assert(!IS_ZERO(aspect));
-		assert(zFar > zNear);
+    void perspective(T fovyRad, T aspect, T zNear,T zFar) {
+        assert(!IS_ZERO(aspect));
+        assert(zFar > zNear);
 
-		T tanHalfFovy = tan(fovyRad / static_cast<T>(2));
+        T tanHalfFovy = tan(fovyRad / static_cast<T>(2));
 
-		zero();
+        zero();
 
-		m[0][0] =    static_cast<T>(1) / (aspect * tanHalfFovy);
-		m[1][1] =    static_cast<T>(1) / (tanHalfFovy);
-		m[2][2] = - (zFar + zNear) / (zFar - zNear);
-		m[2][3] = - static_cast<T>(1);
-		m[3][2] = - (static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
-	}
+        m[0][0] =    static_cast<T>(1) / (aspect * tanHalfFovy);
+        m[1][1] =    static_cast<T>(1) / (tanHalfFovy);
+        m[2][2] = - (zFar + zNear) / (zFar - zNear);
+        m[2][3] = - static_cast<T>(1);
+        m[3][2] = - (static_cast<T>(2) * zFar * zNear) / (zFar - zNear);
+    }
 
-	void frustum(T left, T right, T bottom, T top, T nearVal, T farVal) {
-		zero();
+    void frustum(T left, T right, T bottom, T top, T nearVal, T farVal) {
+        zero();
 
-		m[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
-		m[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
-		m[2][0] = (right + left) / (right - left);
-		m[2][1] = (top + bottom) / (top - bottom);
-		m[2][2] = -(farVal + nearVal) / (farVal - nearVal);
-		m[2][3] = static_cast<T>(-1);
-		m[3][2] = -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
-	}
+        m[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
+        m[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
+        m[2][0] = (right + left) / (right - left);
+        m[2][1] = (top + bottom) / (top - bottom);
+        m[2][2] = -(farVal + nearVal) / (farVal - nearVal);
+        m[2][3] = static_cast<T>(-1);
+        m[3][2] = -(static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
+    }
 
     inline void reflect(T x,T y,T z,T w) {
         reflect(Plane<T>(x,y,z,w));
@@ -863,68 +863,67 @@ namespace Util{
         return v1 + (v2 - v1*t);
     }
     namespace Mat4 {
-                // ----------------------------------------------------------------------------------------
-            template <typename T>
-            inline void decompose(const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position) {
+        // ----------------------------------------------------------------------------------------
+        template <typename T>
+        inline void decompose(const mat4<T>& matrix, vec3<T>& scale, Quaternion<T>& rotation, vec3<T>& position) {
     
-                // extract translation
-                position.x = matrix.m[0][3];
-                position.y = matrix.m[1][3];
-                position.z = matrix.m[2][3];
+            // extract translation
+            position.x = matrix.m[0][3];
+            position.y = matrix.m[1][3];
+            position.z = matrix.m[2][3];
 
-                // extract the rows of the matrix
-                vec3<T> vRows[3] = {
-                    vec3<T>(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0]),
-                    vec3<T>(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1]),
-                    vec3<T>(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2])
-                };
+            // extract the rows of the matrix
+            vec3<T> vRows[3] = {
+                vec3<T>(matrix.m[0][0],matrix.m[1][0],matrix.m[2][0]),
+                vec3<T>(matrix.m[0][1],matrix.m[1][1],matrix.m[2][1]),
+                vec3<T>(matrix.m[0][2],matrix.m[1][2],matrix.m[2][2])
+            };
 
-                // extract the scaling factors
-                scale.x = vRows[0].length();
-                scale.y = vRows[1].length();
-                scale.z = vRows[2].length();
+            // extract the scaling factors
+            scale.x = vRows[0].length();
+            scale.y = vRows[1].length();
+            scale.z = vRows[2].length();
 
-                // and the sign of the scaling
-                if (matrix.det() < 0) {
-                    scale.x = -scale.x;
-                    scale.y = -scale.y;
-                    scale.z = -scale.z;
-                }
-
-                // and remove all scaling from the matrix
-                if(!IS_ZERO(scale.x))
-                {
-                    vRows[0] /= scale.x;
-                }
-                if(!IS_ZERO(scale.y))
-                {
-                    vRows[1] /= scale.y;
-                }
-                if(!IS_ZERO(scale.z))
-                {
-                    vRows[2] /= scale.z;
-                }
-
-                // build a 3x3 rotation matrix
-                mat3<T> m(vRows[0].x,vRows[1].x,vRows[2].x,
-                          vRows[0].y,vRows[1].y,vRows[2].y,
-                          vRows[0].z,vRows[1].z,vRows[2].z);
-
-                // and generate the rotation quaternion from it
-                rotation = Quaternion<T>(m);
+            // and the sign of the scaling
+            if (matrix.det() < 0) {
+                scale.x = -scale.x;
+                scale.y = -scale.y;
+                scale.z = -scale.z;
             }
 
-            // ----------------------------------------------------------------------------------------
-            template <typename T>
-            inline void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position) {
-                // extract translation
-                position.x = matrix.m[0][3];
-                position.y = matrix.m[1][3];
-                position.z = matrix.m[2][3];
-
-                // extract rotation
-                rotation = Quaterion<T>(mat3<T>(matrix));
+            // and remove all scaling from the matrix
+            if (!IS_ZERO(scale.x)) {
+                vRows[0] /= scale.x;
             }
+            if(!IS_ZERO(scale.y))
+            {
+                vRows[1] /= scale.y;
+            }
+            if(!IS_ZERO(scale.z))
+            {
+                vRows[2] /= scale.z;
+            }
+
+            // build a 3x3 rotation matrix
+            mat3<T> m(vRows[0].x,vRows[1].x,vRows[2].x,
+                        vRows[0].y,vRows[1].y,vRows[2].y,
+                        vRows[0].z,vRows[1].z,vRows[2].z);
+
+            // and generate the rotation quaternion from it
+            rotation = Quaternion<T>(m);
+        }
+
+        // ----------------------------------------------------------------------------------------
+        template <typename T>
+        inline void decomposeNoScaling(const mat4<T>& matrix, Quaternion<T>& rotation,	vec3<T>& position) {
+            // extract translation
+            position.x = matrix.m[0][3];
+            position.y = matrix.m[1][3];
+            position.z = matrix.m[2][3];
+
+            // extract rotation
+            rotation = Quaterion<T>(mat3<T>(matrix));
+        }
     };//Mat4
 };//Util
 #endif

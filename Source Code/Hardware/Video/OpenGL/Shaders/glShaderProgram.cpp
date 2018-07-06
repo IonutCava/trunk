@@ -10,6 +10,7 @@
 glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
                                                         _validationQueued(false),
                                                         _loadedFromBinary(false),
+                                                        _validated(false),
                                                         _shaderProgramIDTemp(0)
 {
     // each API has it's own invalid id. This is OpenGL's
@@ -55,18 +56,17 @@ void glShaderProgram::validateInternal() {
     } else{
         D_PRINT_FN(Locale::get("GLSL_VALIDATING_PROGRAM"), getName().c_str(), getLog().c_str());
     }
-    // clear validation queue flag
-    _validationQueued = false;
+    _validated = true;
 }
 
 /// Called once per frame. Used to update internal state
 U8 glShaderProgram::update(const U64 deltaTime){
     // If we haven't validated the program but used it at lease once ...
-    if(_validationQueued && isValid() && _wasBound){
+    if(_validationQueued){
         // Call the internal validation function
         validateInternal();
         // We dump the shader binary only if it wasn't loaded from one
-        if (isValid() && !_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
+        if (!_loadedFromBinary && GFX_DEVICE.getGPUVendor() == GPU_VENDOR_NVIDIA) {
             STUBBED("GLSL binary dump/load is only enabled for nVidia GPUS. Catalyst 14.x destroys uniforms on shader dump, for whatever reason. - Ionut")
             // Get the size of the binary code
             GLint binaryLength = 0;
@@ -93,8 +93,10 @@ U8 glShaderProgram::update(const U64 deltaTime){
             // delete our local code buffer
             free(binary);
         }
-
+        // clear validation queue flag
+        _validationQueued = false;
     }
+
     // pass the update responsibility back to the parent class  
     return ShaderProgram::update(deltaTime);
 }
@@ -192,8 +194,6 @@ void glShaderProgram::threadedLoad(const std::string& name) {
         // Link the program
         link();
     }
-    // At this point, if either it's loaded from binary or loaded via shader stages, the program is ready for validation, so queue it
-    validate();
     // This was once an atomic swap. Might still be in the future
     _shaderProgramId = _shaderProgramIDTemp;
     // Clear texture<->binding map
@@ -385,7 +385,7 @@ bool glShaderProgram::generateHWResource(const std::string& name) {
             // If we request a refresh for the current stage, we need to have a pointer for the stage's shader already
             if (!_refreshStage[type]) {
                 // Else, we ask the shader manager to see if it was previously loaded elsewhere
-                _shaderStage[type] = ShaderManager::getInstance().findShader(shaderCompileName[type], refresh);
+                _shaderStage[type] = ShaderManager::getInstance().getShader(shaderCompileName[type], refresh);
             }
 
             // If this is the first time this shader is loaded ...
@@ -476,6 +476,10 @@ void glShaderProgram::unbind(bool resetActiveProgram) {
     // Prevent double unbind
     if (!_bound) {
         return;
+    }
+    // After using the shader at least once, validate the shader if needed
+    if (!_validated) {
+        _validationQueued = isValid();
     }
     // If forced to do so, we can clear OpenGL's active program object
     if (resetActiveProgram) {

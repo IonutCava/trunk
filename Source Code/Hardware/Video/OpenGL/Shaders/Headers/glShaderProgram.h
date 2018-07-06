@@ -90,8 +90,6 @@ public:
 protected:
     /// Creation of a new shader program. Pass in a shader token and use glsw to load the corresponding effects
     bool generateHWResource(const std::string& name);
-    /// Queue validation on the next update call
-    inline void validate() { _validationQueued = true; }
     /// Linking a shader program also sets up all pre-link properties for the shader (varying locations, attrib bindings, etc)
     void link();
     /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
@@ -113,6 +111,7 @@ private:
     TextureSlotMap _textureSlots;
     boost::atomic_bool _validationQueued;
     GLenum  _binaryFormat;
+    bool    _validated;
     bool    _loadedFromBinary;
     Shader* _shaderStage[ShaderType_PLACEHOLDER];
     GLuint  _shaderProgramIDTemp;

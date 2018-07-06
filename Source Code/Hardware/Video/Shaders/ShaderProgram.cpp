@@ -11,72 +11,83 @@
 #include "Hardware/Video/Shaders/Headers/ShaderManager.h"
 
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
-                                                    _activeCamera(nullptr),
                                                     _optimise(optimise),
-                                                    _linked(false),
-                                                    _bound(false),
                                                     _dirty(true),
-                                                    _wasBound(false),
-                                                    _elapsedTime(0ULL),
+                                                    _bound(false),
+                                                    _linked(false),
                                                     _outputCount(0),
+                                                    _elapsedTime(0ULL),
                                                     _elapsedTimeMS(0.0f)
 {
-    _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
-    
+    // Override in concrete implementations with appropriate invalid values
+    _shaderProgramId = 0;
+    // Start with clean refresh flags
     memset(_refreshStage, false, ShaderType_PLACEHOLDER * sizeof(bool));
-
+    // Cache some frequently updated uniform locations
     _sceneDataDirty = true;
-    _timeLoc             = -1;
-    _enableFogLoc        = -1;
-    _lightAmbientLoc     = -1;
-    _invScreenDimension  = -1;
-    _fogColorLoc       = -1;
-    _fogDensityLoc     = -1;
-    _prevLOD           = 250;
+    _timeLoc            = -1;
+    _enableFogLoc       = -1;
+    _lightAmbientLoc    = -1;
+    _invScreenDimension = -1;
+    _fogColorLoc        = -1;
+    _fogDensityLoc      = -1;
 }
 
 ShaderProgram::~ShaderProgram()
 {
     D_PRINT_FN(Locale::get("SHADER_PROGRAM_REMOVE"), getName().c_str());
-    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap){
+    // Remove every shader attached to this program
+    FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap) {
         ShaderManager::getInstance().removeShader(it.second);
     }
+    // Unregister the program from the manager
     ShaderManager::getInstance().unregisterShaderProgram(getName());
     _shaderIdMap.clear();
 }
 
-U8 ShaderProgram::update(const U64 deltaTime){
-    _elapsedTime += deltaTime;
-    _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
-    if (!isHWInitComplete())
-        return 0;
-
-    _activeCamera = Application::getInstance().getKernel()->getCameraMgr().getActiveCamera();
-    
+/// Called once per frame. Update common values used across programs
+U8 ShaderProgram::update(const U64 deltaTime) {
     ParamHandler& par = ParamHandler::getInstance();
     LightManager& lightMgr = LightManager::getInstance();
+
+    // Update internal timers
+    _elapsedTime += deltaTime;
+    _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
+    // Skip programs that aren't fully loaded
+    if (!isHWInitComplete()) {
+        return 0;
+    }
+    // Toggle fog on or off
     bool enableFog = par.getParam<bool>("rendering.enableFog");
-#ifdef _DEBUG
-    this->Uniform("dvd_showShadowSplits", par.getParam<bool>("rendering.debug.showSplits"));
-#endif
+#   ifdef _DEBUG
+        // Shadow splits are only visible in debug builds
+        this->Uniform("dvd_showShadowSplits", par.getParam<bool>("rendering.debug.showSplits"));
+#   endif
+    // Time, fog, ambient light
     this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Uniform(_enableFogLoc, enableFog);
     this->Uniform(_lightAmbientLoc, lightMgr.getAmbientLight());
-    if(_sceneDataDirty){
-        if(enableFog){
+    // Scene specific data is updated only if it changed
+    if (_sceneDataDirty) {
+        // Check and update fog properties
+        if (enableFog) {
             this->Uniform(_fogColorLoc, vec3<F32>(par.getParam<F32>("rendering.sceneState.fogColor.r"),
                                                   par.getParam<F32>("rendering.sceneState.fogColor.g"),
                                                   par.getParam<F32>("rendering.sceneState.fogColor.b")));
             this->Uniform(_fogDensityLoc, par.getParam<F32>("rendering.sceneState.fogDensity"));
         }
+        // Upload wind data
         Scene* activeScene = GET_ACTIVE_SCENE();
         this->Uniform("windDirection", vec2<F32>(activeScene->state().getWindDirX(), activeScene->state().getWindDirZ()));
         this->Uniform("windSpeed", activeScene->state().getWindSpeed());
         _sceneDataDirty = false;
     }
-    if(_dirty){
+    // The following values are updated only if a call to the ShaderManager's refresh() function is made
+    if (_dirty) {
+        // Inverse screen resolution
         const vec2<U16>& screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
         this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width, 1.0f / screenRes.height));
+        // Shadow mapping specific values
         this->Uniform("dvd_lightBleedBias", 0.0000002f);
         this->Uniform("dvd_minShadowVariance", 0.0002f);
         this->Uniform("dvd_shadowMaxDist", 250.0f);
@@ -87,17 +98,18 @@ U8 ShaderProgram::update(const U64 deltaTime){
     return 1;
 }
 
-bool ShaderProgram::generateHWResource(const std::string& name){
+/// Rendering API specific loading (called after the API specific derived calls processed the request)
+bool ShaderProgram::generateHWResource(const std::string& name) {
     _name = name;
 
     if (!HardwareResource::generateHWResource(name)) {
         return false;
     }
-
+    // Finish threaded loading
     HardwareResource::threadedLoad(name);
-
+    // Validate loading state
     DIVIDE_ASSERT(isHWInitComplete(), "ShaderProgram error: hardware initialization failed!");
-
+    // Get the location for our frequently used uniforms
     if (_linked) {
         _timeLoc             = this->cachedLoc("dvd_time");
         _enableFogLoc        = this->cachedLoc("dvd_enableFog");
@@ -106,65 +118,94 @@ bool ShaderProgram::generateHWResource(const std::string& name){
         _fogColorLoc         = this->cachedLoc("fogColor");
         _fogDensityLoc       = this->cachedLoc("fogDensity");
     }
-
-    _dirty = true;
+    // Make sure the first call to update processes all of the needed data
+    _dirty = _sceneDataDirty = true;
 
     return true;
 }
 
-bool ShaderProgram::bind(){
-    _bound = _wasBound = true;
-
+/// Mark the shader as bound
+bool ShaderProgram::bind() {
+    _bound = true;
     return _shaderProgramId != 0;
 }
 
-void ShaderProgram::unbind(bool resetActiveProgram){
+/// Mark the shader as unbound
+void ShaderProgram::unbind(bool resetActiveProgram) {
     _bound = false;
 }
 
-vectorImpl<Shader* > ShaderProgram::getShaders(const ShaderType& type) const{
-    static vectorImpl<Shader* > returnShaders;
-
-    returnShaders.clear();
-    FOR_EACH(ShaderIdMap::value_type it, _shaderIdMap){
-        if(it.second->getType() == type){
-            returnShaders.push_back(it.second);
-        }
+/// Add a define to the shader. The defined must not have been added previously
+void ShaderProgram::addShaderDefine(const std::string& define) {
+    // Find the string in the list of program defines
+    vectorImpl<std::string >::iterator it = find(_definesList.begin(), _definesList.end(), define);
+    // If we can't find it, we add it
+    if (it == _definesList.end()) {
+        _definesList.push_back(define);
+    } else {
+        // If we did find it, we'll show an error message in debug builds about double add
+        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_ADD"), define.c_str(), getName().c_str());
     }
-    return returnShaders;
+    
 }
 
-void ShaderProgram::removeShaderDefine(const std::string& define){
+/// Remove a define from the shader. The defined must have been added previously
+void ShaderProgram::removeShaderDefine(const std::string& define) {
+    // Find the string in the list of program defines
     vectorImpl<std::string >::iterator it = find(_definesList.begin(), _definesList.end(), define);
-    if (it != _definesList.end()) _definesList.erase(it);
-    else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),define.c_str(),getName().c_str());
+    // If we find it, we remove it
+    if (it != _definesList.end()) {
+        _definesList.erase(it);
+    } else {
+        // If we did not find it, we'll show an error message in debug builds
+        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_DEFINE_DELETE"),define.c_str(),getName().c_str());
+    }
 }
 
 void ShaderProgram::addShaderUniform(const std::string& uniform, const ShaderType& type) {
-    _customUniforms[type].push_back(uniform);
+    // Find the string in the list of uniforms
+    vectorImpl<std::string >::iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
+    // If we can't find it, we add it
+    if (it == _definesList.end()) {
+        _customUniforms[type].push_back(uniform);
+    } else {
+        // If we did find it, we'll show an error message in debug builds about double add
+        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_ADD"), uniform.c_str(), (U32)type, getName().c_str());
+    }
 }
 
+/// Remove an uniform from the shader. The uniform must have been added previously for the specified shader type
 void ShaderProgram::removeUniform(const std::string& uniform, const ShaderType& type) {
+    // Find the string in the list of uniforms
     vectorImpl<std::string >::const_iterator it = find(_customUniforms[type].begin(), _customUniforms[type].end(), uniform);
-    if (it != _customUniforms[type].end()) _customUniforms[type].erase(it);
-    else D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"), uniform.c_str(), (U32)type , getName().c_str());
+    // If we find it, we remove it
+    if (it != _customUniforms[type].end()) {
+        _customUniforms[type].erase(it);
+    } else {
+        // If we did find it, we'll show an error message in debug builds about double add
+        D_ERROR_FN(Locale::get("ERROR_INVALID_SHADER_UNIFORM_DELETE"), uniform.c_str(), (U32)type , getName().c_str());
+    }
 }
 
+/// Rebuild the specified shader stages from source code
 void ShaderProgram::recompile(const bool vertex, const bool fragment, const bool geometry, const bool tessellation, const bool compute){
     _linked = false;
-    _wasBound = _bound;
-
-    if(_wasBound) unbind();
-
-    //update refresh tags
+    // Remember bind state
+    bool wasBound = _bound;
+    if (wasBound) {
+        unbind();
+    }
+    // Update refresh flags
     _refreshStage[VERTEX_SHADER] = vertex;
     _refreshStage[FRAGMENT_SHADER] = fragment;
     _refreshStage[GEOMETRY_SHADER] = geometry;
     _refreshStage[TESSELATION_CTRL_SHADER] = tessellation;
     _refreshStage[TESSELATION_EVAL_SHADER] = tessellation;
     _refreshStage[COMPUTE_SHADER] = compute;
-    //recreate all the needed shaders
+    // Recreate all of the needed shaders
     generateHWResource(getName());
-
-    if(_wasBound)  bind();
+    // Restore bind state
+    if (wasBound) {
+        bind();
+    }
 }

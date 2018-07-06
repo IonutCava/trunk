@@ -122,19 +122,20 @@ public:
     inline bool isBound() const {return _bound;}
     ///Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-    //calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
-           void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
-    //calling refresh will force an update on default shader uniforms
-           void refresh() { _dirty = true;}
-    //add global shader defines
-    inline void addShaderDefine(const std::string& define) {_definesList.push_back(define);}
-           void removeShaderDefine(const std::string& define);
-    //add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
-           void addShaderUniform(const std::string& uniform, const ShaderType& type);
-           void removeUniform(const std::string& uniform, const ShaderType& type);
-    //flush stored uniform locations
+    ///  Calling recompile will re-create the marked shaders from source files and update them in the ShaderManager if needed
+    void recompile(const bool vertex, const bool fragment, const bool geometry = false, const bool tessellation = false, const bool compute = false);
+    /// Add a define to the shader. The defined must not have been added previously
+    void addShaderDefine(const std::string& define);
+    /// Remove a define from the shader. The defined must have been added previously
+    void removeShaderDefine(const std::string& define);
+    /// Add either fragment or vertex uniforms (without the "uniform" word. e.g. addShaderUniform("vec3 eyePos", VERTEX_SHADER);)
+    void addShaderUniform(const std::string& uniform, const ShaderType& type);
+    /// Remove an uniform from the shader. The uniform must have been added previously for the specified shader type
+    void removeUniform(const std::string& uniform, const ShaderType& type);
+    /// Flush stored uniform locations
     virtual void flushLocCache() = 0;
 
+    /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline size_t getFunctionCount(ShaderType shader, U8 LoD){
         return _functionIndex[shader][LoD].size();
     }
@@ -144,8 +145,9 @@ public:
     }
 
     inline void setFunctionCount(ShaderType shader, size_t count){
-        for(U8 i = 0; i < Config::SCENE_NODE_LOD; ++i)
+        for (U8 i = 0; i < Config::SCENE_NODE_LOD; ++i) {
             setFunctionCount(shader, i, count);
+        }
     }
 
     inline void setFunctionIndex(ShaderType shader, U8 LoD, U32 index, U32 functionEntry){
@@ -162,11 +164,14 @@ public:
         _availableFunctionIndex[type].push_back(index);
         return U32(_availableFunctionIndex[type].size() - 1);
     }
+    /** ------ END EXPERIMENTAL CODE ----- **/
 
 protected:
     friend class ShaderManager;
-    vectorImpl<Shader* > getShaders(const ShaderType& type) const;
-    inline void setSceneDataDirty() { _sceneDataDirty = true; }
+    /// Calling refreshSceneData will force an update on scene specific shader uniforms
+    inline void refreshSceneData()  { _sceneDataDirty = true; }
+    /// Calling refreshShaderData will force an update on default shader uniforms
+    inline void refreshShaderData() { _dirty = true;}
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
 
@@ -175,7 +180,6 @@ protected:
     ShaderProgram(const bool optimise = false);
 
     virtual I32 cachedLoc(const std::string& name, const bool uniform = true) = 0;
-    virtual void validate() = 0;
     template<typename T>
     friend class ImplResourceLoader;
     virtual bool generateHWResource(const std::string& name);
@@ -186,7 +190,6 @@ protected:
     bool _refreshStage[ShaderType_PLACEHOLDER];
     bool _optimise;
     bool _dirty;
-    bool _wasBound;
     boost::atomic_bool _bound;
     boost::atomic_bool _linked;
     U32 _shaderProgramId; //<not thread-safe. Make sure assignment is protected with a mutex or something
@@ -202,7 +205,6 @@ protected:
     ShaderIdMap _shaderIdMap;
 
 private:
-    Camera* _activeCamera;
     bool _sceneDataDirty;
     ///Various uniform/attribute locations
     I32 _timeLoc;
@@ -211,7 +213,6 @@ private:
     I32 _invScreenDimension;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
-    U8  _prevLOD;
 
     vectorImpl<U32> _functionIndex[ShaderType_PLACEHOLDER][Config::SCENE_NODE_LOD];
     vectorImpl<U32> _availableFunctionIndex[ShaderType_PLACEHOLDER];

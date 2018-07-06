@@ -17,5 +17,4 @@ IMPrimitive::IMPrimitive() : GUIDWrapper(),
 
 IMPrimitive::~IMPrimitive()
 {
-    SAFE_DELETE(_texture);
 }

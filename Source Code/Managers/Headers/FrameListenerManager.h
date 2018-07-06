@@ -51,7 +51,7 @@ private:
     bool frameEnded(const FrameEvent& evt);
 
     /// pass the current time in milliseconds as the first parameter
-    /// returns the event timp in milliseconds
+    /// returns the event time in milliseconds
     D32 calculateEventTime(const D32 currentTime, FrameEventType type);
 
 private:

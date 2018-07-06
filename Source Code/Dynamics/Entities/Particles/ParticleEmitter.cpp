@@ -172,7 +172,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
 
     if(_particleTexture){
         UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-        SAFE_DELETE(_particleTexture);
+        RemoveResource(_particleTexture);
     }
 
     SamplerDescriptor textureSampler;

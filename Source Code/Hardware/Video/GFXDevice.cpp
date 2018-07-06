@@ -350,7 +350,7 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
     // Update post-processing render targets and buffers
     _postFX.updateResolution(w, h);
     // Refresh shader programs
-    _shaderManager.refresh();
+    _shaderManager.refreshShaderData();
     // Update the 2D camera so it matches our new rendering viewport
     _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
 }

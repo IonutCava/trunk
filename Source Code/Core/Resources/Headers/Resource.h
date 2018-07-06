@@ -42,6 +42,11 @@ enum ResourceState{
 };
 
 class Resource : public TrackedObject {
+    friend class ResourceCache;
+    friend class ResourceLoader;
+    template<class X>
+    friend class ImplResourceLoader;
+
 public:
     Resource(const std::string& name) : TrackedObject(),
                                        _name(name),
@@ -69,10 +74,6 @@ public:
     virtual void threadedLoad(const std::string& name)                  {_threadedLoadComplete = true;}
 
 protected:
-    friend class ResourceCache;
-    friend class ResourceLoader;
-    template<class X>
-    friend class ImplResourceLoader;
     inline void setState(const ResourceState& currentState) {_resourceState = currentState;}
     virtual void refModifyCallback(bool increase);
 

@@ -23,57 +23,78 @@
 #ifndef _TEXTURE_H
 #define _TEXTURE_H
 
-#include "core.h"
-
 #include "TextureDescriptor.h"
 #include "Core/Resources/Headers/HardwareResource.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
-class SamplerDescriptor;
+/// An API-independent representation of a texture
 class Texture : public HardwareResource {
-/*Abstract interface*/
+    friend class ResourceCache;
+    friend class ResourceLoader;
+    template<class X>
+    friend class ImplResourceLoader;
 public:
+    /// Bind the texture to the specified texture unit
     virtual void Bind(U16 slot) = 0;
+    /// Change the texture's mip levels. This can be called at any time
+    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
+    // API-dependent loading function that uploads ptr data to the GPU using the specified parameters
     virtual void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, const vec2<U16>& mipLevels, 
                           GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false) = 0;
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) = 0;
-    virtual void updateMipMaps() = 0;
-    virtual ~Texture() {}
 
-public:
-    bool LoadFile(U32 target, const std::string& name);
-
-    void resize(U16 width, U16 height);
-
-    inline       void               setCurrentSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
-    inline const SamplerDescriptor& getCurrentSampler()                              const {return _samplerDescriptor;}
-
-    inline void        refreshMipMaps()                 { _mipMapsDirty = true; }
+    /// Specify the sampler descriptor used to sample from this texture in the shaders
+    inline void setCurrentSampler(const SamplerDescriptor& descriptor) {
+        // This can be called at any time
+        _samplerDescriptor = descriptor;
+        // The sampler will be updated before the next bind call and used in that bind
+        _samplerDirty = true;
+    }
+    /// Get the sampler descriptor used by this texture
+    inline const SamplerDescriptor& getCurrentSampler() const {
+        return _samplerDescriptor;
+    }
+    /// Set/Get the number of layers (used by texture arrays)
     inline void        setNumLayers(U8 numLayers)       { _numLayers  = numLayers; }
     inline U8          getNumLayers()             const { return _numLayers; }
+    /// Texture bit depth as returned by DevIL
     inline U8          getBitDepth()              const { return _bitDepth; }
+    /// Texture width as returned by DevIL
     inline U16         getWidth()                 const { return _width; }
+    /// Texture height depth as returned by DevIL
     inline U16         getHeight()                const { return _height; }
+    /// A rendering API level handle used to uniquely identify this texture (e.g. for OpenGL, it's the texture object)
     inline U32         getHandle()                const { return _handle; }
-    inline bool        isFlipped()                const { return _flipped; }
+    /// Simple flag to check if the texture was flipped vertically
+    inline bool        isVerticallyFlipped()      const { return _flipped; }
+    /// If the texture has an alpha channel and at least one pixel is translucent, return true
     inline bool        hasTransparency()          const { return _hasTransparency; }
+    /// Get the type of the texture
     inline TextureType getTextureType()           const { return _textureType; }
-
-    virtual bool generateHWResource(const std::string& name);
+    /// Force a full refresh of the mip chain on the next texture bind
+    inline void refreshMipMaps() { _mipMapsDirty = true; }
 
 protected:
     Texture(TextureType type, const bool flipped = false);
+    virtual ~Texture();
+    /// Use DevIL to load a file into a Texture Object
+    bool LoadFile(U32 target, const std::string& name);
+    /// Load texture data using the specified file name
+    virtual bool generateHWResource(const std::string& name);
+    /// Force a refresh of the entire mipmap chain
+    virtual void updateMipMaps() = 0;
 
 protected:
-    boost::atomic<U32>	_handle;
-    U16 _width,_height;
-    U8  _bitDepth;
-    U8  _numLayers;
+    U8 _bitDepth;
+    U8 _numLayers;
+    U16 _width;
+    U16 _height;
     bool _flipped;
     bool _mipMapsDirty;
+    bool _samplerDirty;
     bool _hasTransparency;
     TextureType _textureType;
-    mat4<F32>  _transformMatrix;
+    mat4<F32> _transformMatrix;
+    boost::atomic<U32>	_handle;
     SamplerDescriptor _samplerDescriptor;
 };
 

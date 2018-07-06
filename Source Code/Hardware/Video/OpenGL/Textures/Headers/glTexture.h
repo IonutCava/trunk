@@ -36,7 +36,6 @@ public:
     void Bind(GLushort unit);
 
     void setMipMapRange(GLushort base = 0, GLushort max = 1000);
-    void updateMipMaps();
 
     void loadData(GLuint target, const GLubyte* const ptr, const vec2<GLushort>& dimensions, const vec2<GLushort>& mipLevels,
                   GFXImageFormat format, GFXImageFormat internalFormat, bool usePOW2 = false);
@@ -45,6 +44,8 @@ protected:
     bool generateHWResource(const std::string& name);
     void threadedLoad(const std::string& name);
     void reserveStorage();
+    void updateMipMaps();
+    void updateSampler();
 
 private:
     GLenum _type;
