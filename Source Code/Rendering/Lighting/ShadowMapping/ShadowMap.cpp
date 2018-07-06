@@ -176,7 +176,7 @@ void ShadowMap::bindShadowMaps(GFXDevice& context, GFX::CommandBuffer& bufferInO
         TextureData data = context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SHADOW, i)).getAttachment(attachment, 0).texture()->getData();
         descriptorSetCmd._set._textureData.addTexture(data, bindSlot);
     }
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
 void ShadowMap::clearShadowMapBuffers(GFXDevice& context) {

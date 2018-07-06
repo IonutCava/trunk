@@ -56,17 +56,17 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(buffer, pipelineCmd);
+    GFX::EnqueueCommand(buffer, pipelineCmd);
 
 
     GFX::SetViewportCommand viewportCommand;
     viewportCommand._viewport.set(0, 0, _dimensions.width, _dimensions.height);
-    GFX::SetViewPort(buffer, viewportCommand);
+    GFX::EnqueueCommand(buffer, viewportCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(_splashImage->getData(),
                                                   to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+    GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
@@ -74,7 +74,7 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(triangleCmd);
-    GFX::AddDrawCommands(buffer, drawCmd);
+    GFX::EnqueueCommand(buffer, drawCmd);
 
     context.flushCommandBuffer(buffer);
 }

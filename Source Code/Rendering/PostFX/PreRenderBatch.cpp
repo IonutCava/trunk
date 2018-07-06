@@ -200,29 +200,29 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = _currentLuminance._targetID;
         beginRenderPassCmd._name = "DO_LUMINANCE_PASS";
-        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+        GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
         pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-        GFX::BindPipeline(buffer, pipelineCmd);
+        GFX::EnqueueCommand(buffer, pipelineCmd);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
         descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
-        GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+        GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(triangleCmd);
-        GFX::AddDrawCommands(buffer, drawCmd);
+        GFX::EnqueueCommand(buffer, drawCmd);
 
         GFX::EndRenderPassCommand endRenderPassCmd;
-        GFX::EndRenderPass(buffer, endRenderPassCmd);
+        GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
         // Use previous luminance to control adaptive exposure
         GFX::BlitRenderTargetCommand blitRTCommand;
         blitRTCommand._source = _currentLuminance._targetID;
         blitRTCommand._destination = _previousLuminance._targetID;
-        GFX::BlitRenderTarget(buffer, blitRTCommand);
+        GFX::EnqueueCommand(buffer, blitRTCommand);
     }
 
     // Execute all HDR based operators
@@ -235,7 +235,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getID();
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(buffer, pipelineCmd);
+    GFX::EnqueueCommand(buffer, pipelineCmd);
 
     // ToneMap and generate LDR render target (Alpha channel contains pre-toneMapped luminance value)
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
@@ -245,23 +245,23 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         TextureData data1 = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
         descriptorSetCmd._set._textureData.addTexture(data1, to_U8(ShaderProgram::TextureUsage::UNIT1));
     }
-    GFX::BindDescriptorSets(buffer, descriptorSetCmd);
+    GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _postFXOutput._targetID;
     beginRenderPassCmd._name = "DO_TONEMAP_PASS";
-    GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _toneMapConstants;
-    GFX::SendPushConstants(buffer, pushConstantsCommand);
+    GFX::EnqueueCommand(buffer, pushConstantsCommand);
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(triangleCmd);
-    GFX::AddDrawCommands(buffer, drawCmd);
+    GFX::EnqueueCommand(buffer, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(buffer, endRenderPassCmd);
+    GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
     // Execute all LDR based operators
     for (PreRenderOperator* op : ldrBatch) {

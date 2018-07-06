@@ -184,19 +184,19 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {
         switch (cmd.first) {
             case GFX::CommandType::DRAW_COMMANDS: {
-                addDrawCommand(static_cast<const GFX::DrawCommand&>(commandBuffer.getCommand(cmd)));
+                addDrawCommand(commandBuffer.getCommand<GFX::DrawCommand>(cmd));
             } break;
             case GFX::CommandType::BIND_PIPELINE: {
-                addPipelineCommand(static_cast<const GFX::BindPipelineCommand&>(commandBuffer.getCommand(cmd)));
+                addPipelineCommand(commandBuffer.getCommand<GFX::BindPipelineCommand>(cmd));
             } break;
             case GFX::CommandType::SET_CLIP_PLANES: {
-                addClipPlanesCommand(static_cast<const GFX::SetClipPlanesCommand&>(commandBuffer.getCommand(cmd)));
+                addClipPlanesCommand(commandBuffer.getCommand<GFX::SetClipPlanesCommand>(cmd));
             } break;
             case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                addPushConstantsCommand(static_cast<const GFX::SendPushConstantsCommand&>(commandBuffer.getCommand(cmd)));
+                addPushConstantsCommand(commandBuffer.getCommand<GFX::SendPushConstantsCommand>(cmd));
             } break;
             case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                addDescriptorSetsCommand(static_cast<const GFX::BindDescriptorSetsCommand&>(commandBuffer.getCommand(cmd)));
+                addDescriptorSetsCommand(commandBuffer.getCommand<GFX::BindDescriptorSetsCommand>(cmd));
             } break;
             default:
             case GFX::CommandType::COUNT: {
@@ -224,19 +224,19 @@ bool RenderPackage::buildCommandBuffer() {
         for (const CommandEntry& cmd : _commandOrdering) {
             switch (cmd._type) {
                 case GFX::CommandType::DRAW_COMMANDS: {
-                    GFX::AddDrawCommands(buffer, _drawCommands[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _drawCommands[cmd._index]);
                 } break;
                 case GFX::CommandType::BIND_PIPELINE: {
-                    GFX::BindPipeline(buffer, _pipelines[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _pipelines[cmd._index]);
                 } break;
                 case GFX::CommandType::SET_CLIP_PLANES: {
-                    GFX::SetClipPlanes(buffer, _clipPlanes[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _clipPlanes[cmd._index]);
                 } break;
                 case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-                    GFX::SendPushConstants(buffer, _pushConstants[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _pushConstants[cmd._index]);
                 } break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-                    GFX::BindDescriptorSets(buffer, _descriptorSets[cmd._index]);
+                    GFX::EnqueueCommand(buffer, _descriptorSets[cmd._index]);
                 } break;
                 default:
                 case GFX::CommandType::COUNT: {

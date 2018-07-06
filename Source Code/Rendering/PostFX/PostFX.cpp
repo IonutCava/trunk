@@ -153,7 +153,7 @@ void PostFX::apply() {
 
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(buffer, setCameraCommand);
+    GFX::EnqueueCommand(buffer, setCameraCommand);
 
     _preRenderBatch->execute(_filterStackCount, buffer);
 
@@ -169,15 +169,15 @@ void PostFX::apply() {
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
     beginRenderPassCmd._descriptor = _postFXTarget;
     beginRenderPassCmd._name = "DO_POSTFX_PASS";
-    GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _drawPipeline;
-    GFX::BindPipeline(buffer, bindPipelineCmd);
+    GFX::EnqueueCommand(buffer, bindPipelineCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants = _drawConstants;
-    GFX::SendPushConstants(buffer, sendPushConstantsCmd);
+    GFX::EnqueueCommand(buffer, sendPushConstantsCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::DEPTH));
@@ -185,14 +185,14 @@ void PostFX::apply() {
     bindDescriptorSetsCmd._set._textureData.addTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     bindDescriptorSetsCmd._set._textureData.addTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     bindDescriptorSetsCmd._set._textureData.addTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-    GFX::BindDescriptorSets(buffer, bindDescriptorSetsCmd);
+    GFX::EnqueueCommand(buffer, bindDescriptorSetsCmd);
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(_drawCommand);
-    GFX::AddDrawCommands(buffer, drawCommand);
+    GFX::EnqueueCommand(buffer, drawCommand);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(buffer, endRenderPassCmd);
+    GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
     _gfx->flushCommandBuffer(buffer);
 }

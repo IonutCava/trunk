@@ -225,7 +225,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = cubeMap;
     beginRenderPassCmd._name = "GENERATE_CUBE_MAP";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
@@ -253,7 +253,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // Resolve our render target
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
@@ -311,7 +311,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = targetBuffer;
     beginRenderPassCmd._name = "GENERATE_DUAL_PARABOLOID_MAP";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     for (U8 i = 0; i < 2; ++i) {
             paraboloidTarget.drawToLayer(hasColour ? RTAttachmentType::Colour
@@ -326,7 +326,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             passMgr.doCustomPass(params, bufferInOut);
         }
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
     // Return to our previous rendering stage
     setRenderStagePass(prevRenderStage);
 }
@@ -636,22 +636,22 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
     beginDebugScopeCmd._scopeName = "Construct Hi-Z";
-    GFX::BeginDebugScope(cmdBufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, beginDebugScopeCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = depthBuffer;
     beginRenderPassCmd._descriptor = depthOnlyTarget;
     beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
-    GFX::BeginRenderPass(cmdBufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = pipeline;
-    GFX::BindPipeline(cmdBufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(depth->getData(),
                                                   to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::BindDescriptorSets(cmdBufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
     GFX::SetViewportCommand viewportCommand;
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -665,21 +665,21 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
 
             // Bind next mip level for rendering but first restrict fetches only to previous level
             beginRenderSubPassCmd._mipWriteLevel = level;
-            GFX::BeginRenderSubPass(cmdBufferInOut, beginRenderSubPassCmd);
+            GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
 
             // Update the viewport with the new resolution
             viewportCommand._viewport.set(0, 0, twidth, theight);
-            GFX::SetViewPort(cmdBufferInOut, viewportCommand);
+            GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
             pushConstantsCommand._constants.set("depthInfo", GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
-            GFX::SendPushConstants(cmdBufferInOut, pushConstantsCommand);
+            GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
             // Dummy draw command as the full screen quad is generated completely in the vertex shader
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(triangleCmd);
-            GFX::AddDrawCommands(cmdBufferInOut, drawCmd);
+            GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
 
-            GFX::EndRenderSubPass(cmdBufferInOut, endRenderSubPassCmd);
+            GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
         }
 
         // Calculate next viewport size
@@ -691,14 +691,14 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
     }
 
     viewportCommand._viewport.set(previousViewport);
-    GFX::SetViewPort(cmdBufferInOut, viewportCommand);
+    GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
     // Unbind the render target
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(cmdBufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, endRenderPassCmd);
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EndDebugScope(cmdBufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, endDebugScopeCmd);
 }
 
 Renderer& GFXDevice::getRenderer() const {

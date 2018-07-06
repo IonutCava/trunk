@@ -372,21 +372,21 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(depthTex->getData(), to_U8(ShaderProgram::TextureUsage::UNIT0));
-        GFX::BindDescriptorSets(cmdBuffer, descriptorSetCmd);
+        GFX::EnqueueCommand(cmdBuffer, descriptorSetCmd);
 
         GFX::BindPipelineCommand pipelineCmd;
         pipelineCmd._pipeline = &_context.newPipeline(pipeDesc);
-        GFX::BindPipeline(cmdBuffer, pipelineCmd);
+        GFX::EnqueueCommand(cmdBuffer, pipelineCmd);
 
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants.set("ObjectExtent", GFX::PushConstantType::VEC3, vec3<F32>(1.0f, 1.0f, 1.0f));
         pushConstantsCommand._constants.set("dvd_visibilityDistance", GFX::PushConstantType::FLOAT, sceneRenderState.grassVisibility());
         pushConstantsCommand._constants.set("cullType", GFX::PushConstantType::UINT, /*queryID*/ to_base(CullType::INSTANCE_CLOUD_REDUCTION));
-        GFX::SendPushConstants(cmdBuffer, pushConstantsCommand);
+        GFX::EnqueueCommand(cmdBuffer, pushConstantsCommand);
 
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(_cullDrawCommand);
-        GFX::AddDrawCommands(cmdBuffer, drawCmd);
+        GFX::EnqueueCommand(cmdBuffer, drawCmd);
 
         _context.flushAndClearCommandBuffer(cmdBuffer);
 

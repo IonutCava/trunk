@@ -122,7 +122,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 0;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): PrePass", TypeUtil::renderStageToString(params.stage));
-    GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     // PrePass requires a depth buffer
     bool doPrePass = params.doPrePass && target.getAttachment(RTAttachmentType::Depth, 0).used();
@@ -144,7 +144,7 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
                 beginRenderPassCommand._target = params.target;
                 beginRenderPassCommand._descriptor = RenderTarget::defaultPolicyDepthOnly();
                 beginRenderPassCommand._name = "DO_PRE_PASS";
-                GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
+                GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
             }
 
             for (U32 i = 0; i < to_U32(RenderBinType::COUNT); ++i) {
@@ -162,14 +162,14 @@ void RenderPassManager::prePass(const PassParams& params, const RenderTarget& ta
 
             if (params.bindTargets) {
                 GFX::EndRenderPassCommand endRenderPassCommand;
-                GFX::EndRenderPass(bufferInOut, endRenderPassCommand);
+                GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
             }
         }
         
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EndDebugScope(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
 void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -184,7 +184,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 1;
     beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s ): RenderPass", TypeUtil::renderStageToString(params.stage));
-    GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     SceneManager& sceneManager = parent().sceneManager();
 
@@ -217,7 +217,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
                 bindDescriptorSets._set._textureData.addTexture(prevDepthData, to_U8(ShaderProgram::TextureUsage::DEPTH_PREV));
             }
 
-            GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
+            GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
         }
 
         RTDrawDescriptor& drawPolicy = 
@@ -232,7 +232,7 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
             beginRenderPassCommand._target = params.target;
             beginRenderPassCommand._descriptor = drawPolicy;
             beginRenderPassCommand._name = "DO_MAIN_PASS";
-            GFX::BeginRenderPass(bufferInOut, beginRenderPassCommand);
+            GFX::EnqueueCommand(bufferInOut, beginRenderPassCommand);
         }
 
         if (params.stage == RenderStage::SHADOW) {
@@ -263,12 +263,12 @@ void RenderPassManager::mainPass(const PassParams& params, RenderTarget& target,
 
         if (params.bindTargets) {
             GFX::EndRenderPassCommand endRenderPassCommand;
-            GFX::EndRenderPass(bufferInOut, endRenderPassCommand);
+            GFX::EnqueueCommand(bufferInOut, endRenderPassCommand);
         }
     }
 
     GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EndDebugScope(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
 void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -318,22 +318,22 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
         GFX::EndRenderPassCommand endRenderPassOitCmd, endRenderPassCompCmd;
         // Step1: Draw translucent items into the accumulation and revealage buffers
-        GFX::BeginRenderPass(bufferInOut, beginRenderPassOitCmd);
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
         _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, bufferInOut);
-        GFX::EndRenderPass(bufferInOut, endRenderPassOitCmd);
+        GFX::EnqueueCommand(bufferInOut, endRenderPassOitCmd);
 
         // Step2: Composition pass
-        GFX::BeginRenderPass(bufferInOut, beginRenderPassCompCmd);
-        GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+        GFX::EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
+        GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
         TextureData accum = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION)).texture()->getData();
         TextureData revealage = _context.renderTargetPool().renderTarget(beginRenderPassOitCmd._target).getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE)).texture()->getData();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(accum, 0u);
         descriptorSetCmd._set._textureData.addTexture(revealage, 1u);
-        GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
-        GFX::AddDrawCommands(bufferInOut, drawCmd);
-        GFX::EndRenderPass(bufferInOut, endRenderPassCompCmd);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, endRenderPassCompCmd);
     }
 }
 
@@ -341,11 +341,11 @@ void RenderPassManager::doCustomPass(PassParams& params, GFX::CommandBuffer& buf
     // Tell the Rendering API to draw from our desired PoV
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = params.camera;
-    GFX::SetCamera(bufferInOut, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::SetClipPlanesCommand setClipPlanesCommand;
     setClipPlanesCommand._clippingPlanes = params.clippingPlanes;
-    GFX::SetClipPlanes(bufferInOut, setClipPlanesCommand);
+    GFX::EnqueueCommand(bufferInOut, setClipPlanesCommand);
 
     RenderTarget& target = _context.renderTargetPool().renderTarget(params.target);
     prePass(params, target, bufferInOut);

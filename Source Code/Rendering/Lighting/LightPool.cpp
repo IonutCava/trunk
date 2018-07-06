@@ -349,17 +349,17 @@ void LightPool::drawLightImpostors(GFX::CommandBuffer& bufferInOut) const {
 
         GFX::BindPipelineCommand bindPipeline;
         bindPipeline._pipeline = &_context.newPipeline(pipelineDescriptor);
-        GFX::BindPipeline(bufferInOut, bindPipeline);
+        GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.addTexture(TextureData(_lightIconsTexture->getTextureType(),
                                                                   _lightIconsTexture->getHandle()),
                                                       to_U8(ShaderProgram::TextureUsage::UNIT0));
-        GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(pointsCmd);
-        GFX::AddDrawCommands(bufferInOut, drawCommand);
+        GFX::EnqueueCommand(bufferInOut, drawCommand);
     }
 }
 

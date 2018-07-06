@@ -527,12 +527,12 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
     beginDebugScopeCmd._scopeName = isPostPass ? "Render IMGUI [Post]" : "Render IMGUI [Pre]";
-    GFX::BeginDebugScope(buffer, beginDebugScopeCmd);
+    GFX::EnqueueCommand(buffer, beginDebugScopeCmd);
 
     if (isPostPass && switchWindow) {
         GFX::SwitchWindowCommand switchWindowCmd;
         switchWindowCmd.windowGUID = _activeWindowGUID;
-        GFX::AddSwitchWindow(buffer, switchWindowCmd);
+        GFX::EnqueueCommand(buffer, switchWindowCmd);
     }
 
     if (!isPostPass) {
@@ -547,7 +547,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
         beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
         beginRenderPassCmd._descriptor = screenTarget;
         beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
-        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+        GFX::EnqueueCommand(buffer, beginRenderPassCmd);
     }
 
     GFX::SetBlendCommand blendCmd;
@@ -556,37 +556,37 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
         BlendProperty::SRC_ALPHA,
         BlendProperty::INV_SRC_ALPHA
     };
-    GFX::SetBlend(buffer, blendCmd);
+    GFX::EnqueueCommand(buffer, blendCmd);
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDesc);
-    GFX::BindPipeline(buffer, pipelineCmd);
+    GFX::EnqueueCommand(buffer, pipelineCmd);
 
     GFX::SetViewportCommand viewportCmd;
     viewportCmd._viewport.set(0, 0, fb_width, fb_height);
-    GFX::SetViewPort(buffer, viewportCmd);
+    GFX::EnqueueCommand(buffer, viewportCmd);
 
     GFX::SetCameraCommand cameraCmd;
     cameraCmd._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y);
-    GFX::SetCamera(buffer, cameraCmd);
+    GFX::EnqueueCommand(buffer, cameraCmd);
 
     GFX::DrawIMGUICommand drawIMGUI;
     drawIMGUI._data = pDrawData;
-    GFX::AddDrawIMGUICommand(buffer, drawIMGUI);
+    GFX::EnqueueCommand(buffer, drawIMGUI);
 
     if (isPostPass) {
         if (switchWindow) {
             GFX::SwitchWindowCommand switchWindowCmd;
             switchWindowCmd.windowGUID = previousGUID;
-            GFX::AddSwitchWindow(buffer, switchWindowCmd);
+            GFX::EnqueueCommand(buffer, switchWindowCmd);
         }
     } else {
         GFX::EndRenderPassCommand endRenderPassCmd;
-        GFX::EndRenderPass(buffer, endRenderPassCmd);
+        GFX::EnqueueCommand(buffer, endRenderPassCmd);
     }
 
     GFX::EndDebugScopeCommand endDebugScope;
-    GFX::EndDebugScope(buffer, endDebugScope);
+    GFX::EnqueueCommand(buffer, endDebugScope);
 
     _context.gfx().flushCommandBuffer(buffer);
 }

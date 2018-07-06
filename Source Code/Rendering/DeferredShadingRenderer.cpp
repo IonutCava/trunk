@@ -178,10 +178,10 @@ void DeferredShadingRenderer::preRender(RenderTarget& target,
             }
         }
     };
-    GFX::BeginPixelBuffer(bufferInOut, beginPixelBufferCmd);
+    GFX::EnqueueCommand(bufferInOut, beginPixelBufferCmd);
 
     GFX::EndPixelBufferCommand endPixelBufferCmd;
-    GFX::EndPixelBuffer(bufferInOut, endPixelBufferCmd);
+    GFX::EnqueueCommand(bufferInOut, endPixelBufferCmd);
 }
 
 void DeferredShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,
@@ -199,12 +199,12 @@ void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void, GFX::CommandBuf
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _deferredBuffer._targetID;
     beginRenderPassCmd._name = "DO_DEFERRED_RENDERING_PASS_1";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
         renderCallback(bufferInOut);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
 void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderState,
@@ -214,7 +214,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     // textures bound to that shader
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(bufferInOut, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     TextureData texData0 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     TextureData texData1 = _deferredBuffer._rt->getAttachment(RTAttachmentType::Colour, 1).texture()->getData();
@@ -228,7 +228,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     descriptorSetCmd._set._textureData.addTexture(texData2, 2);
     descriptorSetCmd._set._textureData.addTexture(texData3, 3);
     descriptorSetCmd._set._textureData.addTexture(lightData, 4);
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
@@ -236,49 +236,49 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);;
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
 
     GenericDrawCommand cmd;
     if (_debugView) {
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 4);
-        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
-            GFX::AddDrawCommands(bufferInOut, drawCmd);
+            GFX::EnqueueCommand(bufferInOut, drawCmd);
         }
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 1);
-        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
-            GFX::AddDrawCommands(bufferInOut, drawCmd);
+            GFX::EnqueueCommand(bufferInOut, drawCmd);
         }
         pushConstantsCommand._constants.set("texDiffuse0", GFX::PushConstantType::UINT, 2);
-        GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
         cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
         {
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
-            GFX::AddDrawCommands(bufferInOut, drawCmd);
+            GFX::EnqueueCommand(bufferInOut, drawCmd);
         }
     }
 
     pipelineDescriptor._shaderProgramHandle = _deferredShader->getID();
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     pushConstantsCommand._constants.set("lightCount", GFX::PushConstantType::INT, (I32)_cachedLightCount);
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
     {
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
     }
     GUI& gui = _context.gui();
     GUIElement* guiElement = gui.getGUIElement(0, _ID("FinalImage"));

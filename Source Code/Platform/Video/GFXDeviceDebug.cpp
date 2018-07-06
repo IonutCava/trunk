@@ -129,20 +129,19 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             pipelineDesc._shaderProgramHandle = view._shader->getID();
 
             bindPipeline._pipeline = &newPipeline(pipelineDesc);
-            GFX::BindPipeline(bufferInOut, bindPipeline);
-
+            GFX::EnqueueCommand(bufferInOut, bindPipeline);
             pushConstants._constants = view._shaderData;
-            GFX::SendPushConstants(bufferInOut, pushConstants);
+            GFX::EnqueueCommand(bufferInOut, pushConstants);
 
             setViewport._viewport.set(viewport);
-            GFX::SetViewPort(bufferInOut, setViewport);
+            GFX::EnqueueCommand(bufferInOut, setViewport);
 
             bindDescriptorSets._set._textureData.clear();
             bindDescriptorSets._set._textureData.addTexture(view._texture->getData(),
                                                             view._textureBindSlot);
-            GFX::BindDescriptorSets(bufferInOut, bindDescriptorSets);
+            GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-            GFX::AddDrawCommands(bufferInOut, drawCommand);
+            GFX::EnqueueCommand(bufferInOut, drawCommand);
 
             if (!view._name.empty()) {
                 labelStack.emplace_back(view._name, viewport);
@@ -160,7 +159,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         for (const std::pair<stringImpl, Rect<I32>>& entry : labelStack) {
             // Draw labels at the end to reduce number of state changes
             setViewport._viewport.set(entry.second);
-            GFX::SetViewPort(bufferInOut, setViewport);
+            GFX::EnqueueCommand(bufferInOut, setViewport);
 
             text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
             text.text(entry.first);

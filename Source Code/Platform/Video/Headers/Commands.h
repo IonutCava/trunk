@@ -50,11 +50,9 @@ namespace Divide {
 namespace GFX {
 
 
-#define REGISTER_COMMAND(Type, PoolSize) \
-    bool g_isRegistered_##Type = true; \
-    /*MemoryPool<Type, PoolSize> ##Type_pool;*/ \
-    //struct Type
-
+// beware of macros!
+#define REGISTER_COMMAND(Type, PoolSize)
+#define TYPE_HANDLER(T) virtual const std::type_info& type() { return typeid(T); }
 
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS = 0,
@@ -89,53 +87,61 @@ struct Command {
     }
     virtual ~Command() = default;
 
-    CommandType _type = CommandType::COUNT;
+    TYPE_HANDLER(Command);
 
-protected:
-    friend class CommandBuffer;
-    virtual void onAdd(CommandBuffer* buffer) { ACKNOWLEDGE_UNUSED(buffer); }
+    CommandType _type = CommandType::COUNT;
 };
 
-struct BindPipelineCommand : Command {
+struct BindPipelineCommand final : Command {
     BindPipelineCommand() : Command(CommandType::BIND_PIPELINE)
     {
     }
+
+    TYPE_HANDLER(BindPipelineCommand);
 
     const Pipeline* _pipeline = nullptr;
 };
 REGISTER_COMMAND(BindPipelineCommand, 1024);
 
-struct SendPushConstantsCommand : Command {
+struct SendPushConstantsCommand final : Command {
     SendPushConstantsCommand() : Command(CommandType::SEND_PUSH_CONSTANTS)
     {
     }
+
+    TYPE_HANDLER(SendPushConstantsCommand);
 
     PushConstants _constants;
 };
 REGISTER_COMMAND(SendPushConstantsCommand, 1024);
 
-struct DrawCommand : Command {
+struct DrawCommand final : Command {
     DrawCommand() : Command(CommandType::DRAW_COMMANDS)
     {
     }
+
+    TYPE_HANDLER(DrawCommand);
 
     vectorEASTL<GenericDrawCommand> _drawCommands;
 };
 REGISTER_COMMAND(DrawCommand, 16384);
 
-struct SetViewportCommand : Command {
+struct SetViewportCommand final : Command {
     SetViewportCommand() : Command(CommandType::SET_VIEWPORT)
     {
     }
+
+    TYPE_HANDLER(SetViewportCommand);
 
     Rect<I32> _viewport;
 };
 REGISTER_COMMAND(SetViewportCommand, 256);
 
-struct BeginRenderPassCommand : Command {
+struct BeginRenderPassCommand final : Command {
     BeginRenderPassCommand() : Command(CommandType::BEGIN_RENDER_PASS)
     {
     }
+
+    TYPE_HANDLER(BeginRenderPassCommand);
 
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
@@ -143,50 +149,65 @@ struct BeginRenderPassCommand : Command {
 };
 REGISTER_COMMAND(BeginRenderPassCommand, 256);
 
-struct EndRenderPassCommand : Command {
+struct EndRenderPassCommand final : Command {
     EndRenderPassCommand() : Command(CommandType::END_RENDER_PASS)
     {
     }
+
+    TYPE_HANDLER(BeginRenderPassCommand);
+
 };
 REGISTER_COMMAND(EndRenderPassCommand, 256);
 
-struct BeginPixelBufferCommand : Command {
+struct BeginPixelBufferCommand final : Command {
     BeginPixelBufferCommand() : Command(CommandType::BEGIN_PIXEL_BUFFER)
     {
     }
+
+    TYPE_HANDLER(EndRenderPassCommand);
 
     PixelBuffer* _buffer = nullptr;
     DELEGATE_CBK<void, bufferPtr> _command;
 };
 REGISTER_COMMAND(BeginPixelBufferCommand, 128);
 
-struct EndPixelBufferCommand : Command {
+struct EndPixelBufferCommand final : Command {
     EndPixelBufferCommand() : Command(CommandType::END_PIXEL_BUFFER)
     {
     }
+
+    TYPE_HANDLER(BeginPixelBufferCommand);
+
 };
 REGISTER_COMMAND(EndPixelBufferCommand, 128);
 
-struct BeginRenderSubPassCommand : Command {
+struct BeginRenderSubPassCommand final : Command {
     BeginRenderSubPassCommand() : Command(CommandType::BEGIN_RENDER_SUB_PASS)
     {
     }
+
+    TYPE_HANDLER(EndPixelBufferCommand);
 
     U16 _mipWriteLevel = 0u;
 };
 REGISTER_COMMAND(BeginRenderSubPassCommand, 512);
 
-struct EndRenderSubPassCommand : Command {
+struct EndRenderSubPassCommand final : Command {
     EndRenderSubPassCommand() : Command(CommandType::END_RENDER_SUB_PASS)
     {
     }
+
+    TYPE_HANDLER(BeginRenderSubPassCommand);
+
 };
 REGISTER_COMMAND(EndRenderSubPassCommand, 512);
 
-struct BlitRenderTargetCommand : Command {
+struct BlitRenderTargetCommand final : Command {
     BlitRenderTargetCommand() : Command(CommandType::BLIT_RT)
     {
     }
+
+    TYPE_HANDLER(EndRenderSubPassCommand);
 
     bool _blitColour = true;
     bool _blitDepth = false;
@@ -195,102 +216,124 @@ struct BlitRenderTargetCommand : Command {
 };
 REGISTER_COMMAND(BlitRenderTargetCommand, 128);
 
-struct SetScissorCommand : Command {
+struct SetScissorCommand final : Command {
     SetScissorCommand() : Command(CommandType::SET_SCISSOR)
     {
     }
+
+    TYPE_HANDLER(BlitRenderTargetCommand);
 
     Rect<I32> _rect;
 };
 REGISTER_COMMAND(SetScissorCommand, 128);
 
-struct SetBlendCommand : Command {
+struct SetBlendCommand final : Command {
     SetBlendCommand() : Command(CommandType::SET_BLEND)
     {
-
     }
+
+    TYPE_HANDLER(SetScissorCommand);
 
     bool _enabled = true;
     BlendingProperties _blendProperties;
 };
 REGISTER_COMMAND(SetBlendCommand, 256);
 
-struct SetCameraCommand : Command {
+struct SetCameraCommand final : Command {
     SetCameraCommand() : Command(CommandType::SET_CAMERA)
     {
     }
+
+    TYPE_HANDLER(SetBlendCommand);
 
     Camera* _camera = nullptr;
 };
 REGISTER_COMMAND(SetCameraCommand, 512);
 
-struct SetClipPlanesCommand : Command {
+struct SetClipPlanesCommand final : Command {
     SetClipPlanesCommand() : Command(CommandType::SET_CLIP_PLANES),
         _clippingPlanes(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
     {
     }
 
+    TYPE_HANDLER(SetCameraCommand);
+
     FrustumClipPlanes _clippingPlanes;
 };
 REGISTER_COMMAND(SetClipPlanesCommand, 512);
 
-struct BindDescriptorSetsCommand : Command {
+struct BindDescriptorSetsCommand final : Command {
     BindDescriptorSetsCommand() : Command(CommandType::BIND_DESCRIPTOR_SETS)
     {
     }
+
+    TYPE_HANDLER(BindDescriptorSetsCommand);
 
     DescriptorSet _set;
 };
 REGISTER_COMMAND(BindDescriptorSetsCommand, 1024);
 
-struct BeginDebugScopeCommand : Command {
+struct BeginDebugScopeCommand final : Command {
     BeginDebugScopeCommand() : Command(CommandType::BEGIN_DEBUG_SCOPE)
     {
     }
+
+    TYPE_HANDLER(BeginDebugScopeCommand);
 
     stringImpl _scopeName;
     I32 _scopeID = -1;
 };
 REGISTER_COMMAND(BeginDebugScopeCommand, 4096);
 
-struct EndDebugScopeCommand : Command {
+struct EndDebugScopeCommand final : Command {
     EndDebugScopeCommand() : Command(CommandType::END_DEBUG_SCOPE)
     {
     }
+
+    TYPE_HANDLER(EndDebugScopeCommand);
+
 };
 REGISTER_COMMAND(EndDebugScopeCommand, 4096);
 
-struct DrawTextCommand : Command {
+struct DrawTextCommand final : Command {
     DrawTextCommand() : Command(CommandType::DRAW_TEXT)
     {
     }
+
+    TYPE_HANDLER(DrawTextCommand);
 
     TextElementBatch _batch;
 };
 REGISTER_COMMAND(DrawTextCommand, 1024);
 
-struct DrawIMGUICommand : Command {
+struct DrawIMGUICommand final : Command {
     DrawIMGUICommand() : Command(CommandType::DRAW_IMGUI)
     {
     }
+
+    TYPE_HANDLER(DrawIMGUICommand);
 
     ImDrawData* _data = nullptr;
 };
 REGISTER_COMMAND(DrawIMGUICommand, 64);
 
-struct DispatchComputeCommand : Command {
+struct DispatchComputeCommand final : Command {
     DispatchComputeCommand() : Command(CommandType::DISPATCH_COMPUTE)
     {
     }
+
+    TYPE_HANDLER(DispatchComputeCommand);
 
     ComputeParams _params;
 };
 REGISTER_COMMAND(DispatchComputeCommand, 128);
 
-struct SwitchWindowCommand : Command {
+struct SwitchWindowCommand final : Command {
     SwitchWindowCommand() : Command(CommandType::SWITCH_WINDOW)
     {
     }
+
+    TYPE_HANDLER(SwitchWindowCommand);
 
     I64 windowGUID = -1;
 };

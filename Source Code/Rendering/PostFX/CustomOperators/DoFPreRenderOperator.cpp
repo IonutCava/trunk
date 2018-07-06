@@ -48,7 +48,7 @@ void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = _parent.inputRT()._targetID;
     blitRTCommand._destination = _samplerCopy._targetID;
-    GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
+    GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
     TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     TextureData depthData = _parent.inputRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
@@ -63,24 +63,24 @@ void DoFPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(data0, to_U8(ShaderProgram::TextureUsage::UNIT0));
     descriptorSetCmd._set._textureData.addTexture(depthData, to_U8(ShaderProgram::TextureUsage::UNIT1));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _parent.inputRT()._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
     beginRenderPassCmd._name = "DO_DOF_PASS";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(pointsCmd);
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 };

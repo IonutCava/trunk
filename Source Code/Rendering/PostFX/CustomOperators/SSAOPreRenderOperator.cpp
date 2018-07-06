@@ -159,7 +159,7 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
     pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getID();
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     TextureData data = _noiseTexture->getData();
@@ -170,54 +170,54 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     data = screen._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS)).texture()->getData();
     descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::NORMALMAP));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _ssaoGenerateConstants;
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _ssaoOutput._targetID;
     beginRenderPassCmd._name = "DO_SSAO_PASS";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(triangleCmd);
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Blur AO
     pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getID();
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     descriptorSetCmd._set._textureData.clear();
     data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
     descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pushConstantsCommand._constants = _ssaoBlurConstants;
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     beginRenderPassCmd._target = _ssaoOutputBlurred._targetID;
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
     
     // Apply AO
     _samplerCopy._rt->blitFrom(screen._rt);
     GFX::BlitRenderTargetCommand blitRTCommand;
     blitRTCommand._source = screen._targetID;
     blitRTCommand._destination = _samplerCopy._targetID;
-    GFX::BlitRenderTarget(bufferInOut, blitRTCommand);
+    GFX::EnqueueCommand(bufferInOut, blitRTCommand);
 
     pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     descriptorSetCmd._set._textureData.clear();
     data = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // screen
@@ -225,18 +225,18 @@ void SSAOPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     data = _ssaoOutputBlurred._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();  // AO texture
     descriptorSetCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT1));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     pipelineDescriptor._shaderProgramHandle = _ssaoApplyShader->getID();
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     beginRenderPassCmd._target = screen._targetID;
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
 TextureData SSAOPreRenderOperator::getDebugOutput() const {

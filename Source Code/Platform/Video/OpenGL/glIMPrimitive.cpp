@@ -96,22 +96,22 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _pipeline;
-        GFX::BindPipeline(*_cmdBuffer, pipelineCommand);
+        GFX::EnqueueCommand(*_cmdBuffer, pipelineCommand);
         
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants = pushConstants;
-        GFX::SendPushConstants(*_cmdBuffer, pushConstantsCommand);
+        GFX::EnqueueCommand(*_cmdBuffer, pushConstantsCommand);
 
         if (_texture) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
             descriptorSetCmd._set._textureData.addTexture(_texture->getData(),
                                                           to_U8(ShaderProgram::TextureUsage::UNIT0));
-            GFX::BindDescriptorSets(*_cmdBuffer, descriptorSetCmd);
+            GFX::EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(*_cmdBuffer, drawCommand);
+        GFX::EnqueueCommand(*_cmdBuffer, drawCommand);
     }
 
     return *_cmdBuffer;

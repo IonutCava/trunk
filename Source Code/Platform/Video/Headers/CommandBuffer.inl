@@ -37,13 +37,33 @@ namespace GFX {
 
 template<typename T>
 inline typename std::enable_if<std::is_base_of<Command, T>::value, void>::type
-CommandBuffer::add(const T& command) {
+CommandBuffer::add(T& command) {
     GFX::CommandType type = command._type;
     _commands.insert(command);
     _commandOrder.emplace_back(type, _commands.size(getType(type)) - 1);
-    command.onAdd(this);
 }
 
+template<typename T>
+inline typename std::enable_if<std::is_base_of<Command, T>::value, T*>::type
+CommandBuffer::getCommandInternal(const CommandEntry& commandEntry) {
+    const std::type_info& typeInfo = getType(commandEntry.first);
+    assert(typeid(T) == typeid(Command) || typeInfo == typeid(T));
+    return static_cast<T*>(&(*(_commands.begin(typeInfo) + commandEntry.second)));
+}
+
+template<typename T>
+inline typename std::enable_if<std::is_base_of<Command, T>::value, const T&>::type
+CommandBuffer::getCommand(const CommandEntry& commandEntry) const {
+    const std::type_info& typeInfo = getType(commandEntry.first);
+    assert(typeid(T) == typeid(Command) || typeInfo == typeid(T));
+    return static_cast<const T&>(*(_commands.begin(typeInfo) + commandEntry.second));
+}
+template<typename T>
+inline void CommandBuffer::registerType() {
+    if (!_commands.is_registered<T>()) {
+        _commands.register_types<T>();
+    }
+}
 inline vectorEASTL<CommandBuffer::CommandEntry>& CommandBuffer::operator()() {
     return _commandOrder;
 }

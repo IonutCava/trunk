@@ -144,14 +144,14 @@ void CascadedShadowMaps::render(U32 passIdx, GFX::CommandBuffer& bufferInOut) {
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = params.target;
     beginRenderPassCmd._name = "DO_CSM_PASS";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
     for (U8 i = 0; i < _numSplits; ++i) {
         target.drawToLayer(RTAttachmentType::Colour, 0, to_U16(i + getArrayOffset()));
         params.camera = _shadowCameras[i];
         _context.parent().renderPassManager().doCustomPass(params, bufferInOut);
     }
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     postRender(bufferInOut);
 }
@@ -252,7 +252,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     // Blur horizontally
     _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)getArrayOffset());
@@ -260,47 +260,47 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _blurDepthMapConstants;
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     TextureData texData = depthMap.getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = _blurBuffer._targetID;
     beginRenderPassCmd._name = "DO_CSM_BLUR_PASS";
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(pointsCmd);
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 
     // Blur vertically
     pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, pipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
     _blurDepthMapConstants.set("layerOffsetRead", GFX::PushConstantType::INT, (I32)0);
     _blurDepthMapConstants.set("layerOffsetWrite", GFX::PushConstantType::INT, (I32)getArrayOffset());
 
     pushConstantsCommand._constants = _blurDepthMapConstants;
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     
     texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->getData();
     descriptorSetCmd._set._textureData.clear();
     descriptorSetCmd._set._textureData.addTexture(texData, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     beginRenderPassCmd._target = getDepthMapID();
-    GFX::BeginRenderPass(bufferInOut, beginRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
-    GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
 
 };

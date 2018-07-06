@@ -154,7 +154,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;
             beginDebugScopeCmd._scopeID = 10;
             beginDebugScopeCmd._scopeName = "Display Render Stage";
-            GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+            GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
             const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
@@ -169,7 +169,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             _parent.doCustomPass(params, commandBuffer);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
-            GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+            GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
 
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize();
 
@@ -178,11 +178,11 @@ void RenderPass::render(SceneRenderState& renderState) {
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;
             beginDebugScopeCmd._scopeID = 20;
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
-            GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+            GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), commandBuffer);
             GFX::EndDebugScopeCommand endDebugScopeCmd;
-            GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+            GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
 
         } break;
         case RenderStage::REFLECTION: {
@@ -195,7 +195,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 30;
                 beginDebugScopeCmd._scopeName = "Cube Reflection Render Stage";
-                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
                 //Part 1 - update envirnoment maps:
                 /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
@@ -211,13 +211,13 @@ void RenderPass::render(SceneRenderState& renderState) {
                 }*/
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
             }
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 40;
                 beginDebugScopeCmd._scopeName = "Planar Reflection Render Stage";
-                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
@@ -246,7 +246,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                     }
                 }
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
             }
         } break;
         case RenderStage::REFRACTION: {
@@ -260,16 +260,16 @@ void RenderPass::render(SceneRenderState& renderState) {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 50;
                 beginDebugScopeCmd._scopeName = "Cube Refraction Render Stage";
-                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
             }
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 60;
                 beginDebugScopeCmd._scopeName = "Planar Refraction Render Stage";
-                GFX::BeginDebugScope(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
 
                 const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
                 // While in budget, update refractions
@@ -295,7 +295,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                 }
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EndDebugScope(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
             }
         } break;
     };

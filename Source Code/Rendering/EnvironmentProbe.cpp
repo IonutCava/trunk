@@ -161,27 +161,27 @@ void EnvironmentProbe::debugDraw(GFX::CommandBuffer& bufferInOut) {
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.addTexture(TextureData(reflectTex->getTextureType(),
                                                               reflectTex->getHandle()),
                                                   to_U8(ShaderProgram::TextureUsage::REFLECTION_CUBE));
-    GFX::BindDescriptorSets(bufferInOut, descriptorSetCmd);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstants;
     PushConstants& constants = pushConstants._constants;
     const vec3<F32>& bbPos = _aabb.getCenter();
     constants.set("dvd_WorldMatrixOverride", GFX::PushConstantType::MAT4, mat4<F32>(bbPos.x, bbPos.y, bbPos.z));
     constants.set("dvd_LayerIndex", GFX::PushConstantType::UINT, to_U32(_currentArrayIndex));
-    GFX::SendPushConstants(bufferInOut, pushConstants);
+    GFX::EnqueueCommand(bufferInOut, pushConstants);
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLE_STRIP, 0, vb->getIndexCount());
     cmd.sourceBuffer(vb);
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(bufferInOut, drawCommand);
+    GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
 }

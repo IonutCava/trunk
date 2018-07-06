@@ -55,24 +55,24 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getID();
     bindPipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     TextureData data = target.getAttachment(RTAttachmentType::Depth, 0).texture()->getData();
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     PushConstants constants;
     constants.set("maxNumLightsPerTile", GFX::PushConstantType::UINT, _flag);
     sendPushConstantsCmd._constants = constants;
-    GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
+    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;
     computeCmd._params._barrierType = MemoryBarrierType::SHADER_BUFFER;
     computeCmd._params._groupSize = vec3<U32>(getNumTilesX(), getNumTilesY(), 1);
-    GFX::AddComputeCommand(bufferInOut, computeCmd);
+    GFX::EnqueueCommand(bufferInOut, computeCmd);
 }
 
 void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void, GFX::CommandBuffer&>& renderCallback,

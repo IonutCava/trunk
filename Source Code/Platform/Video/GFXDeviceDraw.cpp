@@ -232,7 +232,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getID();
     bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     ShaderBufferBinding shaderBuffer;
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
@@ -244,18 +244,18 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     bindDescriptorSetsCmd._set._shaderBuffers.push_back(shaderBuffer);
     bindDescriptorSetsCmd._set._textureData.addTexture(depthBuffer->getData(),
                                                        to_U8(ShaderProgram::TextureUsage::DEPTH));
-    GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
     
     U32 cmdCount = bufferData._lastCommandCount;
 
     GFX::SendPushConstantsCommand sendPushConstantsCmd;
     sendPushConstantsCmd._constants.set("dvd_numEntities", GFX::PushConstantType::UINT, cmdCount);
-    GFX::SendPushConstants(bufferInOut, sendPushConstantsCmd);
+    GFX::EnqueueCommand(bufferInOut, sendPushConstantsCmd);
 
     GFX::DispatchComputeCommand computeCmd;
     computeCmd._params._barrierType = MemoryBarrierType::COUNTER;
     computeCmd._params._groupSize = vec3<U32>((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
-    GFX::AddComputeCommand(bufferInOut, computeCmd);
+    GFX::EnqueueCommand(bufferInOut, computeCmd);
 }
 
 U32 GFXDevice::getLastCullCount() const {
@@ -280,11 +280,11 @@ void GFXDevice::drawText(const TextElementBatch& batch, GFX::CommandBuffer& buff
 
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(bufferInOut, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
     
-    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
-    GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
-    GFX::AddDrawTextCommand(bufferInOut, drawTextCommand);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+    GFX::EnqueueCommand(bufferInOut, drawTextCommand);
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
@@ -297,7 +297,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     U16 width = screenRT.getWidth();
     U16 height = screenRT.getHeight();
     viewportCommand._viewport.set(0, 0, width, height);
-    GFX::SetViewPort(buffer, viewportCommand);
+    GFX::EnqueueCommand(buffer, viewportCommand);
 
     drawText(batch, buffer);
     flushCommandBuffer(sBuffer());
@@ -323,31 +323,31 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = 123456332;
     beginDebugScopeCmd._scopeName = "Draw Fullscreen Texture";
-    GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::SetCameraCommand setCameraCommand;
     setCameraCommand._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D);
-    GFX::SetCamera(bufferInOut, setCameraCommand);
+    GFX::EnqueueCommand(bufferInOut, setCameraCommand);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(bufferInOut, bindPipelineCmd);
+    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.addTexture(data, to_U8(ShaderProgram::TextureUsage::UNIT0));
-    GFX::BindDescriptorSets(bufferInOut, bindDescriptorSetsCmd);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::SetViewportCommand viewportCommand;
     viewportCommand._viewport.set(viewport);
-    GFX::SetViewPort(bufferInOut, viewportCommand);
+    GFX::EnqueueCommand(bufferInOut, viewportCommand);
 
     // Blit render target to screen
     GFX::DrawCommand drawCmd;
     drawCmd._drawCommands.push_back(triangleCmd);
-    GFX::AddDrawCommands(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndDebugScopeCommand endDebugScopeCommand;
-    GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+    GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
 }
 
 void GFXDevice::blitToScreen(const Rect<I32>& targetViewport) {
@@ -366,12 +366,12 @@ void GFXDevice::blitToRenderTarget(RenderTargetID targetID, const Rect<I32>& tar
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = targetID;
     beginRenderPassCmd._name = "BLIT_TO_RENDER_TARGET";
-    GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+    GFX::EnqueueCommand(buffer, beginRenderPassCmd);
 
     blitToBuffer(buffer, targetViewport);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EndRenderPass(buffer, endRenderPassCmd);
+    GFX::EnqueueCommand(buffer, endRenderPassCmd);
 
     flushCommandBuffer(buffer);
 }
@@ -384,23 +384,23 @@ void GFXDevice::blitToBuffer(GFX::CommandBuffer& bufferInOut, const Rect<I32>& t
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 12345;
         beginDebugScopeCmd._scopeName = "Flush Display";
-        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         drawTextureInViewport(texData, targetViewport, bufferInOut);
 
         GFX::EndDebugScopeCommand endDebugScopeCommand;
-        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
     {
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 123456;
         beginDebugScopeCmd._scopeName = "Render GUI";
-        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         _parent.platformContext().gui().draw(*this, bufferInOut);
 
         GFX::EndDebugScopeCommand endDebugScopeCommand;
-        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
 
     if (Config::Build::IS_DEBUG_BUILD)
@@ -408,12 +408,12 @@ void GFXDevice::blitToBuffer(GFX::CommandBuffer& bufferInOut, const Rect<I32>& t
         GFX::BeginDebugScopeCommand beginDebugScopeCmd;
         beginDebugScopeCmd._scopeID = 123456;
         beginDebugScopeCmd._scopeName = "Render Debug Views";
-        GFX::BeginDebugScope(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
         renderDebugViews(bufferInOut);
 
         GFX::EndDebugScopeCommand endDebugScopeCommand;
-        GFX::EndDebugScope(bufferInOut, endDebugScopeCommand);
+        GFX::EnqueueCommand(bufferInOut, endDebugScopeCommand);
     }
 }
 };
