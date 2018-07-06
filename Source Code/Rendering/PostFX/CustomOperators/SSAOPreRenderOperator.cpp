@@ -12,7 +12,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
     : PreRenderOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION, hdrTarget, ldrTarget)
 {
 
-    _samplerCopy = GFX_DEVICE.allocateRT();
+    _samplerCopy = GFX_DEVICE.allocateRT("SSAO");
     _samplerCopy._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
 
     U16 ssaoNoiseSize = 4;
@@ -67,7 +67,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
     screenSampler.toggleMipMaps(false);
     screenSampler.setAnisotropy(0);
 
-    _ssaoOutput = GFX_DEVICE.allocateRT();
+    _ssaoOutput = GFX_DEVICE.allocateRT("SSAO_Out");
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D,
                                        GFXImageFormat::RED16,
                                        GFXDataFormat::FLOAT_16);
@@ -76,7 +76,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(RenderTarget* hdrTarget, RenderTarg
     //Colour0 holds the AO texture
     _ssaoOutput._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
 
-    _ssaoOutputBlurred = GFX_DEVICE.allocateRT();
+    _ssaoOutputBlurred = GFX_DEVICE.allocateRT("SSAO_Blurred_Out");
     _ssaoOutputBlurred._rt->addAttachment(outputDescriptor, RTAttachment::Type::Colour, 0);
 
     ResourceDescriptor ssaoGenerate("SSAOPass.SSAOCalc");

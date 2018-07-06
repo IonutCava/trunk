@@ -39,7 +39,7 @@ namespace Divide {
 class d3dRenderTarget : public RenderTarget {
     USE_CUSTOM_ALLOCATOR
    public:
-    d3dRenderTarget(GFXDevice& context);
+    d3dRenderTarget(GFXDevice& context, const stringImpl& name);
     ~d3dRenderTarget();
 
     bool create(U16 width, U16 height) override;

@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include "glResources.h"
+#include "Rendering/Camera/Headers/Frustum.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/OpenGL/Shaders/Headers/glShaderProgram.h"
 #include "Platform/Video/OpenGL/Shaders/Headers/glShader.h"
@@ -260,7 +261,7 @@ DEFINE_SINGLETON_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     static bool _primitiveRestartEnabled;
     static bool _rasterizationEnabled;
     /// Current state of all available clipping planes
-    std::array<bool, Config::MAX_CLIP_PLANES> _activeClipPlanes;
+    std::array<bool, to_const_uint(Frustum::FrustPlane::COUNT)> _activeClipPlanes;
     /// Hardware query objects used for performance measurements
     vectorImpl<glHardwareQueryRing*> _hardwareQueries;
     /// Duration in nanoseconds to render a frame

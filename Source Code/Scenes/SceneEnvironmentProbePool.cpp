@@ -16,7 +16,7 @@ SceneEnvironmentProbePool::~SceneEnvironmentProbePool()
 const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted() {
     if (!_isSorted) {
         _sortedProbes.resize(0);
-        const vec3<F32>& camPosition = _parentScene.renderState().getCamera().getEye();
+        const vec3<F32>& camPosition = Camera::activeCamera()->getEye();
 
         _sortedProbes.insert(std::cend(_sortedProbes), std::cbegin(_envProbes), std::cend(_envProbes));
 

@@ -144,7 +144,7 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
         normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
         // Calculate the normal matrix (world * view)
-        mat4<F32>::Multiply(normalMatrix, _gpuBlock._data._ViewMatrix, dataOut._normalMatrixWV);
+        mat4<F32>::Multiply(normalMatrix, getMatrix(MATRIX::VIEW), dataOut._normalMatrixWV);
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data

@@ -44,6 +44,7 @@
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
+#include "Rendering/Camera/Headers/Frustum.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
@@ -140,10 +141,10 @@ DEFINE_SINGLETON(GFXDevice)
                _ZPlanesCombined.set(1.0f, 1.1f, 1.0f, 1.1f);
                _invScreenDimension.set(1.0f);
                _renderProperties.set(0.0f);
-               for (U8 i = 0; i < 6; ++i) {
+               for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
                    _frustumPlanes[i].set(0.0f);
                }
-               for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
+               for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
                    _frustumPlanes[i].set(1.0f);
                }
            }
@@ -157,8 +158,8 @@ DEFINE_SINGLETON(GFXDevice)
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _renderProperties;
-           vec4<F32> _frustumPlanes[6];
-           vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
+           vec4<F32> _frustumPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
+           vec4<F32> _clipPlanes[to_const_uint(Frustum::FrustPlane::COUNT)];
 
            inline F32 aspectRatio() const;
            inline vec2<F32> currentZPlanes() const;
@@ -237,7 +238,7 @@ DEFINE_SINGLETON(GFXDevice)
                                      
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
     /// Alternative to the normal version of getMatrix
-    inline mat4<F32> getMatrix(const MATRIX& mode) const;
+    inline const mat4<F32>& getMatrix(const MATRIX& mode) const;
     /// Access (Read Only) rendering data used by the GFX
     inline const GPUBlock::GPUData& renderingData() const;
     /// Register a function to be called in the 2D rendering fase of the GFX Flush
@@ -307,12 +308,12 @@ DEFINE_SINGLETON(GFXDevice)
         _rtPool.set(target, newTarget);
     }
 
-    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage) {
-        return _rtPool.add(targetUsage, newRT());
+    inline RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const stringImpl& name) {
+        return _rtPool.add(targetUsage, newRT(name));
     }
 
-    inline RenderTargetHandle allocateRT() {
-        return allocateRT(RenderTargetUsage::OTHER);
+    inline RenderTargetHandle allocateRT(const stringImpl& name) {
+        return allocateRT(RenderTargetUsage::OTHER, name);
     }
 
     inline bool deallocateRT(RenderTargetHandle& handle) {
@@ -370,7 +371,7 @@ DEFINE_SINGLETON(GFXDevice)
     }
 
   protected:
-    RenderTarget* newRT() const;
+    RenderTarget* newRT(const stringImpl& name) const;
 
     void setBaseViewport(const vec4<I32>& viewport);
 

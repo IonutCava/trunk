@@ -84,7 +84,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
    protected:
     SET_DELETE_FRIEND
 
-    RenderTarget(GFXDevice& context);
+    RenderTarget(GFXDevice& context, const stringImpl& name);
     virtual ~RenderTarget();
 
    public:
@@ -138,7 +138,7 @@ class NOINITVTABLE RenderTarget : protected GraphicsResource, public GUIDWrapper
 
     U16 _width, _height;
     F32 _depthValue;
-
+    stringImpl _name;
     RTAttachmentPool _attachments;
 };
 

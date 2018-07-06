@@ -114,7 +114,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     // special, on demand,
     // down-sampled version of the depth buffer
     // Screen FB should use MSAA if available
-    allocateRT(RenderTargetUsage::SCREEN);
+    allocateRT(RenderTargetUsage::SCREEN, "Screen");
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
     // buffer (MSAA + HDR rendering if possible)
@@ -169,7 +169,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     depthCopySampler.toggleMipMaps(false);
     depthCopyDescriptor.setSampler(depthCopySampler);
 
-    _previousDepthBuffer = allocateRT();
+    _previousDepthBuffer = allocateRT("PreviousScreen");
     _previousDepthBuffer._rt->addAttachment(depthCopyDescriptor, RTAttachment::Type::Depth, 0);
 
     _activeRenderTarget = &screenTarget;
@@ -192,7 +192,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
 
     RenderTargetHandle tempHandle;
     for (U32 i = 0; i < Config::MAX_REFLECTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFLECTION);
+        tempHandle = allocateRT(RenderTargetUsage::REFLECTION, Util::StringFormat("Reflection_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFLECTION_TARGET_RESOLUTION);
@@ -200,7 +200,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     for (U32 i = 0; i < Config::MAX_REFRACTIVE_NODES_IN_VIEW; ++i) {
-        tempHandle = allocateRT(RenderTargetUsage::REFRACTION);
+        tempHandle = allocateRT(RenderTargetUsage::REFRACTION, Util::StringFormat("Refraction_%d", i));
         tempHandle._rt->addAttachment(environmentDescriptor, RTAttachment::Type::Colour, 0);
         tempHandle._rt->addAttachment(depthDescriptor, RTAttachment::Type::Depth, 0);
         tempHandle._rt->create(Config::REFRACTION_TARGET_RESOLUTION);

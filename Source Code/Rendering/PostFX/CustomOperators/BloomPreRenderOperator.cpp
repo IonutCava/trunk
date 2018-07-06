@@ -13,12 +13,12 @@ BloomPreRenderOperator::BloomPreRenderOperator(RenderTarget* hdrTarget, RenderTa
     : PreRenderOperator(FilterType::FILTER_BLOOM, hdrTarget, ldrTarget)
 {
     for (U8 i = 0; i < 2; ++i) {
-        _bloomBlurBuffer[i] = GFX_DEVICE.allocateRT();
+        _bloomBlurBuffer[i] = GFX_DEVICE.allocateRT(Util::StringFormat("Bloom_Blur_%d", i));
         _bloomBlurBuffer[i]._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
         _bloomBlurBuffer[i]._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
     }
 
-    _bloomOutput = GFX_DEVICE.allocateRT();
+    _bloomOutput = GFX_DEVICE.allocateRT("Bloom");
     _bloomOutput._rt->addAttachment(_hdrTarget->getDescriptor(RTAttachment::Type::Colour, 0), RTAttachment::Type::Colour, 0);
     _bloomOutput._rt->setClearColour(RTAttachment::Type::COUNT, 0, DefaultColours::BLACK());
 

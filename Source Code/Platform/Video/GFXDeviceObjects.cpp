@@ -28,16 +28,16 @@
 
 namespace Divide {
 
-RenderTarget* GFXDevice::newRT() const {
+RenderTarget* GFXDevice::newRT(const stringImpl& name) const {
     switch (_API_ID) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             /// Create and return a new framebuffer.
             /// The callee is responsible for it's deletion!
-            return MemoryManager_NEW glFramebuffer(instance());
+            return MemoryManager_NEW glFramebuffer(instance(), name);
         } break;
         case RenderAPI::Direct3D: {
-            return MemoryManager_NEW d3dRenderTarget(instance());
+            return MemoryManager_NEW d3dRenderTarget(instance(), name);
         } break;
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));

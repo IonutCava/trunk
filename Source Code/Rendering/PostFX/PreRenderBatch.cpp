@@ -39,9 +39,9 @@ void PreRenderBatch::init(RenderTarget* renderTarget) {
     assert(_postFXOutput._targetID._usage == RenderTargetUsage::COUNT);
     _renderTarget = renderTarget;
 
-    _previousLuminance = GFX_DEVICE.allocateRT();
-    _currentLuminance = GFX_DEVICE.allocateRT();
-    _postFXOutput = GFX_DEVICE.allocateRT();
+    _previousLuminance = GFX_DEVICE.allocateRT("PreviousLuminance");
+    _currentLuminance = GFX_DEVICE.allocateRT("Luminance");
+    _postFXOutput = GFX_DEVICE.allocateRT("PostFXOutput");
     SamplerDescriptor screenSampler;
     screenSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.setFilters(TextureFilter::LINEAR);

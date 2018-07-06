@@ -42,7 +42,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_ZPlanesCombined; //xy - current, zw - main scene 
     vec4  dvd_invScreenDimensions;
     vec4  dvd_renderProperties;
-    vec4  dvd_frustumPlanes[6];
+    vec4  dvd_frustumPlanes[MAX_CLIP_PLANES];
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
 
@@ -82,25 +82,9 @@ invariant gl_Position;
 //out float gl_ClipDistance[MAX_CLIP_PLANES];
 
 void setClipPlanes(in vec4 worldSpaceVertex) {
-    
-#if MAX_CLIP_PLANES > 0
-    gl_ClipDistance[0] = dot(worldSpaceVertex, dvd_clip_plane[0]);
-#   if MAX_CLIP_PLANES > 1
-        gl_ClipDistance[1] = dot(worldSpaceVertex, dvd_clip_plane[1]);
-#       if MAX_CLIP_PLANES > 2
-            gl_ClipDistance[2] = dot(worldSpaceVertex, dvd_clip_plane[2]);
-#           if MAX_CLIP_PLANES > 3
-                gl_ClipDistance[3] = dot(worldSpaceVertex, dvd_clip_plane[3]);
-#               if MAX_CLIP_PLANES > 4
-                    gl_ClipDistance[4] = dot(worldSpaceVertex, dvd_clip_plane[4]);
-#                   if MAX_CLIP_PLANES > 5
-                        gl_ClipDistance[5] = dot(worldSpaceVertex, dvd_clip_plane[5]);
-#                   endif
-#               endif
-#           endif
-#       endif
-#   endif
-#endif
+    for(int i = 0; i < MAX_CLIP_PLANES; ++i) {
+        gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
+    }
 }
 #endif
 

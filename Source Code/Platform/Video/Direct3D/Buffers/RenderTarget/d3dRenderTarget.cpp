@@ -3,8 +3,8 @@
 namespace Divide {
 
 IMPLEMENT_CUSTOM_ALLOCATOR(d3dRenderTarget, 0, 0)
-d3dRenderTarget::d3dRenderTarget(GFXDevice& context)
-    : RenderTarget(context)
+d3dRenderTarget::d3dRenderTarget(GFXDevice& context, const stringImpl& name)
+    : RenderTarget(context, name)
 {
 }
 

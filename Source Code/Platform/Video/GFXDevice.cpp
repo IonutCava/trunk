@@ -63,7 +63,7 @@ GFXDevice::GFXDevice()
     _GPURenderer = GPURenderer::COUNT;
     _API_ID = RenderAPI::COUNT;
     // Clipping planes
-    _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_const_uint(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
     // To allow calls to "setBaseViewport"
     _viewport.push(vec4<I32>(-1));
 
@@ -374,8 +374,8 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
 /// Update the internal GPU data buffer with the clip plane values
 void GFXDevice::updateClipPlanes() {
     GPUBlock::GPUData& data = _gpuBlock._data;
-    for (U8 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
-        data._clipPlanes[i] = _clippingPlanes[i].getEquation();
+    for (U8 i = 0; i < to_const_ubyte(Frustum::FrustPlane::COUNT); ++i) {
+        data._clipPlanes[i].set(_clippingPlanes[i].getEquation());
     }
     _gpuBlock._needsUpload = true;
 }

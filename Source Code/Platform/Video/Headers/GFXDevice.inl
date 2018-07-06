@@ -153,12 +153,12 @@ GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
 /// clear all clipping planes
 inline void 
 GFXDevice::resetClipPlanes() {
-    _clippingPlanes.resize(Config::MAX_CLIP_PLANES, Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_const_uint(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
     updateClipPlanes();
     _api->updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix
-inline mat4<F32> GFXDevice::getMatrix(const MATRIX& mode) const {
+inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX& mode) const {
     return getMatrixInternal(mode);
 }
 

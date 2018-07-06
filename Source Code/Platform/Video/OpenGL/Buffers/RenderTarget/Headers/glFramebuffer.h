@@ -43,7 +43,7 @@ class glFramebuffer : public RenderTarget {
    public:
     /// if resolveBuffer is not null, we add all of our attachments to it and
     /// initialize it with this buffer
-    glFramebuffer(GFXDevice& context);
+    glFramebuffer(GFXDevice& context, const stringImpl& name);
     ~glFramebuffer();
 
     bool create(U16 width, U16 height) override;

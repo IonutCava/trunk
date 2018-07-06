@@ -8,12 +8,13 @@ namespace Divide {
 // We don't need more than 4 colour attachments for now.
 U8 RenderTarget::g_maxColourAttachments = 4;
 
-RenderTarget::RenderTarget(GFXDevice& context)
+RenderTarget::RenderTarget(GFXDevice& context, const stringImpl& name)
     : GraphicsResource(context),
       GUIDWrapper(),
       _width(0),
       _height(0),
-      _depthValue(1.0)
+      _depthValue(1.0),
+      _name(name)
 {
 }
 

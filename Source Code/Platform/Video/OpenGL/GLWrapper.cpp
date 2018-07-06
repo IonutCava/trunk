@@ -310,7 +310,7 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_CLIP_PLANES " + to_stringImpl(Config::MAX_CLIP_PLANES),
+        "#define MAX_CLIP_PLANES " + to_stringImpl(to_const_uint(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(

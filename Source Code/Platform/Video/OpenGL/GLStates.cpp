@@ -165,7 +165,7 @@ void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
     const PlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     // For every clip plane that we support (usually 6)
-    for (U32 i = 0; i < Config::MAX_CLIP_PLANES; ++i) {
+    for (U32 i = 0; i < to_const_uint(Frustum::FrustPlane::COUNT); ++i) {
         // Check its state
         const bool& clipPlaneActive = list[i].active();
         // And compare it with OpenGL's current state

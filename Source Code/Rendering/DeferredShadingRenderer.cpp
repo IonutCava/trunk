@@ -25,7 +25,7 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     ResourceDescriptor deferred("DeferredShadingPass2");
     deferred.setThreadedLoading(false);
     _deferredShader = CreateResource<ShaderProgram>(deferred);
-    _deferredBuffer = GFX_DEVICE.allocateRT();
+    _deferredBuffer = GFX_DEVICE.allocateRT("Deferred");
 
     ResourceDescriptor deferredPreview("deferredPreview");
     deferredPreview.setThreadedLoading(false);

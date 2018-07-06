@@ -30,8 +30,8 @@ bool glFramebuffer::_viewportChanged = false;
 bool glFramebuffer::_zWriteEnabled = true;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glFramebuffer, 0, 0)
-glFramebuffer::glFramebuffer(GFXDevice& context)
-    : RenderTarget(context),
+glFramebuffer::glFramebuffer(GFXDevice& context, const stringImpl& name)
+    : RenderTarget(context, name),
       _resolveBuffer(nullptr),
       _resolved(false),
       _isLayeredDepth(false),
@@ -73,7 +73,7 @@ void glFramebuffer::updateDescriptor(RTAttachment::Type type, U8 index) {
     if (multisampled) {
         texDescriptor.getSampler().toggleMipMaps(false);
         if (!_resolveBuffer) {
-             _resolveBuffer = MemoryManager_NEW glFramebuffer(_context);
+             _resolveBuffer = MemoryManager_NEW glFramebuffer(_context, _name + "_resolve");
         }
     }
 
@@ -120,7 +120,7 @@ void glFramebuffer::initAttachment(RTAttachment::Type type, U8 index ) {
         }
     } else {
         stringImpl attachmentName = Util::StringFormat(
-            "Framebuffer_Att_%s_%d_%d", getAttachmentName(type), index, getGUID());
+            "FBO_%s_Att_%s_%d_%d", _name.c_str(), getAttachmentName(type), index, getGUID());
 
         ResourceDescriptor textureAttachment(attachmentName);
         textureAttachment.setThreadedLoading(false);
@@ -424,6 +424,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
 
     if (Config::ENABLE_GPU_VALIDATION) {
         assert(!glFramebuffer::_bufferBound && "glFramebuffer error: Begin() called without a call to the previous bound buffer's End()");
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 4, -1, ("FBO Begin: " + _name).c_str());
     }
 
     if (drawPolicy.isEnabledState(RTDrawDescriptor::State::CHANGE_VIEWPORT)) {
@@ -484,6 +485,7 @@ void glFramebuffer::end() {
 
     if (Config::ENABLE_GPU_VALIDATION) {
         glFramebuffer::_bufferBound = false;
+        glPopDebugGroup();
     }
 }
 
