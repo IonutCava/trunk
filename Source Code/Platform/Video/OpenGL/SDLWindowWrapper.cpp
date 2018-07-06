@@ -145,20 +145,22 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         // hardwire our debug callback function with OpenGL's implementation
         glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
+        if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
         // nVidia flushes a lot of useful info about buffer allocations and shader
         // recompiles due to state and what now, but those aren't needed until that's
         // what's actually causing the bottlenecks
-        /*U32 nvidiaBufferErrors[] = { 131185, 131218 };
-        // Disable shader compiler errors (shader class handles that)
-        glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
-            GL_DONT_CARE, 0, nullptr, GL_FALSE);
-        // Disable nVidia buffer allocation info (an easy enable is to change the
-        // count param to 0)
-        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
-            GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-        // Shader will be recompiled nVidia error
-        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
-            GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);*/
+            U32 nvidiaBufferErrors[] = { 131185, 131218 };
+            // Disable shader compiler errors (shader class handles that)
+            glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
+                                  GL_DONT_CARE, 0, nullptr, GL_FALSE);
+                              // Disable nVidia buffer allocation info (an easy enable is to change the
+                              // count param to 0)
+            glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
+                                  GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+                              // Shader will be recompiled nVidia error
+            glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
+                                  GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+        }
     }
 
     // Vsync is toggled on or off via the external config file
@@ -382,14 +384,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.a);
 
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
-    _IMGUIBuffer = _context.newGVD(1);
+    _IMGUIBuffer = _context.newGVD(3);
 
     GenericVertexData::IndexBuffer idxBuff;
     idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
     idxBuff.count = MAX_IMGUI_VERTS * 3;
     
     _IMGUIBuffer->create(1);
-    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), false, NULL, true, true); //Pos, UV and Colour
+    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, true, true); //Pos, UV and Colour
     _IMGUIBuffer->setIndexBuffer(idxBuff, true, true);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))

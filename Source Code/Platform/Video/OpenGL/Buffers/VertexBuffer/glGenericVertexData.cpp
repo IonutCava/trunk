@@ -172,7 +172,8 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, bool dynami
             GLUtil::freeBuffer(_indexBuffer);
         }
 
-        _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW)
+        _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW
+                                              : GL_DYNAMIC_DRAW)
                                     : GL_STATIC_DRAW;
 
         // Generate an "Index Buffer Object"
@@ -183,7 +184,7 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, bool dynami
             static_cast<GLsizeiptr>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32))),
             _indexBufferUsage,
             _indexBuffer,
-            indices.data ? indices.data : NULL);
+            indices.data);
     } else {
         GLUtil::freeBuffer(_indexBuffer);
     }
@@ -214,7 +215,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
            "glGenericVertexData error: set buffer called for invalid buffer index!");
 
     assert(_bufferObjects[buffer] == nullptr &&
-           "glGenericVertexData::setBuffer : buffer repurposing is not supported at the moment");
+           "glGenericVertexData::setBuffer : buffer re-purposing is not supported at the moment");
 
     BufferParams params;
     params._usage = isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK : GL_ARRAY_BUFFER;

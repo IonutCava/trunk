@@ -14,16 +14,16 @@ namespace {
 
     bool setIfDifferentBindRange(U32 UBOid,
                                  U32 bindIndex,
-                                 size_t offset,
-                                 size_t range) {
+                                 size_t offsetInBytes,
+                                 size_t rangeInBytes) {
 
         vec3<size_t>& crtConfig = g_currentBindConfig[bindIndex];
 
         if (crtConfig.x != static_cast<size_t>(UBOid) ||
-            crtConfig.y != offset ||
-            crtConfig.z != range)
+            crtConfig.y != offsetInBytes ||
+            crtConfig.z != rangeInBytes)
         {
-            crtConfig.set(static_cast<size_t>(UBOid), offset, range);
+            crtConfig.set(static_cast<size_t>(UBOid), offsetInBytes, rangeInBytes);
             return true;
         }
 
@@ -61,7 +61,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     } else {
         gl::BufferStorageMask storageMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         if (_updateFrequency != BufferUpdateFrequency::ONCE) {
-            //storageMask |= GL_DYNAMIC_STORAGE_BIT;
+            storageMask |= GL_DYNAMIC_STORAGE_BIT;
         }
 
         gl::BufferAccessMask accessMask = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
@@ -86,61 +86,58 @@ glBufferImpl::~glBufferImpl()
     MemoryManager::DELETE(_lockManager);
 }
 
-void glBufferImpl::waitRange(size_t offset, size_t range, bool blockClient) {
-    _lockManager->WaitForLockedRange(offset, range, blockClient);
+void glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
+    _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
 }
 
-void glBufferImpl::lockRange(size_t offset, size_t range) {
-    _lockManager->LockRange(offset, range);
+void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes) {
+    _lockManager->LockRange(offsetInBytes, rangeInBytes);
 }
 
 GLuint glBufferImpl::bufferID() const {
     return _handle;
 }
 
-bool glBufferImpl::bindRange(GLuint bindIndex, size_t offset, size_t range) {
+bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) {
     assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool wasBound = true;
-    if (setIfDifferentBindRange(_handle, bindIndex, offset, range))
+    if (setIfDifferentBindRange(_handle, bindIndex, offsetInBytes, rangeInBytes))
     {
-        glBindBufferRange(_target, bindIndex, _handle, offset, range);
+        glBindBufferRange(_target, bindIndex, _handle, offsetInBytes, rangeInBytes);
         wasBound = false;
     }
     if (_mappedBuffer) {
-        lockRange(offset, range);
+        lockRange(offsetInBytes, rangeInBytes);
     }
 
     return !wasBound;
 }
 
-void glBufferImpl::writeData(size_t offset, size_t range, const bufferPtr data)
+void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
-        waitRange(offset, range, true);
-        assert(_mappedBuffer != nullptr && "PersistentBuffer::UpdateData error: was called for an unmapped buffer!");
-        if (data) {
-            memcpy(((U8*)_mappedBuffer) + offset, data, range);
-        } else {
-            memset(((U8*)_mappedBuffer) + offset, 0, range);
-        }
+        waitRange(offsetInBytes, rangeInBytes, true);
+        std::memcpy(((Byte*)_mappedBuffer) + offsetInBytes,
+                     data,
+                     rangeInBytes);
     } else {
-        if (offset == 0 && range == _alignedSize) {
+        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glInvalidateBufferData(_handle);
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
-            glInvalidateBufferSubData(_handle, offset, range);
-            glNamedBufferSubData(_handle, offset, range, data);
+            glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
+            glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
         }
     }
 }
 
-void glBufferImpl::readData(size_t offset, size_t range, const bufferPtr data)
+void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data)
 {
     if (_mappedBuffer) {
-        memcpy(data, ((U8*)(_mappedBuffer)+offset), range);
+        memcpy(data, ((Byte*)(_mappedBuffer)+offsetInBytes), rangeInBytes);
     } else {
-        glGetNamedBufferSubData(_handle, offset, range, data);
+        glGetNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
     }
 }
 

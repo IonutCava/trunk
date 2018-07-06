@@ -60,12 +60,12 @@ public:
 
     GLuint bufferID() const;
 
-    bool bindRange(GLuint bindIndex, size_t offset, size_t range);
-    void lockRange(size_t offset, size_t range);
-    void waitRange(size_t offset, size_t range, bool blockClient);
+    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes);
+    void waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
 
-    void writeData(size_t offset, size_t range, const bufferPtr data);
-    void readData(size_t offset, size_t range, const bufferPtr data);
+    void writeData(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data);
+    void readData(size_t offsetInBytes, size_t rangeInBytes, const bufferPtr data);
 
 protected:
     GLenum _target;

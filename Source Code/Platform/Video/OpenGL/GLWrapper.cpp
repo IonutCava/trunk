@@ -878,17 +878,15 @@ void GL_API::drawIMGUI(ImDrawData* data) {
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
 
-            //glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr)cmd_list->VtxBuffer.size() * sizeof(ImDrawVert), (GLvoid*)&cmd_list->VtxBuffer.front(), GL_STREAM_DRAW);
-            //glBufferData(GL_ELEMENT_ARRAY_BUFFER, (GLsizeiptr)cmd_list->IdxBuffer.size() * sizeof(ImDrawIdx), (GLvoid*)&cmd_list->IdxBuffer.front(), GL_STREAM_DRAW);*/
-
             GenericVertexData::IndexBuffer idxBuffer;
             idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
             idxBuffer.data = (bufferPtr)cmd_list->IdxBuffer.Data;
 
             assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
-            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0u, static_cast<bufferPtr>(cmd_list->VtxBuffer.Data));
+            _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0u, cmd_list->VtxBuffer.Data);
             _IMGUIBuffer->updateIndexBuffer(idxBuffer);
+            _IMGUIBuffer->incQueue();
 
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
 

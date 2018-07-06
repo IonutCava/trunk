@@ -10,11 +10,11 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
       _elementCountBindOffset(0),
       _ringSizeFactor(params._ringSizeFactor)
 {
-    size_t bufferSize = _elementCount * _elementSize;
-    size_t totalSize = bufferSize * _ringSizeFactor;
+    size_t bufferSizeInBytes = _elementCount * _elementSize;
+    size_t totalSizeInBytes = bufferSizeInBytes * _ringSizeFactor;
     
     BufferImplParams implParams;
-    implParams._dataSizeInBytes = totalSize;
+    implParams._dataSizeInBytes = totalSizeInBytes;
     implParams._frequency = params._frequency;
     implParams._target = params._usage;
     implParams._name = params._name;
@@ -27,7 +27,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr && _ringSizeFactor > 1) {
         for (U8 i = 0; i < _ringSizeFactor; ++i) {
-            _buffer->writeData(i * bufferSize, bufferSize, params._data);
+            _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, params._data);
         }
     }
 }
@@ -47,15 +47,15 @@ void glGenericBuffer::writeData(GLuint elementCount,
                                 const bufferPtr data)
 {
     // Calculate the size of the data that needs updating
-    size_t dataCurrentSize = elementCount * _elementSize;
+    size_t dataCurrentSizeInBytes = elementCount * _elementSize;
     // Calculate the offset in the buffer in bytes from which to start writing
-    size_t offset = elementOffset * _elementSize;
+    size_t offsetInBytes = elementOffset * _elementSize;
 
     if (_ringSizeFactor > 1) {
-        offset += _elementCount * _elementSize * ringWriteOffset;
+        offsetInBytes += _elementCount * _elementSize * ringWriteOffset;
     }
 
-    _buffer->writeData(offset, dataCurrentSize, data);
+    _buffer->writeData(offsetInBytes, dataCurrentSizeInBytes, data);
 }
 
 void glGenericBuffer::readData(GLuint elementCount,
@@ -64,40 +64,40 @@ void glGenericBuffer::readData(GLuint elementCount,
                                bufferPtr dataOut) 
 {
     // Calculate the size of the data that needs updating
-    size_t dataCurrentSize = elementCount * _elementSize;
+    size_t dataCurrentSizeInBytes = elementCount * _elementSize;
     // Calculate the offset in the buffer in bytes from which to start writing
-    size_t offset = elementOffset * _elementSize;
+    size_t offsetInBytes = elementOffset * _elementSize;
 
     if (_ringSizeFactor > 1) {
-        offset += _elementCount * _elementSize * ringReadOffset;
+        offsetInBytes += _elementCount * _elementSize * ringReadOffset;
     }
 
-    _buffer->readData(offset, dataCurrentSize, dataOut);
+    _buffer->readData(offsetInBytes, dataCurrentSizeInBytes, dataOut);
 }
 
 void glGenericBuffer::lockData(GLuint elementCount,
                                GLuint elementOffset,
                                GLuint ringReadOffset)
 {
-    size_t range = elementCount * _elementSize;
-    size_t offset = 0;
+    size_t rangeInBytes = elementCount * _elementSize;
+    size_t offsetInBytes = 0;
 
     if (_ringSizeFactor > 1) {
-        offset += _elementCount * _elementSize * ringReadOffset;
+        offsetInBytes += _elementCount * _elementSize * ringReadOffset;
     }
 
-    _buffer->lockRange(offset, range);
+    _buffer->lockRange(offsetInBytes, rangeInBytes);
 }
 
 GLintptr glGenericBuffer::getBindOffset(GLuint ringReadOffset)
 {
-    GLintptr ret = static_cast<GLintptr>(_elementCountBindOffset * _elementSize);
+    GLintptr retInBytes = static_cast<GLintptr>(_elementCountBindOffset * _elementSize);
 
     if (_ringSizeFactor > 1) {
-        ret += _elementCount * _elementSize * ringReadOffset;
+        retInBytes += _elementCount * _elementSize * ringReadOffset;
     }
 
-    return ret;
+    return retInBytes;
 }
 
 void glGenericBuffer::setBindOffset(GLuint elementCountOffset) {
