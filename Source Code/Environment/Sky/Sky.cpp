@@ -18,6 +18,7 @@ Sky::Sky(const stringImpl& name)
     // The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't
     // have real "depth"
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
+
     _farPlane = 2.0f *
         GET_ACTIVE_SCENE()
         .state()
@@ -116,6 +117,7 @@ void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                       SceneState& sceneState) {}
 
 bool Sky::onDraw(SceneGraphNode& sgn, RenderStage currentStage) {
+    _skyShader->Uniform("isDepthPass", currentStage == RenderStage::Z_PRE_PASS);
     return _sky->onDraw(sgn, currentStage);
 }
 

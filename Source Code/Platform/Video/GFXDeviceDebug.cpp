@@ -26,17 +26,30 @@ void GFXDevice::previewDepthBuffer() {
         fbPreview.setPropertyList("USE_SCENE_ZPLANES");
         _previewDepthMapShader = CreateResource<ShaderProgram>(fbPreview);
         assert(_previewDepthMapShader != nullptr);
+
+        ResourceDescriptor previewNormalsShader("fbPreview");
+        previewNormalsShader.setThreadedLoading(false);
+        _previewNormalsShader = CreateResource<ShaderProgram>(previewNormalsShader);
+        assert(_previewNormalsShader != nullptr);
     }
 
     if (_previewDepthMapShader->getState() != ResourceState::RES_LOADED) {
         return;
     }
 
-    Texture* depthTex = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % (depthTex->getMaxMipLevel() - 1)));
-    depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
-    GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
-    drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
+    { //Depth preview
+        Texture* depthTex = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth);
+        _previewDepthMapShader->Uniform("lodLevel", to_float(to_uint((Time::ElapsedMilliseconds() / 750.0)) % (depthTex->getMaxMipLevel() - 1)));
+        depthTex->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 256, 0,256, 256);
+        drawTriangle(_defaultStateNoDepthHash, _previewDepthMapShader);
+    }
+    { //Normals preview
+        Texture* normalsPreview = _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Color0);
+        normalsPreview->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
+        GFX::ScopedViewport viewport(_renderTarget[to_uint(RenderTarget::DEPTH)]->getResolution().width - 512, 0, 256, 256);
+        drawTriangle(_defaultStateNoDepthHash, _previewNormalsShader);
+    }
 #endif
 }
 

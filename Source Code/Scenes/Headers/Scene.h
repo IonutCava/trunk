@@ -126,8 +126,8 @@ class NOINITVTABLE Scene : public Resource {
     }
     void addPatch(vectorImpl<FileData>& data);
 
-    SceneGraphNode_ptr addLight(LightType type,
-                             SceneGraphNode_ptr parentNode);
+    // DIRECTIONAL lights have shadow mapping enabled automatically
+    SceneGraphNode_ptr addLight(LightType type, SceneGraphNode_ptr parentNode);
     SceneGraphNode_ptr addSky();
     SceneGraphNode_ptr addSky(Sky& skyItem);
 

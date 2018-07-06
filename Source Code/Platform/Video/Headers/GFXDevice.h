@@ -223,7 +223,7 @@ DEFINE_SINGLETON(GFXDevice)
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
            vec4<F32> _cameraPosition;
-           vec4<F32> _ViewPort;
+           vec4<U32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
@@ -588,6 +588,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 FRAME_COUNT;
     /// shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
+    ShaderProgram* _previewNormalsShader;
     ShaderProgram* _HIZConstructProgram;
     ShaderProgram* _HIZCullProgram;
     /// getMatrix cache

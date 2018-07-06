@@ -4,51 +4,133 @@
 #include "Managers/Headers/LightManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
+//ref: https://github.com/bioglaze/aether3d
 namespace Divide {
+namespace {
+    struct PointLightData {
+        vec4<F32> posAndCenter;
+        vec4<F32> color;
+    };
 
-ForwardPlusRenderer::ForwardPlusRenderer()
-    : Renderer(RendererType::RENDERER_FORWARD_PLUS) {
-    _opaqueGrid.reset(new LightGrid());
-    _transparentGrid.reset(new LightGrid());
-    /// Initialize our depth ranges construction shader (see LightManager.cpp for more documentation)
-    ResourceDescriptor rangesDesc("DepthRangesConstruct");
+    struct SpotLightData : public PointLightData {
+        vec4<F32> params;
+    };
 
-    stringImpl gridDim("LIGHT_GRID_TILE_DIM_X ");
-    gridDim.append(std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_X));
-    gridDim.append(",LIGHT_GRID_TILE_DIM_Y ");
-    gridDim.append(std::to_string(Config::Lighting::LIGHT_GRID_TILE_DIM_Y));
-    rangesDesc.setPropertyList(gridDim);
+    const U32 MAX_NUM_LIGHTS_PER_TILE = 544;
+    const I32 TILE_RES = 16;
+    I32 numActivePointLights = 0;
+    I32 numActiveSpotLights = 0;
+    std::array<PointLightData, Config::Lighting::NUM_POSSIBLE_LIGHTS> pointLightData;
+    std::array<SpotLightData, Config::Lighting::NUM_POSSIBLE_LIGHTS> spotLightData;
 
-    _depthRangesConstructProgram = CreateResource<ShaderProgram>(rangesDesc);
-    _depthRangesConstructProgram->Uniform("depthTex", ShaderProgram::TextureUsage::UNIT0);
-    /// Depth ranges are used for grid based light culling
-    SamplerDescriptor depthRangesSampler;
-    depthRangesSampler.setFilters(TextureFilter::NEAREST);
-    depthRangesSampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthRangesSampler.toggleMipMaps(false);
-    TextureDescriptor depthRangesDescriptor(TextureType::TEXTURE_2D,
-                                            GFXImageFormat::RGBA32F,
-                                            GFXDataFormat::FLOAT_32);
-    depthRangesDescriptor.setSampler(depthRangesSampler);
-    // The down-sampled depth buffer is used to cull screen space lights for our Forward+ rendering algorithm.
-    // It's only updated on demand.
-    _depthRanges = GFX_DEVICE.newFB(false);
-    _depthRanges->addAttachment(depthRangesDescriptor, TextureDescriptor::AttachmentType::Color0);
-    _depthRanges->toggleDepthBuffer(false);
-    _depthRanges->setClearColor(vec4<F32>(0.0f, 1.0f, 0.0f, 1.0f));
-    vec2<U16> screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->getResolution();
-    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X, Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(screenRes + tileSize);
-    _depthRanges->create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
+    U32 getMaxNumLightsPerTile() {
+        const U32 adjustmentMultipier = 32;
+
+        // I haven't tested at greater than 1080p, so cap it
+        U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().height;
+        CLAMP<U16>(height, height, 1080);
+
+        // adjust max lights per tile down as height increases
+        return (MAX_NUM_LIGHTS_PER_TILE - (adjustmentMultipier * (height / 120)));
+    }
+
+    U32 getNumTilesX() { 
+        U16 width = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().width;
+        return to_uint((width + TILE_RES - 1) / to_float(TILE_RES));
+    }
+
+    U32 getNumTilesY() { 
+        U16 height = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::SCREEN)->getResolution().height;
+        return to_uint((height + TILE_RES - 1) / to_float(TILE_RES));
+    }
+
+    I32 getNextPointLightBufferIndex()
+    {
+        if (numActivePointLights + numActiveSpotLights < Config::Lighting::NUM_POSSIBLE_LIGHTS)
+        {
+            ++numActivePointLights;
+            return numActivePointLights - 1;
+        }
+
+        // Error handling is done in the caller.
+        return -1;
+    }
+
+    I32 getNextSpotLightBufferIndex()
+    {
+        if (numActiveSpotLights + numActiveSpotLights + 1 < Config::Lighting::NUM_POSSIBLE_LIGHTS)
+        {
+            ++numActiveSpotLights;
+            return numActiveSpotLights - 1;
+        }
+
+        // Error handling is done in the caller.
+        return -1;
+    }
+};
+
+ForwardPlusRenderer::ForwardPlusRenderer() 
+    : Renderer(RendererType::RENDERER_FORWARD_PLUS)
+{
+    ResourceDescriptor cullShaderDesc("lightCull");
+    cullShaderDesc.setThreadedLoading(false);
+    _lightCullComputeShader = CreateResource<ShaderProgram>(cullShaderDesc);
+
+    _pointLightBuffer.reset(GFX_DEVICE.newSB("dvd_pointLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
+    _pointLightBuffer->create(Config::Lighting::NUM_POSSIBLE_LIGHTS, sizeof(PointLightData));
+
+    _spotLightBuffer.reset(GFX_DEVICE.newSB("dvd_spotLightBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
+    _spotLightBuffer->create(Config::Lighting::NUM_POSSIBLE_LIGHTS, sizeof(SpotLightData));
+
+    const U32 numTiles = getNumTilesX() * getNumTilesY();
+    const U32 maxNumLightsPerTile = getMaxNumLightsPerTile();
+
+    _perTileLightIndexBuffer.reset(GFX_DEVICE.newSB("dvd_perTileLightIndexBuffer", 1, true, false, BufferUpdateFrequency::OFTEN));
+    _perTileLightIndexBuffer->create(4 * maxNumLightsPerTile * numTiles, sizeof(U32));
+
+    _pointLightBuffer->bind(ShaderBufferLocation::LIGHT_POINT_LIGHTS);
+    _spotLightBuffer->bind(ShaderBufferLocation::LIGHT_SPOT_LIGHTS);
+    _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
 }
 
-ForwardPlusRenderer::~ForwardPlusRenderer() {
-    MemoryManager::DELETE(_depthRanges);
-    RemoveResource(_depthRangesConstructProgram);
+ForwardPlusRenderer::~ForwardPlusRenderer()
+{
+    RemoveResource(_lightCullComputeShader);
 }
 
 void ForwardPlusRenderer::preRender() {
-    //buildLightGrid();
+    const vectorImpl<Light*>& pointLights = LightManager::getInstance().getLights(LightType::POINT);
+    const vectorImpl<Light*>& spotLights = LightManager::getInstance().getLights(LightType::SPOT);
+    numActivePointLights = to_int(pointLights.size());
+    numActiveSpotLights = to_int(spotLights.size());
+
+    for (I32 i = 0; i < numActivePointLights; ++i) {
+        PointLightData& data = pointLightData[i];
+        Light* light = pointLights[i];
+        data.posAndCenter.set(light->getPosition(), light->getRange());
+        data.color.set(light->getDiffuseColor(), 1.0f);
+    }
+    _pointLightBuffer->setData(pointLightData.data());
+
+    for (I32 i = 0; i < numActiveSpotLights; ++i) {
+        SpotLightData& data = spotLightData[i];
+        Light* light = spotLights[i];
+        data.posAndCenter.set(light->getPosition(), light->getRange());
+        data.color.set(light->getDiffuseColor());
+        data.params.set(light->getDirection(), light->getProperties()._direction.w);
+    }
+
+    GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)
+        ->getAttachment(TextureDescriptor::AttachmentType::Depth)
+        ->Bind(to_ubyte(ShaderProgram::TextureUsage::DEPTH));
+    _spotLightBuffer->setData(spotLightData.data());
+
+    _lightCullComputeShader->bind();
+    _lightCullComputeShader->Uniform("invProjection", GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
+    _lightCullComputeShader->Uniform("numLights", (((U32)numActiveSpotLights & 0xFFFFu) << 16) | ((U32)numActivePointLights & 0xFFFFu));
+    _lightCullComputeShader->Uniform("maxNumLightsPerTile", (I32)getMaxNumLightsPerTile());
+    _lightCullComputeShader->DispatchCompute(getNumTilesX(), getNumTilesY(), 1);
+    _lightCullComputeShader->SetMemoryBarrier();
 }
 
 void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
@@ -57,97 +139,6 @@ void ForwardPlusRenderer::render(const DELEGATE_CBK<>& renderCallback,
 }
 
 void ForwardPlusRenderer::updateResolution(U16 width, U16 height) {
-    vec2<U16> tileSize(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
-                       Config::Lighting::LIGHT_GRID_TILE_DIM_Y);
-    vec2<U16> resTemp(GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->getResolution() + tileSize);
-    _depthRanges->create(resTemp.x / tileSize.x - 1, resTemp.y / tileSize.y - 1);
-}
 
-bool ForwardPlusRenderer::buildLightGrid() {
-    const vec2<F32>& zPlanes = GFX_DEVICE.getCurrentZPlanes();
-    const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
-    Light::LightList& lights = LightManager::getInstance().getLights(LightType::POINT);
-
-    //Disable all lights until we finish pruning
-    for(Light* light : lights) {
-        light->setEnabled(false);
-    }
-
-    _omniLightList.clear();
-    _omniLightList.reserve(static_cast<vectorAlg::vecSize>(lights.size()));
-
-    for (Light* const light : lights) {
-        _omniLightList.push_back(LightGrid::makeLight(
-            light->getGUID(),
-            light->getPosition(),
-            light->getDiffuseColor(),
-            light->getRange()));
-    }
-
-    if (!_omniLightList.empty()) {
-        _transparentGrid->build(
-            vec2<U16>(Config::Lighting::LIGHT_GRID_TILE_DIM_X,
-                      Config::Lighting::LIGHT_GRID_TILE_DIM_Y),
-            // render target resolution
-            vec2<U16>(to_ushort(viewport.z), to_ushort(viewport.w)),
-            _omniLightList,
-            GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW),
-            GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION),
-            // current near plane
-            zPlanes.x,
-            vectorImpl<vec2<F32>>());
-
-        downSampleDepthBuffer(_depthRangesCache);
-        // We take a copy of this, and prune the grid using depth ranges found
-        // from pre-z pass
-        // (for opaque geometry).
-        STUBBED("ADD OPTIMIZED COPY!!!");
-        *_opaqueGrid = *_transparentGrid;
-        // Note that the pruning does not occur if the pre-z pass was not
-        // performed (depthRanges is empty in this case).
-        _opaqueGrid->prune(_depthRangesCache);
-        _transparentGrid->pruneFarOnly(zPlanes.x, _depthRangesCache);
-
-        vectorImpl<I64> guidList;
-        guidList.reserve(_opaqueGrid->getViewSpaceLights().size() + 
-                         _transparentGrid->getViewSpaceLights().size());
-
-        for (const LightGrid::LightInternal& light : _opaqueGrid->getViewSpaceLights()) {
-            guidList.push_back(light.guid);
-        }
-        for (const LightGrid::LightInternal& light : _transparentGrid->getViewSpaceLights()) {
-            guidList.push_back(light.guid);
-        }
-
-        for(Light* light : lights) {
-            I64 crtGUID = light->getGUID();
-            for (I64 guid: guidList) {
-                if (guid == crtGUID) {
-                    light->setEnabled(true);
-                    continue;
-                }
-            }
-        }
-        return true;
-    }
-
-    return false;
-}
-
-/// Extract the depth ranges and store them in a different render target used to cull lights against
-void ForwardPlusRenderer::downSampleDepthBuffer(vectorImpl<vec2<F32>>& depthRanges) {
-    depthRanges.resize(_depthRanges->getWidth() * _depthRanges->getHeight());
-
-    _depthRanges->begin(Framebuffer::defaultPolicy());
-    {
-        _depthRangesConstructProgram->Uniform("dvd_ProjectionMatrixInverse", GFX_DEVICE.getMatrix(MATRIX_MODE::PROJECTION_INV));
-
-        GFX_DEVICE.getRenderTarget(GFXDevice::RenderTarget::DEPTH)->bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0), TextureDescriptor::AttachmentType::Depth);
-
-        GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _depthRangesConstructProgram);
-
-        _depthRanges->readData(GFXImageFormat::RG, GFXDataFormat::FLOAT_32, &depthRanges[0]);
-    }
-    _depthRanges->end();
 }
 };

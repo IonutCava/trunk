@@ -158,7 +158,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     depthSampler.toggleMipMaps(false);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS,
                                       GFXImageFormat::DEPTH_COMPONENT32F,
-                                      GFXDataFormat::FLOAT_32);
+                                      GFXDataFormat::FLOAT_16);
     depthDescriptor.setSampler(depthSampler);
     // Add the attachments to the render targets
     _renderTarget[to_uint(RenderTarget::SCREEN)]->addAttachment(screenDescriptor, TextureDescriptor::AttachmentType::Color0);
@@ -180,8 +180,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     depthSampler.toggleMipMaps(true);
     depthSampler.setMinFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     depthDescriptor.setSampler(depthSampler);
+
+    TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_MS,
+                                       GFXImageFormat::RGB16F,
+                                       GFXDataFormat::FLOAT_16);
+    normalDescriptor.setSampler(screenSampler);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->addAttachment(depthDescriptor, TextureDescriptor::AttachmentType::Depth);
-    _renderTarget[to_uint(RenderTarget::DEPTH)]->toggleColorWrites(false);
+    _renderTarget[to_uint(RenderTarget::DEPTH)]->addAttachment(normalDescriptor, TextureDescriptor::AttachmentType::Color0);
+
     _renderTarget[to_uint(RenderTarget::DEPTH)]->create(resolution.width, resolution.height);
     _renderTarget[to_uint(RenderTarget::DEPTH)]->getAttachment(TextureDescriptor::AttachmentType::Depth)->lockAutomaticMipMapGeneration(true);
 

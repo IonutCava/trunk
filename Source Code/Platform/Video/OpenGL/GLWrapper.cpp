@@ -276,8 +276,8 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "const uint MAX_LIGHTS_IN_VIEW = " +
-            std::to_string(Config::Lighting::MAX_LIGHTS_IN_VIEW) + ";",
+        "const uint NUM_POSSIBLE_LIGHTS = " +
+            std::to_string(Config::Lighting::NUM_POSSIBLE_LIGHTS) + ";",
         lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
                          "const int MAX_VISIBLE_NODES = " +
@@ -288,6 +288,24 @@ bool GL_API::initShaders() {
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_NORMAL " +
             std::to_string(to_uint(ShaderBufferLocation::LIGHT_NORMAL)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_POINT_LIGHTS " +
+            std::to_string(to_uint(ShaderBufferLocation::LIGHT_POINT_LIGHTS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_SPOT_LIGHTS " +
+            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SPOT_LIGHTS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_INDICES " +
+            std::to_string(to_uint(ShaderBufferLocation::LIGHT_INDICES)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -323,6 +341,9 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::FRAGMENT, "#define VARYING in",
                          lineOffsets);
 
+    appendToShaderHeader(ShaderType::COMPUTE, "#define VARYING ",
+                         lineOffsets);
+
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define BUFFER_LIGHT_SHADOW " +
@@ -331,6 +352,12 @@ bool GL_API::initShaders() {
 
     appendToShaderHeader(
         ShaderType::GEOMETRY,
+        "#define BUFFER_LIGHT_SHADOW " +
+            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COMPUTE,
         "#define BUFFER_LIGHT_SHADOW " +
             std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
         lineOffsets);

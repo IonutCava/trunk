@@ -1,7 +1,13 @@
 #ifndef _LIGHT_INPUT_CMN_
 #define _LIGHT_INPUT_CMN_
 
+#if defined(FRAG_SHADER) || defined(COMPUTE_SHADER)
+
 #if defined(FRAG_SHADER)
+#   define ACCESS readonly
+#else
+#   define ACCESS
+#endif
 
 const int LIGHT_DIRECTIONAL = 0;
 const int LIGHT_OMNIDIRECTIONAL = 1;
@@ -15,9 +21,9 @@ struct Light {
     float  _range;
 };
 
-layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_LightBlock
+layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
-    Light dvd_LightSource[MAX_LIGHTS_IN_VIEW];
+    Light dvd_LightSource[NUM_POSSIBLE_LIGHTS];
 };
 
 struct Shadow {
@@ -26,14 +32,31 @@ struct Shadow {
     vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
 };
 
-
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
     Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
 }; 
 
+layout(binding = BUFFER_LIGHT_POINT_LIGHTS, std430) coherent ACCESS buffer pointLightBuffer
+{
+    vec4 pointLightBufferCenterAndRadius[NUM_POSSIBLE_LIGHTS];
+    vec4 pointLightColor[NUM_POSSIBLE_LIGHTS];
+};
+
+layout(binding = BUFFER_LIGHT_SPOT_LIGHTS, std430) coherent ACCESS buffer spotLightBuffer {
+    vec4 spotLightBufferCenterAndRadius[NUM_POSSIBLE_LIGHTS];
+    vec4 spotLightColor[NUM_POSSIBLE_LIGHTS];
+    vec4 spotLightParams;
+};
+
+layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLightIndexBuffer
+{
+    uint perTileLightIndexBufferOut[];
+};
+
 #endif
 
+#if !defined(COMPUTE_SHADER)
 VARYING vec3 _normalWV;
 #if defined(COMPUTE_TBN)
 VARYING vec3 _tangentWV;
@@ -42,5 +65,6 @@ VARYING vec3 _bitangentWV;
 
 VARYING vec3 _viewDirection;
 flat VARYING uint _lightCount;
+#endif
 
 #endif //_LIGHT_INPUT_CMN_

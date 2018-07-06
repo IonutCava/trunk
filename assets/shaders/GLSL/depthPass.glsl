@@ -2,6 +2,10 @@
 
 #include "vbInputData.vert"
 
+#if !defined(SHADOW_PASS)
+out vec3 _normal;
+#endif
+
 void main() {
 
     computeData();
@@ -9,6 +13,7 @@ void main() {
     gl_Position = _vertexW;
 #else
     gl_Position = dvd_ViewProjectionMatrix * _vertexW;
+    _normal = dvd_Normal;
 #endif
 }
 
@@ -51,7 +56,13 @@ void main()
 -- Fragment
 
 in vec2 _texCoord;
-out vec4 _colorOut;
+
+#if defined(SHADOW_PASS)
+out vec2 _colorOut;
+#else
+in vec3 _normal;
+out vec3 _colorOut;
+#endif
 
 #include "nodeBufferedInput.cmn"
 
@@ -69,7 +80,6 @@ layout(binding = TEXTURE_UNIT1)   uniform sampler2D texDiffuse1;
 #endif
 #endif
 
-#if defined(SHADOW_PASS)
 vec2 computeMoments(in float depth) {
     // Compute partial derivatives of depth.  
     float dx = dFdx(depth);
@@ -77,7 +87,6 @@ vec2 computeMoments(in float depth) {
     // Compute second moment over the pixel extents.  
     return vec2(depth, depth*depth + 0.25*(dx*dx + dy*dy));
 }
-#endif
 
 void main() {
     float alpha = 1.0;
@@ -103,9 +112,9 @@ void main() {
 #if defined(SHADOW_PASS)
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     //_colorOut = vec4(computeMoments(exp(DEPTH_EXP_WARP * gl_FragCoord.z)), 0.0, alpha);
-    _colorOut = vec4(computeMoments(gl_FragCoord.z), 0.0, alpha);
+    _colorOut = computeMoments(gl_FragCoord.z);
 #else
-    _colorOut = vec4(gl_FragCoord.w, 0.0, 0.0, alpha);
+    _colorOut = normalize(dvd_NormalMatrix() * _normal);
 #endif
 
 }

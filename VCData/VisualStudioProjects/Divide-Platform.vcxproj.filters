@@ -876,5 +876,8 @@
     <None Include="..\..\assets\shaders\GLSL\common\HiZCullingAlgorithm.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\lightCull.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </None>
   </ItemGroup>
 </Project>

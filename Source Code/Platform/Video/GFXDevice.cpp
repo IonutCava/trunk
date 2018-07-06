@@ -46,6 +46,7 @@ GFXDevice::GFXDevice()
     _gfxDataBuffer = nullptr;
     _HIZConstructProgram = nullptr;
     _HIZCullProgram = nullptr;
+    _previewNormalsShader = nullptr;
     _previewDepthMapShader = nullptr;
     _commandBuildTimer = nullptr;
     // Integers
@@ -97,11 +98,10 @@ GFXDevice::GFXDevice()
 
     // Don't (currently) need these for shadow passes
     flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
-    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
     flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
-
-    VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
     VertexBuffer::setAttribMask(RenderStage::Z_PRE_PASS, flags);
+    flags[to_uint(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
+    VertexBuffer::setAttribMask(RenderStage::SHADOW, flags);
 }
 
 GFXDevice::~GFXDevice()

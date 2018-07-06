@@ -307,7 +307,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\Lighting\LightGrid.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\PointLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMap.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMaps.cpp" />
@@ -429,7 +428,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\Headers\Renderer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\DirectionalLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\Light.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\LightGrid.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\PointLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\Headers\SpotLight.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMap.h" />

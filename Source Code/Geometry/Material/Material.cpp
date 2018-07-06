@@ -38,7 +38,7 @@ Material::Material()
     setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION);
     /// the z-pre-pass descriptor does not process colors
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
-    zPrePassDescriptor.setColorWrites(false, false, false, false);
+    zPrePassDescriptor.setColorWrites(true, true, true, false);
     setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::Z_PRE_PASS);
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);

@@ -221,10 +221,6 @@ void SceneManager::updateVisibleNodes(RenderStage stage, bool refreshNodeData, U
             return renderableA->drawOrder() < renderableB->drawOrder();
     });
 
-    if (refreshNodeData) {
-        getRenderer().preRender();
-    }
-
     GFX_DEVICE.buildDrawCommands(visibleNodes, _activeScene->renderState(), refreshNodeData, pass);
 }
 

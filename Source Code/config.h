@@ -147,8 +147,6 @@ const bool SHOW_MESSAGE_BOX = false;
 };  // namespace Assert
 
 namespace Lighting {
-/// Number of lights in the current view allowed to affect the scene
-const unsigned int MAX_LIGHTS_IN_VIEW = 16;
 // How many lights (in order as passed to the shader for the node) should cast
 /// shadows
 const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
@@ -158,19 +156,6 @@ const unsigned int MAX_SPLITS_PER_LIGHT = 6;
 /// How many "units" away should a directional light source be from the camera's
 /// position
 const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;
-// Note: since each uniform buffer may at most be 64kb, care must be taken that
-// the grid resolution doesnt exceed this
-//       e.g. 1920x1200 wont do with 16x16.
-const unsigned int LIGHT_GRID_TILE_DIM_X = 64;
-const unsigned int LIGHT_GRID_TILE_DIM_Y = 64;
-// used for clustered forward
-const unsigned int LIGHT_GRID_MAX_DIM_Z = 256;
-
-// Max screen size of 4K
-const unsigned int LIGHT_GRID_MAX_DIM_X =
-    ((3840 + LIGHT_GRID_TILE_DIM_X - 1) / LIGHT_GRID_TILE_DIM_X);
-const unsigned int LIGHT_GRID_MAX_DIM_Y =
-    ((2160 + LIGHT_GRID_TILE_DIM_Y - 1) / LIGHT_GRID_TILE_DIM_Y);
 
 /// the maximum number of lights supported, this is limited by constant buffer
 /// size, commonly this is 64kb, but AMD only seem to allow 2048 lights...

@@ -33,11 +33,6 @@
 #define _FORWARD_PLUS_RENDERER_H_
 
 #include "Renderer.h"
-#include "Rendering/Lighting/Headers/LightGrid.h"
-/// This class implements the forward plus renderer that creates a list of all
-/// important lights in screen space
-/// Details:
-/// http://mynameismjp.wordpress.com/2012/03/31/light-indexed-deferred-rendering/
 
 namespace Divide {
 
@@ -53,17 +48,12 @@ class ForwardPlusRenderer : public Renderer {
 
     void updateResolution(U16 width, U16 height);
 
-   protected:
-    bool buildLightGrid();
-    void downSampleDepthBuffer(vectorImpl<vec2<F32>>& depthRanges);
-
    private:
-    std::unique_ptr<LightGrid> _opaqueGrid;
-    std::unique_ptr<LightGrid> _transparentGrid;
-    Framebuffer* _depthRanges;
-    ShaderProgram* _depthRangesConstructProgram;
-    vectorImpl<vec2<F32>> _depthRangesCache;
-    vectorImpl<LightGrid::LightInternal> _omniLightList;
+    ShaderProgram* _lightCullComputeShader;
+
+    std::shared_ptr<ShaderBuffer> _pointLightBuffer;
+    std::shared_ptr<ShaderBuffer> _spotLightBuffer;
+    std::shared_ptr<ShaderBuffer> _perTileLightIndexBuffer;
 };
 
 };  // namespace Divide

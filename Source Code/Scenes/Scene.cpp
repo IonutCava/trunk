@@ -282,7 +282,11 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
         std::to_string(LightManager::getInstance().getLights(type).size()));
 
     defaultLight.setEnumValue(to_uint(type));
-    return parentNode->addNode(*CreateResource<Light>(defaultLight));
+    Light* light = CreateResource<Light>(defaultLight);
+    if (type == LightType::DIRECTIONAL) {
+        light->setCastShadows(true);
+    }
+    return parentNode->addNode(*light);
 }
 
 SceneGraphNode_ptr Scene::addSky() {

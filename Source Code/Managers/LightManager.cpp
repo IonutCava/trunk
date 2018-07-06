@@ -77,7 +77,7 @@ void LightManager::init() {
                                                                              BufferUpdateFrequency::OCASSIONAL);
 
     _lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]->create(
-        Config::Lighting::MAX_LIGHTS_IN_VIEW, sizeof(LightProperties));
+        Config::Lighting::NUM_POSSIBLE_LIGHTS, sizeof(LightProperties));
 
     _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->create(
         Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE, sizeof(LightShadowProperties));
@@ -330,7 +330,7 @@ void LightManager::updateAndUploadLightData(const mat4<F32>& viewMatrix) {
                 continue;
             }
 
-            if (lightProperties.size() >= Config::Lighting::MAX_LIGHTS_IN_VIEW) {
+            if (lightProperties.size() >= Config::Lighting::NUM_POSSIBLE_LIGHTS) {
                 break;
             }
 
