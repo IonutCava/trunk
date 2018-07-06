@@ -83,9 +83,9 @@ bool ShaderProgram::update(const U64 deltaTime) {
         // Upload wind data
         const SceneState& activeSceneState = GET_ACTIVE_SCENE()->state();
         this->Uniform("windDirection",
-                      vec2<F32>(activeSceneState.getWindDirX(),
-                                activeSceneState.getWindDirZ()));
-        this->Uniform("windSpeed", activeSceneState.getWindSpeed());
+                      vec2<F32>(activeSceneState.windDirX(),
+                                activeSceneState.windDirZ()));
+        this->Uniform("windSpeed", activeSceneState.windSpeed());
         _sceneDataDirty = false;
     }
     // The following values are updated only if a call to the ShaderManager's

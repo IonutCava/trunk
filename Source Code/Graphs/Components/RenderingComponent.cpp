@@ -236,27 +236,29 @@ void RenderingComponent::postDraw(const SceneRenderState& sceneRenderState,
         node->postDrawBoundingBox(_parentSGN);
     }
 
-    Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
-    bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
+    if (_renderSkeleton) {
+        Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
+        bool skinned = _parentSGN.getNode<Object3D>()->isSkinned();
 
-    // Continue only for skinned submeshes
-    if (type == Object3D::ObjectType::SUBMESH && skinned) {
-        StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
-        if (parentStates.getTrackedValue(
+        // Continue only for skinned submeshes
+        if (type == Object3D::ObjectType::SUBMESH && skinned) {
+            StateTracker<bool>& parentStates = _parentSGN.getParent()->getTrackedBools();
+            if (parentStates.getTrackedValue(
                 StateTracker<bool>::State::SKELETON_RENDERED) == false) {
-            // Get the animation component of any submesh. They should be synced anyway.
-            AnimationComponent* childAnimComp =
-                _parentSGN.getComponent<AnimationComponent>();
-            // Get the skeleton lines from the submesh's animation component
-            const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
-            // Submit the skeleton lines to the GPU for rendering
-            IMPrimitive& prim = GFX_DEVICE.drawLines(
-                skeletonLines, 2.0f,
-                _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
-                vec4<I32>(), false, true);
-            prim.name("Skeleton_" + _parentSGN.getName());
-            parentStates.setTrackedValue(
-                StateTracker<bool>::State::SKELETON_RENDERED, true);
+                // Get the animation component of any submesh. They should be synced anyway.
+                AnimationComponent* childAnimComp =
+                    _parentSGN.getComponent<AnimationComponent>();
+                // Get the skeleton lines from the submesh's animation component
+                const vectorImpl<Line>& skeletonLines = childAnimComp->skeletonLines();
+                // Submit the skeleton lines to the GPU for rendering
+                IMPrimitive& prim = GFX_DEVICE.drawLines(
+                    skeletonLines, 2.0f,
+                    _parentSGN.getComponent<PhysicsComponent>()->getWorldMatrix(),
+                    vec4<I32>(), false, true);
+                prim.name("Skeleton_" + _parentSGN.getName());
+                parentStates.setTrackedValue(
+                    StateTracker<bool>::State::SKELETON_RENDERED, true);
+            }
         }
     }
 }

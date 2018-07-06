@@ -226,29 +226,33 @@ void PingPongScene::processInput(const U64 deltaTime) {
     // Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     // Camera controls
-    if (state()._angleLR) _paddleCam->rotateYaw(state()._angleLR);
-    if (state()._angleUD) _paddleCam->rotatePitch(state()._angleUD);
+    if (state().angleLR()) {
+        _paddleCam->rotateYaw(state().angleLR());
+    }
+    if (state().angleUD()) {
+        _paddleCam->rotatePitch(state().angleUD());
+    }
 
     SceneGraphNode* paddle = _sceneGraph.findNode("paddle");
 
     vec3<F32> pos = paddle->getComponent<PhysicsComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
-    if (state()._moveFB) {
-        if ((state()._moveFB > 0 && pos.y >= 3) ||
-            (state()._moveFB < 0 && pos.y <= 0.5f))
+    if (state().moveFB()) {
+        if ((state().moveFB() > 0 && pos.y >= 3) ||
+            (state().moveFB() < 0 && pos.y <= 0.5f))
             return;
         paddle->getComponent<PhysicsComponent>()->translateY(
-            state()._moveFB / paddleMovementDivisor);
+            state().moveFB() / paddleMovementDivisor);
     }
 
-    if (state()._moveLR) {
+    if (state().moveLR()) {
         // Left/right movement is flipped for proper control
-        if ((state()._moveLR < 0 && pos.x >= 3) ||
-            (state()._moveLR > 0 && pos.x <= -3))
+        if ((state().moveLR() < 0 && pos.x >= 3) ||
+            (state().moveLR() > 0 && pos.x <= -3))
             return;
         paddle->getComponent<PhysicsComponent>()->translateX(
-            state()._moveLR / paddleMovementDivisor);
+            state().moveLR() / paddleMovementDivisor);
     }
 }
 

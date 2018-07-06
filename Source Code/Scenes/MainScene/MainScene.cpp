@@ -36,7 +36,7 @@ void MainScene::updateLights() {
 }
 
 void MainScene::processInput(const U64 deltaTime) {
-    if (state()._cameraUpdated) {
+    if (state().cameraUpdated()) {
         Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
@@ -85,8 +85,8 @@ void MainScene::processGUI(const U64 deltaTime) {
                          Time::ApplicationTimer::getInstance().getFps(),
                          Time::ApplicationTimer::getInstance().getFrameTime());
         _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]",
-                         state()._cameraUnderwater ? "true" : "false",
-                         state().getWaterLevel());
+                         state().cameraUnderwater() ? "true" : "false",
+                         state().waterLevel());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d",
                          GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
@@ -245,8 +245,8 @@ bool MainScene::loadResources(bool continueOnErrors) {
         _paramHandler.getParam<stringImpl>("assetsLocation") +
         "/sounds/beep.wav");
     beepSound.setFlag(false);
-    state()._backgroundMusic["generalTheme"] =
-        CreateResource<AudioDescriptor>(backgroundMusic);
+    hashAlg::emplace(state().backgroundMusic(), stringImpl("generalTheme"),
+                     CreateResource<AudioDescriptor>(backgroundMusic));
     _beep = CreateResource<AudioDescriptor>(beepSound);
 
     const vec3<F32>& eyePos = renderState().getCamera().getEye();
@@ -271,7 +271,11 @@ bool MainScene::onKeyUp(const Input::KeyEvent& key) {
         case Input::KeyCode::KC_M: {
             _playMusic = !_playMusic;
             if (_playMusic) {
-                SFX_DEVICE.playMusic(state()._backgroundMusic["generalTheme"]);
+                SceneState::MusicPlaylist::const_iterator it;
+                it = state().backgroundMusic().find("generalTheme");
+                if (it != std::end(state().backgroundMusic())) {
+                    SFX_DEVICE.playMusic(it->second);
+                }
             } else {
                 SFX_DEVICE.stopMusic();
             }

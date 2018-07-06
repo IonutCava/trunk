@@ -65,6 +65,10 @@ bool Scene::idle() {  // Called when application is idle
 
     _sceneGraph.idle();
 
+    Attorney::SceneRenderStateScene::playAnimations(
+        renderState(),
+        ParamHandler::getInstance().getParam<bool>("mesh.playAnimations"));
+
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (GFX_DEVICE.getFrameCount() > 1) {
             _sceneGraph.getRoot()
@@ -296,8 +300,8 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
     _GUI = guiInterface;
     _name = name;
 
-    _GFX.enableFog(_sceneState.getFogDesc()._fogDensity,
-                   _sceneState.getFogDesc()._fogColor);
+    _GFX.enableFog(_sceneState.fogDescriptor()._fogDensity,
+                   _sceneState.fogDescriptor()._fogColor);
 
     loadXMLAssets();
     SceneGraphNode& root = _sceneGraph.getRoot();
@@ -426,34 +430,34 @@ bool Scene::updateCameraControls() {
     switch (cam.getType()) {
         default:
         case Camera::CameraType::FREE_FLY: {
-            if (state()._angleLR) {
-                cam.rotateYaw(CLAMPED<I32>(state()._angleLR, -1, 1));
+            if (state().angleLR()) {
+                cam.rotateYaw(CLAMPED<I32>(state().angleLR(), -1, 1));
             }
-            if (state()._angleUD) {
-                cam.rotatePitch(CLAMPED<I32>(state()._angleUD, -1, 1));
+            if (state().angleUD()) {
+                cam.rotatePitch(CLAMPED<I32>(state().angleUD(), -1, 1));
             }
-            if (state()._roll) {
-                cam.rotateRoll(CLAMPED<I32>(state()._roll, -1, 1));
+            if (state().roll()) {
+                cam.rotateRoll(CLAMPED<I32>(state().roll(), -1, 1));
             }
-            if (state()._moveFB) {
-                cam.moveForward(CLAMPED<I32>(state()._moveFB, -1, 1));
+            if (state().moveFB()) {
+                cam.moveForward(CLAMPED<I32>(state().moveFB(), -1, 1));
             }
-            if (state()._moveLR) {
-                cam.moveStrafe(CLAMPED<I32>(state()._moveLR, -1, 1));
+            if (state().moveLR()) {
+                cam.moveStrafe(CLAMPED<I32>(state().moveLR(), -1, 1));
             }
         } break;
     }
 
-    state()._cameraUpdated =
-        (state()._moveFB || state()._moveLR || state()._angleLR ||
-         state()._angleUD || state()._roll);
-    return state()._cameraUpdated;
+    state().cameraUpdated((state().moveFB() || state().moveLR() ||
+                           state().angleLR() || state().angleUD() ||
+                           state().roll()));
+    return state().cameraUpdated();
 }
 
 void Scene::updateSceneState(const U64 deltaTime) {
     updateSceneStateInternal(deltaTime);
-    state()._cameraUnderwater =
-        renderState().getCamera().getEye().y < state()._waterHeight;
+    state().cameraUnderwater(renderState().getCamera().getEye().y <
+                             state().waterLevel());
     _sceneGraph.sceneUpdate(deltaTime, _sceneState);
 }
 

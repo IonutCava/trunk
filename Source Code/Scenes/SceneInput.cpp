@@ -112,8 +112,8 @@ bool Scene::mouseButtonReleased(const Input::MouseEvent& key,
             findSelection(key.state.X.abs, key.state.Y.abs);
         } break;
         case Input::MouseButton::MB_Right: {
-            state()._angleLR = 0;
-            state()._angleUD = 0;
+            state().angleLR(0);
+            state().angleUD(0);
         } break;
         case Input::MouseButton::MB_Middle:
             break;
@@ -132,12 +132,12 @@ bool Scene::mouseButtonReleased(const Input::MouseEvent& key,
 }
 
 bool Scene::mouseMoved(const Input::MouseEvent& key) {
-    state()._mouseXDelta = _previousMousePos.x - key.state.X.abs;
-    state()._mouseYDelta = _previousMousePos.y - key.state.Y.abs;
+    state().mouseXDelta(_previousMousePos.x - key.state.X.abs);
+    state().mouseYDelta(_previousMousePos.y - key.state.Y.abs);
     _previousMousePos.set(key.state.X.abs, key.state.Y.abs);
     if (_mousePressed[Input::MouseButton::MB_Right]) {
-        state()._angleLR = -state()._mouseXDelta;
-        state()._angleUD = -state()._mouseYDelta;
+        state().angleLR(-state().mouseXDelta());
+        state().angleUD(-state().mouseYDelta());
     }
     return true;
 }
@@ -167,34 +167,34 @@ bool Scene::onKeyDown(const Input::KeyEvent& key) {
             }
         } break;
         case KeyCode::KC_W: {
-            state()._moveFB = 1;
+            state().moveFB(1);
         } break;
         case KeyCode::KC_S: {
-            state()._moveFB = -1;
+            state().moveFB(-1);
         } break;
         case KeyCode::KC_A: {
-            state()._moveLR = -1;
+            state().moveLR(-1);
         } break;
         case KeyCode::KC_D: {
-            state()._moveLR = 1;
+            state().moveLR(1);
         } break;
         case KeyCode::KC_Q: {
-            state()._roll = 1;
+            state().roll(1);
         } break;
         case KeyCode::KC_E: {
-            state()._roll = -1;
+            state().roll(-1);
         } break;
         case KeyCode::KC_RIGHT: {
-            state()._angleLR = 1;
+            state().angleLR(1);
         } break;
         case KeyCode::KC_LEFT: {
-            state()._angleLR = -1;
+            state().angleLR(-1);
         } break;
         case KeyCode::KC_UP: {
-            state()._angleUD = -1;
+            state().angleUD(-1);
         } break;
         case KeyCode::KC_DOWN: {
-            state()._angleUD = 1;
+            state().angleUD(1);
         } break;
     }
     return true;
@@ -249,23 +249,23 @@ bool Scene::onKeyUp(const Input::KeyEvent& key) {
         } break;
         case KeyCode::KC_W:
         case KeyCode::KC_S: {
-            state()._moveFB = 0;
+            state().moveFB(0);
         } break;
         case KeyCode::KC_A:
         case KeyCode::KC_D: {
-            state()._moveLR = 0;
+            state().moveLR(0);
         } break;
         case KeyCode::KC_Q:
         case KeyCode::KC_E: {
-            state()._roll = 0;
+            state().roll(0);
         } break;
         case KeyCode::KC_RIGHT:
         case KeyCode::KC_LEFT: {
-            state()._angleLR = 0;
+            state().angleLR(0);
         } break;
         case KeyCode::KC_UP:
         case KeyCode::KC_DOWN: {
-            state()._angleUD = 0;
+            state().angleUD(0);
         } break;
         default:
             return false;
@@ -286,39 +286,39 @@ bool Scene::joystickAxisMoved(const Input::JoystickEvent& key, I8 axis) {
     switch (axis) {
         case 0: {
             if (axisABS > axisDeadZone) {
-                state()._angleUD = 1;
+                state().angleUD(1);
             } else if (axisABS < -axisDeadZone) {
-                state()._angleUD = -1;
+                state().angleUD(-1);
             } else {
-                state()._angleUD = 0;
+                state().angleUD(0);
             }
         } break;
         case 1: {
             if (axisABS > axisDeadZone) {
-                state()._angleLR = 1;
+                state().angleLR(1);
             } else if (axisABS < -axisDeadZone) {
-                state()._angleLR = -1;
+                state().angleLR(-1);
             } else {
-                state()._angleLR = 0;
+                state().angleLR(0);
             }
         } break;
 
         case 2: {
             if (axisABS < -axisDeadZone) {
-                state()._moveFB = 1;
+                state().moveFB(1);
             } else if (axisABS > axisDeadZone) {
-                state()._moveFB = -1;
+                state().moveFB(-1);
             } else {
-                state()._moveFB = 0;
+                state().moveFB(0);
             }
         } break;
         case 3: {
             if (axisABS < -axisDeadZone) {
-                state()._moveLR = -1;
+                state().moveLR(-1);
             } else if (axisABS > axisDeadZone) {
-                state()._moveLR = 1;
+                state().moveLR(1);
             } else {
-                state()._moveLR = 0;
+                state().moveLR(0);
             }
         } break;
     }
@@ -327,17 +327,17 @@ bool Scene::joystickAxisMoved(const Input::JoystickEvent& key, I8 axis) {
 
 bool Scene::joystickPovMoved(const Input::JoystickEvent& key, I8 pov) {
     if (key.state.mPOV[pov].direction & OIS::Pov::North) {  // Going up
-        state()._moveFB = 1;
+        state().moveFB(1);
     } else if (key.state.mPOV[pov].direction & OIS::Pov::South) {  // Going down
-        state()._moveFB = -1;
+        state().moveFB(-1);
     } else if (key.state.mPOV[pov].direction & OIS::Pov::East) {  // Going right
-        state()._moveLR = 1;
+        state().moveLR(1);
     } else if (key.state.mPOV[pov].direction & OIS::Pov::West) {  // Going left
-        state()._moveLR = -1;
+        state().moveLR(-1);
     } else /*if (key.state.mPOV[pov].direction == OIS::Pov::Centered)*/ {  // stopped/centered
                                                                            // out
-        state()._moveLR = 0;
-        state()._moveFB = 0;
+        state().moveLR(0);
+        state().moveFB(0);
     }
     return true;
 }

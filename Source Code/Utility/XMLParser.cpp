@@ -346,19 +346,16 @@ void loadScene(const std::string &sceneName, SceneManager &sceneMgr) {
 
     sceneMgr.setActiveScene(scene);
     scene->setName(sceneName.c_str());
-    scene->state().getGrassVisibility() =
-        pt.get("vegetation.grassVisibility", 1000.0f);
-    scene->state().getTreeVisibility() =
-        pt.get("vegetation.treeVisibility", 1000.0f);
-    scene->state().getGeneralVisibility() =
-        pt.get("options.visibility", 1000.0f);
+    scene->state().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
+    scene->state().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
+    scene->state().generalVisibility(pt.get("options.visibility", 1000.0f));
 
-    scene->state().getWindDirX() = pt.get("wind.windDirX", 1.0f);
-    scene->state().getWindDirZ() = pt.get("wind.windDirZ", 1.0f);
-    scene->state().getWindSpeed() = pt.get("wind.windSpeed", 1.0f);
+    scene->state().windDirX(pt.get("wind.windDirX", 1.0f));
+    scene->state().windDirZ(pt.get("wind.windDirZ", 1.0f));
+    scene->state().windSpeed(pt.get("wind.windSpeed", 1.0f));
 
-    scene->state().getWaterLevel() = pt.get("water.waterLevel", 0.0f);
-    scene->state().getWaterDepth() = pt.get("water.waterDepth", -75);
+    scene->state().waterLevel(pt.get("water.waterLevel", 0.0f));
+    scene->state().waterDepth(pt.get("water.waterDepth", -75));
 
     if (boost::optional<ptree &> cameraPositionOverride =
             pt.get_child_optional("options.cameraStartPosition")) {
@@ -411,9 +408,9 @@ void loadScene(const std::string &sceneName, SceneManager &sceneMgr) {
                      pt.get<F32>("fog.fogColor.<xmlattr>.b", 0.2f));
     }
 
-    scene->state().getFogDesc()._fogDensity =
+    scene->state().fogDescriptor()._fogDensity =
         par.getParam<F32>("rendering.sceneState.fogDensity");
-    scene->state().getFogDesc()._fogColor.set(
+    scene->state().fogDescriptor()._fogColor.set(
         par.getParam<F32>("rendering.sceneState.fogColor.r"),
         par.getParam<F32>("rendering.sceneState.fogColor.g"),
         par.getParam<F32>("rendering.sceneState.fogColor.b"));

@@ -254,11 +254,11 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
              : assetLocation) +
         args1);
     model.position =
-        GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEye();
+        GET_ACTIVE_SCENE()->state().renderState().getCamera().getEye();
     model.data = 1.0f;
     model.scale = vec3<F32>(scale);
     model.orientation =
-        GET_ACTIVE_SCENE()->state().getRenderState().getCamera().getEuler();
+        GET_ACTIVE_SCENE()->state().renderState().getCamera().getEuler();
     model.type = (args1.compare("Box3D") == 0 || args1.compare("Sphere3D") == 0)
                      ? GeometryType::PRIMITIVE
                      : GeometryType::GEOMETRY;

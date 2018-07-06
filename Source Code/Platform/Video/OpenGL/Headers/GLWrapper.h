@@ -286,6 +286,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// A cache of all fonts used
     typedef hashMapImpl<stringImpl, I32> FontCache;
     FontCache _fonts;
+    hashAlg::pair<stringImpl, I32> _fontCache;
     /// Optimisation context for shaders (used for post-load optimisation)
     glslopt_ctx* _GLSLOptContex;
     /// Current active vertex array object's handle

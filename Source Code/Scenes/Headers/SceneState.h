@@ -58,6 +58,7 @@ struct FogDescriptor {
 class Scene;
 namespace Attorney {
     class SceneRenderStateScene;
+    class SceneStateScene;
 };
 
 /// Contains all the information needed to render the scene: camera position,
@@ -82,43 +83,79 @@ class SceneRenderState {
 
     SceneRenderState();
 
-    inline bool drawSkeletons() const { return _drawSkeletons; }
-    inline void drawSkeletons(bool visibility) { _drawSkeletons = visibility; }
-    inline void drawDebugLines(bool visibility) {
-        _debugDrawLines = visibility;
-    }
-    inline bool drawDebugLines() const { return _debugDrawLines; }
-    inline void drawDebugTargetLines(bool visibility) {
-        _debugDrawTargetLines = visibility;
-    }
-    inline bool drawDebugTargetLines() const {
-        return _debugDrawTargetLines;
-    }
-    inline GizmoState gizmoState() const { return _gizmoState; }
-    inline void gizmoState(GizmoState newState) { _gizmoState = newState; }
-    inline ObjectRenderState objectState() const { return _objectState; }
-    inline void objectState(ObjectRenderState newState) {
-        _objectState = newState;
-    }
     /// Render skeletons for animated geometry
-    inline void toggleSkeletons() {
-        Console::d_printfn(Locale::get("TOGGLE_SCENE_SKELETONS"));
-        drawSkeletons(!drawSkeletons());
-    }
-
+    void toggleSkeletons();
     /// Show/hide bounding boxes and/or objects
     void toggleBoundingBoxes();
     /// Show/hide axis gizmos
     void toggleAxisLines();
 
-    inline CameraManager& getCameraMgr() { return *_cameraMgr; }
-    inline Camera& getCamera() { return *_cameraMgr->getActiveCamera(); }
+    inline void drawSkeletons(bool visibility) {
+        _drawSkeletons = visibility;
+    }
+
+    inline bool drawSkeletons() const {
+        return _drawSkeletons;
+    }
+
+    inline void drawDebugLines(bool visibility) {
+        _debugDrawLines = visibility;
+    }
+
+    inline bool drawDebugLines() const {
+        return _debugDrawLines;
+    }
+
+    inline void drawDebugTargetLines(bool visibility) {
+        _debugDrawTargetLines = visibility;
+    }
+
+    inline bool drawDebugTargetLines() const {
+        return _debugDrawTargetLines;
+    }
+
+    inline void gizmoState(GizmoState newState) {
+        _gizmoState = newState;
+    }
+
+    inline GizmoState gizmoState() const {
+        return _gizmoState;
+    }
+
+    inline void objectState(ObjectRenderState newState) {
+        _objectState = newState;
+    }
+
+    inline ObjectRenderState objectState() const {
+        return _objectState;
+    }
+
+    inline CameraManager& getCameraMgr() {
+        return *_cameraMgr;
+    }
+
+    inline Camera& getCamera() {
+        return *_cameraMgr->getActiveCamera();
+    }
+
     inline const Camera& getCameraConst() const {
         return *_cameraMgr->getActiveCamera();
     }
-    inline vec2<U16>& cachedResolution() { return _cachedResolution; }
 
+    inline const vec2<U16>& cachedResolution() const {
+        return _cachedResolution;
+    }
+
+    inline bool playAnimations() const {
+        return _playAnimations;
+    }
+   
    protected:
+
+    inline void playAnimations(bool state) { 
+        _playAnimations = state; 
+    }
+
     inline void cachedResolution(const vec2<U16>& resolution) {
         return _cachedResolution.set(resolution);
     }
@@ -129,6 +166,7 @@ class SceneRenderState {
     bool _drawSkeletons;
     bool _debugDrawLines;
     bool _debugDrawTargetLines;
+    bool _playAnimations;
     GizmoState _gizmoState;
     ObjectRenderState _objectState;
     CameraManager* _cameraMgr;
@@ -136,60 +174,95 @@ class SceneRenderState {
     vec2<U16> _cachedResolution;
 };
 
-namespace Attorney {
-class SceneRenderStateScene {
-   private:
-    static void cachedResolution(SceneRenderState& sceneRenderState,
-                                 const vec2<U16>& resolution) {
-        sceneRenderState.cachedResolution(resolution);
-    }
-
-    friend class Divide::Scene;
-};
-};  // namespace Attorney
-
 class SceneState {
+    friend class Attorney::SceneStateScene;
    public:
+    /// Background music map : trackName - track
+    typedef hashMapImpl<stringImpl, AudioDescriptor*> MusicPlaylist;
+
     SceneState()
-        : _cameraUnderwater(false), _cameraUpdated(false), _isRunning(false) {
+        : _cameraUnderwater(false), 
+          _cameraUpdated(false),
+          _isRunning(false)
+    {
         resetMovement();
         _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
         _fog._fogDensity = 0.01f;
     }
 
-    virtual ~SceneState() {
+    virtual ~SceneState()
+    {
         for (MusicPlaylist::value_type& it : _backgroundMusic) {
             RemoveResource(it.second);
         }
         _backgroundMusic.clear();
     }
 
-    inline FogDescriptor& getFogDesc() { return _fog; }
-    inline SceneRenderState& getRenderState() { return _renderState; }
-
-    inline F32& getWindSpeed() { return _windSpeed; }
-    inline F32& getWindDirX() { return _windDirX; }
-    inline F32& getWindDirZ() { return _windDirZ; }
-
-    inline F32 getWindSpeed() const { return _windSpeed; }
-    inline F32 getWindDirX()  const { return _windDirX; }
-    inline F32 getWindDirZ()  const { return _windDirZ; }
-
-    inline F32& getGrassVisibility() { return _grassVisibility; }
-    inline F32& getTreeVisibility() { return _treeVisibility; }
-    inline F32& getGeneralVisibility() { return _generalVisibility; }
-    inline F32& getWaterLevel() { return _waterHeight; }
-    inline F32& getWaterDepth() { return _waterDepth; }
-    inline bool getRunningState() const { return _isRunning; }
-    inline void toggleRunningState(bool state) { _isRunning = state; }
-
     inline void resetMovement() {
-        _moveFB = 0;
-        _moveLR = 0;
-        _angleUD = 0;
-        _angleLR = 0;
-        _roll = 0;
+        _moveFB = _moveLR = _angleUD = _angleLR = _roll= 0;
     }
+
+    inline FogDescriptor& fogDescriptor()   { return _fog; }
+    inline SceneRenderState& renderState()  { return _renderState; }
+    inline MusicPlaylist& backgroundMusic() { return _backgroundMusic; }
+
+    inline void windSpeed(F32 speed) { _windSpeed = speed; }
+    inline F32  windSpeed()    const { return _windSpeed; }
+
+    inline void windDirX(F32 factor) { _windDirX = factor; }
+    inline F32  windDirX()     const { return _windDirX; }
+
+    inline void windDirZ(F32 factor) { _windDirZ = factor; }
+    inline F32  windDirZ()     const { return _windDirZ; }
+
+    inline void grassVisibility(F32 distance) { _grassVisibility = distance; }
+    inline F32  grassVisibility()       const { return _grassVisibility; }
+
+    inline void treeVisibility(F32 distance) { _treeVisibility = distance; }
+    inline F32  treeVisibility()       const { return _treeVisibility; }
+
+    inline void generalVisibility(F32 distance) { _generalVisibility = distance; }
+    inline F32  generalVisibility()       const { return _generalVisibility; }
+
+    inline void waterLevel(F32 level) { _waterHeight = level; }
+    inline F32  waterLevel()    const { return _waterHeight; }
+
+    inline void waterDepth(F32 depth) { _waterDepth = depth; }
+    inline F32  waterDepth()    const { return _waterDepth; }
+
+    inline void runningState(bool state) { _isRunning = state; }
+    inline bool runningState()     const { return _isRunning; }
+    
+    inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
+    inline bool cameraUnderwater()     const { return _cameraUnderwater; }
+
+    inline void cameraUpdated(bool state) { _cameraUpdated = state; }
+    inline bool cameraUpdated()     const { return _cameraUpdated; }
+
+    inline void moveFB(I32 factor) { _moveFB = factor; }
+    inline I32  moveFB()     const { return _moveFB; }
+
+    inline void moveLR(I32 factor) { _moveLR = factor; }
+    inline I32  moveLR()     const { return _moveLR; }
+
+    inline void angleUD(I32 factor) { _angleUD = factor; }
+    inline I32  angleUD()     const { return _angleUD; }
+
+    inline void angleLR(I32 factor) { _angleLR = factor; }
+    inline I32  angleLR()     const { return _angleLR; }
+
+    inline void roll(I32 factor) { _roll = factor; }
+    inline I32  roll()     const { return _roll; }
+
+    inline void mouseXDelta(F32 depth) { _mouseXDelta = depth; }
+    inline F32  mouseXDelta()    const { return _mouseXDelta; }
+
+    inline void mouseYDelta(F32 depth) { _mouseYDelta = depth; }
+    inline F32  mouseYDelta()    const { return _mouseYDelta; }
+
+protected:
+    MusicPlaylist _backgroundMusic;
+
     F32 _mouseXDelta;
     F32 _mouseYDelta;
     I32 _moveFB;   ///< forward-back move change detected
@@ -201,16 +274,12 @@ class SceneState {
     F32 _waterHeight;
     F32 _waterDepth;
     bool _cameraUnderwater;
-    bool _cameraUpdated;  // was the camera moved or rotated this frame
-    /// Background music map
-    typedef hashMapImpl<stringImpl /*trackName*/, AudioDescriptor* /*track*/>
-        MusicPlaylist;
-    MusicPlaylist _backgroundMusic;
+    // was the camera moved or rotated this frame
+    bool _cameraUpdated;  
 
-   protected:
     FogDescriptor _fog;
-    /// saves all the rendering information for the scene (camera position,
-    /// light info, draw states)
+    /// saves all the rendering information for the scene
+    /// (camera position, light info, draw states)
     SceneRenderState _renderState;
     bool _isRunning;
     F32 _grassVisibility;
@@ -220,6 +289,27 @@ class SceneState {
     F32 _windDirX;
     F32 _windDirZ;
 };
+
+namespace Attorney {
+class SceneRenderStateScene {
+   private:
+    static void cachedResolution(SceneRenderState& sceneRenderState,
+                                 const vec2<U16>& resolution) {
+        sceneRenderState.cachedResolution(resolution);
+    }
+    static void playAnimations(SceneRenderState& sceneRenderState,
+                               bool playAnimations) {
+        sceneRenderState.playAnimations(playAnimations);
+    }
+    friend class Divide::Scene;
+};
+
+class SceneStateScene {
+private:
+    friend class Divide::Scene;
+};
+
+};  // namespace Attorney
 
 };  // namespace Divide
 #endif

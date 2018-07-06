@@ -10,12 +10,18 @@ SceneRenderState::SceneRenderState()
       _drawSkeletons(false),
       _drawObjects(true),
       _debugDrawLines(false),
-      _debugDrawTargetLines(false)
+      _debugDrawTargetLines(false),
+      _playAnimations(true)
 
 {
     _gizmoState = GizmoState::NO_GIZMO;
     _objectState = ObjectRenderState::DRAW_OBJECT;
     _cameraMgr = &Application::getInstance().getKernel().getCameraMgr();
+}
+
+void SceneRenderState::toggleSkeletons() {
+    Console::d_printfn(Locale::get("TOGGLE_SCENE_SKELETONS"));
+    drawSkeletons(!drawSkeletons());
 }
 
 void SceneRenderState::toggleBoundingBoxes() {
@@ -32,7 +38,6 @@ void SceneRenderState::toggleBoundingBoxes() {
     }
 }
 
-/// Show/hide axis gizmos
 void SceneRenderState::toggleAxisLines() {
     Console::d_printfn(Locale::get("TOGGLE_SCENE_AXIS_GIZMO"));
     if (gizmoState() == GizmoState::NO_GIZMO) {

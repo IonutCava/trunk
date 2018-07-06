@@ -111,9 +111,7 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
     virtual void updateSceneStateInternal(const U64 deltaTime) {}
     inline const vectorImpl<Task_ptr>& getTasks() { return _tasks; }
     inline SceneState& state() { return _sceneState; }
-    inline SceneRenderState& renderState() {
-        return _sceneState.getRenderState();
-    }
+    inline SceneRenderState& renderState() { return _sceneState.renderState(); }
     inline SceneGraph& getSceneGraph() { return _sceneGraph; }
 
     void registerTask(Task_ptr taskItem);
@@ -137,7 +135,7 @@ class NOINITVTABLE Scene : public Resource, public Input::InputAggregatorInterfa
 
     inline void cacheResolution(const vec2<U16>& newResolution) {
         Attorney::SceneRenderStateScene::cachedResolution(
-            _sceneState.getRenderState(), newResolution);
+            _sceneState.renderState(), newResolution);
     }
 
     /// Object picking

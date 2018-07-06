@@ -299,7 +299,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
                              SceneState& sceneState) {
     if (_threadedLoadComplete && !_success) {
         generateTrees();
-        sceneState.getRenderState().getCameraMgr().addCameraUpdateListener(
+        sceneState.renderState().getCameraMgr().addCameraUpdateListener(
             DELEGATE_BIND(&Vegetation::gpuCull, this));
         _success = true;
     }
@@ -310,9 +310,9 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
     // Query shadow state every "_stateRefreshInterval" microseconds
     if (_stateRefreshIntervalBuffer >= _stateRefreshInterval) {
         if (!_staticDataUpdated) {
-            _windX = sceneState.getWindDirX();
-            _windZ = sceneState.getWindDirZ();
-            _windS = sceneState.getWindSpeed();
+            _windX = sceneState.windDirX();
+            _windZ = sceneState.windDirZ();
+            _windS = sceneState.windSpeed();
             Material* mat =
                 sgn.getComponent<RenderingComponent>()->getMaterialInstance();
             for (U8 i = 0; i < 3; ++i) {
@@ -324,7 +324,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
             }
             _stateRefreshIntervalBuffer -= _stateRefreshInterval;
             _cullShader->Uniform("dvd_visibilityDistance",
-                                 sceneState.getGrassVisibility());
+                                 sceneState.grassVisibility());
             _staticDataUpdated = true;
         }
     }
@@ -449,7 +449,7 @@ void Vegetation::generateTrees() {
 void Vegetation::generateGrass() {
     const vec2<F32>& chunkPos = _terrainChunk->getOffsetAndSize().xy();
     const vec2<F32>& chunkSize = _terrainChunk->getOffsetAndSize().zw();
-    const F32 waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel() + 1.0f;
+    const F32 waterLevel = GET_ACTIVE_SCENE()->state().waterLevel() + 1.0f;
     const I32 currentCount = std::min((I32)_billboardCount, 4);
     const U16 mapWidth = _map.dimensions().width;
     const U16 mapHeight = _map.dimensions().height;

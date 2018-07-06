@@ -83,7 +83,7 @@ void Terrain::buildQuadtree() {
                                              : RenderStage::Z_PRE_PASS))
                 .getProgram();
         drawShader->Uniform("dvd_waterHeight",
-                            GET_ACTIVE_SCENE()->state().getWaterLevel());
+                            GET_ACTIVE_SCENE()->state().waterLevel());
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
         drawShader->Uniform("texWaterCaustics",

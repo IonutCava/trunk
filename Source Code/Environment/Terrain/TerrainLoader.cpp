@@ -236,12 +236,12 @@ bool TerrainLoader::loadThreadedResources(
     planePtr = CreateResource<Quad3D>(infinitePlane);
     Quad3D& plane = *planePtr;
     // our bottom plane is placed at the bottom of our water entity
-    F32 height = GET_ACTIVE_SCENE()->state().getWaterLevel() -
-                 GET_ACTIVE_SCENE()->state().getWaterDepth();
+    F32 height = GET_ACTIVE_SCENE()->state().waterLevel() -
+                 GET_ACTIVE_SCENE()->state().waterDepth();
     farPlane = 2.0f *
                GET_ACTIVE_SCENE()
                    ->state()
-                   .getRenderState()
+                   .renderState()
                    .getCameraConst()
                    .getZPlanes()
                    .y;

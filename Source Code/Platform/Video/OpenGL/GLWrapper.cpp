@@ -38,7 +38,8 @@ GL_API::GL_API()
       _GUIGLrenderer(nullptr),
       _fonsContext(nullptr),
       _GLSLOptContex(nullptr),
-      _enableCEGUIRendering(false) {
+      _enableCEGUIRendering(false)
+{
     // Only updated in Debug builds
     FRAME_DURATION_GPU = 0;
     // Initial values for performance queries
@@ -51,6 +52,8 @@ GL_API::GL_API()
     for (U8 index = 0; index < Config::MAX_CLIP_PLANES; ++index) {
         _activeClipPlanes[index] = false;
     }
+
+    _fontCache.second = -1;
 }
 
 GL_API::~GL_API() {}
@@ -87,7 +90,7 @@ void GL_API::beginFrame() {
 /// Finish rendering the current frame
 void GL_API::endFrame() {
     // Revert back to the default OpenGL states
-    clearStates(false, false, false, true);
+    clearStates(false, false, false, false);
     // CEGUI handles its own states, so render it after we clear our states but
     // before we swap buffers
     if (_enableCEGUIRendering) {
@@ -96,8 +99,6 @@ void GL_API::endFrame() {
         CEGUI::System::getSingleton().renderAllGUIContexts();
         // glPopDebugGroup();
     }
-    // CEGUI does not clear the scissor test properly (yet)
-    clearStates(true, true, true, false);
     // Swap buffers
     glfwSwapBuffers(GLUtil::_mainWindow);
     // Poll for new events
@@ -493,36 +494,38 @@ bool GL_API::deInitShaders() {
 
 /// Try to find the requested font in the font cache. Load on cache miss.
 I32 GL_API::getFont(const stringImpl& fontName) {
-    // Search for the requested font by name
-    FontCache::const_iterator it = _fonts.find(fontName);
-    // If we failed to find it, it wasn't loaded yet
-    if (it == std::end(_fonts)) {
-        // Fonts are stored in the general asset directory
-        stringImpl fontPath(ParamHandler::getInstance().getParam<stringImpl>(
-                                "assetsLocation", "assets") +
-                            "/");
-        // In the GUI subfolder
-        fontPath += "GUI/";
-        // In the fonts subfolder
-        fontPath += "fonts/";
-        fontPath += fontName;
-        // We use FontStash to load the font file
-        I32 tempFont =
-            fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
-        // If the font is invalid, inform the user, but map it anyway, to avoid
-        // loading an invalid font file on every request
-        if (tempFont == FONS_INVALID) {
-            Console::errorfn(Locale::get("ERROR_FONT_FILE"), fontName.c_str());
+    if (_fontCache.first.compare(fontName) != 0) {
+        _fontCache.first = fontName;
+        // Search for the requested font by name
+        FontCache::const_iterator it = _fonts.find(fontName);
+        // If we failed to find it, it wasn't loaded yet
+        if (it == std::end(_fonts)) {
+            // Fonts are stored in the general asset directory -> in the GUI
+            // subfolder -> in the fonts subfolder
+            stringImpl fontPath(
+                ParamHandler::getInstance().getParam<stringImpl>(
+                    "assetsLocation", "assets") +
+                "/GUI/fonts/");
+            fontPath += fontName;
+            // We use FontStash to load the font file
+            _fontCache.second =
+                fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());
+            // If the font is invalid, inform the user, but map it anyway, to avoid
+            // loading an invalid font file on every request
+            if (_fontCache.second == FONS_INVALID) {
+                Console::errorfn(Locale::get("ERROR_FONT_FILE"), fontName.c_str());
+            }
+            // Save the font in the font cache
+            hashAlg::emplace(_fonts, fontName, _fontCache.second);
+            
+        } else {
+            _fontCache.second = it->second;
         }
-        // Save the font in the font cache
-        hashAlg::pair<FontCache::iterator, bool> result =
-            hashAlg::emplace(_fonts, fontName, tempFont);
-        assert(result.second);
-        // Return the font
-        return result.first->second;
+
     }
-    // We found the font in cache, so return it
-    return it->second;
+
+    // Return the font
+    return _fontCache.second;
 }
 
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library

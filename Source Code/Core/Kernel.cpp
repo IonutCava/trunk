@@ -519,7 +519,7 @@ void Kernel::runLogicLoop() {
     Console::printfn(Locale::get("START_RENDER_LOOP"));
     Kernel::_nextGameTick = Time::ElapsedMicroseconds();
     // lock the scene
-    GET_ACTIVE_SCENE()->state().toggleRunningState(true);
+    GET_ACTIVE_SCENE()->state().runningState(true);
     // The first loops compiles all the visible data, so do not render the first
     // couple of frames
     firstLoop();
@@ -537,7 +537,7 @@ void Kernel::runLogicLoop() {
 void Kernel::shutdown() {
     Console::printfn(Locale::get("STOP_KERNEL"));
     // release the scene
-    GET_ACTIVE_SCENE()->state().toggleRunningState(false);
+    GET_ACTIVE_SCENE()->state().runningState(false);
     Console::bindConsoleOutput(std::function<void(const char*, bool)>());
     GUI::destroyInstance();  /// Deactivate GUI
     _sceneMgr.unloadCurrentScene();

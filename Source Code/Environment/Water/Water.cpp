@@ -37,7 +37,7 @@ WaterPlane::WaterPlane()
     _farPlane = 2.0f *
                 GET_ACTIVE_SCENE()
                     ->state()
-                    .getRenderState()
+                    .renderState()
                     .getCameraConst()
                     .getZPlanes()
                     .y;
@@ -84,8 +84,8 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
         return true;
     }
     SceneGraphNode* planeSGN = sgn.getChildren()[0];
-    _waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel();
-    _waterDepth = GET_ACTIVE_SCENE()->state().getWaterDepth();
+    _waterLevel = GET_ACTIVE_SCENE()->state().waterLevel();
+    _waterDepth = GET_ACTIVE_SCENE()->state().waterDepth();
     planeSGN->getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     bb.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
            vec3<F32>(_farPlane, _waterLevel, _farPlane));
@@ -114,7 +114,7 @@ void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile,
 void WaterPlane::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                              SceneState& sceneState) {
     _cameraUnderWater =
-        isPointUnderWater(sceneState.getRenderState().getCamera().getEye());
+        isPointUnderWater(sceneState.renderState().getCamera().getEye());
     if (_dirty) {
         sgn.getBoundingSphere().fromBoundingBox(sgn.getBoundingBoxConst());
         _dirty = false;

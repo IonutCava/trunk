@@ -67,9 +67,7 @@ void Mesh::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
     typedef SceneGraphNode::NodeChildren::value_type value_type;
 
     if (isSkinned()) {
-        bool playAnimations =
-            ParamHandler::getInstance().getParam<bool>("mesh.playAnimations") &&
-            _playAnimations;
+        bool playAnimations = sceneState.renderState().playAnimations() && _playAnimations;
 
         for (value_type it : sgn.getChildren()) {
             AnimationComponent* comp = it.second->getComponent<AnimationComponent>();

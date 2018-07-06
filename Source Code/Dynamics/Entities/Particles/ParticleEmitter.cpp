@@ -277,7 +277,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
 
     PhysicsComponent* const transform = sgn.getComponent<PhysicsComponent>();
     const vec3<F32>& eyePos =
-        sceneState.getRenderState().getCameraConst().getEye();
+        sceneState.renderState().getCameraConst().getEye();
 
     if (_updateParticleEmitterBB) {
         sgn.updateBoundingBoxTransform(transform->getWorldMatrix());

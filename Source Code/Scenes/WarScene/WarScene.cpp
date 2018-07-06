@@ -450,7 +450,8 @@ if(_bobNodeBody != nullptr){
     test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
     test->addUpdater(std::make_shared<ParticleFloorUpdater>());
 
-    state().getGeneralVisibility() *= 2;
+    state().generalVisibility(state().generalVisibility() * 2);
+
     Application::getInstance()
         .getKernel()
         .getCameraMgr()

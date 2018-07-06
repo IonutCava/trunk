@@ -39,7 +39,7 @@ bool SceneNode::isInView(const SceneRenderState& sceneRenderState,
     const vec3<F32>& center = sphere.getCenter();
     F32 cameraDistance = center.distance(eye);
     F32 visibilityDistance =
-        GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
+        GET_ACTIVE_SCENE()->state().generalVisibility() + sphere.getRadius();
     if (distanceCheck && cameraDistance > visibilityDistance) {
         if (boundingBox.nearestDistanceFromPointSquared(eye) >
             std::min(visibilityDistance,

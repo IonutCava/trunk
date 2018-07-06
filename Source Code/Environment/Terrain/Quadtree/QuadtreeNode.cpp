@@ -133,7 +133,7 @@ void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                                SceneState& sceneState) {
     F32 camDistance =
         _boundingSphere.getCenter().distance(
-            sceneState.getRenderState().getCameraConst().getEye()) -
+            sceneState.renderState().getCameraConst().getEye()) -
         _terLoDOffset;
     F32 sphereRadius = _boundingSphere.getRadius();
     _LOD = camDistance >= sphereRadius
@@ -155,7 +155,7 @@ bool QuadtreeNode::isInView(U32 options,
         if (!bitCompare(options, to_uint(ChunkBit::CHUNK_BIT_SHADOWMAP))) {
             const vec3<F32>& eye = cam.getEye();
             F32 visibilityDistance =
-                GET_ACTIVE_SCENE()->state().getGeneralVisibility() +
+                GET_ACTIVE_SCENE()->state().generalVisibility() +
                 _boundingSphere.getRadius();
             if (_boundingSphere.getCenter().distance(eye) >
                 visibilityDistance) {
