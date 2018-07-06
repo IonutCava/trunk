@@ -36,31 +36,19 @@
 
 #include "VertexDataInterface.h"
 #include "Core/Headers/ByteBuffer.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 
 class ShaderProgram;
-/// Vertex Buffer interface class to allow API-independent implementation of
-/// data
-/// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER /
-/// D3DVERTEXBUFFER
+/// Vertex Buffer interface class to allow API-independent implementation of data
+/// This class does NOT represent an API-level VB, such as: GL_ARRAY_BUFFER / D3DVERTEXBUFFER
 /// It is only a "buffer" for "vertex info" abstract of implementation. (e.g.:
 /// OGL uses a vertex array object for this)
 
 class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
-    enum class VertexAttribute : U32 {
-        ATTRIB_POSITION = 0,
-        ATTRIB_COLOR = 1,
-        ATTRIB_NORMAL = 2,
-        ATTRIB_TEXCOORD = 3,
-        ATTRIB_TANGENT = 4,
-        ATTRIB_BONE_WEIGHT = 5,
-        ATTRIB_BONE_INDICE = 6,
-        COUNT = 7
-    };
-
     struct Vertex {
         vec3<F32> _position;
         F32       _normal;
@@ -70,8 +58,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         P32       _weights;
         P32       _indices;
     };
-
-    typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
     VertexBuffer(GFXDevice& context);
     virtual ~VertexBuffer();

@@ -160,7 +160,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
-    refractionPlane.active(true);
+    
 
     RenderPassManager::PassParams params;
     params.doPrePass = true;
@@ -170,7 +170,8 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
+    params.clippingPlanes._planes[to_U32(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
+    params.clippingPlanes._active[to_U32(g_refractionClipID)] = true;
     renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 
@@ -182,7 +183,6 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
 
     Plane<F32> reflectionPlane;
     updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater);
-    reflectionPlane.active(true);
 
     // Reset reflection cam
     _reflectionCam->fromCamera(*renderParams._camera);
@@ -198,8 +198,8 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_U32(g_reflectionClipID)].active(true);
-    params.clippingPlanes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
+    params.clippingPlanes._planes[to_U32(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
+    params.clippingPlanes._active[to_U32(g_reflectionClipID)] = true;
     renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 
@@ -210,7 +210,6 @@ void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plan
     vec3<F32> normal(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS));
     normal.normalize();
     plane.set(normal, -waterLevel);
-    plane.active(false);
 }
 
 const vec3<F32>& WaterPlane::getDimensions() const {

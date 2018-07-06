@@ -42,6 +42,7 @@
 #include "Platform/Video/OpenGL/Textures/Headers/glSamplerObject.h"
 #include "Platform/Video/OpenGL/Textures/Headers/glTexture.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
 
 struct glslopt_ctx;
 struct FONScontext;
@@ -61,11 +62,17 @@ static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 enum class WindowType : U32;
 
 class DisplayWindow;
+class RenderStateBlock;
+class glHardwareQueryRing;
 
+namespace GLUtil {
+    class glVAOCache;
+};
 /// OpenGL implementation of the RenderAPIWrapper
 class GL_API final : public RenderAPIWrapper {
     friend class glShader;
     friend class glTexture;
+    friend class GLUtil::glVAOCache;
     friend class glIMPrimitive;
     friend class glFramebuffer;
     friend class glVertexArray;
@@ -161,7 +168,7 @@ public:
     /// A state block should contain all rendering state changes needed for the next draw call.
     /// Some may be redundant, so we check each one individually
     void activateStateBlock(const RenderStateBlock& newBlock,
-        const RenderStateBlock& oldBlock) const;
+                            const RenderStateBlock& oldBlock) const;
     void activateStateBlock(const RenderStateBlock& newBlock) const;
     /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
     static bool setPixelPackUnpackAlignment(GLint packAlignment = 1,
@@ -230,12 +237,14 @@ protected:
     static GLint s_maxAttribBindings;
     /// Max nubmer of texture attachmentes to an FBO
     static GLint s_maxFBOAttachments;
+
 public:
     /// Shader block data
     static GLuint s_UBOffsetAlignment;
     static GLuint s_UBMaxSize;
     static GLuint s_SSBOffsetAlignment;
     static GLuint s_SSBMaxSize;
+
 private:
     GFXDevice& _context;
     const DisplayWindow* _mainRenderWindow;
@@ -274,6 +283,10 @@ private:
     static GLint  s_activePackUnpackSkipPixels[2];
     static GLint  s_activePackUnpackSkipRows[2];
     static GLuint s_activeShaderProgram;
+
+    /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
+    static GLUtil::glVAOPool s_vaoPool;
+
     /// Boolean value used to verify if primitive restart index is enabled or
     /// disabled
     static bool s_primitiveRestartEnabled;

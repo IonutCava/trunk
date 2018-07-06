@@ -39,11 +39,11 @@ glGenericVertexData::~glGenericVertexData()
     GL_API::setActiveVAO(0);
     // Delete the rendering VAO
     if (_vertexArray[to_base(GVDUsage::DRAW)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::DRAW)]);
+        GL_API::s_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::DRAW)]);
     }
     // Delete the transform feedback VAO
     if (_vertexArray[to_base(GVDUsage::FDBCK)] > 0) {
-        GLUtil::_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::FDBCK)]);
+        GL_API::s_vaoPool.deallocate(_vertexArray[to_base(GVDUsage::FDBCK)]);
     }
     // Make sure we don't have the indirect draw buffer bound
     // Make sure we don't have our transform feedback object bound
@@ -72,7 +72,7 @@ void glGenericVertexData::create(U8 numBuffers, U8 numQueries) {
     // Prevent double create
     assert(_bufferObjects.empty() && "glGenericVertexData error: create called with no buffers specified!");
     // Create two vertex array objects. One for rendering and one for transform feedback
-    GLUtil::_vaoPool.allocate(to_base(GVDUsage::COUNT), &_vertexArray[0]);
+    GL_API::s_vaoPool.allocate(to_base(GVDUsage::COUNT), &_vertexArray[0]);
     // Transform feedback may not be used, but it simplifies the class interface a lot
     // Create a transform feedback object
     glGenTransformFeedbacks(1, &_transformFeedback);
@@ -257,7 +257,7 @@ void glGenericVertexData::updateBuffer(U32 buffer,
                                        U32 elementCount,
                                        U32 elementCountOffset,
                                        const bufferPtr data) {
-    _bufferObjects[buffer]->updateData(elementCount, elementCountOffset, queueWriteIndex(), data);
+    _bufferObjects[buffer]->writeData(elementCount, elementCountOffset, queueWriteIndex(), data);
 }
 
 void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset) {

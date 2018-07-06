@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-std::array<VertexBuffer::AttribFlags, to_base(RenderStagePass::count())> VertexBuffer::_attribMaskPerStage;
+std::array<AttribFlags, to_base(RenderStagePass::count())> VertexBuffer::_attribMaskPerStage;
 
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),

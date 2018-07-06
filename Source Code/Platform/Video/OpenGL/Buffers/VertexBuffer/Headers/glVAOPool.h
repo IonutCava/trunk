@@ -29,53 +29,34 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _GL_BUFFER_IMPL_H_
-#define _GL_BUFFER_IMPL_H_
+#ifndef _GL_VAO_POOL_H_
+#define _GL_VAO_POOL_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
+
 namespace Divide {
+namespace GLUtil {
 
-struct BufferImplParams {
-    BufferImplParams()
-        : _target(GL_NONE),
-          _frequency(BufferUpdateFrequency::ONCE),
-          _dataSizeInBytes(0),
-          _initialData(NULL),
-          _name("")
-    {
-    }
-
-    GLenum _target;
-    BufferUpdateFrequency _frequency;
-    size_t _dataSizeInBytes;
-    bufferPtr _initialData;
-    const char* _name;
-};
-
-class glBufferLockManager;
-class glBufferImpl {
+class glVAOPool {
 public:
-    glBufferImpl(const BufferImplParams& params);
-    virtual ~glBufferImpl();
+    glVAOPool();
+    ~glVAOPool();
 
-    GLuint bufferID() const;
-
-    bool bindRange(GLuint bindIndex, size_t offset, size_t range);
-    void lockRange(size_t offset, size_t range);
-    void waitRange(size_t offset, size_t range, bool blockClient);
-
-    void writeData(size_t offset, size_t range, const bufferPtr data);
-    void readData(size_t offset, size_t range, const bufferPtr data);
+    GLuint allocate();
+    void   allocate(U32 count, GLuint* vaosOUT);
+    // This must be called on the main thread!
+    void   deallocate(GLuint& vao);
 
 protected:
-    GLenum _target;
-    GLuint _handle;
-    size_t _alignedSize;
-    GLenum _usage;
-    bufferPtr _mappedBuffer;
-    BufferUpdateFrequency _updateFrequency;
-    glBufferLockManager* _lockManager;
+    friend class GL_API;
+    void init(U32 capacity);
+    void destroy();
+
+protected:
+    vectorImpl<std::pair<GLuint, bool>> _pool;
 };
+
+}; //namespace GLUtil
 }; //namespace Divide
 
-#endif //_GL_BUFFER_IMPL_H_
+#endif //_GL_VAO_POOL_H_

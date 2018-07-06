@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 
 #include "Headers/GLWrapper.h"
+#include "Headers/glHardwareQuery.h"
 
 #include "GUI/Headers/GUI.h"
 #include "Core/Headers/Console.h"
@@ -325,11 +326,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, const Configuration&
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
     // Initialize our VAO pool
-    GLUtil::_vaoPool.init(g_maxVAOS);
+    GL_API::s_vaoPool.init(g_maxVAOS);
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
     // We need a dummy VAO object for point rendering
-    s_dummyVAO = GLUtil::_vaoPool.allocate();
+    s_dummyVAO = GL_API::s_vaoPool.allocate();
 
     // In debug, we also have various performance counters to profile GPU rendering
     // operations
@@ -388,7 +389,7 @@ void GL_API::closeRenderingAPI() {
     }
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
-    GLUtil::_vaoPool.destroy();
+    GL_API::s_vaoPool.destroy();
 
     destroyGLContext();
 }

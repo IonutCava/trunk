@@ -27,7 +27,7 @@ SceneShaderData::~SceneShaderData()
 }
 
 void SceneShaderData::uploadToGPU() {
-    _sceneShaderData->setData(&_bufferData);
+    _sceneShaderData->writeData(&_bufferData);
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
 }
 

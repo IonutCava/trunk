@@ -113,7 +113,7 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offset, size_t range) {
     return !wasBound;
 }
 
-void glBufferImpl::updateData(size_t offset, size_t range, const bufferPtr data)
+void glBufferImpl::writeData(size_t offset, size_t range, const bufferPtr data)
 {
     if (_mappedBuffer) {
         waitRange(offset, range, true);

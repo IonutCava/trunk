@@ -29,6 +29,7 @@
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -392,7 +393,7 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
 
-    if (Application::instance().isMainThread()) {
+    if (Runtime::isMainThread()) {
         emitter->initData(data);
     } else {
         Application::instance().mainThreadTask([&emitter, &data] { emitter->initData(data); });
@@ -784,7 +785,7 @@ void Scene::postLoad() {
 }
 
 void Scene::postLoadMainThread() {
-    assert(Application::instance().isMainThread());
+    assert(Runtime::isMainThread());
     setState(ResourceState::RES_LOADED);
 }
 

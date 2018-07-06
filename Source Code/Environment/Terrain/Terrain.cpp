@@ -177,7 +177,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                  const RenderStagePass& renderStagePass,
                                  const SceneRenderState& sceneRenderState,
                                  GenericDrawCommands& drawCommandsInOut) {
-    _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
+    _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight), false);
 
     const U8 stageIndex = to_U8(renderStagePass.stage());
     bool& cameraUpdated = _cameraUpdated[stageIndex];
@@ -198,9 +198,9 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
     drawCommandsInOut.front().drawCount(tessellator.renderDepth());
     STUBBED("This may cause stalls. Profile! -Ionut");
 #if 0
-    _shaderData->updateData(0, depth, (bufferPtr)tessellator.renderData().data());
+    _shaderData->writeData(0, tessellator.renderDepth(), (bufferPtr)tessellator.renderData().data());
 #else
-    _shaderData->setData((bufferPtr)tessellator.renderData().data());
+    _shaderData->writeData((bufferPtr)tessellator.renderData().data());
 #endif
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {

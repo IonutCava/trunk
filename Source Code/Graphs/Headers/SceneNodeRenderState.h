@@ -5,7 +5,7 @@
 
 namespace Divide {
 
-struct RenderStagePass;
+class RenderStagePass;
 enum class RenderStage : U32;
 
 class SceneNodeRenderState {

@@ -49,7 +49,7 @@ class Task;
 class GFXDevice;
 class SceneGraphNode;
 class RenderingComponent;
-struct RenderStagePass;
+class RenderStagePass;
 
 struct RenderBinItem {
     RenderingComponent* _renderable;
@@ -90,7 +90,7 @@ enum class RenderBitProperty : U32 {
 };
 
 class SceneRenderState;
-struct RenderStagePass;
+class RenderStagePass;
 struct RenderSubPassCmd;
 typedef vectorImpl<RenderSubPassCmd> RenderSubPassCmds;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted

@@ -71,7 +71,7 @@ void glIMPrimitive::pipeline(const Pipeline& pipeline) {
         newPipelineDescriptor._stateHash = pipeline.stateHash();
 
         IMPrimitive::pipeline(_context.newPipeline(newPipelineDescriptor));
-        shaderProgram = newPipelineDescriptor._shaderProgram.get();
+        shaderProgram = newPipelineDescriptor._shaderProgram.lock().get();
     } else {
         IMPrimitive::pipeline(pipeline);
     }

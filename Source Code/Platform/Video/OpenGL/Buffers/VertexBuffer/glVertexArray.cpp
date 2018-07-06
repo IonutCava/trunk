@@ -97,32 +97,11 @@ void fillSmallData(const vectorImpl<VertexBuffer::Vertex>& dataIn, ByteBuffer& d
 }
 };
 
-glVertexArray::VAOMap glVertexArray::_VAOMap;
+GLUtil::glVAOCache glVertexArray::_VAOMap;
 
 IMPLEMENT_CUSTOM_ALLOCATOR(glVertexArray, 0, 0)
 
 void glVertexArray::cleanup() {
-    clearVaos();
-}
-
-GLuint glVertexArray::getVao(size_t hash) {
-    VAOMap::const_iterator result = _VAOMap.find(hash);
-    return result != std::end(_VAOMap) ? result->second  : 0;
-}
-
-void glVertexArray::setVao(size_t hash, GLuint id) {
-    std::pair<VAOMap::const_iterator, bool> result =
-        hashAlg::emplace(_VAOMap, hash, id);
-    assert(result.second);
-    ACKNOWLEDGE_UNUSED(result);
-}
-
-void glVertexArray::clearVaos() {
-    for (VAOMap::value_type& value : _VAOMap) {
-        if (value.second != 0) {
-            GLUtil::_vaoPool.deallocate(value.second);
-        }
-    }
     _VAOMap.clear();
 }
 
@@ -140,7 +119,6 @@ glVertexArray::glVertexArray(GFXDevice& context)
     _IBid = 0;
 
     _vaoCaches.fill(0);
-    _vaoHashes.fill(0);
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -155,7 +133,6 @@ void glVertexArray::reset() {
     _usage = GL_STATIC_DRAW;
     _prevSize = -1;
     _prevSizeIndices = -1;
-    _vaoHashes.fill(0);
 
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
@@ -272,19 +249,11 @@ bool glVertexArray::refresh() {
         for (U8 j = 0; j < to_base(VertexAttribute::COUNT); ++j) {
             stageUsage[j] = _useAttribute[j] && stageMask[j];
         }
-        size_t crtHash = std::hash<AttribFlags>()(stageUsage);
-        _vaoHashes[i] = crtHash;
-        _vaoCaches[i] = getVao(crtHash);
-        if (_vaoCaches[i] == 0) {
-            // Generate a "Vertex Array Object"
-            _vaoCaches[i] = GLUtil::_vaoPool.allocate();
-            assert(_vaoCaches[i] != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
-            setVao(crtHash, _vaoCaches[i]);
-            vaoCachesDirty[i] = true;
-        }
 
-        Console::printfn("      %d : %d (pass: %s)", to_base(RenderStagePass::stage(i)), to_U32(crtHash), (to_base(RenderStagePass::pass(i)) == 0 ? "PrePass" : "FwdPass"));
-    }
+        size_t crtHash = 0;
+        // Dirty on a VAO map cache miss
+        vaoCachesDirty[i] = !_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash);
+        Console::printfn("      %d : %d (pass: %s)", to_base(RenderStagePass::stage(i)), to_U32(crtHash), (to_base(RenderStagePass::pass(i)) == 0 ? "PrePass" : "FwdPass"));    }
 
     std::pair<bufferPtr, size_t> bufferData = getMinimalData();
     // If any of the VBO's components changed size, we need to recreate the

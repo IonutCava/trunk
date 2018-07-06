@@ -11,7 +11,7 @@
 
 #include "Scenes/Headers/Scene.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Headers/Application.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -47,7 +47,7 @@ void GUIInterface::onLanguageChange(const char* newLanguage) {
 }
 
 void GUIInterface::addElement(U64 id, GUIElement* element) {
-    assert(Application::instance().isMainThread());
+    assert(Runtime::isMainThread());
 
     U8 typeIndex = to_U8(element->getType());
     GUIMap& targetMap = _guiElements[typeIndex];

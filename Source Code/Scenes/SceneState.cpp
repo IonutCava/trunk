@@ -51,7 +51,9 @@ void SceneRenderState::toggleAxisLines() {
 }
 
 void SceneRenderState::renderMask(U32 mask) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    constexpr bool validateRenderMask = false;
+
+    if (validateRenderMask) {
         auto validateMask = [mask]() -> U32 {
             U32 validMask = 0;
             for (U32 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {
@@ -70,8 +72,7 @@ void SceneRenderState::renderMask(U32 mask) {
         DIVIDE_ASSERT(parsedMask != 0 && parsedMask == mask,
                       "SceneRenderState::renderMask error: Invalid state specified!");
         _stateMask = parsedMask;
-    }
-    else {
+    } else {
         _stateMask = mask;
     }
 }

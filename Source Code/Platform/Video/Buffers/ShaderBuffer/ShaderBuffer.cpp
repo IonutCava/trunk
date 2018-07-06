@@ -30,9 +30,8 @@ ShaderBuffer::~ShaderBuffer()
 {
 }
 
-void ShaderBuffer::setData(const bufferPtr data) {
-    assert(_bufferSize > 0 && "ShaderBuffer::SetData error: Invalid buffer size!");
-    updateData(0, _primitiveCount, data);
+void ShaderBuffer::writeData(const bufferPtr data) {
+    writeData(0, _primitiveCount, data);
 }
 
 size_t ShaderBuffer::alignmentRequirement(bool unbound) {

@@ -2,6 +2,7 @@
 
 #include "Headers/GLWrapper.h"
 #include "Headers/glIMPrimitive.h"
+#include "Headers/glHardwareQuery.h"
 
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"

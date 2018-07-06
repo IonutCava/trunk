@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\Resource.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceCache.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ResourceDescriptor.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\RingBuffer.cpp" />
     <ClCompile Include="..\..\Source Code\Core\StringHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\TaskPool.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Time\ApplicationTimer.cpp" />
@@ -73,6 +74,7 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\NonCopyable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\NonMovable.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ParamHandler.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\RingBuffer.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\Singleton.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\StringHelper.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\TaskPool.h" />
@@ -184,7 +186,7 @@
     <IntDir>$(Configuration)_Core\</IntDir>
     <TargetName>$(ProjectName)_d</TargetName>
     <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
-    <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
   </PropertyGroup>

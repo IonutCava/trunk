@@ -39,6 +39,7 @@
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 #include "Geometry/Material/Headers/ShaderProgramInfo.h"
@@ -47,7 +48,7 @@ namespace Divide {
 
 class RenderStateBlock;
 class ResourceDescriptor;
-class RenderStateBlock;
+
 enum class BlendProperty : U32;
 enum class ReflectorType : U32;
 

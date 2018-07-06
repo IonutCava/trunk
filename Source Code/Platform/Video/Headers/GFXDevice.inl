@@ -97,21 +97,24 @@ inline void
 GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
     assert(index != ClipPlaneIndex::COUNT);
     U32 idx = to_U32(index);
-    if (state != _clippingPlanes[idx].active()) {
-        _clippingPlanes[idx].active(state);
+    if (state != _clippingPlanes._active[idx]) {
+        _clippingPlanes._active[idx] = state;
     }
 }
 /// modify a single clip plane by index
 inline void 
-GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p) {
+GFXDevice::setClipPlane(ClipPlaneIndex index, const Plane<F32>& p, bool state) {
     assert(index != ClipPlaneIndex::COUNT);
-    _clippingPlanes[to_U32(index)] = p;
+    _clippingPlanes._planes[to_U32(index)] = p;
+    _clippingPlanes._active[to_U32(index)] = state;
     updateClipPlanes();
 }
+
 /// set a new list of clipping planes. The old one is discarded
 inline void 
-GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
-    if (clipPlanes != _clippingPlanes) {
+GFXDevice::setClipPlanes(const ClipPlaneList& clipPlanes) {
+    if (clipPlanes._active != _clippingPlanes._active ||
+        clipPlanes._planes != _clippingPlanes._planes) {
         _clippingPlanes = clipPlanes;
         updateClipPlanes();
     }

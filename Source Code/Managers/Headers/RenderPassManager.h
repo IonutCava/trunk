@@ -57,7 +57,7 @@ public:
               doPrePass(true),
               bindTargets(true),
               pass(0),
-              clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+            clippingPlanes(to_base(ClipPlaneIndex::COUNT), Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
         {
         }
 
@@ -69,7 +69,7 @@ public:
         bool doPrePass = true;
         bool bindTargets = true;
         U32 pass = 0;
-        PlaneList clippingPlanes;
+        ClipPlaneList clippingPlanes;
     };
 public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);

@@ -17,14 +17,14 @@ d3dConstantBuffer::~d3dConstantBuffer()
 {
 }
 
-void d3dConstantBuffer::getData(ptrdiff_t offsetElementCount,
-                                ptrdiff_t rangeElementCount,
-                                bufferPtr result) const {
+void d3dConstantBuffer::readData(ptrdiff_t offsetElementCount,
+                                 ptrdiff_t rangeElementCount,
+                                 bufferPtr result) const {
 }
 
-void d3dConstantBuffer::updateData(ptrdiff_t offsetElementCount,
-                                   ptrdiff_t rangeElementCount,
-                                   const bufferPtr data) {
+void d3dConstantBuffer::writeData(ptrdiff_t offsetElementCount,
+                                  ptrdiff_t rangeElementCount,
+                                  const bufferPtr data) {
 }
 
 bool d3dConstantBuffer::bindRange(U32 bindIndex,

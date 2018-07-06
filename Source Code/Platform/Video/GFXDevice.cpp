@@ -16,6 +16,7 @@
 #include "Rendering/Headers/TiledForwardShadingRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -85,7 +86,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
     _renderStagePass(RenderStage::DISPLAY, RenderPassType::COLOUR_PASS),
     _prevRenderStagePass(RenderStage::COUNT, RenderPassType::COLOUR_PASS),
-    _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer"))
+    _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer")),
+    _clippingPlanes(to_base(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0))
 {
     // Hash values
     _state2DRenderingHash = 0;
@@ -122,8 +124,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _GPUVendor = GPUVendor::COUNT;
     _GPURenderer = GPURenderer::COUNT;
     _API_ID = RenderAPI::COUNT;
-    // Clipping planes
-    _clippingPlanes.resize(to_base(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
     // To allow calls to "setBaseViewport"
     _viewport.push(vec4<I32>(-1));
 
@@ -139,17 +139,17 @@ GFXDevice::GFXDevice(Kernel& parent)
     _axisLines.push_back(
         Line(VECTOR3_ZERO, WORLD_Z_AXIS * 2, vec4<U8>(0, 0, 255, 255), 3.0f));
 
-    VertexBuffer::AttribFlags flags;
+    AttribFlags flags;
     flags.fill(true);
     VertexBuffer::setAttribMasks(flags);
 
     // Don't (currently) need these for shadow passes
-    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_COLOR)] = false;
-    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_TANGENT)] = false;
+    flags[to_base(VertexAttribute::ATTRIB_COLOR)] = false;
+    flags[to_base(VertexAttribute::ATTRIB_TANGENT)] = false;
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         VertexBuffer::setAttribMask(RenderStagePass(static_cast<RenderStage>(stage), RenderPassType::DEPTH_PASS), flags);
     }
-    flags[to_base(VertexBuffer::VertexAttribute::ATTRIB_NORMAL)] = false;
+    flags[to_base(VertexAttribute::ATTRIB_NORMAL)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
     }
@@ -462,10 +462,16 @@ const mat4<F32>& GFXDevice::getMatrixInternal(const MATRIX& mode) const {
 
 /// Update the internal GPU data buffer with the clip plane values
 void GFXDevice::updateClipPlanes() {
-    GFXShaderData::GPUData& data = _gpuBlock._data;
-    for (U8 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
-        data._clipPlanes[i].set(_clippingPlanes[i].getEquation());
-    }
+    static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value,
+                  "GFXDevice error: invalid clip plane type!");
+
+    static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>),
+                  "GFXDevice error: clip plane size mismatch!");
+
+    memcpy(&_gpuBlock._data._clipPlanes[0],
+           _clippingPlanes._planes.data(),
+           sizeof(vec4<F32>) * to_base(Frustum::FrustPlane::COUNT));
+
     _gpuBlock._needsUpload = true;
 }
 
@@ -598,7 +604,7 @@ bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<
         if (context == CurrentContext::GFX_LOADING_CTX && Config::USE_GPU_THREADED_LOADING) {
             CreateTask(callback)._task->startTask(Task::TaskPriority::HIGH, to_base(Task::TaskFlags::SYNC_WITH_GPU));
         } else {
-            if (Application::isMainThread()) {
+            if (Runtime::isMainThread()) {
                 callback(mainTask);
             } else {
                 WriteLock w_lock(_GFXLoadQueueLock);

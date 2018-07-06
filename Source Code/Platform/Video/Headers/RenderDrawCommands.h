@@ -88,6 +88,22 @@ struct ShaderBufferBinding {
     }
 };
 
+struct ClipPlaneList {
+    ClipPlaneList(U32 size, const Plane<F32>& defaultValue)
+        : _planes(size, defaultValue),
+          _active(size, false)
+    {
+    }
+
+    void resize(U32 size, const Plane<F32>& defaultValue) {
+        _planes.resize(size, defaultValue);
+        _active.resize(size, false);
+    }
+
+    PlaneList _planes;
+    vectorImpl<bool> _active;
+};
+
 typedef vectorImpl<ShaderBufferBinding> ShaderBufferList;
 
 typedef std::array<IndirectDrawCommand, Config::MAX_VISIBLE_NODES> DrawCommandList;

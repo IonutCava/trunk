@@ -40,39 +40,17 @@ namespace std {
 
 namespace Divide {
 
-class Kernel;
-class Light;
-class SubMesh;
-
-class Material;
-class Object3D;
-class TextLabel;
-class Transform;
-class GUIElement;
-class RenderStateBlock;
-class SceneRenderState;
-
-struct GUITextBatchEntry;
-
 enum class ErrorCode : I32;
-
-template <typename T>
-class Plane;
-typedef vectorImpl<Plane<F32> > PlaneList;
 
 template <typename T>
 class vec4;
 
-class SceneGraph;
-
 class Configuration;
-
-class GenericVertexData;
-class VertexDataInterface;
+struct GUITextBatchEntry;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
-typedef struct {
+struct VideoModes {
     // Video resolution
     I32 Width, Height;
     // Red bits per pixel
@@ -81,117 +59,9 @@ typedef struct {
     I32 GreenBits;
     // Blue bits per pixel
     I32 BlueBits;
-} VideoModes;
-// FWD DECLARE CLASSES
-
-class RingBuffer {
-    public:
-        explicit RingBuffer(U32 queueLength) : 
-            _queueLength(std::max(queueLength, 1U))
-        {
-            _queueReadIndex = 0;
-            _queueWriteIndex = _queueLength - 1;
-        }
-
-        RingBuffer(const RingBuffer& other)
-            : _queueLength(other._queueLength)
-        {
-            _queueReadIndex = other.queueReadIndex();
-            _queueWriteIndex = other.queueWriteIndex();
-        }
-
-        virtual ~RingBuffer()
-        {
-        }
-
-        const inline U32 queueLength() const {
-            return _queueLength;
-        }
-
-        const inline U32 queueWriteIndex() const {
-            return _queueWriteIndex;
-        }
-
-        const inline U32 queueReadIndex() const {
-            return _queueReadIndex;
-        }
-
-        virtual void incQueue() { 
-            if (queueLength() > 1) {
-                _queueWriteIndex = (_queueWriteIndex + 1) % _queueLength;
-                _queueReadIndex  = (_queueReadIndex + 1) % _queueLength;
-            }
-        }
-
-        inline void decQueue() {
-            if (queueLength() > 1) {
-                _queueWriteIndex = (_queueWriteIndex - 1) % _queueLength;
-                _queueReadIndex = (_queueReadIndex - 1) % _queueLength;
-            }
-        }
-
-    private:
-        const U32 _queueLength;
-        std::atomic_uint _queueReadIndex;
-        std::atomic_uint _queueWriteIndex;
-
 };
 
-struct RenderStagePass {
-    explicit RenderStagePass(RenderStage stage, RenderPassType prePass)
-        : _stage(stage),
-          _passType(prePass)
-    {
-    }
-
-    typedef U8 PassIndex;
-
-    inline bool operator==(const RenderStagePass& other) const {
-        return _passType == other._passType &&
-               _stage == other._stage;
-    }
-
-    inline bool operator!=(const RenderStagePass& other) const {
-        return _passType != other._passType ||
-               _stage != other._stage;
-    }
-
-    inline RenderStage stage() const {
-        return _stage;
-    }
-
-    inline RenderPassType pass() const {
-        return _passType;
-    }
-
-    inline PassIndex index() const {
-        return index(_stage, _passType);
-    }
-
-    constexpr static PassIndex count()  {
-        return static_cast<PassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
-    }
-
-    static PassIndex index(const RenderStage stage, const RenderPassType type) {
-        return static_cast<PassIndex>(to_base(stage) + to_base(type) * to_base(RenderStage::COUNT));
-    }
-
-    static RenderStage stage(PassIndex index) {
-        return static_cast<RenderStage>(index % to_base(RenderStage::COUNT));
-    }
-
-    static RenderPassType pass(PassIndex index) {
-        return static_cast<RenderPassType>(index / to_base(RenderStage::COUNT));
-    }
-
-    static RenderStagePass stagePass(PassIndex index) {
-        return RenderStagePass(stage(index), pass(index));
-    }
-
-private:
-    RenderStage _stage;
-    RenderPassType _passType;
-};
+typedef std::array<bool, to_base(VertexAttribute::COUNT)> AttribFlags;
 
 /// Renderer Programming Interface
 class NOINITVTABLE RenderAPIWrapper : private NonCopyable {

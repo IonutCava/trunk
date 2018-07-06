@@ -34,16 +34,17 @@
 
 #include "Core/Headers/ByteBuffer.h"
 
+#include "glVAOCache.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/OpenGL/Buffers/Headers/glMemoryManager.h"
-#include "Platform/Video/OpenGL/Headers/glResources.h"
+
 
 /// Always bind a shader, even a dummy one when rendering geometry. No more
 /// fixed matrix API means no more VBs or VAs
 /// One VAO contains: one VB for data, one IB for indices and uploads to the
 /// shader vertex attribs for:
 ///- Vertex Data  bound to location Divide::VERTEX_POSITION
-///- Colours       bound to location Divide::VERTEX_COLOR
+///- Colours      bound to location Divide::VERTEX_COLOR
 ///- Normals      bound to location Divide::VERTEX_NORMAL
 ///- TexCoords    bound to location Divide::VERTEX_TEXCOORD
 ///- Tangents     bound to location Divide::VERTEX_TANGENT
@@ -87,10 +88,6 @@ class glVertexArray : public VertexBuffer {
     /// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
     std::pair<bufferPtr, size_t> getMinimalData();
 
-    static GLuint getVao(size_t hash);
-    static void setVao(size_t hash, GLuint id);
-    static void clearVaos();
-
     static void cleanup();
    protected:
     GLenum _formatInternal;
@@ -110,10 +107,9 @@ class glVertexArray : public VertexBuffer {
     AttribValues _attributeOffset;
 
     // Both for forward pass and pre-pass
-    std::array<size_t, to_base(RenderStagePass::count())> _vaoHashes;
     std::array<GLuint, to_base(RenderStagePass::count())> _vaoCaches;
-    typedef hashMapImpl<size_t, GLuint> VAOMap;
-    static VAOMap _VAOMap;
+    
+    static GLUtil::glVAOCache _VAOMap;
 };
 
 };  // namespace Divide

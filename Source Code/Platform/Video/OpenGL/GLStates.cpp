@@ -51,6 +51,7 @@ GL_API::imageBoundMapDef GL_API::s_imageBoundMap;
 GL_API::samplerBoundMapDef GL_API::s_samplerBoundMap;
 GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
+GLUtil::glVAOPool GL_API::s_vaoPool;
 
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates() {
@@ -180,11 +181,11 @@ void GL_API::toggleRasterization(bool state) {
 /// state
 void GL_API::updateClipPlanes() {
     // Get the clip planes from the GFXDevice object
-    const PlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
+    const ClipPlaneList& list = Attorney::GFXDeviceAPI::getClippingPlanes(_context);
     // For every clip plane that we support (usually 6)
     for (U32 i = 0; i < to_base(Frustum::FrustPlane::COUNT); ++i) {
         // Check its state
-        const bool& clipPlaneActive = list[i].active();
+        const bool& clipPlaneActive = list._active[i];
         // And compare it with OpenGL's current state
         if (_activeClipPlanes[i] != clipPlaneActive) {
             // Update the clip plane if it differs internally

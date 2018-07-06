@@ -49,11 +49,11 @@ class ImageLayer {
         _dimensions.set(0, 0, 1);
     }
 
-    inline void setData(U8* data, U32 len) {
+    inline void writeData(U8* data, U32 len) {
         _data.assign(data, data + len);
     }
 
-    inline void setData(F32* data, U32 len) {
+    inline void writeData(F32* data, U32 len) {
         _dataf.assign(data, data + len);
     }
     /// the image data as it was read from the file / memory.

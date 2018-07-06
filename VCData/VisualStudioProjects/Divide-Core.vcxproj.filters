@@ -237,6 +237,9 @@
       <Filter>Core\Resources\ConcreteLoaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\stdafx-core.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\RingBuffer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
@@ -403,5 +406,8 @@
       <Filter>Core\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\stdafx.h" />
+    <ClInclude Include="..\..\Source Code\Core\Headers\RingBuffer.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

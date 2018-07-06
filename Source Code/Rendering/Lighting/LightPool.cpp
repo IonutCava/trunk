@@ -313,15 +313,15 @@ void LightPool::uploadLightBuffers() {
         lightShadowCount = std::min(lightShadowCount, static_cast<size_t>(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
 
         if (lightPropertyCount > 0) {
-            _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)]->updateData(0, lightPropertyCount, _sortedLightProperties.data());
+            _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)]->writeData(0, lightPropertyCount, _sortedLightProperties.data());
         } else {
-            _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)]->setData(nullptr);
+            _lightShaderBuffer[to_base(ShaderBufferType::NORMAL)]->writeData(nullptr);
         }
 
         if (lightShadowCount > 0) {
-            _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)]->updateData(0, lightShadowCount, _sortedShadowProperties.data());
+            _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)]->writeData(0, lightShadowCount, _sortedShadowProperties.data());
         } else {
-            _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)]->setData(nullptr);
+            _lightShaderBuffer[to_base(ShaderBufferType::SHADOW)]->writeData(nullptr);
         }
         _buffersUpdated = true;
     }

@@ -176,8 +176,10 @@ inline void Material::setRenderStateBlock(size_t renderStateBlockHash,
 }
 
 inline size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass, I32 variant) {
-    assert(variant >= 0 && variant < defaultRenderStates(renderStagePass).size());
-    return defaultRenderStates(renderStagePass)[variant];
+    const std::array<size_t, 3>& states = defaultRenderStates(renderStagePass);
+
+    assert(variant >= 0 && variant < 3);
+    return states[variant];
 }
 
 inline void Material::setParallaxFactor(F32 factor) {

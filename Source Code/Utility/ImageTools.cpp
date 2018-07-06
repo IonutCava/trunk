@@ -95,10 +95,10 @@ bool ImageData::create(const stringImpl& filename) {
     image._size = width * height * _bpp / 8;
 
     if (isHDR) {
-        image.setData(dataf, to_U32(image._size / 4));
+        image.writeData(dataf, to_U32(image._size / 4));
         stbi_image_free(dataf);
     } else {
-        image.setData(data, to_U32(image._size));
+        image.writeData(data, to_U32(image._size));
         stbi_image_free(data);
     }
 
@@ -299,7 +299,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                          image.get_height(),
                          image.get_depth());
     base._size = image.get_size();
-    base.setData(image, base._dimensions.width * base._dimensions.height);
+    base.writeData(image, base._dimensions.width * base._dimensions.height);
 
     for (U8 i = 0; i < numMips; ++i) {
         ImageLayer& layer = _data[i + 1];
@@ -309,7 +309,7 @@ bool ImageData::loadDDS_NV(const stringImpl& filename) {
                               mipMap.get_height(),
                               mipMap.get_depth());
         layer._size = mipMap.get_size();
-        layer.setData(mipMap, layer._dimensions.width * layer._dimensions.height);
+        layer.writeData(mipMap, layer._dimensions.width * layer._dimensions.height);
     }
 
     image.clear();

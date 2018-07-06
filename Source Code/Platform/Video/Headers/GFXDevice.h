@@ -45,6 +45,7 @@
 
 #include "Core/Headers/KernelComponent.h"
 
+#include "Platform/Video/Headers/RenderStagePass.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 #include "Rendering/Camera/Headers/Frustum.h"
@@ -82,6 +83,7 @@ class PixelBuffer;
 class VertexBuffer;
 class SceneGraphNode;
 class SceneRenderState;
+class GenericVertexData;
 class ShaderComputeQueue;
 
 struct ShaderBufferDescriptor;
@@ -210,9 +212,9 @@ public:  // GPU interface
     /// disable or enable a clip plane by index
     inline void toggleClipPlane(ClipPlaneIndex index, const bool state);
     /// modify a single clip plane by index
-    inline void setClipPlane(ClipPlaneIndex index, const Plane<F32>& p);
+    inline void setClipPlane(ClipPlaneIndex index, const Plane<F32>& p, bool state);
     /// set a new list of clipping planes. The old one is discarded
-    inline void setClipPlanes(const PlaneList& clipPlanes);
+    inline void setClipPlanes(const ClipPlaneList& clipPlanes);
     /// clear all clipping planes
     inline void resetClipPlanes();
 
@@ -497,7 +499,8 @@ protected:
     size_t _state2DRenderingHash;
     size_t _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
-    PlaneList _clippingPlanes;
+    ClipPlaneList _clippingPlanes;
+
     bool _2DRendering;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
@@ -629,7 +632,7 @@ namespace Attorney {
         }
 
         /// Get the entire list of clipping planes
-        static const PlaneList& getClippingPlanes(GFXDevice& device) {
+        static const ClipPlaneList& getClippingPlanes(GFXDevice& device) {
             return device._clippingPlanes;
         }
 

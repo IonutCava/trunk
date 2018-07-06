@@ -69,10 +69,10 @@ class glGenericBuffer {
 
       GLuint bufferHandle() const;
       
-      void updateData(GLuint elementCount,
-                      GLuint elementOffset,
-                      GLuint ringWriteOffset,
-                      const bufferPtr data);
+      void writeData(GLuint elementCount,
+                     GLuint elementOffset,
+                     GLuint ringWriteOffset,
+                     const bufferPtr data);
 
       void readData(GLuint elementCount,
                     GLuint elementOffset,

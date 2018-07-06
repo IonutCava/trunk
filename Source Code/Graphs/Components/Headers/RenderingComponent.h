@@ -40,6 +40,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Sky;
+class SubMesh;
 class Material;
 class GFXDevice;
 class RenderBin;

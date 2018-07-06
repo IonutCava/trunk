@@ -70,6 +70,17 @@ enum class AttribLocation : U32 {
     COUNT
 };
 
+enum class VertexAttribute : U32 {
+    ATTRIB_POSITION = 0,
+    ATTRIB_COLOR = 1,
+    ATTRIB_NORMAL = 2,
+    ATTRIB_TEXCOORD = 3,
+    ATTRIB_TANGENT = 4,
+    ATTRIB_BONE_WEIGHT = 5,
+    ATTRIB_BONE_INDICE = 6,
+    COUNT = 7
+};
+
 enum class ShaderBufferLocation : U32 {
     GPU_BLOCK = 0,
     GPU_COMMANDS = 1,

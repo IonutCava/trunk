@@ -36,6 +36,7 @@ namespace {
         return true;
     }
 };
+
 class AtomicCounter : public RingBuffer
 {
 public:
@@ -94,9 +95,9 @@ GLuint glUniformBuffer::bufferID() const {
     return _buffer->bufferID();
 }
 
-void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
-                              ptrdiff_t rangeElementCount,
-                              bufferPtr result) const {
+void glUniformBuffer::readData(ptrdiff_t offsetElementCount,
+                               ptrdiff_t rangeElementCount,
+                               bufferPtr result) const {
 
     if (rangeElementCount > 0) {
         ptrdiff_t range = rangeElementCount * _primitiveSize;
@@ -112,9 +113,9 @@ void glUniformBuffer::getData(ptrdiff_t offsetElementCount,
     }
 }
 
-void glUniformBuffer::updateData(ptrdiff_t offsetElementCount,
-                                 ptrdiff_t rangeElementCount,
-                                 const bufferPtr data) {
+void glUniformBuffer::writeData(ptrdiff_t offsetElementCount,
+                                ptrdiff_t rangeElementCount,
+                                const bufferPtr data) {
 
     if (rangeElementCount == 0) {
         return;
@@ -133,7 +134,7 @@ void glUniformBuffer::updateData(ptrdiff_t offsetElementCount,
 
     offset += queueWriteIndex() * _allignedBufferSize;
 
-    _buffer->updateData(offset, range, data);
+    _buffer->writeData(offset, range, data);
 }
 
 bool glUniformBuffer::bindRange(U32 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
@@ -187,7 +188,7 @@ void glUniformBuffer::resetAtomicCounter(U32 counterIndex) {
     }
     constexpr U32 defaultValue = 0;
     AtomicCounter* counter = _atomicCounters.at(counterIndex);
-    counter->_buffer->updateData(1, 0, counter->queueWriteIndex(), (bufferPtr)(&defaultValue));
+    counter->_buffer->writeData(1, 0, counter->queueWriteIndex(), (bufferPtr)(&defaultValue));
 }
 
 void glUniformBuffer::printInfo(const ShaderProgram* shaderProgram,

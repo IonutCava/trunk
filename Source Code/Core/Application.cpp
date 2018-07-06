@@ -17,24 +17,9 @@ bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 
-std::thread::id Application::_threadID;
-
-const std::thread::id& Application::mainThreadID() {
-    return _threadID;
-}
-
-bool Application::isMainThread() {
-    return (_threadID == std::this_thread::get_id());
-}
-
-void Application::mainThreadID(const std::thread::id& threadID) {
-    _threadID = threadID;
-}
-
 Application::Application() : _kernel(nullptr),
                              _isInitialized(false)
 {
-    mainThreadID(std::this_thread::get_id());
     _requestShutdown = false;
     _mainLoopPaused = false;
     _mainLoopActive = false;

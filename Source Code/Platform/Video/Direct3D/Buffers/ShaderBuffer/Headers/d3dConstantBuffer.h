@@ -44,13 +44,13 @@ class d3dConstantBuffer final : public ShaderBuffer {
 
     ~d3dConstantBuffer();
 
-    void getData(ptrdiff_t offsetElementCount,
-                 ptrdiff_t rangeElementCount,
-                 bufferPtr result) const override;
+    void readData(ptrdiff_t offsetElementCount,
+                  ptrdiff_t rangeElementCount,
+                  bufferPtr result) const override;
 
-    void updateData(ptrdiff_t offsetElementCount,
-                    ptrdiff_t rangeElementCount,
-                    const bufferPtr data) override;
+    void writeData(ptrdiff_t offsetElementCount,
+                   ptrdiff_t rangeElementCount,
+                   const bufferPtr data) override;
 
     bool bindRange(U32 bindIndex,
                    U32 offsetElementCount,

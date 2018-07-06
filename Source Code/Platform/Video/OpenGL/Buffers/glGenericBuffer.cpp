@@ -27,7 +27,7 @@ glGenericBuffer::glGenericBuffer(const BufferParams& params)
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr && _ringSizeFactor > 1) {
         for (U8 i = 0; i < _ringSizeFactor; ++i) {
-            _buffer->updateData(i * bufferSize, bufferSize, params._data);
+            _buffer->writeData(i * bufferSize, bufferSize, params._data);
         }
     }
 }
@@ -41,10 +41,10 @@ GLuint glGenericBuffer::bufferHandle() const {
     return _buffer->bufferID();
 }
 
-void glGenericBuffer::updateData(GLuint elementCount,
-                                 GLuint elementOffset,
-                                 GLuint ringWriteOffset,
-                                 const bufferPtr data)
+void glGenericBuffer::writeData(GLuint elementCount,
+                                GLuint elementOffset,
+                                GLuint ringWriteOffset,
+                                const bufferPtr data)
 {
     // Calculate the size of the data that needs updating
     size_t dataCurrentSize = elementCount * _elementSize;
@@ -55,7 +55,7 @@ void glGenericBuffer::updateData(GLuint elementCount,
         offset += _elementCount * _elementSize * ringWriteOffset;
     }
 
-    _buffer->updateData(offset, dataCurrentSize, data);
+    _buffer->writeData(offset, dataCurrentSize, data);
 }
 
 void glGenericBuffer::readData(GLuint elementCount,

@@ -42,11 +42,12 @@
 namespace Divide {
 class Scene;
 class Camera;
+class SceneGraph;
 class SceneState;
 class WorldPacket;
 class SceneRenderState;
 class NetworkingComponent;
-struct RenderStagePass;
+class RenderStagePass;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 FWD_DECLARE_MANAGED_CLASS(Material);

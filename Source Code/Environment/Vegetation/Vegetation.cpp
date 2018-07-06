@@ -405,7 +405,7 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
 
     PipelineDescriptor pipeDesc = cmd.pipeline().toDescriptor();
     pipeDesc._stateHash = _grassStateBlockHash;
-    pipeDesc._shaderProgram->Uniform("grassScale", /*_grassScale*/1.0f);
+    pipeDesc._shaderProgram.lock()->Uniform("grassScale", /*_grassScale*/1.0f);
 
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
     cmd.sourceBuffer(buffer);

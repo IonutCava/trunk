@@ -3,6 +3,7 @@
 #include "config.h"
 
 #include "Headers/PlatformDefines.h"
+#include "Headers/PlatformRuntime.h"
 
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIMessageBox.h"
@@ -50,6 +51,7 @@ const SysInfo& const_sysInfo() {
 }
 
 bool PlatformPostInit(int argc, char** argv) {
+    Runtime::mainThreadID(std::this_thread::get_id());
     SeedRandom();
     Paths::initPaths();
     InitSysInfo(sysInfo(), argc, argv);

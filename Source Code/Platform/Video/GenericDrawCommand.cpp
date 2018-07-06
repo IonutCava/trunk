@@ -55,8 +55,8 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _cmd.primCount = primCount;
 
     static_assert(sizeof(IndirectDrawCommand) == 20, "Size of IndirectDrawCommand is incorrect!");
-    static_assert(sizeof(Pipeline) == 40, "Size of Pipeline is incorrect!");
-    static_assert(sizeof(GenericDrawCommand) == 96, "Size of GenericDrawCommand is incorrect!");
+    static_assert(sizeof(Pipeline) == 32, "Size of Pipeline is incorrect!");
+    static_assert(sizeof(GenericDrawCommand) == 88, "Size of GenericDrawCommand is incorrect!");
 }
 
 void GenericDrawCommand::set(const GenericDrawCommand& base) {
@@ -85,7 +85,9 @@ bool GenericDrawCommand::compatible(const GenericDrawCommand& other) const {
 }
 
 void GenericDrawCommand::renderMask(U32 mask) {
-    if (Config::Build::IS_DEBUG_BUILD) {
+    constexpr bool validateRenderMask = false;
+
+    if (validateRenderMask) {
         auto validateMask = [mask]() -> U32 {
             U32 validMask = 0;
             for (U32 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {

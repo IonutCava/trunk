@@ -51,9 +51,6 @@ namespace Attorney {
 DEFINE_SINGLETON(Application)
     friend class Attorney::ApplicationTask;
   public:
-    static bool                    isMainThread();
-    static const std::thread::id&  mainThreadID();
-
     /// Startup and shutdown
     ErrorCode start(const stringImpl& entryPoint, I32 argc, char** argv);
     void      stop();
@@ -97,7 +94,6 @@ DEFINE_SINGLETON(Application)
 
     Application();
     ~Application();
-    static void mainThreadID(const std::thread::id& threadID);
 
     //ToDo: Remove this hack - Ionut
     void warmup();
@@ -115,8 +111,6 @@ DEFINE_SINGLETON(Application)
     /// buffer to register all of the memory allocations recorded via
     /// "MemoryManager_NEW"
     stringImpl _memLogBuffer;
-    /// Main application thread ID
-    static std::thread::id _threadID;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
     vectorImpl<DELEGATE_CBK<void> > _shutdownCallback;

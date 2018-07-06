@@ -25,7 +25,7 @@ void GFXDevice::uploadGPUBlock() {
     if (_gpuBlock._needsUpload) {
         // We flush the entire buffer on update to inform the GPU that we don't
         // need the previous data. Might avoid some driver sync
-        _gfxDataBuffer->setData(&_gpuBlock._data);
+        _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _api->updateClipPlanes();
         _gpuBlock._needsUpload = false;
@@ -278,14 +278,14 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
         assert(cmdCount >= nodeCount);
         // If the buffer update required is large enough, just replace the entire thing
         if (nodeCount > Config::MAX_VISIBLE_NODES / 2) {
-            bufferData._renderData->setData(_matricesData.data());
+            bufferData._renderData->writeData(_matricesData.data());
         } else {
             // Otherwise, just update the needed range to save bandwidth
-            bufferData._renderData->updateData(0, nodeCount, _matricesData.data());
+            bufferData._renderData->writeData(0, nodeCount, _matricesData.data());
         }
 
         ShaderBuffer& cmdBuffer = *bufferData._cmdBuffer;
-        cmdBuffer.setData(_drawCommandsCache.data());
+        cmdBuffer.writeData(_drawCommandsCache.data());
         _api->registerCommandBuffer(cmdBuffer);
 
         // This forces a sync for each buffer to make sure all data is properly uploaded in VRAM

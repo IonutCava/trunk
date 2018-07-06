@@ -189,9 +189,8 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
 }
 
 Pipeline GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
-    Pipeline ret(descriptor);
     // Hack for now. Cache and lookup later (e.g. for Vulkan/D3D12)
-    return ret;
+    return Pipeline(descriptor);
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,

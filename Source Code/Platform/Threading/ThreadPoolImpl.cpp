@@ -83,8 +83,9 @@ ThreadPoolBoostPrio::~ThreadPoolBoostPrio()
 bool ThreadPoolBoostPrio::enqueue(const PoolTask& task) {
     const I32 failCountLimit = 5;
     I32 failCount = 0;
-    while (!_pool.schedule(
-        boost::threadpool::prio_task_func(task._priority, task._task))) {
+    boost::threadpool::prio_task_func task_func(task._priority, task._task);
+
+    while (!_pool.schedule(task_func)) {
         if (++failCount > failCountLimit) {
             return false;
         }

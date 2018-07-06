@@ -53,52 +53,6 @@ namespace NS_GLIM {
 
 namespace Divide {
 
-class glVAOPool {
-
-public:
-    glVAOPool();
-    ~glVAOPool();
-
-    GLuint allocate();
-    void   allocate(U32 count, GLuint* vaosOUT);
-    // This must be called on the main thread!
-    void   deallocate(GLuint& vao);
-
-protected:
-    friend class GL_API;
-    void init(U32 capacity);
-    void destroy();
-
-protected:
-    vectorImpl<std::pair<GLuint, bool>> _pool;
-};
-
-class glHardwareQuery {
-public:
-    glHardwareQuery();
-    ~glHardwareQuery();
-
-    void create();
-    void destroy();
-    inline U32 getID() const { return _queryID; }
-    inline bool enabled() const { return _enabled; }
-    inline void enabled(bool state) { _enabled = state; }
-protected:
-    bool _enabled;
-    U32 _queryID;
-};
-
-class glHardwareQueryRing : public RingBuffer {
-  public:
-    glHardwareQueryRing(U32 queueLength);
-
-    glHardwareQuery& readQuery();
-    glHardwareQuery& writeQuery();
-
-    void initQueries();
-  protected:
-    vectorImpl<glHardwareQuery> _queries;
-};
 
 struct ImageBindSettings {
     GLuint _texture;
@@ -154,8 +108,7 @@ extern GLuint _invalidObjectID;
 extern SDL_GLContext _glRenderContext;
 extern thread_local SDL_GLContext _glSecondaryContext;
 extern SharedLock _glSecondaryContextMutex;
-/// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
-extern glVAOPool _vaoPool;
+
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool useIndirectBuffer,
                          GLenum internalFormat,

@@ -5,10 +5,11 @@
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
 
 #include "Core/Headers/Console.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Utility/Headers/Localization.h"
+
+#include "Platform/Headers/PlatformRuntime.h"
 
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
@@ -203,7 +204,7 @@ void GUIConsole::OutputText(const char* inMsg, const bool error) {
 }
 
 void GUIConsole::update(const U64 deltaTime) {
-    if (!_init || !Application::instance().isMainThread() || _closing) {
+    if (!_init || !Runtime::isMainThread() || _closing) {
         return;
     }
     if (!isVisible()) {

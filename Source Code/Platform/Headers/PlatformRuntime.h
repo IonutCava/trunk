@@ -29,53 +29,22 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _PIPELINE_H_
-#define _PIPELINE_H_
+#ifndef _PLATFORM_RUNTIME_H_
+#define _PLATFORM_RUNTIME_H_
 
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+namespace std {
+    class thread::id;
+};
 
 namespace Divide {
+namespace Runtime {
 
-struct PipelineDescriptor {
-    U8 _multiSampleCount = 0;
-    size_t _stateHash = 0;
-    ShaderProgram_wptr _shaderProgram;
-}; //struct PipelineDescriptor
+bool                    isMainThread();
+const std::thread::id&  mainThreadID();
+// Can only be called once! The first registered thread is the main thread
+void mainThreadID(const std::thread::id& threadID);
 
-class Pipeline {
-public:
-    Pipeline();
-    Pipeline(const PipelineDescriptor& descriptor);
-    ~Pipeline();
+}; //namespace Runtime
+}; // namespace Divide
 
-    void fromDescriptor(const PipelineDescriptor& descriptor);
-    PipelineDescriptor toDescriptor() const;
-
-    inline ShaderProgram* shaderProgram() const {
-        return _shaderProgram.expired() ? nullptr : _shaderProgram.lock().get();
-    }
-
-    inline size_t stateHash() const {
-        return _stateHash;
-    }
-
-    inline U8 multiSampleCount() const{
-        return _multiSampleCount;
-    }
-
-    bool operator==(const Pipeline &other) const;
-    bool operator!=(const Pipeline &other) const;
-
-    size_t getHash() const;
-
-private: //data
-    size_t _stateHash;
-    U8 _multiSampleCount;
-    ShaderProgram_wptr _shaderProgram;
-
-}; //class Pipeline
-
-}; //namespace Divide
-
-#endif //_PIPELINE_H_
-
+#endif //_PLATFORM_RUNTIME_H_

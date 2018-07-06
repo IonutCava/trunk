@@ -355,6 +355,21 @@
     <ClInclude Include="..\..\Source Code\Platform\File\Headers\FileWithPath.h">
       <Filter>File\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glVAOCache.h">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\Headers\glVAOPool.h">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Headers\PlatformRuntime.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Headers\glHardwareQuery.h">
+      <Filter>Video\OpenGL\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\RenderStagePass.h">
+      <Filter>Video\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Platform\Input\AutoKeyRepeat.cpp">
@@ -632,6 +647,16 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\File\FileUpdateMonitor.cpp">
       <Filter>File</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVAOCache.cpp">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\Buffers\VertexBuffer\glVAOPool.cpp">
+      <Filter>Video\OpenGL\Buffers\VertexBuffer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\PlatformRuntime.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\OpenGL\glHardwareQuery.cpp">
+      <Filter>Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

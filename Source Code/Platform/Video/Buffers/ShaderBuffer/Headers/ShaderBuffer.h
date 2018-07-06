@@ -32,6 +32,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SHADER_BUFFER_H_
 #define _SHADER_BUFFER_H_
 
+#include "Core/Headers/RingBuffer.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
@@ -66,15 +67,15 @@ class NOINITVTABLE ShaderBuffer : public GraphicsResource,
 
     virtual ~ShaderBuffer();
 
-    virtual void updateData(ptrdiff_t offsetElementCount,
-                            ptrdiff_t rangeElementCount,
-                            const bufferPtr data) = 0;
+    virtual void writeData(ptrdiff_t offsetElementCount,
+                           ptrdiff_t rangeElementCount,
+                           const bufferPtr data) = 0;
 
-    virtual void setData(const bufferPtr data);
+    virtual void writeData(const bufferPtr data);
 
-    virtual void getData(ptrdiff_t offsetElementCount,
-                         ptrdiff_t rangeElementCount,
-                         bufferPtr result) const = 0;
+    virtual void readData(ptrdiff_t offsetElementCount,
+                          ptrdiff_t rangeElementCount,
+                          bufferPtr result) const = 0;
 
     virtual bool bindRange(U32 bindIndex,
                            U32 offsetElementCount,

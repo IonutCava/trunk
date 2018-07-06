@@ -35,6 +35,7 @@
 #include "config.h"
 
 #include "AttributeDescriptor.h"
+#include "Core/Headers/RingBuffer.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 
