@@ -6,20 +6,20 @@
 #include <iostream>
 
 ///////////////////////////////////////////////////////////////////////////////////////
-//                                     TCP //
+//                                     TCP                                           //
 ///////////////////////////////////////////////////////////////////////////////////////
 
 namespace Divide {
 
-tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service,
-                                 channel& ch)
+tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& ch)
     : _startTime(time(nullptr)),
       _channel(ch),
       _socket(io_service),
       _inputDeadline(io_service),
       _nonEmptyOutputQueue(io_service),
       _outputDeadline(io_service),
-      _strand(io_service) {
+      _strand(io_service)
+{
     _inputDeadline.expires_at(boost::posix_time::pos_infin);
     _outputDeadline.expires_at(boost::posix_time::pos_infin);
     _nonEmptyOutputQueue.expires_at(boost::posix_time::pos_infin);
@@ -30,15 +30,11 @@ void tcp_session_tpl::start() {
 
     start_read();
 
-    _inputDeadline.async_wait(
-        _strand.wrap(boost::bind(&tcp_session_tpl::check_deadline,
-                                 shared_from_this(), &_inputDeadline)));
+    _inputDeadline.async_wait(_strand.wrap(boost::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_inputDeadline)));
 
     await_output();
 
-    _outputDeadline.async_wait(
-        _strand.wrap(boost::bind(&tcp_session_tpl::check_deadline,
-                                 shared_from_this(), &_outputDeadline)));
+    _outputDeadline.async_wait(_strand.wrap(boost::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_outputDeadline)));
 }
 
 void tcp_session_tpl::stop() {
@@ -50,7 +46,9 @@ void tcp_session_tpl::stop() {
     _outputDeadline.cancel();
 }
 
-bool tcp_session_tpl::stopped() const { return !_socket.is_open(); }
+bool tcp_session_tpl::stopped() const {
+    return !_socket.is_open();
+}
 
 void tcp_session_tpl::sendPacket(const WorldPacket& p) {
     _outputQueue.push_back(p);
@@ -66,14 +64,12 @@ void tcp_session_tpl::start_read() {
     _inputBuffer.consume(_inputBuffer.size());
     _inputDeadline.expires_from_now(boost::posix_time::seconds(30));
     boost::asio::async_read(
-        _socket, boost::asio::buffer(&_header, sizeof(_header)),
-        _strand.wrap(
-            boost::bind(&tcp_session_tpl::handle_read_body, shared_from_this(),
-                        _1, boost::asio::placeholders::bytes_transferred)));
+        _socket, 
+        boost::asio::buffer(&_header, sizeof(_header)),
+        _strand.wrap(boost::bind(&tcp_session_tpl::handle_read_body, shared_from_this(), _1, boost::asio::placeholders::bytes_transferred)));
 }
 
-void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec,
-                                       size_t bytes_transfered) {
+void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec, size_t bytes_transfered) {
     ACKNOWLEDGE_UNUSED(bytes_transfered);
 
     if (stopped()) {

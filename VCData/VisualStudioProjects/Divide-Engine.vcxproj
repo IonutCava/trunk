@@ -313,16 +313,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\chaiscript\chaiscript_stdlib.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\chaiscript\stl_extra.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAPIWrapper.cpp" />
@@ -375,7 +365,9 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneGraphNode.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp" />
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
+    <ClCompile Include="..\..\Source Code\Scripting\GameScript.cpp" />
     <ClCompile Include="..\..\Source Code\Scripting\Script.cpp" />
+    <ClCompile Include="..\..\Source Code\Scripting\ScriptBindings.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
@@ -482,7 +474,9 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\GameScript.h" />
     <ClInclude Include="..\..\Source Code\Scripting\Headers\Script.h" />
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\ScriptBindings.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />

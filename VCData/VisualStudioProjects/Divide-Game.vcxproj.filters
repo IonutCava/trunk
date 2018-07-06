@@ -244,6 +244,9 @@
     <Filter Include="XML\Scenes\assets">
       <UniqueIdentifier>{f696a20f-3d3a-4db5-a023-e2659b61bae6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripts">
+      <UniqueIdentifier>{0a4e1a34-6de7-4230-aae7-bf19c5e05e05}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\AI\AIEntity.cpp">
@@ -824,5 +827,10 @@
     <Xml Include="..\..\XML\Scenes\NetworkScene\assets.xml">
       <Filter>XML\Scenes\assets</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\assets\Scripts\utility.chai">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

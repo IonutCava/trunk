@@ -29,43 +29,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _SCRIPTING_SCRIPT_H_
-#define _SCRIPTING_SCRIPT_H_
+#ifndef _SCRIPTING_GAME_SCRIPT_H_
+#define _SCRIPTING_GAME_SCRIPT_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-#include <chaiscript/chaiscript.hpp>
+#include "Headers/Script.h"
+#include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
 
-class Script {
-public:
-    explicit Script(const stringImpl& sourceCode);
-    explicit Script(const stringImpl& scriptPath, FileType fileType);
-    virtual ~Script();
-       
-    template<typename T>
-    void addGlobal(const T& var, const char* name, bool asConst, bool overwrite);
+    class GameScript : public Script,
+                       public FrameListener {
+    public:
+        explicit GameScript(const stringImpl& sourceCode);
+        explicit GameScript(const stringImpl& scriptPath, FileType fileType);
+        ~GameScript();
 
-    template <typename T>
-    void registerType(const char* typeName);
-
-    template <typename Func>
-    void registerFunction(const Func& function, const char* functionName);
-
-    template<typename T = void>
-    T eval();
-
-protected:
-    static void handleOutput(const std::string& msg);
-
-protected:
-    //ToDo: Move this somewhere else to avoid having the include in this file -Ionut
-    chaiscript::ChaiScript _script;
-    std::string _scriptSource;
-};
+    protected:
+        bool frameStarted(const FrameEvent& evt);
+        bool framePreRenderStarted(const FrameEvent& evt);
+        bool framePreRenderEnded(const FrameEvent& evt);
+        bool frameRenderingQueued(const FrameEvent& evt);
+        bool framePostRenderStarted(const FrameEvent& evt);
+        bool framePostRenderEnded(const FrameEvent& evt);
+        bool frameEnded(const FrameEvent& evt);
+    };
 
 }; //namespace Divide
 
-#endif //_SCRIPTING_SCRIPT_H_
-
-#include "Script.inl"
+#endif //_SCRIPTING_GAME_SCRIPT_H_

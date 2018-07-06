@@ -19,13 +19,14 @@ namespace Paths {
     stringImpl g_scenesLocation;
     stringImpl g_saveLocation;
     stringImpl g_GUILocation;
-    stringImpl g_FontsPath;
-    stringImpl g_LocalisationPath;
+    stringImpl g_fontsPath;
+    stringImpl g_localisationPath;
+    stringImpl g_scriptsLocation;
 
     namespace Shaders {
-        stringImpl g_CacheLocation;
-        stringImpl g_CacheLocationText;
-        stringImpl g_CacheLocationBin;
+        stringImpl g_cacheLocation;
+        stringImpl g_cacheLocationText;
+        stringImpl g_cacheLocationBin;
 
         namespace GLSL {
             // these must match the last 4 characters of the atom file
@@ -67,13 +68,14 @@ namespace Paths {
         g_materialsLocation = "materials/";
         g_navMeshesLocation = "navMeshes/";
         g_GUILocation = "GUI/";
-        g_FontsPath = "fonts/";
+        g_fontsPath = "fonts/";
         g_soundsLocation = "sounds/";
-        g_LocalisationPath = "localisation/";
+        g_localisationPath = "localisation/";
+        g_scriptsLocation = g_assetsLocation + "Scripts/";
 
-        Shaders::g_CacheLocation = "shaderCache/";
-        Shaders::g_CacheLocationText = Shaders::g_CacheLocation + "Text/";
-        Shaders::g_CacheLocationBin = Shaders::g_CacheLocation + "Binary/";
+        Shaders::g_cacheLocation = "shaderCache/";
+        Shaders::g_cacheLocationText = Shaders::g_cacheLocation + "Text/";
+        Shaders::g_cacheLocationBin = Shaders::g_cacheLocation + "Binary/";
         // these must match the last 4 characters of the atom file
         Shaders::GLSL::g_fragAtomExt = "frag";
         Shaders::GLSL::g_vertAtomExt = "vert";
@@ -106,6 +108,7 @@ namespace Paths {
         g_texturesLocation = config.defaultTextureLocation + "/";
         g_xmlDataLocation = entryData.scriptLocation + "/";
         g_scenesLocation = entryData.scenesLocation + "/";
+        g_scriptsLocation = g_assetsLocation + "Scripts/";
     }
 
 }; //namespace Paths

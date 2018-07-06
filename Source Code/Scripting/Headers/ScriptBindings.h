@@ -29,43 +29,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef _SCRIPTING_SCRIPT_H_
-#define _SCRIPTING_SCRIPT_H_
+#ifndef _SCRIPTING_SCRIPT_BINDINGS_H_
+#define _SCRIPTING_SCRIPT_BINDINGS_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include <chaiscript/chaiscript.hpp>
+
+namespace chaiscript {
+    class Module;
+}
 
 namespace Divide {
 
-class Script {
-public:
-    explicit Script(const stringImpl& sourceCode);
-    explicit Script(const stringImpl& scriptPath, FileType fileType);
-    virtual ~Script();
-       
-    template<typename T>
-    void addGlobal(const T& var, const char* name, bool asConst, bool overwrite);
+    #define ADD_FUN(Class, Name) module->add(chaiscript::fun(&Class::Name), #Name )
 
-    template <typename T>
-    void registerType(const char* typeName);
-
-    template <typename Func>
-    void registerFunction(const Func& function, const char* functionName);
-
-    template<typename T = void>
-    T eval();
-
-protected:
-    static void handleOutput(const std::string& msg);
-
-protected:
-    //ToDo: Move this somewhere else to avoid having the include in this file -Ionut
-    chaiscript::ChaiScript _script;
-    std::string _scriptSource;
-};
+    std::shared_ptr<chaiscript::Module> create_chaiscript_bindings();
+    std::shared_ptr<chaiscript::Module> create_chaiscript_stdlib();
+    std::shared_ptr<chaiscript::Module> create_chaiscript_stl_extra();
 
 }; //namespace Divide
 
-#endif //_SCRIPTING_SCRIPT_H_
-
-#include "Script.inl"
+#endif //_SCRIPTING_SCRIPT_BINDINGS_H_

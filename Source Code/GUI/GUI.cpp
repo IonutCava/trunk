@@ -225,7 +225,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
     CEGUI::String CEGUIInstallSharePath(Paths::g_assetsLocation + Paths::g_GUILocation);
     rp->setResourceGroupDirectory("schemes", CEGUIInstallSharePath + "schemes/");
     rp->setResourceGroupDirectory("imagesets", CEGUIInstallSharePath + "imagesets/");
-    rp->setResourceGroupDirectory("fonts", CEGUIInstallSharePath + Paths::g_FontsPath);
+    rp->setResourceGroupDirectory("fonts", CEGUIInstallSharePath + Paths::g_fontsPath);
     rp->setResourceGroupDirectory("layouts", CEGUIInstallSharePath + "layouts/");
     rp->setResourceGroupDirectory("looknfeels", CEGUIInstallSharePath + "looknfeel/");
     rp->setResourceGroupDirectory("lua_scripts", CEGUIInstallSharePath + "lua_scripts/");

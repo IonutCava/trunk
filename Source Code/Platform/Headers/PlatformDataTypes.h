@@ -172,6 +172,19 @@ D64 to_double(const T value) {
     return static_cast<D64>(to_underlying_type(value));
 }
 
+//ref: http://codereview.stackexchange.com/questions/51235/udp-network-server-client-for-gaming-using-boost-asio
+class counter {
+    size_t count;
+public:
+    counter &operator=(size_t val) { count = val; return *this; }
+    counter(size_t count = 0) : count(count) {}
+    operator size_t() { return count; }
+    counter &operator++() { ++count; return *this; }
+    counter operator++(int) { counter ret(count); ++count; return ret; }
+    bool operator==(counter const &other) { return count == other.count; }
+    bool operator!=(counter const &other) { return count != other.count; }
+};
+
 }; //namespace Divide;
 
 #endif //_PLATFORM_DATA_TYPES_H_

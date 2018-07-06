@@ -629,7 +629,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
         if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
             // subfolder -> in the fonts subfolder
-            stringImpl fontPath(Paths::g_assetsLocation + Paths::g_GUILocation + Paths::g_FontsPath);
+            stringImpl fontPath(Paths::g_assetsLocation + Paths::g_GUILocation + Paths::g_fontsPath);
             fontPath += fontName;
             // We use FontStash to load the font file
             _fontCache.second =

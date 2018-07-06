@@ -52,13 +52,14 @@ namespace Paths {
     extern stringImpl g_scenesLocation;
     extern stringImpl g_saveLocation;
     extern stringImpl g_GUILocation;
-    extern stringImpl g_FontsPath;
-    extern stringImpl g_LocalisationPath;
+    extern stringImpl g_fontsPath;
+    extern stringImpl g_localisationPath;
+    extern stringImpl g_scriptsLocation;
 
     namespace Shaders {
-        extern stringImpl g_CacheLocation;
-        extern stringImpl g_CacheLocationText;
-        extern stringImpl g_CacheLocationBin;
+        extern stringImpl g_cacheLocation;
+        extern stringImpl g_cacheLocationText;
+        extern stringImpl g_cacheLocationBin;
 
         namespace GLSL {
             // these must match the last 4 characters of the atom file

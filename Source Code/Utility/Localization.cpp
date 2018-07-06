@@ -52,7 +52,7 @@ ErrorCode init(const stringImpl& newLanguage) {
     clear();
     if (!s_LanguageFileWatcher) {
          s_LanguageFileWatcher.reset(new FW::FileWatcher());
-         s_LanguageFileWatcher->addWatch(Paths::g_LocalisationPath.c_str(), &s_fileWatcherListener);
+         s_LanguageFileWatcher->addWatch(Paths::g_localisationPath.c_str(), &s_fileWatcherListener);
     }
 
     detail::s_localeFile = newLanguage;
@@ -60,7 +60,7 @@ ErrorCode init(const stringImpl& newLanguage) {
     g_languageFile.SetUnicode();
     g_languageFile.SetMultiLine(true);
 
-    stringImpl file = Paths::g_LocalisationPath + detail::s_localeFile + g_languageFileExtension;
+    stringImpl file = Paths::g_localisationPath + detail::s_localeFile + g_languageFileExtension;
 
     if (g_languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;

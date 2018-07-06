@@ -143,9 +143,6 @@
     <Filter Include="Scripting\Headers">
       <UniqueIdentifier>{2e4e6571-075f-4b4d-8cb0-002bb59e91f9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Scripting\chaiscript">
-      <UniqueIdentifier>{b4a045b8-a620-4748-a6d4-7478233a359d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -437,11 +434,11 @@
     <ClCompile Include="..\..\Source Code\Scripting\Script.cpp">
       <Filter>Scripting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\chaiscript\chaiscript_stdlib.cpp">
-      <Filter>Scripting\chaiscript</Filter>
+    <ClCompile Include="..\..\Source Code\Scripting\ScriptBindings.cpp">
+      <Filter>Scripting</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\chaiscript\stl_extra.cpp">
-      <Filter>Scripting\chaiscript</Filter>
+    <ClCompile Include="..\..\Source Code\Scripting\GameScript.cpp">
+      <Filter>Scripting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -754,6 +751,12 @@
       <Filter>Core\Networking\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Scripting\Headers\Script.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\ScriptBindings.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\GameScript.h">
       <Filter>Scripting\Headers</Filter>
     </ClInclude>
   </ItemGroup>

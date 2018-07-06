@@ -14,6 +14,8 @@ TEST(TestSimpleMath)
 
 TEST(TestCFunctionCall)
 {
+    Paths::initPaths();
+
     Script input("var my_fun = fun(x) { return x + 2; };"
                  "something(my_fun)");
 
