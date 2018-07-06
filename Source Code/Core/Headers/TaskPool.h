@@ -33,11 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TASK_POOL_H_
 #define _TASK_POOL_H_
 
-#include "Platform/Threading/Headers/Task.h"
-
 #if !defined(USE_BOOST_ASIO_THREADPOOL)
 #include <Threadpool/ThreadPool.h>
 #endif
+
+#include "Platform/Threading/Headers/Task.h"
 
 namespace Divide {
 

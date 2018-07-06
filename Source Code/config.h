@@ -82,7 +82,7 @@ constexpr unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
 /// Minimum required RAM size (in bytes) for the current build
 constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
 /// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
-constexpr unsigned int MAX_POOLED_TASKS = 4096;
+constexpr unsigned int MAX_POOLED_TASKS = 16384;
 /// Toggle multi-threaded resource loading on or off
 constexpr bool USE_GPU_THREADED_LOADING = true;
 /// Run all threaded tasks in a serial fashion. (used to debug multi-threaded related bugs)

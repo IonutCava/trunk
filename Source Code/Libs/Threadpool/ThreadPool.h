@@ -6,16 +6,7 @@
 #include <functional>
 #include <condition_variable>
 
-/**
- *  Set to 1 to use vector instead of queue for jobs container to improve
- *  memory locality however changes job order from FIFO to LIFO.
- */
-#define CONTIGUOUS_JOBS_MEMORY 0
-#if CONTIGUOUS_JOBS_MEMORY
-#include <vector>
-#else
-#include <queue>
-#endif
+#include <ConcurrentQueue/blockingconcurrentqueue.h>
 
 /**
  *  Simple ThreadPool that creates `threadCount` threads upon its creation,
@@ -26,14 +17,12 @@
 class ThreadPool
 {
 public:
-#if CONTIGUOUS_JOBS_MEMORY
-    explicit ThreadPool(const int threadCount, const int jobsReserveCount = 0) :
-#else
+    typedef std::function<void()> Job;
+
     explicit ThreadPool(const int threadCount) :
-#endif
-        _jobsLeft(0),
         _isRunning(true)
     {
+        _jobsLeft.store(0);
         _threads.reserve(threadCount);
         for (int index = 0; index < threadCount; ++index)
         {
@@ -45,44 +34,15 @@ public:
                 */
                 while (_isRunning)
                 {
-                    std::function<void()> job;
-
-                    // scoped lock
-                    {
-                        std::unique_lock<std::mutex> lock(_queueMutex);
-
-                        // Wait for a job if we don't have any.
-                        _jobAvailableVar.wait(lock, [&]
-                        {
-                            return !_queue.empty();
-                        });
-
-                        // Get job from the queue
-#if CONTIGUOUS_JOBS_MEMORY
-                        job = _queue.back();
-                        _queue.pop_back();
-#else
-                        job = _queue.front();
-                        _queue.pop();
-#endif
-                    }
-
+                    Job job;
+                    _queue.wait_dequeue(job);
                     job();
 
-                    // scoped lock
-                    {
-                        std::lock_guard<std::mutex> lock(_jobsLeftMutex);
-                        --_jobsLeft;
-                    }
-
+                    _jobsLeft.fetch_sub(1);
                     _waitVar.notify_one();
                 }
             }));
         }
-
-#if CONTIGUOUS_JOBS_MEMORY
-        _queue.reserve(jobsReserveCount);
-#endif
     }
 
     /**
@@ -98,23 +58,10 @@ public:
      *  a thread is woken up to take the job. If all threads are busy,
      *  the job is added to the end of the queue.
      */
-    template <typename T>
-    void AddJob(const T& job)
+    void AddJob(const Job& job)
     {
-        // scoped lock
-        {
-            std::lock_guard<std::mutex> lock(_queueMutex);
-#if CONTIGUOUS_JOBS_MEMORY
-            _queue.push_back(job);
-#else
-            _queue.push(job);
-#endif
-        }
-        // scoped lock
-        {
-            std::lock_guard<std::mutex> lock(_jobsLeftMutex);
-            ++_jobsLeft;
-        }
+        _queue.enqueue(job);
+        _jobsLeft.fetch_add(1);
         _jobAvailableVar.notify_one();
     }
 
@@ -161,12 +108,12 @@ public:
      */
     void WaitAll()
     {
-        std::unique_lock<std::mutex> lock(_jobsLeftMutex);
-        if (_jobsLeft > 0)
+        if (_jobsLeft.load() > 0)
         {
+            std::unique_lock<std::mutex> lock(_jobsLeftMutex);
             _waitVar.wait(lock, [&]
             {
-                return _jobsLeft == 0;
+                return _jobsLeft.load() == 0;
             });
         }
     }
@@ -183,35 +130,15 @@ public:
     /**
      *  Return the next job in the queue to run it in the main thread
      */
-    std::function<void()> GetNextJob()
+    Job GetNextJob()
     {
-        std::function<void()> job;
+        Job job;
 
-        // scoped lock
-        {
-            std::lock_guard<std::mutex> lock(_queueMutex);
-
-            if (_queue.empty())
-            {
-                return nullptr;
-            }
-
-            // Get job from the queue
-#if CONTIGUOUS_JOBS_MEMORY
-            job = _queue.back();
-            _queue.pop_back();
-#else
-            job = _queue.front();
-            _queue.pop();
-#endif
+        if (!_queue.try_dequeue(job)) {
+            return nullptr;
         }
 
-        // scoped lock
-        {
-            std::lock_guard<std::mutex> lock(_jobsLeftMutex);
-            --_jobsLeft;
-        }
-
+        _jobsLeft.fetch_sub(1);
         _waitVar.notify_one();
 
         return job;
@@ -219,18 +146,13 @@ public:
 
 private:
     std::vector<std::thread> _threads;
-#if CONTIGUOUS_JOBS_MEMORY
-    std::vector<std::function<void()>> _queue;
-#else
-    std::queue<std::function<void()>> _queue;
-#endif
+    moodycamel::BlockingConcurrentQueue<Job> _queue;
 
-    int _jobsLeft;
+    std::atomic_int _jobsLeft;
     bool _isRunning;
     std::condition_variable _jobAvailableVar;
     std::condition_variable _waitVar;
     std::mutex _jobsLeftMutex;
-    std::mutex _queueMutex;
 };
 
 #undef CONTIGUOUS_JOBS_MEMORY

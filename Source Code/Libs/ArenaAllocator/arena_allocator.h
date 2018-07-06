@@ -328,8 +328,8 @@ inline
 		arena.alloc(size);
 }
 
-inline
-	void* operator new (size_t size, Arena* arena)
+template <typename Type, Type* P, typename = typename std::enable_if<(P != nullptr)>::type> inline
+    void* operator new (size_t size, Arena* arena)
 {
 	return
 		arena->alloc(size);

@@ -119,8 +119,15 @@ Task* TaskPool::createTask(Task* parentTask,
         parentTask->_unfinishedJobs.fetch_add(1);
     }
 
-    const U32 index = g_allocatedTasks++;
-    Task* task = &g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
+    Task* task = nullptr;
+    while (task == nullptr) {
+        const U32 index = g_allocatedTasks++;
+        Task* crtTask = &g_taskAllocator[index & (Config::MAX_POOLED_TASKS - 1u)];
+        if (Finished(crtTask)) {
+            task = crtTask;
+        }
+    }
+
     task->_parentPool = this;
     task->_parent = parentTask;
     task->_callback = threadedFunction;

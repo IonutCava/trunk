@@ -3,6 +3,8 @@
 #include "Headers/Defines.h"
 #include "Core/Headers/Console.h"
 #include "Core/Headers/TaskPool.h"
+#include "Core/Time/Headers/ProfileTimer.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
 #include <atomic>
 
@@ -130,6 +132,36 @@ TEST(TaskClassMemberCallbackTest)
     test.flushCallbackQueue();
 
     CHECK_FALSE(testObj.getTestValue());
+}
+
+TEST(TaskSpeedTest)
+{
+    
+    TaskPool test;
+    bool init = test.init(HARDWARE_THREAD_COUNT());
+    CHECK_TRUE(init);
+
+    Time::ProfileTimer timer;
+
+    timer.start();
+    TaskHandle job = CreateTask(test, 
+        [](const Task& parentTask) {
+            // NOP
+        }
+    );
+
+    for (std::size_t i = 0; i < 60 * 1000; ++i)
+    {
+        CreateTask(test, &job,
+            [](const Task& parentTask) {
+                // NOP
+            }
+        ).startTask();
+    }
+
+    job.startTask().wait();
+    F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.stop());
+    std::cout << "Threading speed test: 60K tasks completed in: " << durationMS << " ms." << std::endl;
 }
 
 TEST(TaskPriorityTest)

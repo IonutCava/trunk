@@ -51,11 +51,13 @@ void ProfileTimer::start() {
     }
 }
 
-void ProfileTimer::stop() {
+U64 ProfileTimer::stop() {
     if (Config::Profile::ENABLE_FUNCTION_PROFILING && timersEnabled()) {
         _timerAverage += _appTimer.getElapsedTime(true) - _timer;
         _timerCounter++;
     }
+
+    return get();
 }
 
 void ProfileTimer::reset() {
