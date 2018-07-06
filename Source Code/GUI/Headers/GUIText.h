@@ -69,7 +69,7 @@ class GUIText : public GUIElement, public TextLabel {
             CEGUI::Window* parent,
             U32 fontSize = 16);
 
-    void draw() const;
+    void draw(GFXDevice& context) const;
     void mouseMoved(const GUIEvent& event);
     void onMouseUp(const GUIEvent& event);
     void onMouseDown(const GUIEvent& event);

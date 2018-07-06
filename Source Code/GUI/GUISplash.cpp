@@ -37,7 +37,7 @@ GUISplash::~GUISplash()
 {
 }
 
-void GUISplash::render() {
+void GUISplash::render(GFXDevice& context) {
     GFX::ScopedViewport splashViewport(vec4<I32>(0, 0, _dimensions.width, _dimensions.height));
     _splashImage->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
 
@@ -45,10 +45,10 @@ void GUISplash::render() {
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
     triangleCmd.drawCount(1);
-    triangleCmd.stateHash(GFXDevice::instance().getDefaultStateBlock(true));
+    triangleCmd.stateHash(context.getDefaultStateBlock(true));
     triangleCmd.shaderProgram(_splashShader);
 
-    GFXDevice::instance().draw(triangleCmd);
+    context.draw(triangleCmd);
 }
 
 };

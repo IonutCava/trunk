@@ -40,7 +40,8 @@ GUIMessageBox::~GUIMessageBox()
     _parent->removeChild(_msgBoxWindow);
 }
 
-void GUIMessageBox::draw() const {
+void GUIMessageBox::draw(GFXDevice& context) const {
+    ACKNOWLEDGE_UNUSED(context);
     // Nothing. CEGUI should handle this
 }
 

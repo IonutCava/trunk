@@ -762,6 +762,7 @@ inline TO safe_static_cast(D64 from)
     return static_cast<TO>(from);
 } 
 #endif
+
 /// Performes extra asserts steps (logging, message boxes, etc). 
 /// Returns true if the assert should be processed.
 bool preAssert(const bool expression, const char* failMessage);

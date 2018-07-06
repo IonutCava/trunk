@@ -47,7 +47,7 @@ public:
     typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
 
 public:
-    explicit GUIInterface(const vec2<U16>& resolution);
+    explicit GUIInterface(GUI& context, const vec2<U16>& resolution);
     virtual ~GUIInterface();
 
     virtual void onChangeResolution(U16 w, U16 h);
@@ -107,6 +107,8 @@ protected:
     virtual GUIElement* getGUIElementImpl(I64 elementID) const;
 
 protected:
+    GUI* _context;
+
     GUIMap _guiElements;
 
     vec2<U16> _resolutionCache;

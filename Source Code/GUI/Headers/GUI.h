@@ -55,6 +55,7 @@ const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
 
 class GUIConsole;
 class GUIElement;
+class PlatformContext;
 class RenderStateBlock;
 
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
@@ -66,17 +67,23 @@ class Scene;
 /// Graphical User Interface
 
 class SceneGUIElements;
-DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
-  public:
+class GUI : public GUIInterface,
+    public Input::InputAggregatorInterface {
+public:
     typedef hashMapImpl<I64, SceneGUIElements*> GUIMapPerScene;
 
-  public:
+public:
+    GUI();
+    ~GUI();
+
     /// Create the GUI
-    bool init(const vec2<U16>& renderResolution);
+    bool init(PlatformContext& context, const vec2<U16>& renderResolution);
+    void destroy();
+
     void onChangeResolution(U16 w, U16 h) override;
     void onChangeScene(Scene* newScene);
     void onUnloadScene(Scene* scene);
-    
+
     /// Main update call
     void update(const U64 deltaTime);
 
@@ -98,7 +105,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
 
     /// Get a pointer to our console window
     inline GUIConsole* const getConsole() const { return _console; }
-    inline const GUIEditor& getEditor() const { return GUIEditor::instance(); }
+    inline const GUIEditor& getEditor() const { return *_guiEditor; }
     inline CEGUI::Window* rootSheet() const { return _rootSheet; }
     inline const stringImpl& guiScheme() const { return _defaultGUIScheme; }
     /// Used by CEGUI to setup rendering (D3D/OGL/OGRE/etc)
@@ -124,20 +131,20 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
     bool joystickPovMoved(const Input::JoystickEvent& arg, I8 pov);
     /// Joystick button pressed
     bool joystickButtonPressed(const Input::JoystickEvent& arg,
-                               Input::JoystickButton button);
+        Input::JoystickButton button);
     /// Joystick button released
     bool joystickButtonReleased(const Input::JoystickEvent& arg,
-                                Input::JoystickButton button);
+        Input::JoystickButton button);
     bool joystickSliderMoved(const Input::JoystickEvent& arg, I8 index);
     bool joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index);
     /// Mouse moved
     bool mouseMoved(const Input::MouseEvent& arg);
     /// Mouse button pressed
     bool mouseButtonPressed(const Input::MouseEvent& arg,
-                            Input::MouseButton button);
+        Input::MouseButton button);
     /// Mouse button released
     bool mouseButtonReleased(const Input::MouseEvent& arg,
-                             Input::MouseButton button);
+        Input::MouseButton button);
 
     Scene* activeScene() {
         return _activeScene;
@@ -145,28 +152,26 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
     const Scene* activeScene() const {
         return _activeScene;
     }
-  protected:
+protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName) const;
     GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID) const;
 
-  protected:
-      friend class SceneGUIElements;
-      CEGUI::Window* _rootSheet;  //< gui root Window
-      stringImpl _defaultGUIScheme;
+protected:
+    friend class SceneGUIElements;
+    CEGUI::Window* _rootSheet;  //< gui root Window
+    stringImpl _defaultGUIScheme;
 
-  private:
-    GUI();            //< Constructor
-    ~GUI();           //< Destructor
-    void draw() const;
+private:
+    void draw(GFXDevice& context) const;
 
-  private:
+private:
     bool _init;              //< Set to true when the GUI has finished loading
                              /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
                              /// performance)
     CEGUIInput _ceguiInput;  //< Used to implement key repeat
     GUIConsole* _console;    //< Pointer to the GUIConsole object
-    GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for
-                                    //general purpose messages
+    GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for general purpose messages
+    GUIEditor*  _guiEditor; //< Pointer to a World Editor type interface
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
                               //for performance reasons
     ShaderProgram_ptr _guiShader;  //<Used to apply colour for text for now
@@ -182,7 +187,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;
     mutable SharedLock _guiStackLock;
-END_SINGLETON
+};
 
 };  // namespace Divide
 #endif

@@ -175,7 +175,7 @@ bool SceneManager::unloadScene(Scene* scene) {
     assert(scene != nullptr);
     
     if (Attorney::SceneManager::deinitializeAI(*scene)) {
-        _platformContext->_GUI.onUnloadScene(scene);
+        _platformContext->gui().onUnloadScene(scene);
         return Attorney::SceneManager::unload(*scene);
     }
 
@@ -191,7 +191,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     Attorney::SceneManager::onSetActive(*scene);
     _scenePool->activeScene(*scene);
     ShadowMap::resetShadowMaps(_platformContext->_GFX);
-    _platformContext->_GUI.onChangeScene(scene);
+    _platformContext->gui().onChangeScene(scene);
     ParamHandler::instance().setParam(_ID("activeScene"), scene->getName());
 }
 

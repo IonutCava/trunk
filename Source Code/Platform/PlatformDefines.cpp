@@ -42,6 +42,8 @@ U32 HARDWARE_THREAD_COUNT() {
     return std::max(std::thread::hardware_concurrency(), 2u);
 }
 
+extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage);
+
 bool preAssert(const bool expression, const char* failMessage) {
     if (expression) {
         return false;
@@ -51,13 +53,7 @@ bool preAssert(const bool expression, const char* failMessage) {
     }
     /// Message boxes without continue on assert don't render!
     if (Config::Assert::SHOW_MESSAGE_BOX && Config::Assert::CONTINUE_ON_ASSERT) {
-        GUIMessageBox* const msgBox = GUI::instance().getDefaultMessageBox();
-        if (msgBox) {
-            msgBox->setTitle("Assertion Failed!");
-            msgBox->setMessage(stringImpl("Assert: ") + failMessage);
-            msgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
-            msgBox->show();
-        }
+        DIVIDE_ASSERT_MSG_BOX(failMessage);
     }
 
     return !Config::Assert::CONTINUE_ON_ASSERT;

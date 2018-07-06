@@ -14,7 +14,8 @@ GUIFlash::~GUIFlash()
 {
 }
 
-void GUIFlash::draw() const {
+void GUIFlash::draw(GFXDevice& context) const {
+    ACKNOWLEDGE_UNUSED(context);
 }
 
 };

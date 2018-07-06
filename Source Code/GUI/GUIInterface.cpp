@@ -11,8 +11,9 @@
 
 namespace Divide {
 
-GUIInterface::GUIInterface(const vec2<U16>& resolution)
-    : _resolutionCache(resolution)
+GUIInterface::GUIInterface(GUI& context, const vec2<U16>& resolution)
+    : _context(&context),
+      _resolutionCache(resolution)
 {
 }
 
@@ -111,10 +112,10 @@ GUIButton* GUIInterface::addButton(U64 guiID,
     }
 
     if (!parent) {
-        parent = GUI::instance().rootSheet();
+        parent = _context->rootSheet();
     }
 
-    GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, GUI::instance().guiScheme(), relOffset, relDim, parent, callback);
+    GUIButton* btn = MemoryManager_NEW GUIButton(guiID, text, _context->guiScheme(), relOffset, relDim, parent, callback);
 
     addElement(guiID, btn);
 
@@ -127,7 +128,11 @@ GUIMessageBox* GUIInterface::addMsgBox(U64 guiID,
                                        const vec2<I32>& offsetFromCentre) {
     assert(getGUIElement(guiID) == nullptr);
 
-    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(guiID, title, message, offsetFromCentre, GUI::instance().rootSheet());
+    GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(guiID,
+                                                         title,
+                                                         message,
+                                                         offsetFromCentre,
+                                                         _context->rootSheet());
     addElement(guiID, box);
 
     return box;
@@ -147,7 +152,7 @@ GUIText* GUIInterface::addText(U64 guiID,
                                                      position.height),
                                            font,
                                            colour,
-                                           GUI::instance().rootSheet(),
+                                           _context->rootSheet(),
                                            fontSize);
     t->initialHeightCache(to_float(getDisplayResolution().height));
     addElement(guiID, t);
@@ -161,7 +166,7 @@ GUIFlash* GUIInterface::addFlash(U64 guiID,
                                  const vec2<U32>& extent) {
     assert(getGUIElement(guiID) == nullptr);
 
-    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, GUI::instance().rootSheet());
+    GUIFlash* flash = MemoryManager_NEW GUIFlash(guiID, _context->rootSheet());
     addElement(guiID, flash);
 
     return flash;
@@ -188,4 +193,5 @@ GUIText* GUIInterface::modifyText(U64 guiID, const stringImpl& text) {
 const vec2<U16>& GUIInterface::getDisplayResolution() const {
     return _resolutionCache;
 }
+
 }; //namespace Divide

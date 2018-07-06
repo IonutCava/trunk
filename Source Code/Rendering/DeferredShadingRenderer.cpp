@@ -3,6 +3,7 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIText.h"
 #include "Scenes/Headers/SceneState.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -92,7 +93,7 @@ DeferredShadingRenderer::DeferredShadingRenderer(GFXDevice& context)
 
     updateResolution(width, height);
 
-    GUI& gui = GUI::instance();
+    GUI& gui = Application::instance().kernel().platformContext().gui();
     gui.addText(_ID("PositionData"),                 // Unique ID
                       vec2<I32>(60, 60),             // Position
                       Font::DIVIDE_DEFAULT,          // Font
@@ -208,7 +209,7 @@ void DeferredShadingRenderer::secondPass(
         _context.draw(cmd);
     }
 
-    GUI& gui = GUI::instance();
+    GUI& gui = Application::instance().kernel().platformContext().gui();
     GUIElement* guiElement = gui.getGUIElement(0, _ID("FinalImage"));
     if (guiElement) {
         guiElement->setVisible(_debugView);

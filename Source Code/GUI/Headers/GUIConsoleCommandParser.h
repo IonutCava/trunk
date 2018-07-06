@@ -40,9 +40,10 @@ namespace Divide {
 class AudioDescriptor;
 TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
 
+class GUI;
 class GUIConsoleCommandParser : public CommandParser {
    public:
-    GUIConsoleCommandParser();
+    GUIConsoleCommandParser(GUI& context);
     ~GUIConsoleCommandParser();
 
     bool processCommand(const stringImpl& commandString);
@@ -63,6 +64,7 @@ class GUIConsoleCommandParser : public CommandParser {
     void handleAddObject(const stringImpl& args /*type or name,size or scale*/);
 
    private:
+    GUI& _context;
     /// Help text for every command
     hashMapImpl<U64, const char*> _commandHelp;
     /// used for sound playback

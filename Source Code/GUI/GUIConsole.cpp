@@ -22,8 +22,9 @@ namespace {
     const U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
 };
 
-GUIConsole::GUIConsole()
-    : _init(false),
+GUIConsole::GUIConsole(GUI& context)
+    : _context(context),
+      _init(false),
       _closing(false),
       _editBox(nullptr),
       _lastMsgError(false),
@@ -33,7 +34,7 @@ GUIConsole::GUIConsole()
       _outputBuffer(_CEGUI_MAX_CONSOLE_ENTRIES)
 {
     // we need a default command parser, so just create it here
-    _cmdParser = MemoryManager_NEW GUIConsoleCommandParser();
+    _cmdParser = MemoryManager_NEW GUIConsoleCommandParser(_context);
 }
 
 GUIConsole::~GUIConsole()

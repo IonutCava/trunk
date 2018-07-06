@@ -69,7 +69,7 @@ class GUIButton : public GUIElement {
               ButtonCallback callback);
     ~GUIButton();
 
-    void draw() const;
+    void draw(GFXDevice& context) const;
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:;

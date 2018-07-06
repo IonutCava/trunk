@@ -63,6 +63,7 @@ struct GUIEvent {
     U8 mouseClickCount;
 };
 
+class GFXDevice;
 class RenderStateBlock;
 class GUIElement : public GUIDWrapper {
     friend class GUI;
@@ -71,7 +72,7 @@ class GUIElement : public GUIDWrapper {
     GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
 
-    virtual void draw() const = 0;
+    virtual void draw(GFXDevice& context) const = 0;
 
     inline const stringImpl& getName() const { return _name; }
     inline const GUIType getType() const { return _guiType; }

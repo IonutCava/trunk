@@ -25,43 +25,38 @@
 #include <stdarg.h>
 
 namespace Divide {
+namespace {
+    GUIMessageBox* g_assertMsgBox = nullptr;
+};
+
+void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
+    if (g_assertMsgBox) {
+        g_assertMsgBox->setTitle("Assertion Failed!");
+        g_assertMsgBox->setMessage(stringImpl("Assert: ") + failMessage);
+        g_assertMsgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
+        g_assertMsgBox->show();
+    }
+}
 
 GUI::GUI()
-    : GUIInterface(vec2<U16>(1, 1)),
+    : GUIInterface(*this, vec2<U16>(1, 1)), //<dangerous, but better than a Singleton
       _init(false),
       _rootSheet(nullptr),
       _defaultMsgBox(nullptr),
       _enableCEGUIRendering(false),
       _debugVarCacheCount(0),
       _activeScene(nullptr),
-      _console(MemoryManager_NEW GUIConsole())
+      _guiEditor(nullptr),
+      _console(nullptr),
+      _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
     // 500ms
-    _textRenderInterval = Time::MillisecondsToMicroseconds(10);
     _ceguiInput.setInitialDelay(0.500f);
-    GUIEditor::createInstance();
 }
 
 GUI::~GUI()
 {
-    WriteLock w_lock(_guiStackLock);
-    Console::printfn(Locale::get(_ID("STOP_GUI")));
-    GUIEditor::destroyInstance();
-    MemoryManager::DELETE(_console);
-    assert(_guiStack.empty());
-    for (GUIMap::value_type& it : _guiElements) {
-        MemoryManager::DELETE(it.second.first);
-    }
-    _guiElements.clear();
-
-    _defaultMsgBox = nullptr;
-
-    // Close CEGUI
-    try {
-        CEGUI::System::destroy();
-    } catch (...) {
-        Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
-    }
+    destroy();
 }
 
 void GUI::onChangeScene(Scene* newScene) {
@@ -92,7 +87,7 @@ void GUI::onUnloadScene(Scene* scene) {
     _guiStack.erase(_guiStack.find(scene->getGUID()));
 }
 
-void GUI::draw() const {
+void GUI::draw(GFXDevice& context) const {
     static vectorImpl<GUITextBatchEntry> textBatch;
 
     if (!_init || !_activeScene) {
@@ -118,20 +113,20 @@ void GUI::draw() const {
                     textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
                 }
             } else {
-                element.draw();
+                element.draw(context);
             }
         }
     }
 
     if (!textBatch.empty()) {
-        Attorney::GFXDeviceGUI::drawText(textBatch);
+        Attorney::GFXDeviceGUI::drawText(context, textBatch);
     }
 
     ReadLock r_lock(_guiStackLock);
     // scene specific
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
-        it->second->draw();
+        it->second->draw(context);
     }
 
     // CEGUI handles its own states, so render it after we clear our states but
@@ -154,7 +149,7 @@ void GUI::update(const U64 deltaTime) {
         _console->update(deltaTime);
     }
 
-    GUIEditor::instance().update(deltaTime);
+    _guiEditor->update(deltaTime);
 
     const DebugInterface& debugInterface = DebugInterface::instance();
     U32 debugVarEntries = to_uint(debugInterface.debugVarCount());
@@ -199,14 +194,18 @@ void GUI::update(const U64 deltaTime) {
     }
 }
 
-bool GUI::init(const vec2<U16>& renderResolution) {
+bool GUI::init(PlatformContext& context, const vec2<U16>& renderResolution) {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
+
     onChangeResolution(renderResolution.width, renderResolution.height);
 
     _enableCEGUIRendering = !(ParamHandler::instance().getParam<bool>(_ID("GUI.CEGUI.SkipRendering")));
+
+    _guiEditor = MemoryManager_NEW GUIEditor(*this);
+    _console = MemoryManager_NEW GUIConsole(*this);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -266,14 +265,14 @@ bool GUI::init(const vec2<U16>& renderResolution) {
     _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
-    GUIEditor::instance().init();
+    _guiEditor->init();
 
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
     _guiShader->Uniform("dvd_WorldMatrix", mat4<F32>());
-    GFXDevice::instance().add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this)),
-                                                                std::numeric_limits<U32>::max() - 1);
+    context._GFX.add2DRenderFunction(GUID_DELEGATE_CBK(DELEGATE_BIND(&GUI::draw, this, std::ref(context._GFX))),
+                            std::numeric_limits<U32>::max() - 1);
     const OIS::MouseState& mouseState =
         Input::InputInterface::instance().getMouse().getMouseState();
 
@@ -283,8 +282,38 @@ bool GUI::init(const vec2<U16>& renderResolution) {
                                "Assertion failure",
                                "Assertion failed with message: ");
 
+    g_assertMsgBox = _defaultMsgBox;
+
     _init = true;
     return true;
+}
+
+void GUI::destroy() {
+    if (_init) {
+        Console::printfn(Locale::get(_ID("STOP_GUI")));
+        MemoryManager::DELETE(_guiEditor);
+        MemoryManager::DELETE(_console);
+
+        {
+            WriteLock w_lock(_guiStackLock);
+            assert(_guiStack.empty());
+            for (GUIMap::value_type& it : _guiElements) {
+                MemoryManager::DELETE(it.second.first);
+            }
+            _guiElements.clear();
+        }
+
+        _defaultMsgBox = nullptr;
+        g_assertMsgBox = nullptr;
+        // Close CEGUI
+        try {
+            CEGUI::System::destroy();
+        }
+        catch (...) {
+            Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
+        }
+        _init = false;
+    }
 }
 
 void GUI::onChangeResolution(U16 w, U16 h) {
@@ -303,7 +332,7 @@ void GUI::onChangeResolution(U16 w, U16 h) {
 }
 
 void GUI::selectionChangeCallback(Scene* const activeScene) {
-    GUIEditor::instance().Handle_ChangeSelection(activeScene->getCurrentSelection());
+    _guiEditor->Handle_ChangeSelection(activeScene->getCurrentSelection());
 }
 
 void GUI::setCursorPosition(I32 x, I32 y) const {
@@ -329,8 +358,7 @@ bool GUI::onKeyUp(const Input::KeyEvent& key) {
 
     if (Config::Build::IS_DEBUG_BUILD) {
         if (key._key == Input::KeyCode::KC_F11) {
-            GUIEditor::instance().setVisible(
-                !GUIEditor::instance().isVisible());
+            _guiEditor->setVisible(!_guiEditor->isVisible());
         }
     }
 

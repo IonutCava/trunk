@@ -33,7 +33,6 @@
 #define _GUI_EDITOR_H_
 
 #include "Platform/Headers/PlatformDefines.h"
-#include <assert.h>
 
 namespace CEGUI {
 class Font;
@@ -45,10 +44,14 @@ class ToggleButton;
 
 namespace Divide {
 
+class GUI;
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
+
 /// Our world editor interface
-DEFINE_SINGLETON(GUIEditor)
-  public:
+class GUIEditor {
+public:
+    explicit GUIEditor(GUI& context);
+    ~GUIEditor();
     bool init();
     void setVisible(bool visible);  //< Hide or show the editor
     bool isVisible();  //< Return true if editor is visible, false if is hidden
@@ -58,9 +61,7 @@ DEFINE_SINGLETON(GUIEditor)
     /// Returns true if the last click was in one of the editor's windows
     inline bool wasControlClick() { return _wasControlClick; }
 
-  private:
-    GUIEditor();
-    ~GUIEditor();
+private:
     void RegisterHandlers();
     void UpdateControls();
     void TrackSelection();
@@ -145,13 +146,13 @@ private:
 
     F32& currentValues(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
-                control < ControlFields::COUNT);
+            control < ControlFields::COUNT);
         return _currentValues[to_uint(transform)][to_uint(control)];
     }
 
     CEGUI::Editbox*& valuesField(TransformFields transform, ControlFields control) {
         assert(transform < TransformFields::COUNT &&
-                control < ControlFields::COUNT);
+            control < ControlFields::COUNT);
         return _valuesField[to_uint(transform)][to_uint(control)];
     }
 
@@ -161,17 +162,18 @@ private:
     }
 
     CEGUI::Window*& transformButtonsInc(TransformFields transform, ControlFields control) {
-           assert(transform < TransformFields::COUNT &&
-                  control < ControlFields::COUNT);
+        assert(transform < TransformFields::COUNT &&
+            control < ControlFields::COUNT);
         return _transformButtonsInc[to_uint(transform)][to_uint(control)];
     }
 
-     CEGUI::Window*& transformButtonsDec(TransformFields transform, ControlFields control) {
-           assert(transform < TransformFields::COUNT &&
-                  control < ControlFields::COUNT);
+    CEGUI::Window*& transformButtonsDec(TransformFields transform, ControlFields control) {
+        assert(transform < TransformFields::COUNT &&
+            control < ControlFields::COUNT);
         return _transformButtonsDec[to_uint(transform)][to_uint(control)];
     }
-  private:
+private:
+    GUI& _context;
     bool _init;
     bool _wasControlClick;
     bool _createNavMeshQueued;
@@ -193,9 +195,9 @@ private:
         std::array<CEGUI::Editbox *, to_const_uint(ControlFields::COUNT)>,
         to_const_uint(TransformFields::COUNT)> _valuesField;
     std::array<std::array<F32, to_const_uint(ControlFields::COUNT)>,
-               to_const_uint(TransformFields::COUNT)> _currentValues;
+        to_const_uint(TransformFields::COUNT)> _currentValues;
 
-END_SINGLETON
+};
 
 };  // namespace Divide
 #endif

@@ -64,7 +64,7 @@ Scene::Scene(PlatformContext& context, const stringImpl& name)
     _lightPool = MemoryManager_NEW LightPool(*this, _context._GFX);
     _envProbePool = MemoryManager_NEW SceneEnvironmentProbePool(*this);
 
-    _GUI = MemoryManager_NEW SceneGUIElements(*this);
+    _GUI = MemoryManager_NEW SceneGUIElements(*this, _context.gui());
 
     if (Config::Build::IS_DEBUG_BUILD) {
         RenderStateBlock primitiveDescriptor;
@@ -643,7 +643,7 @@ bool Scene::load(const stringImpl& name) {
     Camera::activeCamera()->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     Camera::activeCamera()->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
 
-    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context._GUI, this));
+    addSelectionCallback(DELEGATE_BIND(&GUI::selectionChangeCallback, &_context.gui(), this));
 
     _loadComplete = true;
     return _loadComplete;

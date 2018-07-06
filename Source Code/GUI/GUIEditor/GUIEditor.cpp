@@ -15,8 +15,9 @@
 
 namespace Divide {
 
-GUIEditor::GUIEditor()
-    : _init(false),
+GUIEditor::GUIEditor(GUI& context)
+    : _context(context),
+      _init(false),
       _wasControlClick(false),
       _createNavMeshQueued(false),
       _pauseSelectionTracking(false),
@@ -238,8 +239,8 @@ bool GUIEditor::update(const U64 deltaTime) {
     _wasControlClick = false;
     bool state = true;
     if (_createNavMeshQueued) {
-        Scene& activeScene = *GUI::instance().activeScene();
-        AI::AIManager& aiManager = GUI::instance().activeScene()->aiManager();
+        Scene& activeScene = *_context.activeScene();
+        AI::AIManager& aiManager = _context.activeScene()->aiManager();
 
         state = false;
         // Check if we already have a NavMesh created
@@ -934,7 +935,7 @@ bool GUIEditor::Handle_EditFieldClick(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_CreateNavMesh(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: NavMesh creation queued!");
-    GUI::instance().getConsole()->setVisible(true);
+    _context.getConsole()->setVisible(true);
     _createNavMeshQueued = true;
     return true;
 }
@@ -951,7 +952,7 @@ bool GUIEditor::Handle_SaveSelection(const CEGUI::EventArgs &e) {
 
 bool GUIEditor::Handle_DeleteSelection(const CEGUI::EventArgs &e) {
     Console::d_printfn("[Editor]: Deleting selection!");
-    GUI::instance().activeScene()->sceneGraph().deleteNode(_currentSelection, false);
+    _context.activeScene()->sceneGraph().deleteNode(_currentSelection, false);
     return true;
 }
 
@@ -1043,7 +1044,7 @@ bool GUIEditor::Handle_DrawNavMeshToggle(const CEGUI::EventArgs &e) {
     } else {
         Console::d_printfn("[Editor]: NavMesh rendering disabled!");
     }
-    GUI::instance()
+    _context
         .activeScene()
         ->aiManager()
         .toggleNavMeshDebugDraw(toggleButton(ToggleButtons::TOGGLE_NAV_MESH_DRAW)->isSelected());

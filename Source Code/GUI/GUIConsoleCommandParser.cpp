@@ -13,8 +13,9 @@
 
 namespace Divide {
 
-GUIConsoleCommandParser::GUIConsoleCommandParser() 
-    : _sound(nullptr)
+GUIConsoleCommandParser::GUIConsoleCommandParser(GUI& context)
+    : _context(context),
+      _sound(nullptr)
 {
     _commandMap[_ID("say")] =
         DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this,
@@ -167,7 +168,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
-    SceneGraph& sceneGraph = GUI::instance().activeScene()->sceneGraph();
+    SceneGraph& sceneGraph = _context.activeScene()->sceneGraph();
     if (!args.empty()) {
         SceneGraphNode_ptr sgn = sceneGraph.findNode("args").lock();
         if (!sgn) {
@@ -183,7 +184,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
         temp = MemoryManager_NEW AI::Navigation::NavigationMesh();
     }
     // Set it's file name
-    temp->setFileName(GUI::instance().activeScene()->getName());
+    temp->setFileName(_context.activeScene()->getName());
     // Try to load it from file
     bool loaded = temp->load(sceneGraph.getRoot());
     if (!loaded) {
@@ -250,7 +251,7 @@ void GUIConsoleCommandParser::handleAddObject(const stringImpl& args) {
     model.useHighDetailNavMesh = true;
     model.physicsUsage = true;
     model.physicsStatic = true;
-    GUI::instance().activeScene()->addModel(model);
+    _context.activeScene()->addModel(model);
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {

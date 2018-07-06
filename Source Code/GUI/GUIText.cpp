@@ -16,13 +16,13 @@ GUIText::GUIText(U64 guiID,
 {
 }
 
-void GUIText::draw() const {
+void GUIText::draw(GFXDevice& context) const {
     if (!text().empty()) {
         static vectorImpl<GUITextBatchEntry> entry(1);
         entry[0]._textLabel = this;
         entry[0]._position.set(getPosition());
         entry[0]._stateHash = getStateBlockHash();
-        Attorney::GFXDeviceGUI::drawText(entry);
+        Attorney::GFXDeviceGUI::drawText(context, entry);
     }
 }
 

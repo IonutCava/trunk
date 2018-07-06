@@ -41,7 +41,7 @@ class GUIFlash : public GUIElement {
     GUIFlash(U64 guiID, CEGUI::Window* parent);
     ~GUIFlash();
 
-    void draw() const;
+    void draw(GFXDevice& context) const;
 };
 
 };  // namespace Divide

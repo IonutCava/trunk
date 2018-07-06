@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct PlatformContext;
+class PlatformContext;
 
 class Scene;
 class ScenePool {

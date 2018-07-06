@@ -41,13 +41,14 @@ class SceneGUIElements : public GUIInterface,
 {
 
 public:
-    SceneGUIElements(Scene& parentScene);
+    SceneGUIElements(Scene& parentScene, GUI& context);
     ~SceneGUIElements();
 
-    void draw();
+    void draw(GFXDevice& context);
 
     void onEnable();
     void onDisable();
+
 };
 }; //namespace Divide;
 

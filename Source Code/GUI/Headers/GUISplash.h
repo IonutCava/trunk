@@ -39,11 +39,12 @@ namespace Divide {
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
+class GFXDevice;
 class GUISplash {
    public:
     GUISplash(const stringImpl& splashImageName, const vec2<U16>& dimensions);
     ~GUISplash();
-    void render();
+    void render(GFXDevice& context);
 
    private:
     vec2<U16> _dimensions;

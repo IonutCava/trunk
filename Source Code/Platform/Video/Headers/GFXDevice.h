@@ -62,6 +62,7 @@ enum class WindowEvent : U32;
 
 class GUI;
 class GUIText;
+class SceneGUIElements;
 
 class GL_API;
 class DX_API;
@@ -512,12 +513,13 @@ END_SINGLETON
 namespace Attorney {
     class GFXDeviceGUI {
     private:
-        static void drawText(const vectorImpl<GUITextBatchEntry>& batch) {
-            return GFXDevice::instance().drawText(batch);
+        static void drawText(GFXDevice& device, const vectorImpl<GUITextBatchEntry>& batch) {
+            return device.drawText(batch);
         }
 
         friend class Divide::GUI;
         friend class Divide::GUIText;
+        friend class Divide::SceneGUIElements;
     };
 
     class GFXDeviceKernel {

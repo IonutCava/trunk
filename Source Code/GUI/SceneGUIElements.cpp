@@ -7,6 +7,8 @@
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIMessageBox.h"
 
+#include "Platform/Video/Headers/GFXDevice.h"
+
 #ifndef CEGUI_STATIC
 #define CEGUI_STATIC
 #include <CEGUI/CEGUI.h>
@@ -14,8 +16,8 @@
 
 namespace Divide {
 
-SceneGUIElements::SceneGUIElements(Scene& parentScene)
-    : GUIInterface(GUI::instance().getDisplayResolution()),
+SceneGUIElements::SceneGUIElements(Scene& parentScene, GUI& context)
+    : GUIInterface(context, context.getDisplayResolution()),
       SceneComponent(parentScene)
 {
 }
@@ -24,13 +26,27 @@ SceneGUIElements::~SceneGUIElements()
 {
 }
 
-void SceneGUIElements::draw() {
+void SceneGUIElements::draw(GFXDevice& context) {
+    static vectorImpl<GUITextBatchEntry> textBatch;
+    textBatch.resize(0);
     for (const GUIMap::value_type& guiStackIterator : _guiElements) {
         GUIElement& element = *guiStackIterator.second.first;
         // Skip hidden elements
         if (element.isVisible()) {
-            element.draw();
+            // Cache text elements
+            if (element.getType() == GUIType::GUI_TEXT) {
+                GUIText& textElement = static_cast<GUIText&>(element);
+                if (!textElement.text().empty()) {
+                    textBatch.emplace_back(&textElement, textElement.getPosition(), textElement.getStateBlockHash());
+                }
+            }
+            else {
+                element.draw(context);
+            }
         }
+    }
+    if (!textBatch.empty()) {
+        Attorney::GFXDeviceGUI::drawText(context, textBatch);
     }
 }
 

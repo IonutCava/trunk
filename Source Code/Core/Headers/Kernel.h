@@ -55,13 +55,13 @@ enum class RenderStage : U32;
 struct FrameEvent;
 class GUI;
 
-struct PlatformContext {
+class PlatformContext {
+public:
     explicit PlatformContext(GFXDevice& gfx,
                              SFXDevice& sfx,
                              PXDevice&  pfx,
-                             GUI& gui,
+                             std::unique_ptr<GUI> gui,
                              Input::InputInterface& input);
-
     void idle();
 
     /// Access to the GPU
@@ -70,10 +70,15 @@ struct PlatformContext {
     SFXDevice& _SFX;
     /// Access to the physics system
     PXDevice& _PFX;
-    /// The graphical user interface
-    GUI& _GUI;
     /// The input interface
     Input::InputInterface& _INPUT;
+
+    inline GUI& gui() { return *_GUI; }
+    inline const GUI& gui() const { return *_GUI; }
+
+private:
+    /// The graphical user interface
+    std::unique_ptr<GUI> _GUI;
 };
 
 struct LoopTimingData {
@@ -163,6 +168,15 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         return _taskPool;
     }
 
+    PlatformContext& platformContext() {
+        assert(_platformContext != nullptr);
+        return *_platformContext;
+    }
+
+    const PlatformContext& platformContext() const {
+        assert(_platformContext != nullptr);
+        return *_platformContext;
+    }
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
