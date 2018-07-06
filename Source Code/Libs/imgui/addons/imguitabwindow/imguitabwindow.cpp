@@ -1083,7 +1083,7 @@ struct TabWindowNode  {
 
 #if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
-    void serialize(ImGuiHelper::Serializer& s,TabWindow* tabWindow) {
+    void serialize(ImGuiHelper::Serializer& s,const TabWindow* tabWindow) {
         if (name) s.save(name,"name");
         s.save(&splitterPerc,"splitterPerc");
         s.save(&horizontal,"horizontal");
@@ -2342,16 +2342,16 @@ bool TabWindow::startCloseAllDialog(ImVector<TabWindow::TabLabel *> *ptabs, bool
 //-------------------------------------------------------------------------------
 #if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
-bool TabWindow::save(ImGuiHelper::Serializer &s)    {
+bool TabWindow::save(ImGuiHelper::Serializer &s)  const {
     if (!s.isValid()) return false;
     mainNode->serialize(s,this);
     return true;
 }
-bool TabWindow::save(const char* filename)  {
+bool TabWindow::save(const char* filename)  const {
     ImGuiHelper::Serializer s(filename);    
     return save(s);
 }
-bool TabWindow::Save(const char *filename, TabWindow *pTabWindows, int numTabWindows)   {
+bool TabWindow::Save(const char *filename, const TabWindow *pTabWindows, int numTabWindows) {
     IM_ASSERT(pTabWindows && numTabWindows>0);
     ImGuiHelper::Serializer s(filename);
     bool ok = false;

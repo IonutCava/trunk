@@ -36,13 +36,13 @@ namespace Divide {
 
     ResourceCache* PanelManager::s_globalCache = nullptr;
     hashMapImpl<U32, Texture_ptr> PanelManager::s_imageEditorCache;
-
-    static void DrawDockedWindows(ImGui::PanelManagerWindowData& wd) {
-        reinterpret_cast<PanelManager*>(wd.userData)->drawDockedWindows(wd);
-    }
+    vectorImpl<ImGui::TabWindow> PanelManager::s_tabWindows;
 
     namespace {
-        ImGui::TabWindow tabWindows[5];
+
+        void DrawDockedWindows(ImGui::PanelManagerWindowData& wd) {
+            reinterpret_cast<PanelManager*>(wd.userData)->drawDockedWindows(wd);
+        }
 
         static const char* tabWindowNames[4] = { "TabWindow Left", "TabWindow Right", "TabWindow Top", "TabWindow Bottom" };
 
@@ -437,12 +437,14 @@ namespace Divide {
           _manager(std::make_unique<ImGui::PanelManager>()),
           _saveFile(Paths::g_saveLocation + Paths::Editor::g_saveLocation + Paths::Editor::g_panelLayoutFile)
     {
+        s_tabWindows.resize(5);
     }
 
 
     PanelManager::~PanelManager()
     {
         s_imageEditorCache.clear();
+        s_tabWindows.clear();
     }
 
     bool PanelManager::saveToFile() const {
@@ -454,11 +456,11 @@ namespace Divide {
     }
 
     bool PanelManager::saveTabsToFile() const {
-        return TabbedWindow::saveToFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+        return TabbedWindow::saveToFile(s_tabWindows.data(), s_tabWindows.size());
     }
 
     bool PanelManager::loadTabsFromFile() {
-        return TabbedWindow::loadFromFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+        return TabbedWindow::loadFromFile(s_tabWindows.data(), s_tabWindows.size());
     }
 
     void PanelManager::idle() {
@@ -489,7 +491,7 @@ namespace Divide {
                 ImGui::SetNextWindowPos(_manager->getCentralQuadPosition());
                 ImGui::SetNextWindowSize(_manager->getCentralQuadSize());
                 if (ImGui::Begin("Central Window", NULL, ImVec2(0, 0), _manager->getDockedWindowsAlpha(), ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | _manager->getDockedWindowsExtraFlags() /*| ImGuiWindowFlags_NoBringToFrontOnFocus*/)) {
-                    tabWindows[0].render(); // Must be called inside "its" window (and sets isInited() to false). [ChildWindows can't be used here (but they can be used inside Tab Pages). Basically all the "Central Window" must be given to 'tabWindow'.]
+                    s_tabWindows[0].render(); // Must be called inside "its" window (and sets isInited() to false). [ChildWindows can't be used here (but they can be used inside Tab Pages). Basically all the "Central Window" must be given to 'tabWindow'.]
                 }
                 ImGui::End();
             }
@@ -723,11 +725,11 @@ namespace Divide {
         // The following block used to be in DrawGL(), but it's better to move it here (it's part of the initalization)
         // Here we load all the Tabs, if their config file is available
         // Otherwise we create some Tabs in the central tabWindow (tabWindows[0])
-        ImGui::TabWindow& tabWindow = tabWindows[0];
+        ImGui::TabWindow& tabWindow = s_tabWindows[0];
         if (!tabWindow.isInited()) {
             // tabWindow.isInited() becomes true after the first call to tabWindow.render() [in DrawGL()]
-            for (int i = 0;i < 5;i++) {
-                tabWindows[i].clear();  // for robustness (they're already empty)
+            for (ImGui::TabWindow& window : s_tabWindows) {
+                window.clear();  // for robustness (they're already empty)
             }
 
             
@@ -937,7 +939,7 @@ namespace Divide {
 
     void PanelManager::drawDockedTabWindows(ImGui::PanelManagerWindowData& wd) {
         // See more generic DrawDockedWindows(...) below...
-        ImGui::TabWindow& tabWindow = tabWindows[(wd.dockPos == ImGui::PanelManager::LEFT) ? 1 :
+        ImGui::TabWindow& tabWindow = s_tabWindows[(wd.dockPos == ImGui::PanelManager::LEFT) ? 1 :
             (wd.dockPos == ImGui::PanelManager::RIGHT) ? 2 :
             (wd.dockPos == ImGui::PanelManager::TOP) ? 3
             : 4];

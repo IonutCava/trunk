@@ -315,12 +315,12 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         if (!_windowManager->Run(true)) {
             return false;
         }
-    } else {
+    } else
+#endif
+    {
         ImGui::NewFrame();
     }
-#else
-    ImGui::NewFrame();
-#endif
+    
     if (!_running) {
         if (!renderMinimal(evt._timeSinceLastFrameUS)) {
             return false;

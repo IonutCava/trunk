@@ -111,6 +111,7 @@ namespace Divide {
         std::array<std::unique_ptr<PanelManagerPane>, to_base(PanelPositions::COUNT) - 1> _toolbars;
 
      public:
+        static vectorImpl<ImGui::TabWindow> s_tabWindows;
         static ResourceCache* s_globalCache;
         static hashMapImpl<U32, Texture_ptr> s_imageEditorCache;
     }; //class PanelManager

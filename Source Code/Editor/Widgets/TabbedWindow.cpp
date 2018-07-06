@@ -36,7 +36,7 @@ bool TabbedWindow::loadFromFile(ImGui::TabWindow* tabWindows, size_t count) {
     return ImGui::TabWindow::Load(s_savePath.c_str(), tabWindows, (int)count);
 }
 
-bool TabbedWindow::saveToFile(ImGui::TabWindow* tabWindows, size_t count) {
+bool TabbedWindow::saveToFile(const ImGui::TabWindow* tabWindows, size_t count) {
     if (s_savePath.empty()) {
         s_savePath = Paths::g_saveLocation + Paths::Editor::g_saveLocation + Paths::Editor::g_tabLayoutFile;
     }

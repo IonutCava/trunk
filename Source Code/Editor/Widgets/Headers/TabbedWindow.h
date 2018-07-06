@@ -45,7 +45,7 @@ class TabbedWindow {
 
   public:
     static bool loadFromFile(ImGui::TabWindow* tabWindows, size_t count);
-    static bool saveToFile(ImGui::TabWindow* tabWindows, size_t count);
+    static bool saveToFile(const ImGui::TabWindow* tabWindows, size_t count);
 
   protected:
      stringImpl _name;

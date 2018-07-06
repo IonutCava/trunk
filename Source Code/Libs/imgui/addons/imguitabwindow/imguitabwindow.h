@@ -476,9 +476,9 @@ static ImGuiWindowFlags ExtraWindowFlags;
 #       if (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
 public:
-        IMGUI_API bool save(ImGuiHelper::Serializer& s);
-        IMGUI_API bool save(const char* filename);
-        IMGUI_API static bool Save(const char* filename,TabWindow* pTabWindows,int numTabWindows);
+        IMGUI_API bool save(ImGuiHelper::Serializer& s) const;
+        IMGUI_API bool save(const char* filename) const;
+        IMGUI_API static bool Save(const char* filename,const TabWindow* pTabWindows,int numTabWindows);
 #       endif //NO_IMGUIHELPER_SERIALIZATION_SAVE
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_LOAD
 public:

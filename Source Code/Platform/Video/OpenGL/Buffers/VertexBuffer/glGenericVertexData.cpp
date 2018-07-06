@@ -208,7 +208,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
                           _indexBufferUsage);
     } else {
         size_t size = (indices.count + indices.offsetCount) * elementSize;
-        assert(size < _indexBufferSize);
+        DIVIDE_ASSERT(size < _indexBufferSize);
         glInvalidateBufferSubData(_indexBuffer,
                                   indices.offsetCount * elementSize,
                                   indices.count * elementSize);
