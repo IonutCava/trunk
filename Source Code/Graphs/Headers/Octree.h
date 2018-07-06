@@ -48,21 +48,23 @@ class Octree : public std::enable_shared_from_this<Octree> {
                 vectorImpl<SceneGraphNode_wptr> objects);
         ~Octree();
 
+        void updateTree();
         void update(const U64 deltaTime);
-        void registerMovedNode(SceneGraphNode& node);
+        void addNode(SceneGraphNode& node);
         void getAllRegions(vectorImpl<BoundingBox>& regionsOut) const;
 
         inline const BoundingBox& getRegion() const {
             return _region;
         }
 
+        static void registerMovedNode(SceneGraphNode& node);
+
     private:
-        void updateTree();
         void buildTree();
         void insert(SceneGraphNode_wptr object);
         void findEnclosingCube();
         std::shared_ptr<Octree>
-        createNode(const BoundingBox& region, vectorImpl<SceneGraphNode_wptr> objects);
+        createNode(const BoundingBox& region, const vectorImpl<SceneGraphNode_wptr>& objects);
 
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, SceneGraphNode_wptr object);
@@ -76,7 +78,9 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::array<bool, 8> _activeNodes;
         vectorImpl<SceneGraphNode_wptr> _objects;
         std::array<std::shared_ptr<Octree>, 8> _childNodes;
-        hashMapImpl<I64, SceneGraphNode_wptr> _movedObjects;
+        vectorImpl<SceneGraphNode_wptr> _movedObjects;
+
+        static vectorImpl<I64> _movedObjectsQueue;
         static std::queue<SceneGraphNode_ptr> _pendingInsertion;
         static bool _treeReady;
         static bool _treeBuilt;

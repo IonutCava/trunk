@@ -1,5 +1,10 @@
 #if defined(_WIN32)
 
+#if defined(_DEBUG)
+//#include <float.h>
+//unsigned int fp_control_state = _controlfp(_EM_INEXACT, _MCW_EM);
+#endif
+
 #include "Headers/PlatformDefines.h"
 #include <iostream>
 

@@ -48,17 +48,16 @@
 
 namespace Divide {
 
-#ifdef M_PI
-#undef M_PI
+#if !defined(M_PI)
+    constexpr D32 M_PI = 3.14159265358979323846;
 #endif
 
-    constexpr D32 M_PI = 3.14159265358979323846;
-    constexpr D32 M_2PI = 2 * M_PI;
-    constexpr D32 M_PI2 = M_PI * M_PI;
-    constexpr D32 M_PIDIV180 = M_PI / 180;
-    constexpr D32 M_180DIVPI = 180 / M_PI;
-    constexpr D32 M_PIDIV360 = M_PIDIV180 / 2;
-    constexpr F32 INV_RAND_MAX = 1.0f / RAND_MAX;
+    constexpr D32 M_2PI = 6.28318530717958647692;
+    constexpr D32 M_PIDIV180 = 0.01745329251994329576;
+    constexpr D32 M_180DIVPI = 57.29577951308232087679;
+    constexpr D32 M_PIDIV360 = 0.00872664625997164788;
+    constexpr F32 INV_RAND_MAX = 0.0000305185094f;
+    constexpr D32 M_PI2 = M_2PI;
 
 template <typename T>
 T Random(const T max = RAND_MAX);

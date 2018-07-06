@@ -68,13 +68,13 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 
 void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
     if (!BitCompare(ignoredNodeType, to_uint(newNode.getNode<>()->getType()))) {
-        _octree->registerMovedNode(newNode);
+        _octree->addNode(newNode);
     }
 }
 
 void SceneGraph::onNodeTransform(SceneGraphNode& node) {
     if (!BitCompare(ignoredNodeType, to_uint(node.getNode<>()->getType()))) {
-        _octree->registerMovedNode(node);
+        //_octree->registerMovedNode(node);
     }
 }
 
@@ -109,6 +109,7 @@ void SceneGraph::deleteNode(SceneGraphNode_wptr node, bool deleteOnAdd) {
 
 void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
     _root->sceneUpdate(deltaTime, sceneState);
+    _octree->updateTree();
     _octree->update(deltaTime);
 }
 
