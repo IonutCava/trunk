@@ -295,34 +295,51 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
     U32 startOffset = 0;
     U32 endOffset = 0;
 
-    vectorImpl<std::future<vec2<U32>>> futures;
-    futures.reserve(taskCount);
-    for (U32 i = 0; i < taskCount; ++i) {
-        startOffset = std::min(i * bucketSize, to_uint(nodeCount));
-        endOffset = std::min(startOffset + bucketSize, to_uint(nodeCount));
+    vec2<U32> parsedValues;
 
-        futures.push_back(std::async(useThreadedCommands 
-                                       ? std::launch::async
-                                       : std::launch::deferred,
-                                     &GFXDevice::processNodeBucket,
-                                     this,
-                                     std::begin(visibleNodes),
-                                     sceneRenderState,
-                                     vec2<U32>(startOffset, endOffset),
-                                     refreshNodeData));
+    if (useThreadedCommands) {
+        vectorImpl<Task_ptr> cmds;
+        cmds.reserve(taskCount);
+        for (U32 i = 0; i < taskCount; ++i) {
+            startOffset = std::min(i * bucketSize, to_uint(nodeCount));
+            endOffset = std::min(startOffset + bucketSize, to_uint(nodeCount));
+
+
+            cmds.push_back(
+            std::make_shared<Task>(_state.getRenderingPool(), 1, 1,
+                                    [&](){
+                                        /// Add proper locking/atomics here
+                                        parsedValues += processNodeBucket(std::begin(visibleNodes),
+                                                                          sceneRenderState,
+                                                                          vec2<U32>(startOffset, endOffset),
+                                                                          refreshNodeData);
+                                    }));
        
-    }
+        }
     
-    vec2<U32> result;
-    for(std::future<vec2<U32>>& future : futures) {
-        result.set(future.get());
-    };
-    
-    if (refreshNodeData) {
-        _nodeBuffer->UpdateData(0, result.x, _matricesData.data());
+        for(Task_ptr& cmd : cmds) {
+            cmd->startTask();
+        }
+
+        _state.getRenderingPool().wait();
+
+    } else {
+        for (U32 i = 0; i < taskCount; ++i) {
+            startOffset = std::min(i * bucketSize, to_uint(nodeCount));
+            endOffset = std::min(startOffset + bucketSize, to_uint(nodeCount));
+
+            parsedValues += processNodeBucket(std::begin(visibleNodes),
+                                              sceneRenderState,
+                                              vec2<U32>(startOffset, endOffset),
+                                              refreshNodeData);
+        }
     }
 
-    uploadDrawCommands(_drawCommandsCache, result.y);
+    if (refreshNodeData) {
+        _nodeBuffer->UpdateData(0, parsedValues.x, _matricesData.data());
+    }
+
+    uploadDrawCommands(_drawCommandsCache, parsedValues.y);
     
 }
 

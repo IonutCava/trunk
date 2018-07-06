@@ -34,7 +34,7 @@ Task::~Task()
 }
 
 void Task::startTask(TaskPriority priority) {
-    if (!_tp.schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
+    if (!_tp.schedule(PoolTask(to_uint(priority), [&](){ run(); }))) {
         Console::errorfn(Locale::get("TASK_SCHEDULE_FAIL"));
     }
 }
@@ -64,8 +64,7 @@ void Task::run() {
             _end = true;
         }
 
-        while ((_paused && !_end) ||
-            (app.mainLoopPaused() && !app.ShutdownRequested())) {
+        while ((_paused && !_end) && !app.ShutdownRequested()) {
             continue;
         }
 

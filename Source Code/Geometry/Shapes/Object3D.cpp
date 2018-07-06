@@ -210,7 +210,7 @@ bool Object3D::computeTriangleList(bool force) {
                   "calculating the triangle list!");
 
     U32 partitionOffset = geometry->getPartitionOffset(_geometryPartitionID);
-    U32 partitionCount = geometry->getPartitionCount(_geometryPartitionID);
+    U32 partitionCount = geometry->getPartitionIndexCount(_geometryPartitionID);
     PrimitiveType type = (_geometryType == ObjectType::MESH ||
                           _geometryType == ObjectType::SUBMESH
                               ? PrimitiveType::TRIANGLES

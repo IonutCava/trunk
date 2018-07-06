@@ -15,7 +15,7 @@ glLockManager::glLockManager(bool cpuUpdates) : _CPUUpdates(cpuUpdates),
 glLockManager::~glLockManager()
 {
     if (_defaultSync != nullptr) {
-        GLUtil::_deleteSync(_defaultSync);
+        glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
         _defaultSyncState = GL_UNSIGNALED;
     }
@@ -24,7 +24,7 @@ glLockManager::~glLockManager()
 void glLockManager::Wait() {
     if (_defaultSync != nullptr && _defaultSyncState == GL_SIGNALED) {
         _defaultSyncState = wait(&_defaultSync, _defaultSyncState);
-        GLUtil::_deleteSync(_defaultSync);
+        glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
     }
 }
@@ -34,8 +34,8 @@ void glLockManager::Lock() {
 
     if (_defaultSyncState != GL_SIGNALED) {
         _defaultSync =
-            GLUtil::_fenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 
-                               UnusedMask::GL_UNUSED_BIT);
+            glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 
+                        UnusedMask::GL_UNUSED_BIT);
 
         _defaultSyncState = GL_SIGNALED;
     }
@@ -49,9 +49,9 @@ GLenum glLockManager::wait(GLsync* syncObj, GLenum response) {
                           "Not sure what to do here. Probably raise an "
                           "exception or something.");
 
-            response = GLUtil::_clientWaitSync(*syncObj,
-                                               GL_SYNC_FLUSH_COMMANDS_BIT,
-                                               waitDuration);
+            response = glClientWaitSync(*syncObj,
+                                        GL_SYNC_FLUSH_COMMANDS_BIT,
+                                        waitDuration);
             if (response == GL_CONDITION_SATISFIED ||
                 response == GL_ALREADY_SIGNALED ||
                 response == GL_ZERO) {
@@ -64,7 +64,7 @@ GLenum glLockManager::wait(GLsync* syncObj, GLenum response) {
             waitDuration = kOneSecondInNanoSeconds;
         }
     } else {
-        GLUtil::_waitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
+        glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);
         response = GL_UNSIGNALED;
     }
 

@@ -30,7 +30,7 @@ GLuint GL_API::_activeBufferID[] = {GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID,
                                     GLUtil::_invalidObjectID};
-
+GL_API::VAOBufferData GL_API::_vaoBufferData;
 bool GL_API::_primitiveRestartEnabled = false;
 vec4<GLfloat> GL_API::_prevClearColor;
 GL_API::textureBoundMapDef GL_API::_textureBoundMap;
@@ -290,6 +290,27 @@ bool GL_API::bindTexture(GLushort unit,
     }
 
     return false;
+}
+
+/// Single place to change buffer objects for every target available
+bool GL_API::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLintptr offset, GLsizei stride) {
+    BufferBindingParams currentParams(location, bufferID, offset, stride);
+
+    VAOBufferData::iterator it = _vaoBufferData.find(vaoID);
+    bool isValidEntry = it != std::cend(_vaoBufferData);
+    if (isValidEntry && it->second == currentParams) {
+        return false;
+    }
+    // Remember the new binding for future reference
+    if (isValidEntry) {
+        it->second = currentParams;
+    } else {
+        hashAlg::emplace(_vaoBufferData, vaoID, currentParams);
+    }
+    // Bind the specified buffer handle to the desired buffer target
+    glVertexArrayVertexBuffer(vaoID, location, bufferID, offset, stride);
+
+    return true;
 }
 
 bool GL_API::setActiveFB(Framebuffer::FramebufferUsage usage, GLuint ID) {

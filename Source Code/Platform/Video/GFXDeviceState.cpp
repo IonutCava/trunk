@@ -181,8 +181,18 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         ParamHandler::getInstance().getParam<F32>("rendering.zFar")));
     // Create a separate loading thread that shares resources with the main
     // rendering context
-    _state.startLoaderThread(
-        DELEGATE_BIND(&GFXDevice::threadedLoadCallback, this));
+    _state.startLoaderThread([&]() {
+        threadedLoadCallback();
+        // Use an atomic bool to check if the thread is still active
+        _state.loadingThreadAvailable(true);
+        // Run an infinite loop until we actually request otherwise
+        while (!_state.closeLoadingThread()) {
+            _state.consumeOneFromQueue();
+        }
+        // If we close the loading thread, update our atomic bool to make sure the
+        // application isn't using it anymore
+        _state.loadingThreadAvailable(false);
+    });
     // Register a 2D function used for previewing the depth buffer.
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);

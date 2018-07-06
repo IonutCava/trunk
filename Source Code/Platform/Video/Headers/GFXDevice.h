@@ -70,6 +70,7 @@ namespace Time {
 namespace Attorney {
     class GFXDeviceGUI;
     class GFXDeviceKernel;
+    class GFXDeviceGPUState;
     class GFXDeviceRenderStateBlock;
 };
 
@@ -78,6 +79,7 @@ namespace Attorney {
 DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
+    friend class Attorney::GFXDeviceGPUState;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
     typedef hashMapImpl<size_t, RenderStateBlock*> RenderStateMap;
@@ -418,9 +420,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
         _api->setCursorPosition(x, y);
     }
 
-  protected:
-    void threadedLoadCallback() override;
+    inline void threadedLoadCallback() override {
+        _api->threadedLoadCallback();
+    }
 
+  protected:
     void setBaseViewport(const vec4<I32>& viewport);
 
     inline void changeViewport(const vec4<I32>& newViewport) const override {
@@ -464,6 +468,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// rendering
     void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio,
                             F32 verticalFoV, bool rightFrustum = false);
+
     void onCameraUpdate(Camera& camera);
 
    protected:
@@ -522,6 +527,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     bool _viewportUpdate;
     vectorImpl<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
+    vectorImpl<Line> _axisLinesTransformed;
 
   protected:
     RenderAPI _API_ID;
@@ -564,7 +570,7 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     /// Immediate mode emulation shader
     ShaderProgram *_imShader, *_imShaderLines;
     /// The interface that coverts IM calls to VB data
-    vectorImpl<IMPrimitive*>  _imInterfaces;  
+    vectorImpl<IMPrimitive*>  _imInterfaces;
 
     /// Current viewport stack
     ViewportStack _viewport;
@@ -604,14 +610,22 @@ namespace Attorney {
         friend class Divide::RenderStateBlock;
     };
 
-   class GFXDeviceKernel {
-   private:
-       static void onCameraUpdate(Camera& camera) {
-           GFXDevice::getInstance().onCameraUpdate(camera);
-       }
-       
-       friend class Divide::Kernel;
-  };
+    class GFXDeviceKernel {
+    private:
+        static void onCameraUpdate(Camera& camera) {
+            GFXDevice::getInstance().onCameraUpdate(camera);
+        }
+
+        friend class Divide::Kernel;
+    };
+
+    class GFXDeviceGPUState {
+        private:
+            static void threadedLoadCallback() {
+                GFXDevice::getInstance().threadedLoadCallback();
+            }
+        friend class Divide::GPUState;
+    };
 };  // namespace Attorney
 };  // namespace Divide
 

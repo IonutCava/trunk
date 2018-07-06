@@ -7,49 +7,29 @@
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"
 
-namespace std {
-    template<typename T, size_t N>
-    struct hash<array<T, N> >
-    {
-        typedef array<T, N> argument_type;
-        typedef size_t result_type;
-
-        result_type operator()(const argument_type& a) const
-        {
-            hash<T> hasher;
-            result_type h = 0;
-            for (result_type i = 0; i < N; ++i)
-            {
-                h = h * 31 + hasher(a[i]);
-            }
-            return h;
-        }
-    };
-};
-
 namespace Divide {
 
-glVertexArray::VaoMap glVertexArray::_vaos;
+glVertexArray::VAOMap glVertexArray::_VAOMap;
 
 GLuint glVertexArray::getVao(size_t hash) {
-    VaoMap::const_iterator result = _vaos.find(hash);
-    return result != std::end(_vaos) ? result->second
-                                     : 0;
+    VAOMap::const_iterator result = _VAOMap.find(hash);
+    return result != std::end(_VAOMap) ? result->second
+                                       : 0;
 }
 
 void glVertexArray::setVao(size_t hash, GLuint id) {
-    std::pair<VaoMap::const_iterator, bool> result = 
-        hashAlg::emplace(_vaos, hash, id);
+    std::pair<VAOMap::const_iterator, bool> result =
+        hashAlg::emplace(_VAOMap, hash, id);
     assert(result.second);
 }
 
 void glVertexArray::clearVaos() {
-    for (VaoMap::value_type& value : _vaos) {
+    for (VAOMap::value_type& value : _VAOMap) {
         if (value.second != 0) {
             glDeleteVertexArrays(1, &value.second);
         }
     }
-    _vaos.clear();
+    _VAOMap.clear();
 }
 
 /// Default destructor

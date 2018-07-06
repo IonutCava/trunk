@@ -6,7 +6,8 @@
 
 namespace Divide {
 
-PreRenderStageBuilder::PreRenderStageBuilder() {
+PreRenderStageBuilder::PreRenderStageBuilder()
+{
     _renderStage = MemoryManager_NEW PreRenderStage();
     _screenSampler = MemoryManager_NEW SamplerDescriptor;
     _screenSampler->setWrapMode(TextureWrap::CLAMP_TO_EDGE);
@@ -14,7 +15,8 @@ PreRenderStageBuilder::PreRenderStageBuilder() {
     _screenSampler->setAnisotropy(0);
 }
 
-PreRenderStageBuilder::~PreRenderStageBuilder() {
+PreRenderStageBuilder::~PreRenderStageBuilder()
+{
     MemoryManager::DELETE(_renderStage);
     MemoryManager::DELETE(_screenSampler);
 }

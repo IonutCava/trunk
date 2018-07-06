@@ -73,14 +73,8 @@ extern GLuint _invalidObjectID;
 /// Main rendering window
 extern SDL_Window* _mainWindow;
 extern SDL_GLContext _glRenderContext;
-extern SDL_GLContext _glLoadingContext;
-extern glbinding::ContextHandle _mainContext;
-extern glbinding::ContextHandle _loadingContext;
+extern vectorImpl<SDL_GLContext> _glSecondaryContexts;
 
-extern GLenum(*_clientWaitSync)(GLsync sync, SyncObjectMask flags, GLuint64 timeout);
-extern void(*_waitSync)(GLsync sync, UnusedMask flags, GLuint64 timeout);
-extern GLsync(*_fenceSync)(GLenum condition, UnusedMask flags);
-extern void(*_deleteSync)(GLsync sync);
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 

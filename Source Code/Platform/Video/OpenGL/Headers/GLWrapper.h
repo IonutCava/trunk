@@ -276,7 +276,12 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
                              GLuint* samplerHandles);
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
-
+    /// Modify buffer bindings for a specific vao
+    static bool bindActiveBuffer(GLuint vaoID,
+                                 GLuint location,
+                                 GLuint bufferID,
+                                 GLintptr offset,
+                                 GLsizei stride);
   private:
     ErrorCode createWindow();
     ErrorCode createGLContext();
@@ -368,6 +373,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GL_API, RenderAPIWrapper, final)
     /// /*sampler hash value*/ /*sampler object*/
     typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;
     static samplerObjectMap _samplerMap;
+
+    typedef std::tuple<GLuint, GLuint, GLintptr, GLsizei> BufferBindingParams;
+    typedef hashMapImpl<GLuint, BufferBindingParams> VAOBufferData;
+    static VAOBufferData _vaoBufferData;
+
     CEGUI::OpenGL3Renderer* _GUIGLrenderer;
 
 END_SINGLETON

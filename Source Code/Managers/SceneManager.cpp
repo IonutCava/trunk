@@ -204,10 +204,13 @@ void SceneManager::render(RenderStage stage, const Kernel& kernel) {
     assert(_activeScene != nullptr);
 
     _activeScene->renderState().getCamera().renderLookAt();
+
     Attorney::KernelScene::submitRenderCall(
         kernel, stage, _activeScene->renderState(),
-        DELEGATE_BIND(&SceneManager::renderVisibleNodes, this,
-                      (stage != RenderStage::DISPLAY)));
+        [&]() {
+            renderVisibleNodes(stage != RenderStage::DISPLAY);
+        });
+
     Attorney::SceneManager::debugDraw(*_activeScene, stage);
 }
 

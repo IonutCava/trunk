@@ -17,15 +17,7 @@ GLuint _invalidObjectID = GL_INVALID_INDEX;
 SDL_Window* _mainWindow = nullptr;
 SDL_Window* _loaderWindow = nullptr;
 SDL_GLContext _glRenderContext;
-SDL_GLContext _glLoadingContext;
-
-glbinding::ContextHandle _mainContext;
-glbinding::ContextHandle _loadingContext;
-
-GLenum(*_clientWaitSync)(GLsync sync, SyncObjectMask flags, GLuint64 timeout);
-void(*_waitSync)(GLsync sync, UnusedMask flags, GLuint64 timeout);
-GLsync(*_fenceSync)(GLenum condition, UnusedMask flags);
-void(*_deleteSync)(GLsync sync);
+vectorImpl<SDL_GLContext> _glSecondaryContexts;
 
 /// this may not seem very efficient (or useful) but it saves a lot of
 /// single-use code scattered around further down

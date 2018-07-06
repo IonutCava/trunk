@@ -34,7 +34,7 @@ void SubMesh::postLoad(SceneGraphNode& sgn) {
 
     GenericDrawCommand cmd(PrimitiveType::TRIANGLES,
         getGeometryVB()->getPartitionOffset(_geometryPartitionID),
-        getGeometryVB()->getPartitionCount(_geometryPartitionID));
+        getGeometryVB()->getPartitionIndexCount(_geometryPartitionID));
 
     cmd.sourceBuffer(_parentMesh->getGeometryVB());
 

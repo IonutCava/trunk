@@ -71,7 +71,7 @@ void glBufferLockManager::LockRange(size_t _lockBeginBytes,
 
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::cleanup(BufferLock* _bufferLock) {
-    GLUtil::_deleteSync(_bufferLock->_syncObj);
+    glDeleteSync(_bufferLock->_syncObj);
     _bufferLock->_status = GL_UNSIGNALED;
     _bufferLock->_syncObj = nullptr;
 }

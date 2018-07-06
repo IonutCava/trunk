@@ -544,7 +544,7 @@ void GFXDevice::setBaseViewport(const vec4<I32>& viewport) {
   
 bool GFXDevice::postProcessingEnabled() const {
     return _enablePostProcessing && 
-            //HACK: postprocessing not working with deffered rendering! -Ionut
+            //HACK: postprocessing not working with deferred rendering! -Ionut
             getRenderer().getType() != RendererType::RENDERER_DEFERRED_SHADING;
 }
 
@@ -579,21 +579,6 @@ bool GFXDevice::loadInContext(const CurrentContext& context,
     return true;
 }
 
-void GFXDevice::threadedLoadCallback() {
-    /// Setup per-thread API specifics
-    _api->threadedLoadCallback(); 
-    // This will be our target container for new items pulled from the queue
-    DELEGATE_CBK<> callback;
-    // Use an atomic bool to check if the thread is still active
-    _state.loadingThreadAvailable(true);
-    // Run an infinite loop until we actually request otherwise
-    while (!_state.closeLoadingThread()) {
-        _state.consumeOneFromQueue();
-    }
-    // If we close the loading thread, update our atomic bool to make sure the
-    // application isn't using it anymore
-    _state.loadingThreadAvailable(false);
-}
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries)
 void GFXDevice::ConstructHIZ() {
     // We don't want to change the viewport or clear the buffer when starting to

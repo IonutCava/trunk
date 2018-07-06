@@ -472,7 +472,9 @@ bool glShaderProgram::generateHWResource(const stringImpl& name) {
         /*_threadedLoading && !_loadedFromBinary
             ? CurrentContext::GFX_LOADING_CTX
             : */CurrentContext::GFX_RENDERING_CTX,
-        DELEGATE_BIND(&glShaderProgram::threadedLoad, this, name));
+        [&](){
+            threadedLoad(name);
+        });
 }
 
 /// Check every possible combination of flags to make sure this program can be

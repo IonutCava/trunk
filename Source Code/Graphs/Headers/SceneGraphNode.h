@@ -32,9 +32,6 @@
 #ifndef _SCENE_GRAPH_NODE_H_
 #define _SCENE_GRAPH_NODE_H_
 
-#define SCENE_GRAPH_PROCESS(pointer) \
-    DELEGATE_BIND(&SceneGraph::process(), pointer)
-
 #include "SceneNode.h"
 #include "Utility/Headers/StateTracker.h"
 #include "Graphs/Components/Headers/SGNComponent.h"

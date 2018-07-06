@@ -99,10 +99,7 @@ ErrorCode GL_API::createGLContext() {
 
     SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
     GLUtil::_glRenderContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
-    GLUtil::_glLoadingContext = SDL_GL_CreateContext(GLUtil::_mainWindow);
-
-    if (GLUtil::_glRenderContext == nullptr ||
-        GLUtil::_glLoadingContext == nullptr)
+    if (GLUtil::_glRenderContext == nullptr)
     {
     	Console::errorfn(Locale::get("ERROR_GFX_DEVICE"),
     					 Locale::get("ERROR_GL_OLD_VERSION"));
@@ -128,7 +125,11 @@ ErrorCode GL_API::destroyGLContext() {
     DIVIDE_ASSERT(GLUtil::_mainWindow != nullptr,
         "GL_API::destroyGLContext error: Tried to destroy the OpenGL context with no valid window!");
     SDL_GL_DeleteContext(GLUtil::_glRenderContext);
-    SDL_GL_DeleteContext(GLUtil::_glLoadingContext);
+
+    for (SDL_GLContext& ctx : GLUtil::_glSecondaryContexts) {
+        SDL_GL_DeleteContext(ctx);
+    }
+    GLUtil::_glSecondaryContexts.clear();
 
     return ErrorCode::NO_ERR;
 }
@@ -249,13 +250,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv) {
     SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glRenderContext);
     glbinding::Binding::initialize();
     glbinding::Binding::useCurrentContext();
-    {
-        GLUtil::_mainContext = glbinding::getCurrentContext();
-        GLUtil::_clientWaitSync = glClientWaitSync;
-        GLUtil::_waitSync = glWaitSync;
-        GLUtil::_fenceSync = glFenceSync;
-        GLUtil::_deleteSync = glDeleteSync;
-    }
+
     // OpenGL has a nifty error callback system, available in every build
     // configuration if required
 #if defined(ENABLE_GPU_VALIDATION)
@@ -628,21 +623,23 @@ void GL_API::setCursorPosition(GLushort x, GLushort y) {
 /// This functions should be run in a separate, consumer thread.
 /// The main app thread, the producer, adds tasks via a lock-free queue
 void GL_API::threadedLoadCallback() {
-    // We need a valid OpenGL context to make current in this thread
-    assert(GLUtil::_mainWindow != nullptr);
-    SDL_GL_MakeCurrent(GLUtil::_mainWindow, GLUtil::_glLoadingContext);
-    glbinding::Binding::initialize();
-    GLUtil::_loadingContext = glbinding::getCurrentContext();
-// Enable OpenGL debug callbacks for this context as well
-#if defined(ENABLE_GPU_VALIDATION)
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    // Debug callback in a separate thread requires a flag to distinguish it
-    // from the main thread's callbacks
-    glDebugMessageCallback(GLUtil::DebugCallback, (void*)(GLUtil::_glLoadingContext));
-#endif
-    // Delay startup of the thread by a 1/4 of a second. No real reason
-    std::this_thread::sleep_for(std::chrono::milliseconds(250));
+    glbinding::ContextHandle glCtx = glbinding::getCurrentContext();
+    if (glCtx == 0) {
+        SDL_GLContext ctx = SDL_GL_CreateContext(GLUtil::_mainWindow);
+        GLUtil::_glSecondaryContexts.push_back(ctx);
+        SDL_GL_MakeCurrent(GLUtil::_mainWindow, ctx);
+        glbinding::Binding::initialize(false);
+    // Enable OpenGL debug callbacks for this context as well
+    #if defined(ENABLE_GPU_VALIDATION)
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        // Debug callback in a separate thread requires a flag to distinguish it
+        // from the main thread's callbacks
+        glDebugMessageCallback(GLUtil::DebugCallback, ctx);
+    #endif
+    } else {
+        glbinding::Binding::useCurrentContext();
+    }
 }
 
 };

@@ -109,8 +109,8 @@ class glVertexArray : public VertexBuffer {
 
     size_t _vaoHash;
     GLuint _vaoCache;
-    typedef hashMapImpl<size_t, GLuint> VaoMap;
-    static VaoMap _vaos;
+    typedef hashMapImpl<size_t, GLuint> VAOMap;
+    static VAOMap _VAOMap;
 };
 
 };  // namespace Divide
