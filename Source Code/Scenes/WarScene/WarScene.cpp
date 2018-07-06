@@ -19,6 +19,16 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
 
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColorUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleFloorUpdater.h"
+
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h"
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColorGenerator.h"
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h"
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleTimeGenerator.h"
+
 namespace Divide {
 
 REGISTER_SCENE(WarScene);
@@ -348,20 +358,47 @@ bool WarScene::load(const stringImpl& name, CameraManager* const cameraMgr, GUI*
     }*/
     //------------------------ The rest of the scene elements -----------------------------///
 
+    
 
-    ParticleEmitterDescriptor particleSystem;
+    
+    
 #ifdef _DEBUG
-    particleSystem._particleCount = 200;
+    const U32 particleCount = 200;
 #else
-    particleSystem._particleCount = 20000;
+    const U32 particleCount = 20000;
 #endif
-    particleSystem._spread = 5.0f;
 
-    SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particleSystem, _sceneGraph->getRoot() );
+    const F32 emitRate = particleCount / 4;
+
+    ParticleData particles(particleCount, ParticleData::PROPERTIES_POS | 
+                                          ParticleData::PROPERTIES_VEL | 
+                                          ParticleData::PROPERTIES_ACC | 
+                                          ParticleData::PROPERTIES_COLOR |
+                                          ParticleData::PROPERTIES_COLOR_TRANS);
+
+    std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(emitRate);
+    std::shared_ptr<ParticleBoxGenerator> boxGenerator = std::make_shared<ParticleBoxGenerator>();
+    particleSource->addGenerator(boxGenerator);
+    std::shared_ptr<ParticleColorGenerator> colGenerator = std::make_shared<ParticleColorGenerator>();
+    particleSource->addGenerator(colGenerator);
+    std::shared_ptr<ParticleVelocityGenerator> velGenerator = std::make_shared<ParticleVelocityGenerator>();
+    particleSource->addGenerator(velGenerator);
+    std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
+    particleSource->addGenerator(timeGenerator);
+
+    SceneGraphNode* testSGN = addParticleEmitter( "TESTPARTICLES", particles, _sceneGraph->getRoot() );
     ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
     testSGN->getComponent<PhysicsComponent>()->translateY(5);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
+    test->addSource(particleSource);
+
+    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>();
+    eulerUpdater->_globalAcceleration.set(0.0f, -15.0f, 0.0f, 0.0f);
+    test->addUpdater(eulerUpdater);
+    test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>());
+    test->addUpdater(std::make_shared<ParticleBasicColorUpdater>());
+    test->addUpdater(std::make_shared<ParticleFloorUpdater>());
 
     state().getGeneralVisibility() *= 2;
     Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(135);

@@ -173,6 +173,8 @@ static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
 template<typename T>
+inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) { return min >= 0 && max < elementCount; }
+template<typename T>
 inline bool IS_IN_RANGE_INCLUSIVE( T x, T min, T max ) { return x >= min && x <= max; }
 template<typename T>
 inline bool IS_IN_RANGE_EXCLUSIVE( T x, T min, T max ) { return x > min && x < max; }

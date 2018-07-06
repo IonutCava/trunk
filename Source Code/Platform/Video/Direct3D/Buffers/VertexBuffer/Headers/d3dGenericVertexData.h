@@ -43,6 +43,13 @@ public:
     void Draw(const GenericDrawCommand& command, bool skipBind = false) 
     {
     }
+    
+    void SetIndexBuffer(const vectorImpl<U32>& indices,
+                        bool dynamic, 
+                        bool stream)
+    {
+    }
+
     void SetBuffer(U32 buffer, 
                    U32 elementCount, 
                    size_t elementSize, 

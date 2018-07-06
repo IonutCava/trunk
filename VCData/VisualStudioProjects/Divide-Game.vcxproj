@@ -55,8 +55,23 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Impostor.cpp" />
-    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\Particle.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleBoxGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleColorGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleRoundGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleSphereVelocityGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleTimeGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityFromPositionGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\ParticleVelocityGenerator.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleAttractorUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicColorUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleBasicTimeUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleEulerUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleFloorUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticlePositionColorUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\ParticleVelocityColorUpdater.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleData.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleEmitter.cpp" />
+    <ClCompile Include="..\..\Source Code\Dynamics\Entities\Particles\ParticleSource.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Triggers\Trigger.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\Character.cpp" />
     <ClCompile Include="..\..\Source Code\Dynamics\Entities\Units\NPC.cpp" />
@@ -114,8 +129,25 @@
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\Sensor.h" />
     <ClInclude Include="..\..\Source Code\AI\Sensors\Headers\VisualSensor.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Headers\Impostor.h" />
-    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\Particle.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleBoxGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColorGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleRoundGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleSphereVelocityGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleTimeGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityFromPositionGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleVelocityGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleAttractorUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicColorUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleBasicTimeUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleEulerUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleFloorUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticlePositionColorUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\ConcreteUpdaters\Headers\ParticleVelocityColorUpdater.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleData.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleEmitter.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleGenerator.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleSource.h" />
+    <ClInclude Include="..\..\Source Code\Dynamics\Entities\Particles\Headers\ParticleUpdater.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Triggers\Headers\Trigger.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\Character.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\Entities\Units\Headers\NPC.h" />
@@ -319,6 +351,8 @@
       <OpenMPSupport>true</OpenMPSupport>
       <ShowIncludes>false</ShowIncludes>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -372,13 +406,14 @@
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OpenMPSupport>false</OpenMPSupport>
+      <OpenMPSupport>true</OpenMPSupport>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <ShowIncludes>false</ShowIncludes>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -433,13 +468,15 @@
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <OpenMPSupport>false</OpenMPSupport>
+      <OpenMPSupport>true</OpenMPSupport>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnablePREfast>true</EnablePREfast>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

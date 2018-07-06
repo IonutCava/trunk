@@ -10,16 +10,10 @@
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
-    ParticleEmitterDescriptor::ParticleEmitterDescriptor() : PropertyDescriptor(PropertyDescriptor::DESCRIPTOR_PARTICLE)
-    {
-        setDefaultValues();
-    }
 
     ParticleEmitter::ParticleEmitter() : SceneNode(TYPE_PARTICLE_EMITTER),
         _drawImpostor(false),
         _updateParticleEmitterBB(true),
-        _lastUsedParticle(0),
-        _particlesCurrentCount(0),
         _particleStateBlockHash(0),
         _enabled(false),
         _uploaded(false),
@@ -39,9 +33,11 @@ namespace Divide {
         unload();
     }
 
-    bool ParticleEmitter::initData(){
+    bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
         // assert if double init!
-        DIVIDE_ASSERT(_particleGPUBuffer == nullptr, "ParticleEmitter error: Double initData detected!");
+        DIVIDE_ASSERT(_particleGPUBuffer == nullptr, "ParticleEmitter::initData error: Double initData detected!");
+
+        updateData(particleData);
 
         _particleGPUBuffer = GFX_DEVICE.newGVD(/*true*/false);
         _particleGPUBuffer->Create(3);
@@ -49,9 +45,9 @@ namespace Divide {
         // Not using Quad3D to improve performance
         static F32 particleQuad[] = {
             -0.5f, -0.5f, 0.0f,
-            0.5f, -0.5f, 0.0f,
+             0.5f, -0.5f, 0.0f,
             -0.5f, 0.5f, 0.0f,
-            0.5f, 0.5f, 0.0f,
+             0.5f, 0.5f, 0.0f,
         };
 
         _particleGPUBuffer->SetBuffer(0, 12, sizeof(F32), 1, particleQuad, false, false);
@@ -67,21 +63,70 @@ namespace Divide {
         _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
         _particleShader->UniformTexture("depthBuffer", 1);
         REGISTER_TRACKED_DEPENDENCY(_particleShader);
+
         ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
         _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
         REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
+
         _impostor = CreateResource<Impostor>(ResourceDescriptor(_name + "_impostor"));
         _impostor->renderState().setDrawState(false);
         _impostor->getMaterialTpl()->setDiffuse(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
         _impostor->getMaterialTpl()->setAmbient(vec4<F32>(0.0f, 0.0f, 1.0f, 1.0f));
-        _renderState.addToDrawExclusionMask(SHADOW_STAGE);
+
+        //_renderState.addToDrawExclusionMask(SHADOW_STAGE);
+
         return (_particleShader != nullptr);
+    }
+
+    bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
+        DIVIDE_ASSERT(particleData.get() == nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
+
+        _created = false;
+        U32 particleCount = _particles->totalCount();
+        _particles = particleData;
+
+        _particleGPUBuffer->SetBuffer(1, particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, /*true*/false);
+        _particleGPUBuffer->SetBuffer(2, particleCount * 3, 4 * sizeof(U8),  1, NULL, true, true, /*true*/false);
+
+        _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
+        _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true, 0, 0, UNSIGNED_BYTE);
+
+        for (U32 i = 0; i < particleCount; ++i) {
+            //Distance to camera (squared)
+            _particles->_misc[i].w = -1.0f;
+            _particles->_alive[i] = false;
+        }
+
+        if (_particleTexture) {
+            UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
+            RemoveResource(_particleTexture);
+        }
+
+        if (!_particles->_textureFileName.empty()) {
+            SamplerDescriptor textureSampler;
+            textureSampler.toggleSRGBColorSpace(true);
+
+            ResourceDescriptor texture(_particles->_textureFileName);
+            texture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
+                                        ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
+                                        _particles->_textureFileName);
+            texture.setFlag(true);
+            texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
+
+            _particleTexture = CreateResource<Texture>(texture);
+
+            REGISTER_TRACKED_DEPENDENCY(_particleTexture);
+        }
+        _created = true;
+
+        return _created;
     }
 
     bool ParticleEmitter::unload(){
         if (getState() != RES_LOADED && getState() != RES_LOADING) {
             return true;
         }
+
         UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
         UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
         UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
@@ -91,10 +136,8 @@ namespace Divide {
 
         MemoryManager::DELETE(_particleGPUBuffer);
 
-        _particles.clear();
-        _particlePositionData.clear();
-        _particleColorData.clear();
         _created = false;
+
         return SceneNode::unload();
     }
 
@@ -134,14 +177,14 @@ namespace Divide {
                                           SceneRenderState& sceneRenderState,
                                           vectorImpl<GenericDrawCommand>& drawCommandsOut) 
     {
-
-        if (!(_particlesCurrentCount > 0 && _enabled && _created)) {
+        U32 particleCount = _particles->aliveCount();
+        if (!(particleCount > 0 && _enabled && _created)) {
             return;
         }
 
         _drawCommand.renderWireframe(sgn->getComponent<RenderingComponent>()->renderWireframe());
         _drawCommand.stateHash(_particleStateBlockHash);
-        _drawCommand.instanceCount(_particlesCurrentCount);
+        _drawCommand.instanceCount(particleCount);
         _drawCommand.shaderProgram(currentRenderStage == FINAL_STAGE ? _particleShader : _particleDepthShader);
         _drawCommand.sourceBuffer(_particleGPUBuffer);
         drawCommandsOut.push_back(_drawCommand);
@@ -151,7 +194,9 @@ namespace Divide {
     void ParticleEmitter::render(SceneGraphNode* const sgn,
                                  const SceneRenderState& sceneRenderState, 
                                  const RenderStage& currentRenderStage) {
-        if (_particlesCurrentCount > 0 && _enabled && _created){
+
+        U32 particleCount = _particles->aliveCount();
+        if (particleCount > 0 && _enabled && _created){
             _particleTexture->Bind(ShaderProgram::TEXTURE_UNIT0);
             GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(ShaderProgram::TEXTURE_UNIT1,
                                                                              TextureDescriptor::Depth);
@@ -159,53 +204,19 @@ namespace Divide {
         }
     }
 
-    ///The descriptor defines the particle properties
-    void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor){
-        _descriptor = descriptor;
-        _particleGPUBuffer->SetBuffer(1, descriptor._particleCount * 3, 4 * sizeof(F32), 1, NULL, true, true, /*true*/false);
-        _particleGPUBuffer->SetBuffer(2, descriptor._particleCount * 3, 4 * sizeof(U8), 1, NULL, true, true, /*true*/false);
-
-        _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, 0, FLOAT_32);
-        _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true, 0, 0, UNSIGNED_BYTE);
-
-        _particles.resize(descriptor._particleCount);
-        _particlePositionData.resize(descriptor._particleCount * 4);
-        _particleColorData.resize(descriptor._particleCount * 4);
-
-        for (U32 i = 0; i < descriptor._particleCount; ++i) {
-            _particles[i].life = -1.0f;
-            _particles[i].distanceToCameraSq = -1.0f;
-        }
-
-        if (_particleTexture) {
-            UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-            RemoveResource(_particleTexture);
-        }
-
-        SamplerDescriptor textureSampler;
-        textureSampler.toggleSRGBColorSpace(true);
-        ResourceDescriptor texture(descriptor._textureFileName);
-        texture.setResourceLocation(ParamHandler::getInstance().getParam<stringImpl>("assetsLocation") + "/" +
-                                    ParamHandler::getInstance().getParam<stringImpl>("defaultTextureLocation") + "/" +
-                                    descriptor._textureFileName);
-        texture.setFlag(true);
-        texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-        _particleTexture = CreateResource<Texture>(texture);
-        REGISTER_TRACKED_DEPENDENCY(_particleTexture);
-        _created = true;
-    }
-
     void ParticleEmitter::uploadToGPU(){
         static const size_t attribSize_float = 4 * sizeof(F32);
         static const size_t attribSize_char = 4 * sizeof(U8);
-        if (_uploaded || !_created)
+        if (_uploaded || !_created) {
             return;
+        }
 
-        U32 writeOffset = _writeOffset * (U32)_particles.size();
-        U32 readOffset = _readOffset  * (U32)_particles.size();
+        U32 writeOffset = _writeOffset * (U32)_particles->totalCount();
+        U32 readOffset = _readOffset   * (U32)_particles->totalCount();
 
-        _particleGPUBuffer->UpdateBuffer(1, _particlesCurrentCount, writeOffset, &_particlePositionData[0]);
-        _particleGPUBuffer->UpdateBuffer(2, _particlesCurrentCount, writeOffset, &_particleColorData[0]);
+        _particleGPUBuffer->SetIndexBuffer(_particles->getSortedIndices(), true, true);
+        _particleGPUBuffer->UpdateBuffer(1, _particles->aliveCount(), writeOffset, _particles->_position.data());
+        _particleGPUBuffer->UpdateBuffer(2, _particles->aliveCount(), writeOffset, _particles->_color.data());
 
         _particleGPUBuffer->getDrawAttribDescriptor(13).set(1, 1, 4, false, 0, readOffset, FLOAT_32);
         _particleGPUBuffer->getDrawAttribDescriptor(VERTEX_COLOR_LOCATION).set(2, 1, 4, true, 0, readOffset, UNSIGNED_BYTE);
@@ -218,11 +229,10 @@ namespace Divide {
 
     ///The onDraw call will emit particles
     bool ParticleEmitter::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {
-
-        if (!_enabled || _particlesCurrentCount == 0 || !_created) {
+        if (!_enabled || _particles->aliveCount() == 0 || !_created) {
             return false;
         }
-        std::sort(_particles.begin(), _particles.end());
+        _particles->sort();
         uploadToGPU();
 
         return true;
@@ -236,102 +246,34 @@ namespace Divide {
         }
 
         PhysicsComponent* const transform = sgn->getComponent<PhysicsComponent>();
+        const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
 
         if (_updateParticleEmitterBB) {
             sgn->updateBoundingBoxTransform(transform->getWorldMatrix());
             _updateParticleEmitterBB = false;
         }
 
-
-        F32 delta = Time::MicrosecondsToSeconds<F32>(deltaTime);
-        F32 emissionVariance = random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
-        I32 newParticles = _descriptor._emissionInterval + emissionVariance;
-        newParticles = static_cast<I32>(newParticles * delta) / (sgn->getComponent<RenderingComponent>()->lodLevel() + 1);
-
-        
-        const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
-        const vec3<F32>& origin = transform->getPosition();
-        const Quaternion<F32>& orientation = transform->getOrientation();
-
-        F32 spread = _descriptor._spread;
-        F32 velVariance = random(-_descriptor._velocityVariance, _descriptor._velocityVariance);
-        vec3<F32> mainDir = orientation * (WORLD_Y_AXIS * (_descriptor._velocity + velVariance));
-
-        for (I32 i = 0; i < newParticles; ++i) {
-            ParticleDescriptor& currentParticle = _particles[findUnusedParticle()];
-            F32 lifetimeVariance = random(-_descriptor._lifetimeVariance, _descriptor._lifetimeVariance);
-            currentParticle.life = _descriptor._lifetime + Time::MillisecondsToSeconds(lifetimeVariance);
-            memcpy(currentParticle.pos, origin._v, 3 * sizeof(F32));
-            // Very bad way to generate a random direction;
-            // See for instance http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution instead,
-            // combined with some user-controlled parameters (main direction, spread, etc)
-            currentParticle.speed[0] = mainDir.x + (rand() % 2000 - 1000.0f) / 1000.0f * spread;
-            currentParticle.speed[1] = mainDir.y + (rand() % 2000 - 1000.0f) / 1000.0f * spread;
-            currentParticle.speed[2] = mainDir.z + (rand() % 2000 - 1000.0f) / 1000.0f * spread;
-            // Very bad way to generate a random color
-            memcpy(currentParticle.rgba, DefaultColors::RANDOM()._v, 3 * sizeof(U8));
-            currentParticle.rgba[3] = (rand() % 256) / 2;
-
-            currentParticle.size = (rand() % 1000) / 2000.0f + 0.1f;
+        for (std::shared_ptr<ParticleSource>& source : _sources) {
+            source->emit(deltaTime, _particles.get());
         }
 
-        // Simulate all particles
-        I32 particlesCount = 0;
-        vec3<F32> half_gravity = DEFAULT_GRAVITY * delta * 0.5f;
-        for (ParticleDescriptor& p : _particles) {
-            if (p.life > 0.0f) {
-                // Decrease life
-                p.life -= delta;
-                if (p.life > 0.0f) {
-                    // Simulate simple physics : gravity only, no collisions
-                    for (U8 i = 0; i < 3; ++i) {
-                        p.speed[i] += half_gravity[i];
-                        p.pos[i] += p.speed[i] * delta;
-                    }
-                    p.distanceToCameraSq = vec3<F32>(p.pos).distanceSquared(eyePos);
-
-                    
-                    _particlePositionData[4 * particlesCount + 0] = p.pos[0];
-                    _particlePositionData[4 * particlesCount + 1] = p.pos[1];
-                    _particlePositionData[4 * particlesCount + 2] = p.pos[2];
-                    _particlePositionData[4 * particlesCount + 3] = p.size;
-
-                    _particleColorData[4 * particlesCount + 0] = p.rgba[0];
-                    _particleColorData[4 * particlesCount + 1] = p.rgba[1];
-                    _particleColorData[4 * particlesCount + 2] = p.rgba[2];
-                    _particleColorData[4 * particlesCount + 3] = p.rgba[3];
-                } else {
-                    // Particles that just died will be put at the end of the buffer in SortParticles();
-                    p.distanceToCameraSq = -1.0f;
-                }
-
-                particlesCount++;
-            }
+        U32 count = _particles->totalCount();
+        U8 lodLevel = sgn->getComponent<RenderingComponent>()->lodLevel();
+        for (U32 i = 0; i < count; ++i) {
+            _particles->_misc[i].w = _particles->_position[i].xyz().distanceSquared(eyePos);
+            _particles->_acceleration[i].set(0.0f);
+            _particles->lodLevel(lodLevel);
         }
 
-        _particlesCurrentCount = particlesCount;
+        for (std::shared_ptr<ParticleUpdater>& up : _updaters) {
+            up->update(deltaTime, _particles.get());
+        }
+
+//        const vec3<F32>& origin = transform->getPosition();
+//        const Quaternion<F32>& orientation = transform->getOrientation();
+
         _uploaded = false;
 
         SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
-    }
-
-    // Finds a Particle in ParticlesContainer which isn't used yet. (i.e. life < 0);
-    I32 ParticleEmitter::findUnusedParticle() {
-        for (U32 i = _lastUsedParticle; i < _particles.size(); ++i) {
-            if (_particles[i].life < 0.0f) {
-                _lastUsedParticle = i;
-                return i;
-            }
-        }
-
-        for (I32 i = 0; i < _lastUsedParticle; ++i) {
-            if (_particles[i].life < 0.0f) {
-                _lastUsedParticle = i;
-                return i;
-            }
-        }
-
-        // All particles are taken, override the first one
-        return 0; 
     }
 };

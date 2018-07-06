@@ -56,7 +56,6 @@ namespace Divide {
     class Object3D;
     class TerrainDescriptor;
     class ParticleEmitter;
-    class ParticleEmitterDescriptor;
     class PhysicsSceneInterface;
 
 /// The scene is a resource (to enforce load/unload and setName) and it has a 2 states: 
@@ -130,8 +129,8 @@ public:
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
     SceneGraphNode* const addParticleEmitter(const stringImpl& name, 
-                                             const ParticleEmitterDescriptor& descriptor,
-                                             SceneGraphNode* parentNode );
+                                             const ParticleData& data,
+                                             SceneGraphNode* parentNode);
 
     TerrainDescriptor* getTerrainInfo(const stringImpl& terrainName);
     inline vectorImpl<FileData>& getVegetationDataArray() { return _vegetationDataArray; }

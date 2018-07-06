@@ -13,11 +13,6 @@ ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()(){
         MemoryManager::DELETE( ptr );
     } else {
         ptr->renderState().useDefaultMaterial( false );
-        if ( !ptr->initData() ) {
-            MemoryManager::DELETE( ptr );
-        } else {
-            ptr->setDescriptor( *_descriptor.getPropertyDescriptor<ParticleEmitterDescriptor>() );
-        }
     }
     return ptr;
 }

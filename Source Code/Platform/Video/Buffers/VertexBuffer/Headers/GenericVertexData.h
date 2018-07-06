@@ -135,6 +135,7 @@ public:
     GenericVertexData(bool persistentMapped) : VertexDataInterface(), 
                                                _persistentMapped(persistentMapped)
     {
+        _hasIndexBuffer = false;
         _doubleBufferedQuery = true;
     }
 
@@ -144,6 +145,9 @@ public:
         _attributeMapFdbk.clear();
     }
 
+    virtual void SetIndexBuffer(const vectorImpl<U32>& indices,
+                                bool dynamic, 
+                                bool stream) = 0;
     virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
     virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
 
@@ -199,6 +203,7 @@ public:
 protected:
     typedef hashMapImpl<U32, AttributeDescriptor > attributeMap;
     bool _persistentMapped;
+    bool _hasIndexBuffer;
     bool _doubleBufferedQuery;
     vectorImpl<U32 > _feedbackBuffers;
     vectorImpl<U32 > _bufferObjects;

@@ -217,14 +217,18 @@ bool Scene::loadGeometry( const FileData& data ) {
 }
 
 SceneGraphNode* const Scene::addParticleEmitter(const stringImpl& name, 
-                                                const ParticleEmitterDescriptor& descriptor, 
+                                                const ParticleData& data, 
                                                 SceneGraphNode* parentNode) {
     assert( parentNode != nullptr && !name.empty() );
 
     ResourceDescriptor particleEmitter( name );
-    particleEmitter.setPropertyDescriptor( descriptor );
+    ParticleEmitter* emitter = CreateResource<ParticleEmitter>(particleEmitter);
 
-    return parentNode->addNode( CreateResource<ParticleEmitter>( particleEmitter ) );
+    DIVIDE_ASSERT(emitter != nullptr, "Scene::addParticleEmitter error: Could not instantiate emitter!");
+
+    emitter->initData(std::make_shared<ParticleData>(data));
+    
+    return parentNode->addNode(emitter);
 }
 
 SceneGraphNode* Scene::addLight( Light* const lightItem, SceneGraphNode* const parentNode ) {

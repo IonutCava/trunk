@@ -1,6 +1,8 @@
 #include "Headers/glGenericVertexData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
 
 glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexData(persistentMapped),
@@ -16,6 +18,7 @@ glGenericVertexData::glGenericVertexData(bool persistentMapped) : GenericVertexD
                                                                   _lockManager(nullptr)
 {
     _numQueries  = 0;
+    _indexBuffer = 0;
     _currentReadQuery = 0;
     _transformFeedback = 0;
     _currentWriteQuery = 0;
@@ -80,7 +83,9 @@ glGenericVertexData::~glGenericVertexData()
             MemoryManager::DELETE_ARRAY( _resultAvailable[i] );
         }
     }
-
+    if (_indexBuffer > 0)  {
+        glDeleteBuffers(1, &_indexBuffer);
+    }
     // Delete the rest of the data
     MemoryManager::DELETE_ARRAY( _prevResult );
     MemoryManager::DELETE_ARRAY( _bufferSet );
@@ -205,7 +210,12 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
         GLenum type = command.renderWireframe() ? GL_LINE_LOOP : 
                                                   GLUtil::GL_ENUM_TABLE::glPrimitiveTypeTable[command.primitiveType()];
 
-        glDrawArraysIndirect(type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
+        if (_hasIndexBuffer) {
+            GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+            glDrawElementsIndirect(type, GL_UNSIGNED_INT, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
+        } else {
+            glDrawArraysIndirect(type, (void*)(cmd.baseInstance * sizeof(IndirectDrawCommand)));
+        }
     }
 
     // Deactivate transform feedback if needed
@@ -217,6 +227,35 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command, bool skipBind)
     }
     // Count the draw call
     GFX_DEVICE.registerDrawCall();    
+}
+
+void glGenericVertexData::SetIndexBuffer(const vectorImpl<U32>& indices,
+                                         bool dynamic, 
+                                         bool stream) {
+    bool addBuffer = !indices.empty();
+
+    if (addBuffer) {
+        if (!_hasIndexBuffer) {
+            // Generate an "Index Buffer Object"
+            glGenBuffers(1, &_indexBuffer);
+            // Assert if the IB creation failed
+            DIVIDE_ASSERT(_indexBuffer != 0, Locale::get("ERROR_IB_INIT"));
+        }
+        glNamedBufferDataEXT(_indexBuffer,
+                             indices.size() * sizeof(GLuint),
+                             indices.data(), 
+                             dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
+
+        _hasIndexBuffer = true;
+    } else {
+        if (!_hasIndexBuffer) {
+            return;
+        }
+        glInvalidateBufferData(_indexBuffer);
+        glDeleteBuffers(1, &_indexBuffer);
+        _indexBuffer = 0;
+        _hasIndexBuffer = false;
+    }
 }
 
 /// Specify the structure and data of the given buffer

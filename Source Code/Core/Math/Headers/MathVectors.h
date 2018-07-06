@@ -129,6 +129,10 @@ public:
     inline T    normalize();
     /// round both values
     inline void round();
+    /// lerp between this and the specified vector by the specified amount
+    inline void lerp(const vec2 &v, T factor);
+    /// lerp between this and the specified vector by the specified amount for each component
+    inline void lerp(const vec2 &v, const vec2& factor);
     /// calculate the dot product between this vector and the specified one
     inline T    dot(const vec2 &v) const;
     /// project this vector on the line defined by the 2 points(A, B)
@@ -432,7 +436,10 @@ public:
     inline T    lengthSquared() const;
     /// round all four values
     inline void round();
-
+    /// lerp between this and the specified vector by the specified amount
+    inline void lerp(const vec4 &v, T factor);
+    /// lerp between this and the specified vector by the specified amount for each component
+    inline void lerp(const vec4 &v, const vec4& factor);
     union {
         struct {T x,y,z,w;};
         struct {T s,t,p,q;};

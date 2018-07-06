@@ -160,6 +160,18 @@ inline vec2<T> closestPointOnSegment(const vec2<T>  &vA, const vec2<T>  &vB) {
 
     return (((vB-vA) * factor) + vA);
 }
+/// lerp between this and the specified vector by the specified amount
+template<typename T>
+inline void vec2<T>::lerp(const vec2 &v, T factor) {
+    set((*this * (1 - factor)) + (v * factor));
+}
+
+/// lerp between this and the specified vector by the specified amount for each component
+template<typename T>
+inline void vec2<T>::lerp(const vec2 &v,const vec2& factor) {
+    set((*this * (1 - factor)) + (v * factor));
+}
+
 /// linear interpolation between 2 vectors
 template<typename T>
 inline vec2<T> lerp(const vec2<T> &u, const vec2<T>  &v, T factor) {
@@ -447,7 +459,17 @@ inline T vec4<T>::normalize() {
 
     return l;
 }
+/// lerp between this and the specified vector by the specified amount
+template<typename T>
+inline void vec4<T>::lerp(const vec4 &v, T factor) {
+    set((*this * (1 - factor)) + (v * factor));
+}
 
+/// lerp between this and the specified vector by the specified amount for each component
+template<typename T>
+inline void vec4<T>::lerp(const vec4 &v,const vec4& factor) {
+    set((*this * (1 - factor)) + (v * factor));
+}
 /// lerp between the 2 vectors by the specified amount
 template<typename T>
 inline vec4<T> lerp(const vec4<T>  &u, const vec4<T>  &v, T factor) {
@@ -463,5 +485,25 @@ inline vec4<T> lerp(const vec4<T>  &u, const vec4<T> &v, const vec4<T> & factor)
                      (u.w * (1 - factor.w)) + (v.w * factor.w)));
 }
 
+template<typename Type>
+inline vec2<Type> random(vec2<Type> min, vec2<Type> max) { 
+    return vec2<Type>(random(min.x, max.x),
+                      random(min.y, max.y));
+}
+
+template<typename Type>
+inline vec3<Type> random(vec3<Type> min, vec3<Type> max) { 
+    return vec3<Type>(random(min.x, max.x),
+                      random(min.y, max.y),
+                      random(min.z, max.z));
+}
+
+template<typename Type>
+inline vec4<Type> random(vec4<Type> min, vec4<Type> max) { 
+    return vec4<Type>(random(min.x, max.x),
+                      random(min.y, max.y),
+                      random(min.z, max.z),
+                      random(min.w, max.w));
+}
 }; //namespace Divide
 #endif

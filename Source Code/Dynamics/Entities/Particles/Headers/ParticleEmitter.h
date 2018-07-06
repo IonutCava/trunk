@@ -23,54 +23,13 @@
 #ifndef _PARTICLE_EMITTER_H_
 #define _PARTICLE_EMITTER_H_
 
-#include "Particle.h"
+#include "ParticleSource.h"
+#include "ParticleUpdater.h"
 #include "Graphs/Headers/SceneNode.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
-#include "Core/Resources/Headers/ResourceDescriptor.h"
 
+/// original source code: https://github.com/fenbf/particles/blob/public/particlesCode
 namespace Divide {
-
-/// Basic definitions used by the particle emitter
-/// By default , every PE node is inert until you pass it a descriptor
-class ParticleEmitterDescriptor : public PropertyDescriptor{
-public:
-    /// maximum number of particles for this emitter
-    U32 _particleCount;
-    /// particles per second
-    I32 _emissionInterval;         
-    /// particles per second used to vary emission (_emissionInterval + rand(-_emissionIntervalVariance,_emissionIntervalVariance))
-    I32 _emissionIntervalVariance; 
-
-    F32 _spread;
-    /// particle velocity on emission
-    F32 _velocity;                   
-    /// velocity variance (_velocity + rand(-_velocityVariance, _velocityVariance))
-    F32 _velocityVariance;           
-    /// lifetime, in milliseconds of each particle
-    I32 _lifetime;                  
-    /// liftime variance (_lifetime + rand(-_lifetimeVariance, _lifetimeVariance))
-    I32 _lifetimeVariance;          
-    stringImpl _textureFileName;
-
-public:
-    ParticleEmitterDescriptor();
-    ///All of these are default values that should be safe for any kind of texture usage
-    inline void setDefaultValues() {
-        _particleCount = 1000;
-        _spread = 1.5f;
-        _emissionInterval = 400;
-        _emissionIntervalVariance = 75;
-        _velocity = 10.0f;
-        _velocityVariance = 1.0f;
-        _lifetime = Time::SecondsToMilliseconds( 5.0f );
-        _lifetimeVariance = 25.0f;
-        _textureFileName = "particle.DDS";
-    }
-
-    ParticleEmitterDescriptor* clone() const { 
-        return MemoryManager_NEW ParticleEmitterDescriptor(*this);
-    }
-};
 
 class Texture;
 class GenericVertexData;
@@ -85,27 +44,33 @@ public:
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) {_enabled = state;}
-
-    /// Set the callback, the position and the radius of the trigger
-    void setDescriptor(const ParticleEmitterDescriptor& descriptor);
     
     inline void setDrawImpostor(const bool state) {_drawImpostor = state;}
 
+    bool initData(std::shared_ptr<ParticleData> particleData);
+    bool updateData(std::shared_ptr<ParticleData> particleData);
+
     ///SceneNode concrete implementations
-    bool initData();
     bool unload();
 
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     ///SceneNode test
     bool isInView(const SceneRenderState& sceneRenderState, SceneGraphNode* const sgn, const bool distanceCheck = false) {
-        if(_enabled && _impostor)
+        if (_enabled && _impostor) {
             return _impostor->isInView(sceneRenderState, sgn, distanceCheck);
+        }
 
         return false;
     }
 
-    const ParticleEmitterDescriptor& getDescriptor() const {return _descriptor;}
+    inline void addUpdater(std::shared_ptr<ParticleUpdater> updater) {
+        _updaters.push_back(updater);
+    }
+
+    inline void addSource(std::shared_ptr<ParticleSource> source) {
+        _sources.push_back(source);
+    }
 
 protected:
     void postLoad(SceneGraphNode* const sgn);
@@ -128,13 +93,12 @@ private:
     void uploadToGPU();
 
 private:
-    vectorImpl<ParticleDescriptor > _particles;
-    vectorImpl<F32 > _particlePositionData;
-    vectorImpl<U8 >  _particleColorData;
+    std::shared_ptr<ParticleData> _particles;
+
+    vectorImpl<std::shared_ptr<ParticleSource>>  _sources;
+    vectorImpl<std::shared_ptr<ParticleUpdater>> _updaters;
 
     U32 _readOffset, _writeOffset;
-    I32 _lastUsedParticle;
-    U32 _particlesCurrentCount;
     /// create particles
     bool _enabled;
     bool _created;
@@ -149,13 +113,10 @@ private:
 
     size_t _particleStateBlockHash;
 
-    ShaderProgram* _particleShader;
-    ShaderProgram* _particleDepthShader;
-    Texture* _particleTexture;
-
-    ParticleEmitterDescriptor _descriptor;
-
-    GenericDrawCommand        _drawCommand;
+    ShaderProgram*     _particleShader;
+    ShaderProgram*     _particleDepthShader;
+    Texture*           _particleTexture;
+    GenericDrawCommand _drawCommand;
 };
 
 }; //namespace Divide

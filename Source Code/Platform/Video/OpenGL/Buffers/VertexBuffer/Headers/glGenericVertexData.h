@@ -45,6 +45,10 @@ public:
     void Create(U8 numBuffers = 1, U8 numQueries = 1);
     U32  GetFeedbackPrimitiveCount(U8 queryID);
 
+    void SetIndexBuffer(const vectorImpl<U32>& indices,
+                        bool dynamic, 
+                        bool stream);
+
     void SetBuffer(U32 buffer, 
                    U32 elementCount, 
                    size_t elementSize, 
@@ -102,6 +106,7 @@ protected:
     bool frameStarted(const FrameEvent& evt);
 
 private:
+    GLuint   _indexBuffer;
     GLuint   _transformFeedback;
     GLuint   _numQueries;
     GLuint   _vertexArray[GVD_USAGE_PLACEHOLDER];
