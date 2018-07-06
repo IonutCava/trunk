@@ -25,6 +25,7 @@
 
 #include "Utility/Headers/ImageTools.h"
 #include "Graphs/Headers/SceneNode.h"
+#include "Hardware/Platform/Headers/Task.h"
 
 class Terrain;
 class Texture;
@@ -34,52 +35,34 @@ class FrameBuffer;
 class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
-typedef Texture Texture2D;
-
-#define GRASS_STRIP_RESTART_INDEX std::numeric_limits<U32>::max() - 1
-
+class GenericVertexData;
 enum RenderStage;
 ///Generates grass and trees on the terrain.
 ///Grass VB's + all resources are stored locally in the class.
 ///Trees are added to the SceneGraph and handled by the scene.
 class Vegetation : public SceneNode {
 public:
-    Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, vectorImpl<Texture2D*>& grassBillboards) : SceneNode(TYPE_VEGETATION_GRASS),
-      _billboardCount(billboardCount),
-      _grassDensity(grassDensity),
-      _grassScale(grassScale),
-      _treeScale(treeScale),
-      _treeDensity(treeDensity),
-      _grassBillboards(grassBillboards),
-      _render(false),
-      _success(false),
-      _shadowMapped(true),
-      _threadedLoadComplete(false),
-      _stopLoadingRequest(false),
-      _terrain(nullptr),
-      _terrainSGN(nullptr),
-      _grassShader(nullptr),
-      _stateRefreshIntervalBuffer(0ULL),
-      _stateRefreshInterval(getSecToUs(1)) ///<Every second?
-      {
-          _map.create(map);
-      }
+    Vegetation(const std::string& name, U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, 
+               const std::string& map, Texture* grassBillboards,
+               const std::string& grassShaderName);
     ~Vegetation();
     void postLoad(SceneGraphNode* const sgn) { SceneNode::postLoad(sgn); }
-    void initialize(const std::string& grassShader, Terrain* const terrain,SceneGraphNode* const terrainSGN);
+    void initialize(Terrain* const terrain,SceneGraphNode* const terrainSGN);
     inline void toggleRendering(bool state){_render = state;}
     ///parentTransform: the transform of the parent terrain node
-    void render(SceneGraphNode* const sgn);
-    inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
+    inline bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) { return true; }
 
 protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    bool onDraw(const RenderStage& renderStage);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& renderStage);
 
 private:
-    bool generateTrees();			   ///< True = Everything OK, False = Error. Check _errorCode
-    bool generateGrass(U32 index, U32 size);     ///< index = current grass type (billboard, vb etc)
-                                                 ///< size = the available vertex count
+    bool uploadGrassData();
+    void generateTrees();
+    void generateGrass();
+    void gpuCull();
+
 private:
     //variables
     bool _render; ///< Toggle vegetation rendering On/Off
@@ -94,11 +77,26 @@ private:
     U64 _stateRefreshInterval;
     U64 _stateRefreshIntervalBuffer;
     ImageTools::ImageData _map;  ///< Dispersion map for vegetation placement
-    vectorImpl<Texture2D*>	_grassBillboards;
-    ShaderProgram*		    _grassShader;
-
+    Texture*              _grassBillboards;
+    ShaderProgram*		  _grassShader[3];
+    ShaderProgram*        _cullShader;
+    std::string           _grassShaderName;
     bool _shadowMapped;
-    RenderStateBlock*   _grassStateBlock;
+    RenderStateBlock*     _grassStateBlock;
+
+
+    bool                   _culledFinal;
+    U32                    _shadowQueryID;
+    U32                    _drawQueryID;
+    U32                    _billboardDivisor;
+    U32                    _instanceCountGrass;
+    U32                    _instanceCountTrees;
+    vectorImpl<I32 >       _grassTextureIdx;
+    vectorImpl<F32 >       _grassSizes;
+    vectorImpl<vec3<F32> > _grassPositions;
+    GenericVertexData*     _grassGPUBuffer;
+    GenericVertexData*     _treeGPUBuffer;
+    Task_ptr               _generateVegetation;
 };
 
 #endif

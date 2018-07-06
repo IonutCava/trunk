@@ -31,6 +31,8 @@ namespace {
 #	pragma GCC diagnostic pop
 #endif
 
+bool GUIConsole::_flushing = false;
+I16 GUIConsole::_tempBufferSize = 0;
 U64 GUIConsole::_totalTime = 0ULL;
 I32 GUIConsole::_currentItem = 0;
 boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<GUIConsole::_messageQueueCapacity> >  GUIConsole::_outputBuffer;
@@ -187,6 +189,7 @@ bool GUIConsole::isVisible(){
 void GUIConsole::printText(const char* output, bool error){
 
     if (!_init && !_closing){
+        while (_flushing) {}
         std::string outString(output);
         assert(!outString.empty());
         _outputTempBuffer.push_back(std::make_pair(outString, error));
@@ -198,8 +201,16 @@ void GUIConsole::printText(const char* output, bool error){
 
 void GUIConsole::PushText(MessageStruct* msg){
     U64 startTimer = GETUSTIME(true);
+    if (_tempBufferSize > _CEGUI_MAX_CONSOLE_ENTRIES){
+        _flushing = true;
+        for (I32 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES * 0.5f; ++i)
+            if (!_outputTempBuffer.empty()) _outputTempBuffer.erase(_outputTempBuffer.end());
+        _flushing = false;
+    }
+    _tempBufferSize++;
     while (!_outputBuffer.push(msg)){
         if (getUsToSec(GETUSTIME(true) - startTimer) > messageQueueTimeoutInSec){
+            _tempBufferSize--;
             break;
         }
     }
@@ -231,6 +242,7 @@ void GUIConsole::update(const U64 deltaTime){
     static std::string lastMsg;
 
     while(!_outputTempBuffer.empty()){
+        _flushing = true;
         std::pair<std::string, bool>& message = _outputTempBuffer.front();
         if (lastMsgError != message.second){
             lastMsgError = message.second;
@@ -243,6 +255,7 @@ void GUIConsole::update(const U64 deltaTime){
         lastMsg.append("\n");
 
         _outputTempBuffer.erase(_outputTempBuffer.begin());
+        _flushing = false;
     }
     _outputTempBuffer.clear();
 

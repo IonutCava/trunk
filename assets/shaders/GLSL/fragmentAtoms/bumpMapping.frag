@@ -4,11 +4,6 @@ uniform float parallax_factor = 1.0f;
 uniform float relief_factor = 1.0f;
 uniform int bumpMapLightId = 0;
 
-#define MODE_PHONG      0
-#define MODE_BUMP		1
-#define MODE_PARALLAX	2
-#define MODE_RELIEF		3
-
 const int num_steps_lin = 10;
 const int num_steps_bin = 15;
 float linear_step = 1.0 / (float(num_steps_lin));
@@ -52,18 +47,19 @@ vec4 NormalMapping(in vec2 uv){
     return Phong(uv, normalize(2.0 * texture(texNormalMap, uv).rgb - 1.0));
 }
 
+#if defined(USE_PARALLAX_MAPPING)
 vec4 ParallaxMapping(in vec2 uv, in vec3 pixelToLightTBN){
     vec3 lightVecTBN = normalize(pixelToLightTBN);
     vec3 viewVecTBN = normalize(_viewDirection);
     
     //Offset, scale and bias
-    vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * parallax_factor * 
-                     (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
+    vec2 vTexCoord = uv + ((texture(texNormalMap, uv).a - 0.5) * parallax_factor * (vec2(viewVecTBN.x, -viewVecTBN.y) / viewVecTBN.z));
 
     //Normal mapping in TBN space
     return Phong(vTexCoord, normalize(2.0 * texture(texNormalMap, vTexCoord).xyz - 1.0));
 }
 
+#endif
 #if defined(USE_RELIEF_MAPPING)
 vec4 ReliefMapping(in int _light, in vec2 uv){
     vec3 viewVecTBN = normalize(_viewDirection);

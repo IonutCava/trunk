@@ -38,7 +38,7 @@ public:
     ///
     void sort(const RenderStage& currentRenderStage);
     void refresh(bool force = false);
-    void addNodeToQueue(SceneGraphNode* const sgn);
+    void addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize();
     SceneGraphNode* getItem(U16 renderBin, U16 index);
     RenderBin*      getBin(RenderBin::RenderBinType rbType);

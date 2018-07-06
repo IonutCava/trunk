@@ -44,19 +44,19 @@ public:
                             _largeIndices(false),
                             _format(UNSIGNED_SHORT),
                             _currentShader(nullptr),
+                            _primitiveRestartEnabled(false),
                             _firstElement(0),
                             _instanceCount(1),
                             _indexDelimiter(0)
     {
         _depthPass = _forceOptimizeForDepth = false;
-        _VBid = _IBid = _DepthVBid = _LODcount = _rangeCount = 0;
+        _LODcount = _rangeCount = 0;
         _optimizeForDepth = true;
         Reset();
     }
 
     virtual ~VertexBuffer()
     {
-        _VBid = _DepthVBid = _IBid = 0;
         _LODcount = 1;
         _currentShader = nullptr;
         Reset();
@@ -68,8 +68,8 @@ public:
     virtual bool computeTriangleList() = 0;
     virtual bool SetActive() = 0;
 
-    virtual void Draw(const U8 LODindex = 0) = 0;
-    virtual void DrawRange() = 0;
+    virtual void Draw(bool skipBind = false, const U8 LODindex = 0) = 0;
+    virtual void DrawRange(bool skipBind = false) = 0;
 
     virtual void setShaderProgram(ShaderProgram* const shaderProgram) = 0;
     inline ShaderProgram* const currentShader()  {return _currentShader;}
@@ -80,7 +80,6 @@ public:
     inline void setFirstElement(U32 firstElement)            {_firstElement = firstElement;}
     inline void setDepthPass(bool state = false)             {if(_optimizeForDepth) _depthPass = state;}
     inline void useLargeIndices(bool state = true)           {assert(!_created); _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;}
-    inline void setIndicesDelimiter(U32 delimiterValue)      {_indexDelimiter = delimiterValue;}
     inline void computeTriangles(bool state = true)          {_computeTriangles = state;}
     inline void reservePositionCount(U32 size)  {_dataPosition.reserve(size);}
     inline void reserveColourCount(U32 size)    {_dataColor.reserve(size);}
@@ -88,6 +87,7 @@ public:
     inline void reserveTangentCount(U32 size)   {_dataTangent.reserve(size);}
     inline void reserveBiTangentCount(U32 size) {_dataBiTangent.reserve(size);}
     inline void reserveIndexCount(U32 size)     {_largeIndices ? _hardwareIndicesL.reserve(size) :_hardwareIndicesS.reserve(size);}
+    inline void reserveTriangleCount(U32 size)  {_dataTriangles.reserve(size);}
 
     inline void resizePositionCount(U32 size, const vec3<F32>& defaultValue = VECTOR3_ZERO)  {
         _dataPosition.resize(size,defaultValue);
@@ -142,6 +142,22 @@ public:
         }
     }
 
+    inline void addIndexL(U32 index){
+        _hardwareIndicesL.push_back(index);
+    }
+
+    inline void addIndexS(U16 index){
+        _hardwareIndicesS.push_back(index);
+    }
+
+    inline void addRestartIndex(){
+        _primitiveRestartEnabled = true;
+        if (_largeIndices){
+            _hardwareIndicesL.push_back(Config::PRIMITIVE_RESTART_INDEX_L);
+        }else{
+            _hardwareIndicesS.push_back(Config::PRIMITIVE_RESTART_INDEX_S);
+        }
+    }
     inline void addPosition(const vec3<F32>& pos){
         if(pos.x > _maxPosition.x)	_maxPosition.x = pos.x;
         if(pos.x < _minPosition.x)	_minPosition.x = pos.x;
@@ -215,6 +231,7 @@ public:
 
     inline void Reset() {
         _created = false;
+        _primitiveRestartEnabled = false;
         _VBoffsetPosition = _VBoffsetColor = _VBoffsetNormal = _VBoffsetTexcoord = _VBoffsetTangent = 0;
         _VBoffsetBiTangent = _VBoffsetBoneIndices = _VBoffsetBoneWeights = 0;
         _VBoffsetBoneIndicesDEPTH = _VBoffsetBoneWeightsDEPTH = 0;
@@ -243,9 +260,8 @@ protected:
 
 protected:
 
-    U32         _IBid;
-    U32  		_VBid, _DepthVBid;
-    U8          _LODcount; ///<Number of LOD nodes in this buffer
+    ///Number of LOD nodes in this buffer
+    U8          _LODcount; 
     ///How many elements should we actually render when using "DrawRange"
     U32         _rangeCount;
     ///The format of the buffer data
@@ -287,6 +303,7 @@ protected:
     ///Set this to FALSE if you need bump/normal/parallax mapping in depth pass (normal mapped object casts correct shadows)
     bool _optimizeForDepth;
     bool _forceOptimizeForDepth; //<Override vb requirements for optimization
+    bool _primitiveRestartEnabled;
     ///If it's true, use depth only VB/VAO else use the regular buffers
     bool _depthPass;
     ///Was the data submited to the GPU?

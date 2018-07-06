@@ -97,10 +97,10 @@ namespace ImageTools {
 		// most formats do not have an alpha channel
 		_alpha = (format == IL_RGBA || format == IL_LUMINANCE_ALPHA || format == IL_ALPHA);
 		_format = textureFormatDevIL(format);
-		size_t imageSize = (size_t)(_dimensions.width) * (size_t)(_dimensions.height) * (size_t)(_bpp);
+		_imageSize = (size_t)(_dimensions.width) * (size_t)(_dimensions.height) * (size_t)(_bpp);
 
-		_data = New U8[imageSize];
-		memcpy(_data, ilGetData(), imageSize);
+        _data = New U8[_imageSize];
+        memcpy(_data, ilGetData(), _imageSize);
 
 		ilBindImage(0);
 		return true;

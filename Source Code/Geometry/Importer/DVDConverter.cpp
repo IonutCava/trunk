@@ -439,7 +439,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setResourceLocation(path);
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-            Texture2D* textureRes = CreateResource<Texture2D>(texture);
+            Texture* textureRes = CreateResource<Texture>(texture);
             assert(tempMaterial != nullptr);
             assert(textureRes != nullptr);
             //The first texture is always "Replace"
@@ -468,7 +468,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setResourceLocation(path);
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-            Texture2D* textureRes = CreateResource<Texture2D>(texture);
+            Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
         }//endif
@@ -489,7 +489,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setResourceLocation(path);
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-            Texture2D* textureRes = CreateResource<Texture2D>(texture);
+            Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,textureRes,aiTextureOperationTable[op]);
             tempMaterial->setBumpMethod(Material::BUMP_NORMAL);
         }//endif
@@ -511,7 +511,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setResourceLocation(path);
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-            Texture2D* textureRes = CreateResource<Texture2D>(texture);
+            Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes,aiTextureOperationTable[op]);
             tempMaterial->setDoubleSided(true);
         }//endif
@@ -524,7 +524,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
         if (tempMaterial->getTexture(Material::TEXTURE_UNIT0)){
             if(!(flags & aiTextureFlags_IgnoreAlpha) &&
                 tempMaterial->getTexture(Material::TEXTURE_UNIT0)->hasTransparency()){
-                    Texture2D* textureRes = CreateResource<Texture2D>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_UNIT0)->getName()));
+                    Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(tempMaterial->getTexture(Material::TEXTURE_UNIT0)->getName()));
                     tempMaterial->setTexture(Material::TEXTURE_OPACITY,textureRes);
             }
         }
@@ -547,7 +547,7 @@ Material* DVDConverter::loadSubMeshMaterial(const aiMaterial* source, const std:
             texture.setResourceLocation(path);
             texture.setFlag(true);
             texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-            Texture2D* textureRes = CreateResource<Texture2D>(texture);
+            Texture* textureRes = CreateResource<Texture>(texture);
             tempMaterial->setTexture(Material::TEXTURE_SPECULAR,textureRes,aiTextureOperationTable[op]);
         }//endif
     }//endif

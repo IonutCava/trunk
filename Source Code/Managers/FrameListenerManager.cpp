@@ -1,30 +1,31 @@
 #include "Headers/FrameListenerManager.h"
 
 ///Register a new Frame Listener to be processed every frame
-void FrameListenerManager::registerFrameListener(FrameListener* listener){
-    ///Check ifthe listener has a name or we should assign an id
+void FrameListenerManager::registerFrameListener(FrameListener* listener, U32 callOrder){
+    //Check if the listener has a name or we should assign an id
     if(listener->getName().empty()){
-        ///Use the classic stringstream method
-        std::stringstream ss;
-        ss << "generic_f_listener_";
-        ss << (_listeners.size() + _removedListeners.size());
-        listener->setName(ss.str());
+        listener->setName("generic_f_listener_" + Util::toString(_listeners.size() + _removedListeners.size()));
     }
-    ///Check if the listener is in the trash bin
-    ListenerMap::iterator it = _removedListeners.find(listener->getName());
-    ///If it is, restore it, else, just add a new one
-    if (it != _removedListeners.end()){
-        _removedListeners.erase(it);
-    }else{
-        _listeners.insert(std::make_pair(listener->getName(), listener));
+    listener->setCallOrder(callOrder);
+    //Check if the listener is in the trash bin
+    for (vectorImpl<FrameListener* >::iterator it = _removedListeners.begin(); it != _removedListeners.end(); ++it){
+        //If it is, restore it, else, just add a new one
+        if ((*it)->getName().compare(listener->getName()) == 0){
+            _removedListeners.erase(it);
+            break;
+        }
     }
+
+    _listeners.push_back(listener);
+
+    std::sort(_listeners.begin(), _listeners.end());
 }
 
-///Remove an existent Frame Listener from our map
+///Remove an existent Frame Listener from our collection
 void FrameListenerManager::removeFrameListener(FrameListener* listener){
-    ListenerMap::iterator it = _listeners.find(listener->getName());
-    if(it != _listeners.end()){
-        _removedListeners.insert(std::make_pair(it->second->getName(),it->second));
+    vectorImpl<FrameListener* >::const_iterator it = findListener(listener->getName());
+    if (it != _listeners.end()){        //If it is, restore it, else, just add a new one
+        _removedListeners.push_back(*it);
     }else{
         ERROR_FN(Locale::get("ERROR_FRAME_LISTENER_REMOVE"), listener->getName().c_str());
     }
@@ -33,9 +34,38 @@ void FrameListenerManager::removeFrameListener(FrameListener* listener){
 ///For each listener, notify of current event and check results
 ///If any Listener returns false, the whole manager returns false for this specific step
 ///If the manager returns false at any step, the application exists
+bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
+    bool state = false;
+    switch (evt._type){
+        default: break;
+        case FRAME_EVENT_STARTED : 
+            state = frameStarted(evt); 
+            break;
+        case FRAME_PRERENDER_START :
+            state = framePreRenderStarted(evt); 
+            break;
+        case FRAME_PRERENDER_END : 
+            state = framePreRenderEnded(evt); 
+            break;
+        case FRAME_POSTRENDER_START : 
+            state = framePostRenderStarted(evt); 
+            break;
+        case FRAME_POSTRENDER_END : 
+            state = framePostRenderEnded(evt); 
+            break;
+        case FRAME_EVENT_PROCESS :
+            state = frameRenderingQueued(evt); 
+            break;
+        case FRAME_EVENT_ENDED : 
+            state = frameEnded(evt); 
+            break;
+    };
+    return state;
+}
+
 bool FrameListenerManager::frameStarted(const FrameEvent& evt){
-    FOR_EACH(ListenerMap::value_type& listener, _listeners){
-        if(!listener.second->frameStarted(evt)){
+    for(FrameListener* listener : _listeners){
+        if(!listener->frameStarted(evt)){
             return false;
         }
     }
@@ -43,8 +73,8 @@ bool FrameListenerManager::frameStarted(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt){
-    FOR_EACH(ListenerMap::value_type& listener, _listeners){
-        if(!listener.second->framePreRenderStarted(evt)){
+    for (FrameListener* listener : _listeners){
+        if(!listener->framePreRenderStarted(evt)){
             return false;
         }
     }
@@ -52,8 +82,8 @@ bool FrameListenerManager::framePreRenderStarted(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
-    FOR_EACH(ListenerMap::value_type& listener, _listeners){
-        if(!listener.second->framePreRenderEnded(evt)){
+    for (FrameListener* listener : _listeners){
+        if(!listener->framePreRenderEnded(evt)){
             return false;
         }
     }
@@ -61,8 +91,26 @@ bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt){
-    FOR_EACH(ListenerMap::value_type& listener, _listeners){
-        if(!listener.second->frameRenderingQueued(evt)){
+    for (FrameListener* listener : _listeners){
+        if(!listener->frameRenderingQueued(evt)){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FrameListenerManager::framePostRenderStarted(const FrameEvent& evt){
+    for (FrameListener* listener : _listeners){
+        if (!listener->framePostRenderStarted(evt)){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool FrameListenerManager::framePostRenderEnded(const FrameEvent& evt){
+    for (FrameListener* listener : _listeners){
+        if (!listener->framePostRenderEnded(evt)){
             return false;
         }
     }
@@ -70,8 +118,8 @@ bool FrameListenerManager::frameRenderingQueued(const FrameEvent& evt){
 }
 
 bool FrameListenerManager::frameEnded(const FrameEvent& evt){
-    FOR_EACH(ListenerMap::value_type& listener, _listeners){
-        if(!listener.second->frameEnded(evt)){
+    for (FrameListener* listener : _listeners){
+        if(!listener->frameEnded(evt)){
             return false;
         }
     }
@@ -80,9 +128,10 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt){
 
 ///When the application is idle, we should really clear up old events
 void FrameListenerManager::idle(){
-    FOR_EACH(ListenerMap::value_type& listener, _removedListeners){
-        _listeners.erase(listener.second->getName());
+    for (vectorImpl<FrameListener* >::iterator it = _removedListeners.end(); it != _removedListeners.begin(); it--){
+        _listeners.erase(findListener((*it)->getName()));
     }
+
     _removedListeners.clear();
 }
 
@@ -92,6 +141,7 @@ void FrameListenerManager::createEvent(const U64 currentTime, FrameEventType typ
     evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
     evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
     evt._interpolationFactor = interpolationFactor;
+    evt._type = type;
 }
 
 D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventType type){
@@ -112,4 +162,15 @@ D32 FrameListenerManager::calculateEventTime(const D32 currentTime, FrameEventTy
     }
     times.erase(times.begin(), it);
     return (times.back() - times.front()) / getSecToMs(times.size()-1);
+}
+
+vectorImpl<FrameListener* >::const_iterator FrameListenerManager::findListener(const std::string& name){
+    vectorImpl<FrameListener* >::const_iterator it = _listeners.begin();
+    for (;it != _listeners.end(); ++it){
+        ///If it is, restore it, else, just add a new one
+        if ((*it)->getName().compare(name) == 0)
+            break;
+    }
+
+    return it;
 }

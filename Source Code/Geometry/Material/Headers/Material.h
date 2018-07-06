@@ -34,9 +34,9 @@ class ShaderProgram;
 class RenderStateBlock;
 class ResourceDescriptor;
 class RenderStateBlockDescriptor;
-typedef Texture Texture2D;
 enum RenderStage;
 enum BlendProperty;
+
 class Material : public Resource {
 public:
     /// ShaderData stores information needed by the shader code to properly shade objects
@@ -159,7 +159,7 @@ public:
     inline void setShadingMode(const ShadingMode& mode) { _shadingMode = mode; }
 
     void setDoubleSided(const bool state);
-    void setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
+    void setTexture(U32 textureUsageSlot, Texture* const texture, const TextureOperation& op = TextureOperation_Replace, U8 index = 0);
     ///Set the desired bump mapping method. If force == true, the shader is updated immediately
     void setBumpMethod(const BumpMethod& newBumpMethod, const bool force = false);
     void setBumpMethod(U32 newBumpMethod, const bool force = false);
@@ -184,7 +184,7 @@ public:
 
     ///toggle multi-threaded shader loading on or off for this material
     inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
-    void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
+    void setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE, const bool computeOnAdd = false);
     RenderStateBlock* setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage);
 
     void getSortKeys(I32& shaderKey, I32& textureKey) const;
@@ -194,8 +194,8 @@ public:
     inline F32   getOpacityValue(U8 index = 0)    const {return _shaderData[index]._opacity;}
     inline U8    getTextureCount(U8 index = 0)    const {return _shaderData[index]._textureCount;}
 
-           RenderStateBlock* getRenderState(RenderStage currentStage);
-    inline Texture2D*	     const getTexture(U32 textureUsage) {return _textures[textureUsage];}
+           const RenderStateBlock& getRenderStateBlock(RenderStage currentStage);
+    inline       Texture*	 const getTexture(U32 textureUsage) {return _textures[textureUsage];}
            ShaderProgram*    const getShaderProgram(RenderStage renderStage = FINAL_STAGE);
 
     inline const TextureOperation& getTextureOperation(U32 textureUsage)   const {
@@ -209,6 +209,7 @@ public:
     void clean();
     bool isTranslucent(U8 index = 0);
 
+    inline void dumpToFile(bool state) { _dumpToFile  = state;}
     inline bool isDirty()       const {return _dirty;}
     inline bool isDoubleSided() const {return _doubleSided;}
     inline bool useAlphaTest()  const {return _useAlphaTest;}
@@ -227,6 +228,7 @@ private:
     std::string _shaderModifier; //<use for special shader tokens, such as "Tree"
     TranslucencySource _translucencySource;
     bool _dirty;
+    bool _dumpToFile;
     bool _translucencyCheck;
     bool _useAlphaTest; //< use discard if true / blend if otherwise
     bool _doubleSided;
@@ -240,7 +242,7 @@ private:
     /// 3 render state's: Normal, reflection and shadow
     Unordered_map<RenderStage, RenderStateBlock* > _defaultRenderStates;
     /// use this map to add textures to the material
-    Texture2D* _textures[Config::MAX_TEXTURE_STORAGE];
+    Texture* _textures[Config::MAX_TEXTURE_STORAGE];
     /// use the bellow map to define texture operation
     TextureOperation _operations[Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0];
     BumpMethod _bumpMethod;

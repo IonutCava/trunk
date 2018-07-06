@@ -34,14 +34,16 @@ namespace Navigation {
    }
 
    void NavMeshDebugDraw::depthMask(bool state){
-      _navMeshStateBlock->getDescriptor().setZReadWrite(true,state);
+      RenderStateBlockDescriptor newDepthDesc(_navMeshStateBlock->getDescriptor());
+      newDepthDesc.setZReadWrite(true, state);
+      _navMeshStateBlock = GFX_DEVICE.getOrCreateStateBlock(newDepthDesc);
    }
 
    void NavMeshDebugDraw::texture(bool state){
    }
 
    void NavMeshDebugDraw::prepareMaterial(){
-        SET_STATE_BLOCK(_navMeshStateBlock, true);
+        SET_STATE_BLOCK(*_navMeshStateBlock, true);
         GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 

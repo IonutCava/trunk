@@ -61,7 +61,7 @@ enum MATRIX_MODE;
 #endif
 
 namespace Divide {
-    namespace GL {
+    namespace GLUtil {
         void glfw_focus_callback(GLFWwindow *window, I32);
         void glfw_error_callback(GLint error, const char* description);
         void initGlew();
@@ -199,11 +199,10 @@ template<class T> class vec3;
 template<class T> class vec4;
 
 namespace Divide {
-    namespace GL {
+    namespace GLUtil {
     /*----------- GLU overrides ------*/
     typedef std::stack<glm::mat4, vectorImpl<glm::mat4 > > matrixStack;
     typedef std::stack<vec3<GLfloat>, vectorImpl<vec3<GLfloat> > > vector3Stack;
-    typedef std::stack<vec4<GLint>, vectorImpl<vec4<GLint> > > viewportStack;
 
     /*--------- Object Management-------*/
     extern GLuint _invalidObjectID;
@@ -224,19 +223,14 @@ namespace Divide {
     extern matrixStack _projectionMatrix;
     ///Current texture matrix. Multiply and change manually if needed
     extern matrixStack _textureMatrix;
-    ///Current viewpoert stack
-    extern viewportStack _viewport;
     ///A cache value for anaglyph eye offset
     extern GLfloat     _anaglyphIOD;
-    ///current camera view direction
-    extern vector3Stack _currentViewDirection;
 
     void _initStacks();
     /*-----------------BEGIN: FIXED PIPELINE EMULATION -----------------------*/
     inline void _matrixMode(const MATRIX_MODE& mode) { _currentMatrixMode = mode; }
 
-    void _unproject(const vec3<GLfloat>& windowCoords, vec3<GLfloat>& objCoords); 
-    GLfloat* _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection);
+    GLfloat* _lookAt(const GLfloat* viewMatrix);
     GLfloat* _ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat zNear, GLfloat zFar);
     GLfloat* _perspective(GLfloat fovy, GLfloat aspect, GLfloat zNear,  GLfloat zFar);
     void _anaglyph(GLfloat IOD, GLdouble zNear, GLdouble zFar, GLfloat aspect, GLfloat fovy, bool rightFrustum = false);

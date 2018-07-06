@@ -75,7 +75,7 @@ void PostFX::init(const vec2<U16>& resolution){
 
         ResourceDescriptor textureWaterCaustics("Underwater Caustics");
         textureWaterCaustics.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images/terrain_water_NM.jpg");
-        _underwaterTexture = CreateResource<Texture2D>(textureWaterCaustics);
+        _underwaterTexture = CreateResource<Texture>(textureWaterCaustics);
 
         createOperators();
 
@@ -176,10 +176,12 @@ void PostFX::displaySceneAnaglyph(){
 void PostFX::displayScene(){
     if (!_gfx->postProcessingEnabled())
          return;
+
     if (_gfx->anaglyphEnabled()){
         displaySceneAnaglyph();
         return;
     }
+
     _gfx->toggle2D(true);
 
     PreRenderStageBuilder::getInstance().getPreRenderBatch()->execute();
@@ -227,14 +229,20 @@ void PostFX::displayScene(){
 }
 
 void PostFX::idle(){
+    if (!_gfx) return;
+
     ParamHandler& par = ParamHandler::getInstance();
     //Update states
     bool recompileShader = false;
 
-    if (!_gfx->postProcessingEnabled() || !_postProcessingShader)
+    if (!_gfx->postProcessingEnabled())
         return;
 
-    _underwater = par.getParam<bool>("scene.camera.underwater");
+    if (!_postProcessingShader){
+        init(GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution());
+    }
+
+    _underwater = GET_ACTIVE_SCENE()->state()._cameraUnderwater;
     _enableDOF  = par.getParam<bool>("postProcessing.enableDepthOfField");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
     _enableFXAA = _gfx->FXAAEnabled();

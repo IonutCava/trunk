@@ -33,7 +33,6 @@ class ShaderProgram;
 class PreRenderOperator;
 
 class Texture;
-typedef Texture Texture2D;
 
 DEFINE_SINGLETON( PostFX )
 
@@ -86,17 +85,17 @@ private:
     PreRenderOperator* _dofOP;
 
     /// Screen Border
-    Texture2D*	_screenBorder;
+    Texture*	_screenBorder;
 
     /// Noise
-    Texture2D*	_noise;
+    Texture*	_noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D32 _timer, _tickInterval;
 
     ShaderProgram* _anaglyphShader;
     ShaderProgram* _postProcessingShader;
-    Texture2D* _underwaterTexture;
+    Texture*       _underwaterTexture;
     GFXDevice* _gfx;
     vec2<U16>  _resolutionCache;
 END_SINGLETON

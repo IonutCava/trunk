@@ -81,7 +81,7 @@ public:
     virtual void processInput(const U64 deltaTime) = 0;  //<Get all input commands from the user
     virtual void processTasks(const U64 deltaTime); //<Update the scene based on the inputs
     virtual void processGUI(const U64 deltaTime);
-    virtual void preRender() = 0;                   //<Prepare the scene for rendering after the update
+    virtual void preRender() {}                     //<Prepare the scene for rendering after the update
     virtual void postRender();                      //<Perform any post rendering operations
     bool idle();                                    //<Scene is rendering, so add intensive tasks here to save CPU cycles
     void onLostFocus();                             //<The application has lost focus
@@ -92,8 +92,6 @@ public:
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTime)  {}
     inline SceneGraphNode*                 getSkySGN(I32 index)     {if(_skiesSGN.empty()) {return nullptr;} CLAMP<I32>(index,0,(I32)_skiesSGN.size() - 1); return _skiesSGN[index];}
-    inline vectorImpl<TerrainDescriptor*>& getTerrainInfoArray()    {return _terrainInfoArray;}
-    inline vectorImpl<FileData>&           getVegetationDataArray() {return _vegetationDataArray;}
     inline const vectorImpl<Task_ptr>&     getTasks()               {return _tasks;}
     inline SceneState&                     state()                  {return _sceneState;}
     inline SceneRenderState&               renderState()            {return _sceneState.getRenderState();}
@@ -120,13 +118,14 @@ public:
     void renderCallback(const DELEGATE_CBK& renderCallback) {_renderCallback = renderCallback;}
     const DELEGATE_CBK& renderCallback() {return _renderCallback;}
 
-    ///Update all cameras
-    void updateCameras();
     ///Override this if you need a custom physics implementation (idle,update,process,etc)
     virtual PhysicsSceneInterface* createPhysicsImplementation();
 
     ParticleEmitter* addParticleEmitter(const std::string& name, const ParticleEmitterDescriptor& descriptor);
     ParticleEmitter* getParticleEmitter(const std::string& name);
+
+    TerrainDescriptor* getTerrainInfo(const std::string& terrainName);
+    inline vectorImpl<FileData>& getVegetationDataArray() { return _vegetationDataArray; }
 
 protected:
     ///Global info
@@ -134,7 +133,6 @@ protected:
     GUI*           _GUI;
     ParamHandler&  _paramHandler;
     SceneGraph*    _sceneGraph;
-    CameraManager* _cameraMgr;
     
     PhysicsSceneInterface*         _physicsInterface;
     vectorImpl<D32>                _taskTimers;
@@ -143,7 +141,6 @@ protected:
     FileDataStack                  _modelDataArray;
     vectorImpl<FileData>           _vegetationDataArray;
     vectorImpl<TerrainDescriptor*> _terrainInfoArray;
-    F32                            _FBSpeedFactor;
     F32                            _LRSpeedFactor;
     ///Current selection
     SceneGraphNode* _currentSelection;
@@ -200,10 +197,9 @@ protected:
     /**End loading and unloading logic*/
 
     // returns true if the camera was moved/rotated/etc
-    bool defaultCameraControls();
+    bool updateCameraControls();
 
     Sky*               addDefaultSky();
-    Camera*            addDefaultCamera();//Default camera
     DirectionalLight*  addDefaultLight();
     
     ///simple function to load the scene elements.
@@ -226,6 +222,8 @@ protected:
         }
         return true;
     }
+
+    void defaultCameraKeys(OIS::KeyCode code, bool upState);
 
 public: //Input
     virtual bool onKeyDown(const OIS::KeyEvent& key);

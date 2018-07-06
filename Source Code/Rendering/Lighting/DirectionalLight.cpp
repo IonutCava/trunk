@@ -1,5 +1,4 @@
 #include "Headers/DirectionalLight.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "ShadowMapping/Headers/ShadowMap.h"
@@ -17,9 +16,4 @@ DirectionalLight::DirectionalLight(U8 slot) : Light(slot,-1,LIGHT_TYPE_DIRECTION
 
 DirectionalLight::~DirectionalLight()
 {
-}
-
-const mat4<F32>& DirectionalLight::getLightViewMatrix(U8 index){
-    _lightViewMatrix.set(GFX_DEVICE.getLookAt(VECTOR3_ZERO, -getPosition(), WORLD_X_AXIS));
-    return _lightViewMatrix;
 }

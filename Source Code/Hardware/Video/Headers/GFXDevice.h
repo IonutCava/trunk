@@ -24,6 +24,7 @@
 #define _HARDWARE_VIDEO_GFX_DEVICE_H_
 
 #include "RenderInstance.h"
+#include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Direct3D/Headers/DXWrapper.h"
 #include "Managers/Headers/RenderPassManager.h" ///<For GFX_RENDER_BIN_SIZE
@@ -39,6 +40,9 @@ class Quad3D;
 class Object3D;
 class ApplicationTimer;
 class SceneRenderState;
+
+class GFXDevice;
+
 ///Rough around the edges Adapter pattern
 DEFINE_SINGLETON_EXT1(GFXDevice,RenderAPIWrapper)
 friend class Frustum; ///< For matrix recovery operations
@@ -68,51 +72,36 @@ public:
     inline void      registerKernel(Kernel* const kernel)           {_kernel = kernel;}
     inline void      initDevice(U32 targetFrameRate)                {_api.initDevice(targetFrameRate);}
     inline void      setWindowPos(U16 w, U16 h)               const {_api.setWindowPos(w,h);}
-    inline vec3<F32> unproject(const vec3<F32>& windowCoord)  const {return _api.unproject(windowCoord); }
     inline void      exitRenderLoop(bool killCommand = false)       {_api.exitRenderLoop(killCommand);}
            void      closeRenderingApi();
            void      changeResolution(U16 w, U16 h);
     inline void      changeResolution(const vec2<U16>& resolution) {changeResolution(resolution.width, resolution.height);}
-           void      changeClipPlanes(F32 near, F32 far);
+
     inline void beginFrame() {_api.beginFrame();}
     inline void endFrame()   {_api.endFrame();  }
            void flush();
 
     /// Rendering buffer management
-    inline FrameBuffer*  getRenderTarget(RenderTarget target) const  {return _renderTarget[target];}
+    inline FrameBuffer*        getRenderTarget(RenderTarget target) const  {return _renderTarget[target];}
 
-    inline FrameBuffer*        newFB(bool multisampled = false)                       {return _api.newFB(multisampled); }
-    inline VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES)           {return _api.newVB(type); }
-    inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)              {return _api.newPB(type); }
-    inline GenericVertexData*  newGVD()                                               {return _api.newGVD();     }
-    inline Texture2D*          newTexture2D(const bool flipped = false)               {return _api.newTexture2D(flipped);}
-    inline TextureCubemap*     newTextureCubemap(const bool flipped = false)          {return _api.newTextureCubemap(flipped);}
-    inline ShaderProgram*      newShaderProgram(const bool optimise = false)          {return _api.newShaderProgram(optimise); }
-    inline Shader*             newShader(const std::string& name, const  ShaderType& type, const bool optimise = false) {
+    inline FrameBuffer*        newFB(bool multisampled = false)              const { return _api.newFB(multisampled); }
+    inline VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES)  const { return _api.newVB(type); }
+    inline PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D)     const { return _api.newPB(type); }
+    inline GenericVertexData*  newGVD()                                      const { return _api.newGVD(); }
+    inline Texture*            newTextureArray(const bool flipped = false)   const { return _api.newTextureArray(flipped); }
+    inline Texture*            newTexture2D(const bool flipped = false)      const { return _api.newTexture2D(flipped); }
+    inline Texture*            newTextureCubemap(const bool flipped = false) const { return _api.newTextureCubemap(flipped);}
+    inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return _api.newShaderProgram(optimise); }
+    inline Shader*             newShader(const std::string& name, const  ShaderType& type, const bool optimise = false) const {
         return _api.newShader(name,type,optimise); 
     }
     ///Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
-    inline bool            initShaders()                                        {return _api.initShaders();}
-    inline bool            deInitShaders()                                      {return _api.deInitShaders();}
+    inline bool            initShaders()    {return _api.initShaders();}
+    inline bool            deInitShaders()  {return _api.deInitShaders();}
 
-    void enableFog(FogMode mode, F32 density, const vec3<F32>& color, F32 startDist, F32 endDist);
-
-    inline void toggle2D(bool _2D)  {_api.toggle2D(_2D);}
-    inline F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)	{ return _api.lookAt(viewMatrix, viewDirection); }
-    inline F32* lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS) { return _api.lookAt(eye, target, up); }
-    inline const F32* getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS) { return _api.getLookAt(eye, target, up); }
-    ///Usually, after locking and releasing our matrices we want to revert to the View matrix to render geometry
-    inline void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true)          {_api.lockMatrices(setCurrentMatrix,lockView,lockProjection);}
-    inline void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true) {_api.releaseMatrices(setCurrentMatrix,releaseView,releaseProjection);}
-    ///sets an ortho projection, updating any listeners if needed
-    inline F32* setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){ return _api.setOrthoProjection(rect, planes); }
-    inline const F32* getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes){ return _api.getOrthoProjection(rect, planes); }
-    ///sets a perspective projection, updating any listeners if needed
-    inline F32* setPerspectiveProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) { return _api.setPerspectiveProjection(FoV, aspectRatio, planes); }
-    ///sets the view frustum to either the left or right eye position for anaglyph rendering
-    inline void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false)  {_api.setAnaglyphFrustum(camIOD,rightFrustum);}
-            ///sets a new horizontal FoV
-           void setHorizontalFoV(I32 newFoV);
+    void enableFog(F32 density, const vec3<F32>& color);
+    void toggle2D(bool state);
+    inline void toggleRasterization(bool state);
     inline void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback)  {_api.renderInViewport(rect,callback);}
     //returns an immediate mode emulation buffer that can be used to construct geometry in a vertex by vertex manner.
     //allowPrimitiveRecycle = do not reause old primitives and do not delete it after x-frames. (Don't use the primitive zombie feature)
@@ -120,11 +109,11 @@ public:
 
     inline void setInterpolation(const D32 interpolation)       {_interpolationFactor = interpolation; }
     inline D32  getInterpolation()                        const {return _interpolationFactor;} 
+    inline void drawDebugAxis(const bool state)                 {_drawDebugAxis = state;}
+    inline bool drawDebugAxis()                           const {return _drawDebugAxis;}
 
-    inline void drawDebugAxis(const bool state)       {_drawDebugAxis = state;}
-    inline bool drawDebugAxis()                 const {return _drawDebugAxis;}
-    inline void debugDraw()                           {_api.debugDraw();}
-
+    inline void debugDraw(const SceneRenderState& sceneRenderState) { _api.debugDraw(sceneRenderState); }
+    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) { _api.drawText(textLabel, position); }
     inline void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset) {_api.drawBox3D(min,max,globalOffset);}
     inline void drawLines(const vectorImpl<vec3<F32> >& pointsA,
                           const vectorImpl<vec3<F32> >& pointsB,
@@ -132,42 +121,41 @@ public:
                           const mat4<F32>& globalOffset,
                           const bool orthoMode = false,
                           const bool disableDepth = false) {_api.drawLines(pointsA,pointsB,colors,globalOffset,orthoMode,disableDepth);}
-          void drawPoints(U32 numPoints);
-    ///Usefull to perform pre-draw operations on the model if it's drawn outside the scenegraph
+           void drawPoints(U32 numPoints);
+    ///Useful to perform pre-draw operations on the model if it's drawn outside the scenegraph
     void renderInstance(RenderInstance* const instance);
-    void renderBuffer(VertexBuffer* const vb, Transform* const vbTransform = nullptr);
-    void renderGUIElement(U64 renderInterval, GUIElement* const guiElement,ShaderProgram* const guiShader);
     ///The render callback must update all visual information and populate the "RenderBin"'s!
     void render(const DELEGATE_CBK& renderFunction, const SceneRenderState& sceneRenderState);
     ///Update light properties internally in the Rendering API
     inline void setLight(Light* const light, bool shadowPass = false)           { _api.setLight(light, shadowPass); }
     ///Sets the current render stage.
     ///@param stage Is used to inform the rendering pipeline what we are rendering. Shadows? reflections? etc
-    inline void  setRenderStage(RenderStage stage) {_prevRenderStage = _renderStage; _renderStage = stage;}
-    ///Restores the render stage to the previous one calling it multiple times will ping-pong between stages
-    inline void  setPreviousRenderStage()          {setRenderStage(_prevRenderStage);}
+    inline RenderStage setRenderStage(RenderStage stage) { RenderStage prevRenderStage = _renderStage; _renderStage = stage; return prevRenderStage; }
     ///Checks if the current rendering stage is any of the stages defined in renderStageMask
     ///@param renderStageMask Is a bitmask of the stages we whish to check if active
-           bool         isCurrentRenderStage(U8 renderStageMask);
+    inline bool isCurrentRenderStage(U8 renderStageMask);
+
+    inline const vec4<I32>& getCurrentViewport()  const  {return _viewport.top(); }
+
     inline RenderStage  getRenderStage()                 {return _renderStage;}
     inline void         setPrevShaderId(const U32& id)   {_prevShaderId = id;}
     inline U32          getPrevShaderId()                {return _prevShaderId;}
     inline void         setPrevTextureId(const U32& id)  {_prevTextureId = id;}
     inline U32          getPrevTextureId()               {return _prevTextureId;}
-    inline Renderer*    getRenderer()                    {assert(_renderer != nullptr); return _renderer;}
-           void         setRenderer(Renderer* const renderer);
            void         closeRenderer();
-
+    inline Renderer*    getRenderer()                         {assert(_renderer != nullptr); return _renderer;}
+    inline void         setRenderer(Renderer* const renderer) {assert(renderer != nullptr);  SAFE_UPDATE(_renderer, renderer);}
     /*
     /* Clipping plane management. All the clipping planes are handled by shader programs only!
     */
-    ///enable-disable HW clipping
-           void updateClipPlanes();
+          void updateClipPlanes();
     /// add a new clipping plane. This will be limited by the actual shaders (how many planes they use)
     /// this function returns the newly added clip plane's index in the vector
-    inline I32 addClipPlane(const Plane<F32>& p);
+    inline I32 addClipPlane(Plane<F32>& p, ClipPlaneIndex clipIndex);
     /// add a new clipping plane defined by it's equation's coefficients
-    inline I32 addClipPlane(F32 A, F32 B, F32 C, F32 D);
+    inline I32 addClipPlane(F32 A, F32 B, F32 C, F32 D, ClipPlaneIndex clipIndex);
+    /// change the clip plane index of the current plane
+    inline bool changeClipIndex(U32 index, ClipPlaneIndex clipIndex);
     /// remove a clip plane by index
     inline bool removeClipPlane(U32 index);
     /// disable a clip plane by index
@@ -184,9 +172,9 @@ public:
     inline bool clippingPlanesDirty()           const {return _clippingPlanesDirty;}
     /// get the entire list of clipping planes
     inline const PlaneList& getClippingPlanes() const {return _clippingPlanes;}
-    /// Post Prcessing state
+    /// Post Processing state
     inline bool postProcessingEnabled()                 const {return _enablePostProcessing;}
-    inline void postProcessingEnabled(const bool state)       {_enablePostProcessing = state;}
+           void postProcessingEnabled(const bool state);
     /// Anaglyph rendering state
     inline bool anaglyphEnabled()                 const {return _enableAnaglyph;}
     inline void anaglyphEnabled(const bool state)       {_enableAnaglyph = state;}
@@ -196,18 +184,23 @@ public:
     /// Depth pre-pass
     inline bool isDepthPrePass()                 const { return _isDepthPrePass; }
     inline void isDepthPrePass(const bool state)       { _isDepthPrePass = state;}
+    /// 2D rendering enabled
+    inline bool is2DRendering()                  const { return _2DRendering; }
     ///Save a screenshot in TGA format
     inline void Screenshot(char *filename, const vec4<F32>& rect){_api.Screenshot(filename,rect);}
     /// Some Scene Node Types are excluded from certain operations (lights triggers, etc)
-    bool excludeFromStateChange(const SceneNodeType& currentType);
+    inline bool excludeFromStateChange(const SceneNodeType& currentType) {
+        return (_stateExclusionMask & currentType) == currentType ? true : false;
+    }
+    inline void setStateChangeExclusionMask(I32 stateMask) {_stateExclusionMask = stateMask; }
     ///Creates a new API dependent stateblock based on the received description
     ///Sets the current state block to the one passed as a param
     ///It is not set immediately, but a call to "updateStates" is required
-    RenderStateBlock* setStateBlock(RenderStateBlock* block, bool forceUpdate = false);
+    RenderStateBlock* setStateBlock(const RenderStateBlock& block, bool forceUpdate = false);
     /// Return or create a new state block using the given descriptor. DO NOT DELETE THE RETURNED STATE BLOCK! GFXDevice handles that!
     RenderStateBlock* getOrCreateStateBlock(RenderStateBlockDescriptor& descriptor);
     ///Sets a standard state block
-    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(_defaultStateBlock, forceUpdate);}
+    inline RenderStateBlock* setDefaultStateBlock(bool forceUpdate = false)  {return setStateBlock(*_defaultStateBlock, forceUpdate);}
     ///Update the graphics pipeline using the current rendering API with the state block passed
     inline void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) { _api.activateStateBlock(newBlock, oldBlock); }
     ///If a new state has been set, update the Graphics pipeline
@@ -219,8 +212,9 @@ public:
     ///use the callback param to override the draw function
     void  generateCubeMap(FrameBuffer& cubeMap,
                           const vec3<F32>& pos,
-                          const DELEGATE_CBK& callback,
-                          const RenderStage& renderStage = ENVIRONMENT_MAPPING_STAGE);
+                          const DELEGATE_CBK& callback, 
+                          const vec2<F32>& zPlanes,
+                          const RenderStage& renderStage = REFLECTION_STAGE);
 
     inline bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {return _api.loadInContext(context, callback);}
 
@@ -232,6 +226,8 @@ public:
            void popWorldMatrix(); 
            void cleanMatrices();
 
+    inline static ShaderProgram* getActiveProgram()  { return _activeShaderProgram; }
+
     inline const mat4<F32>& getMatrix(const MATRIX_MODE& mode)      { getMatrix(mode, _mat4Cache); return _mat4Cache; }
     inline const mat4<F32>& getMatrix4(const EXTENDED_MATRIX& mode) { getMatrix(mode, _mat4Cache); return _mat4Cache; }
     inline const mat3<F32>& getMatrix3(const EXTENDED_MATRIX& mode) { getMatrix(mode, _mat3Cache); return _mat3Cache; }
@@ -241,6 +237,7 @@ public:
 
     inline U64 getFrameDurationGPU() const { return _api.getFrameDurationGPU(); }
     inline I32 getDrawCallCount()    const { return _api.getDrawCallCount(); }
+    inline U32 getFrameCount()       const { return _api.getFrameCount(); }
     inline void togglePreviewDepthBuffer() { _previewDepthBuffer = !_previewDepthBuffer; }
 
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }
@@ -258,31 +255,45 @@ public:
     RenderDetailLevel shadowDetailLevel()                              const { return _shadowDetailLevel; }
     void              shadowDetailLevel(RenderDetailLevel detailLevel)       { _shadowDetailLevel = detailLevel; }
 
+    inline void add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder);
+
 protected:
     friend class Kernel;
     friend class Application;
     inline void setMousePosition(U16 x, U16 y) const {_api.setMousePosition(x,y);}
-    inline void updateProjection() { _api.updateProjection(); }
     inline void changeResolutionInternal(U16 width, U16 height) { _api.changeResolutionInternal(width, height); }
+
+protected:
+    friend class Camera;
+
+    inline F32* lookAt(const mat4<F32>& viewMatrix)	{ return _api.lookAt(viewMatrix); }
+    ///sets an ortho projection, updating any listeners if needed
+    inline F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes)    { return _api.setProjection(rect, planes); }
+    ///sets a perspective projection, updating any listeners if needed
+    inline F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) { return _api.setProjection(FoV, aspectRatio, planes); }
+    ///sets the view frustum to either the left or right eye position for anaglyph rendering
+    inline void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false)  { _api.setAnaglyphFrustum(camIOD, zPlanes, aspectRatio, verticalFoV, rightFrustum); }
+
 private:
 
     GFXDevice();
     ~GFXDevice();
-
-    ///Returns an API dependent stateblock based on the description
-    inline void drawText(const TextLabel& textLabel, const vec2<I32>& position) {_api.drawText(textLabel, position);}
            void previewDepthBuffer();
 
 private:
+    Camera*           _cubeCamera;
+    Camera*           _2DCamera;
     PostFX&           _postFX;
-    Frustum&          _frustum;
     ShaderManager&    _shaderManager;
     RenderAPIWrapper& _api;
     bool _deviceStateDirty;
-    RenderStage _renderStage, _prevRenderStage;
+    RenderStage _renderStage;
     U32  _prevShaderId,  _prevTextureId;
+    I32  _stateExclusionMask;
     bool _drawDebugAxis;
     bool _isDepthPrePass;
+
+    static ShaderProgram* _activeShaderProgram;
 
 protected:
     friend class GL_API;
@@ -298,6 +309,8 @@ protected:
     RenderStateBlock* _currentStateBlock;
     RenderStateBlock* _newStateBlock;
     RenderStateBlock* _defaultStateBlock;
+    RenderStateBlock* _defaultStateNoDepth; //<The default render state buth with depth testing disabled
+    RenderStateBlock* _state2DRendering;    //<Special render state for 2D rendering
     matrixStack       _worldMatrices;
     mat4<F32> _WVCachedMatrix;
     mat4<F32> _VPCachedMatrix;
@@ -319,6 +332,8 @@ protected:
     bool      _enablePostProcessing;
     bool      _enableAnaglyph;
     bool      _enableHDR;
+    bool      _2DRendering;
+    bool      _rasterizationEnabled;
     ///shader used to preview the depth buffer
     ShaderProgram* _previewDepthMapShader;
     bool    _previewDepthBuffer;
@@ -331,6 +346,12 @@ protected:
     /// Quality settings
     RenderDetailLevel _generalDetailLevel;
     RenderDetailLevel _shadowDetailLevel;
+
+    vectorImpl<std::pair<U32, DELEGATE_CBK> > _2dRenderQueue;
+
+    ///Current viewport stack
+    typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > viewportStack;
+    viewportStack _viewport;
 
 END_SINGLETON
 

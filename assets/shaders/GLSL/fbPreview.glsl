@@ -49,13 +49,20 @@ void main()
 in vec2 _texCoord;
 out vec4 _colorOut;
 
+uniform bool useScenePlanes = false;
 uniform sampler2D tex;
 uniform vec2 dvd_zPlanes;
+uniform vec2 dvd_sceneZPlanes;
 
 void main()
 {
     float n = dvd_zPlanes.x;
     float f = dvd_zPlanes.y * 0.5;
+    if (useScenePlanes){
+        n = dvd_sceneZPlanes.x;
+        f = dvd_sceneZPlanes.y * 0.5;
+    }
+
     float depth = texture(tex, _texCoord).r;
     float linearDepth = (2 * n) / (f + n - (depth) * (f - n));
     _colorOut.rgb = vec3(linearDepth);
@@ -83,12 +90,18 @@ out vec4 _colorOut;
 uniform sampler2DArray tex;
 uniform int layer;
 uniform vec2 dvd_zPlanes;
-uniform float far_plane = 1000.0;
+uniform vec2 dvd_sceneZPlanes;
+uniform bool useScenePlanes = false;
 
 void main()
 {
     float n = dvd_zPlanes.x;
-    float f = min(dvd_zPlanes.y, far_plane);
+    float f = dvd_zPlanes.y * 0.5;
+    if (useScenePlanes){
+        n = dvd_sceneZPlanes.x;
+        f = dvd_sceneZPlanes.y * 0.5;
+    }
+
     float depth = texture(tex, vec3(_texCoord, layer)).r;
     _colorOut.rgb = vec3((2 * n) / (f + n - (depth)* (f - n)));
 }

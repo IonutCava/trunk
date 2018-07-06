@@ -5,16 +5,16 @@ SceneNodeRenderState::~SceneNodeRenderState()
 {
 }
 
-RenderStateBlock* SceneNodeRenderState::getDepthStateBlock(){
+const RenderStateBlock& SceneNodeRenderState::getDepthStateBlock(){
     if(!_depthStateBlock){
         RenderStateBlockDescriptor depthDesc;
         depthDesc.setColorWrites(false,false,false,false);
         _depthStateBlock = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
     }
-    return _depthStateBlock;
+    return *_depthStateBlock;
 }
 
-RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
+const RenderStateBlock& SceneNodeRenderState::getShadowStateBlock(){
     if(!_shadowStateBlock){
         RenderStateBlockDescriptor depthDesc;
         /// Cull back faces for shadow rendering
@@ -23,7 +23,7 @@ RenderStateBlock* SceneNodeRenderState::getShadowStateBlock(){
         depthDesc.setColorWrites(true,true,false,false);
         _shadowStateBlock = GFX_DEVICE.getOrCreateStateBlock(depthDesc);
     }
-    return _shadowStateBlock;
+    return *_shadowStateBlock;
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(U32 stageMask) {

@@ -1,12 +1,12 @@
 #include "Headers/ParticleEmitter.h"
 
 #include "Core/Headers/Application.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Math/Headers/Transform.h"
+#include "Scenes/Headers/SceneState.h"
 #include "Geometry/Material/Headers/Material.h"
 
 ParticleEmitterDescriptor::ParticleEmitterDescriptor() {
@@ -134,7 +134,7 @@ bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
 
-    SET_STATE_BLOCK(_particleStateBlock);
+    SET_STATE_BLOCK(*_particleStateBlock);
 
     if(!_particleDepthShader->bind())
         return false;
@@ -153,7 +153,7 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
 
-    SET_STATE_BLOCK(_particleStateBlock);
+    SET_STATE_BLOCK(*_particleStateBlock);
 
     if(!_particleShader->bind())
         return false;
@@ -177,7 +177,7 @@ bool ParticleEmitter::releaseMaterial(){
 }
 
 ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-void ParticleEmitter::render(SceneGraphNode* const sgn){
+void ParticleEmitter::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     if(_particlesCurrentCount > 0 && _enabled && _created){
         GFX_DEVICE.updateStates();
         _particleGPUBuffer->DrawInstanced(TRIANGLE_STRIP, _particlesCurrentCount, 0, 4);
@@ -215,7 +215,7 @@ void ParticleEmitter::setDescriptor(const ParticleEmitterDescriptor& descriptor)
                                 descriptor._textureFileName);
     texture.setFlag(true);
     texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
-    _particleTexture = CreateResource<Texture2D>(texture);
+    _particleTexture = CreateResource<Texture>(texture);
     REGISTER_TRACKED_DEPENDENCY(_particleTexture);
     _created = true;
 }
@@ -239,7 +239,7 @@ void ParticleEmitter::uploadToGPU(){
 }
 
 ///The onDraw call will emit particles
-bool ParticleEmitter::onDraw(const RenderStage& currentStage){
+bool ParticleEmitter::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
     if(!_enabled || _particlesCurrentCount == 0 || !_created)
         return false;
     
@@ -268,7 +268,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn
     I32 newParticles = _descriptor._emissionInterval + random(-_descriptor._emissionIntervalVariance, _descriptor._emissionIntervalVariance);
     newParticles = (I32)(newParticles * delta) / (_lodLevel + 1);
 
-    const vec3<F32>& eyePos = Frustum::getInstance().getEyePos();
+    const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
     const vec3<F32>& origin = sgn->getTransform()->getPosition();
     const Quaternion<F32>& orientation = sgn->getTransform()->getOrientation();
     F32 spread = _descriptor._spread;

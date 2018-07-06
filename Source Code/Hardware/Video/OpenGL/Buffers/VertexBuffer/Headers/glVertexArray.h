@@ -49,8 +49,8 @@ public:
 
     virtual bool SetActive();
 
-    void Draw(const U8 LODindex = 0);
-    void DrawRange();
+    void Draw(bool skipBind = false, const U8 LODindex = 0);
+    void DrawRange(bool skipBind = false);
 
     ///Never call Refresh() just queue it and the data will update before drawing
     inline bool queueRefresh() {_refreshQueued = true; return true;}
@@ -70,11 +70,12 @@ protected:
 protected:
     GLenum _formatInternal;
     GLenum _typeInternal;
+    GLuint _IBid;
+    GLuint _VBid;
+    GLuint _DepthVBid;
     GLuint _VAOid;
     GLuint _DepthVAOid;
     GLuint _usage;
-    static GLuint _indexDelimiterCache; ///<Used to avoid calling glPrimitiveRestartIndex if the index value requested is the same as last time
-    static bool _primitiveRestartEnabled; ///<Used to toggle primitive restart on or off and avoid useless state changes
     bool _animationData;     ///< Used to bind an extra set of vertex attributes for bone indices and bone weights
     bool _refreshQueued;     ///< A refresh call might be called before "Create()". This should help with that
     vectorImpl<vec4<GLhalf> >  _normalsSmall;

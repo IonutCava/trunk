@@ -30,11 +30,9 @@
 #include "Rendering/RenderPass/Headers/Reflector.h"
 #include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
-class ShaderProgram;
-
 class Texture;
-typedef Texture Texture2D;
-
+class CameraManager;
+class ShaderProgram;
 class WaterPlane : public SceneNode, public Reflector{
 public:
     WaterPlane();
@@ -43,13 +41,15 @@ public:
     /// Resource inherited "unload"
     bool unload();
     /// General SceneNode stuff
-    bool onDraw(const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     bool getDrawState(const RenderStage& currentStage)  const;
-    bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
     void setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
     inline Quad3D* getQuad() const {return _plane;}
 
+    inline const I32  getReflectionPlaneId() { return _reflectionPlaneID; }
+    inline const I32  getRefractionPlaneID() { return _refractionPlaneID; }
     /// Reflector overwrite
     void updateReflection();
 	void updateRefraction();
@@ -57,20 +57,20 @@ public:
     /// Used for many things, such as culling switches, and underwater effects
     inline bool isPointUnderWater(const vec3<F32>& pos) { return (pos.y < _waterLevel); }
 
+    inline void setReflectionCallback(const DELEGATE_CBK& callback) { Reflector::setRenderCallback(callback);}
+    inline void setRefractionCallback(const DELEGATE_CBK& callback) { _refractionCallback = callback; }
+
 protected:
-    void postDraw(const RenderStage& currentStage);
-    void render(SceneGraphNode* const sgn);
+    void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     void postLoad(SceneGraphNode* const sgn);
     bool prepareMaterial(SceneGraphNode* const sgn);
     bool releaseMaterial();
-    bool prepareDepthMaterial(SceneGraphNode* const sgn){ return true;}
-    bool releaseDepthMaterial(){return true;}
+    bool prepareDepthMaterial(SceneGraphNode* const sgn);
+    bool releaseDepthMaterial();
+    bool previewReflection();
 
-    template<typename T>
-    friend class ImplResourceLoader;
-    inline void setWaterNormalMap(Texture2D* const waterNM){_texture = waterNM;}
-    inline void setShaderProgram(ShaderProgram* const shaderProg){_shader = shaderProg;}
-    inline void setGeometry(Quad3D* const waterPlane){_plane = waterPlane;}
+    inline const Plane<F32>&  getRefractionPlane() { return _refractionPlane; }
 
 private:
     /// Bounding Box computation overwrite from SceneNode
@@ -78,29 +78,33 @@ private:
 
 private:
     /// number of lights in the scene
-    U8                 _lightCount;
+    U8               _lightCount;
     /// the hw clip-plane index for the water
-    I32                _clippingPlaneID;
+    I32              _reflectionPlaneID;
+    I32              _refractionPlaneID;
     /// cached far plane value
-    F32				   _farPlane;
+    F32				 _farPlane;
     /// cached water level
-    F32                _waterLevel;
+    F32              _waterLevel;
     /// cached water depth
-    F32                _waterDepth;
+    F32             _waterDepth;
     /// Last known camera position
-    vec3<F32>          _eyePos;
+    vec3<F32>       _eyePos;
     /// Camera's position delta from the previous frame only on the XY plane
-    vec2<F32>          _eyeDiff;
-    /// The plane's transformed normal
-    vec3<F32>          _absNormal;
+    vec2<F32>       _eyeDiff;
     /// the water's "geometry"
-    Quad3D*			   _plane;
-    Texture2D*		   _texture;
-    ShaderProgram* 	   _shader;
-    Transform*         _planeTransform;
-    SceneGraphNode*    _node;
-    SceneGraphNode*    _planeSGN;
-    bool               _reflectionRendering;
+    Quad3D*			_plane;
+    Transform*      _planeTransform;
+    SceneGraphNode* _node;
+    SceneGraphNode* _planeSGN;
+    FrameBuffer*    _refractionTexture;
+    Plane<F32>      _refractionPlane;
+    DELEGATE_CBK    _refractionCallback;
+    bool            _refractionRendering;
+    bool            _reflectionRendering;
+    bool            _dirty;
+    bool            _cameraUnderWater;
+    CameraManager&  _cameraMgr;
 };
 
 #endif

@@ -22,7 +22,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
     _tessellationControlShader = nullptr;
     _tessellationEvaluationShader = nullptr;
     _computeShader = nullptr;
-    _shaderProgramId = Divide::GL::_invalidObjectID;
+    _shaderProgramId = Divide::GLUtil::_invalidObjectID;
     //3 buffers: Matrices, Materials and Lights
     _UBOLocation.resize(UBO_PLACEHOLDER,-1);
     _uniformBufferObjects.resize(UBO_PLACEHOLDER, nullptr);
@@ -42,7 +42,7 @@ glShaderProgram::glShaderProgram(const bool optimise) : ShaderProgram(optimise),
 
 glShaderProgram::~glShaderProgram()
 {
-    if(_shaderProgramId != 0 && _shaderProgramId != Divide::GL::_invalidObjectID){
+    if (_shaderProgramId != 0 && _shaderProgramId != Divide::GLUtil::_invalidObjectID){
         FOR_EACH(ShaderIdMap::value_type& it, _shaderIdMap){
             it.second->removeParentProgram(this);
             glDetachShader(_shaderProgramId, it.second->getShaderId());
@@ -75,7 +75,7 @@ U8 glShaderProgram::update(const U64 deltaTime){
     if(_validationQueued && isHWInitComplete() && _wasBound/*after it was used at least once*/){
         validateInternal();
 #ifdef NDEBUG
-        if (_shaderProgramId != 0 && _shaderProgramId != Divide::GL::_invalidObjectID && !_loadedFromBinary){
+        if (_shaderProgramId != 0 && _shaderProgramId != Divide::GLUtil::_invalidObjectID && !_loadedFromBinary){
             GLint   binaryLength;
    
             glGetProgramiv(_shaderProgramId, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
@@ -150,7 +150,7 @@ void glShaderProgram::attachShader(Shader* const shader, const bool refresh){
 void glShaderProgram::threadedLoad(const std::string& name){
     if (!_loadedFromBinary){
         //Create a new program
-        if (_shaderProgramId == Divide::GL::_invalidObjectID)
+        if (_shaderProgramId == Divide::GLUtil::_invalidObjectID)
             _shaderProgramIDTemp = glCreateProgram();
 
         // Attach, compile and validate shaders into this program and update state
@@ -161,7 +161,6 @@ void glShaderProgram::threadedLoad(const std::string& name){
         attachShader(_tessellationEvaluationShader, _refreshTess);
         attachShader(_computeShader, _refreshComp);
         _refreshVert = _refreshFrag = _refreshGeom = _refreshTess = _refreshComp = false;
-
         link();
     }
     // Init UBOs
@@ -186,6 +185,7 @@ void glShaderProgram::threadedLoad(const std::string& name){
         _uniformBufferObjects[Shadow_UBO]->bindUniform(_shaderProgramIDTemp, _UBOLocation[Shadow_UBO]);
         _uniformBufferObjects[Shadow_UBO]->bindBufferBase();
     }
+
     validate();
     _shaderProgramId = _shaderProgramIDTemp;
 
@@ -200,6 +200,12 @@ void glShaderProgram::link(){
     }
 #endif
     D_PRINT_FN(Locale::get("GLSL_LINK_PROGRAM"), getName().c_str(), _shaderProgramIDTemp);
+
+    if (_outputCount > 0){
+        const char *vars[] = { "outVertexData", "outData1", "outData2", "outData3" };
+        glTransformFeedbackVaryings(_shaderProgramIDTemp, _outputCount, vars, GL_SEPARATE_ATTRIBS);
+    }
+
     glLinkProgram(_shaderProgramIDTemp);
     glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
 
@@ -351,15 +357,16 @@ bool glShaderProgram::generateHWResource(const std::string& name){
         if (!_fragmentShader){
             //Get our shader source
             const char* fs = glswGetShader(fragmentShaderName.c_str(), lineCountOffset + lineCountOffsetFrag, _refreshFrag);
-            if (!fs) ERROR_FN("[GLSL] %s", glswGetError());
-            assert(fs != nullptr);
-
-            std::string fsString(fs);
-            //Insert our custom defines in the special define slot
-            Util::replaceStringInPlace(fsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
-            Util::replaceStringInPlace(fsString, "//__CUSTOM_FRAGMENT_UNIFORMS__", shaderSourceFragUniforms);
-            //Load and compile the shader
-            _fragmentShader = ShaderManager::getInstance().loadShader(fragmentShaderName, fsString, FRAGMENT_SHADER, _refreshFrag);
+            if (fs){
+                std::string fsString(fs);
+                //Insert our custom defines in the special define slot
+                Util::replaceStringInPlace(fsString, "//__CUSTOM_DEFINES__", shaderSourceHeader);
+                Util::replaceStringInPlace(fsString, "//__CUSTOM_FRAGMENT_UNIFORMS__", shaderSourceFragUniforms);
+                //Load and compile the shader
+                _fragmentShader = ShaderManager::getInstance().loadShader(fragmentShaderName, fsString, FRAGMENT_SHADER, _refreshFrag);
+            }else{
+                D_PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), fragmentShaderName.c_str())
+            }
         }
 
         if (!_fragmentShader) PRINT_FN(Locale::get("WARN_GLSL_SHADER_LOAD"), fragmentShaderName.c_str());
@@ -442,7 +449,7 @@ bool glShaderProgram::generateHWResource(const std::string& name){
 ///If we did not, ask the GPU to give us the variables address and save it for later use
 GLint glShaderProgram::cachedLoc(const std::string& name, const bool uniform){
     //Not loaded or NULL_SHADER
-    if (!isHWInitComplete() || _shaderProgramId == 0 || _shaderProgramId == Divide::GL::_invalidObjectID) return -1;
+    if (!isHWInitComplete() || _shaderProgramId == 0 || _shaderProgramId == Divide::GLUtil::_invalidObjectID) return -1;
     
     assert(_linked && _threadedLoadComplete);
 
@@ -463,7 +470,7 @@ bool glShaderProgram::bind() {
         return false;
     }
 
-    assert(_shaderProgramId != Divide::GL::_invalidObjectID);
+    assert(_shaderProgramId != Divide::GLUtil::_invalidObjectID);
 
     GL_API::setActiveProgram(this);
     //_uniformBufferObjects[Lights_UBO]->printUniformBlockInfo(this->_shaderProgramId, _UBOLocation[Lights_UBO]);
@@ -511,9 +518,9 @@ void glShaderProgram::Attribute(I32 location, const vec4<GLfloat>& value) const 
 
 void glShaderProgram::SetSubroutines(ShaderType type, const vectorImpl<U32>& indices) const {
     assert(_bound);
-    if (indices[0] != GL_INVALID_INDEX){
+    if (indices[0] != GL_INVALID_INDEX)
         glUniformSubroutinesuiv(_shaderStageTable[type], (GLsizei)indices.size(), &indices.front());
-    }
+    
 }
 
 U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name) const {
@@ -521,52 +528,71 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const std::string& name
 }
 
 void glShaderProgram::Uniform(GLint location, GLuint value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform1ui(_shaderProgramId, location, value);
     else         glUniform1ui(location, value);
 }
 
 void glShaderProgram::Uniform(GLint location, GLint value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform1i(_shaderProgramId, location, value);
     else         glUniform1i(location, value);
 }
 
 void glShaderProgram::Uniform(GLint location, GLfloat value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform1f(_shaderProgramId, location, value);
     else         glUniform1f(location, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const vec2<GLfloat>& value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform2fv(_shaderProgramId, location, 1, value);
     else         glUniform2fv(location, 1, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const vec2<GLint>& value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform2iv(_shaderProgramId, location, 1, value);
     else         glUniform2iv(location, 1, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const vec2<GLushort>& value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform2iv(_shaderProgramId, location, 1, vec2<I32>(value.x, value.y));
     else         glUniform2iv(location, 1, vec2<I32>(value.x, value.y));
-  
 }
 
 void glShaderProgram::Uniform(GLint location, const vec3<GLfloat>& value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform3fv(_shaderProgramId, location, 1, value);
     else         glUniform3fv(location, 1, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const vec4<GLfloat>& value) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniform4fv(_shaderProgramId, location, 1, value);
     else         glUniform4fv(location, 1, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const mat3<GLfloat>& value, bool rowMajor) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniformMatrix3fv(_shaderProgramId, location, 1, rowMajor, value.mat);
     else         glUniformMatrix3fv(location, 1, rowMajor, value);
 }
 
 void glShaderProgram::Uniform(GLint location, const mat4<GLfloat>& value, bool rowMajor) const {
+    if (location == -1) return;
+
     if (!_bound) glProgramUniformMatrix4fv(_shaderProgramId, location, 1, rowMajor, value.mat);
     else         glUniformMatrix4fv(location, 1, rowMajor, value.mat);
 }
@@ -579,41 +605,50 @@ void glShaderProgram::Uniform(GLint location, const vectorImpl<GLint >& values) 
 }
 
 void glShaderProgram::Uniform(GLint location, const vectorImpl<GLfloat >& values) const {
-    if (values.empty()) return;
+    if (values.empty() || location == -1) return;
 
     if (!_bound) glProgramUniform1fv(_shaderProgramId, location, (GLsizei)values.size(), &values.front());
     else         glUniform1fv(location, (GLsizei)values.size(), &values.front());
 }
 
 void glShaderProgram::Uniform(GLint location, const vectorImpl<vec2<GLfloat> >& values) const {
-    if (values.empty()) return;
+    if (values.empty() || location == -1) return;
 
     if (!_bound) glProgramUniform2fv(_shaderProgramId, location, (GLsizei)values.size(), values.front());
     else         glUniform2fv(location, (GLsizei)values.size(), values.front());
 }
 
 void glShaderProgram::Uniform(GLint location, const vectorImpl<vec3<GLfloat> >& values) const {
-    if (values.empty()) return;
+    if (values.empty() || location == -1) return;
 
     if (!_bound) glProgramUniform3fv(_shaderProgramId, location, (GLsizei)values.size(), values.front());
     else         glUniform3fv(location, (GLsizei)values.size(), values.front());
 }
 
 void glShaderProgram::Uniform(GLint location, const vectorImpl<vec4<GLfloat> >& values) const {
-    if (values.empty()) return;
+    if (values.empty() || location == -1) return;
 
     if (!_bound) glProgramUniform4fv(_shaderProgramId, location, (GLsizei)values.size(), values.front());
     else         glUniform4fv(location, (GLsizei)values.size(), values.front());
 }
 
+void glShaderProgram::Uniform(GLint location, const vectorImpl<mat3<F32> >& values, bool rowMajor) const {
+    if (values.empty() || location == -1) return;
+
+    if (!_bound) glProgramUniformMatrix3fv(_shaderProgramId, location, (GLsizei)values.size(), rowMajor, values.front());
+    else         glUniformMatrix3fv(location, (GLsizei)values.size(), rowMajor, values.front());
+}
+
 void glShaderProgram::Uniform(GLint location, const vectorImpl<mat4<GLfloat> >& values, bool rowMajor) const {
-    if (values.empty()) return;
+    if (values.empty() || location == -1) return;
 
     if (!_bound) glProgramUniformMatrix4fv(_shaderProgramId, location, (GLsizei)values.size(), rowMajor, values.front());
     else         glUniformMatrix4fv(location, (GLsizei)values.size(), rowMajor, values.front());
 }
 
 void glShaderProgram::UniformTexture(GLint location, GLushort slot) const {
+    if (location == -1) return;
+
     if(!_bound) glProgramUniform1i(_shaderProgramId, location, slot);
     else        glUniform1i(location, slot);
 }

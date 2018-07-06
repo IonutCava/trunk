@@ -33,10 +33,7 @@ protected:
     friend class GL_API;
     friend class DX_API;
     /// Color Writes
-    bool _writeRedChannel;
-    bool _writeBlueChannel;
-    bool _writeGreenChannel;
-    bool _writeAlphaChannel;
+    P32 _colorWrite;
 
     // Blending
     bool _blendEnable;
@@ -46,7 +43,7 @@ protected:
 
     /// Rasterizer
     CullMode _cullMode;
-
+    
     /// Depth
     bool _zEnable;
     bool _zWriteEnable;
@@ -69,7 +66,8 @@ protected:
 private:
     U32  _cachedHash;
     bool _dirty;
-    
+    bool _lockHash;
+
     void clean();
 
 public:
@@ -102,11 +100,11 @@ public:
 
     void setColorWrites( bool red, bool green, bool blue, bool alpha );
     
-    inline U32 getHash()       { clean(); return _cachedHash; }
+    inline U32 getHash() const { return _cachedHash; }
     inline U32 getGUID() const { return getGUID(); }
 
     bool operator == (RenderStateBlockDescriptor& RSBD) const {
-        return _cachedHash == RSBD._cachedHash;
+        return getHash() == RSBD.getHash();
     }
 
     bool operator != (RenderStateBlockDescriptor& RSBD) const {
@@ -125,9 +123,7 @@ public:
     {
     }
 
-    RenderStateBlockDescriptor& getDescriptor() {return _descriptor;}
-
-    const RenderStateBlockDescriptor& getDescriptorConst() const { return _descriptor; }
+    inline const RenderStateBlockDescriptor& getDescriptor() const { return _descriptor; }
 
     bool operator == (RenderStateBlock& RSB) const {
         return _descriptor == RSB._descriptor;
@@ -137,11 +133,11 @@ public:
         return !(*this == RSB);
     }
 
-    inline bool Compare(RenderStateBlock& RSB) { 
+    inline bool Compare(RenderStateBlock& RSB) const { 
         return (*this == RSB);
     }
 
-    protected:
+protected:
     RenderStateBlockDescriptor _descriptor;
 };
 

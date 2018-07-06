@@ -25,10 +25,11 @@
 
 #include "core.h"
 #include <boost/noncopyable.hpp>
-#include "Hardware/Platform/Headers/Thread.h"
+#include "Hardware/Platform/Headers/Task.h"
+#include <boost/lockfree/queue.hpp>
+#include "Managers/Headers/CameraManager.h"
 
 class GUI;
-class Task;
 class Scene;
 class PXDevice;
 class GFXDevice;
@@ -36,7 +37,6 @@ class SFXDevice;
 class Application;
 class LightManager;
 class SceneManager;
-class CameraManager;
 class ShaderManager;
 class InputInterface;
 class SceneRenderState;
@@ -80,6 +80,7 @@ public:
             static void updateResolutionCallback(I32 w, I32 h);
 
 public:
+
     GFXDevice& getGFXDevice() const {return _GFX;}
     SFXDevice& getSFXDevice() const {return _SFX;}
     PXDevice&  getPXDevice()  const {return _PFX;}
@@ -88,6 +89,8 @@ public:
     inline U64 getCurrentTimeDelta() const {return _currentTimeDelta;}
     /// get a pointer to the kernel's threadpool to add,remove,pause or stop tasks
     inline boost::threadpool::pool* const getThreadPool() {assert(_mainTaskPool != nullptr); return _mainTaskPool;}
+
+    CameraManager& getCameraMgr() { return *_cameraMgr; }
 
 public: ///Input
     ///Key pressed
@@ -111,17 +114,36 @@ public: ///Input
     ///Mouse button released
     bool onMouseClickUp(const OIS::MouseEvent& arg,OIS::MouseButtonID button);
 
+    inline Task* AddTask(D32 tickInterval, bool startOnCreate, I32 numberOfTicks, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+         Task* taskPtr = New Task(getThreadPool(), tickInterval, startOnCreate, numberOfTicks, threadedFunction);
+         taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
+         if (!onCompletionFunction.empty()){
+             _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));
+         }
+         return taskPtr;
+    }
+
+    inline Task* AddTask(D32 tickInterval, bool startOnCreate, bool runOnce, const DELEGATE_CBK& threadedFunction, const DELEGATE_CBK& onCompletionFunction = DELEGATE_CBK()) {
+        Task* taskPtr = New Task(getThreadPool(), tickInterval, startOnCreate, runOnce, threadedFunction);
+        taskPtr->connect(DELEGATE_BIND(&Kernel::threadPoolCompleted, this, _1));
+        if (!onCompletionFunction.empty()){
+            _threadedCallbackFunctions.insert(std::make_pair(taskPtr->getGUID(), onCompletionFunction));
+        }
+        return taskPtr;
+    }
+
 private:
    static void firstLoop();
    void renderScene();
    void renderSceneAnaglyph();
    bool mainLoopScene(FrameEvent& evt);
    bool presentToScreen(FrameEvent& evt, const D32 interpolationFactor);
+   void threadPoolCompleted(U64 onExitTaskID);
 
 private:
     friend class SceneManager;
     void submitRenderCall(const RenderStage& stage, const SceneRenderState& sceneRenderState, const DELEGATE_CBK& sceneRenderCallback) const;
-
+    
 private:
     Application&    _APP;
     ///Access to the GPU
@@ -132,6 +154,8 @@ private:
     PXDevice&		_PFX;
     ///The graphical user interface
     GUI&			_GUI;
+    ///The input interface
+    InputInterface& _input;
     ///The SceneManager/ Scene Pool
     SceneManager&	_sceneMgr;
     ///Keep track of all active cameras used by the engine
@@ -150,7 +174,8 @@ private:
    static U64 _previousTime;
    static D32 _nextGameTick;
 
-
+   static Unordered_map<U64, DELEGATE_CBK > _threadedCallbackFunctions;
+   static boost::lockfree::queue<U64, boost::lockfree::capacity<5> >  _callbackBuffer;
    U8 _loops;
    //Command line arguments
    I32    _argc;

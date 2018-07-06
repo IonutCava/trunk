@@ -30,24 +30,12 @@ void SkinnedSubMesh::postLoad(SceneGraphNode* const sgn){
     Object3D::postLoad(sgn);
 }
 
-/// Called from SceneGraph "sceneUpdate"
-void SkinnedSubMesh::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState){
-    updateAnimations(sgn);
-    SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
-}
-
-void SkinnedSubMesh::drawReset(SceneGraphNode* const sgn){
-    FOR_EACH(SceneGraphNode::NodeChildren::value_type& it, sgn->getParent()->getChildren()){
-        it.second->getComponent<AnimationComponent>()->reset();
-    }
-}
-
 // update possible animations
 void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
     AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
     assert(animComp);
 
-    updateBBatCurrentFrame(sgn);
+    getBoundingBoxForCurrentFrame(sgn);
 
     //Software skinning
     if (!_softwareSkinning || !animComp->playAnimations()) return;
@@ -92,7 +80,7 @@ void SkinnedSubMesh::updateAnimations(SceneGraphNode* const sgn){
     _geometry->queueRefresh();
 }
 
-void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
+void SkinnedSubMesh::getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn){
     AnimationComponent* animComp = sgn->getComponent<AnimationComponent>();
     if (!animComp || !animComp->playAnimations()) return;
 
@@ -132,12 +120,8 @@ void SkinnedSubMesh::updateBBatCurrentFrame(SceneGraphNode* const sgn){
             bb.setComputed(true);
             _bbsPerFrame[i] = bb;
         }
-        _boundingBoxes.insert(std::make_pair(currentAnimationID,_bbsPerFrame));
+        _boundingBoxes.insert(std::make_pair(currentAnimationID, _bbsPerFrame));
     }
 
-    const BoundingBox& bb1 = _boundingBoxes[currentAnimationID][currentFrameIndex];
-    const BoundingBox& bb2 = sgn->getBoundingBoxConst();
-    if(!bb1.Compare(bb2)){
-        sgn->setInitialBoundingBox(bb1);
-    }
+    sgn->setInitialBoundingBox(_boundingBoxes[currentAnimationID][currentFrameIndex]);
 }

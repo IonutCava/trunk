@@ -27,14 +27,12 @@
 
 Scene::Scene() :  Resource("temp_scene"),
                  _GFX(GFX_DEVICE),
-                 _FBSpeedFactor(1.0f),
                  _LRSpeedFactor(5.0f),
                  _loadComplete(false),
                  _cookCollisionMeshesScheduled(false),
                  _paramHandler(ParamHandler::getInstance()),
                  _currentSelection(nullptr),
                  _physicsInterface(nullptr),
-                 _cameraMgr(nullptr),
                  _sceneGraph(New SceneGraph())
 {
     _mousePressed[OIS::MB_Left]    = false;
@@ -61,16 +59,12 @@ bool Scene::idle(){ //Called when application is idle
         loadXMLAssets(true);
 
     if (_cookCollisionMeshesScheduled && _sceneGraph){
-        if(SceneManager::getInstance().getFrameCount() > 1){
+        if(GFX_DEVICE.getFrameCount() > 1){
             _sceneGraph->getRoot()->getComponent<PhysicsComponent>()->cookCollisionMesh(_name);
             _cookCollisionMeshesScheduled = false;
         }
     }
     return true;
-}
-
-void Scene::updateCameras(){
-    renderState().updateCamera(_cameraMgr->getActiveCamera());
 }
 
 void Scene::postRender(){
@@ -150,6 +144,8 @@ bool Scene::loadGeometry(const FileData& data){
     } else if(data.ModelName.compare("Quad3D") == 0)	{
             vec3<F32> scale = data.scale;
             vec3<F32> position = data.position;
+            P32 quadMask; quadMask.i = 0; quadMask.b.b0 = 1;
+            item.setBoolMask(quadMask);
             thisObj = CreateResource<Quad3D>(item);
             dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3<F32>(0,1,0));
             dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3<F32>(1,1,0));
@@ -225,18 +221,6 @@ SceneGraphNode* Scene::addLight(Light* const lightItem, SceneGraphNode* const pa
     return returnNode;
 }
 
-Camera* Scene::addDefaultCamera(){
-    PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"), getName().c_str());
-    Camera* camera = New FreeFlyCamera();
-    camera->setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
-    camera->setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
-    camera->setFixedYawAxis(true);
-    //As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
-    _cameraMgr->addNewCamera("defaultCamera", camera);
-    _cameraMgr->setActiveCamera("defaultCamera");
-    return camera;
-}
-
 DirectionalLight* Scene::addDefaultLight(){
     std::stringstream ss; ss << LightManager::getInstance().getLights().size();
     ResourceDescriptor defaultLight("Default directional light "+ss.str());
@@ -272,19 +256,15 @@ bool Scene::removeGeometry(SceneNode* node){
 }
 
 bool Scene::preLoad() {
-    _GFX.enableFog(_sceneState.getFogDesc()._fogMode,
-                   _sceneState.getFogDesc()._fogDensity,
-                   _sceneState.getFogDesc()._fogColor,
-                   _sceneState.getFogDesc()._fogStartDist,
-                   _sceneState.getFogDesc()._fogEndDist);
+    _GFX.enableFog(_sceneState.getFogDesc()._fogDensity,
+                   _sceneState.getFogDesc()._fogColor);
     return true;
 }
 
 bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const guiInterface){
     _GUI = guiInterface;
-    _cameraMgr = cameraMgr;
     _name = name;
-    addDefaultCamera();
+    renderState()._cameraMgr = cameraMgr;
     preLoad();
     loadXMLAssets();
     SceneGraphNode* root = _sceneGraph->getRoot();
@@ -294,16 +274,13 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
             ResourceDescriptor terrain(_terrainInfoArray[i]->getVariable("terrainName"));
             Terrain* temp = CreateResource<Terrain>(terrain);
             SceneGraphNode* terrainTemp = root->addNode(temp);
-            terrainTemp->useDefaultTransform(false);
-            terrainTemp->setTransform(nullptr);
             terrainTemp->setActive(_terrainInfoArray[i]->getActive());
             terrainTemp->setUsageContext(SceneGraphNode::NODE_STATIC);
             terrainTemp->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_OBSTACLE);
             terrainTemp->getComponent<PhysicsComponent>()->setPhysicsGroup(_terrainInfoArray[i]->getCreatePXActor() ? PhysicsComponent::NODE_COLLIDE_NO_PUSH : PhysicsComponent::NODE_COLLIDE_IGNORE);
-            temp->initializeVegetation(_terrainInfoArray[i],terrainTemp);
         }
     }
-    //Camera position is overriden in the scene's XML configuration file
+    //Camera position is overridden in the scene's XML configuration file
     if(ParamHandler::getInstance().getParam<bool>("options.cameraStartPositionOverride")){
         renderState().getCamera().setEye(vec3<F32>(_paramHandler.getParam<F32>("options.cameraStartPosition.x"),
                                                      _paramHandler.getParam<F32>("options.cameraStartPosition.y"),
@@ -317,12 +294,8 @@ bool Scene::load(const std::string& name, CameraManager* const cameraMgr, GUI* c
 
     //Create an AI thread, but start it only if needed
     Kernel* kernel = Application::getInstance().getKernel();
-    _aiTask.reset(New Task(kernel->getThreadPool(),
-                           1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY,
-                           false,
-                           false,
-                           DELEGATE_BIND(&AIManager::update,
-                           DELEGATE_REF(AIManager::getInstance()))));
+    _aiTask.reset(kernel->AddTask(1000.0 / Config::AI_THREAD_UPDATE_FREQUENCY, false, false,
+                                  DELEGATE_BIND(&AIManager::update, DELEGATE_REF(AIManager::getInstance()))));
     _loadComplete = true;
     return _loadComplete;
 }
@@ -394,7 +367,7 @@ void Scene::clearLights(){
     LightManager::getInstance().clear();
 }
 
-bool Scene::defaultCameraControls(){
+bool Scene::updateCameraControls(){
 
     Camera& cam = renderState().getCamera();
     switch (cam.getType()){
@@ -408,11 +381,13 @@ bool Scene::defaultCameraControls(){
         }break;
     }
 
-    return (state()._moveFB || state()._moveLR || state()._angleLR || state()._angleUD || state()._roll);
+    state()._cameraUpdated =  (state()._moveFB || state()._moveLR || state()._angleLR || state()._angleUD || state()._roll);
+    return state()._cameraUpdated;
 }
 
 void Scene::updateSceneState(const U64 deltaTime){
     updateSceneStateInternal(deltaTime);
+    state()._cameraUnderwater = renderState().getCamera().getEye().y < state()._waterHeight;
     _sceneGraph->sceneUpdate(deltaTime, _sceneState);
 }
 
@@ -463,4 +438,13 @@ void Scene::processGUI(const U64 deltaTime){
 void Scene::processTasks(const U64 deltaTime){
     for(U16 i = 0; i < _taskTimers.size(); ++i)
         _taskTimers[i] += getUsToMs(deltaTime);
+}
+
+TerrainDescriptor* Scene::getTerrainInfo(const std::string& terrainName) {
+    for (U8 i = 0; i < _terrainInfoArray.size(); i++)
+    if (terrainName.compare(_terrainInfoArray[i]->getVariable("terrainName")) == 0)
+        return _terrainInfoArray[i];
+
+    assert(false); // not found;
+    return _terrainInfoArray[0];
 }

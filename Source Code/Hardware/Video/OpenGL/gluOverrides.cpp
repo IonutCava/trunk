@@ -9,7 +9,7 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
-    namespace GL {
+    namespace GLUtil {
         ///Used for anaglyph rendering
         struct CameraFrustum {
             GLdouble leftfrustum;
@@ -34,30 +34,18 @@ namespace Divide {
         matrixStack   _viewMatrix;
         matrixStack   _projectionMatrix;
         matrixStack   _textureMatrix;
-        viewportStack _viewport;
         glm::mat4     _identityMatrix;
-        vector3Stack  _currentViewDirection;
 
         GLfloat  _anaglyphIOD = -0.01f;
 
         void _initStacks(){
-            _currentViewDirection.push(vec3<GLfloat>());
             _projectionMatrix.push(_identityMatrix);
             _viewMatrix.push(_identityMatrix);
             _textureMatrix.push(_identityMatrix);
-            _viewport.push(vec4<GLint>(0,0,0,0));
         }
 
-        void _unproject(const vec3<GLfloat>& windowCoords, vec3<GLfloat>& objCoords) {
-            glm::vec4 viewport(_viewport.top().x, _viewport.top().y, _viewport.top().z, _viewport.top().w);
-            glm::vec3 wincoord(windowCoords.x, windowCoords.y, windowCoords.z);
-            glm::vec3 objcoord = glm::unProject(wincoord, _viewMatrix.top(), _projectionMatrix.top(), viewport);
-            objCoords.set(objcoord.x, objcoord.y, objcoord.z);
-        }
-
-        GLfloat* _lookAt(const GLfloat* viewMatrix, const vec3<GLfloat>& viewDirection){
+        GLfloat* _lookAt(const GLfloat* viewMatrix){
            _matrixMode(VIEW_MATRIX);
-           _currentViewDirection.top() = viewDirection;
            _viewMatrix.top() = glm::make_mat4(viewMatrix);
            GL_API::getInstance().updateViewMatrix();
            return glm::value_ptr(_viewMatrix.top());
@@ -126,7 +114,6 @@ namespace Divide {
                 _projectionMatrix.push(_projectionMatrix.top());
             }else if(_currentMatrixMode == VIEW_MATRIX){
                 _viewMatrix.push(_viewMatrix.top());
-                _currentViewDirection.push(_currentViewDirection.top());
             }else if(_currentMatrixMode == TEXTURE_MATRIX) {
                 _textureMatrix.push(_textureMatrix.top());
             }else {
@@ -140,7 +127,6 @@ namespace Divide {
                 GL_API::getInstance().updateProjectionMatrix();
             }else if(_currentMatrixMode == VIEW_MATRIX){
                 _viewMatrix.pop();
-                _currentViewDirection.pop();
                 GL_API::getInstance().updateViewMatrix();
             }else if(_currentMatrixMode == TEXTURE_MATRIX){
                 _textureMatrix.pop();
@@ -155,7 +141,6 @@ namespace Divide {
                 GL_API::getInstance().updateProjectionMatrix();
             }else if(_currentMatrixMode == VIEW_MATRIX){
                 _viewMatrix.top() = _identityMatrix;
-                _currentViewDirection.top() = vec3<GLfloat>();
                 GL_API::getInstance().updateViewMatrix();
             }else if(_currentMatrixMode == TEXTURE_MATRIX){
                 _textureMatrix.top() = _identityMatrix;
@@ -163,5 +148,5 @@ namespace Divide {
                 assert(_currentMatrixMode == -1);
             }
         }
-    }//namespace GL
+    }//namespace GLUtil
 }// namespace Divide

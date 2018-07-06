@@ -26,5 +26,6 @@
 #include <threadpool.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/signals2.hpp>
 
 #endif

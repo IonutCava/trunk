@@ -48,7 +48,7 @@ public:
     ///Find all the lights affecting the currend node. Return the number of found lights
     ///Note: the returned value is clamped between 0 and MAX_LIGHTS_PER_SCENE_NODE
     ///Use typeFilter to find only lights of a certain type
-    U8 findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LIGHT_TYPE_PLACEHOLDER );
+    U8   findLightsForSceneNode(SceneGraphNode* const node, LightType typeFilter = LIGHT_TYPE_PLACEHOLDER );
     U32  generateNewID();
     bool clear();
     void idle();
@@ -58,7 +58,7 @@ public:
     inline Light*    getLightForCurrentNode(U8 index) {assert(index < _currLightsPerNode.size()); _currLight = _currLightsPerNode[index]; return _currLight;}
 
     inline Light*    getCurrentLight()             const { return _currLight; }
-    inline void      setCurrentLight(Light* light)       { _currLight = light; }
+    inline void      setCurrentLight(Light* light)       { _currLight = light; _currentShadowPass = 0; }
 
     void updateResolution(I32 newWidth, I32 newHeight);
 
@@ -79,6 +79,8 @@ public:
     bool checkId(U32 value);
     void drawDepthMap(U8 light, U8 index);
 
+    inline U8   currentShadowPass()  const { return _currentShadowPass; }
+    inline void registerShadowPass()       { _currentShadowPass++; }
 protected:
     ///This is inherited from FrameListener and is used to queue up reflection on every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
@@ -94,7 +96,7 @@ private:
     Light*    _currLight;
     bool      _shadowMapsEnabled;
     vec4<F32> _ambientLight;
-
+    U8        _currentShadowPass; //<used by CSM. Resets to 0 for every light
     vectorImpl<I32>         _currLightTypes;
     vectorImpl<I32>         _currShadowLights;
     vectorImpl<I32>         _currLightIndices;

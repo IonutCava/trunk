@@ -26,30 +26,58 @@
 #include "core.h"
 #include <boost/noncopyable.hpp>
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Managers/Headers/FrameListenerManager.h"
+#include <stack>
 
+class Kernel;
 /// Multiple camera managers can be created if needed in the future
 /// No need for singletons here
-class CameraManager : private boost::noncopyable {
+class CameraManager : private boost::noncopyable, public FrameListener {
 typedef Unordered_map<std::string, Camera*> CameraPool;
+typedef Unordered_map<U64,         Camera*> CameraPoolGUID;
 
 public:
-    CameraManager();
+    CameraManager(Kernel* const kernelPtr);
     ~CameraManager();
 
-    Camera* const getActiveCamera();
-    void setActiveCamera(const std::string& name);
+    inline Camera* const getActiveCamera() { assert(_camera); return _camera; }
+
     void addNewCamera(const std::string& cameraName, Camera* const camera);
 
     void addCameraChangeListener(const DELEGATE_CBK& f) {_changeCameralisteners.push_back(f);}
-    void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f);}
+    void addCameraUpdateListener(const DELEGATE_CBK& f) {_updateCameralisteners.push_back(f); _addNewListener = true;}
 
-    bool onMouseMove(const OIS::MouseEvent& arg);
+    inline bool onMouseMove(const OIS::MouseEvent& arg) { return _camera->onMouseMove(arg); }
 
-    void update(const U64 deltaTime);
+    inline void pushActiveCamera(const std::string& name, bool callActivate = true) { 
+        _cameraStack.push(findCamera(name));
+        setActiveCamera(_cameraStack.top(), callActivate); 
+    }
+
+    inline void pushActiveCamera(const Camera* camera, bool callActivate = true) {
+        _cameraStack.push(findCamera(camera->getGUID()));
+        setActiveCamera(_cameraStack.top(), callActivate);
+    }
+
+    inline void popActiveCamera(bool callActivate = true) {
+        _cameraStack.pop();
+        setActiveCamera(_cameraStack.top(), callActivate);
+    }
+
+protected:
+    ///This is inherited from FrameListener and is used to update the view matrix every frame
+    bool frameStarted(const FrameEvent& evt);
+    Camera* findCamera(const std::string& name);
+    Camera* findCamera(U64 cameraGUID);
+    void setActiveCamera(Camera* cam, bool callActivate = true);
 
 private:
+    bool    _addNewListener;
+    Kernel* _kernelPtr;
     Camera* _camera;
     CameraPool _cameraPool;
+    CameraPoolGUID _cameraPoolGUID;
+    std::stack<Camera* > _cameraStack;
     vectorImpl<DELEGATE_CBK > _changeCameralisteners;
     vectorImpl<DELEGATE_CBK > _updateCameralisteners;
 };

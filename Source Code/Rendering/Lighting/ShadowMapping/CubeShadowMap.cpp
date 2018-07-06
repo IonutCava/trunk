@@ -1,14 +1,13 @@
 #include "Headers/CubeShadowMap.h"
 
 #include "Graphs/Headers/SceneGraph.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-CubeShadowMap::CubeShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_CubeMap)
+CubeShadowMap::CubeShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CubeMap)
 {
 	PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
 	TextureDescriptor depthMapDescriptor(TEXTURE_CUBE_MAP,
@@ -48,7 +47,7 @@ void CubeShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void CubeShadowMap::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void CubeShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     // Only if we have a valid callback;
 	if(sceneRenderFunction.empty()) {
 		ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());

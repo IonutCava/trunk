@@ -9,14 +9,13 @@
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "Managers/Headers/CameraManager.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Dynamics/Physics/Headers/PXDevice.h"
 #include "Hardware/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
-
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Headers/ForwardRenderer.h"
 #include "Rendering/Headers/DeferredShadingRenderer.h"
 #include "Rendering/Headers/DeferredLightingRenderer.h"
@@ -34,6 +33,9 @@ bool Kernel::_freezeGUITime = false;
 DELEGATE_CBK Kernel::_mainLoopCallback;
 ProfileTimer* s_appLoopTimer = nullptr;
 
+boost::lockfree::queue<U64, boost::lockfree::capacity<5> >  Kernel::_callbackBuffer;
+Unordered_map<U64, DELEGATE_CBK > Kernel::_threadedCallbackFunctions;
+
 #if USE_FIXED_TIMESTEP
 static const U64 SKIP_TICKS = (1000 * 1000) / Config::TICKS_PER_SECOND;
 #endif
@@ -45,23 +47,19 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
                     _GFX(GFXDevice::getOrCreateInstance()), //Video
                     _SFX(SFXDevice::getOrCreateInstance()), //Audio
                     _PFX(PXDevice::getOrCreateInstance()),  //Physics
+                    _input(InputInterface::getOrCreateInstance()), //Input
                     _GUI(GUI::getOrCreateInstance()),       //Graphical User Interface
-                    _cameraMgr(New CameraManager()),               //Camera manager
                     _sceneMgr(SceneManager::getOrCreateInstance()) //Scene Manager
                     
 {
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
-    InputInterface::createInstance();
-
+    
     //General light management and rendering (individual lights are handled by each scene)
     //Unloading the lights is a scene level responsibility
     LightManager::createInstance();
-
+    _cameraMgr = New CameraManager(this);               //Camera manager
     assert(_cameraMgr != nullptr);
-    //If camera has been changed, set a callback to inform the current scene
-    _cameraMgr->addCameraChangeListener(DELEGATE_BIND(&SceneManager::updateCameras, //update camera
-                                                      DELEGATE_REF(_sceneMgr)));
     // force all lights to update on camera change (to keep them still actually)
     _cameraMgr->addCameraUpdateListener(DELEGATE_BIND(&LightManager::update, 
                                                        DELEGATE_REF(LightManager::getInstance()),
@@ -70,6 +68,7 @@ Kernel::Kernel(I32 argc, char **argv, Application& parentApp) :
     //so how many threads do we allocate for tasks? That's up to the programmer to decide for each app
     //we add the A.I. thread in the same pool as it's a task. ReCast should also use this ...
     _mainTaskPool = New boost::threadpool::pool(Config::THREAD_LIMIT + 1 /*A.I.*/);
+
     s_appLoopTimer = ADD_TIMER("MainLoopTimer");
 }
 
@@ -78,6 +77,10 @@ Kernel::~Kernel(){
     _mainTaskPool->wait();
     SAFE_DELETE(_mainTaskPool);
     REMOVE_TIMER(s_appLoopTimer);
+}
+
+void Kernel::threadPoolCompleted(U64 onExitTaskID){
+   _callbackBuffer.push(onExitTaskID);
 }
 
 void Kernel::idle(){
@@ -98,11 +101,18 @@ void Kernel::idle(){
     if(pendingLanguage.compare(Locale::currentLanguage()) != 0){
         Locale::changeLanguage(pendingLanguage);
     }
+    if (!_callbackBuffer.empty()){
+        U64 onExitTaskID;
+        _callbackBuffer.pop(onExitTaskID);
+        DELEGATE_CBK& cbk = _threadedCallbackFunctions[onExitTaskID];
+        if (!cbk.empty())
+            cbk();
+    }
 }
 
 void Kernel::mainLoopApp(){
     // Update internal timer
-    ApplicationTimer::getInstance().update();
+    ApplicationTimer::getInstance().update(GFX_DEVICE.getFrameCount());
 
     START_TIMER(s_appLoopTimer);
 
@@ -128,27 +138,24 @@ void Kernel::mainLoopApp(){
     //Launch the FRAME_STARTED event
     FrameEvent evt;
     frameMgr.createEvent(_currentTime, FRAME_EVENT_STARTED, evt);
-    _keepAlive = frameMgr.frameStarted(evt);
+    _keepAlive = frameMgr.frameEvent(evt);
 
     //Process the current frame
     _keepAlive = APP.getKernel()->mainLoopScene(evt);
     //Launch the FRAME_PROCESS event (a.k.a. the frame processing has ended event)
     frameMgr.createEvent(_currentTime, FRAME_EVENT_PROCESS,evt);
-    _keepAlive = frameMgr.frameRenderingQueued(evt);
+    _keepAlive = frameMgr.frameEvent(evt);
 
     GFX_DEVICE.endFrame();
     //Launch the FRAME_ENDED event (buffers have been swapped)
     frameMgr.createEvent(_currentTime, FRAME_EVENT_ENDED,evt);
-    _keepAlive = frameMgr.frameEnded(evt);
+    _keepAlive = frameMgr.frameEvent(evt);
 
     STOP_TIMER(s_appLoopTimer);
 
 #if defined(_DEBUG) || defined(_PROFILE)  
-    static I32 count = 0;
-    count++;
-    if(count > 600){
+    if (GFX_DEVICE.getFrameCount() % (Config::TARGET_FRAME_RATE * 10) == 0){
         PRINT_FN("GPU: [ %5.5f ] [DrawCalls: %d]", getUsToSec(GFX_DEVICE.getFrameDurationGPU()), GFX_DEVICE.getDrawCallCount());
-        count = 0;
     }
 #endif
 }
@@ -162,33 +169,23 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
     //Process physics
     _PFX.process(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
-    _cameraMgr->update(_currentTimeDelta);
-
 #if USE_FIXED_TIMESTEP
     _loops = 0;
     U64 deltaTime = SKIP_TICKS;
     while(_currentTime > _nextGameTick && _loops < Config::MAX_FRAMESKIP) {
 #else
     U64 deltaTime = _currentTimeDelta;
+    D32 interpolationFactor = 1.0f;
 #endif
-        // Update scene based on input
-        _sceneMgr.processInput(deltaTime);
 
         if (!_freezeGUITime){
             _sceneMgr.processGUI(deltaTime);
         }
         if (!_freezeLoopTime){
+            // Update scene based on input
+            _sceneMgr.processInput(_currentTimeDelta);
             // process all scene events
             _sceneMgr.processTasks(deltaTime);
-
-            // update the scene graph
-            _sceneMgr.update(deltaTime);
-        }
-        // Get input events
-        if(Application::getInstance().hasFocus()) {
-            InputInterface::getInstance().update(deltaTime);
-        }else{
-            _sceneMgr.onLostFocus();
         }
 
 #if USE_FIXED_TIMESTEP
@@ -198,19 +195,20 @@ bool Kernel::mainLoopScene(FrameEvent& evt){
         if (_loops == Config::MAX_FRAMESKIP && _currentTime > _nextGameTick)
             _nextGameTick = _currentTime;
     }
+    D32 interpolationFactor = std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick)) / static_cast<D32>(deltaTime), 1.0);
 #endif
-         
+    
+    // Get input events
+    _APP.hasFocus() ? _input.update(deltaTime) : _sceneMgr.onLostFocus();
+
     // Call this to avoid interpolating 60 bone matrices per entity every render call
     // Update the scene state based on current time (e.g. animation matrices)
     _sceneMgr.updateSceneState(_freezeLoopTime ? 0ULL : _currentTimeDelta);
 
     //Update physics - uses own timestep implementation
     _PFX.update(_freezeLoopTime ? 0ULL : _currentTimeDelta);
-#if USE_FIXED_TIMESTEP
-    return presentToScreen(evt, std::min(static_cast<D32>((_currentTime + deltaTime - _nextGameTick )) / static_cast<D32>(deltaTime), 1.0));
-#else
-    return presentToScreen(evt, 1.0);
-#endif
+
+    return presentToScreen(evt,interpolationFactor);
 }
 
 void Kernel::renderScene(){
@@ -222,9 +220,6 @@ void Kernel::renderScene(){
     RenderStage stage = (_GFX.getRenderer()->getType() != RENDERER_FORWARD) ? DEFERRED_STAGE : FINAL_STAGE;
     bool postProcessing = (stage != DEFERRED_STAGE && _GFX.postProcessingEnabled());
 
-    _cameraMgr->getActiveCamera()->renderLookAt();
-
-    
     FrameBuffer::FrameBufferTarget depthPassPolicy, colorPassPolicy;
     depthPassPolicy._depthOnly = true;
     colorPassPolicy._colorOnly = true;
@@ -264,7 +259,6 @@ void Kernel::renderSceneAnaglyph(){
     colorPassPolicy._colorOnly = true;
     
     Camera* currentCamera = _cameraMgr->getActiveCamera();
-    currentCamera->saveCamera();
 
     // Render to right eye
     currentCamera->setAnaglyph(true);
@@ -292,7 +286,6 @@ void Kernel::renderSceneAnaglyph(){
         _GFX.getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->End();
 
         RenderPassManager::getInstance().unlock();
-    currentCamera->restoreCamera();
 
     PostFX::getInstance().displayScene();
 }
@@ -302,7 +295,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
     FrameListenerManager& frameMgr = FrameListenerManager::getInstance();
 
     frameMgr.createEvent(_currentTime, FRAME_PRERENDER_START,evt, interpolationFactor);
-    if(!frameMgr.framePreRenderStarted(evt)) return false;
+    if (!frameMgr.frameEvent(evt)) return false;
 
     _GFX.setInterpolation(interpolationFactor);
 
@@ -311,15 +304,22 @@ bool Kernel::presentToScreen(FrameEvent& evt, const D32 interpolationFactor){
 
     //perform time-sensitive shader tasks
     ShaderManager::getInstance().update(_currentTimeDelta);
+    LightManager::getInstance().update();
 
-    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END,evt);
-    if(!frameMgr.framePreRenderEnded(evt)) return false;
+    frameMgr.createEvent(_currentTime, FRAME_PRERENDER_END, evt);
+    if (!frameMgr.frameEvent(evt)) return false;
 
     renderScene();
 
+    frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_START, evt);
+    if (!frameMgr.frameEvent(evt)) return false;
+
     _sceneMgr.postRender();
 
-    //render debug primitives and cleanup after us
+    frameMgr.createEvent(_currentTime, FRAME_POSTRENDER_END, evt);
+    if (!frameMgr.frameEvent(evt)) return false;
+
+    //render debug primitives, 2D elements and cleanup after us
     _GFX.flush();
 
     // Draw the GUI
@@ -357,7 +357,7 @@ void Kernel::submitRenderCall(const RenderStage& stage, const SceneRenderState& 
 
     if (bitCompare(FINAL_STAGE, stage) || bitCompare(DEFERRED_STAGE, stage)){
         // Draw bounding boxes, skeletons, axis gizmo, etc.
-        _GFX.debugDraw();
+        _GFX.debugDraw(sceneRenderState);
         // Show NavMeshes
         AIManager::getInstance().debugDraw(false);
     }
@@ -370,7 +370,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
     Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, GUI::getInstance().getConsole(), _1, _2));
     //Using OpenGL for rendering as default
     _GFX.setApi(OpenGL);
-
+    _GFX.setStateChangeExclusionMask(TYPE_LIGHT | TYPE_TRIGGER | TYPE_PARTICLE_EMITTER | TYPE_SKY | TYPE_VEGETATION_GRASS | TYPE_VEGETATION_TREES);
     //Target FPS is usually 60. So all movement is capped around that value
     ApplicationTimer::getInstance().init(Config::TARGET_FRAME_RATE);
 
@@ -383,6 +383,7 @@ I8 Kernel::initialize(const std::string& entryPoint) {
 
     PRINT_FN(Locale::get("START_RENDER_INTERFACE"));
     vec2<U16> resolution = _APP.getResolution();
+    F32 aspectRatio = (F32)resolution.width / (F32)resolution.height;
 
     _GFX.registerKernel(this);
     I8 windowId = _GFX.initHardware(resolution/2, _argc, _argv);
@@ -392,6 +393,14 @@ I8 Kernel::initialize(const std::string& entryPoint) {
 
     //We start of with a forward renderer. Change it to something else on scene load ... or ... whenever
     _GFX.setRenderer(New ForwardRenderer());
+
+    PRINT_FN(Locale::get("SCENE_ADD_DEFAULT_CAMERA"));
+    Camera* camera = New FreeFlyCamera();
+    camera->setProjection(aspectRatio, par.getParam<F32>("rendering.verticalFOV"), vec2<F32>(par.getParam<F32>("rendering.zNear"), par.getParam<F32>("rendering.zFar")));
+    camera->setFixedYawAxis(true);
+    //As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
+    _cameraMgr->addNewCamera("defaultCamera", camera);
+    _cameraMgr->pushActiveCamera(camera);
 
     //Load and render the splash screen
     _GFX.setRenderStage(FINAL_STAGE);
@@ -426,6 +435,9 @@ I8 Kernel::initialize(const std::string& entryPoint) {
         return MISSING_SCENE_LOAD_CALL;
     }
 
+    camera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
+    camera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
+
     PRINT_FN(Locale::get("INITIAL_DATA_LOADED"));
     PRINT_FN(Locale::get("CREATE_AI_ENTITIES_START"));
     //Initialize and start the AI
@@ -443,7 +455,7 @@ void Kernel::beginLogicLoop(){
     //The first loops compiles all the visible data, so do not render the first couple of frames
     _mainLoopCallback = DELEGATE_REF(Kernel::firstLoop);
     //Target FPS is define in "config.h". So all movement is capped around that value
-    GFX_DEVICE.initDevice(Config::TARGET_FRAME_RATE);
+    _GFX.initDevice(Config::TARGET_FRAME_RATE);
 }
 
 void Kernel::shutdown(){

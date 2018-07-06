@@ -64,7 +64,7 @@ void ApplicationTimer::removeTimer(ProfileTimer* const timer) {
 }
 #endif
 
-ApplicationTimer::ApplicationTimer() : _targetFrameRate(60.0f),
+ApplicationTimer::ApplicationTimer() : _targetFrameRate(Config::TARGET_FRAME_RATE),
                                        _ticksPerMicrosecond(0.0),
                                        _speedfactor(1.0f),
                                        _elapsedTimeUs(0ULL),
@@ -84,7 +84,7 @@ ApplicationTimer::ApplicationTimer() : _targetFrameRate(60.0f),
 void ApplicationTimer::init(U8 targetFrameRate) {
     assert(!_init);//<prevent double init
 
-    _targetFrameRate = static_cast<F32>(targetFrameRate);
+    _targetFrameRate = static_cast<U32>(targetFrameRate);
 
 #if defined( OS_WINDOWS )
     if(!QueryPerformanceFrequency(&_ticksPerSecond))
@@ -101,7 +101,6 @@ void ApplicationTimer::init(U8 targetFrameRate) {
 }
 
 namespace {
-    static U32 count = 0;
     static U32 averageCount = 0;
     static F32 maxFps = std::numeric_limits<F32>::min();
     static F32 minFps = std::numeric_limits<F32>::max();
@@ -119,11 +118,11 @@ U64 ApplicationTimer::getElapsedTimeInternal() {
     return static_cast<U64>((_currentTicks.QuadPart -_startupTicks.QuadPart) / _ticksPerMicrosecond);
 }
 
-void ApplicationTimer::update(){
+void ApplicationTimer::update(U32 frameCount){
     _elapsedTimeUs = getElapsedTimeInternal();
 
     _speedfactor = static_cast<F32>((_currentTicks.QuadPart - _frameDelay.QuadPart) / 
-                                    (_ticksPerSecond.QuadPart / _targetFrameRate));
+                                    (_ticksPerSecond.QuadPart / static_cast<F32>(_targetFrameRate)));
     _frameDelay = _currentTicks;
 
     if(_speedfactor <= 0.0f)
@@ -132,22 +131,22 @@ void ApplicationTimer::update(){
     _fps = _targetFrameRate / _speedfactor;
     _frameTime = 1000.0 / _fps;
 
-    if(_benchmark) benchmarkInternal();
+    if (_benchmark) benchmarkInternal(frameCount);
 }
 
-void ApplicationTimer::benchmarkInternal(){
+void ApplicationTimer::benchmarkInternal(U32 frameCount){
     //Average FPS
     averageFps += _fps;
     averageCount++;
 
     //Min/Max FPS (after every target second)
-    if(count > _targetFrameRate){
+    if(frameCount % _targetFrameRate == 0){
         maxFps = std::max(maxFps, _fps);
         minFps = std::min(minFps, _fps);
     }
 
     //Every 10 seconds (targeted)
-    if(count > _targetFrameRate * 10){
+    if(frameCount % (_targetFrameRate * 10) == 0){
         averageFpsTotal += averageFps;
 
         F32 avgFPS = averageFpsTotal / averageCount;
@@ -160,7 +159,5 @@ void ApplicationTimer::benchmarkInternal(){
 
 #endif
         averageFps = 0;
-        count = 0;
     }
-    ++count;
 }

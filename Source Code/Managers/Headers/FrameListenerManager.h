@@ -27,50 +27,44 @@
 ///Add this include here so that any FrameListner derived class only needs to include the manager
 #include "Rendering/Headers/FrameListener.h"
 
-enum FrameEventType{
-    FRAME_EVENT_ANY,
-    FRAME_EVENT_STARTED,
-    FRAME_PRERENDER_START,
-    FRAME_PRERENDER_END,
-    FRAME_EVENT_PROCESS,
-    FRAME_EVENT_ENDED,
-};
-
-class FrameListener;
-struct FrameEvent;
 DEFINE_SINGLETON(FrameListenerManager)
 
-typedef Unordered_map<std::string, FrameListener* > ListenerMap;
 typedef vectorImpl<D32> EventTimeMap;
 
 public:
-    void registerFrameListener(FrameListener* listener);
+    void registerFrameListener(FrameListener* listener, U32 callOrder);
     void removeFrameListener(FrameListener* listener);
     void idle();
 
-    bool frameStarted(const FrameEvent& evt);
-    bool framePreRenderStarted(const FrameEvent& evt);
-    bool framePreRenderEnded(const FrameEvent& evt);
-    bool frameRenderingQueued(const FrameEvent& evt);
-    bool frameEnded(const FrameEvent& evt);
+    bool frameEvent(const FrameEvent& evt);
 
     /// pass the current time in microseconds as the first parameter
     void createEvent(const U64 currentTime, FrameEventType type, FrameEvent& evt, const D32 interpolationFactor = 1.0);
 
 private:
+    vectorImpl<FrameListener* >::const_iterator findListener(const std::string& name);
+
+    bool frameStarted(const FrameEvent& evt);
+    bool framePreRenderStarted(const FrameEvent& evt);
+    bool framePreRenderEnded(const FrameEvent& evt);
+    bool frameRenderingQueued(const FrameEvent& evt);
+    bool framePostRenderStarted(const FrameEvent& evt);
+    bool framePostRenderEnded(const FrameEvent& evt);
+    bool frameEnded(const FrameEvent& evt);
+
     /// pass the current time in milliseconds as the first parameter
     /// returns the event timp in milliseconds
     D32 calculateEventTime(const D32 currentTime, FrameEventType type);
 
 private:
-    ListenerMap _listeners;
-    ListenerMap _removedListeners;
-    EventTimeMap _eventTimers[6];
+    vectorImpl<FrameListener* > _listeners;
+    vectorImpl<FrameListener* > _removedListeners;
+    EventTimeMap _eventTimers[FRAME_EVENT_ENDED + 1];
 
 END_SINGLETON
 
-inline void REGISTER_FRAME_LISTENER(FrameListener* listener){
-    FrameListenerManager::getInstance().registerFrameListener(listener);
+inline void REGISTER_FRAME_LISTENER(FrameListener* listener, U32 callOrder){
+    FrameListenerManager::getInstance().registerFrameListener(listener, callOrder);
 }
 
 #endif

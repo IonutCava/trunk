@@ -132,12 +132,7 @@ namespace Navigation {
         if(_buildThread) 
             _buildThread->stopTask();
 
-        Kernel* kernel = Application::getInstance().getKernel();
-        _buildThread.reset(New Task(kernel->getThreadPool(),
-                                    3,
-                                    true,
-                                    true,
-                                    DELEGATE_BIND(&NavigationMesh::buildProcess,this)));
+        _buildThread.reset(Application::getInstance().getKernel()->AddTask(3, true, true, DELEGATE_BIND(&NavigationMesh::buildProcess, this)));
 
         return true;
     }

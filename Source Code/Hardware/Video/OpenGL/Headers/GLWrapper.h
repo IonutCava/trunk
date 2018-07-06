@@ -53,9 +53,7 @@ DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 protected:
 
     GL_API() : RenderAPIWrapper(),
-               _state2DRendering(nullptr),
-               _defaultStateNoDepth(nullptr),
-                _2DRendering(false),
+               _loaderThread(nullptr),
                _prevWidthNode(0),
                _prevWidthString(0),
                _prevSizeNode(0),
@@ -73,10 +71,6 @@ protected:
     ///Change the window's position
     void      setWindowPos(GLushort w, GLushort h) const;
     void      setMousePosition(GLushort x, GLushort y) const;
-    vec3<GLfloat> unproject(const vec3<GLfloat>& windowCoord) const;
-    GLfloat* lookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
-    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix, const vec3<GLfloat>& viewDirection);
-    const GLfloat* getLookAt(const vec3<GLfloat>& eye, const vec3<GLfloat>& target, const vec3<GLfloat>& up);
 
     void beginFrame();
     void endFrame();
@@ -86,31 +80,35 @@ protected:
 
     void getMatrix(const MATRIX_MODE& mode, mat4<GLfloat>& mat);
 
-    FrameBuffer*        newFB(bool multisampled);
-    VertexBuffer*       newVB(const PrimitiveType& type);
-    PixelBuffer*        newPB(const PBType& type);
-    GenericVertexData*  newGVD();
+    FrameBuffer*        newFB(bool multisampled) const;
+    VertexBuffer*       newVB(const PrimitiveType& type) const;
+    PixelBuffer*        newPB(const PBType& type) const;
+    GenericVertexData*  newGVD() const;
 
-    inline Texture2D*          newTexture2D(const bool flipped = false)                   {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
-    inline TextureCubemap*     newTextureCubemap(const bool flipped = false)              {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
-    inline ShaderProgram*      newShaderProgram(const bool optimise = false)              {return New glShaderProgram(optimise); }
-
-    inline Shader*             newShader(const std::string& name,const ShaderType& type, const bool optimise = false)  {return New glShader(name,type,optimise); }
-           bool                initShaders();
-           bool                deInitShaders();
+    inline Texture*       newTextureArray(const bool flipped = false)   const {return New glTexture(glTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
+    inline Texture*       newTexture2D(const bool flipped = false)      const {return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
+    inline Texture*       newTextureCubemap(const bool flipped = false) const {return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
+    inline ShaderProgram* newShaderProgram(const bool optimise = false) const {return New glShaderProgram(optimise); }
+    inline Shader*        newShader(const std::string& name,const ShaderType& type, const bool optimise = false) const {return New glShader(name,type,optimise); }
+           bool           initShaders();
+           bool           deInitShaders();
 
     void lockMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool lockView = true, bool lockProjection = true);
     void releaseMatrices(const MATRIX_MODE& setCurrentMatrix = VIEW_MATRIX, bool releaseView = true, bool releaseProjection = true);
 
-    GLfloat* setOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
-    const GLfloat* getOrthoProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
-    GLfloat* setPerspectiveProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes);
-    void setAnaglyphFrustum(GLfloat camIOD, bool rightFrustum = false);
+    GLfloat* lookAt(const mat4<GLfloat>& viewMatrix);
+    //Setting ortho projection:
+    GLfloat* GL_API::setProjection(const vec4<GLfloat>& rect, const vec2<GLfloat>& planes);
+    //Setting perspective projection:
+    GLfloat* GL_API::setProjection(GLfloat FoV, GLfloat aspectRatio, const vec2<GLfloat>& planes);
+    //Setting anaglyph frustum for specified eye
+    void setAnaglyphFrustum(GLfloat camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
+
     void updateClipPlanes();
 
-    void toggle2D(bool state);
+    inline void toggleRasterization(bool state) { state ? glDisable(GL_RASTERIZER_DISCARD) : glEnable(GL_RASTERIZER_DISCARD); }
 
-    void debugDraw();
+    void debugDraw(const SceneRenderState& sceneRenderState);
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     void drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const mat4<GLfloat>& globalOffset);
     void drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
@@ -133,12 +131,17 @@ protected:
 
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
-    inline GLuint64 getFrameDurationGPU() const { return GL_API::FRAME_DURATION_GPU; }
-    inline GLint    getDrawCallCount()    const { return GL_API::FRAME_DRAW_CALLS_PREV; }
+    inline GLuint64 getFrameDurationGPU() const { 
+#ifdef _DEBUG
+        glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &GL_API::FRAME_DURATION_GPU); 
+#endif
+        return GL_API::FRAME_DURATION_GPU; 
+    }
 
-    inline static void registerDrawCall() { GL_API::FRAME_DRAW_CALLS++; }
+    inline GLuint      getFrameCount()    const { return GL_API::FRAME_COUNT; }
+    inline GLint       getDrawCallCount() const { return GL_API::FRAME_DRAW_CALLS_PREV; }
+    inline static void registerDrawCall()       { GL_API::FRAME_DRAW_CALLS++; }
 
-    inline static glShaderProgram* getActiveProgram()  {return _activeShaderProgram;}
     inline static GLuint getActiveVAOId()              {return _activeVAOId;}
 
     static void restoreViewport();
@@ -156,14 +159,16 @@ protected:
     inline static GLuint getActiveTextureUnit() {return _activeTextureUnit;}
 
 public:
-
+    static void togglePrimitiveRestart(bool state, bool smallIndices);
     static bool setActiveTextureUnit(GLuint unit,const bool force = false);
     static bool setActiveVAO(GLuint id, const bool force = false);
     static bool setActiveVB(GLuint id, const bool force = false);
+    static bool setActiveTB(GLuint id, const bool force = false);
     static bool setActiveFB(GLuint id, const bool read = true, const bool write = true, const bool force = false);
     static bool setActiveProgram(glShaderProgram* const program,const bool force = false);
            void updateProjectionMatrix();
            void updateViewMatrix();
+           void updateViewport(const vec4<GLint>& viewport);
            void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
 
 protected:
@@ -177,11 +182,11 @@ protected:
     ///Used for rendering skeletons
     void setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho);
     void releaseLineState(const bool ortho);
-    void drawDebugAxisInternal();
+    void drawDebugAxisInternal(const SceneRenderState& sceneRenderState);
     void setupLineStateViewPort(const mat4<F32>& mat);
     void releaseLineStateViewPort();
     void changeResolutionInternal(GLushort w, GLushort h);
-    void updateProjection();
+
 private: //OpenGL specific:
 
     ///Text Rendering
@@ -197,11 +202,6 @@ private: //OpenGL specific:
     GLfloat _prevWidthString;
     ///Window management:
     vec2<GLushort> _cachedResolution; ///<Current window resolution
-    //Render state specific:
-    RenderStateBlock*     _state2DRendering;    //<Special render state for 2D rendering
-    RenderStateBlock*     _defaultStateNoDepth; //<The default render state buth with GL_DEPTH_TEST false
-    bool                  _2DRendering;
-
     // line width limit
     GLint _lineWidthLimit;
     vectorImpl<vec3<GLfloat> > _pointsA, _axisPointsA;
@@ -219,27 +219,31 @@ private: //OpenGL specific:
 
     mat4<F32> _ViewProjectionCacheMatrix;
     static glslopt_ctx* _GLSLOptContex;
-    static glShaderProgram* _activeShaderProgram;
     static GLuint _activeVAOId;
     static GLuint _activeFBId;
     static GLuint _activeVBId;
+    static GLuint _activeTBId;
     static GLuint _activeTextureUnit;
     static Unordered_map<GLuint, vec4<GLfloat> > _prevClearColor;
     static bool _viewportForced;
     static bool _viewportUpdateGL;
+    static bool _lastRestartIndexSmall;
+    static bool _primitiveRestartEnabled;
     bool _activeClipPlanes[Config::MAX_CLIP_PLANES];
 
     /// performance counters
-    // front and back
-    static const GLint PERFORMANCE_COUNTER_BUFFERS = 2;
+    // front x 2 and back x 2
+    static const GLint PERFORMANCE_COUNTER_BUFFERS = 4;
     // number of queries
     static const GLint PERFORMANCE_COUNTERS = 1;
     // number of draw calls (rough estimate)
     static GLint FRAME_DRAW_CALLS;
     static GLint FRAME_DRAW_CALLS_PREV;
+    static GLuint FRAME_COUNT;
 
     GLuint _queryID[PERFORMANCE_COUNTER_BUFFERS][PERFORMANCE_COUNTERS];
-    GLuint _queryBackBuffer, _queryFrontBuffer;
+    GLuint _queryBackBuffer;
+    GLuint _queryFrontBuffer;
     static GLuint64 FRAME_DURATION_GPU;
 
     struct FONScontext* _fonsContext;

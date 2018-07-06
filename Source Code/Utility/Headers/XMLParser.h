@@ -51,7 +51,7 @@ namespace XML {
 	Material* loadMaterial(const std::string &file);
 	void dumpMaterial(Material& mat);
 
-	Material* loadMaterialXML(const std::string& location);
+	Material* loadMaterialXML(const std::string& location, bool rendererDependent = true);
 }
 
 #if defined(_MSC_VER)

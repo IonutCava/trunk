@@ -9,12 +9,13 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Buffers/FrameBuffer/Headers/FrameBuffer.h"
 
-ShadowMap::ShadowMap(Light* light, ShadowType type) : _init(false),
-                                                      _isBound(false),
-                                                      _light(light),
-                                                      _shadowMapType(type),
-                                                      _resolution(0),
-                                                      _par(ParamHandler::getInstance())
+ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type) : _init(false),
+                                                                            _isBound(false),
+                                                                            _light(light),
+                                                                            _shadowCamera(shadowCamera),
+                                                                            _shadowMapType(type),
+                                                                            _resolution(0),
+                                                                            _par(ParamHandler::getInstance())
 {
     _bias.bias();
 }
@@ -37,7 +38,7 @@ ShadowMapInfo::~ShadowMapInfo(){
     SAFE_DELETE(_shadowMap);
 }
 
-ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState){
+ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderState, Camera* shadowCamera){
     if(_shadowMap) return _shadowMap;
 
     if(!_light->castsShadows()) return nullptr;
@@ -45,15 +46,15 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
     switch(_light->getLightType()){
         case LIGHT_TYPE_POINT:{
             _numLayers = 6;
-            _shadowMap = New CubeShadowMap(_light);
+            _shadowMap = New CubeShadowMap(_light, shadowCamera);
             }break;
         case LIGHT_TYPE_DIRECTIONAL:{
             DirectionalLight* dirLight = dynamic_cast<DirectionalLight*>(_light);
             _numLayers = dirLight->csmSplitCount();
-            _shadowMap = New CascadedShadowMaps(_light, _numLayers);
+            _shadowMap = New CascadedShadowMaps(_light, shadowCamera, _numLayers);
             }break;
         case LIGHT_TYPE_SPOT:{
-            _shadowMap = New SingleShadowMap(_light);
+            _shadowMap = New SingleShadowMap(_light, shadowCamera);
             }break;
         default:
             break;
@@ -61,6 +62,7 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
 
     _shadowMap->init(this);
 
+    
     return _shadowMap;
 }
 

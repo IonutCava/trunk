@@ -205,7 +205,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <OpenMPSupport>false</OpenMPSupport>
+      <OpenMPSupport>true</OpenMPSupport>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
@@ -478,13 +478,13 @@
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FirstPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\FreeFlyCamera.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\Camera\Frustum.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\OrbitCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ScriptedCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\ThirdPersonCamera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredLightingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\DeferredShadingRenderer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\ForwardRenderer.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\Frustum.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\DirectionalLight.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\Light.cpp" />
@@ -601,6 +601,7 @@
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Ammunition\Headers\Ammunition.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Projectile\Headers\Projectile.h" />
     <ClInclude Include="..\..\Source Code\Dynamics\WeaponSystem\Weapons\Headers\Weapon.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\TerrainLoader.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationController.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationEvaluator.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\AnimationUtils.h" />
@@ -639,6 +640,7 @@
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FirstPersonCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\FreeFlyCamera.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Frustum.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\OrbitCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ScriptedCamera.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\ThirdPersonCamera.h" />
@@ -659,7 +661,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\FXAAPreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSAOPreRenderOperator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PostFX.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\Headers\Frustum.h" />
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
     <ClInclude Include="..\..\Source Code\Environment\Terrain\Headers\Terrain.h" />

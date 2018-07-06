@@ -44,13 +44,13 @@ public:
         setState(RES_LOADED);
     }
 
-    bool onDraw(const RenderStage& currentStage)       {return true;}
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage)       { return true; }
     bool unload()                                      {return true;}
     bool load(const std::string& name)                 {return true;}
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
 protected:
-    void render(SceneGraphNode* const sgn)             { return; }
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) {}
     void postLoad(SceneGraphNode* const sgn)           { SceneNode::postLoad(sgn); }
 };
 
@@ -63,7 +63,7 @@ public:
         setState(RES_LOADED);
     }
     
-    void render(SceneGraphNode* const sgn)             {return;}
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) { return; }
     void postLoad(SceneGraphNode* const sgn)           {return;}
     bool onDraw(const RenderStage& currentStage)       {return true;}
     bool unload()                                      {return true;}
@@ -88,8 +88,6 @@ public:
     bool unload();
     /// Update bounding boxes
     void checkBoundingBoxes();
-    /// Position, rotation, scale updates
-    void updateTransforms();
     /// Apply current transform to the node's BB
     void updateBoundingBoxTransform(const mat4<F32>& transform);
     /// Called if the current node is in view and is about to be rendered
@@ -131,14 +129,11 @@ public:
     /*Bounding Box Management*/
     void setInitialBoundingBox(const BoundingBox& initialBoundingBox);
 
-    inline void  setBoundingBoxDirty() {_boundingBoxDirty = true;}
-
-           const BoundingBox&     getBoundingBoxTransformed();
-    inline       BoundingBox&     getBoundingBox()                {ReadLock r_lock(_queryLock); return _boundingBox;}
-    inline const BoundingBox&     getBoundingBoxConst()    const  {ReadLock r_lock(_queryLock); return _boundingBox;}
-    inline       BoundingSphere&  getBoundingSphere()             {ReadLock r_lock(_queryLock); return _boundingSphere;}
-    inline const BoundingSphere&  getBoundingSphereConst() const  {ReadLock r_lock(_queryLock); return _boundingSphere; }
-    inline const BoundingBox&     getInitialBoundingBox()  const  { ReadLock r_lock(_queryLock); return _initialBoundingBox; }
+    inline       BoundingBox&     getBoundingBox()                {return _boundingBox;}
+    inline const BoundingBox&     getBoundingBoxConst()    const  {return _boundingBox;}
+    inline       BoundingSphere&  getBoundingSphere()             {return _boundingSphere;}
+    inline const BoundingSphere&  getBoundingSphereConst() const  {return _boundingSphere; }
+    inline const BoundingBox&     getInitialBoundingBox()  const  {return _initialBoundingBox; }
 
     void getBBoxes(vectorImpl<BoundingBox >& boxes) const;
     /*Bounding Box Management*/
@@ -160,6 +155,7 @@ public:
     inline void restoreActive()       {_active = _wasActive;}
     inline void	scheduleDeletion()    {_shouldDelete = true;}
 
+    inline bool inView()   const {return _inView;}
     inline bool isReady()  const {return _isReady;}
     inline bool isActive() const {return _active;}
     /*Node State*/
@@ -197,6 +193,7 @@ public:
 protected:
     friend class RenderPassCuller;
     inline void inView(const bool isInView) { _inView = isInView; }
+
 private:
     inline void setName(const std::string& name){_name = name;}
     inline void scheduleDrawReset(RenderStage currentStage) { _drawReset[currentStage] = true; }
@@ -224,7 +221,7 @@ private:
     bool _shouldDelete;
     ///_initialBoundingBox is a copy of the initialy calculate BB for transformation
     ///it should be copied in every computeBoungingBox call;
-    BoundingBox _initialBoundingBox;
+    BoundingBox _initialBoundingBox, _initialBoundingBoxCache;
     BoundingBox _boundingBox;
     BoundingSphere _boundingSphere; ///<For faster visibility culling
 
@@ -236,7 +233,6 @@ private:
     D32 _updateTimer;
     U64 _elapsedTime;//< the total amount of time that passed since this node was created
     std::string _name;
-    mutable SharedLock _queryLock;
 
     UsageContext _usageContext;
     NodeComponents _components;

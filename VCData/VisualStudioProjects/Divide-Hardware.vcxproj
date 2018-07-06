@@ -483,6 +483,7 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\shadow_spot.frag">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag">
       <FileType>Document</FileType>
     </None>
@@ -498,6 +499,7 @@
     <None Include="..\..\assets\shaders\GLSL\ImmediateModeEmulation.glsl">
       <FileType>Document</FileType>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\instanceCull.glsl" />
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
       <FileType>Document</FileType>
     </None>

@@ -1,7 +1,6 @@
 #include "Headers/MainScene.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Environment/Water/Headers/Water.h"
@@ -12,7 +11,10 @@
 
 REGISTER_SCENE(MainScene);
 
-bool MainScene::updateLights(){
+void MainScene::updateLights(){
+    if (!_updateLights)
+        return;
+
     Light* light = LightManager::getInstance().getLight(0);
     _sun_cosy = cosf(_sunAngle.y);
     _sunColor = DefaultColors::WHITE().lerp(vec4<F32>(1.0f, 0.5f, 0.0f, 1.0f),
@@ -26,45 +28,13 @@ bool MainScene::updateLights(){
     for(Terrain* ter : _visibleTerrains){
         ter->getMaterial()->setAmbient(_sunColor);
     }
-    return true;
-}
 
-void MainScene::preRender(){
-}
-
-void MainScene::postRender(){
-    if(GFX_DEVICE.isCurrentRenderStage(FINAL_STAGE)){
-        _water->previewReflection();
-    }
-    Scene::postRender();
-}
-
-void MainScene::renderEnvironment(bool waterReflection){
-    const vec3<F32>& eyePos = renderState().getCamera().getEye();
-
-    bool underwater = _water->isPointUnderWater(eyePos);
-
-    _paramHandler.setParam("scene.camera.underwater", underwater);
-
-    if(underwater){
-        waterReflection = false;
-    }
-
-    if(waterReflection){
-        renderState().getCamera().renderLookAtReflected(_water->getReflectionPlane());
-    }
-
-    for(Terrain* ter : _visibleTerrains){
-        ter->toggleReflection(waterReflection);
-    }
-
-    SceneManager::getInstance().renderVisibleNodes();
+    _updateLights = false;
+    return;
 }
 
 void MainScene::processInput(const U64 deltaTime){
-    bool update = defaultCameraControls();
-
-    if(update){
+    if(state()._cameraUpdated){
         Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler  = cam.getEuler();
@@ -72,9 +42,12 @@ void MainScene::processInput(const U64 deltaTime){
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
             for(Terrain* ter : _visibleTerrains){
-                terrainHeight = ter->getPositionFromGlobal(eyePosition.x,eyePosition.z).y;
+                CLAMP<F32>(eyePosition.x, ter->getDimensions().width  * 0.5 * -1.0f, ter->getDimensions().width  * 0.5f);
+                CLAMP<F32>(eyePosition.z, ter->getDimensions().height * 0.5 * -1.0f, ter->getDimensions().height * 0.5f);
+               
+                terrainHeight = ter->getPositionFromGlobal(eyePosition.x, eyePosition.z).y;
                 if(!IS_ZERO(terrainHeight)){
-                    eyePosition.y = terrainHeight + 0.45f;
+                    eyePosition.y = terrainHeight + 1.85f;
                     cam.setEye(eyePosition);
                     break;
                 }
@@ -95,7 +68,7 @@ void MainScene::processGUI(const U64 deltaTime){
 
     if (_guiTimers[0] >= FpsDisplay){
         _GUI->modifyText("fpsDisplay", "FPS: %3.0f. FrameTime: %3.1f", ApplicationTimer::getInstance().getFps(), ApplicationTimer::getInstance().getFrameTime());
-        _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]", _paramHandler.getParam<bool>("scene.camera.underwater") ? "true" : "false", state().getWaterLevel());
+        _GUI->modifyText("underwater", "Underwater [ %s ] | WaterLevel [%f] ]", state()._cameraUnderwater ? "true" : "false", state().getWaterLevel());
         _GUI->modifyText("RenderBinCount", "Number of items in Render Bin: %d", GFX_RENDER_BIN_SIZE);
         _guiTimers[0] = 0.0;
     }
@@ -118,21 +91,21 @@ void MainScene::processTasks(const U64 deltaTime){
                                 -sinf(_sunAngle.x) * sinf(_sunAngle.y),
                                 0.0f );
         _taskTimers[0] = 0.0;
+        _updateLights = true;
     }
-
-
 
     Scene::processTasks(deltaTime);
 }
 
 bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
-    bool computeWaterHeight = false;
-
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
+    renderState().getCamera().setMoveSpeedFactor(10.0f);
 
-    if(state().getWaterLevel() == RAND_MAX) computeWaterHeight = true;
-    addDefaultLight();
+    DirectionalLight* sun = addDefaultLight();
+    sun->csmSplitCount(3); // 3 splits
+    sun->csmSplitLogFactor(0.965f);
+    sun->csmNearClipOffset(25.0f);
     addDefaultSky();
 
     for(U8 i = 0; i < _terrainInfoArray.size(); i++){
@@ -140,28 +113,26 @@ bool MainScene::load(const std::string& name, CameraManager* const cameraMgr, GU
         if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
             Terrain* tempTerrain = terrainNode->getNode<Terrain>();
             if(terrainNode->isActive()){
+                tempTerrain->toggleBoundingBoxes();
                 _visibleTerrains.push_back(tempTerrain);
-                if(computeWaterHeight){
-                    F32 tempMin = terrainNode->getBoundingBox().getMin().y;
-                    if(state()._waterHeight > tempMin) state()._waterHeight = tempMin;
-                }
-            }
+             }
         }else{
             ERROR_FN(Locale::get("ERROR_MISSING_TERRAIN"), _terrainInfoArray[i]->getVariable("terrainName"));
         }
     }
+
     ResourceDescriptor infiniteWater("waterEntity");
     _water = CreateResource<WaterPlane>(infiniteWater);
-    _water->setParams(200.0f,vec2<F32>(85.0f, 92.5f),vec2<F32>(0.4f,0.35f),0.34f);
+    _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f,0.1f),0.34f);
     _waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
     _waterGraphNode->useDefaultTransform(false);
     _waterGraphNode->setTransform(nullptr);
     _waterGraphNode->setUsageContext(SceneGraphNode::NODE_STATIC);
     _waterGraphNode->getComponent<NavigationComponent>()->setNavigationContext(NavigationComponent::NODE_IGNORE);
-    ///General rendering callback
-    renderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, false));
-    ///Render the scene for water reflection FB generation
-    _water->setRenderCallback(DELEGATE_BIND(&MainScene::renderEnvironment, this, true));
+    //Render the scene for water reflection FB generation
+    _water->setReflectionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
+    _water->setRefractionCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
+
     return loadState;
 }
 
@@ -202,7 +173,7 @@ void MainScene::test(cdiggins::any a, CallbackParam b){
             }
         }
     }
-    if(box)	boxNode->getTransform()->setPosition(pos);
+    //if(box)	boxNode->getTransform()->setPosition(pos);
 }
 
 bool MainScene::loadResources(bool continueOnErrors){
@@ -239,7 +210,7 @@ bool MainScene::loadResources(bool continueOnErrors){
                             0.0f );
 
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr boxMove(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&MainScene::test,this,std::string("test"),TYPE_STRING)));
+    Task_ptr boxMove(kernel->AddTask(30, true, false, DELEGATE_BIND(&MainScene::test, this, std::string("test"), TYPE_STRING)));
     addTask(boxMove);
     ResourceDescriptor backgroundMusic("background music");
     backgroundMusic.setResourceLocation(_paramHandler.getParam<std::string>("assetsLocation")+"/music/background_music.ogg");
@@ -280,8 +251,7 @@ bool MainScene::onKeyUp(const OIS::KeyEvent& key){
             }break;
         case OIS::KC_F:{
             _freeflyCamera = !_freeflyCamera;
-            _FBSpeedFactor = _freeflyCamera ? 1.0f : 20.0f;
-            _LRSpeedFactor = _freeflyCamera ? 2.0f : 5.0f;
+            renderState().getCamera().setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
             }break;
         case OIS::KC_F1:
             _sceneGraph->print();

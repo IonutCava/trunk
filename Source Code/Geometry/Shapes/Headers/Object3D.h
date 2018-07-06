@@ -58,11 +58,12 @@ public:
     inline  RenderInstance* const renderInstance()  const {return _renderInstance;}
 
     virtual void  postLoad(SceneGraphNode* const sgn);
-    virtual bool  onDraw(const RenderStage& currentStage);
+    virtual bool  onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    virtual void  updateAnimations(SceneGraphNode* const sgn) {}
     //virtual void  optimizeForDepth(bool state = true,bool force = false) {if(_geometry) _geometry->optimizeForDepth(state,force);}
 
 protected:
-    virtual	void  render(SceneGraphNode* const sgn);
+    virtual	void  render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
 
     virtual void computeNormals();
     virtual void computeTangents();

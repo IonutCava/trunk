@@ -35,9 +35,9 @@ public:
 	~Impostor();
 
 	/// Render the impostor using SceneGraphData
-	void render(SceneGraphNode* const node);
+    void render(SceneGraphNode* const node, const SceneRenderState& sceneRenderState);
 	/// Render the impostor using target transform
-	void render(Transform* const transform);
+    void render(Transform* const transform, const SceneRenderState& sceneRenderState);
 
 	inline void setRadius(F32 radius) {_dummy->setRadius(radius);}
 	inline Sphere3D* const getDummy() {return _dummy;}
@@ -45,7 +45,6 @@ public:
 private:
 	bool      _visible;
 	Sphere3D* _dummy;
-	RenderStateBlock* _dummyStateBlock;
 };
 
 #endif

@@ -10,13 +10,16 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 
     if(_descriptor.getEnumValue() == TEXTURE_CUBE_MAP){
         ptr = GFX_DEVICE.newTextureCubemap(_descriptor.getFlag());
+    }else if(_descriptor.getEnumValue() == TEXTURE_2D_ARRAY) {
+        ptr = GFX_DEVICE.newTextureArray(_descriptor.getFlag());
+        ptr->setNumLayers(_descriptor.getId());
     }else{
         ptr = GFX_DEVICE.newTexture2D(_descriptor.getFlag());
     }
 
     ptr->enableThreadedLoading(_descriptor.getThreaded());
     ptr->setResourceLocation(_descriptor.getResourceLocation());
-    //Add the specified sampler, if any o
+    //Add the specified sampler, if any
     if(_descriptor.hasPropertyDescriptor()){
         //cast back to a SamplerDescriptor from a PropertyDescriptor
         const SamplerDescriptor* sampler = dynamic_cast<const SamplerDescriptor*>(_descriptor.getPropertyDescriptor<SamplerDescriptor>());

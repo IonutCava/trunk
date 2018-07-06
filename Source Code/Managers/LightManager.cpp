@@ -13,7 +13,8 @@ ProfileTimer* s_shadowPassTimer = nullptr;
 LightManager::LightManager() : FrameListener(),
                                _shadowMapsEnabled(true),
                                _previewShadowMaps(false),
-                               _dominantLight(nullptr)
+                               _dominantLight(nullptr),
+                               _currentShadowPass(0)
 {
     s_shadowPassTimer = ADD_TIMER("ShadowPassTimer");
 }
@@ -25,7 +26,8 @@ LightManager::~LightManager()
 }
 
 void LightManager::init(){
-    REGISTER_FRAME_LISTENER(&(this->getInstance()));
+    REGISTER_FRAME_LISTENER(&(this->getInstance()), 2);
+    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&LightManager::previewShadowMaps, this, nullptr), 1);
 }
 
 bool LightManager::clear(){
@@ -53,7 +55,7 @@ bool LightManager::addLight(Light* const light){
 
     light->setSlot((U8)_lights.size());
     _lights.insert(std::make_pair(light->getId(),light));
-    
+    GET_ACTIVE_SCENE()->renderState().getCameraMgr().addNewCamera(light->getName(), light->shadowCamera());
     return true;
 }
 
@@ -129,9 +131,8 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt){
     START_TIMER(s_shadowPassTimer);
 
     //Tell the engine that we are drawing to depth maps
-    RenderStage previousRS = GFX_DEVICE.getRenderStage();
     //set the current render stage to SHADOW_STAGE
-    GFX_DEVICE.setRenderStage(SHADOW_STAGE);
+    RenderStage previousRS = GFX_DEVICE.setRenderStage(SHADOW_STAGE);
     // if we have a dominant light, generate only it's shadows
     if(_dominantLight){
         setCurrentLight(_dominantLight);
@@ -203,8 +204,9 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 
     if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
         offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
-    
-    lightLocal->getShadowMapInfo()->getShadowMap()->Bind(offset);
+    ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
+    if(sm)
+        sm->Bind(offset);
 }
 
 void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
@@ -225,7 +227,9 @@ void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominan
     if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
         offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
 
-    lightLocal->getShadowMapInfo()->getShadowMap()->Unbind(offset);
+    ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
+    if (sm)
+        sm->Unbind(offset);
 }
 
 bool LightManager::shadowMappingEnabled() const {

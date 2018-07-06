@@ -12,8 +12,7 @@ SceneManager::SceneManager() : FrameListener(),
                                _renderPassCuller(nullptr),
                                _renderPassManager(nullptr),
                                _defaultMaterial(nullptr),
-                               _init(false),
-                               _frameCount(0)
+                               _init(false)
 {
     DVDConverter::createInstance();
     AIManager::createInstance();
@@ -35,9 +34,10 @@ SceneManager::~SceneManager(){
 bool SceneManager::init(GUI* const gui){
     //Load default material
     PRINT_FN(Locale::get("LOAD_DEFAULT_MATERIAL"));
-    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial");
+    _defaultMaterial = XML::loadMaterialXML(ParamHandler::getInstance().getParam<std::string>("scriptLocation")+"/defaultMaterial", false);
+    _defaultMaterial->dumpToFile(false);
 
-    REGISTER_FRAME_LISTENER(&(this->getInstance()));
+    REGISTER_FRAME_LISTENER(&(this->getInstance()), 1);
     _GUI = gui;
     _renderPassCuller = New RenderPassCuller();
     _renderPassManager = &RenderPassManager::getOrCreateInstance();
@@ -93,18 +93,12 @@ bool SceneManager::frameEnded(const FrameEvent& evt){
     return true;
 }
 
-void SceneManager::update(const U64 deltaTime){
-    _activeScene->getSceneGraph()->update();
-}
-
 void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
 void SceneManager::updateVisibleNodes() {
-    SceneGraph* sceneGraph = _activeScene->getSceneGraph();
-    //sceneGraph->update();
-    _renderPassCuller->cullSceneGraph(sceneGraph->getRoot(), _activeScene->state());
+    _renderPassCuller->cullSceneGraph(_activeScene->getSceneGraph()->getRoot(), _activeScene->state());
 }
 
 void SceneManager::renderVisibleNodes() {
@@ -118,18 +112,18 @@ void SceneManager::render(const RenderStage& stage, const Kernel& kernel) {
     static DELEGATE_CBK renderFunction;
     if(renderFunction.empty()){
         if(_activeScene->renderCallback().empty()){
-            renderFunction = DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance()));
+            renderFunction = DELEGATE_BIND(&SceneManager::renderVisibleNodes, this);
         }else{
             renderFunction = _activeScene->renderCallback();
         }
     }
 
+    _activeScene->renderState().getCamera().renderLookAt();
     kernel.submitRenderCall(stage, _activeScene->renderState(), renderFunction);
 }
 
 void SceneManager::postRender(){
     _activeScene->postRender();
-    _frameCount++;
 }
 
 ///--------------------------Input Management-------------------------------------///

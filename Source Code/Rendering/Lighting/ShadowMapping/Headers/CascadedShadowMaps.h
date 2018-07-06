@@ -35,9 +35,9 @@ class DirectionalLight;
 ///Directional lights can't deliver good quality shadows using a single shadow map. This technique offers an implementation of the CSM method
 class CascadedShadowMaps : public ShadowMap {
 public:
-    CascadedShadowMaps(Light* light, F32 numSplits);
+    CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits);
     ~CascadedShadowMaps();
-    void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
+    void render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction);
     void postRender();
     ///Update depth maps
     void resolution(U16 resolution, U8 resolutionFactor);
@@ -46,7 +46,8 @@ public:
     void init(ShadowMapInfo* const smi);
 
 protected:
-    void CalculateSplitDepths(const Camera& cam);
+
+    void CalculateSplitDepths(Camera& cam);
     void ApplyFrustumSplit(U8 pass);
     void updateResolution(I32 newWidth, I32 newHeight);
 
@@ -55,10 +56,8 @@ protected:
     F32 _splitLogFactor;
     F32 _nearClipOffset;
     vec2<F32> _sceneZPlanes;
-    mat4<F32> _viewMatrixCache;
+    vec3<F32> _lightPosition;
     mat4<F32> _viewInvMatrixCache;
-    mat4<F32> _shadowViewMatrices[Config::MAX_SPLITS_PER_LIGHT];
-    mat4<F32> _shadowProjMatrices[Config::MAX_SPLITS_PER_LIGHT];
     ShaderProgram*  _previewDepthMapShader;
     ShaderProgram*  _blurDepthMapShader;
     FrameBuffer::FrameBufferTarget* _renderPolicy;
@@ -70,7 +69,6 @@ protected:
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
-    vectorImpl<vec4<F32> > _clipRect;
     vectorImpl<F32 >       _splitDepths;
     vectorImpl<U32 >       _horizBlur;
     vectorImpl<U32 >       _vertBlur;

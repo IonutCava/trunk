@@ -34,19 +34,19 @@ public:
                   _waterGraphNode(nullptr),
                   _water(nullptr),
                   _beep(nullptr),
-                  _freeflyCamera(false){}
+                  _freeflyCamera(false),
+                  _updateLights(true)
+    {
+    }
 
     /*General Scene Requirement*/
-    void preRender();
-    void postRender();
     bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
     bool unload();
     bool loadResources(bool continueOnErrors);
 
 private:
     /*Specific Scene Requirement*/
-    void renderEnvironment(bool waterReflection);
-    bool updateLights();
+    void updateLights();
     void processInput(const U64 deltaTime);
     void processTasks(const U64 deltaTime);
     void processGUI(const U64 deltaTime);
@@ -61,6 +61,7 @@ private:
     vec4<F32> _sunvector,_sunColor;
     F32  _sun_cosy;
     bool _freeflyCamera;
+    bool _updateLights;
     AudioDescriptor* _beep;
     vectorImpl<Terrain*> _visibleTerrains;
     WaterPlane* _water;

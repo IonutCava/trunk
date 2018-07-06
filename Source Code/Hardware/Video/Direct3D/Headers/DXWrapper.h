@@ -44,15 +44,11 @@ protected:
     void exitRenderLoop(bool killCommand = false);
     void closeRenderingApi();
     void initDevice(U32 targetFrameRate);
-    void updateProjection();
     void changeResolutionInternal(U16 w, U16 h);
     void setMousePosition(U16 x, U16 y) const;
     ///Change the window's position
     void setWindowPos(U16 w, U16 h)  const;
-    vec3<F32> unproject(const vec3<F32>& windowCoord) const;
-    F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection);
-    F32* lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
-    const F32* getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
+    F32* lookAt(const mat4<F32>& viewMatrix);
     void idle();
     void flush();
     void beginFrame();
@@ -60,26 +56,24 @@ protected:
     void clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll) {}
     void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat);
 
-    inline FrameBuffer*        newFB(bool multisampled)                       {return New d3dRenderTarget(multisampled); }
-    inline GenericVertexData*  newGVD()                                       {return New d3dGenericVertexData(); }
-    inline VertexBuffer*       newVB(const PrimitiveType& type)               {return New d3dVertexBuffer(type);}
-    inline PixelBuffer*        newPB(const PBType& type)                      {return New d3dPixelBuffer(type);}
-    inline Texture2D*          newTexture2D(const bool flipped = false)       {return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
-    inline TextureCubemap*     newTextureCubemap(const bool flipped = false)  {return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
-    inline ShaderProgram*      newShaderProgram(const bool optimise = false)  {return New d3dShaderProgram(optimise);}
+    inline FrameBuffer*        newFB(bool multisampled)                      const { return New d3dRenderTarget(multisampled); }
+    inline GenericVertexData*  newGVD()                                      const { return New d3dGenericVertexData(); }
+    inline VertexBuffer*       newVB(const PrimitiveType& type)              const { return New d3dVertexBuffer(type); }
+    inline PixelBuffer*        newPB(const PBType& type)                     const { return New d3dPixelBuffer(type); }
+    inline Texture*            newTextureArray(const bool flipped = false)   const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D_ARRAY], flipped); }
+    inline Texture*            newTexture2D(const bool flipped = false)      const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D], flipped); }
+    inline Texture*            newTextureCubemap(const bool flipped = false) const { return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP], flipped); }
+    inline ShaderProgram*      newShaderProgram(const bool optimise = false) const { return New d3dShaderProgram(optimise); }
 
-    inline Shader*             newShader(const std::string& name,const  ShaderType& type,const bool optimise = false)  {return New d3dShader(name,type,optimise);}
+    inline Shader*             newShader(const std::string& name,const  ShaderType& type,const bool optimise = false) const {return New d3dShader(name,type,optimise);}
            bool                initShaders();
            bool                deInitShaders();
 
-    void lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView = true, bool lockProjection = true);
-    void releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView = true, bool releaseProjection = true);
-    F32* setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    const F32* getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes);
-    F32* setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2<F32>& planes);
-    void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false);
+    F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes);
+    F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes);
+    void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false);
 
-    void toggle2D(bool _2D);
+    void toggleRasterization(bool state);
 
     void drawText(const TextLabel& textLabel, const vec2<I32>& position);
     void drawBox3D(const vec3<F32>& min,const vec3<F32>& max, const mat4<F32>& globalOffset);
@@ -91,7 +85,7 @@ protected:
                    const bool disableDepth = false);
     void drawPoints(U32 numPoints);
 
-    void debugDraw();
+    void debugDraw(const SceneRenderState& sceneRenderState);
     IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = false) { return nullptr; }
 
     void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback);
@@ -107,6 +101,7 @@ protected:
     bool loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback);
 
     U64 getFrameDurationGPU() const { return 0; }
+    U32 getFrameCount()       const { return 0; }
     I32 getDrawCallCount()    const { return 0; }
 
     void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);

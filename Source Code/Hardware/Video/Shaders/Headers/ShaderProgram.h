@@ -28,6 +28,7 @@
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 
 class Shader;
+class Camera;
 class Material;
 enum ShaderType;
 enum MATRIX_MODE;
@@ -40,7 +41,9 @@ public:
     virtual void unbind(bool resetActiveProgram = true);
     virtual U8   update(const U64 deltaTime);
 
-    void ApplyMaterial(Material* const material, U8 currentLOD);
+    void ApplyMaterial(Material* const material);
+    void SetLOD(U8 currentLOD);
+
     ///Attributes
     inline void Attribute(const std::string& ext, D32 value) { Attribute(cachedLoc(ext,false), value); }
     inline void Attribute(const std::string& ext, F32 value) { Attribute(cachedLoc(ext, false), value); }
@@ -64,6 +67,7 @@ public:
     inline void Uniform(const std::string& ext, const vectorImpl<vec2<F32> >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const std::string& ext, const vectorImpl<vec3<F32> >& values) { Uniform(cachedLoc(ext), values); }
     inline void Uniform(const std::string& ext, const vectorImpl<vec4<F32> >& values) { Uniform(cachedLoc(ext), values); }
+    inline void Uniform(const std::string& ext, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
     inline void Uniform(const std::string& ext, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) { Uniform(cachedLoc(ext), values, rowMajor); }
     ///Uniform Texture
     inline void UniformTexture(const std::string& ext, U16 slot) { UniformTexture(cachedLoc(ext), slot); }
@@ -91,11 +95,13 @@ public:
     virtual void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) const = 0;
+    virtual void Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) const = 0;
     virtual void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const = 0;
     virtual void UniformTexture(I32, U16 slot) const = 0;
 
     inline void Uniform(I32 location, bool value) const { Uniform(location, value ? 1 : 0); }
 
+    inline  void SetOutputCount(U8 count) { _outputCount = std::min(std::max(count, (U8)1), (U8)4); }
     virtual void attachShader(Shader* const shader,const bool refresh = false) = 0;
     virtual void detachShader(Shader* const shader) = 0;
     ///ShaderProgram object id (i.e.: for OGL _shaderProgramId = glCreateProgram())
@@ -123,6 +129,7 @@ protected:
     vectorImpl<Shader* > getShaders(const ShaderType& type) const;
     inline void setMatricesDirty() { _extendedMatricesDirty = true; }
     inline void updateClipPlanes() { _clipPlanesDirty = true; }
+    static void updateCamera(const Camera& activeCamera);
     I32 operator==(const ShaderProgram &_v) { return this->getGUID() == _v.getGUID(); }
     I32 operator!=(const ShaderProgram &_v) { return !(*this == _v); }
 
@@ -152,6 +159,7 @@ protected:
     U64 _elapsedTime;
     F32 _elapsedTimeMS;
     I32 _maxCombinedTextureUnits;
+    U8  _outputCount;
     ///A list of preprocessor defines
     vectorImpl<std::string > _definesList;
     ///A list of vertex shader uniforms
@@ -163,15 +171,18 @@ protected:
     ShaderIdMap _shaderIdMap;
     ///cached clipping planes
     vectorImpl<vec4<F32> > _clipPlanes;
-    ///cached clipping planes' states
-    vectorImpl<I32 >       _clipPlanesStates;
     ///light computation subroutines
     vectorImpl<U32 >       _lod0VertLight;
     vectorImpl<U32 >       _lod1VertLight;
-
+    ///Active camera's cached eye position
+    static vec3<F32> _cachedCamEye;
+    ///Active camera's cached zPlanes
+    static vec2<F32> _cachedZPlanes;
+    ///Default camera's cached zPlanes
+    static vec2<F32> _cachedSceneZPlanes;
 private:
     char _textureOperationUniformSlots[Config::MAX_TEXTURE_STORAGE][32];
-
+    Camera* _activeCamera;
     Unordered_map<EXTENDED_MATRIX, I32  > _extendedMatrixEntry;
     bool _extendedMatricesDirty;
     bool _clipPlanesDirty;
@@ -180,10 +191,10 @@ private:
     I32 _cameraLocationLoc;
     I32 _clipPlanesLoc;
     I32 _clipPlaneCountLoc;
-    I32 _clipPlanesActiveLoc;
     I32 _enableFogLoc;
     I32 _lightAmbientLoc;
     I32 _zPlanesLoc;
+    I32 _sceneZPlanesLoc;
     I32 _screenDimensionLoc;
     I32 _texDepthMapFromLightArrayLoc;
     I32 _texDepthMapFromLightCubeLoc;
@@ -192,10 +203,6 @@ private:
     I32 _texSpecularLoc;
     I32 _fogColorLoc;
     I32 _fogDensityLoc;
-    I32 _fogStartLoc;
-    I32 _fogEndLoc;
-    I32 _fogModeLoc;
-    I32 _fogDetailLevelLoc;
     U8  _prevLOD;
 };
 

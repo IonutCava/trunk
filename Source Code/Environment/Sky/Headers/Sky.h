@@ -32,8 +32,6 @@ class ShaderProgram;
 class SceneGraphNode;
 class RenderStateBlock;
 
-typedef Texture TextureCubemap;
-
 enum RenderStage;
 
 class Sky : public SceneNode {
@@ -41,25 +39,27 @@ public:
     Sky(const std::string& name);
     ~Sky();
 
-    bool onDraw(const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
     void setRenderingOptions(bool drawSun = true, bool drawSky = true) ;
     void setSunVector(const vec3<F32>& sunVect);
-    ///Skies are always visible (for now. Interiors will change that. Windows will reuqire a occlusion querry(?))
-    bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {return true;}
+    ///Skies are always visible (for now. Interiors will change that. Windows will require a occlusion query(?))
+    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) { return true; }
+    void drawBoundingBox(SceneGraphNode* const sgn) const {}
 
 protected:
-    void render(SceneGraphNode* const sgn);
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareMaterial(SceneGraphNode* const sgn);
     bool releaseMaterial();
     void postLoad(SceneGraphNode* const sgn);
+    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
 private:
     bool load();
 
 private:
-    bool			  _init,_drawSky,_drawSun;
+    bool			  _drawSky,_drawSun;
     ShaderProgram*	  _skyShader;
-    TextureCubemap*	  _skybox;
+    Texture*   	      _skybox;
     vec3<F32>		  _sunVect;
     Sphere3D          *_sky,*_sun;
     SceneGraphNode    *_sunNode, *_skyGeom;

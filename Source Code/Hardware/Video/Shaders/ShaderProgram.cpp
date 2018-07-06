@@ -1,21 +1,27 @@
 #include "Headers/ShaderProgram.h"
 
 #include "Hardware/Video/Headers/GFXDevice.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/Application.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
+vec3<F32> ShaderProgram::_cachedCamEye;
+vec2<F32> ShaderProgram::_cachedZPlanes;
+vec2<F32> ShaderProgram::_cachedSceneZPlanes;
+
 ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shader_program"),
+                                                    _activeCamera(nullptr),
                                                     _optimise(optimise),
                                                     _linked(false),
                                                     _bound(false),
                                                     _dirty(true),
                                                     _wasBound(false),
                                                     _elapsedTime(0ULL),
+                                                    _outputCount(0),
                                                     _elapsedTimeMS(0.0f)
 {
     _shaderProgramId = 0;//<Override in concrete implementations with appropriate invalid values
@@ -35,10 +41,10 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _cameraLocationLoc   = -1;
     _clipPlanesLoc       = -1;
     _clipPlaneCountLoc   = -1;
-    _clipPlanesActiveLoc = -1;
     _enableFogLoc        = -1;
     _lightAmbientLoc     = -1;
     _zPlanesLoc          = -1;
+    _sceneZPlanesLoc     = -1;
     _screenDimensionLoc  = -1;
     _texDepthMapFromLightArrayLoc = -1;
     _texDepthMapFromLightCubeLoc  = -1;
@@ -47,14 +53,10 @@ ShaderProgram::ShaderProgram(const bool optimise) : HardwareResource("temp_shade
     _texSpecularLoc    = -1;
     _fogColorLoc       = -1;
     _fogDensityLoc     = -1;
-    _fogStartLoc       = -1;
-    _fogEndLoc         = -1;
-    _fogModeLoc        = -1;
-    _fogDetailLevelLoc = -1;
     _prevLOD           = 250;
     _lod0VertLight.resize(1);
     _lod1VertLight.resize(1);
-    U32 i = 0, j = 0;
+    I32 i = 0, j = 0;
     for (; i < Material::TEXTURE_UNIT0; ++i)
         sprintf_s(_textureOperationUniformSlots[i], "textureOperation%d", Material::TEXTURE_UNIT0 + i);
 
@@ -72,12 +74,18 @@ ShaderProgram::~ShaderProgram()
     _shaderIdMap.clear();
 }
 
+void ShaderProgram::updateCamera(const Camera& activeCamera) {
+    _cachedCamEye = activeCamera.getEye();
+    _cachedZPlanes = activeCamera.getZPlanes();
+}
+
 U8 ShaderProgram::update(const U64 deltaTime){
     _elapsedTime += deltaTime;
     _elapsedTimeMS = static_cast<F32>(getUsToMs(_elapsedTime));
     if (!isHWInitComplete())
         return 0;
 
+    _activeCamera = Application::getInstance().getKernel()->getCameraMgr().getActiveCamera();
     ParamHandler& par = ParamHandler::getInstance();
     bool enableFog = par.getParam<bool>("rendering.enableFog");
 #ifdef _DEBUG
@@ -86,7 +94,6 @@ U8 ShaderProgram::update(const U64 deltaTime){
     this->Uniform(_timeLoc, _elapsedTimeMS);
     this->Uniform(_enableFogLoc, enableFog);
     this->Uniform(_lightAmbientLoc, LightManager::getInstance().getAmbientLight());
-
     if(_dirty){
         this->Uniform(_screenDimensionLoc, Application::getInstance().getResolution());
 
@@ -108,7 +115,7 @@ U8 ShaderProgram::update(const U64 deltaTime){
         this->UniformTexture(_texOpacityMapLoc, Material::TEXTURE_OPACITY);
         this->UniformTexture(_texSpecularLoc,   Material::TEXTURE_SPECULAR);
 
-        for(U32 i = Material::TEXTURE_UNIT0, j = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
+        for(I32 i = Material::TEXTURE_UNIT0, j = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
         {
             char uniformSlot[32];
             sprintf_s(uniformSlot, "texDiffuse%d", j++);
@@ -120,10 +127,6 @@ U8 ShaderProgram::update(const U64 deltaTime){
                                                   par.getParam<F32>("rendering.sceneState.fogColor.g"),
                                                   par.getParam<F32>("rendering.sceneState.fogColor.b")));
             this->Uniform(_fogDensityLoc, par.getParam<F32>("rendering.sceneState.fogDensity"));
-            this->Uniform(_fogStartLoc,   par.getParam<F32>("rendering.sceneState.fogStart"));
-            this->Uniform(_fogEndLoc,     par.getParam<F32>("rendering.sceneState.fogEnd"));
-            this->Uniform(_fogModeLoc,    par.getParam<FogMode>("rendering.sceneState.fogMode"));
-            this->Uniform(_fogDetailLevelLoc, par.getParam<U8>("rendering.fogDetailLevel", 2));
         }
         _dirty = false;
     }
@@ -150,10 +153,10 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _cameraLocationLoc   = this->cachedLoc("dvd_cameraPosition", false);
     _clipPlanesLoc       = this->cachedLoc("dvd_clip_plane");
     _clipPlaneCountLoc   = this->cachedLoc("dvd_clip_plane_count");
-    _clipPlanesActiveLoc = this->cachedLoc("dvd_clip_plane_active");
     _enableFogLoc        = this->cachedLoc("dvd_enableFog");
     _lightAmbientLoc     = this->cachedLoc("dvd_lightAmbient");
     _zPlanesLoc          = this->cachedLoc("dvd_zPlanes");
+    _sceneZPlanesLoc     = this->cachedLoc("dvd_sceneZPlanes");
     _screenDimensionLoc  = this->cachedLoc("screenDimension");
     _texDepthMapFromLightArrayLoc = this->cachedLoc("texDepthMapFromLightArray");
     _texDepthMapFromLightCubeLoc  = this->cachedLoc("texDepthMapFromLightCube");
@@ -162,10 +165,6 @@ bool ShaderProgram::generateHWResource(const std::string& name){
     _texSpecularLoc    = this->cachedLoc("texSpecular");
     _fogColorLoc       = this->cachedLoc("fogColor");
     _fogDensityLoc     = this->cachedLoc("fogDensity");
-    _fogStartLoc       = this->cachedLoc("fogStart");
-    _fogEndLoc         = this->cachedLoc("fogEnd");
-    _fogModeLoc        = this->cachedLoc("fogMode");
-    _fogDetailLevelLoc = this->cachedLoc("fogDetailLevel");
 
     _lod0VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD0");
     _lod1VertLight[0] = GetSubroutineIndex(VERTEX_SHADER, "computeLightInfoLOD1");
@@ -176,18 +175,17 @@ bool ShaderProgram::generateHWResource(const std::string& name){
 }
 
 bool ShaderProgram::bind(){
-    _bound = true;
-    _wasBound = true;
-    if(_shaderProgramId == 0) 
-        return false;
-
-    this->Attribute(_cameraLocationLoc, Frustum::getInstance().getEyePos());
-    this->Uniform(_zPlanesLoc, Frustum::getInstance().getZPlanes());
-    return true;
+    _bound = _wasBound = true;
+    return _shaderProgramId != 0;
 }
 
 void ShaderProgram::uploadNodeMatrices(){
+    assert(_bound);
     GFXDevice& GFX = GFX_DEVICE;
+
+    this->Attribute(_cameraLocationLoc, _cachedCamEye);
+    this->Uniform(_zPlanesLoc, _cachedZPlanes);
+    this->Uniform(_sceneZPlanesLoc, _cachedSceneZPlanes);
 
     I32 currentLocation = -1;
     /*Get and upload matrix data*/
@@ -223,35 +221,28 @@ void ShaderProgram::uploadNodeMatrices(){
     
     /*Get and upload clip plane data*/
     if (_clipPlanesDirty == true){
-        size_t planeCount = GFX.getClippingPlanes().size();
-        this->Uniform(_clipPlaneCountLoc, (I32)planeCount);
+        _clipPlanesDirty = false;
         _clipPlanes.resize(0);
-        _clipPlanes.reserve(planeCount);
 
-        _clipPlanesStates.resize(0);
-        _clipPlanesStates.reserve(planeCount);
-
-        if (planeCount == 0) return;
-        for (const Plane<F32>& currentPlane : GFX.getClippingPlanes()){
+        for (const Plane<F32>& currentPlane : GFX.getClippingPlanes())
             _clipPlanes.push_back(currentPlane.getEquation());
-            _clipPlanesStates.push_back(currentPlane.active() ? 1 : 0);
-        }
+
+        this->Uniform(_clipPlaneCountLoc, (I32)_clipPlanes.size());
+
+        if (_clipPlanes.empty()) return;
 
         this->Uniform(_clipPlanesLoc, _clipPlanes);
-        this->Uniform(_clipPlanesActiveLoc, _clipPlanesStates);
-
-        _clipPlanesDirty = false;
     }
 }
 
-void ShaderProgram::ApplyMaterial(Material* const material, U8 currentLOD){
+void ShaderProgram::ApplyMaterial(Material* const material){
     for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
         if (material->getTexture(i)){
             if (i >= Material::TEXTURE_UNIT0)
-               Uniform(_textureOperationUniformSlots[i], (I32)material->getTextureOperation(i));
+                Uniform(_textureOperationUniformSlots[i], (I32)material->getTextureOperation(i));
         }
     }
-
+    
     if (material->isTranslucent()){
         Uniform("opacity",      material->getOpacityValue());
         Uniform("useAlphaTest", material->useAlphaTest() || GFX_DEVICE.isCurrentRenderStage(SHADOW_STAGE));
@@ -259,13 +250,12 @@ void ShaderProgram::ApplyMaterial(Material* const material, U8 currentLOD){
 
     Uniform("material",     material->getMaterialMatrix());
     Uniform("textureCount", material->getTextureCount());
+}
+
+void ShaderProgram::SetLOD(U8 currentLOD){
+    SetSubroutines(VERTEX_SHADER, currentLOD == 0 ? _lod0VertLight : _lod1VertLight);
 
     if (currentLOD != _prevLOD){
-        if (currentLOD == 0)
-            SetSubroutines(VERTEX_SHADER, _lod0VertLight);
-        else
-            SetSubroutines(VERTEX_SHADER, _lod1VertLight);
-
         Uniform("lodLevel", (I32)currentLOD);
         _prevLOD = currentLOD;
     }
@@ -273,7 +263,6 @@ void ShaderProgram::ApplyMaterial(Material* const material, U8 currentLOD){
 
 void ShaderProgram::unbind(bool resetActiveProgram){
     _bound = false;
-    _prevLOD = 250;
 }
 
 vectorImpl<Shader* > ShaderProgram::getShaders(const ShaderType& type) const{

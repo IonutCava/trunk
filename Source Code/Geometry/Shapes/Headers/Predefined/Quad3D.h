@@ -76,7 +76,8 @@ public:
         TOP_LEFT,
         TOP_RIGHT,
         BOTTOM_LEFT,
-        BOTTOM_RIGHT
+        BOTTOM_RIGHT,
+        CORNER_ALL
     };
 
     vec3<F32> getCorner(CornerLocation corner){
@@ -90,6 +91,23 @@ public:
         return _geometry->getPosition()[0]; //default returns top left corner. Why? Don't care ... seems like a good idea. - Ionut
     }
 
+    void setNormal(CornerLocation corner, const vec3<F32>& normal){
+        switch (corner){
+            case TOP_LEFT:     _geometry->modifyNormalValue(0, normal); break;
+            case TOP_RIGHT:    _geometry->modifyNormalValue(1, normal); break;
+            case BOTTOM_LEFT:  _geometry->modifyNormalValue(2, normal); break;
+            case BOTTOM_RIGHT: _geometry->modifyNormalValue(3, normal); break;
+            case CORNER_ALL: {
+                _geometry->modifyNormalValue(0, normal);
+                _geometry->modifyNormalValue(1, normal);
+                _geometry->modifyNormalValue(2, normal);
+                _geometry->modifyNormalValue(3, normal);
+            }
+            default: break;
+        }
+        _geometry->queueRefresh();
+    }
+
     void setCorner(CornerLocation corner, const vec3<F32>& value){
         switch(corner){
             case TOP_LEFT:     _geometry->modifyPositionValue(0,value); break;
@@ -99,7 +117,6 @@ public:
             default: break;
         }
         _geometry->queueRefresh();
-        //computeTangents();
     }
 
     //rect.xy = Top Left; rect.zw = Bottom right

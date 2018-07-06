@@ -31,7 +31,7 @@ class Texture;
 class ShaderProgram;
 template<class T>
 class vec2;
-typedef Texture Texture2D;
+
 class GUISplash {
 public:
     GUISplash(const std::string& splashImageName,const vec2<U16>& dimensions);
@@ -39,7 +39,7 @@ public:
     void render();
 
 private:
-    Texture2D*     _splashImage;
+    Texture*       _splashImage;
     ShaderProgram* _splashShader;
 };
 

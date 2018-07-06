@@ -1,7 +1,7 @@
 #include "Headers/GLWrapper.h"
 
-namespace Divide{
-    namespace GL{
+namespace Divide {
+    namespace GLUtil {
         void glfw_error_callback(GLint error, const char* description){
             ERROR_FN(Locale::get("ERROR_GENERIC_GLFW"), description);
         }
@@ -36,5 +36,5 @@ namespace Divide{
                                                             message);
         }
 #endif
-    } //namespace GL
+    } //namespace GLUtil
 }//namespace Divide

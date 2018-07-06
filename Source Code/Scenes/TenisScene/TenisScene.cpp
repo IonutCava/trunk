@@ -9,7 +9,6 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/AIManager.h"
-#include "Rendering/Headers/Frustum.h"
 #include "GUI/Headers/GUIButton.h"
 #include "GUI/Headers/GUI.h"
 
@@ -77,7 +76,7 @@ void TenisScene::resetGame(){
 void TenisScene::startGame(){
     resetGame();
     Kernel* kernel = Application::getInstance().getKernel();
-    Task_ptr newGame(New Task(kernel->getThreadPool(),15,true,false,DELEGATE_BIND(&TenisScene::playGame,this,rand() % 5,TYPE_INTEGER)));
+    Task_ptr newGame(kernel->AddTask(15, true, false, DELEGATE_BIND(&TenisScene::playGame, this, rand() % 5, TYPE_INTEGER)));
     addTask(newGame);
     _gameGUID = newGame->getGUID();
 }
@@ -237,7 +236,6 @@ void TenisScene::playGame(cdiggins::any a, CallbackParam b){
 }
 
 void TenisScene::processInput(const U64 deltaTime){
-    defaultCameraControls();
 }
 
 bool TenisScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){

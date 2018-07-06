@@ -15,15 +15,9 @@
 #include "Managers/Headers/CameraManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/AIManager.h"
-#include "Rendering/Headers/Frustum.h"
 #include "AI/PathFinding/Headers/DivideRecast.h"
 
 REGISTER_SCENE(WarScene);
-
-
-void WarScene::preRender(){
-    
-}
 
 void WarScene::processGUI(const U64 deltaTime){
     D32 FpsDisplay = getSecToMs(0.3);
@@ -101,7 +95,7 @@ void WarScene::startSimulation(){
 
     if(getTasks().empty()){
         Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newSim(New Task(kernel->getThreadPool(),12,true,false,DELEGATE_BIND(&WarScene::processSimulation,this,rand() % 5,TYPE_INTEGER)));
+        Task_ptr newSim(kernel->AddTask(12, true, false, DELEGATE_BIND(&WarScene::processSimulation, this, rand() % 5, TYPE_INTEGER)));
         addTask(newSim);
     }
 
@@ -115,7 +109,6 @@ void WarScene::processSimulation(cdiggins::any a, CallbackParam b){
 }
 
 void WarScene::processInput(const U64 deltaTime){
-    defaultCameraControls();
 }
 
 static boost::atomic_bool navMeshStarted;
@@ -183,9 +176,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTime){
 }
 
 bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
-    Frustum& frust = Frustum::getInstance();
-    frust.setProjection(frust.getAspectRatio(), frust.getVerticalFoV(), vec2<F32>(0.85f, 400.0f));
-
     navMeshStarted = false;
     //Load scene resources
     bool loadState = SCENE_LOAD(name,cameraMgr,gui,true,true);
@@ -207,6 +197,7 @@ bool WarScene::load(const std::string& name, CameraManager* const cameraMgr, GUI
 
     SceneGraphNode::NodeChildren& children = cylinderNW->getChildren();
     (*children.begin()).second->getNode()->getMaterial()->setDoubleSided(true);
+    
 
     assert(cylinderNW && cylinderNE && cylinderSW && cylinderSE);
     SceneNode* cylinderMeshNW = cylinderNW->getNode();
@@ -460,14 +451,16 @@ bool WarScene::loadResources(bool continueOnErrors){
                   0.0f, 0.0f, 0.0f);
     //Add a first person camera
     Camera* cam = New FirstPersonCamera();
-    cam->setMoveSpeedFactor(0.2f);
-    cam->setTurnSpeedFactor(0.1f);
-    _cameraMgr->addNewCamera("fpsCamera", cam);
+    cam->fromCamera(renderState().getCameraConst());
+    cam->setMoveSpeedFactor(10.0f);
+    cam->setTurnSpeedFactor(10.0f);
+    renderState().getCameraMgr().addNewCamera("fpsCamera", cam);
     //Add a third person camera
     cam = New ThirdPersonCamera();
+    cam->fromCamera(renderState().getCameraConst());
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
-    _cameraMgr->addNewCamera("tpsCamera", cam);
+    renderState().getCameraMgr().addNewCamera("tpsCamera", cam);
 
     _guiTimers.push_back(0.0); //Fps
     _taskTimers.push_back(0.0); //animation bull
@@ -489,17 +482,20 @@ bool WarScene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_TAB:{
             if(_currentSelection != nullptr){
                 /*if(flyCameraActive){
-                    _cameraMgr->setActiveCamera("fpsCamera");
+                    renderState().getCameraMgr().pushActiveCamera("fpsCamera");
                     flyCameraActive = false; fpsCameraActive = true;
                 }else if(fpsCameraActive){*/
                 if(flyCameraActive){
-                    _cameraMgr->setActiveCamera("tpsCamera");
-                    static_cast<ThirdPersonCamera*>(_cameraMgr->getActiveCamera())->setTarget(_currentSelection);
+                    if(fpsCameraActive) renderState().getCameraMgr().popActiveCamera();
+                    renderState().getCameraMgr().pushActiveCamera("tpsCamera");
+                    static_cast<ThirdPersonCamera&>(renderState().getCamera()).setTarget(_currentSelection);
                     /*fpsCameraActive*/flyCameraActive = false; tpsCameraActive = true;
-                }else if(tpsCameraActive){
-                    _cameraMgr->setActiveCamera("defaultCamera");
-                    tpsCameraActive = false; flyCameraActive = true;
+                    break;
                 }
+            }
+            if (tpsCameraActive){
+                renderState().getCameraMgr().pushActiveCamera("defaultCamera");
+                tpsCameraActive = false; flyCameraActive = true;
             }
 //			renderState().getCamera().setTargetNode(_currentSelection);
         }break;

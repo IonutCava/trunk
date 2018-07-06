@@ -20,7 +20,7 @@
 
 <options>
 	<visibility>200</visibility>
-	<cameraSpeed move = "0.2" turn = "0.75"/>
+	<cameraSpeed move = "20.2" turn = "20.75"/>
 	<autoCookPhysicsAssets>true</autoCookPhysicsAssets>
 </options>
 

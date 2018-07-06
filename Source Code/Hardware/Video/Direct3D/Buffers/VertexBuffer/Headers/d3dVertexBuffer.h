@@ -32,8 +32,8 @@ public:
     void Destroy() {}
 
     bool SetActive() {return true;}
-    void Draw(const U8 LODindex = 0) {}
-    void DrawRange(){}
+    void Draw(bool skipBind = false, const U8 LODindex = 0) {}
+    void DrawRange(bool skipBind = false){}
     bool queueRefresh() {return Refresh();}
 
     d3dVertexBuffer(PrimitiveType type) : VertexBuffer(type) {}

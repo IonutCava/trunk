@@ -55,7 +55,7 @@ public:
    ~ParticleEmitter();
 
     /// Dummy function from SceneNode;
-    bool onDraw(const RenderStage& currentStage);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) {_enabled = state;}
@@ -72,9 +72,9 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     ///SceneNode test
-    bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
+    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
         if(_enabled && _impostor)
-            return _impostor->getDummy()->isInView(boundingBox, sphere, distanceCheck);
+            return _impostor->getDummy()->isInView(sceneRenderState, boundingBox, sphere, distanceCheck);
 
         return false;
     }
@@ -88,7 +88,7 @@ protected:
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareDepthMaterial(SceneGraphNode* const sgn);
     bool releaseDepthMaterial();
     bool prepareMaterial(SceneGraphNode* const sgn);

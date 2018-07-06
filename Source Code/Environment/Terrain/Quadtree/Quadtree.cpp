@@ -2,98 +2,82 @@
 #include "Headers/QuadtreeNode.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-void Quadtree::DrawGround(bool drawInReflection) {
-    assert(_root);
-    _root->DrawGround(drawInReflection ? CHUNK_BIT_WATERREFLECTION : 0, _parentVB);
-}
-
-void Quadtree::DrawGrass(U32 geometryIndex, Transform* const parentTransform)
+Quadtree::Quadtree() : _root(nullptr),
+                       _parentVB(nullptr)
 {
-    assert(_root);
-    _root->DrawGrass(geometryIndex,parentTransform);
+    _chunkCount = 0; 
 }
 
-void Quadtree::DrawBBox() {
+Quadtree::~Quadtree() 
+{
+    SAFE_DELETE(_root);
+}
+
+void Quadtree::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    assert(_root);
+    _root->sceneUpdate(deltaTime, sgn, sceneState);
+}
+
+void Quadtree::DrawGround(const SceneRenderState& sceneRenderState) const {
+    assert(_root);
+    _root->DrawGround(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? CHUNK_BIT_WATERREFLECTION : 0, sceneRenderState);
+}
+
+void Quadtree::DrawBBox() const {
     assert(_root);
     _root->DrawBBox();
+    GFX_DEVICE.drawBox3D(_root->getBoundingBox().getMin(), _root->getBoundingBox().getMax(), mat4<F32>());
 }
 
 QuadtreeNode* Quadtree::FindLeaf(const vec2<F32>& pos) {
     assert(_root);
-    QuadtreeNode* node = _root;
-
+    QuadtreeNode* node  = _root;
+    QuadtreeNode* child = nullptr;
     while(!node->isALeaf()) {
-        I32 i=0;
-        for(i=0; i<4; i++) {
-            QuadtreeNode* child = &(node->getChildren()[i]);
-            if(child->getBoundingBox().ContainsPoint( vec3<F32>(pos.x, child->getBoundingBox().getCenter().y, pos.y) ))
-            {
+        U32 i = 0;
+        for(i = 0; i < 4; i++) {
+            child = node->getChild(i);
+            const BoundingBox& bb = child->getBoundingBox();
+            if(bb.ContainsPoint(vec3<F32>(pos.x, bb.getCenter().y, pos.y) )) {
                 node = child;
                 break;
             }
         }
 
-        if(i>=4) {
-            return nullptr;
-        }
+        if(i >= 4) return nullptr;
     }
 
     return node;
 }
 
-void Quadtree::Build(BoundingBox& terrainBBox,
-                     vec2<U32>& HMsize,
-                     U32 minHMSize,
-                     VertexBuffer* const groundVB){
+void Quadtree::Build(BoundingBox& terrainBBox, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain){
     _root = New QuadtreeNode();
     _root->setBoundingBox(terrainBBox);
-    _root->setParentShaderProgram(_parentShaderProgram);
 
-    _root->Build(0, vec2<U32>(0,0), HMsize, minHMSize, groundVB,_chunkCount);
+    _root->Build(0, vec2<U32>(0, 0), HMsize, minHMSize, groundVB, parentTerrain, _chunkCount);
 
-    GenerateIndexBuffer(HMsize, groundVB);
-}
-
-void Quadtree::GenerateGrassIndexBuffer(U32 bilboardCount){
-    _root->GenerateGrassIndexBuffer(bilboardCount);
-}
-
-void Quadtree::GenerateIndexBuffer(vec2<U32>& HMsize, VertexBuffer* const groundVB){
-    const U32 terrainWidth  = HMsize.x;
+    // Generate index buffer
+    const U32 terrainWidth = HMsize.x;
     const U32 terrainHeight = HMsize.y;
-    const U32 numTriangles = ( terrainWidth - 1 ) * ( terrainHeight - 1 ) * 2;
-    groundVB->reserveIndexCount(numTriangles * 3);
     groundVB->computeTriangles(false);
-
+    groundVB->reserveTriangleCount((terrainWidth - 1) * (terrainHeight - 1) * 2);
     vec3<U32> firstTri, secondTri;
-
-    for (U32 j = 0; j < (terrainHeight - 1); ++j ) {
-        for (U32 i = 0; i < (terrainWidth - 1); ++i )  {
-            I32 vertexIndex = ( j * terrainWidth ) + i;
+    I32 vertexIndex = -1;
+    for (U32 j = 0; j < (terrainHeight - 1); ++j) {
+        for (U32 i = 0; i < (terrainWidth - 1); ++i)  {
+            vertexIndex = (j * terrainWidth) + i;
             // Top triangle (T0)
             firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
-            groundVB->addIndex(firstTri.x); // V0
-            groundVB->addIndex(firstTri.y); // V3
-            groundVB->addIndex(firstTri.z); // V1
-            groundVB->getTriangles().push_back(firstTri);
-
             // Bottom triangle (T1)
             secondTri.set(vertexIndex, vertexIndex + terrainWidth, vertexIndex + terrainWidth + 1);
-            groundVB->addIndex(secondTri.x); // V0
-            groundVB->addIndex(secondTri.y); // V2
-            groundVB->addIndex(secondTri.z); // V3
+            groundVB->getTriangles().push_back(firstTri);
             groundVB->getTriangles().push_back(secondTri);
         }
     }
 }
 
-BoundingBox& Quadtree::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
+BoundingBox& Quadtree::computeBoundingBox(){
     assert(_root);
-    assert(!vertices.empty());
-     _root->computeBoundingBox(vertices);
-     return _root->getBoundingBox();;
-}
-
-void Quadtree::Destroy(){
-    SAFE_DELETE(_root);
+     _root->computeBoundingBox();
+     return _root->getBoundingBox();
 }

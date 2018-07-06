@@ -1,3 +1,7 @@
+const int LIGHT_DIRECTIONAL = 0;
+const int LIGHT_OMNIDIRECTIONAL = 1;
+const int LIGHT_SPOT = 2;
+
 struct Light {
     vec4  _attenuation; ///< x = constAtt, y = linearAtt, z = quadraticAtt, w = spotCutoff
     vec4  _position;    ///< xyz = position/direction (omni,spot / directional). w-light type: 0.0 - directional, 1.0  - point, 2.0 - spot
@@ -42,7 +46,7 @@ uniform bool dvd_enableShadowMapping = false;
 
 /// Light Info is used internally to communicate between vertex and fragment shaders
 VARYING LightInfo {
-    flat vec3  _lightDirection;
+    vec3  _lightDirection;
     smooth float _attenuation;
 } _lightInfo[MAX_LIGHTS_PER_NODE];
 

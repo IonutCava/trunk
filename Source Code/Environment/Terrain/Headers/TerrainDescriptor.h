@@ -31,13 +31,13 @@ public:
     TerrainDescriptor() :  Resource("temp_terrain_descriptor"),
                            _active(false),
                            _addToPhysics(false),
-                           _normalMapScale(0.0f),
-                           _diffuseScale(0.0f),
+                           _is16Bit(false),
                            _grassDensity(0),
                            _chunkSize(0),
                            _treeScale(1.0f),
                            _grassScale(1.0f),
-                           _treeDensity(1)
+                           _treeDensity(1),
+                           _textureLayers(1)
     {
     }
 
@@ -49,47 +49,74 @@ public:
         _variables.insert(make_pair(name,value));
     }
 
-    void setPosition(const vec3<F32>& position) {_position = position;}
-    void setScale(const vec2<F32>& scale)	    {_scale = scale;}
-    void setDiffuseScale(F32 diffuseScale)      {_diffuseScale = diffuseScale;}
-    void setNormalMapScale(F32 normalMapScale)  {_normalMapScale = normalMapScale;}
-    void setGrassDensity(U32 grassDensity)      {_grassDensity = grassDensity;}
-    void setTreeDensity(U16 treeDensity)        {_treeDensity = treeDensity;}
-    void setGrassScale(F32 grassScale)          {_grassScale = grassScale;}
-    void setTreeScale(F32 treeScale)            {_treeScale = treeScale;}
-    void setActive(bool active)                 {_active = active;}
-    void setCreatePXActor(bool create)          {_addToPhysics = create;}
-    void setChunkSize(U32 size)                 {_chunkSize = size;}
-
-    U32   getGrassDensity()  {return _grassDensity;}
-    U16   getTreeDensity()   {return _treeDensity;}
-    F32   getGrassScale()    {return _grassScale;}
-    F32   getTreeScale()     {return _treeScale;}
-    bool  getActive()        {return _active;}
-    bool  getCreatePXActor() {return _addToPhysics;}
-    U32   getChunkSize()     {return _chunkSize;}
-    F32   getDiffuseScale()  {return _diffuseScale;}
-    F32   getNormalMapScale(){return _normalMapScale;}
-    vec3<F32>& getPosition()	 {return _position;}
-    vec2<F32>& getScale()        {return _scale;}
-
-    std::string& getVariable(const std::string& name) {
-        std::string& var = _variables.find(name)->second;
-        if(var.empty()) ERROR_FN(Locale::get("ERROR_TERRAIN_DESCRIPTOR_MISSING_VAR"),name.c_str());
-        return var;
+    void addVariable(const std::string& name, F32 value){
+        _variablesf.insert(make_pair(name, value));
     }
+
+    void setTextureLayerCount(U8 count)         { _textureLayers = count; }
+    void setDimensions(const vec2<U16>& dim)    { _dimensions = dim; }
+    void setAltitudeRange(const vec2<F32>& dim) { _altitudeRange = dim; }
+    void setPosition(const vec3<F32>& position) { _position = position; }
+    void setScale(const vec2<F32>& scale)	    { _scale = scale; }
+    void setGrassDensity(U32 grassDensity)      { _grassDensity = grassDensity; }
+    void setTreeDensity(U16 treeDensity)        { _treeDensity = treeDensity; }
+    void setGrassScale(F32 grassScale)          { _grassScale = grassScale; }
+    void setTreeScale(F32 treeScale)            { _treeScale = treeScale; }
+    void setActive(bool active)                 { _active = active; }
+    void setCreatePXActor(bool create)          { _addToPhysics = create; }
+    void setChunkSize(U32 size)                 { _chunkSize = size; }
+    void set16Bit(bool state)                   { _is16Bit = state;}
+    
+    U8    getTextureLayerCount() const { return _textureLayers; }
+    U32   getGrassDensity()      const { return _grassDensity; }
+    U16   getTreeDensity()       const { return _treeDensity; }
+    F32   getGrassScale()        const { return _grassScale; }
+    F32   getTreeScale()         const { return _treeScale; }
+    bool  getActive()            const { return _active; }
+    bool  getCreatePXActor()     const { return _addToPhysics; }
+    U32   getChunkSize()         const { return _chunkSize; }
+    bool  is16Bit()              const { return _is16Bit; }
+
+    const vec2<F32>& getAltitudeRange() const { return _altitudeRange; }
+    const vec2<U16>& getDimensions()    const { return _dimensions; }
+    const vec3<F32>& getPosition()	    const { return _position; }
+    const vec2<F32>& getScale()         const { return _scale; }
+
+    std::string getVariable(const std::string& name) {
+        Unordered_map<std::string, std::string>::const_iterator it = _variables.find(name);
+        if (it != _variables.end())
+            return it->second;
+
+        return "";
+    }
+
+    F32 getVariablef(const std::string& name){
+        Unordered_map<std::string, F32>::const_iterator it = _variablesf.find(name);
+        if (it != _variablesf.end())
+            return it->second;
+
+        return 0.0f;
+    }
+
 private:
-    Unordered_map<std::string,std::string> _variables;
+    Unordered_map<std::string, std::string> _variables;
+    Unordered_map<std::string, F32>         _variablesf;
     U32    _grassDensity;
     U32    _chunkSize;
     U16    _treeDensity;
     F32	   _grassScale;
     F32    _treeScale;
-    F32    _normalMapScale;
-    F32    _diffuseScale;
+    bool   _is16Bit;
     bool   _active;
     bool   _addToPhysics;
+    U8     _textureLayers;
     vec3<F32>   _position;
     vec2<F32>   _scale;
+    vec2<F32>   _altitudeRange;
+    vec2<U16>   _dimensions;
 };
+
+template<class T>
+inline T TER_COORD(T x, T y, T w) { return ((y)*(w)+(x)); }
+
 #endif

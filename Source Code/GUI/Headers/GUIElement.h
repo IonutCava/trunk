@@ -56,7 +56,7 @@ public:
     inline const std::string& getName() const {return _name;}
     inline const vec2<I32>&   getPosition()  const {return _position;}
     inline void  setPosition(const vec2<I32>& pos)        {_position = pos;}
-    inline const GUIType getGuiType()   const {return _guiType;}
+    inline const GUIType getType()   const {return _guiType;}
 
     inline const bool isActive()  const {return _active;}
     inline const bool isVisible() const {return _visible;}

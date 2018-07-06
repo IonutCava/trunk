@@ -31,8 +31,6 @@ public:
 	DirectionalLight(U8 slot);
 	~DirectionalLight();
 
-    const mat4<F32>& getLightViewMatrix(U8 index = 0);
-
     inline U8   csmSplitCount()               const { return _csmSplitCount; }
     inline void csmSplitCount(U8 splitCount)        { _csmSplitCount = splitCount; }
 

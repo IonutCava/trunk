@@ -29,49 +29,68 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 
 class glGenericVertexData : public GenericVertexData {
+    enum GVDUsage {
+        GVD_USAGE_DRAW = 0,
+        GVD_USAGE_FDBCK = 1,
+        GVD_USAGE_PLACEHOLDER = 2
+    };
+
 public:
     glGenericVertexData();
     ~glGenericVertexData();
 
-    void Clear();
-    void Create(U8 numBuffers = 1);
-    void Draw(const PrimitiveType& type, U32 min, U32 max);
-    void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max);
+    void Create(U8 numBuffers = 1, U8 numQueries = 1);
+    I32  GetFeedbackPrimitiveCount(U8 queryID);
 
-    void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream) {
-        CLAMP<U32>(buffer, 0, (U32)_bufferObjects.size());
-        assert(!_dataWriteActive);
-        _dataWriteActive = true;
-        GL_API::setActiveVB(_bufferObjects[buffer]);
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
-        GL_API::setActiveVB(0);
-        _dataWriteActive = false;
+    void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream);
+    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool stream);
+
+    inline void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
+        UpdateAttribute(index, buffer, divisor, (GLsizei)size, normalized ? GL_TRUE : GL_FALSE, stride, (GLvoid*)offset, glDataFormat[type], false);
     }
 
-    void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool stream) {
-        CLAMP<U32>(buffer, 0, (U32)_bufferObjects.size());
-        assert(_bufferObjects[buffer] != 0);
-        assert(!_dataWriteActive);
-        _dataWriteActive = true;
-        GL_API::setActiveVB(_bufferObjects[buffer]);
-        glBufferData(GL_ARRAY_BUFFER, dataSize, nullptr, dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, offset, currentSize, data);
-        _dataWriteActive = false;
+    inline void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
+        UpdateAttribute(index, buffer, divisor, (GLsizei)size, normalized ? GL_TRUE : GL_FALSE, stride, (GLvoid*)offset, glDataFormat[type], true);
     }
 
-    void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) {
-        assert(!_dataWriteActive);
-        _dataWriteActive = true;
-        GL_API::setActiveVAO(_currentVAO);
-        GL_API::setActiveVB(_bufferObjects[buffer]);
-        glEnableVertexAttribArray(index);
-        glVertexAttribPointer(index, (GLint)size, glDataFormat[type], normalized ? GL_TRUE : GL_FALSE, stride, (void*)offset);
-        glVertexAttribDivisor(index, divisor);
-        _dataWriteActive = false;
+    inline void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
+        DrawInternal(type, min, max, 0, queryID, drawToBuffer);
+    }
+
+    inline void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) {
+        DrawInternal(type, min, max, count, queryID, drawToBuffer);
+    }
+
+    inline void SetFeedbackBuffer(U32 buffer, U32 bindPoint) {
+        if (!isFeedbackBuffer(buffer)){
+             _feedbackBuffers.push_back(_bufferObjects[buffer]);
+             _feedbackBindPoints.push_back(bindPoint);
+        }
+
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _transformFeedback);
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, bindPoint, _bufferObjects[buffer]);
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+    }
+
+protected:
+    void UpdateAttribute(U32 index, U32 buffer, U32 divisor, GLsizei size, GLboolean normalized, U32 stride, GLvoid* offset, GLenum type, bool feedbackAttrib);
+    void DrawInternal(const PrimitiveType& type, U32 min, U32 max, U32 instanceCount, U8 queryID = 0, bool drawToBuffer = false);
+
+    inline bool isFeedbackBuffer(U32 index){
+        for (U32 handle : _feedbackBuffers)
+            if (handle == _bufferObjects[index])
+               return true;
+
+        return false;
     }
 
 private:
-    GLuint _currentVAO;
-    bool _dataWriteActive;
+    GLuint _transformFeedback;
+    GLuint _numQueries;
+    GLuint _vertexArray[GVD_USAGE_PLACEHOLDER];
+
+    GLint*  _prevResult;
+    GLuint* _feedbackQueries;
+    bool*   _resultAvailable;
 };
 #endif

@@ -29,7 +29,6 @@ class Quad3D;
 class Texture;
 class FrameBuffer;
 class ShaderProgram;
-typedef Texture Texture2D;
 
 class BloomPreRenderOperator : public PreRenderOperator {
 public:

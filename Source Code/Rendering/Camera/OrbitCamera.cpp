@@ -3,6 +3,7 @@
 #include "Core/Headers/Application.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Hardware/Input/Headers/InputInterface.h"
 
 OrbitCamera::OrbitCamera(const CameraType& type, const vec3<F32>& eye) : Camera(type, eye),
                                                                          _currentRotationX(0.0),
@@ -25,25 +26,26 @@ void OrbitCamera::setTarget(SceneGraphNode* const sgn, const vec3<F32>& offsetDi
 }
 
 void OrbitCamera::onActivate() {
+    //_cameraRotation.reset();
+    Camera::onActivate();
 }
 
 void OrbitCamera::onDeactivate() {
-    _cameraRotation.reset();
 }
 
-void OrbitCamera::updateViewMatrix() {
+bool OrbitCamera::updateViewMatrix() {
     setEye(_newEye);
-    Camera::updateViewMatrix();
+
+    return Camera::updateViewMatrix();
 }
 
 void OrbitCamera::update(const U64 deltaTime) {
     Camera::update(deltaTime);
 
-    Transform* trans = nullptr;
     if(!_targetNode)
         return;
-    else
-        trans = _targetNode->getTransform();
+    
+    Transform* trans = _targetNode->getTransform();
 
     static vec3<F32> newTargetOrientation;
 
@@ -57,10 +59,15 @@ void OrbitCamera::update(const U64 deltaTime) {
 
     _orientation.fromEuler(newTargetOrientation, false);
     _newEye = trans->getPosition() + _orientation * (_offsetDir * _curRadius);
+    _viewMatrixDirty = true;
 }
 
 bool OrbitCamera::onMouseMove(const OIS::MouseEvent& arg) {
-    return true;
+    I32 zoom = arg.state.Z.rel;
+    if (zoom != 0)
+        curRadius(_curRadius += (zoom * _cameraZoomSpeed * -0.01f));
+    
+    return Camera::onMouseMove(arg);
 }
 
 void OrbitCamera::move(F32 dx, F32 dy, F32 dz) {

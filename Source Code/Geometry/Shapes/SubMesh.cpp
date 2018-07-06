@@ -20,6 +20,8 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
 		return true;
 
 	bb.set(getGeometryVB()->getMinPosition(),getGeometryVB()->getMaxPosition());
+    bb.setComputed(true);
+
 	return SceneNode::computeBoundingBox(sgn);
 }
 

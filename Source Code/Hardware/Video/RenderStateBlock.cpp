@@ -1,15 +1,15 @@
 #include "Headers/RenderStateBlock.h"
 
 RenderStateBlockDescriptor::RenderStateBlockDescriptor() : GUIDWrapper(),
-                                                           _dirty(true),
-                                                           _cachedHash(0)
+                                                           _cachedHash(0),
+                                                           _lockHash(false)
 {
     setDefaultValues();
 }
 
 void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor& descriptor){
    setBlend(descriptor._blendEnable,descriptor._blendSrc,descriptor._blendDest,descriptor._blendOp);
-   setColorWrites(descriptor._writeRedChannel,descriptor._writeGreenChannel,descriptor._writeBlueChannel,descriptor._writeAlphaChannel);
+   setColorWrites(descriptor._colorWrite.b.b0 > 0, descriptor._colorWrite.b.b1 > 0, descriptor._colorWrite.b.b2 > 0, descriptor._colorWrite.b.b3 > 0);
    setCullMode(descriptor._cullMode);
    setZReadWrite(descriptor._zEnable, descriptor._zWriteEnable);
 
@@ -28,7 +28,7 @@ void RenderStateBlockDescriptor::fromDescriptor(const RenderStateBlockDescriptor
 
    _fillMode = descriptor._fillMode;
 
-   _dirty = true;
+   clean();
 }
 
 void RenderStateBlockDescriptor::flipCullMode(){
@@ -37,26 +37,26 @@ void RenderStateBlockDescriptor::flipCullMode(){
     if (_cullMode == CULL_MODE_CW)   _cullMode = CULL_MODE_CCW;
     if (_cullMode == CULL_MODE_CCW)  _cullMode = CULL_MODE_CW;
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setCullMode( CullMode mode ) {
    _cullMode = mode;
 
-   _dirty = true;
+   clean();
 }
 
 void RenderStateBlockDescriptor::setZEnable(const bool enable){
     _zEnable = enable;
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setZReadWrite( bool read, bool write ) {
    _zEnable = read;
    _zWriteEnable = write;
 
-   _dirty = true;
+   clean();
 }
 
 void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, BlendProperty dest, BlendOperation op ) {
@@ -65,16 +65,16 @@ void RenderStateBlockDescriptor::setBlend( bool enable, BlendProperty src, Blend
    _blendDest = dest;
    _blendOp = op;
 
-   _dirty = true;
+   clean();
 }
 
 void RenderStateBlockDescriptor::setColorWrites( bool red, bool green, bool blue, bool alpha ) {
-   _writeRedChannel = red;
-   _writeGreenChannel = green;
-   _writeBlueChannel = blue;
-   _writeAlphaChannel = alpha;
+    _colorWrite.b.b0 = red ? 1 : 0;
+    _colorWrite.b.b1 = green ? 1 : 0;
+    _colorWrite.b.b2 = blue ? 1 : 0;
+    _colorWrite.b.b3 = alpha ? 1 : 0;
 
-   _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits, ComparisonFunction zFunc){
@@ -82,20 +82,20 @@ void RenderStateBlockDescriptor::setZBias(F32 zBias, F32 zUnits, ComparisonFunct
     _zUnits = zUnits;
     _zFunc = zFunc;
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setFillMode(FillMode mode)  { 
     _fillMode = mode; 
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setStencilReadWriteMask(U32 read, U32 write) {
     _stencilMask = read;
     _stencilWriteMask = write;
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, StencilOperation stencilFailOp, StencilOperation stencilZFailOp, 
@@ -107,10 +107,11 @@ void RenderStateBlockDescriptor::setStencil(bool enable, U32 stencilRef, Stencil
     _stencilPassOp = stencilPassOp;
     _stencilFunc = stencilFunc;
 
-    _dirty = true;
+    clean();
 }
 
 void RenderStateBlockDescriptor::setDefaultValues(){
+    _lockHash = true;
     setZBias(0.0f, 2.0f);
     setColorWrites(true, true, true, true);
     setBlend(false, BLEND_PROPERTY_ONE, BLEND_PROPERTY_ONE, BLEND_OPERATION_ADD);
@@ -119,12 +120,33 @@ void RenderStateBlockDescriptor::setDefaultValues(){
     setFillMode(FILL_MODE_SOLID);
     setStencilReadWriteMask(0xFFFFFFFF, 0xFFFFFFFF);
     setStencil(false);
+    _lockHash = false;
+
+    clean();
 }
 
 void RenderStateBlockDescriptor::clean(){
-    if (!_dirty)
-        return;
+    if (_lockHash) return;
 
-    _cachedHash =  Util::CRC32(this, sizeof(RenderStateBlockDescriptor));
-    _dirty = false;
+    _cachedHash = 0;
+    _cachedHash += Util::CRC32(&_colorWrite.i, sizeof(U32));
+    _cachedHash += Util::CRC32(&_blendEnable,  sizeof(bool));
+    _cachedHash += Util::CRC32(&_blendSrc,     sizeof(BlendProperty));
+    _cachedHash += Util::CRC32(&_blendDest,    sizeof(BlendProperty));
+    _cachedHash += Util::CRC32(&_blendOp,      sizeof(BlendOperation));
+    _cachedHash += Util::CRC32(&_cullMode,     sizeof(CullMode));
+    _cachedHash += Util::CRC32(&_zEnable,      sizeof(bool));
+    _cachedHash += Util::CRC32(&_zWriteEnable, sizeof(bool));
+    _cachedHash += Util::CRC32(&_zFunc,         sizeof(ComparisonFunction));
+    _cachedHash += Util::CRC32(&_zBias,         sizeof(F32));
+    _cachedHash += Util::CRC32(&_zUnits,        sizeof(F32));
+    _cachedHash += Util::CRC32(&_stencilEnable, sizeof(bool));
+    _cachedHash += Util::CRC32(&_stencilRef,    sizeof(U32));
+    _cachedHash += Util::CRC32(&_stencilMask,      sizeof(U32));
+    _cachedHash += Util::CRC32(&_stencilWriteMask, sizeof(U32));
+    _cachedHash += Util::CRC32(&_stencilFailOp,  sizeof(StencilOperation));
+    _cachedHash += Util::CRC32(&_stencilZFailOp, sizeof(StencilOperation));
+    _cachedHash += Util::CRC32(&_stencilPassOp,  sizeof(StencilOperation));
+    _cachedHash += Util::CRC32(&_stencilFunc, sizeof(ComparisonFunction));
+    _cachedHash += Util::CRC32(&_fillMode,    sizeof(FillMode));
 }

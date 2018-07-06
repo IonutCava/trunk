@@ -5,11 +5,10 @@
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Rendering/Camera/Headers/Camera.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-SingleShadowMap::SingleShadowMap(Light* light) : ShadowMap(light, SHADOW_TYPE_Single)
+SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "Single Shadow Map");
     ResourceDescriptor shadowPreviewShader("fbPreview");
@@ -54,42 +53,28 @@ void SingleShadowMap::resolution(U16 resolution, U8 resolutionFactor){
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
-void SingleShadowMap::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void SingleShadowMap::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     ///Only if we have a valid callback;
     if(sceneRenderFunction.empty()) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
         return;
     }
-
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     renderInternal(renderState, sceneRenderFunction);
+    renderState.getCameraMgr().popActiveCamera(false);
 }
 
 void SingleShadowMap::renderInternal(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) {
-    //GFXDevice& gfx = GFX_DEVICE;
-    ////Get our eye view
-    //vec3<F32> eyePos = renderState.getCameraConst().getEye();
-    ////For every depth map
-    ////Lock our projection matrix so no changes will be permanent during the rest of the frame
-    ////Lock our model view matrix so no camera transforms will be saved beyond this light's scope
-    //gfx.lockMatrices();
-    ////Set the camera to the light's view
-    //_light->setCameraToLightView(eyePos);
-    ////Set the appropriate projection
-    //_light->getCameraToLightProjMatrix();
-    ////bind the associated depth map
-    //_depthMap->Begin(FrameBuffer::defaultPolicy());
-    //    //draw the scene
-    //    GFX_DEVICE.render(sceneRenderFunction, renderState);
-    ////unbind the associated depth map
-    //_depthMap->End();
+    _shadowCamera->lookAt(_light->getPosition(), _light->getPosition() * _light->getDirection());
+    _shadowCamera->setProjection(1.0f, 90.0f, vec2<F32>(1.0, _light->getFProperty(LIGHT_PROPERTY_BRIGHTNESS) * 0.5f));
+    _shadowCamera->renderLookAt();
 
-    ////get all the required information (light VP matrix for example)
-    ////and restore to the proper camera view
-    //_light->setCameraToSceneView();
-    ////Undo all modifications to the Projection and View Matrices
-    //gfx.releaseMatrices();
-    /////Restore our view frustum
-    //Frustum::getInstance().Extract(eyePos);
+    _depthMap->Begin(FrameBuffer::defaultPolicy());
+        //draw the scene
+        GFX_DEVICE.render(sceneRenderFunction, renderState);
+    //unbind the associated depth map
+    _depthMap->End();
+    LightManager::getInstance().registerShadowPass();
 }
 
 void SingleShadowMap::previewShadowMaps(){

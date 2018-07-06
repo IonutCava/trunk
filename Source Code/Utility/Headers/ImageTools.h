@@ -57,6 +57,8 @@ namespace ImageTools {
             inline bool flip()                   const {return _flip;}
             /// set and get the image's actual data
             inline const U8* const data()        const {return _data;}
+            /// width * height * bpp
+            inline const U32       imageSize()   const {return _imageSize;}
             /// set and get the image's compression state
             inline bool compressed()             const {return _compressed;}
             /// image transparency information
@@ -95,6 +97,8 @@ namespace ImageTools {
             vec2<U16> _dimensions;
             /// image's bits per pixel
             U8  _bpp;
+            /// number of data elements (w * h * bpp)
+            U32 _imageSize;
             /// the image format
             GFXImageFormat _format;
             /// the DevIL texture handle
@@ -103,12 +107,12 @@ namespace ImageTools {
             std::string _name;
     };
 
-    /// prepares the image loading sistem
+    /// prepares the image loading system
     void initialize();
     /// open an image file and save it's contents in the ImageData object
     inline void OpenImage(const std::string& filename, ImageData& img) {img.create(filename);}
     /// read an image file from a block of memory and save it's contents in the ImageData object
-    inline void OpenImage(const void* ptr, U32 size, ImageData& img)   {img.create(ptr, size);}
+    inline void OpenImage(const void* ptr, U32 size, ImageData& img)   { img.create(ptr, size); }
     /// save a single file to TGA
     I8   SaveToTGA(char *filename,  const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData);
     /// save a single file to tga using a sequential naming pattern

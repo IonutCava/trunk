@@ -1,6 +1,5 @@
 #include "Headers/Sky.h"
 
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
@@ -14,7 +13,6 @@ Sky::Sky(const std::string& name) : SceneNode(name, TYPE_SKY),
                                     _skyShader(nullptr),
                                     _skybox(nullptr),
                                     _skyGeom(nullptr),
-                                    _init(false),
                                     _exclusionMask(0)
 {
     //The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
@@ -35,7 +33,8 @@ Sky::~Sky(){
 }
 
 bool Sky::load() {
-    if(_init) return false;
+    if (getState() == RES_LOADED) return false;
+
     std::string location = ParamHandler::getInstance().getParam<std::string>("assetsLocation")+"/misc_images/";
 
     SamplerDescriptor skyboxSampler;
@@ -49,7 +48,7 @@ bool Sky::load() {
                                        location+"skybox_3.jpg "+ location+"skybox_4.jpg");
     skyboxTextures.setEnumValue(TEXTURE_CUBE_MAP);
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
-    _skybox =  CreateResource<TextureCubemap>(skyboxTextures);
+    _skybox =  CreateResource<Texture>(skyboxTextures);
 
     ResourceDescriptor skybox("SkyBox");
     skybox.setFlag(true); //no default material;
@@ -69,12 +68,13 @@ bool Sky::load() {
     _sun->setRadius(0.1f);
     setRenderingOptions(true,true);
     PRINT_FN(Locale::get("CREATE_SKY_RES_OK"));
-    _init = true;
+    setState(RES_LOADED);
     return true;
 }
 
 void Sky::postLoad(SceneGraphNode* const sgn){
-    if(!_init) load();
+    if(getState() != RES_LOADED) load();
+
     _sunNode = sgn->addNode(_sun);
     _skyGeom = sgn->addNode(_sky);
     _sky->getSceneNodeRenderState().setDrawState(false);
@@ -86,13 +86,8 @@ void Sky::postLoad(SceneGraphNode* const sgn){
 }
 
 bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
-    if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE)){
-        SET_STATE_BLOCK(_skyboxRenderStateReflected);
-        _skyShader->Uniform("dvd_isReflection", true);
-    }else{
-        SET_STATE_BLOCK(_skyboxRenderState);
-        _skyShader->Uniform("dvd_isReflection", true);
-    }
+    SET_STATE_BLOCK(*(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE) ? _skyboxRenderStateReflected : _skyboxRenderState));
+
     _skyShader->Uniform("sun_color", LightManager::getInstance().getLight(0)->getDiffuseColor());
     return true;
 }
@@ -101,35 +96,32 @@ bool Sky::releaseMaterial(){
     return true;
 }
 
-bool Sky::onDraw(const RenderStage& currentStage){
-    _sun->onDraw(currentStage);
-    return _sky->onDraw(currentStage);
+void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    Light* l = LightManager::getInstance().getLight(0);
+    if (l && _sun->getMaterial()) _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
 }
 
-void Sky::render(SceneGraphNode* const sgn){
+bool Sky::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
+    _sun->onDraw(sgn, currentStage);
+    return _sky->onDraw(sgn, currentStage);
+}
 
-    const vec3<F32>& eyeTemp = Frustum::getInstance().getEyePos();
-
+void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
+    const vec3<F32>& eyeTemp = sceneRenderState.getCameraConst().getEye();
     sgn->getTransform()->setPosition(eyeTemp);
 
+    _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
+    _sun->renderInstance()->transform(_sunNode->getTransform());
+
     if (_drawSky){
-        _skyShader->bind();
-        _skybox->Bind(0);
         _sky->renderInstance()->transform(sgn->getTransform());
 
+        _skyShader->bind();
+        _skybox->Bind(0);
         GFX_DEVICE.renderInstance(_sky->renderInstance());
-
         _skybox->Unbind(0);
-    }
-    if (!_drawSky && _drawSun) {
-        _sunNode->getTransform()->setPosition(eyeTemp - _sunVect);
-        Light* l = LightManager::getInstance().getLight(0);
-        if(l){
-            _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
-        }
-        _sun->renderInstance()->transform(_sunNode->getTransform());
-
-        GFX_DEVICE.renderInstance(_sun->renderInstance());
+    }else{
+        if (_drawSun) GFX_DEVICE.renderInstance(_sun->renderInstance());
     }
 }
 

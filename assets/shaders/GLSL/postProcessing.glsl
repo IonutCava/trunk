@@ -46,7 +46,7 @@ uniform sampler2D texNoise;
 uniform bool enable_underwater;
 
 #ifdef USE_DEPTH_PREVIEW
-uniform vec2 dvd_zPlanes;
+uniform vec2 dvd_sceneZPlanes;
 uniform bool enable_depth_preview;
 #endif
 
@@ -103,19 +103,18 @@ vec4 VignetteEffect(in vec4 colorIn) {
 }
 
 vec4 UnderWater() {
-
 	float time2 = dvd_time*0.0001;
-	vec2 noiseUV = _texCoord*_noiseTile;
-	vec2 uvNormal0 = noiseUV + time2;
+	vec2 noiseUV = _texCoord * _noiseTile;
+    vec2 uvNormal0 = noiseUV + time2;
 	vec2 uvNormal1 = noiseUV;
 	uvNormal1.s -= time2;
-	uvNormal1.t = uvNormal0.t;
+	uvNormal1.t += time2;
 		
-	vec3 normal0 = 2.0 * texture(texWaterNoiseNM, uvNormal0).rgb - 1.0;
-	vec3 normal1 = 2.0 * texture(texWaterNoiseNM, uvNormal1).rgb - 1.0;
-	vec3 normal = normalize(normal0+normal1);
+	vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb;
+	vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb;
+    vec3 normal = normalize(2.0 * ((normal0 + normal1) * 0.5) - 1.0);
 	
-	return clamp(texture(texScreen, _texCoord + _noiseFactor*normal0.st), 0.0, 1.0);
+    return clamp(texture(texScreen, _texCoord + _noiseFactor * normal.st), vec4(0.0), vec4(1.0));
 }
 
 
@@ -123,7 +122,7 @@ void main(void){
 
 #if defined(USE_DEPTH_PREVIEW)
     if(enable_depth_preview){
-        float z = (2 * dvd_zPlanes.x) / (dvd_zPlanes.y +dvd_zPlanes.x - texture(texScreen, _texCoord).r * (dvd_zPlanes.y - dvd_zPlanes.x));
+        float z = (2 * dvd_sceneZPlanes.x) / (dvd_sceneZPlanes.y +dvd_sceneZPlanes.x - texture(texScreen, _texCoord).r * (dvd_sceneZPlanes.y - dvd_sceneZPlanes.x));
         _colorOut = vec4(z, z, z, 1.0);
     }else{
 #endif

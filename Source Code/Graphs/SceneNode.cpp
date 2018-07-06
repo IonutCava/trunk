@@ -1,6 +1,5 @@
 #include "Headers/SceneNode.h"
 
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/ShaderManager.h"
@@ -41,6 +40,7 @@ void SceneNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Scen
 
 void SceneNode::preFrameDrawEnd(SceneGraphNode* const sgn) {
     assert(_nodeReady);
+    if (!sgn->inView()) return;
 
     //draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     //Draw the bounding box if it's always on or if the scene demands it
@@ -59,12 +59,11 @@ bool SceneNode::isReadyForDraw(const RenderStage& currentStage){
     return mat->getShaderProgram(currentStage)->isHWInitComplete();
 }
 
-bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
+bool SceneNode::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
     assert(_nodeReady);
-
-    const Frustum& frust = Frustum::getInstance();
-
-    const vec3<F32>& eye = frust.getEyePos();
+    
+    const Camera& cam = sceneRenderState.getCameraConst();
+    const vec3<F32>& eye = cam.getEye();
     const vec3<F32>& center  = sphere.getCenter();
     F32  cameraDistance = center.distance(eye);
     F32 visibilityDistance = GET_ACTIVE_SCENE()->state().getGeneralVisibility() + sphere.getRadius();
@@ -73,11 +72,11 @@ bool SceneNode::isInView(const BoundingBox& boundingBox, const BoundingSphere& s
             return false;
     }
 
-    if(!boundingBox.ContainsPoint(frust.getEyePos())){
-        switch(frust.ContainsSphere(center, sphere.getRadius())) {
-            case FRUSTUM_OUT: return false;
-            case FRUSTUM_INTERSECT:	{
-                if(!frust.ContainsBoundingBox(boundingBox)) return false;
+    if(!boundingBox.ContainsPoint(eye)){
+        switch (cam.getFrustumConst().ContainsSphere(center, sphere.getRadius())) {
+            case Frustum::FRUSTUM_OUT: return false;
+            case Frustum::FRUSTUM_INTERSECT:	{
+                if (!cam.getFrustumConst().ContainsBoundingBox(boundingBox)) return false;
             }
         }
     }
@@ -133,15 +132,15 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
         return true;
 
     if(GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE))
-        SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
+        SET_STATE_BLOCK(_material->getRenderStateBlock(REFLECTION_STAGE));
     else
-        SET_STATE_BLOCK(_material->getRenderState(FINAL_STAGE));
+        SET_STATE_BLOCK(_material->getRenderStateBlock(FINAL_STAGE));
 
     ShaderProgram* s = _material->getShaderProgram();
     Scene* activeScene = GET_ACTIVE_SCENE();
     LightManager& lightMgr = LightManager::getInstance();
 
-    Texture2D* texture = nullptr;
+    Texture* texture = nullptr;
     for (U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i){
         if ((texture = _material->getTexture(i)) != nullptr){
             texture->Bind(i);
@@ -151,14 +150,14 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     if(!s->bind())
         return false;
 
-    s->ApplyMaterial(_material, getCurrentLOD());
+    s->ApplyMaterial(_material);
+    s->SetLOD(getCurrentLOD());
     s->Uniform("isSelected", sgn->isSelected() ? 1 : 0);
     s->Uniform("dvd_enableShadowMapping", lightMgr.shadowMappingEnabled() && sgn->getReceivesShadows());
     s->Uniform("dvd_lightIndex",          lightMgr.getLightIndicesForCurrentNode());
     s->Uniform("dvd_lightType",           lightMgr.getLightTypesForCurrentNode());
     s->Uniform("dvd_lightCount",          lightMgr.getLightCountForCurrentNode());
     s->Uniform("dvd_lightCastsShadows",   lightMgr.getShadowCastingLightsForCurrentNode());
-    s->Uniform("dvd_isReflection",        GFX_DEVICE.isCurrentRenderStage(REFLECTION_STAGE));
 
     s->Uniform("windDirection",vec2<F32>(activeScene->state().getWindDirX(),activeScene->state().getWindDirZ()));
     s->Uniform("windSpeed", activeScene->state().getWindSpeed());
@@ -181,7 +180,7 @@ bool SceneNode::releaseMaterial(){
     //UpgradableReadLock ur_lock(_materialLock);
     if(!_material) return true;
 
-    Texture2D* texture = nullptr;
+    Texture* texture = nullptr;
     for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
         if((texture = _material->getTexture(i)) != nullptr)
             texture->Unbind(i);
@@ -202,7 +201,7 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
         SET_STATE_BLOCK(shadowStage ? _renderState.getShadowStateBlock() : _renderState.getDepthStateBlock());
         return true;
     }
-    SET_STATE_BLOCK(_material->getRenderState(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
+    SET_STATE_BLOCK(_material->getRenderStateBlock(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE));
 
     ShaderProgram* s = _material->getShaderProgram(shadowStage ? SHADOW_STAGE : Z_PRE_PASS_STAGE);
     assert(s != nullptr);
@@ -210,8 +209,8 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     if (!s->bind())
         return false;
 
-    s->ApplyMaterial(_material, getCurrentLOD());
-
+    s->ApplyMaterial(_material);
+    s->SetLOD(getCurrentLOD());
     if (_material->isTranslucent()){
         switch (_material->getTranslucencySource()){
         case Material::TRANSLUCENT_OPACITY_MAP:
@@ -259,6 +258,7 @@ bool SceneNode::releaseDepthMaterial(){
 
 bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
     sgn->setInitialBoundingBox(sgn->getBoundingBoxConst());
+    sgn->getBoundingBox().setComputed(true);
     return true;
 }
 

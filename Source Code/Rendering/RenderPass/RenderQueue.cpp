@@ -5,7 +5,6 @@
 #include "Headers/RenderBinTranslucent.h"
 #include "Headers/RenderBinParticles.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Material/Headers/Material.h"
@@ -140,10 +139,10 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node){
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn){
+void RenderQueue::addNodeToQueue(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     assert(sgn != nullptr);
     RenderBin* rb = getBinForNode(sgn->getNode());
-    if(rb) rb->addNodeToBin(sgn);
+    if(rb) rb->addNodeToBin(sgn, eyePos);
     _isSorted = false;
 }
 

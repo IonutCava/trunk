@@ -30,7 +30,7 @@ void PhysXScene::processGUI(const U64 deltaTime){
 }
 
 void PhysXScene::processInput(const U64 deltaTime){
-    defaultCameraControls();
+
 }
 
 bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui){
@@ -128,12 +128,12 @@ bool PhysXScene::onKeyUp(const OIS::KeyEvent& key){
             break;
         case OIS::KC_3:{
             Kernel* kernel = Application::getInstance().getKernel();
-            Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createTower, DELEGATE_REF(*this),(U32)random(5,20))));
+            Task_ptr e(kernel->AddTask(0, true, true, DELEGATE_BIND(&PhysXScene::createTower, this, (U32)random(5, 20))));
             addTask(e);
             }break;
         case OIS::KC_4:{
             Kernel* kernel = Application::getInstance().getKernel();
-            Task_ptr e(New Task(kernel->getThreadPool(),0,true,true,DELEGATE_BIND(&PhysXScene::createStack, DELEGATE_REF(*this),(U32)random(5,10))));
+            Task_ptr e(kernel->AddTask(0, true, true, DELEGATE_BIND(&PhysXScene::createStack, this, (U32)random(5, 10))));
             addTask(e);
         } break;
     }

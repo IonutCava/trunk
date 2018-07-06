@@ -5,7 +5,6 @@
 #include "Core/Headers/Kernel.h"
 #include "core/Headers/Application.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/ShaderManager.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
@@ -58,8 +57,8 @@ GLXEWContext* glxewGetContext(){ return _GLXEWContextPtr.get(); }
 #endif
 #endif//GLEW_MX
 
-namespace Divide{
-    namespace GL{
+namespace Divide {
+    namespace GLUtil {
         void glfw_focus_callback(GLFWwindow *window, I32 focusState) {
             Application::getInstance().hasFocus(focusState == GL_TRUE);
         }
@@ -128,7 +127,7 @@ namespace Divide{
 GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char **argv){
     ParamHandler& par = ParamHandler::getInstance();
 
-    glfwSetErrorCallback(Divide::GL::glfw_error_callback);
+    glfwSetErrorCallback(Divide::GLUtil::glfw_error_callback);
 
     if( !glfwInit() )	return GLFW_INIT_ERROR;
 
@@ -136,7 +135,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT,GL_TRUE);
 #endif
 
-    Divide::GL::_initStacks();
+    Divide::GLUtil::_initStacks();
 
     if(GFX_DEVICE.MSAAEnabled())
         glfwWindowHint(GLFW_SAMPLES, GFX_DEVICE.MSAASamples());
@@ -156,20 +155,20 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     //Store the main window ID for future reference
     // Open an OpenGL window; resolution is specified in the external XML files
     bool window = par.getParam<bool>("runtime.windowedMode",true);
-    Divide::GL::_mainWindow = glfwCreateWindow( resolution.width, resolution.height,
-                                                par.getParam<std::string>("appTitle").c_str(),
-                                                window ? nullptr : glfwGetPrimaryMonitor(),
-                                                nullptr);
+    Divide::GLUtil::_mainWindow = glfwCreateWindow(resolution.width, resolution.height,
+                                                   par.getParam<std::string>("appTitle").c_str(),
+                                                   window ? nullptr : glfwGetPrimaryMonitor(),
+                                                   nullptr);
     boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-    if(!Divide::GL::_mainWindow){
+    if (!Divide::GLUtil::_mainWindow){
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
     }
-    glfwMakeContextCurrent(Divide::GL::_mainWindow);
+    glfwMakeContextCurrent(Divide::GLUtil::_mainWindow);
     //Init glew for main context
-    Divide::GL::initGlew();
+    Divide::GLUtil::initGlew();
     //Keep track of window focus so no input is processed if the window isn't selected
-    glfwSetWindowFocusCallback(Divide::GL::_mainWindow, Divide::GL::glfw_focus_callback);
+    glfwSetWindowFocusCallback(Divide::GLUtil::_mainWindow, Divide::GLUtil::glfw_focus_callback);
     //Geometry shaders became core in version 3.3
     if(!GLEW_VERSION_3_3){
         ERROR_FN(Locale::get("ERROR_GFX_DEVICE"),"The OpenGL version supported by the current GPU is too old!");
@@ -177,15 +176,15 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     }
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    Divide::GL::_loaderWindow = glfwCreateWindow(1,1,"divide-res-loader",nullptr, Divide::GL::_mainWindow);
-    if(!Divide::GL::_loaderWindow){
+    Divide::GLUtil::_loaderWindow = glfwCreateWindow(1, 1, "divide-res-loader", nullptr, Divide::GLUtil::_mainWindow);
+    if (!Divide::GLUtil::_loaderWindow){
         glfwTerminate();
         return( GLFW_WINDOW_INIT_ERROR );
     }
 
 #if defined(_DEBUG) || defined(_PROFILE)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(&Divide::GL::DebugCallback, (GLvoid*)(0));
+    glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(0));
     //Disable shader compiler errors (shader class handles that)
     glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER,
                             GL_DEBUG_TYPE_ERROR,
@@ -199,7 +198,7 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     GLint height = return_struct->height;
     GLint width = return_struct->width;
-    glfwSetWindowPos(Divide::GL::_mainWindow, (width - resolution.width)*0.5f,(height - resolution.height)*0.5f);
+    glfwSetWindowPos(Divide::GLUtil::_mainWindow, (width - resolution.width)*0.5f, (height - resolution.height)*0.5f);
 
     //If we got here, let's figure out what capabilities we have available
     GLint max_frag_uniform = 0, max_varying_floats = 0;
@@ -284,6 +283,9 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         
     }
 
+    glEnable(GL_CULL_FACE);
+
+    glPrimitiveRestartIndex(Config::PRIMITIVE_RESTART_INDEX_S);
     glfwSwapInterval(par.getParam<bool>("runtime.enableVSync",false) ? 1 : 0);
     GLint numberOfDisplayModes;
     const GLFWvidmode* modes = glfwGetVideoModes(glfwGetPrimaryMonitor(), &numberOfDisplayModes );
@@ -291,15 +293,14 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 
     //start background loading thread
     _closeLoadingThread = false;
-    _loaderThread = New boost::thread(&GL_API::loadInContextInternal, DELEGATE_REF(GL_API::getInstance()));
 
     //OpenGL is up and ready
-    Divide::GL::_contextAvailable = true;
+    Divide::GLUtil::_contextAvailable = true;
 
     _uniformBufferObjects.resize(UBO_PLACEHOLDER,nullptr);
     _uniformBufferObjects[Matrices_UBO] = New glUniformBufferObject();
     _uniformBufferObjects[Matrices_UBO]->Create(Matrices_UBO, true,false);
-    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(3 * 16, sizeof(GLfloat)); //View, Projection and ViewProjection 3 x 16 float values
+    _uniformBufferObjects[Matrices_UBO]->ReserveBuffer(3 * 16 + 4, sizeof(GLfloat)); //View, Projection, ViewProjection and Viewport 3 x 16 + 4 float values and
     _uniformBufferObjects[Lights_UBO]  = New glUniformBufferObject();
     _uniformBufferObjects[Lights_UBO]->Create(Lights_UBO,true,false);
     _uniformBufferObjects[Lights_UBO]->ReserveBuffer(Config::MAX_LIGHTS_PER_SCENE, sizeof(LightProperties));
@@ -312,47 +313,37 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     _uniformBufferObjects[Material_UBO]->Create(Material_UBO,true,false);
     _uniformBufferObjects[Material_UBO]->ReserveBuffer(num materials here, sizeof(_mat->getShaderData()) );
 */
-    _queryBackBuffer = 0;
-    _queryFrontBuffer = 1;
+
     for(U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i)
         for(U8 j = 0; j < PERFORMANCE_COUNTERS; ++j)
             _queryID[i][j] = 0;
 
-    glGenQueries(PERFORMANCE_COUNTERS, _queryID[_queryBackBuffer]);
-    glGenQueries(PERFORMANCE_COUNTERS, _queryID[_queryFrontBuffer]);
 #ifdef _DEBUG
-    for(U8 i = 0; i < PERFORMANCE_COUNTERS; ++i){
-        assert(_queryID[_queryBackBuffer] != 0);
-        assert(_queryID[_queryFrontBuffer] != 0);
+    for (U8 i = 0; i < PERFORMANCE_COUNTER_BUFFERS; ++i){
+        glGenQueries(PERFORMANCE_COUNTERS, _queryID[i]);
+        assert(_queryID[i][0] != 0);
     }
-#endif
-    // dummy query to prevent OpenGL errors from popping out
-    //glQueryCounter(_queryID[_queryFrontBuffer][0], GL_TIMESTAMP));
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryFrontBuffer][0]);
+
+    _queryBackBuffer = 4;
+    glBeginQuery(GL_TIME_ELAPSED, _queryID[0][0]);
     glEndQuery(GL_TIME_ELAPSED);
     // wait until the results are available
     GLint stopTimerAvailable = 0;
     while (!stopTimerAvailable) {
-        glGetQueryObjectiv(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
+        glGetQueryObjectiv(_queryID[0][0], GL_QUERY_RESULT_AVAILABLE, &stopTimerAvailable);
     }
+    
+#endif
 
-    for(GLuint index = 0; index < Config::MAX_CLIP_PLANES; ){
-        _activeClipPlanes[index++] = false;
+    for(GLuint index = 0; index < Config::MAX_CLIP_PLANES; ++index){
+        _activeClipPlanes[index] = false;
     }
 
     //That's it. Everything should be ready for draw calls
     PRINT_FN(Locale::get("START_OGL_API_OK"));
 
-    RenderStateBlockDescriptor defaultGLStateDescriptorNoDepth;
-    defaultGLStateDescriptorNoDepth.setZReadWrite(false,false);
-    _defaultStateNoDepth = GFX_DEVICE.getOrCreateStateBlock(defaultGLStateDescriptorNoDepth);
-
-    RenderStateBlockDescriptor state2DRenderingDesc;
-    state2DRenderingDesc.setCullMode(CULL_MODE_NONE);
-    state2DRenderingDesc.setZReadWrite(false,true);
-    _state2DRendering = GFX_DEVICE.getOrCreateStateBlock(state2DRenderingDesc);
     //Create an immediate mode shader
-    ShaderManager::getInstance().init();
+    ShaderManager::getInstance().init(GFX_DEVICE._kernel);
     _imShader = ShaderManager::getInstance().getDefaultShader();
 
     //_prevPointString = New FTPoint();
@@ -381,16 +372,16 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
 void GL_API::exitRenderLoop(bool killCommand) {
     glfonsDelete(_fonsContext);
     _fonsContext = nullptr;
-    Divide::GL::_applicationClosing = true;
-    glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
-    glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
+    Divide::GLUtil::_applicationClosing = true;
+    glfwSetWindowShouldClose(Divide::GLUtil::_mainWindow, true);
+    glfwSetWindowShouldClose(Divide::GLUtil::_loaderWindow, true);
 }
 
 ///clear up stuff ...
 void GL_API::closeRenderingApi(){
-    Divide::GL::_applicationClosing = true;
-    glfwSetWindowShouldClose(Divide::GL::_mainWindow,true);
-    glfwSetWindowShouldClose(Divide::GL::_loaderWindow,true);
+    Divide::GLUtil::_applicationClosing = true;
+    glfwSetWindowShouldClose(Divide::GLUtil::_mainWindow, true);
+    glfwSetWindowShouldClose(Divide::GLUtil::_loaderWindow, true);
 
     _closeLoadingThread = true;
     _loaderThread->join();
@@ -408,9 +399,9 @@ void GL_API::closeRenderingApi(){
     _fonts.clear();
     _glimInterfaces.clear(); //<Should call all destructors
     //SAFE_DELETE(_prevPointString);
-    glfwDestroyWindow(Divide::GL::_loaderWindow);
+    glfwDestroyWindow(Divide::GLUtil::_loaderWindow);
     boost::this_thread::sleep(boost::posix_time::milliseconds(20));
-    glfwDestroyWindow(Divide::GL::_mainWindow);
+    glfwDestroyWindow(Divide::GLUtil::_mainWindow);
     glfwTerminate();
 
     SAFE_DELETE(_loaderThread);
@@ -419,7 +410,7 @@ void GL_API::closeRenderingApi(){
 void GL_API::initDevice(GLuint targetFrameRate){
     assert(_imShader != nullptr);
     _imShader->Uniform("tex",0);
-    while(!glfwWindowShouldClose(Divide::GL::_mainWindow)) {
+    while (!glfwWindowShouldClose(Divide::GLUtil::_mainWindow)) {
         Kernel::mainLoopStatic();
     }
 }
@@ -484,44 +475,27 @@ bool GL_API::deInitShaders(){
     return (glswShutdown() == 1);
 }
 
-void GL_API::updateProjection(){
-    Frustum& frust = Frustum::getInstance();
-    GLfloat zNear = frust.getZPlanes().x;
-    GLfloat zFar = frust.getZPlanes().y;
-    GLfloat fov = Frustum::getInstance().getVerticalFoV();
-    GLfloat ratio = (GLfloat)_cachedResolution.width / (GLfloat)_cachedResolution.height;
-    // Set the clipping volume
-    Divide::GL::_perspective(fov, ratio, zNear, zFar);
-
-    Divide::GL::_matrixMode(VIEW_MATRIX);
-    Divide::GL::_loadIdentity();
-    //Update view frustum
-    Frustum::getInstance().setProjection(ratio, fov, vec2<GLfloat>(zNear, zFar), false);
-}
-
 void GL_API::changeResolutionInternal(GLushort w, GLushort h){
-    glfwSetWindowSize(Divide::GL::_mainWindow, w, h);
+    glfwSetWindowSize(Divide::GLUtil::_mainWindow, w, h);
     // Set the viewport to be the entire window
     GL_API::setViewport(vec4<GLint>(0,0,w,h));
     _cachedResolution.width = w;
     _cachedResolution.height = h;
-
-    updateProjection();
     //Inform the Kernel
     Kernel::updateResolutionCallback(w,h);
 }
 
 void GL_API::setWindowPos(GLushort w, GLushort h) const {
-    glfwSetWindowPos(Divide::GL::_mainWindow,w,h);
+    glfwSetWindowPos(Divide::GLUtil::_mainWindow, w, h);
 }
 
 void GL_API::setMousePosition(GLushort x, GLushort y) const {
-    glfwSetCursorPos(Divide::GL::_mainWindow,(GLdouble)x,(GLdouble)y);
+    glfwSetCursorPos(Divide::GLUtil::_mainWindow, (GLdouble)x, (GLdouble)y);
 }
 
 I32 GL_API::getFont(const std::string& fontName){
-    FontCache::iterator itr = _fonts.find(fontName);
-    if(itr == _fonts.end()){
+    const FontCache::const_iterator& it = _fonts.find(fontName);
+    if(it == _fonts.end()){
         std::string fontPath = ParamHandler::getInstance().getParam<std::string>("assetsLocation") + "/";
         fontPath += "GUI/";
         fontPath += "fonts/";
@@ -532,8 +506,10 @@ I32 GL_API::getFont(const std::string& fontName){
             ERROR_FN(Locale::get("ERROR_FONT_FILE"),fontName.c_str());
         }
         _fonts.insert(std::make_pair(fontName, tempFont));
+        return tempFont;
     }
-    return _fonts[fontName];
+    
+    return it->second;
 }
 
 void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
@@ -561,12 +537,6 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position){
     GL_API::registerDrawCall();
 }
 
-vec3<GLfloat> GL_API::unproject(const vec3<GLfloat>& windowCoord) const {
-    vec3<GLfloat> coords;
-    Divide::GL::_unproject(windowCoord, coords);
-    return coords;
-}
-
 void GL_API::idle(){
     glfwPollEvents();
 }
@@ -574,9 +544,11 @@ void GL_API::idle(){
 bool GL_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& callback) {
     if(callback.empty())
         return false;
-
+ 
     if(context == GFX_LOADING_CONTEXT){
         while(!_loadQueue.push(callback));
+        if (!_loaderThread)
+            _loaderThread = New boost::thread(&GL_API::loadInContextInternal, this);
     }else{
         callback();
     }
@@ -584,12 +556,13 @@ bool GL_API::loadInContext(const CurrentContext& context, const DELEGATE_CBK& ca
 }
 
 void GL_API::loadInContextInternal(){
-    glfwMakeContextCurrent(Divide::GL::_loaderWindow);
+    boost::this_thread::sleep(boost::posix_time::milliseconds(200));
+    glfwMakeContextCurrent(Divide::GLUtil::_loaderWindow);
 #ifdef GLEW_MX
-    Divide::GL::initGlew();
+    Divide::GLUtil::initGlew();
 #   if defined(_DEBUG) || defined(_PROFILE)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(&Divide::GL::DebugCallback, (GLvoid*)(1));
+    glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(1));
 #   endif
 #endif
     while(!_closeLoadingThread){
@@ -603,5 +576,4 @@ void GL_API::loadInContextInternal(){
             glFlush();
         }
     }
-   // glfwMakeContextCurrent(nullptr);
 }

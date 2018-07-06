@@ -10,7 +10,6 @@ class Texture;
 class FrameBuffer;
 class ShaderProgram;
 class SamplerDescriptor;
-typedef Texture Texture2D;
 ///It's called a prerender operator because it operates on the buffer before "rendering" to the screen
 ///Technically, it's a post render operation
 class PreRenderOperator {

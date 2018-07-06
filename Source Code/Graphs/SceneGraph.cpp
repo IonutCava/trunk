@@ -14,11 +14,6 @@ SceneGraph::SceneGraph(){
     _updateRunning = false;
 }
 
-void SceneGraph::update(){
-    _root->checkBoundingBoxes();
-    _root->updateTransforms();
-}
-
 void SceneGraph::idle(){
     for(SceneGraphNode*& it : _pendingDeletionNodes){
         it->unload();

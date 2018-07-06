@@ -33,7 +33,7 @@ enum  RenderStage;
 class SceneGraphNode;
 
 #include "Utility/Headers/Vector.h"
-#include "Hardware/Platform/Headers/PlatformDefines.h"
+#include "Core/Math/Headers/MathClasses.h"
 #include <cassert>
 
 struct RenderBinItem{
@@ -41,9 +41,10 @@ struct RenderBinItem{
     I32              _sortKeyA; 
     I32              _sortKeyB;
     I64              _stateHash;
+    F32              _distanceToCameraSq;
 
     RenderBinItem() : _node(nullptr){}
-    RenderBinItem(I32 sortKeyA, I32 sortKeyB, SceneGraphNode *node );
+    RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneGraphNode *node);
 };
 
 struct RenderingOrder{
@@ -56,6 +57,7 @@ struct RenderingOrder{
     };
 };
 
+class SceneRenderState;
 ///This class contains a list of "RenderBinItem"'s and stores them sorted depending on the desired designation
 class RenderBin {
     typedef vectorImpl< RenderBinItem > RenderBinStack;
@@ -90,11 +92,11 @@ public:
 
     virtual void sort(const RenderStage& currentRenderStage);
     virtual void preRender(const RenderStage& currentRenderStage);
-    virtual void render(const RenderStage& currentRenderStage);
+    virtual void render(const SceneRenderState& renderState, const RenderStage& currentRenderStage);
     virtual void postRender(const RenderStage& currentRenderStage);
     virtual void refresh();
 
-    virtual void addNodeToBin(SceneGraphNode* const sgn);
+    virtual void addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos);
     inline  const RenderBinItem& getItem(U16 index) const {assert(index < _renderBinStack.size());	return _renderBinStack[index]; }
 
     inline U16 getBinSize()   const {return (U16)_renderBinStack.size();}

@@ -23,8 +23,9 @@ public:
             bool getDrawState(const RenderStage& currentStage)  const;
             void addToDrawExclusionMask(U32 stageMask);
             void removeFromDrawExclusionMask(U32 stageMask);
-            RenderStateBlock* getDepthStateBlock();
-            RenderStateBlock* getShadowStateBlock();
+     const  RenderStateBlock& getDepthStateBlock();
+     const  RenderStateBlock& getShadowStateBlock();
+
 protected:
     friend class SceneNode;
     bool _hasWaterReflection;

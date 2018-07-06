@@ -56,15 +56,13 @@ class FrameBuffer;
 class VertexBuffer;
 class ShaderProgram;
 class SceneGraphNode;
+class SceneRenderState;
 class RenderStateBlock;
 class GenericVertexData;
 
 ///FWD DECLARE ENUMS
 enum ShaderType;
 
-///FWD DECLARE TYPEDEFS
-typedef Texture Texture2D;
-typedef Texture TextureCubemap;
 template<class T> class Plane;
 typedef vectorImpl<Plane<F32> > PlaneList;
 ///FWD DECLARE STRUCTS
@@ -96,27 +94,24 @@ protected:
     ///Clear buffers,shaders, etc.
     virtual void flush() = 0;
 
-    virtual F32* lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection) = 0;
-    virtual F32* lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up) = 0;
-    virtual const F32* getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up) = 0;
-
+    virtual F32* lookAt(const mat4<F32>& viewMatrix) = 0;
+   
     virtual void idle() = 0;
     virtual void getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat) = 0;
 
     ///Change the window's position
     virtual void setWindowPos(U16 w, U16 h) const = 0;
-    ///Unproject the give windows space coords to object space (use z - to determine depth [0,1])
-    virtual vec3<F32> unproject(const vec3<F32>& windowCoord) const = 0;
     ///Platform specific cursor manipulation. Set's the cursor's location to the specified X and Y relative to the edge of the window
     virtual void setMousePosition(U16 x, U16 y) const = 0;
-    virtual FrameBuffer*        newFB(bool multisampled) = 0;
-    virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) = 0;
-    virtual GenericVertexData*  newGVD() = 0;
-    virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) = 0;
-    virtual Texture2D*          newTexture2D(const bool flipped = false) = 0;
-    virtual TextureCubemap*     newTextureCubemap(const bool flipped = false) = 0;
-    virtual ShaderProgram*      newShaderProgram(const bool optimise = false) = 0;
-    virtual Shader*             newShader(const std::string& name,const ShaderType& type,const bool optimise = false) = 0;
+    virtual FrameBuffer*        newFB(bool multisampled) const = 0;
+    virtual VertexBuffer*       newVB(const PrimitiveType& type = TRIANGLES) const = 0;
+    virtual GenericVertexData*  newGVD() const = 0;
+    virtual PixelBuffer*        newPB(const PBType& type = PB_TEXTURE_2D) const = 0;
+    virtual Texture*            newTextureArray(const bool flipped = false) const = 0;
+    virtual Texture*            newTexture2D(const bool flipped = false) const = 0;
+    virtual Texture*            newTextureCubemap(const bool flipped = false) const = 0;
+    virtual ShaderProgram*      newShaderProgram(const bool optimise = false) const = 0;
+    virtual Shader*             newShader(const std::string& name,const ShaderType& type,const bool optimise = false) const = 0;
     virtual bool                initShaders() = 0;
     virtual bool                deInitShaders() = 0;
 
@@ -126,20 +121,16 @@ protected:
     virtual void initDevice(U32 targetFrameRate) = 0;
 
     /*State Matrix Manipulation*/
-    virtual F32* setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;
-    virtual const F32* getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;
-    virtual F32* setPerspectiveProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) = 0;
-    //push-pop our rendering matrices and set the current matrix to whatever "setCurrentMatrix" is
-    virtual void lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView , bool lockProjection) = 0;
-    virtual void releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView, bool releaseProjection) = 0;
+    virtual F32* setProjection(const vec4<F32>& rect, const vec2<F32>& planes) = 0;
+    virtual F32* setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes) = 0;
     /*State Matrix Manipulation*/
 
-    virtual void toggle2D(bool _2D) = 0;
+    virtual void toggleRasterization(bool state) = 0;
     virtual void drawText(const TextLabel& textLabel, const vec2<I32>& position) = 0;
 
     /*Object viewing*/
     virtual void renderInViewport(const vec4<I32>& rect, const DELEGATE_CBK& callback) = 0;
-    virtual void setAnaglyphFrustum(F32 camIOD, bool rightFrustum = false) = 0;
+    virtual void setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum = false) = 0;
     virtual void updateClipPlanes() = 0;
     /*Object viewing*/
 
@@ -152,7 +143,7 @@ protected:
                            const bool orthoMode = false,
                            const bool disableDepth = false) = 0;
     ///Render bounding boxes, skeletons, axis etc.
-    virtual void debugDraw() = 0;
+    virtual void debugDraw(const SceneRenderState& sceneRenderState) = 0;
     /*Primitives Rendering*/
     /*Immediate Mode Emmlation*/
     virtual IMPrimitive* createPrimitive(bool allowPrimitiveRecycle = true) = 0;
@@ -167,13 +158,12 @@ protected:
 
     virtual U64 getFrameDurationGPU() const = 0;
     virtual I32 getDrawCallCount() const = 0;
+    virtual U32 getFrameCount() const = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock) = 0;
 
     virtual void drawPoints(U32 numPoints) = 0;
 
 protected:
-    ///Update projection matrix
-    virtual void updateProjection() = 0;
     ///Change the resolution and reshape all graphics data
     virtual void changeResolutionInternal(U16 w, U16 h) = 0;
 

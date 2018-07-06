@@ -30,7 +30,6 @@ class SpotLight : public Light{
 public:
 	SpotLight(U8 slot, F32 range = 2);
 
-    const mat4<F32>& getLightViewMatrix(U8 index = 0);
 };
 
 #endif

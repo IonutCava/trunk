@@ -415,6 +415,11 @@ public:
         rotate(x,y,z,angle,inDegrees);
     }
 
+    mat4(const vec3<T>& eye, const vec3<T>& target, const vec3<T>& up) : mat4()
+    {
+        lookAt(eye, target, up);
+    }
+
     mat4(const mat3<T> &m) 
     {
         mat[0] = m[0]; mat[4] = m[3]; mat[8]  = m[6]; mat[12] = 0.0;
@@ -460,15 +465,25 @@ public:
         return mat4<T>(Util::Mat4::Multiply(this->mat, m.mat));
     }
 
-    inline bool operator == (mat4& B) const {
-        for (U8 i = 0; i < 16; i++)
-            if (!FLOAT_COMPARE(this->mat[i] + EPSILON, B.mat[i] + EPSILON)) //< add a small epsilon value to avoid 0.0 != 0.0
+    inline T elementSum() const { return this->mat[0]  + this->mat[1]  + this->mat[2]  + this->mat[3]  + 
+                                         this->mat[4]  + this->mat[5]  + this->mat[6]  + this->mat[7]  + 
+                                         this->mat[8]  + this->mat[9]  + this->mat[10] + this->mat[11] + 
+                                         this->mat[12] + this->mat[13] + this->mat[14] + this->mat[15]; }
+
+    inline bool operator == (const mat4& B) const {
+        if (!FLOAT_COMPARE(elementSum(), B.elementSum()))
+            return false;
+
+        const F32* mat2 = &B.mat[0];
+        U8 i = 0;
+        for (; i < 16; ++i)
+            if (!FLOAT_COMPARE(mat[i] + EPSILON, mat2[i] + EPSILON)) //< add a small epsilon value to avoid 0.0 != 0.0
                 return false;
 
         return true;
     }
 
-    inline bool operator != (mat4& B) const {
+    inline bool operator != (const mat4& B) const {
         return !(*this == B);
     }
 
@@ -579,6 +594,7 @@ public:
     }
 
     inline T det(void)             const { return Util::Mat4::det(this->mat); }
+    inline mat4 getInverse()       const { mat4 ret; this->inverse(ret); return ret;}
     inline void inverse(mat4& ret) const { Util::Mat4::Inverse(this->mat, ret.mat); }
     inline void inverse()                { mat4 ret; this->inverse(ret); this->set(ret.mat); }
     inline void zero()                   { memset(this->mat, 0.0, sizeof(T) * 16); }
@@ -680,7 +696,7 @@ public:
     }
 
     void reflect(const Plane<T>& plane) {
-        vec4<T> eq = plane.getEquation();
+        const vec4<T>& eq = plane.getEquation();
         T x = eq.x;
         T y = eq.y;
         T z = eq.z;
@@ -693,8 +709,35 @@ public:
         this->mat[3] = 0;          this->mat[7] = 0;          this->mat[11] = 0;           this->mat[15] = 1;
     }
 
+    void lookAt(const vec3<T>& eye, const vec3<T>& target, const vec3<T>& up) {
+        vec3<T> xAxis, yAxis, zAxis, viewDir;
+        zAxis = eye - target;
+        zAxis.normalize();
+        xAxis.cross(up, zAxis);
+        xAxis.normalize();
+        yAxis.cross(zAxis, xAxis);
+        yAxis.normalize();
+        viewDir = -zAxis;
+
+        this->m[0][0] = xAxis.x;
+        this->m[1][0] = xAxis.y;
+        this->m[2][0] = xAxis.z;
+        this->m[3][0] = -xAxis.dot(eye);
+
+        this->m[0][1] = yAxis.x;
+        this->m[1][1] = yAxis.y;
+        this->m[2][1] = yAxis.z;
+        this->m[3][1] = -yAxis.dot(eye);
+
+        this->m[0][2] = zAxis.x;
+        this->m[1][2] = zAxis.y;
+        this->m[2][2] = zAxis.z;
+        this->m[3][2] = -zAxis.dot(eye);
+    }
+
+
     inline void reflect(T x,T y,T z,T w) {
-        reflect(vec4<T>(x,y,z,w));
+        reflect(Plane<T>(x,y,z,w));
     }
 
     inline void extractMat3(mat3<T>& matrix3) const {

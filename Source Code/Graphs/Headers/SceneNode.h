@@ -48,6 +48,7 @@ enum SceneNodeType {
 class Scene;
 class Material;
 class SceneState;
+class SceneRenderState;
 class ShaderProgram;
 enum  RenderStage;
 
@@ -62,7 +63,7 @@ public:
 
     /// Perform any pre-draw operations (this is after sort and transform updates)
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
-    virtual bool onDraw(const RenderStage& currentStage) = 0;
+    virtual bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) = 0;
     virtual	bool getDrawState() const { return _renderState.getDrawState(); }
     /// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
     virtual	bool getDrawState(const RenderStage& currentStage)  const { return _renderState.getDrawState(currentStage); }
@@ -70,7 +71,7 @@ public:
 
     virtual	bool	  unload();
     virtual bool      isReadyForDraw(const RenderStage& currentStage);
-    virtual bool	  isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+    virtual bool	  isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     virtual	void	  setMaterial(Material* const m);
     Material* getMaterial();
     /// A custom shader is used if we either don't have a material or we need to render in a special way.
@@ -101,13 +102,11 @@ protected:
     inline void decReferenceCount()       { _sgnReferenceCount--; }
 
     /// Perform any post-draw operations (this is after releasing object and shadow states)
-    virtual void postDraw(const RenderStage& currentStage) {/*Nothing yet*/ }
+    virtual void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) {/*Nothing yet*/ }
     /// Called from SceneGraph "sceneUpdate"
     virtual void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    /// Called if something changed for the SGN that affects rendering
-    virtual void drawReset(SceneGraphNode* const sgn) {}
     /*Rendering/Processing*/
-    virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState) = 0; //Sounds are played, geometry is displayed etc.
 
     /* Normal material */
     virtual	bool prepareMaterial(SceneGraphNode* const sgn);

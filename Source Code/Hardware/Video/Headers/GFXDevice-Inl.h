@@ -23,27 +23,66 @@
 #ifndef _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 #define _HARDWARE_VIDEO_GFX_DEVICE_INL_H_
 
+/// Compare the current render stage flag with the given mask
+inline bool GFXDevice::isCurrentRenderStage(U8 renderStageMask) {
+    assert((renderStageMask & ~(INVALID_STAGE - 1)) == 0);
+    return bitCompare(renderStageMask, _renderStage);
+}
+
+/// Toggle hardware rasterization on or off. 
+inline void GFXDevice::toggleRasterization(bool state) {
+    if (_rasterizationEnabled == state) return;
+    _rasterizationEnabled = state;
+
+    _api.toggleRasterization(state);
+}
+
+/// Register a function to be called in the 2D rendering fase of the GFX Flush routine. Use callOrder for sorting purposes 
+inline void GFXDevice::add2DRenderFunction(const DELEGATE_CBK& callback, U32 callOrder) {
+    _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
+
+    std::sort(_2dRenderQueue.begin(), 
+              _2dRenderQueue.end(), 
+              [](const std::pair<U32, DELEGATE_CBK> & a, const std::pair<U32, DELEGATE_CBK> & b) -> bool {
+                    return a.first < b.first;
+              });
+}
+
 /// add a new clipping plane. This will be limited by the actual shaders (how many planes they use)
 /// this function returns the newly added clip plane's index in the vector
-inline I32 GFXDevice::addClipPlane(const Plane<F32>& p){
+inline I32 GFXDevice::addClipPlane(Plane<F32>& p, ClipPlaneIndex clipIndex){
     if(_clippingPlanes.size() == Config::MAX_CLIP_PLANES){
         //overwrite the clipping planes from the front
         _clippingPlanes.erase(_clippingPlanes.begin());
     }
+    p.setIndex(static_cast<I32>(clipIndex));
     _clippingPlanes.push_back(p);
     _clippingPlanesDirty = true;
+
     return (I32)(_clippingPlanes.size() - 1);
 }
 
 /// add a new clipping plane defined by it's equation's coefficients
-inline I32 GFXDevice::addClipPlane(F32 A, F32 B, F32 C, F32 D) {
-    return addClipPlane(Plane<F32>(A, B, C, D));
+inline I32 GFXDevice::addClipPlane(F32 A, F32 B, F32 C, F32 D, ClipPlaneIndex clipIndex) {
+    Plane<F32> temp(A, B, C, D);
+    return addClipPlane(temp, clipIndex);
+
 }
 
 /// remove a clip plane by index
 inline bool GFXDevice::removeClipPlane(U32 index) {
     if(index < _clippingPlanes.size() && index >= 0) {
         _clippingPlanes.erase(_clippingPlanes.begin() + index);
+        _clippingPlanesDirty = true;
+        return true;
+    }
+    return false;
+}
+
+/// Change a clip planes bound index
+inline bool GFXDevice::changeClipIndex(U32 index, ClipPlaneIndex clipIndex){
+    if (index < _clippingPlanes.size() && index >= 0) {
+        _clippingPlanes[index].setIndex((U32)clipIndex);
         _clippingPlanesDirty = true;
         return true;
     }
@@ -96,8 +135,8 @@ inline void GFXDevice::resetClipPlanes() {
 #define GFX_DEVICE GFXDevice::getInstance()
 #define GFX_RENDER_BIN_SIZE RenderPassManager::getInstance().getLastTotalBinSize(0)
 
-inline RenderStateBlock* SET_STATE_BLOCK(RenderStateBlock* const block, bool forceUpdate = false){
-    return GFX_DEVICE.setStateBlock(block,forceUpdate);
+inline RenderStateBlock* SET_STATE_BLOCK(const RenderStateBlock& block, bool forceUpdate = false){
+    return GFX_DEVICE.setStateBlock(block, forceUpdate);
 }
 
 inline RenderStateBlock* SET_DEFAULT_STATE_BLOCK(bool forceUpdate = false){

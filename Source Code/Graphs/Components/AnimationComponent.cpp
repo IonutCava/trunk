@@ -23,6 +23,13 @@ AnimationComponent::~AnimationComponent()
 {
 }
 
+void AnimationComponent::update(const U64 deltaTime) {
+    SGNComponent::update(deltaTime);
+    
+    Object3D* node = _parentSGN->getNode<Object3D>();
+    node->updateAnimations(_parentSGN);
+}
+
 /// Select an animation by name
 bool AnimationComponent::playAnimation(const std::string& name){
     U32 animIndex = 0;

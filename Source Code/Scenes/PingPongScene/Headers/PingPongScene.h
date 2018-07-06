@@ -38,6 +38,8 @@ public:
 		_lost = false;
 		_ballSGN = nullptr;
 		_ball = nullptr;
+        _freeFlyCam = nullptr;
+        _paddleCam = nullptr;
 	}
 
 	~PingPongScene() {}
@@ -64,7 +66,8 @@ private:
 	vec3<F32> _sunvector;
 	Sphere3D* _ball;
 	SceneGraphNode* _ballSGN;
-
+    Camera*         _freeFlyCam;
+    Camera*         _paddleCam;
 private: //Game stuff:
 	bool _directionTowardsAdversary;
 	bool _upwardsDirection;

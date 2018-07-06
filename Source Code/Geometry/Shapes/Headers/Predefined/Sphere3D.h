@@ -55,12 +55,12 @@ public:
         return SceneNode::computeBoundingBox(sgn);
     }
 
-    bool onDraw(const RenderStage& currentStage){
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
         if(_dirty){
             createSphere(_resolution,_resolution);
             _dirty = false;
         }
-        return Object3D::onDraw(currentStage);
+        return Object3D::onDraw(sgn, currentStage);
     }
 
 private:

@@ -1,18 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <material>
 	<name>defaultMaterial</name>
-	<diffuse r="0.6" g="0.6" b="0.6" a="1"/>
-	<ambient r="0.6" g="0.6" b="0.6" a="1"/>
-	<specular r="0" g="0" b="0" a="0"/>
-	<emissive r="0" g="0" b="0"/>
-	<shininess v="0.5"/>
-	<doubleSided>true</doubleSided>
+	<ambient r="0.2" g="0.2" b="0.2" a="1"/>
+	<diffuse r="0.6666667" g="0.6666667" b="0.6666667" a="1"/>
+	<specular r="0.8" g="0.8" b="0.8" a="1"/>
+	<shininess v="5"/>
+	<emissive r="0.6" g="0.6" b="0.6"/>
+	<doubleSided>false</doubleSided>
 </material>
-
-<shader>
-  <effect>lighting.NoTexture</effect>
-</shader>
-
-<shadows>
-	<castsShadows>true</castsShadows>
-	<receiveShadows>true</receiveShadows>
-</shadows>
+<shaderProgram>
+	<effect>lighting</effect>
+	<shadowEffect>ImmediateModeEmulation</shadowEffect>
+	<zPrePassEffect>depthPass.PrePass</zPrePassEffect>
+</shaderProgram>

@@ -76,8 +76,8 @@ public:
     vec2(const vec3<T> &_v);
     vec2(const vec4<T> &_v);
 
-          I32  operator==(const vec2 &v)   const { return this->compare(v); }
-          I32  operator!=(const vec2 &v)   const { return !(*this == _v); }
+          bool operator==(const vec2 &v)   const { return this->compare(v); }
+          bool operator!=(const vec2 &v)   const { return !(*this == v); }
           vec2 &operator=(T _f)                  { this->x=_f; this->y=_f; return (*this); }
     const vec2 operator*(T _f)             const { return vec2(this->x * _f,this->y * _f); }
     const vec2 operator/(T _i)             const { return vec2(this->x / _i,this->y / _i); }
@@ -168,8 +168,8 @@ public:
     vec3(const vec3 &v) : x(v.x), y(v.y), z(v.z) { }
     vec3(const vec4<T> &v);
 
-          I32   operator!=(const vec3 &v)  const { return !(*this == v); }
-          I32   operator==(const vec3 &v)  const { return this->compare(v); }
+          bool  operator!=(const vec3 &v)  const { return !(*this == v); }
+          bool  operator==(const vec3 &v)  const { return this->compare(v); }
           vec3 &operator=(T _f)                  { this->x=_f; this->y=_f; this->z=_f; return (*this); }
     const vec3  operator*(T _f)            const { return vec3(this->x * _f,this->y * _f,this->z * _f); }
     const vec3  operator/(T _f)            const { if(IS_ZERO(_f)) return *this;_f = 1.0f / _f; return (*this) * _f; }
@@ -298,8 +298,8 @@ public:
     vec4(const vec3<T> &v,T _w) : x(v.x), y(v.y), z(v.z), w(_w) { }
     vec4(const vec4 &v) : x(v.x), y(v.y), z(v.z), w(v.w)        { }
 
-          I32   operator==(const vec4 &v)   const { return this->compare(v); }
-          I32   operator!=(const vec4 &v)   const { return !(*this == v); }
+          bool  operator==(const vec4 &v)   const { return this->compare(v); }
+          bool  operator!=(const vec4 &v)   const { return !(*this == v); }
           vec4 &operator=(T _f)                   { this->x=_f; this->y=_f; this->z=_f; this->w=_f; return (*this);}
     const vec4  operator*(T _f)             const { return vec4(this->x * _f,this->y * _f,this->z * _f,this->w * _f); }
     const vec4  operator/(T _f)             const { if(IS_ZERO(_f)) return *this; _f = 1.0f / _f; return (*this) * _f; }

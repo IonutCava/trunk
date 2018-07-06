@@ -2,13 +2,13 @@
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/LightManager.h"
 #include "Managers/Headers/SceneManager.h"
 #include "ShadowMapping/Headers/ShadowMap.h"
 #include "Dynamics/Entities/Headers/Impostor.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
 Light::Light(const U8 slot,const F32 range,const LightType& type) :
@@ -34,18 +34,21 @@ Light::Light(const U8 slot,const F32 range,const LightType& type) :
     }
     _shadowProperties._floatValues.set(-1.0f);
 
+    _shadowCamera = New FreeFlyCamera();
+    _shadowCamera->setMoveSpeedFactor(0.0f);
+    _shadowCamera->setTurnSpeedFactor(0.0f);
+    _shadowCamera->setFixedYawAxis(true);
+    
     _properties._diffuse.set(DefaultColors::WHITE());
     _properties._specular.set(DefaultColors::WHITE());
     _properties._direction.w = 0.0f;
     
     _properties._attenuation = vec4<F32>(1.0f, 0.07f, 0.017f, 45.0f); //constAtt, linearAtt, quadAtt, spotCuroff
     _properties._specular.w = 1.0f;
-    setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
+    
     _dirty = true;
     _enabled = true;
     _renderState.addToDrawExclusionMask(DEPTH_STAGE);
-    assert(LightManager::hasInstance());
-    LightManager::getInstance().addLight(this);
 }
 
 Light::~Light()
@@ -53,9 +56,18 @@ Light::~Light()
     unload();
 }
 
+bool Light::load(const std::string& name){
+    setName(name);
+    setShadowMappingCallback(DELEGATE_BIND(&SceneManager::renderVisibleNodes, DELEGATE_REF(SceneManager::getInstance())));
+    assert(LightManager::hasInstance());
+    return LightManager::getInstance().addLight(this);
+}
+
 bool Light::unload(){
     if(getState() != RES_LOADED && getState() != RES_LOADING)
         return true;
+
+    //SAFE_DELETE(_shadowCamera); <-- deleted by the camera manager
 
     if(_impostor){
         _lightSGN->removeNode(_impostorSGN);
@@ -84,9 +96,12 @@ void Light::updateState(const bool force){
 
     if(_type != LIGHT_TYPE_DIRECTIONAL) {
 
-        if(_mode == LIGHT_MODE_MOVABLE) {
-            _properties._position.set(_lightSGN->getTransform()->getPosition());
-            _dirty = true;
+        if(_mode == LIGHT_MODE_MOVABLE) {  
+            vec3<F32> newPosition = _lightSGN->getTransform()->getPosition();
+            if (_properties._position != newPosition){
+                _properties._position.set(newPosition);
+                _dirty = true;
+            }
         }
 
         if(!_dirty && !_updateLightBB) return;
@@ -125,7 +140,6 @@ void Light::updateState(const bool force){
     //Do not set API lights for deferred rendering
     if(getEnabled() && GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD && _dirty)
         GFX_DEVICE.setLight(this);
-
     _dirty = false;
 }
 
@@ -274,15 +288,15 @@ bool Light::computeBoundingBox(SceneGraphNode* const sgn){
     return SceneNode::computeBoundingBox(sgn);
 }
 
-bool Light::isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck){
+bool Light::isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck){
     return ((_impostorSGN != nullptr) && _drawImpostor);
 }
 
-void Light::render(SceneGraphNode* const sgn){
+void Light::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     // The isInView call should stop impostor rendering if needed
     if(!_impostor)  return;
 
-    _impostor->render(sgn);
+    _impostor->render(sgn, sceneRenderState);
 }
 
 void Light::addShadowMapInfo(ShadowMapInfo* shadowMapInfo){
@@ -302,14 +316,15 @@ void Light::updateResolution(I32 newWidth, I32 newHeight){
     sm->updateResolution(newWidth, newHeight);
 }
 
-void Light::generateShadowMaps(const SceneRenderState& sceneRenderState){
-    ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState);
+void Light::generateShadowMaps(SceneRenderState& sceneRenderState){
+    ShadowMap* sm = _shadowMapInfo->getOrCreateShadowMap(sceneRenderState, _shadowCamera);
 
     if (!sm)
         return;
 
     sm->render(sceneRenderState, _callback);
     sm->postRender();
+    GFX_DEVICE.setLight(this, true);
 }
 
 void Light::setLightMode(const LightMode& mode) {

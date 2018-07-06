@@ -49,7 +49,7 @@ public:
     virtual void onDeactivate();
 
 protected:
-    virtual void updateViewMatrix();
+    virtual bool updateViewMatrix();
 
 protected:
     F32             _maxRadius;

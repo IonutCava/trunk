@@ -28,7 +28,62 @@
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-#define TERRAIN_STRIP_RESTART_INDEX std::numeric_limits<U32>::max()
+struct TerrainTextureLayer {
+    TerrainTextureLayer()
+    {
+        _lastOffset = 0;
+
+        for (U8 i = 0; i < TEXTURE_USAGE_PLACEHOLDER; ++i)
+            _texture[i] = nullptr;
+
+        memset(_diffuseUVScale, 0.0f, (4) * sizeof(F32));
+        memset(_detailUVScale,  0.0f, (4) * sizeof(F32));
+    }
+
+    ~TerrainTextureLayer();
+
+    enum TerrainTextureUsage {
+        TEXTURE_BLEND_MAP = 0,
+        TEXTURE_ALBEDO_MAPS = 1,
+        TEXTURE_DETAIL_MAPS = 2,
+        TEXTURE_USAGE_PLACEHOLDER = 3
+    };
+
+    enum TerrainTextureChannel {
+        TEXTURE_RED_CHANNEL = 0,
+        TEXTURE_GREEN_CHANNEL = 1,
+        TEXTURE_BLUE_CHANNEL = 2,
+        TEXTURE_ALPHA_CHANNEL = 3
+    };
+
+    void bindTextures(U32 offset);
+    void unbindTextures();
+
+    inline void setTexture(TerrainTextureUsage textureUsage, Texture* texture){
+        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage >= TEXTURE_BLEND_MAP);
+        _texture[textureUsage] = texture;
+    }
+
+    inline void setTextureScale(TerrainTextureUsage textureUsage, TerrainTextureChannel textureChannel, F32 scale) {
+        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage > TEXTURE_BLEND_MAP);
+
+        if (textureUsage == TEXTURE_ALBEDO_MAPS) _diffuseUVScale[textureChannel] = scale;
+        else                                     _detailUVScale[textureChannel] = scale;
+    }
+
+    inline F32 getTextureScale(TerrainTextureUsage textureUsage, TerrainTextureChannel textureChannel) {
+        assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage > TEXTURE_BLEND_MAP);
+
+        if (textureUsage == TEXTURE_ALBEDO_MAPS) return _diffuseUVScale[textureChannel];
+        else                                     return _detailUVScale[textureChannel];
+    }
+
+private:
+    U32 _lastOffset;
+    F32 _diffuseUVScale[4];
+    F32 _detailUVScale[4];
+    Texture* _texture[TEXTURE_USAGE_PLACEHOLDER];
+};
 
 class Quad3D;
 class Quadtree;
@@ -38,18 +93,7 @@ class ShaderProgram;
 class TerrainDescriptor;
 
 class Terrain : public SceneNode {
-   enum TerrainTextureUsage{
-      TERRAIN_TEXTURE_DIFFUSE = 0,
-      TERRAIN_TEXTURE_NORMALMAP = 1,
-      TERRAIN_TEXTURE_CAUSTICS = 2,
-      TERRAIN_TEXTURE_RED = 3,
-      TERRAIN_TEXTURE_GREEN = 4,
-      TERRAIN_TEXTURE_BLUE = 5,
-      TERRAIN_TEXTURE_ALPHA = 6
-  };
-
-  typedef Unordered_map<TerrainTextureUsage, Texture2D*> TerrainTextureMap;
-
+    friend class TerrainLoader;
 public:
 
     Terrain();
@@ -57,8 +101,8 @@ public:
 
     bool unload();
 
-    bool onDraw(const RenderStage& currentStage);
-    void drawBoundingBox(SceneGraphNode* const sgn);
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
+    void drawBoundingBox(SceneGraphNode* const sgn) const;
     inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
 
     vec3<F32>  getPositionFromGlobal(F32 x, F32 z) const;
@@ -72,24 +116,20 @@ public:
 
     inline VertexBuffer* const getGeometryVB() {return _groundVB;}
     inline Quadtree&           getQuadtree()   const {return *_terrainQuadtree;}
-    inline void toggleReflection(bool state){ _drawReflected = state;}
-    bool computeBoundingBox(SceneGraphNode* const sgn);
-    inline bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true) {return true;}
 
-    void addTexture(TerrainTextureUsage channel, Texture2D* const texture);
-    inline Texture2D* getTexture(TerrainTextureUsage channel) {return _terrainTextures[channel];}
+    bool computeBoundingBox(SceneGraphNode* const sgn);
 
 	Vegetation* const getVegetation() const;
-    void addVegetation(SceneGraphNode* const sgn, Vegetation* veg, std::string grassShader);
     void toggleVegetation(bool state);
 
 protected:
 
-    void postDraw(const RenderStage& currentStage);
+    void postDraw(SceneGraphNode* const sgn, const RenderStage& currentStage);
 
-    void drawGround() const;
-    void drawInfinitePlain();
-    void render(SceneGraphNode* const sgn);
+    void drawGround(const SceneRenderState& sceneRenderState) const;
+    void drawInfinitePlain(const SceneRenderState& sceneRenderState) const;
+
+    void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareMaterial(SceneGraphNode* const sgn);
     bool releaseMaterial();
     bool prepareDepthMaterial(SceneGraphNode* const sgn);
@@ -97,47 +137,56 @@ protected:
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 
-    void  postLoad(SceneGraphNode* const sgn);
+    void postLoad(SceneGraphNode* const sgn);
+    void setCausticsTex(Texture* causticTexture);
+    void setUnderwaterAlbedoTex(Texture* underwaterAlbedoTexture);
+    void setUnderwaterDetailTex(Texture* underwaterDetailTexture);
 
-    template<typename T>
-    friend class ImplResourceLoader;
-    void loadVisualResources();
-    bool loadThreadedResources(TerrainDescriptor* const terrain);
+    inline void setUnderwaterDiffuseScale(F32 diffuseScale) {_underwaterDiffuseScale = diffuseScale;}
 
-private:
+protected:
+    friend class TerrainChunk;
+    void renderChunkCallback(U8 lod);
+
+protected:
 
     U8            _lightCount;
-    U16			  _terrainWidth, _terrainHeight;
+    U16			  _terrainWidth;
+    U16           _terrainHeight;
+    U32           _chunkSize;
     Quadtree*	  _terrainQuadtree;
     VertexBuffer* _groundVB;
 
-    F32  _diffuseUVScale;
-    F32  _normalMapUVScale;
-    F32  _terrainScaleFactor;
-    F32  _terrainHeightScaleFactor;
+    vec2<F32> _terrainScaleFactor;
     F32	 _farPlane;
     U64  _stateRefreshInterval;
     U64  _stateRefreshIntervalBuffer;
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     bool _shadowMapped;
-    bool _drawReflected;
-    TerrainTextureMap       _terrainTextures;
-    SceneGraphNode*         _vegetationGrassNode;
-    std::string             _grassShader;
-    BoundingBox             _boundingBox;
-    vec3<F32>               _eyePos;
-    Quad3D*					_plane;
-    Transform*				_planeTransform;
-    Transform*              _terrainTransform;
-    SceneGraphNode*         _node;
-    SceneGraphNode*			_planeSGN;
+
+    Vegetation*       _vegetation;
+    SceneGraphNode*   _vegetationGrassNode;
+    BoundingBox       _boundingBox;
+    Quad3D*		      _plane;
+    Transform*		  _planeTransform;
+    Transform*        _terrainTransform;
+    SceneGraphNode*   _node;
+    SceneGraphNode*	  _planeSGN;
+
+    Texture*           _causticsTex;
+    Texture*           _underwaterAlbedoTex;
+    Texture*           _underwaterDetailTex;
+    F32                _underwaterDiffuseScale;
+    vectorImpl<TerrainTextureLayer* > _terrainTextures;
     ///Normal rendering state
-    RenderStateBlock*       _terrainRenderState;
+    RenderStateBlock* _terrainRenderState;
     ///Depth map rendering state
-    RenderStateBlock*       _terrainDepthRenderState;
+    RenderStateBlock* _terrainDepthRenderState;
+    ///PrePass rendering state
+    RenderStateBlock* _terrainPrePassRenderState;
     ///Reflection rendering state
-    RenderStateBlock*       _terrainReflectionRenderState;
+    RenderStateBlock*  _terrainReflectionRenderState;
 };
 
 #endif

@@ -35,16 +35,13 @@ public:
     {
     }
 
-    void Clear()
+    void Create(U8 numBuffers = 1, U8 numQueries = 1)
     {
     }
-    void Create(U8 numBuffers = 1) 
+    void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false)
     {
     }
-    void Draw(const PrimitiveType& type, U32 min, U32 max)
-    {
-    }
-    void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max)
+    void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false)
     {
     }
     void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream)
@@ -53,8 +50,19 @@ public:
     void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool steam)
     {
     }
-    void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) 
+    void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type)
     {
+    }
+    void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type)
+    {
+    }
+    void SetFeedbackBuffer(U32 buffer, U32 bindPoint)
+    {
+    }
+
+    I32  GetFeedbackPrimitiveCount(U8 queryID)
+    {
+        return -1;
     }
 };
 #endif

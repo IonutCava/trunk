@@ -10,7 +10,7 @@ Task::~Task(){
 
 void Task::startTask(){
     assert(_tp != nullptr);
-    if(!_tp->schedule(DELEGATE_BIND(&Task::run,DELEGATE_REF(*this)))){
+    if(!_tp->schedule(DELEGATE_BIND(&Task::run, this))){
         ERROR_FN(Locale::get("TASK_SCHEDULE_FAIL"));
     }
 }
@@ -49,5 +49,6 @@ void Task::run(){
 
     D_PRINT_FN(Locale::get("TASK_DELETE_THREAD"), boost::this_thread::get_id());
 
+    _completionSignal(getGUID());
     _done = true;
 }

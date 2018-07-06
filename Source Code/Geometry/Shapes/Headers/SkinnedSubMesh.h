@@ -36,13 +36,10 @@ public:
     inline SceneAnimator* getAnimator() { return _animator; }
 
 protected:
-    /// Called from SceneGraph "sceneUpdate"
-    void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
     void updateAnimations(SceneGraphNode* const sgn);
-    void drawReset(SceneGraphNode* const sgn);
     
 private:
-    void updateBBatCurrentFrame(SceneGraphNode* const sgn);
+    void getBoundingBoxForCurrentFrame(SceneGraphNode* const sgn);
     
 private:
     vectorImpl<vec3<F32> > _origVerts;

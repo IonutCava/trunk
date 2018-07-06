@@ -10,6 +10,7 @@ layout(std140) uniform dvd_MatrixBlock
     mat4 dvd_ProjectionMatrix;
     mat4 dvd_ViewMatrix;
     mat4 dvd_ViewProjectionMatrix;
+    vec4 dvd_ViewPort;
 };
 
 uniform mat4 dvd_WorldMatrix;//[MAX_INSTANCES];

@@ -60,6 +60,7 @@ public:
     void Uniform(I32 location, const vectorImpl<vec2<F32> >& values) const {}
     void Uniform(I32 location, const vectorImpl<vec3<F32> >& values) const {}
     void Uniform(I32 location, const vectorImpl<vec4<F32> >& values) const {}
+    void Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool rowMajor = false) const {}
     void Uniform(I32 location, const vectorImpl<mat4<F32> >& values, bool rowMajor = false) const {}
     //Uniform Texture
     void UniformTexture(I32 location, U16 slot) const {}

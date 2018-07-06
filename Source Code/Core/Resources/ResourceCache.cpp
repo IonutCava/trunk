@@ -2,11 +2,19 @@
 #include "Headers/HardwareResource.h"
 #include "Core/Headers/ParamHandler.h"
 
+#include "Geometry/Importer/Headers/DVDConverter.h"
+#include "Environment/Terrain/Headers/TerrainLoader.h"
+
 ResourceCache::ResourceCache(){
     //_loadingPool = New boost::threadpool::pool(3);
+    DVDConverter::createInstance();
+    TerrainLoader::createInstance();
 }
 
 ResourceCache::~ResourceCache(){
+    DVDConverter::destroyInstance();
+    TerrainLoader::destroyInstance();
+
     Destroy();
     //SAFE_DELETE(_loadingPool);
     PRINT_FN(Locale::get("RESOURCE_CACHE_DELETE"));

@@ -1,18 +1,8 @@
 #include "Headers/Scene.h"
 
 #include "Core/Headers/ParamHandler.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Managers/Headers/SceneManager.h"
-
-struct selectionQueueDistanceFrontToBack{
-    bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
-        const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        F32 dist_b = b->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        return dist_a > dist_b;
-    }
-};
 
 void Scene::onLostFocus(){
    state()._moveFB = 0;
@@ -25,12 +15,26 @@ void Scene::onLostFocus(){
 #endif
 }
 
-static vectorImpl<SceneGraphNode* > _sceneSelectionCandidates;
+namespace {
+    struct selectionQueueDistanceFrontToBack {
+        selectionQueueDistanceFrontToBack(const vec3<F32>& eyePos) : _eyePos(eyePos) {}
+
+        bool operator()(SceneGraphNode* const a, SceneGraphNode* const b) const {
+            F32 dist_a = a->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            F32 dist_b = b->getBoundingBoxConst().nearestDistanceFromPointSquared(_eyePos);
+            return dist_a > dist_b;
+        }
+    private:
+        vec3<F32> _eyePos;
+    };
+    static vectorImpl<SceneGraphNode* > _sceneSelectionCandidates;
+}
+
 void Scene::findSelection(F32 mouseX, F32 mouseY){
-    const vec2<F32>& zPlanes = Frustum::getInstance().getZPlanes();
     mouseY = renderState().cachedResolution().height - mouseY - 1;
-    vec3<F32> startRay = GFX_DEVICE.unproject(vec3<F32>(mouseX, mouseY, 0.0f));
-    vec3<F32> endRay   = GFX_DEVICE.unproject(vec3<F32>(mouseX, mouseY, 1.0f));
+    vec3<F32> startRay = renderState().getCameraConst().unProject(vec3<F32>(mouseX, mouseY, 0.0f));
+    vec3<F32> endRay   = renderState().getCameraConst().unProject(vec3<F32>(mouseX, mouseY, 1.0f));
+    const vec2<F32>& zPlanes = renderState().getCameraConst().getZPlanes();
 
     // deselect old node
     if(_currentSelection) _currentSelection->setSelected(false);
@@ -39,7 +43,7 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
     // Cast the picking ray and find items between the nearPlane (with a small offset) and limit the range to half of the far plane
     _sceneGraph->Intersect(Ray(startRay, startRay.direction(endRay)), zPlanes.x + 0.5f, zPlanes.y * 0.5f, _sceneSelectionCandidates); 
     if(!_sceneSelectionCandidates.empty()){
-        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack());
+        std::sort(_sceneSelectionCandidates.begin(), _sceneSelectionCandidates.end(), selectionQueueDistanceFrontToBack(renderState().getCameraConst().getEye()));
         _currentSelection = _sceneSelectionCandidates[0];
     }else{
         _currentSelection = nullptr;
@@ -57,13 +61,30 @@ void Scene::findSelection(F32 mouseX, F32 mouseY){
 
 bool Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = true;
+    switch (button){
+        case OIS::MB_Left:   break;
+        case OIS::MB_Right:   break;
+        case OIS::MB_Middle:  break;
+        case OIS::MB_Button3: break;
+        case OIS::MB_Button4: break;
+        case OIS::MB_Button5: break;
+        case OIS::MB_Button6: break;
+        case OIS::MB_Button7: break;
+    }
     return true;
 }
 
 bool Scene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
     _mousePressed[button] = false;
-    if(button == OIS::MB_Left){
-        findSelection(key.state.X.abs, key.state.Y.abs);
+    switch (button){
+        case OIS::MB_Left:    findSelection(key.state.X.abs, key.state.Y.abs); break;
+        case OIS::MB_Right:   break;
+        case OIS::MB_Middle:  break;
+        case OIS::MB_Button3: break;
+        case OIS::MB_Button4: break;
+        case OIS::MB_Button5: break;
+        case OIS::MB_Button6: break;
+        case OIS::MB_Button7: break;
     }
     return true;
 }
@@ -73,34 +94,57 @@ bool Scene::onMouseMove(const OIS::MouseEvent& key){
     return true;
 }
 
+void Scene::defaultCameraKeys(OIS::KeyCode code, bool upState){
+
+    if (upState){
+        switch (code){
+            case OIS::KC_W: if (state()._moveFB == 1) state()._moveFB = 0; break;
+            case OIS::KC_S: if (state()._moveFB == -1) state()._moveFB = 0; break;
+            case OIS::KC_A: if (state()._moveLR == -1) state()._moveLR = 0; break;
+            case OIS::KC_D:	if (state()._moveLR == 1) state()._moveLR = 0; break;
+            case OIS::KC_Q: if (state()._roll == -1)   state()._roll = 0;   break;
+            case OIS::KC_E: if (state()._roll == 1)   state()._roll = 0;   break;
+            case OIS::KC_LEFT: if (state()._angleLR == -1) state()._angleLR = 0; break;
+            case OIS::KC_RIGHT: if (state()._angleLR == 1) state()._angleLR = 0; break;
+            case OIS::KC_UP: if (state()._angleUD == -1) state()._angleUD = 0; break;
+            case OIS::KC_DOWN: if (state()._angleUD == 1) state()._angleUD = 0; break;
+        }
+    }else{
+        switch (code){
+            case OIS::KC_W: state()._moveFB =  1; break;
+            case OIS::KC_S: state()._moveFB = -1; break;
+            case OIS::KC_A: state()._moveLR = -1; break;
+            case OIS::KC_D: state()._moveLR =  1; break;
+            case OIS::KC_Q: state()._roll = -1;   break;
+            case OIS::KC_E: state()._roll =  1;   break;
+            case OIS::KC_LEFT:  state()._angleLR = -1; break;
+            case OIS::KC_RIGHT: state()._angleLR =  1; break;
+            case OIS::KC_UP:    state()._angleUD = -1; break;
+            case OIS::KC_DOWN:  state()._angleUD =  1; break;
+        }
+    }
+}
+
 bool Scene::onKeyDown(const OIS::KeyEvent& key){
+    defaultCameraKeys(key.key, false);
+
     switch(key.key){
         default: break;
-        case OIS::KC_W     : state()._moveFB = 1;   break;
-        case OIS::KC_A     : state()._moveLR = -1;  break;
-        case OIS::KC_S     : state()._moveFB = -1;  break;
-        case OIS::KC_D     : state()._moveLR = 1;   break;
-        case OIS::KC_Q     : state()._roll = -1;    break;
-        case OIS::KC_E     : state()._roll = 1;     break;
-        case OIS::KC_LEFT  : state()._angleLR = -1; break;
-        case OIS::KC_RIGHT : state()._angleLR =  1; break;
-        case OIS::KC_UP    : state()._angleUD = -1; break;
-        case OIS::KC_DOWN  : state()._angleUD =  1; break;
         case OIS::KC_END   : deleteSelection(); break;
         case OIS::KC_ADD   : {
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-            if (currentCamMoveSpeedFactor < 5){
-                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 0.1f);
-                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() + 0.1f);
+            if (currentCamMoveSpeedFactor < 50){
+                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 1.0f);
+                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor()  + 1.0f);
             }
         }break;
         case OIS::KC_SUBTRACT :	{
             Camera& cam = renderState().getCamera();
             F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
-            if (currentCamMoveSpeedFactor > 0.2f){
-                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 0.1f);
-                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);
+            if (currentCamMoveSpeedFactor > 1.0f){
+                cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 1.0f);
+                cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 1.0f);
             }
         }break;
     }
@@ -109,17 +153,9 @@ bool Scene::onKeyDown(const OIS::KeyEvent& key){
 }
 
 bool Scene::onKeyUp(const OIS::KeyEvent& key){
+    defaultCameraKeys(key.key, true);
+
     switch( key.key ){
-        case OIS::KC_W    :
-        case OIS::KC_S    :	state()._moveFB = 0; break;
-        case OIS::KC_A    :
-        case OIS::KC_D    :	state()._moveLR = 0; break;
-        case OIS::KC_Q:
-        case OIS::KC_E: state()._roll = 0; break;
-        case OIS::KC_LEFT :
-        case OIS::KC_RIGHT:	state()._angleLR = 0; break;
-        case OIS::KC_UP   :
-        case OIS::KC_DOWN : state()._angleUD = 0; break;
         case OIS::KC_P: 
             _paramHandler.setParam("freezeLoopTime", !_paramHandler.getParam("freezeLoopTime", false)); 
             break;
@@ -138,6 +174,7 @@ bool Scene::onKeyUp(const OIS::KeyEvent& key){
         case OIS::KC_F6: {
             static bool state = true;
             PostFX::getInstance().toggleDepthPreview(state);
+            _paramHandler.setParam("postProcessing.fullScreenDepthBuffer", state);
             state = !state;
         }break;
         case OIS::KC_B:{

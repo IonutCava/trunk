@@ -7,7 +7,8 @@
 Texture::Texture(const bool flipped) : HardwareResource("temp_texture"),
                                        _flipped(flipped),
                                        _handle(0),
-                                       _hasTransparency(false)
+                                       _hasTransparency(false),
+                                       _numLayers(1)
 {
 }
 
@@ -33,7 +34,6 @@ bool Texture::LoadFile(U32 target, const std::string& name){
     _width = img.dimensions().width;
     // Get height
     _height = img.dimensions().height;
-
     // Get bitdepth
     _bitDepth = img.bpp();
 
@@ -51,8 +51,7 @@ bool Texture::LoadFile(U32 target, const std::string& name){
     GFXImageFormat texture_format = img.format();
     // Create a new API-dependent texture object
     loadData(target, img.data(), img.dimensions(), _bitDepth, texture_format);
-    // Unload file data - ImageData destruction handles this
-    //img.Destroy();
+
     return true;
 }
 

@@ -70,27 +70,28 @@ enum CurrentContext {
     GFX_LOADING_CONTEXT
 };
 
-enum FogMode {
-    FOG_NONE = 0,
-    FOG_LINEAR,
-    FOG_EXP,
-    FOG_EXP2
-};
-
 enum RenderStage {
     DEFERRED_STAGE			   = toBit(1),
     SHADOW_STAGE			   = toBit(2),
     REFLECTION_STAGE		   = toBit(3),
     FINAL_STAGE				   = toBit(4),
-    ENVIRONMENT_MAPPING_STAGE  = toBit(5),
-    Z_PRE_PASS_STAGE           = toBit(6),
+    Z_PRE_PASS_STAGE           = toBit(5),
     //Place all stages above this
-    INVALID_STAGE		       = toBit(7),
+    INVALID_STAGE		       = toBit(6),
     //Special composite stages go here
     DISPLAY_STAGE              = DEFERRED_STAGE | FINAL_STAGE,
     DEPTH_STAGE                = SHADOW_STAGE | Z_PRE_PASS_STAGE
 };
 
+enum ClipPlaneIndex {
+    CLIP_PLANE_0 = 0,
+    CLIP_PLANE_1 = 1,
+    CLIP_PLANE_2 = 2,
+    CLIP_PLANE_3 = 3,
+    CLIP_PLANE_4 = 4,
+    CLIP_PLANE_5 = 5,
+    ClipPlaneIndex_PLACEHOLDER = 0,
+};
 enum PBType {
     PB_TEXTURE_1D,
     PB_TEXTURE_2D,

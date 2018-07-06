@@ -325,13 +325,12 @@ void glFrameBuffer::BlitFrom(FrameBuffer* inputFB, TextureDescriptor::Attachment
         glDrawBuffer(this->_colorBuffers[0]);
         glReadBuffer(input->_colorBuffers[0]);
         glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
+        GL_API::registerDrawCall();
         for (U8 i = 1; i < this->_colorBuffers.size(); ++i){
-            GL_API::setActiveFB(this->_frameBufferHandle, false, true, true);
             glDrawBuffer(this->_colorBuffers[i]);
-            GL_API::setActiveFB(input->_frameBufferHandle, true, false, true);
             glReadBuffer(input->_colorBuffers[i]);
             glBlitFramebuffer(0, 0, input->_width, input->_height, 0, 0, this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+            GL_API::registerDrawCall();
         }
         
         _mipMapsDirty = true;
@@ -387,7 +386,10 @@ void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
     GL_API::setActiveFB(_frameBufferHandle, false, true);
     // this is checked so it isn't called twice on the GPU
     GL_API::clearColor(_clearColor, _frameBufferHandle);
-    if (_clearBuffersState && drawPolicy._clearBuffersOnBind)   glClear(_clearBufferMask);
+    if (_clearBuffersState && drawPolicy._clearBuffersOnBind)   {
+        glClear(_clearBufferMask);
+        GL_API::registerDrawCall();
+    }
     if(!drawPolicy._depthOnly) _mipMapsDirty = true;
 
     if (_resolveBuffer)
@@ -424,6 +426,7 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
             if(useColorLayer)
                 glClear(GL_COLOR_BUFFER_BIT);
         }
+        GL_API::registerDrawCall();
     }
 }
 

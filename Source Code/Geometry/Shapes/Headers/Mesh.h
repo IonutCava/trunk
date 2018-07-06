@@ -50,9 +50,7 @@ public:
     bool computeBoundingBox(SceneGraphNode* const sgn);
 
     virtual void postLoad(SceneGraphNode* const sgn);
-    inline  void render(SceneGraphNode* const sgn){};
-
-    inline const BoundingBox& getMaxBoundingBox() const { return _maxBoundingBox; }
+    inline  void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){};
 
     virtual void addSubMesh(SubMesh* const subMesh);
 

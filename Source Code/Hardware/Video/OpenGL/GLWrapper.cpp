@@ -2,7 +2,7 @@
 #include "Headers/glImmediateModeEmulation.h"
 
 #include "Graphs/Headers/SceneGraph.h"
-#include "Rendering/Headers/Frustum.h"
+#include "Scenes/Headers/SceneState.h"
 #include "Utility/Headers/ImageTools.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -21,6 +21,7 @@ const GLint GLIM_MAX_FRAMES_ZOMBIE_COUNT = 180;
 GLint GL_API::FRAME_DRAW_CALLS = 0;
 GLint GL_API::FRAME_DRAW_CALLS_PREV = 0;
 GLuint64 GL_API::FRAME_DURATION_GPU = 0;
+GLuint GL_API::FRAME_COUNT = 0;
 
 #include <glim.h>
 #include <gtc/matrix_transform.hpp>
@@ -34,9 +35,13 @@ namespace IMPrimitiveValidation{
 }
 
 void GL_API::beginFrame(){
-    glBeginQuery(GL_TIME_ELAPSED, _queryID[_queryBackBuffer][0]);
+#ifdef _DEBUG
+    GLuint queryId = _queryID[_queryBackBuffer][0];
+    glBeginQuery(GL_TIME_ELAPSED, queryId);
+#endif
     GL_API::clearColor(DefaultColors::DIVIDE_BLUE(), 0, true);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT/* | GL_STENCIL_BUFFER_BIT*/);
+    GL_API::registerDrawCall();
     SET_DEFAULT_STATE_BLOCK();
 }
 
@@ -58,24 +63,24 @@ void GL_API::endFrame(){
     //unbind all states (shaders, textures, buffers)
     clearStates(false,false,false,true);
 
-    glfwSwapBuffers(Divide::GL::_mainWindow);
+    glfwSwapBuffers(Divide::GLUtil::_mainWindow);
+    GL_API::FRAME_COUNT++;
+
+#ifdef _DEBUG
     glEndQuery(GL_TIME_ELAPSED);
-    glGetQueryObjectui64v(_queryID[_queryFrontBuffer][0], GL_QUERY_RESULT, &GL_API::FRAME_DURATION_GPU);
 
-    if (_queryBackBuffer) {
-        _queryBackBuffer = 0;
-        _queryFrontBuffer = 1;
-    } else {
-        _queryBackBuffer = 1;
-        _queryFrontBuffer = 0;
-    }
-
+    GLuint query = GL_API::FRAME_COUNT % 4;
+    
+    _queryBackBuffer = query;
+    _queryFrontBuffer = 3 - _queryBackBuffer;
+    
+#endif
     GL_API::FRAME_DRAW_CALLS_PREV = GL_API::FRAME_DRAW_CALLS;
     GL_API::FRAME_DRAW_CALLS = 0;
 }
 
-void GL_API::debugDraw(){
-    drawDebugAxisInternal();
+void GL_API::debugDraw(const SceneRenderState& sceneRenderState){
+    drawDebugAxisInternal(sceneRenderState);
 
     _imShader->bind();
 
@@ -181,13 +186,13 @@ void GL_API::drawBox3D(const vec3<GLfloat>& min,const vec3<GLfloat>& max, const 
 
 void GL_API::setupLineState(const mat4<F32>& mat, RenderStateBlock* const drawState,const bool ortho){
     GFX_DEVICE.pushWorldMatrix(mat,true);
-    SET_STATE_BLOCK(drawState);
+    SET_STATE_BLOCK(*drawState);
 
     if(ortho){
         setViewport(vec4<GLint>(_cachedResolution.width - 128, 0, 128, 128));
-        Divide::GL::_matrixMode(VIEW_MATRIX);
-        Divide::GL::_pushMatrix();
-        Divide::GL::_loadIdentity();
+        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
+        Divide::GLUtil::_pushMatrix();
+        Divide::GLUtil::_loadIdentity();
     }
 }
 
@@ -195,14 +200,14 @@ void GL_API::releaseLineState(const bool ortho){
     GFX_DEVICE.popWorldMatrix();
     if(ortho){
         restoreViewport();
-        Divide::GL::_matrixMode(VIEW_MATRIX);
-        Divide::GL::_popMatrix();
+        Divide::GLUtil::_matrixMode(VIEW_MATRIX);
+        Divide::GLUtil::_popMatrix();
     }
 }
 
-void GL_API::drawDebugAxisInternal(){
+void GL_API::drawDebugAxisInternal(const SceneRenderState& sceneRenderState){
     if(!GFX_DEVICE.drawDebugAxis()) return;
-
+    
     if(_axisPointsA.empty()){
         vec3<GLfloat> ORG(0,0,0);
         vec3<GLfloat> XP(1,0,0);
@@ -225,17 +230,10 @@ void GL_API::drawDebugAxisInternal(){
         _axisColors.push_back(vec4<GLubyte>(0,0,255,255));
     }
 
-    vec3<GLfloat> eyeVector = - (Divide::GL::_currentViewDirection.top() * 2);
-    const glm::mat4& viewMatrix = Divide::GL::_viewMatrix.top();
-
-    drawLines(_axisPointsA, _axisPointsB, _axisColors,
-              mat4<GLfloat>(glm::value_ptr(glm::lookAt(glm::vec3(eyeVector.x, eyeVector.y, eyeVector.z),
-                                                       glm::vec3(0.0f),
-                                                       glm::vec3(viewMatrix[0][1],
-                                                                 viewMatrix[1][1],
-                                                                 viewMatrix[2][1])))),
-              true,
-              true);
+    const glm::mat4& viewMatrix = Divide::GLUtil::_viewMatrix.top();
+    vec3<GLfloat> eyeVector = -(sceneRenderState.getCameraConst().getViewDir() * 2);
+    mat4<F32> offset(eyeVector, vec3<F32>(0.0f), vec3<F32>(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
+    drawLines(_axisPointsA, _axisPointsB, _axisColors, offset, true, true);
 }
 
 void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
@@ -255,7 +253,7 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
     priv->_lineWidth = std::min((F32)_lineWidthLimit, 5.0f);
 
     if(!priv->hasRenderStates()){
-        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, disableDepth ? _defaultStateNoDepth : GFX_DEVICE._defaultStateBlock,orthoMode),
+        priv->setRenderStates(DELEGATE_BIND(&GL_API::setupLineState, this, globalOffset, disableDepth ? GFX_DEVICE._defaultStateNoDepth : GFX_DEVICE._defaultStateBlock,orthoMode),
                               DELEGATE_BIND(&GL_API::releaseLineState, this, orthoMode));
     }
 
@@ -275,11 +273,9 @@ void GL_API::drawLines(const vectorImpl<vec3<GLfloat> >& pointsA,
 }
 
 void GL_API::drawPoints(GLuint numPoints) {
-    if(_activeShaderProgram)
-        _activeShaderProgram->uploadNodeMatrices();
-
     GL_API::setActiveVAO(_pointDummyVAO);
     glDrawArrays(GL_POINTS, 0, numPoints);
+    GL_API::registerDrawCall();
 }
 
 //Save the area designated by the rectangle "rect" to a TGA file

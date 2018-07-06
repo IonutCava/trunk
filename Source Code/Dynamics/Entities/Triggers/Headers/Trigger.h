@@ -38,7 +38,7 @@ public:
     ~Trigger();
 
     /// Dummy function from SceneNode;
-    bool onDraw(const RenderStage& currentStage) {return true;};
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; };
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
     bool check(Unit* const unit,const vec3<F32>& camEyePos = VECTOR3_ZERO);
@@ -61,10 +61,10 @@ public:
     void postLoad(SceneGraphNode* const sgn);
 
     ///When the SceneGraph calls the trigger's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
 
     ///SceneNode test
-    bool isInView(const BoundingBox& boundingBox,const BoundingSphere& sphere, const bool distanceCheck = false) {
+    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = false) {
         return _drawImpostor;
     }
 protected:

@@ -19,6 +19,9 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()(){
         ptr->setResourceLocation(_descriptor.getResourceLocation());
     }
 
+    if (_descriptor.getId() > 0)
+        ptr->SetOutputCount((U8)_descriptor.getId());
+
     //get all of the preprocessor defines
     if(!_descriptor.getPropertyListString().empty()){
         vectorImpl<std::string> defines;

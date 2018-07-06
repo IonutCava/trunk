@@ -23,10 +23,6 @@ void DX_API::closeRenderingApi()
 {
 }
 
-void DX_API::updateProjection()
-{
-}
-
 void DX_API::changeResolutionInternal(U16 w, U16 h)
 {
 }
@@ -35,26 +31,11 @@ void DX_API::setWindowPos(U16 w, U16 h) const
 {
 }
 
-vec3<F32> DX_API::unproject(const vec3<F32>& windowCoord)  const 
-{
-    return vec3<F32>();
-}
-
 void DX_API::setMousePosition(U16 x, U16 y) const
 {
 }
 
-F32* DX_API::lookAt(const mat4<F32>& viewMatrix, const vec3<F32>& viewDirection)
-{
-    return nullptr;
-}
-
-F32* DX_API::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
-{
-    return nullptr;
-}
-
-const F32* DX_API::getLookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up)
+F32* DX_API::lookAt(const mat4<F32>& viewMatrix)
 {
     return nullptr;
 }
@@ -79,34 +60,21 @@ void DX_API::getMatrix(const MATRIX_MODE& mode, mat4<F32>& mat)
 {
 }
 
-void DX_API::toggle2D(bool _2D)
+void DX_API::toggleRasterization(bool state)
 {
 }
 
-void DX_API::lockMatrices(const MATRIX_MODE& setCurrentMatrix, bool lockView, bool lockProjection)
-{
-}
-
-void DX_API::releaseMatrices(const MATRIX_MODE& setCurrentMatrix, bool releaseView, bool releaseProjection)
-{
-}
-
-F32* DX_API::setOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
+F32* DX_API::setProjection(const vec4<F32>& rect, const vec2<F32>& planes)
 {
     return nullptr;
 }
 
-const F32* DX_API::getOrthoProjection(const vec4<F32>& rect, const vec2<F32>& planes)
+F32* DX_API::setProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
 {
     return nullptr;
 }
 
-F32* DX_API::setPerspectiveProjection(F32 FoV, F32 aspectRatio, const vec2<F32>& planes)
-{
-    return nullptr;
-}
-
-void DX_API::setAnaglyphFrustum(F32 camIOD, bool rightFrustum)
+void DX_API::setAnaglyphFrustum(F32 camIOD, const vec2<F32>& zPlanes, F32 aspectRatio, F32 verticalFoV, bool rightFrustum)
 {
 }
 
@@ -130,7 +98,7 @@ void DX_API::drawPoints(U32 numPoints)
 {
 }
 
-void DX_API::debugDraw()
+void DX_API::debugDraw(const SceneRenderState& sceneRenderState)
 {
 }
 

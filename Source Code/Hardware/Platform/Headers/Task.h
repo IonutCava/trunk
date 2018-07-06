@@ -44,6 +44,7 @@ enum CallbackParam
 ///Using std::atomic / boost::atomic for thread-shared data to avoid locking
 class Task : public GUIDWrapper, public boost::enable_shared_from_this<Task>
 {
+    typedef boost::signals2::signal<void(U64)> SendCompleted;
 public:
     /// <summary>
     /// Creates a new Task that runs in a separate thread
@@ -66,7 +67,8 @@ public:
       _callback(f),
       _end(false),
       _paused(false),
-      _done(false){
+      _done(false)
+      {
           if(startOnCreate) startTask();
       }
 
@@ -81,7 +83,8 @@ public:
       _callback(f),
       _end(false),
       _paused(false),
-      _done(false){
+      _done(false)
+      {
           ///If runOnce is true, then we only run the Task once (# of ticks is 1)
           ///If runOnce is false, then we run the Task until stopTask() is called
           runOnce ? _numberOfTicks = 0 : _numberOfTicks = -1;
@@ -96,6 +99,11 @@ public:
 
     inline bool isFinished() const {return _done;}
 
+    typedef SendCompleted::slot_type SendCompletedSlot;
+    boost::signals2::connection connect(const SendCompletedSlot &slot) {
+        return _completionSignal.connect(slot);
+    }
+
 private:
     mutable SharedLock _lock;
     mutable boost::atomic<D32> _tickInterval;
@@ -105,6 +113,7 @@ private:
     mutable boost::atomic<bool> _done;
     DELEGATE_CBK _callback;
     boost::threadpool::pool* _tp;
+    SendCompleted            _completionSignal;
 
 protected:
     void run();

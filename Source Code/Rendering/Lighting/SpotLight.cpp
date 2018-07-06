@@ -8,8 +8,3 @@ SpotLight::SpotLight(U8 slot, F32 range) : Light(slot,range,LIGHT_TYPE_SPOT) {
 	_properties._direction = vec4<F32>(1,1,0,0);
 	_properties._direction.w = 1;
 };
-
-const mat4<F32>& SpotLight::getLightViewMatrix(U8 index){
-    _lightViewMatrix.set(GFX_DEVICE.getLookAt(getPosition(), getDirection()));
-    return _lightViewMatrix;
-}

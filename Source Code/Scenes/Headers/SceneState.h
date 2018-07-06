@@ -23,7 +23,7 @@
 #ifndef _SCENE_STATE_H_
 #define _SCENE_STATE_H_
 
-#include "core.h"
+#include "Managers/Headers/CameraManager.h"
 #include "Hardware/Audio/Headers/SFXDevice.h"
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
 #include "Hardware/Audio/Headers/AudioDescriptor.h"
@@ -35,14 +35,10 @@
 
 ///Fog information (fog is so game specific, that it belongs in SceneState not SceneRenderState
 struct FogDescriptor{
-    FogMode _fogMode;
     F32 _fogDensity;
-    F32 _fogStartDist;
-    F32 _fogEndDist;
     vec3<F32> _fogColor;
 };
 
-class Camera;
 ///Contains all the information needed to render the scene:
 ///camera position, render state, etc
 class SceneRenderState{
@@ -51,7 +47,7 @@ public:
                         _drawSkeletons(false),
                         _drawObjects(true),
                         _debugDrawLines(false),
-                        _camera(nullptr)
+                        _cameraMgr(nullptr)
     {
     }
 
@@ -82,10 +78,9 @@ public:
         }
     }
 
-    inline       Camera& getCamera()            {return *_camera;}
-    inline const Camera& getCameraConst() const {return *_camera;}
-    /// Update current camera (simple, fast, inlined poitner swap)
-    inline void updateCamera(Camera* const camera) {_camera = camera;}
+    inline       CameraManager& getCameraMgr()  { return *_cameraMgr;}
+    inline       Camera& getCamera()            { return *_cameraMgr->getActiveCamera(); }
+    inline const Camera& getCameraConst() const { return *_cameraMgr->getActiveCamera(); }
     inline vec2<U16>& cachedResolution() {return _cachedResolution;}
 
    
@@ -95,7 +90,7 @@ protected:
     bool _drawObjects;
     bool _drawSkeletons;
     bool _debugDrawLines;
-    Camera*  _camera;
+    CameraManager*  _cameraMgr;
     ///cached resolution
     vec2<U16> _cachedResolution;
 };
@@ -108,13 +103,12 @@ public:
       _angleUD(0),
       _angleLR(0),
       _roll(0),
+      _cameraUnderwater(false),
+      _cameraUpdated(false),
       _isRunning(false)
     {
         _fog._fogColor = vec3<F32>(0.2f, 0.2f, 0.2f);
         _fog._fogDensity = 0.01f;
-        _fog._fogMode = FOG_EXP2;
-        _fog._fogStartDist = 10;
-        _fog._fogEndDist = 1000;
     }
 
     virtual ~SceneState(){
@@ -148,6 +142,8 @@ public:
 
     F32 _waterHeight;
     F32 _waterDepth;
+    bool _cameraUnderwater;
+    bool _cameraUpdated; //was the camera moved or rotated this frame
     ///Background music map
     typedef Unordered_map<std::string /*trackName*/, AudioDescriptor* /*track*/> MusicPlaylist;
     MusicPlaylist _backgroundMusic;

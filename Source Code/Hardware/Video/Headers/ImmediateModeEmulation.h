@@ -27,7 +27,6 @@
 #include "Core/Math/Headers/MathClasses.h"
 
 class Texture;
-typedef Texture Texture2D;
 
 enum PrimitiveType;
 ///IMPrimitive replaces immediate mode calls to VB based rendering
@@ -64,24 +63,24 @@ protected:
 
 public:
 
-    Texture2D*           _texture;
-    bool                 _hasLines;
-    bool                 _canZombify;
-    F32                  _lineWidth;
+    Texture* _texture;
+    bool     _hasLines;
+    bool     _canZombify;
+    F32      _lineWidth;
 
 protected:
     ///after rendering an IMPrimitive, it's "inUse" flag is set to false.
     ///If OpenGL tries to render it again, we just increment the _zombieCounter
     ///If the _zombieCounter reaches 3, we remove it from the vector as it is not needed
-    U8                   _zombieCounter;
+    U8           _zombieCounter;
     ///After rendering the primitive, we se "inUse" to false but leave it in the vector
     ///If a new primitive is to be rendered, it first looks for a zombie primitive
     ///If none are found, it adds a new one
-    bool                 _inUse; //<For caching
+    bool         _inUse; //<For caching
     ///If _pause is true, rendering for the current primitive is skipped and nothing is modified (e.g. zombie counters)
-    bool                 _paused;
+    bool         _paused;
     //render in wireframe mode
-    bool                 _forceWireframe;
+    bool         _forceWireframe;
     ///2 functions used to setup or reset states
     DELEGATE_CBK _setupStates;
     DELEGATE_CBK _resetStates;

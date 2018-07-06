@@ -25,12 +25,15 @@ void RenderPassCuller::cullSceneGraph(SceneGraphNode* const currentNode, SceneSt
         else refreshNodeList();
     }
 
+    const vec3<F32>& eyePos = sceneState.getRenderState().getCameraConst().getEye();
+
     assert(_visibleNodes.empty());
     cullSceneGraphCPU(currentNode, sceneState.getRenderState());
     for(SceneGraphNode* node : _visibleNodes){
-        RenderQueue::getInstance().addNodeToQueue(node);
+        RenderQueue::getInstance().addNodeToQueue(node, eyePos);
     }
     cullSceneGraphGPU(sceneState);
+
     currentNode->getRoot()->inView(true);
     if(!renderingLocked) refreshNodeList();
 }
@@ -56,7 +59,10 @@ void RenderPassCuller::cullSceneGraphCPU(SceneGraphNode* const currentNode, Scen
         }else{
             if(currentStage != SHADOW_STAGE || (currentStage == SHADOW_STAGE && currentNode->getCastsShadows())){
                 //Perform visibility test on current node
-                if (node->isInView(currentNode->getBoundingBoxConst(), currentNode->getBoundingSphereConst(), currentStage == SHADOW_STAGE ? false : true)){
+                if (node->isInView(sceneRenderState,
+                                   currentNode->getBoundingBoxConst(), 
+                                   currentNode->getBoundingSphereConst(), 
+                                   currentStage == SHADOW_STAGE ? false : true)){
                     //If the current node is visible, add it to the render queue
                     _visibleNodes.push_back(currentNode);
                     currentNode->inView(true);

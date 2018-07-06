@@ -22,9 +22,9 @@ Impostor::Impostor(const std::string& name, F32 radius) : _visible(false){
     _dummy->getSceneNodeRenderState().setDrawState(false);
     _dummy->setResolution(8);
     _dummy->setRadius(radius);
-    _dummyStateBlock = _dummy->getMaterial()->getRenderState(FINAL_STAGE);
-    RenderStateBlockDescriptor& dummyDesc = _dummyStateBlock->getDescriptor();
+    RenderStateBlockDescriptor dummyDesc(_dummy->getMaterial()->getRenderStateBlock(FINAL_STAGE).getDescriptor());
     dummyDesc.setFillMode(FILL_MODE_WIREFRAME);
+    _dummy->getMaterial()->setRenderStateBlock(dummyDesc, FINAL_STAGE);
 }
 
 Impostor::~Impostor(){
@@ -32,13 +32,13 @@ Impostor::~Impostor(){
     //Only the SceneNode (by Uther's might) should delete the dummy
 }
 
-void Impostor::render(SceneGraphNode* const node){
+void Impostor::render(SceneGraphNode* const node, const SceneRenderState& sceneRenderState){
     GFXDevice& gfx = GFX_DEVICE;
     if(!gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
-    SET_STATE_BLOCK(_dummyStateBlock);
+    SET_STATE_BLOCK(_dummy->getMaterial()->getRenderStateBlock(FINAL_STAGE));
     _dummy->renderInstance()->transform(node->getTransform());
 
-    _dummy->onDraw(gfx.getRenderStage());
+    _dummy->onDraw(node, gfx.getRenderStage());
     _dummy->getMaterial()->getShaderProgram()->bind();
     _dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 
@@ -46,13 +46,13 @@ void Impostor::render(SceneGraphNode* const node){
 }
 
 /// Render dummy at target transform
-void Impostor::render(Transform* const transform){
+void Impostor::render(Transform* const transform, const SceneRenderState& sceneRenderState){
     GFXDevice& gfx = GFX_DEVICE;
     if(gfx.isCurrentRenderStage(DISPLAY_STAGE)) return;
-    SET_STATE_BLOCK(_dummyStateBlock);
+    SET_STATE_BLOCK(_dummy->getMaterial()->getRenderStateBlock(FINAL_STAGE));
     _dummy->renderInstance()->transform(transform);
 
-    _dummy->onDraw(gfx.getRenderStage());
+    _dummy->onDraw(nullptr, gfx.getRenderStage());
     _dummy->getMaterial()->getShaderProgram()->bind();
     _dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 

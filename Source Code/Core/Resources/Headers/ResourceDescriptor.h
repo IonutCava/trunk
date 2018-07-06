@@ -53,7 +53,7 @@ class ResourceDescriptor{
 public:
     ResourceDescriptor(const std::string& name = "default",
                        const std::string& resourceLocation = "default",
-                       bool flag = false, U32 id = RAND_MAX, U8 enumValue = -1);
+                       bool flag = false, U32 id = 0, U8 enumValue = 0);
 
     ~ResourceDescriptor();
 

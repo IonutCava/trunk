@@ -22,7 +22,7 @@ Light* ImplResourceLoader<Light>::operator()(){
     };
     assert(ptr != nullptr);
 
-    if(!load(ptr,_descriptor.getName())){
+    if (!ptr->load(_descriptor.getName())){
         SAFE_DELETE(ptr);
     }else{
         ptr->getSceneNodeRenderState().useDefaultMaterial(false);

@@ -64,7 +64,7 @@ void main (void){
    
 #if defined(USE_PARALLAX_MAPPING)
     vec4 color;
-    if(lodLevel == 0) color = ParallaxMapping(_texCoord, _lightDirection[bumpMapLightId]);
+    if(lodLevel == 0) color = ParallaxMapping(_texCoord, _lightInfo[bumpMapLightId]._lightDirection);
     else              color = NormalMapping(_texCoord);
 #elif defined(USE_RELIEF_MAPPING)
     gl_FragDepth = gl_FragCoord.z;

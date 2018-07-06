@@ -8,37 +8,54 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
 
-void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBuffer* const vb){
+TerrainChunk::TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain) : _terrainVB(groundVB), _parentTerrain(parentTerrain)
+{
+    _chunkIndOffset = 0;
     memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
     memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+}
 
-    _chunkIndOffset = vb->getIndexCount();
+TerrainChunk::~TerrainChunk()
+{
+    for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++)
+        _indice[i].clear();
+    
+    memset(_lodIndOffset, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+    memset(_lodIndCount, 0, Config::TERRAIN_CHUNKS_LOD * sizeof(U32));
+    _chunkIndOffset = 0;
+    _terrainVB = nullptr;
+}
+
+void TerrainChunk::Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize){
+
+    _chunkIndOffset = _terrainVB->getIndexCount();
 
     for(U8 i=0; i < Config::TERRAIN_CHUNKS_LOD; i++)
-        ComputeIndicesArray(i, depth, pos, HMsize, vb);
+        ComputeIndicesArray(i, depth, pos, HMsize);
 
-    const vectorImpl<vec3<F32>>& vertices = vb->getPosition();
+    const vectorImpl<vec3<F32>>& vertices = _terrainVB->getPosition();
 
-    F32 tempMin = 100000.0f;
-    F32 tempMax = -100000.0f;
+    F32 tempMin = std::numeric_limits<F32>::max();
+    F32 tempMax = std::numeric_limits<F32>::min();
+    F32 height = 0.0f;
     for(U32 i = 0; i < _lodIndCount[0]; ++i){
-        if(_indice[0][i] == TERRAIN_STRIP_RESTART_INDEX) continue;
+        U32 idx = _indice[0][i];
+        if (idx == Config::PRIMITIVE_RESTART_INDEX_L) continue;
 
-        F32 height = vertices[_indice[0][i]].y;
+        height = vertices[idx].y;
 
         if(height > tempMax) tempMax = height;
         if(height < tempMin) tempMin = height;
     }
 
-    _heightBounds[0] = tempMin;
-    _heightBounds[1] = tempMax;
+    _heightBounds.set(tempMin, tempMax);
 
     for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
         _indice[i].clear();
     }
 }
 
-void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize, VertexBuffer* const vb){
+void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize){
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
 
     U32 offset = (U32)pow(2.0f, (F32)(lod));
@@ -54,23 +71,24 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
     U32 nIndice = (nHMWidth)*(nHMHeight-1)*2;
     nIndice += (nHMHeight-1);//<Restart indices
     _indice[lod].reserve( nIndice  );
-    _indOffsetW[lod] = nHMWidth*2;
-    _indOffsetH[lod] = nHMWidth-1;
 
+    U32 iOffset = 0;
+    U32 indexA = 0;
+    U32 indexB = 0;
+    U32 jOffset = 0;
     for(U16 j=0; j<nHMHeight-1; j++){
-        U32 jOffset = j*(offset) + nHMOffsetY;
-
+        jOffset = j*(offset) + nHMOffsetY;
         for(U16 i=0; i<nHMWidth; i++){
-            U32 iOffset = i*(offset) + nHMOffsetX;
-            U32 indexA = iOffset + jOffset * nHMTotalWidth;
-            U32 indexB = iOffset + (jOffset + (offset)) * nHMTotalWidth;
+            iOffset = i*(offset) + nHMOffsetX;
+            indexA = iOffset + jOffset * nHMTotalWidth;
+            indexB = iOffset + (jOffset + (offset)) * nHMTotalWidth;
             _indice[lod].push_back(indexA);
             _indice[lod].push_back(indexB);
-            vb->addIndex(indexA);
-            vb->addIndex(indexB);
+            _terrainVB->addIndexL(indexA);
+            _terrainVB->addIndexL(indexB);
         }
-        _indice[lod].push_back(TERRAIN_STRIP_RESTART_INDEX);
-        vb->addIndex(TERRAIN_STRIP_RESTART_INDEX);
+        _indice[lod].push_back(Config::PRIMITIVE_RESTART_INDEX_L);
+        _terrainVB->addRestartIndex();
     }
 
     if(lod > 0) _lodIndOffset[lod] = (U32)(_indice[lod-1].size() + _lodIndOffset[lod-1]);
@@ -79,64 +97,13 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
     assert(nIndice == _lodIndCount[lod]);
 }
 
-void TerrainChunk::GenerateGrassIndexBuffer(U32 bilboardCount) {
-	if(_grassData._grassVB == nullptr)
-		return;
-
-    // the first offset is always 0;
-    _grassData._grassIndexOffset[0] = 0;
-    // get the index vector for every billboard texture
-    for(U8 index = 0; index < bilboardCount; ++index){
-        const vectorImpl<U32>& grassIndices = _grassData._grassIndices[index];
-        // add every index for the current texture to the VB
-        for(U32 i = 0; i < grassIndices.size(); ++i){
-            _grassData._grassVB->addIndex(grassIndices[i]);
-        }
-        // save the number of indices for the current texture
-        _grassData._grassIndexSize[index] = (U32)grassIndices.size();
-        // clear the memory used by the original indices
-        _grassData._grassIndices[index].clear();
-        // calculate the needed index offset for the current billboard texture
-        if(index > 0) _grassData._grassIndexOffset[index] = _grassData._grassIndexSize[index - 1] + _grassData._grassIndexOffset[index - 1];
-    }
-
-    _grassData._grassVisibility = GET_ACTIVE_SCENE()->state().getGrassVisibility();
-}
-
-void TerrainChunk::Destroy(){
-    for(U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++){
-        _indOffsetW[i] = _indOffsetH[i] = 0;
-    }
-
-    _grassData._grassVisibility = 0;
-}
-
-I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBuffer* const vb){
+void TerrainChunk::DrawGround(I8 lod) const {
     assert(lod < Config::TERRAIN_CHUNKS_LOD);
-    if(lod>0) lod--;
-   
-    vb->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
-    vb->setRangeCount(_lodIndCount[lod]);
-    GFX_DEVICE.renderBuffer(vb);
+    if(lod > 0) lod--;
 
-    return 1;
-}
-
-void  TerrainChunk::DrawGrass(I8 lod, F32 distance, U32 index, Transform* const parentTransform){
-    assert(lod < Config::TERRAIN_CHUNKS_LOD);
-    if(distance > _grassData._grassVisibility) { //if we go beyond grass visibility limit ...
-        return; // ... do not draw grass if the terrain chunk parent is too far away.
-    }
-
-    U32 indicesCount = _grassData._grassIndexSize[index];
-
-    if(indicesCount > 0){
-		assert(_grassData._grassVB != nullptr);
-		_grassData._grassVB->currentShader()->Uniform("grassVisibilityRange", _grassData._grassVisibility);
-        _grassData._grassVB->setFirstElement(_grassData._grassIndexOffset[index]);
-        _grassData._grassVB->setRangeCount(indicesCount);
-        GFX_DEVICE.renderBuffer(_grassData._grassVB, parentTransform);
-    }
+    _terrainVB->setFirstElement(_lodIndOffset[lod] + _chunkIndOffset);
+    _terrainVB->setRangeCount(_lodIndCount[lod]);
+    _parentTerrain->renderChunkCallback(lod);
 }
 
 void TerrainChunk::addTree(const vec4<F32>& pos,F32 scale, const FileData& tree, SceneGraphNode* parentNode){

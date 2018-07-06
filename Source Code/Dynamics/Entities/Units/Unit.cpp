@@ -11,7 +11,7 @@ Unit::Unit(UnitType type, SceneGraphNode* const node) : FrameListener(),
                                                         _moveTolerance(0.1f),
                                                         _prevTime(0)
 {
-    REGISTER_FRAME_LISTENER(this);
+    REGISTER_FRAME_LISTENER(this, 5);
 }
 
 Unit::~Unit()

@@ -49,7 +49,6 @@ public:
         _scorTeam2 = 0;
     }
 
-    void preRender();
     bool unload();
     bool load(const std::string& name, CameraManager* const cameraMgr, GUI* const gui);
     bool loadResources(bool continueOnErrors);

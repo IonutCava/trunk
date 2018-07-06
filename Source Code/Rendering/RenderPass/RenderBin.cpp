@@ -1,5 +1,4 @@
 #include "Headers/RenderBin.h"
-#include "Rendering/Headers/Frustum.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/LightManager.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
@@ -7,36 +6,30 @@
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
-RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, SceneGraphNode* const node ) : _node( node ),
-                                                                                        _sortKeyA( sortKeyA ),
-                                                                                        _sortKeyB( sortKeyB )
+RenderBinItem::RenderBinItem(I32 sortKeyA, I32 sortKeyB, F32 distToCamSq, SceneGraphNode* const node) : _node(node),
+                                                                                                        _sortKeyA( sortKeyA ),
+                                                                                                        _sortKeyB( sortKeyB ),
+                                                                                                        _distanceToCameraSq(distToCamSq)
 {
     Material* mat = _node->getNode()->getMaterial();
     // If we do not have a material, no need to continue
     if(!mat) return;
 
     // Sort by state hash depending on the current rendering stage
-    RenderStateBlock* currentStateBlock = mat->getRenderState(GFX_DEVICE.getRenderStage());
-    assert(currentStateBlock != nullptr);
+    const RenderStateBlock& currentStateBlock = mat->getRenderStateBlock(GFX_DEVICE.getRenderStage());
     // Save the render state hash value for sorting
-    _stateHash = currentStateBlock->getDescriptor().getHash();
+    _stateHash = currentStateBlock.getDescriptor().getHash();
 }
 
 struct RenderQueueDistanceBacktoFront{
     bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
-        const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        F32 dist_b = b._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        return dist_a < dist_b;
+        return a._distanceToCameraSq < b._distanceToCameraSq;
     }
 };
 
 struct RenderQueueDistanceFrontToBack{
     bool operator()( const RenderBinItem &a, const RenderBinItem &b) const {
-        const vec3<F32>& eye = Frustum::getInstance().getEyePos();
-        F32 dist_a = a._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        F32 dist_b = b._node->getBoundingBoxConst().nearestDistanceFromPointSquared(eye);
-        return dist_a > dist_b;
+        return a._distanceToCameraSq > b._distanceToCameraSq;
     }
 };
 
@@ -116,21 +109,22 @@ void RenderBin::refresh(){
     _renderBinStack.reserve(125);
 }
 
-void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
+void RenderBin::addNodeToBin(SceneGraphNode* const sgn, const vec3<F32>& eyePos){
     SceneNode* sn = sgn->getNode();
     I32 keyA = (U32)_renderBinStack.size() + 1;
     I32 keyB = keyA;
     Material* nodeMaterial = sn->getMaterial();
+    F32 distToCam = sgn->getBoundingBoxConst().nearestDistanceFromPointSquared(eyePos);
     if(nodeMaterial){
         nodeMaterial->getSortKeys(keyA, keyB);
     }
-    _renderBinStack.push_back(RenderBinItem(keyA, keyB, sgn));
+    _renderBinStack.push_back(RenderBinItem(keyA, keyB, distToCam, sgn));
 }
 
 void RenderBin::preRender(const RenderStage& currentRenderStage){
 }
 
-void RenderBin::render(const RenderStage& currentRenderStage){
+void RenderBin::render(const SceneRenderState& renderState, const RenderStage& currentRenderStage){
     SceneNode* sn = nullptr;
     SceneGraphNode* sgn = nullptr;
     LightManager& lightMgr = LightManager::getInstance();
@@ -138,7 +132,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
     U32 lightValidStages = DISPLAY_STAGE | REFLECTION_STAGE;
     bool isDepthPass = bitCompare(DEPTH_STAGE, currentRenderStage);
     bool isLightValidStage = bitCompare(lightValidStages, currentRenderStage);
-
+    
     for(U16 j = 0; j < getBinSize(); j++){
         //Get the current scene node and validate it
         sgn = getItem(j)._node;
@@ -175,7 +169,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
             bool materialBound = (isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn));
 
             //Call render and the stage exclusion mask should do the rest
-            if (materialBound) sn->render(sgn);
+            if (materialBound) sn->render(sgn, renderState);
 
             //Unbind current material properties
             /*bool materialUnBound = */(isDepthPass ? sn->releaseDepthMaterial() : sn->releaseMaterial());

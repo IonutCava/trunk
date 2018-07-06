@@ -47,6 +47,9 @@ public:
     inline       void               setCurrentSampler(const SamplerDescriptor& descriptor) {_samplerDescriptor = descriptor;}
     inline const SamplerDescriptor& getCurrentSampler()                              const {return _samplerDescriptor;}
 
+    inline void setNumLayers(U8 numLayers)       { _numLayers  = numLayers; }
+    inline U8   getNumLayers()             const { return _numLayers; }
+
     inline U32 getHandle()        const {return _handle;}
     inline U16 getWidth()         const {return _width;}
     inline U16 getHeight()        const {return _height;}
@@ -66,6 +69,7 @@ protected:
     boost::atomic<U32>	_handle;
     U16 _width,_height;
     U8  _bitDepth;
+    U8  _numLayers;
     bool _flipped;
     bool _hasTransparency;
     mat4<F32>  _transformMatrix;

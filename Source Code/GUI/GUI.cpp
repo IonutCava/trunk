@@ -46,27 +46,42 @@ void GUI::onResize(const vec2<U16>& newResolution){
     _cachedResolution = newResolution;
 }
 
-void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
-    if(!_init) return;
-    if(_console) _console->update(deltaTime);
-
+void GUI::draw2D(){
     GFXDevice& gfx = GFX_DEVICE;
 
-    gfx.toggle2D(true);
     _guiShader->bind();
     _guiShader->uploadNodeMatrices();
 
     //------------------------------------------------------------------------
-    FOR_EACH(guiMap::value_type& guiStackIterator,_guiStack){
+    FOR_EACH(guiMap::value_type& guiStackIterator, _guiStack){
         GUIElement* guiElement = guiStackIterator.second;
-        if(!guiElement->isVisible() || guiElement->getGuiType() == GUI_BUTTON) continue;
-        SET_STATE_BLOCK(guiElement->_guiSB);
-        gfx.renderGUIElement(_textRenderInterval, guiElement,_guiShader);
+        assert(guiElement);
+        if (!guiElement->isVisible()) continue;
+        switch (guiElement->getType()){
+            case GUI_TEXT:{
+                SET_STATE_BLOCK(*guiElement->_guiSB);
+                gfx.updateStates();
+                GUIText* text = dynamic_cast<GUIText*>(guiElement);
+                gfx.drawText(*text, text->getPosition());
+                text->_lastDrawTimer = GETUSTIME();
+            }break;
+            case GUI_FLASH:
+                dynamic_cast<GUIFlash* >(guiElement)->playMovie();
+                break;
+        default:
+            break;
+        };
     }
     //------------------------------------------------------------------------
-    _guiShader->unbind();
-    gfx.toggle2D(false);
+}
 
+void GUI::draw(const U64 deltaTime, const D32 interpolationFactor){
+    if(!_init) return;
+    if(_console) _console->update(deltaTime);
+    //hack: to remove
+    GFX_DEVICE.toggle2D(true);
+    draw2D();
+    GFX_DEVICE.toggle2D(false);
     D32 deltaTimeSec = getUsToSec(deltaTime);
 
     _input.update(deltaTime);
@@ -128,6 +143,8 @@ bool GUI::init(const vec2<U16>& resolution){
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation.GUI");
     immediateModeShader.setThreadedLoading(false);
     _guiShader = CreateResource<ShaderProgram>(immediateModeShader);
+
+    //GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&GUI::draw2D, this), std::numeric_limits<U32>::max() - 1);
 
     _init = true;
     return true;
@@ -287,7 +304,7 @@ GUIText* GUI::modifyText(const std::string& id, char* format, ...){
     va_end(args);
 
     GUIElement* element = _guiStack[id];
-    assert(element->getGuiType() == GUI_TEXT);
+    assert(element->getType() == GUI_TEXT);
 
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     textElement->_text = fmt_text;

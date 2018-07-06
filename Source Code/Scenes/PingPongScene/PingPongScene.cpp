@@ -1,11 +1,11 @@
 #include "Headers/PingPongScene.h"
 
-#include "Rendering/Headers/Frustum.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 REGISTER_SCENE(PingPongScene);
 
@@ -73,7 +73,7 @@ void PingPongScene::serveBall(){
 
     if(getTasks().empty()){//A maximum of 1 Tasks allowed
         Kernel* kernel = Application::getInstance().getKernel();
-        Task_ptr newGame(New Task(kernel->getThreadPool(),30,true,false,DELEGATE_BIND(&PingPongScene::test,this,rand() % 5,TYPE_INTEGER)));
+        Task_ptr newGame(kernel->AddTask(30, true, false, DELEGATE_BIND(&PingPongScene::test, this, rand() % 5, TYPE_INTEGER)));
         addTask(newGame);
     }
 }
@@ -193,26 +193,22 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b){
 void PingPongScene::processInput(const U64 deltaTime){
     
     if (_freeFly){
-        defaultCameraControls();
         _wasInFreeFly = true;
         return;
     }
-
-    Camera& cam = renderState().getCamera();
     if (_wasInFreeFly){
         //Position the camera
-        cam.setPitch(-90);
-        cam.setYaw(0);
-        cam.setRoll(0);
-        cam.setEye(vec3<F32>(0, 2.5f, 6.5f));
+        _paddleCam->setPitch(-90);
+        _paddleCam->setYaw(0);
+        _paddleCam->setRoll(0);
         _wasInFreeFly = false;
     }
     //Move FB = Forward/Back = up/down
     //Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     //Camera controls
-    if (state()._angleLR) cam.rotateYaw(state()._angleLR);
-    if (state()._angleUD) cam.rotatePitch(state()._angleUD);
+    if (state()._angleLR) _paddleCam->rotateYaw(state()._angleLR);
+    if (state()._angleUD) _paddleCam->rotatePitch(state()._angleUD);
 
     SceneGraphNode* paddle = _sceneGraph->findNode("paddle");
 
@@ -240,9 +236,14 @@ bool PingPongScene::load(const std::string& name, CameraManager* const cameraMgr
     //Add a light
     addDefaultLight();
     addDefaultSky();
+    _freeFlyCam = &renderState().getCamera();
+    _paddleCam = New FreeFlyCamera();
+    _paddleCam->fromCamera(*_freeFlyCam);
     //Position the camera
     //renderState().getCamera().setPitch(-90);
-    renderState().getCamera().setEye(vec3<F32>(0,2.5f,6.5f));
+    _paddleCam->lockMovement(true);
+    _paddleCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
+    _freeFlyCam->setEye(vec3<F32>(0, 2.5f, 6.5f));
 
     return loadState;
 }
@@ -303,8 +304,16 @@ bool PingPongScene::onKeyUp(const OIS::KeyEvent& key){
     bool keyState = Scene::onKeyUp(key);
     switch(key.key)	{
         default: break;
-        case OIS::KC_F: _freeFly = !_freeFly;
+        case OIS::KC_F: {
+            _freeFly = !_freeFly;
+            if (!_freeFly)
+                renderState().getCameraMgr().pushActiveCamera(_paddleCam);
+            else
+                renderState().getCameraMgr().popActiveCamera();
+        }
     }
+
+    
     return keyState;
 }
 

@@ -15,10 +15,6 @@ uniform sampler2D texOpacityMap;
 uniform sampler2D texSpecularMap;
 #endif
 
-const int LIGHT_DIRECTIONAL = 0;
-const int LIGHT_OMNIDIRECTIONAL = 1;
-const int LIGHT_SPOT = 2;
-
 #include "phong_point_light.frag"
 #include "phong_spot_light.frag"
 #include "phong_directional_light.frag"

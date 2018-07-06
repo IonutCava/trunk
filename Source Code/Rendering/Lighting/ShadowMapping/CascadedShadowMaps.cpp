@@ -4,7 +4,6 @@
 
 #include "Scenes/Headers/SceneState.h"
 
-#include "Rendering/Headers/Frustum.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/Light.h"
 
@@ -17,7 +16,7 @@
 
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
-CascadedShadowMaps::CascadedShadowMaps(Light* light, F32 numSplits) : ShadowMap(light, SHADOW_TYPE_CSM),
+CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, F32 numSplits) : ShadowMap(light, shadowCamera, SHADOW_TYPE_CSM),
                                                                       _gfxDevice(GFX_DEVICE)
 {
     _dirLight = dynamic_cast<DirectionalLight*>(_light);
@@ -39,14 +38,13 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, F32 numSplits) : ShadowMap(
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     _previewDepthMapShader->UniformTexture("tex", 0);
-    _previewDepthMapShader->Uniform("far_plane", 2000.0f);
-
+    _previewDepthMapShader->Uniform("useScenePlanes", false);
     ResourceDescriptor blurDepthMapShader("blur.GaussBlur");
     blurDepthMapShader.setThreadedLoading(false);
     _blurDepthMapShader = CreateResource<ShaderProgram>(blurDepthMapShader);
     _blurDepthMapShader->UniformTexture("texScreen", 0);
 
-    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "ECSM");
+    PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getId(), "EVCSM");
     SamplerDescriptor depthMapSampler;
     depthMapSampler.setFilters(TEXTURE_FILTER_LINEAR_MIPMAP_LINEAR, TEXTURE_FILTER_LINEAR);
     depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
@@ -103,7 +101,6 @@ void CascadedShadowMaps::resolution(U16 resolution, U8 resolutionFactor){
         _blurBuffer->Create(_resolution, _resolution);
         updateResolution(screenResolution.width, screenResolution.height);
     }
-    _clipRect.resize(_numSplits);
     ShadowMap::resolution(resolution, resolutionFactor);
 }
 
@@ -111,40 +108,42 @@ void CascadedShadowMaps::updateResolution(I32 newWidth, I32 newHeight){
     ShadowMap::updateResolution(newWidth, newHeight);
 }
 
-void CascadedShadowMaps::render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
+void CascadedShadowMaps::render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction){
     //Only if we have a valid callback;
     if (sceneRenderFunction.empty()) {
         ERROR_FN(Locale::get("ERROR_LIGHT_INVALID_SHADOW_CALLBACK"), _light->getId());
         return;
     }
-    _gfxDevice.getMatrix(VIEW_MATRIX, _viewMatrixCache);
-    _gfxDevice.getMatrix(VIEW_INV_MATRIX, _viewInvMatrixCache);
-    
+
+    Camera& sceneCamera = renderState.getCamera();
     _splitLogFactor = _dirLight->csmSplitLogFactor();
     _nearClipOffset = _dirLight->csmNearClipOffset();
-    _sceneZPlanes = Frustum::getInstance().getZPlanes();
-    // split the view frustum and generate our lightViewProj matrices
-    CalculateSplitDepths(renderState.getCameraConst());
-    _gfxDevice.lockMatrices();
+    const vec2<F32>& currentPlanes = renderState.getCameraConst().getZPlanes();
+    if (_sceneZPlanes != currentPlanes){
+        _sceneZPlanes = currentPlanes;
+        CalculateSplitDepths(sceneCamera);
+    }
+    _lightPosition = _light->getPosition();
+
+    _viewInvMatrixCache = sceneCamera.getWorldMatrix();
+    sceneCamera.getFrustum().getCornersWorldSpace(_frustumCornersWS);
+    sceneCamera.getFrustum().getCornersViewSpace(_frustumCornersVS);
+
     _depthMap->Begin(*_renderPolicy);
+    renderState.getCameraMgr().pushActiveCamera(_shadowCamera, false);
     for (U8 i = 0; i < _numSplits; ++i){
         ApplyFrustumSplit(i);
         _depthMap->DrawToLayer(TextureDescriptor::Color0, i, true);
+        _shadowCamera->renderLookAt();
         _gfxDevice.render(sceneRenderFunction, renderState);
+        LightManager::getInstance().registerShadowPass();
     }
     _depthMap->End();
-    _gfxDevice.releaseMatrices();
-    Frustum::getInstance().Extract();
-
-    _gfxDevice.setLight(_light, true);
+    renderState.getCameraMgr().popActiveCamera();
 }
 
-void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
-    const mat4<F32>& projMatrixCache = _gfxDevice.getMatrix(PROJECTION_MATRIX);
-    for (U8 i = 0; i < 8; ++i){
-        _frustumCornersWS[i].set(Frustum::getInstance().getPoint(i));
-        _frustumCornersVS[i].set(_viewMatrixCache.transform(_frustumCornersWS[i]));
-    }
+void CascadedShadowMaps::CalculateSplitDepths(Camera& cam){
+    const mat4<F32>& projMatrixCache = cam.getProjectionMatrix();
 
     F32 N = _numSplits;
     F32 nearPlane = _sceneZPlanes.x;
@@ -158,9 +157,6 @@ void CascadedShadowMaps::CalculateSplitDepths(const Camera& cam){
 }
 
 void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
-    mat4<F32>& viewMatrix = _shadowViewMatrices[pass];
-    mat4<F32>& projMatrix = _shadowProjMatrices[pass];
-
     F32 minZ = _splitDepths[pass];
     F32 maxZ = _splitDepths[pass + 1];
 
@@ -181,21 +177,20 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
 
     // Position the shadow-caster camera so that it's looking at the centroid, and backed up in the direction of the sunlight
     F32 distFromCentroid = std::max((maxZ - minZ), _splitFrustumCornersVS[4].distance(_splitFrustumCornersVS[5])) + _nearClipOffset;
-    vec3<F32> currentEye = frustumCentroid - (_light->getPosition() * distFromCentroid);
-
-    viewMatrix.set(_gfxDevice.lookAt(currentEye, frustumCentroid));
+    vec3<F32> currentEye = frustumCentroid - (_lightPosition * distFromCentroid);
+    const mat4<F32>& viewMatrix = _shadowCamera->lookAt(currentEye, frustumCentroid);
     // Determine the position of the frustum corners in light space
     for (U8 i = 0; i < 8; i++){
         _frustumCornersLS[i].set(viewMatrix.transform(_frustumCornersWS[i]));
     }
     // Create an orthographic camera for use as a shadow caster
     vec2<F32> clipPlanes;
-
+    vec4<F32> clipRect;
     if (_dirLight->csmStabilize()){
         BoundingSphere frustumSphere(_frustumCornersLS);
-        _clipRect[pass].set(UNIT_RECT * frustumSphere.getRadius());
         clipPlanes.set(0.0f, frustumSphere.getDiameter());
         clipPlanes += _nearClipOffset;
+        clipRect.set(UNIT_RECT * frustumSphere.getRadius());
     }else{
         // Calculate an orthographic projection by sizing a bounding box to the frustum coordinates in light space
         BoundingBox frustumBox(_frustumCornersLS);
@@ -203,20 +198,19 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
         vec3<F32> mins  = frustumBox.getMin();
          // Create an orthographic camera for use as a shadow caster
         clipPlanes.set(-maxes.z - _nearClipOffset, -mins.z);
-        _clipRect[pass].set(mins.x, maxes.x, mins.y, maxes.y);
+        clipRect.set(mins.x, maxes.x, mins.y, maxes.y);
     }
 
-    projMatrix.set(_gfxDevice.setOrthoProjection(_clipRect[pass], clipPlanes));
-    Frustum::getInstance().Extract(currentEye);
+    _shadowCamera->setProjection(clipRect, clipPlanes, true);
 
-    mat4<F32> lightViewProj = viewMatrix * projMatrix;
+    mat4<F32> lightViewProj = viewMatrix * _shadowCamera->getProjectionMatrix();
 
     // http://www.gamedev.net/topic/591684-xna-40---shimmering-shadow-maps/
     F32 halfShadowMapSize = (_resolution) * 0.5f;
     vec3<F32> testPoint = lightViewProj.transform(VECTOR3_ZERO) * halfShadowMapSize;
     vec3<F32> testPointRounded(testPoint); testPointRounded.round();
     vec3<F32> rounding = (testPointRounded - testPoint) / halfShadowMapSize;
-    lightViewProj *= mat4<F32>(rounding.x, rounding.y, 0.0f);
+    lightViewProj = mat4<F32>(rounding.x, rounding.y, 0.0f) * lightViewProj;
 
     _light->setVPMatrix(pass, lightViewProj * _bias);
     _light->setLightPos(pass, currentEye);
@@ -225,8 +219,6 @@ void CascadedShadowMaps::ApplyFrustumSplit(U8 pass){
 void CascadedShadowMaps::postRender(){
     if (_gfxDevice.shadowDetailLevel() == DETAIL_LOW)
         return;
-
-    
 
     _gfxDevice.toggle2D(true);
 
@@ -261,7 +253,6 @@ void CascadedShadowMaps::togglePreviewShadowMaps(bool state){
 }
 
 void CascadedShadowMaps::previewShadowMaps(){
-    _gfxDevice.toggle2D(true);
     _previewDepthMapShader->bind();
     _depthMap->Bind();
     _depthMap->UpdateMipMaps(TextureDescriptor::Color0);
@@ -271,5 +262,4 @@ void CascadedShadowMaps::previewShadowMaps(){
         _gfxDevice.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(_gfxDevice), 1));
     }
     _depthMap->Unbind();
-    _gfxDevice.toggle2D(false);
 }

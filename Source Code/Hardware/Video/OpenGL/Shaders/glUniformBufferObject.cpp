@@ -102,9 +102,7 @@ void glUniformBufferObject::printUniformBlockInfo(GLint prog, GLint block_index)
     // Output details:
     PRINT_FN("%s ( %d )", block_name.c_str(), block_size);
     for (auto detail = uniform_details.begin(); detail != uniform_details.end(); ++detail)
-    {
         PRINT_FN("%s", (*detail).c_str());
-    }
 }
 
 void glUniformBufferObject::Create(GLint bufferIndex, bool dynamic, bool stream){
@@ -124,7 +122,6 @@ void glUniformBufferObject::ChangeSubData(GLintptr offset,	GLsizeiptr size, cons
     assert(_UBOid != 0);
     glBindBuffer(GL_UNIFORM_BUFFER, _UBOid);
     glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
-    //glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void glUniformBufferObject::unbind() {

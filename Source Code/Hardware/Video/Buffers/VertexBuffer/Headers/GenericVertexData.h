@@ -32,7 +32,7 @@
 
 class GenericVertexData : private boost::noncopyable {
 public:
-    GenericVertexData() : _numBuffers(0)
+    GenericVertexData()
     {
     }
 
@@ -40,17 +40,23 @@ public:
     {
     }
 
-    virtual void Clear() = 0;
-    virtual void Create(U8 numBuffers = 1) = 0;
-    virtual void Draw(const PrimitiveType& type, U32 min, U32 max) = 0;
-    virtual void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max) = 0;
+    virtual void Create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
+    virtual void SetFeedbackBuffer(U32 buffer, U32 bindPoint) = 0;
+
+    virtual void Draw(const PrimitiveType& type, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
+    virtual void DrawInstanced(const PrimitiveType& type, U32 count, U32 min, U32 max, U8 queryID = 0, bool drawToBuffer = false) = 0;
 
     virtual void SetBuffer(U32 buffer, size_t dataSize, void* data, bool dynamic, bool stream) = 0;
     virtual void UpdateBuffer(U32 buffer, size_t dataSize, void* data, U32 offset, size_t currentSize, bool dynamic, bool steam) = 0;
+
     virtual void SetAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
+    virtual void SetFeedbackAttribute(U32 index, U32 buffer, U32 divisor, size_t size, bool normalized, U32 stride, U32 offset, const GFXDataFormat& type) = 0;
+    
+    virtual I32  GetFeedbackPrimitiveCount(U8 queryID) = 0;
 
 protected:
-    U8 _numBuffers;
+    vectorImpl<U32 > _feedbackBuffers;
+    vectorImpl<U32 > _feedbackBindPoints;
     vectorImpl<U32 > _bufferObjects;
 };
 #endif

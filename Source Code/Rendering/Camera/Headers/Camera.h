@@ -25,9 +25,10 @@
 
 #include "core.h"
 
+#include "Frustum.h"
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Resources/Headers/Resource.h"
- 
+
 namespace OIS {
     class MouseEvent;
     enum MouseButtonID;
@@ -46,20 +47,17 @@ public:
 
 public:
     Camera(const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
-    virtual ~Camera() {}
+    virtual ~Camera();
+
+    void fromCamera(const Camera& camera);
 
     virtual void update(const U64 deltaTime);
-    ///Camera save/load system
-    ///Saves the minimum ammount of information in order to restore the camera at a later stage
-    void saveCamera();
-    ///Restores the previous camera's position, orientation, etc. based on save data
-    void restoreCamera();
 
     ///Rendering calls
     ///Creates a viewMatrix and passes it to the rendering API
-    void renderLookAt(bool invertX = false);
+    void renderLookAt();
     ///Creates a reflection matrix using the specified plane height and passes it to the rendering API
-    void renderLookAtReflected(const Plane<F32>& reflectionPlane, bool invertX = false);
+    void renderLookAtReflected(const Plane<F32>& reflectionPlane);
     ///Creates the appropriate eye offset and frustum depending on the desired eye.This method does not calls "renderLookAt"
     ///rightEye = false => left eye's frustum+view; rightEye = true => right eye's frustum + view.
     void setAnaglyph(bool rightEye = false);
@@ -68,11 +66,11 @@ public:
     ///Global rotations are applied relative to the world axis, not the camera's
     void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
     ///Sets the camera's position, target and up directions
-    void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS);
+    const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS);
     ///Rotates the camera (changes its orientation) by the specified quaternion (_orientation *= q)
     void rotate(const Quaternion<F32>& q);
     ///Sets the camera to point at the specified target point
-    inline void lookAt(const vec3<F32>& target) { lookAt(_eye, target, _yAxis); }
+    inline const mat4<F32>&  lookAt(const vec3<F32>& target) { return lookAt(_eye, target, _yAxis); }
     ///Sets the camera's orientation to match the specified yaw, pitch and roll values;
     ///Creates a quaternion based on the specified euler angles and calls "rotate" to change the orientation
     virtual void rotate(F32 yaw, F32 pitch, F32 roll);
@@ -104,16 +102,20 @@ public:
     inline void moveStrafe(F32 factor)    { move(factor * _cameraMoveSpeed, 0.0f, 0.0f); }
     ///Moves the camera up or down
     inline void moveUp(F32 factor)        { move(0.0f, factor * _cameraMoveSpeed, 0.0f); }
-    ///Anaglyph rendering: Set intraocular distance
+    ///Anaglyph rendering: Set intra-ocular distance
     inline void setIOD(F32 distance)                             { _camIOD = distance; }
     inline void setEye(F32 x, F32 y, F32 z)                      { _eye.set(x,y,z);  _viewMatrixDirty = true; }
     inline void setEye(const vec3<F32>& position)                { _eye = position;  _viewMatrixDirty = true; }
     inline void setRotation(const Quaternion<F32>& q)            { _orientation = q; _viewMatrixDirty = true; }
     inline void setRotation(F32 yaw, F32 pitch, F32 roll = 0.0f) { setRotation(Quaternion<F32>(-pitch,-yaw,-roll)); }
+    inline void setAspectRatio(F32 ratio)                        { _aspectRatio = ratio; _projectionDirty = true;}
+    inline void setVerticalFoV(F32 vFoV)                         { _verticalFoV = vFoV;  _projectionDirty = true;}
+    inline void setHorizontalFoV(F32 hFoV)                       { _verticalFoV = Util::xfov_to_yfov(hFoV, _aspectRatio); _projectionDirty = true;}
     ///Mouse sensitivity: amount of pixels per radian
     inline void setMouseSensitivity(F32 sensitivity)             {_mouseSensitivity = sensitivity;}
     inline void setMoveSpeedFactor(F32 moveSpeedFactor)          {_moveSpeedFactor = moveSpeedFactor;}
     inline void setTurnSpeedFactor(F32 turnSpeedFactor)          {_turnSpeedFactor = turnSpeedFactor;}
+    inline void setZoomSpeedFactor(F32 zoomSpeedFactor)          {_zoomSpeedFactor = zoomSpeedFactor;}
     ///Exactly as in Ogre3D: locks the yaw movement to the specified axis
     inline void setFixedYawAxis( bool useFixed, const vec3<F32>& fixedAxis = WORLD_Y_AXIS) { _yawFixed = useFixed; _fixedYawAxis = fixedAxis; }
 
@@ -121,59 +123,110 @@ public:
     inline F32 getMouseSensitivity()         const {return _mouseSensitivity;}
     inline F32 getMoveSpeedFactor()          const {return _moveSpeedFactor;}
     inline F32 getTurnSpeedFactor()          const {return _turnSpeedFactor;}
+    inline F32 getZoomSpeedFactor()          const {return _zoomSpeedFactor;}
+
     inline const CameraType& getType()	     const {return _type; }
-    inline const vec3<F32>&  getEye()        const {return _eye;}
-    inline const vec3<F32>&  getViewDir()    const {return _viewDir;}
-    inline const vec3<F32>&  getUpDir()      const {return _yAxis;}
-    inline const vec3<F32>&  getRightDir()   const {return _xAxis;}
+    inline const vec3<F32>&  getEye()        const {return _reflectionRendering ? _reflectedEye : _eye; }
+    inline       vec3<F32>   getViewDir()    const {return _reflectionRendering ? _reflectedViewMatrix * _viewDir : _viewDir; }
+    inline       vec3<F32>   getUpDir()      const {return _reflectionRendering ? _reflectedViewMatrix * _yAxis : _yAxis; }
+    inline       vec3<F32>   getRightDir()   const {return _reflectionRendering ? _reflectedViewMatrix * _xAxis : _xAxis; }
     inline const vec3<F32>&  getEuler()      const {return _euler;}
     inline const vec3<F32>&  getTarget()     const {return _target;}
-    inline const mat4<F32>&  getViewMatrix()       {updateViewMatrix(); return _viewMatrix;}
-    inline const mat4<F32>&  getWorldMatrix()      {getViewMatrix().inverse(_worldMatrix); return _worldMatrix;}
-                 void        getFrustumCorners(vectorImpl<vec3<F32>>& corners, const vec2<F32>& zPlanes, F32 verticalFoVRadians) const;
+    inline const mat4<F32>&  getProjectionMatrix() const { return _projectionMatrix; }
+    inline const vec2<F32>&  getZPlanes()          const { return _zPlanes; }
+    inline const F32         getVerticalFoV()      const { return _verticalFoV; }
+    inline const F32         getHorizontalFoV()    const { return Util::yfov_to_xfov(_verticalFoV, _aspectRatio); }
+    inline const F32         getAspectRatio()      const { return _aspectRatio; }
+
+    inline const mat4<F32>&  getViewMatrix() { 
+        updateViewMatrix();
+        return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
+    }
+
+    inline const mat4<F32>&  getWorldMatrix() { 
+        if (updateViewMatrix())
+            _viewMatrix.inverse(_worldMatrix);
+
+        return _worldMatrix; 
+    }
+
     ///Nothing really to unload
     virtual bool unload() {return true;}
     ///Add an event listener called after every RenderLookAt or RenderLookAtCube call
     virtual void addUpdateListener(const DELEGATE_CBK& f) {_listeners.push_back(f);}
     ///Informs all listeners of a new event
     virtual void updateListeners();
+    ///Clear all listeners from the current camera
+    virtual void clearListeners() { _listeners.clear(); }
     ///Inject mouse events
     virtual bool onMouseMove(const OIS::MouseEvent& arg) {return true;}
     ///Called when the camera becomes active
-    virtual void onActivate() {}
+    virtual void onActivate();
     ///Called when the camera becomes inactive
-    virtual void onDectivate() {}
-protected:
-    virtual void updateViewMatrix();
+    virtual void onDeactivate();
+
+    void setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes, bool updateOnSet = false);
+    void setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes, bool updateOnSet = false);
+    ///Extract the frustum associated with our current PoV
+    virtual bool updateFrustum();
+    ///Get the camera's current frustum
+    inline const Frustum& getFrustumConst() const { return *_frustum; }
+    inline       Frustum& getFrustum()            { return *_frustum; }
+
+    inline  void lockMovement(bool state) { _movementLocked = state;}
+    inline  void lockRotation(bool state) { _rotationLocked = state; }
+    inline  void lockView(bool state)     { _viewMatrixLocked = state; }
+    inline  void lockFrustum(bool state)  { _frustumLocked = state; }
+
+            vec3<F32> unProject(const vec3<F32>& winCoords) const;
+            vec3<F32> unProject(const vec3<F32>& winCoords, const vec4<I32>& viewport) const;
 
 protected:
-    mat4<F32>       _worldMatrix;
+    virtual void lookAtInternal(bool reflection);
+    virtual bool updateViewMatrix();
+    virtual void updateProjection(bool force = false);
+    inline  void updateMatrices() {
+        updateViewMatrix();
+        updateProjection();
+    }
+protected:
     mat4<F32>       _viewMatrix;
+    mat4<F32>       _worldMatrix;
+    mat4<F32>       _projectionMatrix;
     mat4<F32>       _reflectedViewMatrix;
-    Quaternion<F32> _orientation;
-    vec3<F32> _eye, _viewDir, _target;
+    Quaternion<F32> _orientation, _tempOrientation;
+    vec3<F32> _eye, _reflectedEye, _viewDir, _target;
     vec3<F32> _xAxis, _yAxis, _zAxis;
     vec3<F32> _euler, _fixedYawAxis;
+    vec2<F32>  _zPlanes;
+    vec4<F32>  _orthoRect;
 
+    F32 _verticalFoV;
+    F32 _aspectRatio;
     F32 _accumPitchDegrees;
     F32 _turnSpeedFactor;
     F32 _moveSpeedFactor;
     F32 _mouseSensitivity;
+    F32 _zoomSpeedFactor;
     F32 _cameraMoveSpeed;
     F32 _cameraTurnSpeed;
+    F32 _cameraZoomSpeed;
     F32 _camIOD;
     CameraType	_type;
 
     vectorImpl<DELEGATE_CBK > _listeners;
-
-    //Save/Load Camera
-    vec3<F32>       _savedVectors[3];
-    F32             _savedFloats[4];
-    Quaternion<F32> _savedOrientation;
-    bool            _savedYawState;
-    bool            _saved;
+    bool            _isActive;
+    bool            _projectionDirty;
     bool            _viewMatrixDirty;
+    bool            _viewMatrixLocked;
+    bool            _frustumLocked;
+    bool            _rotationLocked;
+    bool            _movementLocked;
     bool            _yawFixed;
+    bool            _isOrthoCamera;
+    bool            _reflectionRendering;
+    bool            _frustumDirty;
+    Frustum*        _frustum;
 };
 
 #endif

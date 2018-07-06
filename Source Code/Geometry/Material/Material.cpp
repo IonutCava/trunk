@@ -2,7 +2,6 @@
 
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/ShaderManager.h"
-#include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Hardware/Video/Headers/RenderStateBlock.h"
 
@@ -12,6 +11,7 @@ Material::Material() : Resource("temp_material"),
                        _shaderThreadedLoad(true),
                        _hardwareSkinning(false),
                        _useAlphaTest(false),
+                       _dumpToFile(true),
                        _gsInputType(GS_TRIANGLES),
                        _translucencyCheck(false),
                        _shadingMode(SHADING_PHONG), /// phong shading by default
@@ -33,7 +33,7 @@ Material::Material() : Resource("temp_material"),
        _textures[i] = nullptr;
    for(U8 i = 0; i < Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0; ++i)
        _operations[i] = TextureOperation_Replace;
-   //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture2D*>(nullptr));
+   //std::fill(_textures, _textures + Config::MAX_TEXTURE_STORAGE, static_cast<Texture*>(nullptr));
    //std::fill(_operations, _operations + (Config::MAX_TEXTURE_STORAGE - TEXTURE_UNIT0), TextureOperation_Replace);
 
    /// Normal state for final rendering
@@ -50,7 +50,7 @@ Material::Material() : Resource("temp_material"),
    RenderStateBlockDescriptor shadowDescriptor(stateDescriptor);
    shadowDescriptor.setCullMode(CULL_MODE_CCW);
    /// set a polygon offset
-   //shadowDescriptor.setZBias(1.0f, 2.0f);
+   shadowDescriptor.setZBias(1.0f, 2.0f);
    /// ignore colors - Some shadowing techniques require drawing to the a color buffer
    shadowDescriptor.setColorWrites(true, true, false, false);
    _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.getOrCreateStateBlock(shadowDescriptor)));
@@ -72,11 +72,11 @@ void Material::update(const U64 deltaTime){
     computeShaderInternal();
 }
 
-RenderStateBlock* Material::getRenderState(RenderStage currentStage) {
+const RenderStateBlock& Material::getRenderStateBlock(RenderStage currentStage) {
     if (_defaultRenderStates.find(currentStage) == _defaultRenderStates.end())
-        return _defaultRenderStates[FINAL_STAGE];
-
-   return _defaultRenderStates[currentStage]; 
+        return *_defaultRenderStates[FINAL_STAGE];
+    
+    return *_defaultRenderStates[currentStage];
 }
 
 RenderStateBlock* Material::setRenderStateBlock(RenderStateBlockDescriptor& descriptor,const RenderStage& renderStage){
@@ -91,7 +91,7 @@ RenderStateBlock* Material::setRenderStateBlock(RenderStateBlockDescriptor& desc
 //base = base texture
 //second = second texture used for multitexturing
 //bump = bump map
-void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const TextureOperation& op, U8 index) {
+void Material::setTexture(U32 textureUsageSlot, Texture* const texture, const TextureOperation& op, U8 index) {
     if(_textures[textureUsageSlot]){
         UNREGISTER_TRACKED_DEPENDENCY(_textures[textureUsageSlot]);
         RemoveResource(_textures[textureUsageSlot]);
@@ -118,7 +118,7 @@ void Material::setTexture(U32 textureUsageSlot, Texture2D* const texture, const 
 }
 
 //Here we set the shader's name
-void Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage){
+void Material::setShaderProgram(const std::string& shader, const RenderStage& renderStage, const bool computeOnAdd){
     ShaderProgram* shaderReference = _shaderInfo[renderStage]._shaderRef;
     //if we already had a shader assigned ...
     if (!_shaderInfo[renderStage]._shader.empty()){
@@ -145,12 +145,16 @@ void Material::setShaderProgram(const std::string& shader, const RenderStage& re
     shaderDescriptor.setThreadedLoading(_shaderThreadedLoad);
 
     _computedShaderTextures = true;
-
-    _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
+    if (computeOnAdd){
+        _shaderInfo[renderStage]._shaderRef = CreateResource<ShaderProgram>(shaderDescriptor);
+        _shaderInfo[renderStage]._computedShader = true;
+    }else{
+        _shaderComputeQueue.push(std::make_pair(renderStage, shaderDescriptor));
+    }
 }
 
 void Material::clean() {
-    if(_dirty){
+    if(_dirty && _dumpToFile){
         isTranslucent();
         XML::dumpMaterial(*this);
        _dirty = false;
@@ -308,12 +312,13 @@ void Material::setDoubleSided(bool state) {
         return;
     
     _doubleSided = state;
-    /// Update all render states for this item
+    // Update all render states for this item
     if(_doubleSided){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         FOR_EACH(stateValue& it, _defaultRenderStates){
-            if (it.first != SHADOW_STAGE)
-                it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
+            RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
+            if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
+            setRenderStateBlock(descriptor, it.first);
         }
     }
 
@@ -354,8 +359,10 @@ bool Material::isTranslucent(U8 index) {
     if(state && !_translucencyCheck){
         typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;
         FOR_EACH(stateValue& it, _defaultRenderStates){
-            if (it.first != SHADOW_STAGE) it.second->getDescriptor().setCullMode(CULL_MODE_NONE);
-            if(!_useAlphaTest) it.second->getDescriptor().setBlend(true);
+            RenderStateBlockDescriptor descriptor(it.second->getDescriptor());
+            if (it.first != SHADOW_STAGE) descriptor.setCullMode(CULL_MODE_NONE);
+            if (!_useAlphaTest) descriptor.setBlend(true);
+            setRenderStateBlock(descriptor, it.first);
         }
         _translucencyCheck = true;
     }

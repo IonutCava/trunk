@@ -38,7 +38,7 @@ glIMPrimitive* GL_API::getOrCreateIMPrimitive(bool allowPrimitiveRecycle){
 }
 
 /// Creates a new frame buffer
-FrameBuffer* GL_API::newFB(bool multisampled)  {
+FrameBuffer* GL_API::newFB(bool multisampled) const {
     // if MSAA is disabled, this will be a simple color / depth buffer
     if (!GFX_DEVICE.MSAAEnabled()){
         multisampled = false;
@@ -49,14 +49,14 @@ FrameBuffer* GL_API::newFB(bool multisampled)  {
      return New glFrameBuffer(multisampled ? New glFrameBuffer() : nullptr);
 }
 
-VertexBuffer* GL_API::newVB(const PrimitiveType& type) {
+VertexBuffer* GL_API::newVB(const PrimitiveType& type) const {
     return New glVertexArray(type);
 }
 
-PixelBuffer* GL_API::newPB(const PBType& type) {
+PixelBuffer* GL_API::newPB(const PBType& type) const {
     return New glPixelBuffer(type);
 }
 
-GenericVertexData* GL_API::newGVD() {
+GenericVertexData* GL_API::newGVD() const {
     return New glGenericVertexData();
 }

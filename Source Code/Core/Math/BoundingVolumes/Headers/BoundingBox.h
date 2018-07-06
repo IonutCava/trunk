@@ -209,9 +209,9 @@ public:
         _pointsDirty = true;
     }
    
-    bool Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat){
+    bool Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat, bool force = false){
         //UpgradableReadLock ur_lock(_lock);
-        if(_oldMatrix == mat)
+        if (!force && _oldMatrix == mat)
             return false;
 
         _oldMatrix.set(mat);

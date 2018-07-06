@@ -56,16 +56,15 @@ public:
     inline void setRenderCallback(const DELEGATE_CBK& callback) {_renderCallback = callback;}
 
     void togglePreviewReflection() {_previewReflection = !_previewReflection;}
-    ///Draw a small quad with our reflection buffer as a texture
-    void previewReflection();
 
 private:
     /// Create FB
     bool  build();
 
 protected:
-    ///This is inherited from FrameListener and is used to queue upreflection on every frame start
+    ///This is inherited from FrameListener and is used to queue up reflection on every frame start
     bool framePreRenderEnded(const FrameEvent& evt);
+    virtual bool previewReflection();
 
 protected:
 

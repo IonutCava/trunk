@@ -1,144 +1,123 @@
 #include "Headers/QuadtreeNode.h"
 
-#include "Rendering/Headers/Frustum.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
-void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, U32& chunkCount){
+QuadtreeNode::QuadtreeNode()
+{
+    _children[CHILD_NW] = nullptr;
+    _children[CHILD_NE] = nullptr;
+    _children[CHILD_SW] = nullptr;
+    _children[CHILD_SE] = nullptr;
+    _terrainChunk = nullptr;
     _LOD = 0;
+    _terLoDOffset = 0.0f;
+    _minHMSize = 0;
+}
 
+QuadtreeNode::~QuadtreeNode()
+{
+    SAFE_DELETE(_children[CHILD_NW]);
+    SAFE_DELETE(_children[CHILD_NE]);
+    SAFE_DELETE(_children[CHILD_SW]);
+    SAFE_DELETE(_children[CHILD_SE]);
+    SAFE_DELETE(_terrainChunk);
+}
+
+void QuadtreeNode::Build(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, U32 minHMSize, VertexBuffer* const groundVB, Terrain* const parentTerrain, U32& chunkCount){
+    _LOD = 0;
+    _minHMSize = minHMSize;
     U32 div = (U32)pow(2.0f, (F32)depth);
     vec2<U32> nodesize = HMsize/(div);
     if(nodesize.x%2==0) nodesize.x++;
     if(nodesize.y%2==0) nodesize.y++;
     vec2<U32> newsize = nodesize/2;
 
-    if(std::max(newsize.x, newsize.y) < minHMSize)	{
-        _terrainChunk = New TerrainChunk();
-        _terrainChunk->Load(depth, pos, HMsize, groundVB);
+    if (std::max(newsize.x, newsize.y) < _minHMSize)	{
+        _terrainChunk = New TerrainChunk(groundVB, parentTerrain);
+        _terrainChunk->Load(depth, pos, HMsize);
 		chunkCount++;
-        _children = nullptr;
         return;
     }
 
+    _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
+
     // Create 4 children
-    _children = New QuadtreeNode[4];
+    _children[CHILD_NW] = New QuadtreeNode();
+    _children[CHILD_NE] = New QuadtreeNode();
+    _children[CHILD_SW] = New QuadtreeNode();
+    _children[CHILD_SE] = New QuadtreeNode();
 
     // Compute children bounding boxes
     const vec3<F32>& center = _boundingBox.getCenter();
-    _children[CHILD_NW].setBoundingBox( BoundingBox(_boundingBox.getMin(), center) );
-    _children[CHILD_NE].setBoundingBox( BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)) );
-    _children[CHILD_SW].setBoundingBox( BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)) );
-    _children[CHILD_SE].setBoundingBox( BoundingBox(center, _boundingBox.getMax()) );
-    _children[CHILD_NW].setParentShaderProgram(_parentShaderProgram);
-    _children[CHILD_NE].setParentShaderProgram(_parentShaderProgram);
-    _children[CHILD_SW].setParentShaderProgram(_parentShaderProgram);
-    _children[CHILD_SE].setParentShaderProgram(_parentShaderProgram);
+    _children[CHILD_NW]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
+    _children[CHILD_NE]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
+    _children[CHILD_SW]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
+    _children[CHILD_SE]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
     // Compute children positions
     vec2<U32> tNewHMpos[4];
     tNewHMpos[CHILD_NW] = pos + vec2<U32>(0, 0);
     tNewHMpos[CHILD_NE] = pos + vec2<U32>(newsize.x, 0);
     tNewHMpos[CHILD_SW] = pos + vec2<U32>(0, newsize.y);
     tNewHMpos[CHILD_SE] = pos + vec2<U32>(newsize.x, newsize.y);
-    _children[CHILD_NW].Build(depth+1, tNewHMpos[CHILD_NW], HMsize, minHMSize, groundVB, chunkCount);
-    _children[CHILD_NE].Build(depth+1, tNewHMpos[CHILD_NE], HMsize, minHMSize, groundVB, chunkCount);
-    _children[CHILD_SW].Build(depth+1, tNewHMpos[CHILD_SW], HMsize, minHMSize, groundVB, chunkCount);
-    _children[CHILD_SE].Build(depth+1, tNewHMpos[CHILD_SE], HMsize, minHMSize, groundVB, chunkCount);
+    _children[CHILD_NW]->Build(depth + 1, tNewHMpos[CHILD_NW], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
+    _children[CHILD_NE]->Build(depth + 1, tNewHMpos[CHILD_NE], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
+    _children[CHILD_SW]->Build(depth + 1, tNewHMpos[CHILD_SW], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
+    _children[CHILD_SE]->Build(depth + 1, tNewHMpos[CHILD_SE], HMsize, _minHMSize, groundVB, parentTerrain, chunkCount);
 }
 
-bool QuadtreeNode::computeBoundingBox(const vectorImpl<vec3<F32> >& vertices){
-    assert(!vertices.empty());
-
+bool QuadtreeNode::computeBoundingBox(){
     if(_terrainChunk != nullptr) {
         _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, _terrainChunk->getMinHeight(),_boundingBox.getMin().z));
         _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, _terrainChunk->getMaxHeight(),_boundingBox.getMax().z));
     }
 
-    if(_children != nullptr) {
-        for(I8 i=0; i<4; i++) {
-            _children[i].computeBoundingBox(vertices);
+    if (!isALeaf()) {
+        for(I8 i = 0; i < 4; i++) {
+            _children[i]->computeBoundingBox();
 
-            if(_boundingBox.getMin().y > _children[i]._boundingBox.getMin().y){
-                _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x,_children[i]._boundingBox.getMin().y,_boundingBox.getMin().z));
+            if (_boundingBox.getMin().y > _children[i]->_boundingBox.getMin().y){
+                _boundingBox.setMin(vec3<F32>(_boundingBox.getMin().x, _children[i]->_boundingBox.getMin().y, _boundingBox.getMin().z));
             }
 
-            if(_boundingBox.getMax().y < _children[i]._boundingBox.getMax().y){
-                _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x,_children[i]._boundingBox.getMax().y,_boundingBox.getMax().z));
+            if (_boundingBox.getMax().y < _children[i]->_boundingBox.getMax().y){
+                _boundingBox.setMax(vec3<F32>(_boundingBox.getMax().x, _children[i]->_boundingBox.getMax().y, _boundingBox.getMax().z));
             }
         }
     }
+
     _boundingBox.setComputed(true);
+    _boundingSphere.fromBoundingBox(_boundingBox);
     return true;
 }
 
-void QuadtreeNode::Destroy(){
-    SAFE_DELETE_ARRAY(_children);
-    SAFE_DELETE(_terrainChunk);
-}
+void QuadtreeNode::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
+    F32 camDistance = _boundingSphere.getCenter().distance(sceneState.getRenderState().getCameraConst().getEye()) - _terLoDOffset;
+    _LOD = camDistance > _boundingSphere.getRadius() ? (camDistance > _boundingSphere.getDiameter() ? 2 : 1) : 0;
 
-void QuadtreeNode::GenerateGrassIndexBuffer(U32 bilboardCount){
-    if(!_children){
-        assert(_terrainChunk);
-        _terrainChunk->GenerateGrassIndexBuffer(bilboardCount);
-    }else{
-        _children[CHILD_NW].GenerateGrassIndexBuffer(bilboardCount);
-        _children[CHILD_NE].GenerateGrassIndexBuffer(bilboardCount);
-        _children[CHILD_SW].GenerateGrassIndexBuffer(bilboardCount);
-        _children[CHILD_SE].GenerateGrassIndexBuffer(bilboardCount);
+    if (!isALeaf()) {
+        _children[CHILD_NW]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[CHILD_NE]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[CHILD_SW]->sceneUpdate(deltaTime, sgn, sceneState);
+        _children[CHILD_SE]->sceneUpdate(deltaTime, sgn, sceneState);
     }
 }
 
-void QuadtreeNode::DrawGrass(U32 geometryIndex, Transform* const parentTransform){
-    STUBBED("ToDo: Change vegetation rendering and generation system. Stop relying on terrain! -Ionut")
-    if(_LOD < 0  || !isInView(CHUNK_BIT_TESTCHILDREN)) return;
-
-    if(!_children){
-        assert(_terrainChunk);
-         _terrainChunk->DrawGrass(_LOD, _camDistance, geometryIndex, parentTransform);
-    }else{
-        _children[CHILD_NW].DrawGrass(geometryIndex, parentTransform);
-        _children[CHILD_NE].DrawGrass(geometryIndex, parentTransform);
-        _children[CHILD_SW].DrawGrass(geometryIndex, parentTransform);
-        _children[CHILD_SE].DrawGrass(geometryIndex, parentTransform);
-    }
-}
-
-void QuadtreeNode::DrawBBox(){
-    if(!_children) {
-        assert(_terrainChunk);
-        GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax(),mat4<F32>());
-    }else {
-        if( _LOD < 0 ) return;
-        _children[CHILD_NW].DrawBBox();
-        _children[CHILD_NE].DrawBBox();
-        _children[CHILD_SW].DrawBBox();
-        _children[CHILD_SE].DrawBBox();
-    }
-}
-
-bool QuadtreeNode::isInView(I32 options) {
-	const Frustum& frust = Frustum::getInstance();
-    const vec3<F32>& center = _boundingBox.getCenter();
-    const vec3<F32>& eyePos = frust.getEyePos();
-	   
-    _camDistance = vec3<F32>(center - eyePos).length();
-	_LOD = 0;
-	if(_camDistance > Config::TERRAIN_CHUNK_LOD1)		_LOD = 2;
-    else if(_camDistance > Config::TERRAIN_CHUNK_LOD0)	_LOD = 1;
-
-    F32 radius = (_boundingBox.getMax()-center).length();
+bool QuadtreeNode::isInView(U32 options, const SceneRenderState& sceneRenderState) const {
 	if(options & CHUNK_BIT_TESTCHILDREN) {
-        if(!_boundingBox.ContainsPoint(eyePos))	{
-            switch(frust.ContainsSphere(center, radius)) {
-                case FRUSTUM_OUT:	return false;
-                case FRUSTUM_IN:	options &= ~CHUNK_BIT_TESTCHILDREN;	break;
-                case FRUSTUM_INTERSECT:	{
-                    switch(frust.ContainsBoundingBox(_boundingBox)) {
-                        case FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
-                        case FRUSTUM_OUT: return false;
+        const Camera& cam = sceneRenderState.getCameraConst();
+        if (!_boundingBox.ContainsPoint(cam.getEye()))	{
+            const Frustum& frust = cam.getFrustumConst();
+            switch (frust.ContainsSphere(_boundingSphere.getCenter(), _boundingSphere.getRadius())) {
+                case Frustum::FRUSTUM_OUT:	return false;
+                case Frustum::FRUSTUM_IN:	options &= ~CHUNK_BIT_TESTCHILDREN;	break;
+                case Frustum::FRUSTUM_INTERSECT:	{
+                    switch (frust.ContainsBoundingBox(_boundingBox)) {
+                        case Frustum::FRUSTUM_IN: options &= ~CHUNK_BIT_TESTCHILDREN; break;
+                        case Frustum::FRUSTUM_OUT: return false;
                     };//inner switch
                 };//case FRUSTUM_INTERSECT
             };//outer case
@@ -148,22 +127,30 @@ bool QuadtreeNode::isInView(I32 options) {
 	return true;
 }
 
-void QuadtreeNode::DrawGround(I32 options,VertexBuffer* const terrainVB){
-  
-	if(!isInView(options))
-		return;
 
-    if(!_children) {
+void QuadtreeNode::DrawBBox() const {
+    GFX_DEVICE.drawBox3D(_boundingBox.getMin(), _boundingBox.getMax(), mat4<F32>());
+
+    if (!isALeaf()){
+        _children[CHILD_NW]->DrawBBox();
+        _children[CHILD_NE]->DrawBBox();
+        _children[CHILD_SW]->DrawBBox();
+        _children[CHILD_SE]->DrawBBox();
+    }
+}
+
+void QuadtreeNode::DrawGround(U32 options, const SceneRenderState& sceneRenderState) const {
+
+    if (!isInView(options, sceneRenderState))
+        return;
+
+    if (isALeaf()) {
         assert(_terrainChunk);
-
-        if(options & CHUNK_BIT_WATERREFLECTION)
-            _terrainChunk->DrawGround(Config::TERRAIN_CHUNKS_LOD-1,_parentShaderProgram,terrainVB);
-		else
-			_terrainChunk->DrawGround(_LOD,_parentShaderProgram,terrainVB);
+        _terrainChunk->DrawGround(options & CHUNK_BIT_WATERREFLECTION ? Config::TERRAIN_CHUNKS_LOD - 1 : _LOD);
     }else{
-        _children[CHILD_NW].DrawGround(options, terrainVB);
-        _children[CHILD_NE].DrawGround(options, terrainVB);
-        _children[CHILD_SW].DrawGround(options, terrainVB);
-        _children[CHILD_SE].DrawGround(options, terrainVB);
+        _children[CHILD_NW]->DrawGround(options, sceneRenderState);
+        _children[CHILD_NE]->DrawGround(options, sceneRenderState);
+        _children[CHILD_SW]->DrawGround(options, sceneRenderState);
+        _children[CHILD_SE]->DrawGround(options, sceneRenderState);
     }
 }

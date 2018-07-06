@@ -42,7 +42,6 @@ public:
     bool   init(GUI* const gui);
 
     /*Base Scene Operations*/
-    void update(const U64 deltaTime);
     void preRender();
     void render(const RenderStage& stage, const Kernel& kernel);
     void postRender();
@@ -62,16 +61,13 @@ public:
     ///AIEntities are deleted automatically by the AIManager if they are not freed in "deinitializeAI"
            bool deinitializeAI(bool continueOnErrors);
     /// Update animations, network data, sounds, triggers etc.
-    inline void updateCameras()                           { _activeScene->updateCameras();}
     inline void updateSceneState(const U64 deltaTime)     { _activeScene->updateSceneState(deltaTime); }
 
     ///Gather input events and process them in the current scene
-    inline void processInput(const U64 deltaTime)   { _activeScene->processInput(deltaTime); }
+    inline void processInput(const U64 deltaTime)   { _activeScene->processInput(deltaTime); _activeScene->updateCameraControls(); }
     inline void processTasks(const U64 deltaTime)   { _activeScene->processTasks(deltaTime); }
     inline void processGUI(const U64 deltaTime)     { _activeScene->processGUI(deltaTime); }
     inline void cacheResolution(const vec2<U16>& newResolution) {_activeScene->cacheResolution(newResolution);}
-    ///Get the number of frames render since the application started
-    inline U32  getFrameCount() const {return _frameCount;}
     ///Insert a new scene factory method for the given name
     template<class DerivedScene>
     inline bool registerScene(const std::string& sceneName) {
@@ -113,7 +109,6 @@ private:
 private:
     typedef Unordered_map<std::string, Scene*> SceneMap;
     bool _init;
-    U32  _frameCount;
     ///Pointer to the currently active scene
     Scene* _activeScene;
     ///Pointer to the GUI interface

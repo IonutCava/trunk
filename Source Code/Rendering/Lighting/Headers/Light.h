@@ -71,6 +71,7 @@ struct LightShadowProperties {
     vec3<F32> _lightPosition[4]; //<light's position in world space
 };
 
+class Camera;
 class Impostor;
 class ParamHandler;
 class ShadowMapInfo;
@@ -138,14 +139,13 @@ public:
     void updateState(const bool force = false);
 
     ///Dummy function from SceneNode;
-    bool onDraw(const RenderStage& currentStage) { return true; }
+    bool onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage) { return true; }
 
     ///SceneNode concrete implementations
     bool unload();
     bool computeBoundingBox(SceneGraphNode* const sgn);
-    bool isInView(const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
+    bool isInView(const SceneRenderState& sceneRenderState, const BoundingBox& boundingBox, const BoundingSphere& sphere, const bool distanceCheck = true);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
-    virtual const mat4<F32>& getLightViewMatrix(U8 index = 0) = 0;
 
     /*----------- Shadow Mapping-------------------*/
     ///Set the function used to generate shadows for this light (usually _scenegraph->render)
@@ -153,7 +153,7 @@ public:
     inline void setShadowMappingCallback(const DELEGATE_CBK& callback) { _callback = callback; }
     void addShadowMapInfo(ShadowMapInfo* const shadowMapInfo);
     bool removeShadowMapInfo();
-    virtual void generateShadowMaps(const SceneRenderState& sceneRenderState);
+    virtual void generateShadowMaps(SceneRenderState& sceneRenderState);
     inline const mat4<F32>& getVPMatrix(U8 index)   const { return _shadowProperties._lightVP[index]; }
     inline const vec4<F32>& getFloatValues()        const { return _shadowProperties._floatValues; }
     inline const vec3<F32>& getLightPos(U8 index)   const { return _shadowProperties._lightPosition[index]; }
@@ -165,9 +165,12 @@ public:
 
 protected:
     friend class LightManager;
+    template<typename T>
+    friend class ImplResourceLoader;
+    bool load(const std::string& name);
 
     ///When the SceneGraph calls the light's render function, we draw the impostor if needed
-    virtual void render(SceneGraphNode* const sgn);
+    virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     void postLoad(SceneGraphNode* const sgn);
     ///Set light type
     ///@param type Directional/Spot/Omni (see LightType enum)
@@ -177,6 +180,8 @@ protected:
     void setLightMode(const LightMode& mode);
     ///Called when the rendering resolution changes
     void updateResolution(I32 newWidth, I32 newHeight);
+    ///Get a ref to the shadow camera used by this light
+     Camera* const shadowCamera() const {return _shadowCamera;}
 
 private:
     ///Enum to char* translation for vector properties
@@ -202,6 +207,7 @@ private:
     Impostor* _impostor; ///< Used for debug rendering -Ionut
     SceneGraphNode* _lightSGN;
     SceneGraphNode* _impostorSGN;
+    Camera*         _shadowCamera;
     DELEGATE_CBK _callback;
     F32   _score;
     bool  _dirty;

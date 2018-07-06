@@ -51,7 +51,7 @@ private:
     F32  _fps;
     F32  _frameTime;
     F32  _speedfactor;
-    F32  _targetFrameRate; // float for division benefits
+    U32  _targetFrameRate; 
     D32  _ticksPerMicrosecond;
     LI	 _ticksPerSecond; //Processor's ticks per second
     LI	 _frameDelay;     //Previous frame's number of ticks
@@ -65,7 +65,7 @@ private:
 public:
 
     void init(U8 targetFrameRate);
-    void update();
+    void update(U32 frameCount);
 
     inline void benchmark(bool state)  {_benchmark = state;}
     inline bool benchmark()      const {return _benchmark;}
@@ -79,7 +79,7 @@ public:
     }
 
 protected:
-  void benchmarkInternal();
+  void benchmarkInternal(U32 frameCount);
   U64  getElapsedTimeInternal();
 
 #if defined(_DEBUG) || defined(_PROFILE)

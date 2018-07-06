@@ -1,9 +1,12 @@
 #include "Headers/ShaderManager.h"
+
+#include "Core/Headers/Kernel.h"
+#include "Core/Headers/ParamHandler.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Hardware/Video/Shaders/Headers/Shader.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 
-ShaderManager::ShaderManager() : _nullShader(nullptr), _init(false)
+ShaderManager::ShaderManager() : _nullShader(nullptr), _activeKernel(nullptr), _init(false)
 {
 }
 
@@ -17,10 +20,11 @@ void ShaderManager::Destroy() {
     RemoveResource(_nullShader);
 }
 
-bool ShaderManager::init(){
+bool ShaderManager::init(Kernel* const activeKernel){
     if(_init){
         ERROR_FN(Locale::get("WARNING_SHADER_MANAGER_DOUBLE_INIT"));
     }
+    _activeKernel = activeKernel;
     _init = GFX_DEVICE.initShaders();
     ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
     immediateModeShader.setThreadedLoading(false);
@@ -55,10 +59,16 @@ U8 ShaderManager::update(const U64 deltaTime){
 }
 
 U8 ShaderManager::idle(){
+    ParamHandler& par = ParamHandler::getInstance();
+    ShaderProgram::_cachedSceneZPlanes.set(par.getParam<F32>("rendering.zNear"), par.getParam<F32>("rendering.zFar"));
     if(_recompileQueue.empty()) return 0;
     _recompileQueue.top()->recompile(true,true,true,true,true);
     _recompileQueue.pop();
     return 1;
+}
+
+void ShaderManager::updateCamera() {
+    ShaderProgram::updateCamera(*(_activeKernel->getCameraMgr().getActiveCamera()));
 }
 
 void ShaderManager::refresh(){

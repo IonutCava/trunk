@@ -31,7 +31,7 @@ Object3D::~Object3D()
     SAFE_DELETE(_renderInstance);
 }
 
-void Object3D::render(SceneGraphNode* const sgn){
+void Object3D::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     if(!GFX_DEVICE.excludeFromStateChange(SceneNode::getType())){
         _renderInstance->transform(sgn->getTransform());
     }
@@ -46,7 +46,7 @@ void  Object3D::postLoad(SceneGraphNode* const sgn){
     SceneNode::postLoad(sgn);
 }
 
-bool Object3D::onDraw(const RenderStage& currentStage){
+bool Object3D::onDraw(SceneGraphNode* const sgn, const RenderStage& currentStage){
     if (getState() != RES_LOADED) 
         return false;
 

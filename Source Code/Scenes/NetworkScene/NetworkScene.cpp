@@ -20,10 +20,6 @@ void NetworkScene::preRender(){
 }
 
 void NetworkScene::processInput(const U64 deltaTime){
-    if(state()._angleLR) renderState().getCamera().rotateYaw(state()._angleLR);
-    if(state()._angleUD) renderState().getCamera().rotatePitch(state()._angleUD);
-    if(state()._moveFB)  renderState().getCamera().moveForward(state()._moveFB);
-    if(state()._moveLR)  renderState().getCamera().moveStrafe(state()._moveLR);
 }
 
 void NetworkScene::processGUI(const U64 deltaTime){

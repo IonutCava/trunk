@@ -35,8 +35,7 @@ public:
     RenderInstance(Object3D* const geometry) : _geometry(geometry),
                                                _transform(nullptr),
                                                _prevTransform(nullptr),
-                                               _preDraw(false),
-                                               _draw2D(false)
+                                               _preDraw(false)
     {
     }
 
@@ -56,9 +55,6 @@ public:
     ///PreDraw checks
     bool preDraw()                   const {return _preDraw;}
     void preDraw(const bool preDraw)       {_preDraw = preDraw;}
-    ///2D drawing
-    bool draw2D()                  const {return _draw2D;}
-    void draw2D(const bool draw2D)       {_draw2D = draw2D;}
 
 private:
     ///The actual geometry wrapper
@@ -69,8 +65,6 @@ private:
     Transform* _prevTransform;
     ///Perform a preDraw operation on the model
     bool       _preDraw;
-    ///Use 2D drawing
-    bool       _draw2D;
 };
 
 #endif

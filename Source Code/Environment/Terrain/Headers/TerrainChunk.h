@@ -33,57 +33,32 @@ class Transform;
 class ShaderProgram;
 class SceneGraphNode;
 
-struct ChunkGrassData{
-    vectorImpl<vectorImpl<U32 > > _grassIndices;
-    vectorImpl<U32 >              _grassIndexOffset;
-    vectorImpl<U32 >              _grassIndexSize;
-    VertexBuffer*                 _grassVB;
-    F32                           _grassVisibility;
-    inline bool empty() {return _grassIndices.empty();}
-
-    ChunkGrassData() : _grassVB(nullptr)
-    {
-    }
-
-    ~ChunkGrassData()
-    {
-		SAFE_DELETE(_grassVB);
-        _grassIndexOffset.clear();
-        _grassIndexSize.clear();
-    }
-};
-
 class TerrainChunk{
 public:
-    TerrainChunk() {}
-    ~TerrainChunk() {Destroy();}
-    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize, VertexBuffer* const vb);
+    TerrainChunk(VertexBuffer* const groundVB, Terrain* const parentTerrain);
+    ~TerrainChunk();
+    void Load(U8 depth, const vec2<U32>& pos, const vec2<U32>& HMsize);
     void Destroy();
 
-    I32  DrawGround(I8 lod,ShaderProgram* const program, VertexBuffer* const vb);
-    void DrawGrass(I8 lod, F32 distance, U32 index, Transform* const parentTransform);
+    void DrawGround(I8 lod) const;
     
     void addObject(Mesh* obj);
     void addTree(const vec4<F32>& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
 
-    void GenerateGrassIndexBuffer(U32 bilboardCount);
-
-    inline F32 getMinHeight()              const {return _heightBounds[0];}
-    inline F32 getMaxHeight()              const {return _heightBounds[1];}
-    inline ChunkGrassData&  getGrassData()       {return _grassData;}
+    inline F32 getMinHeight() const {return _heightBounds.x;}
+    inline F32 getMaxHeight() const {return _heightBounds.y;}
 
 private:
-    void ComputeIndicesArray(I8 lod, U8 depth,const vec2<U32>& position,const vec2<U32>& heightMapSize, VertexBuffer* const vb);
+    void ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& position, const vec2<U32>& heightMapSize);
 
 private:
     vectorImpl<U32> 	_indice[Config::TERRAIN_CHUNKS_LOD];
-    U16					_indOffsetW[Config::TERRAIN_CHUNKS_LOD];
-    U16  				_indOffsetH[Config::TERRAIN_CHUNKS_LOD];
     U32                 _lodIndOffset[Config::TERRAIN_CHUNKS_LOD];
     U32                 _lodIndCount[Config::TERRAIN_CHUNKS_LOD];
     U32                 _chunkIndOffset;
-    ChunkGrassData      _grassData;
-    F32                 _heightBounds[2]; //< 0 = minHeight, 1 = maxHeight
+    vec2<F32>           _heightBounds; //< 0 = minHeight, 1 = maxHeight
+    VertexBuffer*       _terrainVB;
+    Terrain*            _parentTerrain;
 };
 
 #endif

@@ -5,9 +5,7 @@ uniform vec2  dvd_zPlanes;
 uniform mat4  material;
 uniform int   isSelected = 0;
 uniform int   lodLevel = 0;
-#if defined(_DEBUG)
-uniform bool dvd_showShadowSplits = false;
-#endif
+
 #include "lightInput.cmn"
 
 #if defined(USE_OPACITY_DIFFUSE) || defined(USE_OPACITY) || defined(USE_OPACITY_MAP) || defined(USE_OPACITY_DIFFUSE_MAP)

@@ -248,31 +248,53 @@ namespace Util {
         }
         __forceinline F32 det(const F32* mat) {
             return ((mat[0] * mat[5] * mat[10]) +
-                (mat[4] * mat[9] * mat[2]) +
-                (mat[8] * mat[1] * mat[6]) -
-                (mat[8] * mat[5] * mat[2]) -
-                (mat[4] * mat[1] * mat[10]) -
-                (mat[0] * mat[9] * mat[6]));
+                    (mat[4] * mat[9] * mat[2]) +
+                    (mat[8] * mat[1] * mat[6]) -
+                    (mat[8] * mat[5] * mat[2]) -
+                    (mat[4] * mat[1] * mat[10]) -
+                    (mat[0] * mat[9] * mat[6]));
         }
 
+        // Copyright 2011 The Closure Library Authors. All Rights Reserved.
         __forceinline void Inverse(const F32* in, F32* out){
-            F32 idet = 1.0f / det(in);
-            out[0] = (in[5] * in[10] - in[9] * in[6]) * idet;
-            out[1] = -(in[1] * in[10] - in[9] * in[2]) * idet;
-            out[2] = (in[1] * in[6] - in[5] * in[2]) * idet;
-            out[3] = 0.0f;
-            out[4] = -(in[4] * in[10] - in[8] * in[6]) * idet;
-            out[5] = (in[0] * in[10] - in[8] * in[2]) * idet;
-            out[6] = -(in[0] * in[6] - in[4] * in[2]) * idet;
-            out[7] = 0.0f;
-            out[8] = (in[4] * in[9] - in[8] * in[5]) * idet;
-            out[9] = -(in[0] * in[9] - in[8] * in[1]) * idet;
-            out[10] = (in[0] * in[5] - in[4] * in[1]) * idet;
-            out[11] = 0.0f;
-            out[12] = -(in[12] * (out)[0] + in[13] * (out)[4] + in[14] * (out)[8]);
-            out[13] = -(in[12] * (out)[1] + in[13] * (out)[5] + in[14] * (out)[9]);
-            out[14] = -(in[12] * (out)[2] + in[13] * (out)[6] + in[14] * (out)[10]);
-            out[15] = 1.0f;
+            F32 m00 = in[ 0], m10 = in[ 1], m20 = in[ 2], m30 = in[ 3];
+            F32 m01 = in[ 4], m11 = in[ 5], m21 = in[ 6], m31 = in[ 7];
+            F32 m02 = in[ 8], m12 = in[ 9], m22 = in[10], m32 = in[11];
+            F32 m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
+
+            F32 a0 = m00 * m11 - m10 * m01;
+            F32 a1 = m00 * m21 - m20 * m01;
+            F32 a2 = m00 * m31 - m30 * m01;
+            F32 a3 = m10 * m21 - m20 * m11;
+            F32 a4 = m10 * m31 - m30 * m11;
+            F32 a5 = m20 * m31 - m30 * m21;
+            F32 b0 = m02 * m13 - m12 * m03;
+            F32 b1 = m02 * m23 - m22 * m03;
+            F32 b2 = m02 * m33 - m32 * m03;
+            F32 b3 = m12 * m23 - m22 * m13;
+            F32 b4 = m12 * m33 - m32 * m13;
+            F32 b5 = m22 * m33 - m32 * m23;
+
+            F32 det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+            assert(!IS_ZERO(det));
+                
+            F32 idet = 1.0f / det;
+            out[ 0] = ( m11 * b5 - m21 * b4 + m31 * b3) * idet;
+            out[ 1] = (-m10 * b5 + m20 * b4 - m30 * b3) * idet;
+            out[ 2] = ( m13 * a5 - m23 * a4 + m33 * a3) * idet;
+            out[ 3] = (-m12 * a5 + m22 * a4 - m32 * a3) * idet;
+            out[ 4] = (-m01 * b5 + m21 * b2 - m31 * b1) * idet;
+            out[ 5] = ( m00 * b5 - m20 * b2 + m30 * b1) * idet;
+            out[ 6] = (-m03 * a5 + m23 * a2 - m33 * a1) * idet;
+            out[ 7] = ( m02 * a5 - m22 * a2 + m32 * a1) * idet;
+            out[ 8] = ( m01 * b4 - m11 * b2 + m31 * b0) * idet;
+            out[ 9] = (-m00 * b4 + m10 * b2 - m30 * b0) * idet;
+            out[10] = ( m03 * a4 - m13 * a2 + m33 * a0) * idet;
+            out[11] = (-m02 * a4 + m12 * a2 - m32 * a0) * idet;
+            out[12] = (-m01 * b3 + m11 * b1 - m21 * b0) * idet;
+            out[13] = ( m00 * b3 - m10 * b1 + m20 * b0) * idet;
+            out[14] = (-m03 * a3 + m13 * a1 - m23 * a0) * idet;
+            out[15] = ( m02 * a3 - m12 * a1 + m22 * a0) * idet;
         }
     };
 };

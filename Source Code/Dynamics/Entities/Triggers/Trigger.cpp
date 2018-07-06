@@ -50,13 +50,13 @@ void Trigger::postLoad(SceneGraphNode* const sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Trigger::render(SceneGraphNode* const sgn){
+void Trigger::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     ///The isInView call should stop impostor rendering if needed
     if(!_triggerImpostor){
         _triggerImpostor = New Impostor(_name,_radius);
         _impostorSGN = _triggerSGN->addNode(_triggerImpostor->getDummy());
     }
-    _triggerImpostor->render(_impostorSGN);
+    _triggerImpostor->render(_impostorSGN, sceneRenderState);
 }
 
 bool Trigger::check(Unit* const unit,const vec3<F32>& camEyePos){

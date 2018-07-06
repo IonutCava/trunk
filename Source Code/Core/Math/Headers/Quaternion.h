@@ -89,18 +89,14 @@ public:
                              _w * rq._y + _y * rq._w + _z * rq._x - _x * rq._z,
                              _w * rq._z + _z * rq._w + _x * rq._y - _y * rq._x,
                              _w * rq._w - _x * rq._x - _y * rq._y - _z * rq._z);
+
     }
 
     //! Multiply so that rotations are applied in a left to right order.
     inline Quaternion& operator*=(const Quaternion& rq){
-        Quaternion tmp((_w * rq._w) - (_x * rq._x) - (_y * rq._y) - (_z * rq._z),
-                       (_w * rq._x) + (_x * rq._w) - (_y * rq._z) + (_z * rq._y),
-                       (_w * rq._y) + (_x * rq._z) + (_y * rq._w) - (_z * rq._x),
-                       (_w * rq._z) - (_x * rq._y) + (_y * rq._x) + (_z * rq._w));
-
-        *this = tmp;
+        (*this) = rq * (*this);
         _dirty = true;
-        return *this;
+        return (*this);
     }
 
     //! Multiplying a quaternion q with a vector v applies the q-rotation to v

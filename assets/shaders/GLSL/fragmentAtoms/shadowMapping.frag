@@ -5,6 +5,10 @@ uniform sampler2D            texDiffuseProjected;
 
 uniform float mixWeight;
 
+#if defined(_DEBUG)
+uniform bool dvd_showShadowSplits = false;
+#endif
+
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -1;
 

@@ -6,7 +6,7 @@
 #include "Hardware/Video/OpenGL/Headers/GLWrapper.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
-glSamplerObject::glSamplerObject() : _samplerID(Divide::GL::_invalidObjectID)
+glSamplerObject::glSamplerObject() : _samplerID(Divide::GLUtil::_invalidObjectID)
 {
     bool availableSamplerObj = (glewIsSupported("GL_ARB_sampler_objects") == GL_TRUE);
     if(!availableSamplerObj){
@@ -21,7 +21,7 @@ glSamplerObject::~glSamplerObject()
 }
 
 bool glSamplerObject::Destroy() {
-    if(_samplerID > 0 && _samplerID != Divide::GL::_invalidObjectID){
+    if (_samplerID > 0 && _samplerID != Divide::GLUtil::_invalidObjectID){
         glDeleteSamplers(1, &_samplerID);
         _samplerID = 0;
     }
@@ -29,7 +29,7 @@ bool glSamplerObject::Destroy() {
 }
 
 bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
-    if(_samplerID == Divide::GL::_invalidObjectID) glGenSamplers(1, &_samplerID);
+    if (_samplerID == Divide::GLUtil::_invalidObjectID) glGenSamplers(1, &_samplerID);
 
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());
     glSamplerParameterf(_samplerID, GL_TEXTURE_MIN_LOD, descriptor.minLOD());

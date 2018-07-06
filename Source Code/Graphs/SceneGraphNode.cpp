@@ -81,7 +81,6 @@ void SceneGraphNode::getBBoxes(vectorImpl<BoundingBox >& boxes ) const {
         it.second->getBBoxes(boxes);
     }
 
-    ReadLock r_lock(_queryLock);
     boxes.push_back(_boundingBox);
 }
 
@@ -94,13 +93,6 @@ void SceneGraphNode::getShadowCastersAndReceivers(vectorImpl<const SceneGraphNod
         if (getCastsShadows())    casters.push_back(this);
         if (getReceivesShadows()) receivers.push_back(this);
     }
-}
-
-const BoundingBox& SceneGraphNode::getBoundingBoxTransformed() {
-    if(_transform)
-        updateBoundingBoxTransform(_transform->getGlobalMatrix());
-
-    return _boundingBox;
 }
 
 ///When unloading the current graph node
@@ -173,7 +165,7 @@ SceneGraphNode* SceneGraphNode::addNode(SceneNode* const node,const std::string&
         //The child node's parent transform is our current transform matrix
         nodeTransform->setParentTransform(currentTransform);
     }
-    //Set the current node as the new node's parrent
+    //Set the current node as the new node's parent
     sceneGraphNode->setParent(this);
     node->incReferenceCount();
     //Do all the post load operations on the SceneNode
@@ -229,16 +221,11 @@ SceneGraphNode* SceneGraphNode::findNode(const std::string& name, bool sceneNode
 
 void SceneGraphNode::Intersect(const Ray& ray, F32 start, F32 end, vectorImpl<SceneGraphNode* >& selectionHits){
 
-    if(isSelectable()){
-        ReadLock r_lock(_queryLock);
-        if(_boundingBox.Intersect(ray,start,end)){
-            selectionHits.push_back(this);
-        }
-    }
+    if (isSelectable() && _boundingBox.Intersect(ray, start, end))
+        selectionHits.push_back(this);
 
-    FOR_EACH(NodeChildren::value_type& it, _children){
+    FOR_EACH(NodeChildren::value_type& it, _children)
         it.second->Intersect(ray,start,end,selectionHits);
-    }
 }
 
 //This updates the SceneGraphNode's transform by deleting the old one first

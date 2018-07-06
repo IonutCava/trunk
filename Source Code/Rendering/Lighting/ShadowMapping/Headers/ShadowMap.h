@@ -34,6 +34,7 @@ enum ShadowType{
 };
 
 class Light;
+class Camera;
 class ParamHandler;
 class ShadowMapInfo;
 class SceneRenderState;
@@ -41,10 +42,10 @@ class SceneRenderState;
 ///All the information needed for a single light's shadowmap
 class ShadowMap {
 public:
-    ShadowMap(Light* light, ShadowType type);
+    ShadowMap(Light* light, Camera* shadowCamera, ShadowType type);
     virtual ~ShadowMap();
     ///Render the scene and save the frame to the shadow map
-    virtual void render(const SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) = 0;
+    virtual void render(SceneRenderState& renderState, const DELEGATE_CBK& sceneRenderFunction) = 0;
     ///Setup needed before rendering the light
     void preRender();
     ///Setup needed after rendering the light
@@ -73,6 +74,7 @@ protected:
     U16 _resolution;
     ///Internal pointer to the parent light
     Light* _light;
+    Camera* _shadowCamera;
     ParamHandler& _par;
     bool _init;
     bool _isBound;
@@ -86,12 +88,12 @@ public:
     ShadowMapInfo(Light* light);
     virtual ~ShadowMapInfo();
     inline ShadowMap* getShadowMap() {return _shadowMap;}
-           ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState);
+    ShadowMap* getOrCreateShadowMap(const SceneRenderState& sceneRenderState, Camera* shadowCamera);
     inline U16  resolution()       const {return _resolution;}
            void resolution(U16 resolution);
 
-    inline U8    numLayers()              const {return _numLayers;}
-    inline  void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs(layerCount), Config::MAX_SPLITS_PER_LIGHT); }
+    inline U8   numLayers()              const {return _numLayers;}
+    inline void numLayers(U8 layerCount)       { _numLayers = std::min(std::abs((I32)layerCount), (I32)Config::MAX_SPLITS_PER_LIGHT); }
 
 private:
     U8         _numLayers;

@@ -1,4 +1,6 @@
 #include "Headers/Reflector.h"
+
+#include "Core/Headers/Application.h"
 #include "Hardware/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
@@ -15,11 +17,13 @@ Reflector::Reflector(ReflectorType type, const vec2<U16>& resolution) : FrameLis
                                                                      _excludeSelfReflection(true),
                                                                      _previewReflection(false)
 {
-    REGISTER_FRAME_LISTENER(this);
+    REGISTER_FRAME_LISTENER(this, 3);
     ResourceDescriptor reflectionPreviewShader("fbPreview");
     reflectionPreviewShader.setThreadedLoading(false);
     _previewReflectionShader = CreateResource<ShaderProgram>(reflectionPreviewShader);
     _previewReflectionShader->UniformTexture("tex", 0);
+
+    GFX_DEVICE.add2DRenderFunction(DELEGATE_BIND(&Reflector::previewReflection, this), 2);
 }
 
 Reflector::~Reflector(){
@@ -29,30 +33,30 @@ Reflector::~Reflector(){
 
 /// Returning false in any of the FrameListener methods will exit the entire application!
 bool Reflector::framePreRenderEnded(const FrameEvent& evt){
-    /// Do not update the reflection too often so that we can improve speed
+    // Do not update the reflection too often so that we can improve speed
     if(evt._currentTime  - _updateTimer < _updateInterval ){
       return true;
     }
     _updateTimer += _updateInterval;
     if(!_createdFB){
         if(!build()){
-            /// Something wrong. Exit application!
+            // Something wrong. Exit application!
             ERROR_FN(Locale::get("ERROR_REFLECTOR_INIT_FB"));
             return false;
         }
     }
-    ///We should never have an invalid FB
+    //We should never have an invalid FB
     assert(_reflectedTexture != nullptr);
-    /// mark ourselves as reflection target only if we do not wish to reflect ourself back
+    // mark ourselves as reflection target only if we do not wish to reflect ourself back
     _updateSelf = !_excludeSelfReflection;
-    /// recompute the plane equation
+    // recompute the plane equation
     if(_planeDirty) {
         updatePlaneEquation();
         _planeDirty = false;
     }
-    /// generate reflection texture
+    // generate reflection texture
     updateReflection();
-    /// unmark from reflection target
+    // unmark from reflection target
     _updateSelf = true;
     return true;
 }
@@ -63,29 +67,26 @@ bool Reflector::build(){
     reflectionSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     reflectionSampler.toggleMipMaps(false);
 
-    TextureDescriptor reflectionDescriptor(TEXTURE_2D,
-                                           RGBA,
-                                           RGBA8,
-                                           UNSIGNED_BYTE); ///Less precision for reflections
+    TextureDescriptor reflectionDescriptor(TEXTURE_2D, RGBA, RGBA8, UNSIGNED_BYTE); //Less precision for reflections
 
     reflectionDescriptor.setSampler(reflectionSampler);
 
     _reflectedTexture = GFX_DEVICE.newFB();
-    _reflectedTexture->AddAttachment(reflectionDescriptor,TextureDescriptor::Color0);
+    _reflectedTexture->AddAttachment(reflectionDescriptor, TextureDescriptor::Color0);
     _reflectedTexture->toggleDepthBuffer(true);
-    if(!_reflectedTexture->Create(_resolution.x, _resolution.y)){
-        return false;
-    }
+    _createdFB = _reflectedTexture->Create(_resolution.x, _resolution.y);
 
-    _createdFB = true;
-    return true;
+    return _createdFB;
 }
 
-void Reflector::previewReflection(){
-    if(!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)) return;
-
-    _previewReflectionShader->bind();
-    _reflectedTexture->Bind();
-    GFX_DEVICE.drawPoints(1);
-    _reflectedTexture->Unbind();
+bool Reflector::previewReflection() {
+    if (_previewReflection) {
+        F32 height = _resolution.y * 0.333f;
+        _previewReflectionShader->bind();
+        _reflectedTexture->Bind();
+        GFX_DEVICE.renderInViewport(vec4<I32>(0, Application::getInstance().getResolution().y - height, _resolution.x  * 0.333f, height), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1));
+        _reflectedTexture->Unbind();
+        _previewReflectionShader->unbind();
+    }
+    return true;
 }

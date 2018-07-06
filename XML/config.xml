@@ -21,8 +21,8 @@
 	<windowedMode>true</windowedMode>
 	<allowWindowResize>false</allowWindowResize>
 	<enableVSync>true</enableVSync>
-	<zNear>0.125</zNear>
-	<zFar>1000.0</zFar>
+	<zNear>0.25</zNear>
+	<zFar>500.0</zFar>
 	<verticalFOV>60</verticalFOV>
 </runtime>	
 
@@ -49,11 +49,8 @@
 	<!--               high = 3 (blurring, 1024x1024 base resoltion), ultra = 4 (blurring, 2048x2048 base resolution) -->
 	<shadowDetailLevel>3</shadowDetailLevel>
 	<enableFog>true</enableFog>
-	<!--- Fog: only initial values. Override in scene -->
-	<fogStartDistance>500</fogStartDistance>
-	<fogEndDistance>3500</fogEndDistance>
-	<fogDensity>0.01</fogDensity>
-	<fogColor r="0.2" g="0.2" b="0.275"/>
+	<fogDensity>0.0040</fogDensity>
+	<fogColor r="0.5" g="0.5" b="0.55"/>
 	<enablePostFX>true</enablePostFX>
 	<enable3D>false</enable3D>
 	<anaglyphOffset>0.16</anaglyphOffset>

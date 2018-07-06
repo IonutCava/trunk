@@ -22,17 +22,16 @@ bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
     BoundingBox& bb = sgn->getBoundingBox();
 
     bb.reset();
-    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren()){
+    FOR_EACH(childrenNodes::value_type& s, sgn->getChildren())
         bb.Add(s.second->getInitialBoundingBox());
-    }
-    _maxBoundingBox.Add(bb);
-    _maxBoundingBox.setComputed(true);
+
+    bb.setComputed(true);
+
     return SceneNode::computeBoundingBox(sgn);
 }
 
 void Mesh::addSubMesh(SubMesh* const subMesh){
     //A mesh always has submesh SGN nodes handled separately. No need to track it (will cause double Add/Sub Ref)
-    //REGISTER_TRACKED_DEPENDENCY(subMesh);
     _subMeshes.push_back(subMesh->getName());
     //Hold a reference to the submesh by ID (used for animations)
     _subMeshRefMap.insert(std::make_pair(subMesh->getId(), subMesh));
@@ -47,10 +46,10 @@ void Mesh::postLoad(SceneGraphNode* const sgn){
         // Find the SubMesh resource
         SubMesh* s = FindResourceImpl<SubMesh>(it);
         // Add the SubMesh resource as a child
-        if (s) {
-            sgn->addNode(s, sgn->getName() + "_" + it);
-            s->setParentMeshSGN(sgn);
-        }
+        assert(s != nullptr);
+
+        sgn->addNode(s, sgn->getName() + "_" + it);
+        s->setParentMeshSGN(sgn);
     }
 
     Object3D::postLoad(sgn);

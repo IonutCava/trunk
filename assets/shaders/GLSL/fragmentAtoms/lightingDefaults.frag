@@ -1,25 +1,13 @@
 uniform bool  dvd_enableFog = true;
-uniform float fogStart;
-uniform float fogEnd;
 uniform float fogDensity;
-uniform int   fogMode; //<only exp2 for now
-uniform int   fogDetailLevel;
 uniform vec3  fogColor;
 
-const float LOG2 = 1.442695;
-
-void computeData() {
-    if(gl_ClipDistance[0] < 0)
-        discard;
+vec3 applyFogColor(in vec3 color){
+    const float LOG2 = 1.442695;
+    float zDepth = gl_FragCoord.z / gl_FragCoord.w;
+    return mix(fogColor, color, clamp(exp2(-fogDensity * fogDensity * zDepth * zDepth * LOG2), 0.0, 1.0));
 }
 
 void applyFog(inout vec4 color){
-    if(!dvd_enableFog)
-        return;
-
-    float zDepth = gl_FragCoord.z / gl_FragCoord.w;
-    color.rgb = mix(fogColor, 
-                    color.rgb,
-                    clamp(exp2( -fogDensity * fogDensity * zDepth * zDepth * LOG2 ), 0.0, 1.0));
-
+    color.rgb = dvd_enableFog ? applyFogColor(color.rgb) : color.rgb;
 }  

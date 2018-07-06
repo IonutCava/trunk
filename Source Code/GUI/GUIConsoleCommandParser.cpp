@@ -167,7 +167,8 @@ void GUIConsoleCommandParser::handleFOVCommand(const std::string& args){
     }
     I32 FoV = (atoi(args.c_str()));
     CLAMP<I32>(FoV,40,140);
-    GFX_DEVICE.setHorizontalFoV(FoV);
+
+    Application::getInstance().getKernel()->getCameraMgr().getActiveCamera()->setHorizontalFoV(FoV);
 }
 
 void GUIConsoleCommandParser::handleAddObject(const std::string& args){

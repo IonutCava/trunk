@@ -102,6 +102,7 @@ private:
     GUI();               //< Constructor
     ~GUI();              //< Destructor
     void drawText();     //< TextLabel rendering
+    void draw2D();
 
 private:
     bool _init;                     //< Set to true when the GUI has finished loading
