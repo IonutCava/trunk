@@ -35,6 +35,7 @@
 
 namespace Divide {
     namespace {
+
         bool compare(GFX::PushConstantType type, const vectorImpl<AnyParam>& lhsVec, const vectorImpl<AnyParam>& rhsVec) {
             for (vectorAlg::vecSize i = 0; i < lhsVec.size(); ++i) {
                 const AnyParam& lhs = lhsVec[i];
@@ -76,26 +77,28 @@ namespace Divide {
             return false;
         }
 
-        template<typename T>
-        typename std::enable_if<!std::is_same<T, bool>::value, void>::type
-        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
-            std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val)
-            {
-                return val.constant_cast<T>();
+        template<typename T_in>
+        typename std::enable_if<!std::is_same<T_in, bool>::value, void>::type
+        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T_in>& valuesOut) {
+            valuesOut.reserve(valuesIn.size());
+
+            std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val) {
+                return val.constant_cast<T_in>();
             });
         }
 
-        template<typename T>
-        typename std::enable_if<std::is_same<T, bool>::value, void>::type
-        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T>& valuesOut) {
-            std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val)
-            {
+        template<typename T_in>
+        typename std::enable_if<std::is_same<T_in, bool>::value, void>::type
+        convert(const vectorImpl<AnyParam>& valuesIn, vectorImpl<T_in>& valuesOut) {
+            valuesOut.reserve(valuesIn.size());
+
+            std::transform(std::cbegin(valuesIn), std::cend(valuesIn), std::begin(valuesOut), [](const AnyParam& val) {
                 return val.constant_cast<bool>() ? 1 : 0;
             });
         }
 
         //ToDo: REALLY SLOW! Find a faster way of handling this! -Ionut
-        template<typename T_out, typename T_in>
+        template<typename T_out, size_t T_out_count, typename T_in>
         struct castData {
             castData(const vectorImpl<AnyParam>& values)
                 : _convertedData(values.size()),
@@ -105,7 +108,7 @@ namespace Divide {
             }
 
             T_out* operator()() {
-                return (T_out*)(_convertedData.data());
+                return reinterpret_cast<T_out*>(_convertedData.data());
             }
 
             using vectorType = typename std::conditional<std::is_same<T_in, bool>::value, I32, T_in>::type;
@@ -131,91 +134,91 @@ namespace Divide {
         GLsizei count = (GLsizei)values.size();
         switch (type) {
             case GFX::PushConstantType::BOOL:
-                glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, bool>(values)());
+                glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, 1, bool>(values)());
                 break;
             case GFX::PushConstantType::INT:
-                glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, I32>(values)());
+                glProgramUniform1iv(_shaderProgramID, binding, count, castData<GLint, 1, I32>(values)());
                 break;
             case GFX::PushConstantType::UINT:
-                glProgramUniform1uiv(_shaderProgramID, binding, count, castData<GLuint, U32>(values)());
+                glProgramUniform1uiv(_shaderProgramID, binding, count, castData<GLuint, 1, U32>(values)());
                 break;
             case GFX::PushConstantType::DOUBLE:           // Warning! Downcasting to float -Ionut
-                glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, D64>(values)());
+                glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, 1, D64>(values)());
                 break;
             case GFX::PushConstantType::FLOAT:
-                glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, F32>(values)());
+                glProgramUniform1fv(_shaderProgramID, binding, count, castData<GLfloat, 1, F32>(values)());
                 break;
             case GFX::PushConstantType::IVEC2:
-                glProgramUniform2iv(_shaderProgramID, binding, count, castData<GLint, vec2<I32>>(values)());
+                glProgramUniform2iv(_shaderProgramID, binding, count, castData<GLint, 2, vec2<I32>>(values)());
                 break;
             case GFX::PushConstantType::IVEC3:
-                glProgramUniform3iv(_shaderProgramID, binding, count, castData<GLint, vec3<I32>>(values)());
+                glProgramUniform3iv(_shaderProgramID, binding, count, castData<GLint, 3, vec3<I32>>(values)());
                 break;
             case GFX::PushConstantType::IVEC4:
-                glProgramUniform4iv(_shaderProgramID, binding, count, castData<GLint, vec4<I32>>(values)());
+                glProgramUniform4iv(_shaderProgramID, binding, count, castData<GLint, 4, vec4<I32>>(values)());
                 break;
             case GFX::PushConstantType::UVEC2:
-                glProgramUniform2uiv(_shaderProgramID, binding, count, castData<GLuint, vec2<U32>>(values)());
+                glProgramUniform2uiv(_shaderProgramID, binding, count, castData<GLuint, 2, vec2<U32>>(values)());
                 break;
             case GFX::PushConstantType::UVEC3:
-                glProgramUniform3uiv(_shaderProgramID, binding, count, castData<GLuint, vec3<U32>>(values)());
+                glProgramUniform3uiv(_shaderProgramID, binding, count, castData<GLuint, 3, vec3<U32>>(values)());
                 break;
             case GFX::PushConstantType::UVEC4:
-                glProgramUniform4uiv(_shaderProgramID, binding, count, castData<GLuint, vec4<U32>>(values)());
+                glProgramUniform4uiv(_shaderProgramID, binding, count, castData<GLuint, 4, vec4<U32>>(values)());
                 break;
             case GFX::PushConstantType::DVEC2:            // Warning! Downcasting to float -Ionut
-                glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, vec2<D64>>(values)());
+                glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, 2, vec2<D64>>(values)());
                 break;
             case GFX::PushConstantType::VEC2:
-                glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, vec2<F32>>(values)());
+                glProgramUniform2fv(_shaderProgramID, binding, count, castData<GLfloat, 2, vec2<F32>>(values)());
                 break;
             case GFX::PushConstantType::DVEC3:            // Warning! Downcasting to float -Ionut
-                glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, vec3<D64>>(values)());
+                glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, 3, vec3<D64>>(values)());
                 break;
             case GFX::PushConstantType::VEC3:
-                glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, vec3<F32>>(values)());
+                glProgramUniform3fv(_shaderProgramID, binding, count, castData<GLfloat, 3, vec3<F32>>(values)());
                 break;
             case GFX::PushConstantType::DVEC4:            // Warning! Downcasting to float -Ionut
-                glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, vec4<D64>>(values)());
+                glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, 4, vec4<D64>>(values)());
                 break;
             case GFX::PushConstantType::VEC4:
-                glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, vec4<F32>>(values)());
+                glProgramUniform4fv(_shaderProgramID, binding, count, castData<GLfloat, 4, vec4<F32>>(values)());
                 break;
             case GFX::PushConstantType::IMAT2:
-                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<I32>>(values)());
+                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<I32>>(values)());
                 break;
             case GFX::PushConstantType::IMAT3:
-                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<I32>>(values)());
+                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9 , mat3<I32>>(values)());
                 break;
             case GFX::PushConstantType::IMAT4:
-                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<I32>>(values)());
+                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<I32>>(values)());
                 break;
             case GFX::PushConstantType::UMAT2:
-                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<U32>>(values)());
+                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<U32>>(values)());
                 break;
             case GFX::PushConstantType::UMAT3:
-                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<U32>>(values)());
+                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<U32>>(values)());
                 break;
             case GFX::PushConstantType::UMAT4:
-                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<U32>>(values)());
+                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<U32>>(values)());
                 break;
             case GFX::PushConstantType::MAT2:
-                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<F32>>(values)());
+                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<F32>>(values)());
                 break;
             case GFX::PushConstantType::MAT3:
-                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<F32>>(values)());
+                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<F32>>(values)());
                 break;
             case GFX::PushConstantType::MAT4: {
-                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<F32>>(values)());
+                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<F32>>(values)());
             }break;
             case GFX::PushConstantType::DMAT2:
-                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat2<D64>>(values)());
+                glProgramUniformMatrix2fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 4, mat2<D64>>(values)());
                 break;
             case GFX::PushConstantType::DMAT3:
-                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat3<D64>>(values)());
+                glProgramUniformMatrix3fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 9, mat3<D64>>(values)());
                 break;
             case GFX::PushConstantType::DMAT4:
-                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, mat4<D64>>(values)());
+                glProgramUniformMatrix4fv(_shaderProgramID, binding, count, flag ? GL_TRUE : GL_FALSE, castData<GLfloat, 16, mat4<D64>>(values)());
                 break;
             default:
                 DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");

@@ -106,7 +106,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #if !defined(CPP_17_SUPPORT)
 #include "Core/Headers/cdigginsAny.h"
-typedef cdiggins::any AnyParam;
+namespace cd = ::cdiggins;
+typedef cd::any AnyParam;
 #else
 #include <any>
 typedef std::any AnyParam;

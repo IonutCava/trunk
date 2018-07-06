@@ -44,10 +44,7 @@ void TenisSceneAIProcessor::processMessage(AIEntity& sender,
             break;
         case AIMsg::RECEIVE_DISTANCE_TO_TARGET: {
             assert(_entity->getTeam());
-            bool success = false;
-            _entity->getTeam()->getMemberVariable()[&sender] =
-                msg_content.constant_cast<F32>(success);
-            assert(success);
+            _entity->getTeam()->getMemberVariable()[&sender] = msg_content.constant_cast<F32>();
         } break;
         case AIMsg::ATTACK_BALL:
             currentTeam = _entity->getTeam();
