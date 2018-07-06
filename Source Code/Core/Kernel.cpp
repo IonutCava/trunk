@@ -476,7 +476,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Load and render the splash screen
     _GFX.setRenderStage(RenderStage::DISPLAY);
     _GFX.beginFrame();
-    GUISplash("divideLogo.jpg", winManager.getWindowDimension(WindowType::SPLASH)).render();
+    GUISplash("divideLogo.jpg", winManager.getSplashScreenDimensions()).render();
     _GFX.endFrame();
 
     winManager.mainWindowType(windowType);
@@ -583,28 +583,18 @@ void Kernel::shutdown() {
     Time::REMOVE_TIMER(s_appLoopTimer);
 }
 
-void Kernel::changeWindowDimensions(U16 w, U16 h) {
-    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+void Kernel::changeResolution(U16 w, U16 h) {
+    // minimized
+    _renderingPaused = (w == 0 || h == 0);
+
     if (Input::InputInterface::getInstance().isInit()) {
         const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
         ms.width = w;
         ms.height = h;
     }
-}
 
-void Kernel::changeResolution(U16 w, U16 h, bool isFullScreen) {
-    Application::getInstance().getWindowManager().setResolution(vec2<U16>(w, h));
-    // minimized
-    _renderingPaused = (w == 0 || h == 0);
-
-    if (isFullScreen) {
-        if (Input::InputInterface::getInstance().isInit()) {
-            const OIS::MouseState& ms = Input::InputInterface::getInstance().getMouse().getMouseState();
-            ms.width = w;
-            ms.height = h;
-        }
-        CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
-    }
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    
     if (_mainCamera) {
         _mainCamera->setAspectRatio(to_float(w) / to_float(h));
     }

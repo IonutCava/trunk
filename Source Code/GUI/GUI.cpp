@@ -310,14 +310,14 @@ GUIButton* GUI::addButton(const stringImpl& ID,
                           ButtonCallback callback,
                           const stringImpl& rootSheetID) {
 
-    const vec2<U16>& windowSize
-        = Application::getInstance().getWindowManager().getWindowDimension();
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
 
-    vec2<F32> relOffset((position.x * 100.0f) / windowSize.x,
-                        (position.y * 100.0f) / windowSize.y);
+    vec2<F32> relOffset((position.x * 100.0f) / resolution.x,
+                        (position.y * 100.0f) / resolution.y);
 
-    vec2<F32> relDim((dimensions.x * 100.0f) / windowSize.x,
-                     (dimensions.y * 100.0f) / windowSize.y);
+    vec2<F32> relDim((dimensions.x * 100.0f) / resolution.x,
+                     (dimensions.y * 100.0f) / resolution.y);
 
     CEGUI::Window* parent = nullptr;
     if (!rootSheetID.empty()) {
@@ -358,10 +358,12 @@ GUIMessageBox* GUI::addMsgBox(const stringImpl& id, const stringImpl& title,
 GUIText* GUI::addText(const stringImpl& id, const vec2<I32>& position,
                       const stringImpl& font, const vec3<F32>& color,
                       char* format, ...) {
-    const vec2<U16>& windowSize 
-        = Application::getInstance().getWindowManager().getWindowDimension();
-    vec2<F32> relOffset((position.x * 100.0f) / windowSize.x,
-                        (position.y * 100.0f) / windowSize.y);
+
+    const vec2<U16>& resolution
+        = Application::getInstance().getWindowManager().getResolution();
+
+    vec2<F32> relOffset((position.x * 100.0f) / resolution.x,
+                        (position.y * 100.0f) / resolution.y);
 
     va_list args;
     stringImpl fmt_text;

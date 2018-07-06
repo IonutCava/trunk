@@ -25,14 +25,31 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         // Validate initialization
         return hardwareState;
     }
+
+    stringImpl refreshRates;
+    vectorAlg::vecSize displayCount = gpuState().getDisplayCount();
+    for (vectorAlg::vecSize idx = 0; idx < displayCount; ++idx) {
+        const vectorImpl<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
+        Console::printfn(Locale::get("AVAILABLE_VIDEO_MODES"), idx, registeredModes.size());
+
+        for (const GPUState::GPUVideoMode& mode : registeredModes) {
+            // Optionally, output to console/file each display mode
+            refreshRates = std::to_string(mode._refreshRate.front());
+            vectorAlg::vecSize refreshRateCount = mode._refreshRate.size();
+            for (vectorAlg::vecSize i = 1; i < refreshRateCount; ++i) {
+                refreshRates += ", " + std::to_string(mode._refreshRate[i]);
+            }
+            Console::d_printfn(Locale::get("CURRENT_DISPLAY_MODE"),
+                mode._resolution.width,
+                mode._resolution.height,
+                mode._bitDepth,
+                mode._formatName.c_str(),
+                refreshRates.c_str());
+        }
+    }
+
     const SysInfo& systemInfo = Application::getInstance().getSysInfo();
     WindowManager& winManager = Application::getInstance().getWindowManager();
-    winManager.setWindowDimension(WindowType::FULLSCREEN, 
-                                  vec2<U16>(systemInfo._systemResolutionWidth,
-                                            systemInfo._systemResolutionHeight));
-    winManager.setWindowDimension(WindowType::FULLSCREEN_WINDOWED,
-                                  vec2<U16>(systemInfo._systemResolutionWidth,
-                                            systemInfo._systemResolutionHeight));
     // Initialize the shader manager
     ShaderManager::getInstance().init();
     // Create an immediate mode shader used for general purpose rendering (e.g.
@@ -62,8 +79,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     // Resize our window to the target resolution
     const vec2<U16>& resolution = winManager.getResolution();
     changeResolution(resolution.width, resolution.height);
-    const vec2<U16>& windowSize = winManager.getWindowDimension();
-    changeWindowSize(windowSize.width, windowSize.height);
     // Create general purpose render state blocks
     RenderStateBlock defaultState;
     _defaultStateBlockHash = defaultState.getHash();

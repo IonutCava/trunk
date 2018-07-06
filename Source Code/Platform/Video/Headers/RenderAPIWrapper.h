@@ -324,10 +324,6 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void beginFrame() = 0;
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame() = 0;
-    /// Change the window's position
-    virtual void setWindowPosition(U16 w, U16 h) = 0;
-    /// Center the window on the screen. Depends on desktop resolution
-    virtual void centerWindowPosition() = 0;
     /// Platform specific cursor manipulation.
     /// Set's the cursor's location to the specified X and Y relative to the
     /// edge of the window
@@ -365,7 +361,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void drawPoints(U32 numPoints) = 0;
 
    protected:
-    virtual void changeWindowSize(U16 w, U16 h) = 0;
+    virtual void changeResolution(U16 w, U16 h) = 0;
     virtual void changeViewport(const vec4<I32>& newViewport) const = 0;
     virtual void threadedLoadCallback() = 0;
     virtual void uploadDrawCommands(const DrawCommandList& drawCommands,

@@ -261,7 +261,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void increaseResolution();
     void decreaseResolution();
     void changeResolution(U16 w, U16 h);
-    void changeWindowSize(U16 w, U16 h) override;
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);
 
@@ -333,9 +332,6 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 
   public:  // Direct API calls
-    inline void setWindowPosition(U16 w, U16 h) { _api->setWindowPosition(w, h); }
-
-    inline void centerWindowPosition() { _api->centerWindowPosition(); }
     /// Hardware specific shader preps (e.g.: OpenGL: init/deinit GLSL-OPT and GLSW)
     inline bool initShaders() override { return _api->initShaders(); }
 

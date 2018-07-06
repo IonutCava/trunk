@@ -512,6 +512,9 @@
     <ClCompile Include="..\..\Source Code\Geometry\Animations\SceneAnimatorFileIO.cpp">
       <Filter>Geometry\Animations</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\WindowManager.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Rendering\Camera\Headers\Camera.h">
@@ -892,6 +895,9 @@
     <ClInclude Include="..\..\Source Code\Geometry\Animations\Headers\SceneAnimator.h">
       <Filter>Geometry\Animations\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Headers\WindowManager.h">
+      <Filter>Core\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">
@@ -923,6 +929,9 @@
     </None>
     <None Include="..\..\Source Code\Core\Math\Headers\Quaternion.inl">
       <Filter>Core\Math\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Core\Headers\WindowManager.inl">
+      <Filter>Core\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

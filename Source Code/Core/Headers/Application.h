@@ -32,7 +32,7 @@
 #ifndef _CORE_APPLICATION_H_
 #define _CORE_APPLICATION_H_
 
-#include "Core/Math/Headers/MathMatrices.h"
+#include "WindowManager.h"
 #include "Platform/Threading/Headers/Thread.h"
 
 #include <fstream>
@@ -67,48 +67,7 @@ enum class ErrorCode : I32 {
 
 class Kernel;
 const char* getErrorCodeName(ErrorCode code);
-    
-enum class WindowType : U32 {
-    WINDOW = 0,
-    SPLASH = 1,
-    FULLSCREEN = 2,
-    FULLSCREEN_WINDOWED = 3,
-    COUNT
-};
-
-class WindowManager {
-public:
-    WindowManager();
-
-    inline bool hasFocus() const;
-    inline void hasFocus(const bool state);
-
-    inline WindowType mainWindowType() const;
-    inline void mainWindowType(WindowType type);
-    
-    /// Application resolution (either fullscreen resolution or window dimensions)
-    inline const vec2<U16>& getResolution() const;
-    inline const vec2<U16>& getPreviousResolution() const;
-
-    inline void setResolutionWidth(U16 w);
-    inline void setResolutionHeight(U16 h);
-    inline void setResolution(const vec2<U16>& resolution);
-    
-    inline const vec2<U16>& getWindowDimension() const;
-    inline const vec2<U16>& getWindowDimension(WindowType windowType) const;
-    inline void setWindowDimension(const vec2<U16>& newDimension);
-    inline void setWindowDimension(WindowType windowType, const vec2<U16>& newDimension);
-
-protected:
-    /// this is false if the window/application lost focus (e.g. clicked another
-    /// window, alt + tab, etc)
-    bool _hasFocus;
-    WindowType _activeWindowType;
-    vec2<U16> _resolution;
-    vec2<U16> _prevResolution;
-    std::array<vec2<U16>, to_const_uint(WindowType::COUNT)> _windowDimensions;
-};
-
+  
 /// Lightweight singleton class that manages our application's kernel and window
 /// information
 DEFINE_SINGLETON(Application)

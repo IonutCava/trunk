@@ -44,6 +44,7 @@ GL_API::GL_API()
       _GUIGLrenderer(nullptr),
       _fonsContext(nullptr),
       _enableCEGUIRendering(false),
+      _internalMoveEvent(false),
       _crtWindowType(WindowType::COUNT)
 {
     // Only updated in Debug builds
@@ -62,7 +63,9 @@ GL_API::GL_API()
     _fontCache.second = -1;
 }
 
-GL_API::~GL_API() {}
+GL_API::~GL_API()
+{
+}
 
 /// FontStash library initialization
 bool GL_API::createFonsContext() {
@@ -82,7 +85,6 @@ void GL_API::beginFrame() {
     WindowType mainWindowType = Application::getInstance().getWindowManager().mainWindowType();
     if (_crtWindowType != mainWindowType) {
         handleChangeWindowType(mainWindowType);
-        _crtWindowType = mainWindowType;
     }
 // Start a duration query in debug builds
 #ifdef _DEBUG
@@ -562,11 +564,11 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
         if (textLabel._alignFlag != 0) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
-        const vec2<U16>& windowSize
-            = Application::getInstance().getWindowManager().getWindowDimension();
+        const vec2<U16>& resolution
+            = Application::getInstance().getWindowManager().getResolution();
 
-        vec2<F32> position((relativeOffset.x * windowSize.x) / 100.0f,
-                           (relativeOffset.y * windowSize.y) / 100.0f);
+        vec2<F32> position((relativeOffset.x * resolution.x) / 100.0f,
+                           (relativeOffset.y * resolution.y) / 100.0f);
         if (textLabel._multiLine) {
             lines.clear();
             lines = Util::Split(textLabel.text(), '\n');
@@ -574,14 +576,14 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<F32>& relativeOffse
             for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
                 fonsDrawText(_fonsContext,
                              position.x,
-                             to_float(windowSize.y - (position.y + (lh * (1 + i)))),
+                             to_float(resolution.y - (position.y + (lh * (1 + i)))),
                              lines[i].c_str(),
                              nullptr);
             }
         } else {
                 fonsDrawText(_fonsContext,
                              position.x,
-                             to_float(windowSize.y - (position.y + lh)),
+                             to_float(resolution.y - (position.y + lh)),
                              textLabel.text().c_str(),
                              nullptr);
         }

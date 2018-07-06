@@ -12,19 +12,18 @@
 
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
-	<windowSize>
-		<window w="1280" h="720"/>
-		<splashScreen w="400" h="300"/>
-	</windowSize>
-	<resolution w="1280" h="720" />
-	<!-- This value sets the y-position (height) of the "safety-net" for PhysX actors -->
-	<groundPos>-100</groundPos>
-	<!-- PhysX simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
-	<simSpeed>0.0</simSpeed>
-	<resolutionWidth>1280</resolutionWidth>
-	<resolutionHeight>720</resolutionHeight>
+	<!-- 1 = primary display, 0 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
+	<targetDisplay>2</targetDisplay>
+	<!-- set to true to start the application in windowed mode -->
 	<windowedMode>true</windowedMode>
+	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
 	<enableVSync>true</enableVSync>
+	<!-- splash screen dimensions -->
+	<splashScreenSize w="400" h="300"/>
+	<!-- rendering resolution -->
+	<resolution w="1280" h="720" />
+	<!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
+	<simSpeed>0.0</simSpeed>
 	<zNear>0.25</zNear>
 	<zFar>500.0</zFar>
 	<verticalFOV>60</verticalFOV>

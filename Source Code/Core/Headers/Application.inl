@@ -118,62 +118,6 @@ inline const char* getErrorCodeName(ErrorCode code) {
     };
 }
 
-inline const vec2<U16>& WindowManager::getResolution() const {
-    return _resolution;
-}
-
-inline const vec2<U16>& WindowManager::getPreviousResolution() const {
-    return _prevResolution;
-}
-
-inline void WindowManager::setResolutionWidth(U16 w) {
-    _prevResolution.set(_resolution);
-    _resolution.width = w;
-}
-
-inline void WindowManager::setResolutionHeight(U16 h) {
-    _prevResolution.set(_resolution);
-    _resolution.height = h;
-}
-
-inline void WindowManager::setResolution(const vec2<U16>& resolution) {
-    _prevResolution.set(_resolution);
-    _resolution.set(resolution);
-}
-
-inline const vec2<U16>& WindowManager::getWindowDimension() const {
-    return getWindowDimension(mainWindowType());
-}
-
-inline const vec2<U16>& WindowManager::getWindowDimension(WindowType windowType) const {
-    return _windowDimensions[to_uint(windowType)];
-}
-
-inline void WindowManager::setWindowDimension(const vec2<U16>& newDimension) {
-    setWindowDimension(mainWindowType(), newDimension);
-}
-
-inline void WindowManager::setWindowDimension(WindowType windowType,
-                                              const vec2<U16>& newDimension) {
-    _windowDimensions[to_uint(windowType)].set(newDimension);
-}
-
-inline bool WindowManager::hasFocus() const {
-    return _hasFocus;
-}
-
-inline void WindowManager::hasFocus(const bool state) {
-    _hasFocus = state;
-}
-
-inline WindowType WindowManager::mainWindowType() const {
-    return _activeWindowType;
-}
-
-inline void WindowManager::mainWindowType(WindowType type) {
-    _activeWindowType = type;
-}
-
 inline void Application::RequestShutdown() {
     _requestShutdown = true;
 }

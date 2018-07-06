@@ -52,16 +52,13 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
 
     ErrorCode initRenderingAPI(I32 argc, char** argv) override;
     void closeRenderingAPI() override;
-    void changeWindowSize(U16 w, U16 h) override;
+    void changeResolution(U16 w, U16 h) override;
     void changeViewport(const vec4<I32>& newViewport) const override;
     void setCursorPosition(U16 x, U16 y) override;
     void uploadDrawCommands(const DrawCommandList& drawCommands,
                             U32 commandCount) const override;
     bool makeTexturesResident(const TextureDataContainer& textureData) override;
     bool makeTextureResident(const TextureData& textureData) override;
-    /// Change the window's position
-    void setWindowPosition(U16 w, U16 h) override;
-    void centerWindowPosition() override;
     void beginFrame() override;
     void endFrame() override;
 

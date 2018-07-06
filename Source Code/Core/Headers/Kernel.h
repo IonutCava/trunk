@@ -88,9 +88,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     /// so this should keep it busy (old-GLUT heritage)
     static void idle();
     /// Update all engine components that depend on the current resolution
-    void changeResolution(U16 w, U16 h, bool isFullScreen);
-    void changeWindowDimensions(U16 w, U16 h);
-
+    void changeResolution(U16 w, U16 h);
     GFXDevice& getGFXDevice() const { return _GFX; }
     SFXDevice& getSFXDevice() const { return _SFX; }
     PXDevice& getPXDevice() const { return _PFX; }

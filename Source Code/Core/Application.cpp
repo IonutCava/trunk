@@ -16,11 +16,6 @@ bool MemoryManager::MemoryTracker::Ready = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 #endif
 
-WindowManager::WindowManager() : _hasFocus(true),
-                                 _activeWindowType(WindowType::WINDOW)
-{
-}
-
 Application::Application() : _kernel(nullptr)
 {
 

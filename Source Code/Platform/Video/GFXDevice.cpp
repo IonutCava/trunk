@@ -241,8 +241,9 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHa
 }
 
 void GFXDevice::increaseResolution() {
-    const vec2<U16>& resolution = Application::getInstance().getWindowManager().getResolution();
-    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes();
+    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    const vec2<U16>& resolution = winManager.getResolution();
+    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
 
     vectorImpl<GPUState::GPUVideoMode>::const_reverse_iterator it;
     for (it = std::rbegin(displayModes); it != std::rend(displayModes); ++it) {
@@ -257,8 +258,9 @@ void GFXDevice::increaseResolution() {
 }
 
 void GFXDevice::decreaseResolution() {
-    const vec2<U16>& resolution = Application::getInstance().getWindowManager().getResolution();
-    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes();
+    const WindowManager& winManager = Application::getInstance().getWindowManager();
+    const vec2<U16>& resolution = winManager.getResolution();
+    const vectorImpl<GPUState::GPUVideoMode>& displayModes = _state.getDisplayModes(winManager.targetDisplay());
     
     vectorImpl<GPUState::GPUVideoMode>::const_iterator it;
     for (it = std::begin(displayModes); it != std::end(displayModes); ++it) {
@@ -287,30 +289,6 @@ void GFXDevice::toggleFullScreen() {
     };
 }
 
-void GFXDevice::changeWindowSize(U16 w, U16 h) {
-    if (!_viewport.empty() &&
-        getCurrentViewport().width == w &&
-        getCurrentViewport().height == h) {
-        return;
-    }
-
-    _api->changeWindowSize(w, h);
-    // Set the viewport to be the entire window. Force the update so we don't
-    // push a new value (we replace the old)
-    forceViewportInternal(vec4<I32>(0, 0, w, h));
-    // Make sure the main viewport is the only one active. Never change
-    // resolution while rendering to a render target
-    DIVIDE_ASSERT(_viewport.size() == 1,
-        "GFXDevice error: changeWinowSize called while not rendering to screen!");
-    // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
-    // Refresh shader programs
-    ShaderManager::getInstance().refreshShaderData();
-    
-    Application::getInstance().getWindowManager().setWindowDimension(vec2<U16>(w, h));
-    Application::getInstance().getKernel().changeWindowDimensions(w, h);
-}
-
 /// The main entry point for any resolution change request
 void GFXDevice::changeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
@@ -330,20 +308,26 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
 
-    WindowType windowType
-        = Application::getInstance().getWindowManager().mainWindowType();
+    // Set the viewport to be the entire window. Force the update so we don't
+    // push a new value (we replace the old)
+    forceViewportInternal(vec4<I32>(0, 0, w, h));
 
+    Application& app = Application::getInstance();
+    WindowType windowType = app.getWindowManager().mainWindowType();
     // Inform the Kernel
-    Application::getInstance().getKernel().changeResolution(
-        w, h, windowType == WindowType::FULLSCREEN ||
-              windowType == WindowType::FULLSCREEN_WINDOWED);
-
+    app.getKernel().changeResolution(w, h);
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
+
+    app.getWindowManager().setResolution(vec2<U16>(w, h));
+    
+    // Update the 2D camera so it matches our new rendering viewport
+    _2DCamera->setProjection(vec4<F32>(0, w, 0, h), vec2<F32>(-1, 1));
+
     // Refresh shader programs
     ShaderManager::getInstance().refreshShaderData();
 
-    Application::getInstance().getWindowManager().setResolution(vec2<U16>(w, h));
+    _api->changeResolution(w, h);
 }
 
 /// Update fog values

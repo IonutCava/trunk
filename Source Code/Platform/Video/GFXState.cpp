@@ -69,10 +69,16 @@ void GPUState::consumeOneFromQueue() {
     _loadQueueCV.notify_one();
 }
 
-void GPUState::registerDisplayMode(const GPUVideoMode& mode) {
+void GPUState::registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode) {
+    if (displayIndex >= _supportedDislpayModes.size()) {
+        _supportedDislpayModes.push_back(vectorImpl<GPUVideoMode>());
+    }
+
+    vectorImpl<GPUVideoMode>& displayModes = _supportedDislpayModes[displayIndex];
+
     // this is terribly slow, but should only be called a couple of times and
     // only on video hardware init
-    for (GPUVideoMode& crtMode : _supportedDislpayModes) {
+    for (GPUVideoMode& crtMode : displayModes) {
         if (crtMode._resolution == mode._resolution &&
             crtMode._bitDepth == mode._bitDepth) {
             U8 crtRefresh = mode._refreshRate.front();
@@ -85,7 +91,8 @@ void GPUState::registerDisplayMode(const GPUVideoMode& mode) {
             return;
         }
     }
-    _supportedDislpayModes.push_back(mode);
+
+    displayModes.push_back(mode);
 }
 
 };  // namespace Divide

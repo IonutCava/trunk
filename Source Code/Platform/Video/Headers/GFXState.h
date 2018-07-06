@@ -41,7 +41,7 @@
 #include <condition_variable>
 
 namespace Divide {
-
+    
 class GPUState : private NonCopyable {
    public:
     typedef boost::lockfree::spsc_queue<
@@ -69,14 +69,19 @@ class GPUState : private NonCopyable {
     GPUState();
 
     /// register a new display mode (resolution, bitdepth, etc).
-    void registerDisplayMode(const GPUVideoMode& mode);
+    void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
     bool startLoaderThread(const DELEGATE_CBK<>& loadingFunction);
     bool stopLoaderThread();
     void addToLoadQueue(const DELEGATE_CBK<>& callback);
     void consumeOneFromQueue();
 
-    inline const vectorImpl<GPUVideoMode>& getDisplayModes() const {
-        return _supportedDislpayModes;
+    inline vectorAlg::vecSize getDisplayCount() const {
+        return _supportedDislpayModes.size();
+    }
+
+    inline const vectorImpl<GPUVideoMode>& getDisplayModes(vectorAlg::vecSize displayIndex) const {
+        assert(displayIndex < _supportedDislpayModes.size());
+        return _supportedDislpayModes[displayIndex];
     }
 
     inline void initAA(U8 fxaaSamples, U8 msaaSamples) {
@@ -94,11 +99,11 @@ class GPUState : private NonCopyable {
     
     inline bool MSAAEnabled() const { return _MSAASamples > 0; }
 
-    inline U8 MSAASamples() const { return _MSAASamples; }
+    inline U8   MSAASamples() const { return _MSAASamples; }
 
     inline bool FXAAEnabled() const { return _FXAASamples > 0; }
 
-    inline U8 FXAASamples() const { return _FXAASamples; }
+    inline U8   FXAASamples() const { return _FXAASamples; }
 
     inline bool loadingThreadAvailable() const {
         return _loadingThreadAvailable && _loaderThread;
@@ -122,7 +127,7 @@ class GPUState : private NonCopyable {
     U8 _MSAASamples;
     U8 _FXAASamples;
     // Display system
-    vectorImpl<GPUVideoMode> _supportedDislpayModes;
+    vectorImpl<vectorImpl<GPUVideoMode>> _supportedDislpayModes;
 };
 
 };  // namespace Divide
