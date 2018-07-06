@@ -51,7 +51,7 @@ void ShaderProgram::bind(){
 	this->Uniform("lightProjectionMatrix",GFX_DEVICE.getLightProjectionMatrix());
 	this->Uniform("zPlanes",vec2<F32>(par.getParam<F32>("zNear"),par.getParam<F32>("zFar")));
 	this->Uniform("screenDimension", vec2<I32>(app.getResolution().width,app.getResolution().height));
-	this->Uniform("resolutionFactor", par.getParam<U8>("shadowDetailLevel"));
+	this->Uniform("resolutionFactor", par.getParam<U8>("shadowResolutionFactor"));
 	this->Uniform("enableFog",par.getParam<bool>("rendering.enableFog"));
 	this->Uniform("time", GETTIME());
 

@@ -13,7 +13,7 @@ void Light::setShadowMappingCallback(boost::function0<void> callback) {
 		return;
 	}
 	///The higher the shadow detail level, the bigger depth buffers we have
-	F32 resolutionFactor = ParamHandler::getInstance().getParam<U8>("shadowDetailLevel");
+	F32 resolutionFactor = ParamHandler::getInstance().getParam<U8>("shadowResolutionFactor");
 	///If this is the first initialization pass, first = true;
 	///If we changed the callback after initialization, first = false;
 	bool firstPass = false;

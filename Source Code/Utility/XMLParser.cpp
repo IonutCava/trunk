@@ -39,8 +39,24 @@ namespace XML {
 		par.setParam("simSpeed",pt.get("runtime.simSpeed",1));
 		par.setParam("appTitle",pt.get("title","DIVIDE Framework"));
 		par.setParam("detailLevel",pt.get<U8>("rendering.detailLevel",HIGH));
+		
+		U8 shadowDetailLevel = pt.get<U8>("rendering.shadowDetailLevel",HIGH);
+		U8 shadowResolutionFactor = 1;
+		switch(shadowDetailLevel){
+			default:
+			case HIGH:
+				shadowResolutionFactor = 1;
+				break;
+			case MEDIUM:
+				shadowResolutionFactor = 2;
+				break;
+			case LOW:
+				shadowResolutionFactor = 4;
+				break;
+		};
+		par.setParam("shadowDetailLevel",shadowDetailLevel);
+		par.setParam("shadowResolutionFactor", shadowResolutionFactor);
 		par.setParam("enableShadows",pt.get("rendering.enableShadows", true));
-		par.setParam("shadowDetailLevel",pt.get<U8>("rendering.shadowDetailLevel",HIGH));
 		par.setParam("defaultTextureLocation",pt.get("defaultTextureLocation","textures/"));
 		par.setParam("shaderLocation",pt.get("defaultShadersLocation","shaders/"));
 		I32 resWidth = pt.get("runtime.resolutionWidth",1024.0f);

@@ -94,10 +94,9 @@ enum VERTEX_DATA_FORMAT{
 };
 
 enum RENDER_DETAIL_LEVEL{
-	///Use resolution factor for enum values for faster lookup
-	HIGH = 1,
-	MEDIUM = 2,
-	LOW = 4
+	LOW = 0,
+	MEDIUM = 1,
+	HIGH = 2	
 };
       
 /// Specifies how the red, green, blue, and alpha source blending factors are computed.

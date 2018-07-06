@@ -142,6 +142,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib); //How many attributes can we send to a vertex shader
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_texture_units); //Maximum number of texture units we can address in shaders
 	const GLubyte* glslVersionSupported = glGetString(GL_SHADING_LANGUAGE_VERSION);
+	const GLubyte* glDriverVendor = glGetString(GL_VENDOR);
 	//Time to select our shaders.
 	//We do not support OpenGL version lower than 2.0;
 	if(major < 2){
@@ -197,6 +198,7 @@ I8 GL_API::initHardware(const vec2<U16>& resolution){
 	PRINT_FN(Locale::get("GL_MAX_TEX_UNITS"),max_texture_units); 
 	PRINT_FN(Locale::get("GL_MAX_VERSION"),major,minor);
 	PRINT_FN(Locale::get("GL_GLSL_SUPPORT"),glslVersionSupported);
+	PRINT_FN(Locale::get("GL_VENDOR_STRING"),glDriverVendor);
 	GL_ENUM_TABLE::fill();
 	//Set the clear color to a nice blue
 	glClearColor(0.1f,0.1f,0.8f,1);
