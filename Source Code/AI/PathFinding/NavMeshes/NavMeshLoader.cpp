@@ -326,26 +326,28 @@ namespace Navigation {
 			};
 		
 			//I should remove this hack - Ionut
-			if(nodeType == TYPE_WATER)  sgn = sgn->getChildren()["waterPlane"];
-
+			if(nodeType == TYPE_WATER) sgn = sgn->getChildren()["waterPlane"];
 			D_PRINT_FN(Locale::get("NAV_MESH_CURRENT_NODE"),sn->getName().c_str(), (U32)level);
 
 			U32 currentTriangleIndexOffset = outData.getVertCount();
 
 			if(level == DETAIL_ABSOLUTE){
-				if(sn->getType() == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
-				else if(sn->getType() == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
-				else /*sn->getType() == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
+				if(nodeType == TYPE_OBJECT3D)     geometry = dynamic_cast<Object3D* >(sn)->getGeometryVBO();
+				else if(nodeType == TYPE_TERRAIN) geometry = dynamic_cast<Terrain* >(sn)->getGeometryVBO();
+				else /*nodeType == TYPE_WATER*/   geometry = dynamic_cast<WaterPlane* >(sn)->getQuad()->getGeometryVBO();
 				assert(geometry != NULL);
 
 				const vectorImpl<vec3<F32> >& vertices  = geometry->getPosition();
 				const vectorImpl<vec3<U32> >& triangles = geometry->getTriangles();
-
+				mat4<F32> nodeTransform;
+				if(nodeType != TYPE_TERRAIN){
+					nodeTransform = sgn->getTransform()->getGlobalMatrix();
+				}
 				if(vertices.empty()) return false;
 
 				for (U32 i = 0; i < vertices.size(); ++i ){
 					//Apply the node's transform and add the vertex to the NavMesh
-					addVertex(&outData, sgn->getTransform()->getGlobalMatrix() * vertices[i]);
+					addVertex(&outData, nodeTransform * vertices[i]);
 				}
 
  				for (U32 i = 0; i < triangles.size(); ++i){

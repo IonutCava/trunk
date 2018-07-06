@@ -1,4 +1,5 @@
 #include "Headers/TerrainChunk.h"
+#include "Headers/Terrain.h"
 
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
@@ -9,11 +10,11 @@
 
 typedef Unordered_map<std::string, SceneGraphNode*> NodeChildren;
 void TerrainChunk::Load(U8 depth, vec2<U32> pos, vec2<U32> HMsize,VertexBufferObject* const groundVBO){
-	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++)
-		ComputeIndicesArray(i, depth, pos, HMsize);
-
-    for(U32 i =0; i < _indice[0].size(); i++)
-        groundVBO->addIndex(_indice[0][i]);
+	for(U8 i=0; i < TERRAIN_CHUNKS_LOD; i++) ComputeIndicesArray(i, depth, pos, HMsize);
+    for(U32 i=0; i < _indice[0].size(); i++) {
+		if(_indice[0][i] == TERRAIN_STRIP_RESTART_INDEX) continue;
+		groundVBO->addIndex(_indice[0][i]);
+	}
 
 	_grassData._grassVisibility = GET_ACTIVE_SCENE()->state()->getGrassVisibility();
 }
@@ -71,7 +72,8 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 	_indOffsetW[lod] = nHMWidth*2;
 	_indOffsetH[lod] = nHMWidth-1;
 	U32 nIndice = (nHMWidth)*(nHMHeight-1)*2;
-	_indice[lod].reserve( nIndice );
+	nIndice += (nHMHeight-1);//<Restart indices
+	_indice[lod].reserve( nIndice  );
 
 	for(U16 j=0; j<nHMHeight-1; j++){
 		for(U16 i=0; i<nHMWidth; i++){
@@ -80,6 +82,7 @@ void TerrainChunk::ComputeIndicesArray(I8 lod, U8 depth, const vec2<U32>& positi
 			_indice[lod].push_back( id0 );
 			_indice[lod].push_back( id1 );
 		}
+		_indice[lod].push_back(TERRAIN_STRIP_RESTART_INDEX);
 	}
 
 	assert(nIndice == _indice[lod].size());
@@ -104,11 +107,9 @@ I32 TerrainChunk::DrawGround(I8 lod, ShaderProgram* const program, VertexBufferO
         assert(program->isBound());
     }
 
-	for(U16 j=0; j < _indOffsetH[lod]; j++){
-		vbo->setFirstElement(&(_indice[lod][j*_indOffsetW[lod]]));
-		vbo->setRangeCount(_indOffsetW[lod]);
-		GFX_DEVICE.renderBuffer(vbo);
-	}
+	vbo->setFirstElement(&(_indice[lod][0]));
+	vbo->setRangeCount(_indOffsetW[lod] * _indOffsetH[lod]);
+	GFX_DEVICE.renderBuffer(vbo);
 
 	return 1;
 }

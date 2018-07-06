@@ -28,6 +28,8 @@
 #include "Environment/Vegetation/Headers/Vegetation.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
+#define TERRAIN_STRIP_RESTART_INDEX std::numeric_limits<U32>::max()
+
 class Quad3D;
 class Quadtree;
 class Transform;

@@ -48,6 +48,8 @@
 	<position x="0" y="230" z="0" />
 	<orientation x="0" y="0" z="0" />
 	<version>1.0</version>
+	<staticObject>true</staticObject>
+	<addToNavigation>false</addToNavigation>
 </box>
 
 <adi>

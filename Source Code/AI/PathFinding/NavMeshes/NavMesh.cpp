@@ -102,7 +102,10 @@ namespace Navigation {
 	}
 
 	bool NavigationMesh::build(SceneGraphNode* const sgn, bool threaded){
-		if(!loadConfigFromFile()) return false;
+		if(!loadConfigFromFile()){
+			ERROR_FN(Locale::get("NAV_MESH_CONFIG_NOT_FOUND"));
+			return false;
+		}
 
 		_sgn = (sgn != NULL) ? sgn : _sgn = GET_ACTIVE_SCENE()->getSceneGraph()->getRoot();
 

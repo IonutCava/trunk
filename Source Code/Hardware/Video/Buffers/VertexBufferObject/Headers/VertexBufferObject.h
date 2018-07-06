@@ -45,7 +45,8 @@ public:
 							_format(UNSIGNED_SHORT),
 							_currentShader(NULL),
 							_firstElementPtr(NULL),
-							_instanceCount(1)
+							_instanceCount(1),
+							_indexDelimiter(0)
 	{
 		_depthPass = _forceOptimizeForDepth = false;
 		_VBOid = _IBOid = _DepthVBOid = _LODcount = _rangeCount = 0;
@@ -78,7 +79,7 @@ public:
 
     inline void useHWIndices(bool state = true)              {assert(!_created); _useHWIndices = state;}
 	inline void useLargeIndices(bool state = true)           {assert(!_created); _largeIndices = state; _format = _largeIndices ? UNSIGNED_INT : UNSIGNED_SHORT;}
-
+	inline void setIndicesDelimiter(U32 delimiterValue)      {_indexDelimiter = delimiterValue;}
 	inline void computeTriangles(bool state = true)          {_computeTriangles = state;}
 	inline void reservePositionCount(U32 size)  {_dataPosition.reserve(size);}
 	inline void reserveNormalCount(U32 size)    {_dataNormal.reserve(size);}
@@ -220,6 +221,8 @@ protected:
 	GFXDataFormat _format;
 	///Number of instances to draw
 	U32         _instanceCount;
+	///An index value that separates ojects (OGL: primitive restart index)
+	U32         _indexDelimiter;
 	ptrdiff_t	_VBOoffsetPosition;
 	ptrdiff_t	_VBOoffsetNormal;
 	ptrdiff_t	_VBOoffsetTexcoord;

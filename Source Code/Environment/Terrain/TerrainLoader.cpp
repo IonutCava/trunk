@@ -161,14 +161,15 @@ bool Terrain::loadThreadedResources(TerrainDescriptor* const terrain){
 			_groundVBO->modifyNormalValue(idx0,normalData[idx1]);
 			_groundVBO->modifyTangentValue(idx0,normalData[idx1]);
 
-			idx0 = COORD(_terrainWidth-1-i,		j,	_terrainWidth);
-			idx1 = COORD(_terrainWidth-1-offset,	j,	_terrainWidth);
+			idx0 = COORD(_terrainWidth-1-i,		 j,	_terrainWidth);
+			idx1 = COORD(_terrainWidth-1-offset, j,	_terrainWidth);
 
 			_groundVBO->modifyNormalValue(idx0,normalData[idx1]);
 			_groundVBO->modifyTangentValue(idx0,normalData[idx1]);
 		}
 	}
-
+	///Use primitive restart for each strip
+	_groundVBO->setIndicesDelimiter(TERRAIN_STRIP_RESTART_INDEX);
 	_terrainQuadtree->setParentShaderProgram(getMaterial()->getShaderProgram());
     _terrainQuadtree->setParentVBO(_groundVBO);
 	_terrainQuadtree->Build(_boundingBox, vec2<U32>(_terrainWidth, _terrainHeight), terrain->getChunkSize(), _groundVBO);
