@@ -74,4 +74,6 @@ uint GetTileIndex(in vec2 ScreenPos)
     return uint(floor(ScreenPos.x / fTileRes) + floor(ScreenPos.y / fTileRes) * GetNumTilesX());
 }
 
+Light dvd_private_light;
+
 #endif //_LIGHT_INPUT_CMN_

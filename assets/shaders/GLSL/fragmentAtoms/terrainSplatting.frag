@@ -3,10 +3,6 @@
 
 #include "bumpMapping.frag"
 
-uniform sampler2D      texBlend[MAX_TEXTURE_LAYERS];
-uniform sampler2DArray texTileMaps[MAX_TEXTURE_LAYERS];
-uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
-
 uniform vec4 diffuseScale[MAX_TEXTURE_LAYERS];
 uniform vec4 detailScale[MAX_TEXTURE_LAYERS];
 
@@ -14,6 +10,10 @@ layout(binding = TEXTURE_UNIT0)     uniform sampler2D texWaterCaustics;
 layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
+
+uniform sampler2D      texBlend[MAX_TEXTURE_LAYERS];
+uniform sampler2DArray texTileMaps[MAX_TEXTURE_LAYERS];
+uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
 
 vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
     return texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0));
@@ -81,7 +81,7 @@ vec4 getTerrainAlbedo(){
 
 vec3 getTerrainNormal() {
 
-    
+    vec3 V = VAR._vertexW.xyz - dvd_cameraPosition.xyz;
 
     vec3 tbn = vec3(0.0);
     vec3 tbnTemp;
@@ -96,8 +96,7 @@ vec3 getTerrainNormal() {
 #else//(CURRENT_TEXTURE_COUNT % 4) == 0
         tbnTemp = getFinalTBN4(blendMap, 0, detailScale[i]);
 #endif
-        //tbnTemp = getTBNMatrix() * normalize(2.0 * tbnTemp - 1.0);
-        tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, VAR._vertexW.xyz - dvd_cameraPosition.xyz, VAR._texCoord);
+        tbnTemp = perturb_normal(tbnTemp, VAR._normalWV, V, VAR._texCoord);
         tbn = normalUDNBlend(tbnTemp, tbn);
     }
 

@@ -55,6 +55,71 @@ class glShaderProgram final : public ShaderProgram {
            stringImpl _vertexStageProperties;
        };
 
+  private:
+    template<typename T>
+    struct UniformCache {
+        typedef hashMapImpl<T, U32> ShaderVarU32Map;
+        typedef hashMapImpl<T, I32> ShaderVarI32Map;
+        typedef hashMapImpl<T, F32> ShaderVarF32Map;
+        typedef hashMapImpl<T, vec2<F32>> ShaderVarVec2F32Map;
+        typedef hashMapImpl<T, vec2<I32>> ShaderVarvec2I32Map;
+        typedef hashMapImpl<T, vec3<F32>> ShaderVarVec3F32Map;
+        typedef hashMapImpl<T, vec3<I32>> ShaderVarVec3I32Map;
+        typedef hashMapImpl<T, vec4<F32>> ShaderVarVec4F32Map;
+        typedef hashMapImpl<T, vec4<I32>> ShaderVarVec4I32Map;
+        typedef hashMapImpl<T, mat3<F32>> ShaderVarMat3Map;
+        typedef hashMapImpl<T, mat4<F32>> ShaderVarMat4Map;
+        typedef hashMapImpl<T, vectorImpl<I32>> ShaderVarVectorI32Map;
+        typedef hashMapImpl<T, vectorImpl<F32>> ShaderVarVectorF32Map;
+        typedef hashMapImpl<T, vectorImpl<vec2<F32>>> ShaderVarVectorVec2F32Map;
+        typedef hashMapImpl<T, vectorImpl<vec3<F32>>> ShaderVarVectorVec3F32Map;
+        typedef hashMapImpl<T, vectorImpl<vec4<F32>>> ShaderVarVectorVec4F32Map;
+        typedef hashMapImpl<T, vectorImpl<mat3<F32>>> ShaderVarVectorMat3Map;
+        typedef hashMapImpl<T, vectorImpl<mat4<F32>>> ShaderVarVectorMat4Map;
+
+        void clear() {
+            _shaderVarsU32.clear();
+            _shaderVarsI32.clear();
+            _shaderVarsF32.clear();
+            _shaderVarsVec2F32.clear();
+            _shaderVarsVec2I32.clear();
+            _shaderVarsVec3F32.clear();
+            _shaderVarsVec4F32.clear();
+            _shaderVarsMat3.clear();
+            _shaderVarsMat4.clear();
+            _shaderVarsVectorI32.clear();
+            _shaderVarsVectorF32.clear();
+            _shaderVarsVectorVec2F32.clear();
+            _shaderVarsVectorVec3F32.clear();
+            _shaderVarsVectorVec4F32.clear();
+            _shaderVarsVectorMat3.clear();
+            _shaderVarsVectorMat4.clear();
+        }
+
+        ShaderVarU32Map _shaderVarsU32;
+        ShaderVarI32Map _shaderVarsI32;
+        ShaderVarF32Map _shaderVarsF32;
+        ShaderVarVec2F32Map _shaderVarsVec2F32;
+        ShaderVarvec2I32Map _shaderVarsVec2I32;
+        ShaderVarVec3F32Map _shaderVarsVec3F32;
+        ShaderVarVec3I32Map _shaderVarsVec3I32;
+        ShaderVarVec4F32Map _shaderVarsVec4F32;
+        ShaderVarVec4I32Map _shaderVarsVec4I32;
+        ShaderVarMat3Map _shaderVarsMat3;
+        ShaderVarMat4Map _shaderVarsMat4;
+        ShaderVarVectorI32Map _shaderVarsVectorI32;
+        ShaderVarVectorF32Map _shaderVarsVectorF32;
+        ShaderVarVectorVec2F32Map _shaderVarsVectorVec2F32;
+        ShaderVarVectorVec3F32Map _shaderVarsVectorVec3F32;
+        ShaderVarVectorVec4F32Map _shaderVarsVectorVec4F32;
+        ShaderVarVectorMat3Map _shaderVarsVectorMat3;
+        ShaderVarVectorMat4Map _shaderVarsVectorMat4;
+
+    };
+
+    typedef hashMapImpl<U64, I32> ShaderVarMap;
+    typedef UniformCache<const char*> UniformsByName;
+
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
@@ -91,47 +156,24 @@ class glShaderProgram final : public ShaderProgram {
     U32 GetSubroutineUniformLocation(ShaderType type, const char* name) const override;
     U32 GetSubroutineUniformCount(ShaderType type) const override;
     /// Set an uniform value
-    inline void Uniform(const char* ext, U32 value) override;
-    inline void Uniform(const char* ext, I32 value) override;
-    inline void Uniform(const char* ext, F32 value) override;
-    inline void Uniform(const char* ext, const vec2<F32>& value) override;
-    inline void Uniform(const char* ext, const vec2<I32>& value) override;
-    inline void Uniform(const char* ext, const vec3<F32>& value) override;
-    inline void Uniform(const char* ext, const vec3<I32>& value) override;
-    inline void Uniform(const char* ext, const vec4<F32>& value) override;
-    inline void Uniform(const char* ext, const vec4<I32>& value) override;
-    inline void Uniform(const char* ext, const mat3<F32>& value, bool transpose = false) override;
-    inline void Uniform(const char* ext, const mat4<F32>& value, bool transpose = false) override;
-    inline void Uniform(const char* ext, const vectorImpl<I32>& values) override;
-    inline void Uniform(const char* ext, const vectorImpl<F32>& values) override;
-    inline void Uniform(const char* ext, const vectorImpl<vec2<F32>>& values) override;
-    inline void Uniform(const char* ext, const vectorImpl<vec3<F32>>& values) override;
-    inline void Uniform(const char* ext, const vectorImplBest<vec4<F32>>& values) override;
-    inline void Uniform(const char* ext, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
-    inline void Uniform(const char* ext, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
-
-    void Uniform(I32 location, U32 value) override;
-    void Uniform(I32 location, I32 value) override;
-    void Uniform(I32 location, F32 value) override;
-    void Uniform(I32 location, const vec2<F32>& value) override;
-    void Uniform(I32 location, const vec2<I32>& value) override;
-    void Uniform(I32 location, const vec3<F32>& value) override;
-    void Uniform(I32 location, const vec3<I32>& value) override;
-    void Uniform(I32 location, const vec4<F32>& value) override;
-    void Uniform(I32 location, const vec4<I32>& value) override;
-    void Uniform(I32 location, const mat3<F32>& value, bool transpose = false) override;
-    void Uniform(I32 location, const mat4<F32>& value, bool transpose = false) override;
-    void Uniform(I32 location, const vectorImpl<I32>& values) override;
-    void Uniform(I32 location, const vectorImpl<F32>& values) override;
-    void Uniform(I32 location, const vectorImpl<vec2<F32>>& values) override;
-    void Uniform(I32 location, const vectorImpl<vec3<F32>>& values) override;
-    void Uniform(I32 location, const vectorImplBest<vec4<F32>>& values) override;
-    void Uniform(I32 location,
-                 const vectorImpl<mat3<F32>>& values,
-                 bool transpose = false) override;
-    void Uniform(I32 location,
-                 const vectorImplBest<mat4<F32>>& values,
-                 bool transpose = false) override;
+    void Uniform(const char* location, U32 value) override;
+    void Uniform(const char* location, I32 value) override;
+    void Uniform(const char* location, F32 value) override;
+    void Uniform(const char* location, const vec2<F32>& value) override;
+    void Uniform(const char* location, const vec2<I32>& value) override;
+    void Uniform(const char* location, const vec3<F32>& value) override;
+    void Uniform(const char* location, const vec3<I32>& value) override;
+    void Uniform(const char* location, const vec4<F32>& value) override;
+    void Uniform(const char* location, const vec4<I32>& value) override;
+    void Uniform(const char* location, const mat3<F32>& value, bool transpose = false) override;
+    void Uniform(const char* location, const mat4<F32>& value, bool transpose = false) override;
+    void Uniform(const char* location, const vectorImpl<I32>& values) override;
+    void Uniform(const char* location, const vectorImpl<F32>& values) override;
+    void Uniform(const char* location, const vectorImpl<vec2<F32>>& values) override;
+    void Uniform(const char* location, const vectorImpl<vec3<F32>>& values) override;
+    void Uniform(const char* location, const vectorImplBest<vec4<F32>>& values) override;
+    void Uniform(const char* location, const vectorImpl<mat3<F32>>& values, bool transpose = false) override;
+    void Uniform(const char* location, const vectorImplBest<mat4<F32>>& values, bool transpose = false) override;
 
     void DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) override;
 
@@ -156,15 +198,15 @@ class glShaderProgram final : public ShaderProgram {
     /// present, and it's not recommended (yet)
     void threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallback, bool skipRegister);
     /// Cache uniform/attribute locations for shader programs
-    I32 getUniformLocation(const char* name) override;
+    I32 getUniformLocation(const char* name);
 
     struct fake_dependency: public std::false_type {};
     template <typename T>
-    bool cachedValueUpdate(I32 location, const T& value) {
+    I32 cachedValueUpdate(const char* location, const T& value) {
         static_assert(
                 fake_dependency::value,
             "glShaderProgram::cachedValue error: unsupported data type!");
-        return false;
+        return -1;
     }
     /// Basic OpenGL shader program validation (both in debug and in release)
     bool validateInternal();
@@ -181,32 +223,10 @@ class glShaderProgram final : public ShaderProgram {
     void reuploadUniforms();
 
    private:
-    typedef hashMapImpl<U64, I32> ShaderVarMap;
-    typedef hashMapImpl<I32, U32> ShaderVarU32Map;
-    typedef hashMapImpl<I32, I32> ShaderVarI32Map;
-    typedef hashMapImpl<I32, F32> ShaderVarF32Map;
-    typedef hashMapImpl<I32, vec2<F32>> ShaderVarVec2F32Map;
-    typedef hashMapImpl<I32, vec2<I32>> ShaderVarvec2I32Map;
-    typedef hashMapImpl<I32, vec3<F32>> ShaderVarVec3F32Map;
-    typedef hashMapImpl<I32, vec3<I32>> ShaderVarVec3I32Map;
-    typedef hashMapImpl<I32, vec4<F32>> ShaderVarVec4F32Map;
-    typedef hashMapImpl<I32, vec4<I32>> ShaderVarVec4I32Map;
-    typedef hashMapImpl<I32, mat3<F32>> ShaderVarMat3Map;
-    typedef hashMapImpl<I32, mat4<F32>> ShaderVarMat4Map;
-
-    ShaderVarU32Map _shaderVarsU32;
-    ShaderVarI32Map _shaderVarsI32;
-    ShaderVarF32Map _shaderVarsF32;
-    ShaderVarVec2F32Map _shaderVarsVec2F32;
-    ShaderVarvec2I32Map _shaderVarsVec2I32;
-    ShaderVarVec3F32Map _shaderVarsVec3F32;
-    ShaderVarVec3I32Map _shaderVarsVec3I32;
-    ShaderVarVec4F32Map _shaderVarsVec4F32;
-    ShaderVarVec4I32Map _shaderVarsVec4I32;
-    ShaderVarMat3Map _shaderVarsMat3;
-    ShaderVarMat4Map _shaderVarsMat4;
 
     ShaderVarMap _shaderVarLocation;
+    UniformsByName _uniformsByName;
+    
     bool _validationQueued;
     GLenum _binaryFormat;
     bool _validated;

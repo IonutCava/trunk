@@ -77,8 +77,6 @@ class glIMPrimitive : public IMPrimitive {
    protected:
     /// Rendering API specific implementation
     NS_GLIM::GLIM_BATCH* _imInterface;
-    I32 _shaderTextureFlag;
-    I32 _shaderWorldMatrix;
 };
 
 };  // namespace Divide

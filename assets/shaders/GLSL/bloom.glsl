@@ -106,5 +106,5 @@ void main() {
     // Slowly change luminance by mimicking human eye behaviour:
     // bright->dark 5 times faster than dark->bright
     float tau = mix(0.15, 0.35, prevLuminance > crtluminance);
-    _colourOut = prevLuminance + (crtluminance - prevLuminance) * (1 - exp(-dvd_deltaTime() * tau));
+    _colourOut = prevLuminance + (crtluminance - prevLuminance) * (1 - exp(-dvd_deltaTime * tau));
 }

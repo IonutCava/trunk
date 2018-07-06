@@ -17,12 +17,15 @@ getBRDFFactors(in int lightIndex,
                inout vec3 colourInOut,
                inout float reflectionCoeff)
 {
+
+    dvd_private_light = dvd_LightSource[lightIndex];
+
 #if defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    Phong(lightIndex, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
+    Phong(normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #elif defined(USE_SHADING_TOON)
     // ToDo
 #else //if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    PBR(lightIndex, normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
+    PBR(normalWV, albedo, specular, reflectivity, colourInOut, reflectionCoeff);
 #endif
 }
 
@@ -52,12 +55,9 @@ vec4 getPixelColour(const in vec2 texCoord) {
         return vec4(1.0, 0.0, 0.0, 1.0);
     }
 #endif
+
     vec4 albedo = getAlbedo();
     vec3 processedNormal = getProcessedNormal();
-
-#   if defined (USE_DOUBLE_SIDED)
-        processedNormal = gl_FrontFacing ? processedNormal : -processedNormal;
-#   endif
 
     float reflectionCoeff = 0.0;
 #   if defined(USE_SHADING_FLAT)

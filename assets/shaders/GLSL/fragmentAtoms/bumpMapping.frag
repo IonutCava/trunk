@@ -2,10 +2,12 @@
 #define _BUMP_MAPPING_FRAG_
 
 uniform int bumpMapLightID = 0;
+Light dvd_private_bump_light;
 
 mat3 _privateTBNMatrix;
 
 void bumpInit() {
+    dvd_private_bump_light = dvd_LightSource[bumpMapLightID];
     _privateTBNMatrix = mat3(VAR._tangentWV, VAR._bitangentWV, VAR._normalWV);
 }
 
@@ -51,15 +53,15 @@ float ReliefMapping_RayIntersection(in vec2 A, in vec2 AB){
     return best_depth;
 }
 
-vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
+vec4 ParallaxMapping(in vec2 uv){
     vec3 lightVecTBN = vec3(0.0);
-    switch (dvd_LightSource[bumpMapLightID]._options.x){
+    switch (dvd_private_bump_light._options.x){
         case LIGHT_DIRECTIONAL      : 
-            lightVecTBN = -normalize(dvd_LightSource[bumpMapLightID]._positionWV.xyz);
+            lightVecTBN = -normalize(dvd_private_bump_light._positionWV.xyz);
             break;
         case LIGHT_OMNIDIRECTIONAL  : 
         case LIGHT_SPOT             : 
-            lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_LightSource[bumpMapLightID]._positionWV.xyz);
+            lightVecTBN = normalize(-VAR._vertexWV.xyz + dvd_private_bump_light._positionWV.xyz);
             break;
     };
 
@@ -75,7 +77,7 @@ vec4 ParallaxMapping(in int bumpMapLightID, in vec2 uv){
     return getPixelColour(vTexCoord, getTBNMatrix() * getBump(vTexCoord));
 }
 
-vec4 ReliefMapping(in int _light, in vec2 uv){
+vec4 ReliefMapping(in vec2 uv){
     vec3 viewVecTBN = normalize(-VAR._vertexWV.xyz);
     //Size and search starting position in texture space
     vec2 AB = dvd_reliefFactor * vec2(-viewVecTBN.x, viewVecTBN.y)/viewVecTBN.z;

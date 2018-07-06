@@ -7,9 +7,7 @@
 namespace Divide {
 
 glIMPrimitive::glIMPrimitive(GFXDevice& context)
-    : IMPrimitive(context),
-      _shaderTextureFlag(-1),
-      _shaderWorldMatrix(-1)
+    : IMPrimitive(context)
 {
     _imInterface = MemoryManager_NEW NS_GLIM::GLIM_BATCH();
     _imInterface->SetVertexAttribLocation(to_base(AttribLocation::VERTEX_POSITION));
@@ -68,8 +66,6 @@ void glIMPrimitive::drawShader(const ShaderProgram_ptr& shaderProgram) {
     } else {
         IMPrimitive::drawShader(shaderProgram);
         _imInterface->SetShaderProgramHandle(_drawShader->getID());
-        _shaderTextureFlag = _drawShader->getUniformLocation("useTexture");
-        _shaderWorldMatrix = _drawShader->getUniformLocation("dvd_WorldMatrix");
     }
 }
 
@@ -88,9 +84,9 @@ void glIMPrimitive::draw(const GenericDrawCommand& command) {
     }
 
     // Inform the shader if we have (or don't have) a texture
-    command.shaderProgram()->Uniform(_shaderTextureFlag, texture);
+    command.shaderProgram()->Uniform("useTexture", texture);
     // Upload the primitive's world matrix to the shader
-    command.shaderProgram()->Uniform(_shaderWorldMatrix, worldMatrix());
+    command.shaderProgram()->Uniform("dvd_WorldMatrix", worldMatrix());
 
     GLuint query = 0;
     bool queryPrimitives = command.isEnabledOption(GenericDrawCommand::RenderOptions::QUERY_PRIMITIVE_COUNT);

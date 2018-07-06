@@ -52,44 +52,25 @@ U32 d3dShaderProgram::GetSubroutineUniformCount(ShaderType type) const {
 }
 
 // Uniforms
-void d3dShaderProgram::Uniform(const char* ext, U32 value) {}
-void d3dShaderProgram::Uniform(const char* ext, I32 value) {}
-void d3dShaderProgram::Uniform(const char* ext, F32 value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec2<F32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec2<I32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec3<F32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec3<I32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec4<F32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const vec4<I32>& value) {}
-void d3dShaderProgram::Uniform(const char* ext, const mat3<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(const char* ext, const mat4<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<I32>& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<F32>& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImplBest<vec4<F32> >& values) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool transpose) {}
-void d3dShaderProgram::Uniform(const char* ext, const vectorImplBest<mat4<F32> >& values, bool transpose) {}
+void d3dShaderProgram::Uniform(const char* location, U32 value) {}
+void d3dShaderProgram::Uniform(const char* location, I32 value) {}
+void d3dShaderProgram::Uniform(const char* location, F32 value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec2<F32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec2<I32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec3<F32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec3<I32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec4<F32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const vec4<I32>& value) {}
+void d3dShaderProgram::Uniform(const char* location, const mat3<F32>& value, bool transpose) {}
+void d3dShaderProgram::Uniform(const char* location, const mat4<F32>& value, bool transpose) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImpl<I32>& values) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImpl<F32>& values) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImpl<vec2<F32> >& values) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImpl<vec3<F32> >& values) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImplBest<vec4<F32> >& values) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImpl<mat3<F32> >& values, bool transpose) {}
+void d3dShaderProgram::Uniform(const char* location, const vectorImplBest<mat4<F32> >& values, bool transpose) {}
 
-void d3dShaderProgram::Uniform(I32 location, U32 value) {}
-void d3dShaderProgram::Uniform(I32 location, I32 value) {}
-void d3dShaderProgram::Uniform(I32 location, F32 value) {}
-void d3dShaderProgram::Uniform(I32 location, const vec2<F32>& value) {}
-void d3dShaderProgram::Uniform(I32 location, const vec2<I32>& value) {}
-void d3dShaderProgram::Uniform(I32 location, const vec3<F32>& value){}
-void d3dShaderProgram::Uniform(I32 location, const vec3<I32>& value) {}
-void d3dShaderProgram::Uniform(I32 location, const vec4<F32>& value) {}
-void d3dShaderProgram::Uniform(I32 location, const vec4<I32>& value) {}
-void d3dShaderProgram::Uniform(I32 location, const mat3<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(I32 location, const mat4<F32>& value, bool transpose) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<I32>& values) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<F32>& values) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<vec2<F32> >& values){}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<vec3<F32> >& values) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImplBest<vec4<F32> >& values) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImpl<mat3<F32> >& values, bool transpose) {}
-void d3dShaderProgram::Uniform(I32 location, const vectorImplBest<mat4<F32> >& values, bool transpose) {}
-I32 d3dShaderProgram::getUniformLocation(const char* name) { return -1; }
 void d3dShaderProgram::DispatchCompute(U32 xGroups, U32 yGroups, U32 zGroups) {}
 
 void d3dShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {

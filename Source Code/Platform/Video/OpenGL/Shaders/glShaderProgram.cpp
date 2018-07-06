@@ -255,6 +255,7 @@ void glShaderProgram::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoa
 
     if (!skipRegister) {
         ShaderProgram::load(onLoadCallback);
+    } else {
         reuploadUniforms();
     }
 }
@@ -285,6 +286,8 @@ void glShaderProgram::link() {
         detachShader(shader);
     }
 
+    _shaderVarLocation.clear();
+
     // And check the result
     GLint linkStatus = 0;
     glGetProgramiv(_shaderProgramIDTemp, GL_LINK_STATUS, &linkStatus);
@@ -305,17 +308,6 @@ void glShaderProgram::link() {
             glObjectLabel(GL_PROGRAM, _shaderProgramIDTemp, -1, getName().c_str());
         }
     }
-
-    _shaderVarsU32.clear();
-    _shaderVarsI32.clear();
-    _shaderVarsF32.clear();
-    _shaderVarsVec2F32.clear();
-    _shaderVarsVec2I32.clear();
-    _shaderVarsVec3F32.clear();
-    _shaderVarsVec4F32.clear();
-    _shaderVarsMat3.clear();
-    _shaderVarsMat4.clear();
-    _shaderVarLocation.clear();
 }
 
 bool glShaderProgram::loadFromBinary() {
@@ -654,158 +646,197 @@ U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) const
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, U32 value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform1ui(_shaderProgramID, location, value);
+void glShaderProgram::Uniform(const char* location, U32 value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform1ui(_shaderProgramID, binding, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, I32 value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform1i(_shaderProgramID, location, value);
+void glShaderProgram::Uniform(const char* location, I32 value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform1i(_shaderProgramID, binding, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, F32 value) {
+void glShaderProgram::Uniform(const char* location, F32 value) {
+    I32 binding = cachedValueUpdate(location, value);
+
     if (cachedValueUpdate(location, value)) {
-        glProgramUniform1f(_shaderProgramID, location, value);
+        glProgramUniform1f(_shaderProgramID, binding, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec2<F32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform2fv(_shaderProgramID, location, 1, value);
+void glShaderProgram::Uniform(const char* location, const vec2<F32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform2fv(_shaderProgramID, binding, 1, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec2<I32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform2iv(_shaderProgramID, location, 1, value);
+void glShaderProgram::Uniform(const char* location, const vec2<I32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform2iv(_shaderProgramID, binding, 1, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec3<F32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform3fv(_shaderProgramID, location, 1, value);
+void glShaderProgram::Uniform(const char* location, const vec3<F32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform3fv(_shaderProgramID, binding, 1, value);
     }
 }
 
-void glShaderProgram::Uniform(I32 location, const vec3<I32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform3iv(_shaderProgramID, location, 1, value);
-    }
-}
+void glShaderProgram::Uniform(const char* location, const vec3<I32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
 
-/// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vec4<F32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform4fv(_shaderProgramID, location, 1, value);
-    }
-}
-
-void glShaderProgram::Uniform(I32 location, const vec4<I32>& value) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniform4iv(_shaderProgramID, location, 1, value);
+    if (binding != -1) {
+        glProgramUniform3iv(_shaderProgramID, binding, 1, value);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const mat3<F32>& value,
+void glShaderProgram::Uniform(const char* location, const vec4<F32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform4fv(_shaderProgramID, binding, 1, value);
+    }
+}
+
+void glShaderProgram::Uniform(const char* location, const vec4<I32>& value) {
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniform4iv(_shaderProgramID, binding, 1, value);
+    }
+}
+
+/// Set an uniform value
+void glShaderProgram::Uniform(const char* location, const mat3<F32>& value,
                               bool transpose) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniformMatrix3fv(_shaderProgramID, location, 1,
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniformMatrix3fv(_shaderProgramID, binding, 1,
                                   transpose ? GL_TRUE : GL_FALSE, value.mat);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const mat4<F32>& value,
+void glShaderProgram::Uniform(const char* location, const mat4<F32>& value,
                               bool transpose) {
-    if (cachedValueUpdate(location, value)) {
-        glProgramUniformMatrix4fv(_shaderProgramID, location, 1,
+    I32 binding = cachedValueUpdate(location, value);
+
+    if (binding != -1) {
+        glProgramUniformMatrix4fv(_shaderProgramID, binding, 1,
                                   transpose ? GL_TRUE : GL_FALSE, value.mat);
     }
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vectorImpl<I32>& values) {
-    if (values.empty() || location == -1) {
+void glShaderProgram::Uniform(const char* location, const vectorImpl<I32>& values) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniform1iv(_shaderProgramID, location, (GLsizei)values.size(),
+    glProgramUniform1iv(_shaderProgramID, binding, (GLsizei)values.size(),
                         values.data());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vectorImpl<F32>& values) {
-    if (values.empty() || location == -1) {
+void glShaderProgram::Uniform(const char* location, const vectorImpl<F32>& values) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniform1fv(_shaderProgramID, location, (GLsizei)values.size(),
+    glProgramUniform1fv(_shaderProgramID, binding, (GLsizei)values.size(),
                         values.data());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
+void glShaderProgram::Uniform(const char* location,
                               const vectorImpl<vec2<F32> >& values) {
-    if (values.empty() || location == -1) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniform2fv(_shaderProgramID, location, (GLsizei)values.size(),
+    glProgramUniform2fv(_shaderProgramID, binding, (GLsizei)values.size(),
                         values.front());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
+void glShaderProgram::Uniform(const char* location,
                               const vectorImpl<vec3<F32> >& values) {
-    if (values.empty() || location == -1) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniform3fv(_shaderProgramID, location, (GLsizei)values.size(),
+    glProgramUniform3fv(_shaderProgramID, binding, (GLsizei)values.size(),
                         values.front());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location, const vectorImplBest<vec4<F32> >& values) {
-    if (values.empty() || location == -1) {
+void glShaderProgram::Uniform(const char* location,
+                              const vectorImplBest<vec4<F32> >& values) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniform4fv(_shaderProgramID, location, (GLsizei)values.size(),
+    glProgramUniform4fv(_shaderProgramID, binding, (GLsizei)values.size(),
                         values.front());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
+void glShaderProgram::Uniform(const char* location,
                               const vectorImpl<mat3<F32> >& values,
                               bool transpose) {
-    if (values.empty() || location == -1) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniformMatrix3fv(_shaderProgramID, location,
+    glProgramUniformMatrix3fv(_shaderProgramID,
+                              binding,
                               (GLsizei)values.size(),
                               transpose ? GL_TRUE : GL_FALSE, values.front());
 }
 
 /// Set an uniform value
-void glShaderProgram::Uniform(GLint location,
+void glShaderProgram::Uniform(const char* location,
                               const vectorImplBest<mat4<F32> >& values,
                               bool transpose) {
-    if (values.empty() || location == -1) {
+    I32 binding = cachedValueUpdate(location, values);
+
+    if (values.empty() || binding == -1) {
         return;
     }
 
-    glProgramUniformMatrix4fv(_shaderProgramID, location,
+    glProgramUniformMatrix4fv(_shaderProgramID,
+                              binding,
                               (GLsizei)values.size(),
                               transpose ? GL_TRUE : GL_FALSE, values.front());
 }
@@ -846,37 +877,37 @@ void glShaderProgram::SetMemoryBarrier(MemoryBarrierType type) {
 }
 
 void glShaderProgram::reuploadUniforms() {
-    for (ShaderVarU32Map::value_type it : _shaderVarsU32) {
+    for (UniformsByName::ShaderVarU32Map::value_type it : _uniformsByName._shaderVarsU32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarI32Map::value_type it : _shaderVarsI32) {
+    for (UniformsByName::ShaderVarI32Map::value_type it : _uniformsByName._shaderVarsI32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarF32Map::value_type it : _shaderVarsF32) {
+    for (UniformsByName::ShaderVarF32Map::value_type it : _uniformsByName._shaderVarsF32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarVec2F32Map::value_type it : _shaderVarsVec2F32) {
+    for (UniformsByName::ShaderVarVec2F32Map::value_type it : _uniformsByName._shaderVarsVec2F32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarvec2I32Map::value_type it : _shaderVarsVec2I32) {
+    for (UniformsByName::ShaderVarvec2I32Map::value_type it : _uniformsByName._shaderVarsVec2I32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarVec3F32Map::value_type it : _shaderVarsVec3F32) {
+    for (UniformsByName::ShaderVarVec3F32Map::value_type it : _uniformsByName._shaderVarsVec3F32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarVec3I32Map::value_type it : _shaderVarsVec3I32) {
+    for (UniformsByName::ShaderVarVec3I32Map::value_type it : _uniformsByName._shaderVarsVec3I32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarVec4F32Map::value_type it : _shaderVarsVec4F32) {
+    for (UniformsByName::ShaderVarVec4F32Map::value_type it : _uniformsByName._shaderVarsVec4F32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarVec4I32Map::value_type it : _shaderVarsVec4I32) {
+    for (UniformsByName::ShaderVarVec4I32Map::value_type it : _uniformsByName._shaderVarsVec4I32) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarMat3Map::value_type it : _shaderVarsMat3) {
+    for (UniformsByName::ShaderVarMat3Map::value_type it : _uniformsByName._shaderVarsMat3) {
         Uniform(it.first, it.second);
     }
-    for (ShaderVarMat4Map::value_type it : _shaderVarsMat4) {
+    for (UniformsByName::ShaderVarMat4Map::value_type it : _uniformsByName._shaderVarsMat4) {
         Uniform(it.first, it.second);
     }
 }

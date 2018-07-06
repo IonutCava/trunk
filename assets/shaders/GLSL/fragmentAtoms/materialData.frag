@@ -41,7 +41,11 @@ uniform bool dvd_NormalsOnly = false;
 vec3 private_processedNormal = vec3(0.0, 0.0, 1.0);
 
 vec3 getProcessedNormal() {
+#   if defined (USE_DOUBLE_SIDED)
+    return processedNormal = mix(-processedNormal, processedNormal, gl_FrontFacing);
+#   else
     return private_processedNormal;
+#   endif
 }
 
 void setProcessedNormal(vec3 normal) {
@@ -124,30 +128,43 @@ vec3 private_getEmissive();
 vec3 private_getSpecular();
 float private_getShininess();
 
-#if !defined(CUSTOM_MATERIAL_DATA)
+#if !defined(CUSTOM_MATERIAL_OPACITY)
 float getOpacity() {
     return private_getOpacity();
 }
+#else
+float getOpacity();
+#endif
 
+#if !defined(CUSTOM_MATERIAL_ALBEDO)
 vec4 getAlbedo() {
     return private_getAlbedo();
 }
+#else
+vec4 getAlbedo();
+#endif
+
+#if !defined(CUSTOM_MATERIAL_EMISSIVE)
 vec3 getEmissive() {
     return private_getEmissive();
 }
+#else
+vec3 getEmissive();
+#endif
 
+#if !defined(CUSTOM_MATERIAL_SPECULAR)
 vec3 getSpecular() {
     return private_getSpecular();
 }
+#else
+vec3 getSpecular();
+#endif
 
+#if !defined(CUSTOM_MATERIAL_SHININESS)
 float getShininess() {
     return private_getShininess();
 }
 #else
-float getOpacity();
-vec4 getAlbedo();
-vec3 getEmissive();
-vec3 getSpecular();
 float getShininess();
 #endif
 
@@ -216,7 +233,7 @@ vec4 private_getAlbedo() {
 
 #   if defined(_DEBUG)
         if (dvd_LightingOnly) {
-            albedo = vec4(0.0);
+            albedo.rgb = vec3(0.0);
         }
 #   endif
 

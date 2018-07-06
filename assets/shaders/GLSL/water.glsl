@@ -50,6 +50,8 @@ void main (void)
 #   define texWaterNoiseNM texDiffuse0
 #   define texWaterNoiseDUDV texDiffuse1
 
+    dvd_private_light = dvd_LightSource[0];
+
     float time2 = float(dvd_time) * 0.00001;
     const float kDistortion = 1.0;// 0.015;
     vec4 distOffset = texture(texWaterNoiseDUDV, VAR._texCoord + vec2(time2)) * kDistortion;
@@ -66,7 +68,7 @@ void main (void)
     vec2 uvFinalRefract = uvReflection.xy + _noiseFactor * normal.xy;
 
     vec3 N = normalize(dvd_NormalMatrixWV(VAR.dvd_instanceID) * normal);
-    vec3 L = normalize(-(dvd_LightSource[0]._positionWV.xyz));
+    vec3 L = normalize(-(dvd_private_light._positionWV.xyz));
     vec3 V = normalize(_pixToEye);
 
     float iSpecular = pow(clamp(dot(normalize(reflect(-L, N)), V), 0.0, 1.0), _waterShininess);
@@ -77,7 +79,7 @@ void main (void)
                          vec3(clamp(Fresnel(V, normalize(VAR._normalWV)), 0.0, 1.0)));
 
     // add Specular
-    _colourOut.rgb = clamp(_colourOut.rgb + dvd_LightSource[0]._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
+    _colourOut.rgb = clamp(_colourOut.rgb + dvd_private_light._colour.rgb * getSpecular() * iSpecular, vec3(0.0), vec3(1.0));
 
     // add Fog
     _colourOut.rgb = ToSRGB(applyFog(vec4(_colourOut.rgb, 1.0))).rgb;

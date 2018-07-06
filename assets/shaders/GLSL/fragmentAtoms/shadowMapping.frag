@@ -16,20 +16,20 @@ int g_shadowTempInt = -2;
 #include "shadow_point.frag"
 #include "shadow_spot.frag"
 
-float getShadowFactor(in int lightIndex, in float fragDepth) {
-    Light light = dvd_LightSource[lightIndex];
+float getShadowFactor(in float fragDepth) {
+    int lightType = int(dvd_private_light._options.x);
 
-    switch (light._options.x) {
-        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(light._options.z, light._options.w, fragDepth);
-        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(light._options.z);
-        //case LIGHT_SPOT            : return applyShadowSpot(light._options.z); 
+    switch (lightType) {
+        case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_private_light._options.z, dvd_private_light._options.w, fragDepth);
+        //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_private_light._options.z);
+        //case LIGHT_SPOT            : return applyShadowSpot(dvd_private_light._options.z); 
     }
 
     return 1.0;
 }
 
 float shadow_loop(){
-    if (!dvd_shadowsEnabled()) {
+    if (!dvd_shadowsEnabled) {
         return 1.0;
     }
 
@@ -41,9 +41,9 @@ float shadow_loop(){
     for (int i = 0; i < MAX_LIGHT_TYPES; ++i) {
         for (int j = 0; j < int(dvd_lightCountPerType[i]); ++j) {
             int lightIndex = j + offset;
-            if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && 
-                dvd_LightSource[lightIndex]._options.y == 1) {
-                shadow *= getShadowFactor(lightIndex, fragDepth);
+            dvd_private_light = dvd_LightSource[lightIndex];
+            if (shadowLights < MAX_SHADOW_CASTING_LIGHTS && dvd_private_light._options.y == 1) {
+                shadow *= getShadowFactor(fragDepth);
                 shadowLights++;
             }
         }

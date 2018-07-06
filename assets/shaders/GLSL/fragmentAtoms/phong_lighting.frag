@@ -1,12 +1,12 @@
 #ifndef _PHONG_LIGHTING_FRAG_
 #define _PHONG_LIGHTING_FRAG_
 
-void Phong(in int lightIndex, in vec3 normalWV, in vec3 albedo, in vec3 specular, in float reflectivity, inout vec3 colourInOut, inout float reflectionCoeff) {
+void Phong(in vec3 normalWV, in vec3 albedo, in vec3 specular, in float reflectivity, inout vec3 colourInOut, inout float reflectionCoeff) {
     // direction is NOT normalized
-    vec3 lightDirection = getLightDirection(lightIndex);
-    float att = getLightAttenuation(lightIndex, lightDirection);
+    vec3 lightDirection = getLightDirection();
+    float att = getLightAttenuation(lightDirection);
 
-    vec3 lightColour = dvd_LightSource[lightIndex]._colour.rgb;
+    vec3 lightColour = dvd_private_light._colour.rgb;
 
     float NDotL = max(dot(normalize(lightDirection), normalWV), 0.0);
     colourInOut += clamp(lightColour * albedo * NDotL * att, 0.0, 1.0);

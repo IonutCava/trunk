@@ -34,301 +34,402 @@
 namespace Divide {
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const U32& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const U32& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarU32Map::iterator it = _shaderVarsU32.find(location);
-    if (it != std::end(_shaderVarsU32)) {
+    UniformsByName::ShaderVarU32Map::iterator it = _uniformsByName._shaderVarsU32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsU32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_shaderVarsU32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsU32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const I32& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const I32& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarI32Map::iterator it = _shaderVarsI32.find(location);
-    if (it != std::end(_shaderVarsI32)) {
+    UniformsByName::ShaderVarI32Map::iterator it = _uniformsByName._shaderVarsI32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsI32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_shaderVarsI32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsI32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const F32& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const F32& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarF32Map::iterator it = _shaderVarsF32.find(location);
-    if (it != std::end(_shaderVarsF32)) {
+    UniformsByName::ShaderVarF32Map::iterator it = _uniformsByName._shaderVarsF32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsF32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_shaderVarsF32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsF32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<F32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<F32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarVec2F32Map::iterator it = _shaderVarsVec2F32.find(location);
-    if (it != std::end(_shaderVarsVec2F32)) {
+    UniformsByName::ShaderVarVec2F32Map::iterator it = _uniformsByName._shaderVarsVec2F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec2F32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_shaderVarsVec2F32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVec2F32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec2<I32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec2<I32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarvec2I32Map::iterator it = _shaderVarsVec2I32.find(location);
-    if (it != std::end(_shaderVarsVec2I32)) {
+    UniformsByName::ShaderVarvec2I32Map::iterator it = _uniformsByName._shaderVarsVec2I32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec2I32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_shaderVarsVec2I32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVec2I32, location, value);
     }
 
-    return true;
+    return binding;
 }
  
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<F32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<F32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarVec3F32Map::iterator it = _shaderVarsVec3F32.find(location);
-    if (it != std::end(_shaderVarsVec3F32)) {
+    UniformsByName::ShaderVarVec3F32Map::iterator it = _uniformsByName._shaderVarsVec3F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec3F32)) {
         if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_shaderVarsVec3F32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVec3F32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec3<I32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec3<I32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarVec3I32Map::iterator it = _shaderVarsVec3I32.find(location);
-    if (it != std::end(_shaderVarsVec3I32)) {
+    UniformsByName::ShaderVarVec3I32Map::iterator it = _uniformsByName._shaderVarsVec3I32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec3I32)) {
         if (it->second == value) {
-            return false;
-        }
-        else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::emplace(_shaderVarsVec3I32, location, value);
-    }
-
-    return true;
-}
-
-template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<F32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
-    }
-
-    ShaderVarVec4F32Map::iterator it = _shaderVarsVec4F32.find(location);
-    if (it != std::end(_shaderVarsVec4F32)) {
-        if (it->second == value) {
-            return false;
+            return -1;
         } else {
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_shaderVarsVec4F32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVec3I32, location, value);
     }
 
-    return true;
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const vec4<I32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<F32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarVec4I32Map::iterator it = _shaderVarsVec4I32.find(location);
-    if (it != std::end(_shaderVarsVec4I32)) {
+    UniformsByName::ShaderVarVec4F32Map::iterator it = _uniformsByName._shaderVarsVec4F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec4F32)) {
         if (it->second == value) {
-            return false;
-        }
-        else {
+            return -1;
+        } else {
             it->second.set(value);
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVec4F32, location, value);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vec4<I32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVec4I32Map::iterator it = _uniformsByName._shaderVarsVec4I32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVec4I32)) {
+        if (it->second == value) {
+            return -1;
+        } else {
+            it->second.set(value);
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVec4I32, location, value);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat3<F32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarMat3Map::iterator it = _uniformsByName._shaderVarsMat3.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsMat3)) {
+        if (it->second == value) {
+            return -1;
+        } else {
+            it->second.set(value);
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsMat3, location, value);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const mat4<F32>& value) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarMat4Map::iterator it = _uniformsByName._shaderVarsMat4.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsMat4)) {
+        if (it->second == value) {
+            return -1;
+        } else {
+            it->second.set(value);
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsMat4, location, value);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<I32>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorI32Map::iterator it = _uniformsByName._shaderVarsVectorI32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorI32)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorI32, location, values);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<F32>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorF32Map::iterator it = _uniformsByName._shaderVarsVectorF32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorF32)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorF32, location, values);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec2<F32>>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorVec2F32Map::iterator it = _uniformsByName._shaderVarsVectorVec2F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorVec2F32)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec2F32, location, values);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec3<F32>>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorVec3F32Map::iterator it = _uniformsByName._shaderVarsVectorVec3F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorVec3F32)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec3F32, location, values);
+    }
+
+    return binding;
+}
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<vec4<F32>>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorVec4F32Map::iterator it = _uniformsByName._shaderVarsVectorVec4F32.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorVec4F32)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
         }
     }
     else {
-        hashAlg::emplace(_shaderVarsVec4I32, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec4F32, location, values);
     }
 
-    return true;
+    return binding;
+}
+
+
+template <>
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<mat3<F32>>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
+    }
+
+    UniformsByName::ShaderVarVectorMat3Map::iterator it = _uniformsByName._shaderVarsVectorMat3.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorMat3)) {
+        if (it->second == values) {
+            return -1;
+        } else {
+            it->second = values;
+        }
+    } else {
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorMat3, location, values);
+    }
+
+    return binding;
 }
 
 template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat3<F32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
+inline I32 glShaderProgram::cachedValueUpdate(const char* location, const vectorImpl<mat4<F32>>& values) {
+    I32 binding = getUniformLocation(location);
+
+    if (binding == -1 || _shaderProgramID == 0) {
+        return -1;
     }
 
-    ShaderVarMat3Map::iterator it = _shaderVarsMat3.find(location);
-    if (it != std::end(_shaderVarsMat3)) {
-        if (it->second == value) {
-            return false;
+    UniformsByName::ShaderVarVectorMat4Map::iterator it = _uniformsByName._shaderVarsVectorMat4.find(location);
+    if (it != std::end(_uniformsByName._shaderVarsVectorMat4)) {
+        if (it->second == values) {
+            return -1;
         } else {
-            it->second.set(value);
+            it->second = values;
         }
     } else {
-        hashAlg::emplace(_shaderVarsMat3, location, value);
+        hashAlg::emplace(_uniformsByName._shaderVarsVectorMat4, location, values);
     }
 
-    return true;
+    return binding;
 }
-
-template <>
-inline bool glShaderProgram::cachedValueUpdate(I32 location, const mat4<F32>& value) {
-    if (location == -1 || _shaderProgramID == 0) {
-        return false;
-    }
-
-    ShaderVarMat4Map::iterator it = _shaderVarsMat4.find(location);
-    if (it != std::end(_shaderVarsMat4)) {
-        if (it->second == value) {
-            return false;
-        } else {
-            it->second.set(value);
-        }
-    } else {
-        hashAlg::emplace(_shaderVarsMat4, location, value);
-    }
-
-    return true;
-}
-
-
-void glShaderProgram::Uniform(const char* ext, U32 value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, I32 value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, F32 value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec2<F32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec2<I32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec3<F32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec3<I32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec4<F32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vec4<I32>& value) {
-    Uniform(getUniformLocation(ext), value);
-}
-
-void glShaderProgram::Uniform(const char* ext, const mat3<F32>& value, bool transpose) {
-    Uniform(getUniformLocation(ext), value, transpose);
-}
-
-void glShaderProgram::Uniform(const char* ext, const mat4<F32>& value, bool transpose) {
-    Uniform(getUniformLocation(ext), value, transpose);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImpl<I32>& values) {
-    Uniform(getUniformLocation(ext), values);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImpl<F32>& values) {
-    Uniform(getUniformLocation(ext), values);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec2<F32> >& values) {
-    Uniform(getUniformLocation(ext), values);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImpl<vec3<F32> >& values) {
-    Uniform(getUniformLocation(ext), values);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImplBest<vec4<F32> >& values) {
-    Uniform(getUniformLocation(ext), values);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImpl<mat3<F32> >& values, bool transpose) {
-    Uniform(getUniformLocation(ext), values, transpose);
-}
-
-void glShaderProgram::Uniform(const char* ext, const vectorImplBest<mat4<F32> >& values, bool transpose) {
-    Uniform(getUniformLocation(ext), values, transpose);
-}
-
 }; //namespace Divide
 
 #endif //_PLATFORM_VIDEO_OPENGLS_PROGRAM_INL_
