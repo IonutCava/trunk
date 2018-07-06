@@ -118,9 +118,6 @@ void GL_API::debugDraw(const SceneRenderState& sceneRenderState){
         if(priv->_hasLines) {
             glLineWidth(1.0f);
         }
-        if(priv->_texture){
-            priv->_texture->Unbind(0);
-        }
 
         if(!priv->_resetStates.empty()){
             priv->_resetStates();

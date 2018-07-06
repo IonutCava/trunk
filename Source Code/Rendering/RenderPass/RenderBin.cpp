@@ -166,21 +166,11 @@ void RenderBin::render(const SceneRenderState& renderState, const RenderStage& c
             //setup materials and render the node
             //As nodes are sorted, this should be very fast
             //We need to apply different materials for each stage
-            bool materialBound = (isDepthPass ?  sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn));
-
-            //Call render and the stage exclusion mask should do the rest
-            if (materialBound) sn->render(sgn, renderState);
-
-            //Unbind current material properties
-            /*bool materialUnBound = */(isDepthPass ? sn->releaseDepthMaterial() : sn->releaseMaterial());
-
-            //Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
-            if(isLightValidStage){
-                U8 offset = (lightCount - 1) + 9;
-                for(I32 n = lightCount - 1; n >= 0; n--,offset--){
-                    lightMgr.unbindDepthMaps(lightMgr.getLightForCurrentNode(n), offset);
-                }
+            if (isDepthPass ? sn->prepareDepthMaterial(sgn) : sn->prepareMaterial(sgn)){
+                //Call render and the stage exclusion mask should do the rest
+                sn->render(sgn, renderState);
             }
+
         }
 
         sgn->postDraw(currentRenderStage);

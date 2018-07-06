@@ -37,10 +37,9 @@ public:
 	virtual void Destroy() = 0;
 
 	virtual void* Begin(U8 nFace=0) const = 0;
-	virtual void End(U8 nFace=0) const = 0;
+	virtual void  End(U8 nFace=0) const = 0;
 
 	virtual void Bind(U8 unit=0) const = 0;
-	virtual void Unbind(U8 unit=0) const = 0;
 
 	virtual void  updatePixels(const F32 * const pixels) = 0;
 	inline U32    getTextureHandle() const {return _textureId;}

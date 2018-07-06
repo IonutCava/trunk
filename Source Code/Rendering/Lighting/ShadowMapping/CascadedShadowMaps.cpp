@@ -244,7 +244,6 @@ void CascadedShadowMaps::postRender(){
     _blurDepthMapShader->Uniform("blurSize", baseBlurSize);
     _depthMap->DrawToLayer(TextureDescriptor::Color0, 0, false);
     _gfxDevice.drawPoints(1);
-    _blurBuffer->Unbind();
     _depthMap->End();
 
     _gfxDevice.toggle2D(false);
@@ -262,5 +261,4 @@ void CascadedShadowMaps::previewShadowMaps(){
         _previewDepthMapShader->Uniform("zPlanes", vec2<F32>(_splitDepths[i], _splitDepths[i + 1]));
         _gfxDevice.renderInViewport(vec4<I32>(130 * i, 0, 128, 128), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(_gfxDevice), 1));
     }
-    _depthMap->Unbind();
 }

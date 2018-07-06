@@ -34,8 +34,8 @@ public:
 
     bool unload() {Destroy(); return true;}
 
-    void Bind(GLushort unit, bool force = false);
-    void Unbind(GLushort unit, bool force = false);
+    void Bind(GLushort unit);
+
     void setMipMapRange(U32 base = 0, U32 max = 1000);
     void loadData(GLuint target, const GLubyte* const ptr, const vec2<U16>& dimensions, GLubyte bpp, GFXImageFormat format);
 
@@ -43,15 +43,9 @@ protected:
     bool generateHWResource(const std::string& name);
     void threadedLoad(const std::string& name);
 
-    friend class GL_API;
-    friend class glFrameBuffer;
-    typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
-    static textureBoundMapDef textureBoundMap;
-
 private:
     void Destroy();
     void createSampler();
-    inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
 
 private:
     GLenum _format;

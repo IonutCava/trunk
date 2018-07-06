@@ -56,8 +56,8 @@ public:
     virtual void Begin(const FrameBufferTarget& drawPolicy) = 0;
     virtual void End() = 0;
 
-    virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
-    virtual void Unbind(U8 unit = 0) const;
+    virtual void Bind(U8 unit = 0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0) {}
+    
     virtual void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false) = 0;
     //If true, array texture and/or cubemaps are bound to a single attachment and shader based layered rendering should be used
     virtual void toggleLayeredRendering(const bool state) {_layeredRendering = state;}
@@ -88,7 +88,6 @@ protected:
     virtual bool checkStatus() const = 0;
 
 protected:
-    mutable bool _bound;
     bool        _layeredRendering;
     bool        _clearBuffersState;
     bool		_useDepthBuffer;

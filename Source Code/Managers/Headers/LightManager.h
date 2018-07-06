@@ -64,7 +64,6 @@ public:
 
     ///shadow mapping
     void bindDepthMaps(Light* light,U8 lightIndex, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
-    void unbindDepthMaps(Light* light, U8 offset = Config::MAX_TEXTURE_STORAGE, bool overrideDominant = false);
     bool shadowMappingEnabled() const;
     inline void setDominantLight(Light* const light) {_dominantLight = light;}
 

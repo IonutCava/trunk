@@ -21,6 +21,7 @@ bool GL_API::_viewportUpdateGL = false;
 bool GL_API::_lastRestartIndexSmall = true;
 bool GL_API::_primitiveRestartEnabled = false;
 
+GL_API::textureBoundMapDef GL_API::textureBoundMap;
 Unordered_map<GLuint, vec4<GLfloat> > GL_API::_prevClearColor;
 
 void GL_API::clearStates(const bool skipShader,const bool skipTextures,const bool skipBuffers, const bool forceAll){
@@ -29,15 +30,10 @@ void GL_API::clearStates(const bool skipShader,const bool skipTextures,const boo
     }
 
     if(!skipTextures || forceAll){
-        FOR_EACH(glTexture::textureBoundMapDef::value_type& it, glTexture::textureBoundMap){
-            if(it.second.second != GL_NONE){
-                setActiveTextureUnit(it.first);
-                glSamplerObject::Unbind(it.first);
-                glBindTexture(it.second.second, 0);
-                glTexture::textureBoundMap[it.first] = std::make_pair(0, GL_NONE);
-            }
-        }
-        setActiveTextureUnit(0,forceAll);
+        FOR_EACH(textureBoundMapDef::value_type& it, textureBoundMap)
+            GL_API::unbindTexture(it.first);
+
+        setActiveTextureUnit(0, forceAll);
     }
 
     if(!skipBuffers || forceAll){
@@ -358,4 +354,27 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlo
                     newDescriptor._colorWrite.b.b2 == GL_TRUE, // B
                     newDescriptor._colorWrite.b.b3 == GL_TRUE);// A
     }
+}
+
+bool GL_API::bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID){
+    GL_API::setActiveTextureUnit(unit);
+    if (checkBinding(unit, handle)){
+        glBindTexture(type, handle);
+        textureBoundMap[unit] = std::make_pair(handle, type);
+        glBindSampler(unit, samplerID);
+
+        return true;
+    }
+    return false;
+}
+
+bool GL_API::unbindTexture(GLuint unit){
+    GLenum textureType = textureBoundMap[unit].second;
+    if (textureType != GL_NONE){
+        glBindTexture(textureType, 0);
+        glBindSampler(unit, 0);
+        textureBoundMap[unit] = std::make_pair(0, GL_NONE);
+        return true;
+    }
+    return false;
 }

@@ -57,19 +57,3 @@ bool glSamplerObject::Create(const SamplerDescriptor& descriptor) {
     //glSamplerParameterfv(_samplerID, GL_TEXTURE_BORDER_COLOR, &glm::vec4(0.0f)[0]));
     return true;
 }
-
-void glSamplerObject::Bind(GLuint textureUnit) const{
-    glBindSampler(textureUnit, _samplerID);
-}
-
-void glSamplerObject::Unbind(GLuint textureUnit){
-    glBindSampler(textureUnit, 0);
-}
-
-void glSamplerObject::Bind() const{
-    glBindSampler(GL_API::getActiveTextureUnit(), _samplerID);
-}
-
-void glSamplerObject::Unbind(){
-    glBindSampler(GL_API::getActiveTextureUnit(), 0);
-}

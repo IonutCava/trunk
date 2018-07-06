@@ -344,6 +344,12 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
         _activeClipPlanes[index] = false;
     }
 
+    if (textureBoundMap.empty()){
+        for (U8 i = 0; i < 31; i++){
+            //Set all 16 texture slots to 0
+            textureBoundMap[i] = std::make_pair(i, GL_NONE);
+        }
+    }
     //That's it. Everything should be ready for draw calls
     PRINT_FN(Locale::get("START_OGL_API_OK"));
 

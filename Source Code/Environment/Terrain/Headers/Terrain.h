@@ -57,7 +57,6 @@ struct TerrainTextureLayer {
     };
 
     void bindTextures(U32 offset);
-    void unbindTextures();
 
     inline void setTexture(TerrainTextureUsage textureUsage, Texture* texture){
         assert(textureUsage < TEXTURE_USAGE_PLACEHOLDER && textureUsage >= TEXTURE_BLEND_MAP);
@@ -131,9 +130,8 @@ protected:
 
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareMaterial(SceneGraphNode* const sgn);
-    bool releaseMaterial();
+
     bool prepareDepthMaterial(SceneGraphNode* const sgn);
-    bool releaseDepthMaterial();
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

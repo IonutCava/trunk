@@ -33,8 +33,7 @@ class SamplerDescriptor;
 class Texture : public HardwareResource {
 /*Abstract interface*/
 public:
-    virtual void Bind(U16 slot, bool force = false) = 0;
-    virtual void Unbind(U16 slot, bool force = false) = 0;
+    virtual void Bind(U16 slot) = 0;
     virtual void Destroy() = 0;
     virtual void loadData(U32 target, const U8* const ptr, const vec2<U16>& dimensions, U8 bpp, GFXImageFormat format) = 0;
     virtual void setMipMapRange(U32 base = 0, U32 max = 1000) = 0;

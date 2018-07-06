@@ -66,8 +66,8 @@ namespace Navigation {
           inline bool paused()             const {return _paused;}
 
     protected:
-        void prepareMaterial();
-        void releaseMaterial();
+        void setDrawState();
+        void releaseDrawState();
 
     private:
         RenderStateBlock*   _navMeshStateBlock;

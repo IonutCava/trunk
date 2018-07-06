@@ -89,13 +89,7 @@ void glPixelBuffer::End(GLubyte nFace) const {
 }
 
 void glPixelBuffer::Bind(GLubyte unit) const {
-    GL_API::setActiveTextureUnit(unit);
-    glBindTexture(_textureType, _textureId);
-}
-
-void glPixelBuffer::Unbind(GLubyte unit) const {
-    GL_API::setActiveTextureUnit(unit);
-    glBindTexture(_textureType, 0);
+    GL_API::bindTexture(unit, _textureId, _textureType, 0);
 }
 
 bool glPixelBuffer::Create(GLushort width, GLushort height,GLushort depth, GFXImageFormat internalFormatEnum, GFXImageFormat formatEnum,GFXDataFormat dataTypeEnum) {

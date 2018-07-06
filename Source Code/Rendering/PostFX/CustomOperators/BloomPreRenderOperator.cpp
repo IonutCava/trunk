@@ -115,7 +115,6 @@ void BloomPreRenderOperator::operation(){
     _tempBloomFB->Bind(0);
     GFX_DEVICE.drawPoints(1);
     // clear states
-    _tempBloomFB->Unbind(0);
     _outputFB->End();
 }
 
@@ -167,7 +166,6 @@ void BloomPreRenderOperator::toneMapScreen()
     _inputFB[0]->Bind(0);
     _luminaFB[1]->Bind(2);
     GFX_DEVICE.drawPoints(1);
-    _luminaFB[1]->Unbind(2);
     
     _bright->Uniform("luminancePass", false);
     _bright->Uniform("toneMap", true);
@@ -180,5 +178,4 @@ void BloomPreRenderOperator::toneMapScreen()
     // luminance FB
     _luminaFB[0]->Bind(1);
     GFX_DEVICE.drawPoints(1);
-    _luminaFB[0]->Unbind(1);
 }

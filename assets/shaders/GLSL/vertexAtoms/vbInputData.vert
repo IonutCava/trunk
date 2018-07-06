@@ -49,9 +49,6 @@ void computeData(){
     setClipPlanes(_vertexW);
 }
 
-
-
-
 /*
 static.frag
 by Spatial

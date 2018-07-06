@@ -92,10 +92,6 @@ bool Sky::prepareMaterial(SceneGraphNode* const sgn) {
     return true;
 }
 
-bool Sky::releaseMaterial(){
-    return true;
-}
-
 void Sky::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState) {
     Light* l = LightManager::getInstance().getLight(0);
     if (l && _sun->getMaterial()) _sun->getMaterial()->setDiffuse(l->getDiffuseColor());
@@ -119,7 +115,6 @@ void Sky::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderS
         _skyShader->bind();
         _skybox->Bind(0);
         GFX_DEVICE.renderInstance(_sky->renderInstance());
-        _skybox->Unbind(0);
     }else{
         if (_drawSun) GFX_DEVICE.renderInstance(_sun->renderInstance());
     }

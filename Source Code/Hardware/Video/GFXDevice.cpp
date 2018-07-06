@@ -465,8 +465,6 @@ void GFXDevice::previewDepthBuffer(){
     _renderTarget[RENDER_TARGET_DEPTH]->Bind(0, TextureDescriptor::Depth);
     
     renderInViewport(vec4<I32>(Application::getInstance().getResolution().width-256,0,256,256), DELEGATE_BIND(&GFXDevice::drawPoints, this, 1));
-    
-    _renderTarget[RENDER_TARGET_DEPTH]->Unbind(0);
 }
 
 void GFXDevice::flush(){

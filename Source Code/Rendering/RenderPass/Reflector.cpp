@@ -85,8 +85,6 @@ bool Reflector::previewReflection() {
         _previewReflectionShader->bind();
         _reflectedTexture->Bind();
         GFX_DEVICE.renderInViewport(vec4<I32>(0, Application::getInstance().getResolution().y - height, _resolution.x  * 0.333f, height), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1));
-        _reflectedTexture->Unbind();
-        _previewReflectionShader->unbind();
     }
     return true;
 }

@@ -74,8 +74,7 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex == 0) return;
 
-    glBindTexture(GL_TEXTURE_2D, gl->tex);
-    GL_API::setActiveTextureUnit(0);
+    GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D, 0);
     GL_API::setActiveVAO(gl->glfons_vaoID);
     GLuint vertDataSize = sizeof(float) * 2 * nverts;
     GL_API::setActiveVB(gl->glfons_vboID);
@@ -94,7 +93,6 @@ static void glfons__renderDraw(void* userPtr, const float* verts, const float* t
     glDrawArrays(GL_TRIANGLES, 0, nverts);
 
     GL_API::setActiveVB(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 static void glfons__renderDelete(void* userPtr)

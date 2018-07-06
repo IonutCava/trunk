@@ -145,10 +145,6 @@ bool ParticleEmitter::prepareDepthMaterial(SceneGraphNode* const sgn){
     return true;
 }
 
-bool ParticleEmitter::releaseDepthMaterial(){
-    return true;
-}
-
 bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     if(!_enabled || !_created)
         return false;
@@ -164,15 +160,6 @@ bool ParticleEmitter::prepareMaterial(SceneGraphNode* const sgn){
     _particleShader->Uniform("CameraUp_worldspace",    vec3<F32>(viewMatrixCache.m[0][1], viewMatrixCache.m[1][1], viewMatrixCache.m[2][1]));
     _particleTexture->Bind(Material::TEXTURE_UNIT0);
     GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Bind(1, TextureDescriptor::Depth);
-    return true;
-}
-
-bool ParticleEmitter::releaseMaterial(){
-    if(!_enabled || !_created)
-        return false;
-
-    _particleTexture->Unbind(Material::TEXTURE_UNIT0);
-    GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Unbind(1);
     return true;
 }
 

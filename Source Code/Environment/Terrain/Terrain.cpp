@@ -167,22 +167,6 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
     if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE))
         return true;
 
-    //Prepare the main light (directional light only, sun) for now.
-    //Find the most influential light for the terrain. Usually the Sun
-    _lightCount = LightManager::getInstance().findLightsForSceneNode(sgn,LIGHT_TYPE_DIRECTIONAL);
-    //Update lights for this node
-    LightManager::getInstance().update();
-    //Only 1 shadow map for terrains
-    
-    CLAMP<U8>(_lightCount, 0, 1);
-    if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
-        U8 offset = Config::MAX_TEXTURE_STORAGE;
-        for(U8 n = 0; n < _lightCount; n++, offset++){
-            Light* l = LightManager::getInstance().getLightForCurrentNode(n);
-            LightManager::getInstance().bindDepthMaps(l, n, offset);
-        }
-    }
-
     ShaderProgram* terrainShader = getMaterial()->getShaderProgram();
     _groundVB->setShaderProgram(terrainShader);
     _plane->setCustomShader(terrainShader);
@@ -212,26 +196,6 @@ bool Terrain::prepareMaterial(SceneGraphNode* const sgn){
     return terrainShader->bind();
 }
 
-bool Terrain::releaseMaterial(){
-    if (!GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE | REFLECTION_STAGE))
-        return true;
-
-    for (U8 i = 0; i < _terrainTextures.size(); ++i){
-        _terrainTextures[i]->unbindTextures();
-    }
-    _underwaterDetailTex->Unbind(2);
-    _underwaterAlbedoTex->Unbind(1);
-    _causticsTex->Unbind(0);
-
-     U8 offset = (_lightCount - 1) + Config::MAX_TEXTURE_STORAGE;
-     for(I32 n = _lightCount - 1; n >= 0; n--,offset--){
-        Light* l = LightManager::getInstance().getLightForCurrentNode(n);
-        LightManager::getInstance().unbindDepthMaps(l, offset);
-    }
-
-    return true;
-}
-
 bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     bool depthPrePass = GFX_DEVICE.isDepthPrePass();
 
@@ -242,10 +206,6 @@ bool Terrain::prepareDepthMaterial(SceneGraphNode* const sgn){
     _plane->setCustomShader(terrainShader);
 
     return terrainShader->bind();
-}
-
-bool Terrain::releaseDepthMaterial(){
-    return true;
 }
 
 void Terrain::renderChunkCallback(U8 lod){
@@ -400,10 +360,4 @@ void TerrainTextureLayer::bindTextures(U32 offset){
     if (_texture[TEXTURE_ALBEDO_MAPS]) _texture[TEXTURE_ALBEDO_MAPS]->Bind(_lastOffset + TEXTURE_ALBEDO_MAPS);
     if (_texture[TEXTURE_DETAIL_MAPS]) _texture[TEXTURE_DETAIL_MAPS]->Bind(_lastOffset + TEXTURE_DETAIL_MAPS);
     
-}
-
-void TerrainTextureLayer::unbindTextures(){
-    if (_texture[TEXTURE_BLEND_MAP])   _texture[TEXTURE_BLEND_MAP]->Unbind(_lastOffset + TEXTURE_BLEND_MAP);
-    if (_texture[TEXTURE_ALBEDO_MAPS]) _texture[TEXTURE_ALBEDO_MAPS]->Unbind(_lastOffset + TEXTURE_ALBEDO_MAPS);
-    if (_texture[TEXTURE_DETAIL_MAPS]) _texture[TEXTURE_DETAIL_MAPS]->Unbind(_lastOffset + TEXTURE_DETAIL_MAPS);
 }

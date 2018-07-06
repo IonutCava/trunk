@@ -39,10 +39,9 @@ public:
 	void Destroy() {};
 
 	void* Begin(U8 nFace=0) const {return 0;};
-	void End(U8 nFace=0) const {}
+	void  End(U8 nFace=0) const {}
 
 	void Bind(U8 unit=0) const {}
-	void Unbind(U8 unit=0) const {}
 
 	void updatePixels(const F32 * const pixels) {}
 

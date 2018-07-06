@@ -209,29 +209,6 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
         sm->Bind(offset);
 }
 
-void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
-    if(!_shadowMapsEnabled)
-        return;
-
-    Light* lightLocal = light;
-
-    if(_dominantLight && !overrideDominant)
-        lightLocal = _dominantLight;
-
-    if(!lightLocal->castsShadows())
-        return;
-
-    if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL)
-        offset =  Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-
-    if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
-        offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
-
-    ShadowMap* sm = lightLocal->getShadowMapInfo()->getShadowMap();
-    if (sm)
-        sm->Unbind(offset);
-}
-
 bool LightManager::shadowMappingEnabled() const {
     if(!_shadowMapsEnabled)
         return false;

@@ -49,7 +49,6 @@ public:
 protected:
     void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareMaterial(SceneGraphNode* const sgn);
-    bool releaseMaterial();
     void postLoad(SceneGraphNode* const sgn);
     void sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, SceneState& sceneState);
 

@@ -152,21 +152,6 @@ bool WaterPlane::prepareDepthMaterial(SceneGraphNode* const sgn){
     return shader->bind(); 
 }
 
-bool WaterPlane::releaseDepthMaterial(){
-    return false;
-}
-
-bool WaterPlane::releaseMaterial(){
-    Material* waterMat = getMaterial();
-
-    if (!_cameraUnderWater){
-        _refractionTexture->Unbind(2);
-    }
-    _reflectedTexture->Unbind(1);
-    waterMat->getTexture(Material::TEXTURE_UNIT0)->Unbind(0);
-    return true;
-}
-
 void WaterPlane::render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState){
     GFX_DEVICE.renderInstance(_plane->renderInstance());
 }
@@ -259,8 +244,6 @@ bool WaterPlane::previewReflection(){
         _previewReflectionShader->bind();
         _refractionTexture->Bind();
         GFX_DEVICE.renderInViewport(vec4<I32>(_resolution.x  * 0.333f, Application::getInstance().getResolution().y - height, _resolution.x  * 0.666f, height), DELEGATE_BIND(&GFXDevice::drawPoints, DELEGATE_REF(GFX_DEVICE), 1));
-        _refractionTexture->Unbind();
-        _previewReflectionShader->unbind();
     }
 
     return Reflector::previewReflection();

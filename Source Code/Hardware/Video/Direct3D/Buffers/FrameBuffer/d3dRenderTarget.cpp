@@ -29,10 +29,6 @@ void d3dRenderTarget::Bind(U8 unit, TextureDescriptor::AttachmentType slot)
 {
 }
 
-void d3dRenderTarget::Unbind(U8 unit) const
-{
-}
-
 void d3dRenderTarget::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer, bool includeDepth)
 {
 }

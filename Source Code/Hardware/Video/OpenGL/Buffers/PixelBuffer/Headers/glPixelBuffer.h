@@ -39,10 +39,9 @@ public:
 	void Destroy();
 
 	GLvoid* Begin(GLubyte nFace=0) const;
-	void End(GLubyte nFace=0) const;
+	void    End(GLubyte nFace=0) const;
 
 	void Bind(GLubyte unit=0) const;
-	void Unbind(GLubyte unit=0) const;
 
 	void updatePixels(const GLfloat * const pixels);
 

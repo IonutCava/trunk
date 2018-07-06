@@ -110,11 +110,9 @@ protected:
 
     /* Normal material */
     virtual	bool prepareMaterial(SceneGraphNode* const sgn);
-    virtual	bool releaseMaterial();
 
     /* Depth map material */
     virtual	bool prepareDepthMaterial(SceneGraphNode* const sgn);
-    virtual	bool releaseDepthMaterial();
 
     /// Perform any last minute operations before the frame drawing ends (this is after shader and shodawmap unbindng)
     virtual void preFrameDrawEnd(SceneGraphNode* const sgn);

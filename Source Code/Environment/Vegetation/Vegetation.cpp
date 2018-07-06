@@ -191,6 +191,7 @@ bool Vegetation::uploadGrassData(){
     _grassGPUBuffer->SetFeedbackAttribute(sizeLocation, UnculledScaleBuffer, instanceDiv, 1, false, 0, 0, FLOAT_32);
     _grassGPUBuffer->SetFeedbackAttribute(posLocation,  UnculledPositionBuffer, instanceDiv, 3, false, 0, 0, FLOAT_32);
 
+    _render = _threadedLoadComplete = true;
     return true;
 }
 
@@ -199,7 +200,6 @@ void Vegetation::sceneUpdate(const U64 deltaTime, SceneGraphNode* const sgn, Sce
     if(_threadedLoadComplete && !_success){
         generateTrees();
         sceneState.getRenderState().getCameraMgr().addCameraUpdateListener(DELEGATE_BIND(&Vegetation::gpuCull, this));
-        _render = true;
         _success = true;
     }
       
@@ -342,7 +342,6 @@ void Vegetation::generateGrass(){
         for (F32 width = 0.0f; width < (F32)(_map.dimensions().width) - 1 ; width += densityFactor){
             for (F32 height = 0.0f; height < (F32)(_map.dimensions().height) - 1; height += densityFactor){
                 if (_stopLoadingRequest){
-                    _threadedLoadComplete = true;
                     continue;
                 }
                 F32 x = width  + random(1.0f) + textureOffset;
@@ -379,7 +378,6 @@ void Vegetation::generateGrass(){
         _grassTextureIdx.push_back(index);
         for (U32 k = 0; k < _billboardDivisor; k++) {
             if (_stopLoadingRequest){
-                _threadedLoadComplete = true;
                 continue;
             }
 
@@ -410,5 +408,4 @@ void Vegetation::generateGrass(){
     }*/
 
     PRINT_FN(Locale::get("CREATE_GRASS_END"));
-    _threadedLoadComplete = true;
 }

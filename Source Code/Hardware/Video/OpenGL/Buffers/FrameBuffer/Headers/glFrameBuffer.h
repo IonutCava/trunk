@@ -41,7 +41,6 @@ public:
     void End();
 
     void Bind(GLubyte unit=0, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0);
-    void Unbind(GLubyte unit=0) const;
 
     void BlitFrom(FrameBuffer* inputFB, TextureDescriptor::AttachmentType slot = TextureDescriptor::Color0, bool blitColor = true, bool blitDepth = false);
 

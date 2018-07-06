@@ -90,9 +90,7 @@ protected:
     ///When the SceneGraph calls the particle emitter's render function, we draw the impostor if needed
     virtual void render(SceneGraphNode* const sgn, const SceneRenderState& sceneRenderState);
     bool prepareDepthMaterial(SceneGraphNode* const sgn);
-    bool releaseDepthMaterial();
     bool prepareMaterial(SceneGraphNode* const sgn);
-    bool releaseMaterial();
 
 private:
     I32 findUnusedParticle();

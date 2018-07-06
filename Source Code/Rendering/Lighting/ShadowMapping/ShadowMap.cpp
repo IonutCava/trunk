@@ -87,16 +87,6 @@ bool ShadowMap::Bind(U8 offset){
     return true;
 }
 
-bool ShadowMap::Unbind(U8 offset){
-    if (!_isBound || !_depthMap)
-        return false;
-
-    _depthMap->Unbind(offset);
-
-    _isBound = false;
-    return true;
-}
-
 U16  ShadowMap::resolution(){
     return _depthMap->getWidth();
 }

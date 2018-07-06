@@ -176,7 +176,12 @@ public:
            void updateViewport(const vec4<GLint>& viewport);
            void activateStateBlock(const RenderStateBlock& newBlock, RenderStateBlock* const oldBlock);
 
+    static bool bindTexture(GLuint unit, GLuint handle, GLenum type, GLuint samplerID);
+
 protected:
+           static bool unbindTexture(GLuint unit);
+    inline static bool checkBinding(U16 unit, U32 handle) { return textureBoundMap[unit].first != handle; }
+
     void loadInContextInternal();
     boost::lockfree::spsc_queue<DELEGATE_CBK, boost::lockfree::capacity<15> > _loadQueue;
     boost::thread *_loaderThread;
@@ -253,6 +258,8 @@ private: //OpenGL specific:
 
     struct FONScontext* _fonsContext;
 
+    typedef Unordered_map<GLushort/*slot*/, std::pair<GLuint/*textureHandle*/, GLenum/*textureType*/> > textureBoundMapDef;
+    static textureBoundMapDef textureBoundMap;
 END_SINGLETON
 
 #endif

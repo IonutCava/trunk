@@ -42,12 +42,12 @@ namespace Navigation {
    void NavMeshDebugDraw::texture(bool state){
    }
 
-   void NavMeshDebugDraw::prepareMaterial(){
+   void NavMeshDebugDraw::setDrawState(){
         SET_STATE_BLOCK(*_navMeshStateBlock, true);
         GFX_DEVICE.pushWorldMatrix(mat4<F32>(), true);
    }
 
-   void NavMeshDebugDraw::releaseMaterial(){
+   void NavMeshDebugDraw::releaseDrawState(){
        GFX_DEVICE.popWorldMatrix();
    }
 
@@ -55,8 +55,8 @@ namespace Navigation {
       if(!_primitive){
           _dirty = true;
           _primitive = GFX_DEVICE.createPrimitive(false);
-          _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::prepareMaterial,this),
-                                      DELEGATE_BIND(&NavMeshDebugDraw::releaseMaterial,this));
+          _primitive->setRenderStates(DELEGATE_BIND(&NavMeshDebugDraw::setDrawState, this),
+                                      DELEGATE_BIND(&NavMeshDebugDraw::releaseDrawState, this));
       }
 
       assert(_primitive != nullptr);

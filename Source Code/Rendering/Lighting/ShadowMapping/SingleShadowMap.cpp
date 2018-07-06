@@ -81,5 +81,4 @@ void SingleShadowMap::previewShadowMaps(){
     _depthMap->Bind(0);
     _previewDepthMapShader->bind();
     GFX_DEVICE.drawPoints(1);
-    _depthMap->Unbind(0);
 }

@@ -174,20 +174,6 @@ bool SceneNode::prepareMaterial(SceneGraphNode* const sgn){
     return true;
 }
 
-bool SceneNode::releaseMaterial(){
-    assert(_nodeReady);
-
-    //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material) return true;
-
-    Texture* texture = nullptr;
-    for(U16 i = 0; i < Config::MAX_TEXTURE_STORAGE; ++i)
-        if((texture = _material->getTexture(i)) != nullptr)
-            texture->Unbind(i);
-
-    return true;
-}
-
 bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     assert(_nodeReady);
 
@@ -230,27 +216,6 @@ bool SceneNode::prepareDepthMaterial(SceneGraphNode* const sgn){
     }
     else{
         s->Uniform("dvd_hasAnimations", false);
-    }
-
-    return true;
-}
-
-bool SceneNode::releaseDepthMaterial(){
-    assert(_nodeReady);
-
-    //UpgradableReadLock ur_lock(_materialLock);
-    if(!_material || !_material->isTranslucent())
-        return true;
-
-    if (_material->isTranslucent()){
-        switch (_material->getTranslucencySource()){
-        case Material::TRANSLUCENT_OPACITY_MAP:
-            _material->getTexture(Material::TEXTURE_OPACITY)->Unbind(Material::TEXTURE_OPACITY);
-            break;
-        case Material::TRANSLUCENT_DIFFUSE_MAP:
-            _material->getTexture(Material::TEXTURE_UNIT0)->Unbind(Material::TEXTURE_UNIT0);
-            break;
-        };
     }
 
     return true;

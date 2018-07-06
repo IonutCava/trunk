@@ -166,10 +166,7 @@ void PostFX::displaySceneAnaglyph(){
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Bind(TEX_BIND_POINT_RIGHT_EYE); //right eye buffer
     _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Bind(TEX_BIND_POINT_LEFT_EYE); //left eye buffer
 
-       _gfx->drawPoints(1);
-
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_ANAGLYPH)->Unbind(TEX_BIND_POINT_LEFT_EYE);
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Unbind(TEX_BIND_POINT_RIGHT_EYE);
+    _gfx->drawPoints(1);
     _gfx->toggle2D(false);
 }
 
@@ -209,22 +206,6 @@ void PostFX::displayScene(){
     }
 
     _gfx->drawPoints(1);
-
-    if(_enableNoise){
-        _screenBorder->Unbind(TEX_BIND_POINT_BORDER);
-        _noise->Unbind(TEX_BIND_POINT_NOISE);
-    }
-    if(_enableSSAO)  _SSAO_FB->Unbind(TEX_BIND_POINT_SSAO);
-    if(_enableBloom) _bloomFB->Unbind(TEX_BIND_POINT_BLOOM);
-    if(underwater)   _underwaterTexture->Unbind(TEX_BIND_POINT_UNDERWATER);
-
-#ifdef NDEBUG
-    _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Unbind(TEX_BIND_POINT_SCREEN);
-#else
-    if (_depthPreview) _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_DEPTH)->Unbind(TEX_BIND_POINT_SCREEN);
-    else               _gfx->getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->Unbind(TEX_BIND_POINT_SCREEN);
-#endif
-
     _gfx->toggle2D(false);
 }
 

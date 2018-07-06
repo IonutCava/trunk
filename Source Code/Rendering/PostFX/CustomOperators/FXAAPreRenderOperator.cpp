@@ -52,6 +52,5 @@ void FXAAPreRenderOperator::operation(){
     _samplerCopy->Bind(0);
     _fxaa->bind();
     GFX_DEVICE.drawPoints(1);
-    _samplerCopy->Unbind(0);
     _outputFB->End();
 }

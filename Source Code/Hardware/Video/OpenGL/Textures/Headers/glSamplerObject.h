@@ -35,11 +35,6 @@ public:
     bool Destroy();
     bool Create(const SamplerDescriptor& descriptor);
 
-    void Bind(GLuint textureUnit) const;
-    void Bind() const;
-    static void Unbind(GLuint textureUnit);
-    static void Unbind();
-
     inline GLuint getObjectHandle() {return _samplerID;}
 
 private:

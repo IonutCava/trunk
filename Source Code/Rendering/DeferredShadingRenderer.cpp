@@ -195,12 +195,6 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
             GFX_DEVICE.renderInstance(_renderQuads[ _debugView ? 4 : 0]->renderInstance());
 
-    _lightTexture->Unbind(4);
-    _deferredBuffer->Unbind(3);
-    _deferredBuffer->Unbind(2);
-    _deferredBuffer->Unbind(1);
-    _deferredBuffer->Unbind(0);
-
     GFX_DEVICE.toggle2D(false);
     GUI& gui = GUI::getInstance();
     GUIElement* guiElement = gui.getGuiElement("FinalImage");

@@ -278,8 +278,7 @@ bool glFrameBuffer::Create(GLushort width, GLushort height) {
 }
 
 void glFrameBuffer::Destroy() {
-    Unbind();
-
+    
     for(GLuint& texture : _textureId){
         if (texture > 0){
             glDeleteTextures(1, &texture);
@@ -346,27 +345,9 @@ void glFrameBuffer::Bind(GLubyte unit, TextureDescriptor::AttachmentType slot) {
     }
 
     FrameBuffer::Bind(unit, slot);
-    GL_API::setActiveTextureUnit(unit);
-    glSamplerObject::Unbind(unit);
 
-    glBindTexture(_textureType[slot], _textureId[slot]);
-    UpdateMipMaps(slot);
-    glTexture::textureBoundMap[unit] = std::make_pair(_textureId[slot], _textureType[slot]);
-}
-
-void glFrameBuffer::Unbind(GLubyte unit) const {
-    if (_resolveBuffer){
-        _resolveBuffer->Unbind(unit);
-        return;
-    }
-    FrameBuffer::Unbind(unit);
-    GL_API::setActiveTextureUnit(unit);
-
-    GLenum textureType = glTexture::textureBoundMap[unit].second;
-    if (textureType != GL_NONE){
-        glBindTexture(textureType, 0);
-        glTexture::textureBoundMap[unit] = std::make_pair(0, GL_NONE);
-    }
+    if (GL_API::bindTexture(unit, _textureId[slot], _textureType[slot], 0))
+        UpdateMipMaps(slot);
 }
 
 void glFrameBuffer::Begin(const FrameBufferTarget& drawPolicy) {
@@ -431,7 +412,7 @@ void glFrameBuffer::DrawToLayer(TextureDescriptor::AttachmentType slot, U8 layer
 }
 
 void glFrameBuffer::UpdateMipMaps(TextureDescriptor::AttachmentType slot) {
-    if(!_mipMapEnabled[slot] || !_bound || !_mipMapsDirty[slot])
+    if(!_mipMapEnabled[slot] || !_mipMapsDirty[slot])
         return;
 
     glGenerateMipmap(_textureType[slot]);

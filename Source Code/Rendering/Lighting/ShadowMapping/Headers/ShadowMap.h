@@ -62,7 +62,6 @@ public:
 
     virtual void init(ShadowMapInfo* const smi) = 0;
     virtual bool Bind(U8 offset);
-    virtual bool Unbind(U8 offset);
     virtual void previewShadowMaps() = 0;
     virtual void togglePreviewShadowMaps(bool state) {}
     virtual void updateResolution(I32 newWidth, I32 newHeight) {}

@@ -41,7 +41,5 @@ void SSAOPreRenderOperator::operation(){
     _inputFB[0]->Bind(0); // screen
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); // depth
     GFX_DEVICE.drawPoints(1);
-    _inputFB[1]->Unbind(1);
-    _inputFB[0]->Unbind(0);
     _outputFB->End();
 }

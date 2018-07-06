@@ -50,7 +50,5 @@ void DoFPreRenderOperator::operation(){
     _samplerCopy->Bind(0); //screenFB
     _inputFB[1]->Bind(1, TextureDescriptor::Depth); //depthFB
     GFX_DEVICE.drawPoints(1);
-    _inputFB[1]->Unbind(1);
-    _samplerCopy->Unbind(0);
     _outputFB->End();
 }
