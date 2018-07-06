@@ -2,8 +2,8 @@
 #include "Managers/Headers/ResourceManager.h"
 
 
-bool SubMesh::computeBoundingBox(SceneGraphNode* const node){
-	BoundingBox& bb = node->getBoundingBox();
+bool SubMesh::computeBoundingBox(SceneGraphNode* const sgn){
+	BoundingBox& bb = sgn->getBoundingBox();
 	if(bb.isComputed()) return true;
 	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
 
@@ -13,7 +13,7 @@ bool SubMesh::computeBoundingBox(SceneGraphNode* const node){
 		bb.Add( tPosition[i] );
 	}
 
-	return SceneNode::computeBoundingBox(node);
+	return SceneNode::computeBoundingBox(sgn);
 }
 
 

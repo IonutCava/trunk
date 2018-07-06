@@ -23,23 +23,33 @@
 #include "Utility/Headers/BoundingBox.h"
 #include "Geometry/Material/Headers/Material.h"
 
+enum SCENE_NODE_TYPE{
+	TYPE_ROOT = 0,
+	TYPE_OBJECT3D,
+	TYPE_TERRAIN,
+	TYPE_WATER,
+	TYPE_LIGHT,
+	TYPE_PLACEHOLDER
+};
+
 class Scene;
 enum  RENDER_STAGE;
 class SceneNode : public Resource {
 	friend class SceneGraphNode;
 	friend class RenderQueue;
 public:
-	SceneNode();
-	SceneNode(std::string name);
+	SceneNode(SCENE_NODE_TYPE type);
+	SceneNode(std::string name, SCENE_NODE_TYPE type);
+	virtual ~SceneNode();
 
-	virtual ~SceneNode() {}
 	/*Rendering/Processing*/
-	virtual void render(SceneGraphNode* const node) = 0; //Sounds are played, geometry is displayed etc.
-			void setRenderState(bool state) {_renderState = state;}
-			bool getRenderState()  const {return _renderState;} 
-			void addToRenderExclusionMask(U8 stageMask);
-			void removeFromRenderExclusionMask(U8 stageMask);
-			bool getRenderState(RENDER_STAGE currentStage)  const;
+	virtual void render(SceneGraphNode* const sgn) = 0; //Sounds are played, geometry is displayed etc.
+			void setDrawState(bool state) {_drawState = state;}
+	virtual	bool getDrawState()  const {return _drawState;} 
+			void addToDrawExclusionMask(U8 stageMask);
+			void removeFromDrawExclusionMask(U8 stageMask);
+	/// Some scenenodes may need special case handling. I.E. water shouldn't render itself in REFLECTION_STAGE
+	virtual	bool getDrawState(RENDER_STAGE currentStage)  const;
 	/*//Rendering/Processing*/	
 
 	virtual	bool			unload();
@@ -48,12 +58,20 @@ public:
     virtual	void			setMaterial(Material* m);
 			void			clearMaterials();
 		    Material*		getMaterial();
+
+	/* Normal material */
 	virtual	void            prepareMaterial(SceneGraphNode* const sgn);
 	virtual	void            releaseMaterial();
-	virtual	bool    computeBoundingBox(SceneGraphNode* const node);
+	/* Depth map material */
+	virtual	void            prepareShadowMaterial(SceneGraphNode* const sgn);
+	virtual	void            releaseShadowMaterial();
+
+	/// Every SceneNode computes a bounding box in it's own way. 
+	virtual	bool    computeBoundingBox(SceneGraphNode* const sgn);
 	virtual void    onDraw();
 	virtual void    postDraw();
-	virtual void    postLoad(SceneGraphNode* const node) = 0; //Post insertion calls (Use this to setup child objects during creation)
+	virtual void    drawBoundingBox(SceneGraphNode* const sgn);
+	virtual void    postLoad(SceneGraphNode* const sgn) = 0; //Post insertion calls (Use this to setup child objects during creation)
 	void    useDefaultMaterial(bool state) {_noDefaultMaterial = !state;}
 	
 
@@ -62,16 +80,21 @@ public:
 	virtual void    createCopy();
 	virtual void    removeCopy();
 
+	SCENE_NODE_TYPE getType()					  {return _type;}
+	void            setType(SCENE_NODE_TYPE type) {_type = type;}
+
 protected:
 	U8          _exclusionMask;
 
 private:
 	
 	Material*	_material;				   
+	RenderStateBlock* _shadowStateBlock;
 
-	bool		_renderState;
+	bool		_drawState;
 	bool        _noDefaultMaterial;
 	bool        _selected;
+	SCENE_NODE_TYPE _type;
 };
 
 #endif

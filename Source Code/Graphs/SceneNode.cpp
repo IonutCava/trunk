@@ -2,22 +2,31 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Rendering/Headers/Frustum.h"
+#include "Hardware/Video/RenderStateBlock.h"
 
-SceneNode::SceneNode() : Resource(),
-						 _material(NULL),
-						 _renderState(true),
-						 _noDefaultMaterial(false),
-						 _exclusionMask(0),
-						 _selected(false)
+SceneNode::SceneNode(SCENE_NODE_TYPE type) : Resource(),
+											 _material(NULL),
+											 _drawState(true),
+											 _noDefaultMaterial(false),
+											 _exclusionMask(0),
+											 _selected(false),
+											 _shadowStateBlock(NULL),
+											 _type(type)
 {}
 
-SceneNode::SceneNode(std::string name) : Resource(name),
-								        _material(NULL),
-										_renderState(true),
-										_noDefaultMaterial(false),
-										_exclusionMask(0),
-										_selected(false)
+SceneNode::SceneNode(std::string name, SCENE_NODE_TYPE type) : Resource(name),
+															   _material(NULL),
+															   _drawState(true),
+															   _noDefaultMaterial(false),
+															   _exclusionMask(0),
+															   _selected(false),
+															   _shadowStateBlock(NULL),
+															   _type(type)
 {}
+
+SceneNode::~SceneNode() {
+	SAFE_DELETE(_shadowStateBlock);
+}
 
 void SceneNode::removeCopy(){
   decRefCount();
@@ -79,7 +88,7 @@ Material* SceneNode::getMaterial(){
 	if(_material == NULL){
 		if(!_noDefaultMaterial){
 			ResourceDescriptor defaultMat("defaultMaterial");
-			_material = ResourceManager::getInstance().loadResource<Material>(defaultMat);
+			_material = CreateResource<Material>(defaultMat);
 		}
 	}
 	return _material;
@@ -89,14 +98,14 @@ void SceneNode::setMaterial(Material* m){
 	if(m){ //If we need to update the material
 		if(_material){ //If we had an old material
 			if(_material->getMaterialId().i != m->getMaterialId().i){ //if the old material isn't the same as the new one
-				Console::getInstance().printfn("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(),m->getName().c_str());
+				PRINT_FN("Replacing material [ %s ] with material  [ %s ]",_material->getName().c_str(),m->getName().c_str());
 				RemoveResource(_material);			//remove the old material
 			}
 		}
 		_material = m;				   //set the new material
 	}else{ //if we receive a null material, the we need to remove this node's material
 		if(_material){
-			Console::getInstance().printfn("Removing material [ %s ]",_material->getName().c_str());
+			PRINT_FN("Removing material [ %s ]",_material->getName().c_str());
 			RemoveResource(_material);
 		}
 	}
@@ -108,26 +117,21 @@ void SceneNode::clearMaterials(){
 
 void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	if(!_material/* || !sgn*/) return;
-	GFXDevice& gfx = GFXDevice::getInstance();
-	gfx.ignoreStateChanges(true);
-	gfx.setRenderState(_material->getRenderState());
-	gfx.setMaterial(_material);
+	if(GFX_DEVICE.getRenderStage() == REFLECTION_STAGE){
+		SET_STATE_BLOCK(_material->getRenderState(REFLECTION_STAGE));
+	}else{
+		SET_STATE_BLOCK(_material->getRenderState(FINAL_STAGE));
+	}
+	GFX_DEVICE.setMaterial(_material);
+
 	ShaderProgram* s = _material->getShaderProgram();
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 
-	Texture2D* baseTexture = NULL;
-	Texture2D* bumpTexture = NULL;
-	Texture2D* secondTexture = NULL;
-	Texture2D* opacityMap = NULL;
-	Texture2D* specularMap = NULL;
-	
-	if(gfx.getActiveRenderState().texturesEnabled()){
-		baseTexture = _material->getTexture(Material::TEXTURE_BASE);
-		bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
-		secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
-		opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-		specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
-	}
+	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
+	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
 
 	U8 count = 0;
 	if(baseTexture){
@@ -178,7 +182,6 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 	s->Uniform("textureCount",count);
 	s->Uniform("parallax_factor", 1.f);
 	s->Uniform("relief_factor", 1.f);
-	s->Uniform("tile_factor", 1.0f);
 	if(LightManager::getInstance().shadowMappingEnabled()){
 		s->Uniform("enable_shadow_mapping",_material->getReceivesShadows());
 	}else{
@@ -191,33 +194,47 @@ void SceneNode::prepareMaterial(SceneGraphNode* const sgn){
 
 void SceneNode::releaseMaterial(){
 	if(!_material) return;
-	GFXDevice& gfx = GFXDevice::getInstance();
-	gfx.restoreRenderState();
 
-	Texture2D* baseTexture = NULL;
-	Texture2D* bumpTexture = NULL;
-	Texture2D* secondTexture = NULL;
-	Texture2D* opacityMap = NULL;
-	Texture2D* specularMap = NULL;
-	if(gfx.getActiveRenderState().texturesEnabled() ){
-		baseTexture = _material->getTexture(Material::TEXTURE_BASE);
-		bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
-		secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
-		opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
-		specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
-	}
+	Texture2D* baseTexture = _material->getTexture(Material::TEXTURE_BASE);
+	Texture2D* bumpTexture = _material->getTexture(Material::TEXTURE_BUMP);
+	Texture2D* secondTexture = _material->getTexture(Material::TEXTURE_SECOND);
+	Texture2D* opacityMap = _material->getTexture(Material::TEXTURE_OPACITY);
+	Texture2D* specularMap = _material->getTexture(Material::TEXTURE_SPECULAR);
+	
 	if(specularMap) specularMap->Unbind(4);
 	if(opacityMap) opacityMap->Unbind(3);
 	if(bumpTexture) bumpTexture->Unbind(2);
 	if(secondTexture) secondTexture->Unbind(1);
 	if(baseTexture) baseTexture->Unbind(0);
-	GFXDevice::getInstance().ignoreStateChanges(false);
-	//_material->getShaderProgram()->unbind();
 }
 
-bool SceneNode::computeBoundingBox(SceneGraphNode* const node) {
-	BoundingBox& bb = node->getBoundingBox();
-	node->setInitialBoundingBox(bb);
+void SceneNode::prepareShadowMaterial(SceneGraphNode* const sgn){
+	if(getType() != TYPE_OBJECT3D) return;
+	/// general shadow descriptor for objects without material
+	if(!_material) { 
+		if(!_shadowStateBlock){
+			RenderStateBlockDescriptor shadowDesc;
+			/// Cull back faces for shadow rendering
+			shadowDesc.setCullMode(CULL_MODE_CCW);
+			shadowDesc._fixedLighting = false;
+			//shadowDesc._zBias = -0.0002f;
+			shadowDesc.setColorWrites(false,false,false,false);
+			_shadowStateBlock = GFX_DEVICE.createStateBlock(shadowDesc);
+		}
+		SET_STATE_BLOCK(_shadowStateBlock);
+	}else{
+		SET_STATE_BLOCK(_material->getRenderState(SHADOW_STAGE));
+		GFX_DEVICE.setMaterial(_material);
+	}
+}
+
+void SceneNode::releaseShadowMaterial(){
+
+}
+
+bool SceneNode::computeBoundingBox(SceneGraphNode* const sgn) {
+	BoundingBox& bb = sgn->getBoundingBox();
+	sgn->setInitialBoundingBox(bb);
 	bb.isComputed() = true;
 	return true;
 }
@@ -228,16 +245,22 @@ bool SceneNode::unload(){
 	return true;
 }
 
-void SceneNode::removeFromRenderExclusionMask(U8 stageMask) {
+void SceneNode::drawBoundingBox(SceneGraphNode* const sgn){
+	BoundingBox& bb = sgn->getBoundingBox();
+	///This is the only immediate mode draw call left in the rendering api's
+	GFX_DEVICE.drawBox3D(bb.getMin(),bb.getMax());
+}
+
+void SceneNode::removeFromDrawExclusionMask(U8 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask &= ~stageMask;
 }
 
-void SceneNode::addToRenderExclusionMask(U8 stageMask) {
+void SceneNode::addToDrawExclusionMask(U8 stageMask) {
 	assert((stageMask & ~(INVALID_STAGE-1)) == 0);
 	_exclusionMask |= static_cast<RENDER_STAGE>(stageMask);
 }
 
-bool SceneNode::getRenderState(RENDER_STAGE currentStage)  const {
+bool SceneNode::getDrawState(RENDER_STAGE currentStage)  const {
 	return (_exclusionMask & currentStage) == currentStage ? false : true;
 }

@@ -7,8 +7,8 @@
 using namespace std;
 
 void CubeScene::render(){
+
 	GUI& gui = GUI::getInstance();
-	GFXDevice& gfx = GFXDevice::getInstance();
 	//Pass 2
 	//Draw a 2D fullscreen quad that has the lighting shader applied to it and all generated textures bound to that shader
 	_GFX.toggle2D(true);
@@ -23,7 +23,7 @@ void CubeScene::render(){
 			_deferredShader->UniformTexture("tImage1",1);
 			_deferredShader->UniformTexture("tImage2",2);
 			_deferredShader->UniformTexture("lightTexture",3);
-			_deferredShader->UniformTexture("lightCount",LightManager::getInstance().getLights().size());
+			_deferredShader->Uniform("lightCount",(I32)LightManager::getInstance().getLights().size());
 			_deferredShader->Uniform("cameraPosition",CameraManager::getInstance().getActiveCamera()->getEye());
 
 			_GFX.renderModel(_renderQuad);
@@ -32,14 +32,13 @@ void CubeScene::render(){
 		_deferredBuffer->Unbind(2);
 		_deferredBuffer->Unbind(1);
 		_deferredBuffer->Unbind(0);
-	//_deferredShader->unbind();
+	_deferredShader->unbind();
 
 	if(_showTextures){
 
 		_lightTexture->Bind(0);
 			_GFX.renderModel(_renderQuad2);
 		_lightTexture->Unbind(0);
-
 
 		_deferredBuffer->Bind(0,1);
 			_GFX.renderModel(_renderQuad3);
@@ -73,19 +72,20 @@ void CubeScene::render(){
 
 void CubeScene::processEvents(F32 time){
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
-	F32 updateLights = 0.05f;
+	F32 updateLights = 0.005f;
 
 	if(time - _eventTimers[0] >= updateLights){
 		for(U8 row=0; row<3; row++)
-			for(U8 col=0; col < lights.size()/3; col++){
-				F32 x = col * 150.0f - 5.0f + cos(GETTIME()*(col-row+2)*0.008f)*200.0f;
-				F32 y = cos(GETTIME()*(col-row+2)*0.01f)*200.0f+210;;
-				F32 z = row * 500.0f -500.0f - cos(GETTIME()*(col-row+2)*0.009f)*200.0f+110;
+			for(U8 col=0; col < lights.size()/3.0f; col++){
+				F32 x = col * 150.0f - 5.0f + cos(GETMSTIME()*(col-row+2)*0.008f)*200.0f;
+				F32 y = cos(GETTIME()*(col-row+2)*0.01f)*200.0f+20;;
+				F32 z = row * 500.0f -500.0f - cos(GETMSTIME()*(col-row+2)*0.009f)*200.0f+10;
+				F32 r = 1;
 				F32 g = 1.0f-(row/3.0f);
-				F32 b = col/lights.size();
+				F32 b = col/(lights.size()/3.0f);
 	
-				lights[row*10+col]->setLightProperties("position",vec4(x,y,z,1));
-				lights[row*10+col]->setLightProperties("diffuse",vec4(1,g,b,1));
+				lights[row*10+col]->setLightProperties(LIGHT_POSITION,vec4(x,y,z,1));
+				lights[row*10+col]->setLightProperties(LIGHT_DIFFUSE,vec4(r,g,b,1));
 			}
 
 		_eventTimers[0] += updateLights;
@@ -97,7 +97,7 @@ I8 j = 1;
 F32 i = 0;
 bool _switch = false;
 void CubeScene::preRender() {
-	GFXDevice::getInstance().setRenderStage(DEFERRED_STAGE);
+	GFX_DEVICE.setRenderStage(DEFERRED_STAGE);
 	LightManager::LightMap& lights = LightManager::getInstance().getLights();
 
 	if(i >= 360) _switch = true;
@@ -137,8 +137,6 @@ void CubeScene::preRender() {
 	//Pass 1
 	//Draw the geometry, saving parameters into the buffer
 	_deferredBuffer->Begin();
-		RenderState s(false,false,false,true);
-		_GFX.setRenderState(s);
 		_sceneGraph->render();
 	_deferredBuffer->End();
 } 
@@ -160,8 +158,9 @@ void CubeScene::processInput(){
 
 }
 
-bool CubeScene::load(const string& name)
-{
+bool CubeScene::load(const string& name){	
+	_GFX.setDeferredRendering(true);
+	setInitialData(); 
 	bool state = loadResources(true);	
 	if(state){
 		state = loadEvents(true);
@@ -173,7 +172,6 @@ bool CubeScene::loadResources(bool continueOnErrors){
 
 	angleLR=0.0f,angleUD=0.0f,moveFB=0.0f,moveLR=0.0f;
 
-	_GFX.setDeferredRendering(true);
 	_deferredBuffer = _GFX.newFBO();
 	_lightTexture = _GFX.newPBO();
 	//30 lights? >:)
@@ -184,7 +182,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			stringstream ss; ss << (U32)lightId;
 			ResourceDescriptor tempLight("Light Deferred " + ss.str());
 			tempLight.setId(lightId);
-			Light* light = _resManager.loadResource<Light>(tempLight);
+			Light* light = CreateResource<Light>(tempLight);
 			light->setDrawImpostor(true);
 			light->setRadius(30);
 			light->setCastShadows(false); //ToDo: Shadows are ... for another time -Ionut
@@ -192,29 +190,29 @@ bool CubeScene::loadResources(bool continueOnErrors){
 			addLight(light);
 	}
 	ResourceDescriptor deferred("DeferredShadingPass2");
-	_deferredShader = _resManager.loadResource<ShaderProgram>(deferred);
+	_deferredShader = CreateResource<ShaderProgram>(deferred);
 
-	_deferredBuffer->Create(FrameBufferObject::FBO_2D_DEFERRED,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y);
+	_deferredBuffer->Create(FBO_2D_DEFERRED,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y);
 	_lightTexture->Create(2,LightManager::getInstance().getLights().size());
 
 	F32 width = Application::getInstance().getWindowDimensions().width;
 	F32 height = Application::getInstance().getWindowDimensions().height;
 	ResourceDescriptor mrt("MRT RenderQuad");
 	mrt.setFlag(true); //no default material
-	_renderQuad = _resManager.loadResource<Quad3D>(mrt);
+	_renderQuad = CreateResource<Quad3D>(mrt);
 	assert(_renderQuad);
 	//In 2D mode, Quad's are flipped!!!!
 	_renderQuad->setDimensions(vec4(0,0,width,height));
 
 	ResourceDescriptor mrt2("MRT RenderQuad2");
 	mrt2.setFlag(true); //no default material
-	_renderQuad2 = _resManager.loadResource<Quad3D>(mrt2);
+	_renderQuad2 = CreateResource<Quad3D>(mrt2);
 	assert(_renderQuad2);
 	_renderQuad2->setDimensions(vec4(width/2,0,width,height/2));
 
 	ResourceDescriptor mrt3("MRT RenderQuad3");
 	mrt3.setFlag(true); //no default material
-	_renderQuad3 = _resManager.loadResource<Quad3D>(mrt3);
+	_renderQuad3 = CreateResource<Quad3D>(mrt3);
 	assert(_renderQuad3);
 	_renderQuad3->setCorner(Quad3D::TOP_LEFT, vec3(0, height, 0));
 	_renderQuad3->setCorner(Quad3D::TOP_RIGHT, vec3(width/2, height, 0));
@@ -223,7 +221,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 
 	ResourceDescriptor mrt4("MRT RenderQuad4");
 	mrt4.setFlag(true); //no default material
-	_renderQuad4 = _resManager.loadResource<Quad3D>(mrt4);
+	_renderQuad4 = CreateResource<Quad3D>(mrt4);
 	assert(_renderQuad4);
 	_renderQuad4->setCorner(Quad3D::TOP_LEFT, vec3(width/2, height, 0));
 	_renderQuad4->setCorner(Quad3D::TOP_RIGHT, vec3(width, height, 0));
@@ -257,7 +255,7 @@ bool CubeScene::loadResources(bool continueOnErrors){
 
 bool CubeScene::unload()
 {
-	Console::getInstance().printfn("Deleting Deferred Rendering RenderTarget!");
+	PRINT_FN("Deleting Deferred Rendering RenderTarget!");
 	RemoveResource(_renderQuad);
 	return Scene::unload();
 }
@@ -268,16 +266,16 @@ void CubeScene::onKeyDown(const OIS::KeyEvent& key)
 	switch(key.key)
 	{
 		case OIS::KC_W:
-			Application::getInstance().moveFB = 0.25f;
+			Application::getInstance().moveFB = 0.75f;
 			break;
 		case OIS::KC_A:
-			Application::getInstance().moveLR = 0.25f;
+			Application::getInstance().moveLR = 0.75f;
 			break;
 		case OIS::KC_S:
-			Application::getInstance().moveFB = -0.25f;
+			Application::getInstance().moveFB = -0.75f;
 			break;
 		case OIS::KC_D:
-			Application::getInstance().moveLR = -0.25f;
+			Application::getInstance().moveLR = -0.75f;
 			break;
 		case OIS::KC_T:{
 			F32 width = Application::getInstance().getWindowDimensions().width;

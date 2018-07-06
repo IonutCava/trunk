@@ -8,7 +8,7 @@ using namespace physx;
 bool PhysXSceneInterface::init(){
 	//Create the scene
 	if(!PhysX::getInstance().getSDK()){
-		Console::getInstance().errorfn("PhysX SDK not initialized!");
+		ERROR_FN("PhysX SDK not initialized!");
 		return false;
 	}
 	PxSceneDesc sceneDesc(PhysX::getInstance().getSDK()->getTolerancesScale());
@@ -16,7 +16,7 @@ bool PhysXSceneInterface::init(){
 	if(!sceneDesc.cpuDispatcher) {
 		PxDefaultCpuDispatcher* mCpuDispatcher = PxDefaultCpuDispatcherCreate(1);
 		if(!mCpuDispatcher){
-			Console::getInstance().errorfn("PhysX Scene Interface: PxDefaultCpuDispatcherCreate failed!");
+			ERROR_FN("PhysX Scene Interface: PxDefaultCpuDispatcherCreate failed!");
 		}
 		 sceneDesc.cpuDispatcher = mCpuDispatcher;
 	}
@@ -26,7 +26,7 @@ bool PhysXSceneInterface::init(){
 
 	_gScene = PhysX::getInstance().getSDK()->createScene(sceneDesc);
 	if (!_gScene){
-		Console::getInstance().errorfn("PhysX Scene Interface: error creating scene!");
+		ERROR_FN("PhysX Scene Interface: error creating scene!");
 		return false;
 	}
 
@@ -37,7 +37,7 @@ bool PhysXSceneInterface::init(){
 }
 
 bool PhysXSceneInterface::exit(){
-	Console::getInstance().d_printfn("Shuting down PhysXSceneInterface");
+	D_PRINT_FN("Shuting down PhysXSceneInterface");
 	return true;
 }
 
@@ -46,7 +46,7 @@ void PhysXSceneInterface::idle(){
 
 void PhysXSceneInterface::release(){
 	if(!_gScene){
-		Console::getInstance().errorfn("PhysX: trying to close invalid scene!");
+		ERROR_FN("PhysX: trying to close invalid scene!");
 		return;
 	}
 	_gScene->release();
@@ -97,21 +97,21 @@ void PhysXSceneInterface::process(){
 }
 
 void PhysXSceneInterface::addRigidStaticActor(physx::PxRigidStatic* actor) {
-	Console::getInstance().printfn("CALLED1");
+
 	if(!PhysX::getInstance().getSDK()) return;
-	Console::getInstance().printfn("CALLED2");
+
 	if(!_gScene) return;
-	Console::getInstance().printfn("CALLED3");
+
 	_creationMutex.lock();
-	Console::getInstance().printfn("CALLED4");
+
 	_sceneRigidStaticActors.push_back(actor);
-	Console::getInstance().printfn("CALLED5");
+
 	_creationMutex.unlock();
-	Console::getInstance().printfn("CALLED6");
+
 	_gScene->addActor(*actor);
-	Console::getInstance().printfn("CALLED7");
+
 	addToSceneGraph(actor);
-	Console::getInstance().printfn("CALLED8");
+
 }
 
 void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
@@ -125,20 +125,20 @@ void PhysXSceneInterface::addRigidDynamicActor(physx::PxRigidDynamic* actor) {
 }
 
 void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
-	Console::getInstance().printfn("CALLEDA");
+
 	if(!actor) return;
-	Console::getInstance().printfn("CALLEDB");
+
 	U32 nbActors = _gScene->getNbActors(PxActorTypeSelectionFlag::eRIGID_DYNAMIC | PxActorTypeSelectionFlag::eRIGID_STATIC);
 	std::stringstream ss;
 	PxShape** shapes=New PxShape*[actor->getNbShapes()];
 	actor->getShapes(shapes, actor->getNbShapes());   
 	//ToDo: Only 1 shape per actor for now. Fix This! -Ionut
 	Object3D* actorGeometry = NULL;
-	Console::getInstance().printfn("CALLEDC");
+
 	switch(shapes[0]->getGeometryType()){
 		 case PxGeometryType::eBOX: {
 			ss << "BoxActor_" << nbActors;
-			actorGeometry = ResourceManager::getInstance().loadResource<Box3D>(ResourceDescriptor(ss.str()));
+			actorGeometry = CreateResource<Box3D>(ResourceDescriptor(ss.str()));
 			PxBoxGeometry box;
 			shapes[0]->getBoxGeometry(box);
 			dynamic_cast<Box3D*>(actorGeometry)->setSize(box.halfExtents.x * 2);
@@ -146,7 +146,7 @@ void PhysXSceneInterface::addToSceneGraph(PxRigidActor* actor){
        break;
 	   case PxGeometryType::ePLANE:
 		   ss << "PlaneActor_" << nbActors;
-		   actorGeometry = ResourceManager::getInstance().loadResource<Quad3D>(ResourceDescriptor(ss.str()));
+		   actorGeometry = CreateResource<Quad3D>(ResourceDescriptor(ss.str()));
 	   break;
 	} 
     delete [] shapes;

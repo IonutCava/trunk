@@ -31,7 +31,7 @@ public:
 
 	bool clear();
 	U32  generateNewID();
-	void update();
+	void update(bool force = false);
 
 	inline LightMap& getLights()      {return _lights;}
 	inline Light*    getLight(U32 id) {return _lights[id];}

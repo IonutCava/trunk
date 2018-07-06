@@ -1,8 +1,9 @@
 #include "Headers/Material.h"
-#include "Hardware/Video/Texture.h"
 #include "Managers/Headers/ResourceManager.h"
 #include "Managers/Headers/ShaderManager.h"
+#include "Hardware/Video/Texture.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/RenderStateBlock.h"
 #include "Utility/Headers/XMLParser.h"
 
 Material::Material() : Resource(),
@@ -14,31 +15,73 @@ Material::Material() : Resource(),
 					   _materialMatrix(_ambient,_diffuse,_specular,vec4(_shininess,_emissive.x,_emissive.y,_emissive.z)),
 					   _computedLightShaders(false),
 					   _dirty(false),
-					   _twoSided(false),
+					   _doubleSided(false),
 					   _castsShadows(true),
 					   _receiveShadows(true),
-					   _state(New RenderState()),
 					   _shaderRef(NULL)
 {
+
    _textures[TEXTURE_BASE] = NULL;
    _textures[TEXTURE_BUMP] = NULL;
    _textures[TEXTURE_SECOND] = NULL;
    _textures[TEXTURE_OPACITY] = NULL;
    _textures[TEXTURE_SPECULAR] = NULL;
    _matId.i = 0;
+   /// Normal state for final rendering
+   RenderStateBlockDescriptor normalStateDescriptor;
+   if(GFX_DEVICE.getDeferredRendering()){
+	   normalStateDescriptor._fixedLighting = false;
+   }
+
+   /// A descriptor used for rendering to shadow depth map
+   RenderStateBlockDescriptor shadowDescriptor;
+   shadowDescriptor.setCullMode(CULL_MODE_CCW);
+   /// do not used fixed lighting
+   shadowDescriptor._fixedLighting = false;
+   /// set a polygon offset
+   //shadowDescriptor._zBias = -0.0002f;
+   /// ignore colors
+   shadowDescriptor.setColorWrites(false,false,false,false);
+
+   /// the reflection descriptor is the same as the normal descriptor, but with special culling
+   RenderStateBlockDescriptor reflectionStateDescriptor;
+   reflectionStateDescriptor.fromDescriptor(normalStateDescriptor);
+
+   _defaultRenderStates.insert(std::make_pair(FINAL_STAGE, GFX_DEVICE.createStateBlock(normalStateDescriptor)));
+   _defaultRenderStates.insert(std::make_pair(SHADOW_STAGE, GFX_DEVICE.createStateBlock(shadowDescriptor)));
+   _defaultRenderStates.insert(std::make_pair(REFLECTION_STAGE, GFX_DEVICE.createStateBlock(reflectionStateDescriptor)));
+
+    assert(_defaultRenderStates[FINAL_STAGE] != NULL);
+	assert(_defaultRenderStates[SHADOW_STAGE] != NULL);
+	assert(_defaultRenderStates[REFLECTION_STAGE] != NULL);
 }
 
 
 
 Material::~Material(){
-	delete _state;
+
+	SAFE_DELETE(_defaultRenderStates[FINAL_STAGE]);
+	SAFE_DELETE(_defaultRenderStates[SHADOW_STAGE]);
+	SAFE_DELETE(_defaultRenderStates[REFLECTION_STAGE]);
+	_defaultRenderStates.clear();
+}
+
+RenderStateBlock* Material::setRenderStateBlock(const RenderStateBlockDescriptor& descriptor,RENDER_STAGE renderStage){
+	if(descriptor.getHash() == _defaultRenderStates[renderStage]->getDescriptor().getHash()){
+		return _defaultRenderStates[renderStage];
+	}
+
+	SAFE_DELETE(_defaultRenderStates[renderStage]);
+
+	_defaultRenderStates[renderStage] = GFX_DEVICE.createStateBlock(descriptor);
+	return _defaultRenderStates[renderStage];
 }
 
 void Material::removeCopy(){
 	decRefCount();
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
-			Console::getInstance().printfn("Removing texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
+			PRINT_FN("Removing texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
 			iter.second->removeCopy();
 		}
 	}
@@ -48,7 +91,7 @@ void Material::createCopy(){
 	incRefCount();
 	for_each(textureMap::value_type& iter , _textures){
 		if(iter.second){
-			Console::getInstance().printfn("Adding texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
+			PRINT_FN("Adding texture [ %s ] new ref count: %d",iter.second->getName().c_str(),iter.second->getRefCount());
 			iter.second->createCopy();
 		}
 	}
@@ -75,18 +118,18 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader){
 	if(!_shader.empty()){
 		//and we are trying to assing the same one again, return.
 		if(_shader.compare(shader) == 0){
-			_shaderRef = static_cast<ShaderProgram* >(ResourceManager::getInstance().find(_shader));
+			_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
 			return _shaderRef;
 		}else{
-			Console::getInstance().printfn("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
+			PRINT_FN("Replacing shader [ %s ] with shader  [ %s ]",_shader.c_str(),shader.c_str());
 		}
 	}
 
 	(!shader.empty()) ? _shader = shader : _shader = "NULL";
 
-	_shaderRef = static_cast<ShaderProgram* >(ResourceManager::getInstance().find(_shader));
+	_shaderRef = static_cast<ShaderProgram* >(FindResource(_shader));
 	if(!_shaderRef){
-		_shaderRef = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor(_shader));
+		_shaderRef = CreateResource<ShaderProgram>(ResourceDescriptor(_shader));
 	}
 	_dirty = true;
 	_computedLightShaders = true;
@@ -106,23 +149,19 @@ void Material::computeLightShaders(){
 	//Manually setting a shader, overrides this function by setting _computedLightShaders to "true"
 	if(_computedLightShaders) return;
 	if(_shader.empty()){
-		//if(GFXDevice::getInstance().getRenderStage() == DEFERRED_STAGE){
-		if(GFXDevice::getInstance().getDeferredRendering()){
-			if(_textures[TEXTURE_BASE]){
-				setShaderProgram("DeferredShadingPass1.Texture");
+		std::string shader = "lighting";
+		if(GFX_DEVICE.getDeferredRendering()){
+			shader = "DeferredShadingPass1";
+		}
+
+		if(_textures[TEXTURE_BASE]){
+			if(_textures[TEXTURE_BUMP]){
+				setShaderProgram(shader + ".Bump");
 			}else{
-				setShaderProgram("DeferredShadingPass1.NoTexture");
+				setShaderProgram(shader + ".Texture");
 			}
 		}else{
-			if(_textures[TEXTURE_BASE]){
-				if(_textures[TEXTURE_BUMP]){
-					setShaderProgram("lighting.Bump");
-				}else{
-					setShaderProgram("lighting.Texture");
-				}
-			}else{
-				setShaderProgram("lighting.NoTexture");
-			}
+			setShaderProgram(shader + ".NoTexture");
 		}
 	}
 }
@@ -138,23 +177,50 @@ bool Material::unload(){
 }
 
 void Material::dumpToXML(){
-	if(getName().compare("defaultMaterial") == 0) return;
+	//if(getName().compare("defaultMaterial") == 0) return;
 	XML::dumpMaterial(this);
 }
 
-void Material::setTwoSided(bool state) {
-	state ? _state->cullingEnabled() = false : _state->cullingEnabled() = true;
-	_twoSided = state;
+void Material::setDoubleSided(bool state) {
+	if(_doubleSided == state) return;
+	_doubleSided = state;
+	/// Update all render states for this item
+	if(_doubleSided){
+		typedef unordered_map<RENDER_STAGE, RenderStateBlock* >::value_type stateValue;
+		for_each(stateValue& it, _defaultRenderStates){
+			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
+				if(desc._cullMode != CULL_MODE_None){
+					desc.setCullMode(CULL_MODE_None);
+					setRenderStateBlock(desc,it.first);
+				}
+		}
+	}
+
 	_dirty = true;
 }
 
 bool Material::isTranslucent(){
 	bool state = false;
+	/// base texture is translucent
 	if(_textures[TEXTURE_BASE]){
 		if(_textures[TEXTURE_BASE]->hasTransparency()) state = true;
 	}
-	if(!_state->cullingEnabled() && _state->blendingEnabled()) state = true;
+	/// opacity map
 	if(_textures[TEXTURE_OPACITY]) state = true;
+	/// diffuse channel alpha
+	if(getMaterialMatrix().getCol(1).a < 1.0f) state = true;
+
+	/// Disable culling for translucent items
+	if(state){
+		typedef unordered_map<RENDER_STAGE, RenderStateBlock* >::value_type stateValue;
+		for_each(stateValue& it, _defaultRenderStates){
+			RenderStateBlockDescriptor desc =  it.second->getDescriptor();
+			if(desc._cullMode != CULL_MODE_None){
+				desc.setCullMode(CULL_MODE_None);
+				setRenderStateBlock(desc,it.first);
+			}
+		}
+	}
 	return state;
 }
 

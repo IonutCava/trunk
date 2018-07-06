@@ -21,10 +21,14 @@
 #include "resource.h"
 #include "Core/Headers/BaseClasses.h"
 
-class ShaderProgram;
+
 class Texture;
+class ShaderProgram;
+class RenderStateBlock;
 typedef Texture Texture2D;
-class RenderState;
+struct RenderStateBlockDescriptor;
+enum RENDER_STAGE;
+
 class Material : public Resource{
 
 public:
@@ -42,6 +46,7 @@ public:
 	  TEXTURE_MIRROR = 10,
 	  TEXTURE_LIGHTMAP = 11
   };
+
 typedef unordered_map<TextureUsage, Texture2D*> textureMap;
 
 public:
@@ -56,9 +61,11 @@ public:
   inline bool            isDirty() {return _dirty;}
   void setTexture(TextureUsage textureUsage, Texture2D* const texture);
   ShaderProgram* setShaderProgram(const std::string& shader);
-  void setTwoSided(bool state);
-  bool isTwoSided() {return _twoSided;}
-  RenderState& getRenderState() const {return *_state;}
+  void setDoubleSided(bool state);
+  bool isDoubleSided() {return _doubleSided;}
+
+  inline RenderStateBlock* getRenderState(RENDER_STAGE currentStage) {return _defaultRenderStates[currentStage];}
+  RenderStateBlock* setRenderStateBlock(const RenderStateBlockDescriptor& descriptor, RENDER_STAGE renderStage);
 
   inline void setAmbient(const vec4& value) {_ambient = value; _materialMatrix.setCol(0,value);}
   inline void setDiffuse(const vec4& value) {_diffuse = value; _materialMatrix.setCol(1,value);}
@@ -92,11 +99,14 @@ private:
   bool _computedLightShaders;
   P32  _matId;
   bool _dirty;
-  bool _twoSided;
+  bool _doubleSided;
   bool _castsShadows;
   bool _receiveShadows;
-  RenderState* _state;
   ShaderProgram* _shaderRef;
+
+  /// use this map to add more render states mapped to a specific state
+   /// 3 render state's: Normal, reflection and shadow
+  unordered_map<RENDER_STAGE, RenderStateBlock* > _defaultRenderStates;
 };
 
 #endif

@@ -42,11 +42,14 @@ public:
 	
 	void drawGround() const;
 	void drawInfinitePlain();
-	void render(SceneGraphNode* const node);
+	void render(SceneGraphNode* const sgn);
 	void postDraw();
-	void terrainSetParameters(const vec3& pos,const vec2& scale);
 	void prepareMaterial(SceneGraphNode* const sgn);
 	void releaseMaterial();
+	void drawBoundingBox(SceneGraphNode* const sgn);
+
+	inline void toggleBoundingBoxes(){ _drawBBoxes = !_drawBBoxes; }
+
 
 	vec3  getPosition(F32 x_clampf, F32 z_clampf) const;
 	vec3  getNormal(F32 x_clampf, F32 z_clampf) const;
@@ -54,7 +57,7 @@ public:
 	vec2  getDimensions(){return vec2((F32)_terrainWidth, (F32)_terrainHeight);}
 
 	void  setLoaded(bool state) {_loaded = state;}
-	void  postLoad(SceneGraphNode* const node);	
+	void  postLoad(SceneGraphNode* const sgn);	
 
 	Vegetation* const getVegetation() const {return _veg;}
 
@@ -66,10 +69,15 @@ public:
 	void initializeVegetation(TerrainDescriptor* terrain);
 	void toggleVegetation(bool state){ _veg->toggleRendering(state); }
 	inline void setRenderingOptions(bool drawInReflection){_drawInReflection = drawInReflection;}
-	bool computeBoundingBox(SceneGraphNode* const node);
+	bool computeBoundingBox(SceneGraphNode* const sgn);
 	bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
+
 private:
-	
+
+	bool loadVisualResources(TerrainDescriptor* const terrain);
+	bool loadThreadedResources(TerrainDescriptor* const terrain);
+
+private:
 
 	U16						_terrainWidth, _terrainHeight;
 	Quadtree*				_terrainQuadtree;
@@ -78,7 +86,7 @@ private:
 	F32 terrainScaleFactor, _terrainHeightScaleFactor;
 	bool _drawInReflection,_loaded;
 	bool _alphaTexturePresent;
-
+	bool _drawBBoxes;
 	std::vector<Texture2D*>	_terrainTextures;
 	Texture2D*				_terrainDiffuseMap;
 	Vegetation*             _veg;
@@ -89,6 +97,7 @@ private:
 	Transform*				_planeTransform;
 	SceneGraphNode*         _node;
 	SceneGraphNode*			_planeSGN;
+	RenderStateBlock*       _terrainRenderState;
 };
 
 #endif

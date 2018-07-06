@@ -73,7 +73,6 @@ void glFrameBufferObject::Begin(U8 nFace) const {
 void glFrameBufferObject::End(U8 nFace) const {
 	assert(nFace<6);
 	if(_useFBO) {
-		//GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	else {
@@ -91,14 +90,15 @@ void glFrameBufferObject::Bind(U8 unit, U8 texture) {
 	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
 	GLCheck(glEnable(_textureType));
 	GLCheck(glBindTexture(_textureType, _textureId[texture]));
+	//GLCheck(glEnable(_textureType));
 	_bound = true;
 }
 
 void glFrameBufferObject::Unbind(U8 unit) {
 	//if(!_bound) return; //If it's already bound on any slot, including this one
-	/*GLCheck(*/glActiveTexture(GL_TEXTURE0 + unit)/*)*/;
-	GLCheck(glBindTexture(_textureType, 0 ));
-	GLCheck(glDisable(_textureType));
+	GLCheck(glActiveTexture(GL_TEXTURE0 + unit));
+	glBindTexture(_textureType, 0 );
+	glDisable(_textureType);
 	_bound = false;
 }
 
@@ -146,8 +146,8 @@ bool glFrameBufferObject::Create(FBO_TYPE type, U16 width, U16 height, TEXTURE_F
 			format = GL_LUMINANCE_ALPHA;
 			break;
 	};
+	PRINT_FN("Generating framebuffer of dimmensions [%d x %d]",width,height);
 	Destroy();
-	Console::getInstance().printfn("Generating framebuffer of dimmensions [%d x %d]",width,height);
 	_width = width;
 	_height = height;
 	_useFBO = true;
@@ -291,35 +291,35 @@ bool glFrameBufferObject::checkStatus()
         return true;
 
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-        Console::getInstance().errorfn("Framebuffer incomplete: Attachment is NOT complete.");
+        ERROR_FN("Framebuffer incomplete: Attachment is NOT complete.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-        Console::getInstance().errorfn("Framebuffer incomplete: No image is attached to FBO.");
+        ERROR_FN("Framebuffer incomplete: No image is attached to FBO.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-        Console::getInstance().errorfn("Framebuffer incomplete: Attached images have different dimensions.");
+        ERROR_FN("Framebuffer incomplete: Attached images have different dimensions.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS:
-        Console::getInstance().errorfn("Framebuffer incomplete: Color attached images have different internal formats.");
+        ERROR_FN("Framebuffer incomplete: Color attached images have different internal formats.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-        Console::getInstance().errorfn("Framebuffer incomplete: Draw buffer.");
+        ERROR_FN("Framebuffer incomplete: Draw buffer.");
         return false;
 
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-        Console::getInstance().errorfn("Framebuffer incomplete: Read buffer.");
+        ERROR_FN("Framebuffer incomplete: Read buffer.");
         return false;
 
     case GL_FRAMEBUFFER_UNSUPPORTED:
-        Console::getInstance().errorfn("Unsupported by FBO implementation.");
+        ERROR_FN("Unsupported by FBO implementation.");
         return false;
 
     default:
-        Console::getInstance().errorfn("Unknow error.");
+        ERROR_FN("Unknow error.");
         return false;
     }
 }

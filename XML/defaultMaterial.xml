@@ -5,39 +5,14 @@
 	<specular r="0" g="0" b="0" a="0"/>
 	<emissive r="0" g="0" b="0"/>
 	<shininess v="0.5"/>
+	<doubleSided>true</doubleSided>
 </material>
-
-<!--
-
-<diffuseTexture1>
-	<file>none</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</diffuseTexture1>
-
-<diffuseTexture2>
-	<file>none</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</diffuseTexture2>
-
-<bumpMap>
-	<file>none</file>
-	<MapU>CLAMP</MapU>
-	<MapV>CLAMP</MapV>
-	<minFilter>LINEAR</minFilter>
-	<magFilter>LINEAR</magFilter>
-	<mipFilter>true</mipFilter>
-</bumpMap>
-
--->
 
 <shader>
   <effect>lighting.NoTexture</effect>
 </shader>
+
+<shadows>
+	<castsShadows>true</castsShadows>
+	<receiveShadows>true</receiveShadows>
+</shadows>

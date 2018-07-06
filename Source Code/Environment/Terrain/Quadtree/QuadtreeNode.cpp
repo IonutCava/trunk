@@ -21,13 +21,11 @@ void QuadtreeNode::Build(U8 depth,
 
 
 	
-	if((U32)max(newsize.x, newsize.y) < minHMSize)
-	{
+	if((U32)max(newsize.x, newsize.y) < minHMSize)	{
 		
 		_terrainChunk = New TerrainChunk();
 		_terrainChunk->Load(depth, pos, HMsize);
 
-		
 		_children = NULL;
 		return;
 	}
@@ -51,8 +49,10 @@ void QuadtreeNode::Build(U8 depth,
 
 
 	
-	for(I8 i=0; i<4; i++)
+	for(I8 i=0; i<4; i++){
+		_children[i].setParentShaderProgram(_parentShaderProgram);
 		_children[i].Build(depth+1, tNewHMpos[i], HMsize, minHMSize);
+	}
 }
 
 bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
@@ -92,14 +92,8 @@ bool QuadtreeNode::computeBoundingBox(const std::vector<vec3>& vertices){
 
 
 void QuadtreeNode::Destroy(){
-	if(_children != NULL) {
-		delete [] _children;
-		_children = NULL;
-	}
-	if(_terrainChunk != NULL){
-		delete _terrainChunk;
-		_terrainChunk = NULL;
-	}
+	SAFE_DELETE_ARRAY(_children);
+	SAFE_DELETE(_terrainChunk);
 }
 ///ToDo: Change vegetation rendering and generation! -Ionut
 void QuadtreeNode::DrawGrass(){
@@ -121,7 +115,7 @@ void QuadtreeNode::DrawGrass(){
 void QuadtreeNode::DrawBBox(){
 	if(!_children) {
 		assert(_terrainChunk);
-			GFXDevice::getInstance().drawBox3D(_boundingBox.getMin(),_boundingBox.getMax());
+			GFX_DEVICE.drawBox3D(_boundingBox.getMin(),_boundingBox.getMax());
 	}else {
 		if( _LOD>=0 )
 			for(I8 i=0; i<4; i++)
@@ -174,7 +168,7 @@ void QuadtreeNode::DrawGround(I32 options)
 			if(_camDistance > TERRAIN_CHUNK_LOD1)		lod = 2;
 			else if(_camDistance > TERRAIN_CHUNK_LOD0)	lod = 1;
 			_LOD = lod;
-
+			getParentShaderProgram()->Uniform("LOD", (I32)lod);
 			_terrainChunk->DrawGround(lod);
 		}
 	}

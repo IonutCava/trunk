@@ -19,13 +19,10 @@
 #define _GL_RESOURCES_H_
 
 #include <gl/glew.h>
-//#define GL3_PROTOTYPES
-//#include <gl/gl3.h>
-//#define __gl_h_
 #include <gl/freeglut.h> 
+
 #ifdef _DEBUG
 #define GLCheck(Func) ((Func), GLCheckError(__FILE__, __LINE__))
-//#define GLCheck(Func) (Func)
 #else
  #define GLCheck(Func) (Func)
 #endif

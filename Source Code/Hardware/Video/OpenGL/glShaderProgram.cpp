@@ -37,9 +37,9 @@ void glShaderProgram::validate() {
 	glGetProgramiv(_shaderProgramId, GL_VALIDATE_STATUS, &status);
 	// ToDo: Problem with AMD(ATI) cards. GLSL validation errors about multiple samplers to same uniform, but they still work. Fix that. -Ionut
 	if (status == GL_FALSE){
-		Console::getInstance().errorfn("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(), buffer);
+		ERROR_FN("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(), buffer);
 	}else{
-		Console::getInstance().d_printfn("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(),buffer);
+		D_PRINT_FN("[GLSL Manager] Validating program [ %s ]: %s", getName().c_str(),buffer);
 	}
 }
 
@@ -94,7 +94,7 @@ bool glShaderProgram::load(const string& name){
 				//Load our shader and save it in the manager in case a new Shader Program needs it
 				s = ShaderManager::getInstance().loadShader(vertexShader,vs,VERTEX_SHADER);
 			}else{
-				Console::getInstance().errorfn("ShaderProgram: %s",glswGetError());
+				ERROR_FN("ShaderProgram: %s",glswGetError());
 			}
 		}
 		///If the vertex shader loaded ok
@@ -103,7 +103,7 @@ bool glShaderProgram::load(const string& name){
 			attachShader(s);
 			///same goes for every other shader type
 		}else{
-			Console::getInstance().errorfn("Could not load shader [ %s ]",vertexShader.c_str());
+			ERROR_FN("Could not load shader [ %s ]",vertexShader.c_str());
 		}
 		///Load the Fragment Shader
 		s = ShaderManager::getInstance().findShader(fragmentShader);
@@ -112,13 +112,13 @@ bool glShaderProgram::load(const string& name){
 			if(fs != NULL){
 				s = ShaderManager::getInstance().loadShader(fragmentShader,fs,FRAGMENT_SHADER);
 			}else{
-				Console::getInstance().errorfn("ShaderProgram: %s",glswGetError());
+				ERROR_FN("ShaderProgram: %s",glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			Console::getInstance().errorfn("Could not load shader [ %s ]",fragmentShader.c_str());
+			ERROR_FN("Could not load shader [ %s ]",fragmentShader.c_str());
 		}
 		///Load the Geometry Shader
 		s = ShaderManager::getInstance().findShader(geometryShader);
@@ -128,13 +128,13 @@ bool glShaderProgram::load(const string& name){
 				s = ShaderManager::getInstance().loadShader(geometryShader,gs,GEOMETRY_SHADER);
 			}else{
 				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
-				Console::getInstance().d_errorfn("ShaderProgram: %s", glswGetError());
+				D_ERROR_FN("ShaderProgram: %s", glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			Console::getInstance().d_errorfn("Could not load shader [ %s ]",geometryShader.c_str());
+			D_ERROR_FN("Could not load shader [ %s ]",geometryShader.c_str());
 		}
 
 		///Load the Tessellation Shader
@@ -145,13 +145,13 @@ bool glShaderProgram::load(const string& name){
 				s = ShaderManager::getInstance().loadShader(tessellationShader,ts,TESSELATION_SHADER);
 			}else{
 				///Use debug output for geometry and tessellation shaders as they are not vital for the application as of yet
-				Console::getInstance().d_errorfn("ShaderProgram: %s", glswGetError());
+				D_ERROR_FN("ShaderProgram: %s", glswGetError());
 			}
 		}
 		if(s){
 			attachShader(s);
 		}else{
-			Console::getInstance().d_errorfn("Could not load shader [ %s ]",tessellationShader.c_str());
+			D_ERROR_FN("Could not load shader [ %s ]",tessellationShader.c_str());
 		}
 
 		///Link and validate shaders into this program and update state
@@ -191,7 +191,7 @@ I32 glShaderProgram::cachedLoc(const std::string& name,bool uniform){
 }
 
 void glShaderProgram::link(){
-	Console::getInstance().d_printfn("Linking shader [ %s ]",getName().c_str());
+	D_PRINT_FN("Linking shader [ %s ]",getName().c_str());
 	glLinkProgram(_shaderProgramId);
 	_compiled = true;
 }

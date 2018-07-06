@@ -6,7 +6,7 @@
 using namespace std;
 
 bool glTexture::load(const string& name){
-	Console::getInstance().printfn("Loading Texture File [ %s ]",name.c_str());
+	PRINT_FN("Loading Texture File [ %s ]",name.c_str());
 	Gen();
 	if(_handle == 0)	return false;
 
@@ -24,7 +24,6 @@ bool glTexture::load(const string& name){
 		glTexParameterf(_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(_type, GL_GENERATE_MIPMAP, GL_TRUE);
 	}
-	if(_flipped) _img._flip = true;
 	if(_type == GL_TEXTURE_2D)
 	{
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -58,6 +57,8 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 	///If the current texture is a 2D one, than converting it to n^2 by n^2 dimensions will result in faster
 	///rendering for the cost of a slightly higher loading overhead
 	///The conversion code is based on the glmimg code from the glm library;
+	U8* img = New U8[(size_t)(w) * (size_t)(h) * (size_t)(d)];
+	memcpy(img, ptr, (size_t)(w) * (size_t)(h) * (size_t)(d));
 
     if (target == GL_TEXTURE_2D) {
 
@@ -76,10 +77,10 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
     
 		if((w != xSize2) || (h != ySize2)) {
 			U8* rdata = New U8[xSize2*ySize2*d];
-			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, ptr,
+			gluScaleImage(d==3?GL_RGB:GL_RGBA, w, h,GL_UNSIGNED_BYTE, img,
 									   xSize2, ySize2, GL_UNSIGNED_BYTE, rdata);
-			_img.Destroy();
-			_img.data = rdata;
+			delete[] img;
+			img = rdata;
 			w = xSize2; h = ySize2;
 		}
 	}
@@ -97,7 +98,7 @@ void glTexture::LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d)
 			depth = GL_RGBA;
 			break;
 	}
-	glTexImage2D(target, 0, depth, w, h, 0, depth, GL_UNSIGNED_BYTE, _img.data);
+	glTexImage2D(target, 0, depth, w, h, 0, depth, GL_UNSIGNED_BYTE, img);
 }
 
 

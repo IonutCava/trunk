@@ -11,16 +11,16 @@ void Guardian::LoadApplication(const string& entryPoint){
 	//Target FPS is 60. So all movement is capped around that value
 	Framerate::getInstance().Init(60);
 	Console::getInstance().printCopyrightNotice();
-	Console::getInstance().printfn("Starting the application!");
+	PRINT_FN("Starting the application!");
 	//Initialize application window and hardware devices
 	XML::loadScripts(entryPoint); //ToDo: This should be moved in each scene constructor! - Ionut Cava
 	app.Initialize();
 	LoadSettings(); //ToDo: This should be moved up so that it is the first instruction Guardian executes! - Ionut Cava
-	Console::getInstance().printfn("Initializing the rendering engine");
+	PRINT_FN("Initializing the rendering engine");
 	SceneManager::getInstance().load(string(""));
-	Console::getInstance().printfn("Initial data loaded ... ");
-	Console::getInstance().printfn("Entering main rendering loop ...");
-	GFXDevice::getInstance().initDevice();
+	PRINT_FN("Initial data loaded ... ");
+	PRINT_FN("Entering main rendering loop ...");
+	GFX_DEVICE.initDevice();
 	
 	_closing = false;
 }
@@ -36,17 +36,17 @@ void Guardian::ReloadEngine(){
 
 void Guardian::TerminateApplication(){
 
-	Console::getInstance().printfn("Closing application!");
+	PRINT_FN("Closing application!");
 	PostFX::getInstance().DestroyInstance();
-	PXDevice::getInstance().exitPhysics();
+	PHYSICS_DEVICE.exitPhysics();
 	SceneManager::getInstance().DestroyInstance();
 	ResourceManager::getInstance().DestroyInstance();
-	Console::getInstance().printfn("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
-	GFXDevice::getInstance().closeRenderingApi();
-	GFXDevice::getInstance().DestroyInstance();
-	SFXDevice::getInstance().closeAudioApi();
-	SFXDevice::getInstance().DestroyInstance();
-	Console::getInstance().printfn("Application shutdown complete!");
+	PRINT_FN("Closing hardware interface(GFX,SFX,PhysX, input,network) engine ...");
+	GFX_DEVICE.closeRenderingApi();
+	GFX_DEVICE.DestroyInstance();
+	SFX_DEVICE.closeAudioApi();
+	SFX_DEVICE.DestroyInstance();
+	PRINT_FN("Application shutdown complete!");
 }
 
 void Guardian::LoadSettings()

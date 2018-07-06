@@ -19,10 +19,10 @@ void NetworkScene::preRender(){
 	vec4 vSunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + cosf(_sunAngle.y) * 0.75f);
 
-	light->setLightProperties(string("position"),_sunVector);
-	light->setLightProperties(string("ambient"),_white);
-	light->setLightProperties(string("diffuse"),vSunColor);
-	light->setLightProperties(string("specular"),vSunColor);
+	light->setLightProperties(LIGHT_POSITION,_sunVector);
+	light->setLightProperties(LIGHT_AMBIENT,_white);
+	light->setLightProperties(LIGHT_DIFFUSE,vSunColor);
+	light->setLightProperties(LIGHT_SPECULAR,vSunColor);
 
 	Sky::getInstance().setParams(CameraManager::getInstance().getActiveCamera()->getEye(),vec3(_sunVector),false,true,false);
 	Sky::getInstance().draw();
@@ -87,8 +87,8 @@ void NetworkScene::checkPatches()
 	ASIO::getInstance().sendPacket(p);
 }
 
-bool NetworkScene::load(const string& name)
-{
+bool NetworkScene::load(const string& name){
+	setInitialData();
 	_GFX.resizeWindow(640,384);
 	ASIO::getInstance().init(_paramHandler.getParam<string>("serverAddress"),string("443"));
 

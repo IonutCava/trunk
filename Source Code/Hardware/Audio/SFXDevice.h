@@ -49,4 +49,5 @@ private:
 
 END_SINGLETON
 
+#define SFX_DEVICE SFXDevice::getInstance()
 #endif

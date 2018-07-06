@@ -15,7 +15,7 @@ LightManager::~LightManager(){
 }
 
 void LightManager::setAmbientLight(const vec4& light){
-	GFXDevice::getInstance().setAmbientLight(light);
+	GFX_DEVICE.setAmbientLight(light);
 }
 
 bool LightManager::clear(){
@@ -35,7 +35,7 @@ bool LightManager::addLight(Light* const light){
 	}
 	LightMap::iterator& it = _lights.find(light->getId());
 	if(it != _lights.end()){
-		Console::getInstance().errorfn("LightManager: Light with ID: %d already exists in light map",light->getId());
+		ERROR_FN("LightManager: Light with ID: %d already exists in light map",light->getId());
 		return false;
 	}
 
@@ -47,7 +47,7 @@ bool LightManager::removeLight(U32 lightId){
 	LightMap::iterator it = _lights.find(lightId);
 
 	if(it == _lights.end()){
-		Console::getInstance().errorfn("LightManager: Could not remove light with ID: %d",lightId);
+		ERROR_FN("LightManager: Could not remove light with ID: %d",lightId);
 		return false;
 	}
 
@@ -72,9 +72,11 @@ bool LightManager::checkId(U32 value){
 	return true;
 }
 
-void LightManager::update(){
+///Check light properties for every light
+///Update only if needed
+void LightManager::update(bool force){
 	for_each(LightMap::value_type& light, _lights){
-		light.second->onDraw();
+		light.second->updateState(force);
 	}
 }
 
@@ -83,25 +85,27 @@ void LightManager::generateShadowMaps(){
 	if(!ParamHandler::getInstance().getParam<bool>("enableShadows")) return;
 	//Tell the engine that we are drawing to depth maps
 	//Remember the previous render stage type
-	RENDER_STAGE prev = GFXDevice::getInstance().getRenderStage();
+	RENDER_STAGE prev = GFX_DEVICE.getRenderStage();
 	//set the current render stage to SHADOW_STAGE
-	GFXDevice::getInstance().setRenderStage(SHADOW_STAGE);
+	GFX_DEVICE.setRenderStage(SHADOW_STAGE);
 	//tell the rendering API to render geometry for depth storage
-	GFXDevice::getInstance().toggleDepthMapRendering(true);
+	GFX_DEVICE.toggleDepthMapRendering(true);
 	//generate shadowmaps for each light
 	for_each(LightMap::value_type& light, _lights){
 		light.second->generateShadowMaps();
 	}
 	//Set normal rendering settings
-	GFXDevice::getInstance().toggleDepthMapRendering(false);
+	GFX_DEVICE.toggleDepthMapRendering(false);
 	//Revert back to the previous stage
-	GFXDevice::getInstance().setRenderStage(prev);
+	GFX_DEVICE.setRenderStage(prev);
 }
 
 void LightManager::previewDepthMaps(){
-	GFXDevice::getInstance().renderInViewport(vec4(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
-	GFXDevice::getInstance().renderInViewport(vec4(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
-	GFXDevice::getInstance().renderInViewport(vec4(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
+	GFX_DEVICE.toggle2D(true);
+	GFX_DEVICE.renderInViewport(vec4(0,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,0));
+	GFX_DEVICE.renderInViewport(vec4(260,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,1));
+	GFX_DEVICE.renderInViewport(vec4(520,0,256,256), boost::bind(&LightManager::drawDepthMap, boost::ref(LightManager::getInstance()), 0,2));
+	GFX_DEVICE.toggle2D(false);
 }
 
 void LightManager::drawDepthMap(U8 light, U8 index){
@@ -109,11 +113,10 @@ void LightManager::drawDepthMap(U8 light, U8 index){
 	std::stringstream ss;
 	ss << "Light " << (U32)light << " viewport " << (U32)index;
 	renderQuad.setName(ss.str());
-	renderQuad.setDimensions(vec4(0,0,_lights[0]->getDepthMaps()[index]->getWidth(),_lights[0]->getDepthMaps()[index]->getHeight()));
+	renderQuad.setDimensions(vec4(0,0,_lights[0]->getDepthMaps()[index]->getWidth(),
+		                              _lights[0]->getDepthMaps()[index]->getHeight()));
 	_lights[0]->getDepthMaps()[index]->Bind(0);
-	GFXDevice::getInstance().toggle2D(true);
-	GFXDevice::getInstance().renderModel(&renderQuad);
-	GFXDevice::getInstance().toggle2D(false);
+	GFX_DEVICE.renderModel(&renderQuad);
 	_lights[0]->getDepthMaps()[index]->Unbind(0);
 }
 

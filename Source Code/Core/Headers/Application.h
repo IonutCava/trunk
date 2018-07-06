@@ -58,7 +58,7 @@ public:
 	inline void setMainWindowId(U8 id)  {mainWindowId = id;}
 	void   togglePreviewDepthMaps() {_previewDepthMaps = !_previewDepthMaps;}
 private:
-	void DrawScene();
+	bool DrawScene();
    END_SINGLETON
 
 #endif

@@ -17,7 +17,7 @@ bool ShaderProgram::checkBinding(U32 newShaderProgramId){
 }
 
 ShaderProgram::~ShaderProgram(){
-	Console::getInstance().d_printfn("Removing shader program [ %s ]", getName().c_str());
+	D_PRINT_FN("Removing shader program [ %s ]", getName().c_str());
 	for_each(Shader* s, _shaders){
 		ShaderManager::getInstance().removeShader(s);
 	}
@@ -60,7 +60,7 @@ void ShaderProgram::bind(){
     this->Uniform("modelViewInvMatrix",frust.getModelviewInvMatrix());
 	this->Uniform("modelViewMatrix",frust.getModelviewMatrix());
 	this->Uniform("modelViewProjectionMatrix",frust.getModelViewProjectionMatrix());
-	this->Uniform("lightProjectionMatrix",GFXDevice::getInstance().getLightProjectionMatrix());
+	this->Uniform("lightProjectionMatrix",GFX_DEVICE.getLightProjectionMatrix());
 	this->Uniform("zNear",par.getParam<F32>("zNear"));
 	this->Uniform("zFar",par.getParam<F32>("zFar"));
 	this->Uniform("screenWidth", app.getWindowDimensions().width);

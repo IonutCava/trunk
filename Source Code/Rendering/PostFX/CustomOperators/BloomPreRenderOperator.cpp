@@ -15,23 +15,20 @@ BloomPreRenderOperator::BloomPreRenderOperator(ShaderProgram* const bloomShader,
 	F32 width = Application::getInstance().getWindowDimensions().width;
 	F32 height = Application::getInstance().getWindowDimensions().height;
 	I32 w = width/4, h = height/4;
-	_tempBloomFBO = GFXDevice::getInstance().newFBO();
-	_tempBloomFBO->Create(FrameBufferObject::FBO_2D_COLOR,w,h);
-	_bright = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("bright"));
+	_tempBloomFBO = GFX_DEVICE.newFBO();
+	_tempBloomFBO->Create(FBO_2D_COLOR,w,h);
+	_bright = CreateResource<ShaderProgram>(ResourceDescriptor("bright"));
 
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator(){
 	RemoveResource(_bright);
-	if(_tempBloomFBO){
-		delete _tempBloomFBO;
-		_tempBloomFBO = NULL;
-	}
+	SAFE_DELETE(_tempBloomFBO);
 }
 
 void BloomPreRenderOperator::reshape(I32 width, I32 height){
 	if(_tempBloomFBO){
-		_tempBloomFBO->Create(FrameBufferObject::FBO_2D_COLOR, width/4,height/4);
+		_tempBloomFBO->Create(FBO_2D_COLOR, width/4,height/4);
 	}
 }
 
@@ -39,9 +36,9 @@ void BloomPreRenderOperator::operation(){
 	if(!_enabled) return;
 	if(!_renderQuad) return;
 	if(_inputFBO.empty()){
-		Console::getInstance().errorfn("Bloom Operator - no input FBO");
+		ERROR_FN("Bloom Operator - no input FBO");
 	}
-	GFXDevice& gfx = GFXDevice::getInstance();
+	GFXDevice& gfx = GFX_DEVICE;
 	ParamHandler& par = ParamHandler::getInstance();
 
 	gfx.toggle2D(true);

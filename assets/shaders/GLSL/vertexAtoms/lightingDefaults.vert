@@ -26,12 +26,14 @@ void computeLightVectors(){
 	vec3 vTangent = gl_MultiTexCoord1.xyz;
 	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
 	vec3 t = normalize(gl_NormalMatrix * vTangent);
-	vec3 b = cross(t, n);
+	vec3 b = cross(n, t);
 	
+	vNormalMV = n;
+
 	vec4 vLightPosMV = gl_LightSource[0].position;	
 	vVertexMV = vec3(gl_ModelViewMatrix * gl_Vertex);	
 
-	vec3 tmpVec;
+	vec3 tmpVec; 
 
 	if(vLightPosMV.w == LIGHT_DIRECTIONAL)
 		tmpVec = -vLightPosMV.xyz;					
@@ -39,7 +41,7 @@ void computeLightVectors(){
 		tmpVec = vLightPosMV.xyz - vVertexMV.xyz;	
 
 	vPixToLightMV = tmpVec;
-	vNormalMV = n;
+	
 	if(mode == MODE_PHONG){
 		vPixToLightTBN[0].xyz = tmpVec.xyz;
 		vPixToLightTBN[0].w = vLightPosMV.w;

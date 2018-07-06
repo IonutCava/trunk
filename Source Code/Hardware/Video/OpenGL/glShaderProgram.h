@@ -18,7 +18,7 @@
 #ifndef GLSL_H_
 #define GLSL_H_
 
-#include "Hardware/Video/ShaderProgram.h"
+#include "../ShaderProgram.h"
 
 class glShaderProgram : public ShaderProgram {
 

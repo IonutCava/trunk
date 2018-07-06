@@ -21,11 +21,11 @@ glShader::glShader(const std::string& name, SHADER_TYPE type) : Shader(name, typ
 	}
 	case TESSELATION_SHADER : {
 		_shader = NULL; 
-		Console::getInstance().errorfn("GLSL: Tesselation not yet implemented"); 
+		ERROR_FN("GLSL: Tesselation not yet implemented"); 
 		break;
 	}
 	default:
-		Console::getInstance().errorfn("GLSL: Unknown shader type received: %d",type);
+		ERROR_FN("GLSL: Unknown shader type received: %d",type);
 		break;
   }
 }
@@ -36,7 +36,7 @@ glShader::~glShader(){
 
 bool glShader::load(const std::string& source){
 	if(source.empty()){
-		Console::getInstance().errorfn("GLSL Manager: Shader [ %s ] not found!",getName().c_str());
+		ERROR_FN("GLSL Manager: Shader [ %s ] not found!",getName().c_str());
 		return false;
 	}
 	std::string parsedSource = preprocessIncludes(source,getName(),0);
@@ -58,16 +58,16 @@ void glShader::validate() {
 	glGetShaderInfoLog(_shader, BUFFER_SIZE, &length, buffer);
 	glGetShaderiv(_shader, GL_COMPILE_STATUS, &status);
 	if(status == GL_FALSE){
-		Console::getInstance().errorfn("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
+		ERROR_FN("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
 	}else{
-		Console::getInstance().d_printfn("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
+		D_PRINT_FN("[GLSL Manager] Validating shader [ %s ]: %s", _name.c_str(),buffer);
 	}
 }
 
 std::string glShader::preprocessIncludes( const std::string& source, const std::string& filename, int level /*= 0 */ ){
 
 	if(level > 32){
-		Console::getInstance().errorfn("glShader: Header inclusion depth limit reached, might be caused by cyclic header inclusion");
+		ERROR_FN("glShader: Header inclusion depth limit reached, might be caused by cyclic header inclusion");
 	}
 
 	using namespace std;
@@ -102,7 +102,7 @@ std::string glShader::preprocessIncludes( const std::string& source, const std::
 			if(include_string.empty()){
 				stringstream str;
 				str <<  getName() <<"(" << line_number << ") : fatal error: cannot open include file " << include_file;
-				Console::getInstance().errorfn("glShader: %s",str.str());
+				ERROR_FN("glShader: %s",str.str());
 			}
 			output << preprocessIncludes(include_string, include_file, level + 1) << endl;
 		}

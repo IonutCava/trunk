@@ -26,6 +26,7 @@
 
 #include "resource.h"
 #include <xmmintrin.h>
+#include <boost/crc.hpp>
 
 namespace Util {
 

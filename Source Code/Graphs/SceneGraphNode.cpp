@@ -26,15 +26,11 @@ SceneGraphNode::SceneGraphNode(SceneNode* node) : _node(node),
 SceneGraphNode::~SceneGraphNode(){
 	//delete children nodes recursively
 	for_each(NodeChildren::value_type& it, _children){
-		delete it.second;
-		it.second = NULL;
+		SAFE_DELETE(it.second);
 	}
 
 	//and delete the transform bound to this node
-	if(_transform != NULL) {
-		delete _transform;
-		_transform = NULL;
-	} 
+	SAFE_DELETE(_transform);
 	_children.clear();
 
 }
@@ -55,7 +51,7 @@ bool SceneGraphNode::unload(){
 	}
 	//Some debug output ...
 	if(!_silentDispose && getParent() && _node){
-		Console::getInstance().printfn("Removing: %s (%s)",_node->getName().c_str(), getName().c_str());
+		PRINT_FN("Removing: %s (%s)",_node->getName().c_str(), getName().c_str());
 	}
 	//if not root
 	if(getParent()){
@@ -91,12 +87,12 @@ void SceneGraphNode::print(){
 		}
 	}
 	//Print our current node's information
-	Console::getInstance().printfn("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),getNode()->getName().c_str(),material.c_str(),shader.c_str());
+	PRINT_FN("%s (Resource: %s, Material: %s (Shader: %s) )", getName().c_str(),getNode()->getName().c_str(),material.c_str(),shader.c_str());
 	//Repeat for each child, but prefix it with the appropriate number of dashes
 	//Based on our ancestor counting earlier
 	for_each(NodeChildren::value_type& it, _children){
 		for(U8 j = 0; j < i; j++){
-			Console::getInstance().printf("-");
+			PRINT_F("-");
 		}
 		it.second->print();
 	}

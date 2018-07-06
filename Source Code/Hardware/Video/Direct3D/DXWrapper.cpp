@@ -8,7 +8,8 @@ using namespace std;
 
 void DX_API::initHardware()
 {
-	Console::getInstance().printfn("Initializing Direct3D rendering API! ");
+	PRINT_FN("Initializing Direct3D rendering API! ");
+	D3D_ENUM_TABLE::fill();
 }
 
 void DX_API::closeRenderingApi()
@@ -70,7 +71,7 @@ void DX_API::setOrthoProjection(const vec4& rect, const vec2& planes)
 void DX_API::setPerspectiveProjection(F32 FoV,F32 aspectRatio, const vec2& planes)
 {
 }
-void DX_API::drawTextToScreen(Text* text)
+void DX_API::drawTextToScreen(GuiElement* const text)
 {
 }
 
@@ -78,11 +79,11 @@ void DX_API::drawCharacterToScreen(void* ,char)
 {
 }
 
-void DX_API::drawButton(Button* button)
+void DX_API::drawButton(GuiElement* const button)
 {
 }
 
-void DX_API::drawFlash(GuiFlash* flash)
+void DX_API::drawFlash(GuiElement* const flash)
 {
 }
 void DX_API::drawBox3D(vec3 min, vec3 max)
@@ -94,7 +95,7 @@ void DX_API::renderInViewport(const vec4& rect, boost::function0<void> callback)
 
 void DX_API::renderModel(Object3D* const model)
 {
-	Type type = TRIANGLES;
+	PRIMITIVE_TYPE type = TRIANGLES;
 	//render in the switch or after. hacky, but works -Ionut
 	bool b_continue = true;
 	switch(model->getType()){
@@ -113,7 +114,7 @@ void DX_API::renderModel(Object3D* const model)
 			break;
 		//We should never enter the default case!
 		default:
-			Console::getInstance().errorfn("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
+			ERROR_FN("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
 			b_continue = false;
 			break;
 	}
@@ -125,7 +126,7 @@ void DX_API::renderModel(Object3D* const model)
 	}
 }
 
-void DX_API::renderElements(Type t, Format f, U32 count, const void* first_element)
+void DX_API::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element)
 {
 }
 
@@ -138,15 +139,11 @@ void DX_API::initDevice()
 {
 }
 
-void DX_API::toggleWireframe(bool state)
-{
-}
-
 void DX_API::Screenshot(char *filename, const vec4& rect)
 {
 }
 
-void DX_API::setObjectState(Transform* const transform)
+void DX_API::setObjectState(Transform* const transform, bool force)
 {
 }
 
@@ -157,4 +154,13 @@ void DX_API::releaseObjectState(Transform* const transform)
 F32 DX_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph)
 {
 	return 0;
+}
+
+RenderStateBlock* DX_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor)
+{
+	return NULL;
+}
+
+void DX_API::updateStateInternal(RenderStateBlock* block, bool force)
+{
 }

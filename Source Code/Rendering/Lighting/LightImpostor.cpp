@@ -1,5 +1,6 @@
 #include "Headers/LightImpostor.h"
 #include "Managers/Headers/ResourceManager.h" 
+#include "Hardware/Video/RenderStateBlock.h"
 
 LightImpostor::LightImpostor(const std::string& lightName, F32 radius) : _visible(false){
 
@@ -7,12 +8,20 @@ LightImpostor::LightImpostor(const std::string& lightName, F32 radius) : _visibl
 	materialDescriptor.setFlag(true); //No shader
 	ResourceDescriptor light(lightName+"_impostor");
 	light.setFlag(true); //No default material
-	_dummy = ResourceManager::getInstance().loadResource<Sphere3D>(light);
-	_dummy->setMaterial(ResourceManager::getInstance().loadResource<Material>(materialDescriptor));
-	_dummy->setRenderState(false);
+	_dummy = CreateResource<Sphere3D>(light);
+	_dummy->setMaterial(CreateResource<Material>(materialDescriptor));
+	if(GFX_DEVICE.getDeferredRendering()){
+		_dummy->getMaterial()->setShaderProgram("DeferredShadingPass1.Impostor");
+	}else{
+		_dummy->getMaterial()->setShaderProgram("lighting.NoTexture");
+	}
+	_dummy->setDrawState(false);
 	_dummy->setResolution(8);
 	_dummy->setRadius(radius);
-	_dummy->getMaterial()->getRenderState().lightingEnabled() = false;
+	RenderStateBlockDescriptor dummyDesc = _dummy->getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
+	dummyDesc._fixedLighting = false;
+	///get's deleted by the material
+	_dummyStateBlock = _dummy->getMaterial()->setRenderStateBlock(dummyDesc,FINAL_STAGE);
 }
 
 LightImpostor::~LightImpostor(){
@@ -21,12 +30,13 @@ LightImpostor::~LightImpostor(){
 }
 
 void LightImpostor::render(SceneGraphNode* const lightNode){
-	GFXDevice& gfx = GFXDevice::getInstance();
-	//if(gfx.getRenderStage() != FINAL_STAGE) return;
+	GFXDevice& gfx = GFX_DEVICE;
+	if(gfx.getRenderStage() != FINAL_STAGE && gfx.getRenderStage() != DEFERRED_STAGE) return;
+	SET_STATE_BLOCK(_dummyStateBlock);
 	gfx.setObjectState(lightNode->getTransform());
-	gfx.setRenderState(_dummy->getMaterial()->getRenderState());
 	gfx.setMaterial(_dummy->getMaterial());
+	_dummy->getMaterial()->getShaderProgram()->bind();
+	_dummy->getMaterial()->getShaderProgram()->Uniform("material",_dummy->getMaterial()->getMaterialMatrix());
 		gfx.renderModel(_dummy);
-	gfx.restoreRenderState();
 	gfx.releaseObjectState(lightNode->getTransform());
 }

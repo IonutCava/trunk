@@ -53,7 +53,6 @@ float ShadowMapping(out vec3 vPixPosInDepthMap){
 				break;
 		};
 	}
-	
 	return fShadow;
 }
 

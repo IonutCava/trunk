@@ -1,4 +1,5 @@
 #include "texture.h"
+#include "Utility/Headers/ImageTools.h"
 
 bool Texture::_generateMipmaps = true;
 unordered_map<U8, U32> Texture::textureBoundMap;
@@ -22,22 +23,40 @@ Texture::Texture(bool flipped) : Resource(),
 }
 
 
-bool Texture::LoadFile(U32 target, const std::string& name)
-{
+/// Use DevIL to load a file intro a Texture Object
+bool Texture::LoadFile(U32 target, const std::string& name){
+
 	setResourceLocation(name);
-	ImageTools::OpenImage(name,_img);
-	if(!_img.data) {
-		Console::getInstance().errorfn("Texture: Unable to load texture [ %s ]", name.c_str());
+	/// Create a new imageData object
+	ImageTools::ImageData img;
+	/// Flip image if needed
+	if(_flipped){
+		img._flip = true;
+	}
+	/// Save file contents in  the "img" object
+	ImageTools::OpenImage(name,img,_hasTransparency);
+	/// validate data
+	if(!img.data) {
+		ERROR_FN("Texture: Unable to load texture [ %s ]", name.c_str());
 		return false;
 	}
-	_width = _img.w; _height = _img.h; _bitDepth = _img.d;
-	LoadData(target, _img.data, _img.w, _img.h, _img.d);
-	_img.Destroy();
+
+	/// Get width
+	_width = img.w;
+	/// Get height
+	_height = img.h;
+	/// Get bitdepth
+	_bitDepth = img.d;
+	/// Create a new API-dependent texture object
+	LoadData(target, img.data, _width, _height, _bitDepth);
+	/// Unload file data - ImageData destruction handles this
+	//img.Destroy();
 	return true;
 }
 
 void Texture::resize(U16 width, U16 height){
-	_img.resize(width,height);
+	//_img.resize(width,height);
+	/// ToDo: use gluScaleImage if this is needed!
 }
 
 bool Texture::checkBinding(U16 unit, U32 handle){

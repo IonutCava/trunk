@@ -24,26 +24,16 @@
 class SceneGraph;
 class SceneRoot : public SceneNode{
 public:
-	SceneRoot() : SceneNode("root"){useDefaultMaterial(false);}
-	void render(SceneGraphNode* const node) {return;}
+	SceneRoot() : SceneNode("root",TYPE_ROOT){useDefaultMaterial(false);}
+	void render(SceneGraphNode* const sgn) {return;}
 
 	bool load(const std::string& name) {return true;}
-	void postLoad(SceneGraphNode* const node) {};	
+	void postLoad(SceneGraphNode* const sgn) {};	
 	bool unload() {return true;}
 	void onDraw() {};
-	bool computeBoundingBox(SceneGraphNode* const node){return true;}
+	bool computeBoundingBox(SceneGraphNode* const sgn){return true;}
 	void createCopy(){}
 	void removeCopy(){}
-};
-///Each render state could be attributed to any number of SceneGraphNodes.
-///After sorting by shader, we start rendring each VisualNodePropertie's parents as long as they are visible
-class VisualNodeProperties{
-	RenderState& getRenderState() {return _s;}
-	void         addParent(SceneGraphNode* node) {_parents.push_back(node);}
-	void         removeParent(const std::string& name);
-private:
-	RenderState _s;
-	std::vector<SceneGraphNode*> _parents;
 };
 
 class SceneGraphNode{
@@ -54,7 +44,8 @@ public:
 	~SceneGraphNode();
 	bool unload();
 	void print();
-	void updateTransformsAndBounds();
+	void checkBoundingBoxes();
+	void updateTransforms();
 	void updateVisualInformation();
 /*Node Management*/
 template<class T>
@@ -111,7 +102,9 @@ private:
 
 	///_initialBoundingBox is a copy of the initialy calculate BB for transformation
 	///it should be copied in every computeBoungingBox call;
-	BoundingBox _initialBoundingBox, _boundingBox; 
+	BoundingBox _initialBoundingBox;
+	BoundingBox _boundingBox; 
+
 	Transform*	_transform;
 	SceneGraph* _sceneGraph;
 	U32 _childQueue,_updateTimer;

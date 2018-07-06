@@ -32,7 +32,7 @@ bool Scene::clean(){ //Called when application is idle
 			p << (*iter).ModelName;
 			ASIO::getInstance().sendPacket(p);
 			while(!loadModel(*iter)){
-				Console::getInstance().printfn("Waiting for file .. ");
+				PRINT_FN("Waiting for file .. ");
 			}
 		}
 		else
@@ -93,9 +93,9 @@ bool Scene::loadModel(const FileData& data){
 	ResourceDescriptor model(data.ItemName);
 	model.setResourceLocation(data.ModelName);
 	model.setFlag(true);
-	Mesh *thisObj = _resManager.loadResource<Mesh>(model);
+	Mesh *thisObj = CreateResource<Mesh>(model);
 	if (!thisObj){
-		Console::getInstance().errorfn("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
+		ERROR_FN("SceneManager: Error loading model [ %s ]",  data.ModelName.c_str());
 		return false;
 	}
 	SceneGraphNode* meshNode = _sceneGraph->getRoot()->addNode(thisObj);
@@ -113,34 +113,34 @@ bool Scene::loadGeometry(const FileData& data){
 	ResourceDescriptor item(data.ItemName);
 	item.setResourceLocation(data.ModelName);
 	if(data.ModelName.compare("Box3D") == 0) {
-			thisObj = _resManager.loadResource<Box3D>(item);
+			thisObj = CreateResource<Box3D>(item);
 			dynamic_cast<Box3D*>(thisObj)->setSize(data.data);
 
 	} else if(data.ModelName.compare("Sphere3D") == 0) {
-			thisObj = _resManager.loadResource<Sphere3D>(item);
+			thisObj = CreateResource<Sphere3D>(item);
 			dynamic_cast<Sphere3D*>(thisObj)->setRadius(data.data);
 
 	} else if(data.ModelName.compare("Quad3D") == 0)	{
 			vec3 scale = data.scale;
 			vec3 position = data.position;
-			thisObj = _resManager.loadResource<Quad3D>(item);
+			thisObj = CreateResource<Quad3D>(item);
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_LEFT,vec3(0,1,0));
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::TOP_RIGHT,vec3(1,1,0));
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_LEFT,vec3(0,0,0));
 			dynamic_cast<Quad3D*>(thisObj)->setCorner(Quad3D::BOTTOM_RIGHT,vec3(1,0,0));
 	} else if(data.ModelName.compare("Text3D") == 0) {
 		
-			thisObj =_resManager.loadResource<Text3D>(item);
+			thisObj =CreateResource<Text3D>(item);
 			dynamic_cast<Text3D*>(thisObj)->getWidth() = data.data;
 			dynamic_cast<Text3D*>(thisObj)->getText() = data.data2;
 	}else{
-		Console::getInstance().errorfn("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
+		ERROR_FN("SCENEMANAGER: Error adding unsupported geometry to scene: [ %s ]",data.ModelName.c_str());
 		return false;
 	}
 	Material* tempMaterial = XML::loadMaterial(data.ItemName+"_material");
 	if(!tempMaterial){
 		ResourceDescriptor materialDescriptor(data.ItemName+"_material");
-		tempMaterial = ResourceManager::getInstance().loadResource<Material>(materialDescriptor);
+		tempMaterial = CreateResource<Material>(materialDescriptor);
 		tempMaterial->setDiffuse(data.color);
 		tempMaterial->setAmbient(data.color);
 	}
@@ -162,7 +162,7 @@ Light* Scene::addDefaultLight(){
 	ResourceDescriptor defaultLight("Default omni light "+ss.str());
 	defaultLight.setId(0); //descriptor ID is not the same as light ID. This is the light's slot!!
 	defaultLight.setResourceLocation("root");
-	Light* l = _resManager.loadResource<Light>(defaultLight);
+	Light* l = CreateResource<Light>(defaultLight);
 	l->setLightType(LIGHT_DIRECTIONAL);
 	_sceneGraph->getRoot()->addNode(l);
 	addLight(l);
@@ -177,16 +177,13 @@ SceneGraphNode* Scene::addGeometry(Object3D* const object){
 
 bool Scene::removeGeometry(SceneNode* node){
 	if(!node) {
-		Console::getInstance().errorfn("Trying to delete NULL scene node!");
+		ERROR_FN("Trying to delete NULL scene node!");
 		return false;
 	}
 	SceneGraphNode* _graphNode = _sceneGraph->findNode(node->getName());
-	if(_graphNode){
-		delete _graphNode;
-		_graphNode = NULL;
-		return true;
-	}
-	return false;
+
+	SAFE_DELETE_CHECK(_graphNode);
+
 }
 
 bool Scene::load(const std::string& name){
@@ -194,7 +191,7 @@ bool Scene::load(const std::string& name){
 	if(TerrainInfoArray.empty()) return true;
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
 		ResourceDescriptor terrain(TerrainInfoArray[i]->getVariable("terrainName"));
-		Terrain* temp = _resManager.loadResource<Terrain>(terrain);
+		Terrain* temp = CreateResource<Terrain>(terrain);
 		SceneGraphNode* terrainTemp = root->addNode(temp);
 		terrainTemp->useDefaultTransform(false);
 		terrainTemp->setTransform(NULL);
@@ -214,14 +211,10 @@ bool Scene::unload(){
 	}
 	_inputManager.terminate();
 	_inputManager.DestroyInstance();
-	if(_lightTexture != NULL){
-		delete _lightTexture;
-		_lightTexture = NULL;
-	}
-	if(_deferredBuffer != NULL){
-		delete _deferredBuffer;
-		_deferredBuffer = NULL;
-	}
+
+	SAFE_DELETE(_lightTexture);
+	SAFE_DELETE(_deferredBuffer);
+
 	if(_deferredShader != NULL){
 		RemoveResource(_deferredShader);
 	}
@@ -241,8 +234,8 @@ void Scene::clearObjects(){
 	VegetationDataArray.clear();
 	PendingDataArray.clear();
 	assert(_sceneGraph);
-	delete _sceneGraph;
-	_sceneGraph = NULL;
+
+	SAFE_DELETE(_sceneGraph);
 }
 
 void Scene::clearLights(){
@@ -251,7 +244,7 @@ void Scene::clearLights(){
 
 void Scene::clearEvents()
 {
-	Console::getInstance().printfn("Stopping all events ...");
+	PRINT_FN("Stopping all events ...");
 	_events.clear();
 }
 
@@ -338,12 +331,10 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 		case OIS::KC_R:
 			Guardian::getInstance().ReloadEngine();
 			break;
-		case OIS::KC_N:
-			_GFX.toggleWireframe();
-			break;
-		case OIS::KC_B:
+		case OIS::KC_B:{
+			PRINT_FN("Toggling Bounding Boxes");
 			SceneManager::getInstance().toggleBoundingBoxes();
-			break;
+					   }break;
 		case OIS::KC_ADD:
 			if (speedFactor < 10)  speedFactor += 0.1f;
 			break;
@@ -354,7 +345,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			Application::getInstance().togglePreviewDepthMaps();
 			break;
 		case OIS::KC_F12:
-			GFXDevice::getInstance().Screenshot("screenshot_",vec4(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
+			GFX_DEVICE.Screenshot("screenshot_",vec4(0,0,Application::getInstance().getWindowDimensions().x,Application::getInstance().getWindowDimensions().y));
 			break;
 		default:
 			break;

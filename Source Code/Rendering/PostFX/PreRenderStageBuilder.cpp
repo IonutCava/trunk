@@ -8,10 +8,8 @@ PreRenderStageBuilder::PreRenderStageBuilder(){
 }
 
 PreRenderStageBuilder::~PreRenderStageBuilder(){
-	if(_renderStage){
-		delete _renderStage;
-		_renderStage = NULL;
-	}
+
+	SAFE_DELETE(_renderStage);
 }
 
 PreRenderOperator*  PreRenderStageBuilder::addSSAOOperator(ShaderProgram* const SSAOShader, Quad3D* target, bool& state, FrameBufferObject* result) {

@@ -20,8 +20,8 @@
 
 #include "../FrameBufferObject.h"
 
-class glFrameBufferObject : public FrameBufferObject
-{
+class glFrameBufferObject : public FrameBufferObject {
+
 public:
 
 	glFrameBufferObject();

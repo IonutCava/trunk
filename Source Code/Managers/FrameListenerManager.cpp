@@ -1,35 +1,51 @@
 #include "Headers/FrameListenerManager.h"
-#include "Rendering/Headers/FrameListener.h"
 
-//Register a new Frame Listener to be processed every frame
+///Register a new Frame Listener to be processed every frame
 void FrameListenerManager::registerFrameListener(FrameListener* listener){
-		//Check if the listener is in the trash bin
-		ListenerMap::iterator it = _removedListeners.find(listener->getName());
-		//If it is, restore it, else, just add a new one
-		if (it != _removedListeners.end()){
-			_removedListeners.erase(it);
-		}else{
-			_listeners.insert(std::make_pair(listener->getName(), listener));
-		}
+	///Check ifthe listener has a name or we should assign an id
+	if(listener->getName().empty()){
+		///Use the classic stringstream method
+		std::stringstream ss;
+		ss << "generic_f_listener_";
+		ss << (_listeners.size() + _removedListeners.size());
+		listener->setName(ss.str());
+	}
+	///Check if the listener is in the trash bin
+	ListenerMap::iterator it = _removedListeners.find(listener->getName());
+	///If it is, restore it, else, just add a new one
+	if (it != _removedListeners.end()){
+		_removedListeners.erase(it);
+	}else{
+		_listeners.insert(std::make_pair(listener->getName(), listener));
+	}
 
 }
 
-//Remove an existent Frame Listener from our map
+///Remove an existent Frame Listener from our map
 void FrameListenerManager::removeFrameListener(FrameListener* listener){
 	ListenerMap::iterator it = _listeners.find(listener->getName());
 	if(it != _listeners.end()){
 		_removedListeners.insert(std::make_pair(it->second->getName(),it->second));
 	}else{
-		Console::getInstance().errorfn("FrameListener: Trying to remove non-existant listener [ %s ]", listener->getName().c_str());
+		ERROR_FN("FrameListener: Trying to remove non-existant listener [ %s ]", listener->getName().c_str());
 	}
 }
 
-//For each listener, notify of current event and check results
-//If any Listener returns false, the whole manager returns false for this specific step
-//If the manager returns false at any step, the application exists
+///For each listener, notify of current event and check results
+///If any Listener returns false, the whole manager returns false for this specific step
+///If the manager returns false at any step, the application exists
 bool FrameListenerManager::frameStarted(const FrameEvent& evt){
 	for_each(ListenerMap::value_type& listener, _listeners){
 		if(!listener.second->frameStarted(evt)){
+			return false;
+		}
+	}
+	return true;
+}
+
+bool FrameListenerManager::framePreRenderEnded(const FrameEvent& evt){
+	for_each(ListenerMap::value_type& listener, _listeners){
+		if(!listener.second->framePreRenderEnded(evt)){
 			return false;
 		}
 	}
@@ -54,7 +70,7 @@ bool FrameListenerManager::frameEnded(const FrameEvent& evt){
 	return true;
 }
 
-//When the application is idle, we should really clear up old events
+///When the application is idle, we should really clear up old events
 void FrameListenerManager::idle(){
 	for_each(ListenerMap::value_type& listener, _removedListeners){
 		_listeners.erase(listener.second->getName());
@@ -62,11 +78,11 @@ void FrameListenerManager::idle(){
 	_removedListeners.clear();
 }
 
-//Please see the Ogre3D documentation about this
+///Please see the Ogre3D documentation about this
 void FrameListenerManager::createEvent(FRAME_EVENT_TYPE type, FrameEvent& evt){
-		F32 now = GETMSTIME();
-		evt._timeSinceLastEvent = calculateEventTime(now, FRAME_EVENT_ANY);
-		evt._timeSinceLastFrame = calculateEventTime(now, type);
+		evt._currentTime = GETMSTIME();
+		evt._timeSinceLastEvent = calculateEventTime(evt._currentTime, FRAME_EVENT_ANY);
+		evt._timeSinceLastFrame = calculateEventTime(evt._currentTime, type);
 }
 
 F32 FrameListenerManager::calculateEventTime(F32 currentTime, FRAME_EVENT_TYPE type){

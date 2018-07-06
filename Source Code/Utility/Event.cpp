@@ -33,7 +33,7 @@ void Event::run(){
 
 		
 	}
-	Console::getInstance().printfn("EventManager: Deleting thread: %d", boost::this_thread::get_id());
+	PRINT_FN("EventManager: Deleting thread: %d", boost::this_thread::get_id());
 	_mutex.lock();
 	_end = false;
 	_mutex.unlock();

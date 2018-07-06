@@ -3,14 +3,14 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/CameraManager.h"
 #include "Core/Headers/Application.h"
-#include "Graphs/Headers/RenderQueue.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Hardware/Video/RenderStateBlock.h"
+
 using namespace std;
 
-WaterPlane::WaterPlane() : SceneNode(), _plane(NULL), _texture(NULL), _shader(NULL),
-						   _planeTransform(NULL), _node(NULL), _planeSGN(NULL){
-	_reflectionFBO = GFXDevice::getInstance().newFBO();
-}
+WaterPlane::WaterPlane() : SceneNode(TYPE_WATER), Reflector(TYPE_WATER_SURFACE,ivec2(2048,2048)), 
+						   _plane(NULL),_texture(NULL), _shader(NULL),_planeTransform(NULL),
+						   _node(NULL),_planeSGN(NULL),_waterStateBlock(NULL),_waterLevel(0){}
 
 bool WaterPlane::load(const std::string& name){
 	ResourceDescriptor waterTexture("waterTexture");
@@ -19,17 +19,21 @@ bool WaterPlane::load(const std::string& name){
 	waterTexture.setResourceLocation(ParamHandler::getInstance().getParam<string>("assetsLocation")+"/misc_images/terrain_water_NM.jpg");
 	waterPlane.setFlag(true); //No default material
 	//The material is responsible for the destruction of the textures and shaders it receives!!!!
-	_texture = ResourceManager::getInstance().loadResource<Texture2D>(waterTexture);
-	_shader = ResourceManager::getInstance().loadResource<ShaderProgram>(waterShader);
-	_plane = ResourceManager::getInstance().loadResource<Quad3D>(waterPlane);
+	_texture = CreateResource<Texture2D>(waterTexture);
+	_shader = CreateResource<ShaderProgram>(waterShader);
+	_plane = CreateResource<Quad3D>(waterPlane);
 	if(!_texture && !_shader && !_plane) return false;
 	ResourceDescriptor waterMaterial("waterMaterial");
-	setMaterial(ResourceManager::getInstance().loadResource<Material>(waterMaterial));
+	setMaterial(CreateResource<Material>(waterMaterial));
 	assert(getMaterial() != NULL);
 	getMaterial()->setTexture(Material::TEXTURE_BASE, _texture);
 	getMaterial()->setShaderProgram(_shader->getName());
-	getMaterial()->getRenderState().cullingEnabled() = false;
-	getMaterial()->getRenderState().blendingEnabled() = true;
+
+	RenderStateBlockDescriptor waterMatDesc = getMaterial()->getRenderState(FINAL_STAGE)->getDescriptor();
+	waterMatDesc.setCullMode(CULL_MODE_None);
+	waterMatDesc.setBlend(true, BLEND_PROPERTY_SrcAlpha, BLEND_PROPERTY_InvSrcAlpha);
+	_waterStateBlock = getMaterial()->setRenderStateBlock(waterMatDesc,FINAL_STAGE);
+
 	_name = name; //optional
 
 	_shader->bind();
@@ -44,31 +48,30 @@ bool WaterPlane::load(const std::string& name){
 	_plane->setCorner(Quad3D::TOP_RIGHT, vec3(eyePos.x + _farPlane, 0, eyePos.z - _farPlane));
 	_plane->setCorner(Quad3D::BOTTOM_LEFT, vec3(eyePos.x - _farPlane, 0, eyePos.z + _farPlane));
 	_plane->setCorner(Quad3D::BOTTOM_RIGHT, vec3(eyePos.x + _farPlane, 0, eyePos.z + _farPlane));
-	_plane->setRenderState(false);
+	_plane->setDrawState(false);
 	
-	Console::getInstance().printfn("Creating FBO for water reflections in object [ %s ]",getName().c_str());
-	_reflectionFBO->Create(FrameBufferObject::FBO_2D_COLOR, 2048, 2048);
 	return true;
 }
 
-void WaterPlane::postLoad(SceneGraphNode* const node){
-	_node = node;
-	_planeSGN = node->addNode(_plane);
+void WaterPlane::postLoad(SceneGraphNode* const sgn){
+	_node = sgn;
+	_planeSGN = _node->addNode(_plane);
 	_planeSGN->setActive(false);
 	_planeTransform = _planeSGN->getTransform();
-	//The sky doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-	addToRenderExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
+	///The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
+	addToDrawExclusionMask(SHADOW_STAGE | SSAO_STAGE | DEPTH_STAGE);
 }
 
-bool WaterPlane::computeBoundingBox(SceneGraphNode* const node){
+bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = _node->getBoundingBox();
 	if(bb.isComputed()) return true;
-	F32 waterLevel = SceneManager::getInstance().getActiveScene()->getWaterLevel();
+	_waterLevel = SceneManager::getInstance().getActiveScene()->getWaterLevel();
 	F32 waterDepth = SceneManager::getInstance().getActiveScene()->getWaterDepth();
-	bb.set(vec3(-_farPlane,waterLevel - waterDepth, -_farPlane),vec3(_farPlane, waterLevel, _farPlane));
-	Console::getInstance().printfn("Water plane height placement: %f", bb.getMax().y);
-	Console::getInstance().printfn("Water plane depth level: %f", bb.getMin().y);
-	bool state = SceneNode::computeBoundingBox(node);
+	bb.set(vec3(-_farPlane,_waterLevel - waterDepth, -_farPlane),vec3(_farPlane, _waterLevel, _farPlane));
+	_planeSGN->getBoundingBox().Add(bb);
+	PRINT_FN("Water plane height placement: %f", bb.getMax().y);
+	PRINT_FN("Water plane depth level: %f", bb.getMin().y);
+	bool state = SceneNode::computeBoundingBox(sgn);
 	_shader->bind();
 		_shader->Uniform("win_width",  (I32)Application::getInstance().getWindowDimensions().width);
 		_shader->Uniform("win_height", (I32)Application::getInstance().getWindowDimensions().height);
@@ -80,15 +83,9 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode* const node){
 
 bool WaterPlane::unload(){
 	bool state = false;
-	if(_reflectionFBO) {
-		delete _reflectionFBO;
-		_reflectionFBO = NULL;
-	}
 	state = SceneNode::unload();
 	return state;
 }
-
-
 
 
 void WaterPlane::setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency){
@@ -106,10 +103,12 @@ void WaterPlane::onDraw(){
 }
 
 void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
-	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
-	GFXDevice::getInstance().ignoreStateChanges(true);
-	GFXDevice::getInstance().setRenderState(getMaterial()->getRenderState());
-	_reflectionFBO->Bind(0);
+	
+	SET_STATE_BLOCK(_waterStateBlock);
+
+	GFX_DEVICE.setMaterial(getMaterial());
+	
+	_reflectedTexture->Bind(0);
 	_texture->Bind(1);	
 	_shader->bind();
 	_shader->UniformTexture("texWaterReflection", 0);
@@ -117,18 +116,54 @@ void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 }
 
 void WaterPlane::releaseMaterial(){
-	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
-	//_shader->unbind();
+
 	_texture->Unbind(1);
-	_reflectionFBO->Unbind(0);
-	GFXDevice::getInstance().ignoreStateChanges(false);	
-	GFXDevice::getInstance().restoreRenderState();
+	_reflectedTexture->Unbind(0);
 }
 
-void WaterPlane::render(SceneGraphNode* const node){
-	if(!getRenderState(GFXDevice::getInstance().getRenderStage())) return;
+void WaterPlane::render(SceneGraphNode* const sgn){
 	
-	GFXDevice::getInstance().setObjectState(_planeTransform);
-	GFXDevice::getInstance().renderModel(_plane);
-	GFXDevice::getInstance().releaseObjectState(_planeTransform);
+	GFX_DEVICE.setObjectState(_planeTransform);
+	GFX_DEVICE.renderModel(_plane);
+	GFX_DEVICE.releaseObjectState(_planeTransform);
+}
+
+bool WaterPlane::getDrawState(RENDER_STAGE currentStage)  const{
+	/// Wait for the Reflector to update
+	if(!_createdFBO){
+		return false;
+	}
+	/// Make sure we are not drawing ourself
+	if(_updateSelf){
+		/// unless this is desired
+		return false;
+	}
+	/// Else, process normal exclusion
+	return SceneNode::getDrawState(currentStage);
+}
+
+/// Update water reflections
+void WaterPlane::updateReflection(){
+	/// Early out check for render callback
+	if(_renderCallback.empty()) return;
+    /// Set the correct stage
+	RENDER_STAGE prev = GFX_DEVICE.getRenderStage();
+	bool underwater = isCameraUnderWater();
+	if(!underwater){
+		GFX_DEVICE.setRenderStage(REFLECTION_STAGE);
+	}
+	/// bind the reflective texture
+	_reflectedTexture->Begin();
+		/// render to the reflective texture
+		_renderCallback();
+	_reflectedTexture->End();
+
+	if(!underwater){
+		GFX_DEVICE.setRenderStage(prev);
+	}
+}
+
+bool WaterPlane::isCameraUnderWater(){
+	Camera* cam = CameraManager::getInstance().getActiveCamera();
+	return (cam->getEye().y < _waterLevel);
 }

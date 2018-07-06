@@ -20,14 +20,18 @@
 
 #include "Utility/Headers/ImageTools.h"
 
-class VertexBufferObject;
 class Terrain;
-class ShaderProgram;
 class Texture;
-typedef Texture Texture2D;
-class FrameBufferObject;
+class ShaderProgram;
 class SceneGraphNode;
+class RenderStateBlock;
+class FrameBufferObject;
+class VertexBufferObject;
+typedef Texture Texture2D;
 
+///Generates grass and trees on the terrain.
+///Grass VBO's + all resources are stored locally in the class.
+///Trees are added to the SceneGraph and handled by the scene.
 class Vegetation{
 public:
 	Vegetation(U16 billboardCount, D32 grassDensity, F32 grassScale, D32 treeDensity, F32 treeScale, const std::string& map, std::vector<Texture2D*>& grassBillboards): 
@@ -41,7 +45,8 @@ public:
 	  _success(false),
 	  _terrain(NULL),
 	  _grassShader(NULL){
-		  ImageTools::OpenImage(map,_map);
+		  bool alpha = false;
+		  ImageTools::OpenImage(map,_map,alpha);
 	  }
 	~Vegetation();
 	void initialize(const std::string& grassShader, const std::string& terrainName);
@@ -65,6 +70,7 @@ private:
 	bool generateGrass(U32 index);     ///< index = current grass type (billboard, vbo etc)
 
 	std::vector<VertexBufferObject*>	_grassVBO;
+	RenderStateBlock*                   _grassStateBlock;
 };
 
 #endif

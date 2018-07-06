@@ -24,14 +24,6 @@ class Texture;
 typedef Texture Texture2D;
 typedef Texture TextureCubemap;
 
-template<class T>void RemoveResource(T*& resource, bool force = false){
-	if(ResourceManager::getInstance().remove(resource,force)){
-		ResourceManager::getInstance().eraseEntry(resource->getName());
-		delete resource;
-		resource = NULL;
-	}
-}
-
 DEFINE_SINGLETON_EXT1( ResourceManager,Manager )
 
 public:
@@ -46,5 +38,21 @@ protected:
 
 END_SINGLETON
 
+template<class T>
+inline void RemoveResource(T*& resource, bool force = false){
+	if(ResourceManager::getInstance().remove(resource,force)){
+		ResourceManager::getInstance().eraseEntry(resource->getName());
+		SAFE_DELETE(resource);
+	}
+}
+
+template<class T>
+inline T* CreateResource(const ResourceDescriptor& descriptor){
+	return ResourceManager::getInstance().loadResource<T>(descriptor);
+}
+
+inline Resource* const FindResource(const std::string& name){
+	return ResourceManager::getInstance().find(name);
+}
 #endif
 

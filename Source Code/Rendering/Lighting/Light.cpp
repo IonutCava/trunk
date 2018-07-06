@@ -1,14 +1,9 @@
 #include "Headers/Light.h"
 #include "Headers/LightImpostor.h"
-
-//#include "Hardware/Video/GFXDevice.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Managers/Headers/SceneManager.h"
-//#include "Managers/Headers/CameraManager.h"
-//#include "Rendering/Headers/Frustum.h"
-//#include "Core/Headers/Application.h"
 
-Light::Light(U8 slot, F32 radius) : SceneNode(),    _slot(slot), 
+Light::Light(U8 slot, F32 radius) : SceneNode(TYPE_LIGHT),    _slot(slot), 
 													_radius(radius), _drawImpostor(false),
 													_lightSGN(NULL), _impostor(NULL),
 													_id(0),			 _impostorSGN(NULL),
@@ -19,29 +14,31 @@ Light::Light(U8 slot, F32 radius) : SceneNode(),    _slot(slot),
 	vec4 position = vec4(-cosf(angle.x) * sinf(angle.y),-cosf(angle.y),	-sinf(angle.x) * sinf(angle.y),	0.0f );
 	vec4 diffuse = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f), 0.25f + cosf(angle.y) * 0.75f);
 	
-	_lightProperties_v["position"] = position;
-	_lightProperties_v["ambient"] = vec4(0.1f,0.1f,0.1f,1.0f);
-	_lightProperties_v["diffuse"] = diffuse;
-	_lightProperties_v["specular"] = diffuse;
-	_lightProperties_v["target"] = vec4(0,0,0,0);
-	_lightProperties_v["spotDirection"] = vec4(0,0,0,0);
+	_lightProperties_v[LIGHT_POSITION] = position;
+	_lightProperties_v[LIGHT_AMBIENT] = vec4(0.1f,0.1f,0.1f,1.0f);
+	_lightProperties_v[LIGHT_DIFFUSE] = diffuse;
+	_lightProperties_v[LIGHT_SPECULAR] = diffuse;
+	_lightProperties_v[LIGHT_SPOT_DIRECTION] = vec4(0,0,0,0);
 	_type = LIGHT_DIRECTIONAL;
 
-	_lightProperties_f["spotExponent"] = 1;
-	_lightProperties_f["spotCutoff"] = 1;
-	_lightProperties_f["constAtt"] = 1;
-	_lightProperties_f["linearAtt"] = 1;
-	_lightProperties_f["quadAtt"] = 1;
-	SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
-	setShadowMappingCallback(boost::bind(&SceneGraph::render, sg));
+	_lightProperties_f[LIGHT_SPOT_EXPONENT] = 1;
+	_lightProperties_f[LIGHT_SPOT_CUTOFF] = 1;
+	_lightProperties_f[LIGHT_CONST_ATT] = 1;
+	_lightProperties_f[LIGHT_LIN_ATT] = 0.1f;
+	_lightProperties_f[LIGHT_QUAD_ATT] = 0.0f;
+
+	///Shadow Mapping disabled for deferred renderer
+	if(!GFX_DEVICE.getDeferredRendering()){
+		SceneGraph* sg = SceneManager::getInstance().getActiveScene()->getSceneGraph();
+		setShadowMappingCallback(boost::bind(&SceneGraph::render, sg));
+	}
+	_dirty = true;
+	_enabled = true;
 }
 
 Light::~Light(){
 	for_each(FrameBufferObject* dm, _depthMaps){
-		if(dm){
-			delete dm;
-			dm = NULL;
-		}
+		SAFE_DELETE(dm);
 	}
 	_depthMaps.clear();
 }
@@ -50,8 +47,7 @@ bool Light::unload(){
 	_lightProperties_v.clear();
 	_lightProperties_f.clear();
 	LightManager::getInstance().removeLight(getId());
-	delete _impostor;
-	_impostor = NULL;
+	SAFE_DELETE(_impostor);
 	_lightSGN->removeNode(_impostorSGN);
 	return SceneNode::unload();
 }
@@ -63,39 +59,54 @@ bool Light::load(const std::string& name){
 	return true;
 }
 
-void Light::postLoad(SceneGraphNode* const node) {
+void Light::postLoad(SceneGraphNode* const sgn) {
 	//Hold a pointer to the light's location in the SceneGraph
-	_lightSGN = node;
-	_impostorSGN = node->addNode(_impostor->getDummy()); 
+	_lightSGN = sgn;
+	_impostorSGN = _lightSGN->addNode(_impostor->getDummy()); 
 }	
 
-void Light::onDraw(){
-	GFXDevice& gfx = GFXDevice::getInstance();
-	
-	_lightSGN->getTransform()->setPosition(_lightProperties_v["position"]);
-	_impostor->getDummy()->getMaterial()->setDiffuse(getDiffuseColor());
-	_impostor->getDummy()->getMaterial()->setAmbient(getDiffuseColor());
-	gfx.setLight(_slot,_lightProperties_v,_lightProperties_f, _type);
+void Light::updateState(bool force){
+	if(_dirty || force){
+		_lightSGN->getTransform()->setPosition(_lightProperties_v[LIGHT_POSITION]);
+		if(_drawImpostor){
+			_impostor->getDummy()->getMaterial()->setDiffuse(getDiffuseColor());
+			_impostor->getDummy()->getMaterial()->setAmbient(getDiffuseColor());
+			_impostorSGN->getTransform()->setPosition(_lightProperties_v[LIGHT_POSITION]);
+			///Updating impostor radius is expensive, so check if we need to
+			if(!FLOAT_COMPARE(_radius,_impostor->getDummy()->getRadius())){
+				_impostor->getDummy()->setRadius(_radius);
+			}
+		}
+
+		///Do not set GL lights for deferred rendering
+		if(!GFX_DEVICE.getDeferredRendering()){
+			GFX_DEVICE.setLight(this);
+		}
+		_dirty = false;
+	}
 }
 
-void Light::setLightProperties(const std::string& name, const vec4& value){
-	unordered_map<std::string,vec4>::iterator it = _lightProperties_v.find(name);
-	if (it != _lightProperties_v.end())
-		_lightProperties_v[name] = value;
+void Light::setLightProperties(const LIGHT_V_PROPERTIES& propName, const vec4& value){
+	if (_lightProperties_v.find(propName) != _lightProperties_v.end()){
+		_lightProperties_v[propName] = value;
+		_dirty = true;
+	}
 }
 
-void Light::setLightProperties(const std::string& name, F32 value){
-	unordered_map<std::string,F32>::iterator it = _lightProperties_f.find(name);
-	if (it != _lightProperties_f.end())
-		_lightProperties_f[name] = value;
+void Light::setLightProperties(const LIGHT_F_PROPERTIES& propName, F32 value){
+	if (_lightProperties_f.find(propName) != _lightProperties_f.end()){
+		_lightProperties_f[propName] = value;
+		_dirty = true;
+	}
 }
 
-void Light::render(SceneGraphNode* const node){
-	//The isInView call should stop impostor rendering if needed
-	_impostor->render(node);
+void Light::render(SceneGraphNode* const sgn){
+	///The isInView call should stop impostor rendering if needed
+	_impostor->render(_impostorSGN);
 }
 
 void  Light::setRadius(F32 radius) {
+	_dirty = true;
 	_radius = radius;
 	_impostor->setRadius(radius);
 }

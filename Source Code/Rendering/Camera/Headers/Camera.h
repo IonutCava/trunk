@@ -23,8 +23,7 @@
 
 class vec3;
 
-class Camera : public Resource
-{
+class Camera : public Resource {
 
 public:	enum TYPE {FREE_FLY, FIRST_PERSON, THIRD_PERSON, ORBIT,SCRIPTED};
 protected:
@@ -43,6 +42,7 @@ protected:
 	F32	tSaveFloats[2];
 	bool	bSaved;
 	F32   terHeightMin;
+	std::vector<boost::function0<void> > _listeners;
 
 public:
 	Camera();
@@ -59,6 +59,10 @@ public:
 	virtual void createCopy() {incRefCount();}
 	virtual void removeCopy() {decRefCount();}
 
+	///Add an event listener called after every RenderLookAt or RenderLookAtCube call
+	virtual void addUpdateListener(boost::function0<void> f) {_listeners.push_back(f);}
+	///Informs all listeners of a new event
+	virtual void updateListeners();
 
 public:
 	void SaveCamera();

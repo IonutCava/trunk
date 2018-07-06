@@ -35,7 +35,7 @@ public:
 	void processData();
 	void update();
 
-	bool attachNode(SceneGraphNode* const node) {_node = node; return true;}
+	bool attachNode(SceneGraphNode* const sgn) {_node = sgn; return true;}
 	bool addSensor(SENSOR_TYPE type, Sensor* sensor);
 	bool addFriend(AIEntity* entity);
 	bool addEnemyTeam(AICoordination::teamMap& enemyTeam);

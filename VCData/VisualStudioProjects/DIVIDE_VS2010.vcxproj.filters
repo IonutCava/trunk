@@ -281,6 +281,12 @@
     <Filter Include="shaders\GLSL\vertexAtoms">
       <UniqueIdentifier>{1d032943-932c-4c32-a112-6120f9f95590}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rendering\RenderPass">
+      <UniqueIdentifier>{1aee5e88-bfca-4386-a563-03dc6103e32e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering\RenderPass\Headers">
+      <UniqueIdentifier>{0d72c71e-914c-485c-a1ab-32c473006216}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Framerate.cpp">
@@ -442,9 +448,6 @@
     <ClCompile Include="..\..\Source Code\Geometry\Shapes\SubMesh.cpp">
       <Filter>Geometry\Shapes</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Graphs\RenderQueue.cpp">
-      <Filter>Graphs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Graphs\SceneGraph.cpp">
       <Filter>Graphs</Filter>
     </ClCompile>
@@ -532,6 +535,51 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\ShaderManager.cpp">
       <Filter>Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dShader.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dShaderProgram.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dTexture.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dVertexBufferObject.cpp">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp">
+      <Filter>Hardware\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp">
+      <Filter>Environment\Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Utility\CRC.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp">
+      <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -787,9 +835,6 @@
     <ClInclude Include="..\..\Source Code\Geometry\Shapes\Headers\Predefined\Text3D.h">
       <Filter>Geometry\Shapes\Headers\Predefined</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Graphs\Headers\RenderQueue.h">
-      <Filter>Graphs\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneGraph.h">
       <Filter>Graphs\Headers</Filter>
     </ClInclude>
@@ -890,6 +935,54 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dResources.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dShader.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dShaderProgram.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dTexture.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\d3dVertexBufferObject.h">
+      <Filter>Hardware\Video\Direct3D</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\RenderStateBlock.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Utility\Headers\CRC.h">
+      <Filter>Utility\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\RenderAPIEnums.h">
+      <Filter>Hardware\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.h">
+      <Filter>Hardware\Video\OpenGL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\assets\shaders\GLSL\anaglyph.glsl">
@@ -913,9 +1006,6 @@
     <None Include="..\..\assets\shaders\GLSL\lighting.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
-    <None Include="..\..\assets\shaders\GLSL\lighting.glsl.bak">
-      <Filter>shaders\GLSL</Filter>
-    </None>
     <None Include="..\..\assets\shaders\GLSL\postProcessing.glsl">
       <Filter>shaders\GLSL</Filter>
     </None>
@@ -935,9 +1025,6 @@
       <Filter>shaders\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\tree.glsl">
-      <Filter>shaders\GLSL</Filter>
-    </None>
-    <None Include="..\..\assets\shaders\GLSL\tree.glsl.bak">
       <Filter>shaders\GLSL</Filter>
     </None>
     <None Include="..\..\assets\shaders\GLSL\water.glsl">

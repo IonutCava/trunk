@@ -1,8 +1,8 @@
 #include "Headers/Object3D.h"
 #include "Managers/Headers/SceneManager.h"
 
-void Object3D::render(SceneGraphNode* const node){
-	_gfx.renderModel(node->getNode<Object3D>());
+void Object3D::render(SceneGraphNode* const sgn){
+	GFX_DEVICE.renderModel(sgn->getNode<Object3D>());
 }
 
 void Object3D::onDraw(){

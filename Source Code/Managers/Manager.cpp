@@ -15,8 +15,7 @@ void Manager::Destroy(){
 	ResourceMap::iterator& it = _resDB.begin();
 	for_each(ResourceMap::value_type& it, _resDB){
 		remove(it.second, true);
-		delete it.second;
-		it.second = NULL;
+		SAFE_DELETE(it.second);
 	}
 	_resDB.clear();
 }
@@ -32,31 +31,31 @@ Resource* const Manager::find(const string& name){
 
 bool Manager::remove(Resource* const resource,bool force){
 	if(!resource){
-		Console::getInstance().errorfn("ResourceManager: Trying to remove NULL resource!");
+		ERROR_FN("ResourceManager: Trying to remove NULL resource!");
 		return false;
 	}
 	string name(resource->getName());
 	if(name.empty()){
-		Console::getInstance().errorfn("ResourceManager: Trying to remove resource with invalid name!");
+		ERROR_FN("ResourceManager: Trying to remove resource with invalid name!");
 		return true; //delete pointer
 	}
 
 	if(find(name)){
 		if(resource->getRefCount() > 1 && !force) {
 			resource->removeCopy();
-			Console::getInstance().printfn("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
+			PRINT_FN("Removing resource: [ %s ]. New ref count: [ %d ]",name.c_str(),resource->getRefCount());
 			return false; //do not delete pointer
 		}else{
-			Console::getInstance().printfn("Removing resource: [ %s ].",name.c_str());
+			PRINT_FN("Removing resource: [ %s ].",name.c_str());
 			if(resource->unload()){
 				return true;
 			}else{
-				Console::getInstance().errorfn("Resource [ %s ] not unloaded succesfully!", name.c_str());
+				ERROR_FN("Resource [ %s ] not unloaded succesfully!", name.c_str());
 				return force;
 			}
 		}
 	}
 	
-	Console::getInstance().errorfn("ResourceManager: resource [ %s ] not found in database!",name.c_str());
+	ERROR_FN("ResourceManager: resource [ %s ] not found in database!",name.c_str());
 	return force;
 }

@@ -87,11 +87,11 @@ public:
 	}
 
 
-	virtual bool computeBoundingBox(SceneGraphNode* const node){
-		if(node->getBoundingBox().isComputed()) return true;
-		node->getBoundingBox().set(vec3(-_size,-_size,-_size),vec3(_size,_size,_size));
-		node->getBoundingBox().Multiply(0.5f);
-		return SceneNode::computeBoundingBox(node);
+	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
+		if(sgn->getBoundingBox().isComputed()) return true;
+		sgn->getBoundingBox().set(vec3(-_size,-_size,-_size),vec3(_size,_size,_size));
+		sgn->getBoundingBox().Multiply(0.5f);
+		return SceneNode::computeBoundingBox(sgn);
 	}
 private:
 	F32 _size;

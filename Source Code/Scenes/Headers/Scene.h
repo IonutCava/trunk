@@ -39,8 +39,7 @@ class Scene : public Resource{
 
 public:
 	Scene() :  Resource(),
-	  _GFX(GFXDevice::getInstance()),
-	  _resManager(ResourceManager::getInstance()),
+	  _GFX(GFX_DEVICE),
 	  _paramHandler(ParamHandler::getInstance()),
 	  _drawBB(false),
 	  _drawObjects(true),
@@ -106,7 +105,6 @@ public:
 protected:
 
 	GFXDevice& _GFX;
-	ResourceManager& _resManager;
 	ParamHandler& _paramHandler;
 
 	/*Name_Object_map GeometryArray;

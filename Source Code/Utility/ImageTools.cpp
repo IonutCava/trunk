@@ -58,7 +58,7 @@ U8* OpenImagePPM(const string& filename, U16& w, U16& h, U8& d, U32& t, U32& ilT
 	return img;
 }
 
-U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool flip)
+U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture, bool& alpha, bool flip)
 {
 	static bool first = true;
 
@@ -88,14 +88,53 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& il
 	if (!ilLoadImage(filename.c_str()))
 		return false;
 
-   
 	w = ilGetInteger(IL_IMAGE_WIDTH);
 	h = ilGetInteger(IL_IMAGE_HEIGHT);
 	d = ilGetInteger(IL_IMAGE_BPP);
 	t = ilGetInteger(IL_IMAGE_TYPE);
+	I32 format = ilGetInteger(IL_IMAGE_FORMAT);
 
+	 switch(format) {
+      case IL_COLOR_INDEX:
+         switch(ilGetInteger(IL_PALETTE_TYPE)) {
+            case IL_PAL_NONE:
+               ilDeleteImages(1, &ilTexture);
+               break;
+            
+            case IL_PAL_BGRA32:
+               ilConvertPal(IL_PAL_RGBA32);
 
-	if(d==4) ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+            case IL_PAL_RGBA32:
+               alpha = true;
+               break;
+
+            case IL_PAL_BGR24:
+            case IL_PAL_RGB32:
+            case IL_PAL_BGR32:
+               ilConvertPal(IL_PAL_RGB24);
+
+            case IL_PAL_RGB24:
+               alpha = false;
+               break;
+         }
+         break;
+
+      case IL_LUMINANCE:
+      case IL_BGR:
+      case IL_RGB:
+         if(format != IL_RGB || ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)
+            ilConvertImage(IL_RGB, IL_UNSIGNED_BYTE);
+         alpha = false;
+         break;
+
+      case IL_LUMINANCE_ALPHA:
+      case IL_BGRA:
+      case IL_RGBA:
+         if(format != IL_RGBA || ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)
+            ilConvertImage(IL_RGBA, IL_UNSIGNED_BYTE);
+         alpha = true;
+         break;
+   }
 
    
     const U8* Pixels = ilGetData();
@@ -110,34 +149,29 @@ U8* OpenImageDevIL(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& il
 }
 
 
-U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool flip)
-{
-	if(filename.find(".ppm") != string::npos)
+U8* OpenImage(const string& filename, U16& w, U16& h, U8& d, U32& t,U32& ilTexture,bool& alpha,bool flip){
+	if(filename.find(".ppm") != string::npos){
+		alpha = false;
 		return OpenImagePPM(filename, w, h, d,t,ilTexture,flip);
-	else 
-		return OpenImageDevIL(filename,w,h,d,t,ilTexture,flip);
+	}else 
+		return OpenImageDevIL(filename,w,h,d,t,ilTexture,alpha,flip);
 	return NULL;
 }
 
-void OpenImage(const string& filename, ImageData& img)
-{
+void OpenImage(const string& filename, ImageData& img, bool& alpha){
 	
 	img.name = filename;
-	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img.ilTexture,img._flip);
+	img.data = OpenImage(filename, img.w, img.h, img.d, img.type,img.ilTexture,alpha,img._flip);
 
 }
 
 
-void ImageData::Destroy()
-{
-	if(data) {
-		delete [] data;
-		data = NULL;
-	}
+void ImageData::Destroy(){
+
+	SAFE_DELETE_ARRAY(data);
 }
 
-ivec3 ImageData::getColor(U16 x, U16 y) const
-{
+ivec3 ImageData::getColor(U16 x, U16 y) const {
 	I32 idx = (y * w + x) * d;
 	return ivec3( data[idx+0], data[idx+1], data[idx+2]);
 }
@@ -204,9 +238,8 @@ I8 saveToTGA(	char 		*filename,
 	fwrite(imageData, sizeof(U8), 
 			width * height * mode, file);
 	fclose(file);
-// release the memory
-	delete imageData;
-	imageData = NULL;
+	/// release the memory
+	SAFE_DELETE(imageData);
 	return(0);
 }
 
@@ -232,8 +265,7 @@ I8 SaveSeries(char		*filename,
 //increase the counter
 	if (status == 0)
 		savedImages++;
-	delete[] newFilename;
-	newFilename = NULL;
+	SAFE_DELETE_ARRAY(newFilename);
 	return(status);
 }
 

@@ -19,18 +19,17 @@
 #define _TEXTURE_H
 
 #include "resource.h"
-#include "Utility/Headers/ImageTools.h"
 #include "Core/Headers/BaseClasses.h"
 
-class Texture : public Resource
-{
+class Texture : public Resource{
+
 /*Abstract interface*/
 public:
 	virtual void Bind(U16 slot);
 	virtual void Unbind(U16 slot);
 	virtual void Destroy() = 0;
 	virtual void LoadData(U32 target, U8* ptr, U16& w, U16& h, U8 d) = 0;
-	virtual ~Texture() {_img.Destroy();}
+	virtual ~Texture() {/*_img.Destroy();*/}
 
 	enum TextureFilters{
 		LINEAR					= 0x0000,
@@ -73,7 +72,6 @@ protected:
 	bool _flipped;
 	bool _bound;
 	bool _hasTransparency;
-	ImageTools::ImageData _img;
 	static bool _generateMipmaps;	
 	mat4  _transformMatrix;
 	bool  _repeatS, _repeatT;

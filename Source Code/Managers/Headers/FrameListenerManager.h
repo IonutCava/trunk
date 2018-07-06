@@ -17,13 +17,17 @@
 
 #ifndef _FRAME_LISTENER_MANAGER_H_
 #define _FRAME_LISTENER_MANAGER_H_
+
 #include "resource.h"
+///Add this include here so that any FrameListner derived class only needs to include the manager
+#include "Rendering/Headers/FrameListener.h"
 
 enum FRAME_EVENT_TYPE{
 	FRAME_EVENT_ANY,
 	FRAME_EVENT_STARTED,
+	FRAME_PRERENDER_END,
 	FRAME_EVENT_PROCESS,
-	FRAME_EVENT_ENDED
+	FRAME_EVENT_ENDED,
 };
 
 class FrameListener;
@@ -39,6 +43,7 @@ public:
 	void idle();
 
 	bool frameStarted(const FrameEvent& evt);
+	bool framePreRenderEnded(const FrameEvent& evt);
 	bool frameRenderingQueued(const FrameEvent& evt);
 	bool frameEnded(const FrameEvent& evt);
 
@@ -50,7 +55,13 @@ private:
 private:
 	ListenerMap _listeners;
 	ListenerMap _removedListeners;
-	EventTimeMap _eventTimers[4];
+	EventTimeMap _eventTimers[5];
 
 END_SINGLETON
+
+
+inline void REGISTER_FRAME_LISTENER(FrameListener* listener){
+	FrameListenerManager::getInstance().registerFrameListener(listener);
+}
+
 #endif

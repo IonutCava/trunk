@@ -8,7 +8,7 @@
 #include "Environment/Water/Headers/Water.h"
 #include "GUI/Headers/GUI.h"
 #include "Rendering/Headers/Frustum.h"
-#include "Graphs/Headers/RenderQueue.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 using namespace std;
 
 bool MainScene::updateLights(){
@@ -17,34 +17,25 @@ bool MainScene::updateLights(){
 	_sunColor = _white.lerp(vec4(1.0f, 0.5f, 0.0f, 1.0f), vec4(1.0f, 1.0f, 0.8f, 1.0f),
 								0.25f + _sun_cosy * 0.75f);
 
-	light->setLightProperties(string("position"),_sunVector);
-	light->setLightProperties(string("diffuse"),_sunColor);
-	light->setLightProperties(string("specular"),_sunColor);
+	light->setLightProperties(LIGHT_POSITION,_sunVector);
+	light->setLightProperties(LIGHT_DIFFUSE,_sunColor);
+	light->setLightProperties(LIGHT_SPECULAR,_sunColor);
 	return true;
 }
 
 void MainScene::preRender(){
-	_waterGraphNode->setActive(false);
 	updateLights();
-
-	if(_water != NULL){
-		_water->getReflectionFBO()->Begin();
-			renderEnvironment(true);
-		_water->getReflectionFBO()->End();
-	}
 }
 
 void MainScene::render(){
-	_waterGraphNode->setActive(true);
 	renderEnvironment(false);
 }
 
 bool _underwater = false;
 void MainScene::renderEnvironment(bool waterReflection){
-	_GFX.ignoreStateChanges(true);
 
 	Camera* cam = CameraManager::getInstance().getActiveCamera();
-	if(cam->getEye().y < getWaterLevel()){
+	if(_water->isCameraUnderWater()){
 		waterReflection = false;
 		_underwater = true;
 		_paramHandler.setParam("underwater",true);
@@ -53,24 +44,19 @@ void MainScene::renderEnvironment(bool waterReflection){
 		_underwater = false;
 		_paramHandler.setParam("underwater",false);
 	}
-	for(U8 i = 0; i < _visibleTerrains.size(); i++){
-		_visibleTerrains[i]->setRenderingOptions(waterReflection);
-		_visibleTerrains[i]->getMaterial()->setAmbient(_sunColor/1.5f);
+
+	for_each(Terrain* ter, _visibleTerrains){
+		ter->setRenderingOptions(waterReflection);
+		ter->getMaterial()->setAmbient(_sunColor/1.5f);
 	}
 
 	Sky::getInstance().setParams(cam->getEye(),vec3(_sunVector),waterReflection,true,true);
 	Sky::getInstance().draw();
 
 	if(waterReflection){
-		_GFX.setRenderStage(REFLECTION_STAGE);
-		RenderState s = _GFX.getActiveRenderState();
-		s.cullingEnabled() = false;
-		_GFX.setRenderState(s);
 		cam->RenderLookAt(true,true,getWaterLevel());
 	}
-
 	_sceneGraph->render(); //render the rest of the stuff
-	_GFX.ignoreStateChanges(false);
 }
 
 void MainScene::processInput(){
@@ -123,23 +109,27 @@ void MainScene::processEvents(F32 time){
 }
 
 bool MainScene::load(const string& name){
+	setInitialData();
 	bool state = false;
 	 _mousePressed = false;
 	state = Scene::load(name);
 	bool computeWaterHeight = false;
 	if(getWaterLevel() == RAND_MAX) computeWaterHeight = true;
 	Light* light = addDefaultLight();
-	light->setLightProperties(string("ambient"),_white);
-	
+	light->setLightProperties(LIGHT_AMBIENT,_white);
+	light->setLightProperties(LIGHT_DIFFUSE,_white);
+	light->setLightProperties(LIGHT_SPECULAR,_white);
+												
+	//Incarcam resursele scenei
 	state = loadResources(true);	
 	state = loadEvents(true);
 	for(U8 i = 0; i < TerrainInfoArray.size(); i++){
 		SceneGraphNode* terrainNode = _sceneGraph->findNode(TerrainInfoArray[i]->getVariable("terrainName"));
 		if(terrainNode){ //We might have an unloaded terrain in the Array, and thus, not present in the graph
 			Terrain* tempTerrain = terrainNode->getNode<Terrain>();
-			Console::getInstance().d_printfn("Found terrain:  %s!", tempTerrain->getName().c_str());
+			D_PRINT_FN("Found terrain:  %s!", tempTerrain->getName().c_str());
 			if(terrainNode->isActive()){
-				Console::getInstance().d_printfn("Previous found terrain is active!");
+				D_PRINT_FN("Previous found terrain is active!");
 				_visibleTerrains.push_back(tempTerrain);
 				if(computeWaterHeight){
 					F32 tempMin = terrainNode->getBoundingBox().getMin().y;
@@ -147,12 +137,13 @@ bool MainScene::load(const string& name){
 				}
 			}
 		}else{
-			Console::getInstance().errorfn("Could not find terrain [ %s ] in scene graph!", TerrainInfoArray[i]->getVariable("terrainName"));
+			ERROR_FN("Could not find terrain [ %s ] in scene graph!", TerrainInfoArray[i]->getVariable("terrainName"));
 		}
 	}
 	ResourceDescriptor infiniteWater("waterEntity");
-	_water = _resManager.loadResource<WaterPlane>(infiniteWater);
+	_water = CreateResource<WaterPlane>(infiniteWater);
 	_water->setParams(50.0f,50,0.2f,0.5f);
+	_water->setRenderCallback(boost::bind(&MainScene::renderEnvironment, this, true));
 	_waterGraphNode = _sceneGraph->getRoot()->addNode(_water);
 	_waterGraphNode->useDefaultTransform(false);
 	_waterGraphNode->setTransform(NULL);
@@ -160,8 +151,8 @@ bool MainScene::load(const string& name){
 }
 
 bool MainScene::unload(){
-	SFXDevice::getInstance().stopMusic();
-	SFXDevice::getInstance().stopAllSounds();
+	SFX_DEVICE.stopMusic();
+	SFX_DEVICE.stopAllSounds();
 	RemoveResource(_backgroundMusic);
 	RemoveResource(_beep);
 	Sky::getInstance().DestroyInstance();
@@ -254,10 +245,9 @@ bool MainScene::loadResources(bool continueOnErrors){
 	ResourceDescriptor beepSound("beep sound");
 	beepSound.setResourceLocation(_paramHandler.getParam<string>("assetsLocation")+"/sounds/beep.wav");
 	beepSound.setFlag(false);
-	_backgroundMusic = _resManager.loadResource<AudioDescriptor>(backgroundMusic);
-	_beep = _resManager.loadResource<AudioDescriptor>(beepSound);
-	//SFXDevice::getInstance().playMusic(_backgroundMusic);
-	Console::getInstance().printfn("Scene resources loaded OK");
+	_backgroundMusic = CreateResource<AudioDescriptor>(backgroundMusic);
+	_beep = CreateResource<AudioDescriptor>(beepSound);
+	PRINT_FN("Scene resources loaded OK");
 	return true;
 }
 
@@ -282,6 +272,7 @@ void MainScene::onKeyDown(const OIS::KeyEvent& key){
 	}
 }
 
+bool _playMusic = false;
 void MainScene::onKeyUp(const OIS::KeyEvent& key){
 	Scene::onKeyUp(key);
 	switch(key.key)	{
@@ -294,10 +285,23 @@ void MainScene::onKeyUp(const OIS::KeyEvent& key){
 			Application::getInstance().moveLR = 0;
 			break;
 		case OIS::KC_X:
-			SFXDevice::getInstance().playSound(_beep);
+			SFX_DEVICE.playSound(_beep);
 			break;
+		case OIS::KC_M:{
+			_playMusic = !_playMusic;
+			if(_playMusic){
+				SFX_DEVICE.playMusic(_backgroundMusic);
+			}else{
+				SFX_DEVICE.stopMusic();
+			}
+			}break;
 		case OIS::KC_F1:
 			_sceneGraph->print();
+			break;
+		case OIS::KC_T:
+			for_each(Terrain* ter, _visibleTerrains){
+				ter->toggleBoundingBoxes();
+			}
 			break;
 		default:
 			break;

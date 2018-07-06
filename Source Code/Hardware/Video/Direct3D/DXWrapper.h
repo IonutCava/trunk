@@ -20,6 +20,15 @@
 
 #include "../RenderAPIWrapper.h"
 
+#include "resource.h"
+#include "d3dFrameBufferObject.h"
+#include "d3dVertexBufferObject.h"
+#include "d3dPixelBufferObject.h"
+#include "d3dShaderProgram.h"
+#include "d3dShader.h"
+#include "d3dTexture.h"
+#include "d3dEnumTable.h"
+
 DEFINE_SINGLETON_EXT1(DX_API,RenderAPIWrapper)
 
 private:
@@ -35,13 +44,14 @@ private:
 	void getModelViewMatrix(mat4& mvMat);
 	void getProjectionMatrix(mat4& projMat);
 
-	FrameBufferObject*  newFBO(){return /*new dxFrameBufferObject();*/ NULL; }
-	VertexBufferObject* newVBO(){return /*new dxVertexBufferObject();*/ NULL; }
-	PixelBufferObject*  newPBO(){return /*new dxPixelBufferObject();*/ NULL;}
-	Texture2D*          newTexture2D(bool flipped = false){return /*new dxTexture2D();*/ NULL;}
-	TextureCubemap*     newTextureCubemap(bool flipped = false){return /*new dxTextureCubemap();*/ NULL;}
-	ShaderProgram*      newShaderProgram(){return /*new dxShaderProgram();*/ NULL;}
-	Shader*             newShader(const std::string& name, SHADER_TYPE type) {return /*new dxShader(name,type);*/ NULL;}
+	FrameBufferObject*  newFBO(){return New d3dFrameBufferObject();}
+	VertexBufferObject* newVBO(){return New d3dVertexBufferObject();}
+	PixelBufferObject*  newPBO(){return New d3dPixelBufferObject();}
+
+	Texture2D*          newTexture2D(bool flipped = false){return New d3dTexture(d3dTextureTypeTable[TEXTURE_2D]);}
+	TextureCubemap*     newTextureCubemap(bool flipped = false){return New d3dTexture(d3dTextureTypeTable[TEXTURE_CUBE_MAP]);}
+	ShaderProgram*      newShaderProgram(){return New d3dShaderProgram();}
+	Shader*             newShader(const std::string& name, SHADER_TYPE type) {return New d3dShader(name,type);}
 	
 	void clearBuffers(U8 buffer_mask);
 	void swapBuffers();
@@ -56,15 +66,15 @@ private:
 
 	void toggle2D(bool _2D);
 
-	void drawTextToScreen(Text*);
+	void drawTextToScreen(GuiElement* const);
 	void drawCharacterToScreen(void* ,char);
-	void drawButton(Button*);
-	void drawFlash(GuiFlash* flash);
+	void drawButton(GuiElement* const);
+	void drawFlash(GuiElement* const);
 
 	void drawBox3D(vec3 min, vec3 max);
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, Format f, U32 count, const void* first_element);
+	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
 
 	void renderInViewport(const vec4& rect, boost::function0<void> callback);
 
@@ -75,17 +85,16 @@ private:
 	void dxCommand(callback f){(*f)();};
 
 	void setAmbientLight(const vec4& light){}
-	void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){};
+	void setLight(Light* const light){};
 
-	void toggleWireframe(bool state);
 	void Screenshot(char *filename, const vec4& rect);
-	void setRenderState(RenderState& state,bool force = false){}
-	void ignoreStateChanges(bool state){}
-
+	RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
+	void updateStateInternal(RenderStateBlock* block, bool force = false);
 	void toggleDepthMapRendering(bool state){};
 
-	void setObjectState(Transform* const transform);
+	void setObjectState(Transform* const transform, bool force = false);
 	void releaseObjectState(Transform* const transform);
+
 
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
 END_SINGLETON

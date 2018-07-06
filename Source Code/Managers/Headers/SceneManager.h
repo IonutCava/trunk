@@ -30,7 +30,7 @@ public:
 	/*Base Scene Operations*/
 	void render(RENDER_STAGE stage);
 	inline void preRender() {_scene->preRender();}
-	inline bool load(const std::string& name) {_scene->setInitialData(); return _scene->load(name);}
+	bool load(const std::string& name);
 	inline bool unload() {return _scene->unload();}
 	inline void processInput(){_scene->processInput();}
 	inline void processEvents(F32 time){_scene->processEvents(time);}
@@ -62,6 +62,9 @@ private:
 
 END_SINGLETON
 
-#define REGISTER_SCENE(X) SceneManager::getInstance().registerScene(X);
+inline void REGISTER_SCENE(Scene* const scene){
+	SceneManager::getInstance().registerScene(scene);
+}
+
 #endif
 

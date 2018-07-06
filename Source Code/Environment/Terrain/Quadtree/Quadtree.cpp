@@ -44,34 +44,29 @@ QuadtreeNode* Quadtree::FindLeaf(vec2& pos)
 }
 
 
-void Quadtree::Build(BoundingBox* pBBox,		
+void Quadtree::Build(BoundingBox& terrainBBox,		
 					 ivec2 HMsize,				
 					 U32 minHMSize)	
 {
-	assert(pBBox);
-
 	
 	_root = New QuadtreeNode();
-	_root->setBoundingBox(*pBBox);
+	_root->setBoundingBox(terrainBBox);
+	_root->setParentShaderProgram(_parentShaderProgram);
 
 	
 	_root->Build(0, ivec2(0,0), HMsize, minHMSize);
 }
 
-bool Quadtree::computeBoundingBox(const std::vector<vec3>& vertices){
+BoundingBox& Quadtree::computeBoundingBox(const std::vector<vec3>& vertices){
 	assert(_root);
 	assert(!vertices.empty());
-	_root->computeBoundingBox(vertices);
-	return true;
+	 _root->computeBoundingBox(vertices);
+	 return _root->getBoundingBox();;
 }
 
 
-void Quadtree::Destroy()
-{
-	if(_root != NULL) {
-		delete _root;
-		_root = NULL;
-	}
+void Quadtree::Destroy(){
+	SAFE_DELETE(_root);
 }
 
 

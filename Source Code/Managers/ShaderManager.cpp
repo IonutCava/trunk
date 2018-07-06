@@ -62,8 +62,7 @@ void ShaderManager::removeShader(Shader* s){
 	if(_shaders.find(name) != _shaders.end()){
 		s->decRefCount();
 		if(s->getRefCount() == 0){
-			delete _shaders[name];
-			_shaders[name] = NULL;
+			SAFE_DELETE(_shaders[name]);
 			_shaders.erase(name);
 		}
 	}
@@ -72,7 +71,7 @@ void ShaderManager::removeShader(Shader* s){
 Shader* ShaderManager::findShader(const std::string& name){
 	if(_shaders.find(name) != _shaders.end()){
 		_shaders[name]->incRefCount();
-		Console::getInstance().printfn("ShaderManager: returning shader [ %s ]. New ref count [ %d ]",name.c_str(),_shaders[name]->getRefCount());
+		PRINT_FN("ShaderManager: returning shader [ %s ]. New ref count [ %d ]",name.c_str(),_shaders[name]->getRefCount());
 		return _shaders[name];
 	}
 	return NULL;
@@ -83,7 +82,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 	if(s != NULL){
 		return s;
 	}
-	s = GFXDevice::getInstance().newShader(name, type);
+	s = GFX_DEVICE.newShader(name, type);
 	if(!s->load(source)){
 		delete s;
 		s = NULL;
@@ -95,9 +94,9 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 
 bool ShaderManager::unbind(){
 	if(!_nullShader){
-		_nullShader = static_cast<ShaderProgram* >(ResourceManager::getInstance().find("NULL"));
+		_nullShader = static_cast<ShaderProgram* >(FindResource("NULL"));
 		if(!_nullShader){
-			_nullShader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("NULL"));
+			_nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
 			assert(_nullShader != NULL); //LoL -Ionut
 		}
 	}

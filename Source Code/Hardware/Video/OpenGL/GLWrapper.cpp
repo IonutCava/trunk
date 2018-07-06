@@ -1,11 +1,13 @@
 #include "glResources.h"
 #include "GLWrapper.h"
+#include "glRenderStateBlock.h"
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIFlash.h"
 #include "Utility/Headers/Guardian.h"
 #include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Core/Headers/ParamHandler.h"
+#include "Utility/Headers/ImageTools.h"
 #include "Rendering/Lighting/Headers/Light.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
@@ -81,13 +83,13 @@ void GLCheckError(const std::string& File, U32 Line) {
         ss << File.substr(File.find_last_of("\\/") + 1) << " (" << Line << ") : "
            << Error << ", " 
 		   << Desc;
-        Console::getInstance().errorfn("An internal OpenGL call failed: [ %s ]", ss.str().c_str());
+        ERROR_FN("An internal OpenGL call failed: [ %s ]", ss.str().c_str());
     }
 }
 
 void resizeWindowCallback(I32 w, I32 h){
 	GUI::getInstance().onResize(w,h);
-	GFXDevice::getInstance().resizeWindow(w,h);
+	GFX_DEVICE.resizeWindow(w,h);
 }
 
 //Let's try and create a  valid OpenGL context.
@@ -122,7 +124,7 @@ void GL_API::initHardware(){
 	//Check for errors and print if any (They happen more than anyone thinks)
 	//Bad drivers, old video card, corrupt GPU, anything can throw an error
 	if (GLEW_OK != err){
-		Console::getInstance().errorfn("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
+		ERROR_FN("GFXDevice: %s \nTry switching to DX (version 9.0c required) or upgrade hardware.\nApplication will now exit!",glewGetErrorString(err));
 		//No need to continue, as switching to DX should be set before launching the application!
 		exit(1);
 	}
@@ -140,9 +142,9 @@ void GL_API::initHardware(){
 	//Time to select our shaders.
 	//We do not support OpenGL version lower than 2.0;
 	if(major < 2){
-		Console::getInstance().errorfn("Your current hardware does not support the OpenGL 2.0 extension set!");
-		Console::getInstance().printfn("Try switching to DX (version 9.0c required) or upgrade hardware.");
-		Console::getInstance().printfn("Application will now exit!");
+		ERROR_FN("Your current hardware does not support the OpenGL 2.0 extension set!");
+		PRINT_FN("Try switching to DX (version 9.0c required) or upgrade hardware.");
+		PRINT_FN("Application will now exit!");
 		exit(2);
 	}else if(major == 2){
 		//If we do start a 2.0 context, use only basic shaders
@@ -180,30 +182,21 @@ void GL_API::initHardware(){
 		
 	}
 	//Print all of the OpenGL functionality info to the console
-	Console::getInstance().printfn("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
-	Console::getInstance().printfn("Max GLSL fragment varying floats supported: %d",max_varying_floats);
-	Console::getInstance().printfn("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
-	Console::getInstance().printfn("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
-	Console::getInstance().printfn("Max Combined Texture Units supported: %d",max_texture_units); 
-	Console::getInstance().printfn("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
+	PRINT_FN("Max GLSL fragment uniform components supported: %d",max_frag_uniform);
+	PRINT_FN("Max GLSL fragment varying floats supported: %d",max_varying_floats);
+	PRINT_FN("Max GLSL vertex uniform components supported: %d",max_vertex_uniform);
+	PRINT_FN("Max GLSL vertex attributes supported: %d",max_vertex_attrib);
+	PRINT_FN("Max Combined Texture Units supported: %d",max_texture_units); 
+	PRINT_FN("Hardware acceleration up to OpenGL %d.%d supported!",major,minor);
+	GL_ENUM_TABLE::fill();
 	//Set the clear color to a nice blue
 	glClearColor(0.1f,0.1f,0.8f,1);
-	//Use depth testing!
-    glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL); 
 	//Smooth shading as GPU's are fast enough to support this as default
 	glShadeModel(GL_SMOOTH);
-	//A global blend function (good enough for fences, water, grass) for now
-	//This will be moved to RenderState's if needed
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	//keep normals in the [0..1] range despite scaling geometry
 	glEnable(GL_NORMALIZE);
-	//Don't use color materials, as we set all parameters via the Material class
-	glDisable(GL_COLOR_MATERIAL);
 	//Correct texcoord generation during rasterization despite Perspective changes
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	//Cull back faces. If needed, change this via the RenderState component in an object's Material
-	glCullFace(GL_BACK);
 	//We can't use LINE_SMOOTH do to our MRT style rendering and Deferred Shading if need be
 	//glEnable(GL_LINE_SMOOTH);
 	//This isn't needed due to the line found after this
@@ -214,14 +207,8 @@ void GL_API::initHardware(){
 	glutReshapeFunc(resizeWindowCallback);
 	glutDisplayFunc(Application::getInstance().DrawSceneStatic);
 	glutIdleFunc(Application::getInstance().Idle);
-	//Set a default render state for all objects. These global values are quite good for our needs
-	_defaultRenderState.cullingEnabled() = true;
-	_defaultRenderState.blendingEnabled() = false;
-	_defaultRenderState.lightingEnabled() = false;
-	_defaultRenderState.texturesEnabled() = true;
-	GFXDevice::getInstance().setRenderState(_defaultRenderState,true);
 	//That's it. Everything should be ready for draw calls
-	Console::getInstance().printfn("OpenGL rendering system initialized!");
+	PRINT_FN("OpenGL rendering system initialized!");
 	
 /*  //The following code should enable vSync
 	int (*SwapInterval)(int);
@@ -244,6 +231,9 @@ void GL_API::initHardware(){
 	// no vsync, if needed :
 	SwapInterval(0);
 */
+	RenderStateBlockDescriptor defaultGLStateDescriptor;
+	GFX_DEVICE._defaultStateBlock = GFX_DEVICE.createStateBlock(defaultGLStateDescriptor);
+	SET_DEFAULT_STATE_BLOCK();
 }
 
 void GL_API::closeApplication(){
@@ -254,6 +244,7 @@ void GL_API::closeApplication(){
 
 //clear up stuff ...
 void GL_API::closeRenderingApi(){
+	SAFE_DELETE(_state2DRendering);
 	glutDestroyWindow(Application::getInstance().getMainWindowId());
 }
 
@@ -326,7 +317,9 @@ void GL_API::enableFog(F32 density, F32* color){
 	glFogf (GL_FOG_END,    8000.0f);
 }
 
-void GL_API::drawTextToScreen(Text* text){
+void GL_API::drawTextToScreen(GuiElement* const textElement){
+	Text* text = dynamic_cast<Text* >(textElement);
+	assert(text != NULL);
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	glPushMatrix();
 	glLoadIdentity();
@@ -352,13 +345,13 @@ void GL_API::drawCharacterToScreen(void* font,char text){
 #endif
 }
 
-void GL_API::drawFlash(GuiFlash* flash){
-
-	flash->playMovie();
+void GL_API::drawFlash(GuiElement* const flash){
+	assert(flash != NULL);
+	dynamic_cast<GuiFlash* >(flash)->playMovie();
 }
 
-void GL_API::drawButton(Button* b){
-	
+void GL_API::drawButton(GuiElement* const button){
+	Button* b = dynamic_cast<Button* >(button);
 	F32 fontx;
 	F32 fonty;
 	Text *t = NULL;	
@@ -450,62 +443,45 @@ void GL_API::drawButton(Button* b){
 		drawTextToScreen(t);
 		glPopAttrib();
 	}
-	delete t;
-	t = NULL;
+	SAFE_DELETE(t);
+
 }
 
+bool _depthMapRendering = false;
 void GL_API::toggleDepthMapRendering(bool state) {
 	if(state){
-		GLCheck(glCullFace(GL_FRONT));
-		glShadeModel(GL_FLAT);
-		glColorMask(0, 0, 0, 0);
-		glPolygonOffset( 1.0f, 4096.0f);
-		glEnable(GL_POLYGON_OFFSET_FILL);
-		if(_currentRenderState.lightingEnabled()) GLCheck(glDisable(GL_LIGHTING));
+		if(!_depthMapRendering){
+			glShadeModel(GL_FLAT);
+			_depthMapRendering = true;
+		}
 	}else{
-		GLCheck(glCullFace(GL_BACK));
-		glShadeModel(GL_SMOOTH);
-		glColorMask(1, 1, 1, 1);
-		glDisable(GL_POLYGON_OFFSET_FILL);
-		if(_currentRenderState.lightingEnabled()) GLCheck(glEnable(GL_LIGHTING));
+		if(_depthMapRendering){
+			glShadeModel(GL_SMOOTH);
+			_depthMapRendering = false;
+		}
 	}
 }
 
-void GL_API::setRenderState(RenderState& state,bool force){
-
-	if(_currentRenderState.blendingEnabled() != state.blendingEnabled() || force || _ignoreStates){
-		state.blendingEnabled() ? GLCheck(glEnable(GL_BLEND)) : GLCheck(glDisable(GL_BLEND));
-	}
-	if(_currentRenderState.lightingEnabled() != state.lightingEnabled() || force || _ignoreStates){
-		state.lightingEnabled() ? GLCheck(glEnable(GL_LIGHTING)) : GLCheck(glDisable(GL_LIGHTING));
-	}
-	if(_currentRenderState.cullingEnabled() != state.cullingEnabled() || force || _ignoreStates){
-		state.cullingEnabled() ?  /*GLCheck(*/glEnable(GL_CULL_FACE)/*)*/ :	/*GLCheck(*/glDisable(GL_CULL_FACE)/*)*/;
-	}
-	if(_currentRenderState.texturesEnabled() != state.texturesEnabled() || force || _ignoreStates){
-		state.texturesEnabled() ? GLCheck(glEnable(GL_TEXTURE_2D)) : GLCheck(glDisable(GL_TEXTURE_2D));
-	}
+void GL_API::updateStateInternal(RenderStateBlock* block, bool force){
+   assert(dynamic_cast<glRenderStateBlock*>(block));
+   glRenderStateBlock* glBlock = static_cast<glRenderStateBlock*>(block);
+   glRenderStateBlock* glCurrent = static_cast<glRenderStateBlock*>(GFX_DEVICE._currentStateBlock);
+   if (force){
+      glCurrent = NULL;
+   }
+   glBlock->activate(glCurrent);
+   _currentGLRenderStateBlock = glBlock;
 }
 
-void GL_API::ignoreStateChanges(bool state){
-	if(state){
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
-	}else{
-		glPopAttrib();
-	}
-	_ignoreStates = state;
-}
 
-void GL_API::setObjectState(Transform* const transform){
-	if(_wireframeRendering)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	else
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
+void GL_API::setObjectState(Transform* const transform, bool force){
 	if(transform){
-		//ToDo: Create separate shaders for this!!!! -Ionut 
+		///ToDo: Create separate shaders for this!!!! -Ionut 
 		//Performance is abismal
 		glPushMatrix();
+		if(force){
+			glLoadIdentity();
+		}
 		glMultMatrixf(transform->getMatrix());
 		glMultMatrixf(transform->getParentMatrix());
 	}
@@ -525,9 +501,7 @@ void GL_API::setMaterial(Material* mat){
  
 void GL_API::renderInViewport(const vec4& rect, boost::function0<void> callback){
 	
-	glPushAttrib(GL_VIEWPORT_BIT | GL_DEPTH_BUFFER_BIT | GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
+	glPushAttrib(GL_VIEWPORT_BIT);
     glViewport(rect.x, rect.y, rect.z, rect.w);
 	callback();
 	glPopAttrib();
@@ -535,8 +509,7 @@ void GL_API::renderInViewport(const vec4& rect, boost::function0<void> callback)
 }
 
 void GL_API::drawBox3D(vec3 min, vec3 max){
-	glPushAttrib(GL_COLOR_BUFFER_BIT);
-	glColor3i(0,0,0);
+
 	glBegin(GL_LINE_LOOP);
 		glVertex3f( min.x, min.y, min.z );
 		glVertex3f( max.x, min.y, min.z );
@@ -561,18 +534,16 @@ void GL_API::drawBox3D(vec3 min, vec3 max){
 		glVertex3f( min.x, min.y, max.z );
 		glVertex3f( min.x, max.y, max.z );
 	glEnd();
-	glPopAttrib();
 }
 
 void GL_API::renderModel(Object3D* const model){
-	Type type = TRIANGLES;
+	PRIMITIVE_TYPE type = TRIANGLES;
 	//render in the switch or after. hacky, but works -Ionut
 	bool b_continue = true;
 	switch(model->getType()){
 		case TEXT_3D:{
 			Text3D* text = dynamic_cast<Text3D*>(model);
 			glPushAttrib(GL_ENABLE_BIT);	
-			GLCheck(glEnable(GL_LINE_SMOOTH));
 			glLineWidth(text->getWidth());
 			glutStrokeString(text->getFont(), (const U8*)text->getText().c_str());
 			glPopAttrib();
@@ -589,7 +560,7 @@ void GL_API::renderModel(Object3D* const model){
 			break;
 		//We should never enter the default case!
 		default:
-			Console::getInstance().errorfn("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
+			ERROR_FN("GLWrapper: Invalid Object3D type received for object: [ %s ]",model->getName().c_str());
 			b_continue = false;
 			break;
 	}
@@ -601,7 +572,7 @@ void GL_API::renderModel(Object3D* const model){
 	}
 }
 
-void GL_API::renderElements(Type t, Format f, U32 count, const void* first_element){
+void GL_API::renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element){
 	U32 format = 0;
 	switch(f){
 		case _I8:
@@ -627,18 +598,20 @@ void GL_API::renderElements(Type t, Format f, U32 count, const void* first_eleme
 	glDrawElements(t, count, format, first_element );
 }
 
-bool _depthTestWasEnabled = false;
 void GL_API::toggle2D(bool state){
-	
+	if(!_state2DRendering){
+		RenderStateBlockDescriptor state2DRenderingDesc;
+		state2DRenderingDesc.setCullMode(CULL_MODE_None);
+		//state2DRenderingDesc.setZReadWrite(false,false);
+		state2DRenderingDesc._fixedLighting = false;
+		_state2DRendering = GFX_DEVICE.createStateBlock(state2DRenderingDesc);
+	}
+
 	if(state){ //2D
+		SET_STATE_BLOCK(_state2DRendering);
+
 		F32 width = Application::getInstance().getWindowDimensions().width;
 		F32 height = Application::getInstance().getWindowDimensions().height;
-		if(glIsEnabled(GL_DEPTH_TEST) == GL_TRUE){
-			_depthTestWasEnabled = true;
-			GLCheck(glDisable(GL_DEPTH_TEST));
-		}else{
-			_depthTestWasEnabled = false;
-		}
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix(); //1
 		glLoadIdentity();
@@ -651,9 +624,6 @@ void GL_API::toggle2D(bool state){
 		glPopMatrix(); //2 
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix(); //1
-		if(glIsEnabled(GL_DEPTH_TEST) == GL_FALSE && _depthTestWasEnabled){
-			glEnable(GL_DEPTH_TEST);
-		}
 	}
 }
 
@@ -661,34 +631,43 @@ void GL_API::setAmbientLight(const vec4& light){
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light);
 }
 
-void GL_API::setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type){
-	glLightfv(GL_LIGHT0+slot, GL_POSITION, properties_v["position"]);
-	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  properties_v["ambient"]);
-	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  properties_v["diffuse"]);
-	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, properties_v["specular"]);
+///Update OpenGL light state
+void GL_API::setLight(Light* const light){
+	assert(light != NULL);
+	U8 slot = light->getSlot();
+	if(!light->getEnabled()){
+	   glDisable(GL_LIGHT0 + light->getSlot());
+      return;
+   }
+	if(slot >= 8){
+		///We only have 8 slots, so replace
+		slot = slot%8;
+	}
+
+	LIGHT_TYPE type = light->getLightType();
+	glLightfv(GL_LIGHT0+slot, GL_POSITION, light->getVProperty(LIGHT_POSITION));
+	glLightfv(GL_LIGHT0+slot, GL_AMBIENT,  light->getVProperty(LIGHT_AMBIENT));
+	glLightfv(GL_LIGHT0+slot, GL_DIFFUSE,  light->getVProperty(LIGHT_DIFFUSE));
+	glLightfv(GL_LIGHT0+slot, GL_SPECULAR, light->getVProperty(LIGHT_SPECULAR));
 	if(type == LIGHT_SPOT){
-		glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, properties_v["spotDirection"]);
-		glLightf(GL_LIGHT0+slot, GL_SPOT_EXPONENT,properties_f["spotExponent"]);
-		glLightf(GL_LIGHT0+slot, GL_SPOT_CUTOFF, properties_f["spotCutoff"]);
+		glLightfv(GL_LIGHT0+slot, GL_SPOT_DIRECTION, light->getVProperty(LIGHT_SPOT_DIRECTION));
+		glLightf(GL_LIGHT0+slot, GL_SPOT_EXPONENT,light->getFProperty(LIGHT_SPOT_EXPONENT));
+		glLightf(GL_LIGHT0+slot, GL_SPOT_CUTOFF, light->getFProperty(LIGHT_SPOT_CUTOFF));
 	}
 	if(type != LIGHT_DIRECTIONAL){
-		glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,properties_f["constAtt"]);
-		glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,properties_f["linearAtt"]);
-		glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,properties_f["quadAtt"]);
+		glLightf(GL_LIGHT0+slot, GL_CONSTANT_ATTENUATION,light->getFProperty(LIGHT_CONST_ATT));
+		glLightf(GL_LIGHT0+slot, GL_LINEAR_ATTENUATION,light->getFProperty(LIGHT_LIN_ATT));
+		glLightf(GL_LIGHT0+slot, GL_QUADRATIC_ATTENUATION,light->getFProperty(LIGHT_QUAD_ATT));
 	}
+	glEnable(GL_LIGHT0+slot);
 }
 
-
-void GL_API::toggleWireframe(bool state){
-	_wireframeRendering = state;
-}
 
 //Setting gluLookAt here for camera's or shadow projection
 // -set the current matrix to GL_MODELVIEW
 // -reset it to identity
 // -invert the scene if needed by using, the now deprecated, I know, glScalef (but hey, so is gluLookAt)
 void GL_API::lookAt(const vec3& eye,const vec3& center,const vec3& up, bool invertx, bool inverty){
-
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	if(invertx){
@@ -841,4 +820,8 @@ F32 GL_API::applyCropMatrix(frustum &f,SceneGraph* sceneGraph){
 	glMultMatrixf(shad_proj);
 
 	return minZ;
+}
+
+RenderStateBlock* GL_API::newRenderStateBlock(const RenderStateBlockDescriptor& descriptor){
+	return New glRenderStateBlock(descriptor);
 }

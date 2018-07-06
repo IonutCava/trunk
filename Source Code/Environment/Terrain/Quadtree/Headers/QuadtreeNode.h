@@ -34,12 +34,16 @@
 class Frustum;
 class TerrainChunk;
 class Terrain;
+class ShaderProgram;
 class QuadtreeNode {
 public:
 	///recursive node building function
 	void Build(U8 depth, ivec2 pos, ivec2 HMsize, U32 minHMSize);
 	bool computeBoundingBox(const std::vector<vec3>& vertices);
 	void Destroy();
+
+	inline ShaderProgram*     const     getParentShaderProgram()       {return _parentShaderProgram;}
+	inline void                         setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
 	void DrawGround(I32 options);
 	void DrawGrass();
@@ -55,11 +59,12 @@ public:
 	~QuadtreeNode() {Destroy();}
 
 private:
-	I8				_LOD;				//< LOD level
-	F32			    _camDistance;		//< Distance to camera
-	BoundingBox		_boundingBox;		//< Node BoundingBox
-	QuadtreeNode*	_children;			//< Node children
-	TerrainChunk*	_terrainChunk;		//< Terrain Chunk contained in node
+	I8				_LOD;				///< LOD level
+	F32			    _camDistance;		///< Distance to camera
+	BoundingBox		_boundingBox;		///< Node BoundingBox
+	QuadtreeNode*	_children;			///< Node children
+	TerrainChunk*	_terrainChunk;		///< Terrain Chunk contained in node
+	ShaderProgram*  _parentShaderProgram; ///< A reference to the terrain shader in case we need special rendering for this node
 };
 
 #endif

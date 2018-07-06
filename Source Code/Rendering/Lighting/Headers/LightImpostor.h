@@ -17,6 +17,7 @@ private:
 private:
 	bool      _visible;
 	Sphere3D* _dummy;
+	RenderStateBlock* _dummyStateBlock;
 };
 
 #endif

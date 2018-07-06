@@ -41,10 +41,10 @@ public:
 
 	inline std::vector<U32>&			getIndiceArray(I8 lod)		   {return _indice[lod];}
 	inline std::vector<U16>&			getGrassIndiceArray()		   {return _grassIndice;}
-    
+
 	void								addObject(Mesh* obj);
 	void								addTree(const vec4& pos,F32 scale, const FileData& tree,SceneGraphNode* parentNode);
-	TerrainChunk() : _gfx(GFXDevice::getInstance()){}
+	TerrainChunk() {}
 	~TerrainChunk() {Destroy();}
 
 private:
@@ -57,7 +57,6 @@ private:
 	U16  				_indOffsetH[TERRAIN_CHUNKS_LOD];
 	F32                 _grassVisibility;
 	std::vector<U16>	_grassIndice;
-	GFXDevice&          _gfx;
 };
 
 #endif

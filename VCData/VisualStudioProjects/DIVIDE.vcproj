@@ -332,6 +332,30 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="RenderPass"
+				>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\Reflector.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp"
+					>
+				</File>
+				<Filter
+					Name="Headers"
+					>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Dynamics"
@@ -435,6 +459,10 @@
 					RelativePath="..\..\Source Code\Environment\Terrain\TerrainChunk.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\Source Code\Environment\Terrain\TerrainLoader.cpp"
+					>
+				</File>
 				<Filter
 					Name="Quadtree"
 					>
@@ -529,6 +557,10 @@
 			Name="Utility"
 			>
 			<File
+				RelativePath="..\..\Source Code\Utility\CRC.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\Source Code\Utility\Event.cpp"
 				>
 			</File>
@@ -549,6 +581,10 @@
 				>
 				<File
 					RelativePath="..\..\Source Code\Utility\Headers\BoundingBox.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Utility\Headers\CRC.h"
 					>
 				</File>
 				<File
@@ -832,7 +868,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\Source Code\Hardware\Video\RenderAPIEnums.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\Source Code\Hardware\Video\RenderAPIWrapper.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Video\RenderStateBlock.h"
 					>
 				</File>
 				<File
@@ -875,6 +923,14 @@
 					Name="OpenGL"
 					>
 					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glFrameBufferObject.cpp"
 						>
 					</File>
@@ -888,6 +944,14 @@
 					</File>
 					<File
 						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glPixelBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.h"
 						>
 					</File>
 					<File
@@ -959,6 +1023,74 @@
 					Name="Direct3D"
 					>
 					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dFrameBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dPixelBufferObject.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dResources.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dShader.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dShader.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dShaderProgram.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dShaderProgram.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dTexture.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dTexture.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dVertexBufferObject.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\d3dVertexBufferObject.h"
+						>
+					</File>
+					<File
 						RelativePath="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp"
 						>
 					</File>
@@ -1025,6 +1157,14 @@
 				</File>
 				<File
 					RelativePath="..\..\Source Code\Libs\includes\networking\OPCodes.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Platform"
+				>
+				<File
+					RelativePath="..\..\Source Code\Hardware\Platform\PlatformDefines.h"
 					>
 				</File>
 			</Filter>
@@ -1337,10 +1477,6 @@
 			Name="Graphs"
 			>
 			<File
-				RelativePath="..\..\Source Code\Graphs\RenderQueue.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\Source Code\Graphs\SceneGraph.cpp"
 				>
 			</File>
@@ -1359,10 +1495,6 @@
 			<Filter
 				Name="Headers"
 				>
-				<File
-					RelativePath="..\..\Source Code\Graphs\Headers\RenderQueue.h"
-					>
-				</File>
 				<File
 					RelativePath="..\..\Source Code\Graphs\Headers\SceneGraph.h"
 					>

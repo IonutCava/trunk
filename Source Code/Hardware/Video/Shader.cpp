@@ -8,5 +8,5 @@ Shader::Shader(const std::string& name, SHADER_TYPE type){
 }
 
 Shader::~Shader(){
-	Console::getInstance().d_printfn("Deleting Shader  [ %s ]",getName().c_str());
+	D_PRINT_FN("Deleting Shader  [ %s ]",getName().c_str());
 }

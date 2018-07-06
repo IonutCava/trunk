@@ -172,9 +172,8 @@ class EffectManager{
     {
 	  std::vector<VariableEffect*>::iterator iterEffs;
 	  for (iterEffs = _vecEffects.begin(); iterEffs != _vecEffects.end(); ++iterEffs)
-		delete *iterEffs;
-	   *iterEffs = NULL;
-	}
+		   SAFE_DELETE(*iterEffs);
+	  }
 
     void updateActiveEffects()
     {
@@ -208,14 +207,14 @@ class EffectManager{
 	  // Print details about playable effects
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Console::getInstance().d_printfn("InputManager: The device can't play any effect of the test set");
+		  D_PRINT_FN("InputManager: The device can't play any effect of the test set");
 	  }
 	  else
 	  {
-		  Console::getInstance().printfn("InputManager: Selected device can play the following effects :");
+		  PRINT_FN("InputManager: Selected device can play the following effects :");
 		for (size_t nEffIndInd = 0; nEffIndInd < _vecPlayableEffectInd.size(); nEffIndInd++)
 			printEffect(_vecPlayableEffectInd[nEffIndInd]);
-		Console::getInstance().printfn("");
+		PRINT_FN("");
 	  }
 	}
 
@@ -227,14 +226,14 @@ class EffectManager{
 	  // Nothing to do if no joystick currently selected
 	  if (!_pJoystickMgr->getCurrentFFDevice())
 	  {
-		  Console::getInstance().d_printfn("InputManager: No Joystick selected.");  
+		  D_PRINT_FN("InputManager: No Joystick selected.");  
 		return;
 	  }
 
 	  // Nothing to do if joystick cannot play any effect
 	  if (_vecPlayableEffectInd.empty())
 	  {
-		  Console::getInstance().d_printfn("InputManager: No playable effects."); 
+		  D_PRINT_FN("InputManager: No playable effects."); 
 		return;
 	  }
 
@@ -271,7 +270,7 @@ class EffectManager{
 
     void printEffect(size_t nEffInd)
     {
-		Console::getInstance().printfn("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
+		PRINT_FN("InputManager: * #%d : %s",nEffInd,_vecEffects[nEffInd]->getDescription());
 	}
 
     void printEffects()
@@ -351,7 +350,7 @@ public:
 #endif
 
 	  _pInputMgr = OIS::InputManager::createInputSystem(pl);
-	  Console::getInstance().printf("InputManager: %s created.\n",_pInputMgr->inputSystemName().c_str());
+	  PRINT_F("InputManager: %s created.\n",_pInputMgr->inputSystemName().c_str());
 
 	  // Create the event handler.
 	  _pEventHdlr = new EventHandler(this);
@@ -362,7 +361,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		Console::getInstance().printf("Exception raised on keyboard creation: %s\n",ex.eText);
+		PRINT_F("Exception raised on keyboard creation: %s\n",ex.eText);
 	  }
 
 	  try{
@@ -371,7 +370,7 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-			Console::getInstance().printf("Exception raised on joystick creation: %s\n",ex.eText);
+			PRINT_F("Exception raised on joystick creation: %s\n",ex.eText);
 	  }
 
 	  try{
@@ -384,16 +383,15 @@ public:
 	  }
 	  catch(OIS::Exception &ex)
 	  {
-		Console::getInstance().printf("Exception raised on mouse creation: %s\n",ex.eText);
+		PRINT_F("Exception raised on mouse creation: %s\n",ex.eText);
 	  }
 	  
 	  // Create the joystick manager.
 	  _pJoystickMgr = new JoystickManager(_pInputMgr, _pEventHdlr);
 	  if( !_pJoystickMgr->wasFFDetected() )
 	  {
-		Console::getInstance().printf("InputManager: No Force Feedback device detected.\n");
-		delete _pJoystickMgr;
-		_pJoystickMgr = NULL;
+		PRINT_F("InputManager: No Force Feedback device detected.\n");
+		SAFE_DELETE(_pJoystickMgr);
 	  }
 	  else
 	  {	  // Create force feedback effect manager.
@@ -482,24 +480,15 @@ public:
 		_pKeyboard = NULL;
 		_pMouse = NULL;
 		_pJoystick = NULL;
-		if (_pJoystickMgr)
-		{
-		  delete _pJoystickMgr;
-		  _pJoystickMgr = NULL;
-		}
+
+		SAFE_DELETE(_pJoystickMgr);
+
 		OIS::InputManager::destroyInputSystem(_pInputMgr);
 		_pInputMgr = NULL;
 	  }
-	  if (_pEffectMgr)
-	  {
-		delete _pEffectMgr;
-		_pEffectMgr = NULL;
-	  }
-	  if (_pEventHdlr)
-	  {
-		delete _pEventHdlr;
-		_pEventHdlr = NULL;
-	  }
+	 
+	  SAFE_DELETE(_pEffectMgr);
+	  SAFE_DELETE(_pEventHdlr);
 
 #if defined OIS_LINUX_PLATFORM
 	  // Be nice to X and clean up the x window

@@ -18,13 +18,13 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 	ResourceDescriptor model(tree.ItemName);
 	model.setResourceLocation(tree.ModelName);
 	model.setFlag(true);
-	Mesh* tempTree = ResourceManager::getInstance().loadResource<Mesh>(model);
+	Mesh* tempTree = CreateResource<Mesh>(model);
 	if(tempTree){
 		stringstream ss; ss << "_" << tempTree->getRefCount();
 		std::string treeName(tempTree->getName()+ss.str());
 		ss.clear();
 		SceneGraphNode* treeNode = parentNode->addNode(tempTree,treeName);
-		Console::getInstance().printfn("Added tree [ %s ]",treeNode->getName().c_str());
+		PRINT_FN("Added tree [ %s ]",treeNode->getName().c_str());
 		Transform* treeTransform = treeNode->getTransform();
  		treeTransform->scale(scale * tree.scale);
 		treeTransform->rotateY(pos.w);
@@ -42,7 +42,7 @@ void TerrainChunk::addTree(const vec4& pos,F32 scale, const FileData& tree, Scen
 		}
 		
 	}else{
-		Console::getInstance().errorf("Can't add tree: %s\n",tree.ModelName.c_str());
+		ERROR_F("Can't add tree: %s\n",tree.ModelName.c_str());
 	}
 }
 
@@ -96,7 +96,7 @@ int TerrainChunk::DrawGround(I8 lod, bool drawInReflection){
 	if(lod>0) lod--;
 
 	for(U16 j=0; j < _indOffsetH[lod]; j++){
-		_gfx.renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
+		GFX_DEVICE.renderElements(TRIANGLE_STRIP,_U32,_indOffsetW[lod],&(_indice[lod][j*_indOffsetW[lod]]));
 	}
 
 	return 1;
@@ -119,7 +119,7 @@ void  TerrainChunk::DrawGrass(I8 lod, F32 d){
 		indices_count -= indices_count%4; 
 
 		if(indices_count > 0)
-			_gfx.renderElements(QUADS,_U16,indices_count, &(_grassIndice[0]));
+			GFX_DEVICE.renderElements(QUADS,_U16,indices_count, &(_grassIndice[0]));
 			
 	}
 

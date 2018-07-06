@@ -20,8 +20,8 @@
 
 #include "Hardware/Platform/PlatformDefines.h"
 
-class PixelBufferObject 
-{
+class PixelBufferObject {
+
 public:
 
 	virtual bool Create(U16 width, U16 height) = 0;

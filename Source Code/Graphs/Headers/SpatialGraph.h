@@ -28,8 +28,8 @@ public:
 
 	~SceneGraph(){
 		_root->unload();
-		delete _root; ///< Should recursivelly call delete on the entire scene
-		_root = NULL;
+		/// Should recursivelly call delete on the entire scene
+		SAFE_DELETE(_root);
 	}
 
 	SceneGraphNode* getRoot(){ return _root; }

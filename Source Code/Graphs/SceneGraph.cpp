@@ -1,8 +1,8 @@
 #include "Headers/SceneGraph.h"
-#include "Headers/RenderQueue.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Utility/Headers/Event.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 SceneGraph::SceneGraph() : _scene(NULL){
 	_root = New SceneGraphNode(New SceneRoot);
@@ -12,13 +12,13 @@ SceneGraph::SceneGraph() : _scene(NULL){
 void SceneGraph::update(){
 	RenderQueue::getInstance().refresh();
 	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
-	_root->updateTransformsAndBounds();
+	_root->checkBoundingBoxes();
+	_root->updateTransforms();
 	_root->updateVisualInformation();
 }
 
 //Update, cull and draw
 void SceneGraph::render(){
-	GFXDevice& gfx = GFXDevice::getInstance();
 
 	if(!_scene){
 		_scene = SceneManager::getInstance().getActiveScene();
@@ -29,11 +29,11 @@ void SceneGraph::render(){
 		startUpdateThread();
 	}
 
-	gfx.processRenderQueue();
+	GFX_DEVICE.processRenderQueue();
 }
 
 void SceneGraph::print(){
-	Console::getInstance().printfn("SceneGraph: ");
+	PRINT_FN("SceneGraph: ");
 	Console::getInstance().toggleTimeStamps(false);
 	boost::unique_lock< boost::mutex > lock_access_here(_rootAccessMutex);
 	_root->print();

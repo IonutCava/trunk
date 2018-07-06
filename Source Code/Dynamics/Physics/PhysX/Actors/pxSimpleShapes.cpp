@@ -9,12 +9,12 @@ bool PhysX::createPlane(PhysicsSceneInterface* targetScene,const vec3& position,
 	PxTransform pose = PxTransform(PxVec3(position.x,position.y,position.z),PxQuat(PxHalfPi, PxVec3(0.0f, 0.0f, 1.0f)));
 	PxRigidStatic* plane = _gPhysicsSDK->createRigidStatic(pose);
 	if (!plane){
-		Console::getInstance().errorfn("PhysX: error creating plane!");
+		ERROR_FN("PhysX: error creating plane!");
 		return false;
 	}
 	PxShape* shape = plane->createShape(PxPlaneGeometry(), *(_gPhysicsSDK->createMaterial(0.5,0.5,0.5)));
 	if (!shape){
-		Console::getInstance().errorfn("PhysX: error creating shape for plane!");
+		ERROR_FN("PhysX: error creating shape for plane!");
 		return false;
 	}
 	static_cast<PhysXSceneInterface* >(targetScene)->addRigidStaticActor(plane);
@@ -34,7 +34,7 @@ bool PhysX::createBox(PhysicsSceneInterface* targetScene,const vec3& position, F
     actor->setAngularDamping(0.75);
     actor->setLinearVelocity(PxVec3(0,0,0)); 
 	if (!actor){
-		Console::getInstance().errorfn("PhysX: error creating box!");
+		ERROR_FN("PhysX: error creating box!");
 		return false;
 	}
 	static_cast<PhysXSceneInterface* >(targetScene)->addRigidDynamicActor(actor);

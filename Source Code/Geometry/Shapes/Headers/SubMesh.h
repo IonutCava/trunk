@@ -53,7 +53,7 @@ public:
 
 	bool load(const std::string& name) {return true;}
 	bool unload();
-	bool computeBoundingBox(SceneGraphNode* const node);
+	bool computeBoundingBox(SceneGraphNode* const sgn);
 
 private:
 	bool _visibleToNetwork, _render;

@@ -34,12 +34,12 @@ public:
 	inline void*		 getFont()    {return _font;}
 	inline F32&			 getWidth()   {return _width;}
 
-	virtual bool computeBoundingBox(SceneGraphNode* const node){
-		if(node->getBoundingBox().isComputed()) return true;
+	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
+		if(sgn->getBoundingBox().isComputed()) return true;
 		vec3 min(-_width*2,0,-_width*0.5f);
 		vec3 max(_width*1.5f*_text.length()*10,_width*_text.length()*1.5f,_width*0.5f);
-		node->getBoundingBox().set(min,max);
-		return SceneNode::computeBoundingBox(node);
+		sgn->getBoundingBox().set(min,max);
+		return SceneNode::computeBoundingBox(sgn);
 	}
 
 private:

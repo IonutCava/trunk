@@ -69,17 +69,21 @@ void Camera::Refresh()
 	}
 }
 
-
+///Tell the rendering API to set up our desired PoV
 void Camera::RenderLookAt(bool invertx, bool inverty, F32 planey) {
+	///Tell the Rendering API to draw from our desired PoV
 	if(inverty){							 
-		GFXDevice::getInstance().lookAt(vec3(vEye.x,2.0f*planey-vEye.y,vEye.z),
+		///If we need to flip the camera upside down (ex: for reflections)
+		GFX_DEVICE.lookAt(vec3(vEye.x,2.0f*planey-vEye.y,vEye.z),
 										vec3(vCenter.x,2.0f*planey-vCenter.y,vCenter.z),
 										vec3(-vUp.x,-vUp.y,-vUp.z),invertx);
 	}else{
-		GFXDevice::getInstance().lookAt(vEye,vCenter,vUp);
+		GFX_DEVICE.lookAt(vEye,vCenter,vUp);
 	}
-
+	///Extract the frustum associated with our current PoV
 	Frustum::getInstance().Extract(vEye);
+	///Inform all listeners of a new event
+    updateListeners();
 }
 
 void Camera::PlayerMoveForward(F32 factor)	{	
@@ -116,7 +120,7 @@ void Camera::MoveAnaglyph(F32 factor){
 void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace){
 
 	assert(nFace < 6);
-
+	///Get the center and up vectors for each cube face
 	vec3 TabCenter[6] = {	vec3(eye.x+1.0f,	eye.y,		eye.z),
 							vec3(eye.x-1.0f,	eye.y,		eye.z),
 
@@ -135,10 +139,18 @@ void Camera::RenderLookAtToCubeMap(const vec3& eye, U8 nFace){
 
 								vec3(0.0f,	-1.0f,	0.0f),
 								vec3(0.0f,	-1.0f,	0.0f) };
-
+	///Set our eye position
 	setEye( eye );
-
-	GFXDevice::getInstance().lookAt(eye,TabCenter[nFace],TabUp[nFace]);
+	///Set our Rendering API to render the desired face
+	GFX_DEVICE.lookAt(eye,TabCenter[nFace],TabUp[nFace]);
+	///Extract the view frustum associated with this face
 	Frustum::getInstance().Extract(eye);
+	///Inform all listeners of a new event
+    updateListeners();
 }
 
+void Camera::updateListeners(){
+	for_each(boost::function0<void > listener, _listeners){
+		listener();
+	}
+}

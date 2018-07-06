@@ -24,11 +24,15 @@ class QuadtreeNode;
 class BoundingBox;
 class ivec2;
 class Terrain;
+class ShaderProgram;
 class Quadtree {
 public:
-	void Build(BoundingBox* pBBox, ivec2 HMSize, U32 minHMSize);
-	bool computeBoundingBox(const std::vector<vec3>& vertices);
+	void Build(BoundingBox& terrainBBox, ivec2 HMSize, U32 minHMSize);
+	BoundingBox& computeBoundingBox(const std::vector<vec3>& vertices);
 	void Destroy();
+
+	inline ShaderProgram*     const     getParentShaderProgram()       {return _parentShaderProgram;}
+	inline void                         setParentShaderProgram(ShaderProgram* const shaderProgram) {_parentShaderProgram = shaderProgram;}
 
 	void DrawGround(bool drawInReflection);
 	void DrawGrass();
@@ -41,6 +45,7 @@ public:
 
 private:
 	QuadtreeNode*	_root;	
+	ShaderProgram*  _parentShaderProgram;
 };
 
 #endif

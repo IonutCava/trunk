@@ -40,7 +40,7 @@ U8 ParamHandler::getParam<U8>(const std::string& name){
 		}
 		catch(const boost::bad_any_cast &)
 		{
-			Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U8",name.c_str());
+			PRINT_FN("ParamHandler: error casting [ %s ] to U8",name.c_str());
 			return 0;
 		}
 	}else return 0;
@@ -57,7 +57,7 @@ U16 ParamHandler::getParam<U16>(const std::string& name){
 		}
 		catch(const boost::bad_any_cast &)
 		{
-			Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U16",name.c_str());
+			PRINT_FN("ParamHandler: error casting [ %s ] to U16",name.c_str());
 			return 0;
 		}
 	}else return 0;
@@ -74,7 +74,7 @@ U32 ParamHandler::getParam<U32>(const std::string& name){
 		}
 		catch(const boost::bad_any_cast &)
 		{
-			Console::getInstance().printfn("ParamHandler: error casting [ %s ] to U32",name.c_str());
+			PRINT_FN("ParamHandler: error casting [ %s ] to U32",name.c_str());
 			return 0;
 		}
 	}else return 0;
@@ -182,16 +182,16 @@ std::string ParamHandler::getParam<std::string>(const std::string& name){
 void ParamHandler::printOutput(const std::string& name, const boost::any& value,bool inserted){
 	std::string param = "ParamHandler: Updated param \""+name+"\" : ";
 	if(inserted)  param = "ParamHandler: Saved param \""+name+"\" : ";
-	Console::getInstance().printf("%s",param.c_str());
-	if(value.type() == typeid(F32))				    Console::getInstance().printf("%f",any_cast<F32>(value));
-	else if(value.type() == typeid(D32))			Console::getInstance().printf("%f",any_cast<D32>(value));
-	else if(value.type() == typeid(bool))			Console::getInstance().printf("%s",any_cast<bool>(value)? "true" : "false");
-	else if(value.type() == typeid(int))			Console::getInstance().printf("%d",any_cast<I32>(value));
-	else if(value.type() == typeid(U8))		     	Console::getInstance().printf("%d",any_cast<U8>(value));
-	else if(value.type() == typeid(U16))			Console::getInstance().printf("%d",any_cast<U16>(value));
-	else if(value.type() == typeid(U32))			Console::getInstance().printf("%d",any_cast<U32>(value));
-	else if(value.type() == typeid(std::string)) 	Console::getInstance().printf("%s",any_cast<std::string>(value).c_str());
-	else if(value.type() == typeid(const char*))	Console::getInstance().printf("%s",any_cast<const char*>(value));
-	else Console::getInstance().printf("unconvertible %s",value.type().name());
-	Console::getInstance().printf("\n");
+	PRINT_F("%s",param.c_str());
+	if(value.type() == typeid(F32))				    PRINT_F("%f",any_cast<F32>(value))
+	else if(value.type() == typeid(D32))			PRINT_F("%f",any_cast<D32>(value))
+	else if(value.type() == typeid(bool))			PRINT_F("%s",any_cast<bool>(value)? "true" : "false")
+	else if(value.type() == typeid(int))			PRINT_F("%d",any_cast<I32>(value))
+	else if(value.type() == typeid(U8))		     	PRINT_F("%d",any_cast<U8>(value))
+	else if(value.type() == typeid(U16))			PRINT_F("%d",any_cast<U16>(value))
+	else if(value.type() == typeid(U32))			PRINT_F("%d",any_cast<U32>(value))
+	else if(value.type() == typeid(std::string)) 	PRINT_F("%s",any_cast<std::string>(value).c_str())
+	else if(value.type() == typeid(const char*))	PRINT_F("%s",any_cast<const char*>(value))
+	else PRINT_F("unconvertible %s",value.type().name())
+	PRINT_F("\n");
 }

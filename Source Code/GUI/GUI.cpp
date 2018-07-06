@@ -4,8 +4,26 @@
 #include <stdarg.h>
 #include "Hardware/Video/GFXDevice.h"
 #include "Core/Headers/Application.h"
+#include "Hardware/Video/RenderStateBlock.h"
 
 using namespace std;
+
+GuiElement::GuiElement() : _guiType(GUI_PLACEHOLDER),
+						   _parent(NULL),
+						   _active(false) {
+						   _name = "defaultGuiControl";
+						   _visible = true;
+	RenderStateBlockDescriptor d;
+	d.setCullMode(CULL_MODE_None);
+	d.setZEnable(false);
+	_guiSB = GFX_DEVICE.createStateBlock(d);
+
+}
+
+GuiElement::~GuiElement(){
+
+	SAFE_DELETE(_guiSB);
+}
 
 void GUI::onResize(F32 newWidth, F32 newHeight){
 
@@ -17,30 +35,17 @@ void GUI::onResize(F32 newWidth, F32 newHeight){
 
 void GUI::draw(){
 
-	GFXDevice& gfx = GFXDevice::getInstance();
+	GFXDevice& gfx = GFX_DEVICE;
 	gfx.toggle2D(true);
     //------------------------------------------------------------------------
 		for_each(guiMap::value_type& guiStackIterator,_guiStack){
 			GuiElement* guiElement = guiStackIterator.second;
 			if(!guiElement->isVisible()) continue;
-			switch(guiElement->getGuiType())
-			{
-				case GUI_TEXT:
-					gfx.drawTextToScreen(dynamic_cast<Text*>(guiElement));
-					break;
-				case GUI_BUTTON:
-					gfx.drawButton(dynamic_cast<Button*>(guiElement));
-					break;
-				case GUI_FLASH:
-					gfx.drawFlash(dynamic_cast<GuiFlash*>(guiElement));
-					break;
-				default:
-					break;
-			};
+			SET_STATE_BLOCK(guiElement->_guiSB);
+			gfx.renderGUIElement(guiElement);
 			
 		}
 	//------------------------------------------------------------------------
-
 	gfx.toggle2D(false);
 		
 }
@@ -165,8 +170,7 @@ void GUI::addText(const string& id,const vec3 &position, Font font,const vec3 &c
     char *text = new char[len];
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
+	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
 	GuiElement *t = New Text(id,fmt_text,position,(void*)font,color);
@@ -192,8 +196,7 @@ void GUI::modifyText(const string& id, char* format, ...){
     char * text = new char[len];
     vsprintf_s(text, len, format, args);
 	fmt_text.append(text);
-	delete[] text;
-	text = NULL;
+	SAFE_DELETE_ARRAY(text);
     va_end(args);
 
 	if(_guiStack[id]->getGuiType() == GUI_TEXT)

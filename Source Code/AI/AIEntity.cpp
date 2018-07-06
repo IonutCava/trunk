@@ -52,7 +52,7 @@ bool AIEntity::addFriend(AIEntity* entity){
 bool AIEntity::addEnemyTeam(AICoordination::teamMap& enemyTeam){
 	for_each(AICoordination::teamMap::value_type& member, _coordination->getTeam()){
 		if(!member.second->_coordination->addEnemyTeam(enemyTeam)){
-			Console::getInstance().errorfn("AI: Error adding enemy team to member [ %s ]", member.second->_name.c_str());
+			ERROR_FN("AI: Error adding enemy team to member [ %s ]", member.second->_name.c_str());
 			return false;
 		}
 	}

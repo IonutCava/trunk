@@ -3,10 +3,7 @@
 
 PreRenderStage::~PreRenderStage(){
 	for_each(PreRenderOperator* op, _operators){
-		if(op){
-			delete op;
-			op = NULL;
-		}
+		SAFE_DELETE(op);
 	}
 }
 

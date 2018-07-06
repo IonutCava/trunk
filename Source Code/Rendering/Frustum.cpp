@@ -87,10 +87,8 @@ void Frustum::Extract(const vec3& eye){
 	_eyePos = eye;
 	F32 t;
 
-	GFXDevice& gfx = GFXDevice::getInstance();
-
-	gfx.getModelViewMatrix(_modelViewMatrix);
-	gfx.getProjectionMatrix(_projectionMatrix);
+	GFX_DEVICE.getModelViewMatrix(_modelViewMatrix);
+	GFX_DEVICE.getProjectionMatrix(_projectionMatrix);
 	_modelViewMatrix.inverse(_modelViewMatrixInv);						
 	_modelViewProjectionMatrix = _projectionMatrix * _modelViewMatrix;
 	_inverseModelViewProjectionMatrix = _projectionMatrix * _modelViewMatrixInv;

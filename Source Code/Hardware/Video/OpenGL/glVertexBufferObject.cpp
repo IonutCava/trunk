@@ -33,7 +33,7 @@ bool glVertexBufferObject::Create(U32 usage)
 		nSizePosition = _dataPosition.size()*sizeof(vec3);
 	}
 	else {
-		Console::getInstance().errorf("No position data !\n");
+		ERROR_F("No position data !\n");
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool glVertexBufferObject::Create(U32 usage)
 
 	glGenBuffers(1, &_VBOid);
 	if(_VBOid == 0) {
-		Console::getInstance().errorfn( "Init VBO failed!");
+		ERROR_FN( "Init VBO failed!");
 		_created = false;
 	}
 	else {
@@ -92,8 +92,8 @@ bool glVertexBufferObject::Create(U32 usage)
 }
 
 
-void glVertexBufferObject::Enable()
-{
+void glVertexBufferObject::Enable(){
+	if(!_created) Create();
 	if(_VBOid)	    Enable_VBO();		
 	else			Enable_VA();		
 }
@@ -136,7 +136,6 @@ void glVertexBufferObject::Enable_VA()
 
 void glVertexBufferObject::Enable_VBO()
 {
-	if(!_created) Create();
 	U16 slot = 0;
 	glBindBuffer(GL_ARRAY_BUFFER, _VBOid);
 

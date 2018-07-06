@@ -43,7 +43,7 @@ public:
 
 	void delParam(const std::string& name){
 		_params.erase(name); 
-		if(_logState) Console::getInstance().printfn("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
+		if(_logState) PRINT_FN("ParamHandler: Removed saved parameter [ %s ]", name.c_str());
 	} 
 
 	inline void setDebugOutput(bool logState) {_logState = logState;}

@@ -16,6 +16,20 @@
 #define F32 float
 #define D32 double
 
+#define TEST_EPSILON std::numeric_limits<float>::epsilon()
+
+#define FLOAT_COMPARE(X,Y) (fabs(X - Y) < TEST_EPSILON)
+
+#ifdef _DEBUG
+#define SAFE_DELETE(R)	     	if(R){ delete R; R=NULL; }
+#define SAFE_DELETE_ARRAY(R)	if(R){ delete [] R; R=NULL; }
+#else
+#define SAFE_DELETE(R)	     	if(R){ delete R; R=NULL; }
+#define SAFE_DELETE_ARRAY(R)	if(R){ delete [] R; R=NULL; }
+#endif
+
+#define SAFE_DELETE_CHECK(R)    if(R){ delete R; R=NULL; return true;}else{return false;}
+#define SAFE_DELETE_ARRAY_CHECK(R)    if(R){ delete [] R; R=NULL; return true;}else{return false;}
 typedef struct packed_int {
 		 U8 b0;
 		 U8 b1;

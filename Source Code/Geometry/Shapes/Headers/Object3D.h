@@ -40,35 +40,30 @@ class BoundingBox;
 class Object3D : public SceneNode
 {
 public:
-	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(),
+	Object3D(PrimitiveType type = OBJECT_3D) : SceneNode(TYPE_OBJECT3D),
 											  _update(false),
 											  _geometryType(type),
-											  _gfx(GFXDevice::getInstance()),
-											  _geometry(GFXDevice::getInstance().newVBO()),
+											  _geometry(GFX_DEVICE.newVBO()),
 											  _refreshVBO(true)
 
 	{}
 
-	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D) : SceneNode(name),
+	Object3D(const std::string& name, PrimitiveType type = OBJECT_3D) : SceneNode(name,TYPE_OBJECT3D),
 																	    _update(false),
 																		_geometryType(type),
-																		_gfx(GFXDevice::getInstance()),
-																		_geometry(GFXDevice::getInstance().newVBO()),
+																		_geometry(GFX_DEVICE.newVBO()),
 																		_refreshVBO(true)
 	{}
 
 	virtual ~Object3D(){
-		if(_geometry != NULL) {
-			delete _geometry;
-			_geometry = NULL;
-		}
+		SAFE_DELETE(_geometry);
 	};
 
 
-	virtual void						postLoad(SceneGraphNode* const node) {}	
+	virtual void						postLoad(SceneGraphNode* const sgn) {}	
 	inline  PrimitiveType               getType()       const {return _geometryType;}
 	
-	virtual		void    render(SceneGraphNode* const node);
+	virtual		void    render(SceneGraphNode* const sgn);
 
 	inline VertexBufferObject* const getGeometryVBO() {return _geometry;}
 	inline std::vector<U16>&   getIndices()     {return _indices; }
@@ -80,7 +75,6 @@ protected:
 protected:
 	bool		   _update, _refreshVBO;
 	PrimitiveType  _geometryType;
-	GFXDevice&     _gfx;
 	VertexBufferObject*   _geometry;
 	std::vector<U16>      _indices;
 };

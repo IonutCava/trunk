@@ -32,7 +32,13 @@
 #define GETTIME()   Framerate::getInstance().getElapsedTime()/1000
 #define GETMSTIME() Framerate::getInstance().getElapsedTime()
 
-#define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
+//#define CLAMP(n, min, max) (((n)<(min))?(min):(((n)>(max))?(max):(n)))
+
+template <class T>
+inline void CLAMP(T& n, T& min, T& max){
+	((n)<(min))?(min):(((n)>(max))?(max):(n))
+}
+
 #define BIT(x) (1 << (x))
 #ifndef NOMINMAX
 #define NOMINMAX

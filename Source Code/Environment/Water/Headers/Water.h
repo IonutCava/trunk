@@ -23,36 +23,57 @@
 #include "Hardware/Video/FrameBufferObject.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
+#include "Rendering/RenderPass/Headers/Reflector.h"
 
 class ShaderProgram;
-class WaterPlane : public SceneNode{
+class WaterPlane : public SceneNode, public Reflector{
 
 public:
 	WaterPlane();
 	~WaterPlane(){}
-	void render(SceneGraphNode* const node);
+
+	/// Resource inherited "load"
 	bool load(const std::string& name);
+
+	/// Resource inherited "unload"
 	bool unload();
+
+	/// General SceneNode stuff
+	void onDraw();
+	void render(SceneGraphNode* const sgn);
+	void postLoad(SceneGraphNode* const sgn);
+	void prepareMaterial(SceneGraphNode* const sgn);
+	void releaseMaterial();
+	bool getDrawState(RENDER_STAGE currentStage)  const;
+
+	/// ToDo: check water visibility - Ionut
+	bool isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
 
 	void setParams(F32 shininess, F32 noiseTile, F32 noiseFactor, F32 transparency);
 	inline Quad3D*     getQuad()    {return _plane;}
-	inline FrameBufferObject* getReflectionFBO(){return _reflectionFBO;}
-	bool   isInView(bool distanceCheck,BoundingBox& boundingBox) {return true;}
-	void   postLoad(SceneGraphNode* const node);
-	void   prepareMaterial(SceneGraphNode* const sgn);
-	void   releaseMaterial();
-	void   onDraw();
-private:
-	bool computeBoundingBox(SceneGraphNode* const node);
+	
+	/// Reflector overwrite
+	void updateReflection();
+	/// Used for many things, such as culling switches, and underwater effects
+	bool isCameraUnderWater();
 
 private:
+	/// Bounding Box computation overwrite from SceneNode
+	bool computeBoundingBox(SceneGraphNode* const sgn);
+
+private:
+	/// cached far plane value
+	F32				   _farPlane;
+	/// cached water level
+	F32                _waterLevel;
+	/// the water's "geometry"
 	Quad3D*			   _plane;
 	Texture2D*		   _texture;
 	ShaderProgram* 	   _shader;
-	F32				   _farPlane;
-	FrameBufferObject* _reflectionFBO;
 	Transform*         _planeTransform;
 	SceneGraphNode*    _node;
 	SceneGraphNode*    _planeSGN;
+	RenderStateBlock*  _waterStateBlock;
+
 };
 #endif

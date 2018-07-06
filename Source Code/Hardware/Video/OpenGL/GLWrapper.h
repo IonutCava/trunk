@@ -18,23 +18,23 @@
 #ifndef _WRAPPER_GL_H_
 #define _WRAPPER_GL_H_
 
-#include "Graphs/Headers/SceneNode.h"
 #include "../RenderAPIWrapper.h"
-
+#include "resource.h"
 #include "glFrameBufferObject.h"
 #include "glVertexBufferObject.h"
 #include "glPixelBufferObject.h"
 #include "glShaderProgram.h"
 #include "glShader.h"
 #include "glTexture.h"
+#include "glEnumTable.h"
 
-
+class glRenderStateBlock;
 void GLCheckError(const std::string& File, unsigned int Line);
 
 DEFINE_SINGLETON_EXT1(GL_API,RenderAPIWrapper)
 	typedef unordered_map<std::string, SceneGraphNode*> sceneGraphMap;
 private:
-	GL_API() : RenderAPIWrapper(), _windowId(0),_wireframeRendering(false) {}
+	GL_API() : RenderAPIWrapper(), _windowId(0), _currentGLRenderStateBlock(NULL), _state2DRendering(NULL) {}
 	static void closeApplication();
 	void initHardware();
 	void closeRenderingApi();
@@ -50,8 +50,8 @@ private:
 	VertexBufferObject* newVBO(){return New glVertexBufferObject(); }
 	PixelBufferObject*  newPBO(){return New glPixelBufferObject(); }
 
-	Texture2D*          newTexture2D(bool flipped = false){return New glTexture(0x0DE1/*GL_TEXTURE_2D*/,flipped);}
-	TextureCubemap*     newTextureCubemap(bool flipped = false){return New glTexture(0x8513/*GL_TEXTURE_CUBEMAP*/,flipped);}
+	Texture2D*          newTexture2D(bool flipped = false){return New glTexture(glTextureTypeTable[TEXTURE_2D],flipped);}
+	TextureCubemap*     newTextureCubemap(bool flipped = false){return New glTexture(glTextureTypeTable[TEXTURE_CUBE_MAP],flipped);}
 
 	ShaderProgram* newShaderProgram(){return New glShaderProgram(); }
 	Shader*        newShader(const std::string& name, SHADER_TYPE type)       {return New glShader(name,type); }
@@ -72,41 +72,39 @@ private:
 
 	void toggle2D(bool state);
 
-	void drawTextToScreen(Text*);
+	void drawTextToScreen(GuiElement* const);
 	void drawCharacterToScreen(void* ,char);
-	void drawButton(Button*);
-	void drawFlash(GuiFlash* flash);
+	void drawButton(GuiElement* const);
+	void drawFlash(GuiElement* const);
 
 	void drawBox3D(vec3 min, vec3 max);
 
 	void renderInViewport(const vec4& rect, boost::function0<void> callback);
 
 	void renderModel(Object3D* const model);
-	void renderElements(Type t, Format f, U32 count, const void* first_element);
+	void renderElements(PRIMITIVE_TYPE t, VERTEX_DATA_FORMAT f, U32 count, const void* first_element);
 	
 	void setMaterial(Material* mat);
 
 	void setAmbientLight(const vec4& light);
-	void setLight(U8 slot, unordered_map<std::string,vec4>& properties_v,unordered_map<std::string,F32>& properties_f, LIGHT_TYPE type);
-
-	void toggleWireframe(bool state);
+	void setLight(Light* const light);
 
 	void Screenshot(char *filename, const vec4& rect);
 
-	void setRenderState(RenderState& state,bool force = false);
-	void ignoreStateChanges(bool state);
+	RenderStateBlock* newRenderStateBlock(const RenderStateBlockDescriptor& descriptor);
+	void updateStateInternal(RenderStateBlock* block, bool force = false);
 
 	void toggleDepthMapRendering(bool state);
 
-	void setObjectState(Transform* const transform);
+	void setObjectState(Transform* const transform, bool force = false);
 	void releaseObjectState(Transform* const transform);
 
 	F32 applyCropMatrix(frustum &f,SceneGraph* sceneGraph);
-private: //OpenGL specific:
-	RenderState _stateCache;	
-	U8 _windowId;
-	bool _wireframeRendering;
 
+private: //OpenGL specific:
+	U8 _windowId;
+	glRenderStateBlock* _currentGLRenderStateBlock;
+	RenderStateBlock*   _state2DRendering;
 END_SINGLETON
 
 #endif

@@ -9,7 +9,7 @@
 #include "GUI/Headers/GUI.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
-#include "Graphs/Headers/RenderQueue.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 using namespace std;
 
@@ -31,7 +31,7 @@ void AITenisScene::preRender(){
 						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 						0.0f );
 
-	LightManager::getInstance().getLight(0)->setLightProperties(string("position"),_sunVector);
+	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
 
 }
 
@@ -223,12 +223,14 @@ void AITenisScene::processInput(){
 }
 
 bool AITenisScene::load(const string& name){
+	setInitialData();
+
 	bool state = false;
 	//Adaugam o lumina
 	Light* light = addDefaultLight();
-	light->setLightProperties(string("ambient"),_white);
-	light->setLightProperties(string("diffuse"),_white);
-	light->setLightProperties(string("specular"),_white);
+	light->setLightProperties(LIGHT_AMBIENT,_white);
+	light->setLightProperties(LIGHT_DIFFUSE,_white);
+	light->setLightProperties(LIGHT_SPECULAR,_white);
 												
 	//Incarcam resursele scenei
 	state = loadResources(true);	
@@ -293,7 +295,7 @@ bool AITenisScene::loadResources(bool continueOnErrors){
 
 	//Cream o minge (Sa o facem din Chrome?)
 	ResourceDescriptor minge("Minge Tenis");
-	_minge = _resManager.loadResource<Sphere3D>(minge);
+	_minge = CreateResource<Sphere3D>(minge);
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
 	_minge->setRadius(0.3f);

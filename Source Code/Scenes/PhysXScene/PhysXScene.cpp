@@ -1,10 +1,9 @@
 #include "Headers/PhysXScene.h"
 #include "Headers/PhysXImplementation.h"
-
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "GUI/Headers/GUI.h"
 #include "Environment/Sky/Headers/Sky.h"
 #include "Managers/Headers/CameraManager.h"
-#include "Graphs/Headers/RenderQueue.h"
 using namespace std;
 
 //begin copy-paste: randarea scenei
@@ -54,15 +53,16 @@ void PhysXScene::processInput(){
 }
 
 bool PhysXScene::load(const string& name){
+	setInitialData();
 	bool state = false;
 	//Adaugam o lumina
 	vec2 sunAngle(0.0f, RADIANS(45.0f));
 	_sunVector = vec4(-cosf(sunAngle.x) * sinf(sunAngle.y),-cosf(sunAngle.y),-sinf(sunAngle.x) * sinf(sunAngle.y),0.0f );
 	Light* light = addDefaultLight();
-	light->setLightProperties(string("position"),_sunVector);
-	light->setLightProperties(string("ambient"),vec4(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(string("diffuse"),vec4(1.0f,1.0f,1.0f,1.0f));
-	light->setLightProperties(string("specular"),vec4(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_POSITION,_sunVector);
+	light->setLightProperties(LIGHT_AMBIENT,vec4(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_DIFFUSE,vec4(1.0f,1.0f,1.0f,1.0f));
+	light->setLightProperties(LIGHT_SPECULAR,vec4(1.0f,1.0f,1.0f,1.0f));
 	//Incarcam resursele scenei
 	state = loadResources(true);	
 	state = loadEvents(true);
@@ -87,7 +87,7 @@ bool PhysXScene::loadResources(bool continueOnErrors){
 	
 	_eventTimers.push_back(0.0f); //Fps
 	//Add a new physics scene
-	_physx = static_cast<PhysXImplementation* >(PXDevice::getInstance().NewSceneInterface(this));
+	_physx = static_cast<PhysXImplementation* >(PHYSICS_DEVICE.NewSceneInterface(this));
 	//Initialize the physics scene
 	_physx->init();
 	CameraManager::getInstance().getActiveCamera()->RotateX(RADIANS(-75));
@@ -114,7 +114,7 @@ void PhysXScene::createStack(){
 	while(stackSize){
 		for(U16 i=0;i<stackSize;i++){
 			Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-			PXDevice::getInstance().createBox(_physx,Pos,CubeSize);
+			PHYSICS_DEVICE.createBox(_physx,Pos,CubeSize);
 		}
 		Offset += CubeSize;
 		Pos.y += (CubeSize * 2.0f + Spacing);
@@ -138,15 +138,15 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 			Application::getInstance().moveLR = -0.25f;
 			break;
 		case OIS::KC_1:
-			PXDevice::getInstance().createPlane(_physx,vec3(0,0,0),random(0.5f,2.0f));
+			PHYSICS_DEVICE.createPlane(_physx,vec3(0,0,0),random(0.5f,2.0f));
 			break;
 		case OIS::KC_2:
-			PXDevice::getInstance().createBox(_physx,vec3(0,random(10,30),0),random(0.5f,2.0f));
+			PHYSICS_DEVICE.createBox(_physx,vec3(0,random(10,30),0),random(0.5f,2.0f));
 			break;
 		case OIS::KC_3:
 			//create tower of 10 boxes
 			for(U8 i = 0 ; i < 10; i++){
-				PXDevice::getInstance().createBox(_physx,vec3(0,5.0f+5*i,0),0.5f);
+				PHYSICS_DEVICE.createBox(_physx,vec3(0,5.0f+5*i,0),0.5f);
 			}
 			break;
 		case OIS::KC_4:{
@@ -160,7 +160,7 @@ void PhysXScene::onKeyDown(const OIS::KeyEvent& key){
 			while(stackSize){
 				for(U16 i=0;i<stackSize;i++){
 					Pos.x = Offset + i * (CubeSize * 2.0f + Spacing);
-					PXDevice::getInstance().createBox(_physx,Pos,CubeSize);
+					PHYSICS_DEVICE.createBox(_physx,Pos,CubeSize);
 				}
 				Offset += CubeSize;
 				Pos.y += (CubeSize * 2.0f + Spacing);

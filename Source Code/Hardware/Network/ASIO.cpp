@@ -51,14 +51,14 @@ using namespace std;
 	{
 		U8 code;
 		p >> code;
-		Console::getInstance().printfn("CLOSING");
+		PRINT_FN("CLOSING");
 		if(code == 0) ASIO::getInstance().close();
 		// else handleError(code);
 	}
 
 	void ASIO::HandleGeometryAppendOpCode(WorldPacket& p)
 	{
-		Console::getInstance().printfn("ASIO: received  [SMSG_GEOMETRY_APPEND]");
+		PRINT_FN("ASIO: received  [SMSG_GEOMETRY_APPEND]");
 		U8 size;
 		p >> size;
 		vector<FileData> patch;

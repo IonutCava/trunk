@@ -17,32 +17,29 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(ShaderProgram* const SSAOShader, Qu
 	ParamHandler& par = ParamHandler::getInstance();
 	ResourceDescriptor colorNoiseTexture("noiseTexture");
 	colorNoiseTexture.setResourceLocation(par.getParam<std::string>("assetsLocation") + "/misc_images//noise.png");
-	_colorNoise = ResourceManager::getInstance().loadResource<Texture>(colorNoiseTexture);
-	_normalsFBO = GFXDevice::getInstance().newFBO();
-	_normalsFBO->Create(FrameBufferObject::FBO_2D_COLOR, width,height);
-	_stage2Shader = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
+	_colorNoise = CreateResource<Texture>(colorNoiseTexture);
+	_normalsFBO = GFX_DEVICE.newFBO();
+	_normalsFBO->Create(FBO_2D_COLOR, width,height);
+	_stage2Shader = CreateResource<ShaderProgram>(ResourceDescriptor("SSAOPass2"));
 
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator(){
 	RemoveResource(_stage2Shader);
 	RemoveResource(_colorNoise);
-	if(_normalsFBO){
-		delete _normalsFBO;
-		_normalsFBO = NULL;
-	}
+	SAFE_DELETE(_normalsFBO);
 }
 
 void SSAOPreRenderOperator::reshape(I32 width, I32 height){
 	if(_normalsFBO){
-		_normalsFBO->Create(FrameBufferObject::FBO_2D_COLOR, width,height);
+		_normalsFBO->Create(FBO_2D_COLOR, width,height);
 	}
 }
 
 void SSAOPreRenderOperator::operation(){
 	if(!_enabled) return;
 	if(!_renderQuad) return;
-	GFXDevice& gfx = GFXDevice::getInstance();
+	GFXDevice& gfx = GFX_DEVICE;
 	ParamHandler& par = ParamHandler::getInstance();
 
 	_normalsFBO->Begin();

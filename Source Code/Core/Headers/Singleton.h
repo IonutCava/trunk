@@ -37,10 +37,7 @@ public :
 
 	inline static void DestroyInstance() {
 		boost::lock_guard<boost::mutex> lock(_singletonMutex);
-		if(_instance){
-			delete _instance;
-			_instance = NULL;
-		}
+		SAFE_DELETE(_instance);
 	}
 
 

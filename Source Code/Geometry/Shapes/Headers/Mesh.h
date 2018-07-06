@@ -34,19 +34,20 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 #include "resource.h"
 #include "SubMesh.h"
 
-class Mesh : public Object3D
-{
+class Mesh : public Object3D {
+
 	typedef unordered_map<std::string, SceneGraphNode*> childrenNodes;
+
 public:
 	Mesh() : Object3D(MESH), _visibleToNetwork(true), _loaded(false) { _refreshVBO = false;}
 	inline void addSubMesh(const std::string& subMesh){_subMeshes.push_back(subMesh);}
 
-	bool computeBoundingBox(SceneGraphNode* const node);
+	bool computeBoundingBox(SceneGraphNode* const sgn);
 	inline std::vector<std::string>&   getSubMeshes()   {return _subMeshes;}
 
 	bool load(const std::string& file);
-	void postLoad(SceneGraphNode* const node);
-	void render(SceneGraphNode* const node){};
+	void postLoad(SceneGraphNode* const sgn);
+	void render(SceneGraphNode* const sgn){};
 	void createCopy();
 	void removeCopy();
 

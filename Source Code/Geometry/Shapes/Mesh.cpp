@@ -12,40 +12,38 @@ bool Mesh::load(const string& name){
 
 void Mesh::removeCopy(){
 	SceneNode::removeCopy();
-	//Removing a SceneGraphNode removes it's children. For a mesh, the children are the SubMeshes
-	//for_each(std::string& it, _subMeshes){
-	//	Resource* s = ResourceManager::getInstance().find(it);
-	//	if(s) s->removeCopy();
-	//}
 }
 
 void Mesh::createCopy(){
 	SceneNode::createCopy();
 	for_each(std::string& it, _subMeshes){
-		Resource* s = ResourceManager::getInstance().find(it);
+		Resource* s = FindResource(it);
 		if(s) s->createCopy();
 	}
 }
 
-bool Mesh::computeBoundingBox(SceneGraphNode* const node){
-	BoundingBox& bb = node->getBoundingBox();
+
+/// Mesh bounding box is built from all the SubMesh bounding boxes
+bool Mesh::computeBoundingBox(SceneGraphNode* const sgn){
+	BoundingBox& bb = sgn->getBoundingBox();
 	if(bb.isComputed()) return true;
-	bb.set(vec3(100000.0f, 100000.0f, 100000.0f),vec3(-100000.0f, -100000.0f, -100000.0f));
-	for_each(childrenNodes::value_type& it, node->getChildren()){
-		it.second->getBoundingBox().Transform(it.second->getInitialBoundingBox(), it.second->getTransform()->getMatrix());
-		bb.Add(it.second->getBoundingBox());
-	}
-	return SceneNode::computeBoundingBox(node);
+	//bb.set(vec3(100000.0f, 100000.0f, 100000.0f), vec3(-100000.0f, -100000.0f, -100000.0f));
+	return SceneNode::computeBoundingBox(sgn);
 }
 
-void Mesh::postLoad(SceneGraphNode* const node){
+
+/// After we loaded our mesh, we need to add submeshes as children nodes
+void Mesh::postLoad(SceneGraphNode* const sgn){
 	for_each(std::string& it, _subMeshes){
 		ResourceDescriptor subMesh(it);
-		SubMesh* s = dynamic_cast<SubMesh*>(ResourceManager::getInstance().find(it));
+		/// Find the SubMesh resource
+		SubMesh* s = dynamic_cast<SubMesh*>(FindResource(it));
 		if(!s) continue;
-		SceneGraphNode* sGN  = node->addNode(s,node->getName()+"_"+it);
-		//Set submesh transform to this transform
-		sGN->getTransform()->setTransforms(node->getTransform()->getMatrix());
+		/// Add the SubMesh resource as a child
+		PRINT_FN("Adding [ %s ] to [ %s ]" , string(sgn->getName()+"_"+it).c_str(),sgn->getName().c_str());
+		SceneGraphNode* subMeshSGN  = sgn->addNode(s,sgn->getName()+"_"+it);
+		//Set SubMesh transform to this transform - HACK. ToDo <- Fix this. Use parent matrix
+		subMeshSGN->getTransform()->setTransforms(sgn->getTransform()->getMatrix());
 	}
-	Object3D::postLoad(node);
+	Object3D::postLoad(sgn);
 }

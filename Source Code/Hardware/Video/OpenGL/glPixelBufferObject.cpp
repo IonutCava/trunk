@@ -65,7 +65,7 @@ void glPixelBufferObject::Unbind(U8 unit) const
 bool glPixelBufferObject::Create(U16 width, U16 height)
 {
 	Destroy();
-	Console::getInstance().printfn("Generating pixelbuffer of dimmensions [%d x %d]",width,height);
+	PRINT_FN("Generating pixelbuffer of dimmensions [%d x %d]",width,height);
 	_width = width;
 	_height = height;
 	U32 size = _width * _height * 4/*channels*/;
@@ -83,8 +83,7 @@ bool glPixelBufferObject::Create(U16 width, U16 height)
 	F32 *pixels = New F32[size];
 	memset(pixels, 0, size * sizeof(F32) );
 	GLCheck(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0, GL_RGB, GL_FLOAT, pixels));
-	delete [] pixels;
-	pixels = NULL;
+	SAFE_DELETE_ARRAY(pixels);
 
     GLCheck(glGenBuffers(1, &_pixelBufferHandle));
     GLCheck(glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle));

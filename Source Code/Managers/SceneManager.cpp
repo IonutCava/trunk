@@ -9,8 +9,8 @@ using namespace std;
 
 SceneManager::SceneManager() : _scene(NULL), _currentSelection(NULL){}
 SceneManager::~SceneManager(){
-	Console::getInstance().printfn("Deleting Scene Manager ...");
-	Console::getInstance().printfn("Removing all scenes and destroying scene manager ...");
+	PRINT_FN("Deleting Scene Manager ...");
+	PRINT_FN("Removing all scenes and destroying scene manager ...");
 }
 
 Scene* SceneManager::loadScene(const string& name){
@@ -63,6 +63,9 @@ void SceneManager::toggleBoundingBoxes(){
 		_scene->drawObjects(true);
 	}else if (_scene->drawBBox() && _scene->drawObjects()){
 		_scene->drawBBox(true);
+		_scene->drawObjects(false);
+	}else if (_scene->drawBBox() && !_scene->drawObjects()){
+		_scene->drawBBox(false);
 		_scene->drawObjects(false);
 	}else{
 		_scene->drawBBox(false);
@@ -178,6 +181,11 @@ void SceneManager::findSelection(U32 x, U32 y){
 }
 
 void SceneManager::render(RENDER_STAGE stage) {
-	GFXDevice::getInstance().setRenderStage(stage);
+	GFX_DEVICE.setRenderStage(stage);
 	_scene->render();
+}
+
+
+bool SceneManager::load(const std::string& name) {
+	return _scene->load(name);
 }

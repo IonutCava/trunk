@@ -8,29 +8,38 @@
 #include "Hardware/Video/VertexBufferObject.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "Hardware/Video/RenderStateBlock.h"
 
 Vegetation::~Vegetation(){
-	Console::getInstance().printfn("Destroying vegetation for terrain [ %s ] ...",_terrain->getNode<Terrain>()->getName().c_str());
+	PRINT_FN("Destroying vegetation for terrain [ %s ] ...",_terrain->getNode<Terrain>()->getName().c_str());
 	for(U8 i = 0; i < _grassVBO.size(); i++){
-		delete _grassVBO[i];
-		_grassVBO[i] = NULL;
+		SAFE_DELETE(_grassVBO[i]);
 	}
 	_grassVBO.clear();
 	RemoveResource(_grassShader);
 	for(U8 i = 0; i < _grassBillboards.size(); i++){
 		RemoveResource(_grassBillboards[i]);
 	}
-	Console::getInstance().printfn("... destruction complete!");
+
+	SAFE_DELETE(_grassStateBlock);
+
+	PRINT_FN("... destruction complete!");
 }
 
 void Vegetation::initialize(const string& grassShader,const string& terrainName)
 {
-	_grassShader  = ResourceManager::getInstance().loadResource<ShaderProgram>(ResourceDescriptor(grassShader));
+	_grassShader  = CreateResource<ShaderProgram>(ResourceDescriptor(grassShader));
 	_grassDensity = _grassDensity/_billboardCount;
 	_terrain = SceneManager::getInstance().getActiveScene()->getSceneGraph()->findNode(terrainName);
 	assert(_terrain);
 	for(U8 i = 0 ; i < _billboardCount; i++) _success = generateGrass(i);
 	if(_success) _success = generateTrees();
+
+	RenderStateBlockDescriptor transparent;
+    transparent.setCullMode(CULL_MODE_None);
+	transparent.setAlphaTest(true);
+    transparent.setBlend(true, BLEND_PROPERTY_SrcAlpha, BLEND_PROPERTY_InvSrcAlpha);
+    _grassStateBlock = GFX_DEVICE.createStateBlock( transparent );
 
 	_render = true;
 
@@ -38,19 +47,14 @@ void Vegetation::initialize(const string& grassShader,const string& terrainName)
 
 void Vegetation::draw(bool drawInReflection){
 	if(!_render || !_success) return;
-	if(GFXDevice::getInstance().getRenderStage() == SHADOW_STAGE) return;
+	if(GFX_DEVICE.getRenderStage() == SHADOW_STAGE) return;
 
 	Scene* activeScene = SceneManager::getInstance().getActiveScene();
 	_windX = activeScene->getWindDirX();
 	_windZ = activeScene->getWindDirZ();
 	_windS = activeScene->getWindSpeed();
 
-	GFXDevice::getInstance().ignoreStateChanges(true);
-
-	RenderState s = GFXDevice::getInstance().getActiveRenderState();
-	s.blendingEnabled() = true;
-	s.cullingEnabled() = false;
-	GFXDevice::getInstance().setRenderState(s);
+     SET_STATE_BLOCK(_grassStateBlock);
 
 	_grassShader->bind();
 		_grassShader->Uniform("windDirectionX",_windX);
@@ -67,15 +71,12 @@ void Vegetation::draw(bool drawInReflection){
 
 			_grassBillboards[index]->Unbind(0);
 		}
-	//_grassShader->unbind();
-	GFXDevice::getInstance().ignoreStateChanges(false);
-	
 }
 
 
 
 bool Vegetation::generateGrass(U32 index){
-	Console::getInstance().printfn("Generating Grass...[ %d ]", (U32)_grassDensity);
+	PRINT_FN("Generating Grass...[ %d ]", (U32)_grassDensity);
 	assert(_map.data);
 	vec2 pos0(cosf(RADIANS(0.0f)), sinf(RADIANS(0.0f)));
 	vec2 pos120(cosf(RADIANS(120.0f)), sinf(RADIANS(120.0f)));
@@ -92,7 +93,7 @@ bool Vegetation::generateGrass(U32 index){
 		vec2(0.0f, 0.49f), vec2(0.0f, 0.01f), vec2(1.0f, 0.01f), vec2(1.0f, 0.49f)
 	};
 
-	_grassVBO.push_back(GFXDevice::getInstance().newVBO());
+	_grassVBO.push_back(GFX_DEVICE.newVBO());
 	U32 size = (U32) ceil(_grassDensity) * 3 * 4;
 	_grassVBO[index]->getPosition().reserve( size );
 	_grassVBO[index]->getNormal().reserve( size );
@@ -160,7 +161,7 @@ bool Vegetation::generateGrass(U32 index){
 		_grassShader->Uniform("scale", _grassSize);
 	_grassShader->unbind();
 
-	Console::getInstance().printfn("Generating Grass OK");
+	PRINT_FN("Generating Grass OK");
 	return ret;
 }
 
@@ -170,10 +171,10 @@ bool Vegetation::generateTrees(){
 	//<-- End unique position generation
 	vector<FileData>& DA = SceneManager::getInstance().getActiveScene()->getVegetationDataArray();
 	if(DA.empty()){
-		Console::getInstance().errorf("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
+		ERROR_F("Vegetation: Insufficient base geometry for tree generation. Skipping!\n");
 		return true;
 	}
-	Console::getInstance().printf("Generating Vegetation... [ %f ]\n", _treeDensity);
+	PRINT_F("Generating Vegetation... [ %f ]\n", _treeDensity);
 
 	for(U16 k=0; k<(U16)_treeDensity; k++) {
 		I16 map_x = (I16)random((F32)_map.w);
@@ -211,7 +212,7 @@ bool Vegetation::generateTrees(){
 	}
 	
 	positions.clear();
-	Console::getInstance().printf("Generating Vegetation OK\n");
+	PRINT_F("Generating Vegetation OK\n");
 	DA.empty();
 	return true;
 }

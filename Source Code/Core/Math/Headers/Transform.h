@@ -23,7 +23,7 @@
 class Transform
 {
 public:
-	Transform()	: _dirty(false){
+	Transform()	: _dirty(true){
 		_worldMatrix.identity();
 		_rotationMatrix.identity();
 		_scaleMatrix.identity();

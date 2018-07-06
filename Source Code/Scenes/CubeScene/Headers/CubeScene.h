@@ -19,9 +19,9 @@
 #define _CUBE_SCENE_H
 
 #include "Scenes/Headers/Scene.h"
-class Sphere3D;
-class CubeScene : public Scene
-{
+class Quad3D;
+class CubeScene : public Scene {
+
 public:
 	CubeScene() : Scene(), _renderQuad(NULL),
 						   _renderQuad2(NULL),_renderQuad3(NULL),_renderQuad4(NULL),_showTextures(false){}
@@ -40,6 +40,7 @@ private:
 	bool _showTextures;
 	F32 angleLR,angleUD,moveFB,moveLR;
 	Quad3D*	_renderQuad,*_renderQuad2,*_renderQuad3,*_renderQuad4;
+
 };
 
 #endif

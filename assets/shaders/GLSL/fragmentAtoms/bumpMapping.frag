@@ -3,6 +3,9 @@ uniform sampler2D texBump;
 uniform float parallax_factor;
 uniform float relief_factor;
 uniform int mode;
+uniform float zNear;
+uniform float zFar;
+
 #define MODE_PHONG      0
 #define MODE_BUMP		1
 #define MODE_PARALLAX	2
@@ -85,11 +88,9 @@ vec4 ReliefMapping(vec2 uv){
 	//Compute light direction
 	p += v*h*viewVecTBN.z;	
 	
-	float near = 0.1;
-	float far = 800.0;	
 	vec2 planes;
-	planes.x = -far/(far-near);
-	planes.y = -far*near/(far-near);
+	planes.x = -zFar/(zFar-zNear);
+	planes.y = -zFar*zNear/(zFar-zNear);
 	gl_FragDepth =((planes.x*p.z+planes.y)/-p.z);
 	
 	return NormalMapping(uv+uv_offset, vPixToEyeTBN, vPixToLightTBNcurrent, false);

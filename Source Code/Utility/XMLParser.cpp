@@ -14,7 +14,7 @@ namespace XML
 	ptree pt;
 	std::string activeScene("MainScene");
 	void loadScripts(const string& file){
-		Console::getInstance().printfn("XML: Loading Scripts!");
+		PRINT_FN("XML: Loading Scripts!");
 		read_xml(file,pt);
 		par.setParam("scriptLocation",pt.get("scriptLocation","XML"));
 		par.setParam("assetsLocation",pt.get("assets","Assets"));
@@ -31,7 +31,7 @@ namespace XML
 
 	void loadConfig(const string& file){
 		pt.clear();
-		Console::getInstance().printf("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
+		PRINT_F("XML: Loading Configuration settings file: [ %s ]\n", file.c_str());
 		read_xml(file,pt);
 		par.setParam("logFile",pt.get("debug.logFile","none"));
 		par.setParam("memFile",pt.get("debug.memFile","none"));
@@ -72,15 +72,22 @@ namespace XML
 	void loadScene(const string& sceneName){
 		pt.clear();
 		SceneManager& scnMGR = SceneManager::getInstance();
-		Console::getInstance().printf("XML: Loading scene [ %s ]\n", sceneName.c_str());
-		read_xml(par.getParam<string>("scriptLocation") + "/" +
-                 par.getParam<string>("scenesLocation") + "/" +
-				 sceneName + ".xml", pt);
+		PRINT_F("XML: Loading scene [ %s ]\n", sceneName.c_str());
+		try{
+			read_xml(par.getParam<string>("scriptLocation") + "/" +
+				     par.getParam<string>("scenesLocation") + "/" +
+					 sceneName + ".xml", pt);
+		}catch(	boost::property_tree::xml_parser_error & e ){
+			ERROR_FN("Invalid Scene!. Could not find [ %s ]",sceneName.c_str());
+			std::string error = e.what();
+			error += " [check error log!]";
+			throw error.c_str();
+		}
 		par.setParam("currentScene",sceneName);
 		Scene* scene = scnMGR.loadScene(sceneName);
 
 		if(!scene)	{
-			Console::getInstance().errorf("XML: Trying to load unsupported scene! Defaulting to default scene\n");
+			ERROR_F("XML: Trying to load unsupported scene! Defaulting to default scene\n");
 			scene = New MainScene();
 		}
 
@@ -108,7 +115,7 @@ namespace XML
 
 	void loadTerrain(const string &file){
 		pt.clear();
-		Console::getInstance().printf("XML: Loading terrain: [ %s ]\n",file.c_str());
+		PRINT_F("XML: Loading terrain: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation") + "/"; 
@@ -118,7 +125,7 @@ namespace XML
 			//Check and skip commented terrain
 			if(tag.find("<xmlcomment>") != string::npos) continue;
 			//Load the rest of the terrain
-			TerrainDescriptor* ter = ResourceManager::getInstance().loadResource<TerrainDescriptor>(name+"_descriptor");
+			TerrainDescriptor* ter = CreateResource<TerrainDescriptor>(name+"_descriptor");
 			ter->addVariable("terrainName",name);
 			ter->addVariable("heightmap",assetLocation + pt.get<string>(name + ".heightmap"));
 			ter->addVariable("textureMap",assetLocation + pt.get<string>(name + ".textures.map"));
@@ -150,13 +157,13 @@ namespace XML
 			SceneManager::getInstance().addTerrain(ter);
 			
 		}
-		Console::getInstance().printf("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
+		PRINT_F("XML: Number of terrains to load: %d\n",SceneManager::getInstance().getNumberOfTerrains());
 	}
 
 	void loadGeometry(const string &file)
 	{
 		pt.clear();
-		Console::getInstance().printf("XML: Loading Geometry: [ %s ]\n",file.c_str());
+		PRINT_F("XML: Loading Geometry: [ %s ]\n",file.c_str());
 		read_xml(file,pt);
 		ptree::iterator it;
 		string assetLocation = ParamHandler::getInstance().getParam<string>("assetsLocation")+"/";
@@ -267,11 +274,11 @@ namespace XML
 			return NULL;
 		}
 		bool skip = false;
-		Console::getInstance().printfn("Loading material from XML file [ %s ]",matName.c_str());
+		PRINT_FN("Loading material from XML file [ %s ]",matName.c_str());
 		read_xml(matName+".xml",pt);
 		string materialName = matName.substr(matName.rfind("/")+1,matName.length());
-		if(ResourceManager::getInstance().find(materialName)) skip = true;
-		Material* mat = ResourceManager::getInstance().loadResource<Material>(ResourceDescriptor(materialName));
+		if(FindResource(materialName)) skip = true;
+		Material* mat = CreateResource<Material>(ResourceDescriptor(materialName));
 		if(skip) return mat;
 		mat->setDiffuse(vec4(pt.get<F32>("material.diffuse.<xmlattr>.r",0.6f),
 							 pt.get<F32>("material.diffuse.<xmlattr>.g",0.6f),
@@ -289,7 +296,7 @@ namespace XML
 			                  pt.get<F32>("material.emissive.<xmlattr>.g",1.f),
 							  pt.get<F32>("material.emissive.<xmlattr>.b",1.f)));
 		mat->setShininess(pt.get<F32>("material.shininess.<xmlattr>.v",50.f));
-		mat->setTwoSided(pt.get<bool>("material.twoSided",false));
+		mat->setDoubleSided(pt.get<bool>("material.doubleSided",false));
 		if(boost::optional<ptree &> child = pt.get_child_optional("diffuseTexture1")){
 			mat->setTexture(Material::TEXTURE_BASE,loadTextureXML(pt.get("diffuseTexture1.file","none")));
 		}
@@ -307,13 +314,6 @@ namespace XML
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shaderProgram")){
 			mat->setShaderProgram(pt.get("shaderProgram.effect","NULL"));
-		}
-		if(boost::optional<ptree &> child = pt.get_child_optional("renderState")){
-			RenderState& renderState = mat->getRenderState();
-			renderState.cullingEnabled() = pt.get<bool>("renderState.cullingEnabled",true);
-			renderState.blendingEnabled() = pt.get<bool>("renderState.blendingEnabled",false);
-			renderState.lightingEnabled() =  pt.get<bool>("renderState.lightingEnabled",true);
-			renderState.texturesEnabled() = pt.get<bool>("renderState.texturesEnabled",true);
 		}
 		if(boost::optional<ptree &> child = pt.get_child_optional("shadows")){
 			mat->setCastsShadows(pt.get<bool>("shadows.castsShadows", true));
@@ -351,7 +351,7 @@ namespace XML
 		pt.put("material.emissive.<xmlattr>.r",mat->getMaterialMatrix().getCol(3).y);
 		pt.put("material.emissive.<xmlattr>.g",mat->getMaterialMatrix().getCol(3).z);
 		pt.put("material.emissive.<xmlattr>.b",mat->getMaterialMatrix().getCol(3).w);
-		pt.put("material.twoSided", mat->isTwoSided());
+		pt.put("material.doubleSided", mat->isDoubleSided());
 		Texture* baseTexture = mat->getTexture(Material::TEXTURE_BASE);
 		if(baseTexture){
 			pt.put("diffuseTexture1.file",baseTexture->getResourceLocation());
@@ -402,11 +402,6 @@ namespace XML
 		if(s){
 			pt.put("shaderProgram.effect",s->getName());
 		}
-		RenderState& state = mat->getRenderState();
-		pt.put("renderState.cullingEnabled", state.cullingEnabled());
-		pt.put("renderState.blendingEnabled", state.blendingEnabled());
-		pt.put("renderState.lightingEnabled", state.lightingEnabled());
-		pt.put("renderState.texturesEnabled", state.texturesEnabled());
 
 		pt.put("shadows.castsShadows", mat->getCastsShadows());
 		pt.put("shadows.receiveShadows", mat->getReceivesShadows());
@@ -423,7 +418,7 @@ namespace XML
 		ResourceDescriptor texture(img_name);
 		texture.setResourceLocation(pathName + img_name);
 		texture.setFlag(true);
-		Texture* tex1 = ResourceManager::getInstance().loadResource<Texture2D>(texture);
+		Texture* tex1 = CreateResource<Texture2D>(texture);
 
 		std::string clampU = pt.get("diffuseTexture1.MapU","CLAMP");
 		std::string clampV = pt.get("diffuseTexture1.MapV","CLAMP");
@@ -434,14 +429,14 @@ namespace XML
 		}else if (clampU.compare("CLAMP")){
 			wrapU = false;
 		}else{
-			Console::getInstance().errorfn("Invalid U-map parameter for [ %s ]",textureName.c_str());
+			ERROR_FN("Invalid U-map parameter for [ %s ]",textureName.c_str());
 		}
 		if(clampV.compare("WRAP")){
 			wrapV = true;
 		}else if (clampV.compare("CLAMP")){
 			wrapV = false;
 		}else{
-			Console::getInstance().errorfn("Invalid V-map parameter for [ %s ]",textureName.c_str());
+			ERROR_FN("Invalid V-map parameter for [ %s ]",textureName.c_str());
 		}
 		tex1->setTextureWrap(wrapU,wrapV);
 
@@ -456,14 +451,14 @@ namespace XML
 			}else if(minFilter.compare("NEAREST")){
 				minFilterValue = Texture::NEAREST_MIPMAP_NEAREST;
 			}else{
-			Console::getInstance().errorfn("Invalid min filter parameter for [ %s ]",textureName.c_str());
+			ERROR_FN("Invalid min filter parameter for [ %s ]",textureName.c_str());
 			}
 			if(magFilter.compare("LINEAR")){
 				magFilterValue = Texture::LINEAR_MIPMAP_LINEAR;
 			}else if(magFilter.compare("NEAREST")){
 				magFilterValue= Texture::NEAREST_MIPMAP_NEAREST;
 			}else{
-				Console::getInstance().errorfn("Invalid mag filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN("Invalid mag filter parameter for [ %s ]",textureName.c_str());
 			}
 
 		}else{
@@ -472,14 +467,14 @@ namespace XML
 			}else if(minFilter.compare("NEAREST")){
 				minFilterValue = Texture::NEAREST;
 			}else{
-				Console::getInstance().errorfn("Invalid min filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN("Invalid min filter parameter for [ %s ]",textureName.c_str());
 			}
 			if(magFilter.compare("LINEAR")){
 				magFilterValue = Texture::LINEAR;
 			}else if(magFilter.compare("NEAREST")){
 				magFilterValue = Texture::NEAREST;
 			}else{
-				Console::getInstance().errorfn("Invalid mag filter parameter for [ %s ]",textureName.c_str());
+				ERROR_FN("Invalid mag filter parameter for [ %s ]",textureName.c_str());
 			}
 		}
 		tex1->setTextureFilters(minFilterValue,magFilterValue);

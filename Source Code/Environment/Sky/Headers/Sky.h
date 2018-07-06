@@ -20,21 +20,28 @@
 
 #include "resource.h"
 
+class Texture;
 class Sphere3D;
 class ShaderProgram;
-class Texture;
 class SceneGraphNode;
-enum RENDER_STAGE;
+class RenderStateBlock;
+
 typedef Texture TextureCubemap;
+
+enum RENDER_STAGE;
+
+///Only one sky is visible per scene, right?
+///Singleton it is then. No need to track it via the SceneGraph
 DEFINE_SINGLETON( Sky ) 
 
 public:
 	void draw() const;
 	void setParams(const vec3& eyePos,const vec3& sunVect, bool invert, bool drawSun, bool drawSky) ;
 
-	void addToRenderExclusionMask(U8 stageMask);
-	void removeFromRenderExclusionMask(U8 stageMask);
-	bool getRenderState(RENDER_STAGE currentStage) const;
+	void addToDrawExclusionMask(U8 stageMask);
+	void removeFromDrawExclusionMask(U8 stageMask);
+	///Draw states are used to test if the current object should be drawn depending on the current render pass
+	bool getDrawState(RENDER_STAGE currentStage) const;
 
 private:
 	bool load();
@@ -47,6 +54,7 @@ private:
 	Sphere3D          *_sky,*_sun;
 	SceneGraphNode    *_skyNode, *_sunNode;
 	U8				  _exclusionMask;
+	RenderStateBlock* _skyboxRenderState;
 
 private:
 	Sky();

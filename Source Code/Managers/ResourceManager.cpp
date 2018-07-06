@@ -41,8 +41,8 @@ void operator delete(void * pxData ,char* zFile, I32 nLine){
 }
 
 ResourceManager::~ResourceManager(){
-	Console::getInstance().printfn("Destroying resource manager ...");
-	Console::getInstance().printfn("Deleting resource manager ...");
+	PRINT_FN("Destroying resource manager ...");
+	PRINT_FN("Deleting resource manager ...");
 }
 
 template<class T>
@@ -108,16 +108,16 @@ Texture* ResourceManager::loadResource<Texture>(const ResourceDescriptor& descri
 		while(std::getline(ss, it, ' ')) i++;
 
 		if(i == 6)
-			ptr = GFXDevice::getInstance().newTextureCubemap(descriptor.getFlag());
+			ptr = GFX_DEVICE.newTextureCubemap(descriptor.getFlag());
 		else if (i == 1)
-			ptr = GFXDevice::getInstance().newTexture2D(descriptor.getFlag());
+			ptr = GFX_DEVICE.newTexture2D(descriptor.getFlag());
 		else{
-			Console::getInstance().errorfn("ResourceManager: wrong number of files for cubemap texture: [ %s ]", descriptor.getName().c_str());
+			ERROR_FN("ResourceManager: wrong number of files for cubemap texture: [ %s ]", descriptor.getName().c_str());
 			return NULL;
 		}
 
 		if(!ptr->load(descriptor.getResourceLocation())){
-			Console::getInstance().errorfn("ResourceManager: could not load texture file [ %s ]", descriptor.getResourceLocation().c_str());
+			ERROR_FN("ResourceManager: could not load texture file [ %s ]", descriptor.getResourceLocation().c_str());
 			return NULL;
 		}
 
@@ -132,7 +132,7 @@ ShaderProgram* ResourceManager::loadResource<ShaderProgram>(const ResourceDescri
 	ShaderProgram* ptr = dynamic_cast<ShaderProgram*>(loadResource(descriptor.getName()));
 	if(!ptr){
 		ParamHandler& par = ParamHandler::getInstance();
-		ptr = GFXDevice::getInstance().newShaderProgram();
+		ptr = GFX_DEVICE.newShaderProgram();
 
 		if(descriptor.getResourceLocation().compare("default") == 0)
 			ptr->setResourceLocation(par.getParam<string>("assetsLocation") + "/" + 
@@ -360,9 +360,9 @@ Resource* ResourceManager::loadResource(const string& name){
 	if(_resDB.find(name) != _resDB.end()){
 		value = _resDB[name];
 		value->createCopy(); 
-		Console::getInstance().printf("ResourceManager: returning resource [ %s ]. Ref count: %d\n",name.c_str(),value->getRefCount());
+		PRINT_FN("ResourceManager: returning resource [ %s ]. Ref count: %d",name.c_str(),value->getRefCount());
 	}else{
-		Console::getInstance().printf("ResourceManager: loading resource [ %s ]\n",name.c_str());
+		PRINT_FN("ResourceManager: loading resource [ %s ]",name.c_str());
 	}
 	return value;
 }

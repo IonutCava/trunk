@@ -8,7 +8,7 @@
 	#define OUTPUT_DEBUG_MSG(x) {		                    \
 	std::stringstream s;								    \
 	s << x;								  				    \
-	Console::getInstance().printfn("%s", s.str().c_str());	\
+	PRINT_FN("%s", s.str().c_str());	\
 	}
 #endif
 

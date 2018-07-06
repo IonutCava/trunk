@@ -25,9 +25,10 @@ struct RenderQueueItem{
 
 	SceneGraphNode  *_node;
 	P32              _sortKey;
+	U32              _stateHash;
 
 	RenderQueueItem() : _node(NULL){}
-	RenderQueueItem(P32 sortKey, SceneGraphNode *node ) : _node( node ), _sortKey( sortKey ) {}
+	RenderQueueItem(P32 sortKey, SceneGraphNode *node );
 };
 
 struct RenderingOrder{
@@ -44,7 +45,7 @@ DEFINE_SINGLETON( RenderQueue )
 public:
 	void sort();
 	void refresh();
-	void addNodeToQueue(SceneGraphNode* const node);
+	void addNodeToQueue(SceneGraphNode* const sgn);
 	U32  getRenderQueueStackSize();
 	const RenderQueueItem& RenderQueue::getItem(I32 index);
 

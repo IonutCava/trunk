@@ -31,15 +31,15 @@ public:
 						   vec3(-1.0f, -1.0f, 0.0f),   //BOTTOM LEFT
 						   vec3( 1.0f, -1.0f, 0.0f)};  //BOTTOM RIGHT
 
-		vec3 normals[] = {vec3(0.0f, 1.0f, 0.0f), 
-						  vec3(0.0f, 1.0f, 0.0f), 
-						  vec3(0.0f, 1.0f, 0.0f),
-						  vec3(0.0f, 1.0f, 0.0f)};
+		vec3 normals[] = {vec3(0.0f, 0.0f, 1.0f), 
+						  vec3(0.0f, 0.0f, 1.0f), 
+						  vec3(0.0f, 0.0f, 1.0f),
+						  vec3(0.0f, 0.0f, 1.0f)};
 
-		vec3 tangents[] = {vec3(1.0f, 0.0f, 0.0f), 
-						   vec3(1.0f, 0.0f, 0.0f), 
-				           vec3(1.0f, 0.0f, 0.0f),
-				           vec3(1.0f, 0.0f, 0.0f)};
+		vec3 tangents[] = {vec3(0.0f, 1.0f, 0.0f), 
+						   vec3(0.0f, 1.0f, 0.0f), 
+				           vec3(0.0f, 1.0f, 0.0f),
+				           vec3(0.0f, 1.0f, 0.0f)};
 
 		vec2 texcoords[] = {vec2(0,0),
 							vec2(1,0),
@@ -115,10 +115,10 @@ public:
 		_refreshVBO = true;
 	}
 
-	virtual bool computeBoundingBox(SceneGraphNode* const node) {
-		if(node->getBoundingBox().isComputed()) return true;
-		node->getBoundingBox().set(_geometry->getPosition()[2],_geometry->getPosition()[1]);
-		return SceneNode::computeBoundingBox(node);
+	virtual bool computeBoundingBox(SceneGraphNode* const sgn) {
+		if(sgn->getBoundingBox().isComputed()) return true;
+		sgn->getBoundingBox().set(_geometry->getPosition()[2],_geometry->getPosition()[1]);
+		return SceneNode::computeBoundingBox(sgn);
 	}
 };
 

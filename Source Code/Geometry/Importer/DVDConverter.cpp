@@ -34,7 +34,7 @@ Mesh* DVDConverter::load(const string& file){
 	Assimp::Importer importer;
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE , removeLinesAndPoints ? aiPrimitiveType_LINE | aiPrimitiveType_POINT : 0 );
 
-	if(GFXDevice::getInstance().getApi() > 6)
+	if(GFX_DEVICE.getApi() > 6)
 		_ppsteps |= aiProcess_ConvertToLeftHanded;
 
 	scene = importer.ReadFile( file, _ppsteps                    |
@@ -44,7 +44,7 @@ Mesh* DVDConverter::load(const string& file){
 								aiProcess_GenSmoothNormals);
 
 	if( !scene){
-		Console::getInstance().errorfn("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
+		ERROR_FN("DVDFile::load( %s ): %s", file.c_str(), importer.GetErrorString());
 		return false;
 	}
 
@@ -68,7 +68,7 @@ Mesh* DVDConverter::load(const string& file){
 			
 	}
 	
-	tempMesh->setRenderState(true);
+	tempMesh->setDrawState(true);
 	return tempMesh;
 }
 
@@ -89,7 +89,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 	//Submesh is created as a resource when added to the scenegraph
 	ResourceDescriptor submeshdesc(temp);
 	submeshdesc.setFlag(true);
-	SubMesh* tempSubMesh = ResourceManager::getInstance().loadResource<SubMesh>(submeshdesc);
+	SubMesh* tempSubMesh = CreateResource<SubMesh>(submeshdesc);
 
 	if(!tempSubMesh->getGeometryVBO()->getPosition().empty()){
 		return tempSubMesh;
@@ -113,7 +113,7 @@ SubMesh* DVDConverter::loadSubMeshGeometry(aiMesh* source,U8 count){
 */	bool processTangents = true;
 	if(!source->mTangents){
         processTangents = false;
-		Console::getInstance().printfn("DVDConverter: SubMesh [ %s ] does not have tangent & biTangent data!", tempSubMesh->getName().c_str());
+		PRINT_FN("DVDConverter: SubMesh [ %s ] does not have tangent & biTangent data!", tempSubMesh->getName().c_str());
 	}
 
 	for(U32 j = 0; j < source->mNumVertices; j++){
@@ -173,8 +173,8 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 	if(tempMaterial) return tempMaterial;
 	bool skip = false;
 	ResourceDescriptor tempMaterialDescriptor(materialName);
-	if(ResourceManager::getInstance().find(materialName)) skip = true;
-	tempMaterial = ResourceManager::getInstance().loadResource<Material>(tempMaterialDescriptor);
+	if(FindResource(materialName)) skip = true;
+	tempMaterial = CreateResource<Material>(tempMaterialDescriptor);
 
 	if(skip) return tempMaterial;
 	ParamHandler& par = ParamHandler::getInstance();
@@ -190,8 +190,13 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		tempColorVec4.r = tempColor.r;
 		tempColorVec4.g = tempColor.g;
 		tempColorVec4.b = tempColor.b;
-		if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_TRANSPARENT,alpha))
+		if(AI_SUCCESS == source->Get(AI_MATKEY_COLOR_TRANSPARENT,alpha)){
 			tempColorVec4.a = alpha;
+			if(alpha < 1.0f){
+				/// Disable culling
+				tempMaterial->setDoubleSided(true);
+			}
+		}
 	}
 	tempMaterial->setDiffuse(tempColorVec4);
 		
@@ -238,9 +243,8 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		if(path.find('/') == string::npos){
-			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		}
+		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+
 		if(!img_name.substr(img_name.find_first_of(".")).empty()){
 			Material::TextureUsage item;
 			if(count == 0) item = Material::TEXTURE_BASE;
@@ -248,7 +252,7 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(item,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+			tempMaterial->setTexture(item,CreateResource<Texture2D>(texture));
 		}//endif
 
 		tName.Clear();
@@ -260,32 +264,29 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 	if(result == AI_SUCCESS){
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		if(path.find('/') == string::npos){
-			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		}
+		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  string::npos){
 
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+			tempMaterial->setTexture(Material::TEXTURE_NORMALMAP,CreateResource<Texture2D>(texture));
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
 	if(result == AI_SUCCESS){
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
-		if(path.find('/') == string::npos){
-			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		}
+		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
 		if(img_name.rfind('.') !=  string::npos){
 
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_BUMP,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+			tempMaterial->setTexture(Material::TEXTURE_BUMP,CreateResource<Texture2D>(texture));
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -293,16 +294,15 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		if(path.find('/') == string::npos){
-			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		}
+
+		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+		
 		if(img_name.rfind('.') !=  string::npos){
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_OPACITY,ResourceManager::getInstance().loadResource<Texture2D>(texture));
-			tempMaterial->getRenderState().blendingEnabled() = true;
-			tempMaterial->setTwoSided(true);
+			tempMaterial->setTexture(Material::TEXTURE_OPACITY,CreateResource<Texture2D>(texture));
+			tempMaterial->setDoubleSided(true);
 		}//endif
 	}//endif
 	result = source->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
@@ -310,23 +310,29 @@ Material* DVDConverter::loadSubMeshMaterial(aiMaterial* source, const string& ma
 		string path = tName.data;
 		string img_name = path.substr( path.find_last_of( '/' ) + 1 );
 		string pathName = _fileLocation.substr( 0, _fileLocation.rfind("/")+1 );
-		if(path.find('/') == string::npos){
-			path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
-		}
+
+		path = par.getParam<string>("assetsLocation")+"/"+par.getParam<string>("defaultTextureLocation") +"/"+ path;
+
 		if(img_name.rfind('.') !=  string::npos){
 			ResourceDescriptor texture(img_name);
 			texture.setResourceLocation(path);
 			texture.setFlag(true);
-			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,ResourceManager::getInstance().loadResource<Texture2D>(texture));
+			tempMaterial->setTexture(Material::TEXTURE_SPECULAR,CreateResource<Texture2D>(texture));
 		}//endif
 	}//endif
 
 	max = 1;
 	I32 two_sided = 0;
 	if((result == aiGetMaterialIntegerArray(source, AI_MATKEY_TWOSIDED, &two_sided, &max)) && two_sided){
-		tempMaterial->setTwoSided(true);
-	}else{
-		tempMaterial->setTwoSided(false);
+		tempMaterial->setDoubleSided(true);
+	}
+	F32 opacity = 1.0f;;
+	if (result == aiGetMaterialFloat(source, AI_MATKEY_OPACITY, &opacity)){
+		vec4 diffuse = tempMaterial->getMaterialMatrix().getCol(1);
+		diffuse.a = opacity;
+		tempMaterial->setDiffuse(diffuse);
+		/// Disable culling
+		tempMaterial->setDoubleSided(true);
 	}
 
 	return tempMaterial;

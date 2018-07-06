@@ -37,10 +37,10 @@ public:
 	inline void   setRadius(F32 radius) {_radius = radius; _dirty = true; _refreshVBO = true;}
 	inline void   setResolution(F32 resolution) {_resolution = resolution; _dirty = true; _refreshVBO = true;}
 
-	virtual bool computeBoundingBox(SceneGraphNode* const node){
-		if(node->getBoundingBox().isComputed()) return true;
-		node->getBoundingBox().set(vec3(- _radius,- _radius,- _radius), vec3( _radius, _radius, _radius));
-		return SceneNode::computeBoundingBox(node);
+	virtual bool computeBoundingBox(SceneGraphNode* const sgn){
+		if(sgn->getBoundingBox().isComputed()) return true;
+		sgn->getBoundingBox().set(vec3(- _radius,- _radius,- _radius), vec3( _radius, _radius, _radius));
+		return SceneNode::computeBoundingBox(sgn);
 	}
 
 	void onDraw(){

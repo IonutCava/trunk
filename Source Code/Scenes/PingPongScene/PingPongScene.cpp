@@ -31,7 +31,7 @@ void PingPongScene::preRender(){
 						-sinf(_sunAngle.x) * sinf(_sunAngle.y),
 						0.0f );
 
-	LightManager::getInstance().getLight(0)->setLightProperties(string("position"),_sunVector);
+	LightManager::getInstance().getLight(0)->setLightProperties(LIGHT_POSITION,_sunVector);
 }
 //<<end copy-paste
 
@@ -216,6 +216,7 @@ void PingPongScene::processInput(){
 }
 
 bool PingPongScene::load(const string& name){
+	setInitialData();
 	bool state = false;
 	//Adaugam o lumina
 	Light* light = addDefaultLight();
@@ -235,7 +236,7 @@ bool PingPongScene::loadResources(bool continueOnErrors){
 
 	//Cream o minge (Sa o facem din Chrome?)
 	ResourceDescriptor minge("Minge Ping Pong");
-	_minge = _resManager.loadResource<Sphere3D>(minge);
+	_minge = CreateResource<Sphere3D>(minge);
 	_mingeSGN = addGeometry(_minge);
 	_minge->setResolution(16);
 	_minge->setRadius(0.1f);

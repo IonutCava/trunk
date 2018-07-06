@@ -8,17 +8,17 @@ PhysX::PhysX() : _currentScene(NULL), _gPhysicsSDK(NULL){}
 
 bool PhysX::initPhysics(){
   _gDefaultFilterShader=physx::PxDefaultSimulationFilterShader;
-  Console::getInstance().printfn("Initializing the PhysX engine!");
+  PRINT_FN("Initializing the PhysX engine!");
   _gPhysicsSDK = PxCreatePhysics(PX_PHYSICS_VERSION, _gDefaultAllocatorCallback, _gDefaultErrorCallback, PxTolerancesScale() );
    if(_gPhysicsSDK == NULL) {
-	   Console::getInstance().errorfn("Error creating PhysX device!");
+	   ERROR_FN("Error creating PhysX device!");
 	 return false;
    }
    if(!PxInitExtensions(*_gPhysicsSDK)){
-	   Console::getInstance().errorfn("PhysX: PxInitExtensions failed!");
+	   ERROR_FN("PhysX: PxInitExtensions failed!");
 	   return false;
    }
-  Console::getInstance().printfn("PhysX engine initialized!");
+  PRINT_FN("PhysX engine initialized!");
 #ifdef _DEBUG
   PxExtensionVisualDebugger::connect(_gPhysicsSDK->getPvdConnectionManager(),"localhost",5425, 10000, true);
 #endif
@@ -27,7 +27,7 @@ bool PhysX::initPhysics(){
 
 bool PhysX::exitPhysics(){
 	if(_gPhysicsSDK != NULL){
-		Console::getInstance().printfn("Stopping PhysX device!");
+		PRINT_FN("Stopping PhysX device!");
 		 PxCloseExtensions();
        _gPhysicsSDK->release();
 	}else{

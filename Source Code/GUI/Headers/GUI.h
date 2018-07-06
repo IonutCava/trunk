@@ -42,14 +42,14 @@ struct GuiEvent
    U8                   mouseClickCount;
 };
 
-
+class RenderStateBlock;
 class GuiElement{
 	typedef GuiElement Parent;
 	friend class GUI;
 
 public:
-	GuiElement() : _guiType(GUI_PLACEHOLDER), _parent(NULL), _active(false) {_name = "defaultGuiControl";_visible = true;}
-	virtual ~GuiElement(){}
+	GuiElement() ;
+	virtual ~GuiElement();
 	inline const std::string& getName() const {return _name;}
 	inline const vec2&   getPosition()  const {return _position;}
 	inline void  setPosition(vec2& pos)        {_position = pos;}
@@ -83,6 +83,7 @@ private:
 	std::string _name;
 	bool	    _visible;
 	bool		_active;
+	RenderStateBlock* _guiSB;
 };
 
 class Text : public GuiElement

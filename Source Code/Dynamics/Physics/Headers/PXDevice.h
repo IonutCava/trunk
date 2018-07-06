@@ -41,5 +41,8 @@ private:
 	   {
 	   }
 	PhysicsAPIWrapper& _api;
+
 END_SINGLETON
+
+#define PHYSICS_DEVICE PXDevice::getInstance()
 #endif

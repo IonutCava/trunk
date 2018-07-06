@@ -27,11 +27,11 @@ class SceneGraph  {
 	SceneGraph();
 
 	~SceneGraph(){
-		Console::getInstance().printfn("Deleting SceneGraph");
+		PRINT_FN("Deleting SceneGraph");
 
-		_root->unload(); //Should recursivelly call unload on the entire scene graph
-		delete _root;    //Should recursivelly call delete on the entire scene graph
-		_root = NULL;
+		_root->unload(); ///< Should recursivelly call unload on the entire scene graph
+		///Should recursivelly call delete on the entire scene graph
+		SAFE_DELETE(_root);
 	}
 
 	SceneGraphNode* getRoot(){ return _root; }

@@ -21,8 +21,9 @@
 #include "Scenes/Headers/Scene.h"
 
 class AIEntity;
-class AITenisScene : public Scene
-{
+class Sphere3D;
+
+class AITenisScene : public Scene {
 
 public:
 	AITenisScene() : Scene(),

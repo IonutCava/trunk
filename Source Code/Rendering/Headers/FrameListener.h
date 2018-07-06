@@ -25,21 +25,34 @@
 struct FrameEvent{
   F32 _timeSinceLastEvent;
   F32 _timeSinceLastFrame;
+  F32 _currentTime;
 };
-
+/// FrameListener class.
+///Has 3 events, associated with the start of rendering a frame, the end of rendering and the end of buffer swapping after frames
+///All events have timers associated with them for update timing
 class FrameListener{
 public:
-	FrameListener(const std::string& name){_name = name;}
-
+	///Either give it a name
+	FrameListener(const std::string& name){_listenerName = name;}
+	///Or the frame listenr manager will assing it an ID
+	FrameListener() {}
 	virtual ~FrameListener(){}
 	///Adapter patern instead of pure interface for the same reason as the Ogre boys pointed out:
 	///Implement what you need without filling classes with dummy functions
+	///frameStarted is calld at the beggining of a new frame
 	virtual bool frameStarted(const FrameEvent& evt) {return true;}
+	///framePreRenderEnded is called after all the prerendering has finished and rendering should start
+	virtual bool framePreRenderEnded(const FrameEvent& evt) {return true;}
+	///frameRendering Queued is called after all the frame setup/rendering but before the call to SwapBuffers
 	virtual bool frameRenderingQueued(const FrameEvent& evt) {return true;}
+	///frameEnded is called after the buffers have been swapped
 	virtual bool frameEnded(const FrameEvent& evt) {return true;}
-	const std::string& getName() {return _name;}
-
+	inline const std::string& getName() {return _listenerName;}
+protected:
+	friend class FrameListenerManager;
+	inline void  setName(const std::string& name) {_listenerName = name;}
 private:
-	std::string _name;
+	///not _name so that it doesn't conflict with Resource base class
+	std::string _listenerName;
 };
 #endif
