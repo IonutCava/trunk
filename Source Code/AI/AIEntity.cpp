@@ -290,8 +290,8 @@ void AIEntity::updatePosition(const U64 deltaTime) {
         } else {
             _moveWaitTimer = 0;
         }*/
-        _currentPosition.setV(getAgent()->npos);
-        _currentVelocity.setV(getAgent()->nvel);
+        _currentPosition.set(getAgent()->npos);
+        _currentVelocity.set(getAgent()->nvel);
     }
 
     if (_unitRef) {

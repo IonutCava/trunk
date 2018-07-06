@@ -223,6 +223,7 @@ public:
     void setRow(I32 index, const vec2<U> &value);
     template<typename U>
     void setRow(I32 index, const U x, const U y);
+    const vec2<T>& getRow(I32 index) const;
 
     template<typename U>
     void setCol(I32 index, const vec2<U> &value);
@@ -230,6 +231,8 @@ public:
     void setCol(I32 index, const U value);
     template<typename U>
     void setCol(I32 index, const U x, const U y);
+
+    vec2<T> getCol(I32 index) const;
 
     void zero();
     void identity();
@@ -258,6 +261,7 @@ public:
         };
         T mat[4];
         T m[2][2];
+        vec2<T> _vec[2];
     };
 };
 
@@ -376,12 +380,16 @@ class mat3 {
     template<typename U>
     void setRow(I32 index, const U x, const U y, const U z);
 
+    const vec3<T>& getRow(I32 index) const;
+
     template<typename U>
     void setCol(I32 index, const vec3<U> &value);
     template<typename U>
     void setCol(I32 index, const U value);
     template<typename U>
     void setCol(I32 index, const U x, const U y, const U z);
+
+    vec3<T> getCol(I32 index) const;
 
     void zero();
     void identity();
@@ -430,6 +438,7 @@ class mat3 {
         };
         T mat[9];
         T m[3][3];
+        vec3<T> _vec[3];
     };
 };
 
@@ -560,12 +569,16 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void setRow(I32 index, const U x, const U y, const U z, const U w);
 
+    const vec4<T>& getRow(I32 index) const;
+
     template<typename U>
     void setCol(I32 index, const vec4<U> &value);
     template<typename U>
     void setCol(I32 index, const U value);
     template<typename U>
     void setCol(I32 index, const U x, const U y, const U z, const U w);
+
+    vec4<T> getCol(I32 index) const;
 
     void zero();
     void identity();
@@ -648,8 +661,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     void extractMat3(mat3<U> &matrix3) const;
 
-    template <typename U>
-    static void Multiply(const mat4<U>& matrixA, const mat4<U>& matrixB, mat4<U>& ret);
+    static void Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret);
+
     // Copyright 2011 The Closure Library Authors. All Rights Reserved.
     static void Inverse(const T* in, T* out);
 

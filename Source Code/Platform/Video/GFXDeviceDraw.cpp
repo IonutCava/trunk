@@ -137,18 +137,18 @@ GFXDevice::NodeData& GFXDevice::processVisibleNode(const SceneGraphNode& node, U
         // ... get the node's world matrix properly interpolated
         dataOut._worldMatrix.set(transform->getWorldMatrix(getFrameInterpolationFactor()));
 
-        mat4<F32> normalMatrix(dataOut._worldMatrix);
+        dataOut._normalMatrixWV.set(dataOut._worldMatrix);
         if (!transform->isUniformScaled()) {
             // Non-uniform scaling requires an inverseTranspose to negate
             // scaling contribution but preserve rotation
-            normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
-            normalMatrix.inverseTranspose();
-            normalMatrix.mat[15] = 0.0f;
+            dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+            dataOut._normalMatrixWV.inverseTranspose();
+            dataOut._normalMatrixWV.mat[15] = 0.0f;
         }
-        normalMatrix.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
+        dataOut._normalMatrixWV.setRow(3, 0.0f, 0.0f, 0.0f, 0.0f);
 
         // Calculate the normal matrix (world * view)
-        mat4<F32>::Multiply(normalMatrix, getMatrix(MATRIX::VIEW), dataOut._normalMatrixWV);
+        dataOut._normalMatrixWV *= getMatrix(MATRIX::VIEW);
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data

@@ -333,7 +333,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Load diffuse colour
     aiColor4D diffuse;
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
-        data._diffuse.setV(&diffuse.r);
+        data._diffuse.set(&diffuse.r);
     } else {
         Console::d_printfn(Locale::get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
     }
@@ -342,7 +342,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     vec4<F32> ambientTemp(0.0f, 0.0f, 0.0f, 1.0f);
     aiColor4D ambient;
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_AMBIENT, &ambient)) {
-        ambientTemp.setV(&ambient.r);
+        ambientTemp.set(&ambient.r);
     } else {
         // no ambient
     }
@@ -352,7 +352,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Load specular colour
     aiColor4D specular;
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_SPECULAR, &specular)) {
-        data._specular.setV(&specular.r);
+        data._specular.set(&specular.r);
     } else {
         Console::d_printfn(Locale::get(_ID("MATERIAL_NO_SPECULAR")), materialName.c_str());
     }
@@ -362,7 +362,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     // Load emissive colour
     aiColor4D emissive;
     if (AI_SUCCESS == aiGetMaterialColor(source, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
-        data._emissive.setV(&emissive.r);
+        data._emissive.set(&emissive.r);
     }
 
     // Load material opacity value

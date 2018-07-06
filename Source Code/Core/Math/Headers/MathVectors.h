@@ -264,9 +264,8 @@ class vec2 {
         std::swap(this->x, iv.x);
         std::swap(this->x, iv.x);
     }
-    /// set the 2 components of the vector manually using a source pointer to a
-    /// (large enough) array
-    inline void setV(const T *v) { this->set(v[0], v[1]); }
+    /// set the 2 components of the vector manually using a source pointer to a (large enough) array
+    inline void set(const T* v) { std::memcpy(&_v[0], &v[0], sizeof(T) * 2); }
     /// set the 2 components of the vector manually
     inline void set(T value) { this->set(value, value); }
     /// set the 2 components of the vector manually
@@ -280,7 +279,7 @@ class vec2 {
         this->y = static_cast<T>(_y);
     }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2<T> &v) { this->set(v.x, v.y); }
+    inline void set(const vec2 &v) { this->set(&v._v[0]); }
     /// set the 2 components of the vector using the first 2 components of the
     /// source vector
     inline void set(const vec3<T> &v) { this->set(v.x, v.y); }
@@ -288,7 +287,7 @@ class vec2 {
     /// source vector
     inline void set(const vec4<T> &v) { this->set(v.x, v.y); }
     /// set the 2 components of the vector back to 0
-    inline void reset() { this->set(0); }
+    inline void reset() { this->set((T)0); }
     /// return the vector's length
     inline T length() const {
         return std::sqrt(this->x * this->x + this->y * this->y);
@@ -558,9 +557,8 @@ class vec3 {
         this->z = yz.y;
     }
 
-    /// set the 3 components of the vector manually using a source pointer to a
-    /// (large enough) array
-    inline void setV(const T *v) { this->set(v[0], v[1], v[2]); }
+    /// set the 3 components of the vector manually using a source pointer to a (large enough) array
+    inline void set(const T* v) { std::memcpy(&_v[0], &v[0], sizeof(T) * 3); }
     /// set the 3 components of the vector manually
     inline void set(T value) { this->set(value, value, value); }
     /// set the 3 components of the vector manually
@@ -578,12 +576,12 @@ class vec3 {
     /// set the 3 components of the vector using a smaller source vector
     inline void set(const vec2<T> &v) { this->set(v.x, v.y, z); }
     /// set the 3 components of the vector using a source vector
-    inline void set(const vec3<T> &v) { this->set(v.x, v.y, v.z); }
+    inline void set(const vec3 &v) { this->set(&v._v[0]); }
     /// set the 3 components of the vector using the first 3 components of the
     /// source vector
     inline void set(const vec4<T> &v) { this->set(v.x, v.y, v.z); }
     /// set all the components back to 0
-    inline void reset() { this->set(0); }
+    inline void reset() { this->set((T)0); }
     /// return the vector's length
     inline T length() const { return std::sqrt(lengthSquared()); }
     /// return true if length is zero
@@ -1015,9 +1013,8 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     inline void xyz(const vec4<T> &xyzw) {
         this->xyz(xyzw.x, xyzw.y, xyzw.z);
     }
-    /// set the 4 components of the vector manually using a source pointer to a
-    /// (large enough) array
-    inline void setV(const T *v) { this->set(v[0], v[1], v[2], v[3]); }
+    /// set the 4 components of the vector manually using a source pointer to a (large enough) array
+    inline void set(const T* v) { std::memcpy(&_v[0], &v[0], sizeof(T) * 4); }
     /// set the 4 components of the vector manually
     inline void set(T value) { this->set(value, value, value, value); }
     /// set the 4 components of the vector manually
@@ -1034,7 +1031,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     }
 
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4 &v) { this->setV(v._v); }
+    inline void set(const vec4 &v) { this->set(&v._v[0]); }
     /// set the 4 components of the vector using a smaller source vector
     inline void set(const vec3<T> &v) { this->set(v, w); }
     /// set the 4 components of the vector using a smaller source vector
@@ -1046,7 +1043,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         this->set(v1.x, v1.y, v2.x, v2.y);
     }
     /// set all the components back to 0
-    inline void reset() { this->set(0); }
+    inline void reset() { this->set((T)0); }
     /// compare 2 vectors
     template<typename U>
     inline bool compare(const vec4<U> &v) const;

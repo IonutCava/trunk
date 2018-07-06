@@ -303,8 +303,9 @@ void Material::recomputeShaders() {
 
 bool Material::canDraw(const RenderStagePass& renderStage) {
     for (U8 pass = 0; pass < to_const_ubyte(RenderPassType::COUNT); ++pass) {
+        const std::array<ShaderProgramInfo, to_const_uint(RenderStage::COUNT)>& passInfo = _shaderInfo[pass];
         for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
-            ShaderProgramInfo& info = _shaderInfo[pass][i];
+            const ShaderProgramInfo& info = passInfo[i];
             if (info.computeStage() != ShaderProgramInfo::BuildStage::READY) {
                 computeShader(RenderStagePass(static_cast<RenderStage>(i), static_cast<RenderPassType>(pass)), _highPriority);
                 return false;

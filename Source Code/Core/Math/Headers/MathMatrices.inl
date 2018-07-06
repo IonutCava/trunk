@@ -32,6 +32,31 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _MATH_MATRICES_INL_
 #define _MATH_MATRICES_INL_
 namespace Divide {
+
+namespace {
+    //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
+    void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) {
+        __m128 row1 = _mm_load_ps(&B[0]);
+        __m128 row2 = _mm_load_ps(&B[4]);
+        __m128 row3 = _mm_load_ps(&B[8]);
+        __m128 row4 = _mm_load_ps(&B[12]);
+        for (int i = 0; i<4; i++) {
+            __m128 brod1 = _mm_set1_ps(A[4 * i + 0]);
+            __m128 brod2 = _mm_set1_ps(A[4 * i + 1]);
+            __m128 brod3 = _mm_set1_ps(A[4 * i + 2]);
+            __m128 brod4 = _mm_set1_ps(A[4 * i + 3]);
+            __m128 row = _mm_add_ps(
+                _mm_add_ps(
+                    _mm_mul_ps(brod1, row1),
+                    _mm_mul_ps(brod2, row2)),
+                _mm_add_ps(
+                    _mm_mul_ps(brod3, row3),
+                    _mm_mul_ps(brod4, row4)));
+            _mm_store_ps(&C[4 * i], row);
+        }
+    }
+};
+
 /*********************************
 * mat2
 *********************************/
@@ -382,22 +407,24 @@ void mat2<T>::set(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 void mat2<T>::setRow(I32 index, const U value) {
-    m[index][0] = static_cast<T>(value);
-    m[index][1] = static_cast<T>(value);
+    _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
 void mat2<T>::setRow(I32 index, const vec2<U> &value) {
-    m[index][0] = static_cast<T>(value.x);
-    m[index][1] = static_cast<T>(value.y);
+    _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
 void mat2<T>::setRow(I32 index, const U x, const U y) {
-    m[index][0] = static_cast<T>(x);
-    m[index][1] = static_cast<T>(y);
+    _vec[index].set(x, y);
+}
+
+template<typename T>
+const vec2<T>& mat2<T>::getRow(I32 index) const {
+    return _vec[index];
 }
 
 template<typename T>
@@ -419,6 +446,11 @@ template<typename U>
 void mat2<T>::setCol(I32 index, const U x, const U y) {
     m[0][index] = static_cast<T>(x);
     m[1][index] = static_cast<T>(y);
+}
+
+template<typename T>
+vec2<T> mat2<T>::getCol(I32 index) const {
+    return vec2<T>(m[0][index], m[1][index]);
 }
 
 template<typename T>
@@ -891,25 +923,24 @@ void mat3<T>::set(const mat4<U> &matrix) {
 template<typename T>
 template<typename U>
 void mat3<T>::setRow(I32 index, const U value) {
-    m[index][0] = static_cast<T>(value);
-    m[index][1] = static_cast<T>(value);
-    m[index][2] = static_cast<T>(value);
+    _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
 void mat3<T>::setRow(I32 index, const vec3<U> &value) {
-    m[index][0] = static_cast<T>(value.x);
-    m[index][1] = static_cast<T>(value.y);
-    m[index][2] = static_cast<T>(value.z);
+    _vec[index].set(value);
 }
 
 template<typename T>
 template<typename U>
 void mat3<T>::setRow(I32 index, const U x, const U y, const U z) {
-    m[index][0] = static_cast<T>(x);
-    m[index][1] = static_cast<T>(y);
-    m[index][2] = static_cast<T>(z);
+    _vec[index].set(x, y, z);
+}
+
+template<typename T>
+const vec3<T>& mat3<T>::getRow(I32 index) const {
+    return _vec[index];
 }
 
 template<typename T>
@@ -934,6 +965,11 @@ void mat3<T>::setCol(I32 index, const U x, const U y, const U z) {
     m[0][index] = static_cast<T>(x);
     m[1][index] = static_cast<T>(y);
     m[2][index] = static_cast<T>(z);
+}
+
+template<typename T>
+vec3<T> mat3<T>::getCol(I32 index) const {
+    return vec3<T>(m[0][index], m[1][index], m[2][index]);
 }
 
 template<typename T>
@@ -1729,6 +1765,11 @@ void mat4<T>::setRow(I32 index, const U x, const U y, const U z, const U w) {
 }
 
 template<typename T>
+const vec4<T>& mat4<T>::getRow(I32 index) const {
+    return _vec[index];
+}
+
+template<typename T>
 template<typename U>
 void mat4<T>::setCol(I32 index, const vec4<U> &value) {
     setCol(index, value.x, value.y, value.z, value.w);
@@ -1750,6 +1791,11 @@ void mat4<T>::setCol(I32 index, const U x, const U y, const U z, const U w) {
     m[1][index] = static_cast<T>(y);
     m[2][index] = static_cast<T>(z);
     m[3][index] = static_cast<T>(w);
+}
+
+template<typename T>
+vec4<T> mat4<T>::getCol(I32 index) const {
+    return vec4<T>(m[0][index], m[1][index], m[2][index], m[3][index]);
 }
 
 template<typename T>
@@ -2197,15 +2243,16 @@ void mat4<T>::extractMat3(mat3<U> &matrix3) const {
 }
 
 template<typename T>
-template<typename U>
-FORCE_INLINE void mat4<T>::Multiply(const mat4<U>& matrixA, const mat4<U>& matrixB, mat4<U>& ret) {
-    // Calling this with matrixA == ret should be safe!
+FORCE_INLINE void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) {
     for (U8 i = 0; i < 4; ++i) {
-        ret.setRow(i, matrixB._vec[0] * matrixA._vec[i][0] +
-                      matrixB._vec[1] * matrixA._vec[i][1] +
-                      matrixB._vec[2] * matrixA._vec[i][2] +
-                      matrixB._vec[3] * matrixA._vec[i][3]);
+        const vec4<T>& rowA = matrixA.getRow(i);
+        ret.setRow(i, matrixB.getRow(0) * rowA[0] + matrixB.getRow(1) * rowA[1] + matrixB.getRow(2) * rowA[2] + matrixB.getRow(3) * rowA[3]);
     }
+}
+
+template<>
+FORCE_INLINE void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
+    M4x4_SSE(matrixA.mat, matrixB.mat, ret.mat);
 }
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.

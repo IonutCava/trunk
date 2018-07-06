@@ -33,24 +33,18 @@ void TextureDataContainer::set(const TextureDataContainer& other) {
 
 bool TextureDataContainer::addTexture(const TextureData& data) {
     if (Config::Build::IS_DEBUG_BUILD) {
-        vectorImpl<TextureData>::const_iterator it;
-        it = std::find_if(std::cbegin(_textures),
-                          std::cend(_textures),
-                          [&data](const TextureData& textureData) {
-                                return (textureData.getHandleLow() == data.getHandleLow());
-                           });
-
-        if (it == std::cend(_textures)) {
-            _textures.push_back(data);
-            return true;
+        if (std::find_if(std::cbegin(_textures),
+                         std::cend(_textures),
+                         [&data](const TextureData& textureData) {
+                               return (textureData.getHandleLow() == data.getHandleLow());
+                          }) != std::cend(_textures))
+        {
+            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_DATA_CONTAINER_CONFLICT")));
+            return false;
         }
-
-        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_DATA_CONTAINER_CONFLICT")));
-        return false;
-    } else {
-        _textures.push_back(data);
     }
 
+    _textures.push_back(data);
     return true;
 }
 

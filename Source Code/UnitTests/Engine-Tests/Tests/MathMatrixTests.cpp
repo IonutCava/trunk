@@ -141,6 +141,82 @@ TEST(matNUnionTests)
     }
 }
 
+TEST_CONST_MEMBER_FUNCTION(matN, getCol, NA)
+{
+    const mat2<I32> input1(4, 4,
+                           10, 8);
+    const mat3<I32> input2(1, 2, 3,
+                           4, 5, 6,
+                           7, 8, 9);
+    const mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 10.0f, 11.0f, 12.0f,
+                           13.0f, 14.0f, 15.0f, 16.0f);
+
+    const vec2<I32> result1A(4, 10);
+    const vec2<I32> result1B(4, 8);
+
+    const vec3<I32> result2A(1, 4, 7);
+    const vec3<I32> result2B(2, 5, 8);
+    const vec3<I32> result2C(3, 6, 9);
+    
+    const vec4<F32> result3A(1.0f, 5.0f, 9.0f, 13.0f);
+    const vec4<F32> result3B(2.0f, 6.0f, 10.0f, 14.0f);
+    const vec4<F32> result3C(3.0f, 7.0f, 11.0f, 15.0f);
+    const vec4<F32> result3D(4.0f, 8.0f, 12.0f, 16.0f);
+
+    CHECK_EQUAL(input1.getCol(0), result1A);
+    CHECK_EQUAL(input1.getCol(1), result1B);
+
+    CHECK_EQUAL(input2.getCol(0), result2A);
+    CHECK_EQUAL(input2.getCol(1), result2B);
+    CHECK_EQUAL(input2.getCol(2), result2C);
+
+    CHECK_EQUAL(input3.getCol(0), result3A);
+    CHECK_EQUAL(input3.getCol(1), result3B);
+    CHECK_EQUAL(input3.getCol(2), result3C);
+    CHECK_EQUAL(input3.getCol(3), result3D);
+
+}
+
+TEST_CONST_MEMBER_FUNCTION(matN, getRow, NA)
+{
+    const mat2<I32> input1(4, 4,
+                           10, 8);
+    const mat3<I32> input2(1, 2, 3,
+                           4, 5, 6,
+                           7, 8, 9);
+    const mat4<F32> input3(1.0f, 2.0f, 3.0f, 4.0f,
+                           5.0f, 6.0f, 7.0f, 8.0f,
+                           9.0f, 10.0f, 11.0f, 12.0f,
+                           13.0f, 14.0f, 15.0f, 16.0f);
+
+
+    const vec2<I32> result1A(4, 4);
+    const vec2<I32> result1B(10, 8);
+
+    const vec3<I32> result2A(1, 2, 3);
+    const vec3<I32> result2B(4, 5, 6);
+    const vec3<I32> result2C(7, 8, 9);
+
+    const vec4<F32> result3A(1.0f, 2.0f, 3.0f,  4.0f);
+    const vec4<F32> result3B(5.0f, 6.0f, 7.0f, 8.0f);
+    const vec4<F32> result3C(9.0f, 10.0f, 11.0f, 12.0f);
+    const vec4<F32> result3D(13.0f, 14.0f, 15.0f, 16.0f);
+
+    CHECK_EQUAL(input1.getRow(0), result1A);
+    CHECK_EQUAL(input1.getRow(1), result1B);
+
+    CHECK_EQUAL(input2.getRow(0), result2A);
+    CHECK_EQUAL(input2.getRow(1), result2B);
+    CHECK_EQUAL(input2.getRow(2), result2C);
+
+    CHECK_EQUAL(input3.getRow(0), result3A);
+    CHECK_EQUAL(input3.getRow(1), result3B);
+    CHECK_EQUAL(input3.getRow(2), result3C);
+    CHECK_EQUAL(input3.getRow(3), result3D);
+}
+
 TEST_CONST_MEMBER_FUNCTION(matN, equalityOperator, NA)
 {
     mat2<I32> input1[2];

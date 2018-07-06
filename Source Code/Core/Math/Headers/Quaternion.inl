@@ -541,8 +541,7 @@ inline Quaternion<T> RotationFromVToU(
 }
 
 template <typename T>
-inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1,
-                           F32 t) {
+inline Quaternion<T> Slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t) {
     Quaternion<T> temp;
     temp.slerp(q0, q1, t);
     return temp;
