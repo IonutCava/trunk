@@ -144,7 +144,7 @@ bool Scene::loadModel(const FileData& data) {
     ResourceDescriptor model(data.ModelName);
     model.setResourceLocation(data.ModelName);
     model.setFlag(true);
-    Mesh* thisObj = CreateResource<Mesh>(model);
+    Mesh_ptr thisObj = CreateResource<Mesh>(model);
     if (!thisObj) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")),
                          data.ModelName.c_str());
@@ -152,7 +152,7 @@ bool Scene::loadModel(const FileData& data) {
     }
 
     SceneGraphNode_ptr meshNode =
-        _sceneGraph->getRoot().addNode(*thisObj,
+        _sceneGraph->getRoot().addNode(thisObj,
                                        normalMask,
                                        data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                               : PhysicsGroup::GROUP_DYNAMIC
@@ -182,7 +182,7 @@ bool Scene::loadGeometry(const FileData& data) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    Object3D* thisObj;
+    std::shared_ptr<Object3D> thisObj;
     ResourceDescriptor item(data.ItemName);
     item.setResourceLocation(data.ModelName);
     if (data.ModelName.compare("Box3D") == 0) {
@@ -190,7 +190,7 @@ bool Scene::loadGeometry(const FileData& data) {
         thisObj = CreateResource<Box3D>(item);
     } else if (data.ModelName.compare("Sphere3D") == 0) {
         thisObj = CreateResource<Sphere3D>(item);
-        static_cast<Sphere3D*>(thisObj)->setRadius(data.data);
+        static_cast<Sphere3D*>(thisObj.get())->setRadius(data.data);
     } else if (data.ModelName.compare("Quad3D") == 0) {
         vec3<F32> scale = data.scale;
         vec3<F32> position = data.position;
@@ -199,27 +199,27 @@ bool Scene::loadGeometry(const FileData& data) {
         quadMask.b[0] = 1;
         item.setBoolMask(quadMask);
         thisObj = CreateResource<Quad3D>(item);
-        static_cast<Quad3D*>(thisObj)
+        static_cast<Quad3D*>(thisObj.get())
             ->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
-        static_cast<Quad3D*>(thisObj)
+        static_cast<Quad3D*>(thisObj.get())
             ->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
-        static_cast<Quad3D*>(thisObj)
+        static_cast<Quad3D*>(thisObj.get())
             ->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
-        static_cast<Quad3D*>(thisObj)
+        static_cast<Quad3D*>(thisObj.get())
             ->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
     } else if (data.ModelName.compare("Text3D") == 0) {
         /// set font file
         item.setResourceLocation(data.data3);
         item.setPropertyList(data.data2);
         thisObj = CreateResource<Text3D>(item);
-        static_cast<Text3D*>(thisObj)->setWidth(data.data);
+        static_cast<Text3D*>(thisObj.get())->setWidth(data.data);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")),
                          data.ModelName.c_str());
         return false;
     }
     STUBBED("Load material from XML disabled for primitives! - Ionut")
-    Material* tempMaterial = nullptr /*XML::loadMaterial(data.ItemName + "_material")*/;
+    std::shared_ptr<Material> tempMaterial; /* = XML::loadMaterial(data.ItemName + "_material")*/;
     if (!tempMaterial) {
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
         tempMaterial = CreateResource<Material>(materialDescriptor);
@@ -228,7 +228,7 @@ bool Scene::loadGeometry(const FileData& data) {
     }
 
     thisObj->setMaterialTpl(tempMaterial);
-    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot().addNode(*thisObj,
+    SceneGraphNode_ptr thisObjSGN = _sceneGraph->getRoot().addNode(thisObj,
                                                                    normalMask,
                                                                    data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
                                                                                                           : PhysicsGroup::GROUP_DYNAMIC
@@ -261,14 +261,14 @@ SceneGraphNode_ptr Scene::addParticleEmitter(const stringImpl& name,
                   "Scene::addParticleEmitter error: invalid name specified!");
 
     ResourceDescriptor particleEmitter(name);
-    ParticleEmitter* emitter = CreateResource<ParticleEmitter>(particleEmitter);
+    std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(particleEmitter);
 
     DIVIDE_ASSERT(emitter != nullptr,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
 
     emitter->initData(data);
 
-    return parentNode.addNode(*emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
+    return parentNode.addNode(emitter, particleMask, PhysicsGroup::GROUP_IGNORE);
 }
 
 
@@ -298,11 +298,11 @@ SceneGraphNode_ptr Scene::addLight(LightType type,
 
     defaultLight.setEnumValue(to_uint(type));
     defaultLight.setUserPtr(_lightPool.get());
-    Light* light = CreateResource<Light>(defaultLight);
+    std::shared_ptr<Light> light = CreateResource<Light>(defaultLight);
     if (type == LightType::DIRECTIONAL) {
         light->setCastShadows(true);
     }
-    return parentNode.addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
+    return parentNode.addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
 }
 
 void Scene::toggleFlashlight() {
@@ -315,12 +315,12 @@ void Scene::toggleFlashlight() {
         ResourceDescriptor tempLightDesc("MainFlashlight");
         tempLightDesc.setEnumValue(to_const_uint(LightType::SPOT));
         tempLightDesc.setUserPtr(_lightPool.get());
-        Light* tempLight = CreateResource<Light>(tempLightDesc);
+        std::shared_ptr<Light> tempLight = CreateResource<Light>(tempLightDesc);
         tempLight->setDrawImpostor(false);
         tempLight->setRange(30.0f);
         tempLight->setCastShadows(true);
         tempLight->setDiffuseColor(DefaultColors::WHITE());
-        _flashLight = _sceneGraph->getRoot().addNode(*tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
+        _flashLight = _sceneGraph->getRoot().addNode(tempLight, lightMask, PhysicsGroup::GROUP_IGNORE);
     }
 
     _flashLight.lock()->getNode<Light>()->setEnabled(!_flashLight.lock()->getNode<Light>()->getEnabled());
@@ -330,7 +330,7 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
     skyDescriptor.setID(to_uint(std::floor(renderState().getCameraConst().getZPlanes().y * 2)));
 
-    Sky* skyItem = CreateResource<Sky>(skyDescriptor);
+    std::shared_ptr<Sky> skyItem = CreateResource<Sky>(skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
 
     static const U32 normalMask = 
@@ -339,7 +339,7 @@ SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
         to_const_uint(SGNComponent::ComponentType::BOUNDS) |
         to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(*skyItem,
+    SceneGraphNode_ptr skyNode = _sceneGraph->getRoot().addNode(skyItem,
                                                                 normalMask,
                                                                 PhysicsGroup::GROUP_IGNORE,
                                                                 nodeName);
@@ -567,9 +567,9 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         for (TerrainDescriptor* terrainInfo : _terrainInfoArray) {
             ResourceDescriptor terrain(terrainInfo->getVariable("terrainName"));
             terrain.setPropertyDescriptor(*terrainInfo);
-            Terrain* temp = CreateResource<Terrain>(terrain);
+            std::shared_ptr<Terrain> temp = CreateResource<Terrain>(terrain);
 
-            SceneGraphNode_ptr terrainTemp = root.addNode(*temp, normalMask, PhysicsGroup::GROUP_STATIC);
+            SceneGraphNode_ptr terrainTemp = root.addNode(temp, normalMask, PhysicsGroup::GROUP_STATIC);
             terrainTemp->setActive(terrainInfo->getActive());
             terrainTemp->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
             _terrainList.push_back(terrainTemp->getName());
@@ -844,9 +844,9 @@ void Scene::findHoverTarget() {
 
     if (!_sceneSelectionCandidates.empty()) {
         _currentHoverTarget = _sceneSelectionCandidates.front();
-        SceneNode* node = _currentHoverTarget.lock()->getNode();
+        std::shared_ptr<SceneNode> node = _currentHoverTarget.lock()->getNode();
         if (node->getType() == SceneNodeType::TYPE_OBJECT3D) {
-            if (static_cast<Object3D*>(node)->getObjectType() == Object3D::ObjectType::SUBMESH) {
+            if (static_cast<Object3D*>(node.get())->getObjectType() == Object3D::ObjectType::SUBMESH) {
                 _currentHoverTarget = _currentHoverTarget.lock()->getParent();
             }
         }

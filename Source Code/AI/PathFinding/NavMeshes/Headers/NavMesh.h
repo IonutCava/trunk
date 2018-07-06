@@ -96,7 +96,7 @@ struct NavMeshTileHeader {
 class NavMeshDebugDraw;
 class DivideDtCrowd;
 
-typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 namespace Attorney {
     class NavigationMeshCrowd;

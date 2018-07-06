@@ -53,8 +53,6 @@ LightPool::~LightPool()
     clear();
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::NORMAL)]);
     MemoryManager::DELETE(_lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]);
-    RemoveResource(_lightImpostorShader);
-    RemoveResource(_lightIconsTexture);
 }
 
 void LightPool::init() {

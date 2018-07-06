@@ -81,6 +81,8 @@ class AudioDescriptor : public Resource {
     I8 _bitDepth, _channelID, _volume;
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(AudioDescriptor);
+
 };  // namespace Divide
 
 #endif

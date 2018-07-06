@@ -13,7 +13,6 @@
 #include "Geometry/Shapes/Headers/Predefined/Quad3D.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
@@ -77,8 +76,6 @@ CascadedShadowMaps::CascadedShadowMaps(Light* light, Camera* shadowCamera, U8 nu
 
 CascadedShadowMaps::~CascadedShadowMaps()
 {
-    RemoveResource(_previewDepthMapShader);
-    RemoveResource(_blurDepthMapShader);
     MemoryManager::DELETE(_blurBuffer);
     MemoryManager::DELETE(_renderPolicy);
 }

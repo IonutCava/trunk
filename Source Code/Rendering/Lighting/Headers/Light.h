@@ -142,7 +142,7 @@ class Light : public SceneNode {
     inline const LightType& getLightType() const { return _type; }
 
     /// Get a pointer to the light's impostor
-    inline ImpostorSphere* const getImpostor() const { return _impostor; }
+    inline ImpostorSphere* const getImpostor() const { return _impostor.get(); }
 
     bool onRender(SceneGraphNode& sgn, RenderStage currentStage) override;
 
@@ -237,12 +237,14 @@ class Light : public SceneNode {
     bool _drawImpostor;
     SceneGraphNode* _lightSGN;
     /// Used for debug rendering
-    ImpostorSphere* _impostor;
+    std::shared_ptr<ImpostorSphere> _impostor;
     SceneGraphNode_wptr _impostorSGN;
     Camera* _shadowCamera;
     LightPool& _parentPool;
     bool _enabled;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Light);
 
 };  // namespace Divide
 

@@ -92,11 +92,11 @@ bool CubeScene::loadResources(bool continueOnErrors) {
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool.get());
 
-            Light* light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(true);
             light->setRange(30.0f);
             light->setCastShadows(false);
-            _lightNodes.push_back(_sceneGraph->getRoot().addNode(*light, normalMask, PhysicsGroup::GROUP_IGNORE));
+            _lightNodes.push_back(_sceneGraph->getRoot().addNode(light, normalMask, PhysicsGroup::GROUP_IGNORE));
         }
     }
 

@@ -311,14 +311,14 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _ball->getMaterialTpl()->setShininess(36.8f);
     _ball->getMaterialTpl()->setSpecular(
         vec4<F32>(0.774597f, 0.774597f, 0.774597f, 1.0f));
-    _ballSGN = _sceneGraph->getRoot().addNode(*_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "PingPongBallSGN");
+    _ballSGN = _sceneGraph->getRoot().addNode(_ball, normalMask, PhysicsGroup::GROUP_KINEMATIC, "PingPongBallSGN");
     _ballSGN.lock()->get<PhysicsComponent>()->translate(vec3<F32>(0, 2, 2));
 
     /*ResourceDescriptor tempLight("Light Omni");
     tempLight.setEnumValue(LIGHT_TYPE_POINT);
     tempLight.setUserPtr(_lightPool.get());
     Light* light = CreateResource<Light>(tempLight);
-    _sceneGraph->getRoot()->addNode(*light, lightMask);
+    _sceneGraph->getRoot()->addNode(light, lightMask);
     light->setRange(30.0f);
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));

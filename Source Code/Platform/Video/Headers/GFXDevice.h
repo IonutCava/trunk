@@ -289,8 +289,8 @@ DEFINE_SINGLETON(GFXDevice)
                    const vectorImpl<Line>& lines,
                    const vec4<I32>& viewport,  //<only for ortho mode
                    const bool inViewport = false);
-    void drawPoints(U32 numPoints, size_t stateHash, ShaderProgram* const shaderProgram);
-    void drawTriangle(size_t stateHash, ShaderProgram* const shaderProgram);
+    void drawPoints(U32 numPoints, size_t stateHash, const std::shared_ptr<ShaderProgram>& shaderProgram);
+    void drawTriangle(size_t stateHash, const std::shared_ptr<ShaderProgram>& shaderProgram);
 
     void addToRenderQueue(U32 queueIndex, const RenderPackage& package);
     void flushRenderQueues();
@@ -603,11 +603,11 @@ DEFINE_SINGLETON(GFXDevice)
     U32 FRAME_DRAW_CALLS_PREV;
     U32 FRAME_COUNT;
     /// shader used to preview the depth buffer
-    ShaderProgram* _previewDepthMapShader;
-    ShaderProgram* _framebufferDraw;
-    ShaderProgram* _HIZConstructProgram;
-    ShaderProgram* _HIZCullProgram;
-    ShaderProgram* _displayShader;
+    std::shared_ptr<ShaderProgram> _previewDepthMapShader;
+    std::shared_ptr<ShaderProgram> _framebufferDraw;
+    std::shared_ptr<ShaderProgram> _HIZConstructProgram;
+    std::shared_ptr<ShaderProgram> _HIZCullProgram;
+    std::shared_ptr<ShaderProgram> _displayShader;
 
     /// getMatrix cache
     mat4<F32> _mat4Cache;
@@ -617,7 +617,8 @@ DEFINE_SINGLETON(GFXDevice)
     vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
 
     /// Immediate mode emulation shader
-    ShaderProgram *_imShader, *_imShaderLines;
+    std::shared_ptr<ShaderProgram> _imShader;
+    std::shared_ptr<ShaderProgram> _imShaderLines;
     I32 _imShaderTextureFlag;
     I32 _imShaderWorldMatrix;
     /// The interface that coverts IM calls to VB data

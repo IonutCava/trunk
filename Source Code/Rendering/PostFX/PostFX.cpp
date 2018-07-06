@@ -35,10 +35,6 @@ PostFX::PostFX()
 
 PostFX::~PostFX()
 {
-    RemoveResource(_postProcessingShader);
-    RemoveResource(_underwaterTexture);
-    RemoveResource(_noise);
-    RemoveResource(_screenBorder);
     _preRenderBatch.destroy();
 }
 

@@ -25,9 +25,8 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(Framebuffer* hdrTarget, Framebu
     _smaa = CreateResource<ShaderProgram>(smaa);
 }
 
-PostAAPreRenderOperator::~PostAAPreRenderOperator() {
-    RemoveResource(_fxaa);
-    RemoveResource(_smaa);
+PostAAPreRenderOperator::~PostAAPreRenderOperator()
+{
 }
 
 void PostAAPreRenderOperator::idle() {

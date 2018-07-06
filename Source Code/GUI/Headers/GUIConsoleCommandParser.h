@@ -64,7 +64,7 @@ class GUIConsoleCommandParser : public CommandParser {
     /// Help text for every command
     hashMapImpl<ULL, const char*> _commandHelp;
     /// used for sound playback
-    AudioDescriptor* _sound;
+    std::shared_ptr<AudioDescriptor> _sound;
 };
 
 };  // namespace Divide

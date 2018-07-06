@@ -38,12 +38,19 @@
 namespace Divide {
 
 class Resource;
+// Used to delete resources
+struct DeleteResource {
+    void operator()(Resource* res);
+};
+
 class NOINITVTABLE ResourceLoader : private NonCopyable {
    public:
     ResourceLoader(const ResourceDescriptor& descriptor)
-        : _descriptor(descriptor) {}
+        : _descriptor(descriptor) 
+    {
+    }
 
-    virtual Resource* operator()() = 0;
+    virtual Resource_ptr operator()() = 0;
 
    protected:
     ResourceDescriptor _descriptor;
@@ -55,13 +62,13 @@ class ImplResourceLoader : public ResourceLoader {
     ImplResourceLoader(const ResourceDescriptor& descriptor)
         : ResourceLoader(descriptor) {}
 
-    ResourceType* operator()();
+    Resource_ptr operator()();
 
    protected:
 
-    bool load(ResourceType* const res) {
+    bool load(std::shared_ptr<ResourceType> res) {
         res->setState(ResourceState::RES_LOADING);
-        return ResourceCache::instance().load(res);
+        return res->load();
     }
 };
 

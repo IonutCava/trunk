@@ -102,7 +102,7 @@ class SceneGraph : private NonCopyable, public GUIDWrapper, public FrameListener
     bool _loadComplete;
     bool _octreeChanged;
     Scene& _parentScene;
-    SceneRoot* _rootNode;
+    SceneRoot_ptr _rootNode;
     SceneGraphNode_ptr _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;

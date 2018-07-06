@@ -16,7 +16,7 @@ namespace {
     const F32 g_MaterialShininessThresholdForReflection = 127.0f;
 };
 
-RenderingComponent::RenderingComponent(Material* const materialInstance,
+RenderingComponent::RenderingComponent(std::shared_ptr<Material> materialInstance,
                                        SceneGraphNode& parentSGN)
     : SGNComponent(SGNComponent::ComponentType::RENDERING, parentSGN),
       _lodLevel(0),
@@ -119,14 +119,10 @@ RenderingComponent::~RenderingComponent()
 #ifdef _DEBUG
     _axisGizmo->_canZombify = true;
 #endif
-    if (_materialInstance) {
-        RemoveResource(_materialInstance);
-    }
-
 }
 
 void RenderingComponent::update(const U64 deltaTime) {
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTime);
     }
@@ -149,7 +145,7 @@ bool RenderingComponent::canDraw(const SceneRenderState& sceneRenderState,
                                  RenderStage renderStage) {
     bool canDraw = _parentSGN.getNode()->getDrawState(renderStage);
     if (canDraw) {
-        Material* mat = getMaterialInstance();
+        const std::shared_ptr<Material>& mat = getMaterialInstance();
         if (mat) {
             if (!mat->canDraw(renderStage)) {
                 return false;
@@ -193,7 +189,7 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
     GFXDevice::RenderPackage& pkg = _renderData[to_uint(currentStage)];
 
     pkg._textureData.resize(0);
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat) {
         mat->getTextureData(pkg._textureData);
     }
@@ -322,7 +318,7 @@ bool RenderingComponent::receivesShadows() const {
 void RenderingComponent::getMaterialColorMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat) {
         mat->getMaterialMatrix(matOut);
     }
@@ -351,7 +347,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, Re
         return;
     }
 
-    SceneNode* const node = _parentSGN.getNode();
+    const SceneNode_ptr& node = _parentSGN.getNode();
 
 #ifdef _DEBUG
     switch(sceneRenderState.gizmoState()){
@@ -485,7 +481,7 @@ void RenderingComponent::unregisterShaderBuffer(ShaderBufferLocation slot) {
     }
 }
 
-ShaderProgram* const RenderingComponent::getDrawShader(RenderStage renderStage) {
+std::shared_ptr<ShaderProgram> RenderingComponent::getDrawShader(RenderStage renderStage) {
     return (getMaterialInstance()
                 ? _materialInstance->getShaderInfo(renderStage).getProgram()
                 : nullptr);
@@ -591,7 +587,7 @@ void RenderingComponent::setActive(const bool state) {
 
 bool RenderingComponent::clearReflection() {
     // If we lake a material, we don't use reflections
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -613,7 +609,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
         return false;
     }
     // If we lake a material, we don't use reflections
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -641,7 +637,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
 }
 
 bool RenderingComponent::clearRefraction() {
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }
@@ -663,8 +659,7 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (_lodLevel > 1) {
         return false;
     }
-    // If we lake a material, we don't use reflections
-    Material* mat = getMaterialInstance();
+    const std::shared_ptr<Material>& mat = getMaterialInstance();
     if (mat == nullptr) {
         return false;
     }

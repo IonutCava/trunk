@@ -7,9 +7,15 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 namespace Divide {
+
+ShaderProgram_ptr ShaderProgram::_imShader;
+ShaderProgram_ptr ShaderProgram::_nullShader;
+ShaderProgram::AtomMap ShaderProgram::_atoms;
+ShaderProgram::ShaderQueue ShaderProgram::_recompileQueue;
+ShaderProgram::ShaderProgramMap ShaderProgram::_shaderPrograms;
+SharedLock ShaderProgram::_programLock;
 
 ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const stringImpl& resourceLocation, bool asyncLoad)
     : Resource(name, resourceLocation),
@@ -26,13 +32,29 @@ ShaderProgram::ShaderProgram(GFXDevice& context, const stringImpl& name, const s
 ShaderProgram::~ShaderProgram()
 {
     Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), getName().c_str());
+}
+
+bool ShaderProgram::load() {
+    registerShaderProgram(getName(), shared_from_this());
+    return Resource::load();
+}
+
+bool ShaderProgram::unload() {
     // Remove every shader attached to this program
     for (ShaderIDMap::value_type& it : _shaderIDMap) {
-        ShaderManager::instance().removeShader(it.second);
+        Shader::removeShader(it.second);
+    }
+    bool isClosing = false;
+    {
+        ReadLock r_lock(_programLock);
+        isClosing = _shaderPrograms.empty();
     }
     // Unregister the program from the manager
-    ShaderManager::instance().unregisterShaderProgram(getName());
-    _shaderIDMap.clear();
+    if (!isClosing) {
+        unregisterShaderProgram(getName());
+    }
+
+    return true;
 }
 
 /// Called once per frame. Update common values used across programs
@@ -79,7 +101,7 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
     // Remember bind state
     bool wasBound = isBound();
     if (wasBound) {
-        ShaderManager::instance().unbind();
+        ShaderProgram::unbind();
     }
     // Update refresh flags
     _refreshStage[to_const_uint(ShaderType::VERTEX)] = vertex;
@@ -97,4 +119,156 @@ void ShaderProgram::recompile(const bool vertex, const bool fragment,
         bind();
     }
 }
+
+//================================ static methods ========================================
+void ShaderProgram::idle() {
+    // If we don't have any shaders queued for recompilation, return early
+    if (!_recompileQueue.empty()) {
+        // Else, recompile the top program from the queue
+        _recompileQueue.top()->recompile(true, true, true, true, true);
+        _recompileQueue.pop();
+    }
+}
+
+/// Calling this will force a recompilation of all shader stages for the program
+/// that matches the name specified
+bool ShaderProgram::recompileShaderProgram(const stringImpl& name) {
+    bool state = false;
+    ReadLock r_lock(_programLock);
+
+    // Find the shader program
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+        const stringImpl& shaderName = it.second->getName();
+        // Check if the name matches any of the program's name components    
+        if (shaderName.find(name) != stringImpl::npos || shaderName.compare(name) == 0) {
+            // We process every partial match. So add it to the recompilation queue
+            _recompileQueue.push(it.second);
+            // Mark as found
+            state = true;
+        }
+    }
+    // If no shaders were found, show an error
+    if (!state) {
+        Console::errorfn(Locale::get(_ID("ERROR_RECOMPILE_NOT_FOUND")),  name.c_str());
+    }
+
+    return state;
+}
+
+/// Open the file found at 'location' matching 'atomName' and return it's source
+/// code
+const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, const stringImpl& location) {
+    ULL atomNameHash = _ID_RT(atomName);
+    // See if the atom was previously loaded and still in cache
+    AtomMap::iterator it = _atoms.find(atomNameHash);
+    // If that's the case, return the code from cache
+    if (it != std::cend(_atoms)) {
+        return it->second;
+    }
+    // If we forgot to specify an atom location, we have nothing to return
+    assert(!location.empty());
+
+    // Open the atom file and add the code to the atom cache for future reference
+    std::pair<AtomMap::iterator, bool> result =
+        hashAlg::emplace(_atoms, atomNameHash, Util::ReadTextFile(location + "/" + atomName));
+
+    assert(result.second);
+
+    // Return the source code
+    return result.first->second;
+}
+
+void ShaderProgram::shaderFileRead(const stringImpl& filePath,
+                                   bool buildVariant,
+                                   stringImpl& sourceCodeOut) {
+    static const char* variant =
+#if defined(_DEBUG)
+        ".debug";
+#elif defined(_PROFILE)
+        ".profile";
+#else
+        ".release";
+#endif
+
+    Util::ReadTextFile(buildVariant ? (filePath + variant) : filePath, sourceCodeOut);
+}
+
+/// Dump the source code 's' of atom file 'atomName' to file
+void ShaderProgram::shaderFileWrite(const stringImpl& atomName, const char* sourceCode) {
+    static const char* variant =
+#if defined(_DEBUG)
+        ".debug";
+#elif defined(_PROFILE)
+        ".profile";
+#else
+        ".release";
+#endif
+
+    Util::WriteTextFile(atomName + variant, sourceCode);
+}
+
+void ShaderProgram::initStaticData() {
+    GFX_DEVICE.initShaders();
+    // Create an immediate mode rendering shader that simulates the fixed function pipeline
+    ResourceDescriptor immediateModeShader("ImmediateModeEmulation");
+    immediateModeShader.setThreadedLoading(false);
+    _imShader = CreateResource<ShaderProgram>(immediateModeShader);
+    assert(_imShader != nullptr);
+
+    // Create a null shader (basically telling the API to not use any shaders when bound)
+    _nullShader = CreateResource<ShaderProgram>(ResourceDescriptor("NULL"));
+    // The null shader should never be nullptr!!!!
+    assert(_nullShader != nullptr);  // LoL -Ionut
+}
+
+void ShaderProgram::destroyStaticData() {
+    // Make sure we unload all shaders
+    _shaderPrograms.clear();
+    _nullShader.reset();
+    _imShader.reset();
+    GFX_DEVICE.deInitShaders();
+}
+
+bool ShaderProgram::updateAll(const U64 deltaTime) {
+    ReadLock r_lock(_programLock);
+    // Pass the update call to all registered programs
+    for (ShaderProgramMap::value_type& it : _shaderPrograms) {
+        if (!it.second->update(deltaTime)) {
+            // If an update call fails, stop updating
+            return false;
+        }
+    }
+    return true;
+}
+
+/// Whenever a new program is created, it's registered with the manager
+void ShaderProgram::registerShaderProgram(const stringImpl& name, const ShaderProgram_ptr& shaderProgram) {
+    unregisterShaderProgram(name);
+
+    WriteLock w_lock(_programLock);
+    hashAlg::emplace(_shaderPrograms, _ID_RT(name), shaderProgram);
+}
+
+/// Unloading/Deleting a program will unregister it from the manager
+bool ShaderProgram::unregisterShaderProgram(const stringImpl& name) {
+    UpgradableReadLock ur_lock(_programLock);
+    ShaderProgramMap::const_iterator it = _shaderPrograms.find(_ID_RT(name));
+    if (it != std::cend(_shaderPrograms)) {
+        UpgradeToWriteLock w_lock(ur_lock);
+        _shaderPrograms.erase(it);
+        return true;
+    }
+
+    return false;
+}
+
+/// Bind the NULL shader which should have the same effect as using no shaders at all
+bool ShaderProgram::unbind() {
+    return _nullShader->bind();
+}
+
+const ShaderProgram_ptr& ShaderProgram::defaultShader() {
+    return _imShader;
+}
+
 };

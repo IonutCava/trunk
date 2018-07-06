@@ -327,7 +327,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
         navComp->navigationContext() != NavigationComponent::NavigationContext::NODE_IGNORE &&  // Ignore if specified
         box.getHeight() > 0.05f)  // Skip small objects
     {
-        SceneNode* sn = sgn.getNode();
+        const SceneNode_ptr& sn = sgn.getNode();
 
         SceneNodeType nodeType = sn->getType();
         U32 ignoredNodeType = to_const_uint(SceneNodeType::TYPE_ROOT) |
@@ -351,7 +351,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 
         if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
             Object3D::ObjectType crtType =
-                dynamic_cast<Object3D*>(sn)->getObjectType();
+                static_cast<Object3D*>(sn.get())->getObjectType();
             if (crtType == Object3D::ObjectType::TEXT_3D ||
                 crtType == Object3D::ObjectType::MESH ||
                 crtType == Object3D::ObjectType::FLYWEIGHT) {
@@ -374,7 +374,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                      sgn.usageContext() == SceneGraphNode::UsageContext::NODE_STATIC) {
                     level = MeshDetailLevel::BOUNDINGBOX;
                 }
-                if (dynamic_cast<Object3D*>(sn)->getObjectType() ==
+                if (static_cast<Object3D*>(sn.get())->getObjectType() ==
                     Object3D::ObjectType::TERRAIN) {
                     areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND;
                 }
@@ -398,10 +398,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
 
         if (level == MeshDetailLevel::MAXIMUM) {
             if (nodeType == SceneNodeType::TYPE_OBJECT3D) {
-                geometry = dynamic_cast<Object3D*>(sn)->getGeometryVB();
+                geometry = static_cast<Object3D*>(sn.get())->getGeometryVB();
             } else /*nodeType == TYPE_WATER*/ {
-                geometry =
-                    dynamic_cast<WaterPlane*>(sn)->getQuad()->getGeometryVB();
+                geometry = static_cast<WaterPlane*>(sn.get())->getQuad()->getGeometryVB();
             }
             assert(geometry != nullptr);
 
@@ -410,12 +409,12 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode& sgn) {
                 return false;
             }
 
-            dynamic_cast<Object3D*>(sn)->computeTriangleList();
+            static_cast<Object3D*>(sn.get())->computeTriangleList();
             const vectorImpl<vec3<U32> >& triangles =
-                dynamic_cast<Object3D*>(sn)->getTriangles();
+                static_cast<Object3D*>(sn.get())->getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
                 (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                 dynamic_cast<Object3D*>(sn)->getObjectType() !=
+                    static_cast<Object3D*>(sn.get())->getObjectType() !=
                      Object3D::ObjectType::TERRAIN)) {
                 mat4<F32> nodeTransform =
                     nodeSGN->get<PhysicsComponent>()->getWorldMatrix();

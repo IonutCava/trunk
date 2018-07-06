@@ -23,7 +23,7 @@ PhysicsComponent::PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physi
     if (physicsDriven()) {
         _transformInterface.reset(PHYSICS_DEVICE.createRigidActor(parentSGN));
     } else {
-        _transformInterface.reset(MemoryManager_NEW Transform());
+        _transformInterface.reset(new Transform());
     }
 
     reset();

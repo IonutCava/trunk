@@ -6,10 +6,10 @@
 namespace Divide {
 
 template<>
-Mesh* ImplResourceLoader<Mesh>::operator()() {
+Resource_ptr ImplResourceLoader<Mesh>::operator()() {
     MeshImporter& importer = MeshImporter::instance();
 
-    Mesh* ptr = nullptr;
+    Mesh_ptr ptr;
     Import::ImportData tempMeshData(_descriptor.getResourceLocation());
     if (importer.loadMeshDataFromFile(tempMeshData)) {
         ptr = importer.loadMesh(_descriptor.getName(), tempMeshData);
@@ -19,7 +19,7 @@ Mesh* ImplResourceLoader<Mesh>::operator()() {
     }
 
     if (!load(ptr) || !ptr) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);

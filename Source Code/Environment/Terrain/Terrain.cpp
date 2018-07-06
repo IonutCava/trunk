@@ -46,8 +46,6 @@ Terrain::~Terrain() {
 
 bool Terrain::unload() {
     MemoryManager::DELETE_VECTOR(_terrainTextures);
-
-    RemoveResource(_vegDetails.grassBillboards);
     return SceneNode::unload();
 }
 
@@ -57,10 +55,10 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
                                   to_const_uint(SGNComponent::ComponentType::RENDERING);
 
-    SceneGraphNode_ptr planeSGN(sgn.addNode(*_plane, normalMask, PhysicsGroup::GROUP_STATIC));
+    SceneGraphNode_ptr planeSGN(sgn.addNode(_plane, normalMask, PhysicsGroup::GROUP_STATIC));
     planeSGN->setActive(false);
     /*for (TerrainChunk* chunk : _terrainChunks) {
-        SceneGraphNode_ptr vegetation = sgn.addNode(*Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
+        SceneGraphNode_ptr vegetation = sgn.addNode(Attorney::TerrainChunkTerrain::getVegetation(*chunk), normalMask);
         vegetation->lockVisibility(true);
     }*/
     SceneNode::postLoad(sgn);
@@ -78,11 +76,11 @@ void Terrain::buildQuadtree() {
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
 
-    Material* mat = getMaterialTpl();
+    const std::shared_ptr<Material>& mat = getMaterialTpl();
     for (U32 i = 0; i < to_const_uint(RenderStage::COUNT); ++i) {
         RenderStage stage = static_cast<RenderStage>(i);
 
-        ShaderProgram* const drawShader = mat->getShaderInfo(stage).getProgram();
+        const std::shared_ptr<ShaderProgram>& drawShader = mat->getShaderInfo(stage).getProgram();
 
         drawShader->Uniform("bbox_min", _boundingBox.getMin());
         drawShader->Uniform("bbox_extent", _boundingBox.getExtent());
@@ -296,9 +294,7 @@ vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf) const {
            tangents[3] * posD.x * posD.y;
 }
 
-TerrainTextureLayer::~TerrainTextureLayer() {
-    RemoveResource(_blendMap);
-    RemoveResource(_tileMaps);
-    RemoveResource(_normalMaps);
+TerrainTextureLayer::~TerrainTextureLayer()
+{
 }
 };

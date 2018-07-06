@@ -12,7 +12,6 @@
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -116,8 +115,8 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap,
                                 RenderStage renderStage) {
     // Only the first color attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    Texture* colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
-    Texture* depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const std::shared_ptr<Texture>& colorAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const std::shared_ptr<Texture>& depthAttachment = cubeMap.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);
@@ -187,8 +186,8 @@ void GFXDevice::generateDualParaboloidMap(Framebuffer& targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           RenderStage renderStage)
 {
-    Texture* colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
-    Texture* depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
+    const std::shared_ptr<Texture>& colorAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Color0, false);
+    const std::shared_ptr<Texture>& depthAttachment = targetBuffer.getAttachment(TextureDescriptor::AttachmentType::Depth, false);
     // Color attachment takes precedent over depth attachment
     bool hasColor = (colorAttachment != nullptr);
     bool hasDepth = (depthAttachment != nullptr);

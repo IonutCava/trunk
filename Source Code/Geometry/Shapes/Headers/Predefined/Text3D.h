@@ -80,6 +80,8 @@ class Text3D : public Object3D {
     U32 _height;
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Text3D);
+
 };  // namespace Divide
 
 #endif

@@ -43,8 +43,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(SDL_API, AudioAPIWrapper, final)
     ErrorCode initAudioAPI();
     void closeAudioAPI();
 
-    void playSound(AudioDescriptor* sound);
-    void playMusic(AudioDescriptor* music);
+    void playSound(std::shared_ptr<AudioDescriptor> sound);
+    void playMusic(std::shared_ptr<AudioDescriptor> music);
 
     void stopMusic() { Mix_HaltMusic(); }
     void stopAllSounds() {}

@@ -113,7 +113,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Text\Headers\glfontstash.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\OpenGL\Text\Headers\stb_truetype.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\Shader.h" />
-    <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderManager.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderProgram.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\Texture.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\Textures\Headers\TextureDescriptor.h" />
@@ -187,7 +186,6 @@
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderStateBlock.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\ScopedStates.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\Shader.cpp" />
-    <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderManager.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Textures\Texture.cpp" />
   </ItemGroup>

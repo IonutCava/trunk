@@ -157,9 +157,7 @@ bool SceneManager::unloadScene(Scene*& scene) {
     AI::AIManager::instance().pauseUpdate(true);
 
     bool isDefaultScene = scene->getGUID() == _defaultScene->getGUID();
-    if (isDefaultScene) {
-        RemoveResource(_defaultMaterial);
-    }
+
     bool state = Attorney::SceneManager::deinitializeAI(*scene);
     if (state) {
         state = Attorney::SceneManager::unload(*scene);

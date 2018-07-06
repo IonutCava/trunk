@@ -150,8 +150,9 @@ Material::TextureOperation getTextureOperation(const stringImpl& operation) {
     return Material::TextureOperation::REPLACE;
 }
 
-void saveTextureXML(const stringImpl &textureNode, Texture *texture,
-                    ptree &tree, const stringImpl& operation = "") {
+void saveTextureXML(const stringImpl &textureNode, std::weak_ptr<Texture> texturePtr, ptree &tree, const stringImpl& operation = "") {
+    std::shared_ptr<Texture> texture = texturePtr.lock();
+
     const SamplerDescriptor &sampler = texture->getCurrentSampler();
     WAIT_FOR_CONDITION(texture->getState() == ResourceState::RES_LOADED);
 
@@ -169,9 +170,9 @@ void saveTextureXML(const stringImpl &textureNode, Texture *texture,
     }
 }
 
-Texture *loadTextureXML(const stringImpl &textureNode,
-                        const stringImpl &textureName,
-                        const ptree& pt) {
+std::shared_ptr<Texture> loadTextureXML(const stringImpl &textureNode,
+                                        const stringImpl &textureName,
+                                        const ptree& pt) {
     stringImpl img_name(textureName.substr(textureName.find_last_of('/') + 1));
     stringImpl pathName(textureName.substr(0, textureName.rfind("/") + 1));
     std::string node(textureNode.c_str());
@@ -899,7 +900,7 @@ void loadGeometry(const stringImpl &file, Scene *const scene) {
     }
 }
 
-Material *loadMaterial(const stringImpl &file) {
+std::shared_ptr<Material> loadMaterial(const stringImpl &file) {
     ParamHandler &par = ParamHandler::instance();
     stringImpl location = par.getParam<stringImpl>(_ID("scriptLocation")) + "/" +
                           par.getParam<stringImpl>(_ID("scenesLocation")) + "/" +
@@ -909,7 +910,7 @@ Material *loadMaterial(const stringImpl &file) {
     return loadMaterialXML(location + file);
 }
 
-Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
+std::shared_ptr<Material> loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     stringImpl materialFile(matName);
     if (rendererDependent) {
         materialFile +=
@@ -937,12 +938,11 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     stringImpl materialName =
         matName.substr(matName.rfind("/") + 1, matName.length());
 
-    if (FindResourceImpl<Material>(materialName)) {
+    if (!FindResourceImpl<Material>(materialName)) {
         skip = true;
     }
 
-    Material *mat =
-        CreateResource<Material>(ResourceDescriptor(materialName));
+    std::shared_ptr<Material> mat = CreateResource<Material>(ResourceDescriptor(materialName));
     if (skip) {
         return mat;
     }
@@ -1010,6 +1010,7 @@ Material *loadMaterialXML(const stringImpl &matName, bool rendererDependent) {
     return mat;
 }
 
+//ToDo: Fix this one day .... -Ionut
 void dumpMaterial(Material &mat) {
     if (!mat.isDirty()) {
         return;
@@ -1056,36 +1057,30 @@ void dumpMaterial(Material &mat) {
                   mat.getShaderData()._emissive.w);
     pt_writer.put("material.doubleSided", mat.isDoubleSided());
 
-    Texture *texture = nullptr;
-
-    if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::UNIT0)) != nullptr) {
+    std::weak_ptr<Texture> texture;
+    if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::UNIT0)).expired()) {
         saveTextureXML("diffuseTexture1", texture, pt_writer);
     }
 
-    if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::UNIT1)) != nullptr) {
+    if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::UNIT1)).expired()) {
         saveTextureXML("diffuseTexture2", texture, pt_writer,
                        getTextureOperationName(mat.getTextureOperation()));
     }
 
-    if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::NORMALMAP)) != nullptr) {
+    if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::NORMALMAP)).expired()) {
         saveTextureXML("bumpMap", texture, pt_writer);
         pt_writer.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
     }
 
-    if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::OPACITY)) != nullptr) {
+    if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::OPACITY)).expired()) {
         saveTextureXML("opacityMap", texture, pt_writer);
     }
 
-    if ((texture = mat.getTexture(
-             ShaderProgram::TextureUsage::SPECULAR)) != nullptr) {
+    if (!(texture = mat.getTexture(ShaderProgram::TextureUsage::SPECULAR)).expired()) {
         saveTextureXML("specularMap", texture, pt_writer);
     }
 
-    ShaderProgram *shaderProg = mat.getShaderInfo().getProgram();
+    std::shared_ptr<ShaderProgram> shaderProg = mat.getShaderInfo().getProgram();
     if (shaderProg) {
         pt_writer.put("shaderProgram.effect", shaderProg->getName());
     }

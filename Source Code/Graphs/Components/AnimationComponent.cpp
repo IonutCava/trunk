@@ -173,7 +173,7 @@ const vectorImplAligned<mat4<F32>>& AnimationComponent::transformsByIndex(U32 an
 const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
                                                       const D64 timeStamp,
                                                       const stringImpl& name) {
-    Object3D* node = _parentSGN.getNode<Object3D>();
+    const Object3D_ptr& node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);
     assert(_animator != nullptr);
 

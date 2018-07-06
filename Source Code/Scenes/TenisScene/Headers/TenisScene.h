@@ -87,7 +87,7 @@ class TenisScene : public Scene {
 
    private:
     vec3<F32> _sunvector;
-    Sphere3D* _ball;
+    std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode_wptr _ballSGN;
     SceneGraphNode_wptr _net;
     SceneGraphNode_wptr _floor;

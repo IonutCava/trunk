@@ -197,14 +197,14 @@ namespace Import {
         return success;
     }
 
-    Mesh* MeshImporter::loadMesh(const stringImpl& name, const Import::ImportData& dataIn) {
+    Mesh_ptr MeshImporter::loadMesh(const stringImpl& name, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 
         std::shared_ptr<SceneAnimator> animator;
         if (dataIn._hasAnimations) {
             ByteBuffer tempBuffer;
-            animator.reset(MemoryManager_NEW SceneAnimator());
+            animator.reset(new SceneAnimator());
             if (tempBuffer.loadFromFile(dataIn._modelPath + "/" + 
                                         g_parsedAssetLocation + "/" +
                                         dataIn._modelName + "." +
@@ -231,11 +231,12 @@ namespace Import {
             }
         }
 
-        Mesh* mesh = MemoryManager_NEW Mesh(name,
-                                            dataIn._modelPath,
-                                            dataIn._hasAnimations
-                                                ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
-                                                : Object3D::ObjectFlag::OBJECT_FLAG_NONE);
+        Mesh_ptr mesh(MemoryManager_NEW Mesh(name,
+                                             dataIn._modelPath,
+                                             dataIn._hasAnimations
+                                                 ? Object3D::ObjectFlag::OBJECT_FLAG_SKINNED
+                                                 : Object3D::ObjectFlag::OBJECT_FLAG_NONE),
+                                DeleteResource());
         if (dataIn._hasAnimations) {
             mesh->setAnimator(animator);
             animator = nullptr;
@@ -244,7 +245,7 @@ namespace Import {
         mesh->renderState().setDrawState(true);
         mesh->getGeometryVB()->fromBuffer(*dataIn._vertexBuffer);
 
-        SubMesh* tempSubMesh = nullptr;
+        SubMesh_ptr tempSubMesh;
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
             ResourceDescriptor submeshdesc(subMeshData._name);
@@ -287,7 +288,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material* MeshImporter::loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned) {
+    std::shared_ptr<Material> MeshImporter::loadSubMeshMaterial(const Import::MaterialData& importData, bool skinned) {
         // See if the material already exists in a cooked state (XML file)
         STUBBED("LOADING MATERIALS FROM XML IS DISABLED FOR NOW! - Ionut")
 #if !defined(DEBUG)
@@ -296,7 +297,7 @@ namespace Import {
             const bool DISABLE_MAT_FROM_FILE = true;
 #endif
 
-        Material* tempMaterial = nullptr;
+        std::shared_ptr<Material> tempMaterial;
         if (!DISABLE_MAT_FROM_FILE) {
             tempMaterial = XML::loadMaterial(importData._name);
             if (tempMaterial) {
@@ -308,7 +309,6 @@ namespace Import {
         // the Resource Cache
         tempMaterial = FindResourceImpl<Material>(importData._name);
         if (tempMaterial) {
-            tempMaterial->AddRef();
             return tempMaterial;
         }
 
@@ -337,7 +337,7 @@ namespace Import {
                 texture.setResourceLocation(tex._texturePath);
                 texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
                 texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
-                Texture* textureRes = CreateResource<Texture>(texture);
+                std::shared_ptr<Texture> textureRes = CreateResource<Texture>(texture);
                 assert(textureRes != nullptr);
 
                 tempMaterial->setTexture(static_cast<ShaderProgram::TextureUsage>(i), textureRes, tex._operation);
@@ -347,9 +347,9 @@ namespace Import {
         // If we don't have a valid opacity map, try to find out whether the diffuse texture has any non-opaque pixels.
         // If we find a few, use it as opacity texture
         if (!importData._ignoreAlpha && importData._textures[to_const_uint(ShaderProgram::TextureUsage::OPACITY)]._textureName.empty()) {
-            Texture* diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0);
-            if (diffuse != nullptr && diffuse->hasTransparency()) {
-                Texture* textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));
+            std::shared_ptr<Texture> diffuse = tempMaterial->getTexture(ShaderProgram::TextureUsage::UNIT0).lock();
+            if (diffuse && diffuse->hasTransparency()) {
+                std::shared_ptr<Texture> textureRes = CreateResource<Texture>(ResourceDescriptor(diffuse->getName()));
                 tempMaterial->setTexture(ShaderProgram::TextureUsage::OPACITY, textureRes, Material::TextureOperation::REPLACE);
             }
         }

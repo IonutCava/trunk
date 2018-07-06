@@ -33,8 +33,8 @@
 #define _RESOURCE_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
-#include "Core/MemoryManagement/Headers/TrackedObject.h"
-#include <mutex>
+#include "Utility/Headers/GUIDWrapper.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 
 namespace Divide {
 
@@ -62,7 +62,8 @@ enum class ResourceState : U32 {
     COUNT
 };
 
-class NOINITVTABLE Resource : public TrackedObject {
+class NOINITVTABLE Resource : public GUIDWrapper
+{
     friend class ResourceCache;
     friend class ResourceLoader;
     template <typename X>
@@ -97,8 +98,8 @@ class NOINITVTABLE Resource : public TrackedObject {
     stringImpl _name;
     stringImpl _resourceLocation;  ///< Physical file location
     std::atomic<ResourceState> _resourceState;
-    std::mutex _callbackLock;
     std::array<DELEGATE_CBK<void>, to_const_uint(ResourceState::COUNT)> _loadingCallbacks;
+    mutable SharedLock _callbackLock;
 };
 
 enum class GeometryType : U32 {
@@ -153,6 +154,8 @@ struct TerrainInfo {
     vec2<F32> scale;
     bool active;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Resource);
 
 };  // namespace Divide
 

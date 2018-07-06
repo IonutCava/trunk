@@ -50,8 +50,8 @@ class NOINITVTABLE AudioAPIWrapper {
     virtual ErrorCode initAudioAPI() = 0;
     virtual void closeAudioAPI() = 0;
 
-    virtual void playSound(AudioDescriptor* sound) = 0;
-    virtual void playMusic(AudioDescriptor* music) = 0;
+    virtual void playSound(std::shared_ptr<AudioDescriptor> sound) = 0;
+    virtual void playMusic(std::shared_ptr<AudioDescriptor> music) = 0;
 
     virtual void pauseMusic() = 0;
     virtual void stopMusic() = 0;

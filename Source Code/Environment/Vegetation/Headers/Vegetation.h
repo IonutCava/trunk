@@ -61,8 +61,8 @@ struct VegetationDetails {
     stringImpl name;
     stringImpl grassShaderName;
     std::shared_ptr<ImageTools::ImageData> map;
-    Terrain* parentTerrain;
-    Texture* grassBillboards;
+    std::weak_ptr<Terrain> parentTerrain;
+    std::shared_ptr<Texture> grassBillboards;
 };
 
 /// Generates grass and trees on the terrain.
@@ -110,7 +110,7 @@ class Vegetation : public SceneNode {
     bool _success;
     std::atomic_bool _threadedLoadComplete;
     std::atomic_bool _stopLoadingRequest;
-    Terrain* _terrain;
+    std::weak_ptr<Terrain> _terrain;
     TerrainChunk* _terrainChunk;
     F32 _grassDensity, _treeDensity;
     U16 _billboardCount;  ///< Vegetation cumulated density
@@ -119,8 +119,8 @@ class Vegetation : public SceneNode {
     U64 _stateRefreshInterval;
     U64 _stateRefreshIntervalBuffer;
     std::shared_ptr<ImageTools::ImageData> _map;  ///< Dispersion map for vegetation placement
-    Texture* _grassBillboards;
-    ShaderProgram* _cullShader;
+    std::shared_ptr<Texture> _grassBillboards;
+    std::shared_ptr<ShaderProgram> _cullShader;
     stringImpl _grassShaderName;
     bool _shadowMapped;
     size_t  _grassStateBlockHash;
@@ -138,6 +138,8 @@ class Vegetation : public SceneNode {
     static bool _staticDataUpdated;
     GenericDrawCommand _cullDrawCommand;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Vegetation);
 
 };  // namespace Divide
 

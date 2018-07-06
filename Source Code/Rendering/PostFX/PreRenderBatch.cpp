@@ -32,8 +32,6 @@ void PreRenderBatch::destroy() {
     MemoryManager::DELETE(_previousLuminance);
     MemoryManager::DELETE(_currentLuminance);
     MemoryManager::DELETE(_postFXOutput);
-    RemoveResource(_toneMap);
-    RemoveResource(_luminanceCalc);
 }
 
 void PreRenderBatch::init(Framebuffer* renderTarget) {

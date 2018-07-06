@@ -37,7 +37,7 @@
 namespace Divide {
 
 class SceneGraphNode;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 /// A camera that always looks at a given target and orbits around it.
 /// It's position / direction can't be changed by user input

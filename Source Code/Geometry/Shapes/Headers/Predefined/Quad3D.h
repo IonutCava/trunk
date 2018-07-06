@@ -170,6 +170,8 @@ class Quad3D : public Object3D {
 
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Quad3D);
+
 };  // namespace Divide
 
 #endif

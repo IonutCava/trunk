@@ -47,7 +47,6 @@ class GFXDevice;
 class SFXDevice;
 class Application;
 class SceneManager;
-class ShaderManager;
 class InputInterface;
 class SceneRenderState;
 class FrameListenerManager;

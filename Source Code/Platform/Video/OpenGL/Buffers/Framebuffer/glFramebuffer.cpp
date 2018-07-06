@@ -105,7 +105,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
     }
 
     bool newTexture = false;
-    Texture* tex = _attachmentTexture[slot];
+    std::shared_ptr<Texture>& tex = _attachmentTexture[slot];
     if (!tex) {
         stringImpl attachmentName = Util::StringFormat(
             "Framebuffer_Att_%s_%d", getAttachmentName(type), getGUID());
@@ -117,10 +117,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
         tex = CreateResource<Texture>(textureAttachment);
         _attachmentTexture[slot] = tex;
         newTexture = true;
-    } else {
-        tex->AddRef();
     }
-
     
     assert(tex != nullptr);
 
@@ -273,9 +270,7 @@ bool glFramebuffer::create(U16 width, U16 height) {
 }
 
 void glFramebuffer::destroy() {
-    for (Texture* texture : _attachmentTexture) {
-        RemoveResource(texture);
-    }
+    _attachmentTexture.fill(nullptr);
 
     if (_framebufferHandle > 0) {
         glDeleteFramebuffers(1, &_framebufferHandle);
@@ -339,7 +334,7 @@ void glFramebuffer::blitFrom(Framebuffer* inputFB,
     GL_API::setActiveFB(Framebuffer::FramebufferUsage::FB_READ_WRITE, previousFB);
 }
 
-Texture* glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequest) {
+const std::shared_ptr<Texture>& glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequest) {
     if (_resolveBuffer) {
         resolve();
         return _resolveBuffer->getAttachment(slot, flushStateOnRequest);
@@ -349,7 +344,7 @@ Texture* glFramebuffer::getAttachment(AttachmentType slot, bool flushStateOnRequ
 }
 
 void glFramebuffer::bind(U8 unit, AttachmentType slot, bool flushStateOnRequest) {
-    Texture* attachment = getAttachment(slot, flushStateOnRequest);
+    const std::shared_ptr<Texture>& attachment = getAttachment(slot, flushStateOnRequest);
     if (attachment != nullptr) {
         attachment->Bind(unit, flushStateOnRequest);
     }

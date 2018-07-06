@@ -134,13 +134,13 @@ class Material : public Resource, public FrameListener {
         };
 
         bool _customShader;
-        ShaderProgram* _shaderRef;
+        std::shared_ptr<ShaderProgram> _shaderRef;
         stringImpl _shader;
         RenderStage _stage;
         std::atomic<ShaderCompilationStage> _shaderCompStage;
         vectorImpl<stringImpl> _shaderDefines;
 
-        ShaderProgram* const getProgram() const;
+        const std::shared_ptr<ShaderProgram>& getProgram() const;
 
         inline StateTracker<bool>& getTrackedBools() { return _trackedBools; }
 
@@ -158,9 +158,6 @@ class Material : public Resource, public FrameListener {
         ShaderInfo& operator=(const ShaderInfo& other) {
             _customShader = other._customShader;
             _shaderRef = other._shaderRef;
-            if (_shaderRef != nullptr) {
-                _shaderRef->AddRef();
-            }
             _shader = other._shader;
             _shaderCompStage.store(other._shaderCompStage);
             for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
@@ -187,7 +184,7 @@ class Material : public Resource, public FrameListener {
     /// base material's name and the give name suffix.
     /// Call RemoveResource on the returned pointer to free memory. (clone calls
     /// CreateResource internally!)
-    Material* clone(const stringImpl& nameSuffix);
+    std::shared_ptr<Material> clone(const stringImpl& nameSuffix);
     bool unload();
     void update(const U64 deltaTime);
 
@@ -240,11 +237,11 @@ class Material : public Resource, public FrameListener {
 
     void setDoubleSided(const bool state, const bool useAlphaTest = true);
     bool setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                    Texture* texture,
+                    const std::shared_ptr<Texture>&,
                     const TextureOperation& op = TextureOperation::REPLACE);
     /// Add a texture <-> bind slot pair to be bound with the default textures
     /// on each "bindTexture" call
-    void addCustomTexture(Texture* texture, U8 offset);
+    void addCustomTexture(const std::shared_ptr<Texture>& texture, U8 offset);
 
     /// Remove the custom texture assigned to the specified offset
     bool removeCustomTexture(U8 index);
@@ -332,7 +329,7 @@ class Material : public Resource, public FrameListener {
     inline U8  getTextureCount()   const { return _shaderData._textureCount; }
 
     size_t getRenderStateBlock(RenderStage currentStage, I32 variant = 0);
-    inline Texture* getTexture(ShaderProgram::TextureUsage textureUsage) const {
+    inline std::weak_ptr<Texture> getTexture(ShaderProgram::TextureUsage textureUsage) const {
         return _textures[to_uint(textureUsage)];
     }
     ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
@@ -403,9 +400,9 @@ class Material : public Resource, public FrameListener {
     bool _shaderThreadedLoad;
     bool _highPriority;
     /// use this map to add textures to the material
-    std::array<Texture*, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
+    std::array<std::shared_ptr<Texture>, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textures;
     std::array<bool, to_const_uint(ShaderProgram::TextureUsage::COUNT)> _textureExtenalFlag;
-    vectorImpl<std::pair<Texture*, U8>> _customTextures;
+    vectorImpl<std::pair<std::shared_ptr<Texture>, U8>> _customTextures;
 
     /// use the below map to define texture operation
     TextureOperation _operation;
@@ -422,6 +419,8 @@ class Material : public Resource, public FrameListener {
     static U32  _totalShaderComputeCountThisFrame;
     static U32 _totalShaderComputeCount;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Material);
 
 };  // namespace Divide
 

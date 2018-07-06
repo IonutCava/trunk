@@ -6,7 +6,6 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 namespace Divide {
 
@@ -78,46 +77,34 @@ bool SceneNode::getDrawState(RenderStage currentStage) {
     return _renderState.getDrawState(currentStage);
 }
 
-Material* const SceneNode::getMaterialTpl() {
+const std::shared_ptr<Material>& SceneNode::getMaterialTpl() {
     // UpgradableReadLock ur_lock(_materialLock);
     if (_materialTemplate == nullptr && _renderState.useDefaultMaterial()) {
         // UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = CreateResource<Material>(
-            ResourceDescriptor("defaultMaterial_" + getName()));
+        _materialTemplate = CreateResource<Material>(ResourceDescriptor("defaultMaterial_" + getName()));
         _materialTemplate->setShadingMode(Material::ShadingMode::BLINN_PHONG);
-        REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
     }
     return _materialTemplate;
 }
 
-void SceneNode::setMaterialTpl(Material* const mat) {
-    if (mat) {  // If we need to update the material
+void SceneNode::setMaterialTpl(std::shared_ptr<Material> material) {
+    if (material) {  // If we need to update the material
         // UpgradableReadLock ur_lock(_materialLock);
-        if (_materialTemplate) {  // If we had an old material
-            if (_materialTemplate->getGUID() !=
-                mat->getGUID()) {  // if the old material isn't the same as the
 
-                                   // new one
+        // If we had an old material
+        if (_materialTemplate) {  
+            // if the old material isn't the same as the new one
+            if (_materialTemplate->getGUID() != material->getGUID()) {
                 Console::printfn(Locale::get(_ID("REPLACE_MATERIAL")),
                                  _materialTemplate->getName().c_str(),
-                                 mat->getName().c_str());
-                // UpgradeToWriteLock uw_lock(ur_lock);
-                UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-                RemoveResource(_materialTemplate);  // remove the old material
-                // ur_lock.lock();
+                                 material->getName().c_str());
+                _materialTemplate = material;  // set the new material
             }
+        } else {
+            _materialTemplate = material;  // set the new material
         }
-        // UpgradeToWriteLock uw_lock(ur_lock);
-        _materialTemplate = mat;  // set the new material
-        REGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-    } else {  // if we receive a null material, the we need to remove this
-              // node's material
-        // UpgradableReadLock ur_lock(_materialLock);
-        if (_materialTemplate) {
-            // UpgradeToWriteLock uw_lock(ur_lock);
-            UNREGISTER_TRACKED_DEPENDENCY(_materialTemplate);
-            RemoveResource(_materialTemplate);
-        }
+    } else {  // if we receive a null material, the we need to remove this node's material
+        _materialTemplate.reset();
     }
 }
 

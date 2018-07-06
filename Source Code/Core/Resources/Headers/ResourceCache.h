@@ -49,27 +49,26 @@ DEFINE_SINGLETON(ResourceCache)
   public:
     /// Each resource entity should have a 'resource name'Loader implementation.
     template <typename T>
-    typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+    typename std::enable_if<std::is_base_of<Resource, T>::value, std::shared_ptr<T>>::type
     loadResource(const ResourceDescriptor& descriptor) {
         /// Check cache first to avoit loading the same resource twice
-        T* ptr = dynamic_cast<T*>(loadResource(descriptor.getName()));
+        std::shared_ptr<T> ptr = std::static_pointer_cast<T>(loadResource(descriptor.getName()));
         /// If the cache did not contain our resource ...
         if (!ptr) {
             /// ...aquire the resource's loader
             /// and get our resource as the loader creates it
-            ptr = ImplResourceLoader<T>(descriptor)();
+            ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(descriptor)());
             if (ptr) {
                 /// validate it's integrity and add it to the cache
-                add( ptr);
+                add(ptr);
             }
         }
+
         return ptr;
     }
 
-    Resource* const find(const stringImpl& name);
-    void add(Resource* const resource);
-    bool remove(Resource* res);
-    bool load(Resource* const res);
+    Resource_ptr find(const stringImpl& name);
+    void add(Resource_wptr resource);
 
   protected:
     ResourceCache();
@@ -77,23 +76,28 @@ DEFINE_SINGLETON(ResourceCache)
     /// Empty the entire cache of resources
     void Destroy();
     /// this method handles cache lookups and reference counting
-    Resource* loadResource(const stringImpl& name);
+    Resource_ptr loadResource(const stringImpl& name);
+
+  protected:
+    friend struct DeleteResource;
     /// unload a single resource and pend deletion
-    bool removeInternal(Resource* const resource);
+    void remove(Resource* resource);
+
+  protected:
     /// multithreaded resource creation
     SharedLock _creationMutex;
-
-    bool _isReady;
-    typedef hashMapImpl<ULL, Resource*> ResourceMap;
+    typedef hashMapImpl<ULL, Resource_wptr> ResourceMap;
     ResourceMap _resDB;
 
 END_SINGLETON
 
+// This will copy the pointer but will still call unload on it if that is the case
 template <typename T>
 typename std::enable_if<std::is_base_of<Resource, T>::value, bool>::type
-RemoveResource(T*& resource) {
-    if (ResourceCache::instance().remove(resource)) {
-        resource = nullptr;
+RemoveResource(std::shared_ptr<T>& resource) {
+    if (resource && 
+        ResourceCache::instance().remove(*resource, resource.use_count()) ){
+        resource.reset();
         return true;
     }
 
@@ -101,15 +105,15 @@ RemoveResource(T*& resource) {
 }
 
 template <typename T>
-typename std::enable_if<std::is_base_of<Resource, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<Resource, T>::value, std::shared_ptr<T>>::type
 CreateResource(const ResourceDescriptor& descriptor) {
     return ResourceCache::instance().loadResource<T>(descriptor);
 }
 
 template <typename T>
-typename std::enable_if<std::is_base_of<Resource, T>::value, T* const>::type
+typename std::enable_if<std::is_base_of<Resource, T>::value, std::shared_ptr<T>>::type
 FindResourceImpl(const stringImpl& name) {
-    return static_cast<T*>(ResourceCache::instance().find(name));
+    return std::static_pointer_cast<T>(ResourceCache::instance().find(name));
 }
 
 };  // namespace Divide

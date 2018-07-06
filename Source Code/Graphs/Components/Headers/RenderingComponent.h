@@ -94,7 +94,7 @@ class RenderingComponent : public SGNComponent {
 
     inline U32 commandOffset() const { return _commandOffset; }
 
-    ShaderProgram* const getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
+    std::shared_ptr<ShaderProgram> getDrawShader(RenderStage renderStage = RenderStage::DISPLAY);
 
     size_t getDrawStateHash(RenderStage renderStage);
 
@@ -102,7 +102,7 @@ class RenderingComponent : public SGNComponent {
 
     void getRenderingProperties(vec4<F32>& propertiesOut) const;
 
-    inline Material* const getMaterialInstance() const { return _materialInstance; }
+    inline const std::shared_ptr<Material>& getMaterialInstance() const { return _materialInstance; }
 
     void registerShaderBuffer(ShaderBufferLocation slot,
                               vec2<U32> bindRange,
@@ -125,7 +125,7 @@ class RenderingComponent : public SGNComponent {
 
    protected:
     friend class SceneGraphNode;
-    RenderingComponent(Material* const materialInstance,
+    RenderingComponent(std::shared_ptr<Material> materialInstance,
                        SceneGraphNode& parentSGN);
     ~RenderingComponent();
 
@@ -163,7 +163,7 @@ class RenderingComponent : public SGNComponent {
     bool clearRefraction();
 
    protected:
-    Material* _materialInstance;
+    std::shared_ptr<Material> _materialInstance;
     /// LOD level is updated at every visibility check
     U8  _lodLevel;  ///<Relative to camera distance
     U32 _drawOrder;

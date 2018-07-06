@@ -31,7 +31,7 @@ bool Trigger::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
                                       to_const_uint(SGNComponent::ComponentType::RENDERING);
         ResourceDescriptor impostorDesc(_name + "_impostor");
         _triggerImpostor = CreateResource<ImpostorSphere>(impostorDesc);
-        sgn.addNode(*_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+        sgn.addNode(_triggerImpostor, normalMask, PhysicsGroup::GROUP_IGNORE);
     }
     /// update dummy position if it is so
     U32 temp = 0;

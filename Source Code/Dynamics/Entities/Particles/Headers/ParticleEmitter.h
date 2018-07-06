@@ -107,10 +107,12 @@ class ParticleEmitter : public SceneNode {
     U64 _lastUpdateTimer;
 
     std::atomic_bool _updating;
-    ShaderProgram* _particleShader;
-    ShaderProgram* _particleDepthShader;
-    Texture* _particleTexture;
+    std::shared_ptr<ShaderProgram> _particleShader;
+    std::shared_ptr<ShaderProgram> _particleDepthShader;
+    std::shared_ptr<Texture> _particleTexture;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(ParticleEmitter);
 
 };  // namespace Divide
 

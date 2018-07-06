@@ -123,6 +123,13 @@ do {                                                \
 #define TO_STRING_NAME(X) #X
 #endif //TO_STRING
 
+#define TYPEDEF_SMART_POINTERS_FOR_CLASS(T)      \
+    typedef std::unique_ptr<T> T ## _uptr;       \
+    typedef std::weak_ptr<T> T ## _wptr;         \
+    typedef std::shared_ptr<T> T ## _ptr;        \
+    typedef std::weak_ptr<const T> T ## _cwptr;  \
+    typedef std::shared_ptr<const T> T ## _cptr; 
+
 namespace Divide {
 
 static constexpr ULL basis = 14695981039346656037ULL;
@@ -760,17 +767,10 @@ inline void DELETE(T*& ptr) {
     delete ptr;
     ptr = nullptr;
 }
-
-#define SET_SHARED_PTR_DELETE_FRIEND(X) \
-    friend void DeletelFunc(X *);
-    
-
-#define SET_UNIQUE_PTR_DELETE_FRIEND(X) \
-    friend std::unique_ptr<X>::deleter_type;
-
+   
 #define SET_DELETE_FRIEND \
     template <typename T> \
-    friend void MemoryManager::DELETE(T*& ptr);
+    friend void MemoryManager::DELETE(T*& ptr); \
 
 /// Deletes and nullifies the specified pointer
 template <typename T>

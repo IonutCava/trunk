@@ -159,6 +159,8 @@ class Sphere3D : public Object3D {
     bool _dirty;
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Sphere3D);
+
 };  // namespace Divide
 
 #endif

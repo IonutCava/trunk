@@ -71,7 +71,7 @@ class PingPongScene : public Scene {
     I8 _score;
     vectorImpl<stringImpl> _quotes;
     vec3<F32> _sunvector;
-    Sphere3D* _ball;
+    std::shared_ptr<Sphere3D> _ball;
     SceneGraphNode_wptr _ballSGN;
     Camera* _freeFlyCam;
     Camera* _paddleCam;

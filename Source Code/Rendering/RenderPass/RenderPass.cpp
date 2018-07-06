@@ -3,7 +3,6 @@
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Scenes/Headers/Scene.h"
 #include "Geometry/Material/Headers/Material.h"

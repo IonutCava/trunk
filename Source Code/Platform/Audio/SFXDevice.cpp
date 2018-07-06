@@ -63,14 +63,14 @@ void SFXDevice::closeAudioAPI() {
     };
 }
 
-void SFXDevice::playSound(AudioDescriptor* sound) {
+void SFXDevice::playSound(std::shared_ptr<AudioDescriptor> sound) {
     DIVIDE_ASSERT(_api != nullptr,
                 "SFXDevice error: playSound called without init!");
 
     _api->playSound(sound);
 }
 
-void SFXDevice::playMusic(AudioDescriptor* music) {
+void SFXDevice::playMusic(std::shared_ptr<AudioDescriptor> music) {
     DIVIDE_ASSERT(_api != nullptr,
                 "SFXDevice error: playMusic called without init!");
 

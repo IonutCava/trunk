@@ -1,12 +1,13 @@
 #include "Headers/Resource.h"
-
+#include "Headers/ResourceCache.h"
 #include "Core/Headers/Application.h"
 
 namespace Divide {
+
 Resource::Resource(const stringImpl& name)
-    : TrackedObject(),
-        _name(name),
-        _resourceState(ResourceState::RES_CREATED)
+    : GUIDWrapper(),
+      _name(name),
+      _resourceState(ResourceState::RES_CREATED)
 {
 }
 
@@ -45,13 +46,14 @@ ResourceState Resource::getState() const {
 }
 
 void Resource::setStateCallback(ResourceState targetState, DELEGATE_CBK<void> cbk) {
-    std::lock_guard<std::mutex> lock(_callbackLock);
+    WriteLock w_lock(_callbackLock);
     _loadingCallbacks[to_uint(targetState)] = cbk;
 }
 
 void Resource::setState(ResourceState currentState) {
     _resourceState = currentState;
-    std::lock_guard<std::mutex> lock(_callbackLock);
+
+    ReadLock r_lock(_callbackLock);
     DELEGATE_CBK<void>& cbk = _loadingCallbacks[to_uint(currentState)];
     if (cbk) {
         cbk();

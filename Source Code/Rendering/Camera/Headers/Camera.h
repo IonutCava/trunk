@@ -394,5 +394,7 @@ class Camera : public Resource {
     Frustum* _frustum;
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Camera);
+
 };  // namespace Divide
 #endif

@@ -65,7 +65,7 @@ class ShaderProgram;
 class SceneGraphNode;
 enum class RenderStage : U32;
 
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 namespace Attorney {
     class SceneNodeSceneGraph;
@@ -121,8 +121,8 @@ class NOINITVTABLE SceneNode : public Resource {
     /*//Rendering/Processing*/
 
     virtual bool unload();
-    virtual void setMaterialTpl(Material* const m);
-    Material* const getMaterialTpl();
+    virtual void setMaterialTpl(std::shared_ptr<Material> material);
+    const std::shared_ptr<Material>& getMaterialTpl();
 
     virtual void postRender(SceneGraphNode& sgn) const;
 
@@ -173,21 +173,18 @@ class NOINITVTABLE SceneNode : public Resource {
 
    private:
     SceneNodeType _type;
-    Material* _materialTemplate;
+    std::shared_ptr<Material> _materialTemplate;
 
     vectorImpl<SGNParentData> _sgnParents;
     
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneNode);
+
 namespace Attorney {
 class SceneNodeSceneGraph {
    private:
     static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
-        size_t pCount = parentCount(node);
-        if (pCount != node.GetRef()) {
-            node.AddRef();
-            assert(pCount == node.GetRef());
-        }
         node.postLoad(sgn);
     }
     

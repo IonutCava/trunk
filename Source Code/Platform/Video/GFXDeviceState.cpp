@@ -7,7 +7,6 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/Framebuffer/Headers/Framebuffer.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
@@ -62,10 +61,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     }
 
     // Initialize the shader manager
-    ShaderManager::instance().init();
+    ShaderProgram::initStaticData();
     // Create an immediate mode shader used for general purpose rendering (e.g.
     // to mimic the fixed function pipeline)
-    _imShader = ShaderManager::instance().getDefaultShader();
+    _imShader = ShaderProgram::defaultShader();
     _imShaderTextureFlag = _imShader->getUniformLocation("useTexture");
     _imShaderWorldMatrix = _imShader->getUniformLocation("dvd_WorldMatrix");
 
@@ -260,8 +259,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
                              to_int(renderResolution.height));
     setBaseViewport(vec4<I32>(0, 0, to_int(renderResolution.width), to_int(renderResolution.height)));
 
-    Texture* hizTexture = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    hizTexture->lockAutomaticMipMapGeneration(true);
+    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer
+        ->getAttachment(TextureDescriptor::AttachmentType::Depth)
+        ->lockAutomaticMipMapGeneration(true);
 
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
@@ -273,10 +273,6 @@ void GFXDevice::closeRenderingAPI() {
                   "GFXDevice error: closeRenderingAPI called without init!");
 
     _axisGizmo->_canZombify = true;
-    // Delete the internal shader
-    RemoveResource(_HIZConstructProgram);
-    RemoveResource(_HIZCullProgram);
-    RemoveResource(_displayShader);
     // Destroy our post processing system
     Console::printfn(Locale::get(_ID("STOP_POST_FX")));
     PostFX::destroyInstance();
@@ -316,7 +312,7 @@ void GFXDevice::closeRenderingAPI() {
         MemoryManager::DELETE(renderTarget._buffer);
     }
     // Close the shader manager
-    ShaderManager::instance().destroy();
+    ShaderProgram::destroyStaticData();
     // Close the rendering API
     _api->closeRenderingAPI();
     // Close the loading thread and wait for it to terminate
@@ -349,7 +345,7 @@ void GFXDevice::idle() {
     // Pass the idle call to the post processing system
     PostFX::instance().idle();
     // And to the shader manager
-    ShaderManager::instance().idle();
+    ShaderProgram::idle();
 }
 
 void GFXDevice::beginFrame() {
@@ -411,7 +407,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
     // Activate the default render states
     setStateBlock(_defaultStateBlockHash);
     // Unbind shaders
-    ShaderManager::instance().unbind();
+    ShaderProgram::unbind();
     _api->endFrame(swapBuffers);
 }
 

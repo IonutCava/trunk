@@ -184,9 +184,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\Shader.h">
       <Filter>Video\Shaders\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderManager.h">
-      <Filter>Video\Shaders\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Platform\Video\Shaders\Headers\ShaderProgram.h">
       <Filter>Video\Shaders\Headers</Filter>
     </ClInclude>
@@ -430,9 +427,6 @@
       <Filter>Video\Textures</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\Shader.cpp">
-      <Filter>Video\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderManager.cpp">
       <Filter>Video\Shaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Shaders\ShaderProgram.cpp">

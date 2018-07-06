@@ -60,9 +60,9 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    inline void setBlendMap(Texture* const texture) { _blendMap = texture; }
-    inline void setTileMaps(Texture* const texture) { _tileMaps = texture; }
-    inline void setNormalMaps(Texture* const texture) { _normalMaps = texture; }
+    inline void setBlendMap(const std::shared_ptr<Texture>& texture) { _blendMap = texture; }
+    inline void setTileMaps(const std::shared_ptr<Texture>& texture) { _tileMaps = texture; }
+    inline void setNormalMaps(const std::shared_ptr<Texture>& texture) { _normalMaps = texture; }
     inline void setDiffuseScale(TerrainTextureChannel textureChannel,
                                 F32 scale) {
         _diffuseUVScale[to_uint(textureChannel)] = scale;
@@ -75,17 +75,17 @@ struct TerrainTextureLayer {
     inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
     inline const vec4<F32>& getDetailScales() const { return _detailUVScale; }
 
-    Texture* const blendMap() const { return _blendMap; }
-    Texture* const tileMaps() const { return _tileMaps; }
-    Texture* const normalMaps() const { return _normalMaps; }
+    const std::shared_ptr<Texture>& blendMap() const { return _blendMap; }
+    const std::shared_ptr<Texture>& tileMaps() const { return _tileMaps; }
+    const std::shared_ptr<Texture>& normalMaps() const { return _normalMaps; }
 
    private:
     U32 _lastOffset;
     vec4<F32> _diffuseUVScale;
     vec4<F32> _detailUVScale;
-    Texture* _blendMap;
-    Texture* _tileMaps;
-    Texture* _normalMaps;
+    std::shared_ptr<Texture> _blendMap;
+    std::shared_ptr<Texture> _tileMaps;
+    std::shared_ptr<Texture> _normalMaps;
 };
 
 class Quad3D;
@@ -95,6 +95,8 @@ class VertexBuffer;
 class ShaderProgram;
 class SamplerDescriptor;
 class TerrainDescriptor;
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Quad3D);
 
 namespace Attorney {
     class TerrainChunk;
@@ -148,7 +150,7 @@ class Terrain : public Object3D {
     bool _alphaTexturePresent;
     bool _drawBBoxes;
     SceneGraphNode_wptr _vegetationGrassNode;
-    Quad3D* _plane;
+    Quad3D_ptr _plane;
     F32 _underwaterDiffuseScale;
     vectorImpl<TerrainTextureLayer*> _terrainTextures;
     SamplerDescriptor* _albedoSampler;
@@ -213,7 +215,7 @@ class TerrainLoader {
         return terrain._boundingBox;
     }
 
-    static void plane(Terrain& terrain, Quad3D* plane) { terrain._plane = plane; }
+    static void plane(Terrain& terrain, Quad3D_ptr plane) { terrain._plane = plane; }
 
     static vec2<U16>& dimensions(Terrain& terrain) {
         return terrain._terrainDimensions;

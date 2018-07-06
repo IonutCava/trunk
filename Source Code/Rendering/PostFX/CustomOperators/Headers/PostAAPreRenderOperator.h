@@ -51,8 +51,8 @@ class PostAAPreRenderOperator : public PreRenderOperator {
    private:
     bool _useSMAA;
     I32 _postAASamples;
-    ShaderProgram* _fxaa;
-    ShaderProgram* _smaa;
+    std::shared_ptr<ShaderProgram> _fxaa;
+    std::shared_ptr<ShaderProgram> _smaa;
 };
 
 };  // namespace Divide

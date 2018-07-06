@@ -218,7 +218,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                               //for performance reasons
     CEGUI::Window* _rootSheet;  //< gui root Window
     stringImpl _defaultGUIScheme;
-    ShaderProgram* _guiShader;  //<Used to apply color for text for now
+    std::shared_ptr<ShaderProgram> _guiShader;  //<Used to apply color for text for now
 
     /// Each scene has its own gui elements! (0 = global)
     I64 _activeSceneGUID;

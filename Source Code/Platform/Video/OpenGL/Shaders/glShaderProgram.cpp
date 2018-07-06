@@ -6,7 +6,6 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/Shader.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
@@ -291,15 +290,12 @@ void glShaderProgram::link() {
 /// Creation of a new shader program. Pass in a shader token and use glsw to
 /// load the corresponding effects
 bool glShaderProgram::load() {
-    ShaderManager& shaderMgr = ShaderManager::instance();
-
     // NULL shader means use shaderProgram(0), so bypass the normal
     // loading routine
     if (_name.compare("NULL") == 0) {
         _validationQueued = false;
         _shaderProgramID = 0;
-        ShaderProgram::load();
-        return true;
+        return ShaderProgram::load();
     }
 
     // Reset the linked status of the program
@@ -412,7 +408,7 @@ bool glShaderProgram::load() {
             // pointer for the stage's shader already
             if (!_refreshStage[i]) {
                 // Else, we ask the shader manager to see if it was previously loaded elsewhere
-                _shaderStage[i] = shaderMgr.getShader(shaderCompileName, refresh);
+                _shaderStage[i] = Shader::getShader(shaderCompileName, refresh);
             }
 
             // If this is the first time this shader is loaded ...
@@ -421,9 +417,9 @@ bool glShaderProgram::load() {
 
                 stringImpl sourceCode;
                 if (Config::USE_SHADER_TEXT_CACHE) {
-                    shaderMgr.shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
-                                             true,
-                                             sourceCode);
+                    ShaderProgram::shaderFileRead(Shader::CACHE_LOCATION_TEXT + shaderCompileName,
+                                                  true,
+                                                  sourceCode);
                 }
 
                 if (sourceCode.empty()) {
@@ -444,7 +440,7 @@ bool glShaderProgram::load() {
                 }
                 if (!sourceCode.empty()){
                     // Load our shader from the final string and save it in the manager in case a new Shader Program needs it
-                    _shaderStage[i] = shaderMgr.loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
+                    _shaderStage[i] = Shader::loadShader(shaderCompileName, sourceCode, type, parseIncludes, _refreshStage[i]);
                 }
             }
             // Show a message, in debug, if we don't have a shader for this stage
@@ -461,6 +457,7 @@ bool glShaderProgram::load() {
             }
         }
     }
+    ShaderProgram::load();
 
     // try to link the program in a separate thread
     return _context.loadInContext(

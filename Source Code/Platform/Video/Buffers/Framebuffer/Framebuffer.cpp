@@ -32,26 +32,28 @@ void Framebuffer::addAttachment(const TextureDescriptor& descriptor,
     _shouldRebuild = true;
 }
 
-void Framebuffer::addAttachment(Texture& texture,
+void Framebuffer::addAttachment(const std::shared_ptr<Texture>& texture,
                                 TextureDescriptor::AttachmentType type) {
-    addAttachment(texture.getDescriptor(), type);
-    _attachmentTexture[to_uint(type)] = &texture;
+    addAttachment(texture->getDescriptor(), type);
+    _attachmentTexture[to_uint(type)] = texture;
 }
 
-Texture* Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
-                                    bool flushStateOnRequest) {
-    Texture* tex = _attachmentTexture[to_uint(slot)];
+const std::shared_ptr<Texture>& Framebuffer::getAttachment(TextureDescriptor::AttachmentType slot,
+                                                           bool flushStateOnRequest) {
+    static std::shared_ptr<Texture> defaultAttachment;
+
+    std::shared_ptr<Texture>& tex = _attachmentTexture[to_uint(slot)];
     if (tex && ((flushStateOnRequest && tex->flushTextureState())  || !flushStateOnRequest)) {
         return tex;
     }
 
-    return nullptr;
+    return defaultAttachment;
 }
 
 
 void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        Texture* tex = _attachmentTexture[i];
+        const std::shared_ptr<Texture>& tex = _attachmentTexture[i];
         if (tex != nullptr) {
             setMipLevel(mipMinLevel, mipMaxLevel, writeLevel, static_cast<TextureDescriptor::AttachmentType>(i));
         }
@@ -60,7 +62,7 @@ void Framebuffer::setMipLevel(U16 mipMinLevel, U16 mipMaxLevel, U16 writeLevel) 
 
 void Framebuffer::resetMipLevel() {
     for (U32 i = 0; i < to_const_uint(TextureDescriptor::AttachmentType::COUNT); ++i) {
-        Texture* tex = _attachmentTexture[i];
+        const std::shared_ptr<Texture>& tex = _attachmentTexture[i];
         if (tex != nullptr) {
             resetMipLevel(static_cast<TextureDescriptor::AttachmentType>(i));
         }

@@ -82,15 +82,15 @@ DEFINE_SINGLETON(PostFX)
 
     PreRenderBatch _preRenderBatch;
     /// Screen Border
-    Texture* _screenBorder;
+    std::shared_ptr<Texture> _screenBorder;
     /// Noise
-    Texture* _noise;
+    std::shared_ptr<Texture> _noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
     D64 _timer, _tickInterval;
 
-    ShaderProgram* _postProcessingShader;
-    Texture* _underwaterTexture;
+    std::shared_ptr<ShaderProgram> _postProcessingShader;
+    std::shared_ptr<Texture> _underwaterTexture;
     GFXDevice* _gfx;
     vec2<U16> _resolutionCache;
     vectorImpl<U32> _shaderFunctionSelection;

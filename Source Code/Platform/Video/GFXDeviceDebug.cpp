@@ -37,7 +37,7 @@ void GFXDevice::previewDepthBuffer() {
     }
 
     U16 screenWidth = std::max(_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getResolution().width, to_const_ushort(768));
-    Texture* depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    std::shared_ptr<Texture> depthTex = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
     depthTex->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     {
         //HiZ preview
@@ -90,7 +90,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState) {
         // A primitive can be rendered with any shader program available, so
         // make sure we actually use the right one for this stage
         if (prim->drawShader() == nullptr) {
-            prim->drawShader(_imShader);
+            prim->drawShader(_imShader.get());
         }
         // Set the primitive's render state block
         setStateBlock(prim->stateHash());

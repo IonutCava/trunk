@@ -49,8 +49,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(FMOD_API, AudioAPIWrapper, final)
 
     void closeAudioAPI() {}
 
-    void playSound(AudioDescriptor* sound) {}
-    void playMusic(AudioDescriptor* music) {}
+    void playSound(std::shared_ptr<AudioDescriptor> sound) {}
+    void playMusic(std::shared_ptr<AudioDescriptor> music) {}
 
     void pauseMusic() {}
     void stopMusic() {}

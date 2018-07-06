@@ -21,13 +21,13 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _parentScene(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
-     _rootNode(MemoryManager_NEW SceneRoot())
+     _rootNode(new SceneRoot())
 {
     static const U32 rootMask = to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                 to_const_uint(SGNComponent::ComponentType::BOUNDS);
 
     REGISTER_FRAME_LISTENER(this, 1);
-    _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, *_rootNode, "ROOT", rootMask);
+    _root = std::make_shared<SceneGraphNode>(*this, PhysicsGroup::GROUP_IGNORE, _rootNode, "ROOT", rootMask);
     _root->get<BoundsComponent>()->lockBBTransforms(true);
     _rootNode->postLoad(*_root);
 

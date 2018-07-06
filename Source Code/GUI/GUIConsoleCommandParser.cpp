@@ -5,16 +5,17 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/Predefined/Box3D.h"
 #include "Geometry/Shapes/Headers/Predefined/Sphere3D.h"
 
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
-
 namespace Divide {
 
-GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr) {
+GUIConsoleCommandParser::GUIConsoleCommandParser() 
+    : _sound(nullptr)
+{
     _commandMap[_ID("say")] =
         DELEGATE_BIND(&GUIConsoleCommandParser::handleSayCommand, this,
                       std::placeholders::_1);
@@ -57,10 +58,8 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(nullptr) {
     _commandHelp[_ID("invalidhelp")] = Locale::get(_ID("CONSOLE_INVALID_HELP_ARGUMENT"));
 }
 
-GUIConsoleCommandParser::~GUIConsoleCommandParser() {
-    if (_sound != nullptr) {
-        RemoveResource(_sound);
-    }
+GUIConsoleCommandParser::~GUIConsoleCommandParser()
+{
 }
 
 bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
@@ -147,7 +146,6 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
             Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
             return;
         }
-        if (_sound != nullptr) RemoveResource(_sound);
 
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
@@ -203,9 +201,8 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     }
 }
 
-void GUIConsoleCommandParser::handleShaderRecompileCommand(
-    const stringImpl& args) {
-    ShaderManager::instance().recompileShaderProgram(args);
+void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& args) {
+    ShaderProgram::recompileShaderProgram(args);
 }
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {

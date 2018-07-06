@@ -233,12 +233,12 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     std::unique_ptr<ShaderBuffer> _sceneShaderData;
     /// Scene pool
     SceneMap _sceneMap;
-    Material* _defaultMaterial;
     SceneShaderData _sceneData;
     U64 _elapsedTime;
     U32 _elapsedTimeMS;
     U64 _saveTimer;
     std::unique_ptr<Renderer> _renderer;
+    std::shared_ptr<Material> _defaultMaterial;
     RenderPassCuller::VisibleNodeList _reflectiveNodesCache;
     Time::ProfileTimer& _sceneGraphCullTimer;
 END_SINGLETON

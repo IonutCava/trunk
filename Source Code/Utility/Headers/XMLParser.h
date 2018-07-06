@@ -53,11 +53,10 @@ void loadDefaultKeybindings(const stringImpl &file, Scene* scene);
 void loadScene(const stringImpl& sceneName, Scene* scene);
 void loadGeometry(const stringImpl& file, Scene* const scene);
 void loadTerrain(const stringImpl& file, Scene* const scene);
-Material* loadMaterial(const stringImpl& file);
+std::shared_ptr<Material> loadMaterial(const stringImpl& file);
 void dumpMaterial(Material& mat);
 
-Material* loadMaterialXML(const stringImpl& location,
-                          bool rendererDependent = true);
+std::shared_ptr<Material> loadMaterialXML(const stringImpl& location, bool rendererDependent = true);
 };  // namespace XML
 };  // namespace Divide
 

@@ -31,13 +31,6 @@ Sky::Sky(const stringImpl& name, U32 diameter)
 
 Sky::~Sky()
 {
-    RemoveResource(_skyShader);
-    RemoveResource(_skyShaderPrePass);
-    RemoveResource(_skybox);
-}
-
-void Sky::AddRef() {
-    TrackedObject::AddRef();
 }
 
 bool Sky::load() {
@@ -64,7 +57,6 @@ bool Sky::load() {
     skyboxTextures.setPropertyDescriptor<SamplerDescriptor>(skyboxSampler);
     skyboxTextures.setThreadedLoading(false);
     _skybox = CreateResource<Texture>(skyboxTextures);
-    REGISTER_TRACKED_DEPENDENCY(_skybox);
 
     F32 radius = _diameter * 0.5f;
 
@@ -77,11 +69,9 @@ bool Sky::load() {
 
     ResourceDescriptor skyShaderDescriptor("sky.Display");
     _skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);
-    REGISTER_TRACKED_DEPENDENCY(_skyShader);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky.PrePass");
     _skyShaderPrePass = CreateResource<ShaderProgram>(skyShaderPrePassDescriptor);
-    REGISTER_TRACKED_DEPENDENCY(_skyShaderPrePass);
 
     assert(_skyShader && _skyShaderPrePass);
     _skyShader->Uniform("texSky", ShaderProgram::TextureUsage::UNIT0);
@@ -98,7 +88,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
 
     assert(_sky != nullptr);
 
-    sgn.addNode(*_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
+    sgn.addNode(_sky, normalMask, PhysicsGroup::GROUP_IGNORE);
 
     RenderingComponent* renderable = sgn.get<RenderingComponent>();
     renderable->castsShadows(false);

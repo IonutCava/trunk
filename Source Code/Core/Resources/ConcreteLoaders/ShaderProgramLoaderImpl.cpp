@@ -3,7 +3,6 @@
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace {
@@ -13,7 +12,7 @@ namespace {
 namespace Divide {
 
 template<>
-ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
+Resource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     const ParamHandler& par = ParamHandler::instance();
 
     stringImpl resourceLocation;
@@ -25,10 +24,12 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
         resourceLocation = _descriptor.getResourceLocation();
     }
 
-    ShaderProgram* ptr = GFX_DEVICE.newShaderProgram(_descriptor.getName(), 
-                                                     resourceLocation,
-                                                     USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
-                                                                              : false);
+    std::shared_ptr<ShaderProgram> ptr;
+    ptr.reset(GFX_DEVICE.newShaderProgram(_descriptor.getName(),
+                                          resourceLocation,
+                                          USE_THREADED_SHADER_LOAD ? _descriptor.getThreaded()
+                                                                   : false),
+              DeleteResource());
 
 
 
@@ -44,9 +45,7 @@ ShaderProgram* ImplResourceLoader<ShaderProgram>::operator()() {
     }
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
-    } else {
-        ShaderManager::instance().registerShaderProgram(ptr->getName(), ptr);
+        ptr.reset();
     }
 
     return ptr;

@@ -81,9 +81,12 @@ class Trigger : public SceneNode {
     F32 _radius;
     /// Draw the impostor?
     bool _drawImpostor;
-    ImpostorSphere* _triggerImpostor;  ///< used for debug rendering / editing - Ionut
+    /// used for debug rendering / editing - Ionut
+    std::shared_ptr<ImpostorSphere> _triggerImpostor;
     bool _enabled;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Trigger);
 
 };  // namespace Divide
 

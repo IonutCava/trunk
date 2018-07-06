@@ -2,7 +2,6 @@
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/OpenGL/Headers/glResources.h"
 
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 #include "Core/Headers/ParamHandler.h"
 #include <regex>
 
@@ -104,7 +103,7 @@ bool glShader::load(const stringImpl& source) {
     glShaderSource(_shader, 1, &src, &sourceLength);
 
     if (!_skipIncludes) {
-        ShaderManager::instance().shaderFileWrite(Shader::CACHE_LOCATION_TEXT + getName(), src);
+        ShaderProgram::shaderFileWrite(Shader::CACHE_LOCATION_TEXT + getName(), src);
     }
 
     return true;
@@ -156,7 +155,6 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
     stringImpl output, line;
     stringImpl include_file, include_string;
-    ShaderManager& sMgr = ShaderManager::instance();
 
     istringstreamImpl input(source);
     while (std::getline(input, line)) {
@@ -184,7 +182,7 @@ stringImpl glShader::preprocessIncludes(const stringImpl& source,
 
             assert(index != -1);
 
-            include_string = sMgr.shaderFileRead(include_file, shaderAtomLocationPrefix[index]);
+            include_string = ShaderProgram::shaderFileRead(include_file, shaderAtomLocationPrefix[index]);
 
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),

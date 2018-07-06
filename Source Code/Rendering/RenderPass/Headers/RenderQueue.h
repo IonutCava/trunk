@@ -67,8 +67,8 @@ class RenderQueue {
     }
 
   private:
-    RenderBin* getBinForNode(SceneNode* const nodeType,
-                             Material* const matInstance);
+    RenderBin* getBinForNode(const std::shared_ptr<SceneNode>& nodeType,
+                             const std::shared_ptr<Material>& matInstance);
 
     RenderBin* getOrCreateBin(RenderBinType rbType);
 

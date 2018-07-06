@@ -2,7 +2,6 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
 #include "Utility/Headers/Localization.h"

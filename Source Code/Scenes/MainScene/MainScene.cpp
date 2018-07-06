@@ -37,7 +37,7 @@ void MainScene::processInput(const U64 deltaTime) {
             F32 terrainHeight = 0.0f;
             vec3<F32> eyePosition = cam.getEye();
             for (SceneGraphNode_wptr terrainNode : _visibleTerrains) {
-                Terrain* ter = terrainNode.lock()->getNode<Terrain>();
+                const std::shared_ptr<Terrain>& ter = terrainNode.lock()->getNode<Terrain>();
                 assert(ter != nullptr);
                 CLAMP<F32>(eyePosition.x,
                            ter->getDimensions().width * 0.5f * -1.0f,
@@ -123,7 +123,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
         SceneGraphNode_ptr terrainNode(_sceneGraph->findNode(_terrainList[i]).lock());
         if (terrainNode) {  // We might have an unloaded terrain in the Array,
                             // and thus, not present in the graph
-            Terrain* tempTerrain = terrainNode->getNode<Terrain>();
+            const std::shared_ptr<Terrain>& tempTerrain = terrainNode->getNode<Terrain>();
             if (terrainNode->isActive()) {
                 tempTerrain->toggleBoundingBoxes();
                 _visibleTerrains.push_back(terrainNode);
@@ -143,7 +143,7 @@ bool MainScene::load(const stringImpl& name, GUI* const gui) {
     _water = CreateResource<WaterPlane>(infiniteWater);
     _water->setParams(50.0f, vec2<F32>(10.0f, 10.0f), vec2<F32>(0.1f, 0.1f),
                       0.34f);
-    _waterGraphNode = _sceneGraph->getRoot().addNode(*_water, normalMask);
+    _waterGraphNode = _sceneGraph->getRoot().addNode(_water, normalMask);
     SceneGraphNode_ptr waterGraphNode(_waterGraphNode.lock());
     waterGraphNode->usageContext(SceneGraphNode::UsageContext::NODE_STATIC);
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
@@ -211,7 +211,7 @@ U16 MainScene::registerInputActions() {
 bool MainScene::unload() {
     SFX_DEVICE.stopMusic();
     SFX_DEVICE.stopAllSounds();
-    RemoveResource(_beep);
+
     return Scene::unload();
 }
 
@@ -221,7 +221,7 @@ void MainScene::test(const std::atomic_bool& stopRequested, cdiggins::any a, Cal
         vec3<F32> pos;
         SceneGraphNode_ptr boxNode(_sceneGraph->findNode("box").lock());
 
-        Object3D* box = nullptr;
+        std::shared_ptr<Object3D> box;
         if (boxNode) {
             box = boxNode->getNode<Object3D>();
         }

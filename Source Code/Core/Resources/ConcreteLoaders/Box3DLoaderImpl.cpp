@@ -5,17 +5,18 @@
 namespace Divide {
 
 template <>
-Box3D* ImplResourceLoader<Box3D>::operator()() {
+Resource_ptr ImplResourceLoader<Box3D>::operator()() {
     D64 size = 1.0;
     if (!_descriptor.getPropertyListString().empty()) {
-        size =
-            atof(_descriptor.getPropertyListString().c_str());  //<should work
+        size = atof(_descriptor.getPropertyListString().c_str());  //<should work
     }
 
-    Box3D* ptr = MemoryManager_NEW Box3D(_descriptor.getName(), vec3<F32>(to_float(size)));
+    std::shared_ptr<Box3D> ptr(MemoryManager_NEW Box3D(_descriptor.getName(),
+                                                       vec3<F32>(to_float(size))),
+                                DeleteResource());
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);

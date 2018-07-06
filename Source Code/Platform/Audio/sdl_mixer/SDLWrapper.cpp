@@ -43,7 +43,7 @@ void SDL_API::closeAudioAPI() {
     Mix_Quit();
 }
 
-void SDL_API::playMusic(AudioDescriptor* musicFile) {
+void SDL_API::playMusic(std::shared_ptr<AudioDescriptor> musicFile) {
     if (!musicFile) {
         return;
     }
@@ -56,7 +56,7 @@ void SDL_API::playMusic(AudioDescriptor* musicFile) {
     }
 }
 
-void SDL_API::playSound(AudioDescriptor* sound) {
+void SDL_API::playSound(std::shared_ptr<AudioDescriptor> sound) {
     if (sound == nullptr) {
         return;
     }

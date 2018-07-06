@@ -53,9 +53,9 @@ class BloomPreRenderOperator : public PreRenderOperator {
     Framebuffer* _bloomOutput;
     Framebuffer* _bloomBlurBuffer[2];
 
-    ShaderProgram* _blur;
-    ShaderProgram* _bloomCalc;
-    ShaderProgram* _bloomApply;
+    std::shared_ptr<ShaderProgram> _blur;
+    std::shared_ptr<ShaderProgram> _bloomCalc;
+    std::shared_ptr<ShaderProgram> _bloomApply;
 
     U32 _horizBlur;
     U32 _vertBlur;

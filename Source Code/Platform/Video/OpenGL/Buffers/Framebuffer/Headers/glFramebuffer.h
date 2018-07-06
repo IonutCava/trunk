@@ -47,8 +47,9 @@ class glFramebuffer : public Framebuffer {
     bool create(U16 width, U16 height);
     void destroy();
 
-    Texture* getAttachment(TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
-                           bool flushStateOnRequest = true);
+    const std::shared_ptr<Texture>& getAttachment(
+        TextureDescriptor::AttachmentType slot = TextureDescriptor::AttachmentType::Color0,
+        bool flushStateOnRequest = true) override;
 
     void drawToLayer(TextureDescriptor::AttachmentType slot, U32 layer,
                      bool includeDepth = true);

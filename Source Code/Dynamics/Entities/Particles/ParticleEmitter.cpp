@@ -93,11 +93,9 @@ bool ParticleEmitter::initData(std::shared_ptr<ParticleData> particleData) {
         particleShaderDescriptor.setPropertyList("HAS_TEXTURE");
     }
     _particleShader = CreateResource<ShaderProgram>(particleShaderDescriptor);
-    REGISTER_TRACKED_DEPENDENCY(_particleShader);
 
     ResourceDescriptor particleDepthShaderDescriptor("particles.Depth");
     _particleDepthShader = CreateResource<ShaderProgram>(particleDepthShaderDescriptor);
-    REGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
 
     //_renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -142,11 +140,6 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
         _particles->_misc[i].w = -1.0f;
     }
 
-    if (_particleTexture) {
-        UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-        RemoveResource(_particleTexture);
-    }
-
     if (!_particles->_textureFileName.empty()) {
         SamplerDescriptor textureSampler;
         textureSampler.toggleSRGBColorSpace(true);
@@ -161,8 +154,6 @@ bool ParticleEmitter::updateData(std::shared_ptr<ParticleData> particleData) {
         texture.setPropertyDescriptor<SamplerDescriptor>(textureSampler);
         texture.setEnumValue(to_const_uint(TextureType::TEXTURE_2D));
         _particleTexture = CreateResource<Texture>(texture);
-
-        REGISTER_TRACKED_DEPENDENCY(_particleTexture);
     }
 
     return true;
@@ -173,14 +164,6 @@ bool ParticleEmitter::unload() {
         getState() != ResourceState::RES_LOADING) {
         return true;
     }
-    if (_particleTexture) {
-        UNREGISTER_TRACKED_DEPENDENCY(_particleTexture);
-    }
-    UNREGISTER_TRACKED_DEPENDENCY(_particleShader);
-    UNREGISTER_TRACKED_DEPENDENCY(_particleDepthShader);
-    RemoveResource(_particleTexture);
-    RemoveResource(_particleShader);
-    RemoveResource(_particleDepthShader);
 
     MemoryManager::DELETE(_particleGPUBuffer);
 
@@ -191,8 +174,7 @@ bool ParticleEmitter::unload() {
 
 void ParticleEmitter::postLoad(SceneGraphNode& sgn) {
     Framebuffer* depthBuffer = GFX_DEVICE.getRenderTarget(GFXDevice::RenderTargetID::SCREEN)._buffer;
-    Texture* depthTexture = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    TextureData depthBufferData = depthTexture->getData();
+    TextureData depthBufferData = depthBuffer->getAttachment(TextureDescriptor::AttachmentType::Depth)->getData();
     depthBufferData.setHandleLow(to_const_uint(ShaderProgram::TextureUsage::DEPTH));
     sgn.get<RenderingComponent>()->registerTextureDependency(depthBufferData);
 

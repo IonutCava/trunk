@@ -5,27 +5,28 @@
 
 namespace Divide {
 
-template<>
-Sphere3D* ImplResourceLoader<Sphere3D>::operator()() {
-    Sphere3D* ptr = MemoryManager_NEW Sphere3D(_descriptor.getName(),
-                                               _descriptor.getEnumValue() == 0
-                                                                          ? 1.0f
-                                                                          : to_float(_descriptor.getEnumValue()),
-                                               _descriptor.getID() == 0 
-                                                                   ? 32 : 
-                                                                   _descriptor.getID());
+    Resource_ptr ImplResourceLoader<Sphere3D>::operator()() {
+    std::shared_ptr<Sphere3D> ptr(MemoryManager_NEW Sphere3D(_descriptor.getName(),
+                                                             _descriptor.getEnumValue() == 0
+                                                                                         ? 1.0f
+                                                                                         : to_float(_descriptor.getEnumValue()),
+                                                             _descriptor.getID() == 0 
+                                                                                  ? 32 
+                                                                                  : _descriptor.getID()),
+                                  DeleteResource());
 
     if (_descriptor.getFlag()) {
         ptr->renderState().useDefaultMaterial(false);
     } else {
-        Material* matTemp = CreateResource<Material>(
-            ResourceDescriptor("Material_" + _descriptor.getName()));
+        std::shared_ptr<Material> matTemp = 
+            CreateResource<Material>(ResourceDescriptor("Material_" + _descriptor.getName()));
+
         matTemp->setShadingMode(Material::ShadingMode::BLINN_PHONG);
         ptr->setMaterialTpl(matTemp);
     }
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     }
 
     return ptr;

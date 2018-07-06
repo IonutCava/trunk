@@ -134,5 +134,7 @@ class Object3D : public SceneNode {
     VertexBuffer* _buffer;
 };
 
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Object3D);
+
 };  // namespace Divide
 #endif

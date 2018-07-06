@@ -60,6 +60,14 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
            I32 _cubeMapCount;
        };
     public:
+
+    explicit Texture(GFXDevice& context,
+                     const stringImpl& name,
+                     const stringImpl& resourceLocation,
+                     TextureType type,
+                     bool asyncLoad);
+    virtual ~Texture();
+
     /// Bind the texture to the specified texture unit
     virtual void Bind(U8 slot, bool flushStateOnRequest = true) = 0;
     /// Bind a single level
@@ -139,8 +147,6 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     }
 
    protected:
-    SET_DELETE_FRIEND
-
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool LoadFile(const TextureLoadInfo& info, const stringImpl& name);
     /// Load texture data using the specified file name
@@ -148,13 +154,6 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     virtual void threadedLoad();
     /// Force a refresh of the entire mipmap chain
     virtual void updateMipMaps() = 0;
-
-    explicit Texture(GFXDevice& context,
-                     const stringImpl& name,
-                     const stringImpl& resourceLocation,
-                     TextureType type,
-                     bool asyncLoad);
-    virtual ~Texture();
 
    protected:
     U8 _numLayers;
@@ -171,6 +170,8 @@ class NOINITVTABLE Texture : protected GraphicsResource, public Resource {
     TextureData  _textureData;
     TextureDescriptor _descriptor;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Texture);
 
 };  // namespace Divide
 #endif // _TEXTURE_H_

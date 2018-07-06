@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <atomic>
 
 namespace Divide {
+// not totally compatible with smart pointers. Oh well ... -Ionut
 namespace MemoryManager {
 /// From https://www.relisoft.com/book/tech/9new.html
 class MemoryTracker {
@@ -166,7 +167,7 @@ class MemoryTracker {
             output.append("Total leaked bytes: ");
             output.append(to_stringImpl(sizeLeaked).c_str());
             output.append("\n");
-        }
+        } 
         return output;
     }
 

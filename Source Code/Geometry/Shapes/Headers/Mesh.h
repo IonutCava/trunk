@@ -54,6 +54,8 @@ struct aiScene;
 namespace Divide {
 
 class SubMesh;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SubMesh);
+
 class Mesh : public Object3D {
    public:
     explicit Mesh(const stringImpl& name,
@@ -62,9 +64,9 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    virtual void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode& sgn);
 
-    virtual void addSubMesh(SubMesh* const subMesh);
+    void addSubMesh(SubMesh_ptr subMesh);
 
     void setAnimator(std::shared_ptr<SceneAnimator> animator) {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
@@ -84,12 +86,13 @@ class Mesh : public Object3D {
     void updateBoundsInternal(SceneGraphNode& sgn) override;
 
    protected:
-    typedef hashMapImpl<U32, SubMesh*> SubMeshRefMap;
     bool _visibleToNetwork;
     /// Animation player to animate the mesh if necessary
     std::shared_ptr<SceneAnimator> _animator;
-    vectorImpl<SubMesh*> _subMeshList;
+    vectorImpl<SubMesh_ptr> _subMeshList;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Mesh);
 
 };  // namespace Divide
 

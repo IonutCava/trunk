@@ -21,7 +21,6 @@ DoFPreRenderOperator::DoFPreRenderOperator(Framebuffer* hdrTarget, Framebuffer* 
 
 DoFPreRenderOperator::~DoFPreRenderOperator()
 {
-    RemoveResource(_dofShader);
 }
 
 void DoFPreRenderOperator::idle() {

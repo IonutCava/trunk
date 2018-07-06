@@ -35,8 +35,6 @@ GUISplash::GUISplash(const stringImpl& splashImageName,
 
 GUISplash::~GUISplash()
 {
-    RemoveResource(_splashImage);
-    RemoveResource(_splashShader);
 }
 
 void GUISplash::render() {
@@ -44,4 +42,5 @@ void GUISplash::render() {
     _splashImage->Bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawTriangle(GFX_DEVICE.getDefaultStateBlock(true), _splashShader);
 }
+
 };

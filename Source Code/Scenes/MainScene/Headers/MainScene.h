@@ -72,7 +72,7 @@ class MainScene : public Scene {
     bool _musicPlaying;
     bool _freeflyCamera;
     bool _updateLights;
-    AudioDescriptor* _beep;
+    std::shared_ptr<AudioDescriptor> _beep;
     vectorImpl<SceneGraphNode_wptr> _visibleTerrains;
     WaterPlane* _water;
     SceneGraphNode_wptr _sun;

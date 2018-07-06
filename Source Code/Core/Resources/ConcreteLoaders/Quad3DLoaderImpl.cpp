@@ -5,11 +5,11 @@
 namespace Divide {
 
 template<>
-Quad3D* ImplResourceLoader<Quad3D>::operator()() {
-    Quad3D* ptr = MemoryManager_NEW Quad3D(_descriptor.getName(), _descriptor.getMask().b[0] == 0);
+Resource_ptr ImplResourceLoader<Quad3D>::operator()() {
+    std::shared_ptr<Quad3D> ptr(MemoryManager_NEW Quad3D(_descriptor.getName(), _descriptor.getMask().b[0] == 0), DeleteResource());
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);

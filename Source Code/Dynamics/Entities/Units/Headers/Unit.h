@@ -39,8 +39,8 @@
 namespace Divide {
 
 class SceneGraphNode;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
-typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 /// Unit interface
 class Unit : public FrameListener {

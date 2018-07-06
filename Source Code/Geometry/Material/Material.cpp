@@ -4,7 +4,6 @@
 #include "Utility/Headers/Localization.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 #include "Core/Headers/Console.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -95,12 +94,12 @@ bool Material::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-Material* Material::clone(const stringImpl& nameSuffix) {
+std::shared_ptr<Material> Material::clone(const stringImpl& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
                   "Material error: clone called without a valid name suffix!");
 
     const Material& base = *this;
-    Material* cloneMat =
+    std::shared_ptr<Material> cloneMat =
         CreateResource<Material>(ResourceDescriptor(getName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
@@ -133,16 +132,14 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     for (U8 i = 0; i < to_ubyte(base._textures.size()); ++i) {
         ShaderProgram::TextureUsage usage = static_cast<ShaderProgram::TextureUsage>(i);
         if (!isExternalTexture(usage)) {
-            Texture* const tex = base._textures[i];
+            std::shared_ptr<Texture> tex = base._textures[i];
             if (tex) {
-                tex->AddRef();
                 cloneMat->setTexture(usage, tex);
             }
         }
     }
-    for (const std::pair<Texture*, U8>& tex : base._customTextures) {
+    for (const std::pair<std::shared_ptr<Texture>, U8>& tex : base._customTextures) {
         if (tex.first) {
-            tex.first->AddRef();
             cloneMat->addCustomTexture(tex.first, tex.second);
         }
     }
@@ -190,7 +187,7 @@ size_t Material::getRenderStateBlock(RenderStage currentStage, I32 variant) {
 // second = second texture used for multitexturing
 // bump = bump map
 bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
-                          Texture* texture,
+                          const std::shared_ptr<Texture>& texture,
                           const TextureOperation& op) {
     bool computeShaders = false;
     U32 slot = to_uint(textureUsageSlot);
@@ -200,13 +197,10 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
-        Texture* diffuseMap = _textures[to_const_uint(ShaderProgram::TextureUsage::UNIT0)];
+        std::shared_ptr<Texture>& diffuseMap = _textures[to_const_uint(ShaderProgram::TextureUsage::UNIT0)];
         if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
-            /// If the opacity and diffuse map use the same texture, remove one reference
-            RemoveResource(texture);
             return false;
         }
-
     }
 
     if (!_translucencyCheck) {
@@ -215,12 +209,7 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
              textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
     }
 
-    if (_textures[slot]) {
-        if (!isExternalTexture(textureUsageSlot)) {
-            UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-            RemoveResource(_textures[slot]);
-        }
-    } else {
+    if (!_textures[slot]) {
         if (textureUsageSlot != ShaderProgram::TextureUsage::REFLECTION &&
             textureUsageSlot != ShaderProgram::TextureUsage::REFRACTION) {
             // if we add a new type of texture recompute shaders
@@ -229,14 +218,6 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
     }
 
     _textures[slot] = texture;
-
-    if (texture) {
-        if (!isExternalTexture(textureUsageSlot)) {
-            REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-        }
-    }
-    
-
 
     if (computeShaders) {
         recomputeShaders();
@@ -267,10 +248,7 @@ void Material::setShaderProgramInternal(const stringImpl& shader,
         // and we are trying to assign the same one again, return.
         info._shaderRef = FindResourceImpl<ShaderProgram>(info._shader);
         if (info._shader.compare(shader) != 0) {
-            Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
-                             info._shader.c_str(), shader.c_str());
-            UNREGISTER_TRACKED_DEPENDENCY(info._shaderRef);
-            RemoveResource(info._shaderRef);
+            Console::printfn(Locale::get(_ID("REPLACE_SHADER")), info._shader.c_str(), shader.c_str());
         }
     }
 
@@ -340,7 +318,7 @@ void Material::updateReflectionIndex(I32 index) {
         assert(reflectionTarget._buffer != nullptr);
         setTexture(ShaderProgram::TextureUsage::REFLECTION, reflectionTarget._buffer->getAttachment());
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFLECTION, nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFLECTION, std::shared_ptr<Texture>());
     }
 }
 
@@ -351,7 +329,7 @@ void Material::updateRefractionIndex(I32 index) {
         assert(refractionTarget._buffer != nullptr);
         setTexture(ShaderProgram::TextureUsage::REFRACTION, refractionTarget._buffer->getAttachment());
     } else {
-        setTexture(ShaderProgram::TextureUsage::REFRACTION, nullptr);
+        setTexture(ShaderProgram::TextureUsage::REFRACTION, std::shared_ptr<Texture>());
     }
 }
 
@@ -536,23 +514,22 @@ void Material::computeShaderInternal() {
     info._shaderCompStage = shaderAvailable
                                 ? ShaderInfo::ShaderCompilationStage::COMPUTED
                                 : ShaderInfo::ShaderCompilationStage::PENDING;
-    REGISTER_TRACKED_DEPENDENCY(info._shaderRef);
 
     _shaderComputeQueue.pop_front();
 }
 
 /// Add a texture <-> bind slot pair to be bound with the default textures
 /// on each "bindTexture" call
-void Material::addCustomTexture(Texture* texture, U8 offset) {
+void Material::addCustomTexture(const std::shared_ptr<Texture>& texture, U8 offset) {
     // custom textures are not material dependencies!
     _customTextures.push_back(std::make_pair(texture, offset));
 }
 
 /// Remove the custom texture assigned to the specified offset
 bool Material::removeCustomTexture(U8 index) {
-    vectorImpl<std::pair<Texture*, U8>>::iterator it =
+    vectorImpl<std::pair<std::shared_ptr<Texture>, U8>>::iterator it =
         std::find_if(std::begin(_customTextures), std::end(_customTextures),
-            [&index](const std::pair<Texture*, U8>& tex)
+            [&index](const std::pair<std::shared_ptr<Texture>, U8>& tex)
             -> bool { return tex.second == index; });
     if (it == std::end(_customTextures)) {
         return false;
@@ -566,7 +543,7 @@ bool Material::removeCustomTexture(U8 index) {
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
     U32 slotValue = to_uint(slot);
-    Texture* crtTexture = _textures[slotValue];
+    std::shared_ptr<Texture>& crtTexture = _textures[slotValue];
     if (crtTexture && crtTexture->flushTextureState()) {
         TextureData& data = crtTexture->getData();
         data.setHandleLow(slotValue);
@@ -587,7 +564,7 @@ void Material::getTextureData(TextureDataContainer& textureData) {
         getTextureData(ShaderProgram::TextureUsage::REFLECTION, textureData);
         getTextureData(ShaderProgram::TextureUsage::REFRACTION, textureData);
 
-        for (std::pair<Texture*, U8>& tex : _customTextures) {
+        for (std::pair<std::shared_ptr<Texture>, U8>& tex : _customTextures) {
             if (tex.first->flushTextureState()) {
                 textureData.push_back(tex.first->getData());
                 textureData.back().setHandleLow(to_uint(tex.second));
@@ -607,9 +584,9 @@ void Material::getTextureData(TextureDataContainer& textureData) {
     }
 }
 
-ShaderProgram* const Material::ShaderInfo::getProgram() const {
+const std::shared_ptr<ShaderProgram>& Material::ShaderInfo::getProgram() const {
     return _shaderRef == nullptr
-               ? ShaderManager::instance().getDefaultShader()
+               ? ShaderProgram::defaultShader()
                : _shaderRef;
 }
 
@@ -629,23 +606,10 @@ void Material::setShadingMode(const ShadingMode& mode) {
 
 bool Material::unload() {
 
-    size_t textureCount = _textures.size();
-    for (size_t i = 0; i < textureCount; ++i) {
-        Texture*& tex = _textures[i];
-        if (tex != nullptr && !isExternalTexture(static_cast<ShaderProgram::TextureUsage>(i))) {
-            UNREGISTER_TRACKED_DEPENDENCY(tex);
-            RemoveResource(tex);
-        }
-    }
-
+    _textures.fill(nullptr);
     _customTextures.clear();
-    for (ShaderInfo& info : _shaderInfo) {
-        ShaderProgram* shader = FindResourceImpl<ShaderProgram>(info._shader);
-        if (shader != nullptr) {
-            UNREGISTER_TRACKED_DEPENDENCY(shader);
-            RemoveResource(shader);
-        }
-    }
+    _shaderInfo.fill(ShaderInfo());
+
     return true;
 }
 
@@ -720,8 +684,8 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderKey = info._shaderRef ? info._shaderRef->getID()
                                 : invalidShaderKey;
 
-    Texture* albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
-    textureKey = albedoTex ? albedoTex->getHandle() : invalidShaderKey;
+    std::weak_ptr<Texture> albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
+    textureKey = albedoTex.expired() ? invalidShaderKey : albedoTex.lock()->getHandle();
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {

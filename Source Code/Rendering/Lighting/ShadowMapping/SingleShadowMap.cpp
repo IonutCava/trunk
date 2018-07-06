@@ -22,7 +22,9 @@ SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera)
 
 }
 
-SingleShadowMap::~SingleShadowMap() { RemoveResource(_previewDepthMapShader); }
+SingleShadowMap::~SingleShadowMap()
+{ 
+}
 
 void SingleShadowMap::init(ShadowMapInfo* const smi) {
     _init = true;

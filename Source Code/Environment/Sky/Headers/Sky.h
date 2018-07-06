@@ -63,21 +63,24 @@ class Sky : public SceneNode {
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
-   private:
+   protected:
+    template <typename T>
+    friend class ImplResourceLoader;
+
     bool load();
-    void AddRef() override;
 
    private:
-    ShaderProgram* _skyShader;
-    ShaderProgram* _skyShaderPrePass;
-
     U32       _diameter;
-    Texture*  _skybox;
-    Sphere3D* _sky;
+    std::shared_ptr<Texture>  _skybox;
+    std::shared_ptr<Sphere3D> _sky;
+    std::shared_ptr<ShaderProgram> _skyShader;
+    std::shared_ptr<ShaderProgram> _skyShaderPrePass;
     size_t _skyboxRenderStateHash;
     size_t _skyboxRenderStateHashPrePass;
     size_t _skyboxRenderStateReflectedHash;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(Sky);
 
 };  // namespace Divide
 

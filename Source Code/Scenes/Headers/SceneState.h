@@ -204,7 +204,7 @@ class SceneState {
 
    public:
     /// Background music map : trackName - track
-    typedef hashMapImpl<ULL, AudioDescriptor*> MusicPlaylist;
+    typedef hashMapImpl<ULL, std::shared_ptr<AudioDescriptor>> MusicPlaylist;
 
     SceneState()
         : _cameraUnderwater(false), 
@@ -218,9 +218,6 @@ class SceneState {
 
     virtual ~SceneState()
     {
-        for (MusicPlaylist::value_type& it : _backgroundMusic) {
-            RemoveResource(it.second);
-        }
         _backgroundMusic.clear();
     }
 

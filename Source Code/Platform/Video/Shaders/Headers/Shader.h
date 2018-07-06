@@ -43,6 +43,8 @@ class ShaderProgram;
 /// It can be used simultaneously in multiple programs/pipelines
 class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
    public:
+    typedef hashMapImpl<ULL, Shader*> ShaderMap;
+
     static const char* CACHE_LOCATION_TEXT;
     static const char* CACHE_LOCATION_BIN;
 
@@ -52,8 +54,6 @@ class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
                     const stringImpl& name,
                     const ShaderType& type,
                     const bool optimise = false);
-    /// The shader is deleted only by the ShaderManager when no shader programs
-    /// are referencing it
     virtual ~Shader();
 
     /// Shader's API specific handle
@@ -71,8 +71,23 @@ class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
     /// API dependent validation
     virtual void validate() = 0;
 
+    // ======================= static data ========================= //
+    /// Remove a shader from the cache
+    static void removeShader(Shader* s);
+    /// Return a new shader reference
+    static Shader* getShader(const stringImpl& name,
+                             const bool recompile = false);
+    /// Add or refresh a shader from the cache
+    static Shader* loadShader(const stringImpl& name,
+                              const stringImpl& location,
+                              const ShaderType& type,
+                              const bool parseCode,
+                              const bool recompile = false);
   protected:
-    friend class ShaderManager;
+    /// Shader cache
+    static ShaderMap _shaderNameMap;
+
+  protected:
     inline void skipIncludes(bool state) {
         _skipIncludes = state;
     }

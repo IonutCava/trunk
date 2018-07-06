@@ -129,8 +129,8 @@ struct GenericDrawCommand {
     U32 _commandOffset;
     PrimitiveType _type;
     IndirectDrawCommand _cmd;
-    ShaderProgram* _shaderProgram;
     VertexDataInterface* _sourceBuffer;
+    std::shared_ptr<ShaderProgram> _shaderProgram;
 
    public:
 
@@ -165,7 +165,7 @@ struct GenericDrawCommand {
               : ClearBit(_renderOptions, to_const_uint(RenderOptions::RENDER_GEOMETRY));
     }
 
-    inline void shaderProgram(ShaderProgram* const program) {
+    inline void shaderProgram(const std::shared_ptr<ShaderProgram>& program) {
         _shaderProgram = program;
     }
 
@@ -205,7 +205,7 @@ struct GenericDrawCommand {
         return _cmd;
     }
 
-    inline ShaderProgram* shaderProgram() const { return _shaderProgram; }
+    inline const std::shared_ptr<ShaderProgram>& shaderProgram() const { return _shaderProgram; }
     inline VertexDataInterface* sourceBuffer() const { return _sourceBuffer; }
     inline PrimitiveType primitiveType() const { return _type; }
 

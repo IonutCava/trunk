@@ -43,8 +43,16 @@ class Shader;
 class ShaderBuffer;
 struct GenericDrawCommand;
 
-class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
+class ShaderProgram;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(ShaderProgram);
+
+class NOINITVTABLE ShaderProgram : public Resource, 
+                                   protected GraphicsResource,
+                                   public std::enable_shared_from_this<ShaderProgram> {
    public:
+    typedef hashMapImpl<ULL, ShaderProgram_ptr> ShaderProgramMap;
+    typedef hashMapImpl<ULL, stringImpl> AtomMap;
+    typedef std::stack<ShaderProgram_ptr, vectorImpl<ShaderProgram_ptr> > ShaderQueue;
     /// A list of built-in sampler slots. Use these if possible
     enum class TextureUsage : U32 {
         UNIT0 = 0,
@@ -87,7 +95,8 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
     virtual bool isValid() const = 0;
 
     virtual bool update(const U64 deltaTime);
-    virtual bool unload() { return true; }
+    virtual bool load() override;
+    virtual bool unload() override;
 
     /// Uniforms (update constant buffer for D3D. Use index as location in
     /// buffer)
@@ -236,12 +245,44 @@ class NOINITVTABLE ShaderProgram : public Resource, protected GraphicsResource {
         return U32(_availableFunctionIndex[shaderTypeValue].size() - 1);
     }
     /** ------ END EXPERIMENTAL CODE ----- **/
-   protected:
 
+    //==================== static methods ===============================//
+    static void idle();
+    static void initStaticData();
+    static void destroyStaticData();
+    static bool updateAll(const U64 deltaTime);
+    /// Queue a shaderProgram recompile request
+    static bool recompileShaderProgram(const stringImpl& name);
+    static const stringImpl& shaderFileRead(const stringImpl& atomName, const stringImpl& location);
+    static void shaderFileRead(const stringImpl& filePath, bool buildVariant, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const stringImpl& atomName, const char* sourceCode);
+    /// Remove a shaderProgram from the program cache
+    static bool unregisterShaderProgram(const stringImpl& name);
+    /// Add a shaderProgram to the program cache
+    static void registerShaderProgram(const stringImpl& name, const ShaderProgram_ptr& shaderProgram);
+    /// Bind the null shader
+    static bool unbind();
+    /// Return a default shader used for general purpose rendering
+    static const ShaderProgram_ptr& defaultShader();
+
+   protected:
+    /// Shaders loaded from files are kept as atoms
+    static AtomMap _atoms;
+    /// Used to render geometry without valid materials.
+    /// Should emulate the basic fixed pipeline functions (no lights, just color and texture)
+    static ShaderProgram_ptr _imShader;
+    /// Pointer to a shader that we will perform operations on
+    static ShaderProgram_ptr _nullShader;
+    /// Only 1 shader program per frame should be recompiled to avoid a lot of stuttering
+    static ShaderQueue _recompileQueue;
+    /// Shader program cache
+    static ShaderProgramMap _shaderPrograms;
+
+    static SharedLock _programLock;
+   protected:
     template <typename T>
     friend class ImplResourceLoader;
 
-   protected:
     bool _asyncLoad;
     std::atomic_bool _linked;
     U32 _shaderProgramID;  //<not thread-safe. Make sure assignment is protected

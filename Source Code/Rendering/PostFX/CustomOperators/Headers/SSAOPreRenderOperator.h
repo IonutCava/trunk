@@ -47,12 +47,12 @@ class SSAOPreRenderOperator : public PreRenderOperator {
     void debugPreview(U8 slot) const;
 
    private:
-    ShaderProgram* _ssaoGenerateShader;
-    ShaderProgram* _ssaoApplyShader;
-    ShaderProgram* _ssaoBlurShader;
     Framebuffer* _ssaoOutput;
     Framebuffer* _ssaoOutputBlurred;
-    Texture* _noiseTexture;
+    std::shared_ptr<ShaderProgram> _ssaoGenerateShader;
+    std::shared_ptr<ShaderProgram> _ssaoApplyShader;
+    std::shared_ptr<ShaderProgram> _ssaoBlurShader;
+    std::shared_ptr<Texture> _noiseTexture;
 };
 
 };  // namespace Divide

@@ -43,8 +43,8 @@ class SceneRenderState;
 class Camera;
 class SceneGraph;
 class SceneGraphNode;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
-typedef std::weak_ptr<const SceneGraphNode> SceneGraphNode_cwptr;
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 class RenderPassCuller {
    public:

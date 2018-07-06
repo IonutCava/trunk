@@ -39,7 +39,8 @@ namespace Divide {
 
 class Octree;
 class SceneGraphNode;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 class IntersectionRecord
 {

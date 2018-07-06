@@ -42,10 +42,6 @@ BloomPreRenderOperator::BloomPreRenderOperator(Framebuffer* hdrTarget, Framebuff
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
-    RemoveResource(_bloomCalc);
-    RemoveResource(_bloomApply);
-    RemoveResource(_blur);
-
     MemoryManager::DELETE(_bloomOutput);
     MemoryManager::DELETE(_bloomBlurBuffer[0]);
     MemoryManager::DELETE(_bloomBlurBuffer[1]);

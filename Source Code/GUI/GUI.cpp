@@ -45,7 +45,6 @@ GUI::~GUI()
     Console::printfn(Locale::get(_ID("STOP_GUI")));
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
-    RemoveResource(_guiShader);
     for (GUIMapPerScene::value_type& it : _guiStack) {
         MemoryManager::DELETE_HASHMAP(it.second);
     }

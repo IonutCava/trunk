@@ -5,11 +5,11 @@
 namespace Divide {
 
 template<>
-ParticleEmitter* ImplResourceLoader<ParticleEmitter>::operator()() {
-    ParticleEmitter* ptr = MemoryManager_NEW ParticleEmitter(_descriptor.getName());
+Resource_ptr ImplResourceLoader<ParticleEmitter>::operator()() {
+    std::shared_ptr<ParticleEmitter> ptr(MemoryManager_NEW ParticleEmitter(_descriptor.getName()), DeleteResource());
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         ptr->renderState().useDefaultMaterial(false);
     }

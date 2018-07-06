@@ -5,12 +5,13 @@
 namespace Divide {
 
 template<>
-Text3D* ImplResourceLoader<Text3D>::operator()() {
-    Text3D* ptr = MemoryManager_NEW Text3D(_descriptor.getName(),
-                                           _descriptor.getResourceLocation()); //< font
+Resource_ptr ImplResourceLoader<Text3D>::operator()() {
+    std::shared_ptr<Text3D> ptr(MemoryManager_NEW Text3D(_descriptor.getName(),
+                                                         _descriptor.getResourceLocation()),
+                                 DeleteResource()); //< font
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);

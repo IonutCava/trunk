@@ -76,8 +76,8 @@ RenderBin* RenderQueue::getOrCreateBin(RenderBinType rbType) {
     return temp;
 }
 
-RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
-                                      Material* const matInstance) {
+RenderBin* RenderQueue::getBinForNode(const std::shared_ptr<SceneNode>& node,
+                                      const std::shared_ptr<Material>& matInstance) {
     assert(node != nullptr);
     switch (node->getType()) {
         case SceneNodeType::TYPE_LIGHT: {
@@ -97,7 +97,7 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
         }
         case SceneNodeType::TYPE_VEGETATION_TREES:
         case SceneNodeType::TYPE_OBJECT3D: {
-            if (static_cast<Object3D*>(node)->getObjectType() ==
+            if (static_cast<Object3D*>(node.get())->getObjectType() ==
                 Object3D::ObjectType::TERRAIN) {
                 return getOrCreateBin(RenderBinType::RBT_TERRAIN);
             }
@@ -114,11 +114,13 @@ RenderBin* RenderQueue::getBinForNode(SceneNode* const node,
 }
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos) {
+    static std::shared_ptr<Material> defaultMat;
+
     RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
     RenderBin* rb = getBinForNode(sgn.getNode(),
                                   renderingCmp
                                     ? renderingCmp->getMaterialInstance()
-                                    : nullptr);
+                                    : defaultMat);
     if (rb) {
         rb->addNodeToBin(sgn, stage, eyePos);
     }

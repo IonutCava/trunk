@@ -5,24 +5,25 @@
 namespace Divide {
 
 template<>
-SubMesh* ImplResourceLoader<SubMesh>::operator()() {
-    SubMesh* ptr = nullptr;
+Resource_ptr ImplResourceLoader<SubMesh>::operator()() {
+    SubMesh_ptr ptr;
 
     if (_descriptor.getEnumValue() ==
         to_const_uint(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        ptr = MemoryManager_NEW SkinnedSubMesh(_descriptor.getName());
+        ptr.reset(MemoryManager_NEW SkinnedSubMesh(_descriptor.getName()), DeleteResource());
     } else {
-        ptr = MemoryManager_NEW SubMesh(_descriptor.getName());
+        ptr.reset(MemoryManager_NEW SubMesh(_descriptor.getName()), DeleteResource());
     }
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->renderState().useDefaultMaterial(false);
         }
         ptr->setID(_descriptor.getID());
     }
+
     return ptr;
 }
 

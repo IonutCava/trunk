@@ -16,14 +16,14 @@ namespace Divide {
 
 SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
                                PhysicsGroup physicsGroup,
-                               SceneNode& node,
+                               const SceneNode_ptr& node,
                                const stringImpl& name,
                                U32 componentMask)
     : GUIDWrapper(),
       _sceneGraph(sceneGraph),
       _updateTimer(Time::ElapsedMilliseconds()),
       _elapsedTime(0ULL),
-      _node(&node),
+      _node(node),
       _active(true),
       _visibilityLocked(false),
       _isSelectable(false),
@@ -69,12 +69,11 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph,
     
     if (BitCompare(componentMask, to_uint(SGNComponent::ComponentType::RENDERING))) {
 
-        Material* const materialTpl = _node->getMaterialTpl();
-        Material* materialInst = nullptr;
-        if (materialTpl != nullptr) {
-            materialInst = materialTpl->clone("_instance_" + name);
-        }
-        setComponent(SGNComponent::ComponentType::RENDERING, new RenderingComponent(materialInst, *this));
+        const std::shared_ptr<Material>& materialTpl = _node->getMaterialTpl();
+        setComponent(SGNComponent::ComponentType::RENDERING, 
+                     new RenderingComponent(materialTpl ? materialTpl->clone("_instance_" + name) 
+                                                        : nullptr,
+                                            *this));
     }
 
     Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, getGUID());
@@ -98,10 +97,8 @@ SceneGraphNode::~SceneGraphNode()
 
     if (isHelperNode(*_node)) {
         if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-            MemoryManager::DELETE(_node);
+            _node.reset();
         }
-    } else {
-        RemoveResource(_node);
     }
 }
 
@@ -167,7 +164,8 @@ SceneGraphNode_ptr SceneGraphNode::registerNode(SceneGraphNode_ptr node) {
 }
 
 /// Add a new SceneGraphNode to the current node's child list based on a SceneNode
-SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name) {
+SceneGraphNode_ptr SceneGraphNode::addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name) {
+    assert(node);
     // Create a new SceneGraphNode with the SceneNode's info
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
@@ -175,20 +173,20 @@ SceneGraphNode_ptr SceneGraphNode::addNode(SceneNode& node, U32 componentMask, P
         std::make_shared<SceneGraphNode>(_sceneGraph, 
                                          physicsGroup,
                                          node,
-                                         name.empty() ? node.getName()
+                                         name.empty() ? node->getName()
                                                       : name,
                                          componentMask);
     // Set the current node as the new node's parent
     sceneGraphNode->setParent(*this);
-    if (node.getState() == ResourceState::RES_LOADED) {
+    if (node->getState() == ResourceState::RES_LOADED) {
         // Do all the post load operations on the SceneNode
         // Pass a reference to the newly created SceneGraphNode in case we need
         // transforms or bounding boxes
-        Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
-    } else if (node.getState() == ResourceState::RES_LOADING) {
-        node.setStateCallback(ResourceState::RES_LOADED,
+        Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
+    } else if (node->getState() == ResourceState::RES_LOADING) {
+        node->setStateCallback(ResourceState::RES_LOADED,
             [&node, sceneGraphNode]() {
-                Attorney::SceneNodeSceneGraph::postLoad(node, *sceneGraphNode);
+                Attorney::SceneNodeSceneGraph::postLoad(*node, *sceneGraphNode);
             }
         );
     }

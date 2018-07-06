@@ -41,8 +41,12 @@ namespace Divide {
 class Texture;
 class CameraManager;
 class ShaderProgram;
+
 class WaterPlane : public SceneNode {
    public:
+    explicit WaterPlane(const stringImpl& name, I32 sideLength);
+    ~WaterPlane();
+
     /// Resource inherited "unload"
     bool unload() override;
     /// General SceneNode stuff
@@ -57,22 +61,13 @@ class WaterPlane : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    inline Quad3D* getQuad() const { return _plane; }
+    inline const std::shared_ptr<Quad3D>& getQuad() const { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
                              Plane<F32>& reflectionPlane,
                              Plane<F32>& refractionPlane);
 
    protected:
-    SET_DELETE_FRIEND
-
-    template <typename T>
-    friend class ImplResourceLoader;
-
-    explicit WaterPlane(const stringImpl& name, I32 sideLength);
-
-    ~WaterPlane();
-
     bool getDrawCommands(SceneGraphNode& sgn,
                          RenderStage renderStage,
                          const SceneRenderState& sceneRenderState,
@@ -99,7 +94,7 @@ class WaterPlane : public SceneNode {
     /// cached far plane value
     I32 _sideLength;
     /// the water's "geometry"
-    Quad3D* _plane;
+    std::shared_ptr<Quad3D> _plane;
     bool _refractionRendering;
     bool _reflectionRendering;
     bool _paramsDirty;
@@ -114,6 +109,8 @@ class WaterPlane : public SceneNode {
 
     CameraManager& _cameraMgr;
 };
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(WaterPlane);
 
 };  // namespace Divide
 

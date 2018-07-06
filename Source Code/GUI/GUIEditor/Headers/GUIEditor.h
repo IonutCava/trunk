@@ -46,7 +46,7 @@ class ToggleButton;
 namespace Divide {
 
 class SceneGraphNode;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 /// Our world editor interface
 DEFINE_SINGLETON(GUIEditor)
   public:

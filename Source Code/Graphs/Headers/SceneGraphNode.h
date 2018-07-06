@@ -72,7 +72,7 @@ class SceneRoot : public SceneNode {
     friend class SceneGraph;
     void postLoad(SceneGraphNode& sgn) { SceneNode::postLoad(sgn); }
 };
-
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneRoot);
 // Add as many SceneTransform nodes are needed as parent nodes for any scenenode
 // to create complex transforms in the scene
 class SceneTransform : public SceneNode {
@@ -89,11 +89,8 @@ class SceneTransform : public SceneNode {
     bool load() override { return true; }
 };
 
-
-typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
-typedef std::weak_ptr<SceneGraphNode> SceneGraphNode_wptr;
-typedef std::shared_ptr<const SceneGraphNode> SceneGraphNode_cptr;
-typedef std::weak_ptr<const SceneGraphNode> SceneGraphNode_cwptr;
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneTransform);
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 class SceneGraphNode : public GUIDWrapper,
                        private NonCopyable,
@@ -126,16 +123,15 @@ class SceneGraphNode : public GUIDWrapper,
     /// Use getNode<SceneNode> if you need material properties for ex. or
     /// getNode<SubMesh> for animation transforms
     template <typename T = SceneNode>
-    inline T* getNode() const {
-        static_assert(
-            std::is_base_of<SceneNode, T>::value,
-            "SceneGraphNode::getNode error: Invalid target node type!");
+    inline std::shared_ptr<T> getNode() const {
+        static_assert(std::is_base_of<SceneNode, T>::value,
+                      "SceneGraphNode::getNode error: Invalid target node type!");
         assert(_node != nullptr);
-        return static_cast<T*>(_node);
+        return std::static_pointer_cast<T>(_node);
     }
     /// Add node increments the node's ref counter if the node was already added
     /// to the scene graph
-    SceneGraphNode_ptr addNode(SceneNode& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
+    SceneGraphNode_ptr addNode(const SceneNode_ptr& node, U32 componentMask, PhysicsGroup physicsGroup, const stringImpl& name = "");
     SceneGraphNode_ptr registerNode(SceneGraphNode_ptr node);
     /// If recursive is true, this stops on the first node match
     bool removeNode(SceneGraphNode& node, bool recursive = true);
@@ -247,7 +243,7 @@ class SceneGraphNode : public GUIDWrapper,
     friend class std::shared_ptr<SceneGraphNode> ;*/
     explicit SceneGraphNode(SceneGraph& sceneGraph,
                             PhysicsGroup physicsGroup,
-                            SceneNode& node,
+                            const SceneNode_ptr& node,
                             const stringImpl& name,
                             U32 componentMask);
     ~SceneGraphNode();
@@ -333,7 +329,7 @@ class SceneGraphNode : public GUIDWrapper,
     D64 _updateTimer;
     U64 _elapsedTime;
     stringImpl _name;
-    SceneNode* _node;
+    SceneNode_ptr _node;
     SceneGraphNode_wptr _parent;
     vectorImpl<SceneGraphNode_ptr> _children;
     std::atomic_uint _childCount;

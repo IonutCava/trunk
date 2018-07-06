@@ -21,10 +21,10 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::addSubMesh(SubMesh* const subMesh) {
+void Mesh::addSubMesh(SubMesh_ptr subMesh) {
     // Hold a reference to the submesh by ID (used for animations)
     _subMeshList.push_back(subMesh);
-    Attorney::SubMeshMesh::setParentMesh(*subMesh, this);
+    Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 }
 
@@ -44,8 +44,8 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                    to_const_uint(SGNComponent::ComponentType::INVERSE_KINEMATICS) |
                                    to_const_uint(SGNComponent::ComponentType::RAGDOLL);
 
-    for (SubMesh* submesh : _subMeshList) {
-        sgn.addNode(*submesh,
+    for (const SubMesh_ptr& submesh : _subMeshList) {
+        sgn.addNode(submesh,
                     submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED) ? skinnedMask : normalMask,
                     PhysicsGroup::GROUP_IGNORE,
                     Util::StringFormat("%s_%d",

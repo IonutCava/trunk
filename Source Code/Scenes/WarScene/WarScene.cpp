@@ -350,16 +350,16 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     }
 
     // Make the center cylinder reflective
-    Material* matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
+    const std::shared_ptr<Material>& matInstance = cylinder[0]->getChild(0, temp).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
-    SceneNode* cylinderMeshNW = cylinder[1]->getNode();
-    SceneNode* cylinderMeshNE = cylinder[2]->getNode();
-    SceneNode* cylinderMeshSW = cylinder[3]->getNode();
-    SceneNode* cylinderMeshSE = cylinder[4]->getNode();
+    std::shared_ptr<SceneNode> cylinderMeshNW = cylinder[1]->getNode();
+    std::shared_ptr<SceneNode> cylinderMeshNE = cylinder[2]->getNode();
+    std::shared_ptr<SceneNode> cylinderMeshSW = cylinder[3]->getNode();
+    std::shared_ptr<SceneNode> cylinderMeshSE = cylinder[4]->getNode();
 
     stringImpl currentName;
-    SceneNode* currentMesh = nullptr;
+    std::shared_ptr<SceneNode> currentMesh;
     SceneGraphNode_ptr baseNode;
 
     U8 locationFlag = 0;
@@ -397,7 +397,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             locationFlag = 3;
         }
 
-        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot().addNode(*currentMesh, normalMask, baseNode->get<PhysicsComponent>()->physicsGroup(), currentName);
+        SceneGraphNode_ptr crtNode = _sceneGraph->getRoot().addNode(currentMesh, normalMask, baseNode->get<PhysicsComponent>()->physicsGroup(), currentName);
         crtNode->setSelectable(true);
         crtNode->usageContext(baseNode->usageContext());
         PhysicsComponent* pComp = crtNode->get<PhysicsComponent>();
@@ -416,12 +416,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_1", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool.get());
-            Light* light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(25.0f);
             light->setCastShadows(i == 0 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, false));
         }
@@ -429,12 +429,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%s_2", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool.get());
-            Light* light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(35.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 8.0f, 0.0f));
             _lightNodes2.push_back(std::make_pair(lightSGN, true));
         }
@@ -442,12 +442,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_spot_%s", currentName.c_str()));
             tempLight.setEnumValue(to_const_uint(LightType::SPOT));
             tempLight.setUserPtr(_lightPool.get());
-            Light* light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(55.0f);
             light->setCastShadows(i == 1 ? true : false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(position + vec3<F32>(0.0f, 10.0f, 0.0f));
             lightSGN->get<PhysicsComponent>()->rotateX(-20);
             _lightNodes3.push_back(lightSGN);
@@ -458,12 +458,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
     flag = _sceneGraph->findNode("flag").lock();
     RenderingComponent* const renderable = flag->getChild(0, temp).get<RenderingComponent>();
     renderable->getMaterialInstance()->setDoubleSided(true);
-    Material* mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
+    const std::shared_ptr<Material>& mat = flag->getChild(0, temp).getNode()->getMaterialTpl();
     mat->setDoubleSided(true);
     flag->setActive(false);
-    SceneNode* flagNode = flag->getNode();
+    std::shared_ptr<SceneNode> flagNode = flag->getNode();
 
-    _flag[0] = _sceneGraph->getRoot().addNode(*flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team1Flag");
+    _flag[0] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team1Flag");
 
     SceneGraphNode_ptr flag0(_flag[0].lock());
     flag0->setSelectable(false);
@@ -479,7 +479,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::BLUE());
 
-    _flag[1] = _sceneGraph->getRoot().addNode(*flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
+    _flag[1] = _sceneGraph->getRoot().addNode(flagNode, normalMask, flag->get<PhysicsComponent>()->physicsGroup(), "Team2Flag");
     SceneGraphNode_ptr flag1(_flag[1].lock());
     flag1->setSelectable(false);
     flag1->usageContext(flag->usageContext());
@@ -495,7 +495,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     flagRComp->getMaterialInstance()->setDiffuse(DefaultColors::RED());
 
-    SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(*flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
+    SceneGraphNode_ptr firstPersonFlag = _sceneGraph->getRoot().addNode(flagNode, normalMask, PhysicsGroup::GROUP_KINEMATIC, "FirstPersonFlag");
     firstPersonFlag->lockVisibility(true);
     firstPersonFlag->onCollisionCbk(DELEGATE_BIND(&WarScene::weaponCollision, this, std::placeholders::_1));
     firstPersonFlag->usageContext(SceneGraphNode::UsageContext::NODE_DYNAMIC);
@@ -560,7 +560,7 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
 
     _particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
     SceneGraphNode_ptr testSGN = _particleEmitter.lock();
-    ParticleEmitter* test = testSGN->getNode<ParticleEmitter>();
+    std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
     testSGN->get<PhysicsComponent>()->translateY(10);
     test->setDrawImpostor(true);
     test->enableEmitter(true);
@@ -584,12 +584,12 @@ bool WarScene::load(const stringImpl& name, GUI* const gui) {
             ResourceDescriptor tempLight(Util::StringFormat("Light_point_%d_%d", row, col));
             tempLight.setEnumValue(to_const_uint(LightType::POINT));
             tempLight.setUserPtr(_lightPool.get());
-            Light* light = CreateResource<Light>(tempLight);
+            std::shared_ptr<Light> light = CreateResource<Light>(tempLight);
             light->setDrawImpostor(false);
             light->setRange(20.0f);
             light->setCastShadows(false);
             light->setDiffuseColor(DefaultColors::RANDOM());
-            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(*light, lightMask, PhysicsGroup::GROUP_IGNORE);
+            SceneGraphNode_ptr lightSGN = _sceneGraph->getRoot().addNode(light, lightMask, PhysicsGroup::GROUP_IGNORE);
             lightSGN->get<PhysicsComponent>()->setPosition(vec3<F32>(-215.0f + (115 * row), 15.0f, (-215.0f + (115 * col))));
             _lightNodes.push_back(lightSGN);
         }

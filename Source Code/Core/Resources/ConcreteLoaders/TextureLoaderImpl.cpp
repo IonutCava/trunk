@@ -9,13 +9,17 @@
 namespace Divide {
 
 template<>
-Texture* ImplResourceLoader<Texture>::operator()() {
+Resource_ptr ImplResourceLoader<Texture>::operator()() {
     assert(_descriptor.getEnumValue() >= to_const_uint(TextureType::TEXTURE_1D) &&
            _descriptor.getEnumValue() < to_const_uint(TextureType::COUNT));
 
     bool threadedLoad = _descriptor.getThreaded();
 
-    Texture* ptr = GFX_DEVICE.newTexture(_descriptor.getName(), _descriptor.getResourceLocation(), static_cast<TextureType>(_descriptor.getEnumValue()), threadedLoad);
+    std::shared_ptr<Texture> ptr(GFX_DEVICE.newTexture(_descriptor.getName(),
+                                                       _descriptor.getResourceLocation(),
+                                                       static_cast<TextureType>(_descriptor.getEnumValue()),
+                                                       threadedLoad),
+                                 DeleteResource());
 
     if (_descriptor.getID() > 0) {
         ptr->setNumLayers(to_ubyte(_descriptor.getID()));
@@ -31,7 +35,7 @@ Texture* ImplResourceLoader<Texture>::operator()() {
         Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOADER_FILE")),
                          _descriptor.getResourceLocation().c_str(),
                          _descriptor.getName().c_str());
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     }
 
     return ptr;

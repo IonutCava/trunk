@@ -20,7 +20,7 @@ RenderBinItem::RenderBinItem(RenderStage currentStage,
       _distanceToCameraSq(distToCamSq)
 {
     _stateHash = 0;
-    Material* nodeMaterial = _renderable->getMaterialInstance();
+    const Material_ptr& nodeMaterial = _renderable->getMaterialInstance();
     // If we do not have a material, no need to continue
     if (!nodeMaterial) {
         return;
@@ -132,7 +132,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode& sgn, RenderStage stage, const
 
     RenderingComponent* const renderable = sgn.get<RenderingComponent>();
 
-    Material* nodeMaterial = renderable->getMaterialInstance();
+    const Material_ptr& nodeMaterial = renderable->getMaterialInstance();
     if (nodeMaterial) {
         nodeMaterial->getSortKeys(keyA, keyB);
     }

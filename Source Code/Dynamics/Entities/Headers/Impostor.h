@@ -39,20 +39,14 @@ namespace Divide {
 
 /// Renders a sphere at the parent node's position using the desired radius;
 class ImpostorSphere : public Sphere3D {
-    template <typename T>
-    friend class ImplResourceLoader;
-    SET_DELETE_FRIEND
-   protected:
+   public:
     ImpostorSphere(const stringImpl& name, F32 radius = 1.0f);
     ~ImpostorSphere();
 };
 
 /// Renders a box at the parent node's position using the desired radius;
 class ImpostorBox : public Box3D {
-    template <typename T>
-    friend class ImplResourceLoader;
-    SET_DELETE_FRIEND
-   protected:
+   public:
     ImpostorBox(const stringImpl& name, const vec3<F32>& size = vec3<F32>());
     ~ImpostorBox();
 };

@@ -30,7 +30,6 @@ ForwardPlusRenderer::ForwardPlusRenderer()
 
 ForwardPlusRenderer::~ForwardPlusRenderer()
 {
-    RemoveResource(_lightCullComputeShader);
 }
 
 void ForwardPlusRenderer::preRender(LightPool& lightPool) {

@@ -139,12 +139,11 @@ bool Light::onRender(SceneGraphNode& sgn, RenderStage currentStage) {
         _impostor = CreateResource<ImpostorSphere>(ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
-        _impostorSGN = _lightSGN->addNode(*_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+        _impostorSGN = _lightSGN->addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
         _impostorSGN.lock()->setActive(true);
     }
 
-    Material* const impostorMaterialInst = _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance();
-    impostorMaterialInst->setDiffuse(getDiffuseColor());
+    _impostorSGN.lock()->get<RenderingComponent>()->getMaterialInstance()->setDiffuse(getDiffuseColor());
 
     updateImpostor();
 

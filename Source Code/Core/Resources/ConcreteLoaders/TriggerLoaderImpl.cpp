@@ -5,11 +5,11 @@
 namespace Divide {
 
 template<>
-Trigger* ImplResourceLoader<Trigger>::operator()() {
-    Trigger* ptr = MemoryManager_NEW Trigger(_descriptor.getName());
+Resource_ptr ImplResourceLoader<Trigger>::operator()() {
+    std::shared_ptr<Trigger> ptr(MemoryManager_NEW Trigger(_descriptor.getName()), DeleteResource());
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         ptr->renderState().useDefaultMaterial(false);
     }

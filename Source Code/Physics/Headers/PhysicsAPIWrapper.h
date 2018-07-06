@@ -51,7 +51,8 @@ class Scene;
 class PhysicsAsset;
 class SceneGraphNode;
 class PhysicsSceneInterface;
-typedef std::shared_ptr<SceneGraphNode> SceneGraphNode_ptr;
+
+TYPEDEF_SMART_POINTERS_FOR_CLASS(SceneGraphNode);
 
 enum class ErrorCode : I32;
 class NOINITVTABLE PhysicsAPIWrapper {

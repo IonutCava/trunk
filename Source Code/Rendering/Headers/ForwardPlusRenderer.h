@@ -55,7 +55,7 @@ class ForwardPlusRenderer : public Renderer {
 
    private:
     vec2<U16> _resolution;
-    ShaderProgram* _lightCullComputeShader;
+    std::shared_ptr<ShaderProgram> _lightCullComputeShader;
     std::shared_ptr<ShaderBuffer> _perTileLightIndexBuffer;
 };
 

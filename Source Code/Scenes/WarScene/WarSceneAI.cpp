@@ -269,14 +269,14 @@ bool WarScene::addUnits() {
     SceneGraphNode_ptr animalNode(_sceneGraph->findNode("Soldier2").lock());
     SceneGraphNode_ptr heavyNode(_sceneGraph->findNode("Soldier3").lock());
 
-    SceneNode* lightNodeMesh = lightNode->getNode();
-    SceneNode* animalNodeMesh = animalNode->getNode();
-    SceneNode* heavyNodeMesh = heavyNode->getNode();
+    std::shared_ptr<SceneNode> lightNodeMesh = lightNode->getNode();
+    std::shared_ptr<SceneNode> animalNodeMesh = animalNode->getNode();
+    std::shared_ptr<SceneNode> heavyNodeMesh = heavyNode->getNode();
     assert(lightNodeMesh && animalNodeMesh && heavyNodeMesh);
 
     NPC* soldier = nullptr;
     AIEntity* aiSoldier = nullptr;
-    SceneNode* currentMesh = nullptr;
+    std::shared_ptr<SceneNode> currentMesh;
 
     vec3<F32> currentScale;
     stringImpl currentName;
@@ -326,7 +326,7 @@ bool WarScene::addUnits() {
                 damage = 15;
             }
 
-            SceneGraphNode_ptr currentNode = root.addNode(*currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
+            SceneGraphNode_ptr currentNode = root.addNode(currentMesh, normalMask, PhysicsGroup::GROUP_KINEMATIC, currentName);
             currentNode->setSelectable(true);
 
             PhysicsComponent* pComp =

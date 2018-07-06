@@ -37,24 +37,17 @@ DeferredShadingRenderer::DeferredShadingRenderer()
     TextureDescriptor gBuffer[4];  /// 4 Gbuffer elements (mipmaps are ignored
                                    /// for deferredBuffers)
     // Albedo R8G8B8A8, 32bit format for diffuse
-    gBuffer[0] =
-        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,
-                          GFXDataFormat::UNSIGNED_BYTE);
+    gBuffer[0] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8, GFXDataFormat::UNSIGNED_BYTE);
     // Position R32G32B32A32, HDR 128bit format for position data
-    gBuffer[1] =
-        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA32F,
-                          GFXDataFormat::FLOAT_32);
+    gBuffer[1] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA32F, GFXDataFormat::FLOAT_32);
     // Normals R16G16B16A16, 64bit format for normals
-    gBuffer[2] =
-        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F,
-                          GFXDataFormat::FLOAT_32);
-    // Blend (for transparent objects - unused for now) R8G8B8A8, 32bit format
-    // for blend
-    gBuffer[3] =
-        TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,
-                          GFXDataFormat::UNSIGNED_BYTE);
+    gBuffer[2] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA16F, GFXDataFormat::FLOAT_32);
+    // Blend (for transparent objects - unused for now) R8G8B8A8, 32bit format for blend
+    gBuffer[3] = TextureDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA8,  GFXDataFormat::UNSIGNED_BYTE);
 
-    for (U8 i = 0; i < 4; i++) gBuffer[i].setSampler(gBufferSampler);
+    for (U8 i = 0; i < 4; i++) {
+        gBuffer[i].setSampler(gBufferSampler);
+    }
 
     _deferredBuffer->addAttachment(gBuffer[0], TextureDescriptor::AttachmentType::Color0);
     _deferredBuffer->addAttachment(gBuffer[1], TextureDescriptor::AttachmentType::Color1);
@@ -111,19 +104,11 @@ DeferredShadingRenderer::DeferredShadingRenderer()
                       "LIGHT TEXTURE");                            // Text
 }
 
-DeferredShadingRenderer::~DeferredShadingRenderer() {
+DeferredShadingRenderer::~DeferredShadingRenderer()
+{
     Console::printfn(Locale::get(_ID("DEFERRED_RT_DELETE")));
-    RemoveResource(_renderQuads[0]);
-    RemoveResource(_renderQuads[1]);
-    RemoveResource(_renderQuads[2]);
-    RemoveResource(_renderQuads[3]);
-    RemoveResource(_renderQuads[4]);
     _renderQuads.clear();
     MemoryManager::DELETE(_deferredBuffer);
-    if (_deferredShader != nullptr) {
-        RemoveResource(_deferredShader);
-    }
-    RemoveResource(_previewDeferredShader);
     MemoryManager::DELETE(_lightTexture);
 }
 

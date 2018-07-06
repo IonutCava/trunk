@@ -17,7 +17,6 @@
 #include "Platform/Input/Headers/InputInterface.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "Platform/Compute/Headers/OpenCLInterface.h"
-#include "Platform/Video/Shaders/Headers/ShaderManager.h"
 
 namespace Divide {
 
@@ -318,7 +317,9 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     }
 
     // perform time-sensitive shader tasks
-    ShaderManager::instance().update(_timingData._currentTimeDelta);
+    if (!ShaderProgram::updateAll(_timingData._currentTimeDelta)){
+        return false;
+    }
 
     frameMgr.createEvent(_timingData._currentTime, FrameEventType::FRAME_PRERENDER_END, evt);
 
@@ -541,8 +542,6 @@ void Kernel::shutdown() {
     SFXDevice::destroyInstance();
     GFXDevice::destroyInstance();
     ResourceCache::destroyInstance();
-    // Destroy the shader manager AFTER the resource cache
-    ShaderManager::destroyInstance();
     FrameListenerManager::destroyInstance();
 }
 

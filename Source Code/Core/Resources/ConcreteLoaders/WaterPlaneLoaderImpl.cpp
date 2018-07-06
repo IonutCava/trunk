@@ -7,7 +7,7 @@
 namespace Divide {
 
 template <>
-bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res) {
+bool ImplResourceLoader<WaterPlane>::load(std::shared_ptr<WaterPlane> res) {
     const ParamHandler& param = ParamHandler::instance();
     const stringImpl& name = res->getName();
 
@@ -27,13 +27,13 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res) {
         "/misc_images/water_dudv.jpg");
     waterTextureDUDV.setPropertyDescriptor(defaultSampler);
 
-    Texture* waterNM = CreateResource<Texture>(waterTexture);
+    std::shared_ptr<Texture> waterNM = CreateResource<Texture>(waterTexture);
     assert(waterNM != nullptr);
 
-    ShaderProgram* waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
+    std::shared_ptr<ShaderProgram> waterShaderProgram = CreateResource<ShaderProgram>(waterShader);
     assert(waterShaderProgram != nullptr);
 
-    Material* waterMat = CreateResource<Material>(waterMaterial);
+    std::shared_ptr<Material> waterMat = CreateResource<Material>(waterMaterial);
     assert(waterMat != nullptr);
     // The material is responsible for the destruction of the textures and
     // shaders it receives!!!!
@@ -55,14 +55,14 @@ bool ImplResourceLoader<WaterPlane>::load(WaterPlane* const res) {
 }
 
 template<>
-WaterPlane* ImplResourceLoader<WaterPlane>::operator()() {
+Resource_ptr ImplResourceLoader<WaterPlane>::operator()() {
     U32 sideLength = _descriptor.getID();
     assert(sideLength > 0 && sideLength < to_uint(std::numeric_limits<I32>::max()));
 
-    WaterPlane* ptr = MemoryManager_NEW WaterPlane(_descriptor.getName(), to_int(sideLength));
+    std::shared_ptr<WaterPlane> ptr(MemoryManager_NEW WaterPlane(_descriptor.getName(), to_int(sideLength)), DeleteResource());
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     }
 
     return ptr;

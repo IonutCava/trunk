@@ -6,12 +6,12 @@
 namespace Divide {
 
 template<>
-Material* ImplResourceLoader<Material>::operator()() {
-    Material* ptr = MemoryManager_NEW Material(_descriptor.getName());
+Resource_ptr ImplResourceLoader<Material>::operator()() {
+    std::shared_ptr<Material> ptr(MemoryManager_NEW Material(_descriptor.getName()), DeleteResource());
     assert(ptr != nullptr);
 
     if (!load(ptr)) {
-        MemoryManager::DELETE(ptr);
+        ptr.reset();
     } else {
         if (_descriptor.getFlag()) {
             ptr->setShaderProgram("", true);

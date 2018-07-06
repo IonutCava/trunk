@@ -40,7 +40,7 @@ class Terrain;
 class TerrainDescriptor;
 class TerrainLoader : private NonCopyable {
    public:
-    static bool loadTerrain(Terrain* terrain,
+    static bool loadTerrain(std::shared_ptr<Terrain> terrain,
                             const TerrainDescriptor* terrainDescriptor);
 
    protected:
@@ -51,9 +51,9 @@ class TerrainLoader : private NonCopyable {
     TerrainLoader() {}
     ~TerrainLoader() {}
 
-    static bool loadThreadedResources(Terrain* terrain,
+    static bool loadThreadedResources(std::shared_ptr<Terrain> terrain,
                                       const TerrainDescriptor* terrainDescriptor);
-    static void initializeVegetation(Terrain* terrain,
+    static void initializeVegetation(std::shared_ptr<Terrain> terrain,
                                      const TerrainDescriptor* terrainDescriptor);
 };
 
