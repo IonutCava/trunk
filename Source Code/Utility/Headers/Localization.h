@@ -52,7 +52,7 @@ namespace Locale {
         /// Basicly, the hashMapImpl is a direct copy of the [language] section of the
         /// give ini file
         static hashMapImpl<U64, stringImpl> s_languageTable;
-        static vectorImpl<DELEGATE_CBK_PARAM<const char* /*new language*/>> s_languageChangeCallbacks;
+        static vectorImpl<DELEGATE_CBK<void, const char* /*new language*/>> s_languageChangeCallbacks;
 
         /// Callback for external file changes. 
         void onLanguageFileModify(const char* languageFile);
@@ -68,7 +68,7 @@ void idle();
 /// language changes
 void changeLanguage(const stringImpl& newLanguage);
 /// Add a function to be called on each language change
-void addChangeLanguageCallback(const DELEGATE_CBK_PARAM<const char* /*new language*/>& cbk);
+void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk);
 /// Query the current language code to detect changes
 inline const stringImpl& currentLanguage() { return detail::s_localeFile; }
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the

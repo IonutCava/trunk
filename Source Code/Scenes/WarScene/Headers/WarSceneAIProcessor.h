@@ -204,11 +204,11 @@ class WarSceneAIProcessor : public AIProcessor {
         _globalWorkingMemory._flags[1].value(flag2);
     }
 
-    static void registerScoreCallback(const DELEGATE_CBK_PARAM_2<U8, const stringImpl&>& cbk) {
+    static void registerScoreCallback(const DELEGATE_CBK<void, U8, const stringImpl&>& cbk) {
         _scoreCallback = cbk;
     }
 
-    static void registerMessageCallback(const DELEGATE_CBK_PARAM_2<U8, const stringImpl&>& cbk) {
+    static void registerMessageCallback(const DELEGATE_CBK<void, U8, const stringImpl&>& cbk) {
         _messageCallback = cbk;
     }
 
@@ -265,8 +265,8 @@ class WarSceneAIProcessor : public AIProcessor {
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
     std::array<bool, to_const_uint(ActionType::COUNT)> _actionState;
-    static DELEGATE_CBK_PARAM_2<U8, const stringImpl&> _scoreCallback;
-    static DELEGATE_CBK_PARAM_2<U8, const stringImpl&> _messageCallback;
+    static DELEGATE_CBK<void, U8, const stringImpl&> _scoreCallback;
+    static DELEGATE_CBK<void, U8, const stringImpl&> _messageCallback;
     static GlobalWorkingMemory _globalWorkingMemory;
     static vec3<F32> _initialFlagPositions[2];
 

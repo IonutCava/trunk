@@ -50,8 +50,8 @@ FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 /// IMPrimitive replaces immediate mode calls to VB based rendering
 class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
-    inline void setRenderStates(const DELEGATE_CBK<>& setupStatesCallback,
-                                const DELEGATE_CBK<>& releaseStatesCallback) {
+    inline void setRenderStates(const DELEGATE_CBK<void>& setupStatesCallback,
+                                const DELEGATE_CBK<void>& releaseStatesCallback) {
         _setupStates = setupStatesCallback;
         _resetStates = releaseStatesCallback;
     }
@@ -167,8 +167,8 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     /// nothing is modified (e.g. zombie counters)
     bool _paused;
     /// 2 functions used to setup or reset states
-    DELEGATE_CBK<> _setupStates;
-    DELEGATE_CBK<> _resetStates;
+    DELEGATE_CBK<void> _setupStates;
+    DELEGATE_CBK<void> _resetStates;
     /// The state hash associated with this render instance
     size_t _stateHash;
     /// The transform matrix for this element

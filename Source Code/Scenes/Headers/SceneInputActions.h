@@ -112,9 +112,9 @@ struct PressReleaseActions {
 
 struct InputAction {
     InputAction();
-    InputAction(DELEGATE_CBK_PARAM<InputParams>& action);
+    InputAction(DELEGATE_CBK<void, InputParams>& action);
 
-    DELEGATE_CBK_PARAM<InputParams> _action;
+    DELEGATE_CBK<void, InputParams> _action;
     // This will be usefull for menus and the like (defined in XML)
     stringImpl _displayName;
 
@@ -125,7 +125,7 @@ class InputActionList {
    public:
     InputActionList();
 
-    bool registerInputAction(U16 id, DELEGATE_CBK_PARAM<InputParams> action);
+    bool registerInputAction(U16 id, DELEGATE_CBK<void, InputParams> action);
     InputAction& getInputAction(U16 id);
     const InputAction& getInputAction(U16 id) const;
 

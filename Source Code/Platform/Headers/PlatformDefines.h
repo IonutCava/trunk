@@ -712,30 +712,19 @@ auto DELEGATE_CREF(Args&&... args)
     return std::cref(std::forward<Args>(args)...);
 }
 
-template <typename T = void>
-using DELEGATE_CBK = std::function<T()>;
 
-template <typename P, typename T = void>
-using DELEGATE_CBK_PARAM = std::function < T(P param) > ;
-
-template <typename P1, typename P2, typename T = void>
-using DELEGATE_CBK_PARAM_2 = std::function < T(P1 param1, P2 param2) >;
-
-template <typename P1, typename P2, typename P3, typename T = void>
-using DELEGATE_CBK_PARAM_3 = std::function < T(P1 param1, P2 param2, P3 param3) >;
-
-template <typename P1, typename P2, typename P3, typename P4, typename T = void>
-using DELEGATE_CBK_PARAM_4 = std::function < T(P1 param1, P2 param2, P3 param3, P4 param4) >;
+template <typename Ret, typename... Args >
+using DELEGATE_CBK = std::function< Ret(Args...) >;
 
 class GUID_DELEGATE_CBK : public GUIDWrapper {
   public:
-    GUID_DELEGATE_CBK(const DELEGATE_CBK<>& cbk)
+    GUID_DELEGATE_CBK(const DELEGATE_CBK<void>& cbk)
         : GUIDWrapper(),
           _callback(cbk)
     {
     }
 
-    DELEGATE_CBK<> _callback;
+    DELEGATE_CBK<void> _callback;
 };
 
 U32 HARDWARE_THREAD_COUNT();

@@ -513,7 +513,7 @@ void GFXDevice::onCameraChange(const Camera& camera) {
 
 /// Depending on the context, either immediately call the function, or pass it
 /// to the loading thread via a queue
-bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK_PARAM<const Task&>& callback) {
+bool GFXDevice::loadInContext(const CurrentContext& context, const DELEGATE_CBK<void, const Task&>& callback) {
     static const Task mainTask;
     // Skip invalid callbacks
     if (callback) {

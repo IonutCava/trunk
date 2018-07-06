@@ -1141,7 +1141,7 @@ void Scene::findSelection() {
             _currentSelection[0].lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
         }
 
-        for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {
+        for (DELEGATE_CBK<void>& cbk : _selectionChangeCallbacks) {
             cbk();
         }
     }

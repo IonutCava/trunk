@@ -194,7 +194,7 @@ inline ErrorCode Application::errorCode() const {
     return _errorCode;
 }
 
-inline void Application::registerShutdownCallback(const DELEGATE_CBK<>& cbk) {
+inline void Application::registerShutdownCallback(const DELEGATE_CBK<void>& cbk) {
     _shutdownCallback.push_back(cbk);
 }
 

@@ -49,7 +49,7 @@ class TaskPool {
     TaskHandle getTaskHandle(I64 taskGUID);
     Task& getAvailableTask();
     void setTaskCallback(const TaskHandle& handle,
-                         const DELEGATE_CBK<>& callback);
+                         const DELEGATE_CBK<void>& callback);
 
     inline U32 workerThreadCount() const {
         return _workerThreadCount;
@@ -72,7 +72,7 @@ class TaskPool {
 
     vectorImpl<Task> _tasksPool;
     vectorImpl<bool> _taskStates;
-    vectorImpl<DELEGATE_CBK<>> _taskCallbacks;
+    vectorImpl<DELEGATE_CBK<void>> _taskCallbacks;
 
     mutable std::mutex _taskStateLock;
 
@@ -87,16 +87,16 @@ TaskHandle GetTaskHandle(TaskPool& pool,
                          I64 taskGUID);
 
 TaskHandle CreateTask(TaskPool& pool,
-                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+                   const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                   const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 TaskHandle CreateTask(TaskPool& pool, 
                    I64 jobIdentifier,
-                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+                   const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                   const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 TaskHandle parallel_for(TaskPool& pool, 
-                        const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
+                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,

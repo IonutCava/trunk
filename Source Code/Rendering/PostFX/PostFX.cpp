@@ -178,7 +178,7 @@ void PostFX::update(const U64 deltaTime) {
             if (_fadeWaitDurationMS < EPSILON_D64) {
                 if (_fadeOutComplete) {
                     _fadeOutComplete();
-                    _fadeOutComplete = DELEGATE_CBK<>();
+                    _fadeOutComplete = DELEGATE_CBK<void>();
                 }
             } else {
                 _fadeWaitDurationMS -= Time::MicrosecondsToMilliseconds<D64>(deltaTime);
@@ -192,13 +192,13 @@ void PostFX::update(const U64 deltaTime) {
             _postProcessingShader->Uniform("_fadeActive", false);
             if (_fadeInComplete) {
                 _fadeInComplete();
-                _fadeInComplete = DELEGATE_CBK<>();
+                _fadeInComplete = DELEGATE_CBK<void>();
             }
         }
     }
 }
 
-void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<> onComplete) {
+void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete) {
     _postProcessingShader->Uniform("_fadeColour", Util::ToFloatColour(targetColour));
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
@@ -211,7 +211,7 @@ void PostFX::setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDu
 
 // clear any fading effect currently active over the specified time interval
 // set durationMS to instantly clear the fade effect
-void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<> onComplete) {
+void PostFX::setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete) {
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeOut = false;

@@ -29,8 +29,8 @@
 
  */
 
-#ifndef _HANDLER_H_
-#define _HANDLER_H_
+#ifndef _SHADER_PROGRAM_H_
+#define _SHADER_PROGRAM_H_
 
 #include "config.h"
 
@@ -312,4 +312,4 @@ class NOINITVTABLE ShaderProgram : public Resource,
 };
 
 };  // namespace Divide
-#endif
+#endif //_SHADER_PROGRAM_H_

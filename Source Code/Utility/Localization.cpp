@@ -103,7 +103,7 @@ void changeLanguage(const stringImpl& newLanguage) {
     /// Set the new language code
     init(newLanguage);
 
-    for (const DELEGATE_CBK_PARAM<const char* /*new language*/>& languageChangeCbk : detail::s_languageChangeCallbacks) {
+    for (const DELEGATE_CBK<void, const char* /*new language*/>& languageChangeCbk : detail::s_languageChangeCallbacks) {
         languageChangeCbk(newLanguage.c_str());
     }
 }
@@ -127,7 +127,7 @@ const char* get(U64 key) {
     return get(key, "key not found");
 }
 
-void addChangeLanguageCallback(const DELEGATE_CBK_PARAM<const char* /*new language*/>& cbk) {
+void addChangeLanguageCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk) {
     detail::s_languageChangeCallbacks.emplace_back(cbk);
 }
 

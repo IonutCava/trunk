@@ -7,8 +7,8 @@ TaskHandle GetTaskHandle(I64 taskGUID) {
     return GetTaskHandle(Application::instance().kernel().taskPool(), taskGUID);
 }
 
-TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-    const DELEGATE_CBK<>& onCompletionFunction)
+TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
+    const DELEGATE_CBK<void>& onCompletionFunction)
 {
     return CreateTask(-1, threadedFunction, onCompletionFunction);
 }
@@ -21,8 +21,8 @@ TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-    const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-    const DELEGATE_CBK<>& onCompletionFunction)
+    const DELEGATE_CBK<void, const Task&>& threadedFunction,
+    const DELEGATE_CBK<void>& onCompletionFunction)
 {
     TaskPool& pool = Application::instance().kernel().taskPool();
     return CreateTask(pool, jobIdentifier, threadedFunction, onCompletionFunction);
@@ -33,7 +33,7 @@ void WaitForAllTasks(bool yeld, bool flushCallbacks, bool foceClear) {
     WaitForAllTasks(pool, yeld, flushCallbacks, foceClear);
 }
 
-TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
+TaskHandle parallel_for(const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,

@@ -239,7 +239,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     PhysicsComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
     ~PhysicsComponent();
 
-    inline void addTransformUpdateCbk(DELEGATE_CBK<> cbk) {
+    inline void addTransformUpdateCbk(DELEGATE_CBK<void> cbk) {
         _transformCallbacks.push_back(cbk);
     }
 
@@ -269,7 +269,7 @@ class PhysicsComponent : public SGNComponent, public TransformInterface {
     TransformStack _transformStack;
     TransformMask _transformUpdatedMask;
 
-    vectorImpl<DELEGATE_CBK<> > _transformCallbacks;
+    vectorImpl<DELEGATE_CBK<void> > _transformCallbacks;
 
     /// Transform cache values
     std::atomic_bool _dirty;

@@ -40,7 +40,7 @@ InputAction::InputAction()
 {
 }
 
-InputAction::InputAction(DELEGATE_CBK_PARAM<InputParams>& action)
+InputAction::InputAction(DELEGATE_CBK<void, InputParams>& action)
     : _action(action)
 {
 }
@@ -54,7 +54,7 @@ InputActionList::InputActionList()
     _noOPAction.displayName("no-op");
 }
 
-bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK_PARAM<InputParams> action) {
+bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK<void, InputParams> action) {
     if (_inputActions.find(id) == std::cend(_inputActions)) {
         hashAlg::emplace(_inputActions, id, InputAction(action));
         return true;

@@ -137,6 +137,15 @@
     <Filter Include="Core\Networking\Headers">
       <UniqueIdentifier>{f799813c-0e81-4aac-8938-798c0726bbc4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scripting">
+      <UniqueIdentifier>{49bdac78-a433-4610-bb5c-33fd418430a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\Headers">
+      <UniqueIdentifier>{2e4e6571-075f-4b4d-8cb0-002bb59e91f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scripting\chaiscript">
+      <UniqueIdentifier>{b4a045b8-a620-4748-a6d4-7478233a359d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Source Code\Rendering\Camera\Camera.cpp">
@@ -424,6 +433,15 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Networking\Patch.cpp">
       <Filter>Core\Networking</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Scripting\Script.cpp">
+      <Filter>Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\chaiscript\chaiscript_stdlib.cpp">
+      <Filter>Scripting\chaiscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\chaiscript\stl_extra.cpp">
+      <Filter>Scripting\chaiscript</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -735,6 +753,9 @@
     <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Patch.h">
       <Filter>Core\Networking\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\Script.h">
+      <Filter>Scripting\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini">
@@ -742,6 +763,9 @@
     </None>
     <None Include="..\..\Source Code\Core\Headers\Application.inl">
       <Filter>Core\Headers</Filter>
+    </None>
+    <None Include="..\..\Source Code\Scripting\Headers\Script.inl">
+      <Filter>Scripting\Headers</Filter>
     </None>
   </ItemGroup>
 </Project>

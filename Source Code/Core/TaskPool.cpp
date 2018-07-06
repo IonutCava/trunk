@@ -41,10 +41,10 @@ bool TaskPool::init(U32 threadCount, const stringImpl& workerName) {
 }
 
 void TaskPool::runCbkAndClearTask(U32 taskIndex) {
-    DELEGATE_CBK<>& cbk = _taskCallbacks[taskIndex];
+    DELEGATE_CBK<void>& cbk = _taskCallbacks[taskIndex];
     if (cbk) {
         cbk();
-        cbk = DELEGATE_CBK<>();
+        cbk = DELEGATE_CBK<void>();
     }
 }
 
@@ -87,7 +87,7 @@ void TaskPool::waitForAllTasks(bool yeld, bool flushCallbacks, bool forceClear) 
 }
 
 void TaskPool::setTaskCallback(const TaskHandle& handle,
-                               const DELEGATE_CBK<>& callback) {
+                               const DELEGATE_CBK<void>& callback) {
     U32 index = handle._task->poolIndex();
     assert(!_taskCallbacks[index]);
 
@@ -172,16 +172,16 @@ TaskHandle GetTaskHandle(TaskPool& pool, I64 taskGUID) {
 }
 
 TaskHandle CreateTask(TaskPool& pool,
-                   const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                   const DELEGATE_CBK<>& onCompletionFunction)
+                   const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                   const DELEGATE_CBK<void>& onCompletionFunction)
 {
     return CreateTask(pool, -1, threadedFunction, onCompletionFunction);
 }
 
 TaskHandle CreateTask(TaskPool& pool,
                       I64 jobIdentifier,
-                      const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                      const DELEGATE_CBK<>& onCompletionFunction)
+                      const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction)
 {
     Task& freeTask = pool.getAvailableTask();
     TaskHandle handle(&freeTask, jobIdentifier);
@@ -200,14 +200,14 @@ void WaitForAllTasks(TaskPool& pool, bool yeld, bool flushCallbacks, bool foceCl
 
 
 TaskHandle parallel_for(TaskPool& pool, 
-                        const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
+                        const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority,
                         U32 taskFlags,
                         bool waitForResult)
 {
-    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK_PARAM<const Task&>());
+    TaskHandle updateTask = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
     if (count > 0) {
 
         U32 crtPartitionSize = std::min(partitionSize, count);

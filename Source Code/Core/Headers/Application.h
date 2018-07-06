@@ -69,7 +69,7 @@ DEFINE_SINGLETON(Application)
     inline WindowManager& windowManager();
     inline const WindowManager& windowManager() const;
 
-    void mainThreadTask(const DELEGATE_CBK<>& task, bool wait = true);
+    void mainThreadTask(const DELEGATE_CBK<void>& task, bool wait = true);
 
     inline void setMemoryLogFile(const stringImpl& fileName);
 
@@ -91,7 +91,7 @@ DEFINE_SINGLETON(Application)
     /// Add a list of callback functions that should be called when the application
     /// instance is destroyed
     /// (release hardware, file handlers, etc)
-    inline void registerShutdownCallback(const DELEGATE_CBK<>& cbk);
+    inline void registerShutdownCallback(const DELEGATE_CBK<void>& cbk);
 
   private:
 
@@ -119,11 +119,11 @@ DEFINE_SINGLETON(Application)
     static std::thread::id _threadID;
     /// A list of callback functions that get called when the application instance
     /// is destroyed
-    vectorImpl<DELEGATE_CBK<> > _shutdownCallback;
+    vectorImpl<DELEGATE_CBK<void> > _shutdownCallback;
 
     /// A list of callbacks to execute on the main thread
     mutable SharedLock _taskLock;
-    vectorImpl<DELEGATE_CBK<> > _mainThreadCallbacks;
+    vectorImpl<DELEGATE_CBK<void> > _mainThreadCallbacks;
 END_SINGLETON
 
 namespace Attorney {

@@ -44,7 +44,7 @@ class GUIMessageBox;
 class GUIInterface {
 public:
     typedef hashMapImpl<U64, std::pair<GUIElement*, bool/*last state*/>> GUIMap;
-    typedef DELEGATE_CBK_PARAM<I64> ButtonCallback;
+    typedef DELEGATE_CBK<void, I64> ButtonCallback;
 
 public:
     explicit GUIInterface(GUI& context, const vec2<U16>& resolution);

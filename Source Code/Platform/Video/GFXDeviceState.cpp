@@ -325,7 +325,7 @@ void GFXDevice::idle() {
 
     UpgradableReadLock r_lock(_GFXLoadQueueLock);
     if (!_GFXLoadQueue.empty()) {
-        for(DELEGATE_CBK_PARAM<const Task&>& cbk : _GFXLoadQueue) {
+        for(DELEGATE_CBK<void, const Task&>& cbk : _GFXLoadQueue) {
             cbk(idleTask);
         }
         UpgradeToWriteLock w_lock(r_lock);

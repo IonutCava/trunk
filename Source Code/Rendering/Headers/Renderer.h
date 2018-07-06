@@ -54,7 +54,7 @@ class NOINITVTABLE Renderer {
 
     virtual void preRender(RenderTarget& target, LightPool& lightPool);
 
-    virtual void render(const DELEGATE_CBK<>& renderCallback,
+    virtual void render(const DELEGATE_CBK<void>& renderCallback,
                         const SceneRenderState& sceneRenderState) = 0;
 
     virtual void updateResolution(U16 width, U16 height) = 0;

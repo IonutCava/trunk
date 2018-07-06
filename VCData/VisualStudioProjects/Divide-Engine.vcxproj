@@ -120,7 +120,7 @@
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <ShowIncludes>false</ShowIncludes>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -176,7 +176,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -232,7 +232,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <OmitFramePointers>
       </OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code\;$(SolutionDir)..\Source Code\Libs\;$(SolutionDir)..\Source Code\Libs\STB\;$(SolutionDir)..\Source Code\Libs\ReCast\;$(SolutionDir)..\Source Code\Libs\EASTL\include\;$(SolutionDir)..\Source Code\Libs\SimpleCL\include\;$(EngineLibraries)\;$(EngineLibraries)\boost\;$(EngineLibraries)\OpenCL\;$(EngineLibraries)\sdl\include\;$(EngineLibraries)\OIS\include\;$(EngineLibraries)\cegui\include\;$(EngineLibraries)\assimp\include\;$(EngineLibraries)\chaiscript\include\;$(EngineLibraries)\glbinding\include\;$(EngineLibraries)\cegui-deps\include\;$(EngineLibraries)\physx\;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common\;$(EngineLibraries)\physx\include\foundation\;$(EngineLibraries)\physx\include\extensions\;$(EngineLibraries)\physx\Source\foundation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -307,6 +307,8 @@
     <ClCompile Include="..\..\Source Code\GUI\GUIMessageBox.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\chaiscript\chaiscript_stdlib.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\chaiscript\stl_extra.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
     <ClCompile Include="..\..\Source Code\Physics\PhysicsAPIWrapper.cpp" />
@@ -359,6 +361,7 @@
     <ClCompile Include="..\..\Source Code\Graphs\SceneGraphNode.cpp" />
     <ClCompile Include="..\..\Source Code\Graphs\SceneNode.cpp" />
     <ClCompile Include="..\..\Source Code\engineMain.cpp" />
+    <ClCompile Include="..\..\Source Code\Scripting\Script.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Source Code\Core\Headers\Application.h" />
@@ -465,10 +468,12 @@
     <ClInclude Include="..\..\Source Code\Graphs\Headers\SceneNode.h" />
     <ClInclude Include="..\..\Source Code\Graphs\Headers\Octree.h" />
     <ClInclude Include="..\..\Source Code\readme.h" />
+    <ClInclude Include="..\..\Source Code\Scripting\Headers\Script.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\localisation\enGB.ini" />
     <None Include="..\..\Source Code\Core\Headers\Application.inl" />
+    <None Include="..\..\Source Code\Scripting\Headers\Script.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

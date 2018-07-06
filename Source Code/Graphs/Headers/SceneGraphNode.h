@@ -164,7 +164,7 @@ class SceneGraphNode : public GUIDWrapper,
                    vectorImpl<SceneGraphNode_cwptr>& selectionHits,
                    bool recursive = true) const;
 
-    inline void onCollisionCbk(const DELEGATE_CBK_PARAM<SceneGraphNode_cptr>& cbk) {
+    inline void onCollisionCbk(const DELEGATE_CBK<void, SceneGraphNode_cptr>& cbk) {
         _collisionCbk = cbk;
     }
 
@@ -209,20 +209,20 @@ class SceneGraphNode : public GUIDWrapper,
     bool isRelated(const SceneGraphNode& target) const;
     bool isChild(const SceneGraphNode& target, bool recursive) const;
 
-    void forEachChild(const DELEGATE_CBK_PARAM<SceneGraphNode&>& callback);
-    void forEachChild(const DELEGATE_CBK_PARAM<const SceneGraphNode&>& callback) const;
+    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback);
+    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&>& callback) const;
 
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGraphNode&, bool>& callback);
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&>& callback);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM<const SceneGraphNode&, bool>& callback) const;
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&>& callback) const;
 
-    void forEachChild(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32>& callback, U32 start, U32 end);
-    void forEachChild(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
+    void forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>& callback, U32 start, U32 end);
+    void forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32, bool>& callback, U32 start, U32 end);
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&, I32>& callback, U32 start, U32 end);
     //Returns false if the loop was interrupted
-    bool forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) const;
+    bool forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const;
 
     inline bool hasChildren() const {
         return getChildCount() > 0;
@@ -384,7 +384,7 @@ class SceneGraphNode : public GUIDWrapper,
 
     StateTracker<bool> _trackedBools;
 
-    DELEGATE_CBK_PARAM<SceneGraphNode_cptr> _collisionCbk;
+    DELEGATE_CBK<void, SceneGraphNode_cptr> _collisionCbk;
 
     std::array<SGNComponent*, to_const_uint(SGNComponent::ComponentType::COUNT)> _components;
     SGNRelationshipCache _relationshipCache;

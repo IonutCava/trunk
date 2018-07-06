@@ -45,8 +45,8 @@ TaskHandle GetTaskHandle(I64 taskGUID);
 * @param threadedFunction The callback function to call in a separate thread = the job to execute
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
-TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                      const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+TaskHandle CreateTask(const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                      const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
 /**
 * @brief Creates a new Task that runs in a separate thread
@@ -56,10 +56,10 @@ TaskHandle CreateTask(const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
 * @param onCompletionFunction The callback function to call when the thread finishes
 */
 TaskHandle CreateTask(I64 jobIdentifier,
-                     const DELEGATE_CBK_PARAM<const Task&>& threadedFunction,
-                     const DELEGATE_CBK<>& onCompletionFunction = DELEGATE_CBK<>());
+                     const DELEGATE_CBK<void, const Task&>& threadedFunction,
+                     const DELEGATE_CBK<void>& onCompletionFunction = DELEGATE_CBK<void>());
 
-TaskHandle parallel_for(const DELEGATE_CBK_PARAM_3<const Task&, U32, U32>& cbk,
+TaskHandle parallel_for(const DELEGATE_CBK<void, const Task&, U32, U32>& cbk,
                         U32 count,
                         U32 partitionSize,
                         Task::TaskPriority priority = Task::TaskPriority::HIGH,

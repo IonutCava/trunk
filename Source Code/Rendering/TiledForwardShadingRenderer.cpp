@@ -55,7 +55,7 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target, LightPool& lig
     _lightCullComputeShader->SetMemoryBarrier(ShaderProgram::MemoryBarrierType::SHADER_BUFFER);
 }
 
-void TiledForwardShadingRenderer::render(const DELEGATE_CBK<>& renderCallback,
+void TiledForwardShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
                                  const SceneRenderState& sceneRenderState) {
     renderCallback();
 }

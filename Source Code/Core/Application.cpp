@@ -92,7 +92,7 @@ void Application::stop() {
         if (_kernel != nullptr) {
             Attorney::KernelApplication::shutdown(*_kernel);
         }
-        for (DELEGATE_CBK<>& cbk : _shutdownCallback) {
+        for (DELEGATE_CBK<void>& cbk : _shutdownCallback) {
             cbk();
         }
 
@@ -172,7 +172,7 @@ void Application::onChangeRenderResolution(U16 w, U16 h) const {
     Attorney::KernelApplication::onChangeRenderResolution(*_kernel, w, h);
 }
 
-void Application::mainThreadTask(const DELEGATE_CBK<>& task, bool wait) {
+void Application::mainThreadTask(const DELEGATE_CBK<void>& task, bool wait) {
     std::atomic_bool done = false;
     if (wait) {
         WriteLock w_lock(_taskLock);

@@ -150,13 +150,13 @@ void DeferredShadingRenderer::preRender(RenderTarget& target, LightPool& lightPo
     _lightTexture->end();
 }
 
-void DeferredShadingRenderer::render(const DELEGATE_CBK<>& renderCallback,
+void DeferredShadingRenderer::render(const DELEGATE_CBK<void>& renderCallback,
                                      const SceneRenderState& sceneRenderState) {
     firstPass(renderCallback, sceneRenderState);
     secondPass(sceneRenderState);
 }
 
-void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<>& renderCallback,
+void DeferredShadingRenderer::firstPass(const DELEGATE_CBK<void>& renderCallback,
                                         const SceneRenderState& sceneRenderState) {
     // Pass 1
     // Draw the geometry, saving parameters into the buffer

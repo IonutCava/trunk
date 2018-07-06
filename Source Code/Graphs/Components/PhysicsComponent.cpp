@@ -45,7 +45,7 @@ void PhysicsComponent::update(const U64 deltaTime) {
             _isUniformScaled = getScale().isUniform();
         }
 
-        for (DELEGATE_CBK<>& cbk : _transformCallbacks) {
+        for (DELEGATE_CBK<void>& cbk : _transformCallbacks) {
             cbk();
         }
         

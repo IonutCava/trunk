@@ -11,7 +11,7 @@ Resource::Resource(ResourceType type,
       _name(name),
       _resourceState(ResourceState::RES_CREATED)
 {
-    _loadingCallbacks.fill(DELEGATE_CBK<>());
+    _loadingCallbacks.fill(DELEGATE_CBK<void>());
 }
 Resource::Resource(ResourceType type,
                   const stringImpl& name,

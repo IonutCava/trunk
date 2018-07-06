@@ -27,5 +27,8 @@
     <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ThreadingTests.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\UnitTests\Engine-Tests\Tests\ScriptingTests.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

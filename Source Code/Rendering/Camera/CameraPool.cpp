@@ -14,8 +14,8 @@ namespace Divide {
 Camera* Camera::_activeCamera = nullptr;
 Camera* Camera::_previousCamera = nullptr;
 
-vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > Camera::_changeCameralisteners;
-vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > Camera::_updateCameralisteners;
+vectorImpl<DELEGATE_CBK<void, const Camera&> > Camera::_changeCameralisteners;
+vectorImpl<DELEGATE_CBK<void, const Camera&> > Camera::_updateCameralisteners;
 
 SharedLock Camera::_cameraPoolLock;
 Camera::CameraPool Camera::_cameraPool;
@@ -28,7 +28,7 @@ void Camera::update(const U64 deltaTime) {
 }
 
 void Camera::onUpdate(const Camera& cam) {
-    for (const DELEGATE_CBK_PARAM<const Camera&>& listener : _updateCameralisteners) {
+    for (const DELEGATE_CBK<void, const Camera&>& listener : _updateCameralisteners) {
         listener(cam);
     }
 }
@@ -45,7 +45,7 @@ void Camera::activeCamera(Camera* cam) {
     _activeCamera = cam;
     if (cam) {
         _activeCamera->setActiveInternal(true);
-        for (const DELEGATE_CBK_PARAM<Camera&>& listener : _changeCameralisteners) {
+        for (const DELEGATE_CBK<void, Camera&>& listener : _changeCameralisteners) {
             listener(*_activeCamera);
         }
     }
@@ -131,11 +131,11 @@ Camera* Camera::findCamera(U64 nameHash) {
     return nullptr;
 }
 
-void Camera::addChangeListener(const DELEGATE_CBK_PARAM<const Camera&>& f) {
+void Camera::addChangeListener(const DELEGATE_CBK<void, const Camera&>& f) {
     _changeCameralisteners.push_back(f);
 }
 
-void Camera::addUpdateListener(const DELEGATE_CBK_PARAM<const Camera&>& f) {
+void Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
     _updateCameralisteners.push_back(f);
 }
 

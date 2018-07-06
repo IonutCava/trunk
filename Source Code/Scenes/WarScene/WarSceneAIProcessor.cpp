@@ -25,8 +25,8 @@ namespace {
 
 vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
-DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;
-DELEGATE_CBK_PARAM_2<U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
+DELEGATE_CBK<void, U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;
+DELEGATE_CBK<void, U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
 
 WarSceneAIProcessor::WarSceneAIProcessor(AIType type, AIManager& parentManager)
     : AIProcessor(parentManager),

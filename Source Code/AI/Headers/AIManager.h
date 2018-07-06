@@ -94,7 +94,7 @@ class AIManager : public SceneComponent
     /// Remove a NavMesh
     void destroyNavMesh(AIEntity::PresetAgentRadius radius);
 
-    inline void setSceneCallback(const DELEGATE_CBK<>& callback) {
+    inline void setSceneCallback(const DELEGATE_CBK<void>& callback) {
         WriteLock w_lock(_updateMutex);
         _sceneCallback = callback;
     }
@@ -140,7 +140,7 @@ class AIManager : public SceneComponent
     AITeamMap _aiTeams;
     mutable SharedLock _updateMutex;
     mutable SharedLock _navMeshMutex;
-    DELEGATE_CBK<> _sceneCallback;
+    DELEGATE_CBK<void> _sceneCallback;
 
 };
 

@@ -50,14 +50,14 @@ class DeferredShadingRenderer : public Renderer {
 
     void preRender(RenderTarget& target, LightPool& lightPool) override;
 
-    void render(const DELEGATE_CBK<>& renderCallback,
+    void render(const DELEGATE_CBK<void>& renderCallback,
                 const SceneRenderState& sceneRenderState) override;
 
     void toggleDebugView();
     void updateResolution(U16 width, U16 height) override;
 
    private:
-    void firstPass(const DELEGATE_CBK<>& renderCallback,
+    void firstPass(const DELEGATE_CBK<void>& renderCallback,
                    const SceneRenderState& sceneRenderState);
     void secondPass(const SceneRenderState& sceneRenderState);
 

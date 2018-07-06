@@ -371,8 +371,8 @@ class Camera : public Resource {
        /// Informs all listeners of a new event
        static void onUpdate(const Camera& cam);
 
-       static void addChangeListener(const DELEGATE_CBK_PARAM<const Camera& /*new camera*/>& f);
-       static void addUpdateListener(const DELEGATE_CBK_PARAM<const Camera& /*updated camera*/>& f);
+       static void addChangeListener(const DELEGATE_CBK<void, const Camera& /*new camera*/>& f);
+       static void addUpdateListener(const DELEGATE_CBK<void, const Camera& /*updated camera*/>& f);
 
     private:
       typedef hashMapImpl<U64, Camera*> CameraPool;
@@ -380,8 +380,8 @@ class Camera : public Resource {
 
       static Camera* _activeCamera;
       static Camera* _previousCamera;
-      static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _changeCameralisteners;
-      static vectorImpl<DELEGATE_CBK_PARAM<const Camera&> > _updateCameralisteners;
+      static vectorImpl<DELEGATE_CBK<void, const Camera&> > _changeCameralisteners;
+      static vectorImpl<DELEGATE_CBK<void, const Camera&> > _updateCameralisteners;
 
       static CameraPool _cameraPool;
       static SharedLock _cameraPoolLock;

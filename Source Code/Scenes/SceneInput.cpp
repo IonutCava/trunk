@@ -126,11 +126,11 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
                                  const InputParams& params,
                                  bool onPress)
 {
-    const DELEGATE_CBK_PARAM<InputParams>& lAlt  = (onPress ? cbks._onLAltPressAction  : cbks._onLAltReleaseAction);
-    const DELEGATE_CBK_PARAM<InputParams>& rAlt  = (onPress ? cbks._onRAltPressAction  : cbks._onRAltReleaseAction);
-    const DELEGATE_CBK_PARAM<InputParams>& lCtrl = (onPress ? cbks._onLCtrlPressAction : cbks._onLCtrlReleaseAction);
-    const DELEGATE_CBK_PARAM<InputParams>& rCtrl = (onPress ? cbks._onRCtrlPressAction : cbks._onRCtrlReleaseAction);
-    const DELEGATE_CBK_PARAM<InputParams>& noMod = (onPress ? cbks._onPressAction      : cbks._onReleaseAction);
+    const DELEGATE_CBK<void, InputParams>& lAlt  = (onPress ? cbks._onLAltPressAction  : cbks._onLAltReleaseAction);
+    const DELEGATE_CBK<void, InputParams>& rAlt  = (onPress ? cbks._onRAltPressAction  : cbks._onRAltReleaseAction);
+    const DELEGATE_CBK<void, InputParams>& lCtrl = (onPress ? cbks._onLCtrlPressAction : cbks._onLCtrlReleaseAction);
+    const DELEGATE_CBK<void, InputParams>& rCtrl = (onPress ? cbks._onRCtrlPressAction : cbks._onRCtrlReleaseAction);
+    const DELEGATE_CBK<void, InputParams>& noMod = (onPress ? cbks._onPressAction      : cbks._onReleaseAction);
 
     if (getKeyState(params._deviceIndex, Input::KeyCode::KC_LMENU) == Input::InputState::PRESSED && lAlt) {
         lAlt(params);

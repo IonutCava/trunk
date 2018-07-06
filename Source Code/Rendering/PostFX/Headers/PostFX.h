@@ -86,11 +86,11 @@ DEFINE_SINGLETON(PostFX)
     // set durationMS to instantly set fade colour
     // optionally, set a callback when fade out completes
     // waitDurationMS = how much time to wait vefore calling the completeion callback after fade out completes
-    void setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<> onComplete = DELEGATE_CBK<>());
+    void setFadeOut(const vec4<U8>& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
     // clear any fading effect currently active over the specified time interval
     // set durationMS to instantly clear the fade effect
     // optionally, set a callback when fade in completes
-    void setFadeIn(D64 durationMS, DELEGATE_CBK<> onComplete = DELEGATE_CBK<>());
+    void setFadeIn(D64 durationMS, DELEGATE_CBK<void> onComplete = DELEGATE_CBK<void>());
     // fade out to specified colour and back again within the given time slice
     // if duration is 0.0, nothing happens
     // waitDurationMS is the ammount of time to wait before fading back in
@@ -126,8 +126,8 @@ DEFINE_SINGLETON(PostFX)
     D64 _fadeWaitDurationMS;
     bool _fadeOut;
     bool _fadeActive;
-    DELEGATE_CBK<> _fadeOutComplete;
-    DELEGATE_CBK<> _fadeInComplete;
+    DELEGATE_CBK<void> _fadeOutComplete;
+    DELEGATE_CBK<void> _fadeInComplete;
 
     FilterStack _filterStackCount;
 

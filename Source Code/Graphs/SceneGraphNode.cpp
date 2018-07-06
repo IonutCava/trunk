@@ -602,7 +602,7 @@ void SceneGraphNode::invalidateRelationshipCache() {
     }
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<SceneGraphNode&>& callback) {
+void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&>& callback) {
     ReadLock r_lock(_childLock);
     //Using childCount instead of a range-based for loops means that we can skip child null check
     //as childCount should always be updated to reflect the actual number of node children
@@ -612,7 +612,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<SceneGraphNode&>& cal
     }
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<const SceneGraphNode&>& callback) const {
+void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&>& callback) const {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     for (U32 i = 0; i < childCount; ++i) {
@@ -620,7 +620,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM<const SceneGraphNode&
     }
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGraphNode&, bool>& callback) {
+bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&>& callback) {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     for (U32 i = 0; i < childCount; ++i) {
@@ -632,7 +632,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<SceneGra
     return true;
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<const SceneGraphNode&, bool>& callback) const {
+bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&>& callback) const {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     for (U32 i = 0; i < childCount; ++i) {
@@ -644,7 +644,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM<const Sc
     return true;
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32>& callback, U32 start, U32 end) {
+void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     CLAMP<U32>(end, 0, childCount);
@@ -655,7 +655,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I3
     }
 }
 
-void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
+void SceneGraphNode::forEachChild(const DELEGATE_CBK<void, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     CLAMP<U32>(end, 0, childCount);
@@ -666,7 +666,7 @@ void SceneGraphNode::forEachChild(const DELEGATE_CBK_PARAM_2<const SceneGraphNod
     }
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) {
+bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, SceneGraphNode&, I32>& callback, U32 start, U32 end) {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     CLAMP<U32>(end, 0, childCount);
@@ -681,7 +681,7 @@ bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<SceneG
     return true;
 }
 
-bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK_PARAM_2<const SceneGraphNode&, I32, bool>& callback, U32 start, U32 end) const {
+bool SceneGraphNode::forEachChildInterruptible(const DELEGATE_CBK<bool, const SceneGraphNode&, I32>& callback, U32 start, U32 end) const {
     ReadLock r_lock(_childLock);
     U32 childCount = _childCount;
     CLAMP<U32>(end, 0, childCount);

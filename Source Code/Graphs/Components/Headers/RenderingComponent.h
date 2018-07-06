@@ -79,7 +79,7 @@ struct RenderCbkParams {
     U32 _passIndex;
 };
 
-typedef DELEGATE_CBK_PARAM<RenderCbkParams&> RenderCallback;
+typedef DELEGATE_CBK<void, RenderCbkParams&> RenderCallback;
 
 class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompRenderPass;

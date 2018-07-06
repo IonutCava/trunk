@@ -40,18 +40,18 @@ namespace Divide {
 // This is the callback equivalent of PressReleaseAction with IDs resolved
 struct PressReleaseActionCbks {
     // key only
-    DELEGATE_CBK_PARAM<InputParams> _onPressAction;
-    DELEGATE_CBK_PARAM<InputParams> _onReleaseAction;
+    DELEGATE_CBK<void, InputParams> _onPressAction;
+    DELEGATE_CBK<void, InputParams> _onReleaseAction;
 
-    DELEGATE_CBK_PARAM<InputParams> _onLCtrlPressAction;
-    DELEGATE_CBK_PARAM<InputParams> _onLCtrlReleaseAction;
-    DELEGATE_CBK_PARAM<InputParams> _onRCtrlPressAction;
-    DELEGATE_CBK_PARAM<InputParams> _onRCtrlReleaseAction;
+    DELEGATE_CBK<void, InputParams> _onLCtrlPressAction;
+    DELEGATE_CBK<void, InputParams> _onLCtrlReleaseAction;
+    DELEGATE_CBK<void, InputParams> _onRCtrlPressAction;
+    DELEGATE_CBK<void, InputParams> _onRCtrlReleaseAction;
 
-    DELEGATE_CBK_PARAM<InputParams> _onLAltPressAction;
-    DELEGATE_CBK_PARAM<InputParams> _onLAltReleaseAction;
-    DELEGATE_CBK_PARAM<InputParams> _onRAltPressAction;
-    DELEGATE_CBK_PARAM<InputParams> _onRAltReleaseAction;
+    DELEGATE_CBK<void, InputParams> _onLAltPressAction;
+    DELEGATE_CBK<void, InputParams> _onLAltReleaseAction;
+    DELEGATE_CBK<void, InputParams> _onRAltPressAction;
+    DELEGATE_CBK<void, InputParams> _onRAltReleaseAction;
 
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };

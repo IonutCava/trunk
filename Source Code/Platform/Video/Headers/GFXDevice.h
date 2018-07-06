@@ -223,8 +223,7 @@ public:  // GPU interface
     void toggleFullScreen();
     void increaseResolution();
     void decreaseResolution();
-    bool loadInContext(const CurrentContext& context,
-        const DELEGATE_CBK_PARAM<const Task&>& callback);
+    bool loadInContext(const CurrentContext& context, const DELEGATE_CBK<void, const Task&>& callback);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);
@@ -458,7 +457,7 @@ protected:
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
 
-    typedef std::pair<I64, DELEGATE_CBK<>> GUID2DCbk;
+    typedef std::pair<I64, DELEGATE_CBK<void>> GUID2DCbk;
     mutable SharedLock _2DRenderQueueLock;
     vectorImpl<std::pair<U32, GUID2DCbk > > _2dRenderQueue;
 
@@ -478,7 +477,7 @@ protected:
     vectorImpl<RenderPackageQueue> _renderQueues;
 
     mutable SharedLock _GFXLoadQueueLock;
-    std::deque<DELEGATE_CBK_PARAM<const Task&>> _GFXLoadQueue;
+    std::deque<DELEGATE_CBK<void, const Task&>> _GFXLoadQueue;
 
     ShaderBuffer* _gfxDataBuffer;
     GenericDrawCommand _defaultDrawCmd;

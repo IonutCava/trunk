@@ -45,7 +45,7 @@ namespace Divide {
 class GPUState : private NonCopyable {
    public:
     typedef boost::lockfree::spsc_queue<
-        DELEGATE_CBK<>, boost::lockfree::capacity<15> > LoadQueue;
+        DELEGATE_CBK<void>, boost::lockfree::capacity<15> > LoadQueue;
 
     struct GPUVideoMode {
         // width x height
