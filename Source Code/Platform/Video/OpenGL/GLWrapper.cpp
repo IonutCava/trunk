@@ -917,20 +917,6 @@ void GL_API::drawIMGUI(ImDrawData* data) {
     }
 }
 
-void GL_API::drawCEGUI(const GFX::DrawCEGUICommand& ceguiCommand) {
-    CEGUI::GUIContext* ctx = ceguiCommand._context;
-    CEGUI::TextureTarget* tex = ceguiCommand._textureTarget;
-
-    if (ctx && tex) {
-        _GUIGLrenderer->beginRendering();
-
-        tex->clear();
-        ctx->draw();
-
-        _GUIGLrenderer->endRendering();
-    }
-}
-
 bool GL_API::switchWindow(I64 windowGUID) {
     if (windowGUID != -1 && windowGUID != s_activeWindowGUID) {
         DisplayWindow& window = _context.parent().platformContext().app().windowManager().getWindow(windowGUID);
@@ -1136,10 +1122,6 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
 
                 GFX::DrawTextCommand* crtCmd = static_cast<GFX::DrawTextCommand*>(cmd.get());
                 drawText(crtCmd->_batch);
-            }break;
-            case GFX::CommandType::DRAW_CEGUI: {
-                GFX::DrawCEGUICommand* crtCmd = static_cast<GFX::DrawCEGUICommand*>(cmd.get());
-                drawCEGUI(*crtCmd);
             }break;
             case GFX::CommandType::SWITCH_WINDOW: {
                 GFX::SwitchWindowCommand* crtCmd = static_cast<GFX::SwitchWindowCommand*>(cmd.get());

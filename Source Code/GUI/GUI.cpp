@@ -139,20 +139,22 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
     if (parent().platformContext().config().gui.cegui.enabled) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
+            CEGUI::Renderer* guiRenderer(CEGUI::System::getSingleton().getRenderer());
+            guiRenderer->beginRendering();
+
+            _ceguiRenderTextureTarget->clear();
+            getCEGUIContext().draw();
+
+            guiRenderer->endRendering();
+
             GFX::SetBlendCommand blendCmd;
             blendCmd._enabled = true;
             blendCmd._blendProperties = BlendingProperties {
-                BlendProperty::SRC_ALPHA,
+                BlendProperty::ONE,
                 BlendProperty::INV_SRC_ALPHA
             };
             GFX::SetBlend(bufferInOut, blendCmd);
-
-            GFX::DrawCEGUICommand drawCEGUICmd;
-            drawCEGUICmd._context = &getCEGUIContext();
-            drawCEGUICmd._textureTarget = _ceguiRenderTextureTarget;
-            GFX::AddDrawCEGUICommand(bufferInOut, drawCEGUICmd);
-
-            context.drawFullscreenTexture(_ceguiTextureData, bufferInOut);
+            context.drawFullscreenTexture(getCEGUIRenderTextureData(), bufferInOut);
         }
     }
 }
@@ -179,7 +181,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
         return false;
     }
 
-    _console = MemoryManager_NEW GUIConsole(context, cache);
+    _console = MemoryManager_NEW GUIConsole(*this, context, cache);
 
     if (Config::Build::IS_DEBUG_BUILD) {
         CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
@@ -531,10 +533,13 @@ const CEGUI::GUIContext& GUI::getCEGUIContext() const {
 }
 
 TextureData GUI::getCEGUIRenderTextureData() const {
-    const GFXDevice& gfx = _context->parent().platformContext().gfx();
+    TextureData ret;
 
-    TextureData ret(TextureType::TEXTURE_2D,
-                    gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()));
+    if (_ceguiRenderTextureTarget != nullptr) {
+        const GFXDevice& gfx = _context->parent().platformContext().gfx();
+        ret.setHandle(gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()));
+    }
+
     return ret;
 }
 };

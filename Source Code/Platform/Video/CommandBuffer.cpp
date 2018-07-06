@@ -62,9 +62,6 @@ void AddDrawCommands(CommandBuffer& buffer, const DrawCommand& cmd) {
 void AddDrawTextCommand(CommandBuffer& buffer, const DrawTextCommand& cmd) {
     buffer.add(cmd);
 }
-void AddDrawCEGUICommand(CommandBuffer& buffer, const DrawCEGUICommand& cmd) {
-    buffer.add(cmd);
-}
 void AddDrawIMGUICommand(CommandBuffer& buffer, const DrawIMGUICommand& cmd) {
     buffer.add(cmd);
 }
@@ -102,7 +99,6 @@ void CommandBuffer::batch() {
             case GFX::CommandType::DISPATCH_COMPUTE:
             case GFX::CommandType::DRAW_TEXT:
             case GFX::CommandType::DRAW_COMMANDS:
-            case GFX::CommandType::DRAW_CEGUI:
             case GFX::CommandType::DRAW_IMGUI:
             case GFX::CommandType::BIND_DESCRIPTOR_SETS:
             case GFX::CommandType::BIND_PIPELINE:
@@ -282,8 +278,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::BLIT_RT: {
                     needsDescriptorSets = true;
                 }break;
-                case GFX::CommandType::SWITCH_WINDOW:
-                case GFX::CommandType::DRAW_CEGUI: {
+                case GFX::CommandType::SWITCH_WINDOW: {
                     // no requirements yet
                 }break;
             };
@@ -380,9 +375,6 @@ void CommandBuffer::toString(const std::shared_ptr<GFX::Command>& cmd, I32& crtI
         }break;
         case GFX::CommandType::DRAW_COMMANDS: {
             append(out, "DRAW_COMMANDS", crtIndent);
-        }break;
-        case GFX::CommandType::DRAW_CEGUI: {
-            append(out, "DRAW_CEGUI", crtIndent);
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             append(out, "DRAW_IMGUI", crtIndent);

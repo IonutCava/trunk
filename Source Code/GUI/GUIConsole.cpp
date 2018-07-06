@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "Headers/GUI.h"
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
@@ -28,8 +29,9 @@ namespace {
     constexpr U32 _CEGUI_MAX_CONSOLE_ENTRIES = Config::Build::IS_DEBUG_BUILD ? 128 : 512;
 };
 
-GUIConsole::GUIConsole(PlatformContext& context, ResourceCache& cache)
+GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache& cache)
     : PlatformContextComponent(context),
+      _parent(parent),
       _init(false),
       _closing(false),
       _editBox(nullptr),
@@ -56,7 +58,7 @@ GUIConsole::~GUIConsole()
     if (_consoleWindow) {
         setVisible(false);
         _init = false;
-        CEGUI_DEFAULT_CTX.getRootWindow()->removeChild(_consoleWindow);
+        _parent.getCEGUIContext().getRootWindow()->removeChild(_consoleWindow);
         MemoryManager::DELETE(_consoleWindow);
     }
     MemoryManager::DELETE(_cmdParser);
@@ -74,7 +76,7 @@ void GUIConsole::CreateCEGUIWindow() {
 
     if (_consoleWindow) {
         // Add the Window to the GUI Root Sheet
-        CEGUI_DEFAULT_CTX.getRootWindow()->addChild(_consoleWindow);
+        _parent.getCEGUIContext().getRootWindow()->addChild(_consoleWindow);
         _outputWindow = static_cast<CEGUI::Listbox*>(_consoleWindow->getChild("ChatBox"));
         _editBox = static_cast<CEGUI::Editbox*>(_consoleWindow->getChild("EditBox"));
         // Now register the handlers for the events (Clicking, typing, etc)

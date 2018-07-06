@@ -65,7 +65,6 @@ enum class CommandType : U8 {
     DRAW_COMMANDS,
     DRAW_TEXT,
     DRAW_IMGUI,
-    DRAW_CEGUI,
     DISPATCH_COMPUTE,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
@@ -236,15 +235,6 @@ struct DrawTextCommand : Command {
     }
 
     TextElementBatch _batch;
-};
-
-struct DrawCEGUICommand : Command {
-    DrawCEGUICommand() : Command(CommandType::DRAW_CEGUI)
-    {
-    }
-
-    CEGUI::GUIContext* _context = nullptr;
-    CEGUI::TextureTarget* _textureTarget = nullptr;
 };
 
 struct DrawIMGUICommand : Command {

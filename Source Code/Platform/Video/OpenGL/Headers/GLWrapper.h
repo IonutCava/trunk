@@ -118,7 +118,6 @@ protected:
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextElementBatch& batch);
     void drawIMGUI(ImDrawData* data);
-    void drawCEGUI(const GFX::DrawCEGUICommand& ceguiCommand);
 
     bool draw(const GenericDrawCommand& cmd);
 

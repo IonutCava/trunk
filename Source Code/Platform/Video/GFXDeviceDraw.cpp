@@ -308,7 +308,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawFullscreenTexture(TextureData data, GFX::CommandBuffer& bufferInOut) const {
-    drawTextureInViewport(data, _gpuBlock._data._ViewPort, bufferInOut);
+    drawTextureInViewport(data, _baseViewport, bufferInOut);
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const vec4<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {

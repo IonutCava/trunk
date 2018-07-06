@@ -56,7 +56,7 @@ class GUIConsoleCommandParser;
 /// GUIConsole implementation, CEGUI based, as in the practical tutorial series
 class GUIConsole : public PlatformContextComponent {
    public:
-    explicit GUIConsole(PlatformContext& context, ResourceCache& cache);
+    explicit GUIConsole(GUI& parent, PlatformContext& context, ResourceCache& cache);
     ~GUIConsole();
 
     /// Hide or show the console
@@ -85,6 +85,7 @@ class GUIConsole : public PlatformContextComponent {
     void OutputText(const Console::OutputEntry& text);
 
    protected:
+    GUI& _parent;
     /// used to check if the console is ready
     bool _init;
     bool _closing;

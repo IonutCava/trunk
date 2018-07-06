@@ -165,15 +165,18 @@ void OpenGL3StateChangeWrapper::reset()
     d_scissorParams.reset();
     d_bindBufferParams.reset();
 
+    if (d_defaultStateHashScissor == 0) {
+        Divide::RenderStateBlock defaultState;
+        defaultState.setCullMode(Divide::CullMode::NONE);
+        defaultState.setFillMode(Divide::FillMode::SOLID);
+        defaultState.setZRead(false);
 
-    Divide::RenderStateBlock defaultState;
-    defaultState.setCullMode(Divide::CullMode::NONE);
-    defaultState.setFillMode(Divide::FillMode::SOLID);
-    defaultState.setZRead(false);
-    defaultState.setScissorTest(true);
-    d_defaultStateHashScissor = defaultState.getHash();
-    defaultState.setScissorTest(false);
-    d_defaultStateHashNoScissor = defaultState.getHash();
+        defaultState.setScissorTest(true);
+        d_defaultStateHashScissor = defaultState.getHash();
+
+        defaultState.setScissorTest(false);
+        d_defaultStateHashNoScissor = defaultState.getHash();
+    }
 }
 
 void OpenGL3StateChangeWrapper::bindVertexArray(GLuint vertexArray)
