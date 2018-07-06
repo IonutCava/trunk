@@ -151,18 +151,16 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
     size_t dataSize = nverts * sizeof(FONSvert);
     { //Update
         if (nverts > gl->max_verts[gl->current_vbo]) {
-            glNamedBufferData(gl->glfons_vboID[gl->current_vbo], dataSize, verts, GL_STREAM_DRAW);
             gl->max_verts[gl->current_vbo] = nverts;
-        } else {
-            glNamedBufferSubData(gl->glfons_vboID[gl->current_vbo], 0, dataSize, verts);
         }
+        glNamedBufferData(gl->glfons_vboID[gl->current_vbo], dataSize, verts, GL_STREAM_DRAW);
     }
     { //Draw
         Divide::GL_API::bindTexture(0, gl->tex);
         Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
         glVertexArrayVertexBuffer(gl->glfons_vaoID, 0, gl->glfons_vboID[gl->current_vbo], 0, sizeof(FONSvert));
         glDrawArrays(GL_TRIANGLES, 0, nverts);
-        glInvalidateBufferSubData(gl->glfons_vboID[gl->current_vbo], 0, dataSize);
+        glInvalidateBufferData(gl->glfons_vboID[gl->current_vbo]);
     }
 
     gl->current_vbo = (gl->current_vbo + 1) % GLFONSBufferCount;
