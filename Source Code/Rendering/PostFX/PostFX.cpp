@@ -42,7 +42,7 @@ PostFX::~PostFX()
     _preRenderBatch.destroy();
 }
 
-void PostFX::init(const vec2<U16>& resolution) {
+void PostFX::init() {
     Console::printfn(Locale::get(_ID("START_POST_FX")));
     ParamHandler& par = ParamHandler::getInstance();
     _gfx = &GFX_DEVICE;
@@ -110,8 +110,6 @@ void PostFX::init(const vec2<U16>& resolution) {
     _tickInterval = 1.0f / 24.0f;
     _randomNoiseCoefficient = 0;
     _randomFlashCoefficient = 0;
-
-    updateResolution(resolution.width, resolution.height);
 }
 
 void PostFX::updateResolution(U16 width, U16 height) {

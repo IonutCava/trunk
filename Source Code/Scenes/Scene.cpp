@@ -394,6 +394,9 @@ bool Scene::load(const stringImpl& name, GUI* const guiInterface) {
         renderState().getCamera().setEye(vec3<F32>(0, 50, 0));
     }
 
+    renderState().getCamera().setMoveSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.move"));
+    renderState().getCamera().setTurnSpeedFactor(_paramHandler.getParam<F32>("options.cameraSpeed.turn"));
+
     // Create an AI thread, but start it only if needed
     Kernel& kernel = Application::getInstance().getKernel();
     _aiTask = kernel.AddTask(

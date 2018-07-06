@@ -51,8 +51,9 @@ enum class WindowEvent : U32 {
     GAINED_FOCUS = 6,
     RESIZED_INTERNAL = 7,
     RESIZED_EXTERNAL = 8,
-    MOVED = 9,
-    APP_LOOP = 10
+    RESOLUTION_CHANGED = 9,
+    MOVED = 10,
+    APP_LOOP = 11
 };
 
 enum class RenderAPI : U32;

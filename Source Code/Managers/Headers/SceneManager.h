@@ -133,7 +133,7 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     inline void idle() { _activeScene->idle(); }
     bool unloadCurrentScene();
-    bool load(const stringImpl& name, const vec2<U16>& resolution);
+    bool load(const stringImpl& name);
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(*_activeScene);

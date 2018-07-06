@@ -97,11 +97,12 @@ class CameraManager : private NonCopyable, public FrameListener {
         setActiveCamera(_cameraStack.top());
     }
 
+    Camera* findCamera(ULL nameHash);
+
    protected:
     /// This is inherited from FrameListener and is used to update the view
     /// matrix every frame
     bool frameStarted(const FrameEvent& evt);
-    Camera* findCamera(ULL nameHash);
     void setActiveCamera(Camera* cam);
     void addNewCamera(const stringImpl& cameraName, Camera* const camera);
 

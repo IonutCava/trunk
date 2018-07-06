@@ -24,7 +24,7 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye)
       _cameraMoveSpeed(35.0f),
       _cameraZoomSpeed(35.0f),
       _cameraTurnSpeed(35.0f),
-      _aspectRatio(1.33f),
+      _aspectRatio(1.77f),
       _verticalFoV(60.0f),
       _camIOD(0.5f),
       _type(type)
@@ -43,6 +43,7 @@ Camera::Camera(const CameraType& type, const vec3<F32>& eye)
     _reflectedViewMatrix.identity();
     _yawFixed = false;
     _reflectionRendering = false;
+    _zPlanes.set(0.1f, 1.0f);
     _frustum = MemoryManager_NEW Frustum(*this);
 }
 
@@ -81,14 +82,12 @@ void Camera::updateProjection(bool force) {
         if (_projectionDirty) {
             _projectionMatrix.set(
                 _isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes)
-                               : GFX_DEVICE.setProjection(
-                                     _verticalFoV, _aspectRatio, _zPlanes));
+                               : GFX_DEVICE.setProjection(_verticalFoV, _aspectRatio, _zPlanes));
             _projectionDirty = false;
             _frustumDirty = true;
         } else {
             _isOrthoCamera ? GFX_DEVICE.setProjection(_orthoRect, _zPlanes)
-                           : GFX_DEVICE.setProjection(_verticalFoV,
-                                                      _aspectRatio, _zPlanes);
+                           : GFX_DEVICE.setProjection(_verticalFoV,_aspectRatio, _zPlanes);
         }
     }
 }

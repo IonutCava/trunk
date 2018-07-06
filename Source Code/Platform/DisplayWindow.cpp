@@ -259,6 +259,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
 
     if (hidden()) {
         SDL_ShowWindow(_mainWindow);
+        hidden(false);
     }
 }
 

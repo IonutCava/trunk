@@ -187,6 +187,13 @@ void WindowManager::handleWindowEvent(WindowEvent event, I64 winGUID, I32 data1,
         } break;
         case WindowEvent::RESIZED_EXTERNAL: {
         } break;
+        case WindowEvent::RESOLUTION_CHANGED: {
+            // Only if rendering window
+            if (_activeWindowGUID == winGUID) {
+                Application::getInstance().onChangeRenderResolution(to_ushort(data1),
+                                                                    to_ushort(data2));
+            }
+        } break;
         case WindowEvent::APP_LOOP: {
             for (DisplayWindow& win : _windows) {
                 win.update();

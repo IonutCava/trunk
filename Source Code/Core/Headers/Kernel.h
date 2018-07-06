@@ -151,6 +151,7 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     bool setCursorPosition(I32 x, I32 y) const;
     /// Update all engine components that depend on the current screen size
     void onChangeWindowSize(U16 w, U16 h);
+    void onChangeRenderResolution(U16 w, U16 h) const;
 
    private:
     Application& _APP;
@@ -168,7 +169,6 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     SceneManager& _sceneMgr;
     /// Keep track of all active cameras used by the engine
     std::unique_ptr<CameraManager> _cameraMgr;
-    Camera* _mainCamera;
 
     static LoopTimingData _timingData;
     ThreadPool _mainTaskPool;
@@ -199,6 +199,10 @@ namespace Attorney {
 
         static void onChangeWindowSize(Kernel& kernel, U16 w, U16 h) {
             kernel.onChangeWindowSize(w, h);
+        }
+
+        static void onChangeRenderResolution(Kernel& kernel, U16 w, U16 h) {
+            kernel.onChangeRenderResolution(w, h);
         }
 
         static void warmup(Kernel& kernel) {

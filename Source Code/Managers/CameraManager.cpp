@@ -115,8 +115,10 @@ void CameraManager::addNewCamera(const stringImpl& cameraName,
 
 Camera* CameraManager::findCamera(ULL nameHash) {
     const CameraPool::const_iterator& it = _cameraPool.find(nameHash);
-    assert(it != std::end(_cameraPool));
+    if(it != std::end(_cameraPool)) {
+        return it->second;
+    }
 
-    return it->second;
+    return nullptr;
 }
 };

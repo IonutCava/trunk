@@ -91,8 +91,7 @@ bool SceneManager::init(GUI* const gui) {
     return true;
 }
 
-bool SceneManager::load(const stringImpl& sceneName,
-                        const vec2<U16>& resolution) {
+bool SceneManager::load(const stringImpl& sceneName) {
     assert(_init == true && _GUI != nullptr);
     Console::printfn(Locale::get(_ID("SCENE_MANAGER_LOAD_SCENE_DATA")));
     XML::loadScene(sceneName, *this);

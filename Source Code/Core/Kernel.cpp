@@ -52,8 +52,6 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
       _sceneMgr(SceneManager::getInstance())  // Scene Manager
 
 {
-    _mainCamera = nullptr;
-
     ResourceCache::createInstance();
     FrameListenerManager::createInstance();
     // General light management and rendering (individual lights are handled by each scene)
@@ -441,7 +439,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
-    initError = _GFX.initRenderingAPI(_argc, _argv);
+
+    // Match initial rendering resolution to window/screen size
+    const DisplayWindow& mainWindow  = winManager.getActiveWindow();
+
+    initError = _GFX.initRenderingAPI(_argc, _argv, startFullScreen ? mainWindow.getDimensions(WindowType::FULLSCREEN)
+                                                                    : mainWindow.getDimensions(WindowType::WINDOW));
+
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -456,24 +460,18 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     RenderPassManager::getInstance().addRenderPass("shadowPass", 1, { RenderStage::SHADOW });
     RenderPassManager::getInstance().addRenderPass("displayStage", 2, { RenderStage::Z_PRE_PASS, RenderStage::DISPLAY });
 
-    DisplayWindow& mainWindow = winManager.getActiveWindow();
-    vec2<U16> resolution = initRes[to_const_uint(mainWindow.type())];
-    F32 aspectRatio = to_float(resolution.width) / to_float(resolution.height);
-
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
-    _mainCamera = _cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY);
-    _mainCamera->setProjection(aspectRatio,
-                               par.getParam<F32>("rendering.verticalFOV"),
-                               vec2<F32>(par.getParam<F32>("rendering.zNear"),
-                                         par.getParam<F32>("rendering.zFar")));
-    _mainCamera->setFixedYawAxis(true);
-    // As soon as a camera is added to the camera manager, the manager is
-    // responsible for cleaning it up
-    _cameraMgr->pushActiveCamera(_mainCamera);
+
+    // As soon as a camera is added to the camera manager, the manager is responsible for cleaning it up
+    _cameraMgr->pushActiveCamera(_cameraMgr->createCamera("defaultCamera", Camera::CameraType::FREE_FLY));
+    _cameraMgr->getActiveCamera().setFixedYawAxis(true);
+
     // We start of with a forward plus renderer
     _sceneMgr.setRenderer(RendererType::RENDERER_FORWARD_PLUS);
 
-    winManager.getActiveWindow().type(WindowType::SPLASH);
+    DisplayWindow& window = winManager.getActiveWindow();
+    window.type(WindowType::SPLASH);
+    winManager.handleWindowEvent(WindowEvent::APP_LOOP, -1, -1, -1);
     // Load and render the splash screen
     _GFX.beginFrame();
     GUISplash("divideLogo.jpg", initRes[to_const_uint(WindowType::SPLASH)]).render();
@@ -500,10 +498,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     LightManager::getInstance().init();
 
     // Initialize GUI with our current resolution
-    _GUI.init(resolution);
+    _GUI.init();
     _sceneMgr.init(&_GUI);
 
-    if (!_sceneMgr.load(startupScene, resolution)) {  //< Load the scene
+    if (!_sceneMgr.load(startupScene)) {  //< Load the scene
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
@@ -513,9 +511,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                          startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
-
-    _mainCamera->setMoveSpeedFactor(par.getParam<F32>("options.cameraSpeed.move"));
-    _mainCamera->setTurnSpeedFactor(par.getParam<F32>("options.cameraSpeed.turn"));
 
     Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
@@ -574,9 +569,19 @@ void Kernel::onChangeWindowSize(U16 w, U16 h) {
     }
 
     CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+}
 
-    if (_mainCamera) {
-        _mainCamera->setAspectRatio(to_float(w) / to_float(h));
+void Kernel::onChangeRenderResolution(U16 w, U16 h) const {
+    Attorney::GFXDeviceKernel::onChangeRenderResolution(w, h);
+
+
+    CEGUI::System::getSingleton().notifyDisplaySizeChanged(CEGUI::Sizef(w, h));
+    Camera* mainCamera = _cameraMgr->findCamera(_ID_RT("defaultCamera"));
+    if (mainCamera) {
+        const ParamHandler& par = ParamHandler::getInstance();
+        mainCamera->setProjection(to_float(w) / to_float(h),
+                                  par.getParam<F32>("rendering.verticalFOV"),
+                                  vec2<F32>(par.getParam<F32>("rendering.zNear")));
     }
 }
 

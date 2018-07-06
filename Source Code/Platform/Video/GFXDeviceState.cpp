@@ -24,7 +24,7 @@ namespace {
 
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
-ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
+ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
     g_shaderBuffersPerStageCount.fill(1);
     g_shaderBuffersPerStageCount[to_const_uint(RenderStage::REFLECTION)] = 6;
     g_shaderBuffersPerStageCount[to_const_uint(RenderStage::SHADOW)] = 6;
@@ -102,14 +102,9 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         }
     }
 
-    WindowManager& winManager = Application::getInstance().getWindowManager();
-    const vec2<U16>& resolution = winManager.getActiveWindow().getDimensions();
-    setBaseViewport(vec4<I32>(0, 0, resolution.width, resolution.height));
-
     // Utility cameras
     CameraManager& cameraMgr = Application::getInstance().getKernel().getCameraMgr();
     _2DCamera = cameraMgr.createCamera("2DRenderCamera", Camera::CameraType::FREE_FLY);
-    _2DCamera->setProjection(vec4<F32>(0.0f, to_float(resolution.width), 0.0f, to_float(resolution.height)), vec2<F32>(-1, 1));
     _2DCamera->lockView(true);
     _cubeCamera = cameraMgr.createCamera("_gfxCubeCamera", Camera::CameraType::FREE_FLY);
     _dualParaboloidCamera = cameraMgr.createCamera("_gfxParaboloidCamera", Camera::CameraType::FREE_FLY);
@@ -183,9 +178,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->addAttachment(hiZDescriptor,  TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->create(resolution.width, resolution.height);
-    Texture* hizTexture = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    hizTexture->lockAutomaticMipMapGeneration(true);
 
     // If we enabled anaglyph rendering, we need a second target, identical to the screen target
     // used to render the scene at an offset
@@ -194,9 +186,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->addAttachment(hiZDescriptor, TextureDescriptor::AttachmentType::Depth);
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
-    _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->create(resolution.width, resolution.height);
-    hizTexture = _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
-    hizTexture->lockAutomaticMipMapGeneration(true);
 
     // Initialized our HierarchicalZ construction shader (takes a depth
     // attachment and down-samples it for every mip level)
@@ -204,8 +193,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _HIZCullProgram = CreateResource<ShaderProgram>(ResourceDescriptor("HiZOcclusionCull"));
     _displayShader = CreateResource<ShaderProgram>(ResourceDescriptor("display"));
 
-
-    _gpuBlock._data._invScreenDimension.xy(1.0f / resolution.width, 1.0f / resolution.height);
     // Store our target z distances
     _gpuBlock._data._ZPlanesCombined.zw(vec2<F32>(
         ParamHandler::getInstance().getParam<F32>("rendering.zNear"),
@@ -226,13 +213,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
         // application isn't using it anymore
         _state.loadingThreadAvailable(false);
     });
+
     // Register a 2D function used for previewing the depth buffer.
 #ifdef _DEBUG
     add2DRenderFunction(DELEGATE_BIND(&GFXDevice::previewDepthBuffer, this), 0);
 #endif
+
     ParamHandler::getInstance().setParam<bool>(_ID("rendering.previewDepthBuffer"), false);
     // If render targets ready, we initialize our post processing system
-    PostFX::getInstance().init(resolution);
+    PostFX::getInstance().init();
 
     _commandBuildTimer = Time::ADD_TIMER("Command Generation Timer");
 
@@ -246,17 +235,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     _framebufferDraw = CreateResource<ShaderProgram>(previewNormalsShader);
     assert(_framebufferDraw != nullptr);
 
-    // Resize our window to the target resolution
-    changeResolution(resolution.width, resolution.height);
+    // Create initial buffers, cameras etc for this resolution. It should match window size
+    WindowManager& winMgr = Application::getInstance().getWindowManager();
+    winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
+                             winMgr.getActiveWindow().getGUID(),
+                             to_int(renderResolution.width),
+                             to_int(renderResolution.height));
+    setBaseViewport(vec4<I32>(0, 0, to_int(renderResolution.width), to_int(renderResolution.height)));
 
+    Texture* hizTexture = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    hizTexture->lockAutomaticMipMapGeneration(true);
+    hizTexture = _renderTarget[to_const_uint(RenderTargetID::ANAGLYPH)]._buffer->getAttachment(TextureDescriptor::AttachmentType::Depth);
+    hizTexture->lockAutomaticMipMapGeneration(true);
     // Everything is ready from the rendering point of view
     return ErrorCode::NO_ERR;
-}
-
-void GFXDevice::onChangeWindowSize(U16 w, U16 h) {
-    setBaseViewport(vec4<I32>(0, 0, w, h));
-    // Update the 2D camera so it matches our new rendering viewport
-    _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)),  vec2<F32>(-1, 1));
 }
 
 /// Revert everything that was set up in initRenderingAPI()

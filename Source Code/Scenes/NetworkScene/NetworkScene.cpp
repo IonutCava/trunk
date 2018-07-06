@@ -64,7 +64,6 @@ void NetworkScene::checkPatches() {
 }
 
 bool NetworkScene::load(const stringImpl& name, GUI* const gui) {
-    _GFX.changeResolution(640, 384);
     ASIOImpl::getInstance().init(
         _paramHandler.getParam<stringImpl>("serverAddress").c_str(), "443");
     // Load scene resources

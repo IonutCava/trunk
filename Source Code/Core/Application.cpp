@@ -124,4 +124,8 @@ void Application::onChangeWindowSize(U16 w, U16 h) const {
     Attorney::KernelApplication::onChangeWindowSize(*_kernel, w, h);
 }
 
+void Application::onChangeRenderResolution(U16 w, U16 h) const {
+    Attorney::KernelApplication::onChangeRenderResolution(*_kernel, w, h);
+}
+
 }; //namespace Divide

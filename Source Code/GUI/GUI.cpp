@@ -94,7 +94,7 @@ void GUI::update(const U64 deltaTime) {
     GUIEditor::getInstance().update(deltaTime);
 }
 
-bool GUI::init(const vec2<U16>& resolution) {
+bool GUI::init() {
     if (_init) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
@@ -152,6 +152,7 @@ bool GUI::init(const vec2<U16>& resolution) {
     _rootSheet->setMousePassThroughEnabled(true);
     CEGUI_DEFAULT_CTX.setRootWindow(_rootSheet);
     CEGUI_DEFAULT_CTX.setDefaultTooltipType(_defaultGUIScheme + "/Tooltip");
+    
     _rootSheet->setPixelAligned(false);
     assert(_console);
     //_console->CreateCEGUIWindow();
@@ -170,6 +171,7 @@ bool GUI::init(const vec2<U16>& resolution) {
 
     _defaultMsgBox = addMsgBox("AssertMsgBox", "Assertion failure",
                                "Assertion failed with message: ");
+
     _init = true;
     return true;
 }

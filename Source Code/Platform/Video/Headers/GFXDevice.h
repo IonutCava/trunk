@@ -242,7 +242,7 @@ DEFINE_SINGLETON(GFXDevice)
    };
 
   public:  // GPU interface
-    ErrorCode initRenderingAPI(I32 argc, char** argv);
+    ErrorCode initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution);
     void closeRenderingAPI();
 
     inline void setAPI(RenderAPI API) { _API_ID = API; }
@@ -342,7 +342,6 @@ DEFINE_SINGLETON(GFXDevice)
     void toggleFullScreen();
     void increaseResolution();
     void decreaseResolution();
-    void changeResolution(U16 w, U16 h);
     bool loadInContext(const CurrentContext& context,
                        const DELEGATE_CBK<>& callback);
 
@@ -496,7 +495,7 @@ DEFINE_SINGLETON(GFXDevice)
     void computeFrustumPlanes();
     void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
 
-    void onChangeWindowSize(U16 w, U16 h);
+    void onChangeResolution(U16 w, U16 h);
 
   protected:
     friend class Camera;
@@ -676,7 +675,11 @@ namespace Attorney {
         }
 
         static void onChangeWindowSize(U16 w, U16 h) {
-            GFXDevice::getInstance().onChangeWindowSize(w, h);
+            GFXDevice::getInstance().setBaseViewport(vec4<I32>(0, 0, w, h));
+        }
+
+        static void onChangeRenderResolution(U16 w, U16 h) {
+            GFXDevice::getInstance().onChangeResolution(w, h);
         }
 
         friend class Divide::Kernel;

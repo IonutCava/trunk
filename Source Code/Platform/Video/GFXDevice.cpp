@@ -303,7 +303,11 @@ void GFXDevice::increaseResolution() {
 
         if (resolution.width < tempResolution.width &&
             resolution.height < tempResolution.height) {
-            changeResolution(tempResolution.width, tempResolution.height);
+            WindowManager& winMgr = Application::getInstance().getWindowManager();
+            winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
+                                     winMgr.getActiveWindow().getGUID(),
+                                     to_int(tempResolution.width),
+                                     to_int(tempResolution.height));
             return;
         }
     }
@@ -319,7 +323,11 @@ void GFXDevice::decreaseResolution() {
         const vec2<U16>& tempResolution = it->_resolution;
         if (resolution.width > tempResolution.width &&
             resolution.height > tempResolution.height) {
-            changeResolution(tempResolution.width, tempResolution.height);
+            WindowManager& winMgr = Application::getInstance().getWindowManager();
+            winMgr.handleWindowEvent(WindowEvent::RESOLUTION_CHANGED,
+                                     winMgr.getActiveWindow().getGUID(),
+                                     to_int(tempResolution.width),
+                                     to_int(tempResolution.height));
             return;
         }
     }
@@ -342,7 +350,7 @@ void GFXDevice::toggleFullScreen() {
 }
 
 /// The main entry point for any resolution change request
-void GFXDevice::changeResolution(U16 w, U16 h) {
+void GFXDevice::onChangeResolution(U16 w, U16 h) {
     // Make sure we are in a valid state that allows resolution updates
     if (_renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer != nullptr) {
         // Update resolution only if it's different from the current one.
@@ -360,13 +368,12 @@ void GFXDevice::changeResolution(U16 w, U16 h) {
         }
     }
 
-    Application& app = Application::getInstance();
     // Update post-processing render targets and buffers
     PostFX::getInstance().updateResolution(w, h);
-    app.getWindowManager().getActiveWindow().setDimensions(WindowType::WINDOW, w, h);
-
     _gpuBlock._data._invScreenDimension.xy(1.0f / w, 1.0f / h);
     _gpuBlock._updated = true;
+    // Update the 2D camera so it matches our new rendering viewport
+    _2DCamera->setProjection(vec4<F32>(0, to_float(w), 0, to_float(h)), vec2<F32>(-1, 1));
 }
 
 /// Return a GFXDevice specific matrix or a derivative of it

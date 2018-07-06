@@ -61,7 +61,7 @@ DEFINE_SINGLETON(PostFX)
   public:
     void apply();
 
-    void init(const vec2<U16>& resolution);
+    void init();
     void idle();
     void updateResolution(U16 newWidth, U16 newHeight);
 

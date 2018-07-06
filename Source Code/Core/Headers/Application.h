@@ -97,6 +97,8 @@ DEFINE_SINGLETON(Application)
     inline void mainLoopPaused(bool state);
 
     void onChangeWindowSize(U16 w, U16 h) const;
+    void onChangeRenderResolution(U16 w, U16 h) const;
+
     void setCursorPosition(I32 x, I32 y) const;
     inline void snapCursorToCenter() const;
         
