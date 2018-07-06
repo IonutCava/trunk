@@ -75,7 +75,7 @@ class JoystickInterface {
 
     inline bool wasFFDetected() const { return _bFFFound; }
 
-    enum class EWhichJoystick : I32 { 
+    enum class EWhichJoystick : I8 { 
         ePrevious = -1,
         eNext = +1
     };
@@ -116,7 +116,7 @@ class JoystickInterface {
         _vecFFDev[_nCurrJoyInd]->setMasterGain(_dMasterGain);
     }
 
-    enum class EAutoCenterHow : U32 { 
+    enum class EAutoCenterHow : U8 {
         eOff = 0,
         eOn,
         eToggle

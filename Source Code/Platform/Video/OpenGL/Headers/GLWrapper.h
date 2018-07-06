@@ -65,7 +65,7 @@ namespace Time {
 
 static const U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 
-enum class WindowType : U32;
+enum class WindowType : U8;
 
 class DisplayWindow;
 class RenderStateBlock;
@@ -333,7 +333,7 @@ private:
     /// Preferred anisotropic filtering level
     static GLuint s_anisoLevel;
     /// A cache of all fonts used
-    typedef hashMapImpl<U64, I32> FontCache;
+    typedef hashMap<U64, I32> FontCache;
     FontCache _fonts;
     hashAlg::pair<stringImpl, I32> _fontCache;
     static I64 s_activeWindowGUID;
@@ -401,7 +401,7 @@ private:
     typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
     static samplerBoundMapDef s_samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
-    typedef hashMapImpl<size_t, glSamplerObject> samplerObjectMap;
+    typedef hashMap<size_t, GLuint> samplerObjectMap;
     static SharedLock s_samplerMapLock;
     static samplerObjectMap s_samplerMap;
 

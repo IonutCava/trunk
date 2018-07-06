@@ -40,15 +40,15 @@
 namespace Divide {
 
 DEFINE_SINGLETON(ParamHandler)
-    typedef hashMapImpl<U64, AnyParam> ParamMap;
+    typedef hashMap<U64, AnyParam> ParamMap;
 
     /// A special map for string types (small perf. optimization for add/retrieve)
-    typedef hashMapImpl<U64, stringImpl> ParamStringMap;
+    typedef hashMap<U64, stringImpl> ParamStringMap;
     /// A special map for boolean types (small perf. optimization for add/retrieve)
     /// Used a lot as option toggles
-    typedef hashMapImpl<U64, bool> ParamBoolMap;
+    typedef hashMap<U64, bool> ParamBoolMap;
     /// Floats are also used often
-    typedef hashMapImpl<U64, F32> ParamFloatMap;
+    typedef hashMap<U64, F32> ParamFloatMap;
 
   public:
     void setDebugOutput(bool logState);

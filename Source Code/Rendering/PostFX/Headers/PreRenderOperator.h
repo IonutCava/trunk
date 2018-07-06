@@ -13,11 +13,11 @@ class Texture;
 class ShaderProgram;
 class SamplerDescriptor;
 
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 
 // ALL FILTERS MUST MODIFY THE INPUT RENDERTARGET ONLY!
-enum class FilterType : U32 {
+enum class FilterType : U8 {
     FILTER_SS_ANTIALIASING = 0,
     FILTER_SS_REFLECTIONS,
     FILTER_SS_AMBIENT_OCCLUSION,
@@ -31,7 +31,7 @@ enum class FilterType : U32 {
     FILTER_COUNT
 };
 
-enum class FilterSpace : U32 {
+enum class FilterSpace : U8 {
     FILTER_SPACE_HDR = 0,
     FILTER_SPACE_LDR = 1,
     COUNT

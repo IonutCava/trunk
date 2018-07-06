@@ -128,7 +128,7 @@ protected:
 protected:
     /// multithreaded resource creation
     SharedLock _creationMutex;
-    typedef hashMapImpl<size_t, CachedResource_wptr> ResourceMap;
+    typedef hashMap<size_t, CachedResource_wptr> ResourceMap;
     ResourceMap _resDB;
 };
 

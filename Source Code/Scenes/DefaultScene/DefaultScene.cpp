@@ -187,7 +187,7 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 void DefaultScene::processTasks(const U64 deltaTimeUS) {
     D64 SpinTimer = Time::Milliseconds(16.0);
     if (_taskTimers[0] >= SpinTimer) {
-        for (hashMapImpl<U8, Angle::DEGREES<F32>>::value_type& it : _camAngle) {
+        for (hashMap<U8, Angle::DEGREES<F32>>::value_type& it : _camAngle) {
             it.second = 0.25f * ((it.first * 2.0f) + 1.0f) * (it.first % 2 == 0 ? -1 : 1);
         }
 
@@ -203,7 +203,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 
     GUIButton* selection = _GUI->getGUIElement<GUIButton>(btnGUID);
     selection->setText(_sceneToLoad + "\nLoading ...");
-    for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
+    for (hashMap<I64, stringImpl>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         btn->setActive(false);
         if (it.first != btnGUID) {
@@ -213,7 +213,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 }
 
 void DefaultScene::onSetActive() {
-    for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
+    for (hashMap<I64, stringImpl>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         
         btn->setText(it.second);

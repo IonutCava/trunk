@@ -99,7 +99,7 @@ public:
 
 private:
     typedef vectorImpl<BufferBindingParams> VAOBufferData;
-    hashMapImpl<GLuint /*vao ID*/, VAOBufferData> _bindings;
+    hashMap<GLuint /*vao ID*/, VAOBufferData> _bindings;
     U32 _maxBindings;
 };
 

@@ -59,8 +59,8 @@ namespace Divide {
 
     };
 
-    hashMapImpl<U32, TextureWrap> DVDConverter::fillTextureWrapMap() {
-        hashMapImpl<U32, TextureWrap> wrapMap;
+    hashMap<U32, TextureWrap> DVDConverter::fillTextureWrapMap() {
+        hashMap<U32, TextureWrap> wrapMap;
         wrapMap[aiTextureMapMode_Wrap] = TextureWrap::CLAMP;
         wrapMap[aiTextureMapMode_Clamp] = TextureWrap::CLAMP_TO_EDGE;
         wrapMap[aiTextureMapMode_Mirror] = TextureWrap::REPEAT;
@@ -68,8 +68,8 @@ namespace Divide {
         return wrapMap;
     }
 
-    hashMapImpl<U32, Material::ShadingMode> DVDConverter::fillShadingModeMap() {
-        hashMapImpl<U32, Material::ShadingMode> shadingMap;
+    hashMap<U32, Material::ShadingMode> DVDConverter::fillShadingModeMap() {
+        hashMap<U32, Material::ShadingMode> shadingMap;
         shadingMap[aiShadingMode_Fresnel] = Material::ShadingMode::COOK_TORRANCE;
         shadingMap[aiShadingMode_NoShading] = Material::ShadingMode::FLAT;
         shadingMap[aiShadingMode_CookTorrance] = Material::ShadingMode::COOK_TORRANCE;
@@ -83,8 +83,8 @@ namespace Divide {
         return shadingMap;
     }
 
-    hashMapImpl<U32, Material::TextureOperation> DVDConverter::fillTextureOperationMap() {
-        hashMapImpl<U32, Material::TextureOperation> operationMap;
+    hashMap<U32, Material::TextureOperation> DVDConverter::fillTextureOperationMap() {
+        hashMap<U32, Material::TextureOperation> operationMap;
         operationMap[aiTextureOp_Multiply] = Material::TextureOperation::MULTIPLY;
         operationMap[aiTextureOp_Add] = Material::TextureOperation::ADD;
         operationMap[aiTextureOp_Subtract] = Material::TextureOperation::SUBTRACT;
@@ -96,11 +96,11 @@ namespace Divide {
     }
 
 
-    hashMapImpl<U32, TextureWrap>
+    hashMap<U32, TextureWrap>
     DVDConverter::aiTextureMapModeTable = DVDConverter::fillTextureWrapMap();
-    hashMapImpl<U32, Material::ShadingMode>
+    hashMap<U32, Material::ShadingMode>
     DVDConverter::aiShadingModeInternalTable = DVDConverter::fillShadingModeMap();
-    hashMapImpl<U32, Material::TextureOperation>
+    hashMap<U32, Material::TextureOperation>
     DVDConverter::aiTextureOperationTable = DVDConverter::fillTextureOperationMap();
 
 DVDConverter::DVDConverter()

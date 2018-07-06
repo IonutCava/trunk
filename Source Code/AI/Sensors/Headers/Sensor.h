@@ -37,7 +37,7 @@
 namespace Divide {
 namespace AI {
 
-enum class SensorType : U32 { 
+enum class SensorType : U8 {
     NONE = 0, 
     VISUAL_SENSOR = 1,
     AUDIO_SENSOR = 2 

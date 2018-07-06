@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_ERROR_CODES_H_
 
 namespace Divide {
-    enum class ErrorCode {
+    enum class ErrorCode : I8 {
         NO_ERR = 0,
         MISSING_SCENE_DATA = -1,
         MISSING_SCENE_LOAD_CALL = -2,

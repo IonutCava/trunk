@@ -110,15 +110,13 @@ void WarSceneAIProcessor::initInternal() {
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
         SceneGraphNode* node = member.second->getUnitRef()->getBoundNode();
-        hashAlg::insert(_nodeToUnitMap[g_myTeamContainer],
-                        std::make_pair(node->getGUID(), member.second));
+        hashAlg::insert(_nodeToUnitMap[g_myTeamContainer], node->getGUID(), member.second);
         _visualSensor->followSceneGraphNode(g_myTeamContainer, node);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
         SceneGraphNode* node = enemy.second->getUnitRef()->getBoundNode();
-        hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer],
-                        std::make_pair(node->getGUID(), enemy.second));
+        hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer], node->getGUID(), enemy.second);
         _visualSensor->followSceneGraphNode(g_enemyTeamContainer, node);
     }
 
@@ -234,7 +232,7 @@ void WarSceneAIProcessor::beginPlan(const GOAPGoal& currentGoal) {
 }
 
 namespace {
-    enum class PriorityLevel : U32 {
+    enum class PriorityLevel : U8 {
         MAX_PRIORITY = 5,
         VERY_HIGH_PRIORITY = 4,
         HIGH_PRIORITY = 3,

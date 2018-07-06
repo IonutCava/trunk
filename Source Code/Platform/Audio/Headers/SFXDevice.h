@@ -41,7 +41,7 @@ namespace Divide {
 class SFXDevice final : public KernelComponent,
                         public AudioAPIWrapper {
 public:
-    enum class AudioAPI : U32 {
+    enum class AudioAPI : U8 {
         FMOD,
         OpenAL,
         SDL,

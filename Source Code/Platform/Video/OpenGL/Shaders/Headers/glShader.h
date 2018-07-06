@@ -44,7 +44,7 @@ namespace Divide {
 class glShader : public TrackedObject, public GraphicsResource,  public glObject {
     USE_CUSTOM_ALLOCATOR
    public:
-    typedef hashMapImpl<U64, glShader*> ShaderMap;
+    typedef hashMap<U64, glShader*> ShaderMap;
 
    public:
     /// The shader's name is the period-separated list of properties, type is

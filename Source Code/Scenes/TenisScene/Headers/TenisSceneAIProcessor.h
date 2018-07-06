@@ -37,7 +37,7 @@
 namespace Divide {
 namespace AI {
 
-enum class AIMsg : U32 {
+enum class AIMsg : U8 {
     REQUEST_DISTANCE_TO_TARGET = 0,
     RECEIVE_DISTANCE_TO_TARGET = 1,
     ATTACK_BALL = 2,

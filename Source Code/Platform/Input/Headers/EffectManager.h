@@ -62,7 +62,7 @@ class EffectManager {
     vectorImpl<vectorAlg::vecSize> _vecPlayableEffectInd;
 
    public:
-    enum class EWhichEffect : I32 {
+    enum class EWhichEffect : I8 {
         ePrevious = -1,
         eNone = 0,
         eNext = +1

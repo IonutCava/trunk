@@ -122,7 +122,7 @@ void Vegetation::initialize(TerrainChunk* const terrainChunk) {
 }
 
 namespace {
-enum class BufferUsage : U32 {
+enum class BufferUsage : U8 {
     UnculledPositionBuffer = 0,
     CulledPositionBuffer = 1,
     UnculledSizeBuffer = 2,
@@ -357,7 +357,7 @@ void Vegetation::gpuCull(const SceneRenderState& sceneRenderState, const Camera&
                                         _instanceCountGrass);
 
         PipelineDescriptor pipeDesc;
-        pipeDesc._shaderProgram = _cullShader;
+        pipeDesc._shaderProgramHandle = _cullShader->getID();
 
         _cullDrawCommand.cmd().primCount = _instanceCountGrass;
         _cullDrawCommand.enableOption(GenericDrawCommand::RenderOptions::RENDER_NO_RASTERIZE);

@@ -89,14 +89,14 @@ public:
 
     inline bool operator==(const TextureData& other) const {
         return _textureType == other._textureType &&
-               _samplerHash == other._samplerHash &&
-               _textureHandle == other._textureHandle;
+               _textureHandle == other._textureHandle &&
+               _samplerHash == other._samplerHash;
     }
 
     inline bool operator!=(const TextureData& other) const {
         return _textureType != other._textureType ||
-               _samplerHash != other._samplerHash ||
-               _textureHandle != other._textureHandle;
+               _textureHandle != other._textureHandle ||
+               _samplerHash != other._samplerHash;
     }
 
     // No need to cache this as it should already be pretty fast

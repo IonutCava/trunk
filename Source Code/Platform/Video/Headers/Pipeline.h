@@ -41,7 +41,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class MemoryBarrierType : U32 {
+enum class MemoryBarrierType : U8 {
     BUFFER = 0,
     TEXTURE = 1,
     RENDER_TARGET = 2,
@@ -58,15 +58,17 @@ struct ComputeParams {
     vec3<U32> _groupSize;
 };
 
-typedef hashMapImpl<ShaderType, vectorImpl<U32>> ShaderFunctions;
+typedef std::array<vectorImpl<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;
 
 class PipelineDescriptor : public Hashable {
   public:
     size_t getHash() const override;
+    bool operator==(const PipelineDescriptor &other) const;
+    bool operator!=(const PipelineDescriptor &other) const;
 
     U8 _multiSampleCount = 0;
+    U32 _shaderProgramHandle = 0;
     size_t _stateHash = 0;
-    ShaderProgram_wptr _shaderProgram;
     ShaderFunctions _shaderFunctions;
 }; //struct PipelineDescriptor
 
@@ -74,8 +76,8 @@ class Pipeline {
 public:
     Pipeline(const PipelineDescriptor& descriptor);
 
-    inline ShaderProgram* shaderProgram() const {
-        return _descriptor._shaderProgram.expired() ? nullptr : _descriptor._shaderProgram.lock().get();
+    inline U32 shaderProgramHandle() const {
+        return _descriptor._shaderProgramHandle;
     }
 
     inline const PipelineDescriptor& descriptor() const {
@@ -90,7 +92,6 @@ public:
         return _descriptor._multiSampleCount;
     }
 
-
     inline const ShaderFunctions& shaderFunctions() const {
         return _descriptor._shaderFunctions;
     }
@@ -104,6 +105,7 @@ public:
 
 private: //data
     PipelineDescriptor _descriptor;
+    
 
 }; //class Pipeline
 

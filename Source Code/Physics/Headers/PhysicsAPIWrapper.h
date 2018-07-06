@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-enum class RigidBodyShape : U32 {
+enum class RigidBodyShape : U8 {
     SHAPE_SPHERE = 0,
     SHAPE_PLANE,
     SHAPE_CAPSULE,
@@ -54,7 +54,7 @@ class PhysicsSceneInterface;
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
-enum class ErrorCode;
+enum class ErrorCode : I8;
 class RigidBodyComponent;
 
 class NOINITVTABLE PhysicsAPIWrapper {

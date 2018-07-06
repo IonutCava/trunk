@@ -46,7 +46,7 @@ class TerrainChunk;
 class SceneGraphNode;
 class RenderStateBlock;
 class GenericVertexData;
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 FWD_DECLARE_MANAGED_CLASS(Terrain);
@@ -100,7 +100,7 @@ class Vegetation : public SceneNode {
     U32 getQueryID();
 
    private:
-    enum class CullType : U32 {
+    enum class CullType : U8 {
         PASS_THROUGH = 0,
         INSTANCE_CLOUD_REDUCTION = 1,
         HI_Z_CULL = 2,

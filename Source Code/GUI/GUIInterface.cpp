@@ -56,7 +56,7 @@ void GUIInterface::addElement(U64 id, GUIElement* element) {
         MemoryManager::SAFE_UPDATE(it->second.first, element);
         it->second.second = element ? element->isVisible() : false;
     } else {
-        hashAlg::insert(targetMap, std::make_pair(id, std::make_pair(element, element ? element->isVisible() : false)));
+        hashAlg::insert(targetMap, id, std::make_pair(element, element ? element->isVisible() : false));
     }
 }
 

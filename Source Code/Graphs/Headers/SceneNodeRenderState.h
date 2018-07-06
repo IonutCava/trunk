@@ -6,7 +6,7 @@
 namespace Divide {
 
 class RenderStagePass;
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 class SceneNodeRenderState {
    public:

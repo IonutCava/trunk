@@ -39,11 +39,11 @@
 namespace Divide {
 
 class BoundingBox;
-enum class RigidBodyShape : U32;
+enum class RigidBodyShape : U8;
 
 class Object3D : public SceneNode {
    public:
-    enum class ObjectType : U32 {
+    enum class ObjectType : U8 {
         SPHERE_3D = 0,
         BOX_3D = 1,
         QUAD_3D = 2,
@@ -57,7 +57,7 @@ class Object3D : public SceneNode {
         COUNT
     };
 
-    enum class ObjectFlag : U32 {
+    enum class ObjectFlag : U8 {
         OBJECT_FLAG_NONE = toBit(1),
         OBJECT_FLAG_SKINNED = toBit(2),
         OBJECT_FLAG_NO_VB = toBit(3),

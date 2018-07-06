@@ -104,14 +104,14 @@ class DVDConverter {
                              bool skinned);
 
   private:
-    static hashMapImpl<U32, TextureWrap> fillTextureWrapMap();
-    static hashMapImpl<U32, Material::ShadingMode> fillShadingModeMap();
-    static hashMapImpl<U32, Material::TextureOperation> fillTextureOperationMap();
+    static hashMap<U32, TextureWrap> fillTextureWrapMap();
+    static hashMap<U32, Material::ShadingMode> fillShadingModeMap();
+    static hashMap<U32, Material::TextureOperation> fillTextureOperationMap();
 
   private:
-    static hashMapImpl<U32, TextureWrap> aiTextureMapModeTable;
-    static hashMapImpl<U32, Material::ShadingMode> aiShadingModeInternalTable;
-    static hashMapImpl<U32, Material::TextureOperation> aiTextureOperationTable;
+    static hashMap<U32, TextureWrap> aiTextureMapModeTable;
+    static hashMap<U32, Material::ShadingMode> aiShadingModeInternalTable;
+    static hashMap<U32, Material::TextureOperation> aiTextureOperationTable;
 };
 
 };  // namespace Divide

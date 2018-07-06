@@ -30,7 +30,7 @@ namespace {
 
 physx::PxDefaultAllocator PhysX::_gDefaultAllocatorCallback;
 physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
-hashMapImpl<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
+hashMap<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
 
 
 PhysX::PhysX()
@@ -242,7 +242,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     stringImpl nodeName("XML/Scenes/" + sceneName + "/collisionMeshes/node_[_" + sNode->name() + "_]");
     nodeName.append(".cm");
 
-    hashMapImpl<stringImpl, physx::PxTriangleMesh*>::iterator it;
+    hashMap<stringImpl, physx::PxTriangleMesh*>::iterator it;
     it = _gMeshCache.find(nodeName);
 
     // -1 = not available

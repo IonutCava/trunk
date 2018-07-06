@@ -2,13 +2,15 @@
 
 #include "Platform/Headers/PlatformDefines.h"
 
-#if HASH_MAP_IMP == EASTL_IMP || VECTOR_IMP == EASTL_IMP
+#include <EASTL/src/allocator_eastl.cpp>
 #include <EASTL/src/assert.cpp>
-#include <EASTL/src/allocator.cpp>
 #include <EASTL/src/fixed_pool.cpp>
 #include <EASTL/src/hashtable.cpp>
+#include <EASTL/src/intrusive_list.cpp>
+#include <EASTL/src/numeric_limits.cpp>
 #include <EASTL/src/red_black_tree.cpp>
-#endif
+#include <EASTL/src/string.cpp>
+#include <EASTL/src/thread_support.cpp>
 #include <assert.h>
 
 void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,

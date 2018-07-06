@@ -63,9 +63,9 @@ class Order {
 class AITeam : public GUIDWrapper {
    public:
     typedef Navigation::DivideDtCrowd* CrowdPtr;
-    typedef hashMapImpl<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
-    typedef hashMapImpl<AIEntity*, F32> MemberVariable;
-    typedef hashMapImpl<I64, AIEntity*> TeamMap;
+    typedef hashMap<AIEntity::PresetAgentRadius, CrowdPtr> AITeamCrowd;
+    typedef hashMap<AIEntity*, F32> MemberVariable;
+    typedef hashMap<I64, AIEntity*> TeamMap;
     typedef std::shared_ptr<Order> OrderPtr;
     typedef vectorImpl<OrderPtr> OrderList;
    public:

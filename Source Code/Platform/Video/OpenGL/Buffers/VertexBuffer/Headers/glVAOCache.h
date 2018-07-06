@@ -52,7 +52,7 @@ public:
     bool getVAO(const AttribFlags& flags, GLuint& vaoOut, size_t& hashOut);
 
 private:
-    typedef hashMapImpl<size_t, GLuint> VAOMap;
+    typedef hashMap<size_t, GLuint> VAOMap;
     VAOMap _cache;
 
 }; //class glVAOCache;

@@ -220,8 +220,11 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
 }
 
 Pipeline& GFXDevice::newPipeline(const PipelineDescriptor& descriptor) const {
+    // Pipeline with not shader is no pipeline at all
+    DIVIDE_ASSERT(descriptor._shaderProgramHandle != 0, "Missing shader handle during pipeline creation!");
+
     size_t hash = descriptor.getHash();
-    hashMapImpl<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
+    hashMap<size_t, Pipeline>::iterator it = _pipelineCache.find(hash);
 
     if (it == std::cend(_pipelineCache)) {
         return hashAlg::insert(_pipelineCache, hash, Pipeline(descriptor)).first->second;

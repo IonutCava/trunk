@@ -37,8 +37,8 @@
 #include <mutex>
 
 namespace Divide {
-enum class GFXImageFormat : U32;
-enum class TextureType : U32;
+enum class GFXImageFormat : U8;
+enum class TextureType : U8;
 
 namespace ImageTools {
 

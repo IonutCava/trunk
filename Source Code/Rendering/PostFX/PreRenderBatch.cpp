@@ -183,7 +183,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._shaderProgram = _luminanceCalc;
+    pipelineDescriptor._shaderProgramHandle = _luminanceCalc->getID();
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
     GenericDrawCommand triangleCmd;
@@ -232,7 +232,7 @@ void PreRenderBatch::execute(const FilterStack& stack, GFX::CommandBuffer& buffe
         }
     }
 
-    pipelineDescriptor._shaderProgram = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap);
+    pipelineDescriptor._shaderProgramHandle = (_adaptiveExposureControl ? _toneMapAdaptive : _toneMap)->getID();
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(buffer, pipelineCmd);

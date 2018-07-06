@@ -68,7 +68,7 @@ class GUI : public GUIInterface,
             public KernelComponent,
             public Input::InputAggregatorInterface {
 public:
-    typedef hashMapImpl<I64, SceneGUIElements*> GUIMapPerScene;
+    typedef hashMap<I64, SceneGUIElements*> GUIMapPerScene;
 
 public:
     explicit GUI(Kernel& parent);

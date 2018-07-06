@@ -49,7 +49,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
    public:
        static constexpr U16 MAX_CHILD_TASKS = to_base(std::numeric_limits<I8>::max());
 
-       enum class TaskPriority : U32 {
+       enum class TaskPriority : U8 {
            DONT_CARE = 0,
            LOW = 1,
            MEDIUM = 2,
@@ -60,7 +60,7 @@ class Task : public GUIDWrapper, protected NonCopyable {
            COUNT
        };
 
-      enum class TaskFlags : U32 {
+      enum class TaskFlags : U8 {
         PRINT_DEBUG_INFO = toBit(1),
         COUNT = 1,
       };

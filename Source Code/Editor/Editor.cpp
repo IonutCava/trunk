@@ -522,7 +522,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
 
     PipelineDescriptor pipelineDesc;
     pipelineDesc._stateHash = state.getHash();
-    pipelineDesc._shaderProgram = _imguiProgram;
+    pipelineDesc._shaderProgramHandle = _imguiProgram->getID();
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd;
     beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();

@@ -449,6 +449,9 @@ void GL_API::closeRenderingAPI() {
     // Destroy sampler objects
     {
         WriteLock w_lock(s_samplerMapLock);
+        for (auto sampler : s_samplerMap) {
+            glSamplerObject::destruct(sampler.second);
+        }
         s_samplerMap.clear();
     }
     // Destroy the text rendering system

@@ -49,7 +49,7 @@ GUISplash::~GUISplash()
 void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = context.get2DStateBlock();
-    pipelineDescriptor._shaderProgram = _splashShader;
+    pipelineDescriptor._shaderProgramHandle = _splashShader->getID();
 
     GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
     GFX::CommandBuffer& buffer = sBuffer();

@@ -44,7 +44,7 @@ class SceneGraph;
 class ShaderBuffer;
 class SceneRenderState;
 class RenderPassManager;
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 // A RenderPass may contain multiple linked stages.
 // Usefull to avoid having multiple renderqueues per pass if 2 stages depend on one:

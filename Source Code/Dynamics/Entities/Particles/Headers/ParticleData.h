@@ -41,7 +41,7 @@ class ParticleData {
    public:
     static const U32 g_threadPartitionSize = 256;
 
-    enum class Properties : U32 {
+    enum class Properties : U8 {
         PROPERTIES_POS = toBit(1),
         PROPERTIES_VEL = toBit(2),
         PROPERTIES_ACC = toBit(3),

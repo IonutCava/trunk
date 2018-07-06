@@ -41,7 +41,7 @@ typedef struct SDL_Window SDL_Window;
 
 namespace Divide {
 
-enum class WindowType : U32 {
+enum class WindowType : U8 {
     WINDOW = 0,
     SPLASH = 1,
     FULLSCREEN = 2,
@@ -49,7 +49,7 @@ enum class WindowType : U32 {
     COUNT
 };
 
-enum class CursorStyle : U32 {
+enum class CursorStyle : U8 {
     NONE = 0,
     ARROW,
     TEXT_INPUT,
@@ -61,7 +61,7 @@ enum class CursorStyle : U32 {
     COUNT
 };
 
-enum class WindowEvent : U32 {
+enum class WindowEvent : U8 {
     HIDDEN = 0,
     SHOWN = 1,
     MINIMIZED = 2,
@@ -88,7 +88,7 @@ namespace Input {
 
 class WindowManager;
 class PlatformContext;
-enum class ErrorCode;
+enum class ErrorCode : I8;
 // Platform specific window
 class DisplayWindow : public GUIDWrapper,
                       public PlatformContextComponent,

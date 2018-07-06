@@ -305,7 +305,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         beginRenderPassCompCmd._descriptor = noClearPolicy;
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
-        pipelineDescriptor._shaderProgram = _OITCompositionShader;
+        pipelineDescriptor._shaderProgramHandle = _OITCompositionShader->getID();
 
         GFX::BindPipelineCommand bindPipelineCmd;
         bindPipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);

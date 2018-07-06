@@ -147,7 +147,7 @@ class glFramebuffer : public RenderTarget,
 
     bool _hasMultisampledColourAttachments;
 
-    hashMapImpl<GLenum, BindingState> _attachmentState;
+    hashMap<GLenum, BindingState> _attachmentState;
 };
 
 namespace Attorney {

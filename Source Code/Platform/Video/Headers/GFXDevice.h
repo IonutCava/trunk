@@ -60,9 +60,9 @@ class RenderDocManager;
 
 namespace Divide {
 
-enum class RendererType : U32;
-enum class SceneNodeType : U32;
-enum class WindowEvent : U32;
+enum class RendererType : U8;
+enum class SceneNodeType : U16;
+enum class WindowEvent : U8;
 
 class GUI;
 class GUIText;
@@ -122,7 +122,7 @@ class GFXDevice : public KernelComponent, public PlatformContextComponent {
     friend class Attorney::GFXDeviceGFXRTPool;
 
 public:
-    enum class ScreenTargets : U32 {
+    enum class ScreenTargets : U8 {
         ALBEDO = 0,
         NORMALS = 1,
         VELOCITY = 2,
@@ -520,7 +520,7 @@ protected:
 
     Time::ProfileTimer& _commandBuildTimer;
 
-    mutable hashMapImpl<size_t, Pipeline> _pipelineCache;
+    mutable hashMap<size_t, Pipeline> _pipelineCache;
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;
     mutable MyArena<Config::REQUIRED_RAM_SIZE / 4> _gpuObjectArena;

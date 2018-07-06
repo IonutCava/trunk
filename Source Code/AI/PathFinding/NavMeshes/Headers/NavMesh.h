@@ -107,7 +107,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     friend class Attorney::NavigationMeshCrowd;
 
    protected:
-    enum class RenderMode : U32 {
+    enum class RenderMode : U8 {
         RENDER_NAVMESH = 0,
         RENDER_CONTOURS,
         RENDER_POLYMESH,

@@ -44,7 +44,7 @@
 namespace Divide {
 
     ResourceCache* PanelManager::s_globalCache = nullptr;
-    hashMapImpl<U32, Texture_ptr> PanelManager::s_imageEditorCache;
+    hashMap<U32, Texture_ptr> PanelManager::s_imageEditorCache;
 
     namespace {
 
@@ -408,7 +408,7 @@ namespace Divide {
             return ret;
         }
         void FreeTextureDelegate(ImTextureID& texid) {
-            hashMapImpl<U32, Texture_ptr>::iterator it = PanelManager::s_imageEditorCache.find((U32)(intptr_t)texid);
+            hashMap<U32, Texture_ptr>::iterator it = PanelManager::s_imageEditorCache.find((U32)(intptr_t)texid);
             if (it != std::cend(PanelManager::s_imageEditorCache)) {
                 PanelManager::s_imageEditorCache.erase(it);
             } else {

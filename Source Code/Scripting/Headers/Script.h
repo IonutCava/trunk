@@ -86,7 +86,7 @@ protected:
 
     static I64 s_scriptFileWatcher;
 
-    typedef hashMapImpl<I64, Script*> ScriptMap;
+    typedef hashMap<I64, Script*> ScriptMap;
     static  ScriptMap s_scripts;
     static bool s_scriptsReady;
 };

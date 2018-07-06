@@ -205,8 +205,8 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     vectorAlg::emplace_back(m_PositionData, y);
     vectorAlg::emplace_back(m_PositionData, z);
 
-    hashMapImpl<unsigned int, GlimArrayData>::iterator it;
-    hashMapImpl<unsigned int, GlimArrayData>::const_iterator itend;
+    hashMap<unsigned int, GlimArrayData>::iterator it;
+    hashMap<unsigned int, GlimArrayData>::const_iterator itend;
     it = std::begin(m_Attributes);
     itend = std::cend(m_Attributes);
 
@@ -233,7 +233,7 @@ void glimBatchData::GenerateSignature(void) {
 
     m_Signature.push_back(sig);
 
-    hashMapImpl<U64, GlimArrayData>::const_iterator it, itend;
+    hashMap<U64, GlimArrayData>::const_iterator it, itend;
     itend = m_Attributes.end();
 
     unsigned int uiOffset = sizeof(float) * 3;
@@ -309,7 +309,7 @@ void glimBatchData::GenerateSignature(void) {
 unsigned int glimBatchData::getVertexDataSize(void) const {
     unsigned int uiVertexDataSize = sizeof(float) * 3;
 
-    hashMapImpl<unsigned int, GlimArrayData>::const_iterator it, itend;
+    hashMap<unsigned int, GlimArrayData>::const_iterator it, itend;
     itend = m_Attributes.end();
 
     for (it = m_Attributes.begin(); it != itend; ++it) {
@@ -364,7 +364,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
     Divide::GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
+    hashMap<unsigned int, GlimArrayData>::iterator it, itend;
     itend = m_Attributes.end();
 
     for (it = m_Attributes.begin(); it != itend; ++it) {
@@ -494,7 +494,7 @@ void glimBatchData::UploadOGL(unsigned int uiCurrentProgram) {
 
     // space reservation pre-pass;
     size_t bufferSize = m_PositionData.size();
-    hashMapImpl<unsigned int, GlimArrayData>::iterator it, itend;
+    hashMap<unsigned int, GlimArrayData>::iterator it, itend;
     it = std::begin(m_Attributes);
     itend = std::end(m_Attributes);
     for (; it != itend; ++it) {

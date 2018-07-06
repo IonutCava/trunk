@@ -243,8 +243,8 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgram = _blurDepthMapShader;
-    pipelineDescriptor._shaderFunctions[ShaderType::GEOMETRY].push_back(_horizBlur);
+    pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getID();
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_horizBlur);
 
     GenericDrawCommand pointsCmd;
     pointsCmd.primitiveType(PrimitiveType::API_POINTS);
@@ -280,7 +280,7 @@ void CascadedShadowMaps::postRender(GFX::CommandBuffer& bufferInOut) {
     GFX::EndRenderPass(bufferInOut, endRenderPassCmd);
 
     // Blur vertically
-    pipelineDescriptor._shaderFunctions[ShaderType::GEOMETRY].front() = _vertBlur;
+    pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _vertBlur;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 

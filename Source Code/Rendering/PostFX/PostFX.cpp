@@ -108,7 +108,7 @@ void PostFX::init(GFXDevice& context, ResourceCache& cache) {
 
      PipelineDescriptor pipelineDescriptor;
      pipelineDescriptor._stateHash = context.get2DStateBlock();
-     pipelineDescriptor._shaderProgram = _postProcessingShader;
+     pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getID();
 
      _drawCommand.primitiveType(PrimitiveType::TRIANGLES);
      _drawCommand.drawCount(1);
@@ -146,7 +146,7 @@ void PostFX::apply() {
         _shaderFunctionSelection[2] = _shaderFunctionList[getFilterState(FilterType::FILTER_UNDERWATER) ? 2 : 3];
 
         PipelineDescriptor desc = _drawPipeline->descriptor();
-        desc._shaderFunctions[ShaderType::FRAGMENT] = _shaderFunctionSelection;
+        desc._shaderFunctions[to_base(ShaderType::FRAGMENT)] = _shaderFunctionSelection;
         _drawPipeline = &_gfx->newPipeline(desc);
         _filtersDirty = false;
     }

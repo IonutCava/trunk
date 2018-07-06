@@ -36,7 +36,7 @@
 namespace Divide {
 namespace AI {
 
-enum class ActionType : U32 {
+enum class ActionType : U8 {
     APPROACH_ENEMY_FLAG = 0,
     CAPTURE_ENEMY_FLAG = 1,
     SCORE_FLAG = 2,
@@ -48,7 +48,7 @@ enum class ActionType : U32 {
 };
 
 // Some useful predicates
-enum class Fact : U32 {
+enum class Fact : U8 {
     NEAR_ENEMY_FLAG = 0,
     AT_HOME_BASE = 1,
     HAS_ENEMY_FLAG = 2,

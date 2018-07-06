@@ -47,13 +47,13 @@ class Frustum {
     void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
 
    public:
-    enum class FrustCollision : U32 {
+    enum class FrustCollision : U8 {
         FRUSTUM_OUT = 0,
         FRUSTUM_IN = 1,
         FRUSTUM_INTERSECT = 2
     };
 
-    enum class FrustPlane : U32 {
+    enum class FrustPlane : U8 {
         PLANE_LEFT = 0,
         PLANE_RIGHT,
         PLANE_NEAR,
@@ -63,7 +63,7 @@ class Frustum {
         COUNT
     };
 
-    enum class FrustPoints : U32 {
+    enum class FrustPoints : U8 {
         NEAR_LEFT_TOP = 0,
         NEAR_RIGHT_TOP,
         NEAR_RIGHT_BOTTOM,

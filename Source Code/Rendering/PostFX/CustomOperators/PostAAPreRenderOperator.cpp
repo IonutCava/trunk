@@ -71,7 +71,7 @@ void PostAAPreRenderOperator::execute(GFX::CommandBuffer& bufferInOut) {
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgram = (_useSMAA ? _smaa : _fxaa);
+    pipelineDescriptor._shaderProgramHandle = (_useSMAA ? _smaa : _fxaa)->getID();
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.newPipeline(pipelineDescriptor);

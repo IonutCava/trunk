@@ -14,7 +14,7 @@ using namespace physx;
 
 namespace Divide {
 
-enum class PhysXSceneInterfaceState : U32 {
+enum class PhysXSceneInterfaceState : U8 {
     STATE_LOADING_ACTORS
 };
 

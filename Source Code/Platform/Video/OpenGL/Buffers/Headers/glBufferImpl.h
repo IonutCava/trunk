@@ -42,7 +42,7 @@ struct BufferImplParams {
           _frequency(BufferUpdateFrequency::ONCE),
           _dataSizeInBytes(0),
           _initialData(NULL),
-          _name("")
+          _name(nullptr)
     {
     }
 

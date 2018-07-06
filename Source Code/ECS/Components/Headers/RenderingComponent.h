@@ -88,7 +88,7 @@ struct RenderCbkParams {
 };
 
 
-enum class ReflectorType : U32 {
+enum class ReflectorType : U8 {
     PLANAR_REFLECTOR = 0,
     CUBE_REFLECTOR = 1,
     COUNT
@@ -102,7 +102,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     friend class Attorney::RenderingCompRenderBin;
 
    public:
-       enum class RenderOptions : U32 {
+       enum class RenderOptions : U16 {
            RENDER_GEOMETRY = toBit(1),
            RENDER_WIREFRAME = toBit(2),
            RENDER_BOUNDS_AABB = toBit(3),
@@ -243,7 +243,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     ShaderProgram_ptr _previewRenderTargetColour;
     ShaderProgram_ptr _previewRenderTargetDepth;
 
-    static hashMapImpl<U32, GFXDevice::DebugView*> s_debugViews[2];
+    static hashMap<U32, GFXDevice::DebugView*> s_debugViews[2];
 };
 
 namespace Attorney {

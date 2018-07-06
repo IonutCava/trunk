@@ -70,15 +70,15 @@ public:
 
 class SceneInput : public Input::InputAggregatorInterface {
    public:
-    typedef hashMapImpl<Input::KeyCode, PressReleaseActionCbks, std::hash<I32>> KeyMapCache;
-    typedef hashMapImpl<Input::MouseButton, PressReleaseActionCbks, std::hash<I32>> MouseMapCache;
-    typedef hashMapImpl<Input::JoystickElement, PressReleaseActionCbks, JoystickHasher> JoystickMapCacheEntry;
-    typedef hashMapImpl<Input::Joystick, JoystickMapCacheEntry> JoystickMapCache;
+    typedef hashMap<Input::KeyCode, PressReleaseActionCbks, std::hash<I32>> KeyMapCache;
+    typedef hashMap<Input::MouseButton, PressReleaseActionCbks, std::hash<I32>> MouseMapCache;
+    typedef hashMap<Input::JoystickElement, PressReleaseActionCbks, JoystickHasher> JoystickMapCacheEntry;
+    typedef hashMap<Input::Joystick, JoystickMapCacheEntry> JoystickMapCache;
 
-    typedef hashMapImpl<Input::KeyCode, PressReleaseActions, std::hash<I32>> KeyMap;
-    typedef hashMapImpl<Input::MouseButton, PressReleaseActions, std::hash<I32>> MouseMap;
-    typedef hashMapImpl<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
-    typedef hashMapImpl<Input::Joystick, JoystickMapEntry> JoystickMap;
+    typedef hashMap<Input::KeyCode, PressReleaseActions, std::hash<I32>> KeyMap;
+    typedef hashMap<Input::MouseButton, PressReleaseActions, std::hash<I32>> MouseMap;
+    typedef hashMap<Input::JoystickElement, PressReleaseActions, JoystickHasher> JoystickMapEntry;
+    typedef hashMap<Input::Joystick, JoystickMapEntry> JoystickMap;
 
     typedef vectorImpl<std::pair<Input::KeyCode, Input::InputState>> KeyLog;
     typedef vectorImpl<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>> MouseBtnLog;
@@ -157,7 +157,7 @@ class SceneInput : public Input::InputAggregatorInterface {
    private:
     // Up to 2 devices per player: KB + Mouse or Nintendo Switch type controllers
     // If one current player only uses one device, leave pair.second to -1
-    hashMapImpl<U8 /*player index*/, std::pair<I32, I32>> _playerControlDevices;
+    hashMap<U8 /*player index*/, std::pair<I32, I32>> _playerControlDevices;
 
     vectorImpl<I32> _usedInputDevices;
 
@@ -174,8 +174,8 @@ class SceneInput : public Input::InputAggregatorInterface {
 
     InputActionList _actionList;
 
-    hashMapImpl<U8, KeyLog> _keyLog;
-    hashMapImpl<U8, MouseBtnLog> _mouseBtnLog;
+    hashMap<U8, KeyLog> _keyLog;
+    hashMap<U8, MouseBtnLog> _mouseBtnLog;
 
 };  // SceneInput
 

@@ -89,7 +89,7 @@ struct RenderTargetDescriptor {
 
 class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
    public:
-    enum class RenderTargetUsage : U32 {
+    enum class RenderTargetUsage : U8 {
         RT_READ_WRITE = 0,
         RT_READ_ONLY = 1,
         RT_WRITE_ONLY = 2

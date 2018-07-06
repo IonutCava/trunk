@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Math/Headers/Plane.h"
 
 namespace Divide {
-    enum class ClipPlaneIndex : U32 {
+    enum class ClipPlaneIndex : U8 {
         CLIP_PLANE_0 = 0,
         CLIP_PLANE_1,
         CLIP_PLANE_2,

@@ -60,7 +60,7 @@ class Plane {
         plane normal points. The "negative side" is the other half
         space. The flag "no side" indicates the plane itself.
         */
-    enum class Side : I32 {
+    enum class Side : I8 {
         NO_SIDE,
         POSITIVE_SIDE,
         NEGATIVE_SIDE

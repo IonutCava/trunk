@@ -13,7 +13,7 @@
 
 namespace Divide {
 
-enum class PhysXState : U32 {
+enum class PhysXState : U8 {
     STATE_ADDING_ACTORS = 0,
     STATE_IDLE = 2,
     STATE_LOADING = 3

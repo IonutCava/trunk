@@ -40,7 +40,7 @@ namespace Divide {
 class Weapon {
    public:
     /// Weapon type mask
-    enum class WeaponType : U32 {
+    enum class WeaponType : U8 {
         /// Melee weapon (sword,axe,kinfe,lightsaber)
         WEAPON_TYPE_MELEE = toBit(1),
         /// ranged weapons (guns, bows etc)
@@ -49,7 +49,7 @@ class Weapon {
         COUNT
     };
 
-    enum class WeaponProperty : U32 {
+    enum class WeaponProperty : U8 {
         /// this weapon does use ammo (or charges for melee)
         WEAPON_PROPERTY_WITH_AMMO = toBit(1),
         /// this weapon does not us ammo

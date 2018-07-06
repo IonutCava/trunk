@@ -126,7 +126,7 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
         for (U8 idx = 0; idx < to_U8(_debugViews.size()); ++idx) {
 
             DebugView& view = *_debugViews[idx];
-            pipelineDesc._shaderProgram = view._shader;
+            pipelineDesc._shaderProgramHandle = view._shader->getID();
 
             bindPipeline._pipeline = &newPipeline(pipelineDesc);
             GFX::BindPipeline(bufferInOut, bindPipeline);

@@ -71,7 +71,7 @@ struct RTBlendState {
 
 class RTDrawDescriptor {
   public: 
-    enum class State : U32 {
+    enum class State : U8 {
         CLEAR_COLOUR_BUFFERS = toBit(1),
         CLEAR_DEPTH_BUFFER = toBit(2),
         CHANGE_VIEWPORT = toBit(3),

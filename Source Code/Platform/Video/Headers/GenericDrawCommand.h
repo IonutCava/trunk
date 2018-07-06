@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class VertexDataInterface;
-enum class PrimitiveType : U32;
+enum class PrimitiveType : U8;
 
 namespace GenericDrawCommandResults {
     struct QueryResult {
@@ -48,7 +48,7 @@ namespace GenericDrawCommandResults {
         U32 _anySamplesPassed = 0U;
     };
 
-    extern hashMapImpl<I64, QueryResult> g_queryResults;
+    extern hashMap<I64, QueryResult> g_queryResults;
 };
 
 struct IndirectDrawCommand {
@@ -65,7 +65,7 @@ struct IndirectDrawCommand {
 
 class GenericDrawCommand {
 public:
-    enum class RenderOptions : U32 {
+    enum class RenderOptions : U16 {
         RENDER_GEOMETRY = toBit(1),
         RENDER_WIREFRAME = toBit(2),
         RENDER_NO_RASTERIZE = toBit(3),
@@ -79,15 +79,15 @@ public:
 
 private:
     // state hash is not size_t to avoid any platform specific awkward typedefing
-    IndirectDrawCommand _cmd;           // 48 bytes
-    VertexDataInterface* _sourceBuffer; // 28 bytes
-    PrimitiveType _type;                // 20 bytes
-    U32 _commandOffset;                 // 16 bytes
-    U32 _renderOptions;                 // 12 bytes
-    U32 _patchVertexCount;              // 8  bytes
-    U16 _drawCount;                     // 4  bytes
-    U8  _drawToBuffer;                  // 2  bytes
-    U8  _lodIndex;                      // 1  bytes
+    IndirectDrawCommand _cmd;           // 45 bytes
+    VertexDataInterface* _sourceBuffer; // 25 bytes
+    U32 _commandOffset;                 // 17 bytes
+    U32 _renderOptions;                 // 13 bytes
+    U32 _patchVertexCount;              // 9  bytes
+    U16 _drawCount;                     // 5  bytes
+    U8  _drawToBuffer;                  // 3  bytes
+    U8  _lodIndex;                      // 2  bytes
+    PrimitiveType _type;                // 1  bytes
 public:
     GenericDrawCommand();
     GenericDrawCommand(PrimitiveType type,

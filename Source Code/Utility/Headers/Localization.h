@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-enum class ErrorCode : I32;
+enum class ErrorCode : I8;
 enum class FileUpdateEvent : U8;
 
 namespace Locale {
@@ -61,8 +61,8 @@ public:
 private:
     /// Each string key in the map matches a key in the language ini file
     /// each string value in the map matches the value in the ini file for the given key
-    /// Basically, the hashMapImpl is a direct copy of the [language] section of the give ini file
-    hashMapImpl<U64, stringImpl> _languageTable;
+    /// Basically, the hashMap is a direct copy of the [language] section of the give ini file
+    hashMap<U64, stringImpl> _languageTable;
     LangCallbacks _languageChangeCallbacks;
 };
 

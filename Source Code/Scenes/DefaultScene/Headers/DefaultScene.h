@@ -53,8 +53,8 @@ private:
     bool mouseMoved(const Input::MouseEvent& arg) override;
 
 private:
-    hashMapImpl<U8, Angle::DEGREES<F32>> _camAngle;
-    hashMapImpl<I64, stringImpl> _buttonToSceneMap;
+    hashMap<U8, Angle::DEGREES<F32>> _camAngle;
+    hashMap<I64, stringImpl> _buttonToSceneMap;
     stringImpl _sceneToLoad;
 };
 };

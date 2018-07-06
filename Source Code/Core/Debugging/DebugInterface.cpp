@@ -11,11 +11,11 @@ namespace Divide {
 
 namespace {
     vectorImpl<TwBar*> g_TweakWindows;
-    hashMapImpl<vectorAlg::vecSize, I64> g_barToGroupMap;
-    hashMapImpl<I64, DELEGATE_CBK<void, void*>> g_varToCallbackMap;
+    hashMap<vectorAlg::vecSize, I64> g_barToGroupMap;
+    hashMap<I64, DELEGATE_CBK<void, void*>> g_varToCallbackMap;
 
     inline TwBar* getBar(I64 groupID) {
-        for (hashMapImpl<vectorAlg::vecSize, I64>::value_type& entry : g_barToGroupMap) {
+        for (hashMap<vectorAlg::vecSize, I64>::value_type& entry : g_barToGroupMap) {
             if (entry.second == groupID) {
                 return g_TweakWindows[entry.first];
             }
@@ -94,14 +94,14 @@ void DebugInterface::idle() {
                 g_barToGroupMap.clear();
 
                 // Create a new bar per group
-                for (hashMapImpl<I64, DebugGroup>::value_type& group : _debugGroups) {
+                for (hashMap<I64, DebugGroup>::value_type& group : _debugGroups) {
                     g_TweakWindows.push_back(TwNewBar(group.second._name.c_str()));
                     hashAlg::insert(g_barToGroupMap, g_TweakWindows.size() - 1, group.first);
                 }
 
                 g_varToCallbackMap.clear();
                 // Not the fastest, but meh ... debug stuff -Ionut
-                for (hashMapImpl<I64, DebugVar>::value_type& var : _debugVariables) {
+                for (hashMap<I64, DebugVar>::value_type& var : _debugVariables) {
                     DebugVar& variable = var.second;
                     const DebugVarDescriptor& descriptor = variable._descriptor;
 
@@ -124,7 +124,7 @@ I64 DebugInterface::addDebugVar(const DebugVarDescriptor& descriptor) {
     DebugVar temp(descriptor);
 
     WriteLock lock(_varMutex);
-    _debugVariables.insert(std::make_pair(temp.getGUID(), temp));
+    hashAlg::insert(_debugVariables, hashAlg::make_pair(temp.getGUID(), temp));
 
     _dirty = true;
 
@@ -136,21 +136,21 @@ I64 DebugInterface::addDebugGroup(const char* name, I64 parentGUID) {
     temp._name = name;
 
     WriteLock lock(_groupMutex);
-    hashMapImpl<I64, DebugGroup>::iterator it = _debugGroups.find(parentGUID);
+    hashMap<I64, DebugGroup>::iterator it = _debugGroups.find(parentGUID);
 
     if (it != std::cend(_debugGroups)) {
         temp._parentGroup = parentGUID;
         it->second._childGroupsGUID.push_back(temp.getGUID());
     }
 
-    _debugGroups.insert(std::make_pair(temp.getGUID(), temp));
+    hashAlg::insert(_debugGroups, hashAlg::make_pair(temp.getGUID(), temp));
 
     return temp.getGUID();
 }
 
 I64 DebugInterface::getDebugGroup(const char* name) {
     ReadLock lock (_groupMutex);
-    for (hashMapImpl<I64, DebugGroup>::value_type& group : _debugGroups) {
+    for (hashMap<I64, DebugGroup>::value_type& group : _debugGroups) {
         if (group.second._name.compare(name) == 0) {
             return group.first;
         }

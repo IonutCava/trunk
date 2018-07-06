@@ -49,7 +49,7 @@ class Camera : public Resource {
     friend class Attorney::CameraGFXDevice;
 
    public:
-    enum class CameraType : U32 { 
+    enum class CameraType : U8 {
         FREE_FLY = 0,
         FIRST_PERSON,
         THIRD_PERSON,
@@ -57,7 +57,7 @@ class Camera : public Resource {
         SCRIPTED
     };
 
-    enum class UtilityCamera : U32 {
+    enum class UtilityCamera : U8 {
         _2D = 0,
         _2D_FLIP_Y,
         DEFAULT,
@@ -408,13 +408,13 @@ class Camera : public Resource {
       static bool activeCamera(U64 camera);
 
     private:
-      typedef hashMapImpl<U64, Camera*> CameraPool;
+      typedef hashMap<U64, Camera*> CameraPool;
 
       static Camera* s_activeCamera;
 
       static std::array<Camera*, to_base(UtilityCamera::COUNT)> _utilityCameras;
 
-      typedef hashMapImpl<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
+      typedef hashMap<U32, DELEGATE_CBK<void, const Camera&> > ListenerMap;
 
       static U32 s_changeCameraId;
       static U32 s_updateCameraId;

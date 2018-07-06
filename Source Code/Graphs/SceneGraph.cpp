@@ -27,7 +27,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _loadComplete(false),
      _octreeChanged(false),
      _ecsEngine(new ECS::ECSEngine()),
-     _rootNode(new SceneRoot(parentScene.resourceCache(), 1234))
+     _rootNode(new SceneRoot(parentScene.resourceCache(), GUIDWrapper::generateGUID()))
 {
     _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 

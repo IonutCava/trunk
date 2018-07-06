@@ -164,7 +164,6 @@ class SamplerDescriptor : public Hashable {
         Util::Hash_combine(_hash, _borderColour.g);
         Util::Hash_combine(_hash, _borderColour.b);
         Util::Hash_combine(_hash, _borderColour.a);
-        Util::Hash_combine(_hash, _msaaSamples);
         return _hash;
     }
     /*
@@ -210,8 +209,6 @@ class SamplerDescriptor : public Hashable {
     F32 _biasLOD;
     /// Used with CLAMP_TO_BORDER as the background colour outside of the texture border
     FColour _borderColour;
-    /// number of MSAA samples: -1 (default) - max supported by implementation/settings, 0 - disabled
-    I32 _msaaSamples;
 };
 
 /// Use to define a texture with details such as type, image formats, etc

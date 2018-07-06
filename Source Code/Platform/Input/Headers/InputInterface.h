@@ -112,12 +112,12 @@ protected:
     EventHandler* _pEventHdlr;
 
     vectorImpl<KBMousePair> _kbMouseDevices;
-    hashMapImpl<I32, I32> _keyboardIDToEntry;
-    hashMapImpl<I32, I32> _mouseIdToEntry;
+    hashMap<I32, I32> _keyboardIDToEntry;
+    hashMap<I32, I32> _mouseIdToEntry;
 
     /// multiple joystick support
     vectorImpl<OIS::JoyStick*> _joysticks;
-    hashMapImpl<I32, Joystick> _joystickIdToEntry;
+    hashMap<I32, Joystick> _joystickIdToEntry;
 
     JoystickInterface* _pJoystickInterface;
     EffectManager* _pEffectMgr;

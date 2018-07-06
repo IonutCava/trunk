@@ -43,7 +43,7 @@ class PhysicsAsset;
 class PXDevice final : public KernelComponent,
                        public PhysicsAPIWrapper {
 public:
-    enum class PhysicsAPI : U32 {
+    enum class PhysicsAPI : U8 {
         PhysX = 0,
         ODE,
         Bullet,

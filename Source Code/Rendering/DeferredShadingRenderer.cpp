@@ -232,7 +232,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.gfx().getDefaultStateBlock(true);
-    pipelineDescriptor._shaderProgram = _previewDeferredShader;
+    pipelineDescriptor._shaderProgramHandle = _previewDeferredShader->getID();
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);;
@@ -268,7 +268,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
         }
     }
 
-    pipelineDescriptor._shaderProgram = _deferredShader;
+    pipelineDescriptor._shaderProgramHandle = _deferredShader->getID();
     pipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, pipelineCmd);
 

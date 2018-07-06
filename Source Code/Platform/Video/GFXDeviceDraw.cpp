@@ -234,7 +234,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._shaderProgram = _HIZCullProgram;
+    pipelineDescriptor._shaderProgramHandle = _HIZCullProgram->getID();
     bindPipelineCmd._pipeline = &newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 
@@ -318,7 +318,7 @@ void GFXDevice::drawTextureInRenderWindow(TextureData data, GFX::CommandBuffer& 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut) const {
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = get2DStateBlock();
-    pipelineDescriptor._shaderProgram = _displayShader;
+    pipelineDescriptor._shaderProgramHandle = _displayShader->getID();
 
     GenericDrawCommand triangleCmd;
     triangleCmd.primitiveType(PrimitiveType::TRIANGLES);

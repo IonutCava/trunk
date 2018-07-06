@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-hashMapImpl<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
+hashMap<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
 
 NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, LocalClient& parentClient)
     : SGNComponent(parentSGN, "NETWORKING"),
@@ -62,7 +62,7 @@ void NetworkingComponent::onNetworkReceive(WorldPacket& dataIn) {
 }
 
 NetworkingComponent* NetworkingComponent::getReceiver(I64 guid) {
-    hashMapImpl<I64, NetworkingComponent*>::const_iterator it = s_NetComponents.find(guid);
+    hashMap<I64, NetworkingComponent*>::const_iterator it = s_NetComponents.find(guid);
 
     if (it != std::cend(s_NetComponents)) {
         return it->second;

@@ -21,7 +21,7 @@ namespace Divide {
 namespace {
     typedef std::pair<GLuint, GLuint> AtomicBufferBindConfig;
 
-    hashMapImpl<GLuint, AtomicBufferBindConfig> g_currentBindConfig;
+    hashMap<GLuint, AtomicBufferBindConfig> g_currentBindConfig;
 
     bool SetIfDifferentBindRange(GLuint bindIndex, GLuint buffer, GLuint bindOffset) {
         AtomicBufferBindConfig targetCfg = std::make_pair(buffer, bindOffset);

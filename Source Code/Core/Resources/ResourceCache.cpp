@@ -61,7 +61,7 @@ void ResourceCache::add(CachedResource_wptr res) {
 
     Console::printfn(Locale::get(_ID("RESOURCE_CACHE_ADD")), resource->name().c_str(), hash);
     WriteLock w_lock(_creationMutex);
-    hashAlg::insert(_resDB, std::make_pair(hash, resource));
+    hashAlg::insert(_resDB, hashAlg::make_pair(hash, CachedResource_wptr(resource)));
 }
 
 CachedResource_ptr ResourceCache::loadResource(size_t descriptorHash, const stringImpl& resourceName) {

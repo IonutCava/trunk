@@ -83,11 +83,11 @@ public:
     }
 
 protected:
-    inline hashMapImpl<I64, DebugVar>& getDebugVariables() noexcept {
+    inline hashMap<I64, DebugVar>& getDebugVariables() noexcept {
         return _debugVariables;
     }
 
-    inline hashMapImpl<I64, DebugGroup>& getDebugGroups() noexcept {
+    inline hashMap<I64, DebugGroup>& getDebugGroups() noexcept {
         return _debugGroups;
     }
 
@@ -95,8 +95,8 @@ protected:
     bool _dirty;
     mutable SharedLock _varMutex;
     mutable SharedLock _groupMutex;
-    hashMapImpl<I64, DebugVar> _debugVariables;
-    hashMapImpl<I64, DebugGroup> _debugGroups;
+    hashMap<I64, DebugVar> _debugVariables;
+    hashMap<I64, DebugGroup> _debugGroups;
 };
 
 }; //namespace Divide

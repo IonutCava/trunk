@@ -44,7 +44,7 @@ class Camera;
 class SceneGraph;
 class RenderTarget;
 class RTDrawDescriptor;
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 class RenderPassManager : public KernelComponent {
 public:

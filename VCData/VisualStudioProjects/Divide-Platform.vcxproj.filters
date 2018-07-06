@@ -702,6 +702,9 @@
       <Filter>Video</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\UnityBuildEngine.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\DescriptorSet.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Audio">

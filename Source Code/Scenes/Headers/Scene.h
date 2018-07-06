@@ -287,12 +287,12 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorImpl<std::shared_ptr<TerrainDescriptor>> _terrainInfoArray;
        F32 _LRSpeedFactor;
        /// Current selection
-       hashMapImpl<PlayerIndex, vectorImpl<I64>> _currentSelection;
-       hashMapImpl<PlayerIndex, I64> _currentHoverTarget;
+       hashMap<PlayerIndex, vectorImpl<I64>> _currentSelection;
+       hashMap<PlayerIndex, I64> _currentHoverTarget;
 
        SceneGraphNode* _currentSky;
-       hashMapImpl<PlayerIndex, SceneGraphNode*> _flashLight;
-       hashMapImpl<PlayerIndex, U32> _cameraUpdateMap;
+       hashMap<PlayerIndex, SceneGraphNode*> _flashLight;
+       hashMap<PlayerIndex, U32> _cameraUpdateMap;
        /// Scene::load must be called by every scene. Add a load flag to make sure!
        bool _loadComplete;
        /// Schedule a scene graph parse with the physics engine to recreate/recheck

@@ -40,7 +40,7 @@ namespace Divide {
 class Ammunition {
    public:
     /// Type of ammo defines it's properties
-    enum class AmmunitionType : U32 {
+    enum class AmmunitionType : U8 {
         /// Uses a counter to keep track of quantity
         AMMUNITION_TYPE_DEPLETABLE = toBit(1),
         /// Does not keep track of quantity

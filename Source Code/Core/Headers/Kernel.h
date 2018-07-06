@@ -56,7 +56,7 @@ namespace Input {
     class InputInterface;
 };
 
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 struct FrameEvent;
 
@@ -251,6 +251,9 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
         return *_renderPassManager;
     }
 
+    inline void setViewportDirty() {
+        _viewportDirty = true;
+    }
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
@@ -264,6 +267,10 @@ class Kernel : public Input::InputAggregatorInterface, private NonCopyable {
     void onSizeChange(const SizeChangeParams& params) const;
 
    private:
+
+    bool _viewportDirty;
+    vectorImpl<Rect<I32>> _targetViewports;
+
     TaskHandle _splashTask;
     std::atomic_bool _splashScreenUpdating;
 

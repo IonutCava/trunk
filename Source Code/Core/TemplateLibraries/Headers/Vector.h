@@ -62,15 +62,21 @@ typename vectorImpl<T, A>::iterator insert_sorted(vectorImpl<T, A>& vec, T const
 }
 
 template<typename T, typename A>
+void insert_unique(vectorImpl<T, A>& target, const T& item)
+{
+    if (std::find(std::cbegin(target), std::cend(target), item) != std::cend(target))
+    {
+        target.push_back(item);
+    }
+}
+
+template<typename T, typename A>
 void insert_unique(vectorImpl<T, A>& target, const vectorImpl<T, A>& source)
 {
     std::for_each(std::cbegin(source), std::cend(source),
         [&target](T const& item) {
-        if (std::find(std::cbegin(target), std::cend(target), item) != std::cend(target))
-        {
-            target.push_back(item);
-        }
-    });
+            insert_unique(target, item);
+        });
 }
 
 

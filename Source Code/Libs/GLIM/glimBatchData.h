@@ -45,7 +45,7 @@ namespace NS_GLIM
         unsigned int m_uiBufferOffset;
         unsigned int m_uiBufferStride;
         // previous attribute location (second) used with the saved shader program(first)
-        typedef hashMapImpl<unsigned int, int> AttributeLocationMap;
+        typedef hashMap<unsigned int, int> AttributeLocationMap;
         AttributeLocationMap m_programAttribLocation;
     };
 
@@ -104,7 +104,7 @@ namespace NS_GLIM
         GLIM_BATCH_STATE m_State;
 
         // All attributes accessible by name.
-        hashMapImpl<unsigned int, GlimArrayData> m_Attributes;
+        hashMap<unsigned int, GlimArrayData> m_Attributes;
 
         // Position data is stored separately, not as an attribute.
         vectorImpl<Glim4ByteData> m_PositionData;

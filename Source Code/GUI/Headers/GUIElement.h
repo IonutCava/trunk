@@ -46,7 +46,7 @@ namespace GFX {
     class CommandBuffer;
 };
 
-enum class GUIType : U32 {
+enum class GUIType : U8 {
     GUI_TEXT = 0,
     GUI_BUTTON = 1,
     GUI_FLASH = 2,

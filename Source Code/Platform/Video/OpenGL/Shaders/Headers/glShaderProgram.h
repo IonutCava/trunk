@@ -59,7 +59,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
   private:
     template<typename T>
     struct UniformCache {
-        typedef hashMapImpl<T, GFX::PushConstant> ShaderVarMap;
+        typedef hashMap<T, GFX::PushConstant> ShaderVarMap;
    
         void clear() {
             _shaderVars.clear();
@@ -68,7 +68,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
         ShaderVarMap _shaderVars;
     };
 
-    typedef hashMapImpl<U64, I32> ShaderVarMap;
+    typedef hashMap<U64, I32> ShaderVarMap;
     typedef UniformCache<U64> UniformsByNameHash;
 
    public:

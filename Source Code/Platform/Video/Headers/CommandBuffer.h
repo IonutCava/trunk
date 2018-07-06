@@ -59,7 +59,7 @@ class CommandBuffer {
     void batch();
 
     // Return true if merge is successful
-    bool tryMergeCommands(std::shared_ptr<GFX::Command>& prevCommand, const std::shared_ptr<GFX::Command>& crtCommand) const;
+    bool tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const;
     inline vectorImplFast<std::shared_ptr<Command>>& operator()();
     inline const vectorImplFast<std::shared_ptr<Command>>& operator()() const;
 

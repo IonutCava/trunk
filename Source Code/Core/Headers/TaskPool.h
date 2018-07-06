@@ -46,7 +46,7 @@ class TaskPool {
     };
 
   public:
-    enum class TaskPoolType : U32 {
+    enum class TaskPoolType : U8 {
         PRIORITY_QUEUE = 0,
         FIFO_QUEUE,
         DONT_CARE,

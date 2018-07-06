@@ -67,11 +67,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
-    typedef hashMapImpl<size_t, ShaderProgram_ptr> ShaderProgramMap;
-    typedef hashMapImpl<U64, stringImpl> AtomMap;
+    typedef vectorImpl<ShaderProgram_wptr> ShaderProgramMap;
+    typedef hashMap<U64, stringImpl> AtomMap;
     typedef std::stack<ShaderProgram_ptr, vectorImpl<ShaderProgram_ptr> > ShaderQueue;
     /// A list of built-in sampler slots. Use these if possible
-    enum class TextureUsage : U32 {
+    enum class TextureUsage : U8 {
         UNIT0 = 0,
         UNIT1 = 1,
         NORMALMAP = 2,
@@ -191,6 +191,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     static bool unregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
     static void registerShaderProgram(const ShaderProgram_ptr& shaderProgram);
+    static ShaderProgram_wptr findShaderProgram(U32 shaderHandle);
+    static ShaderProgram_wptr findShaderProgram(size_t shaderHash);
 
     /// Return a default shader used for general purpose rendering
     static const ShaderProgram_ptr& defaultShader();

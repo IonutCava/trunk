@@ -52,7 +52,7 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
     bool processCommand(const stringImpl& commandString);
 
    private:
-    typedef hashMapImpl<U64 /*command name*/,
+    typedef hashMap<U64 /*command name*/,
                         std::function<void(stringImpl /*args*/)> > CommandMap;
 
     void handleSayCommand(const stringImpl& args);
@@ -69,7 +69,7 @@ class GUIConsoleCommandParser : public CommandParser, public PlatformContextComp
    private:
     ResourceCache& _resCache;
     /// Help text for every command
-    hashMapImpl<U64, const char*> _commandHelp;
+    hashMap<U64, const char*> _commandHelp;
     /// used for sound playback
     AudioDescriptor_ptr _sound;
 };

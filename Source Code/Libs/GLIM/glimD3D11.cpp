@@ -157,7 +157,7 @@ namespace NS_GLIM
         uiStride[0] = sizeof (float) * 3;
         uiOffset[0] = 0;
 
-        hashMapImpl<U64, GlimArrayData>::const_iterator it, itend;
+        hashMap<U64, GlimArrayData>::const_iterator it, itend;
         itend = m_Attributes.end ();
         int iSlot = 1;
         for (it = m_Attributes.begin (); it != itend; ++it, ++iSlot)
@@ -199,7 +199,7 @@ namespace NS_GLIM
 
         // now upload each attribute array one after another
 
-        hashMapImpl<U64, GlimArrayData>::iterator it, itend;
+        hashMap<U64, GlimArrayData>::iterator it, itend;
         itend = m_Attributes.end ();
 
         for (it = m_Attributes.begin (); it != itend; ++it)

@@ -61,12 +61,12 @@ namespace Attorney {
 };
 
 /// Usage context affects lighting, navigation, physics, etc
-enum class NodeUsageContext : U32 {
+enum class NodeUsageContext : U8 {
     NODE_DYNAMIC = 0,
     NODE_STATIC
 };
 
-enum class SceneNodeType : U32 {
+enum class SceneNodeType : U16 {
     TYPE_ROOT = toBit(1),       //< root node
     TYPE_OBJECT3D = toBit(2),   //< 3d objects in the scene
     TYPE_TRANSFORM = toBit(3),  //< dummy node to stack multiple transforms

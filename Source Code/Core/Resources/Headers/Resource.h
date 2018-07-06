@@ -51,7 +51,7 @@ namespace Divide {
 /// It will still exist, but won't contain any data.
 /// RES_UNKNOWN and RES_CREATED are safe to delete
 
-enum class ResourceState : U32 {
+enum class ResourceState : U8 {
     RES_UNKNOWN = 0,  //<The resource exists, but it's state is undefined
     RES_CREATED = 1,  //<The pointer has been created and instantiated, but no
                       //data has been loaded
@@ -61,7 +61,7 @@ enum class ResourceState : U32 {
     COUNT
 };
 
-enum class ResourceType : U32 {
+enum class ResourceType : U8 {
     DEFAULT = 0,
     GPU_OBJECT = 1, //< Textures, Render targets, shaders, etc
     COUNT
@@ -145,7 +145,7 @@ protected:
     mutable SharedLock _callbackLock;
 };
 
-enum class GeometryType : U32 {
+enum class GeometryType : U8 {
     VEGETATION,  ///< For special rendering subroutines
     PRIMITIVE,   ///< Simple objects: Boxes, Spheres etc
     GEOMETRY,    ///< All other forms of geometry
@@ -185,7 +185,7 @@ struct TerrainInfo {
     /// "variables" contains the various strings needed for each terrain such as
     /// texture names,
     /// terrain name etc.
-    hashMapImpl<U64, stringImpl> variables;
+    hashMap<U64, stringImpl> variables;
     F32 grassDensity = 1.0f;
     F32 treeDensity = 1.0f;
     F32 grassScale = 1.0f;

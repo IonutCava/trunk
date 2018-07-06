@@ -305,8 +305,10 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
         F32 fov = _platformContext->config().runtime.verticalFOV;;
         vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
 
-        for (const Player_ptr& player : getPlayers()) {
-            player->getCamera().setProjection(aspectRatio, fov, zPlanes);
+        for (const Player_ptr& player : _players) {
+            if (player != nullptr) {
+                player->getCamera().setProjection(aspectRatio, fov, zPlanes);
+            }
         }
 
         Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setProjection(aspectRatio, fov, zPlanes);
@@ -324,19 +326,28 @@ void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, boo
 void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
     I64 sgnGUID = playerNode->getGUID();
     for (const Player_ptr& crtPlayer : _players) {
-        if (crtPlayer->getBoundNode()->getGUID() == sgnGUID) {
+        if (crtPlayer && crtPlayer->getBoundNode()->getGUID() == sgnGUID) {
             return;
         }
     }
 
-    Player_ptr player = std::make_shared<Player>(to_U8(_players.size()));
-    player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-    player->getCamera().setFixedYawAxis(true);
-    playerNode->get<UnitComponent>()->setUnit(player);
+    U32 i = 0;
+    for (; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
+        if (_players[i] == nullptr) {
+            break;
+        }
+    }
 
-    _players.push_back(player);
-    _platformContext->gfx().resizeHistory(to_U8(_players.size()));
-     Attorney::SceneManager::onPlayerAdd(parentScene, player);
+    if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
+        Player_ptr player = std::make_shared<Player>(to_U8(i));
+        player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+        player->getCamera().setFixedYawAxis(true);
+        playerNode->get<UnitComponent>()->setUnit(player);
+
+        _players[i] = player;
+        _platformContext->gfx().resizeHistory(to_U8(_players.size()));
+        Attorney::SceneManager::onPlayerAdd(parentScene, player);
+    }
 }
 
 void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool queue) {
@@ -349,27 +360,33 @@ void SceneManager::removePlayer(Scene& parentScene, Player_ptr& player, bool que
 
 void SceneManager::removePlayerInternal(Scene& parentScene, Player_ptr& player) {
     if (player) {
+        bool found = false;
         I64 targetGUID = player->getGUID();
-        vectorAlg::vecSize initialSize = _players.size();
+        for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
+            if (_players[i] != nullptr && _players[i]->getGUID() == targetGUID) {
+                _players[i] = nullptr;
+                found = true;
+            }
+        }
 
-        _players.erase(
-            std::remove_if(std::begin(_players),
-                           std::end(_players),
-                           [&targetGUID](const Player_ptr& crtPlayer) {
-                               return crtPlayer->getGUID() == targetGUID;
-                           }),
-            std::end(_players));
-
-        if (initialSize != _players.size()) {
+        if (found) {
             _platformContext->gfx().resizeHistory(to_U8(_players.size()));
+            parent().setViewportDirty();
             Attorney::SceneManager::onPlayerRemove(parentScene, player);
         }
         player.reset();
     }
 }
 
-const SceneManager::PlayerList& SceneManager::getPlayers() const {
-    return _players;
+
+U32 SceneManager::getActivePlayerCount() const {
+    U32 ret = 0;
+    for (const Player_ptr& player : _players) {
+        if (player != nullptr) {
+            ++ret;
+        }
+    }
+    return ret;
 }
 
 bool SceneManager::frameStarted(const FrameEvent& evt) {
@@ -498,7 +515,7 @@ bool SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
 Camera* SceneManager::playerCamera(PlayerIndex idx) const {
     Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
-        overrideCamera = &getPlayers().at(idx)->getCamera();
+        overrideCamera = &_players[idx]->getCamera();
     }
 
     return overrideCamera;
@@ -511,7 +528,7 @@ Camera* SceneManager::playerCamera() const {
 void SceneManager::currentPlayerPass(PlayerIndex idx) {
     _currentPlayerPass = idx;
     _platformContext->gfx().historyIndex(idx, true);
-    Camera& playerCam = getPlayers().at(_currentPlayerPass)->getCamera();
+    Camera& playerCam = _players[_currentPlayerPass]->getCamera();
     _platformContext->gfx().setSceneZPlanes(playerCam.getZPlanes());
     Attorney::SceneManager::currentPlayerPass(getActiveScene(), idx);
 }

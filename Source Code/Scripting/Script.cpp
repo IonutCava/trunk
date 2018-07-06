@@ -40,7 +40,7 @@ Script::Script(const stringImpl& scriptPathOrCode, FileType fileType)
     bootstrap();
     extractAtoms();
     if (s_scriptsReady) {
-        hashAlg::insert(s_scripts, std::make_pair(getGUID(), this));
+        hashAlg::insert(s_scripts, hashAlg::make_pair(getGUID(), this));
     }
 }
 

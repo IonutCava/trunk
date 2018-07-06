@@ -45,7 +45,7 @@ class Texture;
 
 DEFINE_SINGLETON(PostFX)
    private:
-      enum class TexOperatorBindPoint : U32 {
+      enum class TexOperatorBindPoint : U8 {
           TEX_BIND_POINT_SCREEN = 0,
           TEX_BIND_POINT_BORDER = 1,
           TEX_BIND_POINT_NOISE = 2,

@@ -65,19 +65,20 @@ STRUCT_NAME(scene)::STRUCT_NAME(scene)()  {             \
 #define INIT_SCENE_FACTORY \
     namespace { \
         typedef std::function<Scene*(PlatformContext& context, ResourceCache& cache, SceneManager& parent, const stringImpl& name)> SceneConstructor; \
-        typedef hashMapImpl<stringImpl, SceneConstructor> SceneFactory; \
+        typedef hashMap<stringImpl, SceneConstructor> SceneFactory; \
         SceneFactory g_sceneFactory; \
     };\
-    REGISTER_SCENE(DefaultScene)\
-    REGISTER_SCENE(MainScene)\
     REGISTER_SCENE(CubeScene)\
-    REGISTER_SCENE(NetworkScene)\
-    REGISTER_SCENE(PingPongScene)\
+    REGISTER_SCENE(DefaultScene)\
     REGISTER_SCENE(FlashScene)\
-    REGISTER_SCENE(TenisScene)\
+    REGISTER_SCENE(MainScene)\
+    REGISTER_SCENE(NetworkScene)\
     REGISTER_SCENE(PhysXScene)\
-    REGISTER_SCENE(WarScene)\
+    REGISTER_SCENE(PingPongScene)\
+    REGISTER_SCENE(ReflectionScene)\
     REGISTER_SCENE(ShadowScene)\
-    REGISTER_SCENE(ReflectionScene)
+    REGISTER_SCENE(TenisScene)\
+    REGISTER_SCENE(WarScene)
+    
 
 #endif

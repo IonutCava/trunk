@@ -60,23 +60,8 @@ void glIMPrimitive::endBatch() {
 
 void glIMPrimitive::pipeline(const Pipeline& pipeline) {
 
-    ShaderProgram* shaderProgram = pipeline.shaderProgram();
-    if (shaderProgram == nullptr) {
-        // Inform the primitive that we're using the imShader
-        // A primitive can be rendered with any shader program available, so
-        // make sure we actually use the right one for this stage
-        PipelineDescriptor newPipelineDescriptor;
-        newPipelineDescriptor._shaderProgram = ShaderProgram::defaultShader();
-        newPipelineDescriptor._multiSampleCount = pipeline.multiSampleCount();
-        newPipelineDescriptor._stateHash = pipeline.stateHash();
-
-        IMPrimitive::pipeline(_context.newPipeline(newPipelineDescriptor));
-        shaderProgram = newPipelineDescriptor._shaderProgram.lock().get();
-    } else {
-        IMPrimitive::pipeline(pipeline);
-    }
-
-    _imInterface->SetShaderProgramHandle(shaderProgram->getID());
+    IMPrimitive::pipeline(pipeline);
+    _imInterface->SetShaderProgramHandle(pipeline.shaderProgramHandle());
 }
 
 void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
@@ -97,7 +82,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
     if (!paused()) {
         _cmdBuffer->clear();
 
-        DIVIDE_ASSERT(_pipeline->shaderProgram() != nullptr,
+        DIVIDE_ASSERT(_pipeline->shaderProgramHandle() != 0,
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         GenericDrawCommand cmd;

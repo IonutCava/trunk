@@ -66,7 +66,7 @@ bool InputActionList::registerInputAction(U16 id, DELEGATE_CBK<void, InputParams
 }
 
 InputAction& InputActionList::getInputAction(U16 id) {
-    hashMapImpl<U16, InputAction>::iterator it;
+    hashMap<U16, InputAction>::iterator it;
     it = _inputActions.find(id);
 
     if (it != std::cend(_inputActions)) {
@@ -77,7 +77,7 @@ InputAction& InputActionList::getInputAction(U16 id) {
 }
 
 const InputAction& InputActionList::getInputAction(U16 id) const {
-    hashMapImpl<U16, InputAction>::const_iterator it;
+    hashMap<U16, InputAction>::const_iterator it;
     it = _inputActions.find(id);
 
     if (it != std::cend(_inputActions)) {

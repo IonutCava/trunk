@@ -41,13 +41,13 @@ namespace Divide {
         class TransformComponentSGN;
     };
     
-    enum class TransformType : U32 {
+    enum class TransformType : U8 {
         NONE = 0,
         TRANSLATION = toBit(1),
         SCALE = toBit(2),
         ROTATION = toBit(3),
         ALL = TRANSLATION | SCALE | ROTATION,
-        COUNT = 3
+        COUNT = 4
     };
 
     class TransformComponent : public SGNComponent<TransformComponent>,

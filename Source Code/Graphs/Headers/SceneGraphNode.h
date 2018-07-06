@@ -60,7 +60,7 @@ class TransformComponent;
 
 struct TransformDirty;
 
-enum class PhysicsGroup : U32 {
+enum class PhysicsGroup : U8 {
     GROUP_STATIC = 0,
     GROUP_DYNAMIC,
     GROUP_KINEMATIC,
@@ -135,14 +135,14 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
    public:
 
-    enum class SelectionFlag : U32 {
+    enum class SelectionFlag : U8 {
         SELECTION_NONE = 0,
         SELECTION_HOVER,
         SELECTION_SELECTED,
         SELECTION_COUNT
     };
 
-    enum class UpdateFlag : U32 {
+    enum class UpdateFlag : U8 {
         SPATIAL_PARTITION = toBit(1),
         THREADED_LOAD = toBit(2),
         COUNT = 2

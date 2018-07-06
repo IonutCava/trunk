@@ -47,12 +47,12 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 /// Unit interface
 class Unit : public FrameListener {
    public:
-    typedef hashMapImpl<U32, I32> AttributeMap;
+    typedef hashMap<U32, I32> AttributeMap;
     friend class Attorney::UnitComponent;
 
    public:
     /// Currently supported unit types
-    enum class UnitType : U32 {
+    enum class UnitType : U8 {
         /// "Living beings"
         UNIT_TYPE_CHARACTER,
         /// e.g. Cars, planes, ships etc

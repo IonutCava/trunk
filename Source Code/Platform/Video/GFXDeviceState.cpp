@@ -353,6 +353,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _axisGizmo->name("GFXDeviceAxisGizmo");
     RenderStateBlock primitiveDescriptor(RenderStateBlock::get(getDefaultStateBlock(true)));
     pipelineDesc._stateHash = primitiveDescriptor.getHash();
+    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
+
     Pipeline primitivePipeline = newPipeline(pipelineDesc);
     _axisGizmo->pipeline(primitivePipeline);
 
@@ -371,7 +373,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     assert(_textRenderShader != nullptr);
     _textRenderConstants.set("dvd_WorldMatrix", GFX::PushConstantType::MAT4, mat4<F32>());
     PipelineDescriptor descriptor;
-    descriptor._shaderProgram = _textRenderShader;
+    descriptor._shaderProgramHandle = _textRenderShader->getID();
     descriptor._stateHash = get2DStateBlock();
     _textRenderPipeline = &newPipeline(descriptor);
 

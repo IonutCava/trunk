@@ -31,10 +31,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* node) {
     assert(node);
 
     if (container != std::end(_nodeContainerMap)) {
-        std::pair<NodeContainer::const_iterator, bool> result;
-        result = hashAlg::insert(container->second,
-                                 node->getGUID(),
-                                 node);
+        auto result = hashAlg::insert(container->second, node->getGUID(), node);
         if (!result.second) {
             Console::errorfn("VisualSensor: Added the same node to follow twice!");
         }

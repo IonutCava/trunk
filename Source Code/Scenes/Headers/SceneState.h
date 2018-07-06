@@ -50,7 +50,7 @@
 
 namespace Divide {
 
-enum class MusicType : U32 {
+enum class MusicType : U8 {
     TYPE_BACKGROUND = 0,
     TYPE_COMBAT,
     COUNT
@@ -103,7 +103,7 @@ class SceneRenderState : public SceneComponent {
     friend class Attorney::SceneRenderStateScene;
 
    public:
-    enum class GizmoState : U32 {
+    enum class GizmoState : U8 {
         NO_GIZMO = toBit(1),
         SCENE_GIZMO = toBit(2),
         SELECTED_GIZMO = toBit(3),
@@ -111,7 +111,7 @@ class SceneRenderState : public SceneComponent {
         COUNT = 4
     };
 
-    enum class RenderOptions : U32 {
+    enum class RenderOptions : U16 {
         /// Show/hide bounding boxes and/or objects
         RENDER_AABB = toBit(1),
         /// Show/hide debug lines
@@ -171,7 +171,7 @@ class SceneRenderState : public SceneComponent {
 
 class Camera;
 
-enum class MoveDirection : I32 {
+enum class MoveDirection : I8 {
     NONE = 0,
     NEGATIVE = -1,
     POSITIVE = 1
@@ -180,18 +180,22 @@ enum class MoveDirection : I32 {
 class SceneStatePerPlayer {
   public:
     SceneStatePerPlayer()
-        : _cameraLockedToMouse(false),
-          _cameraUnderwater(false),
-          _cameraUpdated(false),
-          _overrideCamera(nullptr)
     {
-         resetMovement();
+        resetAll();
     }
 
     inline void resetMovement() {
         _moveFB = _moveLR = _angleUD = _angleLR = _roll = MoveDirection::NONE;
         _aimPos.reset();
         _aimDelta.reset();
+
+    }
+
+    inline void resetAll() {
+        resetMovement();
+        _cameraUnderwater = false;
+        _cameraUpdated = false;
+        _overrideCamera = nullptr;
     }
 
     inline void cameraUnderwater(bool state) { _cameraUnderwater = state; }
@@ -245,7 +249,7 @@ private:
 class SceneState : public SceneComponent {
    public:
     /// Background music map : trackName - track
-    typedef hashMapImpl<U64, AudioDescriptor_ptr> MusicPlaylist;
+    typedef hashMap<U64, AudioDescriptor_ptr> MusicPlaylist;
 
     SceneState(Scene& parentScene)
         : SceneComponent(parentScene),
@@ -268,15 +272,21 @@ class SceneState : public SceneComponent {
     }
 
     inline void onPlayerAdd(U8 index) {
-        _playerState.insert(std::make_pair(index, SceneStatePerPlayer()));
+        // Just reset everything
+        onPlayerRemove(index);
     }
 
     inline void onPlayerRemove(U8 index) {
-        playerState(index).resetMovement();
+        _playerState[index].resetAll();
     }
 
-    inline SceneStatePerPlayer& playerState(U8 index) { return _playerState.find(index)->second; }
-    inline const SceneStatePerPlayer& playerState(U8 index) const { return _playerState.find(index)->second; }
+    inline SceneStatePerPlayer& playerState(U8 index) {
+        return _playerState[index];
+    }
+
+    inline const SceneStatePerPlayer& playerState(U8 index) const {
+        return _playerState[index];
+    }
 
     inline FogDescriptor& fogDescriptor()   { return _fog; }
     inline SceneRenderState& renderState()  { return _renderState; }
@@ -307,7 +317,7 @@ class SceneState : public SceneComponent {
 protected:
 
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
-    hashMapImpl<U8, SceneStatePerPlayer> _playerState;
+    std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
 
     bool _saveLoadDisabled;
 

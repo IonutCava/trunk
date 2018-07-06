@@ -51,12 +51,12 @@ namespace Font {
 
 class TextLabelStyle : public Hashable {
   protected:
-    typedef hashMapImpl<size_t, TextLabelStyle> TextLabelStyleMap;
+    typedef hashMap<size_t, TextLabelStyle> TextLabelStyleMap;
     static TextLabelStyleMap s_textLabelStyleMap;
     static SharedLock s_textLableStyleMapMutex;
     static size_t s_defaultCacheValue;
 
-    typedef hashMapImpl<size_t, stringImpl> FontNameHashMap;
+    typedef hashMap<size_t, stringImpl> FontNameHashMap;
     static FontNameHashMap s_fontNameMap;
 
   public:

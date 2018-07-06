@@ -34,7 +34,7 @@ void WaypointGraph::removeWaypoint(Waypoint* wp) {
 }
 
 void WaypointGraph::updateGraph() {
-    typedef hashMapImpl<U32, Waypoint*> wp;
+    typedef hashMap<U32, Waypoint*> wp;
     _positions.clear();
     _rotations.clear();
     _times.clear();

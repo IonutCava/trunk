@@ -50,8 +50,8 @@ void SceneInput::onRemoveActive() {
 }
 
 void SceneInput::onPlayerAdd(U8 index) {
-    _keyLog.insert(std::make_pair(index, KeyLog()));
-    _mouseBtnLog.insert(std::make_pair(index, MouseBtnLog()));
+    hashAlg::insert(_keyLog, index, KeyLog());
+    hashAlg::insert(_mouseBtnLog, index, MouseBtnLog());
 
     std::pair<I32, I32>& devices = _playerControlDevices[index];
     
@@ -104,7 +104,7 @@ void SceneInput::onPlayerRemove(U8 index) {
 }
 
 U8 SceneInput::getPlayerIndexForDevice(U8 deviceIndex) const {
-    for (hashMapImpl<U8 /*player index*/, std::pair<I32, I32>>::value_type it : _playerControlDevices) {
+    for (hashMap<U8 /*player index*/, std::pair<I32, I32>>::value_type it : _playerControlDevices) {
         if (it.second.first == deviceIndex || it.second.second == deviceIndex) {
             return it.first;
         }
@@ -330,7 +330,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 }
 
 bool SceneInput::addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks) {
-    std::pair<KeyMap::iterator, bool> result = hashAlg::insert(_keyMap, key, keyCbks);
+    auto result = hashAlg::insert(_keyMap, key, keyCbks);
     if (!result.second) {
         return result.first->second.merge(keyCbks);
     }
@@ -368,8 +368,7 @@ bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCb
 }
 
 bool SceneInput::addMouseMapping(Input::MouseButton button, PressReleaseActions btnCbks) {
-    std::pair<MouseMap::iterator, bool> result =
-        hashAlg::insert(_mouseMap, button, btnCbks);
+    auto result = hashAlg::insert(_mouseMap, button, btnCbks);
 
     return result.second;
 }

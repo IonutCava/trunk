@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class RenderDetailLevel : U32;
+enum class RenderDetailLevel : U8;
 
 class Configuration : public XML::IXMLSerializable {
 public:

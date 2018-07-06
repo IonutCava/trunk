@@ -162,9 +162,9 @@ bool Terrain::onRender(SceneGraphNode& sgn,
 
         const Pipeline* pipeline = pkg.pipeline(1);
         PipelineDescriptor descriptor = pipeline->descriptor();
-        descriptor._shaderProgram = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                     ? _planeDepthShader
-                                     : _planeShader);
+        descriptor._shaderProgramHandle = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                                                   ? _planeDepthShader
+                                                                   : _planeShader)->getID();
 
         pkg.pipeline(1, _context.newPipeline(descriptor));
 
@@ -215,10 +215,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
 
         PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._shaderProgram = 
+        pipelineDescriptor._shaderProgramHandle = 
             (renderStagePass.pass() == RenderPassType::DEPTH_PASS
                                      ? _planeDepthShader
-                                     : _planeShader);
+                                     : _planeShader)->getID();
         {
             GFX::BindPipelineCommand pipelineCommand;
             pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);
@@ -238,7 +238,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
             pkgInOut.addDrawCommand(drawCommand);
         }
 
-        pipelineDescriptor._shaderProgram = ShaderProgram::defaultShader();
+        pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
         {
             GFX::BindPipelineCommand pipelineCommand;
             pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);

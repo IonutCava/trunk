@@ -46,7 +46,7 @@ class Texture;
 namespace GFX {
     class CommandBuffer;
 };
-enum class PrimitiveType : U32;
+enum class PrimitiveType : U8;
 
 FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 

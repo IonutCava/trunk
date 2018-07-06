@@ -53,7 +53,7 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
 
     GFX::BindPipelineCommand bindPipelineCmd;
     PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._shaderProgram = _lightCullComputeShader;
+    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getID();
     bindPipelineCmd._pipeline = &_context.gfx().newPipeline(pipelineDescriptor);
     GFX::BindPipeline(bufferInOut, bindPipelineCmd);
 

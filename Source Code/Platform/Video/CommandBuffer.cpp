@@ -87,7 +87,7 @@ CommandBuffer::~CommandBuffer()
 void CommandBuffer::batch() {
     clean();
 
-    std::array<std::shared_ptr<Command>, to_base(GFX::CommandType::COUNT)> prevCommands;
+    std::array<Command*, to_base(GFX::CommandType::COUNT)> prevCommands;
     CommandData::iterator it;
 
     bool tryMerge = true;
@@ -104,17 +104,18 @@ void CommandBuffer::batch() {
                 prevCommands.fill(nullptr);
             }
 
-            std::shared_ptr<Command>& prevCommand = prevCommands[to_U16(cmd->_type)];
-
+            Command* crtCommand = cmd.get();
+            Command* prevCommand = prevCommands[to_U16(cmd->_type)];
+            
             if (prevCommand != nullptr && prevCommand->_type == cmd->_type) {
-                if (tryMergeCommands(prevCommand, cmd)) {
+                if (tryMergeCommands(prevCommand, crtCommand)) {
                     it = _data.erase(it);
                     skip = true;
                     tryMerge = true;
                 }
             }
             if (!skip) {
-                prevCommand = cmd;
+                prevCommand = crtCommand;
                 ++it;
             }
         }
@@ -356,12 +357,12 @@ bool CommandBuffer::validate() const {
     return valid;
 }
 
-bool CommandBuffer::tryMergeCommands(std::shared_ptr<GFX::Command>& prevCommand, const std::shared_ptr<GFX::Command>& crtCommand) const {
+bool CommandBuffer::tryMergeCommands(GFX::Command* prevCommand, GFX::Command* crtCommand) const {
     assert(prevCommand != nullptr && crtCommand != nullptr && prevCommand->_type == crtCommand->_type);
     switch (crtCommand->_type) {
         case GFX::CommandType::DRAW_COMMANDS : {
-            DrawCommand* crtDrawCommand = static_cast<DrawCommand*>(crtCommand.get());
-            DrawCommand* prevDrawCommand = static_cast<DrawCommand*>(prevCommand.get());
+            DrawCommand* crtDrawCommand = static_cast<DrawCommand*>(crtCommand);
+            DrawCommand* prevDrawCommand = static_cast<DrawCommand*>(prevCommand);
 
             prevDrawCommand->_drawCommands.insert(std::cend(prevDrawCommand->_drawCommands),
                                                   std::cbegin(crtDrawCommand->_drawCommands),
@@ -411,15 +412,15 @@ bool CommandBuffer::tryMergeCommands(std::shared_ptr<GFX::Command>& prevCommand,
         }break;
 
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
-            BindDescriptorSetsCommand* crtBindCommand = static_cast<BindDescriptorSetsCommand*>(crtCommand.get());
-            BindDescriptorSetsCommand* prevBindCommand = static_cast<BindDescriptorSetsCommand*>(prevCommand.get());
+            BindDescriptorSetsCommand* crtBindCommand = static_cast<BindDescriptorSetsCommand*>(crtCommand);
+            BindDescriptorSetsCommand* prevBindCommand = static_cast<BindDescriptorSetsCommand*>(prevCommand);
             return prevBindCommand->_set.merge(crtBindCommand->_set);
 
         } break;
 
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            SendPushConstantsCommand* crtPushConstants = static_cast<SendPushConstantsCommand*>(crtCommand.get());
-            SendPushConstantsCommand* prevPushConstants = static_cast<SendPushConstantsCommand*>(prevCommand.get());
+            SendPushConstantsCommand* crtPushConstants = static_cast<SendPushConstantsCommand*>(crtCommand);
+            SendPushConstantsCommand* prevPushConstants = static_cast<SendPushConstantsCommand*>(prevCommand);
             return prevPushConstants->_constants.merge(crtPushConstants->_constants);
         } break;
         

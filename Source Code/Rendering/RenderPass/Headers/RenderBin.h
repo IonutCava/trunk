@@ -67,7 +67,7 @@ struct RenderBinItem {
 };
 
 struct RenderingOrder {
-    enum class List : U32 {
+    enum class List : U8 {
         NONE = 0,
         FRONT_TO_BACK = 1,
         BACK_TO_FRONT = 2,
@@ -77,7 +77,7 @@ struct RenderingOrder {
 };
 
 //Bins can sold certain node types. This is also the order in which nodes will be rendered!
-BETTER_ENUM(RenderBinType, U32, 
+BETTER_ENUM(RenderBinType, U32,
     RBT_TERRAIN = 0, //< Terrains should occupy most of the screen and be balanced fill/geometry cost
     RBT_OPAQUE,      //< Opaque geometry will be occluded by terrain but will often occlude most of the sky (e.g.: indoors)
     RBT_SKY,         //< Sky needs to be drawn after ALL opque geometry to save on fillrate

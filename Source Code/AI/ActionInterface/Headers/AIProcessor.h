@@ -40,7 +40,7 @@ class Texture;
 namespace AI {
 
 class AIManager;
-enum class AIMsg : U32;
+enum class AIMsg : U8;
 /// Provides a scene-level AI implementation
 class NOINITVTABLE AIProcessor : private NonCopyable {
    public:

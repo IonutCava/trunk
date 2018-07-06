@@ -46,7 +46,7 @@ namespace CEGUI {
 
 namespace Divide {
 
-enum class ErrorCode;
+enum class ErrorCode : I8;
 
 template <typename T>
 class vec4;

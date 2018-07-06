@@ -43,7 +43,7 @@ FWD_DECLARE_MANAGED_CLASS(Sphere3D);
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 class Sky : public SceneNode {
    public:

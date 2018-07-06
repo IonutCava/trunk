@@ -59,7 +59,7 @@ struct TerrainTextureLayer {
 
     ~TerrainTextureLayer();
 
-    enum class TerrainTextureChannel : U32 {
+    enum class TerrainTextureChannel : U8 {
         TEXTURE_RED_CHANNEL = 0,
         TEXTURE_GREEN_CHANNEL = 1,
         TEXTURE_BLUE_CHANNEL = 2,
@@ -159,7 +159,7 @@ class Terrain : public Object3D {
 
    public:
     //indices per chunk
-    hashMapImpl<U32, vectorImpl<U32>> _physicsIndices;
+    hashMap<U32, vectorImpl<U32>> _physicsIndices;
     vectorImpl<VertexBuffer::Vertex> _physicsVerts;
 
    protected:

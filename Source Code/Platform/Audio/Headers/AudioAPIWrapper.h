@@ -56,7 +56,7 @@ static const U32 MAX_SOUND_BUFFERS = 64;
 class NOINITVTABLE AudioAPIWrapper {
    public:
      typedef std::pair<U32, vectorImpl<AudioDescriptor_ptr>> MusicPlaylist;
-     typedef hashMapImpl<U32, MusicPlaylist> MusicPlaylists;
+     typedef hashMap<U32, MusicPlaylist> MusicPlaylists;
 
    protected:
     friend class SFXDevice;

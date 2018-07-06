@@ -68,11 +68,11 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     void addVariable(const stringImpl& name, const stringImpl& value) {
-        hashAlg::insert(_variables, std::make_pair(_ID_RT(name), value));
+        hashAlg::insert(_variables, hashAlg::make_pair(_ID_RT(name), value));
     }
 
     void addVariable(const stringImpl& name, F32 value) {
-        hashAlg::insert(_variablesf, std::make_pair(_ID_RT(name), value));
+        hashAlg::insert(_variablesf, hashAlg::make_pair(_ID_RT(name), value));
     }
 
     void setTextureLayerCount(U8 count) { _textureLayers = count; }
@@ -103,7 +103,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     const vec2<F32>& getScale() const { return _scale; }
 
     stringImpl getVariable(const stringImpl& name) const {
-        hashMapImpl<U64, stringImpl>::const_iterator it = _variables.find(_ID_RT(name));
+        hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID_RT(name));
         if (it != std::end(_variables)) {
             return it->second;
         }
@@ -111,7 +111,7 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
     F32 getVariablef(const stringImpl& name) const {
-        hashMapImpl<U64, F32>::const_iterator it = _variablesf.find(_ID_RT(name));
+        hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID_RT(name));
         if (it != std::end(_variablesf)) {
             return it->second;
         }
@@ -120,11 +120,11 @@ class TerrainDescriptor : public PropertyDescriptor {
 
     inline size_t getHash() const override {
         size_t hash = 0;
-        for (hashMapImpl<U64, stringImpl>::value_type it : _variables) {
+        for (hashMap<U64, stringImpl>::value_type it : _variables) {
             Util::Hash_combine(hash, it.first);
             Util::Hash_combine(hash, it.second);
         }
-        for (hashMapImpl<U64, F32>::value_type it : _variablesf) {
+        for (hashMap<U64, F32>::value_type it : _variablesf) {
             Util::Hash_combine(hash, it.first);
             Util::Hash_combine(hash, it.second);
         }
@@ -151,8 +151,8 @@ class TerrainDescriptor : public PropertyDescriptor {
     }
 
    private:
-    hashMapImpl<U64, stringImpl> _variables;
-    hashMapImpl<U64, F32> _variablesf;
+    hashMap<U64, stringImpl> _variables;
+    hashMap<U64, F32> _variablesf;
     F32 _grassDensity;
 
     /// chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN

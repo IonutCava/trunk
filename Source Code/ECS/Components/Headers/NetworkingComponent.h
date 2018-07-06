@@ -68,7 +68,7 @@ private:
     WorldPacket _previousReceived;
     
 
-    static hashMapImpl<I64, NetworkingComponent*> s_NetComponents;
+    static hashMap<I64, NetworkingComponent*> s_NetComponents;
 };
 
 }; //namespace Divide

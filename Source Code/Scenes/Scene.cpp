@@ -95,6 +95,7 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
         _linesPrimitive->name("LinesRayPick");
         PipelineDescriptor pipeDesc;
         pipeDesc._stateHash = primitiveDescriptor.getHash();
+        pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
 
         _linesPrimitive->pipeline(_context.gfx().newPipeline(pipeDesc));
         _linesPrimitive->paused(true);
@@ -917,7 +918,7 @@ void Scene::onSetActive() {
     }
     _context.sfx().playMusic(0);
 
-    assert(_parent.getPlayers().empty());
+    assert(_parent.getActivePlayerCount() == 0);
     addPlayerInternal(false);
 
     static stringImpl originalTitle = _context.app().windowManager().getActiveWindow().title();
@@ -928,21 +929,26 @@ void Scene::onRemoveActive() {
     _aiManager->pauseUpdate(true);
 
     while(!_scenePlayers.empty()) {
-        _parent.removePlayer(*this, _scenePlayers.back(), false);
+        Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers.back(), false);
     }
 
     input().onRemoveActive();
 }
 
 void Scene::addPlayerInternal(bool queue) {
-    stringImpl playerName = getPlayerSGNName(to_U8(_parent.getPlayers().size()));
+    // Limit max player count
+    if (_parent.getActivePlayerCount() == Config::MAX_LOCAL_PLAYER_COUNT) {
+        return;
+    }
+
+    stringImpl playerName = getPlayerSGNName(static_cast<PlayerIndex>(_parent.getActivePlayerCount()));
     
     SceneGraphNode* playerSGN(_sceneGraph->findNode(playerName));
     if (!playerSGN) {
         SceneGraphNode& root = _sceneGraph->getRoot();
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
-        playerNodeDescriptor._node = SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, 12345678 + _parent.getPlayers().size(), g_PlayerExtents));
+        playerNodeDescriptor._node = SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), g_PlayerExtents));
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
@@ -955,7 +961,7 @@ void Scene::addPlayerInternal(bool queue) {
                                               to_base(ComponentType::NETWORKING);
 
         playerSGN = root.addNode(playerNodeDescriptor);
-        _parent.addPlayer(*this, playerSGN, queue);
+        Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
     } else {
         assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
     }
@@ -964,7 +970,7 @@ void Scene::addPlayerInternal(bool queue) {
 void Scene::removePlayerInternal(PlayerIndex idx) {
     assert(idx < _scenePlayers.size());
     
-    _parent.removePlayer(*this, _scenePlayers[getSceneIndexForPlayer(idx)], true);
+    Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers[getSceneIndexForPlayer(idx)], true);
 }
 
 void Scene::onPlayerAdd(const Player_ptr& player) {

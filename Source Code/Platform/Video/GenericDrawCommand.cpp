@@ -8,7 +8,7 @@
 namespace Divide {
 
 namespace GenericDrawCommandResults {
-    hashMapImpl<I64, QueryResult> g_queryResults;
+    hashMap<I64, QueryResult> g_queryResults;
 };
 
 IndirectDrawCommand::IndirectDrawCommand()
@@ -58,8 +58,6 @@ GenericDrawCommand::GenericDrawCommand(PrimitiveType type,
     _cmd.indexCount = indexCount;
     _cmd.firstIndex = firstIndex;
     _cmd.primCount = primCount;
-
-    static_assert(sizeof(GenericDrawCommand) == 56, "Size of GenericDrawCommand is incorrect!");
 }
 
 GenericDrawCommand::GenericDrawCommand(const GenericDrawCommand& other)

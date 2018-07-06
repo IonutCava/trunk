@@ -132,7 +132,7 @@ namespace Divide {
      public:
 
         static ResourceCache* s_globalCache;
-        static hashMapImpl<U32, Texture_ptr> s_imageEditorCache;
+        static hashMap<U32, Texture_ptr> s_imageEditorCache;
     }; //class PanelManager
 
 

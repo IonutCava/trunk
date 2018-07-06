@@ -37,8 +37,8 @@ namespace Divide {
 namespace Navigation {
 
 class WaypointGraph {
-    typedef hashMapImpl<U32, Waypoint*> WaypointMap;
-    // typedef hashMapImpl<I32, WaypointPath> PathMap;
+    typedef hashMap<U32, Waypoint*> WaypointMap;
+    // typedef hashMap<I32, WaypointPath> PathMap;
    public:
     WaypointGraph();
     ~WaypointGraph();

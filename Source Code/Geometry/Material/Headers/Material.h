@@ -50,8 +50,8 @@ namespace Divide {
 class RenderStateBlock;
 class ResourceDescriptor;
 
-enum class BlendProperty : U32;
-enum class ReflectorType : U32;
+enum class BlendProperty : U8;
+enum class ReflectorType : U8;
 
 class Material : public CachedResource {
    public:
@@ -92,7 +92,7 @@ class Material : public CachedResource {
 
     /// Not used yet but implemented for shading model selection in shaders
     /// This enum matches the ASSIMP one on a 1-to-1 basis
-    enum class ShadingMode : U32 {
+    enum class ShadingMode : U8 {
         FLAT = 0x1,
         PHONG = 0x2,
         BLINN_PHONG = 0x3,

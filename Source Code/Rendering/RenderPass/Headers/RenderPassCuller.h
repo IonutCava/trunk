@@ -46,7 +46,7 @@ class Camera;
 class SceneGraph;
 class SceneGraphNode;
 class PlatformContext;
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 
 template<typename T>
 class vec3;

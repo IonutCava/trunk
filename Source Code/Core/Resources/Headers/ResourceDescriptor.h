@@ -42,7 +42,7 @@ namespace Divide {
 /// information in a general format
 class NOINITVTABLE PropertyDescriptor : public Hashable {
    public:
-    enum class DescriptorType : U32 {
+    enum class DescriptorType : U8 {
         DESCRIPTOR_TEXTURE = 0,
         DESCRIPTOR_PARTICLE = 1,
         DESCRIPTOR_TERRAIN_INFO = 2,

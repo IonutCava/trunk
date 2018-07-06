@@ -127,6 +127,8 @@ constexpr unsigned int REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE = 256;
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
 constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
 
+/// Maximum number of players we support locally
+constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 /// How many grass elements (3 quads p.e.) to add to each terrain element
 constexpr unsigned int MAX_GRASS_BATCHES = 2000000;
 /// SceneNode LOD selection
@@ -295,17 +297,17 @@ constexpr bool ENABLE_GPU_VALIDATION = false;
 
 /// Specify the string implementation to use
 #ifndef STRING_IMP
-#define STRING_IMP STL_IMP
+#define STRING_IMP EASTL_IMP
 #endif  // STRING_IMP
 
 /// Specify the vector implementation to use
 #ifndef VECTOR_IMP
-#define VECTOR_IMP STL_IMP
+#define VECTOR_IMP EASTL_IMP
 #endif  // VECTOR_IMP
 
 /// Specify the hash maps / unordered maps implementation to use
 #ifndef HASH_MAP_IMP
-#define HASH_MAP_IMP STL_IMP
+#define HASH_MAP_IMP EASTL_IMP
 #endif  // HASH_MAP_IMP
 
 #endif  //_DIVIDE_CONFIG_H_

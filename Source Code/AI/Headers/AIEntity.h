@@ -45,7 +45,7 @@ namespace AI {
 class AITeam;
 class AIProcessor;
 class Order;
-enum class AIMsg : U32;  //< scene dependent message list
+enum class AIMsg : U8;  //< scene dependent message list
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
@@ -59,7 +59,7 @@ namespace Attorney {
 class AIEntity : public GUIDWrapper {
     friend class Attorney::AIEntityAITeam;
    public:
-    enum class PresetAgentRadius : U32 {
+    enum class PresetAgentRadius : U8 {
         AGENT_RADIUS_SMALL = 0,
         AGENT_RADIUS_MEDIUM = 1,
         AGENT_RADIUS_LARGE = 2,
@@ -189,7 +189,7 @@ class AIEntity : public GUIDWrapper {
     mutable SharedLock _updateMutex;
     mutable SharedLock _managerQueryMutex;
 
-    typedef hashMapImpl<SensorType, Sensor*> SensorMap;
+    typedef hashMap<SensorType, Sensor*> SensorMap;
     SensorMap _sensorList;
     NPC* _unitRef;
     /// PathFinding

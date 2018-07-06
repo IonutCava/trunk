@@ -845,13 +845,20 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
     // Set the proper render states
     setStateBlock(pipeline.stateHash());
 
-    glShaderProgram* program = static_cast<glShaderProgram*>(pipeline.shaderProgram());
+    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle());
+    if (wSP.expired()) {
+        //DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+        wSP = ShaderProgram::defaultShader();
+    }
+
+    glShaderProgram* program = static_cast<glShaderProgram*>(wSP.lock().get());
     // We need a valid shader as no fixed function pipeline is available
-    DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+    
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     if (Attorney::GLAPIShaderProgram::bind(*program)) {
-        for (const ShaderFunctions::value_type& func : pipeline.shaderFunctions()) {
-            Attorney::GLAPIShaderProgram::SetSubroutines(*program, func.first, func.second);
+        const ShaderFunctions& functions = pipeline.shaderFunctions();
+        for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
+            Attorney::GLAPIShaderProgram::SetSubroutines(*program, static_cast<ShaderType>(type), functions[type]);
         }
         return true;
     }
@@ -861,8 +868,12 @@ bool GL_API::bindPipeline(const Pipeline& pipeline) {
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     assert(s_activePipeline != nullptr);
-
-    glShaderProgram* program = static_cast<glShaderProgram*>(s_activePipeline->shaderProgram());
+    ShaderProgram_wptr wSP = ShaderProgram::findShaderProgram(s_activePipeline->shaderProgramHandle());
+    if (wSP.expired()) {
+        //DIVIDE_ASSERT(program != nullptr, "GFXDevice error: Draw shader state is not valid for the current draw operation!");
+        wSP = ShaderProgram::defaultShader();
+    }
+    glShaderProgram* program = static_cast<glShaderProgram*>(wSP.lock().get());
     program->UploadPushConstants(pushConstants);
 }
 
@@ -1125,9 +1136,8 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     // If we fail to find it, we need to create a new sampler object
     if (s_samplerMap.find(hashValue) == std::end(s_samplerMap)) {
         UpgradeToWriteLock w_lock(ur_lock);
-        // Create and store the newly created sample object. GL_API is
-        // responsible for deleting these!
-        hashAlg::emplace(s_samplerMap, hashValue, descriptor);
+        // Create and store the newly created sample object. GL_API is responsible for deleting these!
+        hashAlg::emplace(s_samplerMap, hashValue, glSamplerObject::construct(descriptor));
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -1143,7 +1153,7 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         samplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
-            return it->second.getObjectHandle();
+            return it->second;
         }
            
         Console::errorfn(Locale::get(_ID("ERROR_NO_SAMPLER_OBJECT_FOUND")), samplerHash);

@@ -78,7 +78,7 @@ namespace Divide {
 class Character : public Unit {
    public:
     /// Currently supported character types
-    enum class CharacterType : U32 {
+    enum class CharacterType : U8 {
         /// user controlled character
         CHARACTER_TYPE_PLAYER = 0,
         /// non-user(player) character

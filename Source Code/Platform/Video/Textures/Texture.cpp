@@ -103,7 +103,7 @@ void Texture::threadedLoad(DELEGATE_CBK<void, CachedResource_wptr> onLoadCallbac
 
     loadFromFile = !fileNames.empty();
 
-    hashMapImpl<U64, ImageTools::ImageData> dataStorage;
+    hashMap<U64, ImageTools::ImageData> dataStorage;
 
     for(const stringImpl& file : fileNames) {
         // Attempt to load the current entry

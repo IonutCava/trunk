@@ -54,8 +54,8 @@ namespace Navigation {
 class AIManager : public SceneComponent
 {
   public:
-    typedef hashMapImpl<U32, AITeam*> AITeamMap;
-    typedef hashMapImpl<AIEntity::PresetAgentRadius,
+    typedef hashMap<U32, AITeam*> AITeamMap;
+    typedef hashMap<AIEntity::PresetAgentRadius,
                         Navigation::NavigationMesh*> NavMeshMap;
 
     explicit AIManager(Scene& parentScene, TaskPool& pool);

@@ -46,8 +46,9 @@ public:
     static bool saveScene(const Scene& activeScene);
 };
 
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 namespace Attorney {
+    class SceneManagerScene;
     class SceneManagerKernel;
     class SceneManagerScenePool;
     class SceneManagerRenderPass;
@@ -65,13 +66,14 @@ class SceneManager : public FrameListener,
                      public Input::InputAggregatorInterface,
                      public KernelComponent {
 
+    friend class Attorney::SceneManagerScene;
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerScenePool;
     friend class Attorney::SceneManagerRenderPass;
     friend class Attorney::SceneManagerCameraAccessor;
 
 public:
-    typedef vectorImpl<Player_ptr> PlayerList;
+    typedef std::array<Player_ptr, Config::MAX_LOCAL_PLAYER_COUNT> PlayerList;
 
 public:
     static bool onStartup();
@@ -92,13 +94,7 @@ public:
     bool init(PlatformContext& platformContext, ResourceCache& cache);
     void destroy();
 
-    // Add a new player to the simulation
-    void addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
-    // Removes the specified player from the active simulation
-    // Returns true if the player was previously registered
-    // On success, player pointer will be reset
-    void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
-    const PlayerList& getPlayers() const;
+    U32 getActivePlayerCount() const;
 
     /*Base Scene Operations*/
     // generate a list of nodes to render
@@ -193,6 +189,12 @@ protected:
     // On success, player pointer will be reset
     void removePlayerInternal(Scene& parentScene, Player_ptr& player);
 
+    // Add a new player to the simulation
+    void addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
+    // Removes the specified player from the active simulation
+    // Returns true if the player was previously registered
+    // On success, player pointer will be reset
+    void removePlayer(Scene& parentScene, Player_ptr& player, bool queue);
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
@@ -290,6 +292,19 @@ private:
 };
 
 namespace Attorney {
+class SceneManagerScene {
+private:
+    static void addPlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+        manager.addPlayer(parentScene, playerNode, queue);
+    }
+
+    static void removePlayer(Divide::SceneManager& manager, Scene& parentScene, Player_ptr& player, bool queue) {
+        manager.removePlayer(parentScene, player, queue);
+    }
+
+    friend class Divide::Scene;
+};
+
 class SceneManagerKernel {
    private:
     static void initPostLoadState(Divide::SceneManager& manager) {

@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-enum class RenderAPI : U32;
+enum class RenderAPI : U8;
 
 struct WindowDescriptor {
     enum class Flags : U8 {

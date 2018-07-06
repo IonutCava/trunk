@@ -40,7 +40,7 @@ namespace Divide {
 class SceneGraphNode;
 class SGNRelationshipCache {
 public:
-    enum class RelationShipType : U32 {
+    enum class RelationShipType : U8 {
         GRANDPARENT = 0, //<applies for all levels above 0
         PARENT,
         CHILD,

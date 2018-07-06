@@ -80,9 +80,8 @@ namespace Divide {
         if (ImGui::TreeNode(activeScene.name().c_str()))
         {
             ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
-            const SceneManager::PlayerList& activePlayers = sceneManager.getPlayers();
-            for (const Player_ptr& player : activePlayers) {
-                printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, player->index()));
+            for (PlayerIndex i = 0; i < static_cast<PlayerIndex>(Config::MAX_LOCAL_PLAYER_COUNT); ++i) {
+                printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, i));
             }
             printSceneGraphNode(sceneManager, root);
             ImGui::PopStyleVar();

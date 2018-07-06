@@ -45,7 +45,7 @@ enum class ChildPosition :U32 {
     CHILD_SE = 3
 };
 
-enum class ChunkBit : U32 {
+enum class ChunkBit : U8 {
     CHUNK_BIT_TESTCHILDREN = toBit(1),
     CHUNK_BIT_WATERREFLECTION = toBit(2),
     CHUNK_BIT_SHADOWMAP = toBit(3)

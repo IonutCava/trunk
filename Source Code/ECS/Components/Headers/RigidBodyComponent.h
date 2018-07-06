@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 namespace Divide {
-    enum class PhysicsGroup : U32;
+    enum class PhysicsGroup : U8;
 
     class PXDevice;
     

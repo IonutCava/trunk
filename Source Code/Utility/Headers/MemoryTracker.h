@@ -44,6 +44,10 @@ class MemoryTracker {
    private:
     class Entry {
        public:
+        Entry() : Entry(nullptr, 0, 0)
+        {
+        }
+
         Entry(const char* file, size_t line, size_t size)
             : _file(file),
               _line(line),
@@ -85,8 +89,6 @@ class MemoryTracker {
         MemoryTracker& _tracer;
     };
 
-    typedef hashMapImplBest<void*, Entry>::iterator iterator;
-    typedef hashMapImplBest<void*, Entry>::const_iterator citerator;
     friend class Lock;
 
    public:
@@ -117,7 +119,7 @@ class MemoryTracker {
             if (!MemoryTracker::LogAllAllocations) {
                 WriteLock w_lock(_mutex);
                 MemoryTracker::Lock lock(*this);
-                iterator it = _map.find(p);
+                hashMap<void*, Entry>::iterator it = _map.find(p);
                 if (it != std::cend(_map)) {
                     _map.erase(it);
                 } else {
@@ -143,7 +145,7 @@ class MemoryTracker {
             }
             output.append(Util::StringFormat("%d %s\n", _map.size(), msg.c_str()));
             size_t totalUsage = 0;
-            for (citerator it = std::cbegin(_map); 
+            for (hashMap<void*, Entry>::const_iterator it = std::cbegin(_map);
                            it != std::cend(_map);
                            ++it)
             {
@@ -184,7 +186,7 @@ class MemoryTracker {
 
    private:
     mutable SharedLock _mutex;
-    hashMapImplBest<void*, Entry> _map;
+    hashMap<void*, Entry> _map;
     std::atomic_bool _locked;
 };
 

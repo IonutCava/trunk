@@ -75,7 +75,7 @@ typedef union {
     U8  b[8];
 } P64;
 
-enum class CallbackParam : U32 {
+enum class CallbackParam : U8 {
     TYPE_SMALL_INTEGER = 0,
     TYPE_MEDIUM_INTEGER,
     TYPE_INTEGER,

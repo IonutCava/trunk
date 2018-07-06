@@ -257,7 +257,7 @@ InputState InputInterface::getMouseButtonState(U8 deviceIndex, MouseButton butto
 }
 
 InputState InputInterface::getJoystickeButtonState(Input::Joystick deviceIndex, JoystickButton button) const {
-    for (hashMapImpl<I32, Joystick>::value_type it : _joystickIdToEntry) {
+    for (hashMap<I32, Joystick>::value_type it : _joystickIdToEntry) {
         if (it.second == deviceIndex) {
             for (OIS::JoyStick* deviceIt : _joysticks) {
                 if (deviceIt->getID() == it.first) {
@@ -273,7 +273,7 @@ InputState InputInterface::getJoystickeButtonState(Input::Joystick deviceIndex, 
 }
 
 Joystick InputInterface::joystick(I32 deviceID) const {
-    hashMapImpl<I32, Joystick>::const_iterator it = _joystickIdToEntry.find(deviceID);
+    hashMap<I32, Joystick>::const_iterator it = _joystickIdToEntry.find(deviceID);
     if (it != std::cend(_joystickIdToEntry)) {
         return it->second;
     }
@@ -282,7 +282,7 @@ Joystick InputInterface::joystick(I32 deviceID) const {
 }
 
 I32 InputInterface::keyboard(I32 deviceID) const {
-    hashMapImpl<I32, I32>::const_iterator it = _keyboardIDToEntry.find(deviceID);
+    hashMap<I32, I32>::const_iterator it = _keyboardIDToEntry.find(deviceID);
     if (it != std::cend(_keyboardIDToEntry)) {
         return it->second;
     }
@@ -291,7 +291,7 @@ I32 InputInterface::keyboard(I32 deviceID) const {
 }
 
 I32 InputInterface::mouse(I32 deviceID) const {
-    hashMapImpl<I32, I32>::const_iterator it = _mouseIdToEntry.find(deviceID);
+    hashMap<I32, I32>::const_iterator it = _mouseIdToEntry.find(deviceID);
     if (it != std::cend(_mouseIdToEntry)) {
         return it->second;
     }

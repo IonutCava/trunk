@@ -545,6 +545,7 @@ void GFXDevice::setBaseViewport(const Rect<I32>& viewport) {
     setViewport(viewport);
     _prevViewport.set(viewport);
     _baseViewport.set(viewport);
+    parent().setViewportDirty();
 }
 
 void GFXDevice::onCameraUpdate(const Camera& camera) {
@@ -605,7 +606,7 @@ void GFXDevice::constructHIZ(RenderTargetID depthBuffer, GFX::CommandBuffer& cmd
         HiZState.setZFunc(ComparisonFunction::ALWAYS);
 
         pipelineDesc._stateHash = HiZState.getHash();
-        pipelineDesc._shaderProgram = _HIZConstructProgram;
+        pipelineDesc._shaderProgramHandle = _HIZConstructProgram->getID();
 
         triangleCmd.primitiveType(PrimitiveType::TRIANGLES);
         triangleCmd.drawCount(1);

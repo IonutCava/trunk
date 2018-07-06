@@ -39,15 +39,10 @@ namespace Divide {
 
 class SamplerDescriptor;
 
-class glSamplerObject : private NonCopyable {
+class glSamplerObject {
    public:
-    glSamplerObject(const SamplerDescriptor& descriptor);
-    ~glSamplerObject();
-
-    inline GLuint getObjectHandle() const { return _samplerID; }
-
-private:
-    GLuint _samplerID;
+    static GLuint construct(const SamplerDescriptor& descriptor);
+    static void destruct(GLuint& handle);
 };
 
 };  // namespace Divide

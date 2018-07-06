@@ -40,7 +40,7 @@
 namespace Divide {
 
 /// The different types of lights supported
-enum class LightType : U32 {
+enum class LightType : U8 {
     DIRECTIONAL = 0,
     POINT = 1,
     SPOT = 2,

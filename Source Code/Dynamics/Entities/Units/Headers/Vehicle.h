@@ -40,7 +40,7 @@ namespace Divide {
 class Vehicle : public Unit {
    public:
     /// Currently supported vehicle types
-    enum class VehicleType : U32 {
+    enum class VehicleType : U8 {
         /// Ground based vehicles
         VEHICLE_TYPE_GROUND = toBit(1),
         /// Flying/Space vehicles

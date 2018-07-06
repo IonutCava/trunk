@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-enum class RendererType : U32 {
+enum class RendererType : U8 {
     RENDERER_TILED_FORWARD_SHADING = 0,
     RENDERER_DEFERRED_SHADING = 1,
     COUNT

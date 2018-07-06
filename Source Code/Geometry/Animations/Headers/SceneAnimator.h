@@ -139,7 +139,7 @@ class SceneAnimator {
     }
 
     inline bool animationID(const stringImpl& animationName, U32& ID) {
-        hashMapImpl<U64, U32>::iterator itr =
+        hashMap<U64, U32>::iterator itr =
             _animationNameToID.find(_ID_RT(animationName));
         if (itr != std::end(_animationNameToID)) {
             ID = itr->second;
@@ -222,7 +222,7 @@ class SceneAnimator {
     /// A vector that holds each animation
     vectorImpl<std::shared_ptr<AnimEvaluator>> _animations;
     /// find animations quickly
-    hashMapImpl<U64, U32> _animationNameToID;
+    hashMap<U64, U32> _animationNameToID;
     /// temp array of transforms
     vectorImpl<aiMatrix4x4> _transforms;
     mat4<F32> _boneTransformCache;

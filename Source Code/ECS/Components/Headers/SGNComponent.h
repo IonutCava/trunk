@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 /// A generic component for the SceneGraphNode class
-enum class RenderStage : U32;
+enum class RenderStage : U8;
 class SceneGraphNode;
 class RenderStagePass;
 class SceneRenderState;

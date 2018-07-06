@@ -131,7 +131,7 @@ class NavModelData {
 };
 
 namespace NavigationMeshLoader {
-enum class MeshDetailLevel : U32 { 
+enum class MeshDetailLevel : U8 {
     MAXIMUM = 0,
     BOUNDINGBOX = 1
 };

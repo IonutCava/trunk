@@ -35,7 +35,7 @@
 
 namespace Divide {
 
-enum class RenderAPI : U32 {
+enum class RenderAPI : U8 {
     OpenGL,    ///< 4.x+
     OpenGLES,  ///< 3.x+
     Direct3D,  ///< 12.x+ (not supported yet)
@@ -44,7 +44,7 @@ enum class RenderAPI : U32 {
     COUNT
 };
 
-enum class RenderTargetUsage : U32 {
+enum class RenderTargetUsage : U8 {
     SCREEN = 0,
     REFLECTION_PLANAR = 1,
     REFRACTION_PLANAR = 2,
@@ -59,7 +59,7 @@ enum class RenderTargetUsage : U32 {
 };
 
 /// State the various attribute locations to use in shaders with VAO/VB's
-enum class AttribLocation : U32 {
+enum class AttribLocation : U8 {
     VERTEX_POSITION = 0,
     VERTEX_COLOR = 1,
     VERTEX_NORMAL = 2,
@@ -72,7 +72,7 @@ enum class AttribLocation : U32 {
     COUNT
 };
 
-enum class VertexAttribute : U32 {
+enum class VertexAttribute : U8 {
     ATTRIB_POSITION = 0,
     ATTRIB_COLOR = 1,
     ATTRIB_NORMAL = 2,
@@ -83,7 +83,7 @@ enum class VertexAttribute : U32 {
     COUNT = 7
 };
 
-enum class ShaderBufferLocation : U32 {
+enum class ShaderBufferLocation : U8 {
     GPU_BLOCK = 0,
     GPU_COMMANDS = 1,
     LIGHT_NORMAL = 2,
@@ -102,12 +102,12 @@ enum class ShaderBufferLocation : U32 {
 /// 2 rendering contexts with a single
 /// display list, one for rendering and one for loading seems the best approach
 /// (for now)
-enum class CurrentContext : U32 { 
+enum class CurrentContext : U8 { 
     GFX_RENDERING_CTX = 0, 
     GFX_LOADING_CTX = 1
 };
 
-enum class RenderStage : U32 {
+enum class RenderStage : U8 {
     SHADOW = 0,
     REFLECTION = 1,
     REFRACTION = 2,
@@ -115,20 +115,20 @@ enum class RenderStage : U32 {
     COUNT
 };
 
-enum class RenderPassType : U32 {
+enum class RenderPassType : U8 {
     DEPTH_PASS = 0,
     COLOUR_PASS = 1,
     COUNT
 };
 
-enum class PBType : U32 { 
+enum class PBType : U8 { 
     PB_TEXTURE_1D, 
     PB_TEXTURE_2D, 
     PB_TEXTURE_3D,
     COUNT
 };
 
-enum class PrimitiveType : U32 {
+enum class PrimitiveType : U8 {
     API_POINTS = 0x0000,
     LINES = 0x0001,
     LINE_LOOP = 0x0002,
@@ -142,7 +142,7 @@ enum class PrimitiveType : U32 {
     COUNT
 };
 
-enum class RenderDetailLevel : U32 {
+enum class RenderDetailLevel : U8 {
     OFF = 0,
     LOW = 1,
     MEDIUM = 2,
@@ -153,7 +153,7 @@ enum class RenderDetailLevel : U32 {
 
 /// Specifies how the red, green, blue, and alpha source blending factors are
 /// computed.
-enum class BlendProperty : U32 {
+enum class BlendProperty : U8 {
     ZERO = 0,
     ONE,
     SRC_COLOR,
@@ -175,7 +175,7 @@ enum class BlendProperty : U32 {
 };
 
 /// Specifies how source and destination colours are combined.
-enum class BlendOperation : U32 {
+enum class BlendOperation : U8 {
     /// The ADD equation is useful for antialiasing and transparency, among
     /// other things.
     ADD = 0,
@@ -195,7 +195,7 @@ enum class BlendOperation : U32 {
 
 /// Valid comparison functions for most states
 /// YYY = test value using this function
-enum class ComparisonFunction : U32 {
+enum class ComparisonFunction : U8 {
     /// Never passes.
     NEVER = 0,
     /// Passes if the incoming YYY value is less than the stored YYY value.
@@ -219,7 +219,7 @@ enum class ComparisonFunction : U32 {
 };
 
 /// Specifies whether front- or back-facing facets are candidates for culling.
-enum class CullMode : U32 {
+enum class CullMode : U8 {
     NONE = 0,
     /// Cull Back facing polygons
     CW,
@@ -232,7 +232,7 @@ enum class CullMode : U32 {
 };
 
 /// Available shader stages
-enum class ShaderType : U32 {
+enum class ShaderType : U8 {
     FRAGMENT = 0,
     VERTEX = 1,
     GEOMETRY = 2,
@@ -243,7 +243,7 @@ enum class ShaderType : U32 {
 };
 
 /// Valid front and back stencil test actions
-enum class StencilOperation : U32 {
+enum class StencilOperation : U8 {
     /// Keeps the current value.
     KEEP = 0,
     /// Sets the stencil buffer value to 0.
@@ -270,7 +270,7 @@ enum class StencilOperation : U32 {
 };
 
 /// Defines all available fill modes for primitives
-enum class FillMode : U32 {
+enum class FillMode : U8 {
     /// Polygon vertices that are marked as the start of a boundary edge are
     /// drawn as points.
     POINT = 1,
@@ -282,7 +282,7 @@ enum class FillMode : U32 {
     COUNT
 };
 
-enum class TextureType : U32 {
+enum class TextureType : U8 {
     TEXTURE_1D = 0,
     TEXTURE_2D,
     TEXTURE_3D,
@@ -294,7 +294,7 @@ enum class TextureType : U32 {
     COUNT
 };
 
-enum class TextureFilter : U32 {
+enum class TextureFilter : U8 {
     LINEAR = 0x0000,
     NEAREST = 0x0001,
     NEAREST_MIPMAP_NEAREST = 0x0002,
@@ -304,7 +304,7 @@ enum class TextureFilter : U32 {
     COUNT
 };
 
-enum class TextureWrap : U32 {
+enum class TextureWrap : U8 {
     /** Texture coordinates outside [0...1] are clamped to the nearest valid
        value.     */
     CLAMP = 0x0,
@@ -318,7 +318,7 @@ enum class TextureWrap : U32 {
     COUNT
 };
 
-enum class GFXImageFormat : U32 {
+enum class GFXImageFormat : U8 {
     LUMINANCE = 0,
     LUMINANCE_ALPHA,
     LUMINANCE_ALPHA16F,
@@ -371,7 +371,7 @@ enum class GFXImageFormat : U32 {
     COUNT
 };
 
-enum class GFXDataFormat : U32 {
+enum class GFXDataFormat : U8 {
     UNSIGNED_BYTE = 0x0000,
     UNSIGNED_SHORT = 0x0001,
     UNSIGNED_INT = 0x0002,
@@ -383,7 +383,7 @@ enum class GFXDataFormat : U32 {
     COUNT
 };
 
-enum class GPUVendor : U32 {
+enum class GPUVendor : U8 {
     NVIDIA = 0,
     AMD,
     INTEL,
@@ -398,7 +398,7 @@ enum class GPUVendor : U32 {
     COUNT
 };
 
-enum class GPURenderer : U32 {
+enum class GPURenderer : U8 {
     UNKNOWN = 0,
     ADRENO,
     GEFORCE,
@@ -430,49 +430,49 @@ enum class QueryType : U8 {
 
 inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
     switch (internalFormat) {
-    case GFXImageFormat::LUMINANCE_ALPHA:
-    case GFXImageFormat::LUMINANCE_ALPHA16F:
-    case GFXImageFormat::LUMINANCE_ALPHA32F:
-        return GFXImageFormat::LUMINANCE;
+        case GFXImageFormat::LUMINANCE_ALPHA:
+        case GFXImageFormat::LUMINANCE_ALPHA16F:
+        case GFXImageFormat::LUMINANCE_ALPHA32F:
+            return GFXImageFormat::LUMINANCE;
 
-    case GFXImageFormat::RED8:
-    case GFXImageFormat::RED16:
-    case GFXImageFormat::RED16F:
-    case GFXImageFormat::RED32:
-    case GFXImageFormat::RED32F:
-        return GFXImageFormat::RED;
+        case GFXImageFormat::RED8:
+        case GFXImageFormat::RED16:
+        case GFXImageFormat::RED16F:
+        case GFXImageFormat::RED32:
+        case GFXImageFormat::RED32F:
+            return GFXImageFormat::RED;
 
-    case GFXImageFormat::RG8:
-    case GFXImageFormat::RG16:
-    case GFXImageFormat::RG16F:
-    case GFXImageFormat::RG32:
-    case GFXImageFormat::RG32F:
-        return GFXImageFormat::RG;
+        case GFXImageFormat::RG8:
+        case GFXImageFormat::RG16:
+        case GFXImageFormat::RG16F:
+        case GFXImageFormat::RG32:
+        case GFXImageFormat::RG32F:
+            return GFXImageFormat::RG;
 
-    case GFXImageFormat::RGB8:
-    case GFXImageFormat::SRGB8:
-    case GFXImageFormat::RGB8I:
-    case GFXImageFormat::RGB16:
-    case GFXImageFormat::RGB16F:
-    case GFXImageFormat::RGB32F:
-        return GFXImageFormat::RGB;
+        case GFXImageFormat::RGB8:
+        case GFXImageFormat::SRGB8:
+        case GFXImageFormat::RGB8I:
+        case GFXImageFormat::RGB16:
+        case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGB32F:
+            return GFXImageFormat::RGB;
 
-    case GFXImageFormat::RGBA4:
-    case GFXImageFormat::RGBA8:
-    case GFXImageFormat::SRGB_ALPHA8:
-    case GFXImageFormat::RGBA8I:
-    case GFXImageFormat::RGBA16F:
-    case GFXImageFormat::RGBA32F:
-        return GFXImageFormat::RGBA;
+        case GFXImageFormat::RGBA4:
+        case GFXImageFormat::RGBA8:
+        case GFXImageFormat::SRGB_ALPHA8:
+        case GFXImageFormat::RGBA8I:
+        case GFXImageFormat::RGBA16F:
+        case GFXImageFormat::RGBA32F:
+            return GFXImageFormat::RGBA;
 
-    case GFXImageFormat::DEPTH_COMPONENT16:
-    case GFXImageFormat::DEPTH_COMPONENT24:
-    case GFXImageFormat::DEPTH_COMPONENT32:
-    case GFXImageFormat::DEPTH_COMPONENT32F:
-        return GFXImageFormat::DEPTH_COMPONENT;
+        case GFXImageFormat::DEPTH_COMPONENT16:
+        case GFXImageFormat::DEPTH_COMPONENT24:
+        case GFXImageFormat::DEPTH_COMPONENT32:
+        case GFXImageFormat::DEPTH_COMPONENT32F:
+            return GFXImageFormat::DEPTH_COMPONENT;
 
-    default:
-        break;
+        default:
+            break;
     };
 
     return internalFormat;
@@ -480,24 +480,24 @@ inline GFXImageFormat baseFromInternalFormat(GFXImageFormat internalFormat) {
 
 inline GFXDataFormat dataTypeForInternalFormat(GFXImageFormat format) {
     switch (format) {
-    case GFXImageFormat::DEPTH_COMPONENT32F:
-    case GFXImageFormat::LUMINANCE_ALPHA32F:
-    case GFXImageFormat::RED32F:
-    case GFXImageFormat::RG32F:
-    case GFXImageFormat::RGB32F:
-    case GFXImageFormat::RGBA32F:
-        return GFXDataFormat::FLOAT_32;
+        case GFXImageFormat::DEPTH_COMPONENT32F:
+        case GFXImageFormat::LUMINANCE_ALPHA32F:
+        case GFXImageFormat::RED32F:
+        case GFXImageFormat::RG32F:
+        case GFXImageFormat::RGB32F:
+        case GFXImageFormat::RGBA32F:
+            return GFXDataFormat::FLOAT_32;
 
-    case GFXImageFormat::LUMINANCE_ALPHA16F:
-    case GFXImageFormat::RED16F:
-    case GFXImageFormat::RG16F:
-    case GFXImageFormat::RGB16F:
-    case GFXImageFormat::RGBA16F:
-        return GFXDataFormat::FLOAT_16;
+        case GFXImageFormat::LUMINANCE_ALPHA16F:
+        case GFXImageFormat::RED16F:
+        case GFXImageFormat::RG16F:
+        case GFXImageFormat::RGB16F:
+        case GFXImageFormat::RGBA16F:
+            return GFXDataFormat::FLOAT_16;
 
-    case GFXImageFormat::RGB8I:
-    case GFXImageFormat::RGBA8I:
-        return GFXDataFormat::SIGNED_BYTE;
+        case GFXImageFormat::RGB8I:
+        case GFXImageFormat::RGBA8I:
+            return GFXDataFormat::SIGNED_BYTE;
     };
 
     return GFXDataFormat::UNSIGNED_BYTE;

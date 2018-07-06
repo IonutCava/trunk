@@ -149,7 +149,7 @@ class InputActionList {
     const InputAction& getInputAction(U16 id) const;
 
    protected:
-    hashMapImpl<U16 /*actionID*/, InputAction> _inputActions;
+    hashMap<U16 /*actionID*/, InputAction> _inputActions;
     InputAction _noOPAction;
 };
 

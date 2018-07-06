@@ -104,7 +104,7 @@ private:
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;
 
-    static hashMapImpl<stringImpl, physx::PxTriangleMesh*> _gMeshCache;
+    static hashMap<stringImpl, physx::PxTriangleMesh*> _gMeshCache;
 };
 
 };  // namespace Divide

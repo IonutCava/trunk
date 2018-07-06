@@ -51,7 +51,7 @@ const F32 BORDER_PADDING = -3;
 namespace Navigation {
 /// These are just sample areas to use consistent values across the samples.
 /// The use should specify these base on his needs.
-enum class SamplePolyAreas : U32 {
+enum class SamplePolyAreas : U8 {
     SAMPLE_POLYAREA_GROUND,
     SAMPLE_POLYAREA_WATER,
     SAMPLE_POLYAREA_ROAD,
@@ -61,7 +61,7 @@ enum class SamplePolyAreas : U32 {
     SAMPLE_AREA_OBSTACLE
 };
 
-enum class SamplePolyFlags : U32 {
+enum class SamplePolyFlags : U16 {
     SAMPLE_POLYFLAGS_WALK = 0x01,      // Ability to walk (ground, grass, road)
     SAMPLE_POLYFLAGS_SWIM = 0x02,      // Ability to swim (water).
     SAMPLE_POLYFLAGS_DOOR = 0x04,      // Ability to move through doors.
@@ -79,7 +79,7 @@ typedef struct {
     I32 Target;
 } PATHDATA;
 
-enum class PathErrorCode : I32 {
+enum class PathErrorCode : I8 {
     PATH_ERROR_NONE = 0,
     PATH_ERROR_NO_NEAREST_POLY_START = -1,
     PATH_ERROR_NO_NEAREST_POLY_END = -2,

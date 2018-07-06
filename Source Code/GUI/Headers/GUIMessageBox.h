@@ -49,7 +49,7 @@ class GUIMessageBox : public GUIElement {
     friend class SceneGUIElements;
 
    public:
-    enum class MessageType : U32 {
+    enum class MessageType : U8 {
         MESSAGE_INFO = 0,
         MESSAGE_WARNING = 1,
         MESSAGE_ERROR = 2

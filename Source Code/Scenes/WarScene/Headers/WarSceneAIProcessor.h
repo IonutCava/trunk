@@ -46,14 +46,14 @@ class Unit;
 
 namespace AI {
 
-enum class UnitAttributes : U32 {
+enum class UnitAttributes : U8 {
     HEALTH_POINTS = 0,
     DAMAGE = 1,
     ALIVE_FLAG = 2,
     COUNT
 };
 
-enum class AIMsg : U32 { 
+enum class AIMsg : U8 {
     HAVE_FLAG = 0,
     RETURNED_FLAG = 1,
     ENEMY_HAS_FLAG = 2,
@@ -63,7 +63,7 @@ enum class AIMsg : U32 {
     COUNT
 };
 
-enum class FactType : U32 {
+enum class FactType : U8 {
     POSITION = 0,
     COUNTER_SMALL = 1,
     COUNTER_MEDIUM = 2,
@@ -148,7 +148,7 @@ class LocalWorkingMemory {
 
 class WarSceneOrder : public Order {
    public:
-    enum class WarOrder : U32 {
+    enum class WarOrder : U8 {
         IDLE = 0,
         CAPTURE_ENEMY_FLAG = 1,
         SCORE_ENEMY_FLAG = 2,
@@ -180,7 +180,7 @@ namespace Attorney {
 class WarSceneAIProcessor : public AIProcessor {
     friend class Attorney::WarAISceneWarAction;
    public:
-       typedef hashMapImpl<I64, AIEntity*> NodeToUnitMap;
+       typedef hashMap<I64, AIEntity*> NodeToUnitMap;
    public:
        enum class AIType {
            ANIMAL = 0,

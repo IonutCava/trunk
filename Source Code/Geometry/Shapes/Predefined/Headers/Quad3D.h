@@ -39,7 +39,7 @@ namespace Divide {
 
 class Quad3D : public Object3D {
   public:
-    enum class CornerLocation : U32 {
+    enum class CornerLocation : U8 {
         TOP_LEFT = 0,
         TOP_RIGHT,
         BOTTOM_LEFT,

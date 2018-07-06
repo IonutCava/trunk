@@ -52,6 +52,8 @@ Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
     : _argc(argc),
       _argv(argv),
       _resCache(nullptr),
+      _viewportDirty(false),
+      _splashScreenUpdating(false),
       _platformContext(std::make_unique<PlatformContext>(parentApp, *this)),
       _taskPool(Config::MAX_POOLED_TASKS),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
@@ -301,8 +303,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
-        const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
-        U8 playerCount = to_U8(activePlayers.size());
+        U32 playerCount = _sceneManager->getActivePlayerCount();
 
         bool firstRun = true;
         while (_timingData.runUpdateLoop()) {
@@ -484,8 +485,6 @@ Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorImpl<Time::P
 }
 
 bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
-    static vectorImpl<Rect<I32>> targetViewports;
-
     Time::ScopedTimer time(_flushToScreenTimer);
 
     FrameListenerManager& frameMgr = FrameListenerManager::instance();
@@ -506,11 +505,13 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
     }
 
-    const SceneManager::PlayerList& activePlayers = _sceneManager->getPlayers();
-    const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+    U32 playerCount = _sceneManager->getActivePlayerCount();
 
-    U8 playerCount = to_U8(activePlayers.size());
-    computeViewports(mainViewport, targetViewports, playerCount);
+    if (_viewportDirty) {
+        const Rect<I32>& mainViewport = _platformContext->gfx().getCurrentViewport();
+        computeViewports(mainViewport, _targetViewports, to_U8(playerCount));
+        _viewportDirty = false;
+    }
 
     for (U8 i = 0; i < playerCount; ++i) {
         if (!frameMgr.createAndProcessEvent(Time::ElapsedMicroseconds(true), FrameEventType::FRAME_SCENERENDER_START, evt)) {
@@ -533,14 +534,14 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         {
             Time::ScopedTimer time4(getTimer(_flushToScreenTimer, _blitToDisplayTimer, i, "Blit to screen Timer"));
             if (Config::Build::ENABLE_EDITOR && _platformContext->editor().running()) {
-                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), targetViewports[i]);
+                Attorney::GFXDeviceKernel::blitToRenderTarget(_platformContext->gfx(), RenderTargetID(RenderTargetUsage::EDITOR), _targetViewports[i]);
             } else {
-                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), targetViewports[i]);
+                Attorney::GFXDeviceKernel::blitToScreen(_platformContext->gfx(), _targetViewports[i]);
             }
         }
     }
 
-    for (U8 i = playerCount; i < to_U8(_renderTimer.size()); ++i) {
+    for (U32 i = playerCount; i < to_U32(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);
         Time::ProfileTimer::removeTimer(*_postFxRenderTimer[i]);
         Time::ProfileTimer::removeTimer(*_blitToDisplayTimer[i]);

@@ -40,7 +40,7 @@
 
 namespace Divide {
 
-enum class ShadowType : U32 {
+enum class ShadowType : U8 {
     SINGLE = 0,
     LAYERED,
     CUBEMAP,

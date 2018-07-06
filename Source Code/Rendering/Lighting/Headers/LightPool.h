@@ -77,7 +77,7 @@ class LightPool : public SceneComponent {
 
 
   public:
-    enum class ShaderBufferType : U32 {
+    enum class ShaderBufferType : U8 {
         NORMAL = 0,
         SHADOW = 1,
         COUNT

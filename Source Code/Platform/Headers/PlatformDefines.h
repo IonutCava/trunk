@@ -832,9 +832,9 @@ inline void DELETE_VECTOR(vectorImpl<T*>& vec) {
 
 /// Deletes every element from the map and clears it at the end
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
-inline void DELETE_HASHMAP(hashMapImpl<K, V, HashFun>& map) {
+inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
     if (!map.empty()) {
-        for (typename hashMapImpl<K, V, HashFun>::value_type iter : map) {
+        for (typename hashMap<K, V, HashFun>::value_type iter : map) {
             delete iter.second;
         }
         map.clear();
@@ -843,7 +843,7 @@ inline void DELETE_HASHMAP(hashMapImpl<K, V, HashFun>& map) {
 #define SET_DELETE_HASHMAP_FRIEND                                           \
     template <typename K, typename V, typename HashFun = hashAlg::hash<K> > \
     friend void MemoryManager::DELETE_HASHMAP(                              \
-        hashMapImpl<K, V, HashFun>& map);
+        hashMap<K, V, HashFun>& map);
 
 /// Deletes the object pointed to by "OLD" and redirects that pointer to the
 /// object pointed by "NEW"

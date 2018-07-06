@@ -113,7 +113,7 @@ bool TenisSceneAIProcessor::processInput(const U64 deltaTimeUS) {
 bool TenisSceneAIProcessor::processData(const U64 deltaTimeUS) {
     AIEntity* nearestEntity = _entity;
     F32 distance = _entity->getTeam()->getMemberVariable()[_entity];
-    typedef hashMapImpl<AIEntity*, F32> memberVariable;
+    typedef hashMap<AIEntity*, F32> memberVariable;
     for (memberVariable::value_type& member :
          _entity->getTeam()->getMemberVariable()) {
         if (member.second < distance &&

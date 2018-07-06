@@ -19,7 +19,7 @@
 
 namespace Divide {
 
-hashMapImpl<U32, GFXDevice::DebugView*> RenderingComponent::s_debugViews[2];
+hashMap<U32, GFXDevice::DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(GFXDevice& context,
                                        Material_ptr materialInstance,
@@ -77,6 +77,7 @@ RenderingComponent::RenderingComponent(GFXDevice& context,
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
+    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getID();
     Pipeline pipeline = _context.newPipeline(pipelineDescriptor);
 
     _boundingBoxPrimitive[0] = _context.newIMP();
@@ -186,7 +187,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
-    pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
+    pipelineDescriptor._shaderProgramHandle = getDrawShader(stagePass)->getID();
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = &_context.newPipeline(pipelineDescriptor);

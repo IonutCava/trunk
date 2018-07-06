@@ -59,6 +59,8 @@ class GUIDWrapper {
 
     inline I64 getGUID() const { return _GUID; }
 
+    static I64 generateGUID();
+
    private:
     void operator=(const GUIDWrapper& old) = delete;
 
@@ -66,7 +68,6 @@ class GUIDWrapper {
     const I64 _GUID;
 
    private:
-    static I64 generateGUID();
 };
 
 };  // namespace Divide

@@ -41,7 +41,7 @@ namespace Divide {
 class DisplayWindow;
 namespace Input {
 /// Points to the position of said joystick in the vector
-enum class Joystick : U32 {
+enum class Joystick : U8 {
     JOYSTICK_1  = 0,
     JOYSTICK_2  = 1,
     JOYSTICK_3  = 2,
@@ -114,7 +114,7 @@ struct KeyEvent : public InputEvent {
     U32 _text;
 };
 
-enum class JoystickElementType : U32 {
+enum class JoystickElementType : U8 {
     POV_MOVE = 0,
     AXIS_MOVE,
     SLIDER_MOVE,
@@ -133,7 +133,7 @@ struct JoystickElement {
     JoystickButton _data; //< e.g. button index
 };
 
-enum class InputState : U32 {
+enum class InputState : U8 {
     PRESSED = 0,
     RELEASED,
     COUNT
