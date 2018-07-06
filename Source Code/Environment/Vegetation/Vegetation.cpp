@@ -383,28 +383,31 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     cmd.LoD(1);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
+    pkgInOut.addDrawCommand(drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
-    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
+    const Pipeline& pipeline = pkgInOut.pipeline(0);
+    PipelineDescriptor pipeDesc = pipeline.toDescriptor();
     pipeDesc._stateHash = _grassStateBlockHash;
-    pipelines.front()->fromDescriptor(pipeDesc);
+    pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
 
-    PushConstants& constants = *pkgInOut.commands().getPushConstants().front();
+    PushConstants constants = pkgInOut.pushConstants(0);
     constants.set("grassScale", PushConstantType::FLOAT, 1.0f);
     constants.set("positionOffsets", PushConstantType::VEC3, _grassBlades);
     constants.set("texCoordOffsets", PushConstantType::VEC2, _texCoord);
     constants.set("rotationMatrices", PushConstantType::MAT3, _rotationMatrices, true);
     constants.set("lod_metric", PushConstantType::FLOAT, 100.0f);
+    pkgInOut.pushConstants(0, constants);
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }
 
-void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
-                                    const RenderStagePass& renderStagePass,
-                                    const SceneRenderState& sceneRenderState,
-                                    RenderPackage& pkgInOut) {
+bool Vegetation::onRender(SceneGraphNode& sgn,
+                          const SceneRenderState& sceneRenderState,
+                          const RenderStagePass& renderStagePass) {
+    RenderingComponent* renderComp = sgn.get<RenderingComponent>();
+    RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
+    ACKNOWLEDGE_UNUSED(sceneRenderState);
     GenericVertexData* buffer = _grassGPUBuffer[_readBuffer];
     U32 queryID = getQueryID();
     gpuCull(sceneRenderState);
@@ -413,14 +416,11 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     buffer->attribDescriptor(scaleLocation).offset(_instanceCountGrass * queryID);
     buffer->attribDescriptor(instLocation).offset(_instanceCountGrass * queryID);
 
-    GenericDrawCommand* cmd = pkgInOut.commands().getDrawCommands().front();
-    cmd->cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
-    cmd->sourceBuffer(buffer);
-
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
-}
-
-bool Vegetation::onRender(const RenderStagePass& renderStagePass) {
+    GenericDrawCommand cmd = pkg.drawCommand(0);
+    cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_U8(queryID));
+    cmd.sourceBuffer(buffer);
+    pkg.drawCommand(0, cmd);
+    
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _parentLoD > 0 ||

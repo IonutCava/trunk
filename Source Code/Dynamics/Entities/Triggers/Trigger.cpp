@@ -23,10 +23,6 @@ Trigger::~Trigger()
 {
 }
 
-bool Trigger::onRender(const RenderStagePass& renderStagePass) {
-
-    return true;
-}
 
 void Trigger::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
                           SceneState& sceneState) {

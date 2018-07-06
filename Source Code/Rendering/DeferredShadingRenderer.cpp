@@ -234,7 +234,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     if (_debugView) {
         pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 4);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
-        if (_renderQuads[1]->onRender(_context.gfx().getRenderStage())) {
+        if (_renderQuads[1]->onRender(sceneRenderState, _context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[1]->getGeometryVB());
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -242,7 +242,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
         }
         pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 1);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
-        if (_renderQuads[2]->onRender(_context.gfx().getRenderStage())) {
+        if (_renderQuads[2]->onRender(sceneRenderState, _context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[2]->getGeometryVB());
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -250,7 +250,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
         }
         pushConstantsCommand._constants.set("texDiffuse0", PushConstantType::UINT, 2);
         GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
-        if (_renderQuads[3]->onRender(_context.gfx().getRenderStage())) {
+        if (_renderQuads[3]->onRender(sceneRenderState, _context.gfx().getRenderStage())) {
             cmd.sourceBuffer(_renderQuads[3]->getGeometryVB());
             GFX::DrawCommand drawCmd;
             drawCmd._drawCommands.push_back(cmd);
@@ -266,7 +266,7 @@ void DeferredShadingRenderer::secondPass(const SceneRenderState& sceneRenderStat
     pushConstantsCommand._constants.set("lightCount", PushConstantType::INT, (I32)_cachedLightCount);
     GFX::SendPushConstants(bufferInOut, pushConstantsCommand);
 
-    if (_renderQuads[_debugView ? 4 : 0]->onRender(_context.gfx().getRenderStage())) {
+    if (_renderQuads[_debugView ? 4 : 0]->onRender(sceneRenderState, _context.gfx().getRenderStage())) {
         cmd.sourceBuffer(_renderQuads[_debugView ? 4 : 0]->getGeometryVB());
         GFX::DrawCommand drawCmd;
         drawCmd._drawCommands.push_back(cmd);

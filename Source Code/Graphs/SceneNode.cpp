@@ -74,7 +74,11 @@ void SceneNode::sgnUpdate(const U64 deltaTime,
     }
 }
 
-bool SceneNode::onRender(const RenderStagePass& renderStagePass) {
+bool SceneNode::onRender(SceneGraphNode& sgn,
+                         const SceneRenderState& sceneRenderState,
+                         const RenderStagePass& renderStagePass) {
+    ACKNOWLEDGE_UNUSED(sgn);
+    ACKNOWLEDGE_UNUSED(sceneRenderState);
     ACKNOWLEDGE_UNUSED(renderStagePass);
     return true;
 }
@@ -134,16 +138,6 @@ void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
                                        RenderPackage& pkgInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(pkgInOut);
-}
-
-void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
-                                   const RenderStagePass& renderStagePass,
-                                   const SceneRenderState& sceneRenderState,
-                                   RenderPackage& pkgInOut) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(sceneRenderState);
     ACKNOWLEDGE_UNUSED(pkgInOut);
 }
 

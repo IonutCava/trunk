@@ -19,7 +19,6 @@ Light::Light(ResourceCache& parentCache, size_t descriptorHash, const stringImpl
       _rangeChanged(true),
       _drawImpostor(false),
       _impostor(nullptr),
-      _lightSGN(nullptr),
       _shadowMapInfo(nullptr),
       _castsShadows(false),
       _spotPropertiesChanged(false),
@@ -76,14 +75,8 @@ bool Light::unload() {
 }
 
 void Light::postLoad(SceneGraphNode& sgn) {
-    // Hold a pointer to the light's location in the SceneGraph
-    DIVIDE_ASSERT(
-        _lightSGN == nullptr,
-        "Light error: Lights can only be bound to a single SGN node!");
-
-    _lightSGN = &sgn;
-    _lightSGN->get<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
-    _lightSGN->get<BoundsComponent>()->lockBBTransforms(true);
+    sgn.get<PhysicsComponent>()->setPosition(_positionAndRange.xyz());
+    sgn.get<BoundsComponent>()->lockBBTransforms(true);
     SceneNode::postLoad(sgn);
 }
 
@@ -106,10 +99,10 @@ void Light::setSpotCosOuterConeAngle(F32 newCosAngle) {
 }
 
 void Light::sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn, SceneState& sceneState) {
-    vec3<F32> dir(_lightSGN->get<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    vec3<F32> dir(sgn.get<PhysicsComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
     dir.normalize();
     _spotProperties.xyz(dir);
-    _positionAndRange.xyz(_lightSGN->get<PhysicsComponent>()->getPosition());
+    _positionAndRange.xyz(sgn.get<PhysicsComponent>()->getPosition());
     setFlag(UpdateFlag::BOUNDS_CHANGED);
 
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
@@ -133,7 +126,11 @@ void Light::updateBoundsInternal(SceneGraphNode& sgn) {
     SceneNode::updateBoundsInternal(sgn);
 }
 
-bool Light::onRender(const RenderStagePass& renderStagePass) {
+bool Light::onRender(SceneGraphNode& sgn,
+                     const SceneRenderState& sceneRenderState,
+                     const RenderStagePass& renderStagePass) {
+    ACKNOWLEDGE_UNUSED(sceneRenderState);
+
     /*if (_type == LightType::DIRECTIONAL) {
         if (sceneState.playerState(0).overrideCamera() == nullptr) {
             sceneState.playerState(0).overrideCamera(_shadowCamera);
@@ -153,7 +150,7 @@ bool Light::onRender(const RenderStagePass& renderStagePass) {
         _impostor = CreateResource<ImpostorSphere>(_parentCache, ResourceDescriptor(_name + "_impostor"));
         _impostor->setRadius(_positionAndRange.w);
         _impostor->renderState().setDrawState(true);
-        _impostorSGN = _lightSGN->addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
+        _impostorSGN = sgn.addNode(_impostor, normalMask, PhysicsGroup::GROUP_IGNORE);
         _impostorSGN.lock()->setActive(true);
     }
 

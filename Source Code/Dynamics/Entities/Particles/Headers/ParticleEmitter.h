@@ -50,7 +50,9 @@ class ParticleEmitter : public SceneNode {
     explicit ParticleEmitter(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name);
     ~ParticleEmitter();
 
-    bool onRender(const RenderStagePass& renderStagePass) override;
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
 
     /// toggle the particle emitter on or off
     inline void enableEmitter(bool state) { _enabled = state; }
@@ -86,11 +88,6 @@ class ParticleEmitter : public SceneNode {
     void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
                                 RenderPackage& pkgInOut) override;
-
-    void updateDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
-                            const SceneRenderState& sceneRenderState,
-                            RenderPackage& pkgInOut) override;
 
     void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
 

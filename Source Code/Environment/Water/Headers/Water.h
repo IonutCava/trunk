@@ -49,7 +49,9 @@ class WaterPlane : public SceneNode {
     /// Resource inherited "unload"
     bool unload() override;
     /// General SceneNode stuff
-    bool onRender(const RenderStagePass& renderStagePass) override;
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
 
     bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
 

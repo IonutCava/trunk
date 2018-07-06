@@ -147,7 +147,9 @@ class Light : public SceneNode {
     /// Get a pointer to the light's impostor
     inline ImpostorSphere* const getImpostor() const { return _impostor.get(); }
 
-    bool onRender(const RenderStagePass& renderStagePass) override;
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
 
     /// SceneNode concrete implementations
     bool unload() override;
@@ -237,7 +239,6 @@ class Light : public SceneNode {
    private:
     bool _rangeChanged;
     bool _drawImpostor;
-    SceneGraphNode* _lightSGN;
     /// Used for debug rendering
     std::shared_ptr<ImpostorSphere> _impostor;
     SceneGraphNode_wptr _impostorSGN;

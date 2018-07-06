@@ -62,29 +62,14 @@ class CommandBuffer {
     inline vectorImpl<std::shared_ptr<Command>>& operator()();
     inline const vectorImpl<std::shared_ptr<Command>>& operator()() const;
 
-    inline const vectorImpl<Pipeline*>& getPipelines() const;
-    inline const vectorImpl<ClipPlaneList*>& getClipPlanes() const;
-    inline const vectorImpl<PushConstants*>& getPushConstants() const;
-    inline const vectorImpl<DescriptorSet*>& getDescriptorSets() const;
-    inline const vectorImpl<GenericDrawCommand*>& getDrawCommands() const;
-
     inline vectorAlg::vecSize size() const { return _data.size(); }
     inline void clear();
     inline bool empty() const;
 
   protected:
-    void rebuildCaches();
-
-  protected:
     size_t _index = 0;
 
     vectorImpl<std::shared_ptr<Command>> _data;
-
-    vectorImpl<Pipeline*> _pipelineCache;
-    vectorImpl<ClipPlaneList*> _clipPlanesCache;
-    vectorImpl<PushConstants*> _pushConstantsCache;
-    vectorImpl<DescriptorSet*> _descriptorSetCache;
-    vectorImpl<GenericDrawCommand*> _drawCommandsCache;
 
     vectorImplFast<CommandEntry> _buffer;
     vectorImplFast<BindPipelineCommand> _bindPipelineCommands;

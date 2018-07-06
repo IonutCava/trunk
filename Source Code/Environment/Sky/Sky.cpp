@@ -102,8 +102,10 @@ void Sky::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-bool Sky::onRender(const RenderStagePass& renderStagePass) {
-    return _sky->onRender(renderStagePass);
+bool Sky::onRender(SceneGraphNode& sgn,
+                   const SceneRenderState& sceneRenderState,
+                   const RenderStagePass& renderStagePass) {
+    return _sky->onRender(sgn, sceneRenderState, renderStagePass);
 }
 
 void Sky::buildDrawCommands(SceneGraphNode& sgn,
@@ -119,10 +121,10 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
 
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
+    pkgInOut.addDrawCommand(drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
-    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
+    const Pipeline& pipeline = pkgInOut.pipeline(1);
+    PipelineDescriptor pipeDesc = pipeline.toDescriptor();
     if (renderStagePass.pass() == RenderPassType::DEPTH_PASS) {
         pipeDesc._stateHash = _skyboxRenderStateHashPrePass;
         pipeDesc._shaderProgram = _skyShaderPrePass;
@@ -133,7 +135,7 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
         pipeDesc._shaderProgram = _skyShader;
     }
 
-    pipelines.front()->fromDescriptor(pipeDesc);
+    pkgInOut.pipeline(1, _context.newPipeline(pipeDesc));
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
 }

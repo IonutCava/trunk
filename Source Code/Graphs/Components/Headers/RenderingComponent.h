@@ -58,6 +58,11 @@ namespace Attorney {
     class RenderingCompRenderBin;
 };
 
+struct RenderParams {
+    GenericDrawCommand _cmd;
+    Pipeline _pipeline;
+};
+
 struct RenderCbkParams {
     explicit RenderCbkParams(GFXDevice& context,
                              const SceneGraphNode& sgn,
@@ -109,7 +114,8 @@ class RenderingComponent : public SGNComponent {
        };
 
    public:
-    bool onRender(const RenderStagePass& renderStagePass) override;
+    bool onRender(const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
     void update(const U64 deltaTime) override;
 
     void setActive(const bool state) override;
@@ -132,6 +138,7 @@ class RenderingComponent : public SGNComponent {
 
     void getRenderingProperties(vec4<F32>& propertiesOut, F32& reflectionIndex, F32& refractionIndex) const;
 
+    RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
     const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
     size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
@@ -156,6 +163,7 @@ class RenderingComponent : public SGNComponent {
 
     void drawDebugAxis();
 
+    
    protected:
     friend class SceneGraphNode;
     explicit RenderingComponent(GFXDevice& context,

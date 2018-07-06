@@ -100,14 +100,21 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-bool Object3D::onRender(const RenderStagePass& renderStagePass) {
-    return getState() == ResourceState::RES_LOADED;
+bool Object3D::onRender(SceneGraphNode& sgn,
+                        const SceneRenderState& sceneRenderState,
+                        const RenderStagePass& renderStagePass) {
+    
+    if (getState() == ResourceState::RES_LOADED) {
+        return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
+    }
+
+    return false;
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode& sgn,
                                       const RenderStagePass& renderStagePass,
                                       RenderPackage& pkgInOut) {
-    if (pkgInOut.commands().getDrawCommands().empty()) {
+    if (pkgInOut.drawCommandCount() == 0) {
         GenericDrawCommand cmd;
         VertexBuffer* const vb = getGeometryVB();
         cmd.sourceBuffer(vb);
@@ -115,7 +122,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         
         GFX::DrawCommand drawCommand;
         drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
+        pkgInOut.addDrawCommand(drawCommand);
     }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);

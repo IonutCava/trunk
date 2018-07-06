@@ -81,17 +81,15 @@ class Vegetation : public SceneNode {
     void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
                                 RenderPackage& pkgInOut) override;
-    void updateDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
-                            const SceneRenderState& sceneRenderState,
-                            RenderPackage& pkgInOut) override;
 
-   protected:
+    protected:
     void sceneUpdate(const U64 deltaTime,
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool onRender(const RenderStagePass& renderStagePass)  override;
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass)  override;
 
     void gpuCull(const SceneRenderState& sceneRenderState);
 

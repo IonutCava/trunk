@@ -490,15 +490,15 @@ void SceneGraphNode::onTransform() {
     }
 }
 
-bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
-                                 const RenderStagePass& renderStagePass) {
+bool SceneGraphNode::prepareRender(const SceneRenderState& sceneRenderState,
+                                   const RenderStagePass& renderStagePass) {
     for (SGNComponent* component : _components) {
-        if (component && !component->onRender(renderStagePass)) {
+        if (component && !component->onRender(sceneRenderState, renderStagePass)) {
             return false;
         }
     }
 
-    return true;
+    return _node->onRender(sceneRenderState, renderStagePass);
 }
 
 void SceneGraphNode::onCameraUpdate(const I64 cameraGUID,

@@ -289,7 +289,7 @@ class SceneGraphNode : public GUIDWrapper,
 
    protected:
     friend class RenderingComponent;
-    bool prepareDraw(const SceneRenderState& sceneRenderState,
+    bool prepareRender(const SceneRenderState& sceneRenderState,
                      const RenderStagePass& renderStagePass);
 
    protected:

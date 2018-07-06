@@ -110,80 +110,17 @@ void Terrain::onCameraUpdate(SceneGraphNode& sgn,
     _cameraUpdated[to_base(_context.getRenderStage().stage())] = true;
 }
 
-void Terrain::buildDrawCommands(SceneGraphNode& sgn,
-                                const RenderStagePass& renderStagePass,
-                                RenderPackage& pkgInOut) {
+bool Terrain::onRender(SceneGraphNode& sgn,
+                       const SceneRenderState& sceneRenderState,
+                       const RenderStagePass& renderStagePass) {
+    RenderingComponent* renderComp = sgn.get<RenderingComponent>();
+    RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
 
-    const vec3<F32>& bbMin = _boundingBox.getMin();
-    const vec3<F32>& bbExtent = _boundingBox.getExtent();
-    TerrainTextureLayer* textureLayer = _terrainTextures;
-
-    PushConstants& pushConstants = *pkgInOut.commands().getPushConstants().front();
-
-    pushConstants.set("bbox_min", PushConstantType::VEC3, bbMin);
-    pushConstants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
-    pushConstants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDiffuseScales()));
-    pushConstants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDetailScales()));
-
-
-    GFX::SetClipPlanesCommand clipPlanesCommand;
-    clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
-                                          Plane<F32>(WORLD_Y_AXIS, _waterHeight),
-                                          false);
-    GFX::SetClipPlanes(pkgInOut.commands(), clipPlanesCommand);
-
-    GenericDrawCommand cmd;
-    cmd.primitiveType(PrimitiveType::PATCH);
-    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
-    cmd.sourceBuffer(getGeometryVB());
-    cmd.patchVertexCount(4);
-    cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
-    {
-        GFX::DrawCommand drawCommand;
-        drawCommand._drawCommands.push_back(cmd);
-        GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
-    }
-    if (renderStagePass.stage() == RenderStage::DISPLAY) {
-
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._shaderProgram = 
-            (renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                     ? _planeDepthShader
-                                     : _planeShader);
-        {
-            GFX::BindPipelineCommand pipelineCommand;
-            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-            GFX::BindPipeline(pkgInOut.commands(), pipelineCommand);
-        }
-        //infinite plane
-        GenericDrawCommand planeCmd;
-        planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
-        planeCmd.cmd().firstIndex = 0;
-        planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
-        planeCmd.LoD(0);
-        planeCmd.sourceBuffer(_plane->getGeometryVB());
-
-        {
-            GFX::DrawCommand drawCommand;
-            drawCommand._drawCommands.push_back(planeCmd);
-            GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
-        }
-        //BoundingBoxes
-        _terrainQuadtree.drawBBox(_context, pkgInOut);
-    }
-
-    Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
-
-    _cameraUpdated[to_base(renderStagePass.stage())] = true;
-}
-
-void Terrain::updateDrawCommands(SceneGraphNode& sgn,
-                                 const RenderStagePass& renderStagePass,
-                                 const SceneRenderState& sceneRenderState,
-                                 RenderPackage& pkgInOut) {
-    pkgInOut.commands().getClipPlanes().front()->set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
-                                                     Plane<F32>(WORLD_Y_AXIS, _waterHeight),
-                                                     true);
+    ClipPlaneList clipPlanes = pkg.clipPlanes(0);
+    clipPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
+                   Plane<F32>(WORLD_Y_AXIS, _waterHeight),
+                   true);
+    pkg.clipPlanes(0, clipPlanes);
 
     const U8 stageIndex = to_U8(renderStagePass.stage());
     bool& cameraUpdated = _cameraUpdated[stageIndex];
@@ -197,14 +134,13 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
                                    _terrainDimensions);
             tessellator.updateRenderData();
         }
-        
+
         cameraUpdated = false;
     }
 
-    const vectorImpl<GenericDrawCommand*>& commands = pkgInOut.commands().getDrawCommands();
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
-
-    commands[0]->drawCount(tessellator.renderDepth());
+    GenericDrawCommand cmd = pkg.drawCommand(0);
+    cmd.drawCount(tessellator.renderDepth());
+    pkg.drawCommand(0, cmd);
 
     U32 offset = to_U32(stageIndex * Terrain::MAX_RENDER_NODES);
 
@@ -218,24 +154,91 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
 
     if (renderStagePass.stage() == RenderStage::DISPLAY) {
         // draw infinite plane
-        assert(commands[1]->drawCount() == 1);
+        assert(pkg.drawCommand(1).drawCount() == 1u);
 
-        PipelineDescriptor descriptor = pipelines[1]->toDescriptor();
+        const Pipeline& pipeline = pkg.pipeline(1);
+        PipelineDescriptor descriptor = pipeline.toDescriptor();
         descriptor._shaderProgram = (renderStagePass.pass() == RenderPassType::DEPTH_PASS
-                                                             ? _planeDepthShader
-                                                             : _planeShader);
+                                     ? _planeDepthShader
+                                     : _planeShader);
 
-        pipelines[1]->fromDescriptor(descriptor);
+        pkg.pipeline(1, _context.newPipeline(descriptor));
 
-        size_t i = 2;
-        std::for_each(std::begin(commands) + i,
-                        std::end(commands),
-                        [this](GenericDrawCommand* bbCmd) {
-                            bbCmd->drawCount(_drawBBoxes ? 1 : 0);
-                        });
+        U16 state = _drawBBoxes ? 1 : 0;
+        for (size_t i = 2; i < pkg.drawCommandCount(); ++i) {
+            GenericDrawCommand cmd = pkg.drawCommand(i);
+            cmd.drawCount(state);
+            pkg.drawCommand(i, cmd);
+        }
     }
 
-    Object3D::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
+    return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
+}
+
+void Terrain::buildDrawCommands(SceneGraphNode& sgn,
+                                const RenderStagePass& renderStagePass,
+                                RenderPackage& pkgInOut) {
+
+    const vec3<F32>& bbMin = _boundingBox.getMin();
+    const vec3<F32>& bbExtent = _boundingBox.getExtent();
+    TerrainTextureLayer* textureLayer = _terrainTextures;
+
+    PushConstants constants = pkgInOut.pushConstants(0);
+    constants.set("bbox_min", PushConstantType::VEC3, bbMin);
+    constants.set("bbox_extent", PushConstantType::VEC3, bbExtent);
+    constants.set("diffuseScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDiffuseScales()));
+    constants.set("detailScale", PushConstantType::VEC4, copy_array_to_vector(textureLayer->getDetailScales()));
+    pkgInOut.pushConstants(0, constants);
+
+    GFX::SetClipPlanesCommand clipPlanesCommand;
+    clipPlanesCommand._clippingPlanes.set(to_U32(ClipPlaneIndex::CLIP_PLANE_0),
+                                          Plane<F32>(WORLD_Y_AXIS, _waterHeight),
+                                          false);
+    pkgInOut.addClipPlanesCommand(clipPlanesCommand);
+
+    GenericDrawCommand cmd;
+    cmd.primitiveType(PrimitiveType::PATCH);
+    cmd.enableOption(GenericDrawCommand::RenderOptions::RENDER_TESSELLATED);
+    cmd.sourceBuffer(getGeometryVB());
+    cmd.patchVertexCount(4);
+    cmd.cmd().indexCount = getGeometryVB()->getIndexCount();
+    {
+        GFX::DrawCommand drawCommand;
+        drawCommand._drawCommands.push_back(cmd);
+        pkgInOut.addDrawCommand(drawCommand);
+    }
+    if (renderStagePass.stage() == RenderStage::DISPLAY) {
+
+        PipelineDescriptor pipelineDescriptor;
+        pipelineDescriptor._shaderProgram = 
+            (renderStagePass.pass() == RenderPassType::DEPTH_PASS
+                                     ? _planeDepthShader
+                                     : _planeShader);
+        {
+            GFX::BindPipelineCommand pipelineCommand;
+            pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
+            pkgInOut.addPipelineCommand(pipelineCommand);
+        }
+        //infinite plane
+        GenericDrawCommand planeCmd;
+        planeCmd.primitiveType(PrimitiveType::TRIANGLE_STRIP);
+        planeCmd.cmd().firstIndex = 0;
+        planeCmd.cmd().indexCount = _plane->getGeometryVB()->getIndexCount();
+        planeCmd.LoD(0);
+        planeCmd.sourceBuffer(_plane->getGeometryVB());
+
+        {
+            GFX::DrawCommand drawCommand;
+            drawCommand._drawCommands.push_back(planeCmd);
+            pkgInOut.addDrawCommand(drawCommand);
+        }
+        //BoundingBoxes
+        _terrainQuadtree.drawBBox(_context, pkgInOut);
+    }
+
+    Object3D::buildDrawCommands(sgn, renderStagePass, pkgInOut);
+
+    _cameraUpdated[to_base(renderStagePass.stage())] = true;
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

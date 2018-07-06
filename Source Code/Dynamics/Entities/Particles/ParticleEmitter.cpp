@@ -211,41 +211,17 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
     GenericDrawCommand cmd(_particles->particleGeometryType(), 0, indexCount);
     GFX::DrawCommand drawCommand;
     drawCommand._drawCommands.push_back(cmd);
-    GFX::AddDrawCommands(pkgInOut.commands(), drawCommand);
+    pkgInOut.addDrawCommand(drawCommand);
 
-    const vectorImpl<Pipeline*>& pipelines = pkgInOut.commands().getPipelines();
-    PipelineDescriptor pipeDesc = pipelines.front()->toDescriptor();
+    const Pipeline& pipeline = pkgInOut.pipeline(0);
+    PipelineDescriptor pipeDesc = pipeline.toDescriptor();
 
     pipeDesc._stateHash = (_context.isDepthStage(renderStagePass) ? _particleStateBlockHashDepth
                                                                   : _particleStateBlockHash); 
-    pipelines.front()->fromDescriptor(pipeDesc);
+    pkgInOut.pipeline(0, _context.newPipeline(pipeDesc));
     
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, pkgInOut);
-}
-
-void ParticleEmitter::updateDrawCommands(SceneGraphNode& sgn,
-                                         const RenderStagePass& renderStagePass,
-                                         const SceneRenderState& sceneRenderState,
-                                         RenderPackage& pkgInOut) {
-    for(TaskHandle& task : _bufferUpdate) {
-        task.wait();
-    }
-    _bufferUpdate.clear();
-
-    if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
-        GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
-        buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
-        buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
-        buffer.incQueue();
-        _buffersDirty[to_U32(renderStagePass.stage())] = false;
-    }
-
-    GenericDrawCommand* cmd = pkgInOut.commands().getDrawCommands().front();
-    cmd->cmd().primCount = to_U32(_particles->_renderingPositions.size());
-    cmd->sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
-
-    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, pkgInOut);
 }
 
 void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
@@ -277,16 +253,35 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     _bufferUpdate.back().startTask(Task::TaskPriority::HIGH);
 }
 
-/// The onDraw call will emit particles
-bool ParticleEmitter::onRender(const RenderStagePass& renderStagePass) {
+/// The onRender call will emit particles
+bool ParticleEmitter::onRender(SceneGraphNode& sgn,
+                               const SceneRenderState& sceneRenderState,
+                               const RenderStagePass& renderStagePass) {
     if ( _enabled &&  getAliveParticleCount() > 0) {
         for (TaskHandle& task : _bufferUpdate) {
             task.wait();
         }
+
         _bufferUpdate.clear();
+
+        if (renderStagePass.pass() != RenderPassType::DEPTH_PASS && _buffersDirty[to_U32(renderStagePass.stage())]) {
+            GenericVertexData& buffer = getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass());
+            buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
+            buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
+            buffer.incQueue();
+            _buffersDirty[to_U32(renderStagePass.stage())] = false;
+        }
+
+        RenderingComponent* renderComp = sgn.get<RenderingComponent>();
+        RenderPackage& pkg = renderComp->getDrawPackage(renderStagePass);
+        GenericDrawCommand cmd = pkg.drawCommand(0);
+        cmd.cmd().primCount = to_U32(_particles->_renderingPositions.size());
+        cmd.sourceBuffer(&getDataBuffer(renderStagePass.stage(), sceneRenderState.playerPass()));
+        pkg.drawCommand(0, cmd);
+
         prepareForRender(renderStagePass, *Camera::activeCamera());
 
-        return true;
+        return SceneNode::onRender(sgn, sceneRenderState, renderStagePass);
     }
 
     return false;

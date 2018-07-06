@@ -73,49 +73,6 @@ CommandBuffer::~CommandBuffer()
 {
 }
 
-void CommandBuffer::rebuildCaches() {
-    _pipelineCache.resize(0);
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::BIND_PIPELINE) {
-            Pipeline& pipeline = static_cast<BindPipelineCommand*>(cmd.get())->_pipeline;
-            _pipelineCache.push_back(&pipeline);
-        }
-    }
-
-    _clipPlanesCache.resize(0);
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::SET_CLIP_PLANES) {
-            ClipPlaneList& planes = static_cast<SetClipPlanesCommand*>(cmd.get())->_clippingPlanes;
-            _clipPlanesCache.push_back(&planes);
-        }
-    }
-
-    _pushConstantsCache.resize(0);
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::SEND_PUSH_CONSTANTS) {
-            PushConstants& constants = static_cast<SendPushConstantsCommand*>(cmd.get())->_constants;
-            _pushConstantsCache.push_back(&constants);
-        }
-    }
-
-    _descriptorSetCache.resize(0);
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::BIND_DESCRIPTOR_SETS) {
-            DescriptorSet& set = static_cast<BindDescriptorSetsCommand*>(cmd.get())->_set;
-            _descriptorSetCache.push_back(&set);
-        }
-    }
-
-    _drawCommandsCache.resize(0);
-    for (const std::shared_ptr<Command>& cmd : _data) {
-        if (cmd->_type == CommandType::DRAW_COMMANDS) {
-            vectorImpl<GenericDrawCommand>& drawCommands = static_cast<DrawCommand*>(cmd.get())->_drawCommands;
-            for (GenericDrawCommand& drawCmd : drawCommands) {
-                _drawCommandsCache.push_back(&drawCmd);
-            }
-        }
-    }
-}
 
 void CommandBuffer::batch() {
     /*auto batch = [](GenericDrawCommand& previousIDC,

@@ -21,11 +21,6 @@ void RenderingComponent::toggleRenderOption(RenderOptions option, bool state) {
         } else {
             ClearBit(_renderMask, to_U32(option));
         }
-
-        if (option == RenderOptions::RENDER_GEOMETRY ||
-            option == RenderOptions::RENDER_WIREFRAME) {
-            _renderPackagesDirty = true;
-        }
     }
 }
 

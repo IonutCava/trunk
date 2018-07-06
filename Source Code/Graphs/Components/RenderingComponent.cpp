@@ -179,22 +179,23 @@ const std::unique_ptr<RenderPackage>& RenderingComponent::renderData(const Rende
 
 void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     std::unique_ptr<RenderPackage>& pkg = renderData(stagePass);
-    pkg->commands().clear();
+    pkg->clear();
 
+    // We also have a pipeline
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = getMaterialStateHash(stagePass);
     pipelineDescriptor._shaderProgram = getDrawShader(stagePass);
 
     GFX::BindPipelineCommand pipelineCommand;
     pipelineCommand._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::BindPipeline(pkg->commands(), pipelineCommand);
-
+    pkg->addPipelineCommand(pipelineCommand);
+    
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants = _globalPushConstants;
-    GFX::SendPushConstants(pkg->commands(), pushConstantsCommand);
+    pkg->addPushConstantsCommand(pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand;
-    GFX::BindDescriptorSets(pkg->commands(), bindDescriptorSetsCommand);
+    pkg->addDescriptorSetsCommand(bindDescriptorSetsCommand);
 
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
 }
@@ -260,11 +261,15 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
     _textureDependencies.removeTexture(additionalTexture);
 }
 
-bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
+bool RenderingComponent::onRender(const SceneRenderState& sceneRenderState,
+                                  const RenderStagePass& renderStagePass) {
+
+    ACKNOWLEDGE_UNUSED(sceneRenderState);
+
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
-    DescriptorSet& set = *pkg->commands().getDescriptorSets().front();
+    DescriptorSet set = pkg->descriptorSet(0);
     
     set._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
@@ -277,8 +282,9 @@ bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     }
 
     set._shaderBuffers = _shaderBuffers;
+    pkg->descriptorSet(0, set);
 
-    return _parentSGN.getNode()->onRender(renderStagePass);
+    return true;
 }
 
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
@@ -502,12 +508,11 @@ void RenderingComponent::setDrawIDs(const RenderStagePass& renderStagePass,
 
     std::unique_ptr<RenderPackage>& pkg = renderData(renderStagePass);
     
-    const vectorImpl<GenericDrawCommand*>& commands = pkg->commands().getDrawCommands();
-
-    for (GenericDrawCommand* cmd : commands) {
-        cmd->commandOffset(cmdOffset++);
-        cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
-        cmd->cmd().baseInstance = cmdIndex;
+    for (size_t cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
+        GenericDrawCommand& cmd = pkg->drawCommand(cmdIdx);
+        cmd.commandOffset(cmdOffset++);
+        cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_INDIRECT, true);
+        cmd.cmd().baseInstance = cmdIndex;
     }
 }
 
@@ -522,9 +527,8 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             }
             _renderPackagesDirty = false;
         }
-        if (_parentSGN.prepareDraw(sceneRenderState, renderStagePass)) {
-            _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, *pkg);
 
+        if (_parentSGN.prepareRender(sceneRenderState, renderStagePass)) {
             updateLoDLevel(*Camera::activeCamera(), renderStagePass);
 
             bool renderGeometry = renderOptionEnabled(RenderOptions::RENDER_GEOMETRY);
@@ -533,22 +537,29 @@ void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderS
             bool renderWireframe = renderOptionEnabled(RenderOptions::RENDER_WIREFRAME);
             renderWireframe = renderWireframe || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
 
-            const vectorImpl<GenericDrawCommand*>& commands = pkg->commands().getDrawCommands();
-            for (GenericDrawCommand* cmd : commands) {
-                cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
-                                  renderGeometry || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
+            for (size_t cmdIdx = 0; cmdIdx < pkg->drawCommandCount(); ++cmdIdx) {
+                GenericDrawCommand& cmd = pkg->drawCommand(cmdIdx);
+                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY,
+                                 renderGeometry || cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_GEOMETRY));
 
-                cmd->toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
-                                  renderWireframe || cmd->isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
+                cmd.toggleOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME,
+                                 renderWireframe || cmd.isEnabledOption(GenericDrawCommand::RenderOptions::RENDER_WIREFRAME));
 
-                cmd->LoD(_lodLevel);
+                cmd.LoD(_lodLevel);
             }
-            if (!commands.empty()) {
+
+            if (pkg->drawCommandCount() > 0) {
                 pkg->isRenderable(true);
                 setDrawIDs(renderStagePass, commandOffset(), commandIndex());
             }
         }
     }
+}
+
+RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
+    RenderPackage& ret = *renderData(renderStagePass).get();
+    //ToDo: Some validation? -Ionut
+    return ret;
 }
 
 const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {

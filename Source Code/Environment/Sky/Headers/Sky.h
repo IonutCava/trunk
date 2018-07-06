@@ -50,7 +50,9 @@ class Sky : public SceneNode {
     explicit Sky(GFXDevice& context, ResourceCache& parentCache, size_t descriptorHash, const stringImpl& name, U32 diameter);
     ~Sky();
 
-    bool onRender(const RenderStagePass& renderStagePass) override;
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
 
    protected:
     void postLoad(SceneGraphNode& sgn) override;

@@ -141,19 +141,21 @@ class Terrain : public Object3D {
     void buildDrawCommands(SceneGraphNode& sgn,
                                 const RenderStagePass& renderStagePass,
                                 RenderPackage& pkgInOut) override;
-    void updateDrawCommands(SceneGraphNode& sgn,
-                            const RenderStagePass& renderStagePass,
-                            const SceneRenderState& sceneRenderState,
-                            RenderPackage& pkgInOut) override;
 
     void sceneUpdate(const U64 deltaTime, SceneGraphNode& sgn,
-                     SceneState& sceneState);
+                     SceneState& sceneState) override;
+
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) override;
 
     void onCameraUpdate(SceneGraphNode& sgn,
                         const I64 cameraGUID,
                         const vec3<F32>& posOffset,
-                        const mat4<F32>& rotationOffset);
+                        const mat4<F32>& rotationOffset) override;
+
     void buildQuadtree();
+
     void postLoad(SceneGraphNode& sgn);
 
    public:

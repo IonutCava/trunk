@@ -68,9 +68,11 @@ class Sphere3D : public Object3D {
         _dirty = true;
     }
 
-    bool onRender(const RenderStagePass& renderStagePass) {
+    bool onRender(SceneGraphNode& sgn,
+                  const SceneRenderState& sceneRenderState,
+                  const RenderStagePass& renderStagePass) {
         clean();
-        return Object3D::onRender(renderStagePass);
+        return Object3D::onRender(sgn, sceneRenderState, renderStagePass);
     }
 
    protected:

@@ -58,7 +58,10 @@ class SGNComponent : private NonCopyable {
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 
-    virtual bool onRender(const RenderStagePass& renderStagePass) {
+    virtual bool onRender(const SceneRenderState& sceneRenderState,
+                          const RenderStagePass& renderStagePass) {
+        ACKNOWLEDGE_UNUSED(sceneRenderState);
+        ACKNOWLEDGE_UNUSED(renderStagePass);
         return true;
     }
 

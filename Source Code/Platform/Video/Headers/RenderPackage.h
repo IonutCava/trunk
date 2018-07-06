@@ -52,14 +52,60 @@ public:
 
     size_t getSortKeyHash() const;
 
-    GFX::CommandBuffer& commands();
     const GFX::CommandBuffer& commands() const;
+
+    size_t drawCommandCount() const;
+    const GenericDrawCommand& drawCommand(I32 index) const;
+    void drawCommand(I32 index, const GenericDrawCommand cmd);
+
+    const Pipeline& pipeline(I32 index) const;
+    void pipeline(I32 index, const Pipeline& pipeline);
+
+    const ClipPlaneList& clipPlanes(I32 index) const;
+    void clipPlanes(I32 index, const ClipPlaneList& pipeline);
+
+    const PushConstants& pushConstants(I32 index) const;
+    void pushConstants(I32 index, const PushConstants& constants);
+
+    const DescriptorSet& descriptorSet(I32 index) const;
+    void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
+
+    void addDrawCommand(const GFX::DrawCommand& cmd);
+    void addPipelineCommand(const GFX::BindPipelineCommand& clipPlanes);
+    void addClipPlanesCommand(const GFX::SetClipPlanesCommand& clipPlanes);
+    void addPushConstantsCommand(const GFX::SendPushConstantsCommand& pushConstants);
+    void addDescriptorSetsCommand(const GFX::BindDescriptorSetsCommand& descriptorSets);
+
+protected:
+    friend class RenderingComponent;
+    //eventually phase this out
+    GFX::CommandBuffer& commands();
+    GenericDrawCommand& drawCommand(I32 index);
 
 private:
     GFXDevice& _context;
     bool _isRenderable;
     bool _isOcclusionCullable;
     bool _secondaryCommandPool;
+
+    vectorImpl<GenericDrawCommand> _drawCommands;
+    bool _drawCommandDirty = true;
+
+    vectorImpl<Pipeline> _pipelines;
+    bool _pipelineDirty = true;
+
+    vectorImpl<ClipPlaneList> _clipPlanes;
+    bool _clipPlanesDirty = true;
+
+    vectorImpl<PushConstants> _pushConstants;
+    bool _pushConstantsDirty = true;
+
+    vectorImpl<DescriptorSet> _descriptorSets;
+    bool _descriptorSetsDirty = true;
+
+private:
+    // Cached command buffer
+    bool _commandBufferDirty = true;
     GFX::CommandBuffer* _commands;
 };
 
