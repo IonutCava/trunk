@@ -108,45 +108,60 @@ void main(){
 
 #include "vertexDefault.vert"
 
+uniform int layer;
+uniform bool horizontal;
+uniform float blurSize;
+
+out vec3 _blurCoords[9];
+
 void main(void)
 {
     computeData();
+    if (horizontal){
+        _blurCoords[0] = vec3(_texCoord.x, _texCoord.y - 4.0*blurSize, layer);
+        _blurCoords[1] = vec3(_texCoord.x, _texCoord.y - 3.0*blurSize, layer);
+        _blurCoords[2] = vec3(_texCoord.x, _texCoord.y - 2.0*blurSize, layer);
+        _blurCoords[3] = vec3(_texCoord.x, _texCoord.y - blurSize, layer);
+        _blurCoords[4] = vec3(_texCoord.x, _texCoord.y, layer);
+        _blurCoords[5] = vec3(_texCoord.x, _texCoord.y + blurSize, layer);
+        _blurCoords[6] = vec3(_texCoord.x, _texCoord.y + 2.0*blurSize, layer);
+        _blurCoords[7] = vec3(_texCoord.x, _texCoord.y + 3.0*blurSize, layer);
+        _blurCoords[8] = vec3(_texCoord.x, _texCoord.y + 4.0*blurSize, layer);
+    }
+    else{
+        _blurCoords[0] = vec3(_texCoord.x - 4.0*blurSize, _texCoord.y, layer);
+        _blurCoords[1] = vec3(_texCoord.x - 3.0*blurSize, _texCoord.y, layer);
+        _blurCoords[2] = vec3(_texCoord.x - 2.0*blurSize, _texCoord.y, layer);
+        _blurCoords[3] = vec3(_texCoord.x - blurSize, _texCoord.y, layer);
+        _blurCoords[4] = vec3(_texCoord.x, _texCoord.y, layer);
+        _blurCoords[5] = vec3(_texCoord.x + blurSize, _texCoord.y, layer);
+        _blurCoords[6] = vec3(_texCoord.x + 2.0*blurSize, _texCoord.y, layer);
+        _blurCoords[7] = vec3(_texCoord.x + 3.0*blurSize, _texCoord.y, layer);
+        _blurCoords[8] = vec3(_texCoord.x + 4.0*blurSize, _texCoord.y, layer);
+    }
 }
 
 -- Fragment.GaussBlur
 
 in vec2 _texCoord;
+in vec3 _blurCoords[9];
+
 out vec2 _outColor;
 
 uniform sampler2DArray shadowMap;
-uniform float blurSize; 
-uniform bool horizontal = true;
-uniform int layer;
 
 void main(void)
 {
     vec2 sum = vec2(0.0);
-    if (horizontal){
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 4.0*blurSize, layer)).rg * 0.05;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 3.0*blurSize, layer)).rg * 0.09;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - 2.0*blurSize, layer)).rg * 0.12;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y - blurSize, layer)).rg * 0.15;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y, layer)).rg * 0.16;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + blurSize, layer)).rg * 0.15;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 2.0*blurSize, layer)).rg * 0.12;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 3.0*blurSize, layer)).rg * 0.09;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y + 4.0*blurSize, layer)).rg * 0.05;
-    }else{
-        sum += texture(shadowMap, vec3(_texCoord.x - 4.0*blurSize, _texCoord.y, layer)).rg * 0.05;
-        sum += texture(shadowMap, vec3(_texCoord.x - 3.0*blurSize, _texCoord.y, layer)).rg * 0.09;
-        sum += texture(shadowMap, vec3(_texCoord.x - 2.0*blurSize, _texCoord.y, layer)).rg * 0.12;
-        sum += texture(shadowMap, vec3(_texCoord.x - blurSize, _texCoord.y, layer)).rg * 0.15;
-        sum += texture(shadowMap, vec3(_texCoord.x, _texCoord.y, layer)).rg * 0.16;
-        sum += texture(shadowMap, vec3(_texCoord.x + blurSize,     _texCoord.y, layer)).rg * 0.15;
-        sum += texture(shadowMap, vec3(_texCoord.x + 2.0*blurSize, _texCoord.y, layer)).rg * 0.12;
-        sum += texture(shadowMap, vec3(_texCoord.x + 3.0*blurSize, _texCoord.y, layer)).rg * 0.09;
-        sum += texture(shadowMap, vec3(_texCoord.x + 4.0*blurSize, _texCoord.y, layer)).rg * 0.05;
-    }
+    sum += texture(shadowMap, _blurCoords[0]).rg * 0.05;
+    sum += texture(shadowMap, _blurCoords[1]).rg * 0.09;
+    sum += texture(shadowMap, _blurCoords[2]).rg * 0.12;
+    sum += texture(shadowMap, _blurCoords[3]).rg * 0.15;
+    sum += texture(shadowMap, _blurCoords[4]).rg * 0.16;
+    sum += texture(shadowMap, _blurCoords[5]).rg * 0.15;
+    sum += texture(shadowMap, _blurCoords[6]).rg * 0.12;
+    sum += texture(shadowMap, _blurCoords[7]).rg * 0.09;
+    sum += texture(shadowMap, _blurCoords[8]).rg * 0.05;
 
     _outColor = sum;
 }
