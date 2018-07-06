@@ -172,7 +172,7 @@ void RenderStateBlock::clean() {
 
     if (previousCache != _cachedHash) {
         WriteLock w_lock(s_stateBlockMapMutex);
-        hashAlg::emplace(s_stateBlockMap, _cachedHash, *this);
+        hashAlg::insert(s_stateBlockMap, _cachedHash, *this);
     }
 }
 

@@ -152,7 +152,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius,
                       "AIManager error: Invalid navmesh specified!");
 
         navMesh->debugDraw(_navMeshDebugDraw);
-        hashAlg::emplace(_navMeshes, radius, navMesh);
+        hashAlg::insert(_navMeshes, radius, navMesh);
     }
 
     WriteLock w_lock2(_updateMutex);

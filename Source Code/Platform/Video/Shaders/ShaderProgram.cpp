@@ -209,7 +209,7 @@ const stringImpl& ShaderProgram::shaderFileRead(const stringImpl& atomName, cons
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
     readFile(location + "/" + atomName, output, FileType::TEXT);
-    std::pair<AtomMap::iterator, bool> result = hashAlg::emplace(_atoms, atomNameHash, output);
+    std::pair<AtomMap::iterator, bool> result = hashAlg::insert(_atoms, atomNameHash, output);
 
     assert(result.second);
 
@@ -315,7 +315,7 @@ void ShaderProgram::registerShaderProgram(const ShaderProgram_ptr& shaderProgram
     unregisterShaderProgram(shaderHash);
 
     WriteLock w_lock(_programLock);
-    hashAlg::emplace(_shaderPrograms, shaderHash, shaderProgram);
+    hashAlg::insert(_shaderPrograms, shaderHash, shaderProgram);
 }
 
 /// Unloading/Deleting a program will unregister it from the manager

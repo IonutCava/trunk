@@ -78,7 +78,7 @@ void GUI::onChangeScene(Scene* newScene) {
         it->second->onEnable();
     } else {
         SceneGUIElements* elements = Attorney::SceneGUI::guiElements(*newScene);
-        hashAlg::emplace(_guiStack, newScene->getGUID(), elements);
+        hashAlg::insert(_guiStack, newScene->getGUID(), elements);
         elements->onEnable();
     }
 

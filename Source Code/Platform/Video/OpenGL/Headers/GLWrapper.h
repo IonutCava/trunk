@@ -69,6 +69,10 @@ class glHardwareQueryRing;
 namespace GLUtil {
     class glVAOCache;
 };
+
+struct GLConfig {
+};
+
 /// OpenGL implementation of the RenderAPIWrapper
 class GL_API final : public RenderAPIWrapper {
     friend class glShader;
@@ -190,19 +194,14 @@ public:
     /// Bind a texture specified by a GL handle and GL type to the specified
     /// unit
     /// using the sampler object defined by hash value
-    static bool bindTexture(GLushort unit, GLuint handle, GLenum target, size_t samplerHash = 0);
+    static bool bindTexture(GLushort unit, GLuint handle, size_t samplerHash = 0);
     static bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
         bool layered, GLint layer, GLenum access,
         GLenum format);
     /// Bind multiple textures specified by an array of handles and an offset
     /// unit
-    static bool bindTextures(GLushort unitOffset, GLuint textureCount,
-        GLuint* textureHandles, GLenum* targets,
-        GLuint* samplerHandles);
+    static bool bindTextures(GLushort unitOffset, GLuint textureCount, GLuint* textureHandles, GLuint* samplerHandles);
 
-    /// Bind the sampler object described by the hash value to the specified
-    /// unit
-    static bool bindSampler(GLushort unit, size_t samplerHash);
     /// Bind multiple samplers described by the array of hash values to the
     /// consecutive texture units starting from the specified offset
     static bool bindSamplers(GLushort unitOffset, GLuint samplerCount,
@@ -254,6 +253,8 @@ public:
     static GLuint s_SSBOffsetAlignment;
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
+    static GLConfig s_glConfig;
+
 private:
     GFXDevice& _context;
     /// The previous Text3D node's font face size
@@ -310,18 +311,18 @@ private:
     GLuint FRAME_DURATION_GPU;
     /// FontStash's context
     FONScontext* _fonsContext;
-    /// /*texture slot*/ /*<texture handle , texture type>*/
-    typedef std::array<std::pair<GLuint, GLenum>, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
+    /// /*texture slot*/ /*texture handle*/
+    typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> textureBoundMapDef;
     static textureBoundMapDef s_textureBoundMap;
 
     typedef std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS> imageBoundMapDef;
     static imageBoundMapDef s_imageBoundMap;
 
-    /// /*texture slot*/ /*sampler hash value*/
-    typedef std::array<size_t, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
+    /// /*texture slot*/ /*sampler handle*/
+    typedef std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS> samplerBoundMapDef;
     static samplerBoundMapDef s_samplerBoundMap;
     /// /*sampler hash value*/ /*sampler object*/
-    typedef hashMapImpl<size_t, glSamplerObject*> samplerObjectMap;
+    typedef hashMapImpl<size_t, glSamplerObject> samplerObjectMap;
     static SharedLock s_samplerMapLock;
     static samplerObjectMap s_samplerMap;
 

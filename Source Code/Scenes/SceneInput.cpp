@@ -327,7 +327,7 @@ bool SceneInput::mouseButtonReleased(const Input::MouseEvent& arg,
 }
 
 bool SceneInput::addKeyMapping(Input::KeyCode key, PressReleaseActions keyCbks) {
-    std::pair<KeyMap::iterator, bool> result = hashAlg::emplace(_keyMap, key, keyCbks);
+    std::pair<KeyMap::iterator, bool> result = hashAlg::insert(_keyMap, key, keyCbks);
     if (!result.second) {
         return result.first->second.merge(keyCbks);
     }
@@ -356,7 +356,7 @@ bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCb
     if (it != std::cend(_keyMap)) {
         const PressReleaseActions& actions = it->second;
         keyCbksOut.from(actions, _actionList);
-        hashAlg::emplace(_keyMapCache, key, keyCbksOut);
+        hashAlg::insert(_keyMapCache, key, keyCbksOut);
 
         return true;
     }
@@ -366,7 +366,7 @@ bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCb
 
 bool SceneInput::addMouseMapping(Input::MouseButton button, PressReleaseActions btnCbks) {
     std::pair<MouseMap::iterator, bool> result =
-        hashAlg::emplace(_mouseMap, button, btnCbks);
+        hashAlg::insert(_mouseMap, button, btnCbks);
 
     return result.second;
 }
@@ -394,7 +394,7 @@ bool SceneInput::getMouseMapping(Input::MouseButton button, PressReleaseActionCb
     if (it != std::cend(_mouseMap)) {
         const PressReleaseActions& actions = it->second;
         btnCbksOut.from(actions, _actionList);
-        hashAlg::emplace(_mouseMapCache, button, btnCbksOut);
+        hashAlg::insert(_mouseMapCache, button, btnCbksOut);
         return true;
     }
 
@@ -439,7 +439,7 @@ bool SceneInput::addJoystickMapping(Input::Joystick device, Input::JoystickEleme
         }
     }
 
-    return hashAlg::emplace(_joystickMap[device], element, btnCbks).second;
+    return hashAlg::insert(_joystickMap[device], element, btnCbks).second;
 }
 
 bool SceneInput::removeJoystickMapping(Input::Joystick device, Input::JoystickElement element) {
@@ -468,7 +468,7 @@ bool SceneInput::getJoystickMapping(Input::Joystick device, Input::JoystickEleme
     if (it != std::cend(entry2)) {
         const PressReleaseActions& actions = it->second;
         btnCbksOut.from(actions, _actionList);
-        hashAlg::emplace(entry, element, btnCbksOut);
+        hashAlg::insert(entry, element, btnCbksOut);
         return true;
     }
 

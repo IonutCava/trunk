@@ -109,6 +109,10 @@ namespace TypeUtil {
     RenderPassType stringToRenderPassType(const char* pass);
 };
 
+struct GFXConfig {
+    bool _enableDebugMsgGroups = true;
+};
+
 /// Rough around the edges Adapter pattern abstracting the actual rendering API
 /// and access to the GPU
 class GFXDevice : public KernelComponent {
@@ -387,13 +391,13 @@ public:  // Direct API calls
     }
 
     inline void pushDebugMessage(const char* message, I32 id) {
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if (Config::ENABLE_GPU_VALIDATION && _config._enableDebugMsgGroups) {
             _api->pushDebugMessage(message, id);
         }
     }
 
     inline void popDebugMessage() {
-        if (Config::ENABLE_GPU_VALIDATION) {
+        if (Config::ENABLE_GPU_VALIDATION && _config._enableDebugMsgGroups) {
             _api->popDebugMessage();
         }
     }
@@ -539,6 +543,8 @@ protected:
 
     GenericCommandPool  _commandPool;
     Time::ProfileTimer& _commandBuildTimer;
+
+    GFXConfig _config;
 
     std::shared_ptr<RenderDocManager> _renderDocManager;
     mutable std::mutex _gpuObjectArenaMutex;

@@ -36,6 +36,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     namespace Util {
+        bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
+
         void ReplaceStringInPlace(stringImpl& subject, const stringImpl& search, const stringImpl& replace);
 
         void GetPermutations(const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer);

@@ -94,7 +94,7 @@ inline void ParamHandler::setParam(U64 nameID, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
-        bool result = hashAlg::emplace(_params, nameID, AnyParam(value)).second;
+        bool result = hashAlg::emplace(_params, nameID, value).second;
         DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
     } else {
             it->second = AnyParam(value);

@@ -66,13 +66,7 @@ vectorImpl<BlendingProperties> GL_API::s_blendProperties;
 void GL_API::clearStates() {
     static const vec4<F32> clearColour = DefaultColours::DIVIDE_BLUE();
 
-    for(U16 i = 0; i < to_U16(GL_API::s_maxTextureUnits); ++i) {
-        const std::pair<GLuint, GLenum>& it  = s_textureBoundMap[i];
-        if (it.second != GL_ZERO) {
-            GL_API::bindTexture(i, 0, it.second);
-        }
-    }
-
+    GL_API::bindTextures(0, GL_API::s_maxTextureUnits, nullptr, nullptr);
     setPixelPackUnpackAlignment();
     setActiveVAO(0);
     setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
@@ -216,54 +210,56 @@ bool GL_API::bindSamplers(GLushort unitOffset,
     if (samplerCount > 0 &&
         unitOffset + samplerCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
-        glBindSamplers(unitOffset, samplerCount, samplerHandles);
-
-        if (!samplerHandles) {
-            for (GLushort i = 0; i < samplerCount; ++i) {
-               s_samplerBoundMap[unitOffset + i] = 0;
+        if (samplerCount == 1) {
+            GLuint& handle = s_samplerBoundMap[unitOffset];
+            GLuint targetHandle = samplerHandles ? samplerHandles[0] : 0u;
+            if (handle != targetHandle) {
+                glBindSampler(unitOffset, targetHandle);
+                handle = targetHandle;
+                return true;
             }
         } else {
-            for (GLushort i = 0; i < samplerCount; ++i) {
-                s_samplerBoundMap[unitOffset + i] = samplerHandles[i];
+            glBindSamplers(unitOffset, samplerCount, samplerHandles);
+            if (samplerHandles != nullptr) {
+                memcpy(&s_samplerBoundMap[unitOffset], samplerHandles, sizeof(GLuint) * samplerCount);
+            } else {
+                memset(&s_samplerBoundMap[unitOffset], 0, sizeof(GLuint) * samplerCount);
             }
-        }
-
-        return true;
+            return true;
+        } 
     }
 
     return false;
 }
 
-/// Bind the sampler object described by the hash value to the specified unit
-bool GL_API::bindSampler(GLushort unit, size_t samplerHash) {
-
-    GLuint samplerHandle = getSamplerHandle(samplerHash);
-    return bindSamplers(unit, 1, &samplerHandle);
-}
-
 bool GL_API::bindTextures(GLushort unitOffset,
                           GLuint textureCount,
                           GLuint* textureHandles,
-                          GLenum* targets,
                           GLuint* samplerHandles) {
     if (textureCount > 0 &&
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         GL_API::bindSamplers(unitOffset, textureCount, samplerHandles);
-        glBindTextures(unitOffset, textureCount, textureHandles);
 
-        if (!textureHandles) {
-            for (GLushort i = 0; i < textureCount; ++i) {
-                s_textureBoundMap[unitOffset + i].first = 0;
+        if (textureCount == 1) {
+            GLuint& crtHandle = s_textureBoundMap[unitOffset];
+            GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
+
+            if (crtHandle != targetHandle) {
+                glBindTextureUnit(unitOffset, targetHandle);
+                crtHandle = targetHandle;
+                return true;
             }
         } else {
-            for (GLushort i = 0; i < textureCount; ++i) {
-                std::pair<GLuint, GLenum>& currentMapping = s_textureBoundMap[unitOffset + i];
-                currentMapping.first = textureHandles[i];
-                currentMapping.second = targets[i];
+            glBindTextures(unitOffset, textureCount, textureHandles);
+            if (textureHandles != nullptr) {
+                memcpy(&s_textureBoundMap[unitOffset], textureHandles, sizeof(GLuint) * textureCount);
+            } else {
+                memset(&s_textureBoundMap[unitOffset], 0, sizeof(GLuint) * textureCount);
             }
+
+            return true;
         }
-        return true;
     }
 
     return false;
@@ -273,14 +269,13 @@ bool GL_API::bindTextures(GLushort unitOffset,
 /// using the sampler object defined by hash value
 bool GL_API::bindTexture(GLushort unit,
                          GLuint handle,
-                         GLenum target,
                          size_t samplerHash) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
     DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits),
                   "GLStates error: invalid texture unit specified as a texture binding slot!");
     GLuint samplerHandle = getSamplerHandle(samplerHash);
-    return bindTextures(unit, 1, &handle, &target, &samplerHandle);
+    return bindTextures(unit, 1, &handle, &samplerHandle);
 }
 
 bool GL_API::bindTextureImage(GLushort unit, GLuint handle, GLint level,

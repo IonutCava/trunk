@@ -117,7 +117,7 @@ static void glfons__renderDraw(void* userPtr,
     GLuint bufferID = gl->glfons_vboID;
     Divide::GL_API::setActiveVAO(gl->glfons_vaoID);
     Divide::GL_API::setActiveBuffer(GL_ARRAY_BUFFER, gl->glfons_vboID);
-    Divide::GL_API::bindTexture(0, gl->tex, GL_TEXTURE_2D);
+    Divide::GL_API::bindTexture(0, gl->tex);
 
     glInvalidateBufferData(bufferID);
     glNamedBufferData(bufferID, nverts * sizeof(FONSvert), verts, GL_STREAM_DRAW);

@@ -34,23 +34,23 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode_wptr nod
 
     if (container != std::end(_nodeContainerMap)) {
         std::pair<NodeContainer::const_iterator, bool> result;
-        result = hashAlg::emplace(container->second,
-                                  sgnNode->getGUID(),
-                                  node);
+        result = hashAlg::insert(container->second,
+                                 sgnNode->getGUID(),
+                                 node);
         if (!result.second) {
             Console::errorfn("VisualSensor: Added the same node to follow twice!");
         }
     } else {
-        hashAlg::emplace(_nodeContainerMap[containerID],
-                         sgnNode->getGUID(),
-                         node);
+        hashAlg::insert(_nodeContainerMap[containerID],
+                        sgnNode->getGUID(),
+                        node);
        
     }
 
     NodePositions& positions = _nodePositionsMap[containerID];
-    hashAlg::emplace(positions,
-                     sgnNode->getGUID(),
-                     sgnNode->get<PhysicsComponent>()->getPosition());
+    hashAlg::insert(positions,
+                    sgnNode->getGUID(),
+                    sgnNode->get<PhysicsComponent>()->getPosition());
 }
 
 void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {

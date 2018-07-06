@@ -376,7 +376,7 @@ void glimBatchData::BindOGL(unsigned int uiCurrentProgram) {
             iAttributeArray = it2->second;
         } else {
             iAttributeArray = it->first;
-            hashAlg::emplace(attribs, uiCurrentProgram, iAttributeArray);
+            hashAlg::insert(attribs, uiCurrentProgram, iAttributeArray);
         }
 
         if (iAttributeArray < 0) {

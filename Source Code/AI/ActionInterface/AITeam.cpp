@@ -154,7 +154,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
     if (_team.find(entity->getGUID()) != std::end(_team)) {
         return true;
     }
-    hashAlg::emplace(_team, entity->getGUID(), entity);
+    hashAlg::insert(_team, entity->getGUID(), entity);
     Attorney::AIEntityAITeam::setTeamPtr(*entity, this);
 
     return true;

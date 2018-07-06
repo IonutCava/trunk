@@ -237,7 +237,7 @@ namespace Attorney {
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {
                 animator._animations.push_back(animations[i]);
-                hashAlg::emplace(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_U32(i));
+                hashAlg::insert(animator._animationNameToID, _ID_RT(animator._animations[i]->name()), to_U32(i));
             }
         }
 

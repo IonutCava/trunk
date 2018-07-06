@@ -15,8 +15,11 @@ WaypointGraph::WaypointGraph() {
 WaypointGraph::~WaypointGraph() { _waypoints.clear(); }
 
 void WaypointGraph::addWaypoint(Waypoint* wp) {
-    if (_waypoints.find(wp->getID()) != std::end(_waypoints)) return;
-    hashAlg::emplace(_waypoints, wp->getID(), wp);
+    if (_waypoints.find(wp->getID()) != std::end(_waypoints)) {
+        return;
+    }
+
+    hashAlg::insert(_waypoints, wp->getID(), wp);
     updateGraph();
 }
 

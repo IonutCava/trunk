@@ -557,7 +557,7 @@ I32 glShaderProgram::Binding(const char* name) {
     GLint location = glGetUniformLocation(_shaderProgramID, name);
 
     // Save it for later reference
-    hashAlg::emplace(_shaderVarLocation, nameHash, location);
+    hashAlg::insert(_shaderVarLocation, nameHash, location);
 
     // Return the location
     return location;

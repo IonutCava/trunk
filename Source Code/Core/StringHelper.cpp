@@ -5,6 +5,19 @@
 namespace Divide {
 namespace Util {
 
+bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix) {
+    stringImpl tempArg(arg_prefix);
+    tempArg += target_arg;
+    const char* target = tempArg.c_str();
+
+    for (int i = 0; i < argc; ++i) {
+        if (_strcmpi(argv[i], target) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void GetPermutations(const stringImpl& inputString, vectorImpl<stringImpl>& permutationContainer) {
     permutationContainer.clear();
     stringImpl tempCpy(inputString);

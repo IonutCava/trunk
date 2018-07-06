@@ -49,7 +49,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsU32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsU32, location, value);
     }
 
     return binding;
@@ -71,7 +71,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsI32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsI32, location, value);
     }
 
     return binding;
@@ -93,7 +93,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = value;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsF32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsF32, location, value);
     }
 
     return binding;
@@ -115,7 +115,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec2F32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec2F32, location, value);
     }
 
     return binding;
@@ -137,7 +137,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec2I32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec2I32, location, value);
     }
 
     return binding;
@@ -159,7 +159,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec3F32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec3F32, location, value);
     }
 
     return binding;
@@ -181,7 +181,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec3I32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec3I32, location, value);
     }
 
     return binding;
@@ -203,7 +203,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec4F32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec4F32, location, value);
     }
 
     return binding;
@@ -225,7 +225,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVec4I32, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsVec4I32, location, value);
     }
 
     return binding;
@@ -247,7 +247,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsMat3, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsMat3, location, value);
     }
 
     return binding;
@@ -269,7 +269,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second.set(value);
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsMat4, location, value);
+        hashAlg::insert(_uniformsByName._shaderVarsMat4, location, value);
     }
 
     return binding;
@@ -291,7 +291,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorI32, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorI32, location, values);
     }
 
     return binding;
@@ -313,7 +313,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorF32, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorF32, location, values);
     }
 
     return binding;
@@ -335,7 +335,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec2F32, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorVec2F32, location, values);
     }
 
     return binding;
@@ -357,7 +357,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec3F32, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorVec3F32, location, values);
     }
 
     return binding;
@@ -378,9 +378,8 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
         } else {
             it->second = values;
         }
-    }
-    else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorVec4F32, location, values);
+    } else {
+        hashAlg::insert(_uniformsByName._shaderVarsVectorVec4F32, location, values);
     }
 
     return binding;
@@ -403,7 +402,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorMat3, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorMat3, location, values);
     }
 
     return binding;
@@ -425,7 +424,7 @@ inline I32 glShaderProgram::cachedValueUpdate(const stringImplFast& location, co
             it->second = values;
         }
     } else {
-        hashAlg::emplace(_uniformsByName._shaderVarsVectorMat4, location, values);
+        hashAlg::insert(_uniformsByName._shaderVarsVectorMat4, location, values);
     }
 
     return binding;

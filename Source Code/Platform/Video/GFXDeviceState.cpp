@@ -41,6 +41,7 @@ namespace Divide {
 /// primitives needed for frame rendering
 ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& renderResolution) {
     ErrorCode hardwareState = createAPIInstance();
+    _config._enableDebugMsgGroups = Util::findCommandLineArgument(argc, argv, "enableGPUMessageGroups");
     Configuration& config = _parent.platformContext().config();
 
     if (hardwareState == ErrorCode::NO_ERR) {

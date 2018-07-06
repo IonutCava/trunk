@@ -238,9 +238,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     GFXDevice::setGPURenderer(renderer);
     GFXDevice::setGPUVendor(vendor);
-
+    
     // Cap max anisotropic level to what the hardware supports
-    CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(1), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
+    CLAMP(config.rendering.anisotropicFilteringLevel, to_U8(0), to_U8(GLUtil::getIntegerv(gl::GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
     GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     Console::printfn(Locale::get(_ID("GL_MAX_VERSION")),
@@ -382,7 +382,7 @@ void GL_API::closeRenderingAPI() {
     // Destroy sampler objects
     {
         WriteLock w_lock(s_samplerMapLock);
-        MemoryManager::DELETE_HASHMAP(s_samplerMap);
+        s_samplerMap.clear();
     }
     // Destroy the text rendering system
     deleteFonsContext();

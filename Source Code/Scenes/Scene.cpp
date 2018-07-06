@@ -181,9 +181,9 @@ void Scene::addMusic(MusicType type, const stringImpl& name, const stringImpl& s
     music.setResourceName(musicFile);
     music.setResourceLocation(musicFilePath);
     music.setFlag(true);
-    hashAlg::emplace(state().music(type),
-                     _ID_RT(name),
-                     CreateResource<AudioDescriptor>(_resCache, music));
+    hashAlg::insert(state().music(type),
+                    _ID_RT(name),
+                    CreateResource<AudioDescriptor>(_resCache, music));
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data) {
@@ -460,9 +460,9 @@ void Scene::toggleFlashlight(U8 playerIndex) {
         flashLight = _sceneGraph->getRoot().addNode(tempLight,
                                                     lightMask,
                                                     PhysicsGroup::GROUP_IGNORE);
-        hashAlg::emplace(_flashLight,
-                         playerIndex,
-                         flashLight);
+        hashAlg::insert(_flashLight,
+                        playerIndex,
+                        flashLight);
                      
     }
 

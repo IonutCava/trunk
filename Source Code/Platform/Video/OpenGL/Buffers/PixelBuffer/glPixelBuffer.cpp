@@ -113,7 +113,7 @@ void glPixelBuffer::end() const {
 }
 
 void glPixelBuffer::bind(GLubyte unit) const {
-    GL_API::bindTexture(unit, _textureID, static_cast<GLenum>(_textureType));
+    GL_API::bindTexture(unit, _textureID);
 }
 
 bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,

@@ -132,6 +132,13 @@ void MainScene::processTasks(const U64 deltaTime) {
                                -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
         _taskTimers[0] = 0.0;
         _updateLights = true;
+
+
+        vectorImpl<SceneGraphNode_wptr> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), Object3D::ObjectType::TERRAIN);
+
+        for (SceneGraphNode_wptr terrainNode : terrains) {
+            //terrainNode.lock()->get<PhysicsComponent>()->setPositionY(terrainNode.lock()->get<PhysicsComponent>()->getPosition().y - 0.5f);
+        }
     }
 
     Scene::processTasks(deltaTime);

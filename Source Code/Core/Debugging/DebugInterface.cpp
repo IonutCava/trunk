@@ -96,7 +96,7 @@ void DebugInterface::idle() {
                 // Create a new bar per group
                 for (hashMapImpl<I64, DebugGroup>::value_type& group : _debugGroups) {
                     g_TweakWindows.push_back(TwNewBar(group.second._name.c_str()));
-                    hashAlg::emplace(g_barToGroupMap, g_TweakWindows.size() - 1, group.first);
+                    hashAlg::insert(g_barToGroupMap, g_TweakWindows.size() - 1, group.first);
                 }
 
                 g_varToCallbackMap.clear();
@@ -110,7 +110,7 @@ void DebugInterface::idle() {
                     if (!descriptor._cbk) {
                         TwAddVarRO(targetBar, variable._descriptor._displayName.c_str(), toTwType(descriptor._type), descriptor._variable, "");
                     } else {
-                        auto result = hashAlg::emplace(g_varToCallbackMap, variable.getGUID(), descriptor._cbk);
+                        auto result = hashAlg::insert(g_varToCallbackMap, variable.getGUID(), descriptor._cbk);
                         TwAddVarCB(targetBar, descriptor._displayName.c_str(), toTwType(descriptor._type), SetCB, GetCB, &(result.first->second), "");
                     }
                 }

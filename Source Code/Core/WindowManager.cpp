@@ -142,6 +142,10 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG |
                            SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG |
                            SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
+        } else {
+            // These seem to use the same value
+            auto KHR_NO_ERROR = SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
+            OpenGLFlags |= KHR_NO_ERROR;
         }
 
         auto validate = [](I32 errCode) -> bool {
@@ -163,6 +167,8 @@ U32 WindowManager::createAPIFlags(RenderAPI api) {
         };
 
         validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
+        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
+
         validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
         // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
         validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));

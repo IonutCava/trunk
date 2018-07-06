@@ -90,7 +90,7 @@ namespace Navigation {
 
 class NavigationMesh;
 
-class DivideDtCrowd {
+class DivideDtCrowd : public NonCopyable {
    public:
     /**
       * Initialize a detour crowd that will manage agents on the specified

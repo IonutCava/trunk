@@ -11,7 +11,7 @@ bool PreparePlatform() {
     static Divide::ErrorCode err = Divide::ErrorCode::PLATFORM_INIT_ERROR;
     if (err != Divide::ErrorCode::NO_ERR) {
         Divide::PlatformClose();
-        vectorImpl<char*> args = { "disableCopyright" };
+        vectorImpl<char*> args = { "--disableCopyright" };
         err = Divide::PlatformInit(static_cast<int>(args.size()), args.data());
         if (err != Divide::ErrorCode::NO_ERR) {
             std::cout << "Platform error code: " << static_cast<int>(err) << std::endl;

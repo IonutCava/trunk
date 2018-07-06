@@ -64,7 +64,7 @@ const char* LanguageData::get(U64 key, const char* defaultValue) {
 }
 
 void LanguageData::add(U64 key, const char* value) {
-    hashAlg::emplace(_languageTable, key, stringImpl(value));
+    hashAlg::emplace(_languageTable, key, value);
 }
 
 void LanguageData::addLanguageChangeCallback(const DELEGATE_CBK<void, const char* /*new language*/>& cbk) {

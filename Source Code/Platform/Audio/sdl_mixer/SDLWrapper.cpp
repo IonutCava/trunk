@@ -75,7 +75,7 @@ void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
         MusicMap::iterator it = _musicMap.find(music->getGUID());
         if (it == std::cend(_musicMap)) {
             musicPtr = Mix_LoadMUS(music->getAudioFile().c_str());
-            hashAlg::emplace(_musicMap, music->getGUID(), musicPtr);
+            hashAlg::insert(_musicMap, music->getGUID(), musicPtr);
         } else {
             if (music->dirty()) {
                 musicPtr = Mix_LoadMUS(music->getAudioFile().c_str());
@@ -104,7 +104,7 @@ void SDL_API::playSound(const AudioDescriptor_ptr& sound) {
         SoundMap::iterator it = _soundMap.find(sound->getGUID());
         if (it == std::cend(_soundMap)) {
             soundPtr = Mix_LoadWAV(sound->getAudioFile().c_str());
-            hashAlg::emplace(_soundMap, sound->getGUID(), soundPtr);
+            hashAlg::insert(_soundMap, sound->getGUID(), soundPtr);
         } else {
             if (sound->dirty()) {
                 soundPtr = Mix_LoadWAV(sound->getAudioFile().c_str());

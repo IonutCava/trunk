@@ -43,15 +43,10 @@ class MemoryTracker {
    private:
     class Entry {
        public:
-        Entry(char const* file, size_t line, size_t size)
+        Entry(const char* file, size_t line, size_t size)
             : _file(file),
               _line(line),
               _size(size)
-        {
-        }
-
-        Entry()
-            : Entry("", 0, 0)
         {
         }
 
@@ -112,7 +107,7 @@ class MemoryTracker {
         if (!_locked) {
             WriteLock w_lock(_mutex);
             MemoryTracker::Lock lock(*this);
-            hashAlg::emplace(_map, p, Entry(file, line, size));
+            hashAlg::emplace(_map, p, file, line, size);
         }
     }
 

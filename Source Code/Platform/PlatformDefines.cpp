@@ -23,15 +23,6 @@ namespace Divide {
 
 namespace {
     SysInfo g_sysInfo;
-
-    bool hasArgument(int argc, char** argv, const char* arg) {
-        for (int i = 0; i < argc; ++i) {
-            if (_strcmpi(argv[i], arg) == 0) {
-                return true;
-            }
-        }
-        return false;
-    }
 };
 
 namespace MemoryManager {
@@ -77,7 +68,7 @@ ErrorCode PlatformPostInit(int argc, char** argv) {
         if (err == ErrorCode::NO_ERR) {
             Console::start();
             // Print a copyright notice in the log file
-            if (!hasArgument(argc, argv, "disableCopyright")) {
+            if (!Util::findCommandLineArgument(argc, argv, "disableCopyright")) {
                 Console::printCopyrightNotice();
             }
             Console::toggleTimeStamps(true);

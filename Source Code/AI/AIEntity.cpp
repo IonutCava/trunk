@@ -129,7 +129,7 @@ bool AIEntity::addSensor(SensorType type) {
 
     if (sensor) {
         std::pair<SensorMap::iterator, bool> result;
-        result = hashAlg::emplace(_sensorList, type, sensor);
+        result = hashAlg::insert(_sensorList, type, sensor);
         if (!result.second) {
             MemoryManager::SAFE_UPDATE((result.first)->second, sensor);
         } 

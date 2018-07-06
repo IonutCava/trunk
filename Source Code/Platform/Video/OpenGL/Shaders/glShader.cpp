@@ -265,7 +265,7 @@ glShader* glShader::loadShader(GFXDevice& context,
             U64 nameHash = _ID_RT(name);
             // If we loaded the source code successfully,  register it
             WriteLock w_lock(_shaderNameLock);
-            hashAlg::emplace(_shaderNameMap, nameHash, shader);
+            hashAlg::insert(_shaderNameMap, nameHash, shader);
         }
     }
 

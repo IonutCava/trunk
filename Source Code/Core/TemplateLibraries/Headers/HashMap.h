@@ -105,10 +105,12 @@ struct EnumHash {
 namespace hashAlg {
 
 #if defined(HASH_MAP_IMP) && HASH_MAP_IMP == EASTL_IMP
-template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val) {
+
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
+inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, K key, Args&&... args) {
+
     hashMapImpl<K, V, HashFun>::value_type value(key);
-    value.second = val;
+    value.second = V(std::forward<Args>(args)...);
 
     auto result = map.insert(value);
 
@@ -124,9 +126,16 @@ inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, con
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturnFast<K, V, HashFun> emplace(hashMapImplFast<K, V, HashFun>& map, K key, const V& val) {
+inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, K key, const V& value) {
+    auto result = map.insert(eastl::pair<K, V>(key, value));
+
+    return std::make_pair(result.first, result.second);
+}
+
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
+inline hashPairReturnFast<K, V, HashFun> emplace(hashMapImplFast<K, V, HashFun>& map, K key, , Args&&... args) {
     hashMapImpl<K, V, HashFun>::value_type value(key);
-    value.second = val;
+    value.second = V(std::forward<Args>(args)...);
 
     auto result = map.insert(value);
 
@@ -141,11 +150,20 @@ inline hashPairReturnFast<K, V, HashFun> insert(hashMapImplFast<K, V, HashFun>& 
     return std::make_pair(result.first, result.second);
 }
 
+template <typename K, typename V, typename HashFun = HashType<K> >
+inline hashPairReturnFast<K, V, HashFun> insert(hashMapImplFast<K, V, HashFun>& map, K key, const V& value) {
+    auto result = map.insert(eastl::pair<K, V>(key, value));
+
+    return std::make_pair(result.first, result.second));
+}
+
 #else 
 
-template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, K key, const V& val) {
-    return map.emplace(key, val);
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
+inline hashPairReturn<K, V, HashFun> emplace(hashMapImpl<K, V, HashFun>& map, K key, Args&&... args) {
+    return map.emplace(std::piecewise_construct,
+                       std::forward_as_tuple(key),
+                       std::forward_as_tuple(std::forward<Args>(args)...));
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
@@ -154,13 +172,25 @@ inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, con
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturnFast<K, V, HashFun> emplace(hashMapImplFast<K, V, HashFun>& map, K key, const V& val) {
-    return map.emplace(key, val);
+inline hashPairReturn<K, V, HashFun> insert(hashMapImpl<K, V, HashFun>& map, K key, const V& value) {
+    return map.insert(std::make_pair(key, value));
+}
+
+template <typename K, typename V, typename ... Args, typename HashFun = HashType<K> >
+inline hashPairReturnFast<K, V, HashFun> emplace(hashMapImplFast<K, V, HashFun>& map, K key, Args&&... argsl) {
+    return map.emplace(std::piecewise_construct,
+                       std::forward_as_tuple(key),
+                       std::forward_as_tuple(std::forward<Args>(args)...));
 }
 
 template <typename K, typename V, typename HashFun = HashType<K> >
-inline hashPairReturnFast<K, V, HashFun> insert(hashMapImplFast<K, V, HashFun>& map, const typename hashMapImpl<K, V, HashFun>::value_type& valuePair) {
+inline hashPairReturnFast<K, V, HashFun> insert(hashMapImplFast<K, V, HashFun>& map, const typename hashMapImplFast<K, V, HashFun>::value_type& valuePair) {
     return map.insert(valuePair);
+}
+
+template <typename K, typename V, typename HashFun = HashType<K> >
+inline hashPairReturnFast<K, V, HashFun> insert(hashMapImplFast<K, V, HashFun>& map, K key, const V& value) {
+    return map.insert(std::make_pair(key, value));
 }
 
 #endif

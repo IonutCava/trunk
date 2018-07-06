@@ -176,7 +176,7 @@ void SceneAnimator::load(PlatformContext& context, ByteBuffer& dataIn) {
         anim = std::make_unique<AnimEvaluator>();
         AnimEvaluator::load(*anim, dataIn);
         // get all the animation names so I can reference them by name and get the correct id
-        hashAlg::emplace(_animationNameToID, _ID_RT(anim->name()), idx++);
+        hashAlg::insert(_animationNameToID, _ID_RT(anim->name()), idx++);
     }
     
     init(context);

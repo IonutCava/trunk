@@ -102,7 +102,7 @@ Camera* Camera::createCamera(const stringImpl& cameraName, CameraType type) {
 
     if (camera != nullptr) {
         WriteLock w_lock(s_cameraPoolLock);
-        hashAlg::emplace(s_cameraPool, _ID_RT(camera->getName()), camera);
+        hashAlg::insert(s_cameraPool, _ID_RT(camera->getName()), camera);
     }
 
     return camera;
@@ -146,7 +146,7 @@ bool Camera::removeChangeListener(U32 id) {
 }
 
 U32 Camera::addChangeListener(const DELEGATE_CBK<void, const Camera&>& f) {
-    hashAlg::emplace(s_changeCameraListeners, ++s_changeCameraId, f);
+    hashAlg::insert(s_changeCameraListeners, ++s_changeCameraId, f);
     return s_changeCameraId;
 }
 
@@ -161,7 +161,7 @@ bool Camera::removeUpdateListener(U32 id) {
 }
 
 U32 Camera::addUpdateListener(const DELEGATE_CBK<void, const Camera&>& f) {
-    hashAlg::emplace(s_updateCameraListeners, ++s_updateCameraId, f);
+    hashAlg::insert(s_updateCameraListeners, ++s_updateCameraId, f);
     return s_updateCameraId;
 }
 

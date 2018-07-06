@@ -33,19 +33,20 @@
 #define _GL_SAMPLER_H_
 
 #include "Platform/Video/OpenGL/Headers/glResources.h"
+#include "Core/Headers/NonCopyable.h"
 
 namespace Divide {
 
 class SamplerDescriptor;
 
-class glSamplerObject {
+class glSamplerObject : private NonCopyable {
    public:
     glSamplerObject(const SamplerDescriptor& descriptor);
     ~glSamplerObject();
 
-    inline GLuint getObjectHandle() { return _samplerID; }
+    inline GLuint getObjectHandle() const { return _samplerID; }
 
-   private:
+private:
     GLuint _samplerID;
 };
 

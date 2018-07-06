@@ -8,6 +8,7 @@
 namespace Divide {
 
 glSamplerObject::glSamplerObject(const SamplerDescriptor& descriptor)
+    : _samplerID(0)
 {
     glCreateSamplers(1, &_samplerID);
     glSamplerParameterf(_samplerID, GL_TEXTURE_LOD_BIAS, descriptor.biasLOD());

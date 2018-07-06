@@ -71,8 +71,8 @@ GL_API::GL_API(GFXDevice& context)
     // All clip planes are disabled at first (default OpenGL state)
     _activeClipPlanes.fill(false);
     _fontCache.second = -1;
-    s_samplerBoundMap.fill(0);
-    s_textureBoundMap.fill(std::make_pair(0, GL_NONE));
+    s_samplerBoundMap.fill(0u);
+    s_textureBoundMap.fill(0u);
 
     _elapsedTimeQuery = std::make_shared<glHardwareQueryRing>(context, g_performanceQueryRingLength);
 }
@@ -776,7 +776,7 @@ I32 GL_API::getFont(const stringImpl& fontName) {
                 Console::errorfn(Locale::get(_ID("ERROR_FONT_FILE")), fontName.c_str());
             }
             // Save the font in the font cache
-            hashAlg::emplace(_fonts, fontNameHash, _fontCache.second);
+            hashAlg::insert(_fonts, fontNameHash, _fontCache.second);
             
         } else {
             _fontCache.second = it->second;
@@ -797,9 +797,7 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
 
     GL_API::setBlending(0, true, textBlend, Util::ToByteColour(DefaultColours::DIVIDE_BLUE()));
 
-    if (Config::ENABLE_GPU_VALIDATION) {
-        pushDebugMessage("OpenGL render text start!", 2);
-    }
+    GFX::ScopedDebugMessage(_context, "OpenGL render text start!", 2);
 
     const RenderTarget& screenRT = _context.renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     U16 height = screenRT.getHeight();
@@ -842,10 +840,6 @@ void GL_API::drawText(const vectorImpl<GUITextBatchEntry>& batch) {
                 _context.registerDrawCall();
             }
         }
-    }
-
-    if (Config::ENABLE_GPU_VALIDATION) {
-        popDebugMessage();
     }
 }
 
@@ -971,7 +965,6 @@ bool GL_API::makeTextureResident(const TextureData& textureData) {
     return bindTexture(
         static_cast<GLushort>(textureData.getHandleLow()),
         textureData.getHandleHigh(),
-        GLUtil::glTextureTypeTable[to_U32(textureData._textureType)],
         textureData._samplerHash);
 }
 
@@ -992,13 +985,12 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     size_t hashValue = descriptor.getHash();
     // Try to find the hash value in the sampler object map
     UpgradableReadLock ur_lock(s_samplerMapLock);
-    samplerObjectMap::const_iterator it = s_samplerMap.find(hashValue);
     // If we fail to find it, we need to create a new sampler object
-    if (it == std::end(s_samplerMap)) {
+    if (s_samplerMap.find(hashValue) == std::end(s_samplerMap)) {
         UpgradeToWriteLock w_lock(ur_lock);
         // Create and store the newly created sample object. GL_API is
         // responsible for deleting these!
-        hashAlg::emplace(s_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
+        hashAlg::emplace(s_samplerMap, hashValue, descriptor);
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -1014,10 +1006,10 @@ GLuint GL_API::getSamplerHandle(size_t samplerHash) {
         samplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
-            return it->second->getObjectHandle();
-        } else {
-            Console::errorfn(Locale::get(_ID("ERROR_NO_SAMPLER_OBJECT_FOUND")), samplerHash);
+            return it->second.getObjectHandle();
         }
+           
+        Console::errorfn(Locale::get(_ID("ERROR_NO_SAMPLER_OBJECT_FOUND")), samplerHash);
     }
 
     return 0;
