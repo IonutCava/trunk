@@ -633,6 +633,15 @@ void GFXDevice::Screenshot(const stringImpl& filename) {
     MemoryManager::DELETE_ARRAY(imageData);
 }
 
+void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut) {
+    static vec4<F32> planesTemp[6];
+    computeFrustumPlanes(invViewProj, planesTemp);
+    for (U8 i = 0; i < 6; ++i) {
+        const vec4<F32>& planeTemp = planesTemp[i];
+        planesOut[i].set(planeTemp.xyz(), planeTemp.w);
+    }
+}
+
 void GFXDevice::computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut) {
     static const vec4<F32> unitVecs[] = { vec4<F32>(-1, -1, -1, 1),
                                           vec4<F32>(-1 , 1, -1, 1),

@@ -81,6 +81,21 @@
 #define WIN32
 #endif
 
+#if defined(CPP_VERSION)
+#   undef CPP_VERSION
+#   if _MSC_VER == 1600 || _MSC_VER == 1700
+#       define CPP_VERSION 1
+#   elif _MSC_VER == 1800
+#       define CPP_VERSION 201103L
+#   elif _MSC_VER == 1900
+#       define CPP_VERSION 201402L
+#   elif _MSC_VER > 1900
+#       define CPP_VERSION 201500 //This may change for C++17
+#   else
+#       define CPP_VERSION 0
+#   endif
+#endif
+
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 #ifndef thread_local

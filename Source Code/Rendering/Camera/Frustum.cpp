@@ -72,13 +72,21 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox) co
 
 void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix) {
     mat4<F32>::Multiply(viewMatrix, projectionMatrix, _viewProjectionMatrixCache);
+    //GFXDevice::computeFrustumPlanes(_viewProjectionMatrixCache.getInverse(), _frustumPlanes);
 
-    Plane<F32>& rightPlane = _frustumPlanes[0];
-    Plane<F32>& leftPlane = _frustumPlanes[1];
-    Plane<F32>& bottomPlane = _frustumPlanes[2];
-    Plane<F32>& topPlane = _frustumPlanes[3];
-    Plane<F32>& farPlane = _frustumPlanes[4];
-    Plane<F32>& nearPlane = _frustumPlanes[5];
+    Plane<F32> tempPlanes[6];
+    /*Plane<F32>& leftPlane = _frustumPlanes[0];
+    Plane<F32>& rightPlane = _frustumPlanes[1];
+    Plane<F32>& nearPlane = _frustumPlanes[2];
+    Plane<F32>& farPlane = _frustumPlanes[3];
+    Plane<F32>& topPlane = _frustumPlanes[4];
+    Plane<F32>& bottomPlane = _frustumPlanes[5];*/
+    Plane<F32>& leftPlane = tempPlanes[0];
+    Plane<F32>& rightPlane = tempPlanes[1];
+    Plane<F32>& nearPlane = tempPlanes[2];
+    Plane<F32>& farPlane = tempPlanes[3];
+    Plane<F32>& topPlane = tempPlanes[4];
+    Plane<F32>& bottomPlane = tempPlanes[5];
 
     const F32* mat = &_viewProjectionMatrixCache.mat[0];
 
@@ -100,6 +108,10 @@ void Frustum::Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMa
     nearPlane.set(mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10], mat[15] + mat[14]);
     nearPlane.normalize();
 
+    /*for (U8 i = 0; i < 6; ++i) {
+        assert(tempPlanes[i].compare(_frustumPlanes[i], 0.05));
+    }*/
+
     _pointsDirty = true;
 }
 
@@ -116,12 +128,12 @@ void Frustum::updatePoints() {
         return;
     }
 
-    const Plane<F32>& rightPlane = _frustumPlanes[0];
-    const Plane<F32>& leftPlane = _frustumPlanes[1];
-    const Plane<F32>& bottomPlane = _frustumPlanes[2];
-    const Plane<F32>& topPlane = _frustumPlanes[3];
-    const Plane<F32>& farPlane = _frustumPlanes[4];
-    const Plane<F32>& nearPlane = _frustumPlanes[5];
+    const Plane<F32>& leftPlane = _frustumPlanes[0];
+    const Plane<F32>& rightPlane = _frustumPlanes[1];
+    const Plane<F32>& nearPlane = _frustumPlanes[2];
+    const Plane<F32>& farPlane = _frustumPlanes[3];
+    const Plane<F32>& topPlane = _frustumPlanes[4];
+    const Plane<F32>& bottomPlane = _frustumPlanes[5];
 
     intersectionPoint(nearPlane, leftPlane, topPlane, _frustumPoints[0]);
     intersectionPoint(nearPlane, rightPlane, topPlane, _frustumPoints[1]);

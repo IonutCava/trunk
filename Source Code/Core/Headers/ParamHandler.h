@@ -33,15 +33,23 @@
 #define _CORE_PARAM_HANDLER_H_
 
 #include "Console.h"
-#include "cdigginsAny.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Headers/PlatformDefines.h"
+
+#if !defined(CPP_17_SUPPORT)
+#include "cdigginsAny.h"
+#else
+#include <any>
+#endif
 
 namespace Divide {
 
 DEFINE_SINGLETON(ParamHandler)
-
+#if !defined(CPP_17_SUPPORT)
     typedef hashMapImpl<ULL, cdiggins::any> ParamMap;
+#else
+    typedef hashMapImpl<ULL, std::any> ParamMap;
+#endif
     /// A special map for string types (small perf. optimization for add/retrieve)
     typedef hashMapImpl<ULL, stringImpl> ParamStringMap;
     /// A special map for boolean types (small perf. optimization for add/retrieve)

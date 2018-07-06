@@ -49,6 +49,7 @@
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
 #endif //_USE_MATH_DEFINES
+
 #include <cmath>
 #include <functional>
 #include <atomic>
@@ -95,6 +96,10 @@ enum class CallbackParam : U32 {
 
 }; //namespace Divide
 
+#if !defined(CPP_VERSION)
+#   define CPP_VERSION __cplusplus
+#endif
+
 #if defined(_WIN32)
 #include "PlatformDefinesWindows.h"
 #elif defined(__APPLE_CC__) 
@@ -134,6 +139,24 @@ do {                                                \
 #define FWD_DECLARE_MANAGED_CLASS(T)      \
     class T;                              \
     TYPEDEF_SMART_POINTERS_FOR_CLASS(T);
+
+#if CPP_VERSION > 1
+#   define CPP_98_SUPPORT
+#   define CPP_03_SUPPORT
+#   if CPP_VERSION >= 201103L
+#       define CPP_11_SUPPORT
+#           if CPP_VERSION >= 201402L
+#               define CPP_14_SUPPORT
+#               if CPP_VERSION > 201402L
+#                   define CPP_17_SUPPORT
+#               endif
+#           endif
+#   endif
+#endif 
+
+#if !defined(CPP_11_SUPPORT)
+#error "Divide Framework requires C++11 support at a minimum!."
+#endif 
 
 namespace Divide {
 
@@ -297,10 +320,94 @@ static inline size_t realign_offset(size_t offset, size_t align) {
     return (offset + align - 1) & ~(align - 1);
 }
 
+#if !defined(CPP_11_SUPPORT)
 template<typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+#endif
+
+#if !defined(CPP_14_SUPPORT)
+namespace std {
+    // TEMPLATE FUNCTIONS cbegin AND cend
+    template<class _Container>
+    auto inline cbegin(const _Container& _Cont) -> decltype(::std::begin(_Cont))
+    {	// get beginning of sequence
+        return (::std::begin(_Cont));
+    }
+
+    template<class _Container>
+    auto inline cend(const _Container& _Cont) -> decltype(::std::end(_Cont))
+    {	// get end of sequence
+        return (::std::end(_Cont));
+    }
+
+    // TEMPLATE FUNCTIONS rbegin AND rend
+    template<class _Container>
+    auto inline rbegin(_Container& _Cont) -> decltype(_Cont.rbegin())
+    {	// get beginning of reversed sequence
+        return (_Cont.rbegin());
+    }
+
+    template<class _Container>
+    auto inline rbegin(const _Container& _Cont) -> decltype(_Cont.rbegin())
+    {	// get beginning of reversed sequence
+        return (_Cont.rbegin());
+    }
+
+    template<class _Container>
+    auto inline rend(_Container& _Cont) -> decltype(_Cont.rend())
+    {	// get end of reversed sequence
+        return (_Cont.rend());
+    }
+
+    template<class _Container>
+    auto inline rend(const _Container& _Cont) -> decltype(_Cont.rend())
+    {	// get end of reversed sequence
+        return (_Cont.rend());
+    }
+
+    template<class _Ty,
+        size_t _Size> inline
+        reverse_iterator<_Ty *> rbegin(_Ty(&_Array)[_Size])
+    {	// get beginning of reversed array
+        return (reverse_iterator<_Ty *>(_Array + _Size));
+    }
+
+    template<class _Ty,
+        size_t _Size> inline
+        reverse_iterator<_Ty *> rend(_Ty(&_Array)[_Size])
+    {	// get end of reversed array
+        return (reverse_iterator<_Ty *>(_Array));
+    }
+
+    template<class _Elem> inline
+        reverse_iterator<const _Elem *> rbegin(initializer_list<_Elem> _Ilist)
+    {	// get beginning of reversed sequence
+        return (reverse_iterator<const _Elem *>(_Ilist.end()));
+    }
+
+    template<class _Elem> inline
+        reverse_iterator<const _Elem *> rend(initializer_list<_Elem> _Ilist)
+    {	// get end of reversed sequence
+        return (reverse_iterator<const _Elem *>(_Ilist.begin()));
+    }
+
+    // TEMPLATE FUNCTIONS crbegin AND crend
+    template<class _Container>
+    auto inline crbegin(const _Container& _Cont) -> decltype(::std::rbegin(_Cont))
+    {	// get beginning of reversed sequence
+        return (::std::rbegin(_Cont));
+    }
+
+    template<class _Container>
+    auto inline crend(const _Container& _Cont) -> decltype(::std::rend(_Cont))
+    {	// get end of reversed sequence
+        return (::std::rend(_Cont));
+    }
+
+}; //namespace std
+#endif
 
 template<typename T >
 std::unique_ptr<T> copy_unique(const std::unique_ptr<T>& source)

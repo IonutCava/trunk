@@ -107,6 +107,12 @@ class Plane {
     inline T signedDistanceToPoint(const vec3<T>& point) const {
         return _normal.dot(point) + _distance;
     }
+
+    vec3<T> closestPointOnPlaneToPoint(const vec3<T>& point) const  {
+        return (point - signedDistanceToPoint(point)) * _normal;
+    }
+
+    inline T& getDistance() { return _distance; }
     inline T getDistance() const { return _distance; }
 
     inline void set(const vec3<T>& normal, T distance) {
@@ -131,6 +137,8 @@ class Plane {
         _distance = _normal.dot(point);
     }
     inline vec4<T> getEquation() const { return vec4<T>(_normal, _distance); }
+
+    inline vec3<T>& getNormal() { return _normal; }
     inline const vec3<T>& getNormal() const { return _normal; }
     /// active plane state. used by rendering API's when the plane is considered
     /// a clipplane
@@ -146,6 +154,10 @@ class Plane {
 
     bool operator!=(const Plane& rhs) const {
         return !COMPARE(rhs._distance, _distance) || rhs._normal != _normal;
+    }
+
+    bool compare(const Plane& rhs, F32 epsilon) {
+        return COMPARE_TOLERANCE(rhs._distance, _distance, epsilon) && rhs._normal.compare(_normal, epsilon);
     }
 
     T normalize() {

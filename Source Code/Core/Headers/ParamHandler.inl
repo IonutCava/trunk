@@ -61,7 +61,12 @@ inline T ParamHandler::getParam(ULL nameID, T defaultValue) const {
     ParamMap::const_iterator it = _params.find(nameID);
     if (it != std::cend(_params)) {
         bool success = false;
+#       if !defined(CPP_17_SUPPORT)
         const T& ret = it->second.constant_cast<T>(success);
+#       else
+        const T& ret = std::any_cast<T>(it->second);
+        success = true;
+#       endif
         if (Config::Build::IS_DEBUG_BUILD) {
             if (!success) {
                 Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
@@ -89,10 +94,19 @@ inline void ParamHandler::setParam(ULL nameID, const T& value) {
     WriteLock w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
-        DIVIDE_ASSERT(hashAlg::emplace(_params, nameID, cdiggins::any(value)).second,
-                      "ParamHandler error: can't add specified value to map!");
+        bool result = 
+#       if !defined(CPP_17_SUPPORT)
+            hashAlg::emplace(_params, nameID, cdiggins::any(value)).second;
+#       else
+            hashAlg::emplace(_params, nameID, value).second;
+#       endif
+        DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
     } else {
-        it->second = cdiggins::any(value);
+#       if defined(CPP_17_SUPPORT)
+            it->second = cdiggins::any(value);
+#       else
+            it->second = value;
+#       endif
     }
 }
 

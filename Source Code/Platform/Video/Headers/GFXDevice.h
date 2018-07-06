@@ -354,6 +354,8 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline RenderStage setRenderStage(RenderStage stage);
 
+    static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
+    static void computeFrustumPlanes(const mat4<F32>& invViewProj, Plane<F32>* planesOut);
   public:
       IMPrimitive*       newIMP() const;
       VertexBuffer*      newVB() const;
@@ -398,7 +400,6 @@ DEFINE_SINGLETON(GFXDevice)
 
     void onChangeResolution(U16 w, U16 h);
 
-    static void computeFrustumPlanes(const mat4<F32>& invViewProj, vec4<F32>* planesOut);
   protected:
     friend class Camera;
     void renderFromCamera(Camera& camera);
