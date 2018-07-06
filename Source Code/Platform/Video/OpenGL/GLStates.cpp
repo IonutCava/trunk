@@ -160,8 +160,8 @@ void GL_API::updateClipPlanes() {
         if (_activeClipPlanes[i] != clipPlaneActive) {
             // Update the clip plane if it differs internally
             _activeClipPlanes[i] = clipPlaneActive;
-            clipPlaneActive ? glEnable(GL_CLIP_DISTANCE0 + i)
-                            : glDisable(GL_CLIP_DISTANCE0 + i);
+            clipPlaneActive ? glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i))
+                            : glDisable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
         }
     }
 }
@@ -180,7 +180,7 @@ bool GL_API::setActiveTextureUnit(GLushort unit, GLuint& previousUnit) {
     }
     // Update and remember internal state
     _activeTextureUnit = unit;
-    glActiveTexture(GL_TEXTURE0 + static_cast<GLuint>(unit));
+    glActiveTexture(GLenum((U32)GL_TEXTURE0 + unit));
 
     return true;
 }

@@ -367,18 +367,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinDelegate.cpp">
-      <Filter>Rendering\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinMesh.cpp">
-      <Filter>Rendering\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinParticles.cpp">
-      <Filter>Rendering\RenderPass</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinTranslucent.cpp">
-      <Filter>Rendering\RenderPass</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
@@ -733,18 +721,6 @@
       <Filter>Rendering\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBin.h">
-      <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinDelegate.h">
-      <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinMesh.h">
-      <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinParticles.h">
-      <Filter>Rendering\RenderPass\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinTranslucent.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h">

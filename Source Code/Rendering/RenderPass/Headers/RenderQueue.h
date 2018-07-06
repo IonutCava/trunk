@@ -41,47 +41,39 @@ class SceneNode;
 
 /// This class manages all of the RenderBins and renders them in the correct order
 class RenderQueue {
-    typedef hashMapImpl<RenderBin::RenderBinType, RenderBin*> RenderBinMap;
-    typedef hashMapImpl<U16, RenderBin::RenderBinType> RenderBinIDType;
+    typedef std::array<RenderBin*, RenderBinType::COUNT> RenderBinArray;
 
   public:
     RenderQueue();
     ~RenderQueue();
 
+    void render(SceneRenderState& renderState, RenderStage renderStage);
+    void postRender(SceneRenderState& renderState, RenderStage renderStage);
     void sort(RenderStage renderStage);
     void refresh();
     void addNodeToQueue(SceneGraphNode& sgn, const vec3<F32>& eyePos);
     U16 getRenderQueueStackSize() const;
-    SceneGraphNode& getItem(U16 renderBin, U16 index);
-    RenderBin* getBin(RenderBin::RenderBinType rbType);
 
-    inline U16 getRenderQueueBinSize() { 
-        return (U16)_sortedRenderBins.size(); 
-    }
-
-    inline RenderBin* getBinSorted(U16 renderBin) {
-        return _sortedRenderBins[renderBin];
-    }
-
-    inline vectorImpl<RenderBin*>& getBinsSorted() {
-        return _sortedRenderBins;
+    inline RenderBin* getBin(RenderBinType rbType) {
+        return _renderBins[rbType._to_integral()];
     }
 
     inline RenderBin* getBin(U16 renderBin) {
-        return getBin(_renderBinID[renderBin]);
+        return _renderBins[renderBin];
+    }
+
+    inline RenderBinArray& getBins() {
+        return _renderBins;
     }
 
   private:
     RenderBin* getBinForNode(SceneNode* const nodeType,
                              Material* const matInstance);
 
-    RenderBin* getOrCreateBin(const RenderBin::RenderBinType& rbType);
+    RenderBin* getOrCreateBin(RenderBinType rbType);
 
   private:
-    RenderBinMap _renderBins;
-    RenderBinIDType _renderBinID;
-    vectorImpl<RenderBin*> _sortedRenderBins;
-
+    RenderBinArray _renderBins;
 };
 
 };  // namespace Divide

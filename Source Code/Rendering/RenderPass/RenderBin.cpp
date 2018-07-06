@@ -72,22 +72,12 @@ struct RenderQueueDistanceFrontToBack {
     }
 };
 
-RenderBin::RenderBin(const RenderBinType& rbType,
-                     const RenderingOrder::List& renderOrder, D32 drawKey)
-    : _rbType(rbType), _renderOrder(renderOrder), _drawKey(drawKey) {
+RenderBin::RenderBin(RenderBinType rbType,
+                     RenderingOrder::List renderOrder)
+    : _rbType(rbType),
+      _renderOrder(renderOrder)
+{
     _renderBinStack.reserve(125);
-    renderBinTypeToNameMap[to_uint(RenderBinType::COUNT)] = "Invalid Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_MESH)] = "Mesh Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_IMPOSTOR)] = "Impostor Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DELEGATE)] = "Delegate Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TRANSLUCENT)] ="Translucent Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_SKY)] = "Sky Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_WATER)] = "Water Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_TERRAIN)] = "Terrain Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_PARTICLES)] = "Particle Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_GRASS)] = "Grass Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_VEGETATION_TREES)] = "Trees Bin";
-    renderBinTypeToNameMap[to_uint(RenderBinType::RBT_DECALS)] = "Decals Bin";
 }
 
 void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
@@ -120,7 +110,7 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
         } break;
         case RenderingOrder::List::COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")),
-                             renderBinTypeToNameMap[to_uint(_rbType)].c_str());
+                             _rbType._to_string());
         } break;
     };
 
@@ -157,11 +147,17 @@ void RenderBin::preRender(RenderStage renderStage) {}
 
 void RenderBin::render(const SceneRenderState& renderState,  RenderStage renderStage) {
     GFXDevice& gfx = GFX_DEVICE;
+    U32 binPropertyMask = 0;
+    isTranslucent() ? SetBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT))
+                    : ClearBit(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
+
     // We need to apply different materials for each stage. As nodes are sorted,
     // this should be very fast
     for (const RenderBinItem& item : _renderBinStack) {
-        gfx.addToRenderQueue(Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
+        gfx.addToRenderQueue(binPropertyMask,
+                             Attorney::RenderingCompRenderBin::getRenderData(*item._renderable, renderStage));
     }
+                     
     gfx.flushRenderQueue();
 }
 
@@ -170,4 +166,11 @@ void RenderBin::postRender(const SceneRenderState& renderState, RenderStage rend
         Attorney::RenderingCompRenderBin::postDraw(*item._renderable, renderState, renderStage);
     }
 }
+
+// This may change per bin in the future
+bool RenderBin::isTranslucent() const {
+    return _rbType != +RenderBinType::RBT_OPAQUE &&
+           _rbType != +RenderBinType::RBT_TERRAIN;
+}
+
 };

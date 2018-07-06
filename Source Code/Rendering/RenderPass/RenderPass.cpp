@@ -118,10 +118,7 @@ bool RenderPass::postRender(SceneRenderState& renderState, bool anaglyph, U32 pa
     GFXDevice& GFX = GFX_DEVICE;
 
     RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
-    U16 renderBinCount = renderQueue.getRenderQueueBinSize();
-    for (U16 i = 0; i < renderBinCount; ++i) {
-        renderQueue.getBinSorted(i)->postRender(renderState, _stageFlags[pass]);
-    }
+    renderQueue.postRender(renderState, _stageFlags[pass]);
 
     Attorney::SceneRenderPass::debugDraw(SceneManager::getInstance().getActiveScene(), _stageFlags[pass]);
 

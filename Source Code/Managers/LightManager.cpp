@@ -399,7 +399,7 @@ void LightManager::drawLightImpostors() const {
 
     _lightIconsTexture->Bind(to_ubyte(ShaderProgram::TextureUsage::UNIT0));
     GFX_DEVICE.drawPoints(directionalLightCount + pointLightCount + spotLightCount,
-                          GFX_DEVICE.getDefaultStateBlock(),
+                          GFX_DEVICE.getDefaultStateBlock(false),
                           _lightImpostorShader);
 }
 

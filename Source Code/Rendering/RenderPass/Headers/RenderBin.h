@@ -41,6 +41,7 @@
 #define _RENDER_BIN_H_
 
 #include "Core/Math/Headers/MathMatrices.h"
+#include <BetterEnums/include/enum.h>
 
 namespace Divide {
 
@@ -70,6 +71,22 @@ struct RenderingOrder {
     };
 };
 
+BETTER_ENUM(RenderBinType, U32, 
+    RBT_TERRAIN = 0,
+    RBT_OPAQUE,
+    RBT_SKY,
+    RBT_WATER,
+    RBT_VEGETATION_GRASS,
+    RBT_TRANSLUCENT,
+    RBT_PARTICLES,
+    RBT_DECALS,
+    RBT_IMPOSTOR,
+    COUNT)
+
+enum class RenderBitProperty : U32 {
+    TRANSLUCENT = toBit(1)
+};
+
 class SceneRenderState;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted
 /// depending on designation
@@ -77,29 +94,11 @@ class RenderBin {
     typedef vectorImpl<RenderBinItem> RenderBinStack;
 
    public:
-    enum class RenderBinType : U32 {
-        RBT_MESH = 0,
-        RBT_DELEGATE,
-        RBT_TRANSLUCENT,
-        RBT_SKY,
-        RBT_WATER,
-        RBT_TERRAIN,
-        RBT_IMPOSTOR,
-        RBT_PARTICLES,
-        RBT_VEGETATION_GRASS,
-        RBT_VEGETATION_TREES,
-        RBT_DECALS,
-        COUNT
-    };
-
-    std::array<stringImpl, to_const_uint(RenderBinType::COUNT) + 1>  renderBinTypeToNameMap;
 
     friend class RenderQueue;
 
-    RenderBin(const RenderBinType& rbType = RenderBinType::COUNT,
-              const RenderingOrder::List& renderOrder =
-                  RenderingOrder::List::COUNT,
-              D32 drawKey = -1);
+    RenderBin(RenderBinType rbType,
+              RenderingOrder::List renderOrder);
 
     virtual ~RenderBin() {}
 
@@ -121,15 +120,13 @@ class RenderBin {
 
     inline U16 getBinSize() const { return (U16)_renderBinStack.size(); }
 
-    inline D32 getSortOrder() const { return _drawKey; }
+    inline RenderBinType getType() const { return _rbType; }
 
-    inline const RenderBinType& getType() const { return _rbType; }
-
-    bool operator<(const RenderBin& rhs) { return (_drawKey < rhs._drawKey); };
+   private:
+    bool isTranslucent() const;
 
    private:
     // mutable SharedLock _renderBinGetMutex;
-    D32 _drawKey;
     RenderBinType _rbType;
     RenderBinStack _renderBinStack;
     RenderingOrder::List _renderOrder;

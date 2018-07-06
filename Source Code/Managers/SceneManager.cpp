@@ -269,10 +269,7 @@ void SceneManager::renderVisibleNodes(RenderStage stage, bool refreshNodeData, U
     SceneRenderState& renderState = _activeScene->renderState();
     if (renderState.drawGeometry()) {
         RenderQueue& renderQueue = RenderPassManager::getInstance().getQueue();
-        vectorImpl<RenderBin*>& bins = renderQueue.getBinsSorted();
-        for (RenderBin* bin : bins) {
-            bin->render(renderState, stage);
-        }
+        renderQueue.render(renderState, stage);
     }
 }
 

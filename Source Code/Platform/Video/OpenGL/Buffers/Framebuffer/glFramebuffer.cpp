@@ -138,7 +138,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
     }
 
     // Attach to frame buffer
-    I32 offset = 0;
+    U32 offset = 0;
     GLenum attachment;
     if (type == AttachmentType::Depth) {
         attachment = GL_DEPTH_ATTACHMENT;
@@ -151,7 +151,7 @@ void glFramebuffer::initAttachment(AttachmentType type,
         if (slot > 0) {
             offset += _attOffset[slot - 1];
         }
-        attachment = GL_COLOR_ATTACHMENT0 + offset;
+        attachment = GLenum((U32)GL_COLOR_ATTACHMENT0 + offset);
     }
     _attOffset[slot] = offset + 1;
 

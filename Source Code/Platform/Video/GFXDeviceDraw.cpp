@@ -118,6 +118,7 @@ void GFXDevice::flushRenderQueue() {
     if (_renderQueue.empty()) {
         return;
     }
+
     uploadGPUBlock();
 
     U32 queueSize = _renderQueue.size();
@@ -148,10 +149,11 @@ void GFXDevice::flushRenderQueue() {
     _renderQueue.clear();
 }
 
-void GFXDevice::addToRenderQueue(const RenderPackage& package) {
+void GFXDevice::addToRenderQueue(U32 binPropertyMask, const RenderPackage& package) {
     if (!package.isRenderable()) {
         return;
     }
+    bool isTranslucent = BitCompare(binPropertyMask, to_uint(RenderBitProperty::TRANSLUCENT));
 
     if (!_renderQueue.empty()) {
         RenderPackage& previous = _renderQueue.back();

@@ -272,7 +272,7 @@ DEFINE_SINGLETON(GFXDevice)
     void drawPoints(U32 numPoints, U32 stateHash, ShaderProgram* const shaderProgram);
     void drawTriangle(U32 stateHash, ShaderProgram* const shaderProgram);
 
-    void addToRenderQueue(const RenderPackage& package);
+    void addToRenderQueue(U32 binPropertyMask, const RenderPackage& package);
     void flushRenderQueue();
 
     /// Sets the current render stage.
@@ -370,8 +370,9 @@ DEFINE_SINGLETON(GFXDevice)
     inline void anaglyphEnabled(const bool state) { _enableAnaglyph = state; }
 
     /// returns the standard state block
-    inline U32 getDefaultStateBlock(bool noDepth = false) {
-        return noDepth ? _defaultStateNoDepthHash : _defaultStateBlockHash;
+    inline U32 getDefaultStateBlock(bool noDepth) const {
+        return noDepth ? _defaultStateNoDepthHash
+                       : _defaultStateBlockHash;
     }
 
     inline Framebuffer* getRenderTarget(RenderTarget target) const {

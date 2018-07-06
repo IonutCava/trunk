@@ -322,10 +322,6 @@
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\PreRenderBatch.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\Reflector.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBin.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinDelegate.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinMesh.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinParticles.cpp" />
-    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderBinTranslucent.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPass.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassCuller.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderQueue.cpp" />
@@ -443,10 +439,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\Headers\PreRenderBatch.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\Reflector.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBin.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinDelegate.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinMesh.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinParticles.h" />
-    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderBinTranslucent.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPass.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassCuller.h" />
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderQueue.h" />
