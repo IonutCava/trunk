@@ -100,9 +100,7 @@ class GUIElement : public GUIDWrapper {
    public:
     GUIElement(U64 guiID, CEGUI::Window* const parent, const GUIType& type);
     virtual ~GUIElement();
-
-    virtual void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const = 0;
-
+    
     inline const stringImpl& getName() const { return _name; }
     inline const GUIType getType() const { return _guiType; }
     inline const bool isActive() const { return _active; }

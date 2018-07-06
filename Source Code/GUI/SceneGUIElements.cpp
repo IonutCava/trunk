@@ -26,22 +26,10 @@ SceneGUIElements::~SceneGUIElements()
 }
 
 void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
-    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-        if (i != to_base(GUIType::GUI_TEXT)) {
-            for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-                GUIElement& element = *guiStackIterator.second.first;
-                // Skip hidden elements
-                if (element.isVisible()) {
-                    element.draw(context, bufferInOut);
-                }
-            }
-        }
-    }
-
     TextElementBatch batch;
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
-        if (!textElement.text().empty()) {
+        if (textElement.isVisible() && !textElement.text().empty()) {
             batch._data.emplace_back(textElement);
         }
     }

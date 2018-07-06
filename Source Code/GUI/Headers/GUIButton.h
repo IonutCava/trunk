@@ -75,7 +75,6 @@ class GUIButton : public GUIElement {
               AudioDescriptor_ptr onClickSound);
     ~GUIButton();
 
-    void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const override;
     bool joystickButtonPressed(const CEGUI::EventArgs& /*e*/);
 
    protected:;

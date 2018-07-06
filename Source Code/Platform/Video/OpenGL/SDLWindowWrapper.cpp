@@ -146,18 +146,18 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         // hardwire our debug callback function with OpenGL's implementation
         glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
         if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
-        // nVidia flushes a lot of useful info about buffer allocations and shader
-        // recompiles due to state and what now, but those aren't needed until that's
-        // what's actually causing the bottlenecks
-            U32 nvidiaBufferErrors[] = { 131185, 131218 };
+            // nVidia flushes a lot of useful info about buffer allocations and shader
+            // recompiles due to state and what now, but those aren't needed until that's
+            // what's actually causing the bottlenecks
+            U32 nvidiaBufferErrors[] = { 131185, 131218, 131186 };
             // Disable shader compiler errors (shader class handles that)
             glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR,
                                   GL_DONT_CARE, 0, nullptr, GL_FALSE);
-                              // Disable nVidia buffer allocation info (an easy enable is to change the
-                              // count param to 0)
+            // Disable nVidia buffer allocation info (an easy enable is to change the
+            // count param to 0)
             glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER,
                                   GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
-                              // Shader will be recompiled nVidia error
+              // Shader will be recompiled nVidia error
             glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE,
                                   GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
         }

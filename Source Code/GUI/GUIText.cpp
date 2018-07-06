@@ -16,12 +16,6 @@ GUIText::GUIText(U64 guiID,
 {
 }
 
-void GUIText::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
-    if (!text().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, TextElementBatch(*this), bufferInOut);
-    }
-}
-
 const RelativePosition2D& GUIText::getPosition() const {
     return _position;
 }

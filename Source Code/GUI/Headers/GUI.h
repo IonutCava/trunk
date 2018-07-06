@@ -77,7 +77,6 @@ public:
     void destroy();
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
-    void updateCEGUI();
 
     void onSizeChange(const SizeChangeParams& params) override;
     void onChangeScene(Scene* newScene);
@@ -169,6 +168,7 @@ private:
                              /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
                              /// performance)
     CEGUIInput _ceguiInput;  //< Used to implement key repeat
+    CEGUI::Renderer* _ceguiRenderer; //<Used to render CEGUI to a texture;
     GUIConsole* _console;    //< Pointer to the GUIConsole object
     GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for general purpose messages
     U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible

@@ -52,6 +52,7 @@ GUI::GUI(Kernel& parent)
     _activeScene(nullptr),
     _console(nullptr),
     _ceguiContext(nullptr),
+    _ceguiRenderer(nullptr),
     _ceguiRenderTextureTarget(nullptr),
     _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
@@ -100,25 +101,10 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
         return;
     }
 
-    // global elements
     TextElementBatch textBatch;
-
-    for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-        if (i != to_base(GUIType::GUI_TEXT)) {
-            for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {
-                GUIElement& element = *guiStackIterator.second.first;
-                // Skip hidden elements
-                if (element.isVisible()) {
-                    element.draw(context, bufferInOut);
-                }
-            }
-        }
-    }
-
-    //cache text elements
     for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
         GUIText& textLabel = static_cast<GUIText&>(*guiStackIterator.second.first);
-        if (!textLabel.text().empty()) {
+        if (textLabel.isVisible() && !textLabel.text().empty()) {
             textBatch._data.push_back(textLabel);
         }
     }
@@ -136,13 +122,12 @@ void GUI::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
 
     if (parent().platformContext().config().gui.cegui.enabled) {
         if (!parent().platformContext().config().gui.cegui.skipRendering) {
-            CEGUI::Renderer* guiRenderer(CEGUI::System::getSingleton().getRenderer());
-            guiRenderer->beginRendering();
+            _ceguiRenderer->beginRendering();
 
             _ceguiRenderTextureTarget->clear();
             getCEGUIContext().draw();
 
-            guiRenderer->endRendering();
+            _ceguiRenderer->endRendering();
 
             context.drawFullscreenTexture(getCEGUIRenderTextureData(), bufferInOut);
         }
@@ -224,6 +209,7 @@ bool GUI::init(PlatformContext& context, ResourceCache& cache, const vec2<U16>& 
 
     getCEGUIContext().setRootWindow(_rootSheet);
     getCEGUIContext().setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
+    _ceguiRenderer = CEGUI::System::getSingleton().getRenderer();
 
     _rootSheet->setPixelAligned(false);
     assert(_console);

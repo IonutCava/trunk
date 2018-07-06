@@ -39,12 +39,6 @@ GUIMessageBox::~GUIMessageBox()
     CEGUI::WindowManager::getSingletonPtr()->destroyWindow(_msgBoxWindow);
 }
 
-void GUIMessageBox::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
-    ACKNOWLEDGE_UNUSED(context);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-    // Nothing. CEGUI should handle this
-}
-
 bool GUIMessageBox::onConfirm(const CEGUI::EventArgs& /*e*/) {
     setActive(false);
     setVisible(false);

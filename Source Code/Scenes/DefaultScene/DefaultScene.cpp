@@ -75,20 +75,22 @@ void DefaultScene::postLoadMainThread() {
 
     size_t i = 0, j = 0;
     for (const stringImpl& scene : scenes) {
-        size_t localOffsetX = btnWidth  * (i % numColumns) + spacingX * (i % numColumns);
-        size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
+        if (scene != getName()) {
+            size_t localOffsetX = btnWidth * (i % numColumns) + spacingX * (i % numColumns);
+            size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
 
-        buttonPosition.d_x.d_offset = to_F32(localOffsetX);
-        buttonPosition.d_y.d_offset = to_F32(localOffsetY);
-        GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene), scene,
-                                         buttonPosition,
-                                         buttonSize,
-                                         DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
+            buttonPosition.d_x.d_offset = to_F32(localOffsetX);
+            buttonPosition.d_y.d_offset = to_F32(localOffsetY);
+            GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene), scene,
+                                             buttonPosition,
+                                             buttonSize,
+                                             DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
 
-        _buttonToSceneMap[btn->getGUID()] = scene;
-        i++;
-        if (i > 0 && i % numColumns == 0) {
-            j++;
+            _buttonToSceneMap[btn->getGUID()] = scene;
+            i++;
+            if (i > 0 && i % numColumns == 0) {
+                j++;
+            }
         }
     }
 
@@ -189,10 +191,10 @@ void DefaultScene::loadScene(I64 btnGUID) {
 void DefaultScene::onSetActive() {
     vectorImpl<stringImpl> scenes = _parent.sceneNameList();
 
-    for (const stringImpl& scene : scenes) {
-        GUIButton* btn = _GUI->getGUIElement<GUIButton>(_ID_RT("StartScene" + scene));
+    for (hashMapImpl<I64, stringImpl>::value_type it : _buttonToSceneMap) {
+        GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         
-        btn->setText(scene);
+        btn->setText(it.second);
         btn->setActive(true);
         btn->setVisible(true);
     }

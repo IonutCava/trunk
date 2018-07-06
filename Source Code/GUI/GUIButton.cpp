@@ -36,8 +36,6 @@ GUIButton::GUIButton(U64 guiID,
                                CEGUI::Event::Subscriber(&GUIButton::joystickButtonPressed, this));
 
     _parent->addChild(_btnWindow);
-    _btnWindow->setEnabled(true);
-
     setActive(true);
 }
 
@@ -47,23 +45,21 @@ GUIButton::~GUIButton()
 }
 
 void GUIButton::setActive(const bool active) {
-    _btnWindow->setEnabled(active);
-    GUIElement::setActive(active);
+    if (isActive() != active) {
+        _btnWindow->setEnabled(active);
+        GUIElement::setActive(active);
+    }
 }
 
 void GUIButton::setVisible(const bool visible) {
-    _btnWindow->setVisible(visible);
-    GUIElement::setVisible(visible);
+    if (isVisible() != visible) {
+        _btnWindow->setVisible(visible);
+        GUIElement::setVisible(visible);
+    }
 }
 
 void GUIButton::setText(const stringImpl& text) {
     _btnWindow->setText(text.c_str());
-}
-
-void GUIButton::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) const {
-    ACKNOWLEDGE_UNUSED(context);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-    //Nothing. CEGUI should handle this
 }
 
 void GUIButton::setTooltip(const stringImpl& tooltipText) {
