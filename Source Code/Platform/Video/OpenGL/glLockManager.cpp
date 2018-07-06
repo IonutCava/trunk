@@ -26,6 +26,9 @@ void glLockManager::Wait(bool blockClient) {
 void glLockManager::Lock() {
     assert(_defaultSync == nullptr);
     _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+    // A glFlush call is needed after creating a new fence 
+    // to make sure we don't end up with an infinite wait issue
+    glFlush();
 }
 
 void glLockManager::wait(GLsync* syncObj, bool blockClient) {
@@ -43,13 +46,12 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
                 return;
             }
 
-            assert(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED));
-                          
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
 
             if (++retryCount > kMaxWaitRetry) {
+                assert(waitDuration == 0 || (waitDuration > 0 && waitRet != GL_TIMEOUT_EXPIRED));
                 return;
             }
         }
