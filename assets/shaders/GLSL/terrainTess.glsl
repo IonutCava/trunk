@@ -37,6 +37,8 @@ void main(void)
 
 --TessellationC
 
+const bool USE_CAMERA_DISTANCE = false;
+
 #include "nodeBufferedInput.cmn"
 
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D TexTerrainHeight;
@@ -115,15 +117,14 @@ float dlodCameraDistance(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 */
 float dlodSphere(vec4 p0, vec4 p1, vec2 t0, vec2 t1)
 {
-    float g_tessellatedTriWidth = 10.0;
+    const float g_tessellatedTriWidth = 10.0;
 
     float sampleHeight = texture(TexTerrainHeight, t0).r;
     p0.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
     sampleHeight = texture(TexTerrainHeight, t1).r;
     p1.y = TERRAIN_MIN_HEIGHT + TERRAIN_HEIGHT_RANGE * sampleHeight;
 
-
-    vec3 offset = dvd_TerrainData[_in[0].dvd_drawID]._positionAndTileScale.xyz;
+    vec3 offset = dvd_TerrainData[VAR.dvd_drawID]._positionAndTileScale.xyz;
 
     vec4 center = 0.5 * (p0 + p1);
     vec4 view0 = mvMatrix * vec4(center.xyz + offset, center.w);
@@ -174,18 +175,23 @@ void main(void)
 {
     PassData(gl_InvocationID);
 
-    mat4 mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
+    mvMatrix = dvd_WorldViewMatrix(VAR.dvd_instanceID);
 
     // Outer tessellation level
-    gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-    gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-    gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-    gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
-
-    /*gl_TessLevelOuter[0] = dlodSphere(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
-    gl_TessLevelOuter[1] = dlodSphere(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
-    gl_TessLevelOuter[2] = dlodSphere(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
-    gl_TessLevelOuter[3] = dlodSphere(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);*/
+    if (USE_CAMERA_DISTANCE)
+    {
+        gl_TessLevelOuter[0] = dlodCameraDistance(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+        gl_TessLevelOuter[1] = dlodCameraDistance(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+        gl_TessLevelOuter[2] = dlodCameraDistance(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+        gl_TessLevelOuter[3] = dlodCameraDistance(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+    } 
+    else
+    {
+        gl_TessLevelOuter[0] = dlodSphere(gl_in[3].gl_Position, gl_in[0].gl_Position, _in[3]._texCoord, _in[0]._texCoord);
+        gl_TessLevelOuter[1] = dlodSphere(gl_in[0].gl_Position, gl_in[1].gl_Position, _in[0]._texCoord, _in[1]._texCoord);
+        gl_TessLevelOuter[2] = dlodSphere(gl_in[1].gl_Position, gl_in[2].gl_Position, _in[1]._texCoord, _in[2]._texCoord);
+        gl_TessLevelOuter[3] = dlodSphere(gl_in[2].gl_Position, gl_in[3].gl_Position, _in[2]._texCoord, _in[3]._texCoord);
+    }
     
     float tscale_negx = dvd_TerrainData[VAR.dvd_drawID]._tScale.x;
     float tscale_negz = dvd_TerrainData[VAR.dvd_drawID]._tScale.y;
@@ -596,7 +602,7 @@ void main(void)
     setProcessedNormal(getTerrainNormal());
 
     _colourOut = ToSRGB(applyFog(mix(TerrainMappingRoutine(), UnderwaterMappingRoutine(), _waterDetails.x)));
-    
+
 #if defined(_DEBUG)
     if (ToggleWireframe == 1.0) {
         const float LineWidth = 0.75;

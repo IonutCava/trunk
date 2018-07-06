@@ -44,10 +44,15 @@ namespace Divide {
 
 class TerrainLoader;
 
+constexpr U8 MAX_TEXTURE_LAYERS = 128 / 4;
+
 struct TerrainTextureLayer {
-    TerrainTextureLayer() {
-        _lastOffset = 0;
-        _blendMap = nullptr;
+    explicit TerrainTextureLayer(U8 layerCount)
+        : _layerCount(layerCount)
+    {
+        assert(_layerCount <= MAX_TEXTURE_LAYERS);
+
+        _blendMaps = nullptr;
         _tileMaps = nullptr;
         _normalMaps = nullptr;
     }
@@ -61,30 +66,35 @@ struct TerrainTextureLayer {
         TEXTURE_ALPHA_CHANNEL = 3
     };
 
-    inline void setBlendMap(const Texture_ptr& texture) { _blendMap = texture; }
-    inline void setTileMaps(const Texture_ptr& texture) { _tileMaps = texture; }
+    inline void setBlendMaps(const Texture_ptr& texture)  { _blendMaps = texture; }
+    inline void setTileMaps(const Texture_ptr& texture)   { _tileMaps = texture; }
     inline void setNormalMaps(const Texture_ptr& texture) { _normalMaps = texture; }
-    inline void setDiffuseScale(TerrainTextureChannel textureChannel,
-                                F32 scale) {
-        _diffuseUVScale[to_U32(textureChannel)] = scale;
-    }
-    inline void setDetailScale(TerrainTextureChannel textureChannel,
-                               F32 scale) {
-        _detailUVScale[to_U32(textureChannel)] = scale;
+
+    inline void setDiffuseScale(TerrainTextureChannel textureChannel, U8 layer, F32 scale) {
+        _diffuseUVScale[layer][to_U32(textureChannel)]= scale;
     }
 
-    inline const vec4<F32>& getDiffuseScales() const { return _diffuseUVScale; }
-    inline const vec4<F32>& getDetailScales() const { return _detailUVScale; }
+    inline void setDetailScale(TerrainTextureChannel textureChannel, U8 layer, F32 scale) {
+        _detailUVScale[layer][to_U32(textureChannel)] = scale;
+    }
 
-    const Texture_ptr& blendMap() const { return _blendMap; }
-    const Texture_ptr& tileMaps() const { return _tileMaps; }
+    inline const vec4<F32>& getDiffuseScales(U8 layer) const { return _diffuseUVScale[layer]; }
+    inline const vec4<F32>& getDetailScales(U8 layer) const { return _detailUVScale[layer]; }
+
+    inline const std::array<vec4<F32>, MAX_TEXTURE_LAYERS>& getDiffuseScales() const { return _diffuseUVScale; }
+    inline const std::array<vec4<F32>, MAX_TEXTURE_LAYERS>& getDetailScales() const { return _detailUVScale; }
+
+    const Texture_ptr& blendMaps()  const { return _blendMaps; }
+    const Texture_ptr& tileMaps()   const { return _tileMaps; }
     const Texture_ptr& normalMaps() const { return _normalMaps; }
 
+    inline U8 layerCount() const { return _layerCount; }
+
    private:
-    U32 _lastOffset;
-    vec4<F32> _diffuseUVScale;
-    vec4<F32> _detailUVScale;
-    Texture_ptr _blendMap;
+    U8 _layerCount;
+    std::array<vec4<F32>, MAX_TEXTURE_LAYERS> _diffuseUVScale;
+    std::array<vec4<F32>, MAX_TEXTURE_LAYERS> _detailUVScale;
+    Texture_ptr _blendMaps;
     Texture_ptr _tileMaps;
     Texture_ptr _normalMaps;
 };
@@ -176,7 +186,7 @@ class Terrain : public Object3D {
     vec2<F32> _terrainScaleFactor;
     SceneGraphNode_wptr _vegetationGrassNode;
     vectorImpl<TerrainChunk*> _terrainChunks;
-    vectorImpl<TerrainTextureLayer*> _terrainTextures;
+    TerrainTextureLayer* _terrainTextures;
 };
 
 namespace Attorney {
@@ -199,13 +209,12 @@ class TerrainChunk {
 
 class TerrainLoader {
    private:
-    static void addTextureLayer(Terrain& terrain,
-                                TerrainTextureLayer* textureLayer) {
-        terrain._terrainTextures.push_back(textureLayer);
+    static void setTextureLayer(Terrain& terrain, TerrainTextureLayer* textureLayer) {
+        terrain._terrainTextures = textureLayer;
     }
 
     static U32 textureLayerCount(Terrain& terrain) {
-        return to_U32(terrain._terrainTextures.size());
+        return to_U32(terrain._terrainTextures->layerCount());
     }
 
     static VegetationDetails& vegetationDetails(Terrain& terrain) {

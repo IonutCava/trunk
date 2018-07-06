@@ -699,6 +699,12 @@ constexpr void assert_type(const U& value) {
     static_assert(std::is_same<U, T>::value, "value type not satisfied");
 }
 
+
+template<typename U, size_t N>
+vectorImpl<U> copy_array_to_vector(const std::array<U, N>& input) {
+    return vectorImpl<U>(std::begin(input), std::end(input));
+}
+
 };  // namespace Divide
 
 void* malloc_aligned(const size_t size, size_t alignment);

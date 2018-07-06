@@ -11,51 +11,51 @@ layout(binding = TEXTURE_UNIT1)     uniform sampler2D texUnderwaterAlbedo;
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texUnderwaterDetail;
 layout(binding = TEXTURE_OPACITY)   uniform sampler2D texHeightMap;
 
-uniform sampler2D      texBlend[MAX_TEXTURE_LAYERS];
-uniform sampler2DArray texTileMaps[MAX_TEXTURE_LAYERS];
-uniform sampler2DArray texNormalMaps[MAX_TEXTURE_LAYERS];
+uniform sampler2DArray texBlendMaps;
+uniform sampler2DArray texTileMaps;
+uniform sampler2DArray texNormalMaps;
 
 vec4 getFinalColour1(const in vec4 blendMap, const in uint index, const in vec4 diffSize) {
-    return texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0));
+    return texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, diffSize.r), 0 + index));
 }
 
 vec3 getFinalTBN1(const in vec4 blendMap, const in uint index, const in vec4 normSize){
-    return texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.r), 0)).rgb;
+    return texture(texNormalMaps, vec3(scaledTextureCoords(VAR._texCoord, normSize.r), 0 + index)).rgb;
 }
 
 vec4 getFinalColour2(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
     return mix(getFinalColour1(blendMap, index, diffSize), 
-               texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.g), 1)),
+               texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, diffSize.g), 1 + index)),
                blendMap.g);
 }
 
 vec3 getFinalTBN2(const in vec4 blendMap, const in uint index, const in vec4 normSize){
     return mix(getFinalTBN1(blendMap, index, normSize), 
-               texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.g), 1)).rgb,
+               texture(texNormalMaps, vec3(scaledTextureCoords(VAR._texCoord, normSize.g), 1 + index)).rgb,
                blendMap.g);
 }
 
 vec4 getFinalColour3(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
     return mix(getFinalColour2(blendMap, index, diffSize), 
-               texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.b), 2)),
+               texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, diffSize.b), 2 + index)),
                blendMap.b);
 }
 
 vec3 getFinalTBN3(const in vec4 blendMap, const in uint index, const in vec4 normSize){
     return mix(getFinalTBN2(blendMap, index, normSize), 
-               texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.b), 2)).rgb,
+               texture(texNormalMaps, vec3(scaledTextureCoords(VAR._texCoord, normSize.b), 2 + index)).rgb,
                blendMap.b);
 }
 
 vec4 getFinalColour4(const in vec4 blendMap, const in uint index, const in vec4 diffSize){
     return mix(getFinalColour3(blendMap, index, diffSize), 
-               texture(texTileMaps[index], vec3(scaledTextureCoords(VAR._texCoord, diffSize.a), 3)),
+               texture(texTileMaps, vec3(scaledTextureCoords(VAR._texCoord, diffSize.a), 3 + index)),
                blendMap.a);
 }
 
 vec3 getFinalTBN4(const in vec4 blendMap, const in uint index, const in vec4 normSize){
     return mix(getFinalTBN3(blendMap, index, normSize), 
-               texture(texNormalMaps[index], vec3(scaledTextureCoords(VAR._texCoord, normSize.a), 3)).rgb,
+               texture(texNormalMaps, vec3(scaledTextureCoords(VAR._texCoord, normSize.a), 3 + index)).rgb,
                blendMap.a);
 }
 
@@ -64,7 +64,8 @@ vec4 getTerrainAlbedo(){
     vec4 colour = vec4(0.0);
     
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
-        blendMap = texture(texBlend[i], VAR._texCoord);
+        blendMap = texture(texBlendMaps, vec3(VAR._texCoord, i));
+
 #if (CURRENT_TEXTURE_COUNT % 4) == 1
         colour += getFinalColour1(blendMap, i, diffuseScale[i]);
 #elif (CURRENT_TEXTURE_COUNT % 4) == 2
@@ -74,6 +75,7 @@ vec4 getTerrainAlbedo(){
 #else//(CURRENT_TEXTURE_COUNT % 4) == 0
         colour += getFinalColour4(blendMap, i, diffuseScale[i]);
 #endif
+
     }
 
     return colour;
@@ -86,7 +88,7 @@ vec3 getTerrainNormal() {
     vec3 tbn = vec3(0.0);
     vec3 tbnTemp;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; i++) {
-        vec4 blendMap = texture(texBlend[i], VAR._texCoord);
+        vec4 blendMap = texture(texBlendMaps, vec3(VAR._texCoord, i));
 #if (CURRENT_TEXTURE_COUNT % 4) == 1
         tbnTemp = getFinalTBN1(blendMap, 0, detailScale[i]);
 #elif (CURRENT_TEXTURE_COUNT % 4) == 2

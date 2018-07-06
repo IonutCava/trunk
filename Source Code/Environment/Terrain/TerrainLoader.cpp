@@ -47,142 +47,147 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     heightMapSampler.toggleMipMaps(false);
     heightMapSampler.toggleSRGBColourSpace(false);
 
-    TerrainTextureLayer* textureLayer = nullptr;
-    stringImpl layerOffsetStr;
-    stringImpl currentTexture;
-    stringImpl arrayLocation;
-    U32 textureCount = 0;
-    U32 textureCountAlbedo = 0;
-    U32 textureCountDetail = 0;
     const stringImpl& terrainMapLocation = terrainDescriptor->getVariable("textureLocation");
 
-    for (U32 i = 0; i < terrainDescriptor->getTextureLayerCount(); ++i) {
-        textureCountAlbedo = 0;
-        textureCountDetail = 0;
+    // Blend map
+    ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
+    textureBlendMap.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
+    textureBlendMap.setResourceLocation(terrainMapLocation);
+    textureBlendMap.setPropertyDescriptor(blendMapSampler);
+    textureBlendMap.setFlag(true);
 
+    // Albedo map
+    ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name);
+    textureTileMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
+    textureTileMaps.setResourceLocation(terrainMapLocation);
+    textureTileMaps.setPropertyDescriptor(albedoSampler);
+    textureTileMaps.setFlag(true);
+
+    // Normal map
+    ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
+    textureNormalMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
+    textureNormalMaps.setResourceLocation(terrainMapLocation);
+    textureNormalMaps.setPropertyDescriptor(normalSampler);
+    textureNormalMaps.setFlag(true);
+
+    //temp data
+    stringImpl layerOffsetStr;
+    stringImpl currentEntry;
+
+    //texture data
+    stringImpl blendMapArray;
+    stringImpl albedoMapArray;
+    stringImpl normalMapArray;
+    U8 albedoCount = 0;
+    U8 normalCount = 0;
+
+    U8 layerCount = terrainDescriptor->getTextureLayerCount();
+    TerrainTextureLayer* textureLayer = MemoryManager_NEW TerrainTextureLayer(layerCount);
+
+    for (U8 i = 0; i < layerCount; ++i) {
         layerOffsetStr = to_stringImpl(i);
-        textureLayer = MemoryManager_NEW TerrainTextureLayer();
+        
+        blendMapArray += ((i != 0) ? (",") : ("")) + terrainDescriptor->getVariable("blendMap" + layerOffsetStr);
+        
+        currentEntry = terrainDescriptor->getVariable("redAlbedo" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            albedoMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
+            albedoCount++;
 
-        ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name + "_layer_" + layerOffsetStr);
-        textureBlendMap.setResourceLocation(terrainMapLocation);
-        textureBlendMap.setResourceName(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
-        textureBlendMap.setPropertyDescriptor(blendMapSampler);
-        textureBlendMap.setEnumValue(to_base(TextureType::TEXTURE_2D));
-        textureBlendMap.setFlag(true);
-        textureLayer->setBlendMap(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-
-        arrayLocation.clear();
-        currentTexture = terrainDescriptor->getVariable("redAlbedo" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation = currentTexture;
-            textureCount++;
-            textureCountAlbedo++;
-            textureLayer->setDiffuseScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
-                terrainDescriptor->getVariablef("diffuseScaleR" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("greenAlbedo" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCount++;
-            textureCountAlbedo++;
-            textureLayer->setDiffuseScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
-                terrainDescriptor->getVariablef("diffuseScaleG" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("blueAlbedo" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCount++;
-            textureCountAlbedo++;
-            textureLayer->setDiffuseScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
-                terrainDescriptor->getVariablef("diffuseScaleB" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("alphaAlbedo" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCount++;
-            textureCountAlbedo++;
-            textureLayer->setDiffuseScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
-                terrainDescriptor->getVariablef("diffuseScaleA" +
-                                                layerOffsetStr));
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
+                                          i,
+                                          terrainDescriptor->getVariablef("diffuseScaleR" + layerOffsetStr));
         }
 
-        ResourceDescriptor textureTileMaps("Terrain Tile Maps_" + name +
-                                           "_layer_" + layerOffsetStr);
-        textureTileMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
-        textureTileMaps.setID(textureCountAlbedo);
-        textureTileMaps.setResourceLocation(terrainMapLocation);
-        textureTileMaps.setResourceName(arrayLocation);
-        textureTileMaps.setPropertyDescriptor(albedoSampler);
-        textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
+        currentEntry = terrainDescriptor->getVariable("greenAlbedo" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            albedoMapArray += "," + currentEntry;
+            albedoCount++;
 
-        arrayLocation.clear();
-        currentTexture =
-            terrainDescriptor->getVariable("redDetail" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCountDetail++;
-            textureLayer->setDetailScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
-                terrainDescriptor->getVariablef("detailScaleR" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("greenDetail" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCountDetail++;
-            textureLayer->setDetailScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
-                terrainDescriptor->getVariablef("detailScaleG" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("blueDetail" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCountDetail++;
-            textureLayer->setDetailScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
-                terrainDescriptor->getVariablef("detailScaleB" +
-                                                layerOffsetStr));
-        }
-        currentTexture =
-            terrainDescriptor->getVariable("alphaDetail" + layerOffsetStr);
-        if (!currentTexture.empty()) {
-            arrayLocation += "," + currentTexture;
-            textureCountDetail++;
-            textureLayer->setDetailScale(
-                TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
-                terrainDescriptor->getVariablef("detailScaleA" +
-                                                layerOffsetStr));
+            
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
+                                          i,
+                                          terrainDescriptor->getVariablef("diffuseScaleG" + layerOffsetStr));
         }
 
-        ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name +
-                                             "_layer_" + layerOffsetStr);
-        textureNormalMaps.setEnumValue(to_base(TextureType::TEXTURE_2D_ARRAY));
-        textureNormalMaps.setID(textureCountDetail);
-        textureNormalMaps.setResourceLocation(terrainMapLocation);
-        textureNormalMaps.setResourceName(arrayLocation);
-        textureNormalMaps.setPropertyDescriptor(normalSampler);
-        textureNormalMaps.setFlag(true);
-        textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
+        currentEntry = terrainDescriptor->getVariable("blueAlbedo" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            albedoMapArray += "," + currentEntry;
+            albedoCount++;
+            
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
+                                          i,
+                                          terrainDescriptor->getVariablef("diffuseScaleB" + layerOffsetStr));
+        }
 
-        Attorney::TerrainLoader::addTextureLayer(*terrain, textureLayer);
+        currentEntry = terrainDescriptor->getVariable("alphaAlbedo" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            albedoMapArray += "," + currentEntry;
+            albedoCount++;
+            
+            textureLayer->setDiffuseScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
+                                          i,
+                                          terrainDescriptor->getVariablef("diffuseScaleA" + layerOffsetStr));
+        }
+
+
+        currentEntry =  terrainDescriptor->getVariable("redDetail" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            normalMapArray += ((i != 0) ? (",") : ("")) + currentEntry;
+            normalCount++;
+
+            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_RED_CHANNEL,
+                                         i,
+                                         terrainDescriptor->getVariablef("detailScaleR" + layerOffsetStr));
+        }
+
+        currentEntry = terrainDescriptor->getVariable("greenDetail" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            normalMapArray += "," + currentEntry;
+            normalCount++;
+
+            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_GREEN_CHANNEL,
+                                         i,
+                                         terrainDescriptor->getVariablef("detailScaleG" + layerOffsetStr));
+        }
+
+        currentEntry = terrainDescriptor->getVariable("blueDetail" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            normalMapArray += "," + currentEntry;
+            normalCount++;
+
+            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_BLUE_CHANNEL,
+                                         i,
+                                         terrainDescriptor->getVariablef("detailScaleB" + layerOffsetStr));
+        }
+
+        currentEntry = terrainDescriptor->getVariable("alphaDetail" + layerOffsetStr);
+        if (!currentEntry.empty()) {
+            normalMapArray += "," + currentEntry;
+            normalCount++;
+
+            textureLayer->setDetailScale(TerrainTextureLayer::TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL,
+                                         i,
+                                         terrainDescriptor->getVariablef("detailScaleA" + layerOffsetStr));
+        }
     }
 
+    textureBlendMap.setID(layerCount);
+    textureBlendMap.setResourceName(blendMapArray);
+
+    textureTileMaps.setID(albedoCount);
+    textureTileMaps.setResourceName(albedoMapArray);
+
+    textureNormalMaps.setID(normalCount);
+    textureNormalMaps.setResourceName(normalMapArray);
+
+    textureLayer->setBlendMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
+    textureLayer->setTileMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureTileMaps));
+    textureLayer->setNormalMaps(CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
+    Attorney::TerrainLoader::setTextureLayer(*terrain, textureLayer);
+
     ResourceDescriptor terrainMaterialDescriptor("terrainMaterial_" + name);
-    Material_ptr terrainMaterial =
-        CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
+    Material_ptr terrainMaterial = CreateResource<Material>(terrain->parentResourceCache(), terrainMaterialDescriptor);
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();
     const vec2<F32>& altitudeRange = terrainDescriptor->getAltitudeRange();
@@ -205,7 +210,7 @@ bool TerrainLoader::loadTerrain(std::shared_ptr<Terrain> terrain,
     terrainMaterial->setShaderDefines("SKIP_TEXTURES");
     terrainMaterial->setShaderDefines("USE_SHADING_PHONG");
     terrainMaterial->setShaderDefines("MAX_TEXTURE_LAYERS " + to_stringImpl(Attorney::TerrainLoader::textureLayerCount(*terrain)));
-    terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(textureCount));
+    terrainMaterial->setShaderDefines("CURRENT_TEXTURE_COUNT " + to_stringImpl(albedoCount));
     terrainMaterial->setShaderDefines("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width));
     terrainMaterial->setShaderDefines("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height));
     terrainMaterial->setShaderDefines("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x));
