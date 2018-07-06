@@ -137,7 +137,7 @@ void WarScene::processTasks(const U64 deltaTime) {
     D32 SunTimer = Time::Milliseconds(10);
     D32 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     D32 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    D32 updateLights = Time::SecondsToMilliseconds(0.15);
+    //D32 updateLights = Time::SecondsToMilliseconds(0.15);
 
     if (_taskTimers[0] >= SunTimer) {
         if (!g_direction) {

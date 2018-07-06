@@ -1,12 +1,10 @@
 #ifndef _LIGHT_INPUT_CMN_
 #define _LIGHT_INPUT_CMN_
 
-#if defined(FRAG_SHADER) || defined(COMPUTE_SHADER)
-
-#if defined(FRAG_SHADER)
-#   define ACCESS readonly
-#else
+#if defined(COMPUTE_SHADER)
 #   define ACCESS
+#else
+#   define ACCESS readonly
 #endif
 
 const int LIGHT_DIRECTIONAL = 0;
@@ -35,18 +33,7 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
     Light dvd_LightSource[MAX_POSSIBLE_LIGHTS];
 };
 
-struct Shadow {
-    mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
-    vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
-    vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
-    uvec4 _arrayOffset;
-};
-
-layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
-{
-    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
-}; 
-
+#if defined(COMPUTE_SHADER)
 layout(binding = BUFFER_LIGHT_POINT_LIGHTS, std430) coherent ACCESS buffer pointLightBuffer
 {
     vec4 pointLightBufferCenterAndRadius[MAX_POSSIBLE_LIGHTS];
@@ -63,7 +50,20 @@ layout(binding = BUFFER_LIGHT_INDICES, std430) coherent ACCESS buffer perTileLig
 {
     uint perTileLightIndexBufferOut[];
 };
+#endif
 
+#if defined(FRAG_SHADER)
+struct Shadow {
+    mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
+    vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
+    vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
+    uvec4 _arrayOffset;
+};
+
+layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
+{
+    Shadow dvd_ShadowSource[MAX_SHADOW_CASTING_LIGHTS];
+};
 #endif
 
 #if !defined(COMPUTE_SHADER)

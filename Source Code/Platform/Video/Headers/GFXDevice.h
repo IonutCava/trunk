@@ -219,10 +219,6 @@ DEFINE_SINGLETON(GFXDevice)
        }
 
        struct GPUData {
-           GPUData() : _shadowArrayOffset(0)
-           {
-           }
-
            mat4<F32> _ProjectionMatrix;
            mat4<F32> _ViewMatrix;
            mat4<F32> _ViewProjectionMatrix;
@@ -230,8 +226,8 @@ DEFINE_SINGLETON(GFXDevice)
            vec4<U32> _ViewPort;
            vec4<F32> _ZPlanesCombined;  // xy - current, zw - main scene
            vec4<F32> _invScreenDimension; //xy - dims, zw - reserved;
+           vec4<U32> _shadowProperties;
            vec4<F32> _clipPlanes[Config::MAX_CLIP_PLANES];
-           U32       _shadowArrayOffset;
         } _data;
 
         bool _updated;

@@ -39,7 +39,7 @@
 namespace Divide {
 
 struct SceneShaderData {
-    SceneShaderData() : _shadowCastingLightArrayOffset(0)
+    SceneShaderData()
     {
     }
 
@@ -47,7 +47,6 @@ struct SceneShaderData {
     vec4<F32> _windDetails;
     vec4<F32> _shadowingSettings;
     vec4<U32> _otherData;
-    U32 _shadowCastingLightArrayOffset;
 
     inline void fogDetails(F32 colorR, F32 colorG, F32 colorB, F32 density) {
         _fogDetails.set(colorR, colorG, colorB, density);
@@ -79,10 +78,6 @@ struct SceneShaderData {
 
     inline void lightCount(U32 lightCount) {
         _otherData.w = lightCount;
-    }
-
-    inline void shadowCastingLightArrayOffset(U32 offset) {
-        _shadowCastingLightArrayOffset = offset;
     }
 };
 
