@@ -7,7 +7,7 @@ float filterFinalShadow(in sampler2DArrayShadow depthMap, in vec4 vPosInDM){
 
     float fShadow = 0.0;
     if((vDepthMapColour+Z_TEST_SIGMA) < vPosInDM.w){
-#if defined(GPU_VENDOR_AMD)
+#if GPU_VENDOR == GPU_VENDOR_AMD
         fShadow = vDepthMapColour;
 #else
         fShadow = vDepthMapColour * 0.25;

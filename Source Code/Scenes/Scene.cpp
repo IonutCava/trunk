@@ -888,30 +888,26 @@ void Scene::findHoverTarget() {
 }
 
 void Scene::resetSelection() {
-    SceneGraphNode_ptr selection(_currentSelection.lock());
-    if (selection) {
-        selection->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
+    if (!_currentSelection.expired()) {
+        _currentSelection.lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_NONE);
     }
 
     _currentSelection.reset();
 }
 
 void Scene::findSelection() {
-    SceneGraphNode_ptr target(_currentHoverTarget.lock());
-    SceneGraphNode_ptr crtTarget(_currentSelection.lock());
+    bool hadTarget = !_currentSelection.expired();
+    bool haveTarget = !_currentHoverTarget.expired();
 
-    bool hadTarget = crtTarget != nullptr;
-    bool haveTarget = target != nullptr;
-
-    I64 crtGUID = hadTarget ? crtTarget->getGUID() : -1;
-    I64 GUID = haveTarget ? target->getGUID() : -1;
+    I64 crtGUID = hadTarget ? _currentSelection.lock()->getGUID() : -1;
+    I64 GUID = haveTarget ? _currentHoverTarget.lock()->getGUID() : -1;
 
     if (crtGUID != GUID) {
         resetSelection();
 
         if (haveTarget) {
-            _currentSelection = target;
-            target->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
+            _currentSelection = _currentHoverTarget;
+            _currentSelection.lock()->setSelectionFlag(SceneGraphNode::SelectionFlag::SELECTION_SELECTED);
         }
 
         for (DELEGATE_CBK<>& cbk : _selectionChangeCallbacks) {

@@ -203,7 +203,7 @@ bool GL_API::initShaders() {
     appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
-                         "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);
+                         "/*Copyright 2009-2016 DIVIDE-Studio*/", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,
                          "#extension GL_ARB_shader_draw_parameters : require",
                          lineOffsets);

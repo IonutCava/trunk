@@ -362,8 +362,9 @@ class SceneLoadSave {
 class SceneGraph {
 private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
-        SceneGraphNode_ptr currentSelection = scene.getCurrentSelection().lock();
-        if (currentSelection && currentSelection->getGUID() == node.getGUID()) {
+        if (!scene.getCurrentSelection().expired() &&
+            scene.getCurrentSelection().lock()->getGUID() == node.getGUID())
+        {
             scene.resetSelection();
         }
     }

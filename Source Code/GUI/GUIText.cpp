@@ -16,14 +16,6 @@ GUIText::GUIText(ULL ID,
 {
 }
 
-const bool GUIText::isVisible() const {
-    if (!text().empty()) {
-        return GUIElement::isVisible();
-    }
-
-    return false;
-}
-
 void GUIText::draw() const {
     if (!text().empty()) {
         Attorney::GFXDeviceGUI::drawText(*this,

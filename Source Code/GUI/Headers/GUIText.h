@@ -53,7 +53,6 @@ class GUIText : public GUIElement, public TextLabel {
     void onMouseUp(const GUIEvent& event);
     void onMouseDown(const GUIEvent& event);
     void onChangeResolution(U16 w, U16 h);
-    const bool isVisible() const override;
 
 protected:
     inline void initialHeightCache(F32 height) { _heightCache = height; }

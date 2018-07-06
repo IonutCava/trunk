@@ -50,9 +50,8 @@ WarScene::WarScene(const stringImpl& name)
     _resetUnits = false;
 
     addSelectionCallback([&]() {
-        SceneGraphNode_ptr selection(_currentSelection.lock());
-        if (selection) {
-            _GUI->modifyText(_ID("entityState"), selection->getName().c_str());
+        if (!_currentSelection.expired()) {
+            _GUI->modifyText(_ID("entityState"), _currentSelection.lock()->getName().c_str());
         } else {
             _GUI->modifyText(_ID("entityState"), "");
         }
@@ -93,9 +92,8 @@ void WarScene::processGUI(const U64 deltaTime) {
     }
 
     if (_guiTimers[1] >= Time::SecondsToMilliseconds(1)) {
-        SceneGraphNode_ptr selection(_currentSelection.lock());
-        if (selection) {
-            AI::AIEntity* entity = findAI(selection);
+        if (!_currentSelection.expired()) {
+            AI::AIEntity* entity = findAI(_currentSelection.lock());
             if (entity) {
                 _GUI->modifyText(_ID("entityState"), entity->toString().c_str());
             }
@@ -663,7 +661,7 @@ void WarScene::toggleCamera() {
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
 
-    if (_currentSelection.lock()) {
+    if (!_currentSelection.expired()) {
         if (flyCameraActive) {
             if (fpsCameraActive) {
                 renderState().getCameraMgr().popActiveCamera();
@@ -739,9 +737,11 @@ void WarScene::postLoadMainThread() {
         vec4<U8>(50, 192, 50, 255),// Colour
         Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
 
-    _GUI->addText(_ID("entityState"), vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
-        vec4<U8>(0, 0, 0, 255),
-        "");
+    _GUI->addText(_ID("entityState"),
+                  vec2<I32>(60, 163),
+                  Font::DIVIDE_DEFAULT,
+                  vec4<U8>(0, 0, 0, 255),
+                  "");
 
     _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
 
