@@ -107,7 +107,7 @@ vec4 getFinalPixelColour() {
 #if defined(USE_WB_OIT)
 #if USE_COLOURED_WOIT
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
-void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ, inout vec4 accum, inout float revealage) {
+void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
     // NEW: Perform this operation before modifying the coverage to account for transmission.
     _modulate.rgb = premultipliedReflect.a * (vec3(1.0) - transmit);
 
@@ -134,14 +134,15 @@ void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ, inout vec4 
     _revealage = premultipliedReflect.a;
 }
 #else
-void writePixel(vec4 premultipliedReflect) {
-    vec3 transmit = vec3(0.5);
+void writePixel(vec4 premultipliedReflect, float csZ) {
+    vec3 transmit = vec3(0.01);
     premultipliedReflect.a *= 1.0 - clamp((transmit.r + transmit.g + transmit.b) * (1.0 / 3.0), 0, 1);
 
     /* You may need to adjust the w function if you have a very large or very small view volume; see the paper and
     presentation slides at http://jcgt.org/published/0002/02/09/ */
     // Intermediate terms to be cubed
     float a = min(1.0, premultipliedReflect.a) * 8.0 + 0.01;
+
     float b = -gl_FragCoord.z * 0.95 + 1.0;
 
     /* If your scene has a lot of content very close to the far plane,
@@ -167,13 +168,14 @@ void main (void){
     colourOut = getFinalPixelColour();
 #endif
 
-vec2 screenPositionNormalised = getScreenPositionNormalised();
+    vec2 screenPositionNormalised = getScreenPositionNormalised();
 #if defined(USE_WB_OIT)
-#if defined(USE_COLOURED_WOIT)
     float linearDepth = ToLinearDepth(getDepthValue(screenPositionNormalised));
+
+#if defined(USE_COLOURED_WOIT)
     writePixel(colourOut, colourOut.rgb - vec3(0.2), linearDepth, _accum, _revealage);
 #else
-    writePixel(colourOut);
+    writePixel(colourOut, linearDepth);
 #endif
 #else
     _colourOut = colourOut;

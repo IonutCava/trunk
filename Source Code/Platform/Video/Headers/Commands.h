@@ -161,7 +161,6 @@ struct SetScissorCommand final : Command<SetScissorCommand, CommandType::SET_SCI
 };
 
 struct SetBlendCommand final : Command<SetBlendCommand, CommandType::SET_BLEND> {
-    bool _enabled = true;
     BlendingProperties _blendProperties;
 };
 

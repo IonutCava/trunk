@@ -54,8 +54,7 @@ const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
 void CommandBuffer::add(const CommandBuffer& other) {
     if (!other.empty()) {
         for (const CommandEntry& cmd : other._commandOrder) {
-            const CommandBase& baseCommand = *(other._commands.begin(getType(cmd.first)) + cmd.second);
-            add(baseCommand);
+            add(*(other._commands.begin(getType(cmd.first)) + cmd.second));
         }
     }
 }

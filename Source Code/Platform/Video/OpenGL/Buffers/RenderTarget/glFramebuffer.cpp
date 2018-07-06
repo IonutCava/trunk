@@ -333,9 +333,7 @@ void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const vect
             const RTBlendState& blend = drawPolicy.blendState(i);
 
             // Set blending per attachment if specified. Overrides general blend state
-            GL_API::setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)),
-                                blend._blendEnable,
-                                blend._blendProperties);
+            GL_API::setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)), blend._blendProperties);
             GL_API::setBlendColour(blend._blendColour);
         }
     }

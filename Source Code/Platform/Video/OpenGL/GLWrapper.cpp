@@ -720,13 +720,14 @@ I32 GL_API::getFont(const stringImpl& fontName) {
 /// Text rendering is handled exclusively by Mikko Mononen's FontStash library (https://github.com/memononen/fontstash)
 /// with his OpenGL frontend adapted for core context profiles
 void GL_API::drawText(const TextElementBatch& batch) {
+
     pushDebugMessage("OpenGL render text start!", 2);
 
     GL_API::setBlending(0,
-                        true,
                         BlendingProperties {
                             BlendProperty::SRC_ALPHA,
-                            BlendProperty::INV_SRC_ALPHA
+                            BlendProperty::INV_SRC_ALPHA,
+                            BlendOperation::ADD
                         });
 
     GL_API::setBlendColour(DefaultColours::DIVIDE_BLUE_U8);
@@ -1019,7 +1020,7 @@ void GL_API::flushCommandBuffer(GFX::CommandBuffer& commandBuffer) {
             }break;
             case GFX::CommandType::SET_BLEND: {
                 const GFX::SetBlendCommand& blendCmd = commandBuffer.getCommand<GFX::SetBlendCommand>(cmd);
-                setBlending(blendCmd._enabled, blendCmd._blendProperties);
+                setBlending(blendCmd._blendProperties);
             }break;
             case GFX::CommandType::SET_VIEWPORT: {
                 _context.setViewport(commandBuffer.getCommand<GFX::SetViewportCommand>(cmd)._viewport);

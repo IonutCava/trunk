@@ -73,6 +73,9 @@ void TiledForwardShadingRenderer::preRender(RenderTarget& target,
     GFX::DispatchComputeCommand computeCmd;
     computeCmd._params._barrierType = MemoryBarrierType::SHADER_BUFFER;
     computeCmd._params._groupSize = vec3<U32>(getNumTilesX(), getNumTilesY(), 1);
+    assert(computeCmd._params._groupSize.x > 0 &&
+           computeCmd._params._groupSize.y > 0 &&
+           computeCmd._params._groupSize.z > 0);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 }
 

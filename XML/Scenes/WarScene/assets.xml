@@ -1,17 +1,18 @@
 <geometry>
-	<item>Soldier1</item>
-	<item>Soldier2</item>
-	<item>Soldier3</item>
-	<item>cylinderNE</item>
+  <!--<item>Soldier1</item>
+  <item>Soldier2</item>-->
+
+  <item>Soldier3</item>
+  <!--<item>cylinderNE</item>
 	<item>cylinderNW</item>
 	<item>cylinderSE</item>
 	<item>cylinderSW</item>
 	<item>cylinderC</item>
-	<item>flag</item>
+	<item>flag</item>-->
 </geometry>
 
 <primitives>
-	<item>Ground_placeholder</item>
+  <!--<item>Ground_placeholder</item>-->
 </primitives>
 
 <flag>

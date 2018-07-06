@@ -30,7 +30,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D accumTexture;
 /* prod(1 - a) */
 layout(binding = TEXTURE_UNIT1) uniform sampler2D revealageTexture;
 
-out vec4 result;
+layout(location = 0) out vec4 _colourOut;
 
 void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
@@ -52,10 +52,10 @@ void main() {
     // [dst has already been modulated by the transmission colors and coverage and the blend mode
     // inverts revealage for us] 
 #ifdef USE_COLOURED_WOIT
-    result = vec4(accum.rgb / max(accum.a, 0.00001), revealage);
+    _colourOut = vec4(accum.rgb / max(accum.a, 0.00001), revealage);
 #else
     vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
-    result = vec4(averageColor, 1.0 - revealage);
+    _colourOut = vec4(averageColor, 1.0 - revealage);
 #endif
 
 }

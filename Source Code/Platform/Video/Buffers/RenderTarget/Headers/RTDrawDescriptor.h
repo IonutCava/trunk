@@ -61,7 +61,6 @@ class RTDrawMask {
 };
 
 struct RTBlendState {
-    bool _blendEnable = false;
     UColour _blendColour = UColour(0);
     BlendingProperties _blendProperties;
 

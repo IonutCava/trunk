@@ -55,7 +55,7 @@ enum class MemoryBarrierType : U8 {
 
 struct ComputeParams {
     MemoryBarrierType _barrierType = MemoryBarrierType::COUNT;
-    vec3<U32> _groupSize;
+    vec3<U32> _groupSize = vec3<U32>(1);
 };
 
 typedef std::array<vector<U32>, to_base(ShaderType::COUNT)> ShaderFunctions;

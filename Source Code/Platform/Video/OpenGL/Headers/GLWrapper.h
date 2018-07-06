@@ -176,15 +176,15 @@ public:
     static bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
     /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
     static void setDepthRange(F32 nearVal, F32 farVal);
-    static void setBlending(bool enable, const BlendingProperties& blendingProperties, bool force = false);
-    inline static void setBlending(bool enable, bool force = false) {
-        setBlending(enable, s_blendPropertiesGlobal, force);
+    static void setBlending(const BlendingProperties& blendingProperties, bool force = false);
+    inline static void setBlending(bool force = false) {
+        setBlending(s_blendPropertiesGlobal, force);
     }
     /// Set the blending properties for the specified draw buffer
-    static void setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, bool force = false);
+    static void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties, bool force = false);
 
-    inline static void setBlending(GLuint drawBufferIdx, bool enable, bool force = false) {
-        setBlending(drawBufferIdx, enable, s_blendProperties[drawBufferIdx], force);
+    inline static void setBlending(GLuint drawBufferIdx, bool force = false) {
+        setBlending(drawBufferIdx, s_blendProperties[drawBufferIdx], force);
     }
 
     static void setBlendColour(const UColour& blendColour, bool force = false);

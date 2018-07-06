@@ -551,10 +551,10 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     }
 
     GFX::SetBlendCommand blendCmd;
-    blendCmd._enabled = true;
     blendCmd._blendProperties = BlendingProperties{
         BlendProperty::SRC_ALPHA,
-        BlendProperty::INV_SRC_ALPHA
+        BlendProperty::INV_SRC_ALPHA,
+        BlendOperation::ADD
     };
     GFX::EnqueueCommand(buffer, blendCmd);
 

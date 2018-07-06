@@ -40,7 +40,7 @@ namespace Divide {
 struct BlendingProperties {
     BlendProperty  _blendSrc = BlendProperty::ONE;
     BlendProperty  _blendDest = BlendProperty::ONE;
-    BlendOperation _blendOp = BlendOperation::ADD;
+    BlendOperation _blendOp = BlendOperation::COUNT;
 
     BlendProperty  _blendSrcAlpha = BlendProperty::COUNT;
     BlendProperty  _blendDestAlpha = BlendProperty::COUNT;
@@ -64,10 +64,15 @@ struct BlendingProperties {
                _blendOpAlpha != rhs._blendOpAlpha;
     }
 
+    inline bool blendEnabled() const {
+        return _blendOp != BlendOperation::COUNT ||
+               _blendOpAlpha != BlendOperation::COUNT;
+    }
+
     inline void reset() {
         _blendSrc = BlendProperty::ONE;
         _blendDest = BlendProperty::ONE;
-        _blendOp = BlendOperation::ADD;
+        _blendOp = BlendOperation::COUNT;
 
         _blendSrcAlpha = BlendProperty::COUNT;
         _blendDestAlpha = BlendProperty::COUNT;

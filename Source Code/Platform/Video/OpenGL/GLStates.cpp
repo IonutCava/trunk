@@ -71,7 +71,13 @@ GL_API::samplerObjectMap GL_API::s_samplerMap;
 SharedLock GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
-BlendingProperties GL_API::s_blendPropertiesGlobal;
+
+BlendingProperties GL_API::s_blendPropertiesGlobal{
+    BlendProperty::ONE,
+    BlendProperty::ONE,
+    BlendOperation::ADD
+};
+
 GLboolean GL_API::s_blendEnabledGlobal;
 vector<BlendingProperties> GL_API::s_blendProperties;
 vector<GLboolean> GL_API::s_blendEnabled;
@@ -130,7 +136,7 @@ void GL_API::clearStates() {
     setActiveTransformFeedback(0);
 
     for (vec_size i = 0; i < GL_API::s_blendEnabled.size(); ++i) {
-        setBlending((GLuint)i, false, BlendingProperties(), true);
+        setBlending((GLuint)i, BlendingProperties(), true);
     }
     GL_API::setBlendColour(UColour(0u), true);
 
@@ -682,7 +688,9 @@ void GL_API::setBlendColour(const UColour& blendColour, bool force) {
     }
 }
 
-void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperties, bool force) {
+void GL_API::setBlending(const BlendingProperties& blendingProperties, bool force) {
+    bool enable = blendingProperties.blendEnabled();
+
     if ((GL_API::s_blendEnabledGlobal == GL_TRUE) != enable || force) {
         enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
         GL_API::s_blendEnabledGlobal = (enable ? GL_TRUE : GL_FALSE);
@@ -698,12 +706,17 @@ void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperti
                                     GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
                                     GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
 
-                glBlendEquationSeparate(GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)],
+                glBlendEquationSeparate(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                            ? to_base(blendingProperties._blendOp)
+                                                                                            : to_base(BlendOperation::ADD)],
                                         GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
             } else {
                 glBlendFunc(GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
                             GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
-                glBlendEquation(GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)]);
+                    glBlendEquation(GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                        ? to_base(blendingProperties._blendOp)
+                                                                                        : to_base(BlendOperation::ADD)]);
+
             }
 
             GL_API::s_blendPropertiesGlobal = blendingProperties;
@@ -713,7 +726,9 @@ void GL_API::setBlending(bool enable, const BlendingProperties& blendingProperti
     }
 }
 
-void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProperties& blendingProperties, bool force) {
+void GL_API::setBlending(GLuint drawBufferIdx,const BlendingProperties& blendingProperties, bool force) {
+    bool enable = blendingProperties.blendEnabled();
+
     assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
 
     if ((GL_API::s_blendEnabled[drawBufferIdx] == GL_TRUE) != enable || force) {
@@ -736,12 +751,21 @@ void GL_API::setBlending(GLuint drawBufferIdx, bool enable, const BlendingProper
                 glBlendEquationSeparatei(drawBufferIdx, 
                                          GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)],
                                          GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
+
+                glBlendEquationSeparatei(drawBufferIdx, 
+                                         GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                             ? to_base(blendingProperties._blendOp)
+                                                                                             : to_base(BlendOperation::ADD)],
+                                         GLUtil::glBlendOpTable[to_base(blendingProperties._blendOpAlpha)]);
             } else {
                 glBlendFunci(drawBufferIdx,
                              GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
                              GLUtil::glBlendTable[to_base(blendingProperties._blendDest)]);
+
                 glBlendEquationi(drawBufferIdx,
-                                 GLUtil::glBlendOpTable[to_base(blendingProperties._blendOp)]);
+                                 GLUtil::glBlendOpTable[blendingProperties._blendOp != BlendOperation::COUNT
+                                                                                     ? to_base(blendingProperties._blendOp)
+                                                                                     : to_base(BlendOperation::ADD)]);
             }
 
             GL_API::s_blendProperties[drawBufferIdx] = blendingProperties;

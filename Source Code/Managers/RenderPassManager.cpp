@@ -274,19 +274,17 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         GFX::BeginRenderPassCommand beginRenderPassOitCmd;
         beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
         beginRenderPassOitCmd._target = RenderTargetID(RenderTargetUsage::OIT);
-        RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(0);
-        RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(1);
+        {
+            RTBlendState& state0 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ACCUMULATION));
+            state0._blendProperties._blendSrc = BlendProperty::ONE;
+            state0._blendProperties._blendDest = BlendProperty::ONE;
+            state0._blendProperties._blendOp = BlendOperation::ADD;
 
-        state0._blendEnable = true;
-        state0._blendProperties._blendSrc = BlendProperty::ONE;
-        state0._blendProperties._blendDest = BlendProperty::ONE;
-        state0._blendProperties._blendOp = BlendOperation::ADD;
-
-        state1._blendEnable = true;
-        state1._blendProperties._blendSrc = BlendProperty::ZERO;
-        state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
-        state1._blendProperties._blendOp = BlendOperation::ADD;
-
+            RTBlendState& state1 = beginRenderPassOitCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::REVEALAGE));
+            state1._blendProperties._blendSrc = BlendProperty::ZERO;
+            state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
+            state1._blendProperties._blendOp = BlendOperation::ADD;
+        }
         // Don't clear our screen target. That would be BAD.
         beginRenderPassOitCmd._descriptor.clearColour(to_U8(GFXDevice::ScreenTargets::MODULATE), false);
         // Don't clear and don't write to depth buffer
@@ -307,9 +305,17 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
         beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
         beginRenderPassCompCmd._descriptor.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
         beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-        beginRenderPassCompCmd._descriptor.blendState(0)._blendEnable = true;
-        beginRenderPassCompCmd._descriptor.blendState(0)._blendProperties._blendSrc = BlendProperty::ONE;
-        beginRenderPassCompCmd._descriptor.blendState(0)._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
+        {
+            RTBlendState& state0 = beginRenderPassCompCmd._descriptor.blendState(to_U8(GFXDevice::ScreenTargets::ALBEDO));
+            state0._blendProperties._blendOp = BlendOperation::ADD;
+#if defined(USE_COLOUR_WOIT)
+            state0._blendProperties._blendSrc = BlendProperty::INV_SRC_ALPHA;
+            state0._blendProperties._blendDest = BlendProperty::ONE;
+#else
+            state0._blendProperties._blendSrc = BlendProperty::SRC_COLOR;
+            state0._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
+#endif
+        }
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
 
         GFX::BindPipelineCommand bindPipelineCmd;
@@ -324,8 +330,8 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set = _context.newDescriptorSet();
-        descriptorSetCmd._set->_textureData.addTexture(accum, 0u);
-        descriptorSetCmd._set->_textureData.addTexture(revealage, 1u);
+        descriptorSetCmd._set->_textureData.addTexture(accum, to_base(ShaderProgram::TextureUsage::UNIT0));
+        descriptorSetCmd._set->_textureData.addTexture(revealage, to_base(ShaderProgram::TextureUsage::UNIT1));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCmd;
