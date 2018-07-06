@@ -35,7 +35,7 @@ void BoundsComponent::onBoundsChange(const BoundingBox& nodeBounds) {
     flagBoundingBoxDirty();
 }
 
-void BoundsComponent::update(const U64 deltaTimeUS) {
+void BoundsComponent::Update(const U64 deltaTimeUS) {
     if (_transformDirty) {
         
         TransformComponent* tComp = _parentSGN.GetComponentManager()->GetComponent<TransformComponent>(GetOwner());
@@ -65,6 +65,8 @@ void BoundsComponent::update(const U64 deltaTimeUS) {
         _boundingSphere.fromBoundingBox(_boundingBox);
         _boundingBoxDirty = false;
     }
+
+    SGNComponent<BoundsComponent>::Update(deltaTimeUS);
 }
 
 };

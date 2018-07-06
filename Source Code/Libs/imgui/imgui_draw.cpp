@@ -36,7 +36,6 @@
 #ifdef _MSC_VER
 #pragma warning (disable: 4505) // unreferenced local function has been removed (stb stuff)
 #pragma warning (disable: 4996) // 'This function or variable may be unsafe': strcpy, strdup, sprintf, vsnprintf, sscanf, fopen
-#define snprintf _snprintf
 #endif
 
 #ifdef __clang__
@@ -64,9 +63,12 @@
 // STB libraries implementation
 //-------------------------------------------------------------------------
 
+// Compile time options:
 //#define IMGUI_STB_NAMESPACE     ImGuiStb
-//#define IMGUI_DISABLE_STB_RECT_PACK_IMPLEMENTATION
+//#define IMGUI_STB_TRUETYPE_FILENAME   "my_folder/stb_truetype.h"
+//#define IMGUI_STB_RECT_PACK_FILENAME  "my_folder/stb_rect_pack.h"
 //#define IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
+//#define IMGUI_DISABLE_STB_RECT_PACK_IMPLEMENTATION
 
 #ifdef IMGUI_STB_NAMESPACE
 namespace IMGUI_STB_NAMESPACE
@@ -90,23 +92,31 @@ namespace IMGUI_STB_NAMESPACE
 #pragma GCC diagnostic ignored "-Wtype-limits"              // warning: comparison is always true due to limited range of data type [-Wtype-limits]
 #endif
 
-#define STBRP_ASSERT(x)    IM_ASSERT(x)
 #ifndef IMGUI_DISABLE_STB_RECT_PACK_IMPLEMENTATION
 #define STBRP_STATIC
+#define STBRP_ASSERT(x)    IM_ASSERT(x)
 #define STB_RECT_PACK_IMPLEMENTATION
 #endif
+#ifdef IMGUI_STB_RECT_PACK_FILENAME
+#include IMGUI_STB_RECT_PACK_FILENAME
+#else
 #include "stb_rect_pack.h"
+#endif
 
+#ifndef IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_malloc(x,u)  ((void)(u), ImGui::MemAlloc(x))
 #define STBTT_free(x,u)    ((void)(u), ImGui::MemFree(x))
 #define STBTT_assert(x)    IM_ASSERT(x)
-#ifndef IMGUI_DISABLE_STB_TRUETYPE_IMPLEMENTATION
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #else
 #define STBTT_DEF extern
 #endif
+#ifdef IMGUI_STB_TRUETYPE_FILENAME
+#include IMGUI_STB_TRUETYPE_FILENAME
+#else
 #include "stb_truetype.h"
+#endif
 
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
@@ -167,9 +177,6 @@ void ImGui::StyleColorsDark(ImGuiStyle* dst)
     colors[ImGuiCol_ResizeGrip]             = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
     colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
     colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    colors[ImGuiCol_CloseButton]            = ImVec4(0.41f, 0.41f, 0.41f, 0.50f);
-    colors[ImGuiCol_CloseButtonHovered]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-    colors[ImGuiCol_CloseButtonActive]      = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -219,9 +226,6 @@ void ImGui::StyleColorsClassic(ImGuiStyle* dst)
     colors[ImGuiCol_ResizeGrip]             = ImVec4(1.00f, 1.00f, 1.00f, 0.16f);
     colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.78f, 0.82f, 1.00f, 0.60f);
     colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.78f, 0.82f, 1.00f, 0.90f);
-    colors[ImGuiCol_CloseButton]            = ImVec4(0.50f, 0.50f, 0.90f, 0.50f);
-    colors[ImGuiCol_CloseButtonHovered]     = ImVec4(0.70f, 0.70f, 0.90f, 0.60f);
-    colors[ImGuiCol_CloseButtonActive]      = ImVec4(0.70f, 0.70f, 0.70f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -274,9 +278,6 @@ void ImGui::StyleColorsLight(ImGuiStyle* dst)
     colors[ImGuiCol_ResizeGrip]             = ImVec4(0.80f, 0.80f, 0.80f, 0.56f);
     colors[ImGuiCol_ResizeGripHovered]      = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
     colors[ImGuiCol_ResizeGripActive]       = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
-    colors[ImGuiCol_CloseButton]            = ImVec4(0.59f, 0.59f, 0.59f, 0.50f);
-    colors[ImGuiCol_CloseButtonHovered]     = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
-    colors[ImGuiCol_CloseButtonActive]      = ImVec4(0.98f, 0.39f, 0.36f, 1.00f);
     colors[ImGuiCol_PlotLines]              = ImVec4(0.39f, 0.39f, 0.39f, 1.00f);
     colors[ImGuiCol_PlotLinesHovered]       = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     colors[ImGuiCol_PlotHistogram]          = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -348,6 +349,16 @@ void ImDrawList::ClearFreeMemory()
         _Channels[i].IdxBuffer.clear();
     }
     _Channels.clear();
+}
+
+ImDrawList* ImDrawList::CloneOutput() const
+{
+    ImDrawList* dst = IM_NEW(ImDrawList(NULL));
+    dst->CmdBuffer = CmdBuffer;
+    dst->IdxBuffer = IdxBuffer;
+    dst->VtxBuffer = VtxBuffer;
+    dst->Flags = Flags;
+    return dst;
 }
 
 // Using macros because C++ is a terrible language, we want guaranteed inline, no code in header, and no overhead in Debug builds
@@ -1351,7 +1362,7 @@ static const char FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS[FONT_ATLAS_DEFAULT_TEX_DATA
     "                                                      -    XX           XX    -           "
 };
 
-static const ImVec2 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA[ImGuiMouseCursor_Count_][3] =
+static const ImVec2 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA[ImGuiMouseCursor_COUNT][3] =
 {
     // Pos ........ Size ......... Offset ......
     { ImVec2(0,3),  ImVec2(12,19), ImVec2( 0, 0) }, // ImGuiMouseCursor_Arrow
@@ -1527,6 +1538,7 @@ ImFont* ImFontAtlas::AddFontDefault(const ImFontConfig* font_cfg_template)
 
     const char* ttf_compressed_base85 = GetDefaultCompressedFontDataTTFBase85();
     ImFont* font = AddFontFromMemoryCompressedBase85TTF(ttf_compressed_base85, font_cfg.SizePixels, &font_cfg, GetGlyphRangesDefault());
+    font->DisplayOffset.y = 1.0f;
     return font;
 }
 
@@ -1545,7 +1557,7 @@ ImFont* ImFontAtlas::AddFontFromFileTTF(const char* filename, float size_pixels,
         // Store a short copy of filename into into the font name for convenience
         const char* p;
         for (p = filename + strlen(filename); p > filename && p[-1] != '/' && p[-1] != '\\'; p--) {}
-        snprintf(font_cfg.Name, IM_ARRAYSIZE(font_cfg.Name), "%s, %.0fpx", p, size_pixels);
+        ImFormatString(font_cfg.Name, IM_ARRAYSIZE(font_cfg.Name), "%s, %.0fpx", p, size_pixels);
     }
     return AddFontFromMemoryTTF(data, data_size, size_pixels, &font_cfg, glyph_ranges);
 }
@@ -1624,7 +1636,7 @@ void ImFontAtlas::CalcCustomRectUV(const CustomRect* rect, ImVec2* out_uv_min, I
 
 bool ImFontAtlas::GetMouseCursorTexData(ImGuiMouseCursor cursor_type, ImVec2* out_offset, ImVec2* out_size, ImVec2 out_uv_border[2], ImVec2 out_uv_fill[2])
 {
-    if (cursor_type <= ImGuiMouseCursor_None || cursor_type >= ImGuiMouseCursor_Count_)
+    if (cursor_type <= ImGuiMouseCursor_None || cursor_type >= ImGuiMouseCursor_COUNT)
         return false;
     if (Flags & ImFontAtlasFlags_NoMouseCursors)
         return false;
@@ -1819,13 +1831,15 @@ bool    ImFontAtlasBuildWithStbTruetype(ImFontAtlas* atlas)
         ImFontConfig& cfg = atlas->ConfigData[input_i];
         ImFontTempBuildData& tmp = tmp_array[input_i];
         ImFont* dst_font = cfg.DstFont; // We can have multiple input fonts writing into a same destination font (when using MergeMode=true)
+        if (cfg.MergeMode)
+            dst_font->BuildLookupTable();
 
         const float font_scale = stbtt_ScaleForPixelHeight(&tmp.FontInfo, cfg.SizePixels);
         int unscaled_ascent, unscaled_descent, unscaled_line_gap;
         stbtt_GetFontVMetrics(&tmp.FontInfo, &unscaled_ascent, &unscaled_descent, &unscaled_line_gap);
 
-        const float ascent = unscaled_ascent * font_scale;
-        const float descent = unscaled_descent * font_scale;
+        const float ascent = ImFloor(unscaled_ascent * font_scale + ((unscaled_ascent > 0.0f) ? +1 : -1));
+        const float descent = ImFloor(unscaled_descent * font_scale + ((unscaled_descent > 0.0f) ? +1 : -1));
         ImFontAtlasBuildSetupFont(atlas, dst_font, &cfg, ascent, descent);
         const float off_x = cfg.GlyphOffset.x;
         const float off_y = cfg.GlyphOffset.y + (float)(int)(dst_font->Ascent + 0.5f);
@@ -1840,7 +1854,7 @@ bool    ImFontAtlasBuildWithStbTruetype(ImFontAtlas* atlas)
                     continue;
 
                 const int codepoint = range.first_unicode_codepoint_in_range + char_idx;
-                if (cfg.MergeMode && dst_font->FindGlyph((unsigned short)codepoint))
+                if (cfg.MergeMode && dst_font->FindGlyphNoFallback((unsigned short)codepoint))
                     continue;
 
                 stbtt_aligned_quad q;
@@ -1962,6 +1976,7 @@ void ImFontAtlasBuildFinish(ImFontAtlas* atlas)
 
     // Build all fonts lookup tables
     for (int i = 0; i < atlas->Fonts.Size; i++)
+        if (atlas->Fonts[i]->DirtyLookupTables)
         atlas->Fonts[i]->BuildLookupTable();
 }
 
@@ -2058,7 +2073,7 @@ const ImWchar*  ImFontAtlas::GetGlyphRangesJapanese()
         // Unpack
         int codepoint = 0x4e00;
         memcpy(full_ranges, base_ranges, sizeof(base_ranges));
-        ImWchar* dst = full_ranges + IM_ARRAYSIZE(base_ranges);;
+        ImWchar* dst = full_ranges + IM_ARRAYSIZE(base_ranges);
         for (int n = 0; n < IM_ARRAYSIZE(offsets_from_0x4E00); n++, dst += 2)
             dst[0] = dst[1] = (ImWchar)(codepoint += (offsets_from_0x4E00[n] + 1));
         dst[0] = 0;
@@ -2138,7 +2153,7 @@ ImFont::ImFont()
 {
     Scale = 1.0f;
     FallbackChar = (ImWchar)'?';
-    DisplayOffset = ImVec2(0.0f, 1.0f);
+    DisplayOffset = ImVec2(0.0f, 0.0f);
     ClearOutputData();
 }
 
@@ -2167,6 +2182,7 @@ void    ImFont::ClearOutputData()
     ConfigData = NULL;
     ContainerAtlas = NULL;
     Ascent = Descent = 0.0f;
+    DirtyLookupTables = true;
     MetricsTotalSurface = 0;
 }
 
@@ -2179,6 +2195,7 @@ void ImFont::BuildLookupTable()
     IM_ASSERT(Glyphs.Size < 0xFFFF); // -1 is reserved
     IndexAdvanceX.clear();
     IndexLookup.clear();
+    DirtyLookupTables = false;
     GrowIndex(max_codepoint + 1);
     for (int i = 0; i < Glyphs.Size; i++)
     {
@@ -2201,8 +2218,7 @@ void ImFont::BuildLookupTable()
         IndexLookup[(int)tab_glyph.Codepoint] = (unsigned short)(Glyphs.Size-1);
     }
 
-    FallbackGlyph = NULL;
-    FallbackGlyph = FindGlyph(FallbackChar);
+    FallbackGlyph = FindGlyphNoFallback(FallbackChar);
     FallbackAdvanceX = FallbackGlyph ? FallbackGlyph->AdvanceX : 0.0f;
     for (int i = 0; i < max_codepoint + 1; i++)
         if (IndexAdvanceX[i] < 0.0f)
@@ -2243,6 +2259,7 @@ void ImFont::AddGlyph(ImWchar codepoint, float x0, float y0, float x1, float y1,
         glyph.AdvanceX = (float)(int)(glyph.AdvanceX + 0.5f);
     
     // Compute rough surface usage metrics (+1 to account for average padding, +0.99 to round)
+    DirtyLookupTables = true;
     MetricsTotalSurface += (int)((glyph.U1 - glyph.U0) * ContainerAtlas->TexWidth + 1.99f) * (int)((glyph.V1 - glyph.V0) * ContainerAtlas->TexHeight + 1.99f);
 }
 
@@ -2263,13 +2280,22 @@ void ImFont::AddRemapChar(ImWchar dst, ImWchar src, bool overwrite_dst)
 
 const ImFontGlyph* ImFont::FindGlyph(ImWchar c) const
 {
-    if (c < IndexLookup.Size)
-    {
+    if (c >= IndexLookup.Size)
+        return FallbackGlyph;
         const unsigned short i = IndexLookup[c];
-        if (i != (unsigned short)-1)
+    if (i == (unsigned short)-1)
+        return FallbackGlyph;
             return &Glyphs.Data[i];
     }
-    return FallbackGlyph;
+
+const ImFontGlyph* ImFont::FindGlyphNoFallback(ImWchar c) const
+{
+    if (c >= IndexLookup.Size)
+        return NULL;
+    const unsigned short i = IndexLookup[c];
+    if (i == (unsigned short)-1)
+        return NULL;
+    return &Glyphs.Data[i];
 }
 
 const char* ImFont::CalcWordWrapPositionA(float scale, const char* text, const char* text_end, float wrap_width) const

@@ -20,26 +20,35 @@ namespace Divide {
     }
 
     void TransformSystem::PreUpdate(F32 dt) {
-        // Go over all transforms and make sure we update parent states
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (;transform != transformEnd; ++transform)
         {
-           
+            transform->PreUpdate(microSec);
         }
     }
 
     void TransformSystem::Update(F32 dt) {
-        // 
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+
+        auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
+        auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
+        for (; transform != transformEnd; ++transform)
+        {
+            transform->Update(microSec);
+        }
     }
 
     void TransformSystem::PostUpdate(F32 dt) {
-        // If the transform has been modified, notify listeners, 
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+         
         auto transform = _engine.GetComponentManager()->begin<TransformComponent>();
         auto transformEnd = _engine.GetComponentManager()->end<TransformComponent>();
         for (;transform != transformEnd; ++transform)
         {
-            transform->snapshot();
+            transform->PostUpdate(microSec);
         }
     }
 

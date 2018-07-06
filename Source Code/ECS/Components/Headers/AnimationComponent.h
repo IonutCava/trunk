@@ -101,7 +101,7 @@ class AnimationComponent : public SGNComponent<AnimationComponent>{
 
    protected:
     friend class AnimationSystem;
-    void update(const U64 deltaTimeUS);
+    void Update(const U64 deltaTimeUS) override;
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!

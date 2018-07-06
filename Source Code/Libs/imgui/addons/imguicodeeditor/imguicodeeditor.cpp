@@ -1479,8 +1479,8 @@ static void InitFoldingStringVectors() {
         }
         {
             const SyntaxHighlightingType sht = SH_KEYWORD_ITERATION;
-            static const char* vars[] = {"for","while","do"};
-            const int varsSize = (int)sizeof(vars)/sizeof(vars[0]);foldingStrings.keywords[sht].reserve(foldingStrings.keywords[sht].size()+varsSize);for (int i=0;i<varsSize;i++) foldingStrings.keywords[sht].push_back(vars[i]);
+            static const char* vars2[] = {"for","while","do"};
+            const int varsSize = (int)sizeof(vars2)/sizeof(vars2[0]);foldingStrings.keywords[sht].reserve(foldingStrings.keywords[sht].size()+varsSize);for (int i=0;i<varsSize;i++) foldingStrings.keywords[sht].push_back(vars[i]);
         }
         {
             const SyntaxHighlightingType sht = SH_KEYWORD_JUMP;

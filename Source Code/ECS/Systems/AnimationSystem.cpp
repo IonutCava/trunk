@@ -16,20 +16,36 @@ namespace Divide {
     }
 
     void AnimationSystem::PreUpdate(F32 dt) {
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+
         auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
         auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
         for (;anim != animEnd; ++anim)
         {
-            anim->update(Time::MillisecondsToMicroseconds(dt));
+            anim->PreUpdate(microSec);
         }
     }
 
     void AnimationSystem::Update(F32 dt) {
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
+        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
+        for (; anim != animEnd; ++anim)
+        {
+            anim->Update(microSec);
+        }
     }
 
     void AnimationSystem::PostUpdate(F32 dt) {
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        auto anim = _engine.GetComponentManager()->begin<AnimationComponent>();
+        auto animEnd = _engine.GetComponentManager()->end<AnimationComponent>();
+        for (; anim != animEnd; ++anim)
+        {
+            anim->PostUpdate(microSec);
+        }
     }
 
     bool AnimationSystem::save(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {

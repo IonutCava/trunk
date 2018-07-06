@@ -37,77 +37,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct ParentTransformDirty;
-    struct ParentTransformClean;
 
     enum class TransformType : U32 {
-        TRANSLATION = 0,
-        SCALE,
-        ROTATION,
-        VIEW_OFFSET,
-        COUNT
-    };
-
-
-    class TransformMask {
-        public:
-        TransformMask()
-        {
-            clearAllFlags();
-        }
-
-        inline bool hasSetFlags() const {
-            for (bool flag : _transformFlags) {
-                if (flag) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        inline bool hasSetAllFlags() const {
-            for (bool flag : _transformFlags) {
-                if (!flag) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        inline bool getFlag(TransformType type) const {
-            return _transformFlags[to_U32(type)] == true;
-        }
-
-        inline void clearAllFlags() {
-            _transformFlags[to_base(TransformType::SCALE)] = false;
-            _transformFlags[to_base(TransformType::ROTATION)] = false;
-            _transformFlags[to_base(TransformType::TRANSLATION)] = false;
-            _transformFlags[to_base(TransformType::VIEW_OFFSET)] = false;
-        }
-
-        inline void setAllFlags() {
-            _transformFlags[to_base(TransformType::SCALE)] = true;
-            _transformFlags[to_base(TransformType::ROTATION)] = true;
-            _transformFlags[to_base(TransformType::TRANSLATION)] = true;
-        }
-
-        inline bool clearFlag(TransformType type) {
-            _transformFlags[to_U32(type)] = false;
-        }
-
-        inline void setFlag(TransformType type) {
-            _transformFlags[to_U32(type)] = true;
-        }
-
-        inline void setFlags(const TransformMask& other) {
-            _transformFlags[to_base(TransformType::SCALE)] = other.getFlag(TransformType::SCALE);
-            _transformFlags[to_base(TransformType::ROTATION)] = other.getFlag(TransformType::ROTATION);
-            _transformFlags[to_base(TransformType::TRANSLATION)] = other.getFlag(TransformType::TRANSLATION);
-            _transformFlags[to_base(TransformType::VIEW_OFFSET)] = other.getFlag(TransformType::VIEW_OFFSET);
-
-        }
-        private:
-        std::array<std::atomic_bool, to_base(TransformType::COUNT)> _transformFlags;
+        NONE = 0,
+        TRANSLATION = toBit(1),
+        SCALE = toBit(2),
+        ROTATION = toBit(3),
+        VIEW_OFFSET = toBit(4),
+        WORLD_TRANSFORMS = TRANSLATION | SCALE | ROTATION,
+        ALL = WORLD_TRANSFORMS | VIEW_OFFSET,
+        COUNT = 4
     };
 
     struct IgnoreViewSettings {
@@ -129,9 +68,8 @@ namespace Divide {
 
          void reset();
 
-         const mat4<F32>& getWorldMatrix();
-
-         const mat4<F32>& getWorldMatrix(D64 interpolationFactor);
+         const mat4<F32>& getWorldMatrix() const;
+         mat4<F32>        getWorldMatrix(D64 interpolationFactor) const;
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;
@@ -203,7 +141,12 @@ namespace Divide {
          /// Return the local orientation quaternion
          Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
 
-         const mat4<F32>& getMatrix() override;
+         inline const mat4<F32>& getLocalMatrix() {
+             return getMatrix();
+         }
+
+         void setTransforms(const mat4<F32>& transform);
+
          void getValues(TransformValues& valuesOut) const override;
 
          void pushTransforms();
@@ -217,43 +160,43 @@ namespace Divide {
 
          void ignoreView(const bool state, const I64 cameraGUID);
 
-         // Local transform interface access
-         void getScale(vec3<F32>& scaleOut) const override;
-         void getPosition(vec3<F32>& posOut) const override;
-         void getOrientation(Quaternion<F32>& quatOut) const override;
-
          bool save(ByteBuffer& outputBuffer) const override;
          bool load(ByteBuffer& inputBuffer) override;
 
       protected:
          friend class TransformSystem;
          void setTransformDirty(TransformType type);
-         void snapshot();
-         bool dirty() const;
-         void clean(bool interp);
+         void setTransformDirty(U32 typeMask);
+
+         void PreUpdate(const U64 deltaTimeUS) override;
+         void Update(const U64 deltaTimeUS) override;
+         void PostUpdate(const U64 deltaTimeUS) override;
 
          void RegisterEventCallbacks();
          void OnParentTransformDirty(const ParentTransformDirty* event);
-         void OnParentTransformClean(const ParentTransformClean* event);
+
+         const mat4<F32>& getMatrix() override;
+         const mat4<F32>& updateWorldMatrix();
+
+         // Local transform interface access (all are in local space)
+         void getScale(vec3<F32>& scaleOut) const override;
+         void getPosition(vec3<F32>& posOut) const override;
+         void getOrientation(Quaternion<F32>& quatOut) const override;
 
       private:
         IgnoreViewSettings _ignoreViewSettings;
 
         typedef std::stack<TransformValues> TransformStack;
 
+        U32             _transformUpdatedMask;
         TransformValues _prevTransformValues;
         TransformStack  _transformStack;
-        TransformMask   _transformUpdatedMask;
         Transform       _transformInterface;
-        /// Transform cache values
-        std::atomic_bool _dirty;
-        std::atomic_bool _dirtyInterp;
-        std::atomic_bool _parentDirty;
 
         D64 _prevInterpValue;
 
+        std::atomic_bool _worldMatrixDirty;
         mat4<F32> _worldMatrix;
-        mat4<F32> _worldMatrixInterp;
 
         mutable SharedLock _lock;
     };

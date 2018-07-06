@@ -121,7 +121,7 @@ class RenderingComponent : public SGNComponent<RenderingComponent> {
     void onRender(const SceneRenderState& sceneRenderState,
                   const RenderStagePass& renderStagePass);
 
-    void update(const U64 deltaTimeUS);
+    void Update(const U64 deltaTimeUS) override;
 
     inline PushConstants& pushConstants() { return _globalPushConstants; }
     inline const PushConstants& pushConstants() const { return _globalPushConstants; }

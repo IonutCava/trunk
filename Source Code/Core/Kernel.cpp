@@ -328,11 +328,10 @@ bool Kernel::mainLoopScene(FrameEvent& evt, const U64 deltaTimeUS) {
 
             if (firstRun) {
                 _sceneUpdateLoopTimer.stop();
+                firstRun = false;
             }
 
             _timingData.endUpdateLoop(deltaTimeUS);
-
-            firstRun = false;
         }  // while
     }
 

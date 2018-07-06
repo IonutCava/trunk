@@ -7,10 +7,8 @@
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode& parentSGN)
       : SGNComponent(parentSGN, "TRANSFORM"),
-        _dirty(true),
-        _dirtyInterp(true),
-        _parentDirty(true),
-        _prevInterpValue(0.0)
+        _prevInterpValue(0.0),
+        _transformUpdatedMask(to_base(TransformType::WORLD_TRANSFORMS))
     {
         _editorComponent.registerField("Transform",
                                        &_transformInterface,
@@ -28,9 +26,7 @@ namespace Divide {
 
         _editorComponent.onChangedCbk([this](EditorComponentField& field) {
             if (field._name == "Transform") {
-                setTransformDirty(TransformType::TRANSLATION);
-                setTransformDirty(TransformType::SCALE);
-                setTransformDirty(TransformType::ROTATION);
+                setTransformDirty(to_base(TransformType::WORLD_TRANSFORMS));
             } else if (field._name == "Position Offset") {
                 setTransformDirty(TransformType::VIEW_OFFSET);
             }
@@ -46,19 +42,12 @@ namespace Divide {
 
     void TransformComponent::RegisterEventCallbacks() {
         RegisterEventCallback(&TransformComponent::OnParentTransformDirty);
-        RegisterEventCallback(&TransformComponent::OnParentTransformClean);
         SGNComponent<TransformComponent>::RegisterEventCallbacks();
     }
 
     void TransformComponent::OnParentTransformDirty(const ParentTransformDirty* event) {
         if (GetOwner() == event->ownerID) {
-            _parentDirty = true;
-        }
-    }
-
-    void TransformComponent::OnParentTransformClean(const ParentTransformClean* event) {
-        if (GetOwner() == event->ownerID) {
-            _parentDirty = false;
+            _worldMatrixDirty = true;
         }
     }
 
@@ -70,19 +59,44 @@ namespace Divide {
         while (!_transformStack.empty()) {
             _transformStack.pop();
         }
-        _transformUpdatedMask.setAllFlags();
-        _dirty = true;
-        _dirtyInterp = true;
+        
+        _worldMatrixDirty = true;
         _prevInterpValue = 0.0;
+
+        WriteLock r_lock(_lock);
+        SetBit(_transformUpdatedMask, TransformType::ALL);
     }
 
-    void TransformComponent::snapshot() {
-        if (_transformUpdatedMask.hasSetFlags()) {
-            _transformUpdatedMask.clearAllFlags();
+    void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
+        // If we have dirty transforms, inform everybody
+        UpgradableReadLock r_lock(_lock);
+        if (_transformUpdatedMask != to_base(TransformType::NONE) &&
+            _transformUpdatedMask != to_base(TransformType::VIEW_OFFSET))
+        {
+            _parentSGN.SendEvent<TransformDirty>(GetOwner(), _transformUpdatedMask);
         }
 
-        ReadLock r_lock(_lock);
-        _transformInterface.getValues(_prevTransformValues);
+        SGNComponent<TransformComponent>::PreUpdate(deltaTimeUS);
+    }
+
+    void TransformComponent::Update(const U64 deltaTimeUS) {
+        // Cleanup our dirty transforms
+        UpgradableReadLock r_lock(_lock);
+        if (_transformUpdatedMask != to_base(TransformType::NONE) &&
+            _transformUpdatedMask != to_base(TransformType::VIEW_OFFSET))
+        {
+            UpgradeToWriteLock w_lock(r_lock);
+            _transformInterface.getValues(_prevTransformValues);
+            _worldMatrixDirty = true;
+            _transformUpdatedMask = to_base(TransformType::NONE);
+        }
+        SGNComponent<TransformComponent>::Update(deltaTimeUS);
+    }
+
+    void TransformComponent::PostUpdate(const U64 deltaTimeUS) {
+        updateWorldMatrix();
+        _prevInterpValue = -1.0;
+        SGNComponent<TransformComponent>::PostUpdate(deltaTimeUS);
     }
 
     void TransformComponent::ignoreView(const bool state, const I64 cameraGUID) {
@@ -98,10 +112,11 @@ namespace Divide {
     }
 
     void TransformComponent::setTransformDirty(TransformType type) {
-        _transformUpdatedMask.setFlag(type);
-        _dirty = true;
-        _dirtyInterp = true;
-        _parentSGN.SendEvent<TransformDirty>(GetOwner(), type);
+        setTransformDirty(to_U32(type));
+    }
+
+    void TransformComponent::setTransformDirty(U32 typeMask) {
+        SetBit(_transformUpdatedMask, typeMask);
     }
 
     void TransformComponent::setPosition(const vec3<F32>& position) {
@@ -358,14 +373,17 @@ namespace Divide {
 
             _transformStack.pop();
 
-            setTransformDirty(TransformType::TRANSLATION);
-            setTransformDirty(TransformType::SCALE);
-            setTransformDirty(TransformType::ROTATION);
+            setTransformDirty(TransformType::WORLD_TRANSFORMS);
             return true;
         }
         return false;
     }
 
+
+    void TransformComponent::setTransforms(const mat4<F32>& transform) {
+        ReadLock r_lock(_lock);
+        _transformInterface.setTransforms(transform);
+    }
 
     void TransformComponent::getValues(TransformValues& valuesOut) const {
         ReadLock r_lock(_lock);
@@ -377,38 +395,15 @@ namespace Divide {
         return _transformInterface.getMatrix();
     }
 
-    const mat4<F32>& TransformComponent::getWorldMatrix(D64 interpolationFactor) {
-        bool dirty = (_dirtyInterp ||
-                      !COMPARE(_prevInterpValue, interpolationFactor) ||
-                      _parentDirty);
-
-        if (dirty) {
-            SceneGraphNode* grandParentPtr = _parentSGN.getParent();
-            _worldMatrixInterp.set(getLocalPosition(interpolationFactor),
-                                   getLocalScale(interpolationFactor),
-                                   mat4<F32>(GetMatrix(getLocalOrientation(interpolationFactor)), false));
-            if (grandParentPtr) {
-                _worldMatrixInterp *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
-            }
-            clean(true);
-        }
-
-        if (_ignoreViewSettings._cameraGUID != -1) {
-            _worldMatrixInterp = _worldMatrixInterp * _ignoreViewSettings._transformOffset;
-        }
-
-        return _worldMatrixInterp;
-    }
-
-    const mat4<F32>& TransformComponent::getWorldMatrix() {
-        if (_dirty || _parentDirty) {
+    const mat4<F32>& TransformComponent::updateWorldMatrix() {
+        if (_worldMatrixDirty) {
             _worldMatrix.set(getMatrix());
 
             SceneGraphNode* grandParentPtr = _parentSGN.getParent();
             if (grandParentPtr) {
-                _worldMatrix *= grandParentPtr->get<TransformComponent>()->getWorldMatrix();
+                _worldMatrix *= grandParentPtr->get<TransformComponent>()->updateWorldMatrix();
             }
-            clean(false);
+            _worldMatrixDirty = false;
         }
 
         if (_ignoreViewSettings._cameraGUID != -1) {
@@ -418,16 +413,83 @@ namespace Divide {
         return _worldMatrix;
     }
 
-    /// Return the position
-    vec3<F32> TransformComponent::getPosition() const {
-        vec3<F32> position(getLocalPosition());
+    const mat4<F32>& TransformComponent::getWorldMatrix() const {
+        return _worldMatrix;
+    }
 
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            position += grandParent->get<TransformComponent>()->getPosition();
+    mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
+        mat4<F32> worldMatrixInterp(getLocalPosition(interpolationFactor),
+                                    getLocalScale(interpolationFactor),
+                                    GetMatrix(getLocalOrientation(interpolationFactor)));
+
+        SceneGraphNode* grandParentPtr = _parentSGN.getParent();
+        if (grandParentPtr) {
+            worldMatrixInterp *= grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor);
         }
 
-        return position;
+        if (_ignoreViewSettings._cameraGUID != -1) {
+            return worldMatrixInterp * _ignoreViewSettings._transformOffset;
+        }
+
+        return worldMatrixInterp;
+    }
+
+    /// Return the position
+    vec3<F32> TransformComponent::getPosition() const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return getLocalPosition() + grandParent->get<TransformComponent>()->getPosition();
+        }
+
+        return getLocalPosition();
+    }
+
+    /// Return the position
+    vec3<F32> TransformComponent::getPosition(D64 interpolationFactor) const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return getLocalPosition(interpolationFactor) + grandParent->get<TransformComponent>()->getPosition(interpolationFactor);
+        }
+
+        return getLocalPosition(interpolationFactor);
+    }
+
+    vec3<F32> TransformComponent::getScale() const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return getLocalScale() * grandParent->get<TransformComponent>()->getScale();
+        }
+
+        return getLocalScale();
+    }
+
+    /// Return the scale factor
+    vec3<F32> TransformComponent::getScale(D64 interpolationFactor) const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return getLocalScale(interpolationFactor) * grandParent->get<TransformComponent>()->getScale(interpolationFactor);
+        }
+
+        return getLocalScale(interpolationFactor);
+    }
+
+    /// Return the orientation quaternion
+    Quaternion<F32> TransformComponent::getOrientation() const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return grandParent->get<TransformComponent>()->getOrientation() * getLocalOrientation();
+        }
+
+        return getLocalOrientation();
+    }
+
+    Quaternion<F32> TransformComponent::getOrientation(D64 interpolationFactor) const {
+        SceneGraphNode* grandParent = _parentSGN.getParent();
+        if (grandParent) {
+            return grandParent->get<TransformComponent>()->getOrientation(interpolationFactor) * getLocalOrientation(interpolationFactor);
+        }
+
+        return getLocalOrientation(interpolationFactor);
     }
 
     vec3<F32> TransformComponent::getLocalPosition() const {
@@ -436,69 +498,10 @@ namespace Divide {
         return pos;
     }
 
-    /// Return the position
-    vec3<F32> TransformComponent::getPosition(D64 interpolationFactor) const {
-        vec3<F32> position(getLocalPosition(interpolationFactor));
-
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            position += grandParent->get<TransformComponent>()->getPosition(interpolationFactor);
-        }
-
-        return position;
-    }
-
-    vec3<F32> TransformComponent::getLocalPosition(D64 interpolationFactor) const {
-        return Lerp(_prevTransformValues._translation,
-                    getLocalPosition(),
-                    to_F32(interpolationFactor));
-    }
-
-    vec3<F32> TransformComponent::getScale() const {
-        vec3<F32> scale(getLocalScale());
-
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            scale *= grandParent->get<TransformComponent>()->getScale();
-        }
-
-        return scale;
-    }
-
     vec3<F32> TransformComponent::getLocalScale() const {
         vec3<F32> scale;
         getScale(scale);
         return scale;
-    }
-
-    /// Return the scale factor
-    vec3<F32> TransformComponent::getScale(D64 interpolationFactor) const {
-        vec3<F32> scale(getLocalScale(interpolationFactor));
-
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            scale *= grandParent->get<TransformComponent>()->getScale(interpolationFactor);
-        }
-
-        return scale;
-    }
-
-    vec3<F32> TransformComponent::getLocalScale(D64 interpolationFactor) const {
-        return Lerp(_prevTransformValues._scale,
-                    getLocalScale(),
-                    to_F32(interpolationFactor));
-    }
-
-    /// Return the orientation quaternion
-    Quaternion<F32> TransformComponent::getOrientation() const {
-        Quaternion<F32> orientation(getLocalOrientation());
-
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            orientation.set(grandParent->get<TransformComponent>()->getOrientation() * orientation);
-        }
-
-        return orientation;
     }
 
     Quaternion<F32> TransformComponent::getLocalOrientation() const {
@@ -507,21 +510,16 @@ namespace Divide {
         return quat;
     }
 
-    Quaternion<F32> TransformComponent::getOrientation(D64 interpolationFactor) const {
-        Quaternion<F32> orientation(getLocalOrientation(interpolationFactor));
+    vec3<F32> TransformComponent::getLocalPosition(D64 interpolationFactor) const {
+        return Lerp(_prevTransformValues._translation, getLocalPosition(), to_F32(interpolationFactor));
+    }
 
-        SceneGraphNode* grandParent = _parentSGN.getParent();
-        if (grandParent) {
-            orientation.set(grandParent->get<TransformComponent>()->getOrientation(interpolationFactor) * orientation);
-        }
-
-        return orientation;
+    vec3<F32> TransformComponent::getLocalScale(D64 interpolationFactor) const {
+        return Lerp(_prevTransformValues._scale, getLocalScale(), to_F32(interpolationFactor));
     }
 
     Quaternion<F32> TransformComponent::getLocalOrientation(D64 interpolationFactor) const {
-        return Slerp(_prevTransformValues._orientation,
-                     getLocalOrientation(),
-                     to_F32(interpolationFactor));
+        return Slerp(_prevTransformValues._orientation, getLocalOrientation(), to_F32(interpolationFactor));
     }
 
     // Transform interface access
@@ -545,19 +543,6 @@ namespace Divide {
 
     bool TransformComponent::isUniformScaled() const {
         return getLocalScale().isUniform();
-    }
-
-    bool TransformComponent::dirty() const {
-        return _dirty || _dirtyInterp;
-    }
-
-    void TransformComponent::clean(bool interp) {
-        if (interp) {
-            _dirtyInterp = false;
-        } else {
-            _dirty = false;
-            _parentSGN.SendEvent<TransformClean>(GetOwner());
-        }
     }
 
     bool TransformComponent::save(ByteBuffer& outputBuffer) const {

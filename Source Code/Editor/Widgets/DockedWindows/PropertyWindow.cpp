@@ -10,7 +10,53 @@
 #include "Widgets/Headers/PanelManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 
+#undef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui_internal.h>
 
+namespace ImGui {
+    bool InputDoubleN(const char* label, double* v, int components, const char* display_format, ImGuiInputTextFlags extra_flags)
+    {
+        ImGuiWindow* window = GetCurrentWindow();
+        if (window->SkipItems)
+            return false;
+
+        ImGuiContext& g = *GImGui;
+        bool value_changed = false;
+        BeginGroup();
+        PushID(label);
+        PushMultiItemsWidths(components);
+        for (int i = 0; i < components; i++)
+        {
+            PushID(i);
+            value_changed |= InputDouble("##v", &v[i], 0.0, 0.0, display_format, extra_flags);
+            SameLine(0, g.Style.ItemInnerSpacing.x);
+            PopID();
+            PopItemWidth();
+        }
+        PopID();
+
+        TextUnformatted(label, FindRenderedTextEnd(label));
+        EndGroup();
+
+        return value_changed;
+    }
+
+    bool InputDouble2(const char* label, double v[2], const char* display_format, ImGuiInputTextFlags extra_flags)
+    {
+        return InputDoubleN(label, v, 2, display_format, extra_flags);
+    }
+
+    bool InputDouble3(const char* label, double v[3], const char* display_format, ImGuiInputTextFlags extra_flags)
+    {
+        return InputDoubleN(label, v, 3, display_format, extra_flags);
+    }
+
+    bool InputDouble4(const char* label, double v[4], const char* display_format, ImGuiInputTextFlags extra_flags)
+    {
+        return InputDoubleN(label, v, 4, display_format, extra_flags);
+    }
+};
 
 namespace Divide {
     PropertyWindow::PropertyWindow(PanelManager& parent, PlatformContext& context)
@@ -200,7 +246,7 @@ namespace Divide {
              }break;
              case GFX::PushConstantType::DOUBLE: {
                  ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = ImGui::InputDouble("", (D64*)(field._data), 0.0, 0.0, "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::FLOAT: {
                  ImGui::SameLine();
@@ -244,15 +290,15 @@ namespace Divide {
              }break;
              case GFX::PushConstantType::DVEC2: {
                  ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = ImGui::InputDouble2("", (D64*)(field._data), "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::DVEC3: {
                  ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = ImGui::InputDouble3("", (D64*)(field._data), "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::DVEC4: {
                  ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 ret = ImGui::InputDouble4("", (D64*)(field._data), "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::IMAT2: {
                  mat2<I32>* mat = (mat2<I32>*)(field._data);
@@ -303,16 +349,22 @@ namespace Divide {
                        ImGui::InputFloat4("", mat->_vec[3], field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::DMAT2: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 mat2<D64>* mat = (mat2<D64>*)(field._data);
+                 ret = ImGui::InputDouble2("", mat->_vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble2("", mat->_vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::DMAT3: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 mat3<D64>* mat = (mat3<D64>*)(field._data);
+                 ret = ImGui::InputDouble3("", mat->_vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble3("", mat->_vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble3("", mat->_vec[2], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              case GFX::PushConstantType::DMAT4: {
-                 ImGui::SameLine();
-                 ImGui::Text("Not currently supported");
+                 mat4<D64>* mat = (mat4<D64>*)(field._data);
+                 ret = ImGui::InputDouble4("", mat->_vec[0], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble4("", mat->_vec[1], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble4("", mat->_vec[2], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0) ||
+                       ImGui::InputDouble4("", mat->_vec[3], "%.6f", field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
              }break;
              default: {
                  ImGui::Text(field._name.c_str());

@@ -283,7 +283,7 @@ void Editor::update(const U64 deltaTimeUS) {
             }
         }
 
-        if (io.WantMoveMouse) {
+        if (io.WantSetMousePos) {
             context().app().windowManager().setCursorPosition((int)io.MousePos.x, (int)io.MousePos.y);
         }
     }
@@ -321,7 +321,7 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                 const Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
                 const mat4<F32>& cameraView = camera->getViewMatrix();
                 const mat4<F32>& cameraProjection = camera->getProjectionMatrix();
-                mat4<F32> matrix(transform->getWorldMatrix());
+                mat4<F32> matrix(transform->getLocalMatrix());
 
                 ImGui::SetCurrentContext(_imguiContext[to_base(Context::Gizmo)]);
                 ImGui::NewFrame();
@@ -337,10 +337,11 @@ bool Editor::renderGizmos(const U64 deltaTime) {
                                      NULL, 
                                      _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
 
-                TransformValues values;  vec3<F32> euler;
-                ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
-                values._orientation.fromEuler(euler);
-                transform->setTransform(values);
+                //TransformValues values;  vec3<F32> euler;
+                //ImGuizmo::DecomposeMatrixToComponents(matrix, values._translation, euler._v, values._scale);
+                //values._orientation.fromEuler(euler);
+                //transform->setTransform(values);
+                transform->setTransforms(matrix);
 
                 ImGui::Render();
                 renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID(), false);
@@ -522,6 +523,21 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
         GFX::AddSwitchWindow(buffer, switchWindowCmd);
     }
 
+    if (!isPostPass) {
+        // Draw the gizmos to the main render target but don't clear anything
+        RTDrawDescriptor screenTarget;
+        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
+        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
+        screenTarget.drawMask().disableAll();
+        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
+
+        GFX::BeginRenderPassCommand beginRenderPassCmd;
+        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
+        beginRenderPassCmd._descriptor = screenTarget;
+        beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
+        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
+    }
+
     GFX::SetBlendCommand blendCmd;
     blendCmd._enabled = true;
     blendCmd._blendProperties = BlendingProperties{
@@ -541,21 +557,6 @@ void Editor::renderDrawList(ImDrawData* pDrawData, I64 windowGUID, bool isPostPa
     GFX::SetCameraCommand cameraCmd;
     cameraCmd._camera = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y);
     GFX::SetCamera(buffer, cameraCmd);
-
-    if (!isPostPass) {
-        // Draw the gizmos to the main render target but don't clear anything
-        RTDrawDescriptor screenTarget;
-        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_DEPTH_BUFFER);
-        screenTarget.disableState(RTDrawDescriptor::State::CLEAR_COLOUR_BUFFERS);
-        screenTarget.drawMask().disableAll();
-        screenTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
-
-        GFX::BeginRenderPassCommand beginRenderPassCmd;
-        beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
-        beginRenderPassCmd._descriptor = screenTarget;
-        beginRenderPassCmd._name = "DO_IMGUI_PRE_PASS";
-        GFX::BeginRenderPass(buffer, beginRenderPassCmd);
-    }
 
     GFX::DrawIMGUICommand drawIMGUI;
     drawIMGUI._data = pDrawData;

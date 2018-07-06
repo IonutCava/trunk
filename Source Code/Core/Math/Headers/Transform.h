@@ -83,8 +83,7 @@ class Transform : public ITransform, public GUIDWrapper, private NonCopyable {
     const mat4<F32>& getMatrix() override;
 
     /// Sets the transform to match a certain transformation matrix.
-    /// Scale, orientation and translation are extracted from the specified
-    /// matrix
+    /// Scale, orientation and translation are extracted from the specified matrix
     void setTransforms(const mat4<F32>& transform);
 
     /// Set all of the internal values to match those of the specified transform

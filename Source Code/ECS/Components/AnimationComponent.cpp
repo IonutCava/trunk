@@ -26,7 +26,7 @@ void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
     _parentTimeStamp += timestamp;
 }
 
-void AnimationComponent::update(const U64 deltaTimeUS) {
+void AnimationComponent::Update(const U64 deltaTimeUS) {
     if (!_animator || _parentTimeStamp == _currentTimeStamp) {
         return;
     }
@@ -54,6 +54,8 @@ void AnimationComponent::update(const U64 deltaTimeUS) {
         /// Use PhysX actor from RigidBodyComponent to feed new bone positions/orientation
         /// And read back ragdoll results to update transforms accordingly
     //}
+
+    SGNComponent<AnimationComponent>::Update(deltaTimeUS);
 }
 
 void AnimationComponent::resetTimers() {

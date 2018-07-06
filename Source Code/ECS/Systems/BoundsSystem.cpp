@@ -45,19 +45,31 @@ namespace Divide {
                     }
                 }
             }
+
+            U64 microSec = Time::MillisecondsToMicroseconds(dt);
+            bComp->PreUpdate(microSec);
         }
     }
 
     void BoundsSystem::Update(F32 dt) {
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+
         auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
         auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
         for (;bComp != bCompEnd; ++bComp)
         {
-            bComp->update(Time::MillisecondsToMicroseconds(dt));
+            bComp->Update(microSec);
         }
     }
 
     void BoundsSystem::PostUpdate(F32 dt) {
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
+        auto bComp = _engine.GetComponentManager()->begin<BoundsComponent>();
+        auto bCompEnd = _engine.GetComponentManager()->end<BoundsComponent>();
+        for (; bComp != bCompEnd; ++bComp)
+        {
+            bComp->PostUpdate(microSec);
+        }
     }
 }; //namespace Divide

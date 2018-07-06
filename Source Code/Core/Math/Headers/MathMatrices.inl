@@ -33,6 +33,29 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _MATH_MATRICES_INL_
 namespace Divide {
 
+#ifndef USE_AVX
+#define USE_AVX
+#endif
+
+#define MakeShuffleMask(x,y,z,w)           (x | (y<<2) | (z<<4) | (w<<6))
+
+    // vec(0, 1, 2, 3) -> (vec[x], vec[y], vec[z], vec[w])
+#define VecSwizzle(vec, x,y,z,w)           _mm_shuffle_ps(vec, vec, MakeShuffleMask(x,y,z,w))
+#define VecSwizzle1(vec, x)                _mm_shuffle_ps(vec, vec, MakeShuffleMask(x,x,x,x))
+    // special swizzle
+#define VecSwizzle_0101(vec)               _mm_movelh_ps(vec, vec)
+#define VecSwizzle_2323(vec)               _mm_movehl_ps(vec, vec)
+#define VecSwizzle_0022(vec)               _mm_moveldup_ps(vec)
+#define VecSwizzle_1133(vec)               _mm_movehdup_ps(vec)
+
+    // return (vec1[x], vec1[y], vec2[z], vec2[w])
+#define VecShuffle(vec1, vec2, x,y,z,w)    _mm_shuffle_ps(vec1, vec2, MakeShuffleMask(x,y,z,w))
+    // special shuffle
+#define VecShuffle_0101(vec1, vec2)        _mm_movelh_ps(vec1, vec2)
+#define VecShuffle_2323(vec1, vec2)        _mm_movehl_ps(vec2, vec1)
+
+#define SMALL_NUMBER		(1.e-8f)
+
 namespace {
     //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
     void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) noexcept {
@@ -51,6 +74,220 @@ namespace {
                                                      _mm_mul_ps(brod4, row4)));
            _mm_store_ps(&C[4 * i], row);
         }
+    }
+
+    //ref: https://gist.github.com/rygorous/4172889
+#ifndef USE_AVX
+    // linear combination:
+    // a[0] * B.row[0] + a[1] * B.row[1] + a[2] * B.row[2] + a[3] * B.row[3]
+    static inline __m128 lincomb_SSE(const __m128 &a, const mat4<F32> &B)
+    {
+        __m128 result;
+        result = _mm_mul_ps(_mm_shuffle_ps(a, a, 0x00), B._reg[0]._reg);
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0x55), B._reg[1]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xaa), B._reg[2]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_shuffle_ps(a, a, 0xff), B._reg[3]._reg));
+        return result;
+    }
+
+    // this is the right approach for SSE ... SSE4.2
+    void M4x4_SSE(const mat4<F32>& A, const mat4<F32>& B, mat4<F32>& C)
+    {
+        // out_ij = sum_k a_ik b_kj
+        // => out_0j = a_00 * b_0j + a_01 * b_1j + a_02 * b_2j + a_03 * b_3j
+        __m128 out0x = lincomb_SSE(A._reg[0]._reg, B);
+        __m128 out1x = lincomb_SSE(A._reg[1]._reg, B);
+        __m128 out2x = lincomb_SSE(A._reg[2]._reg, B);
+        __m128 out3x = lincomb_SSE(A._reg[3]._reg, B);
+
+        C._reg[0]._reg = out0x;
+        C._reg[1]._reg = out1x;
+        C._reg[2]._reg = out2x;
+        C._reg[3]._reg = out3x;
+    }
+#else
+    // another linear combination, using AVX instructions on XMM regs
+    static inline __m128 lincomb_AVX_4mem(const F32 *a, const mat4<F32> &B)
+    {
+        __m128 result;
+        result = _mm_mul_ps(_mm_broadcast_ss(&a[0]), B._reg[0]._reg);
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[1]), B._reg[1]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[2]), B._reg[2]._reg));
+        result = _mm_add_ps(result, _mm_mul_ps(_mm_broadcast_ss(&a[3]), B._reg[3]._reg));
+        return result;
+    }
+
+    // using AVX instructions, 4-wide
+    // this can be better if A is in memory.
+    void M4x4_SSE(const mat4<F32> &A, const mat4<F32> &B, mat4<F32>& C)
+    {
+        _mm256_zeroupper();
+        __m128 out0x = lincomb_AVX_4mem(A.m[0], B);
+        __m128 out1x = lincomb_AVX_4mem(A.m[1], B);
+        __m128 out2x = lincomb_AVX_4mem(A.m[2], B);
+        __m128 out3x = lincomb_AVX_4mem(A.m[3], B);
+
+        C._reg[0] = out0x;
+        C._reg[1] = out1x;
+        C._reg[2] = out2x;
+        C._reg[3] = out3x;
+    }
+
+#endif
+
+    //ref: https://lxjk.github.io/2017/09/03/Fast-4x4-Matrix-Inverse-with-SSE-SIMD-Explained.html
+    inline void GetTransformInverseNoScale(const mat4<F32>& inM, mat4<F32>& r)
+    {
+        // transpose 3x3, we know m03 = m13 = m23 = 0
+        __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
+        __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
+        r._reg[0] = VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3);        // 00, 10, 20, 23(=0)
+        r._reg[1] = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);        // 01, 11, 21, 23(=0)
+        r._reg[2] = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);        // 02, 12, 22, 23(=0)
+
+                                                             // last line
+        r._reg[3] = _mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0));
+        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1)));
+        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2)));
+        r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
+    }
+
+    // for row major matrix
+    // we use __m128 to represent 2x2 matrix as A = | A0  A1 |
+    //                                              | A2  A3 |
+    // 2x2 row major Matrix multiply A*B
+    __forceinline __m128 Mat2Mul(__m128 vec1, __m128 vec2)
+    {
+        return
+            _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 3, 0, 3)),
+                _mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+    }
+    // 2x2 row major Matrix adjugate multiply (A#)*B
+    __forceinline __m128 Mat2AdjMul(__m128 vec1, __m128 vec2)
+    {
+        return
+            _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 3, 0, 0), vec2),
+                _mm_mul_ps(VecSwizzle(vec1, 1, 1, 2, 2), VecSwizzle(vec2, 2, 3, 0, 1)));
+
+    }
+    // 2x2 row major Matrix multiply adjugate A*(B#)
+    __forceinline __m128 Mat2MulAdj(__m128 vec1, __m128 vec2)
+    {
+        return
+            _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 0, 3, 0)),
+                _mm_mul_ps(VecSwizzle(vec1, 1, 0, 3, 2), VecSwizzle(vec2, 2, 1, 2, 1)));
+    }
+
+    // Requires this matrix to be transform matrix
+    inline void GetTransformInverse(const mat4<F32>& inM, mat4<F32>& r)
+    {
+        // transpose 3x3, we know m03 = m13 = m23 = 0
+        __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
+        __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
+        r._reg[0]._reg = VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3);   // 00, 10, 20, 23(=0)
+        r._reg[1]._reg = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);   // 01, 11, 21, 23(=0)
+        r._reg[2]._reg = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);   // 02, 12, 22, 23(=0)
+
+        // (SizeSqr(_reg[0]._reg), SizeSqr(_reg[1]._reg), SizeSqr(_reg[2]._reg), 0)
+        __m128 sizeSqr;
+        sizeSqr = _mm_mul_ps(r._reg[0]._reg, r._reg[0]._reg);
+        sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(r._reg[1]._reg, r._reg[1]._reg));
+        sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(r._reg[2]._reg, r._reg[2]._reg));
+
+        // optional test to avoid divide by 0
+        __m128 one = _mm_set1_ps(1.f);
+        // for each component, if(sizeSqr < SMALL_NUMBER) sizeSqr = 1;
+        __m128 rSizeSqr = _mm_blendv_ps(
+            _mm_div_ps(one, sizeSqr),
+            one,
+            _mm_cmplt_ps(sizeSqr, _mm_set1_ps(SMALL_NUMBER))
+        );
+
+        r._reg[0] = _mm_mul_ps(r._reg[0]._reg, rSizeSqr);
+        r._reg[1] = _mm_mul_ps(r._reg[1]._reg, rSizeSqr);
+        r._reg[2] = _mm_mul_ps(r._reg[2]._reg, rSizeSqr);
+
+        // last line
+        r._reg[3] = _mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0));
+        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1)));
+        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2)));
+        r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
+    }
+
+    // Inverse function is the same no matter column major or row major
+    // this version treats it as row major
+    inline void GetInverse(const mat4<F32>& inM, mat4<F32>& r)
+    {
+        // use block matrix method
+        // A is a matrix, then i(A) or iA means inverse of A, A# (or A_ in code) means adjugate of A, |A| (or detA in code) is determinant, tr(A) is trace
+
+        // sub matrices
+        __m128 A = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg);
+        __m128 C = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg);
+        __m128 B = VecShuffle_0101(inM._reg[2]._reg, inM._reg[3]._reg);
+        __m128 D = VecShuffle_2323(inM._reg[2]._reg, inM._reg[3]._reg);
+
+        __m128 detA = _mm_set1_ps(inM.m[0][0] * inM.m[1][1] - inM.m[0][1] * inM.m[1][0]);
+        __m128 detC = _mm_set1_ps(inM.m[0][2] * inM.m[1][3] - inM.m[0][3] * inM.m[1][2]);
+        __m128 detB = _mm_set1_ps(inM.m[2][0] * inM.m[3][1] - inM.m[2][1] * inM.m[3][0]);
+        __m128 detD = _mm_set1_ps(inM.m[2][2] * inM.m[3][3] - inM.m[2][3] * inM.m[3][2]);
+
+#if 0 // for determinant, float version is faster
+        // determinant as (|A| |C| |B| |D|)
+        __m128 detSub = _mm_sub_ps(
+            _mm_mul_ps(VecShuffle(inM._reg[0]._reg, inM._reg[2]._reg, 0, 2, 0, 2), VecShuffle(inM._reg[1]._reg, inM._reg[3]._reg, 1, 3, 1, 3)),
+            _mm_mul_ps(VecShuffle(inM._reg[0]._reg, inM._reg[2]._reg, 1, 3, 1, 3), VecShuffle(inM._reg[1]._reg, inM._reg[3]._reg, 0, 2, 0, 2))
+        );
+        __m128 detA = VecSwizzle1(detSub, 0);
+        __m128 detC = VecSwizzle1(detSub, 1);
+        __m128 detB = VecSwizzle1(detSub, 2);
+        __m128 detD = VecSwizzle1(detSub, 3);
+#endif
+
+        // let iM = 1/|M| * | X  Y |
+        //                  | Z  W |
+
+        // D#C
+        __m128 D_C = Mat2AdjMul(D, C);
+        // A#B
+        __m128 A_B = Mat2AdjMul(A, B);
+        // X# = |D|A - B(D#C)
+        __m128 X_ = _mm_sub_ps(_mm_mul_ps(detD, A), Mat2Mul(B, D_C));
+        // W# = |A|D - C(A#B)
+        __m128 W_ = _mm_sub_ps(_mm_mul_ps(detA, D), Mat2Mul(C, A_B));
+
+        // |M| = |A|*|D| + ... (continue later)
+        __m128 detM = _mm_mul_ps(detA, detD);
+
+        // Y# = |B|C - D(A#B)#
+        __m128 Y_ = _mm_sub_ps(_mm_mul_ps(detB, C), Mat2MulAdj(D, A_B));
+        // Z# = |C|B - A(D#C)#
+        __m128 Z_ = _mm_sub_ps(_mm_mul_ps(detC, B), Mat2MulAdj(A, D_C));
+
+        // |M| = |A|*|D| + |B|*|C| ... (continue later)
+        detM = _mm_add_ps(detM, _mm_mul_ps(detB, detC));
+
+        // tr((A#B)(D#C))
+        __m128 tr = _mm_mul_ps(A_B, VecSwizzle(D_C, 0, 2, 1, 3));
+        tr = _mm_hadd_ps(tr, tr);
+        tr = _mm_hadd_ps(tr, tr);
+        // |M| = |A|*|D| + |B|*|C| - tr((A#B)(D#C))
+        detM = _mm_sub_ps(detM, tr);
+
+        const __m128 adjSignMask = _mm_setr_ps(1.f, -1.f, -1.f, 1.f);
+        // (1/|M|, -1/|M|, -1/|M|, 1/|M|)
+        __m128 rDetM = _mm_div_ps(adjSignMask, detM);
+
+        X_ = _mm_mul_ps(X_, rDetM);
+        Y_ = _mm_mul_ps(Y_, rDetM);
+        Z_ = _mm_mul_ps(Z_, rDetM);
+        W_ = _mm_mul_ps(W_, rDetM);
+
+        // apply adjugate and store, here we combine adjugate shuffle and store shuffle
+        r._reg[0]._reg = VecShuffle(X_, Z_, 3, 1, 3, 1);
+        r._reg[1]._reg = VecShuffle(X_, Z_, 2, 0, 2, 0);
+        r._reg[2]._reg = VecShuffle(Y_, W_, 3, 1, 3, 1);
+        r._reg[3]._reg = VecShuffle(Y_, W_, 2, 0, 2, 0);
     }
 };
 
@@ -1284,13 +1521,13 @@ mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept
+mat4<T>::mat4(const vec3<U> &translation, const vec3<U> &scale, const mat3<U>& rotation) noexcept
     : mat4(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(1))
 {
-    set(*this * rotation);
+    set(*this * mat4<U>(rotation, false));
     setTranslation(translation);
 }
 
@@ -2212,7 +2449,7 @@ FORCE_INLINE void mat4<T>::Multiply(const mat4<T>& matrixA, const mat4<T>& matri
 
 template<>
 FORCE_INLINE void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matrixB, mat4<F32>& ret) {
-    M4x4_SSE(matrixA.mat, matrixB.mat, ret.mat);
+    M4x4_SSE(matrixA, matrixB, ret);
 }
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.

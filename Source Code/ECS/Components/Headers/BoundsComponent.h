@@ -55,7 +55,7 @@ namespace Divide {
         friend class SceneGraph;
         friend class BoundsSystem;
                 
-        void update(const U64 deltaTimeUS);
+        void Update(const U64 deltaTimeUS) override;
 
         inline void flagBoundingBoxDirty() { _boundingBoxDirty = true; }
 

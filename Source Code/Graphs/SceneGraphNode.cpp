@@ -126,7 +126,6 @@ SceneGraphNode::~SceneGraphNode()
 void SceneGraphNode::RegisterEventCallbacks()
 {
     RegisterEventCallback(&SceneGraphNode::OnTransformDirty);
-    RegisterEventCallback(&SceneGraphNode::OnTransformClean);
 }
 
 void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
@@ -137,18 +136,7 @@ void SceneGraphNode::OnTransformDirty(const TransformDirty* event) {
         ReadLock r_lock(_childLock);
         U32 childCount = getChildCountLocked();
         for (U32 i = 0; i < childCount; ++i) {
-            SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->type);
-        }
-    }
-}
-
-void SceneGraphNode::OnTransformClean(const TransformClean* event) {
-    // are we targeted by the event?
-    if (GetEntityID() == event->ownerID) {
-        ReadLock r_lock(_childLock);
-        U32 childCount = getChildCountLocked();
-        for (U32 i = 0; i < childCount; ++i) {
-            SendEvent<ParentTransformClean>(_children[i]->GetEntityID());
+            SendEvent<ParentTransformDirty>(_children[i]->GetEntityID(), event->typeMask);
         }
     }
 }

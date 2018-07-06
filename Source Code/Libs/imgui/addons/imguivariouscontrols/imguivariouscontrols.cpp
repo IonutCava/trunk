@@ -556,7 +556,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
                 true, style.FrameRounding);
 
     RenderFrame(ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y), frame_bb.Max, GetColorU32(hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button), true, style.FrameRounding); // FIXME-ROUNDING
-    RenderTriangle(ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y) + style.FramePadding, ImGuiDir_Down);
+    RenderArrow(ImVec2(frame_bb.Max.x-arrow_size, frame_bb.Min.y) + style.FramePadding, ImGuiDir_Down);
 
     RenderTextClipped(ImVec2(frame_bb.Min.x+color_quad_size,frame_bb.Min.y) + style.FramePadding, value_bb.Max, label, NULL, NULL);
 
@@ -1446,7 +1446,7 @@ inline static bool GlyphButton(ImGuiID id, const ImVec2& pos,const ImVec2& halfS
     const bool useNormalButtonStyle = (text && text[0]!='\0' && !isACheckedToggleButton);   // Otherwise use CloseButtonStyle
 
     // Render    
-    ImU32 col = GetColorU32((held && hovered) ? (useNormalButtonStyle ? ImGuiCol_ButtonActive : ImGuiCol_CloseButtonActive) : hovered ? (useNormalButtonStyle ? ImGuiCol_ButtonHovered : ImGuiCol_CloseButtonHovered) : (useNormalButtonStyle ? ImGuiCol_Button : ImGuiCol_CloseButton));
+    ImU32 col = GetColorU32((held && hovered) ? (useNormalButtonStyle ? ImGuiCol_ButtonActive : ImGuiCol_ButtonActive) : hovered ? (useNormalButtonStyle ? ImGuiCol_ButtonHovered : ImGuiCol_ButtonHovered) : (useNormalButtonStyle ? ImGuiCol_Button : ImGuiCol_Button));
     ImU32 textCol = GetColorU32(ImGuiCol_Text);
     if (!hovered) {
         col = (((col>>24)/2)<<24)|(col&0x00FFFFFF);

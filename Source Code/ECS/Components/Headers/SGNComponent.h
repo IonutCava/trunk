@@ -70,6 +70,10 @@ class SGNComponent : private NonCopyable,
     SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name);
     virtual ~SGNComponent();
 
+    virtual void PreUpdate(const U64 deltaTime);
+    virtual void Update(const U64 deltaTime);
+    virtual void PostUpdate(const U64 deltaTime);
+
     inline SceneGraphNode& getSGN() const { return _parentSGN; }
     
     EditorComponent& getEditorComponent() { return _editorComponent; }

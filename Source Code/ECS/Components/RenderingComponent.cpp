@@ -202,7 +202,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass) {
     _parentSGN.getNode()->buildDrawCommands(_parentSGN, stagePass, *pkg);
 }
 
-void RenderingComponent::update(const U64 deltaTimeUS) {
+void RenderingComponent::Update(const U64 deltaTimeUS) {
     const Material_ptr& mat = getMaterialInstance();
     if (mat) {
         mat->update(deltaTimeUS);
@@ -218,6 +218,8 @@ void RenderingComponent::update(const U64 deltaTimeUS) {
             parentStates.setTrackedValue(StateTracker<bool>::State::SKELETON_RENDERED, false);
         }
     }
+
+    SGNComponent<RenderingComponent>::Update(deltaTimeUS);
 }
 
 bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) {

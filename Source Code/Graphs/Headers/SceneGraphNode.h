@@ -54,7 +54,6 @@ namespace Divide {
 class SceneGraph;
 class SceneState;
 struct TransformDirty;
-struct TransformClean;
 
 class PropertyWindow;
 
@@ -357,7 +356,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     void RegisterEventCallbacks();
     void OnTransformDirty(const TransformDirty* event);
-    void OnTransformClean(const TransformClean* event);
 
 
     template<class T, class ...P>

@@ -475,7 +475,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept;
+    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat3<U>& rotation) noexcept;
     template<typename U>
     mat4(const vec3<U> &translation) noexcept;
     template<typename U>

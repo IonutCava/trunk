@@ -36,39 +36,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    enum class TransformType : U32;
-
     struct TransformDirty: public ECS::Event::Event<TransformDirty>
     {
         ECS::EntityId ownerID;
-        TransformType type;
+        U32 typeMask;
 
-        TransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, TransformType transformType) : Event(engine), ownerID(id), type(transformType)
-        {}
-    };
-
-    struct TransformClean: public ECS::Event::Event<TransformClean>
-    {
-        ECS::EntityId ownerID;
-
-        TransformClean(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
+        TransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, U32 transformTypeMask) : Event(engine), ownerID(id), typeMask(transformTypeMask)
         {}
     };
 
     struct ParentTransformDirty : public ECS::Event::Event<ParentTransformDirty>
     {
         ECS::EntityId ownerID;
-        TransformType type;
+        U32 typeMask;
 
-        ParentTransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, TransformType transformType) : Event(engine), ownerID(id), type(transformType)
-        {}
-    };
-    
-    struct ParentTransformClean : public ECS::Event::Event<ParentTransformClean>
-    {
-        ECS::EntityId ownerID;
-
-        ParentTransformClean(ECS::ECSEngine* engine, ECS::EntityId id) : Event(engine), ownerID(id)
+        ParentTransformDirty(ECS::ECSEngine* engine, ECS::EntityId id, U32 transformTypeMask) : Event(engine), ownerID(id), typeMask(transformTypeMask)
         {}
     };
 };

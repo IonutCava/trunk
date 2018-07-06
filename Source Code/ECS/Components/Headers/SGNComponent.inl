@@ -73,6 +73,20 @@ namespace Divide {
         return _ID_RT((_parentSGN.name() + "_" + _editorComponent.name().c_str()));
     }
 
+    template<typename T>
+    void SGNComponent<T>::PreUpdate(const U64 deltaTime) {
+        ACKNOWLEDGE_UNUSED(deltaTime);
+    }
+
+    template<typename T>
+    void SGNComponent<T>::Update(const U64 deltaTime) {
+        ACKNOWLEDGE_UNUSED(deltaTime);
+    }
+
+    template<typename T>
+    void SGNComponent<T>::PostUpdate(const U64 deltaTime) {
+        ACKNOWLEDGE_UNUSED(deltaTime);
+    }
 };//namespace Divide
 
 #endif
