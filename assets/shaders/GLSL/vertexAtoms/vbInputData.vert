@@ -8,8 +8,6 @@ out vec2 _texCoord;
 
 #include "nodeBufferedInput.cmn"
 
-uniform uint baseInstance = 0;
-
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif
@@ -24,7 +22,7 @@ vec3 UNPACK_FLOAT(in float value) {
 }
 
 void computeData(){
-    dvd_drawID  = /*gl_BaseInstanceARB*/baseInstance + gl_DrawIDARB;
+    dvd_drawID  = gl_BaseInstanceARB;
     dvd_Vertex  = vec4(inVertexData,1.0);
     dvd_Normal  = inNormalData;
     dvd_Color   = inColorData / vec4(255.0);

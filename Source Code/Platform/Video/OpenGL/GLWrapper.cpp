@@ -200,10 +200,9 @@ bool GL_API::initShaders() {
     GLint glswState = glswInit();
 
     ShaderOffsetArray lineOffsets = {0};
-    // Add our engine specific defines and various code pieces to every GLSL
-    // shader
+    // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    appendToShaderHeader(ShaderType::COUNT, "#version 440 core", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT, "#version 450 core", lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT,
                          "/*Copyright 2009-2015 DIVIDE-Studio*/", lineOffsets);

@@ -231,6 +231,11 @@ bool glVertexArray::CreateInternal() {
 void glVertexArray::Draw(const GenericDrawCommand& command,
                          std::shared_ptr<HardwareQuery> hardwareQuery,
                          bool useCmdBuffer) {
+    // Process the actual draw command
+    if (Config::Profile::DISABLE_DRAWS) {
+        return;
+    }
+
     DIVIDE_ASSERT(command.primitiveType() != PrimitiveType::COUNT,
                   "glVertexArray error: Draw command's type is not valid!");
     // Instance count can be generated programmatically,
@@ -242,11 +247,6 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
     if (!SetActive()) {
         return;
     }
-    // Process the actual draw command
-    if (Config::Profile::DISABLE_DRAWS) {
-        return;
-    }
-
     bool generateOccQuery = false;
     glHardwareQuery* query = static_cast<glHardwareQuery*>(hardwareQuery.get());
     if (!query->enabled()) {
@@ -257,7 +257,9 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
         //glBeginConditionalRender(query->getID(), GL_QUERY_BY_REGION_WAIT);
     }
 
-    bufferPtr offset = (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
+    static const size_t cmdSize = sizeof(IndirectDrawCommand);
+
+    bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
     if (!useCmdBuffer) {
         GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
         offset = (bufferPtr)(&command.cmd());
@@ -268,7 +270,7 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
         GLenum mode = GLUtil::glPrimitiveTypeTable[to_uint(command.primitiveType())];
         // Submit the draw command
         if (drawCount > 1) {
-            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, 0);
+            glMultiDrawElementsIndirect(mode, _formatInternal, offset, drawCount, cmdSize);
         } else {
             glDrawElementsIndirect(mode, _formatInternal, offset);
         }
@@ -284,9 +286,8 @@ void glVertexArray::Draw(const GenericDrawCommand& command,
 
         if (command.renderWireframe()) {
             if (drawCount > 1) {
-                glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, 0);
-            }
-            else {
+                glMultiDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset, drawCount, cmdSize);
+            } else {
                 glDrawElementsIndirect(GL_LINE_LOOP, _formatInternal, offset);
             }
             // Always update draw call counter after draw calls

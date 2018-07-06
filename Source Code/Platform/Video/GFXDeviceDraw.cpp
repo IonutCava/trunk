@@ -58,14 +58,15 @@ bool GFXDevice::RenderPackage::isCompatible(const RenderPackage& other) const {
 }
 
 void GFXDevice::uploadGlobalBufferData() {
-    if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] && _lastNodeCount > 0) {
-        _nodeBuffer->UpdateData(0, _lastNodeCount, _matricesData.data());
-        _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
-    }
-
-    if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] && _lastCmdCount > 0) {
-        uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
-        _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
+    if (_lastCmdCount > 0) {
+        if (_buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)]) {
+            _nodeBuffer->UpdateData(0, _lastCmdCount, _matricesData.data());
+            _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = false;
+        }
+        if (_buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)]) {
+            uploadDrawCommands(_drawCommandsCache, _lastCmdCount);
+            _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = false;
+        }
     }
 
     if (_buffersDirty[to_uint(GPUBuffer::GPU_BUFFER)]) {
@@ -83,7 +84,7 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
     // properly
     DIVIDE_ASSERT(IS_IN_RANGE_INCLUSIVE(
                       cmd.drawID(), 0u,
-                      std::max(to_uint(_lastNodeCount - 1), 1u)),
+                      std::max(to_uint(_lastCmdCount - 1), 1u)),
                   "GFXDevice error: Invalid draw ID encountered!");
     DIVIDE_ASSERT(cmd.primCount() > 0 && cmd.drawCount() > 0,
                   "GFXDevice error: Invalid draw command!");
@@ -92,17 +93,12 @@ bool GFXDevice::setBufferData(const GenericDrawCommand& cmd) {
                   "GFXDevice error: Draw shader state is not valid for the "
                   "current draw operation!");
 
+    // Set the proper render states
+    setStateBlock(cmd.stateHash());
+
     // Try to bind the shader program. If it failed to load, or isn't loaded
     // yet, cancel the draw request for this frame
-    if (cmd.shaderProgram()->bind()) {
-        cmd.shaderProgram()->Uniform("baseInstance", cmd.drawID());
-        // Finally, set the proper render states
-        setStateBlock(cmd.stateHash());
-        // Continue with the draw call
-        return true;
-    }
-
-    return false;
+    return cmd.shaderProgram()->bind();
 }
 
 void OcclusionQueryHelper::registerDrawIDForNode(I64 nodeGUID, U32 drawID) {
@@ -213,19 +209,21 @@ void GFXDevice::flushRenderQueue() {
 }
 
 void GFXDevice::addToRenderQueue(const RenderPackage& package) {
-    if (!package._drawCommands.empty()) {
-        if (!_renderQueue.empty()) {
-            RenderPackage& previous = _renderQueue.back();
-
-            if (previous.isCompatible(package)) {
-                previous._drawCommands.insert(std::end(previous._drawCommands),
-                                              std::begin(package._drawCommands),
-                                              std::end(package._drawCommands));
-                return;
-            }
-        }
-        _renderQueue.push_back(package);
+    if (package._drawCommands.empty()) {
+        return;
     }
+
+    if (!_renderQueue.empty()) {
+        RenderPackage& previous = _renderQueue.back();
+
+        if (previous.isCompatible(package)) {
+            previous._drawCommands.insert(std::end(previous._drawCommands),
+                                            std::begin(package._drawCommands),
+                                            std::end(package._drawCommands));
+            return;
+        }
+    }
+    _renderQueue.push_back(package);
 }
 
 /// Prepare the list of visible nodes for rendering
@@ -330,22 +328,26 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
                 }
 
             } else {
+                NodeData data;
                 vectorImpl<GenericDrawCommand>& nodeDrawCommands =
                     Attorney::RenderingCompGFXDevice::getDrawCommands(
                     *nodeRef.getComponent<RenderingComponent>(),
                     sceneRenderState, currentStage);
 
                 if (!nodeDrawCommands.empty()) {
+                    if (refreshNodeData) {
+                        processVisibleNode(node, data);
+                    }
+
                     for (GenericDrawCommand& cmd : nodeDrawCommands) {
-                        cmd.drawID(lastNodeCount);
+                        cmd.drawID(lastCmdCount);
                         cmd.renderWireframe(cmd.renderWireframe() ||
                             sceneRenderState.drawWireframe());
                         // Extract the specific rendering commands from the draw commands
                         // Rendering commands are stored in GPU memory. Draw commands are not.
-                        _drawCommandsCache[lastCmdCount++].set(cmd.cmd());
-                    }
-                    if (refreshNodeData) {
-                        processVisibleNode(node, _matricesData[lastNodeCount]);
+                        _drawCommandsCache[lastCmdCount].set(cmd.cmd());
+                        _matricesData[lastCmdCount].set(data);
+                        lastCmdCount++;
                     }
 
                     _occlusionHelper.updateDrawIDForNode(nodeRef.getGUID(), lastNodeCount);
@@ -356,7 +358,6 @@ void GFXDevice::buildDrawCommands(VisibleNodeList& visibleNodes,
         });
 
     _lastCmdCount = lastCmdCount;
-    _lastNodeCount = lastNodeCount;
     _buffersDirty[to_uint(GPUBuffer::CMD_BUFFER)] = true;
     _buffersDirty[to_uint(GPUBuffer::NODE_BUFFER)] = refreshNodeData;
 }

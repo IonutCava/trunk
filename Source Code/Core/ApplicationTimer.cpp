@@ -67,8 +67,6 @@ void ApplicationTimer::update(U32 frameCount) {
     _speedfactor = to_float(currentTicks - _frameDelay) /
                    (_ticksPerSecond / to_float(_targetFrameRate));
 
-//    CLAMP<F32>(_speedfactor, 0.0f, 1.0f);
-
     _frameDelay = currentTicks;
 
     _fps = _targetFrameRate / _speedfactor;

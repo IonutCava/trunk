@@ -211,8 +211,8 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
 
     // Submit the draw command
     if (!Config::Profile::DISABLE_DRAWS) {
-        bufferPtr offset =
-            (bufferPtr)(command.drawID() * sizeof(IndirectDrawCommand));
+        static const size_t cmdSize = sizeof(IndirectDrawCommand);
+        bufferPtr offset = (bufferPtr)(command.drawID() * cmdSize);
         if (!useCmdBuffer) {
             GL_API::setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
             offset = (bufferPtr)(&command.cmd());
@@ -225,13 +225,13 @@ void glGenericVertexData::Draw(const GenericDrawCommand& command,
             if (_indexBuffer > 0) {
                 GL_API::setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
                 if (drawCount > 1) {
-                    glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, 0);
+                    glMultiDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset, drawCount, cmdSize);
                 } else {
                     glDrawElementsIndirect(mode, GL_UNSIGNED_INT, offset);
                 }
             } else {
                 if (drawCount > 1) {
-                    glMultiDrawArraysIndirect(mode, offset, drawCount, 0);
+                    glMultiDrawArraysIndirect(mode, offset, drawCount, cmdSize);
                 } else {
                     glDrawArraysIndirect(mode, offset);
                 }
