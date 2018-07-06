@@ -198,7 +198,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// if singleStep is true, only the first model from the modelArray will be loaded.
     /// Useful for loading one model per frame
     virtual void loadXMLAssets(bool singleStep = false);
-    virtual void loadBaseCamera();
+    virtual void loadDefaultCamera();
 
     virtual bool load(const stringImpl& name);
     Mesh_ptr loadModel(const FileData& data, bool addToSceneGraph);
@@ -220,10 +220,6 @@ class Scene : public Resource, public PlatformContextComponent {
     bool updateCameraControls(PlayerIndex idx);
     /// Draw debug entities
     virtual void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, GFX::CommandBuffer& bufferInOut);
-
-    inline Camera& baseCamera() { return *_baseCamera; }
-
-    inline const Camera& baseCamera() const { return *_baseCamera; }
 
     //Return true if input was consumed
     bool mouseMoved(const Input::MouseEvent& arg);
@@ -277,7 +273,6 @@ class Scene : public Resource, public PlatformContextComponent {
        SceneGraph*    _sceneGraph;
        AI::AIManager* _aiManager;
        SceneGUIElements* _GUI;
-       Camera* _baseCamera;
 
        SceneGraphNode_wptr _sun;
 
@@ -344,14 +339,6 @@ class SceneManager {
 
     static bool deinitializeAI(Scene& scene) {
         return scene.deinitializeAI(true);
-    }
-
-    static Camera& baseCamera(Scene& scene) {
-        return scene.baseCamera();
-    }
-
-    static const Camera& baseCamera(const Scene& scene) {
-        return scene.baseCamera();
     }
 
     static void onPlayerAdd(Scene& scene, const Player_ptr& player) {

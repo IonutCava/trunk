@@ -343,8 +343,8 @@ bool WarScene::load(const stringImpl& name) {
     // Add a skybox
     _currentSky = addSky();
     // Position camera
-    _baseCamera->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
-    _baseCamera->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
+    Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
+    Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);
 
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
     _sun.lock()->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
@@ -609,7 +609,7 @@ bool WarScene::load(const stringImpl& name) {
         }
     }
 
-    _baseCamera->setHorizontalFoV(110);
+    Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
     _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
     _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
@@ -703,12 +703,12 @@ void WarScene::toggleCamera(InputParams param) {
 bool WarScene::loadResources(bool continueOnErrors) {
     // Add a first person camera
     Camera* cam = Camera::createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
-    cam->fromCamera(*_baseCamera);
+    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
     cam->setMoveSpeedFactor(10.0f);
     cam->setTurnSpeedFactor(10.0f);
     // Add a third person camera
     cam = Camera::createCamera("tpsCamera", Camera::CameraType::THIRD_PERSON);
-    cam->fromCamera(*_baseCamera);
+    cam->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
     cam->setMoveSpeedFactor(0.02f);
     cam->setTurnSpeedFactor(0.01f);
 

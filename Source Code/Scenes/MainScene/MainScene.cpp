@@ -151,7 +151,8 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
 bool MainScene::load(const stringImpl& name) {
     // Load scene resources
     bool loadState = SCENE_LOAD(name, true, true);
-    _baseCamera->setMoveSpeedFactor(10.0f);
+    Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+    baseCamera->setMoveSpeedFactor(10.0f);
 
     _sun = addLight(LightType::DIRECTIONAL, _sceneGraph->getRoot());
     _sun.lock()->getNode<DirectionalLight>()->csmSplitCount(3);  // 3 splits
@@ -165,8 +166,8 @@ bool MainScene::load(const stringImpl& name) {
                                   to_base(SGNComponent::ComponentType::RENDERING) |
                                   to_base(SGNComponent::ComponentType::NAVIGATION);
 
-    g_waterDimensions.x = _baseCamera->getZPlanes().y;
-    g_waterDimensions.z = _baseCamera->getZPlanes().y;
+    g_waterDimensions.x = baseCamera->getZPlanes().y;
+    g_waterDimensions.z = baseCamera->getZPlanes().y;
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.setUserPtr(g_waterDimensions);
     WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
@@ -334,8 +335,8 @@ void MainScene::postLoadMainThread() {
         vec4<U8>(164, 64, 64, 255),
         Util::StringFormat("Number of items in Render Bin: %d", 0));
 
-    const vec3<F32>& eyePos = _baseCamera->getEye();
-    const vec3<F32>& euler = _baseCamera->getEuler();
+    const vec3<F32>& eyePos = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getEye();
+    const vec3<F32>& euler = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getEuler();
     _GUI->addText(_ID("camPosition"), pixelPosition(60, 100), Font::DIVIDE_DEFAULT,
         vec4<U8>(64, 200, 64, 255),
         Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",

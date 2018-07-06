@@ -230,8 +230,7 @@ bool DateChooser(const char* label, tm& dateOut,const char* dateFormat,bool clos
 
         const ImGuiWindowFlags flags = ImGuiWindowFlags_ComboBox | ImGuiWindowFlags_NoScrollbar;
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, style.FramePadding);
-        const ImVec4& bgColor = style.Colors[ImGuiCol_ChildWindowBg].w<0.5f ? style.Colors[ImGuiCol_WindowBg] : style.Colors[ImGuiCol_ChildWindowBg];
-        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, bgColor);
+        ImGui::PushStyleColor(ImGuiCol_ChildWindowBg, style.Colors[ImGuiCol_PopupBg]);
         ImGui::BeginChild("#ComboBoxDateChooser", popup_rect.GetSize(), true, flags);
         ImGui::Spacing();
 

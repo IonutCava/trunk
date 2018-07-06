@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 // The MIT License(MIT)
 // 
 // Copyright(c) 2016 Cedric Guillemet
@@ -1224,26 +1226,26 @@ namespace ImGuizmo
                // for 1 or 2 axes, compute a ratio that's used for scale and snap it based on resulting length
                for (int i = 0; i < 2; i++)
                {
-                   int axisIndex = gContext.mBoundsAxis[i];
-                   if (axisIndex == -1)
+                   int axisIndex_ = gContext.mBoundsAxis[i];
+                   if (axisIndex_ == -1)
                        continue;
 
                    float ratioAxis = 1.f;
-                   vec_t axisDir = gContext.mBoundsMatrix.component[axisIndex].Abs();
+                   vec_t axisDir = gContext.mBoundsMatrix.component[axisIndex_].Abs();
 
                    float dtAxis = axisDir.Dot(referenceVector);
-                   float boundSize = bounds[axisIndex + 3] - bounds[axisIndex];
+                   float boundSize = bounds[axisIndex_ + 3] - bounds[axisIndex_];
                    if (dtAxis > FLT_EPSILON)
                        ratioAxis = axisDir.Dot(deltaVector) / dtAxis;
 
                    if (snapValues)
                    {
                        float length = boundSize * ratioAxis;
-                       ComputeSnap(&length, snapValues[axisIndex]);
+                       ComputeSnap(&length, snapValues[axisIndex_]);
                        if (boundSize > FLT_EPSILON)
                            ratioAxis = length / boundSize;
                    }
-                   scale.component[axisIndex] *= ratioAxis;
+                   scale.component[axisIndex_] *= ratioAxis;
                }
 
                // transform matrix

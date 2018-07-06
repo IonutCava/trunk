@@ -58,6 +58,7 @@ class Camera : public Resource {
     enum class UtilityCamera : U32 {
         _2D = 0,
         _2D_FLIP_Y,
+        DEFAULT,
         CUBE,
         DUAL_PARABOLOID,
         COUNT

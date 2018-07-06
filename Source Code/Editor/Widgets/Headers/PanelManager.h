@@ -68,8 +68,12 @@ namespace Divide {
         PanelManager(PlatformContext& context);
         ~PanelManager();
 
+        bool saveToFile() const;
         bool loadFromFile();
-        bool saveToFile();
+
+        //ToDo: Move these to the Tab window manager
+        bool saveTabsToFile() const;
+        bool loadTabsFromFile();
 
         void init();
         void destroy();
@@ -81,22 +85,23 @@ namespace Divide {
 
         inline ImGui::PanelManager& ImGuiPanelManager() { return *_manager; }
 
-        inline bool simulationPauseRequested() const { return _simulationPaused != nullptr && *_simulationPaused; }
+        inline bool simulationPauseRequested() const { 
+            return _sceneStepCount == 0 && _simulationPaused != nullptr && *_simulationPaused;
+        }
+
 
       protected:
         float calcMainMenuHeight();
-        void drawIMGUISample();
-        void drawIMGUIDebug();
 
       protected:
         static void drawDockedTabWindows(ImGui::PanelManagerWindowData& wd);
 
       protected:
-        bool* _showMainMenuBar;
         bool* _showCentralWindow;
         bool* _simulationPaused;
 
         U64 _deltaTime;
+        U32 _sceneStepCount;
         stringImpl _saveFile;
         std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures;
         std::unique_ptr<ImGui::PanelManager> _manager;

@@ -115,6 +115,7 @@ class Application {
     std::atomic_bool _mainLoopActive;
     std::atomic_bool _mainLoopPaused;
     std::atomic_bool _requestShutdown;
+    std::atomic_bool _stepLoop;
     bool             _isInitialized;
     Kernel* _kernel;
     /// buffer to register all of the memory allocations recorded via

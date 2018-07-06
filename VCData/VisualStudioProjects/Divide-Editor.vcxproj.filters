@@ -95,6 +95,9 @@
     <Filter Include="3rdParty/ImGUI\addons\imguiyesaddons\imguiimageeditor_plugins">
       <UniqueIdentifier>{b95797b2-d83f-4129-ab7b-738839cb42ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdParty/ImGUI\addons\imgui_gizmo">
+      <UniqueIdentifier>{3c1642a7-f6bf-42b2-bc51-957ad2fd3677}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\../Source Code/stdafx-editor.cpp" />
@@ -189,6 +192,12 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Editor\Widgets\ApplicationOutput.cpp">
       <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Widgets\MenuBar.cpp">
+      <Filter>Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp">
+      <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -404,6 +413,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\ApplicationOutput.h">
       <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\MenuBar.h">
+      <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.h">
+      <Filter>3rdParty/ImGUI\addons\imgui_gizmo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -47,6 +47,7 @@ namespace Attorney {
     class EditorPanelManager;
 };
 
+class MenuBar;
 class PanelManager;
 class DisplayWindow;
 class PlatformContext;
@@ -125,6 +126,12 @@ class Editor : public PlatformContextComponent,
     bool joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) override;
     bool joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) override;
 
+  protected:
+    void drawIMGUIDebug(const U64 deltaTime);
+    bool renderMinimal(const U64 deltaTime);
+    bool renderFull(const U64 deltaTime);
+    bool needInput();
+
   protected: // window events
     bool OnClose();
     void OnFocus(bool bHasFocus);
@@ -136,7 +143,16 @@ class Editor : public PlatformContextComponent,
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, I64 windowGUID);
+    void savePanelLayout() const;
+    void loadPanelLayout();
+    void saveTabLayout() const;
+    void loadTabLayout();
     void drawOutputWindow();
+    void drawMenuBar();
+    void showDebugWindow(bool state);
+    void showSampleWindow(bool state);
+    bool showDebugWindow() const;
+    bool showSampleWindow() const;
 
   private:
     Theme _currentTheme;
@@ -146,6 +162,7 @@ class Editor : public PlatformContextComponent,
     Rect<I32> _scenePreviewRect;
 
     I64 _activeWindowGUID = -1;
+    std::unique_ptr<MenuBar> _menuBar;
     std::unique_ptr<ImwWindowManagerDivide> _windowManager;
     std::unique_ptr<PanelManager> _panelManager;
     std::unique_ptr<ApplicationOutput> _applicationOutput;
@@ -155,6 +172,8 @@ class Editor : public PlatformContextComponent,
     bool              _sceneWasHovered;
     bool              _scenePreviewFocused;
     bool              _scenePreviewWasFocused;
+    bool              _showDebugWindow;
+    bool              _showSampleWindow;
     DisplayWindow*    _mainWindow;
     Texture_ptr       _fontTexture;
     ShaderProgram_ptr _imguiProgram;
@@ -181,10 +200,34 @@ namespace Attorney {
         static void setScenePreviewRect(Editor& editor, const Rect<I32>& rect, bool hovered) {
             editor.setScenePreviewRect(rect, hovered);
         }
+        static void savePanelLayout(const Editor& editor) {
+            editor.savePanelLayout();
+        }
+        static void loadPanelLayout(Editor& editor) {
+            editor.loadPanelLayout();
+        }
+        static void saveTabLayout(const Editor& editor) {
+            editor.saveTabLayout();
+        }
+        static void loadTabLayout(Editor& editor) {
+            editor.loadTabLayout();
+        }
         static void drawOutputWindow(Editor& editor) {
             editor.drawOutputWindow();
         }
-
+        static void showDebugWindow(Editor& editor, bool state) {
+            editor.showDebugWindow(state);
+        }
+        static void showSampleWindow(Editor& editor, bool state) {
+            editor.showSampleWindow(state);
+        }
+        static bool showDebugWindow(Editor& editor) {
+            return editor.showDebugWindow();
+        }
+        static bool showSampleWindow(Editor& editor) {
+            return editor.showSampleWindow();
+        }
+        friend class Divide::MenuBar;
         friend class Divide::PanelManager;
     };
 };

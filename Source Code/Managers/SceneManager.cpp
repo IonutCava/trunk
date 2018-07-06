@@ -326,8 +326,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
             player->getCamera().setProjection(aspectRatio, fov, zPlanes);
         }
 
-        Camera& baseCam = Attorney::SceneManager::baseCamera(getActiveScene());
-        baseCam.setProjection(aspectRatio, fov, zPlanes);
+        Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setProjection(aspectRatio, fov, zPlanes);
     }
 }
 
@@ -348,7 +347,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, const SceneGraphNode_cp
     }
 
     Player_ptr player = std::make_shared<Player>(to_U8(_players.size()));
-    player->getCamera().fromCamera(Attorney::SceneManager::baseCamera(parentScene));
+    player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
     player->getCamera().setFixedYawAxis(true);
     playerNode->get<UnitComponent>()->setUnit(player);
 

@@ -2,6 +2,7 @@
 
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
+#include "Editor/Widgets/Headers/MenuBar.h"
 #include "Editor/Widgets/Headers/PanelManager.h"
 #include "Editor/Widgets/Headers/ApplicationOutput.h"
 #include "Editor/Widgets/Headers/ImWindowManagerDivide.h"
@@ -11,6 +12,7 @@
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/FrameListenerManager.h"
 
@@ -20,6 +22,8 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 #include "Rendering/Camera/Headers/Camera.h"
+
+#include <imgui/addons/imguigizmo/ImGuizmo.h>
 
 #define DISABLE_IMWINDOW
 
@@ -38,6 +42,11 @@ namespace {
         ImGuiStyle_EdinWhite,
         ImGuiStyle_Maya
     };
+
+    bool show_another_window = false;
+    I32 window_opacity = 255;
+    I32 previous_window_opacity = 255;
+    bool show_test_window = true;
 };
 
 Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Theme dimmedTheme)
@@ -50,6 +59,8 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
       _sceneWasHovered(false),
       _scenePreviewFocused(false),
       _scenePreviewWasFocused(false),
+      _showDebugWindow(false),
+      _showSampleWindow(false),
       _activeWindowGUID(-1),
       _consoleCallbackIndex(0),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
@@ -59,6 +70,7 @@ Editor::Editor(PlatformContext& context, Theme theme, Theme lostFocusTheme, Them
     _windowManager = std::make_unique<ImwWindowManagerDivide>(*this);
 #endif
     _panelManager = std::make_unique<PanelManager>(context);
+    _menuBar = std::make_unique<MenuBar>(context, true);
     _applicationOutput = std::make_unique<ApplicationOutput>(context, to_U16(512));
     
     _mainWindow = nullptr;
@@ -72,6 +84,12 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
+    CLAMP(window_opacity, 0, 255);
+    if (window_opacity != previous_window_opacity) {
+        context().activeWindow().opacity(to_U8(window_opacity));
+        previous_window_opacity = window_opacity;
+    }
+
     _panelManager->idle();
 }
 
@@ -192,7 +210,7 @@ bool Editor::shouldPauseSimulation() const {
 }
 
 void Editor::update(const U64 deltaTimeUS) {
-    if (!_running) {
+    if (!needInput()) {
         return;
     }
     Time::ScopedTimer timer(_editorUpdateTimer);
@@ -267,27 +285,70 @@ bool Editor::frameRenderingQueued(const FrameEvent& evt) {
     return true;
 }
 
-bool Editor::framePostRenderStarted(const FrameEvent& evt) {
-    if (!_running) {
-        return true;
+bool Editor::renderMinimal(const U64 deltaTime) {
+    if (showDebugWindow()) {
+        drawIMGUIDebug(deltaTime);
+    }
+    if (showSampleWindow()) {
+        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
+        ImGui::ShowTestWindow(&show_test_window);
     }
 
-    ACKNOWLEDGE_UNUSED(evt);
-    Time::ScopedTimer timer(_editorRenderTimer);
+    return true;
+}
 
+bool Editor::renderFull(const U64 deltaTime) {
+    static mat4<F32> matrix;
+
+    drawMenuBar();
+    _panelManager->draw(deltaTime);
+    renderMinimal(deltaTime);
+
+    return true;
+}
+
+bool Editor::framePostRenderStarted(const FrameEvent& evt) {
+    Time::ScopedTimer timer(_editorRenderTimer);
 #if !defined(DISABLE_IMWINDOW)
     // Render ImWindow stuff
-    if (_windowManager->Run(true))
-#endif
-    {
+    if (_running) {
+        if (!_windowManager->Run(true)) {
+            return false;
+        }
+    } else {
         ImGui::NewFrame();
-        _panelManager->draw(evt._timeSinceLastFrameUS);
-        ImGui::Render();
-        renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
-        return true;
     }
+#else
+    ImGui::NewFrame();
+#endif
+    if (!_running) {
+        if (!renderMinimal(evt._timeSinceLastFrameUS)) {
+            return false;
+        }
+    } else {
+        if (!renderFull(evt._timeSinceLastFrameUS)) {
+            return false;
+        }
+    }
+    /*
+    static mat4<F32> matrix;
 
-    return false;
+    ImGuizmo::BeginFrame();
+    ImGuizmo::Enable(true);
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+    
+    Camera& cam = *Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
+    const mat4<F32>& view = cam.getViewMatrix().getTranspose();
+    const mat4<F32>& projection = cam.getProjectionMatrix().getTranspose();
+
+    ImGuizmo::DrawCube(view.mat, projection.mat, matrix.mat);
+    ImGuizmo::Manipulate(view.mat, projection.mat, ImGuizmo::ROTATE, ImGuizmo::WORLD, matrix.mat);
+    */
+    ImGui::Render();
+    renderDrawList(ImGui::GetDrawData(), _mainWindow->getGUID());
+    
+    return true;
 }
 
 bool Editor::framePostRenderEnded(const FrameEvent& evt) {
@@ -304,6 +365,51 @@ bool Editor::frameEnded(const FrameEvent& evt) {
 void Editor::drawOutputWindow() {
     if (_applicationOutput) {
         _applicationOutput->draw();
+    }
+}
+
+void Editor::drawMenuBar() {
+    if (_menuBar) {
+        _menuBar->draw();
+    }
+}
+
+void Editor::showDebugWindow(bool state) {
+    _showDebugWindow = state;
+}
+
+void Editor::showSampleWindow(bool state) {
+    _showSampleWindow = state;
+}
+
+bool Editor::showDebugWindow() const {
+    return _showDebugWindow;
+}
+
+bool Editor::showSampleWindow() const {
+    return _showSampleWindow;
+}
+
+void Editor::savePanelLayout() const {
+    if (_panelManager) {
+        _panelManager->saveToFile();
+    }
+}
+void Editor::loadPanelLayout() {
+    if (_panelManager) {
+        _panelManager->loadFromFile();
+    }
+}
+
+void Editor::saveTabLayout() const {
+    if (_panelManager) {
+        _panelManager->saveTabsToFile();
+    }
+}
+
+void Editor::loadTabLayout() {
+    if (_panelManager) {
+        _panelManager->loadTabsFromFile();
     }
 }
 
@@ -415,7 +521,7 @@ void Editor::setScenePreviewRect(const Rect<I32>& rect, bool hovered) {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -437,7 +543,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 /// Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -467,7 +573,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
 /// Mouse moved: return true if input was consumed
 bool Editor::mouseMoved(const Input::MouseEvent& arg) {
-    if (!_running) {
+    if (!needInput()) {
         return false;
     }
 
@@ -491,7 +597,7 @@ bool Editor::mouseMoved(const Input::MouseEvent& arg) {
 bool Editor::mouseButtonPressed(const Input::MouseEvent& arg, Input::MouseButton button) {
     ACKNOWLEDGE_UNUSED(arg);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -513,7 +619,7 @@ bool Editor::mouseButtonReleased(const Input::MouseEvent& arg, Input::MouseButto
         toggleScenePreview(_running);
     }
 
-    if (!_running ) {
+    if (!needInput()) {
         return false;
     }
 
@@ -535,7 +641,7 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg, Input::Joyst
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(button);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -546,7 +652,7 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg, Input::Joys
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(button);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -557,7 +663,7 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg, I8 axis) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(axis);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -568,7 +674,7 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg, I8 pov) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(pov);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -579,7 +685,7 @@ bool Editor::joystickSliderMoved(const Input::JoystickEvent &arg, I8 index) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(index);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -590,7 +696,7 @@ bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
     ACKNOWLEDGE_UNUSED(arg);
     ACKNOWLEDGE_UNUSED(index);
 
-    if (!_running || _scenePreviewFocused) {
+    if (!needInput() || _scenePreviewFocused) {
         return false;
     }
 
@@ -598,7 +704,7 @@ bool Editor::joystickvector3Moved(const Input::JoystickEvent &arg, I8 index) {
 }
 
 bool Editor::OnClose() {
-    if (!_running) {
+    if (!needInput()) {
         return false;
     }
 
@@ -606,7 +712,7 @@ bool Editor::OnClose() {
 }
 
 void Editor::OnFocus(bool bHasFocus) {
-    if (!_running) {
+    if (!needInput()) {
         return;
     }
 
@@ -623,7 +729,7 @@ void Editor::OnSize(int iWidth, int iHeight) {
 }
 
 void Editor::OnUTF8(const char* text) {
-    if (!_running) {
+    if (!needInput()) {
         return;
     }
 
@@ -631,4 +737,32 @@ void Editor::OnUTF8(const char* text) {
     io.AddInputCharactersUTF8(text);
 }
 
+void Editor::drawIMGUIDebug(const U64 deltaTime) {
+    DisplayWindow& window = context().activeWindow();
+
+    static float f = 0.0f;
+    ImGui::Text("Hello, world!");
+    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+    ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
+    ImGui::ColorEdit4("clear color", window.clearColour()._v);
+    if (ImGui::Button("Test Window")) show_test_window ^= 1;
+    if (ImGui::Button("Another Window")) show_another_window ^= 1;
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<float>(deltaTime));
+    if (ImGui::Button("Toggle cursor")) {
+        ImGuiIO& io = ImGui::GetIO();
+        io.MouseDrawCursor = !io.MouseDrawCursor;
+    }
+    // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name the window.
+    if (show_another_window)
+    {
+        ImGui::Begin("Another Window", &show_another_window);
+        ImGui::Text("Hello from another window!");
+        ImGui::End();
+    }
+}
+
+bool Editor::needInput() {
+    return _running || showDebugWindow() || showSampleWindow();
+}
 }; //namespace Divide

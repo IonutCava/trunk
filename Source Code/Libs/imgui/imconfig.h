@@ -6,6 +6,9 @@
 
 #pragma once
 
+//---- Define assertion handler. Defaults to calling assert().
+//#define IM_ASSERT(_EXPR)  MyAssert(_EXPR)
+
 
 //max verts IMGUI will ever render. Change for your specific use case scenario
 #define MAX_IMGUI_VERTS 65535 
@@ -13,6 +16,9 @@
 //---- Define attributes of all API symbols declarations, e.g. for DLL under Windows.
 //#define IMGUI_API __declspec( dllexport )
 //#define IMGUI_API __declspec( dllimport )
+
+//---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names
+//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 //---- Include imgui_user.h at the end of imgui.h
 //#define IMGUI_INCLUDE_IMGUI_USER_H
@@ -25,12 +31,16 @@
 //---- It is very strongly recommended to NOT disable the test windows. Please read the comment at the top of imgui_demo.cpp to learn why.
 //#define IMGUI_DISABLE_TEST_WINDOWS
 
-//---- Don't define obsolete functions names. Consider enabling from time to time or when updating to reduce like hood of using already obsolete function/names
-//#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+//---- Don't implement ImFormatString(), ImFormatStringV() so you can reimplement them yourself.
+//#define IMGUI_DISABLE_FORMAT_STRING_FUNCTIONS
 
 //---- Pack colors to BGRA instead of RGBA (remove need to post process vertex buffer in back ends)
 //#define IMGUI_USE_BGRA_PACKED_COLOR
 
+//---- Implement STB libraries in a namespace to avoid linkage conflicts
+//#define IMGUI_STB_NAMESPACE     ImGuiStb
+
+//---- Define constructor and implicit cast operators to convert back<>forth from your math types and ImVec2/ImVec4.
 #include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {

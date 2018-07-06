@@ -45,13 +45,8 @@ namespace Divide {
         ImGui::TabWindow tabWindows[5];
 
         static const char* tabWindowNames[4] = { "TabWindow Left", "TabWindow Right", "TabWindow Top", "TabWindow Bottom" };
-        static bool showDebugWindow = false;
-        static bool showSampleWindow = false;
 
         bool show_test_window = true;
-        bool show_another_window = false;
-        I32 window_opacity = 255;
-        I32 previous_window_opacity = 255;
 
         static const ImVec2 buttonSize(8, 10);
         static const ImVec2 buttonSizeSq(10, 10);
@@ -336,124 +331,18 @@ namespace Divide {
 
                 ImGui::Separator();
                 if (ImGui::MenuItem("Save Layout")) {
-                    TabbedWindow::saveToFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+                    PanelManager* mgr = reinterpret_cast<PanelManager*>(userPtr);
+                    mgr->saveTabsToFile();
                 }
 
                 if (ImGui::MenuItem("Load Layout")) {
-                    TabbedWindow::loadFromFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+                    PanelManager* mgr = reinterpret_cast<PanelManager*>(userPtr);
+                    mgr->loadTabsFromFile();
                 }
 
                 ImGui::EndPopup();
             }
             ImGui::PopStyleColor(2);
-        }
-
-        static void ShowExampleMenuFile()
-        {
-            ImGui::MenuItem("(dummy menu)", NULL, false, false);
-            if (ImGui::MenuItem("New")) {}
-            if (ImGui::MenuItem("Open", "Ctrl+O")) {}
-            if (ImGui::BeginMenu("Open Recent"))
-            {
-                ImGui::MenuItem("fish_hat.c");
-                ImGui::MenuItem("fish_hat.inl");
-                ImGui::MenuItem("fish_hat.h");
-                if (ImGui::BeginMenu("More.."))
-                {
-                    ImGui::MenuItem("Hello");
-                    ImGui::MenuItem("Sailor");
-                    if (ImGui::BeginMenu("Recurse.."))
-                    {
-                        ShowExampleMenuFile();
-                        ImGui::EndMenu();
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-            if (ImGui::MenuItem("Save As..")) {}
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Options"))
-            {
-                static bool enabled = true;
-                ImGui::MenuItem("Enabled", "", &enabled);
-                ImGui::BeginChild("child", ImVec2(0, 60), true);
-                for (int i = 0; i < 10; i++)
-                    ImGui::Text("Scrolling Text %d", i);
-                ImGui::EndChild();
-                static float f = 0.5f;
-                ImGui::SliderFloat("Value", &f, 0.0f, 1.0f);
-                ImGui::InputFloat("Input", &f, 0.1f);
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Colors"))
-            {
-                for (int i = 0; i < ImGuiCol_COUNT; i++)
-                    ImGui::MenuItem(ImGui::GetStyleColorName((ImGuiCol)i));
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Disabled", false)) // Disabled
-            {
-                IM_ASSERT(0);
-            }
-            if (ImGui::MenuItem("Checked", NULL, true)) {}
-            if (ImGui::MenuItem("Quit", "Alt+F4")) {}
-        }
-        static void ShowExampleMenuBar(PanelManager& mgr, bool isMainMenu = false)
-        {
-            //static bool ids[2];
-            //ImGui::PushID((const void*) isMainMenu ? &ids[0] : &ids[1]);
-            const bool open = isMainMenu ? ImGui::BeginMainMenuBar() : ImGui::BeginMenuBar();
-            if (open)
-            {
-                if (ImGui::BeginMenu("File"))
-                {
-                    ShowExampleMenuFile();
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Edit"))
-                {
-                    if (ImGui::MenuItem("Undo", "CTRL+Z")) {}
-                    if (ImGui::MenuItem("Redo", "CTRL+Y", false, false)) {}  // Disabled item
-                    ImGui::Separator();
-                    if (ImGui::MenuItem("Cut", "CTRL+X")) {}
-                    if (ImGui::MenuItem("Copy", "CTRL+C")) {}
-                    if (ImGui::MenuItem("Paste", "CTRL+V")) {}
-                    ImGui::Separator();
-
-                    // Just a test to check/uncheck multiple checkItems without closing the Menu (with the RMB)
-                    static bool booleanProps[3] = { true,false,true };
-                    static const char* names[3] = { "Boolean Test 1","Boolean Test 2","Boolean Test 3" };
-                    const bool isRightMouseButtonClicked = ImGui::IsMouseClicked(1);    // cached
-                    for (int i = 0;i<3;i++) {
-                        ImGui::MenuItem(names[i], NULL, &booleanProps[i]);
-                        if (isRightMouseButtonClicked && ImGui::IsItemHovered()) booleanProps[i] = !booleanProps[i];
-                    }
-
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Window"))
-                {
-                    if (ImGui::MenuItem("Debug Window", NULL, &showDebugWindow)) {
-                        if (showDebugWindow && ImGui::IsItemHovered()) {
-                            showDebugWindow = showDebugWindow;
-                        }
-                    }
-                    if (ImGui::MenuItem("Sample Window", NULL, &showSampleWindow)) {
-                        if (showSampleWindow && ImGui::IsItemHovered()) {
-                            showSampleWindow = showSampleWindow;
-                        }
-                    }
-
-                    ImGui::EndMenu();
-                }
-                if (isMainMenu) {
-                    //gMainMenuBarSize = ImGui::GetWindowSize();
-                    ImGui::EndMainMenuBar();
-                } else ImGui::EndMenuBar();
-            }
-            //ImGui::PopID();
         }
 
         ImTextureID LoadTextureFromMemory(Texture_ptr& target, const stringImpl& name, int width, int height, int channels, const unsigned char* pixels, bool useMipmapsIfPossible, bool wraps, bool wrapt, bool minFilterNearest, bool magFilterNearest) {
@@ -539,8 +428,8 @@ namespace Divide {
     PanelManager::PanelManager(PlatformContext& context)
         : PlatformContextComponent(context),
           _deltaTime(0ULL),
+          _sceneStepCount(0),
           _simulationPaused(nullptr),
-          _showMainMenuBar(nullptr),
           _showCentralWindow(nullptr),
           _manager(std::make_unique<ImGui::PanelManager>()),
           _saveFile(Paths::g_saveLocation + Paths::Editor::g_saveLocation + Paths::Editor::g_panelLayoutFile)
@@ -553,7 +442,7 @@ namespace Divide {
         s_imageEditorCache.clear();
     }
 
-    bool PanelManager::saveToFile() {
+    bool PanelManager::saveToFile() const {
         return ImGui::PanelManager::Save(*_manager, _saveFile.c_str());
     }
 
@@ -561,20 +450,35 @@ namespace Divide {
         return ImGui::PanelManager::Load(*_manager, _saveFile.c_str());
     }
 
+    bool PanelManager::saveTabsToFile() const {
+        return TabbedWindow::saveToFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+    }
+
+    bool PanelManager::loadTabsFromFile() {
+        return TabbedWindow::loadFromFile(&tabWindows[0], sizeof(tabWindows) / sizeof(tabWindows[0]));
+    }
+
     void PanelManager::idle() {
-        CLAMP(window_opacity, 0, 255);
-        if (window_opacity != previous_window_opacity) {
-            context().activeWindow().opacity(to_U8(window_opacity));
-            previous_window_opacity = window_opacity;
+        if (_sceneStepCount > 0) {
+            _sceneStepCount--;
+        }
+
+        ImGui::PanelManager::Pane& pane = _toolbars[to_base(PanelPositions::TOP)]->impl();
+        ImGui::Toolbar::Button* btn1 = pane.bar.getButton(pane.getSize() - 2);
+        if (btn1->isDown) {                          // [***]
+            _sceneStepCount = 1;
+            btn1->isDown = false;
+        }
+        ImGui::Toolbar::Button* btn2 = pane.bar.getButton(pane.getSize() - 1);
+        if (btn2->isDown) {                          // [****]
+            _sceneStepCount = Config::TARGET_FRAME_RATE;
+            btn2->isDown = false;
         }
     }
 
 
     void PanelManager::draw(const U64 deltaTime) {
         _deltaTime = deltaTime;
-        if (_showMainMenuBar && *_showMainMenuBar) {
-            ShowExampleMenuBar(*this, true);
-        }
 
         if (_showCentralWindow && *_showCentralWindow) {
             const ImVec2& iqs = _manager->getCentralQuadSize();
@@ -586,13 +490,6 @@ namespace Divide {
                 }
                 ImGui::End();
             }
-        }
-
-        if (showDebugWindow) {
-            drawIMGUIDebug();
-        }
-        if (showSampleWindow) {
-            drawIMGUISample();
         }
 
         // Here we render mgr (our ImGui::PanelManager)
@@ -794,20 +691,18 @@ namespace Divide {
                 pane.addSeparator(32);  // Note that a separator "eats" one toolbutton index as if it was a real button
 
                 // Here we add two manual toggle buttons, but we'll use them later to show/hide menu and show/hide a central window
-                tileNumber = 51;uv0 = ImVec2((float)(tileNumber % 8) / 8.f, (float)(tileNumber / 8) / 8.f);uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
-                pane.addButtonOnly(ImGui::Toolbutton("Show/Hide Main Menu Bar", myImageTextureVoid, uv0, uv1, buttonSizeSq, true, true));  // [*] Here we add a manual toggle button we'll simply bind to "gpShowMainMenuBar" later. Start value is last arg.
                 tileNumber = 5;uv0 = ImVec2((float)(tileNumber % 8) / 8.f, (float)(tileNumber / 8) / 8.f);uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
                 pane.addButtonOnly(ImGui::Toolbutton("Show/Hide central window", myImageTextureVoid, uv0, uv1, buttonSizeSq, true, true));  // [**] Here we add a manual toggle button we'll process later [**]
-
-                // Ok. Now all the buttons/windows have been added to the TOP Pane.
                 tileNumber = 34;uv0 = ImVec2((float)(tileNumber % 8) / 8.f, (float)(tileNumber / 8) / 8.f);uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
                 pane.addButtonOnly(ImGui::Toolbutton("Play/Pause", myImageTextureVoid, uv0, uv1, buttonSize, true, false, ImVec4(1,0,0,1)));
-
+                tileNumber = 34;uv0 = ImVec2((float)(tileNumber % 8) / 8.f, (float)(tileNumber / 8) / 8.f);uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
+                pane.addButtonOnly(ImGui::Toolbutton("1 Frame Step", myImageTextureVoid, uv0, uv1, buttonSize, true, false, ImVec4(1, 1, 0, 1)));
+                tileNumber = 34;uv0 = ImVec2((float)(tileNumber % 8) / 8.f, (float)(tileNumber / 8) / 8.f);uv1 = ImVec2(uv0.x + 1.f / 8.f, uv0.y + 1.f / 8.f);
+                pane.addButtonOnly(ImGui::Toolbutton("60 Frames Step", myImageTextureVoid, uv0, uv1, buttonSize, true, false, ImVec4(1, 1, 0.5, 1)));
+                // Ok. Now all the buttons/windows have been added to the TOP Pane.
                 // Please note that it's not safe to add EVERYTHING (even separators) to this (TOP) pane afterwards (unless we bind the booleans again).
-                _showMainMenuBar = &pane.bar.getButton(pane.getSize() - 3)->isDown;            // [*]
-                _showCentralWindow = &pane.bar.getButton(pane.getSize() - 2)->isDown;          // [**]
-                _simulationPaused = &pane.bar.getButton(pane.getSize() - 1)->isDown;           // [***]
-
+                _showCentralWindow = &pane.bar.getButton(pane.getSize() - 4)->isDown;          // [*]
+                _simulationPaused = &pane.bar.getButton(pane.getSize() - 3)->isDown;           // [**]
             }
 
             // Optional. Loads the layout (just selectedButtons, docked windows sizes and stuff like that)
@@ -832,7 +727,8 @@ namespace Divide {
                 tabWindows[i].clear();  // for robustness (they're already empty)
             }
 
-            if (!TabbedWindow::loadFromFile(tabWindows, sizeof(tabWindows) / sizeof(tabWindows[0]))) {
+            
+            if (!loadTabsFromFile()) {
                 // Here we set the starting configurations of the tabs in our ImGui::TabWindows
                 static const char* tabNames[] = { "TabLabelStyle","Render","Layers","Capture","Scene","World","Object","Constraints","Modifiers","Data","Material","Texture","Particle","Physics" };
                 static const int numTabs = sizeof(tabNames) / sizeof(tabNames[0]);
@@ -875,52 +771,19 @@ namespace Divide {
     }
 
     void  PanelManager::setPanelManagerBoundsToIncludeMainMenuIfPresent(int displayX, int displayY) {
-        if (_showMainMenuBar) {
-            if (displayX <= 0) displayX = ImGui::GetIO().DisplaySize.x;
-            if (displayY <= 0) displayY = ImGui::GetIO().DisplaySize.y;
-            ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
-            if (*_showMainMenuBar) {
-                const float mainMenuHeight = calcMainMenuHeight();
-                bounds = ImVec4(0, mainMenuHeight, displayX, displayY - mainMenuHeight);
-            }
-            _manager->setDisplayPortion(bounds);
-        }
+        if (displayX <= 0) displayX = ImGui::GetIO().DisplaySize.x;
+        if (displayY <= 0) displayY = ImGui::GetIO().DisplaySize.y;
+        ImVec4 bounds(0, 0, (float)displayX, (float)displayY);   // (0,0,-1,-1) defaults to (0,0,io.DisplaySize.x,io.DisplaySize.y)
+        const float mainMenuHeight = calcMainMenuHeight();
+        bounds = ImVec4(0, mainMenuHeight, displayX, displayY - mainMenuHeight);
+        
+        _manager->setDisplayPortion(bounds);
     }
 
     void PanelManager::resize(int w, int h) {
         static ImVec2 initialSize(w, h);
         _manager->setToolbarsScaling((float)w / initialSize.x, (float)h / initialSize.y);  // Scales the PanelManager bounmds based on the initialSize
         setPanelManagerBoundsToIncludeMainMenuIfPresent(w, h);                  // This line is only necessary if we have a global menu bar
-    }
-
-    void PanelManager::drawIMGUISample() {
-        ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver);
-        ImGui::ShowTestWindow(&show_test_window);
-    }
-
-    void PanelManager::drawIMGUIDebug() {
-        DisplayWindow& window = context().activeWindow();
-
-        static float f = 0.0f;
-        ImGui::Text("Hello, world!");
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::SliderInt("Opacity", &window_opacity, 0, 255);
-        ImGui::ColorEdit4("clear color", window.clearColour()._v);
-        if (ImGui::Button("Test Window")) show_test_window ^= 1;
-        if (ImGui::Button("Another Window")) show_another_window ^= 1;
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::Text("Time since last frame %.3f ms", Time::MicrosecondsToMilliseconds<float>(_deltaTime));
-        if (ImGui::Button("Toggle cursor")) {
-            ImGuiIO& io = ImGui::GetIO();
-            io.MouseDrawCursor = !io.MouseDrawCursor;
-        }
-        // 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name the window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello from another window!");
-            ImGui::End();
-        }
     }
 
     void PanelManager::drawDockedWindows(ImGui::PanelManagerWindowData& wd) {
@@ -1006,10 +869,7 @@ namespace Divide {
                 if (_showCentralWindow) {
                     ImGui::SameLine();ImGui::Checkbox("Show Central Wndow", (bool*)_showCentralWindow);
                 }
-                if (_showMainMenuBar) {
-                    ImGui::SameLine();
-                    if (ImGui::Checkbox("Show Main Menu", (bool*)_showMainMenuBar)) setPanelManagerBoundsToIncludeMainMenuIfPresent();
-                }
+                
                 // Here we test saving/loading the ImGui::PanelManager layout (= the sizes of the 4 docked windows and the buttons that are selected on the 4 toolbars)
                 // Please note that the API should allow loading/saving different items into a single file and loading/saving from/to memory too, but we don't show it now.
 
@@ -1031,12 +891,12 @@ namespace Divide {
                 ImGui::Separator();
                 static const char twTooltip[] = "the layout of the 5 ImGui::TabWindows\n(this option is also available by right-clicking\non an empty space in the Tab Header)";
                 if (ImGui::Button("Save TabWindows Layout")) {
-                    TabbedWindow::saveToFile(tabWindows, sizeof(tabWindows) / sizeof(tabWindows[0]));
+                    saveTabsToFile();
                 }
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("Save %s", twTooltip);
                 ImGui::SameLine();
                 if (ImGui::Button("Load TabWindows Layout")) {
-                    TabbedWindow::loadFromFile(tabWindows, sizeof(tabWindows) / sizeof(tabWindows[0]));
+                    loadTabsFromFile();
                 }
                 if (ImGui::IsItemHovered()) ImGui::SetTooltip("Load %s", twTooltip);
 

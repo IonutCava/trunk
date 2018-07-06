@@ -75,7 +75,6 @@ Scene::Scene(PlatformContext& context, ResourceCache& cache, SceneManager& paren
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
       _pxScene(nullptr),
-      _baseCamera(nullptr),
       _paramHandler(ParamHandler::instance())
 {
     _sceneTimerUS = 0UL;
@@ -471,7 +470,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
 
 SceneGraphNode_ptr Scene::addSky(const stringImpl& nodeName) {
     ResourceDescriptor skyDescriptor("Default Sky");
-    skyDescriptor.setID(to_U32(std::floor(_baseCamera->getZPlanes().y * 2)));
+    skyDescriptor.setID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
     std::shared_ptr<Sky> skyItem = CreateResource<Sky>(_resCache, skyDescriptor);
     DIVIDE_ASSERT(skyItem != nullptr, "Scene::addSky error: Could not create sky resource!");
@@ -720,28 +719,29 @@ void Scene::loadKeyBindings() {
     XML::loadDefaultKeybindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
 }
 
-void Scene::loadBaseCamera() {
-    _baseCamera = Camera::createCamera(Util::StringFormat("BaseCamera_%s", _name.c_str()), Camera::CameraType::FREE_FLY);
+void Scene::loadDefaultCamera() {
+    Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
     
 
     // Camera position is overridden in the scene's XML configuration file
     if (ParamHandler::instance().getParam<bool>(_ID_RT((getName() + ".options.cameraStartPositionOverride").c_str()))) {
-        _baseCamera->setEye(vec3<F32>(
+        baseCamera->setEye(vec3<F32>(
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.x").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.y").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartPosition.z").c_str()))));
         vec2<F32> camOrientation(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
             _paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
-        _baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
+        baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
-        _baseCamera->setEye(vec3<F32>(0, 50, 0));
+        baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    _baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    _baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    _baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
-                               _context.config().runtime.verticalFOV,
-                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+    baseCamera->setMoveSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_paramHandler.getParam<F32>(_ID_RT((getName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
+                              _context.config().runtime.verticalFOV,
+                              vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+
 }
 
 bool Scene::load(const stringImpl& name) {
@@ -750,7 +750,7 @@ bool Scene::load(const stringImpl& name) {
     STUBBED("ToDo: load skyboxes from XML")
     _name = name;
 
-    loadBaseCamera();
+    loadDefaultCamera();
     loadXMLAssets();
     addSelectionCallback([this](U8 pIndex){_context.gui().selectionChangeCallback(this, pIndex);});
 
@@ -790,7 +790,6 @@ bool Scene::unload() {
     MemoryManager::DELETE(_pxScene);
     _context.pfx().setPhysicsScene(nullptr);
     clearObjects();
-    Camera::destroyCamera(_baseCamera);
     _loadComplete = false;
     assert(_scenePlayers.empty());
 

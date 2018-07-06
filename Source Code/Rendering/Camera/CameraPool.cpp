@@ -74,6 +74,7 @@ void Camera::initPool() {
     _utilityCameras[to_base(UtilityCamera::_2D_FLIP_Y)] = Camera::createCamera("2DRenderCameraFlipY", Camera::CameraType::FREE_FLY);
     _utilityCameras[to_base(UtilityCamera::CUBE)] = Camera::createCamera("CubeCamera", Camera::CameraType::FREE_FLY);
     _utilityCameras[to_base(UtilityCamera::DUAL_PARABOLOID)] = Camera::createCamera("DualParaboloidCamera", Camera::CameraType::FREE_FLY);
+    _utilityCameras[to_base(UtilityCamera::DEFAULT)] = Camera::createCamera("DefaultCamera", Camera::CameraType::FREE_FLY);
 }
 
 void Camera::destroyPool() {
