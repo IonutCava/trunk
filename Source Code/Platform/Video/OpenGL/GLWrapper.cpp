@@ -338,6 +338,12 @@ bool GL_API::initShaders() {
         lineOffsets);
 
     appendToShaderHeader(
+        ShaderType::GEOMETRY,
+        "#define BUFFER_LIGHT_SHADOW " +
+            std::to_string(to_uint(ShaderBufferLocation::LIGHT_SHADOW)),
+        lineOffsets);
+
+    appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define MAX_TEXTURE_SLOTS " + std::to_string(GL_API::_maxTextureUnits),
         lineOffsets);
@@ -673,8 +679,7 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
     if (it == std::end(_samplerMap)) {
         // Create and store the newly created sample object. GL_API is
         // responsible for deleting these!
-        hashAlg::emplace(_samplerMap, hashValue,
-                         MemoryManager_NEW glSamplerObject(descriptor));
+        hashAlg::emplace(_samplerMap, hashValue, MemoryManager_NEW glSamplerObject(descriptor));
     }
     // Return the sampler object's hash value
     return hashValue;
@@ -682,22 +687,21 @@ size_t GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
 
 /// Return the OpenGL sampler object's handle for the given hash value
 GLuint GL_API::getSamplerHandle(size_t samplerHash) {
-    // If the hash value is 0, we assume the code is trying to unbind a sampler
-    // object
-    if (samplerHash == 0) {
-        return 0;
+    // If the hash value is 0, we assume the code is trying to unbind a sampler object
+    GLuint samplerHandle = 0;
+    if (samplerHash > 0) {
+        // If we fail to find the sampler object for the given hash, we print an
+        // error and return the default OpenGL handle
+        samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
+        if (it != std::cend(_samplerMap)) {
+            // Return the OpenGL handle for the sampler object matching the specified hash value
+            samplerHandle = it->second->getObjectHandle();
+        } else {
+            Console::errorfn(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"), samplerHash);
+        }
     }
-    // If we fail to find the sampler object for the given hash, we print an
-    // error and return the default OpenGL handle
-    samplerObjectMap::const_iterator it = _samplerMap.find(samplerHash);
-    if (it == std::end(_samplerMap)) {
-        Console::errorfn(Locale::get("ERROR_NO_SAMPLER_OBJECT_FOUND"),
-                         samplerHash);
-        return 0;
-    }
-    // Return the OpenGL handle for the sampler object matching the specified
-    // hash value
-    return it->second->getObjectHandle();
+
+    return samplerHandle;
 }
 
 /// Create and return a new IM emulation primitive. The callee is responsible

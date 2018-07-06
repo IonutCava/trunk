@@ -129,19 +129,25 @@ bool Texture::LoadFile(const TextureLoadInfo& info, const stringImpl& name) {
             if (!abort) {
                 // We process one column per thread
                 for (I32 j = 0; j < height; ++j) {
-                    // Check alpha value
-                    U8 tempR, tempG, tempB, tempA;
-                    img.getColor(i, j, tempR, tempG, tempB, tempA);
-                    // If the pixel is transparent, toggle translucency flag
-#                   pragma omp critical
-                    {
-                        // Should be thread-safe
-                        _hasTransparency = abort = (tempA < 253);
-#                       pragma omp flush(abort)
+#                  pragma omp flush(abort)
+                    if (!abort) {
+                        // Check alpha value
+                        U8 tempR, tempG, tempB, tempA;
+                        img.getColor(i, j, tempR, tempG, tempB, tempA);
+                        // If the pixel is transparent, toggle translucency flag
+#                       pragma omp critical
+                        {
+                            // Should be thread-safe
+                            if (tempA < 250) {
+                               abort = true;
+#                              pragma omp flush(abort)
+                            }
+                        }
                     }
                 }
             }
         }
+        _hasTransparency = abort;
     }
 
     // Create a new Rendering API-dependent texture object

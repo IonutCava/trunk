@@ -101,9 +101,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     stateDepthOnlyRendering.setZFunc(ComparisonFunction::ALWAYS);
     _stateDepthOnlyRenderingHash = stateDepthOnlyRendering.getHash();
 
-    // Block with hash 0 is null, and it's used to force a block update,
-    // bypassing state comparison with previous blocks
-    _stateBlockMap[0] = nullptr;
     // The general purpose render state blocks are both mandatory and must
     // differ from each other at a state hash level
     DIVIDE_ASSERT(_stateDepthOnlyRenderingHash != _state2DRenderingHash,
@@ -113,6 +110,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv) {
     DIVIDE_ASSERT(_defaultStateNoDepthHash != _defaultStateBlockHash,
                   "GFXDevice error: Invalid default state hash detected!");
     // Activate the default render states
+    _previousStateBlockHash = _stateBlockMap[0].getHash();
     setStateBlock(_defaultStateBlockHash);
     // Our default render targets hold the screen buffer, depth buffer, and a
     // special, on demand,
@@ -233,7 +231,7 @@ void GFXDevice::closeRenderingAPI() {
     // Delete the renderer implementation
     Console::printfn(Locale::get("CLOSING_RENDERER"));
     // Delete our default render state blocks
-    MemoryManager::DELETE_HASHMAP(_stateBlockMap);
+    _stateBlockMap.clear();
     // Destroy all of the immediate mode emulation primitives created during
     // runtime
     MemoryManager::DELETE_VECTOR(_imInterfaces);

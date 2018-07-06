@@ -13,7 +13,7 @@ BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius)
       _center(center),
       _radius(radius) {}
 
-BoundingSphere::BoundingSphere(vectorImpl<vec3<F32> >& points)
+BoundingSphere::BoundingSphere(const vectorImpl<vec3<F32> >& points)
     : BoundingSphere() {
     CreateFromPoints(points);
 }

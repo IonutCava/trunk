@@ -14,7 +14,7 @@ BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max)
       _min(min),
       _max(max) {}
 
-BoundingBox::BoundingBox(vectorImpl<vec3<F32> >& points) : BoundingBox() {
+BoundingBox::BoundingBox(const vectorImpl<vec3<F32> >& points) : BoundingBox() {
     CreateFromPoints(points);
 }
 

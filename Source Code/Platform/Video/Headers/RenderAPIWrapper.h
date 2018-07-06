@@ -443,7 +443,7 @@ class NOINITVTABLE RenderAPIWrapper {
     virtual void updateClipPlanes() = 0;
     virtual U64  getFrameDurationGPU() = 0;
     virtual void activateStateBlock(const RenderStateBlock& newBlock,
-                                    RenderStateBlock* const oldBlock) const = 0;
+                                    const RenderStateBlock& oldBlock) const = 0;
 
     virtual void drawPoints(U32 numPoints) = 0;
     virtual void drawTriangle() = 0;

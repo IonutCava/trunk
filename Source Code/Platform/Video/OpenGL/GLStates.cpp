@@ -518,34 +518,31 @@ void GL_API::changeViewport(const vec4<I32>& newViewport) const {
     }
 }
 
-/// A state block should contain all rendering state changes needed for the next
-/// draw call.
+/// A state block should contain all rendering state changes needed for the next draw call.
 /// Some may be redundant, so we check each one individually
 void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
-                                RenderStateBlock* const oldBlock) const {
-
+                                const RenderStateBlock&  oldBlock) const {
     auto toggle = [](bool flag, GLenum state) {
         flag ? glEnable(state) : glDisable(state);
     };
 
     // Compare toggle-only states with the previous block
-    if (!oldBlock || oldBlock->blendEnable() != newBlock.blendEnable()) {
+    if (oldBlock.blendEnable() != newBlock.blendEnable()) {
         toggle(newBlock.blendEnable(), GL_BLEND);
     }
 
-    if (!oldBlock || oldBlock->cullEnabled() != newBlock.cullEnabled()) {
+    if (oldBlock.cullEnabled() != newBlock.cullEnabled()) {
         toggle(newBlock.cullEnabled(), GL_CULL_FACE);
     }
-    if (!oldBlock || oldBlock->stencilEnable() != newBlock.stencilEnable()) {
+    if (oldBlock.stencilEnable() != newBlock.stencilEnable()) {
         toggle(newBlock.stencilEnable(), GL_STENCIL_TEST);
     }
-    if (!oldBlock || oldBlock->zEnable() != newBlock.zEnable()) {
+    if (oldBlock.zEnable() != newBlock.zEnable()) {
         toggle(newBlock.zEnable(), GL_DEPTH_TEST);
     }
     // Check separate blend functions
-    if (!oldBlock ||
-        oldBlock->blendSrc() != newBlock.blendSrc() ||
-        oldBlock->blendDest() != newBlock.blendDest()) {
+    if (oldBlock.blendSrc() != newBlock.blendSrc() ||
+        oldBlock.blendDest() != newBlock.blendDest()) {
         glBlendFuncSeparate(GLUtil::glBlendTable[to_uint(newBlock.blendSrc())],
                             GLUtil::glBlendTable[to_uint(newBlock.blendDest())],
                             GL_ONE,
@@ -553,64 +550,62 @@ void GL_API::activateStateBlock(const RenderStateBlock& newBlock,
     }
 
     // Check the blend equation
-    if (!oldBlock || oldBlock->blendOp() != newBlock.blendOp()) {
+    if (oldBlock.blendOp() != newBlock.blendOp()) {
         glBlendEquation(GLUtil::glBlendOpTable[to_uint(newBlock.blendOp())]);
     }
     // Check culling mode (back (CW) / front (CCW) by default)
-    if (!oldBlock || oldBlock->cullMode() != newBlock.cullMode()) {
+    if (oldBlock.cullMode() != newBlock.cullMode()) {
         if (newBlock.cullMode() != CullMode::NONE) {
             glCullFace(GLUtil::glCullModeTable[to_uint(newBlock.cullMode())]);
         }
     }
     // Check rasterization mode
-    if (!oldBlock || oldBlock->fillMode() != newBlock.fillMode()) {
+    if (oldBlock.fillMode() != newBlock.fillMode()) {
         glPolygonMode(GL_FRONT_AND_BACK,
                       GLUtil::glFillModeTable[to_uint(newBlock.fillMode())]);
     }
     // Check the depth function
-    if (!oldBlock || oldBlock->zFunc() != newBlock.zFunc()) {
+    if (oldBlock.zFunc() != newBlock.zFunc()) {
         glDepthFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.zFunc())]);
     }
     // Check if we need to toggle the depth mask
-    if (!oldBlock || oldBlock->zWriteEnable() != newBlock.zWriteEnable()) {
+    if (oldBlock.zWriteEnable() != newBlock.zWriteEnable()) {
         glDepthMask(newBlock.zWriteEnable() ? GL_TRUE : GL_FALSE);
     }
     // Check if we need to change the stencil mask
-    if (!oldBlock || oldBlock->stencilWriteMask() != newBlock.stencilWriteMask()) {
+    if (oldBlock.stencilWriteMask() != newBlock.stencilWriteMask()) {
         glStencilMask(newBlock.stencilWriteMask());
     }
     // Stencil function is dependent on 3 state parameters set together
-    if (!oldBlock ||
-        oldBlock->stencilFunc() != newBlock.stencilFunc() ||
-        oldBlock->stencilRef()  != newBlock.stencilRef() ||
-        oldBlock->stencilMask() != newBlock.stencilMask()) {
+    if (oldBlock.stencilFunc() != newBlock.stencilFunc() ||
+        oldBlock.stencilRef()  != newBlock.stencilRef() ||
+        oldBlock.stencilMask() != newBlock.stencilMask()) {
         glStencilFunc(GLUtil::glCompareFuncTable[to_uint(newBlock.stencilFunc())],
                       newBlock.stencilRef(),
                       newBlock.stencilMask());
     }
     // Stencil operation is also dependent  on 3 state parameters set together
-    if (!oldBlock ||
-        oldBlock->stencilFailOp() != newBlock.stencilFailOp() ||
-        oldBlock->stencilZFailOp() != newBlock.stencilZFailOp() ||
-        oldBlock->stencilPassOp() != newBlock.stencilPassOp()) {
+    if (oldBlock.stencilFailOp() != newBlock.stencilFailOp() ||
+        oldBlock.stencilZFailOp() != newBlock.stencilZFailOp() ||
+        oldBlock.stencilPassOp() != newBlock.stencilPassOp()) {
         glStencilOp(GLUtil::glStencilOpTable[to_uint(newBlock.stencilFailOp())],
                     GLUtil::glStencilOpTable[to_uint(newBlock.stencilZFailOp())],
                     GLUtil::glStencilOpTable[to_uint(newBlock.stencilPassOp())]);
     }
     // Check and set polygon offset
-    if (!oldBlock || !COMPARE(oldBlock->zBias(), newBlock.zBias())) {
+    if (!COMPARE(oldBlock.zBias(), newBlock.zBias())) {
         if (IS_ZERO(newBlock.zBias())) {
             glDisable(GL_POLYGON_OFFSET_FILL);
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-            if (!oldBlock || !COMPARE(oldBlock->zUnits(), newBlock.zUnits())) {
+            if (!COMPARE(oldBlock.zUnits(), newBlock.zUnits())) {
                 glPolygonOffset(newBlock.zBias(), newBlock.zUnits());
             }
         }
     }
 
     // Check and set color mask
-    if (!oldBlock || oldBlock->colorWrite().i != newBlock.colorWrite().i) {
+    if (oldBlock.colorWrite().i != newBlock.colorWrite().i) {
         glColorMask(newBlock.colorWrite().b[0] == 1 ? GL_TRUE : GL_FALSE,   // R
                     newBlock.colorWrite().b[1] == 1 ? GL_TRUE : GL_FALSE,   // G
                     newBlock.colorWrite().b[2] == 1 ? GL_TRUE : GL_FALSE,   // B

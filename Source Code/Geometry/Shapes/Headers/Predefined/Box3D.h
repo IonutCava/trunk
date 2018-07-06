@@ -100,13 +100,11 @@ class Box3D : public Object3D {
         
     }
 
-    inline void fromPoints(const std::array<vec3<F32>, 8>& points,
+    inline void fromPoints(const vectorImpl<vec3<F32>>& points,
                            const vec3<F32>& halfExtent) {
 
         VertexBuffer* vb = getGeometryVB();
-        for (U8 i = 0; i < 8; ++i) {
-            vb->modifyPositionValue(i, points[i]);
-        }
+        vb->modifyPositionValues(0, points);
         vb->queueRefresh();
         _halfExtent = halfExtent;
     }

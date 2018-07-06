@@ -205,16 +205,16 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
                                 const vec3<F32>& target,
                                 const vec3<F32>& up) {
-    _eye = eye;
+    _eye.set(eye);
+    _zAxis.set(eye - target);
 
-    _zAxis = eye - target;
     _zAxis.normalize();
     _xAxis.cross(up, _zAxis);
     _xAxis.normalize();
     _yAxis.cross(_zAxis, _xAxis);
     _yAxis.normalize();
 
-    _viewDir = -_zAxis;
+    _viewDir.set(-_zAxis);
 
     _viewMatrix.m[0][0] = _xAxis.x;
     _viewMatrix.m[1][0] = _xAxis.y;
@@ -245,8 +245,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 void Camera::setAnaglyph(bool rightEye) {
     assert(_isActive);
 
-    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV,
-                                  rightEye);
+    GFX_DEVICE.setAnaglyphFrustum(_camIOD, _zPlanes, _aspectRatio, _verticalFoV,  rightEye);
     rightEye ? _eye.x += _camIOD / 2 : _eye.x -= _camIOD / 2;
 
     _viewMatrixDirty = true;
@@ -301,8 +300,7 @@ void Camera::setProjection(F32 aspectRatio, F32 verticalFoV,
     }
 }
 
-void Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes,
-                           bool updateOnSet) {
+void Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes, bool updateOnSet) {
     _zPlanes = zPlanes;
     _orthoRect = rect;
     _isOrthoCamera = true;

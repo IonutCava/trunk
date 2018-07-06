@@ -17,11 +17,15 @@ ShadowMap::ShadowMap(Light* light, Camera* shadowCamera, ShadowType type)
       _shadowCamera(shadowCamera),
       _shadowMapType(type),
       _resolution(0),
-      _par(ParamHandler::getInstance()) {
+      _par(ParamHandler::getInstance())
+{
     _bias.bias();
 }
 
-ShadowMap::~ShadowMap() { MemoryManager::DELETE(_depthMap); }
+ShadowMap::~ShadowMap()
+{ 
+    MemoryManager::DELETE(_depthMap);
+}
 
 ShadowMapInfo::ShadowMapInfo(Light* light)
     : _light(light), _shadowMap(nullptr) {
@@ -36,7 +40,9 @@ ShadowMapInfo::ShadowMapInfo(Light* light)
     _numLayers = 1;
 }
 
-ShadowMapInfo::~ShadowMapInfo() { MemoryManager::DELETE(_shadowMap); }
+ShadowMapInfo::~ShadowMapInfo() {
+    MemoryManager::DELETE(_shadowMap);
+}
 
 ShadowMap* ShadowMapInfo::getOrCreateShadowMap(
     const SceneRenderState& renderState, Camera* shadowCamera) {

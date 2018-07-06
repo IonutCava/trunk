@@ -61,7 +61,6 @@ Material* Material::clone(const stringImpl& nameSuffix) {
         CreateResource<Material>(ResourceDescriptor(getName() + nameSuffix));
 
     cloneMat->_shadingMode = base._shadingMode;
-    cloneMat->_shaderModifier = base._shaderModifier;
     cloneMat->_translucencyCheck = base._translucencyCheck;
     cloneMat->_dumpToFile = base._dumpToFile;
     cloneMat->_useAlphaTest = base._useAlphaTest;
@@ -75,6 +74,7 @@ Material* Material::clone(const stringImpl& nameSuffix) {
     cloneMat->_translucencySource.clear();
 
     for (U8 i = 0; i < to_uint(RenderStage::COUNT); i++) {
+        cloneMat->_shaderModifier[i] = base._shaderModifier[i];
         cloneMat->_shaderInfo[i] = _shaderInfo[i];
         cloneMat->_defaultRenderStates[i] = _defaultRenderStates[i];
     }
@@ -143,14 +143,12 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
                           Texture* texture,
                           const TextureOperation& op) {
     bool computeShaders = false;
-    U32 slot = to_uint(textureUsageSlot);
-
     if (textureUsageSlot == ShaderProgram::TextureUsage::UNIT1) {
         _operation = op;
     }
 
     if (texture && textureUsageSlot == ShaderProgram::TextureUsage::OPACITY) {
-        Texture* diffuseMap = _textures[to_uint(ShaderProgram::TextureUsage::UNIT0)];
+        Texture* diffuseMap = getTexture(ShaderProgram::TextureUsage::UNIT0);
         if (diffuseMap && texture->getGUID() == diffuseMap->getGUID()) {
             /// If the opacity and diffuse map use the same texture, remove one reference
             RemoveResource(texture);
@@ -163,18 +161,17 @@ bool Material::setTexture(ShaderProgram::TextureUsage textureUsageSlot,
         (textureUsageSlot == ShaderProgram::TextureUsage::UNIT0 ||
          textureUsageSlot == ShaderProgram::TextureUsage::OPACITY);
 
-    if (_textures[slot]) {
-        UNREGISTER_TRACKED_DEPENDENCY(_textures[slot]);
-        RemoveResource(_textures[slot]);
+    if (_textures[to_uint(textureUsageSlot)]) {
+        UNREGISTER_TRACKED_DEPENDENCY(_textures[to_uint(textureUsageSlot)]);
+        RemoveResource(_textures[to_uint(textureUsageSlot)]);
     } else {
         // if we add a new type of texture recompute shaders
         computeShaders = true;
     }
 
-    _textures[slot] = texture;
-
+    _textures[to_uint(textureUsageSlot)] = texture;
     if (texture) {
-        REGISTER_TRACKED_DEPENDENCY(_textures[slot]);
+        REGISTER_TRACKED_DEPENDENCY(_textures[to_uint(textureUsageSlot)]);
     }
 
     if (computeShaders) {
@@ -293,30 +290,27 @@ bool Material::computeShader(RenderStage renderStage,
                ShaderInfo::ShaderCompilationStage::COMPUTED;
     }
 
-    U32 slot0 = to_uint(ShaderProgram::TextureUsage::UNIT0);
-    U32 slot1 = to_uint(ShaderProgram::TextureUsage::UNIT1);
-    U32 slotOpacity = to_uint(ShaderProgram::TextureUsage::OPACITY);
-
-    if ((_textures[slot0] &&
-         _textures[slot0]->getState() != ResourceState::RES_LOADED) ||
-        (_textures[slotOpacity] &&
-         _textures[slotOpacity]->getState() != ResourceState::RES_LOADED)) {
+    Texture* albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
+    Texture* opacityTex = getTexture(ShaderProgram::TextureUsage::OPACITY);
+    if ((albedoTex && albedoTex->getState() != ResourceState::RES_LOADED) ||
+        (opacityTex && opacityTex->getState() != ResourceState::RES_LOADED)) {
         return false;
     }
 
-    DIVIDE_ASSERT(
-        _shadingMode != ShadingMode::COUNT,
-        "Material computeShader error: Invalid shading mode specified!");
+    DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT,
+                  "Material computeShader error: Invalid shading mode specified!");
 
     info._shaderDefines.clear();
 
-    if (_textures[slot0]) {
+    if (albedoTex) {
         _shaderData._textureCount = 1;
     }
 
-    if (_textures[slot1]) {
-        if (!_textures[slot0]) {
-            std::swap(_textures[slot0], _textures[slot1]);
+    Texture* secondAlbedoTex = getTexture(ShaderProgram::TextureUsage::UNIT1);
+    if (secondAlbedoTex) {
+        if (!albedoTex) {
+            std::swap(_textures[to_uint(ShaderProgram::TextureUsage::UNIT0)],
+                      _textures[to_uint(ShaderProgram::TextureUsage::UNIT1)]);
             _shaderData._textureCount = 1;
             _translucencyCheck = true;
         } else {
@@ -342,13 +336,14 @@ bool Material::computeShader(RenderStage renderStage,
 
     if (depthPassShader && renderStage == RenderStage::SHADOW) {
         setShaderDefines(renderStage, "COMPUTE_MOMENTS");
+        shader += ".Shadow";
     }
 
+
     // What kind of effects do we need?
-    if (_textures[slot0]) {
+    if (albedoTex) {
         // Bump mapping?
-        if (_textures[to_uint(
-                ShaderProgram::TextureUsage::NORMALMAP)] &&
+        if (getTexture(ShaderProgram::TextureUsage::NORMALMAP) &&
             _bumpMethod != BumpMethod::NONE) {
             setShaderDefines(renderStage, "COMPUTE_TBN");
             shader += ".Bump";  // Normal Mapping
@@ -368,7 +363,7 @@ bool Material::computeShader(RenderStage renderStage,
         shader += ".NoTexture";
     }
 
-    if (_textures[to_uint(ShaderProgram::TextureUsage::SPECULAR)]) {
+    if (getTexture(ShaderProgram::TextureUsage::SPECULAR)) {
         shader += ".Specular";
         setShaderDefines(renderStage, "USE_SPECULAR_MAP");
     }
@@ -396,8 +391,7 @@ bool Material::computeShader(RenderStage renderStage,
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         setShaderDefines(renderStage, "USE_GPU_SKINNING");
-        shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only
-        // property
+        shader += ",Skinned";  //<Use "," instead of "." will add a Vertex only property
     }
 
     switch (_shadingMode) {
@@ -428,9 +422,9 @@ bool Material::computeShader(RenderStage renderStage,
         } break;
     }
     // Add any modifiers you wish
-    if (!_shaderModifier.empty()) {
+    if (!_shaderModifier[to_uint(renderStage)].empty()) {
         shader += ".";
-        shader += _shaderModifier;
+        shader += _shaderModifier[to_uint(renderStage)];
     }
 
     setShaderProgramInternal(shader, renderStage, computeOnAdd);
@@ -459,11 +453,10 @@ void Material::computeShaderInternal() {
 
 void Material::getTextureData(ShaderProgram::TextureUsage slot,
                               TextureDataContainer& container) {
-    U32 slotValue = to_uint(slot);
-    Texture* crtTexture = _textures[slotValue];
+    Texture* crtTexture = getTexture(slot);
     if (crtTexture && crtTexture->flushTextureState()) {
         TextureData data = crtTexture->getData();
-        data.setHandleLow(slotValue);
+        data.setHandleLow(to_uint(slot));
         container.push_back(data);
     }
 }
@@ -560,15 +553,14 @@ bool Material::isTranslucent() {
         }
 
         // base texture is translucent
-        if (_textures[to_uint(ShaderProgram::TextureUsage::UNIT0)] &&
-            _textures[to_uint(ShaderProgram::TextureUsage::UNIT0)]
-                ->hasTransparency()) {
+        Texture* albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
+        if (albedoTex && albedoTex->hasTransparency()) {
             _translucencySource.push_back(TranslucencySource::DIFFUSE_MAP);
             useAlphaTest = true;
         }
 
         // opacity map
-        if (_textures[to_uint(ShaderProgram::TextureUsage::OPACITY)]) {
+        if (getTexture(ShaderProgram::TextureUsage::OPACITY)) {
             _translucencySource.push_back(TranslucencySource::OPACITY_MAP);
             useAlphaTest = false;
         }
@@ -592,8 +584,7 @@ void Material::getSortKeys(I32& shaderKey, I32& textureKey) const {
     shaderKey = info._shaderRef ? info._shaderRef->getID()
                                 : invalidShaderKey;
 
-    U32 textureSlot = to_uint(ShaderProgram::TextureUsage::UNIT0);
-    textureKey = _textures[textureSlot] ? _textures[textureSlot]->getHandle()
-                                        : invalidShaderKey;
+    Texture* albedoTex = getTexture(ShaderProgram::TextureUsage::UNIT0);
+    textureKey = albedoTex ? albedoTex->getHandle(): invalidShaderKey;
 }
 };

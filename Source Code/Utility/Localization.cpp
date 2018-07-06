@@ -54,20 +54,18 @@ void changeLanguage(const stringImpl& newLanguage) {
 }
 
 const char* get(const stringImpl& key, const stringImpl& defaultValue) {
+    typedef hashMapImpl<stringImpl, stringImpl>::const_iterator citer;
     assert(g_initialized == true &&
            "Locale::get error: Get() called without initializing the language "
            "subsytem");
     // When we ask for a string for the given key, we check our language cache
     // first
-    if (g_languageTable.find(key) != std::end(g_languageTable)) {
+    citer entry = g_languageTable.find(key);
+    if (entry != std::cend(g_languageTable)) {
         // Usually, the entire language table is loaded.
-        return g_languageTable[key].c_str();
+        return entry->second.c_str();
     }
-
-    g_languageTable[key] = defaultValue;
-    assert(g_languageTable[key].compare("String not found!") != 0 &&
-           "Locale error: INVALID STRING KEY!");
-
+    assert(false && "Locale error: INVALID STRING KEY!");
     return const_cast<char*>(defaultValue.c_str());
 }
 

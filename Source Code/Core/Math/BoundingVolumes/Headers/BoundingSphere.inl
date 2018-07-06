@@ -84,7 +84,7 @@ inline void BoundingSphere::addRadius(const vec3<F32>& point) {
     }
 }
 
-inline void BoundingSphere::CreateFromPoints(vectorImpl<vec3<F32>>& points) {
+inline void BoundingSphere::CreateFromPoints(const vectorImpl<vec3<F32>>& points) {
     _radius = 0;
     F32 numPoints = to_float(points.size());
 

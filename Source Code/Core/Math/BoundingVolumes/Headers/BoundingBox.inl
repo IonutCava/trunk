@@ -53,7 +53,7 @@ inline bool BoundingBox::operator!=(const BoundingBox& B) const {
     return !Compare(B);
 }
 
-inline void BoundingBox::CreateFromPoints(vectorImpl<vec3<F32>>& points) {
+inline void BoundingBox::CreateFromPoints(const vectorImpl<vec3<F32>>& points) {
     for (vec3<F32> p : points) {
         Add(p);
     }

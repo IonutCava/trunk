@@ -22,9 +22,9 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_Light
 };
 
 struct Shadow {
-    mat4  _lightVP[4];
+    mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
     vec4  _floatValues;
-    vec4  _lightPosition[4];
+    vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
 };
 
 

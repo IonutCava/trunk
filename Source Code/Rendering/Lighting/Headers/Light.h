@@ -82,15 +82,15 @@ struct LightProperties {
 
 struct LightShadowProperties {
     /// light viewProjection matrices
-    mat4<F32> _lightVP[4];
+    mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
     /// random float values (e.g. split distances)
     vec4<F32> _floatValues;
     /// light's position in world space
-    vec4<F32> _lightPosition[4];
+    vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
 
     inline void set(const LightShadowProperties& other) {
         _floatValues.set(other._floatValues);
-        for (U8 i = 0; i < 4; ++i) {
+        for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
             _lightVP[i].set(other._lightVP[i]);
             _lightPosition[i].set(other._lightPosition[i]);
         }

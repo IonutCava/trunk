@@ -82,8 +82,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     friend class Attorney::GFXDeviceGPUState;
     friend class Attorney::GFXDeviceRenderStateBlock;
   protected:
-    typedef hashMapImpl<size_t, RenderStateBlock*> RenderStateMap;
-    typedef std::stack<vec4<I32>, vectorImpl<vec4<I32> > > ViewportStack;
+    typedef hashMapImpl<size_t, RenderStateBlock> RenderStateMap;
+    typedef std::stack<vec4<I32>> ViewportStack;
 
     struct NodeData {
         union {
@@ -530,12 +530,11 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(GFXDevice, RenderAPIWrapper, final)
     void uploadGPUBlock();
     /// Update the graphics pipeline using the current rendering API with the state
     /// block passed
-    inline void activateStateBlock(
-        const RenderStateBlock& newBlock,
-        RenderStateBlock* const oldBlock) const override {
+    inline void activateStateBlock(const RenderStateBlock& newBlock,
+                                   const RenderStateBlock& oldBlock) const override {
         _api->activateStateBlock(newBlock, oldBlock);
     }
-    
+
     /// If the stateBlock doesn't exist in the state block map, add it for future reference
     bool registerRenderStateBlock(const RenderStateBlock& stateBlock);
 

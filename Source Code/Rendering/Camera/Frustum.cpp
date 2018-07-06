@@ -69,8 +69,7 @@ Frustum::FrustCollision Frustum::ContainsBoundingBox(
 }
 
 void Frustum::Extract() {
-    _viewProjectionMatrixCache.set(
-        GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION));
+    GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW_PROJECTION, _viewProjectionMatrixCache);
 
     Plane<F32>& rightPlane = _frustumPlanes[0];
     Plane<F32>& leftPlane = _frustumPlanes[1];
@@ -81,28 +80,22 @@ void Frustum::Extract() {
 
     const F32* mat = &_viewProjectionMatrixCache.mat[0];
 
-    rightPlane.set(mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8],
-                   mat[15] - mat[12]);
+    rightPlane.set(mat[3] - mat[0], mat[7] - mat[4], mat[11] - mat[8], mat[15] - mat[12]);
     rightPlane.normalize();
 
-    leftPlane.set(mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8],
-                  mat[15] + mat[12]);
+    leftPlane.set(mat[3] + mat[0], mat[7] + mat[4], mat[11] + mat[8], mat[15] + mat[12]);
     leftPlane.normalize();
 
-    bottomPlane.set(mat[3] + mat[1], mat[7] + mat[5], mat[11] + mat[9],
-                    mat[15] + mat[13]);
+    bottomPlane.set(mat[3] + mat[1], mat[7] + mat[5], mat[11] + mat[9], mat[15] + mat[13]);
     bottomPlane.normalize();
 
-    topPlane.set(mat[3] - mat[1], mat[7] - mat[5], mat[11] - mat[9],
-                 mat[15] - mat[13]);
+    topPlane.set(mat[3] - mat[1], mat[7] - mat[5], mat[11] - mat[9], mat[15] - mat[13]);
     topPlane.normalize();
 
-    farPlane.set(mat[3] - mat[2], mat[7] - mat[6], mat[11] - mat[10],
-                 mat[15] - mat[14]);
+    farPlane.set(mat[3] - mat[2], mat[7] - mat[6], mat[11] - mat[10], mat[15] - mat[14]);
     farPlane.normalize();
 
-    nearPlane.set(mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10],
-                  mat[15] + mat[14]);
+    nearPlane.set(mat[3] + mat[2], mat[7] + mat[6], mat[11] + mat[10], mat[15] + mat[14]);
     nearPlane.normalize();
 
     _pointsDirty = true;
@@ -113,7 +106,7 @@ void Frustum::intersectionPoint(const Plane<F32>& a, const Plane<F32>& b,
     outResult.set((a.getDistance() * (Cross(b.getNormal(), c.getNormal()))) +
                   (b.getDistance() * (Cross(c.getNormal(), a.getNormal()))) +
                   (c.getDistance() * (Cross(a.getNormal(), b.getNormal()))) /
-                      -Dot(a.getNormal(), Cross(b.getNormal(), c.getNormal())));
+                  -Dot(a.getNormal(), Cross(b.getNormal(), c.getNormal())));
 }
 
 void Frustum::updatePoints() {

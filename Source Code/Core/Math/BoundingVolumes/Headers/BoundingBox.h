@@ -41,7 +41,7 @@ class BoundingBox : public GUIDWrapper {
    public:
     BoundingBox();
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max);
-    BoundingBox(vectorImpl<vec3<F32>>& points);
+    BoundingBox(const vectorImpl<vec3<F32>>& points);
     ~BoundingBox();
 
     BoundingBox(const BoundingBox& b);
@@ -58,7 +58,7 @@ class BoundingBox : public GUIDWrapper {
     /// Optimized method
     bool Intersect(const Ray& r, F32 t0, F32 t1) const;
 
-    void CreateFromPoints(vectorImpl<vec3<F32>>& points);
+    void CreateFromPoints(const vectorImpl<vec3<F32>>& points);
 
     void Add(const vec3<F32>& v);
     void Add(const BoundingBox& bb);

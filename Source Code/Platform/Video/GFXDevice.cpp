@@ -77,6 +77,7 @@ GFXDevice::GFXDevice()
         renderTarget = nullptr;
     }
     // To allow calls to "setBaseViewport"
+    
     _viewport.push(vec4<I32>(-1));
     // Add our needed app-wide render passes. RenderPassManager is responsible
     // for deleting these!
@@ -178,44 +179,41 @@ void GFXDevice::generateCubeMap(Framebuffer& cubeMap, const vec3<F32>& pos,
 }
 
 /// If the stateBlock doesn't exist in the state block map, add it for future reference
-bool GFXDevice::registerRenderStateBlock(
-    const RenderStateBlock& descriptor) {
+bool GFXDevice::registerRenderStateBlock(const RenderStateBlock& descriptor) {
     // Each combination of render states has a unique hash value
     size_t hashValue = descriptor.getHash();
     // Find the corresponding render state block
     // Create a new one if none are found. The GFXDevice class is
     // responsible for deleting these!
     std::pair<RenderStateMap::iterator, bool> result =
-        hashAlg::emplace(_stateBlockMap, hashValue,
-                         MemoryManager_NEW RenderStateBlock(descriptor));
+        hashAlg::emplace(_stateBlockMap, hashValue, descriptor);
     // Return true if registration was successful 
     return result.second;
 }
 
-/// Activate the render state block described by the specified hash value (0 ==
-/// default state block)
+/// Activate the render state block described by the specified hash value (0 == default state block)
 size_t GFXDevice::setStateBlock(size_t stateBlockHash) {
-    // Passing 0 is a perfectly acceptable way of enabling the default render
-    // state block
-    stateBlockHash =
-        stateBlockHash == 0 ? _defaultStateBlockHash : stateBlockHash;
+    // Passing 0 is a perfectly acceptable way of enabling the default render state block
+    if (stateBlockHash == 0) {
+        stateBlockHash = _defaultStateBlockHash;
+    }
+
     // If the new state hash is different from the previous one
-    if (_currentStateBlockHash == 0 ||
-        stateBlockHash != _currentStateBlockHash) {
+    if (stateBlockHash != _currentStateBlockHash) {
         // Remember the previous state hash
         _previousStateBlockHash = _currentStateBlockHash;
         // Update the current state hash
         _currentStateBlockHash = stateBlockHash;
-        RenderStateMap::const_iterator currentStateIt =
-            _stateBlockMap.find(_currentStateBlockHash);
-        RenderStateMap::const_iterator previousStateIt =
-            _stateBlockMap.find(_previousStateBlockHash);
-        DIVIDE_ASSERT(
-            currentStateIt != std::end(_stateBlockMap) &&
-                previousStateIt != std::end(_stateBlockMap),
-            "GFXDevice error: Invalid state blocks detected on activation!");
+        RenderStateMap::const_iterator currentStateIt = _stateBlockMap.find(_currentStateBlockHash);
+        RenderStateMap::const_iterator previousStateIt = _stateBlockMap.find(_previousStateBlockHash);
+
+        DIVIDE_ASSERT(currentStateIt != previousStateIt &&
+                      currentStateIt != std::cend(_stateBlockMap) &&
+                      previousStateIt != std::cend(_stateBlockMap),
+                      "GFXDevice error: Invalid state blocks detected on activation!");
+
         // Activate the new render state block in an rendering API dependent way
-        activateStateBlock(*currentStateIt->second, previousStateIt->second);
+        activateStateBlock(currentStateIt->second, previousStateIt->second);
     }
     // Return the previous state hash
     return _previousStateBlockHash;
@@ -226,11 +224,11 @@ const RenderStateBlock& GFXDevice::getRenderStateBlock(size_t renderStateBlockHa
     // Find the render state block associated with the received hash value
     RenderStateMap::const_iterator it = _stateBlockMap.find(renderStateBlockHash);
     // Assert if it doesn't exist. Avoids programming errors.
-    DIVIDE_ASSERT(it != std::end(_stateBlockMap),
+    DIVIDE_ASSERT(it != std::cend(_stateBlockMap),
                   "GFXDevice error: Invalid render state block hash specified "
                   "for getRenderStateBlock!");
     // Return the state block's descriptor
-    return *it->second;
+    return it->second;
 }
 
 void GFXDevice::increaseResolution() {

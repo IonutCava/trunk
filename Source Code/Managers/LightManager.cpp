@@ -199,13 +199,18 @@ bool LightManager::framePreRenderEnded(const FrameEvent& evt) {
     // generate shadowmaps for each light
     for (Light::LightList& lights : _lights) {
         for (Light* light : lights) {
+            _currentShadowCastingLight = light;
+            I32 shadowPropertiesOffset = light->getProperties()._options.z;
+            if (shadowPropertiesOffset >= 0) {
+                _lightShaderBuffer[to_uint(ShaderBufferType::SHADOW)]->bindRange(ShaderBufferLocation::LIGHT_SHADOW, shadowPropertiesOffset, 1);
+            }
             light->generateShadowMaps(GET_ACTIVE_SCENE().renderState());
         }
     }
 
     // Revert back to the previous stage
     GFX_DEVICE.setRenderStage(previousRS);
-
+    _currentShadowCastingLight = nullptr;
     return true;
 }
 

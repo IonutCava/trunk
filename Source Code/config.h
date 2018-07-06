@@ -153,7 +153,8 @@ const unsigned int MAX_LIGHTS_IN_VIEW = 16;
 /// shadows
 const unsigned int MAX_SHADOW_CASTING_LIGHTS_PER_NODE = 2;
 /// Used for CSM or PSSM to determine the maximum number of frustum splits
-const unsigned int MAX_SPLITS_PER_LIGHT = 4;
+/// And cube map shadows as well
+const unsigned int MAX_SPLITS_PER_LIGHT = 6;
 /// How many "units" away should a directional light source be from the camera's
 /// position
 const unsigned int DIRECTIONAL_LIGHT_DISTANCE = 500;

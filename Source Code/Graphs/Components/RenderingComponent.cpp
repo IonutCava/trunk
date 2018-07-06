@@ -30,7 +30,10 @@ RenderingComponent::RenderingComponent(Material* const materialInstance,
      Object3D::ObjectType type = _parentSGN.getNode<Object3D>()->getObjectType();
      _isSubMesh = type == Object3D::ObjectType::SUBMESH;
     _nodeSkinned = parentSGN.getNode<Object3D>()->hasFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
-
+    if (_materialInstance && !_isSubMesh) {
+        _materialInstance->addShaderModifier(RenderStage::SHADOW, "TriangleStrip");
+        _materialInstance->setShaderDefines(RenderStage::SHADOW, "USE_TRIANGLE_STRIP");
+    }
     for (GFXDevice::RenderPackage& pkg : _renderData) {
         pkg._textureData.reserve(ParamHandler::getInstance().getParam<I32>("rendering.maxTextureSlots", 16));
     }
@@ -118,7 +121,7 @@ void RenderingComponent::update(const U64 deltaTime) {
     _shadowMappingEnabled = LightManager::getInstance().shadowMappingEnabled();
 
     if (_impostorDirty) {
-        std::array<vec3<F32>, 8> points;
+        vectorImpl<vec3<F32>> points(8);
         const vec3<F32>* bbPoints = _parentSGN.getInitialBoundingBox().getPoints();
         points[0].set(bbPoints[1]);
         points[1].set(bbPoints[5]);

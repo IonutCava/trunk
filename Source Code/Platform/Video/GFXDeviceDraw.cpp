@@ -175,9 +175,9 @@ void GFXDevice::addToRenderQueue(const RenderPackage& package) {
         RenderPackage& previous = _renderQueue.back();
 
         if (previous.isCompatible(package)) {
-            previous._drawCommands.insert(std::end(previous._drawCommands),
-                                          std::begin(package._drawCommands),
-                                          std::end(package._drawCommands));
+            previous._drawCommands.insert(std::cend(previous._drawCommands),
+                                          std::cbegin(package._drawCommands),
+                                          std::cend(package._drawCommands));
             return;
         }
     } else {

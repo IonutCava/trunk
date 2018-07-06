@@ -50,27 +50,17 @@ struct RenderQueueKeyCompare {
     // Sort
     bool operator()(const RenderBinItem& a, const RenderBinItem& b) const {
         // Sort by shader in all states The sort key is the shader id (for now)
-        if (a._sortKeyA < b._sortKeyA) {
-            return true;
+        if (a._sortKeyA != b._sortKeyA) {
+            return a._sortKeyA < b._sortKeyA;
         }
-
-        if (a._sortKeyA > b._sortKeyA) {
-            return false;
-        }
-
         // If the shader values are the same, we use the state hash for sorting
         // The _stateHash is a CRC value created based on the RenderState.
-        if (a._stateHash < b._stateHash) {
-            return true;
+        if (a._stateHash != b._stateHash) {
+            return a._stateHash < b._stateHash;
         }
-
-        if (a._stateHash > b._stateHash) {
-            return false;
-        }
-
         // If both the shader are the same and the state hashes match,
         // we sort by the secondary key (usually the texture id)
-        return (a._sortKeyB < b._sortKeyB);
+        return a._sortKeyB < b._sortKeyB;
     }
 };
 
@@ -115,15 +105,18 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
                           RenderQueueDistanceFrontToBack());
             } else {
                 std::sort(std::begin(_renderBinStack),
-                          std::end(_renderBinStack), RenderQueueKeyCompare());
+                          std::end(_renderBinStack),
+                          RenderQueueKeyCompare());
             }
         } break;
         case RenderingOrder::List::BACK_TO_FRONT: {
-            std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
+            std::sort(std::begin(_renderBinStack),
+                      std::end(_renderBinStack),
                       RenderQueueDistanceBacktoFront());
         } break;
         case RenderingOrder::List::FRONT_TO_BACK: {
-            std::sort(std::begin(_renderBinStack), std::end(_renderBinStack),
+            std::sort(std::begin(_renderBinStack),
+                      std::end(_renderBinStack),
                       RenderQueueDistanceFrontToBack());
         } break;
         case RenderingOrder::List::NONE: {

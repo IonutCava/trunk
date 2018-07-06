@@ -59,5 +59,5 @@ bool DX_API::deInitShaders() { return true; }
 void DX_API::threadedLoadCallback() {}
 
 void DX_API::activateStateBlock(const RenderStateBlock& newBlock,
-                                RenderStateBlock* const oldBlock) const {}
+                                const RenderStateBlock& oldBlock) const {}
 };

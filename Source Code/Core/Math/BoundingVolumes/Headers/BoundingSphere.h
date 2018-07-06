@@ -43,7 +43,7 @@ class BoundingSphere {
    public:
     BoundingSphere();
     BoundingSphere(const vec3<F32>& center, F32 radius);
-    BoundingSphere(vectorImpl<vec3<F32>>& points);
+    BoundingSphere(const vectorImpl<vec3<F32>>& points);
 
     BoundingSphere(const BoundingSphere& s);
     void operator=(const BoundingSphere& s);
@@ -56,7 +56,7 @@ class BoundingSphere {
     void addRadius(const BoundingSphere& bSphere);
     void addRadius(const vec3<F32>& point);
 
-    void CreateFromPoints(vectorImpl<vec3<F32>>& points);
+    void CreateFromPoints(const vectorImpl<vec3<F32>>& points);
 
     void setRadius(F32 radius);
     void setCenter(const vec3<F32>& center);

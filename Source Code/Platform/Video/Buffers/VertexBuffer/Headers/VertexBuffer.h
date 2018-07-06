@@ -211,6 +211,20 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface
         }
     }
 
+    inline void modifyPositionValues(U32 indexOffset, const vectorImpl<vec3<F32>>& newValues) {
+       assert(indexOffset + newValues.size() - 1 < _data.size());
+       DIVIDE_ASSERT(_staticBuffer == false ||
+           (_staticBuffer == true && !_data.empty()),
+           "VertexBuffer error: Modifying static buffers after creation is not allowed!");
+
+       vectorImpl<Vertex>::iterator it = _data.begin() + indexOffset;
+       for (const vec3<F32>& value : newValues) {
+            (it++)->_position.set(value);
+       }
+
+       _attribDirty[to_uint(VertexAttribute::ATTRIB_POSITION)] = true;
+    }
+
     inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
         modifyPositionValue(index, newValue.x, newValue.y, newValue.z);
     }

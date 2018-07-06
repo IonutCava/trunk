@@ -139,9 +139,8 @@ DEFINE_SINGLETON_EXT1_W_SPECIFIER(DX_API, RenderAPIWrapper, final)
     void threadedLoadCallback() override;
 
     U64 getFrameDurationGPU() override { return 0; }
-
     void activateStateBlock(const RenderStateBlock& newBlock,
-                            RenderStateBlock* const oldBlock) const override;
+                            const RenderStateBlock& oldBlock) const override;
 
 END_SINGLETON
 

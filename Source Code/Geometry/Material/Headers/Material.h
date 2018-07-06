@@ -265,9 +265,16 @@ class Material : public Resource {
     /// Shader modifiers add tokens to the end of the shader name.
     /// Add as many tokens as needed but separate them with a ".". i.e:
     /// "Tree.NoWind.Glow"
-    inline void addShaderModifier(const stringImpl& shaderModifier) {
-        _shaderModifier = shaderModifier;
+    inline void addShaderModifier(RenderStage renderStage, const stringImpl& shaderModifier) {
+        _shaderModifier[to_uint(renderStage)] = shaderModifier;
     }
+    inline void addShaderModifier(const stringImpl& shaderModifier) {
+        addShaderModifier(RenderStage::DISPLAY, shaderModifier);
+        addShaderModifier(RenderStage::Z_PRE_PASS, shaderModifier);
+        addShaderModifier(RenderStage::SHADOW, shaderModifier);
+        addShaderModifier(RenderStage::REFLECTION, shaderModifier);
+    }
+
     /// Shader defines, separated by commas, are added to the generated shader
     /// The shader generator appends "#define " to the start of each define
     /// For example, to define max light count and max shadow casters add this
@@ -335,7 +342,7 @@ class Material : public Resource {
     inline U8  getTextureCount()   const { return _shaderData._textureCount; }
 
     size_t getRenderStateBlock(RenderStage currentStage);
-    inline Texture* const getTexture(ShaderProgram::TextureUsage textureUsage) {
+    inline Texture* getTexture(ShaderProgram::TextureUsage textureUsage) const {
         return _textures[to_uint(textureUsage)];
     }
     ShaderInfo& getShaderInfo(RenderStage renderStage = RenderStage::DISPLAY);
@@ -378,7 +385,7 @@ class Material : public Resource {
     std::deque<ShaderQueueElement> _shaderComputeQueue;
     ShadingMode _shadingMode;
     /// use for special shader tokens, such as "Tree"
-    stringImpl _shaderModifier;
+    std::array<stringImpl, to_const_uint(RenderStage::COUNT)> _shaderModifier;
     vectorImpl<TranslucencySource> _translucencySource;
     /// parallax/relief factor (higher value > more pronounced effect)
     F32 _parallaxFactor;
