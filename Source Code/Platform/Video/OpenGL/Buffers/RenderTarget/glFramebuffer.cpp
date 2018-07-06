@@ -254,8 +254,8 @@ void glFramebuffer::fastBlit(GLuint inputFB,
 {
     if (colourAttIn != GL_NONE) {
         assert(colourAttOut != GL_NONE);
-        glNamedFramebufferDrawBuffer(outputFB, colourAttIn);
-        glNamedFramebufferReadBuffer(inputFB, colourAttOut);
+        glNamedFramebufferDrawBuffer(outputFB, colourAttOut);
+        glNamedFramebufferReadBuffer(inputFB, colourAttIn);
     }
 
     glBlitNamedFramebuffer(inputFB, outputFB,
