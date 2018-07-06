@@ -63,12 +63,12 @@ void Camera::tick(U32 elapsedTime) {
 	//static bool oddFrame = true;
 	_cameraMoveSpeed = FRAME_SPEED_FACTOR * _moveSpeedFactor;
 	_cameraTurnSpeed = FRAME_SPEED_FACTOR * _turnSpeedFactor;
-	//if(oddFrame) 
+	//if(oddFrame)
 		_orientation.normalize();
 	//oddFrame = !oddFrame;
 }
 
-void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) { 
+void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
 	Quaternion<F32> pitchRot(WORLD_X_AXIS, -pitch);
 	Quaternion<F32> yawRot(WORLD_Y_AXIS, -yaw);
 	if(!IS_ZERO(roll)){
@@ -95,11 +95,10 @@ void Camera::rotate(const Quaternion<F32>& q) {
 }
 
 void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
-
 	yaw   =   -yaw * _cameraTurnSpeed;
 	pitch = -pitch * _cameraTurnSpeed;
 	roll  =  -roll * _cameraTurnSpeed;
-	
+
 	if(_type == FIRST_PERSON){
 	    _accumPitchDegrees += pitch;
 
@@ -136,7 +135,6 @@ void Camera::rotate(F32 yaw, F32 pitch, F32 roll) {
 }
 
 void Camera::move(F32 dx, F32 dy, F32 dz) {
-
 	_eye += _xAxis * dx * _cameraMoveSpeed;
 	_eye += WORLD_Y_AXIS * dy * _cameraMoveSpeed;
 
@@ -151,7 +149,7 @@ void Camera::move(F32 dx, F32 dy, F32 dz) {
     }else{
 		_eye += _viewDir * dz * _cameraMoveSpeed;
     }
-    
+
     _viewMatrixDirty = true;
 }
 
@@ -179,7 +177,7 @@ void Camera::lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F3
 
     _viewMatrix.m[0][2] = _zAxis.x;
     _viewMatrix.m[1][2] = _zAxis.y;
-    _viewMatrix.m[2][2] = _zAxis.z;    
+    _viewMatrix.m[2][2] = _zAxis.z;
     _viewMatrix.m[3][2] = -_zAxis.dot(eye);
 
     // Extract the pitch angle from the view matrix.
@@ -226,10 +224,9 @@ void Camera::renderLookAtReflected(const Plane<F32>& reflectionPlane, bool inver
 }
 
 void Camera::updateViewMatrix(){
-
 	if(!_viewMatrixDirty)
 		return;
-		
+
 	// Reconstruct the view matrix.
     _viewMatrix = _orientation.getMatrix();
 

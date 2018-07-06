@@ -52,7 +52,7 @@ Scene* SceneManager::createScene(const std::string& name){
 
 	if(!name.empty())
 		scene = _sceneFactory[name]();
-	
+
 	if(scene != NULL)
 		_sceneMap.insert(std::make_pair(name, scene));
 
@@ -65,7 +65,7 @@ bool SceneManager::framePreRenderStarted(const FrameEvent& evt){
 }
 
 void SceneManager::preRender() {
-	_activeScene->preRender(); 
+	_activeScene->preRender();
 }
 
 void SceneManager::render(const RenderStage& stage) {

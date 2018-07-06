@@ -23,7 +23,7 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 			_frustumPlanes[p][2] * center.z +
 			_frustumPlanes[p][3];
 
-		if( t < -radius)         
+		if( t < -radius)
 			return FRUSTUM_OUT;
 
 		if(fabs(t) < radius)
@@ -34,7 +34,6 @@ I8 Frustum::ContainsSphere(const vec3<F32>& center, F32 radius) const {
 }
 
 I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
-
 	const vectorImpl<vec3<F32>>& tCorners = bbox.getPoints();
 
 	I32 iTotalIn = 0;
@@ -47,7 +46,6 @@ I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
 		iPtIn = 1;
 
 		for(U8 c = 0; c < 8; ++c) {
-
 			side = _frustumPlanes[p][0] * tCorners[c].x +
 				   _frustumPlanes[p][1] * tCorners[c].y +
 				   _frustumPlanes[p][2] * tCorners[c].z +
@@ -59,13 +57,13 @@ I8 Frustum::ContainsBoundingBox(const BoundingBox& bbox) const {
 			}
 		}
 
-		if(iInCount == 0) 
+		if(iInCount == 0)
 			return FRUSTUM_OUT;
 
 		iTotalIn += iPtIn;
 	}
 
-	if(iTotalIn == 6) 
+	if(iTotalIn == 6)
 		return FRUSTUM_IN;
 
 	return FRUSTUM_INTERSECT;

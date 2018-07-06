@@ -51,14 +51,14 @@ ShadowMap* ShadowMapInfo::getOrCreateShadowMap(const SceneRenderState& renderSta
 }
 
 bool ShadowMap::Bind(U8 offset){
-	if(_isBound) 
+	if(_isBound)
 		return false;
 
 	_isBound = true;
 
 	if(_depthMap)
 		_depthMap->Bind(offset);
-	
+
 	return true;
 }
 
@@ -68,7 +68,7 @@ bool ShadowMap::Unbind(U8 offset){
 
 	if(_depthMap)
 		_depthMap->Unbind(offset);
-	
+
 	_isBound = false;
 	return true;
 }

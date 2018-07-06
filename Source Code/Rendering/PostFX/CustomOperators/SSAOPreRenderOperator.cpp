@@ -12,8 +12,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(Quad3D* target,
 											 SamplerDescriptor* const sampler) : PreRenderOperator(SSAO_STAGE,target,resolution,sampler),
 																		         _outputFBO(result)
 {
-
-	TextureDescriptor outputDescriptor(TEXTURE_2D, 
+	TextureDescriptor outputDescriptor(TEXTURE_2D,
 		                               RGB,
 									   RGB8,
 									   UNSIGNED_BYTE);

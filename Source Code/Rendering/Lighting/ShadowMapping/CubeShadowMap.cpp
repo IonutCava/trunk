@@ -63,7 +63,6 @@ void CubeShadowMap::render(const SceneRenderState& renderState, boost::function0
 }
 
 void CubeShadowMap::renderInternal(const SceneRenderState& renderState) const {
-	
 	//Get some global vars. We limit ourselves to drawing only the objects in the light's range. If range is infinit (-1) we use the GFX limit
 	F32 zNear  = Frustum::getInstance().getZPlanes().x;
 	F32 zFar   = _light->getRange();
@@ -74,6 +73,6 @@ void CubeShadowMap::renderInternal(const SceneRenderState& renderState) const {
 	Frustum::getInstance().setZPlanes(vec2<F32>(zNear,zFar));
 
 	GFX_DEVICE.generateCubeMap(*_depthMap, _light->getPosition(), _callback, SHADOW_STAGE);
-	
+
 	Frustum::getInstance().setZPlanes(vec2<F32>(zNear,oldzFar));
 }

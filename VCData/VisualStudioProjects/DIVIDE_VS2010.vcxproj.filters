@@ -125,39 +125,6 @@
     <Filter Include="Scenes\Headers">
       <UniqueIdentifier>{965fc129-41e3-4932-8e3d-3a8479420e1f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hardware">
-      <UniqueIdentifier>{7bb497fd-d27a-41da-9d19-87b691548faa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Input">
-      <UniqueIdentifier>{bf13033d-1afc-4568-888a-cf7972cd1de0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video">
-      <UniqueIdentifier>{be7df57b-e604-4be6-8e17-dc8fc4f30cd3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL">
-      <UniqueIdentifier>{4f89b93d-9cd0-4a95-80de-6d603e5f3aa8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D">
-      <UniqueIdentifier>{afa5dc04-9337-4c26-b96f-de125246b7cc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Null">
-      <UniqueIdentifier>{cb9ae69d-7f2d-4f71-8f74-1f58394eb1e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio">
-      <UniqueIdentifier>{0ee00467-4025-4185-a9f8-8fcbdfd27555}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\fmod">
-      <UniqueIdentifier>{327eb8f2-5de2-42b1-9ee9-a9a87bf1eabe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\openal">
-      <UniqueIdentifier>{3e98068f-56e3-43a7-b310-4e586039804e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\sdl_mixer">
-      <UniqueIdentifier>{3bbbe357-50e7-43e4-b48d-b5863f08ba54}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Network">
-      <UniqueIdentifier>{3db4993f-30dc-4f66-a413-ab79a834481b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Managers">
       <UniqueIdentifier>{50410db4-6ff3-4f30-85e5-99293c2ad55a}</UniqueIdentifier>
     </Filter>
@@ -272,9 +239,6 @@
     <Filter Include="Dynamics\Physics\PhysX\Headers">
       <UniqueIdentifier>{719e71b7-3874-4e2f-a0f7-0cefea42350d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hardware\Video\OpenGL\glsw">
-      <UniqueIdentifier>{2ffc7374-ca5b-44f6-adf7-2aefc209185c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="shaders\GLSL\fragmentAtoms">
       <UniqueIdentifier>{7227fcef-ee04-4ec6-9e67-b2096ccb09eb}</UniqueIdentifier>
     </Filter>
@@ -386,9 +350,6 @@
     <Filter Include="Scenes\WarScene\Resources\Support\Army\Headers">
       <UniqueIdentifier>{16411be4-155d-4c7a-8b60-ad55a7eb3ed2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hardware\Platform">
-      <UniqueIdentifier>{42339953-c419-4eb8-8752-96c6e1e03820}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core\Resources">
       <UniqueIdentifier>{a27eb18b-f72b-43c4-beb1-ab4290cac23d}</UniqueIdentifier>
     </Filter>
@@ -404,140 +365,8 @@
     <Filter Include="Core\MemoryManagement\Headers">
       <UniqueIdentifier>{a9ba85e3-526e-4399-9e00-713c4e5de039}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hardware\Input\Headers">
-      <UniqueIdentifier>{79e14772-bf5f-475e-bc57-c5a23ca84024}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Languages">
       <UniqueIdentifier>{003c25a0-1e62-4590-abe3-fe1bd5b04614}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\Headers">
-      <UniqueIdentifier>{ec069530-e0c2-4261-8e3c-614b799056de}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\fmod\Headers">
-      <UniqueIdentifier>{09681f8a-67dd-4cc9-afdf-19c5c42ccbc7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\openal\Headers">
-      <UniqueIdentifier>{7d92da0f-f78e-4ba0-8b18-d7201ee52fef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Audio\sdl_mixer\Headers">
-      <UniqueIdentifier>{1b743868-ef4c-4f0a-a74d-55eb6499e412}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Network\Headers">
-      <UniqueIdentifier>{a76e3eb8-052e-4746-92ce-846b3330e073}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Platform\Headers">
-      <UniqueIdentifier>{e2451970-974f-4d8d-a67b-daa6c5edca0d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Headers">
-      <UniqueIdentifier>{b7d87d0c-aa01-407f-beb5-6dd85dde512c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers">
-      <UniqueIdentifier>{30787d70-add8-4295-a1db-d49e6b33de03}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\FrameBufferObject">
-      <UniqueIdentifier>{d980acd1-9746-4404-bb71-005891375bb8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\VertexBufferObject">
-      <UniqueIdentifier>{97ebca71-14ef-4dd3-b564-0a2fbfd46000}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\PixelBufferObject">
-      <UniqueIdentifier>{7fc59c22-e538-43f6-b588-cc8e1f75c560}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\FrameBufferObject\Headers">
-      <UniqueIdentifier>{b10b59ef-f28a-46cd-871a-3b706745f669}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\PixelBufferObject\Headers">
-      <UniqueIdentifier>{91ba6a56-d71c-446f-99e7-d9dc53827888}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Buffers\VertexBufferObject\Headers">
-      <UniqueIdentifier>{d1204b53-d439-472e-af09-b0f288335a4b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Shaders">
-      <UniqueIdentifier>{b32e4760-36c6-4f03-867b-95be234d1606}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Shaders\Headers">
-      <UniqueIdentifier>{599bd2aa-ae14-4d14-87fe-03a070a5a1d6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Textures">
-      <UniqueIdentifier>{aeb45461-23f3-48d0-add3-0a0d47bc9827}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Textures\Headers">
-      <UniqueIdentifier>{32492aab-c4b5-4cef-847c-6cd6819b8762}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers">
-      <UniqueIdentifier>{3d41ad17-f452-47a4-bfa4-fec27a6579ee}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\FrameBufferObject">
-      <UniqueIdentifier>{8746e86b-86b8-4117-b3f8-f940e50841cc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers">
-      <UniqueIdentifier>{8237e20b-bc42-4cc3-b7d5-8538ab4daf14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\VertexBufferObject">
-      <UniqueIdentifier>{6c65087a-de5a-4ed9-a7ea-bbb99e3b78d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers">
-      <UniqueIdentifier>{b4ea455d-6fa2-4a2b-b711-bf1262ebeb0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\PixelBufferObject">
-      <UniqueIdentifier>{b66ed4a7-8f45-48cf-a922-4a545616f0b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers">
-      <UniqueIdentifier>{d0b333a2-8cd6-43cb-afe3-f83394d0f41d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Shaders">
-      <UniqueIdentifier>{239946dd-89fc-4e64-baa0-7acc471e54f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Shaders\Headers">
-      <UniqueIdentifier>{110778d5-c6e9-47e2-9057-e9c7a926366f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Headers">
-      <UniqueIdentifier>{93078291-d6b4-4707-8acd-ff19c67e21a3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Textures">
-      <UniqueIdentifier>{fec7954f-2182-4ea7-b640-bea99920bd7b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\Direct3D\Textures\Headers">
-      <UniqueIdentifier>{6cbba3ee-d8f8-4873-b413-aaaf81442e3a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\glsw\Headers">
-      <UniqueIdentifier>{4774f594-9988-4e70-985a-6a85e85f851f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers">
-      <UniqueIdentifier>{013e71ec-fcaa-4b27-b487-dcb9fa084898}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\FrameBufferObject">
-      <UniqueIdentifier>{d34ea58b-3f93-4faf-a856-bed2cf76a828}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers">
-      <UniqueIdentifier>{b5b43c65-83e7-458b-a899-519930642e68}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\VertexBufferObject">
-      <UniqueIdentifier>{b35d40cf-3856-4fc6-a730-0a36d5b55978}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers">
-      <UniqueIdentifier>{33ceb73c-5a9d-44ac-a4a5-4af499498b12}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\PixelBufferObject">
-      <UniqueIdentifier>{018c36c3-7343-4498-a39d-d745037b8477}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers">
-      <UniqueIdentifier>{7dab2501-4951-4205-97e4-748a1cd0ff79}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Headers">
-      <UniqueIdentifier>{126d25bc-761b-492c-a8bd-3e62be16fe0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Shaders">
-      <UniqueIdentifier>{a25e67d2-fdd6-415d-a41b-923f84d4b1a2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Shaders\Headers">
-      <UniqueIdentifier>{ae2e6e0e-bcb9-4dba-a5da-ffff66ea21db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Textures">
-      <UniqueIdentifier>{8b3bf81b-0d05-4a68-81c4-8dfb5ccd5be9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hardware\Video\OpenGL\Textures\Headers">
-      <UniqueIdentifier>{ff5a3b29-2f4c-4026-8c2a-f47435f3e885}</UniqueIdentifier>
     </Filter>
     <Filter Include="Rendering\Lighting\ShadowMapping">
       <UniqueIdentifier>{35bc9492-d1be-44e3-9f54-9491c8ddd917}</UniqueIdentifier>
@@ -664,12 +493,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp">
       <Filter>Scenes\PingPongScene</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp">
-      <Filter>Hardware\Input</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp">
-      <Filter>Hardware\Audio\sdl_mixer</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
@@ -739,12 +562,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Dynamics\Physics\PhysX\PhysXSceneInterface.cpp">
       <Filter>Dynamics\Physics\PhysX</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c">
-      <Filter>Hardware\Video\OpenGL\glsw</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c">
-      <Filter>Hardware\Video\OpenGL\glsw</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp">
       <Filter>Managers</Filter>
@@ -902,81 +719,6 @@
     <ClCompile Include="..\..\Source Code\Utility\Localization.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp">
-      <Filter>Hardware\Video\Direct3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp">
-      <Filter>Hardware\Video\Direct3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp">
-      <Filter>Hardware\Video\Direct3D</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp">
-      <Filter>Hardware\Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp">
-      <Filter>Hardware\Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\Shader.cpp">
-      <Filter>Hardware\Video\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderGenerator.cpp">
-      <Filter>Hardware\Video\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp">
-      <Filter>Hardware\Video\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp">
-      <Filter>Hardware\Video\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dFrameBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\d3dPixelBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\PixelBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\d3dVertexBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\VertexBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShader.cpp">
-      <Filter>Hardware\Video\Direct3D\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShaderProgram.cpp">
-      <Filter>Hardware\Video\Direct3D\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\d3dTexture.cpp">
-      <Filter>Hardware\Video\Direct3D\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\PixelBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glTexture.cpp">
-      <Filter>Hardware\Video\OpenGL\Textures</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDeferredBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDepthBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dTextureBufferObject.cpp">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\CommunicationInterface.cpp">
       <Filter>AI</Filter>
     </ClCompile>
@@ -1043,50 +785,11 @@
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp">
       <Filter>Managers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\FXAAPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\FrameBufferObject.cpp">
-      <Filter>Hardware\Video\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthArrayBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glMSTextureBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureArrayBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp">
-      <Filter>Hardware\Video\OpenGL\Shaders</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIConsole.cpp">
       <Filter>GUI</Filter>
@@ -1097,35 +800,17 @@
     <ClCompile Include="..\..\Source Code\GUI\CEGUIAddons\CEGUIKeyRepeat.cpp">
       <Filter>GUI\CEGUIAddons</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp">
-      <Filter>Hardware\Input</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\CommandParser.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIConsoleCommandParser.cpp">
       <Filter>GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObjectInterleaved.cpp">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp">
-      <Filter>Hardware\Platform</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp">
       <Filter>Core\Math</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp">
-      <Filter>Hardware\Video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Utility\GUIDWrapper.cpp">
       <Filter>Utility</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glSamplerOject.cpp">
-      <Filter>Hardware\Video\OpenGL\Textures</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditor.cpp">
       <Filter>GUI\GUIEditor</Filter>
@@ -1138,15 +823,6 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\GUI\GUIEditor\GUIEditorLightInterface.cpp">
       <Filter>GUI\GUIEditor</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp">
-      <Filter>Hardware\Network</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp">
-      <Filter>Hardware\Video\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\AI\PathFinding\Waypoints\Waypoint.cpp">
       <Filter>AI\PathFinding\Waypoints</Filter>
@@ -1505,18 +1181,6 @@
     <ClInclude Include="..\..\Source Code\Core\Headers\Kernel.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EventHandler.h">
-      <Filter>Hardware\Input\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h">
-      <Filter>Hardware\Input\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h">
-      <Filter>Hardware\Input\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h">
-      <Filter>Hardware\Input\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\DoFPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
@@ -1528,132 +1192,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\UnorderedMap.h">
       <Filter>Utility\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\AudioAPIWrapper.h">
-      <Filter>Hardware\Audio\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\AudioDescriptor.h">
-      <Filter>Hardware\Audio\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\SFXDevice.h">
-      <Filter>Hardware\Audio\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\Headers\FmodWrapper.h">
-      <Filter>Hardware\Audio\fmod\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\sdl_mixer\Headers\SDLWrapper.h">
-      <Filter>Hardware\Audio\sdl_mixer\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\Headers\ALWrapper.h">
-      <Filter>Hardware\Audio\openal\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h">
-      <Filter>Hardware\Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h">
-      <Filter>Hardware\Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\Headers\FrameBufferObject.h">
-      <Filter>Hardware\Video\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBufferObject\Headers\PixelBufferObject.h">
-      <Filter>Hardware\Video\Buffers\PixelBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\VertexBufferObject.h">
-      <Filter>Hardware\Video\Buffers\VertexBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\Shader.h">
-      <Filter>Hardware\Video\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderGenerator.h">
-      <Filter>Hardware\Video\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderProgram.h">
-      <Filter>Hardware\Video\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h">
-      <Filter>Hardware\Video\Textures\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dFrameBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers\d3dPixelBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dVertexBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShader.h">
-      <Filter>Hardware\Video\Direct3D\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h">
-      <Filter>Hardware\Video\Direct3D\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h">
-      <Filter>Hardware\Video\Direct3D\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h">
-      <Filter>Hardware\Video\Direct3D\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dResources.h">
-      <Filter>Hardware\Video\Direct3D\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\DXWrapper.h">
-      <Filter>Hardware\Video\Direct3D\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\Headers\d3dTexture.h">
-      <Filter>Hardware\Video\Direct3D\Textures\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h">
-      <Filter>Hardware\Video\OpenGL\glsw\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h">
-      <Filter>Hardware\Video\OpenGL\glsw\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h">
-      <Filter>Hardware\Video\OpenGL\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h">
-      <Filter>Hardware\Video\OpenGL\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h">
-      <Filter>Hardware\Video\OpenGL\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h">
-      <Filter>Hardware\Video\OpenGL\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers\glPixelBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glTexture.h">
-      <Filter>Hardware\Video\OpenGL\Textures\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDeferredBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDepthBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dTextureBufferObject.h">
-      <Filter>Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\Headers\CommunicationInterface.h">
       <Filter>AI\Headers</Filter>
@@ -1721,9 +1259,6 @@
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h">
       <Filter>Managers\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\BoundingBox.h">
       <Filter>Core\Math\BoundingVolumes\Headers</Filter>
     </ClInclude>
@@ -1745,42 +1280,6 @@
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\FXAAPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthArrayBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glMSTextureBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureArrayBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h">
-      <Filter>Hardware\Video\OpenGL\Shaders\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h">
-      <Filter>Hardware\Video\Textures\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h">
-      <Filter>Hardware\Platform\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h">
-      <Filter>Hardware\Platform\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\cdigginsAny.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
@@ -1790,9 +1289,6 @@
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIFormattedListBox.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h">
-      <Filter>Hardware\Input\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\CEGUIAddons\Headers\CEGUIKeyRepeat.h">
       <Filter>GUI\CEGUIAddons\Headers</Filter>
     </ClInclude>
@@ -1801,12 +1297,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIConsoleCommandParser.h">
       <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObjectInterleaved.h">
-      <Filter>Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h">
-      <Filter>Hardware\Platform\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\Headers\PhysicsAPIWrapper.h">
       <Filter>Dynamics\Physics\Headers</Filter>
@@ -1826,15 +1316,6 @@
     <ClInclude Include="..\..\Source Code\Dynamics\Physics\PhysX\Headers\PhysXSceneInterface.h">
       <Filter>Dynamics\Physics\PhysX\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h">
-      <Filter>Hardware\Video\OpenGL\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h">
-      <Filter>Hardware\Video\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glSamplerObject.h">
-      <Filter>Hardware\Video\OpenGL\Textures\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Utility\Headers\GUIDWrapper.h">
       <Filter>Utility\Headers</Filter>
     </ClInclude>
@@ -1852,12 +1333,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\GUI\GUIEditor\Headers\GUIEditorInterface.h">
       <Filter>GUI\GUIEditor\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Network\Headers\ASIOImpl.h">
-      <Filter>Hardware\Network\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h">
-      <Filter>Hardware\Video\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\AI\PathFinding\Waypoints\Headers\Waypoint.h">
       <Filter>AI\PathFinding\Waypoints\Headers</Filter>
@@ -1900,9 +1375,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Math\Headers\MathVectors-Inl.h">
       <Filter>Core\Math\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice-Inl.h">
-      <Filter>Hardware\Video\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

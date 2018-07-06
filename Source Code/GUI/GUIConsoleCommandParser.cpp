@@ -17,7 +17,7 @@ GUIConsoleCommandParser::GUIConsoleCommandParser() : _sound(NULL)
 	_commandMap.insert(std::make_pair("recompileshader",DELEGATE_BIND(&GUIConsoleCommandParser::handleShaderRecompileCommand,this,_1)));
 	_commandMap.insert(std::make_pair("setfov",DELEGATE_BIND(&GUIConsoleCommandParser::handleFOVCommand,this,_1)));
 	_commandMap.insert(std::make_pair("invalidcommand",DELEGATE_BIND(&GUIConsoleCommandParser::handleInvalidCommand,this,_1)));
-	
+
 	_commandHelp.insert(std::make_pair("say",Locale::get("CONSOLE_SAY_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("quit",Locale::get("CONSOLE_QUIT_COMMAND_HELP")));
 	_commandHelp.insert(std::make_pair("help",Locale::get("CONSOLE_HELP_COMMAND_HELP")));

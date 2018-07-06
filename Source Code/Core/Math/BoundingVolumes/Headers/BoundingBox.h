@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -85,7 +85,7 @@ public:
 	inline bool ContainsPoint(const vec3<F32>& point) const	{
 		//const ReadLock r_lock(_lock);
 		return (point.x>=_min.x && point.y>=_min.y &&
-			    point.z>=_min.z && point.x<=_max.x && 
+			    point.z>=_min.z && point.x<=_max.x &&
 				point.y<=_max.y && point.z<=_max.z);
 	};
 
@@ -104,7 +104,7 @@ public:
 	}
 
 	inline bool Compare(const BoundingBox& bb) const {
-		/*ReadLock r_lock(_lock);*/ 
+		/*ReadLock r_lock(_lock);*/
 		return _GUID == bb._GUID;
 	}
 
@@ -212,7 +212,7 @@ public:
 		//UpgradableReadLock ur_lock(_lock);
 		if(_oldMatrix == mat)
 			return;
-		
+
 		_oldMatrix = mat;
 
 		const F32* oldMin = &initialBoundingBox._min[0];
@@ -220,13 +220,13 @@ public:
 
 		//UpgradeToWriteLock uw_lock(ur_lock);
 		_min = _max =  vec3<F32>(mat[12],mat[13],mat[14]);
-		
+
 		F32 a, b;
 		for (U8 i = 0; i < 3; ++i)		{
 			for (U8 j = 0; j < 3; ++j)			{
 				a = mat.m[j][i] * oldMin[j];
 				b = mat.m[j][i] * oldMax[j]; /// Transforms are usually row major
-				
+
 				if (a < b) {
 					_min[i] += a;
 					_max[i] += b;
@@ -249,7 +249,7 @@ public:
 	}
 
 	inline bool  getVisibility() const {
-		/*ReadLock r_lock(_lock);*/ 
+		/*ReadLock r_lock(_lock);*/
 		return _visibility;
 	}
 
@@ -264,7 +264,7 @@ public:
 	}
 
     inline vec3<F32>  getCenter()     const {
-		/*ReadLock r_lock(_lock);*/ 
+		/*ReadLock r_lock(_lock);*/
 		return (_max + _min)*0.5f;
 	}
 
@@ -274,12 +274,12 @@ public:
 	}
 
 	inline vec3<F32>  getHalfExtent() const {
-		/*ReadLock r_lock(_lock);*/ 
+		/*ReadLock r_lock(_lock);*/
 		return (_max -_min) * 0.5f;
 	}
 
     inline F32   getWidth()  const {
-		/*ReadLock r_lock(_lock);*/ 
+		/*ReadLock r_lock(_lock);*/
 		return _max.x - _min.x;
 	}
 
@@ -299,9 +299,9 @@ public:
 	}
 
 	inline void setMin(const vec3<F32>& min)   {
-		/*WriteLock w_lock(_lock);*/ 
+		/*WriteLock w_lock(_lock);*/
 		_min = min;
-		_pointsDirty = true; 
+		_pointsDirty = true;
 	}
 
 	inline void setMax(const vec3<F32>& max)   {
@@ -314,14 +314,14 @@ public:
 		/*WriteLock w_lock(_lock);*/
 		_min = min;
 		_max = max;
-		_pointsDirty = true; 
+		_pointsDirty = true;
 	}
 
     inline void reset() {
 		/*WriteLock w_lock(_lock);*/
 		_min.set(100000.0f, 100000.0f, 100000.0f);
 		_max.set(-100000.0f, -100000.0f, -100000.0f);
-		_pointsDirty = true; 
+		_pointsDirty = true;
 	}
 
     inline const vectorImpl<vec3<F32> >& getPoints() const {

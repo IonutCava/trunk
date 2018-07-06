@@ -88,14 +88,14 @@ void Light::updateState(){
 
 	//Do not set GL lights for deferred rendering
 	if(GFX_DEVICE.getRenderer()->getType() == RENDERER_FORWARD)
-		GFX_DEVICE.setLight(this);	
-	
+		GFX_DEVICE.setLight(this);
+
 	_dirty = false;
 }
 
 void Light::setLightProperties(const LightPropertiesV& key, const vec4<F32>& value){
 	///Light properties are very dependent on scene state. Some lights can't be changed on runtime!
-	if(!GET_ACTIVE_SCENE()->state().getRunningState()) 
+	if(!GET_ACTIVE_SCENE()->state().getRunningState())
 		return;
 
 	///Simple light's can't be changed. Period!
@@ -214,7 +214,7 @@ void Light::updateBBatCurrentFrame(SceneGraphNode* const sgn){
 }
 
 bool Light::computeBoundingBox(SceneGraphNode* const sgn){
-    if(sgn->getBoundingBox().isComputed()) 
+    if(sgn->getBoundingBox().isComputed())
 		return true;
 
     F32 range = getRange() * 0.5f; //diameter to radius

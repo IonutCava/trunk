@@ -45,7 +45,7 @@ void Framerate::SetSpeedFactor(){
     _frameDelay = currentTicks;
 	_fps = _targetFrameRate / _speedfactor;
     _frameTime = 1000.0f / _fps;
-	
+
 	benchmarkInternal();
 }
 
@@ -72,12 +72,11 @@ void Framerate::benchmarkInternal(){
 
 	//Every 10 seconds (targeted)
 	if(count > _targetFrameRate * 10){
-
 		averageFps /= count;
 		PRINT_FN(Locale::get("FRAMERATE_FPS_OUTPUT"), averageFps, maxFps, minFps, 1000.0f / averageFps);
 		count = 0;
 
-		if(resetAverage) 
+		if(resetAverage)
 			averageFps = 0.0f;
 
 		resetAverage = !resetAverage;

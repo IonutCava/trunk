@@ -51,7 +51,6 @@ namespace anyimpl
         virtual void move(void* const* src, void** dest) { *dest = *src; }
         virtual const void* get_value_const(void *const *src) const { return reinterpret_cast<const void*>(src); }
 		virtual       void* get_value(void **src) { return reinterpret_cast<void*>(src); }
-
     };
 
     template<typename T>

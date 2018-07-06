@@ -154,7 +154,7 @@ bool Kernel::MainLoopScene(FrameEvent& evt){
 
 		//Update physics
 		_PFX.update();
-		
+
 		_nextGameTick += SKIP_TICKS;
         _loops++;
 	//}
@@ -177,13 +177,12 @@ bool Kernel::presentToScreen(FrameEvent& evt){
 	//perform time-sensitive shader tasks
 	_shaderMgr.tick(_currentTimeMS);
 
-
 	_frameMgr.createEvent(FRAME_PRERENDER_END,evt);
 	if(!_frameMgr.framePreRenderEnded(evt)) return false;
 
 	// Render the scene adding any post-processing effects that we have active
 	PostFX::getInstance().render();
-	
+
 	_sceneMgr.postRender();
 
 	//render debug primitives and cleanup after us
@@ -196,7 +195,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	I8 returnCode = 0;
 	ParamHandler& par = ParamHandler::getInstance();
 
-	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText, 
+	Console::getInstance().bindConsoleOutput(DELEGATE_BIND(&GUIConsole::printText,
 		                                                    GUI::getInstance().getConsole(),
 															_1,_2));
 	//Using OpenGL for rendering as default
@@ -218,7 +217,7 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	windowId = _GFX.initHardware(resolution/2,_argc,_argv);
 
 	//If we could not initialize the graphics device, exit
-	if(windowId < 0) 
+	if(windowId < 0)
 		return windowId;
 
 	//Load and render the splash screen
@@ -236,11 +235,11 @@ I8 Kernel::Initialize(const std::string& entryPoint) {
 	PRINT_FN(Locale::get("START_SOUND_INTERFACE"));
 	if((returnCode = _SFX.initHardware()) < 0)
 		return returnCode;
-	
+
 	PRINT_FN(Locale::get("START_PHYSICS_INTERFACE"));
 	if((returnCode =_PFX.initPhysics(Config::TARGET_FRAME_RATE)) < 0)
 		return returnCode;
-	
+
 	PostFX::getInstance().init(resolution);
 
 	//Bind the kernel with the input interface

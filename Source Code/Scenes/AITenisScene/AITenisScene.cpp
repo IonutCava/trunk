@@ -242,7 +242,6 @@ bool AITenisScene::load(const std::string& name, CameraManager* const cameraMgr)
 	//Position camera
 	//renderState().getCamera().setEye(vec3<F32>(14,5.5f,11.5f));
 	//renderState().getCamera().setRotation(10/*yaw*/,-45/*pitch*/);
-	
 
 	//------------------------ Load up game elements -----------------------------///
 	_net = _sceneGraph->findNode("Net");
@@ -440,7 +439,6 @@ void AITenisScene::onMouseMove(const OIS::MouseEvent& key){
 	_previousMousePos.x = key.state.X.abs;
 	_previousMousePos.y = key.state.Y.abs;
 }
-
 
 void AITenisScene::onMouseClickUp(const OIS::MouseEvent& key,OIS::MouseButtonID button){
 	Scene::onMouseClickUp(key,button);

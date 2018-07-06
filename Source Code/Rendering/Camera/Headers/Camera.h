@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -55,7 +55,7 @@ public:
 	void renderLookAt(bool invertX = false);
 	///Creates a reflection matrix using the specified plane height and passes it to the rendering API
 	void renderLookAtReflected(const Plane<F32>& reflectionPlane, bool invertX = false);
-	///Creates the appropriate eye offset and frustum depending on the desired eye.This method calls "renderLookAt" 
+	///Creates the appropriate eye offset and frustum depending on the desired eye.This method calls "renderLookAt"
 	///rightEye = false => left eye's frustum+view; rightEye = true => right eye's frustum + view.
 	void renderAnaglyph(bool rightEye = false);
 	///Moves the camera by the specified offsets in each direction
@@ -64,7 +64,7 @@ public:
 	void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
 	///Sets the camera's position, target and up directions
 	void lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up = WORLD_Y_AXIS);
-	///Rotates the camera (changes its orientation) by the specified quaternion (_orientation *= q)		
+	///Rotates the camera (changes its orientation) by the specified quaternion (_orientation *= q)
 	void rotate(const Quaternion<F32>& q);
 	///Sets the camera to point at the specified target point
 	inline void lookAt(const vec3<F32>& target) { lookAt(_eye, target, _yAxis); }
@@ -77,7 +77,7 @@ public:
 	///Because the camera is facing the -Z axis, a positive angle will create a positive Yaw behind the camera
 	///and a negative one in front of the camera (so we invert the angle - left will turn left when facing -Z)
 	inline void rotateYaw(F32 angle)      { rotate(Quaternion<F32>(_yawFixed ? _fixedYawAxis : _orientation * WORLD_Y_AXIS,-angle * _cameraTurnSpeed)); }
-	///Change camera's roll. 
+	///Change camera's roll.
 	inline void rotateRoll(F32 angle)     { rotate(Quaternion<F32>(_orientation * WORLD_Z_AXIS,-angle * _cameraTurnSpeed)); }
 	///Change camera's pitch
 	inline void rotatePitch(F32 angle)    { rotate(Quaternion<F32>(_orientation * WORLD_X_AXIS,-angle * _cameraTurnSpeed)); }
@@ -149,7 +149,7 @@ protected:
 	CameraType	_type;
 
 	vectorImpl<boost::function0<void> > _listeners;
-	
+
 	//Save/Load Camera
 	vec3<F32>       _savedVectors[3];
 	F32             _savedFloats[4];

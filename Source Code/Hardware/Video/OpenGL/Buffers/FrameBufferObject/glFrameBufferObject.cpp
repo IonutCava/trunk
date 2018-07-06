@@ -41,12 +41,13 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
 
 			//generate a new texture attachement
 			if(slot != TextureDescriptor::Depth){
+				_mipMapEnabled[slot] = sampler.generateMipMaps();
 				GLCheck(glGenTextures( 1, &_textureId[slot] ));
 				GLCheck(glBindTexture(_textureType, _textureId[slot]));
 
 				hasColor = true;
 				//anisotrophic filtering is only added to color attachements
-				if (sampler.anisotrophyLevel() > 1 && sampler.generateMipMaps()) {
+				if (sampler.anisotrophyLevel() > 1 && _mipMapEnabled[slot]) {
 					if(!glewIsSupported("GL_EXT_texture_filter_anisotropic")){
 						ERROR_FN(Locale::get("ERROR_NO_ANISO_SUPPORT"));
 					}else{
@@ -54,7 +55,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
 						GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_ANISOTROPY_EXT,anisoLevel));
 					}
 				}
-                if(sampler.generateMipMaps()){
+                if(_mipMapEnabled[slot]){
 				    //(depth doesn't need mipmaps)
 				    GLCheck(glTexParameteri(_textureType, GL_TEXTURE_BASE_LEVEL, texDescriptor._mipMinLevel));
 				    GLCheck(glTexParameteri(_textureType, GL_TEXTURE_MAX_LEVEL,  texDescriptor._mipMaxLevel));
@@ -159,9 +160,13 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
 			if(slot != TextureDescriptor::Depth){
                 depthAttachment = false;
 				//Generate mip maps for color attachements
-				if(sampler.generateMipMaps()){
-					if(glGenerateMipmap != NULL) GLCheck(glGenerateMipmap(_textureType));
-					else 						 ERROR_FN(Locale::get("ERROR_NO_MIP_MAPS"));
+				if(_mipMapEnabled[slot]){
+					if(glGenerateMipmap != NULL) 
+						GLCheck(glGenerateMipmap(_textureType));
+					else{
+						ERROR_FN(Locale::get("ERROR_NO_MIP_MAPS"));
+						assert(glGenerateMipmap);
+					}
 				}
             }
             GLenum attachment = depthAttachment ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0 + slot;
@@ -244,7 +249,7 @@ bool glFrameBufferObject::Create(GLushort width, GLushort height, GLubyte imageL
 		_clearBufferMask = _clearBufferMask | GL_DEPTH_BUFFER_BIT;
 
 	checkStatus();
-
+	GLCheck(glClear(_clearBufferMask));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 	return true;
 }
@@ -279,7 +284,7 @@ void glFrameBufferObject::Destroy() {
 void glFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) const {
 	GLCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, inputFBO->getHandle()));
 	GLCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this->_frameBufferHandle));
-	GLCheck(glBlitFramebuffer(0, 0, inputFBO->getWidth(), inputFBO->getHeight(), 0, 0, this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_NEAREST));
+	GLCheck(glBlitFramebuffer(0, 0, inputFBO->getWidth(), inputFBO->getHeight(), 0, 0, this->_width, this->_height, GL_COLOR_BUFFER_BIT, GL_LINEAR));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
@@ -302,14 +307,23 @@ void glFrameBufferObject::Begin(GLubyte nFace) const {
 	if(_textureType == GL_TEXTURE_CUBE_MAP) {
 		GLCheck(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+nFace, _textureId[0], 0));
 	}
-	GLCheck(glClear(_clearBufferMask));
-	GL_API::clearColor( _clearColor );
+	if(_clearBuffersState)
+		GLCheck(glClear(_clearBufferMask));
+	if(_clearColorState)
+		GL_API::clearColor( _clearColor );
 }
 
 void glFrameBufferObject::End(GLubyte nFace) const {
 	assert(nFace<6);
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 	GL_API::restoreViewport();
+}
+
+void glFrameBufferObject::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {
+	if(slot == TextureDescriptor::Depth || !_mipMapEnabled[slot] || !_bound)
+		return;
+
+	GLCheck(glGenerateMipmap(_textureType));
 }
 
 bool glFrameBufferObject::checkStatus() const {

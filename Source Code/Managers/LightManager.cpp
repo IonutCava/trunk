@@ -39,7 +39,7 @@ bool LightManager::clear(){
 bool LightManager::addLight(Light* const light){
 	if(light->getId() == 0)
 		light->setId(generateNewID());
-	
+
 	light->addShadowMapInfo(New ShadowMapInfo(light));
 
 	if(_lights.find(light->getId()) != _lights.end()){
@@ -69,7 +69,7 @@ U32 LightManager::generateNewID(){
 
 	while(!checkId(tempId))
 		tempId++;
-	
+
 	return tempId;
 }
 
@@ -103,7 +103,7 @@ void LightManager::update(){
 ///When pre-rendering is done, the Light Manager will generate the shadow maps
 /// Returning false in any of the FrameListener methods will exit the entire application!
 bool LightManager::framePreRenderEnded(const FrameEvent& evt){
-	if(!_shadowMapsEnabled) 
+	if(!_shadowMapsEnabled)
 		return true;
 
 	//Stop if we have shadows disabled
@@ -138,7 +138,7 @@ void LightManager::previewShadowMaps(Light* light) {
 	if(_dominantLight){
 		localLight = _dominantLight;
 	}else{
-		if(localLight == NULL)	
+		if(localLight == NULL)
 			localLight = _lights[0];
 	}
 
@@ -152,7 +152,7 @@ void LightManager::previewShadowMaps(Light* light) {
 //Always bind shadowmaps to slots Config::MAX_TEXTURE_STORAGE, Config::MAX_TEXTURE_STORAGE+1, Config::MAX_TEXTURE_STORAGE+2 ...
 void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool overrideDominant){
 	//Skip applying shadows if we are rendering to depth map, or we have shadows disabled
-	if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty()) 
+	if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty())
 		return;
 
 	Light* lightLocal = light;
@@ -160,39 +160,39 @@ void LightManager::bindDepthMaps(Light* light, U8 lightIndex, U8 offset, bool ov
 	///Shadow map binding has a failsafe check for this, so it's ok to call bind twice
 	if(_dominantLight && !overrideDominant)
 		lightLocal = _dominantLight;
-	
+
 	if(!lightLocal->castsShadows())
 		return;
 
 	if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL)
 		offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-	
+
 	if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
 		offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
-	
+
 	_lightProjectionMatricesCache[lightIndex] = lightLocal->getLightProjectionMatrix();
 
 	lightLocal->getShadowMapInfo()->getShadowMap()->Bind(offset);
 }
 
 void LightManager::unbindDepthMaps(Light* light, U8 offset, bool overrideDominant){
-    if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty()) 
+    if(!_shadowMapsEnabled || _lightProjectionMatricesCache.empty())
 		return;
 
 	Light* lightLocal = light;
 
 	if(_dominantLight && !overrideDominant)
 		lightLocal = _dominantLight;
-	
+
 	if(!lightLocal->castsShadows())
 		return;
 
 	if(lightLocal->getLightType() == LIGHT_TYPE_DIRECTIONAL)
 		offset =  Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE;
-	
+
 	if(lightLocal->getLightType() == LIGHT_TYPE_POINT)
 		offset = Config::MAX_TEXTURE_STORAGE + Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE + 1;
-	
+
 	lightLocal->getShadowMapInfo()->getShadowMap()->Unbind(offset);
 }
 
@@ -201,20 +201,20 @@ bool LightManager::shadowMappingEnabled() const {
 		return false;
 
 	for_each(LightMap::value_type light, _lights){
-		if(!light.second->castsShadows()) 
+		if(!light.second->castsShadows())
 			continue;
 
 		ShadowMapInfo* smi = light.second->getShadowMapInfo();
 		//no shadow info;
-		if(!smi) 
-			continue; 
+		if(!smi)
+			continue;
 
 		ShadowMap* sm = smi->getShadowMap();
 		//no shadow map;
-		if(!sm) 
-			continue; 
+		if(!sm)
+			continue;
 
-		if(sm->getDepthMap()) 
+		if(sm->getDepthMap())
 			return true;
 	}
 
@@ -246,7 +246,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 		Light* light = lightIt.second;
 		if(!light->getEnabled())
 			continue;
-			
+
 		LightType lType = light->getLightType();
 		if(lType != LIGHT_TYPE_DIRECTIONAL )  {
 			// get the luminosity.
@@ -264,11 +264,10 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 				CLAMP<F32>(dist, 0.0f, 1.0f );
 			}
 			light->setScore( luminace * weight * dist );
-
 		}else{// directional
 			light->setScore( weight );
 		}
-				
+
 		// use type filter
 		if((typeFilter != LIGHT_TYPE_PLACEHOLDER && lType == typeFilter) || //< wether we have the correct light type
 			typeFilter == LIGHT_TYPE_PLACEHOLDER){ //< or we did not specify a type filter
@@ -277,7 +276,7 @@ U8 LightManager::findLightsForSceneNode(SceneGraphNode* const node, LightType ty
 	}
 
 	// sort the lights by score
-	std::sort(_tempLightsPerNode.begin(), 
+	std::sort(_tempLightsPerNode.begin(),
 		      _tempLightsPerNode.end(),
 			  scoreCmpFnc());
 

@@ -25,7 +25,6 @@ Sky::Sky(const std::string& name) : SceneNode(TYPE_SKY),
 	skyboxDesc.setCullMode(CULL_MODE_NONE);
 	skyboxDesc.setZReadWrite(false,false);
     _skyboxRenderState = GFX_DEVICE.createStateBlock(skyboxDesc);
-
 }
 
 Sky::~Sky(){
@@ -41,7 +40,7 @@ bool Sky::load() {
 	SamplerDescriptor skyboxSampler;
 	skyboxSampler.toggleMipMaps(false);
 	skyboxSampler.setAnisotrophy(16);
-	skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);   
+	skyboxSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
 
 	ResourceDescriptor skyboxTextures("SkyboxTextures");
 	skyboxTextures.setResourceLocation(location+"skybox_2.jpg "+ location+"skybox_1.jpg "+
@@ -54,11 +53,10 @@ bool Sky::load() {
 	ResourceDescriptor skybox("SkyBox");
 	skybox.setFlag(true); //no default material;
 	_sky = CreateResource<Sphere3D>(skybox);
-	
+
 	ResourceDescriptor sun("Sun");
 	sun.setFlag(true);
 	_sun = CreateResource<Sphere3D>(sun);
-
 
 	ResourceDescriptor skyShaderDescriptor("sky");
 	_skyShader = CreateResource<ShaderProgram>(skyShaderDescriptor);

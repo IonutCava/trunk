@@ -23,7 +23,7 @@
 #define FTGL_LIBRARY_STATIC
 #endif
 #include <FTGL/ftgl.h>
-#include <glim.h>
+#include <glim/include/glim.h>
 #include <gtc/matrix_transform.hpp>
 #include <gtc/type_ptr.hpp>
 

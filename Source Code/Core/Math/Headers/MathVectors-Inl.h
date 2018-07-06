@@ -2,19 +2,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -33,25 +33,25 @@ inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) {
 
 /// multiply a vector by a value
 template<class T>
-inline vec2<T> operator*(T fl, const vec2<T>& v) { 
+inline vec2<T> operator*(T fl, const vec2<T>& v) {
 	return vec2<T>(v.x*fl, v.y*fl);
 }
 
 /// general vec2 dot product
 template<class T>
 inline T Dot(const vec2<T>& a, const vec2<T>& b) {
-	return(a.x*b.x+a.y*b.y); 
+	return(a.x*b.x+a.y*b.y);
 }
 
 /// multiply a vector by a value
 template<class T>
-inline vec3<T> operator*(T fl, const vec3<T>& v) { 
+inline vec3<T> operator*(T fl, const vec3<T>& v) {
 	return vec3<T>(v.x*fl, v.y*fl, v.z*fl);
 }
 
 /// general vec3 dot product
 template<class T>
-inline T Dot(const vec3<T>& a, const vec3<T>& b) { 
+inline T Dot(const vec3<T>& a, const vec3<T>& b) {
 	return(a.x*b.x+a.y*b.y+a.z*b.z);
 }
 
@@ -63,7 +63,7 @@ inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) {
 
 /// multiply a vector by a value
 template<class T>
-inline vec4<T> operator*(T fl, const vec4<T>& v) { 
+inline vec4<T> operator*(T fl, const vec4<T>& v) {
 	return vec4<T>(v.x*fl, v.y*fl, v.z*fl,  v.w*fl);
 }
 
@@ -76,7 +76,7 @@ template<class T>
 inline T vec2<T>::normalize() {
 	T l = this->length();
 
-	if(l < EPSILON) 
+	if(l < EPSILON)
 		return 0;
 
 	T inv = 1.0f / l;
@@ -87,14 +87,14 @@ inline T vec2<T>::normalize() {
 
 /// compare 2 vectors using the given tolerance
 template<class T>
-inline bool vec2<T>::compare(const vec2 &_v,F32 epsi=EPSILON) const { 
-	return (FLOAT_COMPARE_TOLERANCE(this->x,_v.x,epsi) && 
-			FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi)); 
+inline bool vec2<T>::compare(const vec2 &_v,F32 epsi=EPSILON) const {
+	return (FLOAT_COMPARE_TOLERANCE(this->x,_v.x,epsi) &&
+			FLOAT_COMPARE_TOLERANCE(this->y,_v.y,epsi));
 }
 
 /// return the coordinates of the closest point from *this to the line determined by points vA and vB
 template<class T>
-inline vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) const { 
+inline vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) const {
 	return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
@@ -103,10 +103,10 @@ template<class T>
 inline vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) const {
 	T factor = this->projectionOnLine(vA, vB);
 
-	if (factor <= 0) 
+	if (factor <= 0)
 		return vA;
 
-	if (factor >= 1) 
+	if (factor >= 1)
 		return vB;
 
 	return (((vB-vA) * factor) + vA);
@@ -121,22 +121,21 @@ inline T vec2<T>::projectionOnLine(const vec2 &vA, const vec2 &vB) const {
 
 /// linear interpolation between 2 vectors
 template<class T>
-inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, T factor) const { 
-	return ((u * (1 - factor)) + (v * factor)); 
+inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, T factor) const {
+	return ((u * (1 - factor)) + (v * factor));
 }
 
 /// linear interpolation between 2 vectors based on separate x and y factors
 template<class T>
-inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, vec2& factor) const { 
-	return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x), 
-				 (u.y * (1 - factor.y)) + (v.y * factor.y))); 
+inline vec2<T> vec2<T>::lerp(vec2 &u, vec2 &v, vec2& factor) const {
+	return (vec2((u.x * (1 - factor.x)) + (v.x * factor.x),
+				 (u.y * (1 - factor.y)) + (v.y * factor.y)));
 }
-
 
 /// get the dot product between this vector and the specified one
 template<class T>
-inline T vec2<T>::dot(const vec2 &v) const { 
-	return ((this->x*v.x) + (this->y*v.y)); 
+inline T vec2<T>::dot(const vec2 &v) const {
+	return ((this->x*v.x) + (this->y*v.y));
 }
 
 template<class T>
@@ -157,14 +156,14 @@ inline vec2<T>::vec2(const vec4<T> &v) {
 /// compare 2 vectors within the specified tolerance
 template<class T>
 inline bool vec3<T>::compare(const vec3 &v,F32 epsi=EPSILON) const {
-	return FLOAT_COMPARE_TOLERANCE(this->x,v.x,epsi) && 
-	 	   FLOAT_COMPARE_TOLERANCE(this->y,v.y,epsi) && 
-		   FLOAT_COMPARE_TOLERANCE(this->z,v.z,epsi); 
+	return FLOAT_COMPARE_TOLERANCE(this->x,v.x,epsi) &&
+	 	   FLOAT_COMPARE_TOLERANCE(this->y,v.y,epsi) &&
+		   FLOAT_COMPARE_TOLERANCE(this->z,v.z,epsi);
 }
 
 /// uniform vector: x = y = z
 template<class T>
-inline bool vec3<T>::isUniform() const { 
+inline bool vec3<T>::isUniform() const {
 	return IS_ZERO(this->x - this->y) && IS_ZERO(this->y - this->z);
 }
 
@@ -204,15 +203,15 @@ inline void vec3<T>::cross(const vec3 &v2) {
 
 /// calculate the dot product between this vector and the specified one
 template<class T>
-inline T vec3<T>::dot(const vec3 &v) const { 
+inline T vec3<T>::dot(const vec3 &v) const {
 	return ((this->x*v.x) + (this->y*v.y) + (this->z*v.z));
 }
 
 /// compute the vector's distance to another specified vector
 template<class T>
 inline T vec3<T>::distance(const vec3 &v) const {
-	return square_root_tpl(((v.x - this->x)*(v.x - this->x)) + 
-			               ((v.y - this->y)*(v.y - this->y)) + 
+	return square_root_tpl(((v.x - this->x)*(v.x - this->x)) +
+			               ((v.y - this->y)*(v.y - this->y)) +
 						   ((v.z - this->z)*(v.z - this->z)));
 }
 
@@ -221,7 +220,7 @@ template<class T>
 inline T vec3<T>::angle(vec3 &v) const {
 	T angle = (T)fabs(acos(this->dot(v)/(this->length()*v.length())));
 
-	if(angle < EPSILON) 
+	if(angle < EPSILON)
 		return 0;
 
 	return angle;
@@ -237,12 +236,12 @@ inline vec3<T> vec3<T>::direction(const vec3& u) const {
 
 /// return the closest point on the line defined by the 2 points (A, B) and this vector
 template<class T>
-inline vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) const { 
-	return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA); 
+inline vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) const {
+	return (((vB-vA) * this->projectionOnLine(vA, vB)) + vA);
 }
 
 /// return the closest point on the line segment created between the 2 points (A, B) and this vector
-template<class T> 
+template<class T>
 inline vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) const {
 	T factor = this->projectionOnLine(vA, vB);
 
@@ -264,7 +263,7 @@ inline T vec3<T>::projectionOnLine(const vec3 &vA, const vec3 &vB) const {
 
 /// lerp between the 2 specified vectors by the specified ammount
 template<class T>
-inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, T factor) const { 
+inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, T factor) const {
 	return ((u * (1 - factor)) + (v * factor));
 }
 
@@ -273,7 +272,7 @@ template<class T>
 inline vec3<T> vec3<T>::lerp(vec3 &u, vec3 &v, vec3& factor) const {
 	return (vec3((u.x * (1 - factor.x)) + (v.x * factor.x),
 				 (u.y * (1 - factor.y)) + (v.y * factor.y),
-				 (u.z * (1 - factor.z)) + (v.z * factor.z))); 
+				 (u.z * (1 - factor.z)) + (v.z * factor.z)));
 }
 
 /// rotate this vector on the X axis
@@ -299,7 +298,7 @@ inline void vec3<T>::rotateZ(D32 radians){
 
 /// swap the components  of this vector with that of the specified one
 template<class T>
-inline void vec3<T>::swap(vec3 &iv) { 
+inline void vec3<T>::swap(vec3 &iv) {
 	std::swap(this->x, iv.x);
 	std::swap(this->y, iv.y);
 	std::swap(this->z, iv.z);
@@ -307,10 +306,10 @@ inline void vec3<T>::swap(vec3 &iv) {
 
 /// swap the components  of this vector with that of the specified one
 template<class T>
-inline void vec3<T>::swap(vec3 *iv) { 
+inline void vec3<T>::swap(vec3 *iv) {
 	std::swap(this->x, iv->x);
 	std::swap(this->y, iv->y);
-	std::swap(this->z, iv->z); 
+	std::swap(this->z, iv->z);
 }
 
 /// export the vector's components in the first 3 positions of the specified array
@@ -340,16 +339,16 @@ inline vec3<T>::vec3(const vec4<T> &v) {
 
 /// compare this vector with the one specified and see if they match within the specified ammount
 template<class T>
-inline bool vec4<T>::compare(const vec4 &v,F32 epsi=EPSILON) const { 
-	return (FLOAT_COMPARE_TOLERANCE((F32)this->x, (F32)v.x, epsi) && 
-			FLOAT_COMPARE_TOLERANCE((F32)this->y, (F32)v.y, epsi) && 
-			FLOAT_COMPARE_TOLERANCE((F32)this->z, (F32)v.z, epsi) && 
-			FLOAT_COMPARE_TOLERANCE((F32)this->w, (F32)v.w, epsi)); 
+inline bool vec4<T>::compare(const vec4 &v,F32 epsi=EPSILON) const {
+	return (FLOAT_COMPARE_TOLERANCE((F32)this->x, (F32)v.x, epsi) &&
+			FLOAT_COMPARE_TOLERANCE((F32)this->y, (F32)v.y, epsi) &&
+			FLOAT_COMPARE_TOLERANCE((F32)this->z, (F32)v.z, epsi) &&
+			FLOAT_COMPARE_TOLERANCE((F32)this->w, (F32)v.w, epsi));
 }
 
 /// lerp between the 2 vectors by the specified ammount
 template<class T>
-inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const { 
+inline vec4<T> vec4<T>::lerp(const vec4 &u, const vec4 &v, T factor) const {
 	return ((u * (1 - factor)) + (v * factor));
 }
 
@@ -359,12 +358,12 @@ inline vec4<T> vec4<T>::lerp(vec4 &u, vec4 &v, vec4& factor) const {
 	return (vec4((u.x * (1 - factor.x)) + (v.x * factor.x),
 				 (u.y * (1 - factor.y)) + (v.y * factor.y),
 				 (u.z * (1 - factor.z)) + (v.z * factor.z),
-				 (u.w * (1 - factor.w)) + (v.w * factor.w))); 
+				 (u.w * (1 - factor.w)) + (v.w * factor.w)));
 }
 
 /// swap this vector's values with that of the specified vector
 template<class T>
-inline void vec4<T>::swap(vec4 *iv) { 
+inline void vec4<T>::swap(vec4 *iv) {
 	std::swap(this->x, iv->x);
 	std::swap(this->y, iv->y);
 	std::swap(this->z, iv->z);

@@ -88,9 +88,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code/;$(OutDir)Source Code/Libs/includes/;$(OutDir)Source Code/Libs/src/ReCast/;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\sdl\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\Threadpool\include;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -98,7 +98,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <SmallerTypeCheck>true</SmallerTypeCheck>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
@@ -109,7 +109,7 @@
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
     <Link>
-      <AdditionalDependencies>Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL_d.lib;SDL_mixer_d.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware_d.lib;Divide-Networking_d.lib;Divide-ReCast_d.lib;IL_d.lib;ILU_d.lib;jpeg_d.lib;libpng_d.lib;libmng_d.lib;libtiff_d.lib;SDL_d.lib;SDL_mixer_d.lib;zlib_d.lib;assimp_d.lib;glu32.lib;opengl32.lib;glfw3_d.lib;glsl_optimizer_d.lib;OIS_static_d.lib;pcre_d.lib;expat_d.lib;freetype_d.lib;CEGUIBase_d.lib;CEGUIDevILImageCodec_d.lib;CEGUICoreWindowRendererSet_d.lib;CEGUIExpatParser_d.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ShowProgress>NotSet</ShowProgress>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
@@ -129,10 +129,10 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\sdl\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\Threadpool\include;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -141,13 +141,13 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -168,10 +168,10 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\glm;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glim\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\sdl\include;$(EngineLibraries)\Threadpool\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\boost;$(EngineLibraries)\assimp\include;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(OutDir)Source Code;$(OutDir)Source Code/Libs\includes;$(OutDir)Source Code\Libs\src\ReCast;$(EngineLibraries)\boost;$(EngineLibraries)\sdl\include;$(EngineLibraries)\DevIL\include;$(EngineLibraries)\cegui\include;$(EngineLibraries)\assimp\include;$(EngineLibraries)\SimpleINI\include;$(EngineLibraries)\Threadpool\include;$(SolutionDir)..\Source Code/Libs\includes;$(EngineLibraries)\physx\include\;$(EngineLibraries)\physx\include\common;$(EngineLibraries)\physx\include\foundation;$(EngineLibraries)\physx\include\extensions;$(EngineLibraries)\physx\include\Samples\SampleFramework\framework\include;$(EngineLibraries)\freetype\include;$(EngineLibraries)\glfw\include;$(EngineLibraries)\glslopt\include;$(EngineLibraries)\GLEW\include;$(EngineLibraries)\OIS\include;$(EngineLibraries)\ftgl\include;$(EngineLibraries)\glm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_PROFILE;_WIN32_WINNT=0x0601;_CRT_SECURE_NO_WARNINGS;CEGUI_STATIC</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <MinimalRebuild>true</MinimalRebuild>
+      <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
@@ -180,12 +180,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnablePREfast>false</EnablePREfast>
       <UndefinePreprocessorDefinitions>_DEBUG</UndefinePreprocessorDefinitions>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <OmitFramePointers>false</OmitFramePointers>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Divide-Hardware.lib;Divide-Networking.lib;Divide-ReCast.lib;IL.lib;ILU.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;SDL.lib;SDL_mixer.lib;zlib.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;pcre.lib;expat.lib;freetype.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(TargetPath)</OutputFile>
       <AdditionalLibraryDirectories>$(EngineLibraries)\glslopt\lib;$(EngineLibraries)\openmp\lib;$(EngineLibraries)\glim\lib;$(EngineLibraries)\glfw\lib;$(EngineLibraries)\ftgl\lib;$(EngineLibraries)\SILLY\lib;$(EngineLibraries)\libmng\lib;$(EngineLibraries)\libjpeg\lib;$(EngineLibraries)\zlib\lib;$(EngineLibraries)\libtiff\lib;$(EngineLibraries)\libpng\lib;$(EngineLibraries)\pcre\lib;$(EngineLibraries)\expat\lib;$(EngineLibraries)\freetype\lib;$(EngineLibraries)\OIS\lib;$(EngineLibraries)\GLEW\lib;$(EngineLibraries)\DevIL\lib;$(EngineLibraries)\sdl\lib;$(OutDir)Source Code/Libs\lib;$(EngineLibraries)\cegui\lib;$(EngineLibraries)\boost\lib;$(EngineLibraries)\assimp\lib;$(EngineLibraries)\physx\lib\win32</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -273,54 +273,6 @@
     <ClCompile Include="..\..\Source Code\GUI\GuiFlash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUISplash.cpp" />
     <ClCompile Include="..\..\Source Code\GUI\GUIText.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Input\AutoKeyRepeat.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Platform\Task.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\FrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDeferredBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dDepthBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dFrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\d3dTextureBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\d3dPixelBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\d3dVertexBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dEnumTable.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\d3dRenderStateBlock.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\DXWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShader.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\d3dShaderProgram.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\d3dTexture.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\GFXDevice.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\ImmediateModeEmulation.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDeferredBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthArrayBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glDepthBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glFrameBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glMSTextureBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureArrayBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\glTextureBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\glPixelBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\glVertexArrayObjectInterleaved.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLEntities.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glEnumTable.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLError.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLFWWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glImmediateModeEmulation.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glRenderStateBlock.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLStates.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\bstrlib.c" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\glsw.c" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\gluOverrides.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\GLWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShader.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glShaderProgram.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\glUniformBufferObject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glSamplerOject.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\glTexture.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\RenderStateBlock.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\Shader.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderGenerator.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Shaders\ShaderProgram.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Video\Textures\Texture.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\FrameListenerManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\LightManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\RenderPassManager.cpp" />
@@ -387,9 +339,6 @@
     <ClCompile Include="..\..\Source Code\Scenes\PhysXScene\PhysXScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\NetworkScene\NetworkScene.cpp" />
     <ClCompile Include="..\..\Source Code\Scenes\PingPongScene\PingPongScene.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Input\EventHandler.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Audio\sdl_mixer\SDLWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Hardware\Network\ASIOImpl.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\AIManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\CameraManager.cpp" />
     <ClCompile Include="..\..\Source Code\Managers\SceneManager.cpp" />
@@ -475,74 +424,6 @@
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIFlash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUISplash.h" />
     <ClInclude Include="..\..\Source Code\GUI\Headers\GUIText.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\fmod\Headers\FmodWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\AudioAPIWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\AudioDescriptor.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\Headers\SFXDevice.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\openAl\Headers\ALWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Audio\sdl_mixer\Headers\SDLWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\AutoKeyRepeat.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\EventHandler.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputInterface.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\InputVariables.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Input\Headers\JoystickInterface.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Network\Headers\ASIOImpl.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SharedMutex.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\PlatformDefines.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\SimpleMutex.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Task.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Platform\Headers\Thread.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\FrameBufferObject\Headers\FrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\PixelBufferObject\Headers\PixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Buffers\VertexBufferObject\Headers\VertexBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDeferredBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dDepthBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dFrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\FrameBufferObject\Headers\d3dTextureBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\PixelBufferObject\Headers\d3dPixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Buffers\VertexBufferObject\Headers\d3dVertexBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dEnumTable.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dRenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\d3dResources.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Headers\DXWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShader.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Shaders\Headers\d3dShaderProgram.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Direct3D\Textures\Headers\d3dTexture.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice-Inl.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\GFXDevice.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\ImmediateModeEmulation.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\OcclusionQuery.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIEnums.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderAPIWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderInstance.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Headers\RenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDeferredBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthArrayBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glDepthBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glFrameBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glMSTextureBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureArrayBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\FrameBufferObject\Headers\glTextureBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\PixelBufferObject\Headers\glPixelBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Buffers\VertexBufferObject\Headers\glVertexArrayObjectInterleaved.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\bstrlib.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\glsw\Headers\glsw.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glEnumTable.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glImmediateModeEmulation.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glRenderStateBlock.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\glResources.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Headers\GLWrapper.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShader.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glShaderProgram.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Shaders\Headers\glUniformBufferObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glSamplerObject.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\OpenGL\Textures\Headers\glTexture.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\Shader.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderGenerator.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Shaders\Headers\ShaderProgram.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\Texture.h" />
-    <ClInclude Include="..\..\Source Code\Hardware\Video\Textures\Headers\TextureDescriptor.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\FrameListenerManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\RenderPassManager.h" />
     <ClInclude Include="..\..\Source Code\Managers\Headers\ShaderManager.h" />

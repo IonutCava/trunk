@@ -180,7 +180,6 @@ void SceneAnimator::CalculateBoneToWorldTransform(Bone* child){
 			child->_globalTransform = parent->_localTransform * child->_globalTransform;
 			parent  = parent->_parent;// get the parent of the bone we are working on
 		}
-		
 	}
 }
 

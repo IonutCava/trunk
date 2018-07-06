@@ -43,6 +43,8 @@ public:
 	virtual void Unbind(U8 unit=0) const = 0;
 	void BlitFrom(FrameBufferObject* inputFBO) const;
 
+	void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const;
+
 protected:
 	bool checkStatus() const;
 };

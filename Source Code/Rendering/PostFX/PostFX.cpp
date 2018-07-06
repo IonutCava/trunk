@@ -24,6 +24,7 @@ PostFX::PostFX(): _underwaterTexture(NULL),
 	_SSAO_FBO(NULL),
 	_fxaaOP(NULL),
 	_dofOP(NULL),
+	_bloomOP(NULL),
 	_currentCamera(NULL),
 	_underwater(false),
 	_gfx(GFX_DEVICE)
@@ -79,7 +80,7 @@ void PostFX::init(const vec2<U16>& resolution){
 	_enableDOF = par.getParam<bool>("postProcessing.enableDepthOfField");
 	_enableNoise = par.getParam<bool>("postProcessing.enableNoise");
 	_enableFXAA = par.getParam<bool>("postProcessing.enableFXAA");
-    _enableHDR = par.getParam<bool>("rendering.enableHDR");
+    _enableHDR = par.getParam<bool>("postProcessing.enableHDR");
 
 	if(_enablePostProcessing){
 
@@ -94,7 +95,6 @@ void PostFX::init(const vec2<U16>& resolution){
         std::stringstream ss;
         if(_enableBloom) ss << "POSTFX_ENABLE_BLOOM,";
 		if(_enableSSAO)  ss << "POSTFX_ENABLE_SSAO,";
-        if(_enableHDR)   ss << "POSTFX_ENABLE_HDR,";
 		ss << "DEFINE_PLACEHOLDER";
 		postFXShader.setPropertyList(ss.str());
 
@@ -174,9 +174,10 @@ void PostFX::createOperators(){
 	// Bloom and Ambient Occlusion generate textures that are applied in the PostFX shader
 	if(_enableBloom && !_bloomFBO){
 		_bloomFBO = _gfx.newFBO(FBO_2D_COLOR);
-		PreRenderOperator* bloomOp = stageBuilder.addPreRenderOperator<BloomPreRenderOperator>(_renderQuad,_enableBloom,_bloomFBO,resolution);
-		bloomOp->addInputFBO(_screenFBO);
+		_bloomOP = stageBuilder.addPreRenderOperator<BloomPreRenderOperator>(_renderQuad,_enableBloom,_bloomFBO,resolution);
+		_bloomOP->addInputFBO(_screenFBO);
 	}
+	_bloomOP->genericFlag(_enableHDR);
 
 	if(_enableSSAO && !_SSAO_FBO){
 		_SSAO_FBO = _gfx.newFBO(FBO_2D_COLOR);
@@ -301,10 +302,6 @@ void PostFX::displaySceneWithoutAnaglyph(bool deferred){
 			_screenBorder->Bind(id);
 			_postProcessingShader->UniformTexture("texVignette", id++);
 		}
-        if(_enableHDR){
-            _postProcessingShader->Uniform("exposure",1.0f);
-        }
-		_postProcessingShader->Uniform("enable_hdr",_enableHDR);
 
 		_gfx.toggle2D(true);
         _renderQuad->setCustomShader(_postProcessingShader);
@@ -361,6 +358,7 @@ void PostFX::idle(){
     _enableFXAA = par.getParam<bool>("postProcessing.enableFXAA");
 	_enableAnaglyph = par.getParam<bool>("postProcessing.enable3D");
     _enableNoise = par.getParam<bool>("postProcessing.enableNoise");
+	_enableHDR = par.getParam<bool>("postProcessing.enableHDR");
 
     if(_enableBloom != par.getParam<bool>("postProcessing.enableBloom")){
         _enableBloom = !_enableBloom;
@@ -380,14 +378,7 @@ void PostFX::idle(){
         recompileShader = true;
     }
 
-    if(_enableHDR != par.getParam<bool>("rendering.enableHDR")){
-        _enableHDR = !_enableHDR;
-        if(_enableHDR) 
-	        _postProcessingShader->addShaderDefine("POSTFX_ENABLE_HDR");
-        else
-		    _postProcessingShader->removeShaderDefine("POSTFX_ENABLE_HDR");
-        recompileShader = true;
-    }
+   
 
     createOperators();
 

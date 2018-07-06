@@ -10,7 +10,7 @@ DoFPreRenderOperator::DoFPreRenderOperator(Quad3D* target,
 										   SamplerDescriptor* const sampler) : PreRenderOperator(DOF_STAGE,target,resolution,sampler),
 																	           _outputFBO(result)
 {
-    TextureDescriptor dofDescriptor(TEXTURE_2D, 
+    TextureDescriptor dofDescriptor(TEXTURE_2D,
 		                            RGBA,
 									RGBA8,
 									UNSIGNED_BYTE);

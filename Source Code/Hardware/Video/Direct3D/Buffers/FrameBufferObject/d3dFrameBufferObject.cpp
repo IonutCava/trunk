@@ -6,3 +6,6 @@ bool d3dFrameBufferObject::checkStatus() const {
 
 void d3dFrameBufferObject::BlitFrom(FrameBufferObject* inputFBO) const {
 }
+
+void d3dFrameBufferObject::UpdateMipMaps(TextureDescriptor::AttachmentType slot) const {
+}

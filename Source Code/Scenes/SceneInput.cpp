@@ -12,7 +12,7 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 	//mathematical handling of the difference between
     //your mouse position and the 'center' of the window
     F32 modifier_x, modifier_y;
-        
+
      F32 point_dist = _paramHandler.getParam<F32>("runtime.zFar");
         //it'll be put this far on the Z plane
 
@@ -87,7 +87,6 @@ void Scene::findSelection(const vec3<F32>& camOrigin, U32 x, U32 y){
 												 Frustum::getInstance().getZPlanes().y/2.0f);
 	if(previousSelection) previousSelection->setSelected(false);
 	if(_currentSelection) _currentSelection->setSelected(true);
-	
 }
 
 void Scene::onMouseClickDown(const OIS::MouseEvent& key,OIS::MouseButtonID button){
@@ -102,7 +101,7 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 	switch(key.key){
 		default: break;
 		case OIS::KC_LEFT  : state()._angleLR = -1; break;
-		case OIS::KC_RIGHT : state()._angleLR =  1; break;		
+		case OIS::KC_RIGHT : state()._angleLR =  1; break;
 		case OIS::KC_UP    : state()._angleUD = -1; break;
 		case OIS::KC_DOWN  : state()._angleUD =  1; break;
 		case OIS::KC_END   : deleteSelection(); break;
@@ -110,17 +109,17 @@ void Scene::onKeyDown(const OIS::KeyEvent& key){
 			Camera& cam = renderState().getCamera();
 			F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
 			if (currentCamMoveSpeedFactor < 5){
-				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 0.1f);   
-				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() + 0.1f);   
+				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor + 0.1f);
+				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() + 0.1f);
 			}
 		}break;
 		case OIS::KC_SUBTRACT :	{
 			Camera& cam = renderState().getCamera();
 			F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
 			if (currentCamMoveSpeedFactor > 0.2f){
-				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 0.1f);  
-				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);  
-			} 
+				cam.setMoveSpeedFactor( currentCamMoveSpeedFactor - 0.1f);
+				cam.setTurnSpeedFactor( cam.getTurnSpeedFactor() - 0.1f);
+			}
 		}break;
 		case OIS::KC_F2:{
 			D_PRINT_FN(Locale::get("TOGGLE_SCENE_SKELETONS"));

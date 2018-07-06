@@ -36,11 +36,9 @@ RenderBinItem::RenderBinItem(P32 sortKey, SceneGraphNode* const node ) : _node( 
 		// all materials should have at least one final render state
 		currentStateBlock = mat->getRenderState(FINAL_STAGE);
 		assert(currentStateBlock != NULL);
-
 	}
 	// Save the render state hash value for sorting
 	_stateHash = currentStateBlock->getGUID();
-
 }
 
 /// Sorting opaque items is a 2 step process:
@@ -97,7 +95,6 @@ RenderBin::RenderBin(const RenderBinType& rbType,const RenderingOrder::List& ren
 	renderBinTypeToNameMap[RBT_PARTICLES]   = "Particle Bin";
 	renderBinTypeToNameMap[RBT_DECALS]      = "Decals Bin";
 	renderBinTypeToNameMap[RBT_SHADOWS]     = "Shadow Bin";
-
 }
 
 void RenderBin::sort(){
@@ -139,7 +136,6 @@ void RenderBin::addNodeToBin(SceneGraphNode* const sgn){
 }
 
 void RenderBin::preRender(){
-
 }
 
 void RenderBin::render(const RenderStage& currentRenderStage){
@@ -164,7 +160,6 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 
 		//Check if we should draw the node. (only after onDraw as it may contain exclusion mask changes before draw)
 		if(sn->getDrawState(currentRenderStage)) {
-
 			U8 lightCount = 0;
 			if(!isDepthPass){
 				//Find the most influental lights for this node.
@@ -174,7 +169,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 				lightMgr.update();
 				//Only 2 sets of shadow maps for every node
             }
-			
+
 			CLAMP<U8>(lightCount, 0, Config::MAX_SHADOW_CASTING_LIGHTS_PER_NODE);
 			//Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
 			if(isLightValidStage){
@@ -184,7 +179,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 					lightMgr.bindDepthMaps(l, n, offset);
 				}
 			}
-				
+
 			//setup materials and render the node
 			//As nodes are sorted, this should be very fast
 			//We need to apply different materials for each stage
@@ -195,7 +190,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 
 			//Unbind current material properties
 			isDepthPass ?  sn->releaseDepthMaterial() : sn->releaseMaterial();
-		
+
 			//Apply shadows only from the most important MAX_SHADOW_CASTING_LIGHTS_PER_NODE lights
 			if(isLightValidStage){
 				U8 offset = (lightCount - 1) + 9;
@@ -205,7 +200,7 @@ void RenderBin::render(const RenderStage& currentRenderStage){
 				}
 			}
 		}
-		
+
 		// Perform any post draw operations regardless of the draw state
 		sn->postDraw(currentRenderStage);
 	}

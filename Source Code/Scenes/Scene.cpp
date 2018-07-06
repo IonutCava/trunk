@@ -45,7 +45,7 @@ Scene::Scene() :  Resource(),
 	_mousePressed[OIS::MB_Button7] = false;
 }
 
-Scene::~Scene() 
+Scene::~Scene()
 {
 }
 
@@ -87,7 +87,6 @@ void Scene::updateCameras(){
 }
 
 void Scene::postRender(){
-
 }
 
 void Scene::addPatch(vectorImpl<FileData>& data){

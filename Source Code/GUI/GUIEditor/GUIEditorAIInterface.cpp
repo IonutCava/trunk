@@ -9,7 +9,6 @@
 
 GUIEditorAIInterface::GUIEditorAIInterface() : GUIEditorInterface(), _createNavMeshQueued(false)
 {
-
 }
 
 GUIEditorAIInterface::~GUIEditorAIInterface()
@@ -31,7 +30,7 @@ bool GUIEditorAIInterface::tick(U32 deltaMsTime){
 		temp->setFileName(GET_ACTIVE_SCENE()->getName());
 		bool loaded = temp->load(NULL);//<Start from root for now
 
-		if(!loaded){ 
+		if(!loaded){
 			loaded = temp->build(NULL,false);
 			temp->save();
 		}

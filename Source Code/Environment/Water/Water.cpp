@@ -39,7 +39,7 @@ void WaterPlane::postLoad(SceneGraphNode* const sgn){
 bool WaterPlane::computeBoundingBox(SceneGraphNode* const sgn){
 	BoundingBox& bb = _node->getBoundingBox();
 
-	if(bb.isComputed()) 
+	if(bb.isComputed())
 		return true;
 
 	_waterLevel = GET_ACTIVE_SCENE()->state().getWaterLevel();
@@ -62,7 +62,6 @@ bool WaterPlane::unload(){
 }
 
 void WaterPlane::setParams(F32 shininess, const vec2<F32>& noiseTile, const vec2<F32>& noiseFactor, F32 transparency){
-
 	_shader->Uniform("_waterShininess",shininess  );
 	_shader->Uniform("_noiseFactor",   noiseFactor);
 	_shader->Uniform("_noiseTile",     noiseTile  );
@@ -83,7 +82,6 @@ void WaterPlane::onDraw(const RenderStage& currentStage){
 		_shader->Uniform("water_bb_diff",bb.getMax() - bb.getMin());
 		_shader->Uniform("underwater",isPointUnderWater(_eyePos));
 	}
-
 }
 
 void WaterPlane::postDraw(const RenderStage& currentStage){
@@ -96,7 +94,7 @@ void WaterPlane::prepareMaterial(SceneGraphNode* const sgn){
 	//Update lights for this node
 	LightManager::getInstance().update();
 	//Only 1 shadow map for terrains
-	
+
 	if(GFX_DEVICE.isCurrentRenderStage(DISPLAY_STAGE)){
 		U8 offset = Config::MAX_TEXTURE_STORAGE;
 		CLAMP<U8>(_lightCount, 0, 1);
@@ -135,10 +133,10 @@ void WaterPlane::render(SceneGraphNode* const sgn){
 bool WaterPlane::getDrawState(const RenderStage& currentStage)  const {
 	// Wait for the Reflector to update
 	if(!_createdFBO) return false;
-	
+
 	// Make sure we are not drawing ourself unless this is desired
 	if((currentStage == REFLECTION_STAGE || _reflectionRendering) && !_updateSelf)	return false;
-	
+
 	// Else, process normal exclusion
 	return SceneNode::getDrawState(currentStage);
 }
@@ -177,7 +175,7 @@ void WaterPlane::updateReflection(){
 	_reflectedTexture->End();
 
 	if(!underwater){
-		GFX_DEVICE.disableClipPlane(_clippingPlaneID);	
+		GFX_DEVICE.disableClipPlane(_clippingPlaneID);
 		GFX_DEVICE.setPreviousRenderStage();
 	}
 	_reflectionRendering = false;
@@ -186,7 +184,7 @@ void WaterPlane::updateReflection(){
 void WaterPlane::updatePlaneEquation(){
 	_absNormal = _planeSGN->getTransform()->getGlobalOrientation() * WORLD_Y_AXIS;
 	_absNormal.normalize();
-	_reflectionPlane.set(_absNormal,_waterLevel); 
+	_reflectionPlane.set(_absNormal,_waterLevel);
 	_reflectionPlane.active(false);
 	if(_clippingPlaneID == -1){
 		_clippingPlaneID = GFX_DEVICE.addClipPlane(_reflectionPlane);

@@ -35,7 +35,6 @@ namespace {
 	static boost::lockfree::queue<MessageStruct*, boost::lockfree::capacity<256> >  _outputBuffer;
 };
 
-
 GUIConsole::GUIConsole() : _consoleWindow(NULL),
 						   _editBox(NULL),
 						   _outputWindow(NULL),
@@ -52,12 +51,12 @@ GUIConsole::~GUIConsole()
     setVisible(false);
 	if (_consoleWindow)
 		CEGUI_DEFAULT_CONTEXT.getRootWindow()->removeChild(_consoleWindow);
-	
+
 	SAFE_DELETE(_cmdParser);
 }
 
 void GUIConsole::CreateCEGUIWindow(){
-	if(_init) 
+	if(_init)
 		ERROR_FN(Locale::get("ERROR_CONSOLE_DOUBLE_INIT"));
 
 	// Get a local pointer to the CEGUI Window Manager, Purely for convenience to reduce typing
@@ -128,7 +127,7 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 	//Keep command history low
 	if(_inputHistory.size() > _CEGUI_MAX_CONSOLE_ENTRIES)
 		_inputHistory.pop_front();
-	
+
 	_inputHistoryIndex = _inputHistory.size()-1;
 	//reset the inputbuffer so we can handle console closing properly
 	_inputBuffer.clear();
@@ -137,7 +136,7 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs &e){
 
 void GUIConsole::setVisible(bool visible){
 	//if it's not the first key (e.g., if the toggle key is "~", then "lorem~ipsum" should not close the Window)
-	if(!_inputBuffer.empty()) 
+	if(!_inputBuffer.empty())
 		return;
 
 	assert(_editBox != NULL);
@@ -164,14 +163,13 @@ void GUIConsole::printText(const char* output, bool error){
 		while(!_outputBuffer.push(msg));
 		return;
 	}
-	
+
    //print it all at once
 	MessageStruct* outMsg = NULL;
 	while(_outputBuffer.pop(outMsg)){
 		OutputText(outMsg->msg(), outMsg->error());
 		SAFE_DELETE(outMsg);
 	}
-	
 
 	OutputText(output, error);
  }
@@ -190,6 +188,6 @@ void GUIConsole::OutputText(const char* inMsg, const bool error){
  	// Always make sure the last item is visible (auto-scroll)
 	_outputWindow->ensureItemIsVisible(newItem);
 	   // Try to not overfill the listbox but make room for the new item
-    if(_outputWindow->getItemCount() > _CEGUI_MAX_CONSOLE_ENTRIES) 
+    if(_outputWindow->getItemCount() > _CEGUI_MAX_CONSOLE_ENTRIES)
          _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
 }

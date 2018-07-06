@@ -45,7 +45,6 @@ void Quadtree::Build(BoundingBox& terrainBBox,
 					 vec2<U32>& HMsize,
 					 U32 minHMSize,
                      VertexBufferObject* const groundVBO){
-
 	_root = New QuadtreeNode();
 	_root->setBoundingBox(terrainBBox);
 	_root->setParentShaderProgram(_parentShaderProgram);
@@ -66,7 +65,6 @@ void Quadtree::GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const 
 
     for (U32 j = 0; j < (terrainHeight - 1); ++j ) {
         for (U32 i = 0; i < (terrainWidth - 1); ++i )  {
-
             I32 vertexIndex = ( j * terrainWidth ) + i;
             // Top triangle (T0)
 			firstTri.set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
@@ -81,7 +79,6 @@ void Quadtree::GenerateIndexBuffer(vec2<U32>& HMsize, VertexBufferObject* const 
             groundVBO->addIndex(secondTri.y); // V2
             groundVBO->addIndex(secondTri.z); // V3
 			groundVBO->getTriangles().push_back(secondTri);
-
         }
     }
 }

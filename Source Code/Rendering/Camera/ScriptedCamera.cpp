@@ -1,4 +1,4 @@
-#include "Headers/ScriptedCamera.h" 
+#include "Headers/ScriptedCamera.h"
 
 ScriptedCamera::ScriptedCamera() : Camera(SCRIPTED)
 {

@@ -12,7 +12,7 @@ FXAAPreRenderOperator::FXAAPreRenderOperator(Quad3D* target,
 																	             _outputFBO(result)
 {
 	_samplerCopy = GFX_DEVICE.newFBO(FBO_2D_COLOR);
-	TextureDescriptor fxaaDescriptor(TEXTURE_2D, 
+	TextureDescriptor fxaaDescriptor(TEXTURE_2D,
 		                             RGBA,
 									 RGBA8,
 									 UNSIGNED_BYTE);

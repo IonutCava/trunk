@@ -119,7 +119,6 @@ void QuadtreeNode::DrawBBox(){
 }
 
 void QuadtreeNode::DrawGround(I32 options,VertexBufferObject* const terrainVBO){
-
 	const Frustum& frust = Frustum::getInstance();
 	const vec3<F32>& center = _boundingBox.getCenter();
 	const vec3<F32>& eyePos = frust.getEyePos();

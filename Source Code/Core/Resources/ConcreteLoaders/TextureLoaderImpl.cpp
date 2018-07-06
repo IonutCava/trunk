@@ -5,7 +5,6 @@
 #include "Hardware/Video/Textures/Headers/Texture.h"
 #include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
-
 Texture* ImplResourceLoader<Texture>::operator()(){
 	Texture* ptr = NULL;
 
@@ -23,7 +22,7 @@ Texture* ImplResourceLoader<Texture>::operator()(){
 		const SamplerDescriptor* sampler = dynamic_cast<const SamplerDescriptor*>(_descriptor.getPropertyDescriptor<SamplerDescriptor>());
 		ptr->setCurrentSampler(*sampler);
 	}
-	
+
 	if(!load(ptr,_descriptor.getResourceLocation())){
 		ERROR_FN(Locale::get("ERROR_TEXTURE_LOADER_FILE"),_descriptor.getResourceLocation().c_str(), _descriptor.getName().c_str());
         SAFE_DELETE(ptr)

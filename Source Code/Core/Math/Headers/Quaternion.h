@@ -3,23 +3,22 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
-
 
 #ifndef _QUATERNION_H_
 #define _QUATERNION_H_
@@ -40,11 +39,10 @@ public:
 	Quaternion(const vec3<T>& axis, T angle) : _dirty(true) {fromAxisAngle(axis, angle);}
 	Quaternion(T pitch, T yaw, T roll,bool inDegrees = true) : _dirty(true) {fromEuler(pitch,yaw,roll,inDegrees);}
 
-
 	inline T dot(const Quaternion& rq)  const { return _w*rq._w+_x*rq._x+_y*rq._y+_z*rq._z;  }
 	inline T magnitude()                const { return sqrtf(magnituteSq()); }
     inline T magnituteSq()              const { return (_w * _w + _x * _x + _y * _y + _z * _z); }
-	
+
 	inline bool compare(const Quaternion& rq, F32 tolerance = 1e-3f) const {
 		T fCos = dot(rq);
         T angle = (T)acos((D32)fCos);
@@ -89,7 +87,7 @@ public:
 				             _w * rq._z + _z * rq._w + _x * rq._y - _y * rq._x,
 					         _w * rq._w - _x * rq._x - _y * rq._y - _z * rq._z);
 	}
-      
+
 	//! Multiply so that rotations are applied in a left to right order.
 	inline Quaternion& operator*=(const Quaternion& rq){
 		Quaternion tmp((_w * rq._w) - (_x * rq._x) - (_y * rq._y) - (_z * rq._z),
@@ -135,7 +133,7 @@ public:
 		_dirty = true;
 		return *this;
 	}
-	
+
 	inline Quaternion& operator*=(T scalar) {
 		_w *= scalar;
         _x *= scalar;
@@ -226,13 +224,12 @@ public:
 		_w = cos(angle);
 	}
 
-	inline void fromEuler(const vec3<T>& v, bool inDegrees = true) { 
-		fromEuler(v.pitch,v.yaw,v.roll,inDegrees); 
+	inline void fromEuler(const vec3<T>& v, bool inDegrees = true) {
+		fromEuler(v.pitch,v.yaw,v.roll,inDegrees);
 	}
 
 	//! Convert from Euler Angles
 	void  fromEuler(T pitch, T yaw, T roll, bool inDegrees = true) {
-
 		_dirty = true;
 
 		T attitude = pitch;
@@ -244,7 +241,7 @@ public:
 			heading  = RADIANS(heading);
 			bank     = RADIANS(bank);
 		}
-		
+
 		D32 c1 = cos(heading  * 0.5);
 	    D32 s1 = sin(heading  * 0.5);
 	    D32 c2 = cos(attitude * 0.5);

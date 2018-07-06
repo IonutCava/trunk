@@ -183,7 +183,6 @@ bool WarScene::loadResources(bool continueOnErrors){
 								 Font::DIVIDE_DEFAULT,
 								vec3<F32>(0.6f,0.2f,0.2f),
 								"Number of items in Render Bin: %d",0);
-	
 
 	//Add a first person camera
 	Camera* cam = New FirstPersonCamera();
@@ -225,7 +224,7 @@ void WarScene::onKeyUp(const OIS::KeyEvent& key){
 		case OIS::KC_S:	state()._moveFB = 0; break;
 		case OIS::KC_A:
 		case OIS::KC_D: state()._moveLR = 0; break;
-		case OIS::KC_Q: 
+		case OIS::KC_Q:
 		case OIS::KC_E: state()._roll   = 0; break;
 		case OIS::KC_F1: _sceneGraph->print(); break;
 		case OIS::KC_TAB:{
@@ -266,7 +265,7 @@ void WarScene::onMouseClickDown(const OIS::MouseEvent& key, OIS::MouseButtonID b
 	if(_mousePressed[OIS::MB_Left]){
 		findSelection(renderState().getCamera().getEye(), _previousMousePos.x, _previousMousePos.y);
 	}
-} 
+}
 
 void WarScene::onMouseClickUp(const OIS::MouseEvent& key, OIS::MouseButtonID button){
 	Scene::onMouseClickUp(key,button);

@@ -2,7 +2,7 @@
 #include "Headers/PreRenderStageBuilder.h"
 
 #include "Hardware/Video/Headers/RenderAPIEnums.h"
-#include "Hardware/Video/Textures/Headers/TextureDescriptor.h" 
+#include "Hardware/Video/Textures/Headers/TextureDescriptor.h"
 
 PreRenderStageBuilder::PreRenderStageBuilder(){
 	_renderStage = New PreRenderStage();
@@ -17,7 +17,7 @@ PreRenderStageBuilder::~PreRenderStageBuilder(){
 }
 
 PreRenderOperator* PreRenderStageBuilder::addToStage(PreRenderOperator* op, bool& state){
-	op->setEnabled(state);
+	op->enabled(state);
 	_renderStage->addRenderOperator(op);
 	return op;
 }

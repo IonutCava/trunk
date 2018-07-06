@@ -33,9 +33,8 @@ bool Terrain::unload(){
 
 /// Visual resources must be loaded in the rendering thread to gain acces to the current graphic context
 void Terrain::loadVisualResources(){
-
 	_alphaTexturePresent = (_terrainTextures[TERRAIN_TEXTURE_ALPHA] != NULL);
-	
+
 	//Generate a render state
 	RenderStateBlockDescriptor terrainDesc;
 	terrainDesc.setCullMode(CULL_MODE_CW);
@@ -203,7 +202,7 @@ void Terrain::postLoad(SceneGraphNode* const sgn){
 	_plane->renderInstance()->transform(_planeTransform);
 	computeBoundingBox(_node);
 	ShaderProgram* s = getMaterial()->getShaderProgram();
-	
+
 	s->Uniform("detail_scale",  _normalMapUVScale);
     s->Uniform("diffuse_scale", _diffuseUVScale);
 	s->Uniform("bbox_min", _boundingBox.getMin());

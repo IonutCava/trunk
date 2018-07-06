@@ -21,18 +21,17 @@ namespace ImageTools {
 
 		return RGB;
 	}
-		
+
 	void initialize() {
 		// used to play nice with DevIL (DevIL acts like OpenGL - a state machine)
 		static bool first = true;
-		if(!first) 
+		if(!first)
 			return;
 
 		first = false;
 		ilInit();
 		ilEnable(IL_TYPE_SET);
 		ilTypeFunc(IL_UNSIGNED_BYTE);
-
 	}
 
 	void ImageData::throwLoadError(const std::string& fileName){
@@ -40,16 +39,15 @@ namespace ImageTools {
 		ILenum error;
 		while((error = ilGetError()) != IL_NO_ERROR) {
 			ERROR_FN(Locale::get("ERROR_IMAGETOOLS_DEVIL"), iluErrorString(error));
-		} 
+		}
 
 		ilDeleteImages(1, &_ilTexture);
 		_ilTexture = 0;
 	}
 
 	bool ImageData::prepareInternalData() {
-	
 		initialize();
-	
+
 		ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
 		ilEnable(IL_ORIGIN_SET);
 		ilGenImages(1, &_ilTexture);
@@ -72,7 +70,7 @@ namespace ImageTools {
 				switch(ilGetInteger(IL_PALETTE_TYPE)) {
 					default:
 					case IL_PAL_NONE: {
-						throwLoadError(_name); 
+						throwLoadError(_name);
 						return false;
 					}
 					case IL_PAL_RGB24:
@@ -86,7 +84,7 @@ namespace ImageTools {
 			case IL_BGRA: targetFormat = IL_RGBA; break;
 			case IL_BGR:  targetFormat = IL_RGB; break;
 		}
-	
+
 		// if the image's format is not desired or the image's data type is not in unsigned byte format, we should convert it
 		if(format != targetFormat || (ilGetInteger(IL_IMAGE_TYPE) != IL_UNSIGNED_BYTE)){
 			if(ilConvertImage(targetFormat, IL_UNSIGNED_BYTE) != IL_TRUE){
@@ -97,7 +95,7 @@ namespace ImageTools {
 		}
 
 		// most formats do not have an alpha channel
-		_alpha = (format == IL_RGBA || format == IL_LUMINANCE_ALPHA || format == IL_ALPHA);	
+		_alpha = (format == IL_RGBA || format == IL_LUMINANCE_ALPHA || format == IL_ALPHA);
 		_format = textureFormatDevIL(format);
 		size_t imageSize = (size_t)(_dimensions.width) * (size_t)(_dimensions.height) * (size_t)(_bpp);
 
@@ -130,7 +128,6 @@ namespace ImageTools {
 		}
 
 		return setInternalData();
-	
 	}
 
 	void ImageData::destroy(){
@@ -152,7 +149,6 @@ namespace ImageTools {
 	}
 
 	I8 SaveToTGA(char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
-
 		U8 cGarbage = 0, type,mode,aux;
 		I16 iGarbage = 0;
 		U16 width = dimensions.width;
@@ -202,7 +198,6 @@ namespace ImageTools {
 
 	/// saves a series of files with names "filenameX.tga"
 	I8 SaveSeries(char *filename, const vec2<U16>& dimensions, U8 pixelDepth, U8 *imageData) {
-
 		static I8 savedImages=0;
 		char *newFilename;
 		// compute the new filename by adding the
@@ -220,5 +215,4 @@ namespace ImageTools {
 
 		return status;
 	}
-
 } ///namespace ImageTools

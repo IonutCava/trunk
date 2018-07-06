@@ -4,10 +4,13 @@ FrameBufferObject::FrameBufferObject(FBOType type) : _frameBufferHandle(0),
 												     _width(0),
 						  						     _height(0),
 													 _textureType(0),
-													 _clearColor(BLACK()),
+													 _clearColor(WHITE()),
 													 _fboType(type),
 													 _useDepthBuffer(false),
-													 _disableColorWrites(false)
+													 _disableColorWrites(false),
+													 _bound(false),
+													 _clearBuffersState(true),
+													 _clearColorState(true)
 {
 }
 
@@ -57,7 +60,9 @@ bool FrameBufferObject::AddAttachment(const TextureDescriptor& descriptor,
 }
 
 void FrameBufferObject::Bind(U8 unit, U8 texture) const {
+	_bound = true;
 }
 
 void FrameBufferObject::Unbind(U8 unit) const {
+	_bound = false;
 }

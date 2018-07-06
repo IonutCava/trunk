@@ -36,7 +36,7 @@ PSShadowMaps::PSShadowMaps(Light* light) : ShadowMap(light)
 	createJitterTexture(JITTER_SIZE,8,8);
 
 	_depthMap = GFX_DEVICE.newFBO(FBO_2D_ARRAY_DEPTH);
-	
+
 	SamplerDescriptor depthMapSampler;
 	depthMapSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
 	depthMapSampler.toggleMipMaps(false);

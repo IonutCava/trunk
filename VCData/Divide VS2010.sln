@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Client", "VisualStudioProjects\DIVIDE_VS2010.vcxproj", "{8FCA6505-8035-4279-9942-F0BBCCF2FDE7}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1ED21303-434E-46DA-8050-2DF2684BE74E} = {1ED21303-434E-46DA-8050-2DF2684BE74E}
+		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C} = {9D7BBBC8-E5CF-475D-8531-4520B605833C}
 	EndProjectSection
 EndProject
@@ -15,8 +16,16 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Server", "VisualStud
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-ReCast", "VisualStudioProjects\Divide-ReCast.vcxproj", "{1ED21303-434E-46DA-8050-2DF2684BE74E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Networking", "VisualStudioProjects\Divide-Networking.vcxproj", "{9D7BBBC8-E5CF-475D-8531-4520B605833C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CE681ABE-38E0-4445-92A0-0F17EE225473} = {CE681ABE-38E0-4445-92A0-0F17EE225473}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Divide-Hardware", "VisualStudioProjects\Divide-Hardware.vcxproj", "{CE681ABE-38E0-4445-92A0-0F17EE225473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,6 +58,12 @@ Global
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Profile|Win32.Build.0 = Profile|Win32
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release|Win32.ActiveCfg = Release|Win32
 		{9D7BBBC8-E5CF-475D-8531-4520B605833C}.Release|Win32.Build.0 = Release|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Debug|Win32.Build.0 = Debug|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile|Win32.ActiveCfg = Profile|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Profile|Win32.Build.0 = Profile|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release|Win32.ActiveCfg = Release|Win32
+		{CE681ABE-38E0-4445-92A0-0F17EE225473}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

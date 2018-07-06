@@ -14,7 +14,8 @@ glDepthArrayBufferObject::glDepthArrayBufferObject() : glFrameBufferObject(FBO_2
 
 void glDepthArrayBufferObject::DrawToLayer(GLubyte face, GLubyte layer) const {
 	GLCheck(glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthId, 0, layer));
-	GLCheck(glClear( _clearBufferMask ));
+	if(_clearBuffersState)
+		GLCheck(glClear( _clearBufferMask ));
 }
 
 void glDepthArrayBufferObject::Bind(GLubyte unit, GLubyte texture) const {

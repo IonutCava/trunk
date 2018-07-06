@@ -95,6 +95,7 @@ bool glMSTextureBufferObject::Create(GLushort width, GLushort height, GLubyte im
     }
 
 	checkStatus();
+	GLCheck(glClear(_clearBufferMask));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 	return true;
 }

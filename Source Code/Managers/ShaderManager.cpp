@@ -139,7 +139,7 @@ Shader* ShaderManager::loadShader(const std::string& name, const std::string& so
 
 	if(!recompile){
 		if(shader != NULL) return shader;
-		
+
 		shader = GFX_DEVICE.newShader(name, type);
 	}
 

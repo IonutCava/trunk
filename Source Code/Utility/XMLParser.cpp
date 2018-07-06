@@ -12,7 +12,6 @@ namespace XML {
 	ptree pt;
 
 	namespace {
-		
 		const char* getFilterName(TextureFilter filter)	{
 			if(filter == TEXTURE_FILTER_LINEAR)
 				return "TEXTURE_FILTER_LINEAR";
@@ -27,9 +26,8 @@ namespace XML {
 
 			return "TEXTURE_FILTER_NEAREST";
 		}
-		
-		TextureFilter getFilter(const char* filter)	{
 
+		TextureFilter getFilter(const char* filter)	{
 			if(strcmp(filter, "TEXTURE_FILTER_LINEAR") == 0 )
 				return TEXTURE_FILTER_LINEAR;
 			else if(strcmp(filter, "TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST") == 0 )
@@ -43,7 +41,7 @@ namespace XML {
 
 			return TEXTURE_FILTER_NEAREST;
 		}
-		
+
 		const char* getWrapModeName(TextureWrap wrapMode) {
 			if(wrapMode == TEXTURE_CLAMP)
 				return "TEXTURE_CLAMP";
@@ -53,10 +51,10 @@ namespace XML {
 				return "TEXTURE_CLAMP_TO_BORDER";
 			else if(wrapMode == TEXTURE_DECAL)
 				return "TEXTURE_DECAL";
-		
+
 			return "TEXTURE_REPEAT";
 		}
-		
+
 		TextureWrap getWrapMode(const char* wrapMode) {
 			if(strcmp(wrapMode, "TEXTURE_CLAMP") == 0)
 				return TEXTURE_CLAMP;
@@ -364,7 +362,6 @@ namespace XML {
 
 		loadTerrain(sceneLocation + "/" + pt.get("terrain","terrain.xml"),scene);
 		loadGeometry(sceneLocation + "/" + pt.get("assets","assets.xml"),scene);
-
 	}
 
 	void loadTerrain(const std::string &file, Scene* const scene) {
@@ -678,7 +675,7 @@ namespace XML {
 		if((texture = mat.getTexture(Material::TEXTURE_UNIT0 + 1)) != NULL){
 			saveTextureXML("diffuseTexture2",getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_UNIT0 + 1)), texture);
 		}
-		
+
 		if((texture = mat.getTexture(Material::TEXTURE_NORMALMAP)) != NULL){
 			saveTextureXML("bumpMap", getTextureOperationName(mat.getTextureOperation(Material::TEXTURE_NORMALMAP)), texture);
 			pt.put("bumpMap.method", getBumpMethodName(mat.getBumpMethod()));
@@ -707,5 +704,4 @@ namespace XML {
 		write_xml(fileLocation, pt,std::locale(),settings);
 		fclose(xml);
 	}
-
 }

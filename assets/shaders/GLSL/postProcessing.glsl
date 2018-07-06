@@ -28,29 +28,10 @@ uniform float dvd_time;
 #if defined(POSTFX_ENABLE_BLOOM)
 uniform sampler2D texBloom;
 uniform float bloomFactor;
-#if defined(POSTFX_ENABLE_HDR)
-uniform float exposure = 1.0;
-uniform float whitePoint = 1.0;
-
-vec3 Uncharted2Tonemap(vec3 x)
-{
-	float A = 0.15;
-	float B = 0.50;
-	float C = 0.10;
-	float D = 0.20;
-	float E = 0.02;
-	float F = 0.30;
-
-return ((x*(A*x+C*B)+D*E)/(x*(A*x+B)+D*F))-E/F;
-}
-#endif
 #endif
 
 #if defined(POSTFX_ENABLE_SSAO)
 uniform sampler2D texSSAO;
-#endif
-
-#if defined(POSTFX_ENABLE_DOF)
 #endif
 
 uniform bool  enableVignette;
@@ -70,12 +51,7 @@ vec4 SSAO(in vec4 color){
 
 #if defined(POSTFX_ENABLE_BLOOM)
 vec4 Bloom(in vec4 colorIn) {
-    colorIn += bloomFactor * texture(texBloom, _texCoord);
-#if defined(POSTFX_ENABLE_HDR)
-    return vec4(Uncharted2Tonemap(vec3(colorIn) * exposure) / Uncharted2Tonemap(whitePoint) , colorIn.a);
-#else
-	return colorIn;
-#endif
+	return colorIn + bloomFactor * texture(texBloom, _texCoord);
 }
 #endif
 

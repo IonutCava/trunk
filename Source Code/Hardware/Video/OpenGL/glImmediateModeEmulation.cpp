@@ -2,7 +2,7 @@
 #include "Headers/glResources.h"
 
 #include "core.h"
-#include <glim.h>
+#include <glim/include/glim.h>
 
 #ifdef GLEW_MX
 #	ifdef _DEBUG

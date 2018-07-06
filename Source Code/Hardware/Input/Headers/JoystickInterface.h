@@ -56,10 +56,10 @@ class JoystickInterface {
 																					  _dMasterGain(0.5),
 																					  _bAutoCenter(true)  {
 	  _bFFFound = false;
-	  for( U8 nJoyInd = 0; nJoyInd < pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd )  {
+	  for( U8 nJoyInd = 0; nJoyInd < _pInputInterface->getNumberOfDevices(OIS::OISJoyStick); ++nJoyInd )  {
 		OIS::JoyStick* pJoy = NULL;
 		try{
-			pJoy = (OIS::JoyStick*)pInputInterface->createInputObject( OIS::OISJoyStick, true );
+			pJoy = static_cast<OIS::JoyStick*>(_pInputInterface->createInputObject( OIS::OISJoyStick, true ));
 			if(pJoy){
 				PRINT_FN(Locale::get("INPUT_CREATE_BUFF_JOY"),nJoyInd, pJoy->vendor().empty() ? "unknown vendor" : pJoy->vendor().c_str(),pJoy->getID());
 			}

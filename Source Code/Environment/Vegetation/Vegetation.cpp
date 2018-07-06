@@ -43,12 +43,12 @@ void Vegetation::initialize(const std::string& grassShader, Terrain* const terra
 
     assert(_map.data() != NULL);
 	_success = generateGrass(_billboardCount,size);
-   
+
 	_grassShader->Uniform("lod_metric", 100.0f);
     _grassShader->Uniform("dvd_lightCount", 1);
 	_grassShader->Uniform("grassScale", _grassScale);
 	_grassShader->UniformTexture("texDiffuse", 0);
-	
+
 	_grassVBO->setShaderProgram(_grassShader);
 	if(_success) _success = generateTrees();
 

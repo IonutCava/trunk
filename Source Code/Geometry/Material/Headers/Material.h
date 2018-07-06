@@ -3,19 +3,19 @@
    Copyright (c) 2009 Ionut Cava
 
    This file is part of DIVIDE Framework.
-   
+
    Permission is hereby granted, free of charge, to any person obtaining a copy of this software
    and associated documentation files (the "Software"), to deal in the Software without restriction,
-   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+   including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
    subject to the following conditions:
 
    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
    OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
@@ -113,7 +113,7 @@ public:
   inline void setEmissive(const vec3<F32>& value)       {_dirty = true; _shaderData._emissive = value; _materialMatrix.setCol(3,vec4<F32>(_shaderData._shininess,value.x,value.y,value.z));}
   inline void setOpacity(F32 value)                     {_dirty = true;  _shaderData._opacity = value;}
   inline void setShininess(F32 value) {
-	  _dirty = true; 
+	  _dirty = true;
       _shaderData._shininess = value;
       _materialMatrix.setCol(3,vec4<F32>(value,
                                          _shaderData._emissive.x,
@@ -146,7 +146,7 @@ public:
 			addShaderDefines(0, shaderDefines,force);
 			addShaderDefines(1, shaderDefines,force);
 		}
-		
+
 		///toggle multi-threaded shader loading on or off for this material
 		inline void setShaderLoadThreaded(const bool state) {_shaderThreadedLoad = state;}
 		ShaderProgram*    setShaderProgram(const std::string& shader, const RenderStage& renderStage = FINAL_STAGE);
@@ -159,7 +159,6 @@ public:
   inline bool  getReceivesShadows() const {return _receiveShadows;}
   inline F32   getOpacityValue()    const {return _shaderData._opacity;}
   inline U8    getTextureCount()    const {return _shaderData._textureCount;}
-
 
   inline RenderStateBlock*       getRenderState(RenderStage currentStage)       {return _defaultRenderStates[currentStage];}
   inline Texture2D*	       const getTexture(U32 textureUsage)                   {return _textures[textureUsage];}

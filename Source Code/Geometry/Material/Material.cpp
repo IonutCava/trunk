@@ -154,15 +154,15 @@ ShaderProgram* Material::setShaderProgram(const std::string& shader, const Rende
 	_computedShader[id] = true;
     _computedShaderTextures = true;
 	_shaderRef[renderStage] = shaderReference;
-	
+
 	return shaderReference;
 }
 
 void Material::clean() {
-	if(_dirty){ 
+	if(_dirty){
 		_matId[0].i = (_shaderRef[FINAL_STAGE] != NULL ?  _shaderRef[FINAL_STAGE]->getId() : 0);
 		_matId[1].i = (_shaderRef[DEPTH_STAGE] != NULL ?  _shaderRef[DEPTH_STAGE]->getId() : 0);
-		dumpToXML(); 
+		dumpToXML();
 	   _dirty = false;
 	}
 }
@@ -178,7 +178,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 	if(_computedShader[id] && !force && (id == 0 && _computedShaderTextures)) return;
 	if(_shader[id].empty() || (id == 0 && !_computedShaderTextures)){
 		//the base shader is either for a Deferred Renderer or a Forward  one ...
-		std::string shader = (GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD ? "DeferredShadingPass1" : 
+		std::string shader = (GFX_DEVICE.getRenderer()->getType() != RENDERER_FORWARD ? "DeferredShadingPass1" :
 							 (renderStage == DEPTH_STAGE ? "depthPass" : "lighting"));
 
 		//What kind of effects do we need?
@@ -202,7 +202,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 			// Or just color mapping? Use the simple fragment
 		}
 
-        if(_textures[TEXTURE_OPACITY]){   
+        if(_textures[TEXTURE_OPACITY]){
 			shader += ".Opacity";
 			addShaderDefines(id, "USE_OPACITY_MAP");
 		}
@@ -234,7 +234,7 @@ void Material::computeShader(bool force, const RenderStage& renderStage){
 ShaderProgram* const Material::getShaderProgram(RenderStage renderStage) {
 	ShaderProgram* shaderPr = _shaderRef[renderStage];
 
-    if(shaderPr == NULL) 
+    if(shaderPr == NULL)
 		shaderPr = _imShader;
 
     return shaderPr;
@@ -249,7 +249,7 @@ void Material::setCastsShadows(bool state) {
 
 	if(!state) _shader[1] = "NULL_SHADER";
 	else _shader[1].clear();
-	
+
 	_computedShader[1] = false;
 }
 
@@ -308,7 +308,7 @@ bool Material::unload(){
 }
 
 void Material::setDoubleSided(bool state) {
-	if(_doubleSided == state) 
+	if(_doubleSided == state)
 		return;
 
 	_doubleSided = state;
@@ -331,7 +331,7 @@ bool Material::isTranslucent() {
 		if(_textures[TEXTURE_UNIT0]->hasTransparency()) state = true;
 	}
 	// opacity map
-	if(_textures[TEXTURE_OPACITY]) 
+	if(_textures[TEXTURE_OPACITY])
 		state = true;
 	// diffuse channel alpha
 	if(_materialMatrix.getCol(1).a < 1.0f)
@@ -340,7 +340,7 @@ bool Material::isTranslucent() {
 	// if we have a global opacity value
 	if(getOpacityValue() < 1.0f)
 		state = true;
-	
+
 	// Disable culling for translucent items
 	if(state){
 		typedef Unordered_map<RenderStage, RenderStateBlock* >::value_type stateValue;

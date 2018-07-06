@@ -89,6 +89,7 @@ bool glDeferredBufferObject::Create(GLushort width,
     }
 
 	checkStatus();
+	GLCheck(glClear(_clearBufferMask));
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
 	return true;
@@ -100,6 +101,8 @@ void glDeferredBufferObject::Begin(GLubyte nFace) const {
 	GLCheck(glBindFramebuffer(GL_FRAMEBUFFER, _frameBufferHandle));
 	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 	GLCheck(glDrawBuffers(4, buffers));
-	GLCheck(glClear(_clearBufferMask));
-	GL_API::clearColor( _clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a );
+	if(_clearBuffersState)
+		GLCheck(glClear(_clearBufferMask));
+	if(_clearColorState)
+		GL_API::clearColor( _clearColor.r, _clearColor.g, _clearColor.b, _clearColor.a );
 }

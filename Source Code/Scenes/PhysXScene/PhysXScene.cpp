@@ -43,7 +43,6 @@ bool PhysXScene::load(const std::string& name, CameraManager* const cameraMgr){
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors){
-
 	GUI::getInstance().addText("fpsDisplay",           //Unique ID
 		                       vec2<I32>(60,20),          //Position
 							    Font::DIVIDE_DEFAULT,    //Font

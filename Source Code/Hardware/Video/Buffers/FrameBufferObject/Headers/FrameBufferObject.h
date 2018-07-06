@@ -41,7 +41,8 @@ public:
 
 	virtual void Bind(U8 unit = 0, U8 texture = 0) const;
 	virtual void Unbind(U8 unit=0) const ;
-
+	// regenerates mip maps for the currently bound color attachement (must be called  between Bind() / Unbind() to take effect)
+	virtual void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const = 0;
 	virtual void BlitFrom(FrameBufferObject* inputFBO) const = 0;
 	//Enable/Disable color writes
 	virtual void toggleColorWrites(bool state) {_disableColorWrites = !state;}
@@ -55,6 +56,11 @@ public:
 	inline U8  getType()   const	{return _fboType;}
 	inline U8  getHandle() const	{return _frameBufferHandle;}
 
+	inline void clearBuffers(bool state)       {_clearBuffersState = state;}
+	inline bool clearBuffers()           const {return _clearBuffersState;}
+	inline void clearColor(bool state)         {_clearColorState = state;}
+	inline bool clearColor()             const {return _clearColorState;}
+
 	FrameBufferObject(FBOType type);
 	virtual ~FrameBufferObject();
 
@@ -64,6 +70,9 @@ protected:
 protected:
 	typedef Unordered_map<TextureDescriptor::AttachmentType, TextureDescriptor >  TextureAttachements;
 
+	mutable bool _bound;
+	bool        _clearBuffersState;
+	bool        _clearColorState;
 	bool		_useDepthBuffer;
 	bool        _disableColorWrites;
 	U16		    _width, _height;

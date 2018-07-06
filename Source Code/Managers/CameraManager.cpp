@@ -31,7 +31,7 @@ void CameraManager::setActiveCamera(const std::string& name) {
 	assert(!_cameraPool.empty());
 	if(_cameraPool.find(name) != _cameraPool.end()) 	_camera = _cameraPool[name];
 	else  		                                        _camera = _cameraPool.begin()->second;
-	
+
 	for_each(boost::function0<void > listener, _listeners){
 		listener();
 	}

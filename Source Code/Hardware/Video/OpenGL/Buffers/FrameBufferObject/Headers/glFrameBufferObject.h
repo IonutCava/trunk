@@ -51,6 +51,8 @@ public:
 	virtual void Unbind(GLubyte unit=0) const;
 
 	void BlitFrom(FrameBufferObject* inputFBO) const;
+	
+	void UpdateMipMaps(TextureDescriptor::AttachmentType slot) const ;
 
 protected:
 	bool checkStatus() const;
@@ -60,6 +62,7 @@ protected:
 	GLuint _depthId;      ///<Depth attachement
 	GLuint _imageLayers;
 	GLuint _clearBufferMask;
+	bool   _mipMapEnabled[4];
 };
 
 #endif
