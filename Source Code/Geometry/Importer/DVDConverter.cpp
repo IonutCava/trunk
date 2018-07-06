@@ -240,7 +240,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source,
                                              source->mNormals[j].y,
                                              source->mNormals[j].z);
 
-        importBB.Add(targetBuffer->getPosition(idx));
+        importBB.add(targetBuffer->getPosition(idx));
     }
     
     subMeshData._minPos = importBB.getMin();

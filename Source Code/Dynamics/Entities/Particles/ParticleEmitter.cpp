@@ -201,8 +201,8 @@ bool ParticleEmitter::computeBoundingBox(SceneGraphNode& sgn) {
     BoundingBox& bb = sgn.getBoundingBox();
     if (_particles->_renderingPositions.size() > 2) {
         bb.reset();
-        bb.Add(_particles->_renderingPositions.front());
-        bb.Add(_particles->_renderingPositions.back());
+        bb.add(_particles->_renderingPositions.front());
+        bb.add(_particles->_renderingPositions.back());
     }
     return SceneNode::computeBoundingBox(sgn);
 }

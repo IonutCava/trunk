@@ -93,7 +93,7 @@ bool WaterPlane::computeBoundingBox(SceneGraphNode& sgn) {
     planeSGN.getComponent<PhysicsComponent>()->setPositionY(_waterLevel);
     bb.set(vec3<F32>(-_farPlane, _waterLevel - _waterDepth, -_farPlane),
            vec3<F32>(_farPlane, _waterLevel, _farPlane));
-    planeSGN.getBoundingBox().Add(bb);
+    planeSGN.getBoundingBox().add(bb);
     Console::printfn(Locale::get("WATER_CREATE_DETAILS_1"), bb.getMax().y);
     Console::printfn(Locale::get("WATER_CREATE_DETAILS_2"), bb.getMin().y);
     _dirty = true;

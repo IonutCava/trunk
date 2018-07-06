@@ -30,9 +30,9 @@ bool Mesh::computeBoundingBox(SceneGraphNode& sgn) {
     for (U32 i = 0; i < childCount; ++i) {
         SceneGraphNode& child = sgn.getChild(i, childCount);
         if (isSubMesh(child)) {
-            bb.Add(child.getInitialBoundingBox());
+            bb.add(child.getInitialBoundingBox());
         } else {
-            bb.Add(child.getBoundingBoxConst());
+            bb.add(child.getBoundingBoxConst());
         }
     }
     return SceneNode::computeBoundingBox(sgn);

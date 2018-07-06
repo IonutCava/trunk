@@ -30,17 +30,16 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
 #   if !defined(_DEBUG)
       int _shadowTempInt = -1;
 #   endif
-
+    float zDist = gl_FragCoord.z;
+    
     // find the appropriate depth map to look up in based on the depth of this fragment
-    if (gl_FragCoord.z < currentShadowSource._floatValues.x)      {
-        _shadowTempInt = 0;
-    }else if (gl_FragCoord.z < currentShadowSource._floatValues.y) {
-        _shadowTempInt = 1;
-    }else if (gl_FragCoord.z < currentShadowSource._floatValues.z) {
-        _shadowTempInt = 2;
-    }else /*(gl_FragCoord.z < currentShadowSource._floatValues.w)*/{
-        _shadowTempInt = 3;
+    _shadowTempInt = 0;
+    for (int i = 0; i < MAX_SPLITS_PER_LIGHT; ++i) {
+        if (zDist > currentShadowSource._floatValues[i].x)      {
+            _shadowTempInt = i + 1;
+        }
     }
+
 
     // GLOBAL
     const int SplitPowLookup[8] = { 0, 1, 1, 2, 2, 2, 2, 3 };
@@ -51,7 +50,7 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
     int SplitY = int(abs(dFdy(SplitPow)));
     int SplitXY = int(abs(dFdx(SplitY)));
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
-    _shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
+    //_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
 
     if (_shadowTempInt < 0 || _shadowTempInt > 3) {
         return 1.0;

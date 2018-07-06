@@ -33,6 +33,8 @@
 #define _C_SM_H_
 
 #include "ShadowMap.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
+
 namespace Divide {
 
 class Quad3D;
@@ -60,7 +62,7 @@ class CascadedShadowMaps : public ShadowMap {
    protected:
     bool bindInternal(U8 offset);
     void calculateSplitDepths(const Camera& cam);
-    void applyFrustumSplit(U8 pass);
+    void applyFrustumSplits();
 
    protected:
     U8 _numSplits;
@@ -68,6 +70,7 @@ class CascadedShadowMaps : public ShadowMap {
     F32 _nearClipOffset;
     U32 _horizBlur;
     U32 _vertBlur;
+    BoundingBox _previousFrustumBB;
     vec2<F32> _sceneZPlanes;
     vec3<F32> _lightPosition;
     mat4<F32> _viewInvMatrixCache;
@@ -81,7 +84,7 @@ class CascadedShadowMaps : public ShadowMap {
     vectorImpl<vec3<F32> > _frustumCornersWS;
     vectorImpl<vec3<F32> > _frustumCornersLS;
     vectorImpl<vec3<F32> > _splitFrustumCornersVS;
-    vectorImpl<F32> _splitDepths;
+    vectorImpl<F32       > _splitDepths;
 
     std::array<mat4<F32>, Config::Lighting::MAX_SPLITS_PER_LIGHT> _shadowMatrices;
     std::unique_ptr<ShaderBuffer> _shadowMatricesBuffer;

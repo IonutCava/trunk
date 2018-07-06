@@ -20,7 +20,7 @@ bool SceneRoot::computeBoundingBox(SceneGraphNode& sgn) {
     bb.reset();
     U32 childCount = sgn.getChildCount();
     for (U32 i = 0; i < childCount; ++i) {
-        bb.Add(sgn.getChild(i, childCount).getBoundingBoxConst());
+        bb.add(sgn.getChild(i, childCount).getBoundingBoxConst());
     }
     return SceneNode::computeBoundingBox(sgn);
 }
@@ -95,7 +95,7 @@ SceneGraphNode::~SceneGraphNode()
 void SceneGraphNode::addBoundingBox(const BoundingBox& bb,
                                     const SceneNodeType& type) {
     if (!BitCompare(_bbAddExclusionList, to_uint(type))) {
-        _boundingBox.Add(bb);
+        _boundingBox.add(bb);
         SceneGraphNode_ptr parent = _parent.lock();
         if (parent) {
             parent->getBoundingBox().setComputed(false);
@@ -249,7 +249,7 @@ void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
                                vectorImpl<SceneGraphNode_wptr>& selectionHits) {
-    if (isSelectable() && _boundingBox.Intersect(ray, start, end)) {
+    if (isSelectable() && _boundingBox.intersect(ray, start, end)) {
         selectionHits.push_back(shared_from_this());
     }
 
@@ -288,15 +288,15 @@ void SceneGraphNode::restoreActive() {
 
 bool SceneGraphNode::updateBoundingBoxPosition(const vec3<F32>& position) {
     vec3<F32> diff(position - _boundingSphere.getCenter());
-    _boundingBox.Translate(diff);
+    _boundingBox.translate(diff);
     _boundingSphere.fromBoundingBox(_boundingBox);
     return true;
 }
 
 bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
-    if (_boundingBox.Transform(
+    if (_boundingBox.transform(
             _initialBoundingBox, transform,
-            !_initialBoundingBox.Compare(_initialBoundingBoxCache))) {
+            !_initialBoundingBox.compare(_initialBoundingBoxCache))) {
         _initialBoundingBoxCache = _initialBoundingBox;
         _boundingSphere.fromBoundingBox(_boundingBox);
         return true;
@@ -306,7 +306,7 @@ bool SceneGraphNode::updateBoundingBoxTransform(const mat4<F32>& transform) {
 }
 
 void SceneGraphNode::setInitialBoundingBox(const BoundingBox& initialBoundingBox) {
-    if (!initialBoundingBox.Compare(getInitialBoundingBox())) {
+    if (!initialBoundingBox.compare(getInitialBoundingBox())) {
         _initialBoundingBox = initialBoundingBox;
         _initialBoundingBox.setComputed(true);
         _boundingBoxDirty = true;

@@ -114,9 +114,10 @@ void main(void)
 layout(points, invocations = GS_MAX_INVOCATIONS) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform vec2 blurSize;
+uniform vec2 blurSizes[GS_MAX_INVOCATIONS];
 uniform int layerCount;
 uniform int layerOffset;
+uniform int layerTotalCount;
 
 out vec3 _blurCoords[7];
 
@@ -125,6 +126,7 @@ subroutine uniform BlurRoutineType BlurRoutine;
 
 subroutine(BlurRoutineType)
 void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
+    vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize.x, layer);
     _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize.x, layer);
     _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize.x, layer);
@@ -136,6 +138,7 @@ void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
 
 subroutine(BlurRoutineType)
 void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
+    vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX - 3.0*blurSize.y, texCoordY, layer);
     _blurCoords[1] = vec3(texCoordX - 2.0*blurSize.y, texCoordY, layer);
     _blurCoords[2] = vec3(texCoordX - 1.0*blurSize.y, texCoordY, layer);
@@ -143,6 +146,16 @@ void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
     _blurCoords[4] = vec3(texCoordX + 1.0*blurSize.y, texCoordY, layer);
     _blurCoords[5] = vec3(texCoordX + 2.0*blurSize.y, texCoordY, layer);
     _blurCoords[6] = vec3(texCoordX + 3.0*blurSize.y, texCoordY, layer);
+}
+
+void passThrough(in float texCoordX, in float texCoordY, in int layer) {
+    _blurCoords[0] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[1] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[2] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[3] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[4] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[5] = vec3(texCoordX, texCoordY, layer);
+    _blurCoords[6] = vec3(texCoordX, texCoordY, layer);
 }
 
 void main() {
@@ -169,12 +182,35 @@ void main() {
 
         EndPrimitive();
     }
+
+    if (gl_InvocationID >= layerCount && gl_InvocationID< layerTotalCount) {
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(1.0, 1.0, 0.0, 1.0);
+        passThrough(1.0, 1.0, gl_Layer);
+        EmitVertex();
+
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(-1.0, 1.0, 0.0, 1.0);
+        passThrough(0.0, 1.0, gl_Layer);
+        EmitVertex();
+
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(1.0, -1.0, 0.0, 1.0);
+        passThrough(1.0, 0.0, gl_Layer);
+        EmitVertex();
+
+        gl_Layer = gl_InvocationID;
+        gl_Position = vec4(-1.0, -1.0, 0.0, 1.0);
+        passThrough(0.0, 0.0, gl_Layer);
+        EmitVertex();
+
+        EndPrimitive();
+    }
 }
 
 --Fragment.GaussBlur
 
 in vec3 _blurCoords[7];
-
 out vec2 _outColor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;

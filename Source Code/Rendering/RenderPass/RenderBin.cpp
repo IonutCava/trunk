@@ -130,8 +130,7 @@ void RenderBin::sort(U32 binIndex, RenderStage renderStage) {
 
     U32 index = 0;
     for (RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable,
-                                                  binIndex + index++);
+        Attorney::RenderingCompRenderBin::drawOrder(*item._renderable, binIndex + index++);
     }
 }
 

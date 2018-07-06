@@ -330,8 +330,8 @@ bool TerrainLoader::loadThreadedResources(
         vec3<F32>(-terrainWidth * 0.5f, minAltitude, -terrainHeight * 0.5f),
         vec3<F32>(terrainWidth * 0.5f, maxAltitude, terrainHeight * 0.5f));
 
-    terrainBB.Translate(terrainDescriptor->getPosition());
-    terrainBB.Multiply(vec3<F32>(terrainScaleFactor.x, terrainScaleFactor.y,
+    terrainBB.translate(terrainDescriptor->getPosition());
+    terrainBB.multiply(vec3<F32>(terrainScaleFactor.x, terrainScaleFactor.y,
                                  terrainScaleFactor.x));
     F32 yOffset = terrainDescriptor->getPosition().y;
     const vec3<F32>& bMin = terrainBB.getMin();

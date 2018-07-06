@@ -101,12 +101,12 @@ void TenisScene::checkCollisions() {
     BoundingBox floorBB = _floor.lock()->getBoundingBoxConst();
 
     WriteLock w_lock(_gameLock);
-    _collisionPlayer1 = ballBB.Collision(Player1->getBoundingBox());
-    _collisionPlayer2 = ballBB.Collision(Player2->getBoundingBox());
-    _collisionPlayer3 = ballBB.Collision(Player3->getBoundingBox());
-    _collisionPlayer4 = ballBB.Collision(Player4->getBoundingBox());
-    _collisionNet = ballBB.Collision(_net.lock()->getBoundingBox());
-    _collisionFloor = floorBB.Collision(ballBB);
+    _collisionPlayer1 = ballBB.collision(Player1->getBoundingBox());
+    _collisionPlayer2 = ballBB.collision(Player2->getBoundingBox());
+    _collisionPlayer3 = ballBB.collision(Player3->getBoundingBox());
+    _collisionPlayer4 = ballBB.collision(Player4->getBoundingBox());
+    _collisionNet = ballBB.collision(_net.lock()->getBoundingBox());
+    _collisionFloor = floorBB.collision(ballBB);
 }
 
 // Team 1: Player1 + Player2

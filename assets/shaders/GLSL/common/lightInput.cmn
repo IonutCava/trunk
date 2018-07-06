@@ -16,15 +16,14 @@ struct Light {
 };
 
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent readonly buffer dvd_LightBlock
-//layout(binding = BUFFER_LIGHT_NORMAL, std140) uniform dvd_LightBlock
 {
     Light dvd_LightSource[MAX_LIGHTS_IN_VIEW];
 };
 
 struct Shadow {
     mat4  _lightVP[MAX_SPLITS_PER_LIGHT];
-    vec4  _floatValues;
     vec4  _lightPosition[MAX_SPLITS_PER_LIGHT];
+    vec4  _floatValues[MAX_SPLITS_PER_LIGHT];
 };
 
 

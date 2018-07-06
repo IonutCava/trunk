@@ -25,9 +25,9 @@ Light::Light(const F32 range, const LightType& type)
     setLightMode(LightMode::MOVABLE);
     for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
         _shadowProperties._lightVP[i].identity();
+        _shadowProperties._floatValues[i].set(-1.0f);
     }
-    _shadowProperties._floatValues.set(-1.0f);
-
+    
     _shadowCamera = MemoryManager_NEW FreeFlyCamera();
     _shadowCamera->setMoveSpeedFactor(0.0f);
     _shadowCamera->setTurnSpeedFactor(0.0f);

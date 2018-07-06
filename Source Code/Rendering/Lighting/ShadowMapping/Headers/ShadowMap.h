@@ -68,10 +68,6 @@ class NOINITVTABLE ShadowMap {
 
     inline Framebuffer* getDepthMap() { return _depthMap; }
 
-    inline const vectorImpl<F32>& getShadowFloatValues() const {
-        return _shadowFloatValues;
-    }
-
     U16 resolution();
     virtual void resolution(U16 resolution, U8 resolutionFactor) {}
 
@@ -95,9 +91,6 @@ class NOINITVTABLE ShadowMap {
     ParamHandler& _par;
     bool _init;
     mat4<F32> _bias;
-    /// Generic floating point values needed for shadow mapping such as
-    /// farBounds, biases, etc.
-    vectorImpl<F32> _shadowFloatValues;
 };
 
 class ShadowMapInfo {

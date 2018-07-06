@@ -277,6 +277,11 @@ class Camera : public Resource {
 
     inline const F32 getAspectRatio() const { return _aspectRatio; }
 
+    inline const mat4<F32>& getViewMatrix() const {
+        assert(!_viewMatrixDirty);
+        return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;
+    }
+
     inline const mat4<F32>& getViewMatrix() {
         updateViewMatrix();
         return _reflectionRendering ? _reflectedViewMatrix : _viewMatrix;

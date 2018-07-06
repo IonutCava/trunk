@@ -123,7 +123,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     ballTransform->translate(ballPosition - ballTransform->getPosition());
 
     // Did we hit the table? Bounce then ...
-    if (table->getBoundingBox().Collision(_ballSGN.lock()->getBoundingBox())) {
+    if (table->getBoundingBox().collision(_ballSGN.lock()->getBoundingBox())) {
         if (ballPosition.z > tablePosition.z) {
             _touchedOwnTableHalf = true;
             _touchedAdversaryTableHalf = false;
@@ -137,7 +137,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     if (ballPosition.y > 2.1f) _upwardsDirection = false;
 
     // Did we hit the paddle?
-    if (_ballSGN.lock()->getBoundingBox().Collision(paddle->getBoundingBox())) {
+    if (_ballSGN.lock()->getBoundingBox().collision(paddle->getBoundingBox())) {
         _sideDrift = ballPosition.x - paddlePosition.x;
         // If we hit the ball with the upper margin of the paddle, add a slight
         // impuls to the ball
@@ -167,7 +167,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
         updated = true;
     }
 
-    if (_ballSGN.lock()->getBoundingBox().Collision(net->getBoundingBox())) {
+    if (_ballSGN.lock()->getBoundingBox().collision(net->getBoundingBox())) {
         if (_directionTowardsAdversary) {
             // Did we hit the net?
             _lost = true;
@@ -181,7 +181,7 @@ void PingPongScene::test(cdiggins::any a, CallbackParam b) {
     // Did we hit the opponent? Then change ball direction ... BUT ...
     // Add a small chance that we win
     if (Random(30) != 2)
-        if (_ballSGN.lock()->getBoundingBox().Collision(opponent->getBoundingBox())) {
+        if (_ballSGN.lock()->getBoundingBox().collision(opponent->getBoundingBox())) {
             _sideDrift =
                 ballPosition.x -
                 opponent->getComponent<PhysicsComponent>()->getPosition().x;

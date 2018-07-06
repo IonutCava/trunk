@@ -52,7 +52,7 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
         for (i = 0; i < 4; i++) {
             child = node->getChild(i);
             const BoundingBox& bb = child->getBoundingBox();
-            if (bb.ContainsPoint(vec3<F32>(pos.x, bb.getCenter().y, pos.y))) {
+            if (bb.containsPoint(vec3<F32>(pos.x, bb.getCenter().y, pos.y))) {
                 node = child;
                 break;
             }

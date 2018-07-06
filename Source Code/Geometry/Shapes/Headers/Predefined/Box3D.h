@@ -114,7 +114,7 @@ class Box3D : public Object3D {
             return true;
         }
         sgn.getBoundingBox().set(-_halfExtent, _halfExtent);
-        sgn.getBoundingBox().Multiply(0.5f);
+        sgn.getBoundingBox().multiply(0.5f);
         return SceneNode::computeBoundingBox(sgn);
     }
 

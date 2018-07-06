@@ -316,9 +316,10 @@ inline T vec3<T>::dot(const vec3 &v) const {
 /// compute the vector's distance to another specified vector
 template <typename T>
 inline T vec3<T>::distance(const vec3 &v) const {
-    return std::sqrt(((v.x - this->x) * (v.x - this->x)) +
-                     ((v.y - this->y) * (v.y - this->y)) +
-                     ((v.z - this->z) * (v.z - this->z)));
+    T distanceSQ = ((v.x - this->x) * (v.x - this->x)) +
+                   ((v.y - this->y) * (v.y - this->y)) +
+                   ((v.z - this->z) * (v.z - this->z));
+    return distanceSQ > EPSILON_F32 ? std::sqrt(distanceSQ) : 0;
 }
 /// compute the vector's squared distance to another specified vector
 template <typename T>

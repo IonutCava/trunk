@@ -1,24 +1,34 @@
 #include "Headers/BoundingBox.h"
 
 namespace Divide {
-BoundingBox::BoundingBox()
-    : GUIDWrapper(), _computed(false), _pointsDirty(true) {
-    _min.set(std::numeric_limits<F32>::max());
-    _max.set(std::numeric_limits<F32>::min());
+
+BoundingBox::BoundingBox() 
+    : BoundingBox(vec3<F32>(std::numeric_limits<F32>::max()),
+                  vec3<F32>(std::numeric_limits<F32>::min()))
+{
 }
 
 BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max)
-    : GUIDWrapper(),
-      _computed(false),
-      _pointsDirty(true),
-      _min(min),
-      _max(max) {}
-
-BoundingBox::BoundingBox(const vectorImpl<vec3<F32> >& points) : BoundingBox() {
-    CreateFromPoints(points);
+    : BoundingBox(min.x, min.y, min.z, max.x, max.y, max.z)
+{
 }
 
-BoundingBox::~BoundingBox() {}
+BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ)
+    : GUIDWrapper(),
+      _computed(false)
+{
+    set(minX, minY, minZ, maxX, maxY, maxZ);
+}
+
+BoundingBox::BoundingBox(const vectorImpl<vec3<F32> >& points)
+    : BoundingBox()
+{
+    createFromPoints(points);
+}
+
+BoundingBox::~BoundingBox()
+{
+}
 
 BoundingBox::BoundingBox(const BoundingBox& b) : GUIDWrapper() {
     // WriteLock w_lock(_lock);
@@ -42,7 +52,7 @@ void BoundingBox::operator=(const BoundingBox& b) {
     memcpy(_points, b._points, sizeof(vec3<F32>) * 8);
 }
 
-bool BoundingBox::Collision(const BoundingBox& AABB2) const {
+bool BoundingBox::collision(const BoundingBox& AABB2) const {
     // ReadLock r_lock(_lock);
     const vec3<F32>& center = this->getCenter();
     const vec3<F32>& halfWidth = this->getHalfExtent();
@@ -60,7 +70,7 @@ bool BoundingBox::Collision(const BoundingBox& AABB2) const {
 }
 
 /// Optimized method
-bool BoundingBox::Intersect(const Ray& r, F32 t0, F32 t1) const {
+bool BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const {
     // ReadLock r_lock(_lock);
     const vec3<F32> bounds[] = {_min, _max};
 
@@ -85,7 +95,13 @@ bool BoundingBox::Intersect(const Ray& r, F32 t0, F32 t1) const {
     return ((t_min < t1) && (t_max > t0));
 }
 
-bool BoundingBox::Transform(const BoundingBox& initialBoundingBox,
+bool BoundingBox::transform(const mat4<F32>& mat,
+                            bool force) {
+    BoundingBox copy(*this);
+    return transform(copy, mat, force);
+}
+
+bool BoundingBox::transform(const BoundingBox& initialBoundingBox,
                             const mat4<F32>& mat, bool force) {
     // UpgradableReadLock ur_lock(_lock);
     if (!force && _oldMatrix == mat) {

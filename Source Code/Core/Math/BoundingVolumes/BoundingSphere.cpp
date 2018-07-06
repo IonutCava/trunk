@@ -15,7 +15,7 @@ BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius)
 
 BoundingSphere::BoundingSphere(const vectorImpl<vec3<F32> >& points)
     : BoundingSphere() {
-    CreateFromPoints(points);
+    createFromPoints(points);
 }
 
 BoundingSphere::BoundingSphere(const BoundingSphere& s) {
@@ -36,7 +36,7 @@ void BoundingSphere::operator=(const BoundingSphere& s) {
     this->_radius = s._radius;
 }
 
-bool BoundingSphere::Collision(const BoundingSphere& sphere2) const {
+bool BoundingSphere::collision(const BoundingSphere& sphere2) const {
     return (this->_center.distance(sphere2._center) <=
            (this->_radius + sphere2._radius));
 }

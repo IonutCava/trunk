@@ -103,6 +103,10 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
         return true;
     }
 
+    const vectorImpl<SceneGraphNode_wptr>& getVisibleShadowCasters() const {
+        return _visibleShadowCasters;
+    }
+
   public:  /// Input
     /// Key pressed
     bool onKeyDown(const Input::KeyEvent& key);
@@ -147,6 +151,9 @@ DEFINE_SINGLETON_EXT2(SceneManager, FrameListener,
     typedef hashMapImpl<stringImpl, Scene*> SceneMap;
     bool _init;
     bool _processInput;
+
+    /// The bounding sphere of all of the visible shadow casters in the current frustum
+    vectorImpl<SceneGraphNode_wptr> _visibleShadowCasters;
     /// Pointer to the currently active scene
     std::unique_ptr<Scene> _activeScene;
     /// Pointer to the GUI interface

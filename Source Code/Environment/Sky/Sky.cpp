@@ -93,6 +93,7 @@ void Sky::postLoad(SceneGraphNode& sgn) {
         PhysicsComponent::PhysicsGroup::NODE_COLLIDE_IGNORE);
 
     RenderingComponent* renderable = sgn.getComponent<RenderingComponent>();
+    renderable->castsShadows(false);
 
     GenericDrawCommand cmd;
     cmd.sourceBuffer(_sky->getGeometryVB());

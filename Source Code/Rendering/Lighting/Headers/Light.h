@@ -83,16 +83,15 @@ struct LightProperties {
 struct LightShadowProperties {
     /// light viewProjection matrices
     mat4<F32> _lightVP[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-    /// random float values (e.g. split distances)
-    vec4<F32> _floatValues;
     /// light's position in world space
     vec4<F32> _lightPosition[Config::Lighting::MAX_SPLITS_PER_LIGHT];
-
+    /// random float values (e.g. split distances)
+    vec4<F32> _floatValues[Config::Lighting::MAX_SPLITS_PER_LIGHT];
     inline void set(const LightShadowProperties& other) {
-        _floatValues.set(other._floatValues);
         for (U8 i = 0; i < Config::Lighting::MAX_SPLITS_PER_LIGHT; ++i) {
             _lightVP[i].set(other._lightVP[i]);
             _lightPosition[i].set(other._lightPosition[i]);
+            _floatValues[i].set(other._floatValues[i]);
         }
     }
 };
@@ -205,8 +204,8 @@ class Light : public SceneNode {
         return _shadowProperties._lightVP[index];
     }
 
-    inline const vec4<F32>& getShadowFloatValues() const {
-        return _shadowProperties._floatValues;
+    inline const vec4<F32>& getShadowFloatValues(U8 index) const {
+        return _shadowProperties._floatValues[index];
     }
 
     inline const vec4<F32>& getShadowLightPos(U8 index) const {
@@ -217,8 +216,8 @@ class Light : public SceneNode {
         _shadowProperties._lightVP[index].set(newValue);
     }
 
-    inline void setShadowFloatValue(U8 index, F32 newValue) {
-        _shadowProperties._floatValues[index] = newValue;
+    inline void setShadowFloatValue(U8 index, const vec4<F32>& newValue) {
+        _shadowProperties._floatValues[index].set(newValue);
     }
 
     inline void setShadowLightPos(U8 index, const vec3<F32>& newValue) {

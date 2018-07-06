@@ -165,7 +165,7 @@ bool QuadtreeNode::isInView(U32 options,
                     return false;
             }
         }
-        if (!_boundingBox.ContainsPoint(cam.getEye())) {
+        if (!_boundingBox.containsPoint(cam.getEye())) {
             const Frustum& frust = cam.getFrustumConst();
             switch (frust.ContainsSphere(_boundingSphere.getCenter(),
                                          _boundingSphere.getRadius())) {

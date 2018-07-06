@@ -108,23 +108,18 @@ void SceneManager::preRender() {
     _activeScene->preRender();
 }
 
-void SceneManager::sortVisibleNodes(
-    RenderPassCuller::VisibleNodeCache& nodes) const {
-    if (nodes._sorted) {
-        return;
+void SceneManager::sortVisibleNodes(RenderPassCuller::VisibleNodeCache& nodes) const {
+    if (!nodes._sorted) {
+        RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
+        std::sort(std::begin(visibleNodes), std::end(visibleNodes),
+                  [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
+                      RenderingComponent* renderableA = nodeA.lock()->getComponent<RenderingComponent>();
+                      RenderingComponent* renderableB = nodeA.lock()->getComponent<RenderingComponent>();
+                      return renderableA->drawOrder() < renderableB->drawOrder();
+                  });
+
+        nodes._sorted = true;
     }
-
-    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
-    std::sort(std::begin(visibleNodes), std::end(visibleNodes),
-              [](SceneGraphNode_wptr nodeA, SceneGraphNode_wptr nodeB) {
-                  RenderingComponent* renderableA =
-                      nodeA.lock()->getComponent<RenderingComponent>();
-                  RenderingComponent* renderableB =
-                      nodeA.lock()->getComponent<RenderingComponent>();
-                  return renderableA->drawOrder() < renderableB->drawOrder();
-              });
-
-    nodes._sorted = true;
 }
 
 void SceneManager::updateVisibleNodes(bool flushCache) {
@@ -156,14 +151,29 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
 
     _renderPassCuller->frustumCull(GET_ACTIVE_SCENEGRAPH(), _activeScene->state(), cullingFunction);
     RenderPassCuller::VisibleNodeCache& nodes = _renderPassCuller->getNodeCache(stage);
+    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
+
     bool refreshNodeData = !nodes._locked;
     if (refreshNodeData) {
+        _visibleShadowCasters.resize(0);
         queue.refresh();
         vec3<F32> eyePos(_activeScene->renderState().getCameraConst().getEye());
-        for (SceneGraphNode_wptr node : nodes._visibleNodes) {
-            queue.addNodeToQueue(*node.lock(), eyePos);
+        for (SceneGraphNode_wptr node : visibleNodes) {
+            SceneGraphNode_ptr sgn = node.lock();
+            queue.addNodeToQueue(*sgn, eyePos);
         }
+        
+        visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
+                                         std::end(visibleNodes),
+                                         meshCullingFunction),
+                                         std::end(visibleNodes));
 
+        for (SceneGraphNode_wptr node : visibleNodes) {
+            SceneGraphNode_ptr sgn = node.lock();
+            if (sgn->getComponent<RenderingComponent>()->castsShadows()) {
+                _visibleShadowCasters.push_back(node);
+            }
+        }
         // Generate and upload all lighting data
         if (stage == RenderStage::Z_PRE_PASS) {
             LightManager::getInstance().updateAndUploadLightData(GFX_DEVICE.getMatrix(MATRIX_MODE::VIEW));
@@ -172,13 +182,7 @@ void SceneManager::updateVisibleNodes(bool flushCache) {
     queue.sort(stage);
     sortVisibleNodes(nodes);
 
-    RenderPassCuller::VisibleNodeList& visibleNodes = nodes._visibleNodes;
-    visibleNodes.erase(std::remove_if(std::begin(visibleNodes),
-                                      std::end(visibleNodes),
-                                      meshCullingFunction),
-                      std::end(visibleNodes));
-
-    GFX_DEVICE.buildDrawCommands(nodes._visibleNodes,
+    GFX_DEVICE.buildDrawCommands(visibleNodes,
                                  _activeScene->renderState(),
                                  refreshNodeData);
 }

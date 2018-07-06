@@ -49,6 +49,7 @@ class BoundingSphere {
     void operator=(const BoundingSphere& s);
 
     void fromBoundingBox(const BoundingBox& bBox);
+    void fromBoundingSphere(const BoundingSphere& bSphere);
 
     // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
     void add(const BoundingSphere& bSphere);
@@ -56,7 +57,7 @@ class BoundingSphere {
     void addRadius(const BoundingSphere& bSphere);
     void addRadius(const vec3<F32>& point);
 
-    void CreateFromPoints(const vectorImpl<vec3<F32>>& points);
+    void createFromPoints(const vectorImpl<vec3<F32>>& points);
 
     void setRadius(F32 radius);
     void setCenter(const vec3<F32>& center);
@@ -65,11 +66,12 @@ class BoundingSphere {
     F32 getRadius() const;
     F32 getDiameter() const;
 
-    inline vec4<F32> asVec4() const {
-        return vec4<F32>(getCenter(), getRadius());
-    }
+    F32 getDistanceFromPoint(const vec3<F32>& point) const;
 
-    bool Collision(const BoundingSphere& sphere2) const;
+    void reset();
+    vec4<F32> asVec4() const;
+
+    bool collision(const BoundingSphere& sphere2) const;
 
    private:
     bool _computed, _visibility, _dirty;

@@ -42,35 +42,40 @@ class BoundingBox : public GUIDWrapper {
     BoundingBox();
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max);
     BoundingBox(const vectorImpl<vec3<F32>>& points);
+    BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ);
     ~BoundingBox();
 
     BoundingBox(const BoundingBox& b);
     void operator=(const BoundingBox& b);
 
-    bool ContainsPoint(const vec3<F32>& point) const;
+    bool containsPoint(const vec3<F32>& point) const;
 
-    bool Collision(const BoundingBox& AABB2) const;
+    bool collision(const BoundingBox& AABB2) const;
 
-    bool Compare(const BoundingBox& bb) const;
+    bool compare(const BoundingBox& bb) const;
     bool operator==(const BoundingBox& B) const;
     bool operator!=(const BoundingBox& B) const;
 
     /// Optimized method
-    bool Intersect(const Ray& r, F32 t0, F32 t1) const;
+    bool intersect(const Ray& r, F32 t0, F32 t1) const;
 
-    void CreateFromPoints(const vectorImpl<vec3<F32>>& points);
+    void createFromPoints(const vectorImpl<vec3<F32>>& points);
 
-    void Add(const vec3<F32>& v);
-    void Add(const BoundingBox& bb);
+    void add(const vec3<F32>& v);
+    void add(const BoundingBox& bb);
 
-    void Translate(const vec3<F32>& v);
+    void translate(const vec3<F32>& v);
 
-    void Multiply(F32 factor);
-    void Multiply(const vec3<F32>& v);
-    void MultiplyMax(const vec3<F32>& v);
-    void MultiplyMin(const vec3<F32>& v);
+    void multiply(F32 factor);
+    void multiply(const vec3<F32>& v);
+    void multiplyMax(const vec3<F32>& v);
+    void multiplyMin(const vec3<F32>& v);
 
-    bool Transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat,
+    bool transform(const BoundingBox& initialBoundingBox,
+                   const mat4<F32>& mat,
+                   bool force = false);
+
+    bool transform(const mat4<F32>& mat,
                    bool force = false);
 
     void setComputed(bool state);
@@ -91,6 +96,10 @@ class BoundingBox : public GUIDWrapper {
     void set(const vec3<F32>& min, const vec3<F32>& max);
     void setMin(const vec3<F32>& min);
     void setMax(const vec3<F32>& max);
+
+    void set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ);
+    void setMin(F32 minX, F32 minY, F32 minZ);
+    void setMax(F32 maxX, F32 maxY, F32 maxZ);
 
     void reset();
 

@@ -725,7 +725,7 @@ void WarSceneAIProcessor::updatePositions() {
         BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode().lock()->getBoundingSphereConst());
         const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
         for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
-            if (boundingSphere.Collision(enemy.second->getUnitRef()->getBoundNode().lock()->getBoundingSphereConst())) {
+            if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode().lock()->getBoundingSphereConst())) {
                 SceneGraphNode_ptr currentTarget(_localWorkingMemory._currentTarget.value().lock());
                 if (!currentTarget ||
                     currentTarget->getGUID() != enemy.second->getGUID()) {
