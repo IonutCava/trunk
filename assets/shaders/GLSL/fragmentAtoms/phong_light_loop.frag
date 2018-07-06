@@ -97,8 +97,8 @@ float shadow_loop(){
         if (dvd_LightSource[i]._options.x == 1)
             switch (uint(dvd_LightSource[i]._position.w)){
                 case LIGHT_DIRECTIONAL     : shadow *= applyShadowDirectional(i, dvd_ShadowSource[i]); break;
-                case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, dvd_ShadowSource[i]);       break;
-                case LIGHT_SPOT            : shadow *= applyShadowSpot(i, dvd_ShadowSource[i]);        break;
+                //case LIGHT_OMNIDIRECTIONAL : shadow *= applyShadowPoint(i, dvd_ShadowSource[i]);       break;
+                //case LIGHT_SPOT            : shadow *= applyShadowSpot(i, dvd_ShadowSource[i]);        break;
             }
     }
 

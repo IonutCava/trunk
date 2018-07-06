@@ -31,14 +31,6 @@
 #endif
 
 //PhysX includes
-#ifdef _PLATFORM_DEFINES_H_
-#undef U8
-#undef U16
-#undef U32
-#undef U64
-#undef _PLATFORM_DEFINES_H_
-#define _P_D_TYPES_ONLY_
-#endif
 
 #if defined(_MSC_VER)
 #	pragma warning( push )

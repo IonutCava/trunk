@@ -5,10 +5,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/function.hpp>
 
-#ifndef I32
-#define I32 int
-#endif
-
 DEFINE_SINGLETON(Console)
 	typedef boost::function2<void, const char*, bool > consolePrintCallback;
 

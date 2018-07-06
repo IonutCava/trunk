@@ -28,9 +28,6 @@
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\Patch.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\UtilClasses.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\XMLParser.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>

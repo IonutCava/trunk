@@ -33,7 +33,6 @@
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\DataTypes.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\OutputBuffer.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\Patch.h" />
-    <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\UtilClasses.h" />
     <ClInclude Include="..\..\Source Code\DivideSever\Utility\Headers\XMLParser.h" />
     <ClInclude Include="..\..\source code\hardware\network\headers\OPCodesImpl.h" />
   </ItemGroup>

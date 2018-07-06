@@ -107,7 +107,7 @@ public:
     }
 
     virtual void SetBuffer(U32 buffer, U32 elementCount, size_t elementSize, void* data, bool dynamic, bool stream, bool persistentMapped = false) = 0;
-    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam) = 0;
+    virtual void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam, bool invalidateRange = false) = 0;
 
     virtual void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount) = 0;
 

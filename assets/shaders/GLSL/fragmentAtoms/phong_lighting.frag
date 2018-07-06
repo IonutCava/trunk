@@ -69,7 +69,7 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
     // Apply shadowing
     color *= shadow_loop();
 
-#if defined(_DEBUG)
+#if defined(_DEBUG) && defined(_SHADOWMAPPING)
     switch (dvd_showShadowSplits ? _shadowTempInt : -2){
         case -2: return vec4(color, alpha);
         case -1: return vec4(1.0);
@@ -79,7 +79,6 @@ vec4 Phong(const in vec2 texCoord, const in vec3 normal, in vec4 textureColor){
         case  3: return vec4(color, alpha) + vec4(0.15, 0.25, 0.40, 0.0);
     };
 #else
-
     return vec4(color, alpha);
 #endif
 }

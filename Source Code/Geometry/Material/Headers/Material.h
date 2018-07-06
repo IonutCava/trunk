@@ -54,7 +54,8 @@ public:
         TEXTURE_NORMALMAP = 2,
         TEXTURE_OPACITY   = 3,
         TEXTURE_SPECULAR  = 4,
-        TextureUsage_PLACEHOLDER = 5
+        TEXTURE_PROJECTION = 5, //< Not currently handled!
+        TextureUsage_PLACEHOLDER = 6
     };
 
     /// How should each texture be added

@@ -16,6 +16,7 @@
 #include "OPCodesTpl.h"
 #include "ASIO.h"
 #include "Client.h"
+#include "Core\Math\Headers\MathHelper.h"
 #include <boost/archive/text_iarchive.hpp>
 
 ASIO::ASIO() : _connected(false), _debugOutput(true), _localClient(nullptr)
@@ -78,7 +79,7 @@ void ASIO::sendPacket(WorldPacket& p)const {
 	_localClient->sendPacket(p);
 
 	if(_debugOutput){
-		std::string msg = "ASIO: sent opcode [ 0x" + DivideNetworking::toString(p.getOpcode()) + std::string("]");
+		std::string msg = "ASIO: sent opcode [ 0x" + Util::toString(p.getOpcode()) + std::string("]");
 		std::cout << msg << std::endl;
 	}
 }

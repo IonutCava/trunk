@@ -80,15 +80,15 @@ U8 ShaderProgram::update(const U64 deltaTime){
         const vec2<U16>& screenRes = GFX_DEVICE.getRenderTarget(GFXDevice::RENDER_TARGET_SCREEN)->getResolution();
         this->Uniform(_invScreenDimension, vec2<F32>(1.0f / screenRes.width, 1.0f / screenRes.height));
         //Apply global shader values valid throughout application runtime:
-        char depthMapSampler1[32], depthMapSampler2[32], depthMapSampler3[32];
-        for (I32 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
-            sprintf_s(depthMapSampler1, "texDepthMapFromLight[%d]",      i);
-            sprintf_s(depthMapSampler2, "texDepthMapFromLightArray[%d]", i);
-            sprintf_s(depthMapSampler3, "texDepthMapFromLightCube[%d]",  i);
-             //Shadow Maps always bound from the last texture slot upwards
-            this->UniformTexture(depthMapSampler1, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_NORMAL, i));
-            this->UniformTexture(depthMapSampler2, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_ARRAY,  i));
-            this->UniformTexture(depthMapSampler3, lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_CUBE,   i));
+        char depthMapSampler[3][32];
+        for (U8 i = 0; i < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE; ++i){
+            sprintf_s(depthMapSampler[0], "texDepthMapFromLight[%d]",      i);
+            sprintf_s(depthMapSampler[1], "texDepthMapFromLightArray[%d]", i);
+            sprintf_s(depthMapSampler[2], "texDepthMapFromLightCube[%d]",  i);
+            // Shadow Maps always bound from the last texture slot upwards
+            this->UniformTexture(depthMapSampler[0], lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_NORMAL, i));
+            this->UniformTexture(depthMapSampler[1], lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_ARRAY,  i));
+            this->UniformTexture(depthMapSampler[2], lightMgr.getShadowBindSlot(LightManager::SHADOW_SLOT_TYPE_CUBE,   i));
         }
 
         this->UniformTexture("texDiffuse0", Material::TEXTURE_UNIT0);

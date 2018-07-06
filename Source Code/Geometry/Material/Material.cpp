@@ -287,7 +287,6 @@ void Material::bindTextures(){
         _textures[TEXTURE_SPECULAR]->Bind(TEXTURE_SPECULAR);
     if(_textures[TEXTURE_UNIT1])
         _textures[TEXTURE_UNIT1]->Bind(TEXTURE_UNIT1);
-
     for(std::pair<Texture*, U32>& tex : _customTextures)
         tex.first->Bind(tex.second);
 }

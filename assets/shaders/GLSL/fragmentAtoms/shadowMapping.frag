@@ -1,20 +1,55 @@
-uniform sampler2DArray       texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
-uniform samplerCubeShadow    texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
-uniform sampler2DShadow      texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
-uniform sampler2D            texDiffuseProjected;
+uniform sampler2DArray    texDepthMapFromLightArray[MAX_SHADOW_CASTING_LIGHTS];
+uniform samplerCubeShadow texDepthMapFromLightCube[MAX_SHADOW_CASTING_LIGHTS];
+uniform sampler2DShadow   texDepthMapFromLight[MAX_SHADOW_CASTING_LIGHTS];
 
-uniform float mixWeight;
+uniform float dvd_lightBleedBias = 0.2;
+uniform float dvd_minShadowVariance = 0.00002;
+uniform float dvd_shadowMaxDist = 250.0;
+uniform float dvd_shadowFadeDist = 150.0;
+
+// dynamic indexing doesn't work for some reason
+vec2 getArrayShadowValue(in uint index, in vec3 coords){
+    #if MAX_SHADOW_CASTING_LIGHTS > 1
+        switch(index){
+            case 0 :  return texture(texDepthMapFromLightArray[0], coords).rg;
+            case 1 :  return texture(texDepthMapFromLightArray[1], coords).rg;
+            #if MAX_SHADOW_CASTING_LIGHTS > 2
+            case 2 :  return texture(texDepthMapFromLightArray[2], coords).rg;
+            #if MAX_SHADOW_CASTING_LIGHTS > 3
+            case 3 :  return texture(texDepthMapFromLightArray[3], coords).rg;
+            #endif
+            #endif
+        };
+    #else
+        return texture(texDepthMapFromLightArray[0], coords).rg
+    #endif
+}
+
+float getCubeShadowValue(in uint index, in vec4 coords){
+    return 1.0;
+    #if MAX_SHADOW_CASTING_LIGHTS > 1
+        switch(index){
+            case 0 :  return texture(texDepthMapFromLightCube[0], coords).r;
+            case 1 :  return texture(texDepthMapFromLightCube[1], coords).r;
+            #if MAX_SHADOW_CASTING_LIGHTS > 2
+            case 2 :  return texture(texDepthMapFromLightCube[2], coords).r;
+            #if MAX_SHADOW_CASTING_LIGHTS > 3
+            case 3 :  return texture(texDepthMapFromLightCube[3], coords).r;
+            #endif
+            #endif
+        };
+    #else
+        return texture(texDepthMapFromLightCube[0], coords).r
+    #endif
+}
 
 #if defined(_DEBUG)
+#define _SHADOWMAPPING
+
 uniform bool dvd_showShadowSplits = false;
 // set this to whatever (current cascade, current depth comparison result, anything)
 int _shadowTempInt = -1;
 #endif
-
-void projectTexture(in vec3 PoxPosInMap, inout vec4 tex){
-	vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));
-	tex.xyz = mix(tex.xyz, projectedTex.xyz, mixWeight);
-}
 
 #include "shadow_directional.frag"
 #include "shadow_point.frag"

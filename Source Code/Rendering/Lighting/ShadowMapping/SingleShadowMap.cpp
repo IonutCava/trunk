@@ -11,7 +11,7 @@
 SingleShadowMap::SingleShadowMap(Light* light, Camera* shadowCamera) : ShadowMap(light, shadowCamera, SHADOW_TYPE_Single)
 {
     PRINT_FN(Locale::get("LIGHT_CREATE_SHADOW_FB"), light->getGUID(), "Single Shadow Map");
-    ResourceDescriptor shadowPreviewShader("fbPreview");
+    ResourceDescriptor shadowPreviewShader("fbPreview.LinearDepth");
     shadowPreviewShader.setThreadedLoading(false);
     _previewDepthMapShader = CreateResource<ShaderProgram>(shadowPreviewShader);
     _previewDepthMapShader->UniformTexture("tex", 0);

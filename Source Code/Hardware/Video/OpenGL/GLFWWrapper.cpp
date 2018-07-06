@@ -181,22 +181,14 @@ GLbyte GL_API::initHardware(const vec2<GLushort>& resolution, GLint argc, char *
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(&Divide::GLUtil::DebugCallback, (GLvoid*)(0));
 
-    U32 nvidiaBufferErrors[] = {131185};
+    U32 nvidiaBufferErrors[] = {131185, 131218};
 
     //Disable shader compiler errors (shader class handles that)
-    glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER,
-                            GL_DEBUG_TYPE_ERROR,
-                            GL_DONT_CARE,
-                            0,
-                            nullptr,
-                            GL_FALSE);
+    glDebugMessageControl(GL_DEBUG_SOURCE_SHADER_COMPILER, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, GL_FALSE);
     //Disable nVidia buffer allocation info
-    glDebugMessageControl(GL_DEBUG_SOURCE_API, 
-                          GL_DEBUG_TYPE_OTHER,
-                          GL_DONT_CARE,
-                          1,
-                          nvidiaBufferErrors,
-                          GL_FALSE);
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
+    //Shader will be recompiled nv-error
+    glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE, GL_DONT_CARE, 2, nvidiaBufferErrors, GL_FALSE);
                                 
 #endif
 

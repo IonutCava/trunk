@@ -1,7 +1,7 @@
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#include <DivideNetworking/Utility/Singleton.h>
+#include "Core/Headers/Singleton.h"
 #include "tcp_session_impl.h"
 #include <boost/asio.hpp>
 #include <string>

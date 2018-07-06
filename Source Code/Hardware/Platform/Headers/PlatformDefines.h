@@ -27,47 +27,17 @@
 #include <boost/function.hpp>
 
 ///Data Types
-#ifndef U8
-#define U8   unsigned char
-#endif
-#ifndef U16
-#define U16  unsigned short
-#endif
-#ifndef U32
-#define U32  unsigned int
-#endif
-#ifndef UL32
-#define UL32 unsigned long
-#endif
-#ifndef U64
-#define U64  unsigned long long
-#endif
-
-#ifndef I8
-#define I8  signed char
-#endif
-#ifndef I16
-#define I16 signed short
-#endif
-#ifndef I32
-#define I32 signed int
-#endif
-#ifndef L32
-#define L32 signed long
-#endif
-#ifndef I64
-#define I64 signed long long
-#endif
-#ifndef _I64
-#define _I64 __int64
-#endif
-#ifndef F32
-#define F32 float
-#endif
-#ifndef D32
-#define D32 double
-#endif
-#ifndef _P_D_TYPES_ONLY_
+typedef uint8_t  U8;
+typedef uint16_t U16; 
+typedef uint32_t U32;
+typedef uint64_t U64;
+typedef int8_t   I8;
+typedef int16_t  I16;
+typedef int32_t  I32;
+typedef int64_t  I64;
+typedef __int64 _I64;
+typedef float    F32;
+typedef double   D32;
 
 /// Converts an arbitrary positive integer value to a bitwise value used for masks
 #define toBit(X) (1 << (X))
@@ -81,22 +51,22 @@ for the potential portability problems with the union and bit-fields below.
 union Float_t {
     Float_t(F32 num = 0.0f) : f(num) {}
     // Portable extraction of components.
-    bool    Negative()    const { return (i >> 31) != 0; }
-    int32_t RawMantissa() const { return i & ((1 << 23) - 1); }
-    int32_t RawExponent() const { return (i >> 23) & 0xFF; }
+    bool Negative()    const { return (i >> 31) != 0; }
+    I32  RawMantissa() const { return i & ((1 << 23) - 1); }
+    I32  RawExponent() const { return (i >> 23) & 0xFF; }
  
-    int32_t i;
+    I32 i;
     F32 f;
 };
 
 union Double_t {
     Double_t(D32 num = 0.0) : d(num) {}
     // Portable extraction of components.
-    bool    Negative()    const { return (i >> 63) != 0; }
-    int64_t RawMantissa() const { return i & ((1LL << 52) - 1); }
-    int64_t RawExponent() const { return (i >> 52) & 0x7FF; }
+    bool  Negative()    const { return (i >> 63) != 0; }
+    I64   RawMantissa() const { return i & ((1LL << 52) - 1); }
+    I64   RawExponent() const { return (i >> 52) & 0x7FF; }
 
-   int64_t i;
+   I64 i;
    D32 d;
 };
 
@@ -168,7 +138,7 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
-static const F32 EPSILON_F32     = std::numeric_limits<F32>::epsilon();
+static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
 
 inline bool IS_ZERO(F32 X) { return  (std::fabs(X) < EPSILON_F32); }
@@ -226,9 +196,6 @@ typedef union {
     packed_int b;
 } P32;
 
-#else
-#undef _P_D_TYPES_ONLY_
-#endif
 
 #if defined(_MSC_VER)
 

@@ -36,8 +36,8 @@ namespace Util
     string toString(T data)
     {
         _tempStream.str(std::string());
-        s << data;
-        return s.str();
+        _tempStream << data;
+        return _tempStream.str();
     }
 }
 #endif

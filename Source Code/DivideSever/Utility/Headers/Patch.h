@@ -1,7 +1,7 @@
 #ifndef _PATCH_H_
 #define _PATCH_H_
 
-#include <DivideNetworking/Utility/Singleton.h>
+#include "Core/Headers/Singleton.h"
 #include "DataTypes.h"
 
 struct PatchData

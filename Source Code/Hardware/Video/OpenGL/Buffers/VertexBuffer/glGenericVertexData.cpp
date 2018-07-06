@@ -177,6 +177,11 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
     size_t bufferSize = elementCount * elementSize;
 
     GL_API::setActiveBuffer(GL_ARRAY_BUFFER, _bufferObjects[buffer]);
+
+    if(Config::Profile::DISABLE_PERSISTENT_BUFFER){
+        persistentMapped = false;
+    }
+
     if (persistentMapped){
         GLenum flag = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
         glBufferStorage(GL_ARRAY_BUFFER, bufferSize * 3, NULL, flag);
@@ -184,16 +189,15 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
         _bufferPersistentData[buffer] = glMapBufferRange(GL_ARRAY_BUFFER, 0, bufferSize * 3, flag);
         if (data != nullptr){
             void* dst = nullptr;
-            _lockManager->WaitForLockedRange(0, bufferSize * 3);
-                dst = (unsigned char*)_bufferPersistentData[buffer] + bufferSize * 0;
-                memcpy(dst, data, bufferSize);
-                dst = (unsigned char*)_bufferPersistentData[buffer] + bufferSize * 1;
-                memcpy(dst, data, bufferSize);
-                dst = (unsigned char*)_bufferPersistentData[buffer] + bufferSize * 2;
-                memcpy(dst, data, bufferSize);
-            _lockManager->WaitForLockedRange(0, bufferSize * 3);
+            U8 bufferSizeFactor = 3;
+            _lockManager->WaitForLockedRange(0, bufferSize * bufferSizeFactor);
+                for(U8 i = 0; i < bufferSizeFactor; ++i){
+                    dst = (U8*)_bufferPersistentData[buffer] + bufferSize * i;
+                    memcpy(dst, data, bufferSize);
+                }
+            _lockManager->WaitForLockedRange(0, bufferSize * bufferSizeFactor);
         }
-    } else{
+    } else {
         GLenum flag = isFeedbackBuffer(buffer) ? (dynamic ? (stream ? GL_STREAM_COPY : GL_DYNAMIC_COPY) : GL_STATIC_COPY) :
                                                  (dynamic ? (stream ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW) : GL_STATIC_DRAW);
 
@@ -203,9 +207,13 @@ void glGenericVertexData::SetBuffer(U32 buffer, U32 elementCount, size_t element
     _bufferPersistent[buffer] = persistentMapped;
 }
 
-void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool stream) {
+void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool stream, bool invalidateRange) {
     size_t dataCurrentSize = elementCount * _elementSize[buffer];
     size_t offset = elementCountOffset * _elementSize[buffer];
+
+    if(invalidateRange)
+        glInvalidateBufferSubData(_bufferObjects[buffer], offset, dataCurrentSize);
+    
     if (!_bufferPersistent[buffer]){
         glNamedBufferSubDataEXT(_bufferObjects[buffer], offset, dataCurrentSize, data);
     }else{
@@ -213,11 +221,8 @@ void glGenericVertexData::UpdateBuffer(U32 buffer, U32 elementCount, void* data,
         size_t bufferSize = _elementCount[buffer] * _elementSize[buffer];
 
         _lockManager->WaitForLockedRange(_startDestOffset[buffer], bufferSize);
-
-        void* dst = (unsigned char*)_bufferPersistentData[buffer] + _startDestOffset[buffer] + offset;
-         memcpy(dst, data, dataCurrentSize);
-
-        // Lock this area for the future.
+            U8* dst = (U8*)_bufferPersistentData[buffer] + _startDestOffset[buffer] + offset;
+             memcpy(dst, data, dataCurrentSize);
         _lockManager->LockRange(_startDestOffset[buffer], bufferSize);
             
         _startDestOffset[buffer] = (_startDestOffset[buffer] + bufferSize) % (bufferSize * 3);

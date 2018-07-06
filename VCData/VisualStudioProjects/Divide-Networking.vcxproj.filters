@@ -43,16 +43,7 @@
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\WorldPacket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\SharedMutex.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\Singleton.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\Thread.h">
-      <Filter>Header Files\Utility</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\PlatformDefines.h">
       <Filter>Header Files\Utility</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\OPCodesTpl.h">

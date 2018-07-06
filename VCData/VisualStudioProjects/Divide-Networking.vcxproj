@@ -153,7 +153,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -203,7 +203,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -256,7 +256,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\Source Code;$(EngineLibraries)\boost\;$(SolutionDir)..\Source Code\Libs\includes\DivideNetworking;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -291,9 +291,6 @@
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Client.h" />
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\OPCodesTpl.h" />
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\tcp_session_tpl.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\PlatformDefines.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\SharedMutex.h" />
-    <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\Singleton.h" />
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\Utility\Thread.h" />
     <ClInclude Include="..\..\Source Code\Libs\includes\DivideNetworking\WorldPacket.h" />
   </ItemGroup>

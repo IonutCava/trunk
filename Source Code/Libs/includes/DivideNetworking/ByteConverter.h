@@ -23,7 +23,7 @@
 for cross platform where they have different endians.
 */
 
-#include "Utility/PlatformDefines.h"
+#include "Hardware/Platform/Headers/PlatformDefines.h"
 #include <algorithm>
 
 namespace ByteConverter

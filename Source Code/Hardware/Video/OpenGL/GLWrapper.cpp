@@ -84,7 +84,7 @@ void GL_API::flush(){
 bool GL_API::initShaders(){
     //Init glsw library
     GLint glswState = glswInit();
-    glswAddDirectiveToken("","#version 440 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
+    glswAddDirectiveToken("","#version 430 core\n/*“Copyright 2009-2014 DIVIDE-Studio”*/");
 #if defined(_DEBUG)
     glswAddDirectiveToken("", "#define _DEBUG");
 #elif defined(_PROFILE)
@@ -105,18 +105,16 @@ bool GL_API::initShaders(){
     if(getGPUVendor() == GPU_VENDOR_NVIDIA){ //nVidia specific
         glswAddDirectiveToken("","#pragma optionNV(fastmath on)");
         glswAddDirectiveToken("","#pragma optionNV(fastprecision on)");
-        glswAddDirectiveToken("","#pragma optionNV(inline all)");
-        glswAddDirectiveToken("","#pragma optionNV(ifcvt none)");
+        glswAddDirectiveToken("","//#pragma optionNV(inline all)");
+        glswAddDirectiveToken("","//#pragma optionNV(ifcvt none)");
         glswAddDirectiveToken("","#pragma optionNV(strict on)");
-        glswAddDirectiveToken("","#pragma optionNV(unroll all)");
+        glswAddDirectiveToken("","//#pragma optionNV(unroll all)");
     }
 
-    glswAddDirectiveToken("", std::string("#define MAX_INSTANCES " + Util::toString(Config::MAX_INSTANCE_COUNT)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_CLIP_PLANES " + Util::toString(Config::MAX_CLIP_PLANES)).c_str());
     glswAddDirectiveToken("", std::string("#define MAX_SHADOW_CASTING_LIGHTS " + Util::toString(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS_PER_NODE)).c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_SPLITS_PER_LIGHT " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT)).c_str());
+    glswAddDirectiveToken("", std::string("const uint MAX_SPLITS_PER_LIGHT = " + Util::toString(Config::Lighting::MAX_SPLITS_PER_LIGHT) + ";").c_str());
     glswAddDirectiveToken("", std::string("const uint MAX_LIGHTS_PER_SCENE = " + Util::toString(Config::Lighting::MAX_LIGHTS_PER_SCENE) + ";").c_str());
-    glswAddDirectiveToken("", std::string("#define MAX_LIGHTS_PER_SCENE_NODE 3").c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_LIGHT_NORMAL " + Util::toString(Divide::SHADER_BUFFER_LIGHT_NORMAL)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_GPU_BLOCK " + Util::toString(Divide::SHADER_BUFFER_GPU_BLOCK)).c_str());
     glswAddDirectiveToken("", std::string("#define SHADER_BUFFER_NODE_INFO " + Util::toString(Divide::SHADER_BUFFER_NODE_INFO)).c_str());
@@ -127,6 +125,7 @@ bool GL_API::initShaders(){
     glswAddDirectiveToken("Fragment", std::string("#define SHADER_BUFFER_LIGHT_SHADOW " + Util::toString(Divide::SHADER_BUFFER_LIGHT_SHADOW)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT0 " + Util::toString(Material::TEXTURE_UNIT0)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_UNIT1 " + Util::toString(Material::TEXTURE_UNIT1)).c_str());
+    glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_PROJECTION " + Util::toString(Material::TEXTURE_PROJECTION)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_NORMALMAP " + Util::toString(Material::TEXTURE_NORMALMAP)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_OPACITY " + Util::toString(Material::TEXTURE_OPACITY)).c_str());
     glswAddDirectiveToken("Fragment", std::string("#define TEXTURE_SPECULAR " + Util::toString(Material::TEXTURE_SPECULAR)).c_str());
@@ -134,14 +133,14 @@ bool GL_API::initShaders(){
     
     // GLSL <-> VBO intercommunication 
     glswAddDirectiveToken("Vertex", std::string("#define VARYING out").c_str());
-    glswAddDirectiveToken("Vertex", std::string("#define MAX_BONE_COUNT_PER_NODE " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE)).c_str());
+    glswAddDirectiveToken("Vertex", std::string("const uint MAX_BONE_COUNT_PER_NODE = " + Util::toString(Config::MAX_BONE_COUNT_PER_NODE) + ";").c_str());
     glswAddDirectiveToken("Vertex", std::string("#define SHADER_BUFFER_BONE_TRANSFORMS " + Util::toString(Divide::SHADER_BUFFER_BONE_TRANSFORMS)).c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION) + ") in vec3  inVertexData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION) + ") in vec4  inColorData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION) + ") in vec3  inNormalData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TEXCOORD_LOCATION) + ") in vec2  inTexCoordData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TANGENT_LOCATION) + ") in vec3  inTangentData;").c_str());
-    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION) + ") in vec3  inBiTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_POSITION_LOCATION)    + ") in vec3  inVertexData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_COLOR_LOCATION)       + ") in vec4  inColorData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_NORMAL_LOCATION)      + ") in vec3  inNormalData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TEXCOORD_LOCATION)    + ") in vec2  inTexCoordData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_TANGENT_LOCATION)     + ") in vec3  inTangentData;").c_str());
+    glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BITANGENT_LOCATION)   + ") in vec3  inBiTangentData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_WEIGHT_LOCATION) + ") in vec4  inBoneWeightData;").c_str());
     glswAddDirectiveToken("Vertex", std::string("layout(location = " + Util::toString(Divide::VERTEX_BONE_INDICE_LOCATION) + ") in ivec4 inBoneIndiceData;").c_str());
 

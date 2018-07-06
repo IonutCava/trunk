@@ -78,7 +78,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     depthSamplerHiZ.setFilters(TEXTURE_FILTER_NEAREST_MIPMAP_NEAREST, TEXTURE_FILTER_NEAREST);
     depthSamplerHiZ.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthSamplerHiZ.toggleMipMaps(true);
-    depthSamplerHiZ._useRefCompare = true; //< Use compare function
+    depthSamplerHiZ._useRefCompare = false; //< Use compare function
     depthSamplerHiZ._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
     depthDescriptorHiZ.setSampler(depthSamplerHiZ);
 
@@ -87,7 +87,7 @@ I8 GFXDevice::initHardware(const vec2<U16>& resolution, I32 argc, char **argv) {
     depthSampler.setFilters(TEXTURE_FILTER_NEAREST);
     depthSampler.setWrapMode(TEXTURE_CLAMP_TO_EDGE);
     depthSampler.toggleMipMaps(false);
-    depthSampler._useRefCompare = true; //< Use compare function
+    depthSampler._useRefCompare = false; //< Use compare function
     depthSampler._cmpFunc = CMP_FUNC_GEQUAL; //< Use greater or equal
     depthDescriptor.setSampler(depthSampler);
 

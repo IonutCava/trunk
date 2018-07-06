@@ -8,6 +8,9 @@
 glUniformBuffer::glUniformBuffer(bool unbound, bool persistentMapped) : ShaderBuffer(unbound, persistentMapped), _UBOid(0), _mappedBuffer(nullptr)
 {
     _lockManager = persistentMapped ? New glBufferLockManager(true) : nullptr;
+
+    if(Config::Profile::DISABLE_PERSISTENT_BUFFER)
+        _persistentMapped = false;
 }
 
 glUniformBuffer::~glUniformBuffer()
@@ -45,8 +48,8 @@ void glUniformBuffer::Create(U32 primitiveCount, ptrdiff_t primitiveSize) {
 void glUniformBuffer::UpdateData(GLintptr offset, GLsizeiptr size, const GLvoid *data, const bool invalidateBuffer) const {
     DIVIDE_ASSERT(offset + size <= (GLsizeiptr)_bufferSize, "glUniformBuffer error: ChangeSubData was called with an invalid range (buffer overflow)!");
 
-    /*if(invalidateBuffer)
-        glInvalidateBufferData(_UBOid);*/
+    if(invalidateBuffer)
+        glInvalidateBufferSubData(_UBOid, offset, size);
     
     if(size == 0 || !data)
         return;

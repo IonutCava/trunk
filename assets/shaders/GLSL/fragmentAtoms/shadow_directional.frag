@@ -1,8 +1,3 @@
-uniform float dvd_lightBleedBias = 0.2;
-uniform float dvd_minShadowVariance = 0.00002;
-uniform float dvd_shadowMaxDist = 250.0;
-uniform float dvd_shadowFadeDist = 150.0;
-
 float linstep(float a, float b, float v) {
     return clamp((v - a) / (b - a), 0.0, 1.0);
 }
@@ -68,12 +63,12 @@ float applyShadowDirectional(const in uint lightIndex, const in Shadow currentSh
         shadow_coord.w = shadow_coord.z;
         shadow_coord.z = _shadowTempInt;
 
-        //vec2 moments = texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg;
+        vec2 moments = getArrayShadowValue(lightIndex, shadow_coord.xyz);
+       
         //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_minShadowVariance);
         //float shadowWarpedz1 = exp(shadow_coord.w * DEPTH_EXP_WARP);
         //return mix(chebyshevUpperBound(moments, shadowWarpedz1, dvd_minShadowVariance), 1.0, clamp(((gl_FragCoord.z + dvd_shadowFadeDist) - dvd_shadowMaxDist) / dvd_shadowFadeDist, 0.0, 1.0));
-        return chebyshevUpperBound(texture(texDepthMapFromLightArray[lightIndex], shadow_coord.xyz).rg,
-                                   shadow_coord.w, dvd_minShadowVariance);
+        return chebyshevUpperBound(moments,  shadow_coord.w, dvd_minShadowVariance);
     }
 
     return 1.0;

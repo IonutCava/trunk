@@ -22,8 +22,22 @@ float filterFinalShadow(in sampler2DShadow depthMap, in vec3 vPosInDM){
 }
 
 float applyShadowSpot(const in uint lightIndex, const in Shadow currentShadowSource) {
-    vec4 shadow_coord = currentShadowSource._lightVP0 * _vertexW;
+    return 1.0;
+    /*vec4 shadow_coord = currentShadowSource._lightVP0 * _vertexW;
     shadow_coord =  1.0 + shadow_coord * 0.5;
     shadow_coord.xy = shadow_coord.xy / shadow_coord.w;
-    return filterFinalShadow(texDepthMapFromLight[lightIndex], shadow_coord.xyz);
+    #if MAX_SHADOW_CASTING_LIGHTS > 1
+        switch(lightIndex){
+            case 0 :  return filterFinalShadow(texDepthMapFromLight[0], shadow_coord.xyz);
+            case 1 :  return filterFinalShadow(texDepthMapFromLight[1], shadow_coord.xyz);
+            #if MAX_SHADOW_CASTING_LIGHTS > 2
+            case 2 :  return filterFinalShadow(texDepthMapFromLight[2], shadow_coord.xyz);
+            #if MAX_SHADOW_CASTING_LIGHTS > 3
+            case 3 :  return filterFinalShadow(texDepthMapFromLight[3], shadow_coord.xyz);
+            #endif
+            #endif
+        };
+    #else
+        return filterFinalShadow(texDepthMapFromLight[0], shadow_coord.xyz);
+    #endif*/
 }

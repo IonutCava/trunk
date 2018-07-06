@@ -47,7 +47,7 @@ public:
     void BindFeedbackBufferRange(U32 buffer, U32 elementCountOffset, size_t elementCount)
     {
     }
-    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam)
+    void UpdateBuffer(U32 buffer, U32 elementCount, void* data, U32 elementCountOffset, bool dynamic, bool steam, bool invalidateRange = false)
     {
     }
     void SetFeedbackBuffer(U32 buffer, U32 bindPoint)
