@@ -877,6 +877,7 @@ void GL_API::drawIMGUI(ImDrawData* data) {
         GenericDrawCommand cmd(PrimitiveType::TRIANGLES, 0, 0);
         for (int n = 0; n < data->CmdListsCount; n++) {
             const ImDrawList* cmd_list = data->CmdLists[n];
+            cmd.cmd().firstIndex = 0;
 
             GenericVertexData::IndexBuffer idxBuffer;
             idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
@@ -886,7 +887,6 @@ void GL_API::drawIMGUI(ImDrawData* data) {
             assert(cmd_list->VtxBuffer.size() < MAX_IMGUI_VERTS);
             _IMGUIBuffer->updateBuffer(0, to_U32(cmd_list->VtxBuffer.size()), 0u, cmd_list->VtxBuffer.Data);
             _IMGUIBuffer->updateIndexBuffer(idxBuffer);
-            _IMGUIBuffer->incQueue();
 
             for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++) {
 

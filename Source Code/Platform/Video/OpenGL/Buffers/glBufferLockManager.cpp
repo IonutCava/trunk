@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/glBufferLockManager.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -48,21 +49,19 @@ void glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 // --------------------------------------------------------------------------------------------------------------------
 void glBufferLockManager::LockRange(size_t lockBeginBytes,
                                     size_t lockLength) {
-    BufferRange testRange = { lockBeginBytes, lockLength };
-    {
-        WriteLock w_lock(_lock);
-        for (BufferLock& lock : _bufferLocks) {
-            if (testRange.Overlaps(lock._range)) {
-                // no point in locking the same range multiple times
-                return;
-            }
-        }
-
-        GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+    GLsync sync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, UnusedMask::GL_UNUSED_BIT);
+    if (!Runtime::isMainThread()) {
+        // Make forward progress in worker thread so that we don't deadlock
         glFlush();
-
-        _bufferLocks.push_back({testRange, sync});
     }
+    _bufferLocks.push_back(
+    {
+        {
+            lockBeginBytes,
+            lockLength
+        },
+        sync
+    });
 }
 
 // --------------------------------------------------------------------------------------------------------------------

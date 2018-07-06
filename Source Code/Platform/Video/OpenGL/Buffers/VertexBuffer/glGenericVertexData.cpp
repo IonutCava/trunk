@@ -166,22 +166,24 @@ void glGenericVertexData::draw(const GenericDrawCommand& command) {
     }
 }
 
-void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) {
+void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {
     if (indices.count > 0) {
         if (_indexBuffer != 0) {
             GLUtil::freeBuffer(_indexBuffer);
         }
 
-        _indexBufferUsage = dynamic ? (stream ? GL_STREAM_DRAW
-                                              : GL_DYNAMIC_DRAW)
-                                    : GL_STATIC_DRAW;
-
+        _indexBufferUsage = 
+            updateFrequency == BufferUpdateFrequency::ONCE
+                             ? GL_STATIC_DRAW
+                             : updateFrequency == BufferUpdateFrequency::OCASSIONAL
+                                                ? GL_DYNAMIC_DRAW
+                                                : GL_STREAM_DRAW;
         // Generate an "Index Buffer Object"
-        _indexBufferSize = (GLuint)indices.count;
+        _indexBufferSize = (GLuint)(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32)));
         _smallIndices = indices.smallIndices;
 
         GLUtil::createAndAllocBuffer(
-            static_cast<GLsizeiptr>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32))),
+            _indexBufferSize,
             _indexBufferUsage,
             _indexBuffer,
             indices.data);
@@ -191,15 +193,30 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, bool dynami
 }
 
 void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
-    DIVIDE_ASSERT(indices.count > 0 && _indexBufferSize >= to_U32(indices.count),
-                  "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
+    DIVIDE_ASSERT(indices.count > 0, "glGenericVertexData::UpdateIndexBuffer error: Invalid index buffer data!");
     assert(_indexBuffer != 0 && "glGenericVertexData::UpdateIndexBuffer error: no valid index buffer found!");
 
-    glInvalidateBufferData(_indexBuffer);
-    glNamedBufferSubData(_indexBuffer,
-                         0,
-                         static_cast<GLsizeiptr>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32))),
-                         indices.data);
+    size_t elementSize = indices.smallIndices ? sizeof(GLushort) : sizeof(GLuint);
+
+    if (indices.offsetCount == 0) {
+        _indexBufferSize = (GLuint)(indices.count * elementSize);
+
+        glInvalidateBufferData(_indexBuffer);
+        glNamedBufferData(_indexBuffer,
+                          _indexBufferSize,
+                          indices.data,
+                          _indexBufferUsage);
+    } else {
+        size_t size = (indices.count + indices.offsetCount) * elementSize;
+        assert(size < _indexBufferSize);
+        glInvalidateBufferSubData(_indexBuffer,
+                                  indices.offsetCount * elementSize,
+                                  indices.count * elementSize);
+        glNamedBufferSubData(_indexBuffer,
+                             indices.offsetCount * elementSize,
+                             indices.count * elementSize,
+                             indices.data);
+    }
 }
 
 /// Specify the structure and data of the given buffer
@@ -208,8 +225,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
                                     size_t elementSize,
                                     bool useRingBuffer,
                                     const bufferPtr data,
-                                    bool dynamic,
-                                    bool stream) {
+                                    BufferUpdateFrequency updateFrequency) {
     // Make sure the buffer exists
     assert(buffer >= 0 && buffer < _bufferObjects.size() &&
            "glGenericVertexData error: set buffer called for invalid buffer index!");
@@ -221,9 +237,7 @@ void glGenericVertexData::setBuffer(U32 buffer,
     params._usage = isFeedbackBuffer(buffer) ? GL_TRANSFORM_FEEDBACK : GL_ARRAY_BUFFER;
     params._elementCount = elementCount;
     params._elementSizeInBytes = elementSize;
-    params._frequency = dynamic ? stream ? BufferUpdateFrequency::OFTEN
-                                         : BufferUpdateFrequency::OCASSIONAL
-                                : BufferUpdateFrequency::ONCE;
+    params._frequency = updateFrequency;
     params._ringSizeFactor = useRingBuffer ? queueLength() : 1;
     params._data = data;
 

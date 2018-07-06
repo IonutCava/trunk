@@ -86,7 +86,7 @@ class glGenericVertexData : public GenericVertexData {
     void create(U8 numBuffers = 1, U8 numQueries = 1) override;
     U32 getFeedbackPrimitiveCount(U8 queryID) override;
 
-    void setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) override;
+    void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) override;
 
     void updateIndexBuffer(const IndexBuffer& indices) override;
 
@@ -95,8 +95,7 @@ class glGenericVertexData : public GenericVertexData {
                    size_t elementSize,
                    bool useRingBuffer,
                    const bufferPtr data,
-                   bool dynamic,
-                   bool stream) override;
+                   BufferUpdateFrequency updateFrequency) override;
 
     void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, const bufferPtr data) override;
 

@@ -296,19 +296,11 @@ void sumitDirectCommand(const IndirectDrawCommand& cmd,
                         GLuint indexBuffer) {
 
     if (indexBuffer > 0) {
-        bufferPtr offset = nullptr;
-        if (internalFormat == GL_UNSIGNED_SHORT) {
-            GLushort* shortOffset = 0;
-            shortOffset += cmd.firstIndex;
-            offset = shortOffset;
-        } else {
-            GLuint* uintOffset = 0;
-            uintOffset += cmd.firstIndex;
-            offset = uintOffset;
-        }
-
-        
-        glDrawElementsInstanced(mode, cmd.indexCount, internalFormat, offset, cmd.primCount);
+         glDrawElementsInstanced(mode,
+                                 cmd.indexCount,
+                                 internalFormat,
+                                 (GLvoid*)(cmd.firstIndex * (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint))),
+                                 cmd.primCount);
     } else {
         glDrawArraysInstanced(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount);
     }

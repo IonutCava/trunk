@@ -45,7 +45,7 @@ class d3dGenericVertexData : public GenericVertexData {
 
     void create(U8 numBuffers = 1, U8 numQueries = 1) override {}
 
-    void setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) override {}
+    void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) override {}
     void updateIndexBuffer(const IndexBuffer& indices) override {}
 
     void setBuffer(U32 buffer,
@@ -53,8 +53,7 @@ class d3dGenericVertexData : public GenericVertexData {
                    size_t elementSize,
                    bool useRingBuffer,
                    const bufferPtr data,
-                   bool dynamic,
-                   bool stream) override {}
+                   BufferUpdateFrequency updateFrequency) override {}
 
     void bindFeedbackBufferRange(U32 buffer,
                                  U32 elementCountOffset,

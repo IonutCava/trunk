@@ -77,15 +77,14 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                              sizeof(vec3<F32>),
                              false,
                              (bufferPtr)geometry.data(),
-                             false,
-                             false);
+                             BufferUpdateFrequency::ONCE);
             if (!indices.empty()) {
                 GenericVertexData::IndexBuffer idxBuff;
                 idxBuff.smallIndices = false;
                 idxBuff.count = to_U32(indices.size());
                 idxBuff.data = (bufferPtr)(indices.data());
 
-                buffer.setIndexBuffer(idxBuff, false, false);
+                buffer.setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             }
 
             AttributeDescriptor& desc = buffer.attribDescriptor(to_base(AttribLocation::VERTEX_POSITION));
@@ -143,15 +142,13 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
                              sizeof(vec4<F32>),
                              true,
                              NULL,
-                             true,
-                             true);
+                             BufferUpdateFrequency::OFTEN);
             buffer.setBuffer(g_particleColourBuffer,
                              particleCount,
                              sizeof(vec4<U8>),
                              true,
                              NULL,
-                             true,
-                             true);
+                             BufferUpdateFrequency::OFTEN);
 
             buffer.attribDescriptor(positionAttribLocation).set(g_particlePositionBuffer,
                                                                 4,

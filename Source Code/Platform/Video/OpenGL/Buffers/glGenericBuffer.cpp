@@ -18,15 +18,13 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._frequency = params._frequency;
     implParams._target = params._usage;
     implParams._name = params._name;
-    if (_ringSizeFactor == 1) {
-        implParams._initialData = params._data;
-    }
+    implParams._initialData = params._data;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 
     // Create sizeFactor copies of the data and store them in the buffer
-    if (params._data != nullptr && _ringSizeFactor > 1) {
-        for (U8 i = 0; i < _ringSizeFactor; ++i) {
+    if (params._data != nullptr) {
+        for (U8 i = 1; i < _ringSizeFactor; ++i) {
             _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, params._data);
         }
     }
@@ -80,7 +78,7 @@ void glGenericBuffer::lockData(GLuint elementCount,
                                GLuint ringReadOffset)
 {
     size_t rangeInBytes = elementCount * _elementSize;
-    size_t offsetInBytes = 0;
+    size_t offsetInBytes = elementOffset * _elementSize;
 
     if (_ringSizeFactor > 1) {
         offsetInBytes += _elementCount * _elementSize * ringReadOffset;

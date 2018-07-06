@@ -216,15 +216,15 @@ void Vegetation::uploadGrassData() {
         buffer->setFeedbackBuffer(to_base(BufferUsage::CulledInstanceBuffer), 2);
 
         buffer->setBuffer(to_base(BufferUsage::UnculledPositionBuffer), _instanceCountGrass,
-                          sizeof(vec4<F32>), true, &_grassPositions[0], false, false);
+                          sizeof(vec4<F32>), true, &_grassPositions[0], BufferUpdateFrequency::OCASSIONAL);
         buffer->setBuffer(to_base(BufferUsage::UnculledSizeBuffer), _instanceCountGrass,
-                          sizeof(F32), true, &_grassScales[0], false, false);
+                          sizeof(F32), true, &_grassScales[0], BufferUpdateFrequency::OCASSIONAL);
         buffer->setBuffer(to_base(BufferUsage::CulledPositionBuffer), _instanceCountGrass * 3,
-                          sizeof(vec4<F32>), true, NULL, true, false);
+                          sizeof(vec4<F32>), true, NULL, BufferUpdateFrequency::OCASSIONAL);
         buffer->setBuffer(to_base(BufferUsage::CulledSizeBuffer), _instanceCountGrass * 3,
-                          sizeof(F32), true, NULL, true, false);
+                          sizeof(F32), true, NULL, BufferUpdateFrequency::OCASSIONAL);
         buffer->setBuffer(to_base(BufferUsage::CulledInstanceBuffer), _instanceCountGrass * 3,
-                          sizeof(I32), true, NULL, true, false);
+                          sizeof(I32), true, NULL, BufferUpdateFrequency::OCASSIONAL);
 
         buffer->attribDescriptor(posLocation)
             .set(to_base(BufferUsage::CulledPositionBuffer),

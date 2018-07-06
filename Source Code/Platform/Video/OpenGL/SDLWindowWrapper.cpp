@@ -384,15 +384,16 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.a);
 
     // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
-    _IMGUIBuffer = _context.newGVD(3);
+    // We update and draw multiple times in a loop
+    _IMGUIBuffer = _context.newGVD(1);
 
     GenericVertexData::IndexBuffer idxBuff;
     idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
     idxBuff.count = MAX_IMGUI_VERTS * 3;
     
     _IMGUIBuffer->create(1);
-    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, true, true); //Pos, UV and Colour
-    _IMGUIBuffer->setIndexBuffer(idxBuff, true, true);
+    _IMGUIBuffer->setBuffer(0, MAX_IMGUI_VERTS, sizeof(ImDrawVert), true, NULL, BufferUpdateFrequency::OFTEN); //Pos, UV and Colour
+    _IMGUIBuffer->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
     AttributeDescriptor& descPos = _IMGUIBuffer->attribDescriptor(to_base(AttribLocation::VERTEX_GENERIC));

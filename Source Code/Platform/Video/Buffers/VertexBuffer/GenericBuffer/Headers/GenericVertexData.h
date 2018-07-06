@@ -51,6 +51,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
      
      struct IndexBuffer {
          size_t count = 0;
+         size_t offsetCount = 0;
          bufferPtr data = nullptr;
          bool smallIndices = false;
      };
@@ -59,7 +60,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     GenericVertexData(GFXDevice& context, const U32 ringBufferLength);
     virtual ~GenericVertexData();
 
-    virtual void setIndexBuffer(const IndexBuffer& indices, bool dynamic, bool stream) = 0;
+    virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) = 0;
     virtual void updateIndexBuffer(const IndexBuffer& indices) = 0;
 
     virtual void create(U8 numBuffers = 1, U8 numQueries = 1) = 0;
@@ -74,8 +75,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
                            size_t elementSize,
                            bool useRingBuffer,
                            const bufferPtr data,
-                           bool dynamic,
-                           bool stream) = 0;
+                           BufferUpdateFrequency updateFrequency) = 0;
 
     virtual void updateBuffer(U32 buffer,
                               U32 elementCount,
