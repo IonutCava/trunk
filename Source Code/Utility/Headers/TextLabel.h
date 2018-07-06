@@ -37,10 +37,9 @@
 namespace Divide {
 class TextLabel {
    public:
-    TextLabel(const stringImpl& text, const stringImpl& font,
+    TextLabel(const stringImpl& string, const stringImpl& font,
               const vec3<F32>& color, U32 textHeight = 16)
         : _width(1.0f),
-          _text(text),
           _font(font),
           _height(textHeight),
           _color(color),
@@ -48,9 +47,21 @@ class TextLabel {
           _spacing(0.0f),
           _alignFlag(0),
           _bold(false),
-          _italic(false) {}
+          _italic(false)
+          
+    {
+        text(string);
+    }
 
-    stringImpl _text;
+    inline void text(const stringImpl& text) {
+        _text = text;
+        _multiLine = _text.find('\n') != stringImpl::npos;
+    }
+
+    inline const stringImpl& text() const {
+        return _text;
+    }
+
     stringImpl _font;
     U32 _height;
     U32 _width;
@@ -60,6 +71,10 @@ class TextLabel {
     vec4<F32> _color;
     bool _bold;
     bool _italic;
+    bool _multiLine;
+
+private:
+    stringImpl _text;
 };
 
 };  // namespace Divide

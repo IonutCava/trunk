@@ -201,7 +201,7 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
         return plan[_currentStep];
     }
 
-    inline GOAPGoal* const getActiveGoal() { return _activeGoal; }
+    inline GOAPGoal* const getActiveGoal() const { return _activeGoal; }
 
     inline const stringImpl& getPlanLog() const { return _planLog; }
 
@@ -224,6 +224,8 @@ class NOINITVTABLE AISceneImpl : private NonCopyable {
     }
 
     virtual void initInternal() = 0;
+    
+    virtual stringImpl toString() const = 0;
 
    protected:
     AIEntity* _entity;

@@ -81,7 +81,7 @@ DEFINE_SINGLETON_EXT1(GUI, Input::InputAggregatorInterface)
                      const stringImpl& font, const vec3<F32>& color, char* format,
                      ...);
     /// Modify a text label
-    GUIText* modifyText(const stringImpl& id, char* format, ...);
+    GUIText* modifyText(const stringImpl& id, const char* format, ...);
     GUIMessageBox* addMsgBox(const stringImpl& id, const stringImpl& title,
                              const stringImpl& message,
                              const vec2<I32>& offsetFromCentre = vec2<I32>(0));

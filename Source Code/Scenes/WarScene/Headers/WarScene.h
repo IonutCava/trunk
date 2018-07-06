@@ -66,6 +66,7 @@ class WarScene : public Scene {
     bool removeUnits(bool removeNodesOnCall);
     bool addUnits();
     bool resetUnits();
+    AI::AIEntity* findAI(SceneGraphNode& node);
 
    private:
     DirectionalLight* _sun;

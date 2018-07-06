@@ -396,7 +396,7 @@ GUIFlash* GUI::addFlash(const stringImpl& id, stringImpl movie,
     return flash;
 }
 
-GUIText* GUI::modifyText(const stringImpl& id, char* format, ...) {
+GUIText* GUI::modifyText(const stringImpl& id, const char* format, ...) {
     if (_guiStack.find(id) == std::end(_guiStack)) {
         return nullptr;
     }
@@ -417,7 +417,7 @@ GUIText* GUI::modifyText(const stringImpl& id, char* format, ...) {
     GUIText* textElement = dynamic_cast<GUIText*>(element);
     assert(textElement != nullptr);
 
-    textElement->_text = fmt_text;
+    textElement->text(fmt_text);
     fmt_text.empty();
     return textElement;
 }

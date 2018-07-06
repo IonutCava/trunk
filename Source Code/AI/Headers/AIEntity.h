@@ -161,6 +161,8 @@ class AIEntity : public GUIDWrapper {
     /// Returns true if this character is moving.
     bool isMoving() const { return !_stopped || !IS_ZERO(getSpeed()); }
 
+    stringImpl toString() const;
+
    protected:
     /**
       * Update current position of this character to the current position of its

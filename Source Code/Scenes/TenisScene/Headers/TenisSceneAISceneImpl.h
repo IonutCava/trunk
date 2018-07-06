@@ -54,6 +54,8 @@ class TenisSceneAISceneImpl : public AISceneImpl {
     void processMessage(AIEntity* sender, AIMsg msg,
                         const cdiggins::any& msg_content);
 
+    inline stringImpl toString() const { return ""; }
+
    private:
     void updatePositions();
     void initInternal() {}

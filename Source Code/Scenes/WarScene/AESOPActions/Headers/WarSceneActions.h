@@ -60,17 +60,17 @@ enum class Fact : U32 {
 inline const char* WarSceneFactName(GOAPFact fact) {
     switch (static_cast<Fact>(fact)) {
         case Fact::NEAR_ENEMY_FLAG:
-            return "At enemy flag location";
+            return "NEAR ENEMY FLAG";
         case Fact::AT_HOME_BASE:
-            return "At home base location";
+            return "AT HOME BASE";
         case Fact::HAS_ENEMY_FLAG:
-            return "Has enemy flag";
+            return "HAS ENEMY FLAG";
         case Fact::ENEMY_HAS_FLAG:
-            return "Enemy has flag";
+            return "ENEMY HAS FLAG";
         case Fact::IDLING:
-            return "Idling";
+            return "IDLING";
         case Fact::ENEMY_DEAD:
-            return "Enemy Dead";
+            return "ENEMY DEAD";
     };
     return GOAPFactName(fact);
 };

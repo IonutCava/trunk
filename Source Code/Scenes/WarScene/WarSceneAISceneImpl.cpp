@@ -23,7 +23,6 @@ static const U32 g_flagContainer = 2;
 vec3<F32> WarSceneAISceneImpl::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAISceneImpl::_globalWorkingMemory;
 
-
 WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
     : AISceneImpl(),
       _type(type),
@@ -35,6 +34,7 @@ WarSceneAISceneImpl::WarSceneAISceneImpl(AIType type)
       _visualSensor(nullptr),
       _audioSensor(nullptr)
 {
+    _actionState.fill(false);
 }
 
 WarSceneAISceneImpl::~WarSceneAISceneImpl()
@@ -244,7 +244,7 @@ bool WarSceneAISceneImpl::preAction(ActionType type,
 
     U8 ownTeamID = currentTeam->getTeamID();
     U8 enemyTeamID = 1 - ownTeamID;
-
+    _actionState[to_uint(type)] = true;
     switch (type) {
         case ActionType::IDLE: {
             PRINT("Starting idle action");
@@ -302,6 +302,7 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
             PRINT("Approach flag action over");
         } break;
         case ActionType::SCORE_FLAG: {
+            PRINT("Score flag action over");
             assert(_localWorkingMemory._hasEnemyFlag.value());
 
             U8 score = _globalWorkingMemory._score[ownTeamID].value();
@@ -374,11 +375,17 @@ bool WarSceneAISceneImpl::postAction(ActionType type,
     }
 
     PRINT("\n");
-
+    _actionState[to_uint(type)] = false;
     return advanceGoal();
 }
 
 bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep) {
+    const WarSceneAction& warAction = static_cast<const WarSceneAction&>(planStep);
+    ActionType type = warAction.actionType();
+    if (!_actionState[to_uint(type)]) {
+        return false;
+    }
+
     const AITeam* const currentTeam = _entity->getTeam();
    
     U8 ownTeamID = currentTeam->getTeamID();
@@ -387,12 +394,10 @@ bool WarSceneAISceneImpl::checkCurrentActionComplete(const GOAPAction& planStep)
     const SceneGraphNode& currentNode = *(_entity->getUnitRef()->getBoundNode());
     const SceneGraphNode& enemyFlag = *(_globalWorkingMemory._flags[enemyTeamID].value());
 
-    const WarSceneAction& warAction = static_cast<const WarSceneAction&>(planStep);
-
     bool state = false;
 
     const BoundingBox& bb1 = currentNode.getBoundingBoxConst();
-    switch (warAction.actionType()) {
+    switch (type) {
         case ActionType::APPROACH_ENEMY_FLAG:
         case ActionType::CAPTURE_ENEMY_FLAG: {
             state = nearEnemyFlag();
@@ -676,26 +681,50 @@ bool WarSceneAISceneImpl::printActionStats(const GOAPAction& planStep) const {
 }
 
 void WarSceneAISceneImpl::printWorkingMemory() const {
-    PRINT("--------------- Working memory state BEGIN ----------------------------");
-    PRINT("        Current position: - [ %4.1f , %4.1f, %4.1f]",
-                     _entity->getPosition().x, _entity->getPosition().y,
-                     _entity->getPosition().z);
-    PRINT(
+    PRINT(toString().c_str());
+}
+
+stringImpl WarSceneAISceneImpl::toString() const {
+    stringImpl ret(
+        "--------------- Working memory state BEGIN "
+        "----------------------------\n");
+    ret += Util::stringFormat(
+        "        Current position: - [ %4.1f , %4.1f, %4.1f]\n",
+        _entity->getPosition().x, _entity->getPosition().y,
+        _entity->getPosition().z);
+    ret += Util::stringFormat(
         "        Flag Positions - 0 : [ %4.1f , %4.1f, %4.1f] | 1 : [ %4.1f , "
-        "%4.1f, %4.1f]",
+        "%4.1f, %4.1f]\n",
         _globalWorkingMemory._teamFlagPosition[0].value().x,
         _globalWorkingMemory._teamFlagPosition[0].value().y,
         _globalWorkingMemory._teamFlagPosition[0].value().z,
         _globalWorkingMemory._teamFlagPosition[1].value().x,
         _globalWorkingMemory._teamFlagPosition[1].value().y,
         _globalWorkingMemory._teamFlagPosition[1].value().z);
-    PRINT("        Has enemy flag: [ %s ]",
-          _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
+    ret += Util::stringFormat(
+        "        Has enemy flag: [ %s ]\n",
+        _localWorkingMemory._hasEnemyFlag.value() ? "true" : "false");
+
     for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
-        PRINT("        World state fact [ %s ] : [ %s ]",
-              WarSceneFactName(var.first), var.second ? "true" : "false");
+        ret += Util::stringFormat("        World state fact [ %s ] : [ %s ]\n",
+                                  WarSceneFactName(var.first),
+                                  var.second ? "true" : "false");
     }
-    PRINT("--------------- Working memory state END ----------------------------");
+    ret += "--------------- Working memory state END ----------------------------\n";
+
+    if (getActiveGoal()) {
+        const GOAPAction* activeAction = getActiveAction();
+        if (activeAction) {
+            ret += "Active action: " + activeAction->name() + "\n";
+        }
+    }
+
+    SceneGraphNode* enemy = _localWorkingMemory._currentTarget.value();
+    if (enemy != nullptr) {
+        ret += "Active target: " + enemy->getName() + "\n";
+    }
+
+    return ret;
 }
 
 void WarSceneAISceneImpl::registerGOAPPackage(const GOAPPackage& package) {

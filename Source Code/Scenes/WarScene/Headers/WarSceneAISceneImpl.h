@@ -199,6 +199,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
     bool checkCurrentActionComplete(const GOAPAction& planStep);
+    stringImpl toString() const;
 
    private:
        // Helper queries
@@ -238,6 +239,7 @@ class WarSceneAISceneImpl : public AISceneImpl {
     /// Keep this in memory at this level
     vectorImpl<WarSceneAction> _actionList;
     NodeToUnitMap _nodeToUnitMap[2];
+    std::array<bool, to_const_uint(ActionType::COUNT)> _actionState;
     static GlobalWorkingMemory _globalWorkingMemory;
     static vec3<F32> _initialFlagPositions[2];
 

@@ -80,6 +80,11 @@ bool WarScene::addUnits() {
     approachEnemyFlag.setEffect(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
     approachEnemyFlag.setEffect(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(false));
 
+    WarSceneAction protectFlagInBase(ActionType::APPROACH_ENEMY_FLAG, "ProtectFlagInBase");
+    protectFlagInBase.setPrecondition(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(false));
+    protectFlagInBase.setPrecondition(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(true));
+    protectFlagInBase.setEffect(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
+
     // Grab the enemy flag only if we do not already have it and if we are near it
     // The enemy flag will never be at the home base, because that is a scoring condition
     WarSceneAction captureEnemyFlag(ActionType::CAPTURE_ENEMY_FLAG, "CaptureEnemyFlag");
@@ -262,6 +267,20 @@ bool WarScene::addUnits() {
     }
 
     return !(_army[0].empty() || _army[1].empty());
+}
+
+AI::AIEntity* WarScene::findAI(SceneGraphNode& node) {
+    I64 targetGUID = node.getGUID();
+
+    for (U8 i = 0; i < 2; ++i) {
+        for (AI::AIEntity* entity : _army[i]) {
+            if (entity->getUnitRef()->getBoundNode()->getGUID() == targetGUID) {
+                return entity;
+            }
+        }
+    }
+
+    return nullptr;
 }
 
 bool WarScene::resetUnits() {

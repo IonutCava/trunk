@@ -366,4 +366,11 @@ D32 AIEntity::getMaxAcceleration() {
     return (isAgentLoaded() ? getAgent()->params.maxAcceleration : 0.0);
 }
 
+stringImpl AIEntity::toString() const {
+    if (_AISceneImpl) {
+        return _AISceneImpl->toString();
+    }
+
+    return "Error_" + getName();
+}
 };  // namespace Divide

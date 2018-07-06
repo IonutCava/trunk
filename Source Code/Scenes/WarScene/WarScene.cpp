@@ -39,10 +39,10 @@ namespace {
 
 WarScene::WarScene()
     : Scene(),
-      _sun(nullptr),
-      _infoBox(nullptr),
-      _sceneReady(false),
-      _lastNavMeshBuildTime(0UL)
+    _sun(nullptr),
+    _infoBox(nullptr),
+    _sceneReady(false),
+    _lastNavMeshBuildTime(0UL)
 {
     for (U8 i = 0; i < 2; ++i) {
         _flag[i] = nullptr;
@@ -50,6 +50,14 @@ WarScene::WarScene()
     }
 
     _resetUnits = false;
+
+    addSelectionCallback([&]() {
+        if (_currentSelection) {
+            _GUI->modifyText("entityState", _currentSelection->getName().c_str());
+        } else {
+            _GUI->modifyText("entityState", "");
+        }
+    });
 }
 
 WarScene::~WarScene()
@@ -71,7 +79,18 @@ void WarScene::processGUI(const U64 deltaTime) {
                          "Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: "
                          "%5.2f | Yaw: %5.2f]",
                          eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw);
+
         _guiTimers[0] = 0.0;
+    }
+
+    if (_guiTimers[1] >= Time::SecondsToMilliseconds(1)) {
+        if (_currentSelection) {
+            AI::AIEntity* entity = findAI(*_currentSelection);
+            if (entity) {
+                _GUI->modifyText("entityState", entity->toString().c_str());
+            }
+        }
+        _guiTimers[1] = 0.0;
     }
     Scene::processGUI(deltaTime);
 }
@@ -398,10 +417,10 @@ bool WarScene::loadResources(bool continueOnErrors) {
                   renderState().getCamera().getEuler().pitch,
                   renderState().getCamera().getEuler().yaw);
 
-    _GUI->addText("lampPosition", vec2<I32>(60, 120), Font::DIVIDE_DEFAULT,
-                  vec3<F32>(0.2f, 0.8f, 0.2f),
-                  "Lamp Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ]", 0.0f,
-                  0.0f, 0.0f);
+    _GUI->addText("entityState", vec2<I32>(60, 120), Font::DIVIDE_DEFAULT,
+                  vec3<F32>(0.0f, 0.0f, 0.0f),
+                  "");
+
     _infoBox = _GUI->addMsgBox("infoBox", "Info", "Blabla");
     // Add a first person camera
     Camera* cam = MemoryManager_NEW FirstPersonCamera();
@@ -417,6 +436,7 @@ bool WarScene::loadResources(bool continueOnErrors) {
     renderState().getCameraMgr().addNewCamera("tpsCamera", cam);
 
     _guiTimers.push_back(0.0);  // Fps
+    _guiTimers.push_back(0.0);  // AI info
     _taskTimers.push_back(0.0); // Sun animation
     _taskTimers.push_back(0.0); // animation team 1
     _taskTimers.push_back(0.0); // animation team 2

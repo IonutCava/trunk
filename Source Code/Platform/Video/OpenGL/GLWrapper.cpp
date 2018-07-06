@@ -533,6 +533,7 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
     if (font == FONS_INVALID) {
         return;
     }
+    static vectorImpl<stringImpl> lines;
     // See FontStash documentation for the following block
     {
         fonsClearState(_fonsContext);
@@ -540,8 +541,10 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
         fonsSetFont(_fonsContext, font);
         F32 lh = 0;
         fonsVertMetrics(_fonsContext, nullptr, nullptr, &lh);
-        fonsSetColor(_fonsContext, textLabel._color.r * 255,
-                     textLabel._color.g * 255, textLabel._color.b * 255,
+        fonsSetColor(_fonsContext, 
+                     textLabel._color.r * 255,
+                     textLabel._color.g * 255,
+                     textLabel._color.b * 255,
                      textLabel._color.a * 255);
 
         if (textLabel._blurAmount > 0.01f) {
@@ -556,9 +559,20 @@ void GL_API::drawText(const TextLabel& textLabel, const vec2<I32>& position) {
             fonsSetAlign(_fonsContext, textLabel._alignFlag);
         }
 
-        fonsDrawText(_fonsContext, position.x,
-                     _cachedResolution.y - (position.y + lh),
-                     textLabel._text.c_str(), nullptr);
+        if (textLabel._multiLine) {
+            lines.clear();
+            lines = Util::split(textLabel.text(), '\n');
+            vectorAlg::vecSize lineCount = lines.size();
+            for (vectorAlg::vecSize i = 0; i < lineCount; ++i) {
+                fonsDrawText(_fonsContext, position.x,
+                    _cachedResolution.y - (position.y + (lh * (1 + i))),
+                    lines[i].c_str(), nullptr);
+            }
+        } else {
+                fonsDrawText(_fonsContext, position.x,
+                    _cachedResolution.y - (position.y + lh),
+                    textLabel.text().c_str(), nullptr);
+        }
     }
     // Register each label rendered as a draw call
     GFX_DEVICE.registerDrawCall();
