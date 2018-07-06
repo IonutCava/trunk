@@ -595,6 +595,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp">
+      <Filter>ECS\Components</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1051,6 +1054,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h">
       <Filter>Rendering\Lighting\ShadowMapping\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

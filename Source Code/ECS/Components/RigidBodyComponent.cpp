@@ -5,9 +5,9 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-    RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context)
+    RigidBodyComponent::RigidBodyComponent(SceneGraphNode& parentSGN, PXDevice& context)
         : SGNComponent(parentSGN, "RIGID_BODY"),
-          _physicsCollisionGroup(physicsGroup)
+          _physicsCollisionGroup(PhysicsGroup::GROUP_STATIC)
     {
         _rigidBody.reset(context.createRigidActor(parentSGN, *this));
     }

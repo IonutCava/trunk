@@ -424,6 +424,7 @@
     <ClCompile Include="..\../Source Code/Rendering\Lighting\Light.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\LightPool.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\PointLight.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CubeShadowMapGenerator.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\CascadedShadowMapsGenerator.cpp" />
     <ClCompile Include="..\../Source Code/Rendering\Lighting\ShadowMapping\ShadowMap.cpp" />
@@ -578,6 +579,7 @@
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\LightPool.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\PointLight.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\Headers\SpotLight.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CubeShadowMapGenerator.h" />
     <ClInclude Include="..\..\Source Code\Rendering\Lighting\ShadowMapping\Headers\CascadedShadowMapsGenerator.h" />
     <ClInclude Include="..\../Source Code/Rendering\Lighting\ShadowMapping\Headers\ShadowMap.h" />

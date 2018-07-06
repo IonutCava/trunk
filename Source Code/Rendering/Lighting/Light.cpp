@@ -145,8 +145,6 @@ bool Light::onRender(SceneGraphNode& sgn,
         SceneGraphNodeDescriptor impostorDescriptor;
         impostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING);
         impostorDescriptor._node = _impostor;
-        impostorDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-        impostorDescriptor._isSelectable = false;
         impostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
 
         _impostorSGN = sgn.addNode(impostorDescriptor);

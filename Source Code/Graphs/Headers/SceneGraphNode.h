@@ -47,6 +47,7 @@
 #include "ECS/Components/Headers/AnimationComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/NetworkingComponent.h"
 
@@ -60,22 +61,10 @@ class TransformComponent;
 
 struct TransformDirty;
 
-enum class PhysicsGroup : U8 {
-    GROUP_STATIC = 0,
-    GROUP_DYNAMIC,
-    GROUP_KINEMATIC,
-    GROUP_RAGDOL,
-    GROUP_VEHICLE,
-    GROUP_IGNORE,
-    GROUP_COUNT
-};
-
 struct SceneGraphNodeDescriptor {
     SceneNode_ptr    _node = nullptr;
     stringImpl       _name = "";
     U32              _componentMask = 0;
-    bool             _isSelectable = false;
-    PhysicsGroup     _physicsGroup = PhysicsGroup::GROUP_IGNORE;
     NodeUsageContext _usageContext = NodeUsageContext::NODE_STATIC;
 };
 
@@ -195,15 +184,13 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
 
     /// Find the graph nodes whom's bounding boxes intersects the given ray
     void intersect(const Ray& ray, F32 start, F32 end,
+                   bool force,
                    vector<SGNRayResult>& selectionHits,
                    bool recursive = true) const;
 
     /// Selection helper functions
     void setSelectionFlag(SelectionFlag flag);
     inline SelectionFlag getSelectionFlag() const { return _selectionFlag; }
-
-    void setSelectable(const bool state);
-    bool isSelectable() const;
 
     void lockVisibility(const bool state);
     inline bool visibilityLocked() const { return _visibilityLocked; }
@@ -409,7 +396,6 @@ class SceneGraphNode : public ECS::Entity<SceneGraphNode>,
     std::atomic_bool _visibilityLocked;
     std::atomic_uint _updateFlags;
 
-    bool _isSelectable;
     SelectionFlag _selectionFlag;
 
     NodeUsageContext _usageContext;

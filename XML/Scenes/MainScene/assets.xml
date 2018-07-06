@@ -1,27 +1,20 @@
-<geometry>
-	<!--<obj>box</obj>  -->
-	<!-- <obj>adi</obj> -->
-	<!-- <collada>test</collada> -->
-	<!-- <3ds>test2</3ds> -->
-</geometry>
-<!-- 
-<primitives>
-	<item>HelloText</item>
-</primitives>
--->
-<vegetation>
-	<tree>pin</tree>
-	<tree>copacel</tree>
-	<tree>copac</tree>
-</vegetation>
+<entities>
+	<!--<item>box</item>  -->
+	<!-- <item>adi</item> -->
+	<!-- <item>test</item> -->
+	<!-- <item>test2</item> -->
+  <!-- <item>HelloText</item> -->
+  <!-- <tree>pin</tree> -->
+  <!-- <tree>copacel</tree> -->
+  <!-- <tree>copac</tree> -->
+</entities>
 
 <pin>
 	<model>models/pin.obj</model>
 	<scale x="0.008" y="0.008" z="0.008" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-	<addToNavigation>true</addToNavigation>
+  <components>Navigation</components>
 </pin>
 
 <copacel>
@@ -29,8 +22,7 @@
 	<scale x="0.8" y="0.8" z="0.8" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-	<addToNavigation>true</addToNavigation>
+  <components>Navigation</components>
 </copacel>
 
 <copac>
@@ -38,8 +30,7 @@
 	<scale x="0.005" y="0.005" z="0.005" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-	<addToNavigation>true</addToNavigation>
+  <components>Navigation</components>
 </copac>
 
 <box>
@@ -47,9 +38,8 @@
 	<scale x="1" y="1" z="1" />
 	<position x="0" y="230" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-	<staticObject>true</staticObject>
-	<addToNavigation>false</addToNavigation>
+	<static>true</static>
+  <components>Navigation</components>
 </box>
 
 <adi>
@@ -57,10 +47,7 @@
 	<scale x="0.1" y="1" z="1" />
 	<position x="-10" y="340" z="0" />
 	<orientation x="50" y="0" z="0" />
-	<version>1.0</version>
-	<addToNavigation>true</addToNavigation>
-	<addToPhysics>true</addToPhysics>
-	<addToPhysicsGroupPushable>false</addToPhysicsGroupPushable>
+  <components>Navigation,Rigidbody</components>
 </adi>
 
 <HelloText>
@@ -72,5 +59,4 @@
 	<lineWidth>5</lineWidth>
 	<text>Hello World :D</text>
 	<fontName>Test.ttf</fontName>
-	<version>1.0</version>
 </HelloText>

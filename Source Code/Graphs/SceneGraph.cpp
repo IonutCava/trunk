@@ -37,8 +37,6 @@ SceneGraph::SceneGraph(Scene& parentScene)
     rootDescriptor._node = _rootNode;
     rootDescriptor._name = "ROOT";
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
-    rootDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    rootDescriptor._isSelectable = false;
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
     _root = createSceneGraphNode(*this, rootDescriptor);
@@ -216,8 +214,8 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     _root->onNetworkSend(frameCount);
 }
 
-void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vector<SGNRayResult>& selectionHits) const {
-    _root->intersect(ray, start, end, selectionHits);
+void SceneGraph::intersect(const Ray& ray, F32 start, F32 end, bool force, vector<SGNRayResult>& selectionHits) const {
+    _root->intersect(ray, start, end, force, selectionHits);
 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);

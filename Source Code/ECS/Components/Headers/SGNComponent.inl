@@ -38,9 +38,10 @@ namespace Divide {
 
     template<typename T>
     SGNComponent<T>::SGNComponent(SceneGraphNode& parentSGN, const stringImpl& name)
-      : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
+        : ECS::Event::IEventListener(&parentSGN.GetECSEngine()),
         _parentSGN(parentSGN),
         _editorComponent(name),
+        _enabled(true),
         _hasChanged(false)
     {
         RegisterEventCallbacks();
@@ -76,6 +77,16 @@ namespace Divide {
     template<typename T>
     void SGNComponent<T>::PreUpdate(const U64 deltaTime) {
         ACKNOWLEDGE_UNUSED(deltaTime);
+    }
+
+    template<typename T>
+    bool SGNComponent<T>::enabled() const {
+        return _enabled;
+    }
+
+    template<typename T>
+    void SGNComponent<T>::enabled(const bool state) {
+        _enabled = state;
     }
 
     template<typename T>

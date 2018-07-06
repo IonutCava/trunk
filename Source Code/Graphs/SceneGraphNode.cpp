@@ -31,7 +31,6 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
       _node(descriptor._node),
       _componentMask(descriptor._componentMask),
       _usageContext(descriptor._usageContext),
-      _isSelectable(descriptor._isSelectable),
       _selectionFlag(SelectionFlag::SELECTION_NONE),
       _parent(nullptr),
       _frustPlaneCache(-1),
@@ -69,7 +68,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
         PXDevice& pxContext = _sceneGraph.parentScene().context().pfx();
 
         STUBBED("Rigid body physics disabled for now - Ionut");
-        AddSGNComponent<RigidBodyComponent>(*this, /*descriptor._physicsGroup*/PhysicsGroup::GROUP_IGNORE, pxContext);
+        AddSGNComponent<RigidBodyComponent>(*this, pxContext);
     }
     if (BitCompare(_componentMask, to_U32(ComponentType::TRANSFORM))) {
         AddSGNComponent<TransformComponent>(*this);
@@ -361,10 +360,12 @@ SceneGraphNode* SceneGraphNode::findChild(const stringImpl& name, bool sceneNode
 void SceneGraphNode::intersect(const Ray& ray,
                                F32 start,
                                F32 end,
+                               bool force,
                                vector<SGNRayResult>& selectionHits,
                                bool recursive) const {
 
-    if (isSelectable()) {
+    SelectionComponent* selComp = get<SelectionComponent>();
+    if (force || (selComp && selComp->enabled())) {
         AABBRayResult result = get<BoundsComponent>()->getBoundingBox().intersect(ray, start, end);
         if (std::get<0>(result)) {
             selectionHits.push_back(std::make_tuple(getGUID(), std::get<1>(result), std::get<2>(result)));
@@ -372,8 +373,8 @@ void SceneGraphNode::intersect(const Ray& ray,
     }
 
     if (recursive) {
-        forEachChild([&ray, start, end, &selectionHits](const SceneGraphNode& child) {
-            child.intersect(ray, start, end, selectionHits);
+        forEachChild([&ray, start, end, force, &selectionHits](const SceneGraphNode& child) {
+            child.intersect(ray, start, end, force, selectionHits);
         });
     }
 }
@@ -385,19 +386,6 @@ void SceneGraphNode::setSelectionFlag(SelectionFlag flag) {
             child.setSelectionFlag(flag);
         });
     }
-}
-
-void SceneGraphNode::setSelectable(const bool state) {
-    if (_isSelectable != state) {
-        _isSelectable = state;
-        forEachChild([state](SceneGraphNode& child) {
-            child.setSelectable(state);
-        });
-    }
-}
-
-bool SceneGraphNode::isSelectable() const {
-    return _isSelectable;
 }
 
 void SceneGraphNode::lockVisibility(const bool state) {

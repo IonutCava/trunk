@@ -187,22 +187,8 @@ void Scene::addPatch(vector<FileData>& data) {
 void Scene::loadXMLAssets(bool singleStep) {
     constexpr bool terrainThreadedLoading = true;
 
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
-
     while (!_modelDataArray.empty()) {
-        const FileData& it = _modelDataArray.top();
-        if (it.type == GeometryType::VEGETATION) {
-            _vegetationDataArray.push_back(loadModel(it, false));
-        } else  if (it.type == GeometryType::PRIMITIVE) {
-            loadGeometry(it, true);
-        } else {
-            loadModel(it, true);
-        }
+        loadAsset(_modelDataArray.top(), true);
         ++_loadingTasks;
 
         _modelDataArray.pop();
@@ -218,8 +204,6 @@ void Scene::loadXMLAssets(bool singleStep) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
         terrainNodeDescriptor._node = std::dynamic_pointer_cast<Terrain>(res.lock());
         terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-        terrainNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_STATIC;
-        terrainNodeDescriptor._isSelectable = false;
         terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
                                                to_base(ComponentType::TRANSFORM) |
                                                to_base(ComponentType::RIGID_BODY) |
@@ -230,6 +214,8 @@ void Scene::loadXMLAssets(bool singleStep) {
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+
+        terrainTemp->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
 
         --_loadingTasks;
     };
@@ -252,144 +238,117 @@ void Scene::loadXMLAssets(bool singleStep) {
     }
 }
 
-Mesh_ptr Scene::loadModel(const FileData& data, bool addToSceneGraph) {
-    constexpr bool modelThreadedLoading = true;
-
-    static const U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                                  to_base(ComponentType::TRANSFORM) |
-                                  to_base(ComponentType::RIGID_BODY) |
-                                  to_base(ComponentType::BOUNDS) |
-                                  to_base(ComponentType::RENDERING) |
-                                  to_base(ComponentType::NETWORKING);
-
-    auto loadModelComplete = [this](Resource_wptr res) {
-        ACKNOWLEDGE_UNUSED(res);
-        --_loadingTasks;
+bool isPrimitive(const stringImpl& modelName) {
+    static const stringImpl pritimiveNames[] = {
+        "Box3D",
+        //"Patch3D", <- Internal
+        "Quad3D",
+        "Sphere3D"
     };
 
-    ResourceDescriptor model(data.ModelName);
-    model.setResourceLocation(data.ModelName);
-    model.setFlag(true);
-    model.setThreadedLoading(modelThreadedLoading);
-    model.setOnLoadCallback(loadModelComplete);
-    Mesh_ptr thisObj = CreateResource<Mesh>(_resCache, model);
-
-    if (!thisObj) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
-    } else {
-        if (addToSceneGraph) {
-            SceneGraphNodeDescriptor meshNodeDescriptor;
-            meshNodeDescriptor._node = thisObj;
-            meshNodeDescriptor._name = data.ItemName;
-            meshNodeDescriptor._usageContext = data.staticUsage ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC;
-            meshNodeDescriptor._physicsGroup = data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                                      : PhysicsGroup::GROUP_DYNAMIC
-                                                                 : PhysicsGroup::GROUP_IGNORE;
-            meshNodeDescriptor._isSelectable = data.isSelectable;
-            meshNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                                to_base(ComponentType::TRANSFORM) |
-                                                to_base(ComponentType::RIGID_BODY) |
-                                                to_base(ComponentType::BOUNDS) |
-                                                to_base(ComponentType::RENDERING) |
-                                                to_base(ComponentType::NETWORKING) |
-                                                (data.isUnit ? to_base(ComponentType::UNIT) : 0);
-
-            SceneGraphNode* meshNode = _sceneGraph->getRoot().addNode(meshNodeDescriptor);
-            meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
-            meshNode->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
-            meshNode->get<TransformComponent>()->setScale(data.scale);
-            meshNode->get<TransformComponent>()->setRotation(data.orientation);
-            meshNode->get<TransformComponent>()->setPosition(data.position);
-
-            if (data.navigationUsage) {
-                meshNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-            }
-
-            if (data.useHighDetailNavMesh) {
-                meshNode->get<NavigationComponent>()->navigationDetailOverride(true);
-            }
+    for (const stringImpl& it : pritimiveNames) {
+        if (Util::CompareIgnoreCase(modelName, it)) {
+            return true;
         }
     }
 
-    return thisObj;
+    return false;
 }
 
-Object3D_ptr Scene::loadGeometry(const FileData& data, bool addToSceneGraph) {
+Object3D_ptr Scene::createPrimitive(const FileData& data) {
     auto loadModelComplete = [this](Resource_wptr res) {
         ACKNOWLEDGE_UNUSED(res);
         --_loadingTasks;
     };
 
-    std::shared_ptr<Object3D> thisObj;
+    Object3D_ptr ret = nullptr;
+
     ResourceDescriptor item(data.ItemName);
     item.setOnLoadCallback(loadModelComplete);
     item.setResourceLocation(data.ModelName);
-    if (data.ModelName.compare("Box3D") == 0) {
+    if (Util::CompareIgnoreCase(data.ModelName, "Box3D")) {
         item.setPropertyList(Util::StringFormat("%2.2f", data.data));
-        thisObj = CreateResource<Box3D>(_resCache, item);
-    } else if (data.ModelName.compare("Sphere3D") == 0) {
-        thisObj = CreateResource<Sphere3D>(_resCache, item);
-        static_cast<Sphere3D*>(thisObj.get())->setRadius(data.data);
-    } else if (data.ModelName.compare("Quad3D") == 0) {
+        ret = CreateResource<Box3D>(_resCache, item);
+    } else if (Util::CompareIgnoreCase(data.ModelName, "Sphere3D")) {
+        ret = CreateResource<Sphere3D>(_resCache, item);
+        static_cast<Sphere3D*>(ret.get())->setRadius(data.data);
+    } else if (Util::CompareIgnoreCase(data.ModelName, "Quad3D")) {
         vec3<F32> scale = data.scale;
         vec3<F32> position = data.position;
         P32 quadMask;
         quadMask.i = 0;
         quadMask.b[0] = 1;
         item.setBoolMask(quadMask);
-        thisObj = CreateResource<Quad3D>(_resCache, item);
-        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
-        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
-        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
-        static_cast<Quad3D*>(thisObj.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+        ret = CreateResource<Quad3D>(_resCache, item);
+        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
+        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
+        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
+        static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), data.ModelName.c_str());
-        return false;
     }
-    STUBBED("Load material from XML disabled for primitives! - Ionut")
-    Material_ptr tempMaterial = nullptr; /* = XML::loadMaterial(data.ItemName + "_material")*/;
-    if (!tempMaterial) {
+
+    return ret;
+}
+
+Object3D_ptr Scene::loadAsset(const FileData& data, bool addToSceneGraph) {
+    constexpr bool modelThreadedLoading = true;
+
+    static const U32 normalMask = to_base(ComponentType::TRANSFORM) |
+                                  to_base(ComponentType::BOUNDS) |
+                                  to_base(ComponentType::RENDERING) |
+                                  to_base(ComponentType::NETWORKING);
+
+    Object3D_ptr ret = nullptr;
+
+    if (isPrimitive(data.ModelName)) {
+        ret = createPrimitive(data);
+
         ResourceDescriptor materialDescriptor(data.ItemName + "_material");
-        tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
-        tempMaterial->setDiffuse(data.colour);
+        Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
         tempMaterial->setShadingMode(Material::ShadingMode::BLINN_PHONG);
+        ret->setMaterialTpl(tempMaterial);
+    } else {
+        auto loadModelComplete = [this](Resource_wptr res) {
+            ACKNOWLEDGE_UNUSED(res);
+            --_loadingTasks;
+        };
+
+        ResourceDescriptor model(data.ModelName);
+        model.setResourceLocation(Paths::g_assetsLocation + data.ModelName);
+        model.setFlag(true);
+        model.setThreadedLoading(modelThreadedLoading);
+        model.setOnLoadCallback(loadModelComplete);
+        ret = std::static_pointer_cast<Object3D>(CreateResource<Mesh>(_resCache, model));
     }
 
-    thisObj->setMaterialTpl(tempMaterial);
+    ret->getMaterialTpl()->setDiffuse(data.colour);
 
-    if (addToSceneGraph) {
-        SceneGraphNodeDescriptor meshNodeDescriptor;
-        meshNodeDescriptor._node = thisObj;
-        meshNodeDescriptor._usageContext = data.staticUsage ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC;
-        meshNodeDescriptor._physicsGroup = data.physicsUsage ? data.physicsStatic ? PhysicsGroup::GROUP_STATIC
-                                                                                  : PhysicsGroup::GROUP_DYNAMIC
-                                                             : PhysicsGroup::GROUP_IGNORE;
-        meshNodeDescriptor._isSelectable = data.isSelectable;
-        meshNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                            to_base(ComponentType::TRANSFORM) |
-                                            to_base(ComponentType::RIGID_BODY) |
-                                            to_base(ComponentType::BOUNDS) |
-                                            to_base(ComponentType::RENDERING) |
-                                            to_base(ComponentType::NETWORKING);
+    if (!ret) {
+        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_MODEL")), data.ModelName.c_str());
+    } else {
+        if (addToSceneGraph) {
+            SceneGraphNodeDescriptor nodeDescriptor;
+            nodeDescriptor._node = ret;
+            nodeDescriptor._name = data.ItemName;
+            nodeDescriptor._componentMask = normalMask | data.componentMask;
 
-        SceneGraphNode* thisObjSGN = _sceneGraph->getRoot().addNode(meshNodeDescriptor);
+            SceneGraphNode* node = _sceneGraph->getRoot().addNode(nodeDescriptor);
+            node->get<TransformComponent>()->setScale(data.scale);
+            node->get<TransformComponent>()->setRotation(data.orientation);
+            node->get<TransformComponent>()->setPosition(data.position);
 
-        thisObjSGN->get<TransformComponent>()->setScale(data.scale);
-        thisObjSGN->get<TransformComponent>()->setRotation(data.orientation);
-        thisObjSGN->get<TransformComponent>()->setPosition(data.position);
-        thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, data.castsShadows);
-        thisObjSGN->get<RenderingComponent>()->toggleRenderOption(RenderingComponent::RenderOptions::RECEIVE_SHADOWS, data.receivesShadows);
+            if (BitCompare(data.componentMask, ComponentType::RIGID_BODY)) {
+                node->get<RigidBodyComponent>()->physicsGroup(data.staticUsage ? PhysicsGroup::GROUP_STATIC : PhysicsGroup::GROUP_DYNAMIC);
+            }
 
-        if (data.navigationUsage) {
-            thisObjSGN->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-        }
-
-        if (data.useHighDetailNavMesh) {
-            thisObjSGN->get<NavigationComponent>()->navigationDetailOverride(true);
+            if (BitCompare(data.componentMask, ComponentType::NAVIGATION)){
+                node->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+            }
         }
     }
 
-    return thisObj;
+    return ret;
 }
 
 SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
@@ -413,12 +372,11 @@ SceneGraphNode* Scene::addParticleEmitter(const stringImpl& name,
     SceneGraphNodeDescriptor particleNodeDescriptor;
     particleNodeDescriptor._node = emitter;
     particleNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    particleNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    particleNodeDescriptor._isSelectable = true;
     particleNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                             to_base(ComponentType::BOUNDS) |
                                             to_base(ComponentType::RENDERING) |
-                                            to_base(ComponentType::NETWORKING);
+                                            to_base(ComponentType::NETWORKING) |
+                                            to_base(ComponentType::SELECTION);
 
     return parentNode.addNode(particleNodeDescriptor);
 }
@@ -454,8 +412,6 @@ SceneGraphNode* Scene::addLight(LightType type, SceneGraphNode& parentNode) {
     SceneGraphNodeDescriptor lightNodeDescriptor;
     lightNodeDescriptor._node = light;
     lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    lightNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    lightNodeDescriptor._isSelectable = false;
     lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING) |
@@ -478,8 +434,6 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         SceneGraphNodeDescriptor lightNodeDescriptor;
         lightNodeDescriptor._node = tempLight;
         lightNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-        lightNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-        lightNodeDescriptor._isSelectable = false;
         lightNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                              to_base(ComponentType::BOUNDS) |
                                              to_base(ComponentType::RENDERING) |
@@ -514,8 +468,6 @@ SceneGraphNode* Scene::addSky(const stringImpl& nodeName) {
     skyNodeDescriptor._node = skyItem;
     skyNodeDescriptor._name = nodeName;
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-    skyNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    skyNodeDescriptor._isSelectable = false;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                         to_base(ComponentType::BOUNDS) |
                                         to_base(ComponentType::RENDERING) |
@@ -978,8 +930,6 @@ void Scene::addPlayerInternal(bool queue) {
         playerNodeDescriptor._node = SceneNode_ptr(MemoryManager_NEW SceneTransform(_resCache, static_cast<size_t>(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), g_PlayerExtents));
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-        playerNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_KINEMATIC;
-        playerNodeDescriptor._isSelectable = false;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
                                               to_base(ComponentType::NAVIGATION) |
                                               to_base(ComponentType::TRANSFORM) |
@@ -1113,7 +1063,7 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
     _aiManager->update(deltaTimeUS);
 
     for(PlayerIndex idx : _hoverUpdateQueue) {
-        findHoverTarget(idx);
+        findHoverTarget(idx, editorVisible());
     }
     _hoverUpdateQueue.clear();
 }
@@ -1245,7 +1195,7 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
     return false;
 }
 
-void Scene::findHoverTarget(PlayerIndex idx) {
+void Scene::findHoverTarget(PlayerIndex idx, bool force) {
     const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
 
     const vec2<U16>& displaySize = _context.app().windowManager().getActiveWindow().getDimensions();
@@ -1268,7 +1218,7 @@ void Scene::findHoverTarget(PlayerIndex idx) {
     for (RenderPassCuller::VisibleNode& node : nodes) {
         const SceneGraphNode* nodePtr = node._node;
         if (nodePtr) {
-            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, _sceneSelectionCandidates, false);
+            nodePtr->intersect(mouseRay, zPlanes.x, zPlanes.y, force, _sceneSelectionCandidates, false);
         }
     }
 
@@ -1409,4 +1359,7 @@ Camera* Scene::playerCamera(U8 index) const {
     return Attorney::SceneManagerCameraAccessor::playerCamera(_parent, index);
 }
 
+bool Scene::editorVisible() const {
+    return _context.editor().running();
+}
 };

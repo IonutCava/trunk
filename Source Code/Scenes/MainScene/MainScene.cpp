@@ -174,8 +174,6 @@ bool MainScene::load(const stringImpl& name) {
     SceneGraphNodeDescriptor waterNodeDescriptor;
     waterNodeDescriptor._node = water;
     waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
-    waterNodeDescriptor._physicsGroup = PhysicsGroup::GROUP_IGNORE;
-    waterNodeDescriptor._isSelectable = false;
     waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) | 
                                          to_base(ComponentType::TRANSFORM) |
                                          to_base(ComponentType::BOUNDS) |

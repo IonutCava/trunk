@@ -38,15 +38,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 namespace Divide {
-    enum class PhysicsGroup : U8;
+
+    enum class PhysicsGroup : U8 {
+        GROUP_STATIC = 0,
+        GROUP_DYNAMIC,
+        GROUP_KINEMATIC,
+        GROUP_RAGDOL,
+        GROUP_VEHICLE,
+        GROUP_IGNORE,
+        GROUP_COUNT
+    };
 
     class PXDevice;
     
     class RigidBodyComponent : public SGNComponent<RigidBodyComponent> {
       public:
-        RigidBodyComponent(SceneGraphNode& parentSGN, PhysicsGroup physicsGroup, PXDevice& context);
+        RigidBodyComponent(SceneGraphNode& parentSGN, PXDevice& context);
         ~RigidBodyComponent();
 
+
+        inline void physicsGroup(PhysicsGroup physicsGroup) {
+            _physicsCollisionGroup = physicsGroup;
+        }
 
         inline const PhysicsGroup& physicsGroup() const {
             return _physicsCollisionGroup;

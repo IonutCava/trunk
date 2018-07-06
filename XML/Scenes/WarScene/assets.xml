@@ -1,4 +1,4 @@
-<geometry>
+<entities>
   <item>Soldier1</item>
   <item>Soldier2</item>
   <item>Soldier3</item>
@@ -8,20 +8,15 @@
 	<item>cylinderSW</item>
 	<item>cylinderC</item>
   <item>flag</item>
-</geometry>
-
-<primitives>
   <item>Ground_placeholder</item>
-</primitives>
+</entities>
 
 <flag>
 	<model>models/flag_obj.obj</model>
 	<scale x="0.01" y="0.01" z="0.01" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-	<staticObject>true</staticObject>
-	<addToNavigation>false</addToNavigation>
+  <static>true</static>
 </flag>
 
 <Soldier1>
@@ -29,8 +24,7 @@
 	<scale x="0.05" y="0.05" z="0.05" />
 	<position x="0" y="0" z="-7" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isUnit>true</isUnit>
+  <components>Unit</components>
 </Soldier1>
 
 
@@ -39,8 +33,7 @@
 	<scale x="2" y="2" z="2" />
 	<position x="-3.5" y="0" z="7.5" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isUnit>true</isUnit>
+  <components>Unit</components>
 </Soldier2>
 
 <Soldier3>
@@ -48,8 +41,7 @@
 	<scale x="0.1" y="0.1" z="0.1" />
 	<position x="4.5" y="0" z="5.5" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isUnit>true</isUnit>
+  <components>Unit</components>
 </Soldier3>
 
 
@@ -59,11 +51,8 @@
 	<position x="-250" y="0" z="-250" />
 	<orientation x="0" y="0" z="-90" />
 	<colour r="0.1" g="0.4" b="0.1"/>
-	<version>1.0</version>
-  <isSelectable>false</isSelectable>
-	<staticObject>true</staticObject>
-	<castsShadows>false</castsShadows>
-	<addToNavigation>true</addToNavigation>
+  <static>true</static>
+  <components>Navigation,Selection</components>
 </Ground_placeholder>
 
 <cylinderNE>
@@ -71,11 +60,8 @@
 	<scale x="2" y="2" z="2" />
 	<position x="-100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isSelectable>true</isSelectable>
-	<staticObject>true</staticObject>
-	<addToNavigation>true</addToNavigation>
-	<useHighNavigationDetail>true</useHighNavigationDetail>
+  <static>true</static>
+  <components>Navigation,Selection</components>
 </cylinderNE>
 
 <cylinderNW>
@@ -83,11 +69,8 @@
 	<scale x="3" y="3" z="3" />
 	<position x="100" y="0" z="-100" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isSelectable>true</isSelectable>
-	<staticObject>true</staticObject>
-	<addToNavigation>true</addToNavigation>
-	<useHighNavigationDetail>true</useHighNavigationDetail>
+  <static>true</static>
+  <components>Navigation,Selection</components>
 </cylinderNW>
 
 <cylinderSE>
@@ -95,11 +78,8 @@
 	<scale x="2" y="2" z="2" />
 	<position x="-100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isSelectable>true</isSelectable>
-	<staticObject>true</staticObject>
-	<addToNavigation>true</addToNavigation>
-	<useHighNavigationDetail>true</useHighNavigationDetail>
+  <static>true</static>
+  <components>Navigation,Selection</components>
 </cylinderSE>
 
 <cylinderSW>
@@ -107,11 +87,8 @@
 	<scale x="2.5" y="2.5" z="2.5" />
 	<position x="100" y="0" z="100" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isSelectable>true</isSelectable>
-	<staticObject>true</staticObject>
-	<addToNavigation>true</addToNavigation>
-	<useHighNavigationDetail>true</useHighNavigationDetail>
+  <static>true</static>
+  <components>Navigation,Selection</components>
 </cylinderSW>
 
 <cylinderC>
@@ -119,9 +96,6 @@
 	<scale x="4" y="4" z="4" />
 	<position x="0" y="0" z="0" />
 	<orientation x="0" y="0" z="0" />
-	<version>1.0</version>
-  <isSelectable>false</isSelectable>
-	<staticObject>true</staticObject>
-	<addToNavigation>true</addToNavigation>
-	<useHighNavigationDetail>true</useHighNavigationDetail>
+  <static>true</static>
+  <components>Navigation</components>
 </cylinderC>
