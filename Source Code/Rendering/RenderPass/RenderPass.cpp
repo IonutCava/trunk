@@ -116,6 +116,14 @@ RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferInde
     return *buffer;
 }
 
+const RenderPass::BufferData& RenderPass::BufferDataPool::getBufferData(I32 bufferIndex) const {
+    assert(IS_IN_RANGE_INCLUSIVE(bufferIndex, 0, to_I32(_buffers.size())));
+
+    const std::shared_ptr<BufferData>& buffer = _buffers[bufferIndex];
+    assert(buffer != nullptr);
+    return *buffer;
+}
+
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlag)
     : _parent(parent),
       _context(context),
@@ -138,15 +146,13 @@ RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex) {
     return _passBuffers->getBufferData(bufferIndex);
 }
 
-void RenderPass::generateDrawCommands() {
+const RenderPass::BufferData&  RenderPass::getBufferData(I32 bufferIndex) const {
+    return _passBuffers->getBufferData(bufferIndex);
 }
 
-void RenderPass::render(SceneRenderState& renderState) {
-    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
-    GFX::CommandBuffer& commandBuffer = sBuffer();
-
+void RenderPass::render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
     if (_stageFlag != RenderStage::SHADOW) {
-        LightPool::bindShadowMaps(_context, commandBuffer);
+        LightPool::bindShadowMaps(_context, bufferInOut);
     }
 
     switch(_stageFlag) {
@@ -154,7 +160,7 @@ void RenderPass::render(SceneRenderState& renderState) {
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;
             beginDebugScopeCmd._scopeID = 10;
             beginDebugScopeCmd._scopeName = "Display Render Stage";
-            GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
             const RenderTarget& screenRT = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
             RenderPassManager::PassParams params;
@@ -166,10 +172,10 @@ void RenderPass::render(SceneRenderState& renderState) {
             params._pass = 0;
             params._doPrePass = Config::USE_Z_PRE_PASS && screenRT.getAttachment(RTAttachmentType::Depth, 0).used();
             params._occlusionCull = true;
-            _parent.doCustomPass(params, commandBuffer);
+            _parent.doCustomPass(params, bufferInOut);
 
             GFX::EndDebugScopeCommand endDebugScopeCmd;
-            GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 
             _lastTotalBinSize = _parent.getQueue().getRenderQueueStackSize();
 
@@ -178,11 +184,11 @@ void RenderPass::render(SceneRenderState& renderState) {
             GFX::BeginDebugScopeCommand beginDebugScopeCmd;
             beginDebugScopeCmd._scopeID = 20;
             beginDebugScopeCmd._scopeName = "Shadow Render Stage";
-            GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
-            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), commandBuffer);
+            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
             GFX::EndDebugScopeCommand endDebugScopeCmd;
-            GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 
         } break;
         case RenderStage::REFLECTION: {
@@ -195,13 +201,13 @@ void RenderPass::render(SceneRenderState& renderState) {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 30;
                 beginDebugScopeCmd._scopeName = "Cube Reflection Render Stage";
-                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
                 //Part 1 - update envirnoment maps:
                 /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
                 const EnvironmentProbeList& probes = envProbPool->getNearestSorted(params.camera->getEye());
                 for (EnvironmentProbe_ptr& probe : probes) {
-                    probe->refresh(commandBuffer);
+                    probe->refresh(bufferInOut);
                 }
                 RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
                 for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
@@ -211,13 +217,13 @@ void RenderPass::render(SceneRenderState& renderState) {
                 }*/
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
             }
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 40;
                 beginDebugScopeCmd._scopeName = "Planar Reflection Render Stage";
-                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
@@ -236,7 +242,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                                                                                  ReflectionUtil::currentEntry(),
                                                                                  params._camera,
                                                                                  renderState,
-                                                                                 commandBuffer)) {
+                                                                                 bufferInOut)) {
 
                             ReflectionUtil::updateBudget();
                         }
@@ -246,7 +252,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                     }
                 }
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
             }
         } break;
         case RenderStage::REFRACTION: {
@@ -260,16 +266,16 @@ void RenderPass::render(SceneRenderState& renderState) {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 50;
                 beginDebugScopeCmd._scopeName = "Cube Refraction Render Stage";
-                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
             }
             {
                 GFX::BeginDebugScopeCommand beginDebugScopeCmd;
                 beginDebugScopeCmd._scopeID = 60;
                 beginDebugScopeCmd._scopeName = "Planar Refraction Render Stage";
-                GFX::EnqueueCommand(commandBuffer, beginDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
                 const RenderPassCuller::VisibleNodeList& nodeCache = mgr.getSortedRefractiveNodes();
                 // While in budget, update refractions
@@ -284,7 +290,7 @@ void RenderPass::render(SceneRenderState& renderState) {
                                                                                 RefractionUtil::currentEntry(),
                                                                                 params._camera,
                                                                                 renderState,
-                                                                                commandBuffer))
+                                                                                bufferInOut))
                         {
                             RefractionUtil::updateBudget();
                         }
@@ -295,12 +301,10 @@ void RenderPass::render(SceneRenderState& renderState) {
                 }
 
                 GFX::EndDebugScopeCommand endDebugScopeCmd;
-                GFX::EnqueueCommand(commandBuffer, endDebugScopeCmd);
+                GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
             }
         } break;
     };
-
-    _context.flushCommandBuffer(commandBuffer);
 }
 
 // This is very hackish but should hold up fine

@@ -404,7 +404,7 @@ void GFXDevice::onSizeChange(const SizeChangeParams& params) {
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT_FULL_RES, w, h);
-        _rtPool->resizeTargets(RenderTargetUsage::OIT_QUARTER_RES, to_U16(std::ceil(w / 4.0f)), to_U16(std::ceil(h / 4.0f)));
+        //_rtPool->resizeTargets(RenderTargetUsage::OIT_QUARTER_RES, to_U16(std::ceil(w / 4.0f)), to_U16(std::ceil(h / 4.0f)));
         if (Config::Build::ENABLE_EDITOR) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }

@@ -63,12 +63,6 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
     return setViewport(Rect<I32>(x, y, width, height));
 }
 
-inline bool 
-GFXDevice::isDepthStage(RenderStagePass renderStagePass) const {
-    return renderStagePass._stage == RenderStage::SHADOW ||
-           renderStagePass._passType == RenderPassType::DEPTH_PASS;
-}
-
 };  // namespace Divide
 
 #endif

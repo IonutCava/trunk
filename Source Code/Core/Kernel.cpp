@@ -677,7 +677,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
-    _renderPassManager->init();
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
     _renderPassManager->addRenderPass("reflectionPass", 1, RenderStage::REFLECTION);
     _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION);

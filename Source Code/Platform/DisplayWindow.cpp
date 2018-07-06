@@ -247,14 +247,15 @@ void DisplayWindow::handleEvent(SDL_Event event) {
     };
 }
 
-void DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
+bool DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
     if (_externalResizeEvent && 
         (_type != WindowType::WINDOW &&
          _type != WindowType::SPLASH))
     {
-        return;
+        return false;
     }
 
+    I32 newW = to_I32(w); I32 newH = to_I32(h);
     if (_type == WindowType::FULLSCREEN) {
         // Find a decent resolution close to our dragged dimensions
         SDL_DisplayMode mode, closestMode;
@@ -266,12 +267,15 @@ void DisplayWindow::setDimensionsInternal(U16& w, U16& h) {
         h = to_U16(closestMode.h);
         SDL_SetWindowDisplayMode(_sdlWindow, &closestMode);
     } else {
-        SDL_SetWindowSize(_sdlWindow, w, h);
+        SDL_SetWindowSize(_sdlWindow, to_I32(w), to_I32(h));
+        SDL_GetWindowSize(_sdlWindow, &newW, &newH);
     }
 
     if (_inputHandler->isInit()) {
         _inputHandler->onChangeWindowSize(w, h);
     }
+
+    return newW == w && newH == h;
 }
 
 vec2<U16> DisplayWindow::getDrawableSize() const {
@@ -409,18 +413,29 @@ vec2<U16> DisplayWindow::getPreviousDimensions() const {
     return _prevDimensions;
 }
 
-void DisplayWindow::setDimensions(U16& dimensionX, U16& dimensionY) {
-    if (!fullscreen()) {
-        setDimensionsInternal(dimensionX, dimensionY);
+bool DisplayWindow::setDimensions(U16& dimensionX, U16& dimensionY) {
+    if (fullscreen()) {
+        return true;
+    }
+
+    vec2<U16> newDimensions(dimensionX, dimensionY);
+    if (_windowDimensions == newDimensions) {
+        return true;
+    }
+
+    if (setDimensionsInternal(dimensionX, dimensionY)) {
 
         _prevDimensions.set(_windowDimensions);
         _windowDimensions.set(dimensionX, dimensionY);
         _parent.pollSDLEvents();
+        return true;
     }
+
+    return false;
 }
 
-void DisplayWindow::setDimensions(vec2<U16>& dimensions) {
-    setDimensions(dimensions.x, dimensions.y);
+bool DisplayWindow::setDimensions(vec2<U16>& dimensions) {
+    return setDimensions(dimensions.x, dimensions.y);
 }
 
 vec2<U16> DisplayWindow::getDimensions() const {

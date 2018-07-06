@@ -57,6 +57,11 @@ struct RenderStagePass {
         return index(_stage, _passType);
     }
 
+    inline bool isDepthPass() const {
+        return _stage == RenderStage::SHADOW ||
+               _passType == RenderPassType::DEPTH_PASS;
+    }
+
     constexpr static PassIndex count() {
         return static_cast<PassIndex>(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT));
     }

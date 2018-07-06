@@ -19,9 +19,6 @@ CommandBuffer::CommandBuffer()
     _commands.reserve(4);
 }
 
-CommandBuffer::~CommandBuffer()
-{
-}
 
 const std::type_info& CommandBuffer::getType(GFX::CommandType type) const {
     switch (type) {

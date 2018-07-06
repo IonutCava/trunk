@@ -43,8 +43,8 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
-            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BY_STATE
-                                                          : RenderingOrder::List::FRONT_TO_BACK;
+            sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::BY_STATE
+                                                 : RenderingOrder::List::FRONT_TO_BACK;
         } break;
         case RenderBinType::RBT_SKY: {
             sortOrder = RenderingOrder::List::NONE;
@@ -53,15 +53,15 @@ RenderingOrder::List RenderQueue::getSortOrder(RenderStagePass stagePass, Render
         case RenderBinType::RBT_TERRAIN:
         case RenderBinType::RBT_DECAL: {
             // No need to sort decals in depth passes as they're small on screen and processed post-opaque pass
-            sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::FRONT_TO_BACK
-                                                          : RenderingOrder::List::NONE;
+            sortOrder = !stagePass.isDepthPass() ? RenderingOrder::List::FRONT_TO_BACK
+                                                 : RenderingOrder::List::NONE;
         } break;
         case RenderBinType::RBT_TRANSLUCENT: {
             // Translucent items should be rendered by material in depth passes to avoid useless material switches
             // Small cost for bypassing early-Z checks, but translucent items should be in the minority on the screen anyway
             // and the Opaque pass should have finished by now
-            /*sortOrder = !_context.isDepthStage(stagePass) ? RenderingOrder::List::BACK_TO_FRONT
-                                                          : RenderingOrder::List::BY_STATE;*/
+            /*sortOrder = !stagePass.isDepthPass()  ? RenderingOrder::List::BACK_TO_FRONT
+                                                    : RenderingOrder::List::BY_STATE;*/
 
 
             // We are using weighted blended OIT. State is fine (and faster)

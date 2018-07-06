@@ -2,8 +2,10 @@
 
 #include "Headers/RenderPassManager.h"
 
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
@@ -18,37 +20,38 @@ namespace Divide {
 RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
     : KernelComponent(parent),
       _context(context),
-      _renderQueue(nullptr),
-      _OITCompositionShader(nullptr)
+      _renderQueue(context)
 {
+    ResourceDescriptor shaderDesc("OITComposition");
+    _OITCompositionShader = CreateResource<ShaderProgram>(parent.resourceCache(), shaderDesc);
 }
 
 RenderPassManager::~RenderPassManager()
 {
-    destroy();
-}
-
-bool RenderPassManager::init() {
-    if (_renderQueue == nullptr) {
-        _renderQueue = MemoryManager_NEW RenderQueue(_context);
-
-        ResourceDescriptor shaderDesc("OITComposition");
-        _OITCompositionShader = CreateResource<ShaderProgram>(parent().resourceCache(), shaderDesc);
-        return true;
+    for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
+        GFX::deallocateCommandBuffer(buf);
     }
-
-    return false;
-}
-
-void RenderPassManager::destroy() {
-    MemoryManager::DELETE_VECTOR(_renderPasses);
-    MemoryManager::DELETE(_renderQueue);
-    _OITCompositionShader.reset();
 }
 
 void RenderPassManager::render(SceneRenderState& sceneRenderState) {
-    for (RenderPass* rp : _renderPasses) {
-        rp->render(sceneRenderState);
+    TaskPool& pool = parent().platformContext().taskPool();
+    TaskHandle renderTarsk = CreateTask(pool, DELEGATE_CBK<void, const Task&>());
+
+    for (vec_size i = 0; i < _renderPasses.size(); ++i) {
+        RenderPass& rp = _renderPasses[i];
+        GFX::CommandBuffer& buf = *_renderPassCommandBuffer[i];
+        CreateTask(pool,
+            &renderTarsk,
+            [&rp, &buf, &sceneRenderState](const Task& parentTask) {
+                rp.render(sceneRenderState, buf);
+            }).startTask(TaskPriority::REALTIME);
+    }
+
+    renderTarsk.startTask(TaskPriority::REALTIME).wait();
+
+    //ToDo: Maybe handle this differently?
+    for (vec_size_eastl i = 0; i < _renderPassCommandBuffer.size(); ++i) {
+        _context.flushAndClearCommandBuffer(*_renderPassCommandBuffer[i]);
     }
 }
 
@@ -57,51 +60,68 @@ RenderPass& RenderPassManager::addRenderPass(const stringImpl& renderPassName,
                                              RenderStage renderStage) {
     assert(!renderPassName.empty());
 
-    _renderPasses.emplace_back(MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage));
-    RenderPass& item = *_renderPasses.back();
+    _renderPasses.emplace_back(*this, _context, renderPassName, orderKey, renderStage);
+    _renderPassCommandBuffer.emplace_back(GFX::allocateCommandBuffer());
 
-    std::sort(std::begin(_renderPasses), std::end(_renderPasses),
-              [](RenderPass* a, RenderPass* b)
-                  -> bool { return a->sortKey() < b->sortKey(); });
+    RenderPass& item = _renderPasses.back();
 
-    assert(item.sortKey() == orderKey);
+    std::sort(std::begin(_renderPasses),
+              std::end(_renderPasses),
+              [](const RenderPass& a, const RenderPass& b) -> bool {
+                    return a.sortKey() < b.sortKey();
+              });
 
     return item;
 }
 
 void RenderPassManager::removeRenderPass(const stringImpl& name) {
-    for (vector<RenderPass*>::iterator it = std::begin(_renderPasses);
+    for (vector<RenderPass>::iterator it = std::begin(_renderPasses);
          it != std::end(_renderPasses); ++it) {
-        if ((*it)->name().compare(name) == 0) {
+        if ((*it).name().compare(name) == 0) {
             _renderPasses.erase(it);
+            // Remove one command buffer
+            GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
+            GFX::deallocateCommandBuffer(buf);
+            _renderPassCommandBuffer.pop_back();
             break;
         }
     }
 }
 
 U16 RenderPassManager::getLastTotalBinSize(RenderStage renderStage) const {
-    return getPassForStage(renderStage)->getLastTotalBinSize();
+    return getPassForStage(renderStage).getLastTotalBinSize();
 }
 
-RenderPass* RenderPassManager::getPassForStage(RenderStage renderStage) const {
-    for (RenderPass* pass : _renderPasses) {
-        if (pass->stageFlag() == renderStage) {
+RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) {
+    for (RenderPass& pass : _renderPasses) {
+        if (pass.stageFlag() == renderStage) {
             return pass;
         }
     }
 
     DIVIDE_UNEXPECTED_CALL();
-    return nullptr;
+    return _renderPasses.front();
+}
+
+const RenderPass& RenderPassManager::getPassForStage(RenderStage renderStage) const {
+    for (const RenderPass& pass : _renderPasses) {
+        if (pass.stageFlag() == renderStage) {
+            return pass;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+    return _renderPasses.front();
 }
 
 const RenderPass::BufferData& 
 RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) const {
-    return getPassForStage(renderStage)->getBufferData(bufferIndex);
+    return getPassForStage(renderStage).getBufferData(bufferIndex);
 }
 
 RenderPass::BufferData&
 RenderPassManager::getBufferData(RenderStage renderStage, I32 bufferIndex) {
-    return getPassForStage(renderStage)->getBufferData(bufferIndex);
+    return getPassForStage(renderStage).getBufferData(bufferIndex);
 }
 
 void RenderPassManager::prePass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut) {
@@ -262,9 +282,9 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
                                                           params._pass);
 
     // Weighted Blended Order Independent Transparency
-    for (U8 i = 0; i < 2; ++i) {
-        RenderPackage::MinQuality quality = i == 0 ? RenderPackage::MinQuality::FULL : RenderPackage::MinQuality::LOW;
-        if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT, quality) > 0) {
+    for (U8 i = 0; i < /*2*/1; ++i) {
+        //RenderPackage::MinQuality quality = i == 0 ? RenderPackage::MinQuality::FULL : RenderPackage::MinQuality::LOW;
+        if (_context.renderQueueSize(RenderBinType::RBT_TRANSLUCENT/*, quality*/) > 0) {
             RenderTargetUsage rtUsage = i == 0 ? RenderTargetUsage::OIT_FULL_RES : RenderTargetUsage::OIT_QUARTER_RES;
 
             RenderTarget& oitTarget = _context.renderTargetPool().renderTarget(RenderTargetID(rtUsage));
@@ -291,7 +311,7 @@ void RenderPassManager::woitPass(const PassParams& params, const RenderTarget& t
             beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
             GFX::EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
 
-            _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT, quality, bufferInOut);
+            _context.renderQueueToSubPasses(RenderBinType::RBT_TRANSLUCENT/*, quality*/, bufferInOut);
 
             GFX::EndRenderPassCommand endRenderPassOitCmd;
             GFX::EnqueueCommand(bufferInOut, endRenderPassOitCmd);

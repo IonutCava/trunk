@@ -213,9 +213,7 @@ public:  // GPU interface
 
     void flushCommandBuffer(GFX::CommandBuffer& commandBuffer);
     void flushAndClearCommandBuffer(GFX::CommandBuffer& commandBuffer);
-
-    inline bool isDepthStage(RenderStagePass renderStagePass) const;
-
+    
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function

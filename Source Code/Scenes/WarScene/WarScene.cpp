@@ -359,7 +359,7 @@ bool WarScene::load(const stringImpl& name) {
     _sun->getNode<DirectionalLight>()->csmSplitLogFactor(0.85f);
     _sun->getNode<DirectionalLight>()->csmNearClipOffset(25.0f);
     // Add some obstacles
-#if 0
+
     SceneGraphNode* cylinder[5];
     cylinder[0] = _sceneGraph->findNode("cylinderC");
     cylinder[1] = _sceneGraph->findNode("cylinderNW");
@@ -377,6 +377,7 @@ bool WarScene::load(const stringImpl& name) {
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
     matInstance->setShininess(200);
 
+#if 0
     SceneNode_ptr cylinderMeshNW = cylinder[1]->getNode();
     SceneNode_ptr cylinderMeshNE = cylinder[2]->getNode();
     SceneNode_ptr cylinderMeshSW = cylinder[3]->getNode();

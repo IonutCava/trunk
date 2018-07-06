@@ -64,9 +64,6 @@ public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);
     ~RenderPassManager();
 
-    bool init();
-    void destroy();
-
     /// Call every renderqueue's render function in order
     void render(SceneRenderState& sceneRenderState);
     /// Add a new pass that will run once for each of the RenderStages specified
@@ -77,9 +74,7 @@ public:
     void removeRenderPass(const stringImpl& name);
     U16  getLastTotalBinSize(RenderStage renderStage) const;
 
-    inline RenderQueue& getQueue() {
-        return *_renderQueue;
-    }
+    inline RenderQueue& getQueue() { return _renderQueue; }
 
     RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex);
     const RenderPass::BufferData& getBufferData(RenderStage renderStage, I32 bufferIndex) const;
@@ -92,13 +87,16 @@ private:
     void mainPass(const PassParams& params, RenderTarget& target, GFX::CommandBuffer& bufferInOut);
     void woitPass(const PassParams& params, const RenderTarget& target, GFX::CommandBuffer& bufferInOut);
 
-    RenderPass* getPassForStage(RenderStage renderStage) const;
+    RenderPass& getPassForStage(RenderStage renderStage);
+    const RenderPass& getPassForStage(RenderStage renderStage) const;
 
 private:
     GFXDevice& _context;
-    // Some vector implementations are not move-aware so use STL in this case
-    vector<RenderPass*> _renderPasses;
-    RenderQueue* _renderQueue;
+    RenderQueue _renderQueue;
+
+    vector<RenderPass> _renderPasses;
+    vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
+
     ShaderProgram_ptr _OITCompositionShader;
 };
 

@@ -113,7 +113,7 @@ void Application::warmup(const Configuration& config) {
     Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
     //Make sure we are displaying a splash screen
     vec2<U16> splashDimensions(config.runtime.splashScreen.w, config.runtime.splashScreen.h);
-    window.setDimensions(splashDimensions);
+    while (!window.setDimensions(splashDimensions)) { }
     window.changeType(WindowType::SPLASH);
     window.hidden(false);
     Attorney::KernelApplication::startSplashScreen(*_kernel);
@@ -122,8 +122,8 @@ void Application::warmup(const Configuration& config) {
     //Restore to normal window
     window.swapBuffers(true);
     Attorney::KernelApplication::stopSplashScreen(*_kernel);
-    window.setDimensions(previousDimensions);
     window.changeToPreviousType();
+    while (!window.setDimensions(previousDimensions)) {}
 }
 
 void Application::idle() {

@@ -257,7 +257,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
         oitDesc._attachments = attachments.data();
         oitDesc._externalAttachmentCount = to_U8(externalAttachments.size());
         oitDesc._externalAttachments = externalAttachments.data();
-        _rtPool->allocateRT(RenderTargetUsage::OIT_QUARTER_RES, oitDesc);
+        //ToDo: Add a quarter size depth buffer and blit it from the main depth buffer -Ionut
+        //_rtPool->allocateRT(RenderTargetUsage::OIT_QUARTER_RES, oitDesc);
     }
     // Reflection Targets
     SamplerDescriptor reflectionSampler;

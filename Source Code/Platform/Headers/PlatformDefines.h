@@ -830,9 +830,22 @@ inline void DELETE_VECTOR(vector<T*>& vec) {
         vec.clear();
     }
 }
+
+template <typename T>
+inline void DELETE_VECTOR(vectorEASTL<T*>& vec) {
+    if (!vec.empty()) {
+        for (T* iter : vec) {
+            delete iter;
+        }
+        vec.clear();
+    }
+}
+
 #define SET_DELETE_VECTOR_FRIEND \
     template <typename T>        \
-    friend void MemoryManager::DELETE_VECTOR(vector<T*>& vec);
+    friend void MemoryManager::DELETE_VECTOR(vector<T*>& vec); \
+    template <typename T>        \
+    friend void MemoryManager::DELETE_VECTOR(vectorEASTL<T*>& vec);
 
 /// Deletes every element from the map and clears it at the end
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >

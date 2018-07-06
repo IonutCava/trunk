@@ -71,12 +71,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             AlphaAccumulationHigh->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
             AlphaAccumulationHigh->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
-            DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
-            AlphaAccumulationLow->_shader = _renderTargetDraw;
-            AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-            AlphaAccumulationLow->_name = "Alpha Accumulation Low";
-            AlphaAccumulationLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
-            AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
+            //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
+            //AlphaAccumulationLow->_shader = _renderTargetDraw;
+            //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+            //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
+            //AlphaAccumulationLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
+            //AlphaAccumulationLow->_shaderData.set("unpack2Channel", GFX::PushConstantType::UINT, 0u);
 
             DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
             AlphaRevealageHigh->_shader = _renderTargetDraw;
@@ -85,12 +85,12 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             AlphaRevealageHigh->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
             AlphaRevealageHigh->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
 
-            DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
-            AlphaRevealageLow->_shader = _renderTargetDraw;
-            AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
-            AlphaRevealageLow->_name = "Alpha Revealage Low";
-            AlphaRevealageLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
-            AlphaRevealageLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
+            //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
+            //AlphaRevealageLow->_shader = _renderTargetDraw;
+            //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
+            //AlphaRevealageLow->_name = "Alpha Revealage Low";
+            //AlphaRevealageLow->_shaderData.set("linearSpace", GFX::PushConstantType::UINT, 1u);
+            //AlphaRevealageLow->_shaderData.set("unpack1Channel", GFX::PushConstantType::UINT, 1u);
 
             HiZPtr = addDebugView(HiZ);
             addDebugView(DepthPreview);
@@ -98,8 +98,8 @@ void GFXDevice::renderDebugViews(GFX::CommandBuffer& bufferInOut) {
             addDebugView(VelocityPreview);
             addDebugView(AlphaAccumulationHigh);
             addDebugView(AlphaRevealageHigh);
-            addDebugView(AlphaAccumulationLow);
-            addDebugView(AlphaRevealageLow);
+            //addDebugView(AlphaAccumulationLow);
+            //addDebugView(AlphaRevealageLow);
         }
 
         RenderTarget& screenRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));

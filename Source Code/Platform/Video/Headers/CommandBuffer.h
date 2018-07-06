@@ -40,7 +40,7 @@ namespace Divide {
 
 namespace GFX {
 
-class CommandBuffer : protected NonCopyable {
+class CommandBuffer {
     friend class CommandBufferPool;
 
   public:
@@ -48,7 +48,14 @@ class CommandBuffer : protected NonCopyable {
 
   public:
     CommandBuffer();
-    ~CommandBuffer();
+
+    ~CommandBuffer() = default;
+
+    // Just a big ol' collection of vectors, so these should be fine
+    CommandBuffer(const CommandBuffer& other) = default;
+    CommandBuffer & operator=(const CommandBuffer& other) = default;
+    CommandBuffer(CommandBuffer&& other) = default;
+    CommandBuffer & operator=(CommandBuffer&& other) = default;
 
     template<typename T>
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, void>::type

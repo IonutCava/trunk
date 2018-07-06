@@ -67,11 +67,11 @@ class RenderPass : private NonCopyable {
         ~BufferDataPool();
 
         BufferData& getBufferData(I32 bufferIndex);
+        const BufferData& getBufferData(I32 bufferIndex) const;
 
     private:
         GFXDevice& _context;
         vector<std::shared_ptr<BufferData>> _buffers;
-
     };
 
    public:
@@ -79,8 +79,7 @@ class RenderPass : private NonCopyable {
     explicit RenderPass(RenderPassManager& parent, GFXDevice& context, stringImpl name, U8 sortKey, RenderStage passStageFlags);
     ~RenderPass();
 
-    void generateDrawCommands();
-    void render(SceneRenderState& renderState);
+    void render(const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut);
     inline U8 sortKey() const { return _sortKey; }
     inline U16 getLastTotalBinSize() const { return _lastTotalBinSize; }
     inline const stringImpl& name() const { return _name; }
@@ -89,6 +88,7 @@ class RenderPass : private NonCopyable {
 
 
     BufferData& getBufferData(I32 bufferIndex);
+    const BufferData& getBufferData(I32 bufferIndex) const;
 
    protected:
     U32 getBufferCountForStage(RenderStage stages) const;

@@ -548,7 +548,7 @@ void Material::getTextureData(ShaderProgram::TextureUsage slot,
 
 void Material::getTextureData(RenderStagePass renderStagePass, TextureDataContainer& textureData) {
     const U32 textureCount = to_base(ShaderProgram::TextureUsage::COUNT);
-    const bool depthstage = _context.isDepthStage(renderStagePass);
+    const bool depthstage = renderStagePass.isDepthPass();
 
     getTextureData(ShaderProgram::TextureUsage::UNIT0, textureData);
     getTextureData(ShaderProgram::TextureUsage::OPACITY, textureData);
