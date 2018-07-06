@@ -327,6 +327,8 @@ void Normalize(vec3<F32>& inputRotation, bool degrees = false,
 
 vec4<U8>  ToByteColour(const vec4<F32>& floatColour);
 vec3<U8>  ToByteColour(const vec3<F32>& floatColour);
+vec4<I32> ToIntColour(const vec4<F32>& floatColour);
+vec3<I32> ToIntColour(const vec3<F32>& floatColour);
 vec4<U32> ToUIntColour(const vec4<F32>& floatColour);
 vec3<U32> ToUIntColour(const vec3<F32>& floatColour);
 vec4<F32> ToFloatColour(const vec4<U8>& byteColour);
@@ -336,6 +338,8 @@ vec3<F32> ToFloatColour(const vec3<U32>& uintColour);
 
 void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut);
 void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut);
+void ToIntColour(const vec4<F32>& floatColour, vec4<I32>& colourOut);
+void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut);
 void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut);
 void ToUIntColour(const vec3<F32>& floatColour, vec3<U32>& colourOut);
 void ToFloatColour(const vec4<U8>& byteColour, vec4<F32>& colourOut);

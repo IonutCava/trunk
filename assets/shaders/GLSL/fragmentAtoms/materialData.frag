@@ -65,6 +65,14 @@ vec4 getTextureColour(in vec2 uv) {
     #define TEX_DECAL  7
     #define TEX_REPLACE  8
 
+#if defined(DEPTH_PASS)
+    vec4 colour;
+    if (dvd_customData > 0.5) {
+        colour = texture(texDiffuse1, uv);
+    } else {
+        colour = texture(texDiffuse0, uv);
+    }
+#else
     vec4 colour = texture(texDiffuse0, uv);
 
     if (dvd_texOperation == TEX_NONE) {
@@ -91,6 +99,7 @@ vec4 getTextureColour(in vec2 uv) {
         }break;
     }
     
+#endif
 
     return saturate(colour);
 }
@@ -122,7 +131,7 @@ float getOpacity() {
 #   endif
 
 #   if defined(USE_OPACITY_MAP)
-    vec4 opacityMap = texture(texOpacityMap, texCoord);
+    vec4 opacityMap = texture(texOpacityMap, VAR._texCoord);
     return max(min(opacityMap.r, opacityMap.g), min(opacityMap.b, opacityMap.a));
 #   endif
 

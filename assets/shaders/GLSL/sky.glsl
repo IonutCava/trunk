@@ -22,6 +22,7 @@ void main() {
 
 layout(location = 0) out vec4 _skyColour;
 layout(location = 1) out vec2 _normalOut;
+layout(location = 2) out vec2 _velocityOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
 
@@ -50,4 +51,5 @@ void main() {
     vec3 sky_colour = textureLod(texSky, vec4(VAR._vertexW.xyz, 0), 0).rgb;
     _skyColour = vec4(ToSRGB(enable_sun ? sky_colour * sunColour() : sky_colour), 1.0);
     _normalOut = packNormal(normalize(VAR._normalWV));
+    _velocityOut = vec2(1.0);
 }

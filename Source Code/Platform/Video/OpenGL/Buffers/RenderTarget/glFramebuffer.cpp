@@ -486,6 +486,8 @@ void glFramebuffer::clear(const RTDrawDescriptor& drawPolicy) const {
                 GFXDataFormat dataType = att->descriptor().dataType();
                 if (dataType == GFXDataFormat::FLOAT_16 || dataType == GFXDataFormat::FLOAT_32) {
                     glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, i, att->clearColour()._v);
+                } else if (dataType == GFXDataFormat::SIGNED_BYTE || dataType == GFXDataFormat::SIGNED_SHORT || dataType == GFXDataFormat::SIGNED_INT) {
+                    glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, i, Util::ToIntColour(att->clearColour())._v);
                 } else {
                     glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, i, Util::ToUIntColour(att->clearColour())._v);
                 }

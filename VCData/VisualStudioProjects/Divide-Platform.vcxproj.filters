@@ -1048,5 +1048,8 @@
     <None Include="..\..\assets\shaders\GLSL\velocityCalc.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
+    </None>
   </ItemGroup>
 </Project>

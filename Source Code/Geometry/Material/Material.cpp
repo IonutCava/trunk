@@ -361,12 +361,14 @@ bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
     if (Config::Profile::DISABLE_SHADING) {
         shader = g_PassThroughMaterialShaderName;
         setShaderProgramInternal(shader, renderStage, computeOnAdd);
-        return false;;
+        return false;
     }
 
     if (depthPassShader && renderStage == RenderStage::SHADOW) {
         setShaderDefines(renderStage, "SHADOW_PASS");
         shader += ".Shadow";
+    } else {
+        setShaderDefines(renderStage, "DEPTH_PASS");
     }
 
     // What kind of effects do we need?

@@ -263,6 +263,7 @@
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\terrainSplatting.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\texturing.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\utility.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\velocityCalc.frag" />
     <None Include="..\..\assets\shaders\GLSL\FXAA.glsl" />
     <None Include="..\..\assets\shaders\GLSL\geometryAtoms\inOut.geom" />
     <None Include="..\..\assets\shaders\GLSL\grass.glsl" />

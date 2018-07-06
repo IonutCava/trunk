@@ -13,8 +13,10 @@ float DIST_TO_ZERO(float val) {
 }
 
 float saturate(float v) { return clamp(v, 0.0, 1.0); }
+vec2  saturate(vec2 v)  { return clamp(v, 0.0, 1.0); }
 vec3  saturate(vec3 v)  { return clamp(v, 0.0, 1.0); }
 vec4  saturate(vec4 v)  { return clamp(v, 0.0, 1.0); }
+
 float overlay(float x, float y)
 {
     if (x < 0.5)

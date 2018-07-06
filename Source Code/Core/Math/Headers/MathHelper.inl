@@ -161,6 +161,16 @@ inline F32 FRACT(const F32 floatValue) {
 }
 
 ///Helper methods to go from a float [0 ... 1] to packed char and back
+inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) {
+    assert(value > 0.0f);
+    return to_byte(std::min(255, (I32)(value * 256.0f)));
+}
+
+inline I8 FLOAT_TO_SCHAR(const F32 value) {
+    assert(value > 0.0f);
+    return to_byte(((value + 1.0f) * 0.5f) * 255.0f);
+}
+
 inline U8 FLOAT_TO_CHAR_SNORM(const F32 value) {
     return to_ubyte(std::min(255, (I32)(value * 256.0f)));
 }

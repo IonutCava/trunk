@@ -148,8 +148,21 @@ void ToByteColour(const vec4<F32>& floatColour, vec4<U8>& colourOut) {
 
 void ToByteColour(const vec3<F32>& floatColour, vec3<U8>& colourOut) {
     colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
-                 FLOAT_TO_CHAR_SNORM(floatColour.g),
-                 FLOAT_TO_CHAR_SNORM(floatColour.b));
+                  FLOAT_TO_CHAR_SNORM(floatColour.g),
+                  FLOAT_TO_CHAR_SNORM(floatColour.b));
+}
+
+void ToIntColour(const vec4<F32>& floatColour, vec4<I32>& colourOut) {
+    colourOut.set(FLOAT_TO_SCHAR_SNORM(floatColour.r),
+                  FLOAT_TO_SCHAR_SNORM(floatColour.g),
+                  FLOAT_TO_SCHAR_SNORM(floatColour.b),
+                  FLOAT_TO_SCHAR_SNORM(floatColour.a));
+}
+
+void ToIntColour(const vec3<F32>& floatColour, vec3<I32>& colourOut) {
+    colourOut.set(to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.r)),
+                  to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.g)),
+                  to_uint(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
 }
 
 void ToUIntColour(const vec4<F32>& floatColour, vec4<U32>& colourOut) {
@@ -200,6 +213,18 @@ vec4<U8> ToByteColour(const vec4<F32>& floatColour) {
 vec3<U8>  ToByteColour(const vec3<F32>& floatColour) {
     vec3<U8> tempColour;
     ToByteColour(floatColour, tempColour);
+    return tempColour;
+}
+
+vec4<I32> ToIntColour(const vec4<F32>& floatColour) {
+    vec4<I32> tempColour;
+    ToIntColour(floatColour, tempColour);
+    return tempColour;
+}
+
+vec3<I32> ToIntColour(const vec3<F32>& floatColour) {
+    vec3<I32> tempColour;
+    ToIntColour(floatColour, tempColour);
     return tempColour;
 }
 

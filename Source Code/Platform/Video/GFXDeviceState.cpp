@@ -159,8 +159,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     normalDescriptor.setSampler(screenSampler);
     
     TextureDescriptor velocityDescriptor(TextureType::TEXTURE_2D,
-                                         GFXImageFormat::RG16,
-                                         GFXDataFormat::UNSIGNED_SHORT);
+                                         GFXImageFormat::RG16F,
+                                         GFXDataFormat::FLOAT_16);
     velocityDescriptor.setSampler(screenSampler);
 
     // Add the attachments to the render targets
@@ -173,16 +173,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::NORMALS), DefaultColours::WHITE());
     screenTarget.setClearColour(RTAttachment::Type::Colour, to_const_ubyte(ScreenTargets::VELOCITY), DefaultColours::WHITE());
 
-    TextureDescriptor depthCopyDescriptor(TextureType::TEXTURE_2D,
-                                          GFXImageFormat::DEPTH_COMPONENT32F,
-                                          GFXDataFormat::FLOAT_32);
-
-    SamplerDescriptor depthCopySampler;
-    depthCopySampler.setFilters(TextureFilter::NEAREST);
-    depthCopySampler.setWrapMode(TextureWrap::CLAMP_TO_EDGE);
-    depthCopySampler.toggleMipMaps(false);
-    depthCopyDescriptor.setSampler(depthCopySampler);
-    
     _activeRenderTarget = &screenTarget;
 
     // Reflection Targets
