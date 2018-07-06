@@ -59,13 +59,13 @@ namespace Divide {
 #define WAIT_FOR_CONDITION_TIMEOUT_1(condition, timeoutMS, yeld) \
 {                                                                \
     assert_type<bool>(yeld);                                     \
-    assert_type<D32>(timeoutMS);                                 \
+    assert_type<D64>(timeoutMS);                                 \
                                                                  \
     if (timeoutMS >= 0.0) {                                      \
-        D32 start = Time::ElapsedMilliseconds(true);             \
+        D64 start = Time::ElapsedMilliseconds(true);             \
                                                                  \
         while (!(condition)) {                                   \
-            D32 end = Time::ElapsedMilliseconds(true);           \
+            D64 end = Time::ElapsedMilliseconds(true);           \
             if (end - start >= timeoutMS) {                      \
                 break;                                           \
             }                                                    \
@@ -121,15 +121,15 @@ namespace Divide {
 {                                                                              \
     assert_type<bool>(yeld);                                                   \
     assert_type<std::function>(cbk);                                           \
-    assert_type<D32>(timeoutMS);                                               \
+    assert_type<D64>(timeoutMS);                                               \
                                                                                \
     if (timeoutMS >= 0.0) {                                                    \
-        D32 start = Time::ElapsedMilliseconds(true);                           \
+        D64 start = Time::ElapsedMilliseconds(true);                           \
                                                                                \
         while (!(condition)) {                                                 \
             cbk();                                                             \
                                                                                \
-            D32 end = Time::ElapsedMilliseconds(true);                         \
+            D64 end = Time::ElapsedMilliseconds(true);                         \
             if (end - start >= timeoutMS) {                                    \
                 break;                                                         \
             }                                                                  \

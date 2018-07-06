@@ -194,7 +194,7 @@ void PhysicsComponent::rotate(const Quaternion<F32>& quat) {
 }
 
 void PhysicsComponent::rotateSlerp(const Quaternion<F32>& quat,
-                                   const D32 deltaTime) {
+                                   const D64 deltaTime) {
     if (_transform) {
         _transform->rotateSlerp(quat, deltaTime);
     }
@@ -390,7 +390,7 @@ const mat4<F32>& PhysicsComponent::getLocalMatrix() const {
     return _transform->getMatrix(wasRebuilt);
 }
 
-const mat4<F32>& PhysicsComponent::getWorldMatrix(D32 interpolationFactor) {
+const mat4<F32>& PhysicsComponent::getWorldMatrix(D64 interpolationFactor) {
     bool dirty = (_dirtyInterp ||
                   !COMPARE(_prevInterpValue, interpolationFactor) ||
                   _parentDirty);
@@ -434,7 +434,7 @@ const mat4<F32>& PhysicsComponent::getWorldMatrix() {
 }
 
 /// Return the scale factor
-vec3<F32> PhysicsComponent::getScale(D32 interpolationFactor,
+vec3<F32> PhysicsComponent::getScale(D64 interpolationFactor,
                                      const bool local) const {
     vec3<F32> scale;
     if (_transform) {
@@ -457,7 +457,7 @@ vec3<F32> PhysicsComponent::getScale(D32 interpolationFactor,
 }
 
 /// Return the position
-vec3<F32> PhysicsComponent::getPosition(D32 interpolationFactor,
+vec3<F32> PhysicsComponent::getPosition(D64 interpolationFactor,
                                         const bool local) const {
     vec3<F32> position;
     if (_transform) {
@@ -479,7 +479,7 @@ vec3<F32> PhysicsComponent::getPosition(D32 interpolationFactor,
 }
 
 /// Return the orientation quaternion
-Quaternion<F32> PhysicsComponent::getOrientation(D32 interpolationFactor,
+Quaternion<F32> PhysicsComponent::getOrientation(D64 interpolationFactor,
                                                  const bool local) const {
     Quaternion<F32> orientation;
     

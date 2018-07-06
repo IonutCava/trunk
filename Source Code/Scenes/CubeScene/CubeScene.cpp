@@ -14,7 +14,7 @@ REGISTER_SCENE(CubeScene);
 void CubeScene::render() {}
 
 void CubeScene::processTasks(const U64 deltaTime) {
-    D32 updateLights = Time::SecondsToMilliseconds(0.05);
+    D64 updateLights = Time::SecondsToMilliseconds(0.05);
 
     if (_taskTimers[0] >= updateLights) {
         for (U8 row = 0; row < 3; row++)

@@ -48,7 +48,7 @@ class IntersectionRecord
     IntersectionRecord(const vec3<F32>& hitPos,
                        const vec3<F32>& hitNormal,
                        const Ray& ray,
-                       D32 distance);
+                       D64 distance);
     /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
     IntersectionRecord(SceneGraphNode_wptr hitObject);
 
@@ -72,7 +72,7 @@ class IntersectionRecord
     std::shared_ptr<const Octree> _treeNode;
     /// This is the distance from the ray to the intersection point. 
     /// You'll usually want to use the nearest collision point if you get multiple intersections.
-    D32 _distance;
+    D64 _distance;
 
     bool _hasHit;
 

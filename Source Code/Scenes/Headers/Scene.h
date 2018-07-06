@@ -166,8 +166,8 @@ class NOINITVTABLE Scene : public Resource {
     SceneGraph _sceneGraph;
 
     U64 _sceneTimer;
-    vectorImpl<D32> _taskTimers;
-    vectorImpl<D32> _guiTimers;
+    vectorImpl<D64> _taskTimers;
+    vectorImpl<D64> _guiTimers;
     /// Datablocks for models,vegetation,terrains,tasks etc
     FileDataStack _modelDataArray;
     vectorImpl<FileData> _vegetationDataArray;

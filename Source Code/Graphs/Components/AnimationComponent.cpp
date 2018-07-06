@@ -39,7 +39,7 @@ void AnimationComponent::update(const U64 deltaTime) {
     if (_playAnimations) {
         _parentSGN.getNode<Object3D>()->updateAnimations(_parentSGN);
         _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex,
-            Time::MicrosecondsToSeconds<D32>(_currentTimeStamp));
+            Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
             _previousAnimationIndex = _currentAnimIndex;
@@ -136,7 +136,7 @@ bool AnimationComponent::playPreviousAnimation() {
 const vectorImpl<Line>& AnimationComponent::skeletonLines() const {
     assert(_animator != nullptr);
 
-    D32 animTimeStamp = Time::MicrosecondsToSeconds<D32>(_currentTimeStamp);
+    D64 animTimeStamp = Time::MicrosecondsToSeconds<D64>(_currentTimeStamp);
     // update possible animation
     return  _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
 }
@@ -171,7 +171,7 @@ const vectorImplAligned<mat4<F32>>& AnimationComponent::transformsByIndex(U32 an
 }
 
 const mat4<F32>& AnimationComponent::getBoneTransform(U32 animationID,
-                                                      const D32 timeStamp,
+                                                      const D64 timeStamp,
                                                       const stringImpl& name) {
     Object3D* node = _parentSGN.getNode<Object3D>();
     assert(node != nullptr);

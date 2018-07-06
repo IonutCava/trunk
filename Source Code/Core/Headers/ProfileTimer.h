@@ -48,7 +48,7 @@ class ProfileTimer {
     void print() const;
     void reset();
 
-    inline D32 get() const { return _timer; }
+    inline D64 get() const { return _timer; }
     inline bool init() const { return _init; }
     inline void pause(const bool state) { _paused = state; }
     inline const stringImpl& name() const { return _name; }
@@ -57,9 +57,9 @@ class ProfileTimer {
     stringImpl _name;
     std::atomic_bool _paused;
     std::atomic_bool _init;
-    std::atomic<D32> _timer;
+    std::atomic<D64> _timer;
 #if defined(_DEBUG) || defined(_PROFILE)
-    std::atomic<D32> _timerAverage;
+    std::atomic<D64> _timerAverage;
     std::atomic_int _timerCounter;
 #endif
 };

@@ -78,7 +78,7 @@ class AnimationComponent : public SGNComponent {
     Bone* getBoneByName(const stringImpl& bname) const;
 
     const mat4<F32>& getBoneTransform(U32 animationID,
-                                      const D32 timeStamp,
+                                      const D64 timeStamp,
                                       const stringImpl& name);
 
     inline bool playAnimations() const { return _playAnimations; }

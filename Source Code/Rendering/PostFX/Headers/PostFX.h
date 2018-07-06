@@ -87,7 +87,7 @@ DEFINE_SINGLETON(PostFX)
     Texture* _noise;
 
     F32 _randomNoiseCoefficient, _randomFlashCoefficient;
-    D32 _timer, _tickInterval;
+    D64 _timer, _tickInterval;
 
     ShaderProgram* _postProcessingShader;
     Texture* _underwaterTexture;

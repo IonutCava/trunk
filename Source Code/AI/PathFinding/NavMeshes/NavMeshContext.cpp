@@ -32,7 +32,7 @@ void rcContextDivide::doStartTimer(const rcTimerLabel label) {
 }
 
 void rcContextDivide::doStopTimer(const rcTimerLabel label) {
-    const D32 deltaTime = Time::ElapsedMilliseconds(true) - _startTime[label];
+    const D64 deltaTime = Time::ElapsedMilliseconds(true) - _startTime[label];
     if (_accTime[label] == -1) {
         _accTime[label] = to_int(deltaTime);
     } else {

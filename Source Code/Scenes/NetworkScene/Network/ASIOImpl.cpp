@@ -32,7 +32,7 @@ void ASIOImpl::handlePacket(WorldPacket& p) {
 void ASIOImpl::HandlePongOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
-    D32 result = Time::ElapsedMilliseconds() - time;
+    D64 result = Time::ElapsedMilliseconds() - time;
     ParamHandler::instance().setParam(
         _ID("serverResponse"), "Server says: Pinged with : " +
                               to_stringImpl(floor(result + 0.5f)) +

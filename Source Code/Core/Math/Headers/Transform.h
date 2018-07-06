@@ -150,7 +150,7 @@ class Transform : public GUIDWrapper, private NonCopyable {
     }
 
     /// Perform a SLERP rotation towards the specified quaternion
-    void rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime) {
+    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) {
         this->_dirty = true;
         this->_rebuildMatrix = true;
 

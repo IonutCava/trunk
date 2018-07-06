@@ -283,7 +283,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTime,
         if (_enabled) {
         
             WAIT_FOR_CONDITION_TIMEOUT(!_updating,
-                                       Time::MicrosecondsToMilliseconds<D32>(Config::SKIP_TICKS));
+                                       Time::MicrosecondsToMilliseconds<D64>(Config::SKIP_TICKS));
             // timeout expired
             if (_updating) {
                 return;

@@ -4,7 +4,7 @@
 namespace Divide {
 
 IntersectionRecord::IntersectionRecord() :
-    _distance(std::numeric_limits<D32>::max()),
+    _distance(std::numeric_limits<D64>::max()),
     _hasHit(false)
 {
 }
@@ -12,7 +12,7 @@ IntersectionRecord::IntersectionRecord() :
 IntersectionRecord::IntersectionRecord(const vec3<F32>& hitPos,
                                        const vec3<F32>& hitNormal,
                                        const Ray& ray,
-                                       D32 distance) :
+                                       D64 distance) :
     _position(hitPos),
     _normal(hitNormal),
     _ray(ray),
@@ -33,7 +33,7 @@ void IntersectionRecord::reset()
 {
     _ray.identity();
     _hasHit = false;
-    _distance = std::numeric_limits<D32>::max();
+    _distance = std::numeric_limits<D64>::max();
     _intersectedObject1.reset();
     _intersectedObject2.reset();
 }

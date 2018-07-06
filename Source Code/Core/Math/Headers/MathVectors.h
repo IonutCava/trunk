@@ -120,6 +120,9 @@ class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
  ***********************************************************************/
 template <typename T>
 class vec2 {
+    static_assert(std::is_arithmetic<T>::value &&
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic vector type");
    public:
     vec2() : vec2((T)0)
     {
@@ -352,6 +355,9 @@ inline vec2<T> operator*(T fl, const vec2<T> &v);
  ***********************************************************************/
 template <typename T>
 class vec3 {
+    static_assert(std::is_arithmetic<T>::value &&
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic vector type");
    public:
     vec3() : vec3((T)0)
     {
@@ -587,11 +593,11 @@ class vec3 {
     /// specified vector
     inline void cross(const vec3 &v2);
     /// rotate this vector on the X axis
-    inline void rotateX(D32 radians);
+    inline void rotateX(D64 radians);
     /// rotate this vector on the Y axis
-    inline void rotateY(D32 radians);
+    inline void rotateY(D64 radians);
     /// rotate this vector on the Z axis
-    inline void rotateZ(D32 radians);
+    inline void rotateZ(D64 radians);
     /// swap the components  of this vector with that of the specified one
     inline void swap(vec3 &iv);
     /// swap the components  of this vector with that of the specified one
@@ -651,6 +657,9 @@ inline vec3<T> operator*(T fl, const vec3<T> &v);
 //__declspec(align(alignment))
 template <typename T>
 class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
+    static_assert(std::is_arithmetic<T>::value &&
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic vector type");
    public:
     vec4() : x(0), y(0), z(0), w(1)
     {

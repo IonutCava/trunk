@@ -74,7 +74,7 @@ WarScene::~WarScene()
 }
 
 void WarScene::processGUI(const U64 deltaTime) {
-    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
         const Camera& cam = renderState().getCamera();
         const vec3<F32>& eyePos = cam.getEye();
@@ -150,10 +150,10 @@ void WarScene::processTasks(const U64 deltaTime) {
         return;
     }
 
-    D32 SunTimer = Time::Milliseconds(33);
-    D32 AnimationTimer1 = Time::SecondsToMilliseconds(5);
-    D32 AnimationTimer2 = Time::SecondsToMilliseconds(10);
-    D32 updateLights = Time::Milliseconds(16);
+    D64 SunTimer = Time::Milliseconds(33);
+    D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
+    D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
+    D64 updateLights = Time::Milliseconds(16);
 
     if (_taskTimers[0] >= SunTimer) {
         g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);

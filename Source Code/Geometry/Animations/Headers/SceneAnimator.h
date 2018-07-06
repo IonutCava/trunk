@@ -78,24 +78,24 @@ class SceneAnimator {
     /// This function will adjust the current animations speed by a percentage.
     /// So, passing 100, would do nothing, passing 50, would decrease the speed
     /// by half, and 150 increase it by 50%
-    inline void adjustAnimationSpeedBy(I32 animationIndex, const D32 percent) {
+    inline void adjustAnimationSpeedBy(I32 animationIndex, const D64 percent) {
         std::shared_ptr<AnimEvaluator> animation = _animations.at(animationIndex);
         animation->ticksPerSecond(animation->ticksPerSecond() * (percent / 100.0));
     }
     /// This will set the animation speed
     inline void adjustAnimationSpeedTo(I32 animationIndex,
-                                       const D32 tickspersecond) {
+                                       const D64 tickspersecond) {
         _animations[animationIndex]->ticksPerSecond(tickspersecond);
     }
     /// Get the animationspeed... in ticks per second
-    inline D32 animationSpeed(I32 animationIndex) const {
+    inline D64 animationSpeed(I32 animationIndex) const {
         return _animations[animationIndex]->ticksPerSecond();
     }
 
     /// Get the transforms needed to pass to the vertex shader.
     /// This will wrap the dt value passed, so it is safe to pass 50000000 as a
     /// valid number
-    inline I32 frameIndexForTimeStamp(I32 animationIndex, const D32 dt) const {
+    inline I32 frameIndexForTimeStamp(I32 animationIndex, const D64 dt) const {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 
@@ -143,7 +143,7 @@ class SceneAnimator {
     /// Be careful with this to make sure and send the correct dt. If the dt is
     /// different from what the model is currently at,
     /// the transform will be off
-    inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
+    inline const mat4<F32>& boneTransform(I32 animationIndex, const D64 dt,
                                           const stringImpl& bname) {
         I32 boneID = boneIndex(bname);
         if (boneID != -1) {
@@ -155,7 +155,7 @@ class SceneAnimator {
     }
 
     /// Same as above, except takes the index
-    inline const mat4<F32>& boneTransform(I32 animationIndex, const D32 dt,
+    inline const mat4<F32>& boneTransform(I32 animationIndex, const D64 dt,
                                           I32 bindex) {
         if (bindex != -1) {
             return _animations[animationIndex]->transforms(dt).at(bindex);
@@ -179,7 +179,7 @@ class SceneAnimator {
     /// The index can be used to index directly into the vector returned from
     /// GetTransform
     I32 boneIndex(const stringImpl& bname) const;
-    const vectorImpl<Line>& skeletonLines(I32 animationIndex, const D32 dt);
+    const vectorImpl<Line>& skeletonLines(I32 animationIndex, const D64 dt);
 
     /// Returns the frame count of the longest registered animation
     inline U32 getMaxAnimationFrames() const {
@@ -199,7 +199,7 @@ class SceneAnimator {
     Bone* loadSkeleton(ByteBuffer& dataIn, Bone* pNode);
 
     void updateTransforms(Bone* pNode);
-    void calculate(I32 animationIndex, const D32 pTime);
+    void calculate(I32 animationIndex, const D64 pTime);
     I32 createSkeleton(Bone* piNode, const aiMatrix4x4& parent,
                        vectorImpl<Line>& lines);
 

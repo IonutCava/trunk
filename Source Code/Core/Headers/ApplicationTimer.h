@@ -50,8 +50,8 @@ namespace Time {
                 _startTime = takeTimeStamp();
             }
 
-            D32 elapsed() const {
-                return D32(takeTimeStamp() - _startTime) * 1e-9;
+            D64 elapsed() const {
+                return D64(takeTimeStamp() - _startTime) * 1e-9;
             }
 
             U64 elapsedNanoseconds() const {
@@ -148,11 +148,11 @@ inline U64 ElapsedMicroseconds(bool forceUpdate = false) {
     return ApplicationTimer::instance().getElapsedTime(forceUpdate);
 }
 
-inline D32 ElapsedMilliseconds(bool forceUpdate = false) {
-    return MicrosecondsToMilliseconds<D32>(ElapsedMicroseconds(forceUpdate));
+inline D64 ElapsedMilliseconds(bool forceUpdate = false) {
+    return MicrosecondsToMilliseconds<D64>(ElapsedMicroseconds(forceUpdate));
 }
-inline D32 ElapsedSeconds(bool forceUpdate = false) {
-    return MicrosecondsToSeconds<D32>(ElapsedMicroseconds(forceUpdate));
+inline D64 ElapsedSeconds(bool forceUpdate = false) {
+    return MicrosecondsToSeconds<D64>(ElapsedMicroseconds(forceUpdate));
 }
 
 };  // namespace Time

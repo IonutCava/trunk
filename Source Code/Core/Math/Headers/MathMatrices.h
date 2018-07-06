@@ -114,22 +114,223 @@ smasherprog@gmail.com or visit www.nolimitsdesigns.com
 namespace Divide {
 
 /*********************************
+* mat2
+*********************************/
+template <typename T>
+class mat2 {
+    static_assert(std::is_arithmetic<T>::value &&
+        !std::is_same<T, bool>::value,
+        "non-arithmetic matrix type");
+public:
+    mat2() { this->identity(); }
+
+    // Line 1 (m0, m1), Line 2 (m2, m3)
+    mat2(T m0, T m1, T m2, T m3) {
+        this->mat[0] = m0;
+        this->mat[1] = m1;
+        this->mat[2] = m2;
+        this->mat[3] = m3;
+    }
+
+    mat2(const T *m) { this->set(m); }
+
+    mat2(const mat2 &m) : mat2(m.mat) {}
+
+    mat2(const mat3<T> &m) { this->set(m); }
+
+    mat2(const mat4<T> &m) { this->set(m); }
+
+    vec2<T> operator*(const vec2<T> &v) const {
+        return vec2<T>(
+            this->mat[0] * v[0] + this->mat[1] * v[1],
+            this->mat[2] * v[0] + this->mat[3] * v[1]);
+    }
+
+    vec4<T> operator*(const vec4<T> &v) const {
+        return vec4<T>(
+            this->mat[0] * v[0] + this->mat[1] * v[1],
+            this->mat[2] * v[0] + this->mat[3] * v[1],
+            v[2],
+            v[3]);
+    }
+
+    mat2 operator*(T f) const {
+        return mat2(this->mat[0] * f, this->mat[1] * f,
+                    this->mat[2] * f, this->mat[3] * f);
+    }
+
+    mat2 operator*(const mat2 &m) const {
+        return mat2(this->mat[0] * m.mat[0] + this->mat[1] * m.mat[2], this->mat[0] * m.mat[1] + this->mat[1] * m.mat[3],
+                    this->mat[2] * m.mat[0] + this->mat[3] * m.mat[2], this->mat[2] * m.mat[1] + this->mat[3] * m.mat[3]);
+    }
+
+    mat2 operator+(const mat2 &m) const {
+        return mat2(
+            this->mat[0] + m[0], this->mat[1] + m[1],
+            this->mat[2] + m[2], this->mat[3] + m[3]);
+    }
+
+    mat2 operator-(const mat2 &m) const {
+        return mat2(
+            this->mat[0] - m[0], this->mat[1] - m[1],
+            this->mat[2] - m[2], this->mat[3] - m[3]);
+    }
+
+    mat2 &operator*=(T f) { return *this = *this * f; }
+    mat2 &operator*=(const mat2 &m) { return *this = *this * m; }
+    mat2 &operator+=(const mat2 &m) { return *this = *this + m; }
+    mat2 &operator-=(const mat2 &m) { return *this = *this - m; }
+
+    bool operator==(mat2 &B) const {
+        if (!COMPARE(this->m[0][0], B[0][0]) ||
+            !COMPARE(this->m[0][1], B[0][1])) {
+            return false;
+        }
+        if (!COMPARE(this->m[1][0], B[1][0]) ||
+            !COMPARE(this->m[1][1], B[1][1])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool operator!=(mat2 &B) const { return !(*this == B); }
+
+    operator T *() { return this->mat; }
+    operator const T *() const { return this->mat; }
+
+    T &operator[](I32 i) { return this->mat[i]; }
+    const T operator[](I32 i) const { return this->mat[i]; }
+
+    inline void set(T m0, T m1, T m2, T m3) {
+        this->mat[0] = m0;
+        this->mat[3] = m3;
+        this->mat[1] = m1;
+        this->mat[2] = m2;
+    }
+
+    inline void set(const T *matrix) {
+        memcpy(this->mat, matrix, sizeof(T) * 4);
+    }
+
+    inline void set(const mat2<T> &matrix) {
+        this->set(matrix.mat);
+    }
+
+    inline void set(const mat3<T> &matrix) {
+        this->mat[0] = matrix[0];
+        this->mat[1] = matrix[1];
+        this->mat[2] = matrix[3];
+        this->mat[3] = matrix[4];
+    }
+
+    inline void set(const mat4<T> &matrix) {
+        this->mat[0] = matrix[0];
+        this->mat[1] = matrix[1];
+        this->mat[2] = matrix[4];
+        this->mat[3] = matrix[5];
+    }
+
+    inline mat2 getInverse() const {
+        mat2 ret(this->mat);
+        ret.inverse();
+        return ret;
+    }
+
+    inline void getInverse(mat2 &ret) const { ret.set(this->getInverse()); }
+
+    inline mat2 getTranspose() const {
+        mat2 ret(this->mat);
+        ret.transpose();
+        return ret;
+    }
+
+    inline void getTranspose(mat2 &ret) const { ret.set(this->getTranspose()); }
+
+    inline mat2 getInverseTranspose() const {
+        return this->getInverse().getTranspose();
+    }
+
+    inline void getInverseTranspose(mat2 &ret) const {
+        ret.set(this);
+        ret.inverseTranspose();
+    }
+
+    inline void inverseTranspose() {
+        this->inverse();
+        this->transpose();
+    }
+
+    inline void transpose() const {
+        this->set(this->mat[0], this->mat[2],
+                  this->mat[1], this->mat[3]);
+    }
+
+    inline T det() const {
+        return (this->mat[0] * this->mat[3] - this->mat[1] * this->mat[2]);
+    }
+
+    inline void inverse() {
+        T idet = this->det();
+        assert(!IS_ZERO(idet));
+        idet = static_cast<T>(1) / idet;
+
+        this->set(this->mat[3] * idet, -this->mat[1] * idet,
+                  -this->mat[2] * idet, this->mat[0] * idet);
+    }
+
+    inline void zero() { memset(this->mat, 0, 4 * sizeof(T)); }
+
+    inline void identity() {
+        this->mat[0] = static_cast<T>(1);
+        this->mat[3] = static_cast<T>(1);
+        this->mat[1] = static_cast<T>(0);
+        this->mat[2] = static_cast<T>(0);
+    }
+
+    inline bool isIdentity() const {
+        return (COMPARE(this->mat[0], static_cast<T>(1)) && IS_ZERO(this->mat[1]) &&
+                IS_ZERO(this->mat[2]) && COMPARE(this->mat[3], static_cast<T>(1)));
+    }
+
+    inline void swap(mat2 &B) {
+        std::swap(this->m[0][0], B.m[0][0]);
+        std::swap(this->m[0][1], B.m[0][1]);
+
+        std::swap(this->m[1][0], B.m[1][0]);
+        std::swap(this->m[1][1], B.m[1][1]);
+    }
+
+    union {
+        struct {
+            T _11, _12;  // standard names for components
+            T _21, _22;  // standard names for components
+        };
+        T mat[4];
+        T m[2][2];
+    };
+};
+
+/*********************************
  * mat3
  *********************************/
 template <typename T>
 class mat3 {
+    static_assert(std::is_arithmetic<T>::value && 
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic matrix type");
    public:
     mat3() { this->identity(); }
 
     mat3(T m0, T m1, T m2, T m3, T m4, T m5, T m6, T m7, T m8) {
         this->mat[0] = m0;
-        this->mat[3] = m3;
-        this->mat[6] = m6;
         this->mat[1] = m1;
-        this->mat[4] = m4;
-        this->mat[7] = m7;
         this->mat[2] = m2;
+        this->mat[3] = m3;
+        this->mat[4] = m4;
         this->mat[5] = m5;
+        this->mat[6] = m6;
+        this->mat[7] = m7;
         this->mat[8] = m8;
     }
 
@@ -317,17 +518,17 @@ class mat3 {
 
     inline void identity() {
         this->zero();
-        this->mat[0] = 1.0;
-        this->mat[4] = 1.0;
-        this->mat[8] = 1.0;
+        this->mat[0] = static_cast<T>(1);
+        this->mat[4] = static_cast<T>(1);
+        this->mat[8] = static_cast<T>(1);
     }
 
     inline bool isIdentity() const {
-        return (COMPARE(this->mat[0], 1.0) && IS_ZERO(this->mat[1]) &&
+        return (COMPARE(this->mat[0], static_cast<T>(1)) && IS_ZERO(this->mat[1]) &&
                 IS_ZERO(this->mat[2]) && IS_ZERO(this->mat[3]) &&
-                COMPARE(this->mat[4], 1.0) && IS_ZERO(this->mat[5]) &&
+                COMPARE(this->mat[4], static_cast<T>(1)) && IS_ZERO(this->mat[5]) &&
                 IS_ZERO(this->mat[6]) && IS_ZERO(this->mat[7]) &&
-                COMPARE(this->mat[8], 1.0));
+                COMPARE(this->mat[8], static_cast<T>(1)));
     }
 
     inline void rotate(const vec3<T> &v, T angle, bool inDegrees = true) {
@@ -342,7 +543,7 @@ class mat3 {
         T c = static_cast<T>(std::cos(angle));
         T s = static_cast<T>(std::sin(angle));
         T l =
-            static_cast<T>(std::sqrt(static_cast<D32>(x * x + y * y + z * z)));
+            static_cast<T>(std::sqrt(static_cast<D64>(x * x + y * y + z * z)));
 
         l = l < EPSILON_F32 ? 1 : 1 / l;
         x *= l;
@@ -483,6 +684,9 @@ class mat3 {
  ***************/
 template <typename T>
 class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
+    static_assert(std::is_arithmetic<T>::value &&
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic matrix type");
    public:
     mat4() { this->identity(); }
 

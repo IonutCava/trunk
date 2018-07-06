@@ -44,10 +44,10 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
         _prevTime = Time::ElapsedMilliseconds();
     }
     // get current time in ms
-    D32 currentTime = Time::ElapsedMilliseconds();
+    D64 currentTime = Time::ElapsedMilliseconds();
     // figure out how many milliseconds have elapsed since last move time
-    D32 timeDif = currentTime - _prevTime;
-    CLAMP<D32>(timeDif, 0, timeDif);
+    D64 timeDif = currentTime - _prevTime;
+    CLAMP<D64>(timeDif, 0, timeDif);
     // update previous time
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms

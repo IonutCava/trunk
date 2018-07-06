@@ -159,4 +159,4 @@ TEST(TestStringStream)
     CHECK_EQUAL(result2, stringImplAligned(input));
 }
 
-};
+}; //namespace Divide

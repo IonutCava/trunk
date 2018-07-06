@@ -41,11 +41,11 @@ namespace Input {
 
 class Variable {
    protected:
-    D32 _dInitValue;
-    D32 _dValue;
+    D64 _dInitValue;
+    D64 _dValue;
 
    public:
-    Variable(D32 dInitValue) : _dInitValue(dInitValue)
+    Variable(D64 dInitValue) : _dInitValue(dInitValue)
     {
         reset();
     }
@@ -54,11 +54,11 @@ class Variable {
     {
     }
 
-    D32 getValue() const { return _dValue; }
+    D64 getValue() const { return _dValue; }
 
     void reset() { _dValue = _dInitValue; }
 
-    virtual void setValue(D32 dValue) { _dValue = dValue; }
+    virtual void setValue(D64 dValue) { _dValue = dValue; }
 
     virtual stringImpl toString() const {
         return to_stringImpl(_dValue).c_str();
@@ -69,18 +69,18 @@ class Variable {
 
 class Constant : public Variable {
    public:
-    Constant(D32 dInitValue) : Variable(dInitValue) {}
+    Constant(D64 dInitValue) : Variable(dInitValue) {}
 
-    virtual void setValue(D32 dValue) {}
+    virtual void setValue(D64 dValue) {}
 };
 
 class LimitedVariable : public Variable {
    protected:
-    D32 _dMinValue;
-    D32 _dMaxValue;
+    D64 _dMinValue;
+    D64 _dMaxValue;
 
    public:
-    LimitedVariable(D32 dInitValue, D32 dMinValue, D32 dMaxValue)
+    LimitedVariable(D64 dInitValue, D64 dMinValue, D64 dMaxValue)
         : Variable(dInitValue),
           _dMinValue(dMinValue),
           _dMaxValue(dMaxValue)
@@ -88,7 +88,7 @@ class LimitedVariable : public Variable {
 
    }
 
-    virtual void setValue(D32 dValue) {
+    virtual void setValue(D64 dValue) {
         _dValue = dValue;
         if (_dValue > _dMaxValue)
             _dValue = _dMaxValue;
@@ -99,16 +99,16 @@ class LimitedVariable : public Variable {
 
 class TriangleVariable : public LimitedVariable {
    protected:
-    D32 _dDeltaValue;
+    D64 _dDeltaValue;
 
    public:
-    TriangleVariable(D32 dInitValue, D32 dDeltaValue, D32 dMinValue,
-                     D32 dMaxValue)
+    TriangleVariable(D64 dInitValue, D64 dDeltaValue, D64 dMinValue,
+                     D64 dMaxValue)
         : LimitedVariable(dInitValue, dMinValue, dMaxValue),
           _dDeltaValue(dDeltaValue){};
 
     virtual void update() {
-        D32 dValue = getValue() + _dDeltaValue;
+        D64 dValue = getValue() + _dDeltaValue;
         if (dValue > _dMaxValue) {
             dValue = _dMaxValue;
             _dDeltaValue = -_dDeltaValue;

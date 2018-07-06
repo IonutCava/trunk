@@ -181,7 +181,7 @@ void DivideDtCrowd::removeAgent(const I32 ID) {
 
 vec3<F32> DivideDtCrowd::calcVel(const vec3<F32>& position,
                                  const vec3<F32>& target,
-                                 D32 speed) {
+                                 D64 speed) {
     vec3<F32> res;
     calcVel(res._v, &position.x, &target.x, to_float(speed));
     return res;

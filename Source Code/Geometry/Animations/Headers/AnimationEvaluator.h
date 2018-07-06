@@ -72,9 +72,9 @@ class AnimEvaluator {
     AnimEvaluator(const aiAnimation* pAnim, U32 idx);
     ~AnimEvaluator();
 
-    void evaluate(const D32 dt, Bone* skeleton);
+    void evaluate(const D64 dt, Bone* skeleton);
 
-    I32 frameIndexAt(const D32 elapsedTime) const;
+    I32 frameIndexAt(const D64 elapsedTime) const;
 
     
     inline U32 frameCount() const {
@@ -99,24 +99,24 @@ class AnimEvaluator {
         return _transforms[frameIndex];
     }
 
-    inline vectorImplAligned<mat4<F32>>& transforms(const D32 elapsedTime,
+    inline vectorImplAligned<mat4<F32>>& transforms(const D64 elapsedTime,
                                                     I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_uint(resultingFrameIndex));
     }
 
-    inline vectorImplAligned<mat4<F32>>& transforms(const D32 elapsedTime) {
+    inline vectorImplAligned<mat4<F32>>& transforms(const D64 elapsedTime) {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
 
-    inline const vectorImplAligned<mat4<F32>>& transforms(const D32 elapsedTime,
+    inline const vectorImplAligned<mat4<F32>>& transforms(const D64 elapsedTime,
                                                           I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_uint(resultingFrameIndex));
     }
 
-    inline const vectorImplAligned<mat4<F32>>& transforms(const D32 elapsedTime) const {
+    inline const vectorImplAligned<mat4<F32>>& transforms(const D64 elapsedTime) const {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
@@ -129,11 +129,11 @@ class AnimEvaluator {
         return _playAnimationForward;
     }
 
-    inline void ticksPerSecond(D32 tickCount) {
+    inline void ticksPerSecond(D64 tickCount) {
         _ticksPerSecond = tickCount;
     }
 
-    inline D32 ticksPerSecond() const {
+    inline D64 ticksPerSecond() const {
         return _ticksPerSecond;
     }
 
@@ -141,7 +141,7 @@ class AnimEvaluator {
         return _name;
     }
 
-    inline D32 duration() const {
+    inline D64 duration() const {
         return _duration;
     }
 
@@ -160,9 +160,9 @@ class AnimEvaluator {
     vectorImpl<vectorImplAligned<mat4<F32>>> _transforms;
     /// play forward == true, play backward == false
     bool _playAnimationForward;
-    D32 _lastTime;
-    D32 _duration;
-    D32 _ticksPerSecond;
+    D64 _lastTime;
+    D64 _duration;
+    D64 _ticksPerSecond;
 
    private:
     vectorImpl<vec3<U32>> _lastPositions;

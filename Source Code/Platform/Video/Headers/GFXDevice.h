@@ -358,11 +358,11 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline GPUState& gpuState() { return _state; }
 
-    inline void setInterpolation(const D32 interpolation) {
+    inline void setInterpolation(const D64 interpolation) {
         _interpolationFactor = interpolation;
     }
 
-    inline D32 getInterpolation() const { return _interpolationFactor; }
+    inline D64 getInterpolation() const { return _interpolationFactor; }
 
     inline void setGPUVendor(const GPUVendor& gpuvendor) { _GPUVendor = gpuvendor; }
 
@@ -597,7 +597,7 @@ DEFINE_SINGLETON(GFXDevice)
     U32 _state2DRenderingHash;
     U32 _stateDepthOnlyRenderingHash;
     /// The interpolation factor between the current and the last frame
-    D32 _interpolationFactor;
+    D64 _interpolationFactor;
     PlaneList _clippingPlanes;
     bool _enableAnaglyph;
     bool _2DRendering;

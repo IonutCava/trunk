@@ -6,7 +6,7 @@ namespace Divide {
 
 template <>
 Box3D* ImplResourceLoader<Box3D>::operator()() {
-    D32 size = 1.0;
+    D64 size = 1.0;
     if (!_descriptor.getPropertyListString().empty()) {
         size =
             atof(_descriptor.getPropertyListString().c_str());  //<should work

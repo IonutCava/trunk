@@ -716,13 +716,13 @@ void Scene::processInput(const U64 deltaTime) {
 
 void Scene::processGUI(const U64 deltaTime) {
     for (U16 i = 0; i < _guiTimers.size(); ++i) {
-        _guiTimers[i] += Time::MicrosecondsToMilliseconds<D32>(deltaTime);
+        _guiTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
     }
 }
 
 void Scene::processTasks(const U64 deltaTime) {
     for (U16 i = 0; i < _taskTimers.size(); ++i) {
-        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D32>(deltaTime);
+        _taskTimers[i] += Time::MicrosecondsToMilliseconds<D64>(deltaTime);
     }
 }
 

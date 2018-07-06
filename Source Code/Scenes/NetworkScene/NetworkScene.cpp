@@ -23,9 +23,9 @@ void NetworkScene::preRender() {
 void NetworkScene::processInput(const U64 deltaTime) {}
 
 void NetworkScene::processGUI(const U64 deltaTime) {
-    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
-    D32 TimeDisplay = Time::SecondsToMilliseconds(0.01);
-    D32 ServerPing = Time::SecondsToMilliseconds(1.0);
+    D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    D64 TimeDisplay = Time::SecondsToMilliseconds(0.01);
+    D64 ServerPing = Time::SecondsToMilliseconds(1.0);
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %5.2f", Time::ApplicationTimer::instance().getFps()));

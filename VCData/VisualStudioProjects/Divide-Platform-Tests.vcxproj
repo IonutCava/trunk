@@ -134,7 +134,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>true</Profile>
-      <AdditionalOptions>/OPT:NOLBR %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>Console</SubSystem>
     </Link>
     <Lib>
@@ -181,6 +181,7 @@
       <AdditionalDependencies>Divide-Recast.lib;Divide-Game.lib;Divide-Platform.lib;Divide-Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
+      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)$(TargetExt)</OutputFile>
@@ -226,6 +227,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)..\Source Code\Libs\lib\;$(EngineLibraries)\assimp\lib\;$(EngineLibraries)\boost\lib\;$(EngineLibraries)\cegui\lib\;$(EngineLibraries)\cegui-deps\lib\static\;$(EngineLibraries)\OpenCL\lib\;$(EngineLibraries)\OpenAL\libs\;$(EngineLibraries)\glbinding\lib\;$(EngineLibraries)\GLEW\lib\;$(EngineLibraries)\glfw\lib\;$(EngineLibraries)\glslopt\lib\;$(EngineLibraries)\OIS\lib\;$(EngineLibraries)\physx\Lib\win64\;$(EngineLibraries)\sdl\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
       <SubSystem>Console</SubSystem>
+      <AdditionalOptions>/OPT:NOLBR /ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Lib>
       <OutputFile>$(SolutionDir)..\Source Code\Libs\lib\$(ProjectName)_p$(TargetExt)</OutputFile>

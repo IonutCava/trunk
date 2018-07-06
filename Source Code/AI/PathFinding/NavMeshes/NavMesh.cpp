@@ -194,7 +194,7 @@ bool NavigationMesh::buildThreaded() {
 void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
     _building = true;
     // Create mesh
-    D32 timeStart = Time::ElapsedSeconds();
+    D64 timeStart = Time::ElapsedSeconds();
     if (generateMesh()) {
         Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),  Time::ElapsedSeconds(true) - timeStart);
 
@@ -231,7 +231,7 @@ void NavigationMesh::buildInternal(const std::atomic_bool& stopRequested) {
 bool NavigationMesh::buildProcess() {
     _building = true;
     // Create mesh
-    D32 timeStart = Time::ElapsedSeconds();
+    D64 timeStart = Time::ElapsedSeconds();
     bool success = generateMesh();
     if (!success) {
         Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),

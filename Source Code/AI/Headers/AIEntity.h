@@ -103,9 +103,9 @@ class AIEntity : public GUIDWrapper {
     /// Update the crowding system
     void resetCrowd();
     /// The height of the agent for this character.
-    D32 getAgentHeight() const;
+    D64 getAgentHeight() const;
     /// The radius of the agent for this character.
-    D32 getAgentRadius() const;
+    D64 getAgentRadius() const;
     /// The radius category of this character
     inline PresetAgentRadius getAgentRadiusCategory() const {
         return _agentRadiusCategory;
@@ -131,10 +131,10 @@ class AIEntity : public GUIDWrapper {
     const vec3<F32>& getPosition() const;
     /// The maximum speed this character can attain.
     /// This parameter is configured for the agent controlling this character.
-    D32 getMaxSpeed();
+    D64 getMaxSpeed();
     /// The maximum acceleration this character has towards its maximum speed.
     /// This parameter is configured for the agent controlling this character.
-    D32 getMaxAcceleration();
+    D64 getMaxAcceleration();
     /**
      * Request to set a manual velocity for this character, to control it
      * manually.
@@ -158,7 +158,7 @@ class AIEntity : public GUIDWrapper {
     /// at.
     vec3<F32> getVelocity() const;
     /// The current speed this character is traveling at.
-    D32 getSpeed() const { return getVelocity().length(); }
+    D64 getSpeed() const { return getVelocity().length(); }
     /// Returns true if this character is moving.
     bool isMoving() const { return !_stopped || !IS_ZERO(getSpeed()); }
 

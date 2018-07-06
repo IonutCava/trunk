@@ -368,7 +368,7 @@ inline void vec3<T>::lerp(const vec3 &v, const vec3 &factor) {
 
 /// rotate this vector on the X axis
 template <typename T>
-inline void vec3<T>::rotateX(D32 radians) {
+inline void vec3<T>::rotateX(D64 radians) {
     this->y = static_cast<T>(std::cos(radians) * this->y +
                              std::sin(radians) * this->z);
     this->z = static_cast<T>(-std::sin(radians) * this->y +
@@ -377,7 +377,7 @@ inline void vec3<T>::rotateX(D32 radians) {
 
 /// rotate this vector on the Y axis
 template <typename T>
-inline void vec3<T>::rotateY(D32 radians) {
+inline void vec3<T>::rotateY(D64 radians) {
     this->x = static_cast<T>(std::cos(radians) * this->x -
                              std::sin(radians) * this->z);
     this->z = static_cast<T>(std::sin(radians) * this->x +
@@ -386,7 +386,7 @@ inline void vec3<T>::rotateY(D32 radians) {
 
 /// rotate this vector on the Z axis
 template <typename T>
-inline void vec3<T>::rotateZ(D32 radians) {
+inline void vec3<T>::rotateZ(D64 radians) {
     this->x = static_cast<T>(std::cos(radians) * this->x +
                              std::sin(radians) * this->y);
     this->y = static_cast<T>(-std::sin(radians) * this->x +

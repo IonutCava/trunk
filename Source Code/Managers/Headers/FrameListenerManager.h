@@ -40,7 +40,7 @@ namespace Divide {
 
 DEFINE_SINGLETON(FrameListenerManager)
 
-    typedef vectorImpl<D32> EventTimeMap;
+    typedef vectorImpl<D64> EventTimeMap;
 
   public:
     void registerFrameListener(FrameListener* listener, U32 callOrder);
@@ -63,7 +63,7 @@ DEFINE_SINGLETON(FrameListenerManager)
 
     /// pass the current time in milliseconds as the first parameter
     /// returns the event time in milliseconds
-    D32 calculateEventTime(const D32 currentTime, FrameEventType type);
+    D64 calculateEventTime(const D64 currentTime, FrameEventType type);
 
    private:
     vectorImpl<FrameListener*> _listeners;

@@ -43,6 +43,9 @@ namespace Divide {
 
 template <typename T>
 class Quaternion {
+    static_assert(std::is_arithmetic<T>::value &&
+                  !std::is_same<T, bool>::value,
+                  "non-arithmetic quaternion type");
    public:
     Quaternion();
     Quaternion(T x, T y, T z, T w);

@@ -49,15 +49,15 @@
 namespace Divide {
 
 #if !defined(M_PI)
-    constexpr D32 M_PI = 3.14159265358979323846;
+    constexpr D64 M_PI = 3.14159265358979323846;
 #endif
 
-    constexpr D32 M_2PI = 6.28318530717958647692;
-    constexpr D32 M_PIDIV180 = 0.01745329251994329576;
-    constexpr D32 M_180DIVPI = 57.29577951308232087679;
-    constexpr D32 M_PIDIV360 = 0.00872664625997164788;
+    constexpr D64 M_2PI = 6.28318530717958647692;
+    constexpr D64 M_PIDIV180 = 0.01745329251994329576;
+    constexpr D64 M_180DIVPI = 57.29577951308232087679;
+    constexpr D64 M_PIDIV360 = 0.00872664625997164788;
     constexpr F32 INV_RAND_MAX = 0.0000305185094f;
-    constexpr D32 M_PI2 = M_2PI;
+    constexpr D64 M_PI2 = M_2PI;
 
 template <typename T>
 T Random(const T max = RAND_MAX);
@@ -109,6 +109,10 @@ void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b);
 #define BitMaskFlip(arg, mask) ((arg) ^= (mask))
 #define BitMaskCheck(arg, mask) ((arg) & (mask))
 
+template <typename T>
+class mat2;
+template <typename T>
+class mat3;
 template <typename T>
 class mat4;
 template <typename T>

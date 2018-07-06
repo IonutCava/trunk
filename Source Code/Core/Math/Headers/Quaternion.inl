@@ -273,15 +273,15 @@ void Quaternion<T>::fromEuler(T pitch, T yaw, T roll, bool inDegrees) {
         bank = Angle::DegreesToRadians(bank);
     }
 
-    D32 c1 = std::cos(heading * 0.5);
-    D32 s1 = std::sin(heading * 0.5);
-    D32 c2 = std::cos(attitude * 0.5);
-    D32 s2 = std::sin(attitude * 0.5);
-    D32 c3 = std::cos(bank * 0.5);
-    D32 s3 = std::sin(bank * 0.5);
+    D64 c1 = std::cos(heading * 0.5);
+    D64 s1 = std::sin(heading * 0.5);
+    D64 c2 = std::cos(attitude * 0.5);
+    D64 s2 = std::sin(attitude * 0.5);
+    D64 c3 = std::cos(bank * 0.5);
+    D64 s3 = std::sin(bank * 0.5);
 
-    D32 c1c2 = c1 * c2;
-    D32 s1s2 = s1 * s2;
+    D64 c1c2 = c1 * c2;
+    D64 s1s2 = s1 * s2;
 
     W(static_cast<T>(c1c2 * c3 - s1s2 * s3));
     X(static_cast<T>(c1c2 * s3 + s1s2 * c3));

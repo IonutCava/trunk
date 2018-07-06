@@ -60,7 +60,7 @@
 #include <cstdio>
 
 namespace Divide {
-/// Data Types
+/// Data Types (double is 8 bytes with Microsoft's compiler)
 typedef uint8_t U8;
 typedef uint16_t U16;
 typedef uint32_t U32;
@@ -70,7 +70,7 @@ typedef int16_t I16;
 typedef int32_t I32;
 typedef int64_t I64;
 typedef float F32;
-typedef double D32;
+typedef double D64;
 typedef void* bufferPtr;
 typedef unsigned long long ULL;
 
@@ -204,8 +204,8 @@ constexpr F32 to_const_float(const T value) {
 }
 
 template<typename T>
-constexpr D32 to_const_double(const T value) {
-    return static_cast<D32>(value);
+constexpr D64 to_const_double(const T value) {
+    return static_cast<D64>(value);
 }
 
 template <typename T>
@@ -243,8 +243,8 @@ F32 to_float(const T value) {
 }
 
 template <typename T>
-D32 to_double(const T value) {
-    return static_cast<D32>(to_underlying_type(value));
+D64 to_double(const T value) {
+    return static_cast<D64>(to_underlying_type(value));
 }
 
 struct SysInfo;
@@ -326,14 +326,14 @@ union Float_t {
 };
 
 union Double_t {
-    Double_t(D32 num = 0.0) : d(num) {}
+    Double_t(D64 num = 0.0) : d(num) {}
     // Portable extraction of components.
     bool Negative() const { return (i >> 63) != 0; }
     I64 RawMantissa() const { return i & ((1LL << 52) - 1); }
     I64 RawExponent() const { return (i >> 52) & 0x7FF; }
 
     I64 i;
-    D32 d;
+    D64 d;
 };
 
 inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
@@ -355,9 +355,9 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) {
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualUlpsAndAbs(D32 A, D32 B, D32 maxDiff, I32 maxUlpsDiff) {
+inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    D32 absDiff = std::fabs(A - B);
+    D64 absDiff = std::fabs(A - B);
     if (absDiff <= maxDiff) {
         return true;
     }
@@ -388,16 +388,16 @@ inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff) {
+inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff) {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
-    D32 diff = std::fabs(A - B);
+    D64 diff = std::fabs(A - B);
     if (diff <= maxDiff) {
         return true;
     }
 
     A = std::fabs(A);
     B = std::fabs(B);
-    D32 largest = (B > A) ? B : A;
+    D64 largest = (B > A) ? B : A;
 
     return (diff <= largest * maxRelDiff);
 }
@@ -413,7 +413,7 @@ inline bool AlmostEqualRelativeAndAbs(D32 A, D32 B, D32 maxDiff, D32 maxRelDiff)
 #endif
 
 static const F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
-static const D32 EPSILON_D32 = std::numeric_limits<D32>::epsilon();
+static const D64 EPSILON_D32 = std::numeric_limits<D64>::epsilon();
 
 template <typename T>
 inline bool IS_VALID_CONTAINER_RANGE(T elementCount, T min, T max) {
@@ -444,7 +444,7 @@ inline bool IS_ZERO(F32 X) {
     return (std::fabs(X) < EPSILON_F32);
 }
 template <>
-inline bool IS_ZERO(D32 X) {
+inline bool IS_ZERO(D64 X) {
     return (std::fabs(X) < EPSILON_D32);
 }
 
@@ -457,7 +457,7 @@ inline bool IS_TOLERANCE(F32 X, F32 TOLERANCE) {
     return (std::fabs(X) <= TOLERANCE);
 }
 template <>
-inline bool IS_TOLERANCE(D32 X, D32 TOLERANCE) {
+inline bool IS_TOLERANCE(D64 X, D64 TOLERANCE) {
     return (std::fabs(X) <= TOLERANCE);
 }
 
@@ -472,7 +472,7 @@ inline bool COMPARE_TOLERANCE(F32 X, F32 Y, F32 TOLERANCE) {
 }
 
 template<>
-inline bool COMPARE_TOLERANCE(D32 X, D32 Y, D32 TOLERANCE) {
+inline bool COMPARE_TOLERANCE(D64 X, D64 Y, D64 TOLERANCE) {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
@@ -487,7 +487,7 @@ inline bool COMPARE(F32 X, F32 Y) {
 }
 
 template<>
-inline bool COMPARE(D32 X, D32 Y) {
+inline bool COMPARE(D64 X, D64 Y) {
     return COMPARE_TOLERANCE(X, Y, EPSILON_D32);
 }
 
@@ -503,7 +503,7 @@ inline bool IS_GEQUAL(F32 X, F32 Y) {
 }
 
 template <>
-inline bool IS_GEQUAL(D32 X, D32 Y) {
+inline bool IS_GEQUAL(D64 X, D64 Y) {
     return X > Y || COMPARE(X, Y);
 }
 
@@ -518,7 +518,7 @@ inline bool IS_LEQUAL(F32 X, F32 Y) {
 }
 
 template <>
-inline bool IS_LEQUAL(D32 X, D32 Y) {
+inline bool IS_LEQUAL(D64 X, D64 Y) {
     return X < Y || COMPARE(X, Y);
 }
 
@@ -617,7 +617,7 @@ inline TO safe_static_cast(F32 from)
 }
 
 template <typename TO>
-inline TO safe_static_cast(D32 from)
+inline TO safe_static_cast(D64 from)
 {
     return static_cast<TO>(from);
 }

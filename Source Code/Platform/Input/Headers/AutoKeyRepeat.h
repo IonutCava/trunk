@@ -45,13 +45,13 @@ class NOINITVTABLE AutoRepeatKey {
    private:
     Input::KeyEvent _key;
 
-    D32 _elapsed;
-    D32 _delay;
+    D64 _elapsed;
+    D64 _delay;
     /// Time intervals between key injections
-    D32 _repeatDelay;
+    D64 _repeatDelay;
     /// The time after begin() and before repeatKey() is called. If end() is
     /// called in that interval, the key will not repeat
-    D32 _initialDelay;
+    D64 _initialDelay;
 
    protected:
     /// Override this to define custom events for key repeats
@@ -59,7 +59,7 @@ class NOINITVTABLE AutoRepeatKey {
 
    public:
     /// Default constructor
-    AutoRepeatKey(D32 repeatDelay = 0.035, D32 initialDelay = 0.300);
+    AutoRepeatKey(D64 repeatDelay = 0.035, D64 initialDelay = 0.300);
     /// Called when a key is pressed
     void begin(const Input::KeyEvent &evt);
     /// Called when a key is released

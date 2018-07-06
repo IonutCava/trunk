@@ -16,8 +16,8 @@ namespace Divide {
 namespace AI {
 
 namespace {
- const D32 g_ATTACK_RADIUS = 5;
- const D32 g_ATTACK_RADIUS_SQ = g_ATTACK_RADIUS * g_ATTACK_RADIUS;
+ const D64 g_ATTACK_RADIUS = 5;
+ const D64 g_ATTACK_RADIUS_SQ = g_ATTACK_RADIUS * g_ATTACK_RADIUS;
  const U32 g_myTeamContainer = 0;
  const U32 g_enemyTeamContainer = 1;
  const U32 g_flagContainer = 2;

@@ -81,7 +81,7 @@ void DebugInterface::onDebugVarTrigger(I64 guid, bool invert) {
                     variable = invert ? (variable - 1.0f) : (variable + 1.0f);
                 } break;
                 case CallbackParam::TYPE_DOUBLE: {
-                    D32& variable = *reinterpret_cast<D32*>(var._varPointer);
+                    D64& variable = *reinterpret_cast<D64*>(var._varPointer);
                     variable = invert ? (variable - 1.0) : (variable + 1.0);
                 } break;
                 // unsupported

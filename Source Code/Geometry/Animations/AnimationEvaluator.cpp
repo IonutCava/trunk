@@ -98,14 +98,14 @@ bool AnimEvaluator::initBuffers() {
     return !animationData.empty();
 }
 
-I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
-    D32 time = 0.0f;
+I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const {
+    D64 time = 0.0f;
     if (_duration > 0.0) {
         // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
         time = fmod(elapsedTime * _ticksPerSecond, _duration);
     }
 
-    D32 percent = time / _duration;
+    D64 percent = time / _duration;
 
     // this will invert the percent so the animation plays backwards
     if (!_playAnimationForward) {
@@ -118,10 +118,10 @@ I32 AnimEvaluator::frameIndexAt(const D32 elapsedTime) const {
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
-void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
-    D32 pTime = dt * _ticksPerSecond;
+void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
+    D64 pTime = dt * _ticksPerSecond;
 
-    D32 time = 0.0f;
+    D64 time = 0.0f;
     if (_duration > 0.0) {
         time = fmod(pTime, _duration);
     }
@@ -163,7 +163,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
 
             const aiVectorKey& key = channel->_positionKeys[frame];
             const aiVectorKey& nextKey = channel->_positionKeys[nextFrame];
-            D32 diffTime = nextKey.mTime - key.mTime;
+            D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += _duration;
             if (diffTime > 0) {
                 F32 factor = F32((time - key.mTime) / diffTime);
@@ -190,7 +190,7 @@ void AnimEvaluator::evaluate(const D32 dt, Bone* skeleton) {
 
             const aiQuatKey& key = channel->_rotationKeys[frame];
             const aiQuatKey& nextKey = channel->_rotationKeys[nextFrame];
-            D32 diffTime = nextKey.mTime - key.mTime;
+            D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += _duration;
             if (diffTime > 0) {
                 F32 factor = F32((time - key.mTime) / diffTime);

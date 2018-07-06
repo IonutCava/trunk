@@ -26,7 +26,7 @@ void PhysXScene::preRender() {
 //<<end copy-paste
 
 void PhysXScene::processGUI(const U64 deltaTime) {
-    D32 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
     if (_guiTimers[0] >= FpsDisplay) {
         _GUI->modifyText("fpsDisplay",
                          Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f",

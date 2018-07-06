@@ -164,8 +164,8 @@ namespace Import {
     }
 };
     bool MeshImporter::loadMeshDataFromFile(const stringImpl& meshFilePath, Import::ImportData& dataOut) {
-        D32 start = 0.0;
-        D32 elapsed = 0.0;
+        D64 start = 0.0;
+        D64 elapsed = 0.0;
         start = Time::ElapsedMilliseconds(true);
         stringImpl modelName = meshFilePath.substr(meshFilePath.find_last_of('/') + 1);
         stringImpl path = meshFilePath.substr(0, meshFilePath.find_last_of('/'));
@@ -197,8 +197,8 @@ namespace Import {
 
     Mesh* MeshImporter::loadMesh(const Import::ImportData& dataIn) {
 
-        D32 start = 0.0;
-        D32 elapsed = 0.0;
+        D64 start = 0.0;
+        D64 elapsed = 0.0;
         start = Time::ElapsedMilliseconds(true);
 
         std::shared_ptr<SceneAnimator> animator;

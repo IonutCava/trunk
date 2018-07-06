@@ -153,7 +153,7 @@ class DivideDtCrowd {
       * of adjustMoveTarget function.
       **/
     static vec3<F32> calcVel(const vec3<F32>& position, const vec3<F32>& target,
-                             D32 speed);
+                             D64 speed);
     static F32 getDistanceToGoal(const dtCrowdAgent* agent, const F32 maxRange);
     static bool destinationReached(const dtCrowdAgent* agent,
                                    const F32 maxDistanceFromTarget);
@@ -180,7 +180,7 @@ class DivideDtCrowd {
     /// height, and height is
     /// determined by the agent height parameter with which the navmesh is
     /// build.
-    inline D32 getAgentHeight() const {
+    inline D64 getAgentHeight() const {
         return Attorney::NavigationMeshCrowd::getConfigParams(*_recast)
             .getAgentHeight();
     }
@@ -188,7 +188,7 @@ class DivideDtCrowd {
     /// radius, and radius
     /// determined by the agent radius parameter with which the navmesh is
     /// build.
-    inline D32 getAgentRadius() const {
+    inline D64 getAgentRadius() const {
         return Attorney::NavigationMeshCrowd::getConfigParams(*_recast)
             .getAgentRadius();
     }

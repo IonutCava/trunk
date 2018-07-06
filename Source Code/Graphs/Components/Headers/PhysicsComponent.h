@@ -155,7 +155,7 @@ class PhysicsComponent : public SGNComponent {
 
     const mat4<F32>& getWorldMatrix();
 
-    const mat4<F32>& getWorldMatrix(D32 interpolationFactor);
+    const mat4<F32>& getWorldMatrix(D64 interpolationFactor);
     
     /// Component <-> Transform interface
     void setPosition(const vec3<F32>& position);
@@ -168,7 +168,7 @@ class PhysicsComponent : public SGNComponent {
     void rotate(const vec3<F32>& axis, F32 degrees, bool inDegrees = true);
     void rotate(F32 pitch, F32 yaw, F32 roll, bool inDegrees = true);
     void rotate(const Quaternion<F32>& quat);
-    void rotateSlerp(const Quaternion<F32>& quat, const D32 deltaTime);
+    void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime);
     void setScale(const F32 scale);
     void setScaleX(const F32 scale);
     void setScaleY(const F32 scale);
@@ -229,11 +229,11 @@ class PhysicsComponent : public SGNComponent {
     }
 
     /// Return the scale factor
-    vec3<F32> getScale(D32 interpolationFactor = 1.0, const bool local = false) const;
+    vec3<F32> getScale(D64 interpolationFactor = 1.0, const bool local = false) const;
     /// Return the position
-    vec3<F32> getPosition(D32 interpolationFactor = 1.0, const bool local = false) const;
+    vec3<F32> getPosition(D64 interpolationFactor = 1.0, const bool local = false) const;
     /// Return the orientation quaternion
-    Quaternion<F32> getOrientation(D32 interpolationFactor = 1.0, const bool local = false) const;
+    Quaternion<F32> getOrientation(D64 interpolationFactor = 1.0, const bool local = false) const;
 
     void pushTransforms();
     bool popTransforms();
@@ -280,7 +280,7 @@ class PhysicsComponent : public SGNComponent {
     std::atomic_bool _parentDirty;
 
     mat4<F32> _worldMatrix;
-    D32  _prevInterpValue;
+    D64  _prevInterpValue;
     mat4<F32> _worldMatrixInterp;
 };
 

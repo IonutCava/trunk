@@ -15,8 +15,8 @@
 namespace Divide {
 using namespace AI;
 
-static const D32 DESTINATION_RADIUS = 2;
-static const D32 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
+static const D64 DESTINATION_RADIUS = 2;
+static const D64 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
                                          DESTINATION_RADIUS;
 static const F32 DESTINATION_RADIUS_F = to_const_float(DESTINATION_RADIUS);
 static const F32 DESTINATION_RADIUS_SQ_F = to_const_float(DESTINATION_RADIUS_SQ);
@@ -204,11 +204,11 @@ void AIEntity::addUnitRef(NPC* const npc) {
     }
 }
 
-D32 AIEntity::getAgentHeight() const {
+D64 AIEntity::getAgentHeight() const {
     return _detourCrowd ? _detourCrowd->getAgentHeight() : 0.0;
 }
 
-D32 AIEntity::getAgentRadius() const {
+D64 AIEntity::getAgentRadius() const {
     return _detourCrowd ? _detourCrowd->getAgentRadius() : 0.0;
 }
 
@@ -273,7 +273,7 @@ void AIEntity::updatePosition(const U64 deltaTime) {
         if (distanceDelta < DESTINATION_RADIUS_SQ) {
             _moveWaitTimer += deltaTime;
 
-            if (Time::MicrosecondsToSeconds<D32>(_moveWaitTimer) > 5) {
+            if (Time::MicrosecondsToSeconds<D64>(_moveWaitTimer) > 5) {
                 _moveWaitTimer = 0;
                 stop();
                 if (_detourCrowd) {
@@ -409,11 +409,11 @@ vec3<F32> AIEntity::getVelocity() const {
     return (isAgentLoaded() ? vec3<F32>(getAgent()->nvel) : vec3<F32>());
 }
 
-D32 AIEntity::getMaxSpeed() {
+D64 AIEntity::getMaxSpeed() {
     return (isAgentLoaded() ? getAgent()->params.maxSpeed : 0.0);
 }
 
-D32 AIEntity::getMaxAcceleration() {
+D64 AIEntity::getMaxAcceleration() {
     return (isAgentLoaded() ? getAgent()->params.maxAcceleration : 0.0);
 }
 

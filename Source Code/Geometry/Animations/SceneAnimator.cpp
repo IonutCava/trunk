@@ -63,7 +63,7 @@ bool SceneAnimator::init() {
 
     _transforms.resize(_skeletonDepthCache);
 
-    D32 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
+    D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
     mat4<F32> rotationmat;
     vectorImplAligned<mat4<F32> > vec;
     vectorAlg::vecSize animationCount = _animations.size();
@@ -72,10 +72,10 @@ bool SceneAnimator::init() {
     // pre-calculate the animations
     for (vectorAlg::vecSize i(0); i < animationCount; ++i) {
         std::shared_ptr<AnimEvaluator> crtAnimation = _animations[i];
-        D32 duration = crtAnimation->duration();
-        D32 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
-        D32 dt = 0;
-        for (D32 ticks = 0; ticks < duration; ticks += tickStep) {
+        D64 duration = crtAnimation->duration();
+        D64 tickStep = crtAnimation->ticksPerSecond() / ANIMATION_TICKS_PER_SECOND;
+        D64 dt = 0;
+        for (D64 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
             calculate((I32)i, dt);
             crtAnimation->transforms().push_back(vec);
@@ -128,7 +128,7 @@ void SceneAnimator::registerAnimation(std::shared_ptr<AnimEvaluator> animation) 
 
 // ------------------------------------------------------------------------------------------------
 // Calculates the node transformations for the scene.
-void SceneAnimator::calculate(I32 animationIndex, const D32 pTime) {
+void SceneAnimator::calculate(I32 animationIndex, const D64 pTime) {
     assert(_skeleton != nullptr);
 
     if ((animationIndex < 0) || (animationIndex >= (I32)_animations.size())) {
@@ -167,7 +167,7 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 
 /// Renders the current skeleton pose at time index dt
 const vectorImpl<Line>& SceneAnimator::skeletonLines(I32 animationIndex,
-                                                     const D32 dt) {
+                                                     const D64 dt) {
     I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 

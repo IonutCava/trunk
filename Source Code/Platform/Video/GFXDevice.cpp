@@ -21,10 +21,10 @@ std::array<VertexBuffer::AttribFlags, to_const_uint(RenderStage::COUNT)> VertexB
 namespace {
 /// Used for %anaglyph rendering
 struct CameraFrustum {
-    D32 leftfrustum;
-    D32 rightfrustum;
-    D32 bottomfrustum;
-    D32 topfrustum;
+    D64 leftfrustum;
+    D64 rightfrustum;
+    D64 bottomfrustum;
+    D64 topfrustum;
     F32 modeltranslation;
 } _leftCam, _rightCam;
 F32 _anaglyphIOD = -0.01f;

@@ -124,7 +124,7 @@ class Unit : public FrameListener {
     /// acceptable distance from target
     F32 _moveTolerance;
     /// previous time, in milliseconds when last move was applied
-    D32 _prevTime;
+    D64 _prevTime;
     /// Unit position in world
     vec3<F32> _currentPosition;
     /// Current destination point cached

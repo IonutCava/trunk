@@ -221,11 +221,11 @@ bool Kernel::mainLoopScene(FrameEvent& evt) {
 
     }  // while
 
-    D32 interpolationFactor = static_cast<D32>(_timingData._currentTime + 
+    D64 interpolationFactor = static_cast<D64>(_timingData._currentTime + 
                                                deltaTime -
                                                _timingData._nextGameTick);
 
-    interpolationFactor /= static_cast<D32>(deltaTime);
+    interpolationFactor /= static_cast<D64>(deltaTime);
     assert(interpolationFactor <= 1.0 && interpolationFactor > 0.0);
 
     _GFX.setInterpolation(Config::USE_FIXED_TIMESTEP ? interpolationFactor : 1.0);
