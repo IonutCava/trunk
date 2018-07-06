@@ -107,12 +107,11 @@ out vec4 _colorOut;
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArrayShadow texDiffuse0;
 uniform uint layer;
 uniform uint face;
-uniform float lodLevel = 0;
 
 void main()
 {
 
-    float depth = textureLod(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0, lodLevel).r;
+    float depth = texture(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0);
     //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     float linearDepth = ToLinearDepth(depth);
     _colorOut = vec4(vec3(linearDepth), 1.0);
@@ -126,11 +125,10 @@ out vec4 _colorOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArrayShadow texDiffuse0;
 uniform uint layer;
-uniform float lodLevel = 0;
 
 void main()
 {
-    float depth = textureLod(texDiffuse0, vec4(VAR._texCoord, layer, 1.0), lodLevel).r;
+    float depth = texture(texDiffuse0, vec4(VAR._texCoord, layer, 1.0)).r;
     float linearDepth = ToLinearDepth(depth);
     _colorOut = vec4(vec3(linearDepth), 1.0);
 }

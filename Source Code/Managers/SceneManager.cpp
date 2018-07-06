@@ -16,6 +16,12 @@
 
 namespace Divide {
 
+/*
+    ToDo:
+    - Add IMPrimities per Scene and clear on scene unload
+    - Cleanup load flags and use ResourceState enum instead
+    - Sort out camera loading/unloading issues with parameteres (position, orientation, etc)
+*/
 
 INIT_SCENE_FACTORY
 
@@ -178,19 +184,7 @@ Scene* SceneManager::load(stringImpl sceneName) {
         Attorney::SceneManager::postLoad(*loadingScene);
     }
 
-    if (state && !isAlreadyLoaded) {
-        if (!loadDefaultScene) {
-            Attorney::SceneManager::gui(*loadingScene)
-                ->addButton(_ID_RT("Back"),
-                            "Back",
-                            vec2<I32>(15, 15),
-                            vec2<U32>(50, 25),
-                            [this](I64 btnGUID)
-                            {
-                                _sceneSwitchTarget.first = "DefaultScene";
-                                _sceneSwitchTarget.second = true;
-                            });
-        }
+    if (state && !isAlreadyLoaded && !loadDefaultScene) {
         _loadedScenes.push_back(loadingScene);
     }
 
@@ -245,11 +239,15 @@ void SceneManager::setActiveScene(Scene& scene) {
     ParamHandler::instance().setParam(_ID("activeScene"), scene.getName());
 }
 
-bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
+bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious, bool threaded) {
+    if (unloadPrevious) {
+        _activeScene = nullptr;
+    }
+
     CreateTask(
         [this, name, unloadPrevious](const std::atomic_bool& stopRequested)
         {
-            if (unloadPrevious) {
+            if (unloadPrevious && _activeScene) {
                 Attorney::SceneManager::onRemoveActive(*_activeScene);
                 unloadScene(_activeScene);
             }
@@ -259,6 +257,22 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
         [this]()
         {
             if (_loadedScene != nullptr) {
+                if (_loadedScene->getState() == ResourceState::RES_LOADING) {
+                    Attorney::SceneManager::postLoadMainThread(*_loadedScene);
+                    if (_loadedScene->getGUID() != _defaultScene->getGUID())
+                    {
+                        SceneGUIElements* gui = Attorney::SceneManager::gui(*_loadedScene);
+                        gui->addButton(_ID_RT("Back"),
+                            "Back",
+                            vec2<I32>(15, 15),
+                            vec2<U32>(50, 25),
+                            [this](I64 btnGUID)
+                        {
+                            _sceneSwitchTarget.first = "DefaultScene";
+                            _sceneSwitchTarget.second = true;
+                        });
+                    }
+                }
                 SceneManager::instance().setActiveScene(*_loadedScene);
 
                 _reflectiveNodesCache.clear();
@@ -266,7 +280,9 @@ bool SceneManager::switchScene(const stringImpl& name, bool unloadPrevious) {
                 _loadedScene = nullptr;
             }
 
-        })._task->startTask(Task::TaskPriority::HIGH, to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
+        })._task->startTask(threaded ? Task::TaskPriority::HIGH
+                                     : Task::TaskPriority::REALTIME_WITH_CALLBACK,
+                            to_const_uint(Task::TaskFlags::SYNC_WITH_GPU));
 
     _sceneSwitchTarget.first = "";
     return true;
@@ -312,43 +328,45 @@ void SceneManager::onCameraUpdate(Camera& camera) {
 }
 
 void SceneManager::updateSceneState(const U64 deltaTime) {
-    // Update internal timers
-    _elapsedTime += deltaTime;
-    _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
+    if (_activeScene && _activeScene->getState() == ResourceState::RES_LOADED) {
+        // Update internal timers
+        _elapsedTime += deltaTime;
+        _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    ParamHandler& par = ParamHandler::instance();
-    LightPool* lightPool = Attorney::SceneManager::lightPool(*_activeScene);
+        ParamHandler& par = ParamHandler::instance();
+        LightPool* lightPool = Attorney::SceneManager::lightPool(*_activeScene);
 
-    // Shadow splits are only visible in debug builds
-    _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
-    // Time, fog, etc
-    _sceneData.elapsedTime(_elapsedTimeMS);
-    _sceneData.deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));
-    _sceneData.lightCount(LightType::DIRECTIONAL, lightPool->getActiveLightCount(LightType::DIRECTIONAL));
-    _sceneData.lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
-    _sceneData.lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
+        // Shadow splits are only visible in debug builds
+        _sceneData.enableDebugRender(par.getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
+        // Time, fog, etc
+        _sceneData.elapsedTime(_elapsedTimeMS);
+        _sceneData.deltaTime(Time::MicrosecondsToSeconds<F32>(deltaTime));
+        _sceneData.lightCount(LightType::DIRECTIONAL, lightPool->getActiveLightCount(LightType::DIRECTIONAL));
+        _sceneData.lightCount(LightType::POINT, lightPool->getActiveLightCount(LightType::POINT));
+        _sceneData.lightCount(LightType::SPOT, lightPool->getActiveLightCount(LightType::SPOT));
 
-    _sceneData.setRendererFlag(getRenderer().getFlag());
+        _sceneData.setRendererFlag(getRenderer().getFlag());
 
-    _sceneData.toggleShadowMapping(lightPool->shadowMappingEnabled());
+        _sceneData.toggleShadowMapping(lightPool->shadowMappingEnabled());
 
-    _sceneData.fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))
-                            ? par.getParam<F32>(_ID("rendering.sceneState.fogDensity"))
-                            : 0.0f);
+        _sceneData.fogDensity(par.getParam<bool>(_ID("rendering.enableFog"))
+                                ? par.getParam<F32>(_ID("rendering.sceneState.fogDensity"))
+                                : 0.0f);
 
-    const SceneState& activeSceneState = _activeScene->state();
-    _sceneData.windDetails(activeSceneState.windDirX(),
-                           0.0f,
-                           activeSceneState.windDirZ(),
-                           activeSceneState.windSpeed());
+        const SceneState& activeSceneState = _activeScene->state();
+        _sceneData.windDetails(activeSceneState.windDirX(),
+                               0.0f,
+                               activeSceneState.windDirZ(),
+                               activeSceneState.windSpeed());
 
-    _activeScene->updateSceneState(deltaTime);
+        _activeScene->updateSceneState(deltaTime);
 
-    _saveTimer += deltaTime;
+        _saveTimer += deltaTime;
 
-    if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
-        LoadSave::saveScene(*_activeScene);
-        _saveTimer = 0ULL;
+        if (_saveTimer >= Time::SecondsToMicroseconds(5)) {
+            LoadSave::saveScene(*_activeScene);
+            _saveTimer = 0ULL;
+        }
     }
 }
 

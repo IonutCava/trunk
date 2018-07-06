@@ -43,11 +43,12 @@ class FlashScene : public Scene {
     {
     }
 
-    bool load(const stringImpl& name);
-    bool loadResources(bool continueOnErrors);
-    void processInput(const U64 deltaTime);
-    void processTasks(const U64 deltaTime);
-    void processGUI(const U64 deltaTime);
+    bool load(const stringImpl& name) override;
+    void postLoadMainThread() override;
+    bool loadResources(bool continueOnErrors) override;
+    void processInput(const U64 deltaTime) override;
+    void processTasks(const U64 deltaTime) override;
+    void processGUI(const U64 deltaTime) override;
 
    private:
     F32 i;

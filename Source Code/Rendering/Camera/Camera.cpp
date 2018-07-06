@@ -356,7 +356,9 @@ bool Camera::updateFrustum() {
 }
 
 vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ) const {
-    return unProject(winCoordsX, winCoordsY, winCoordsZ, GFX_DEVICE.getCurrentViewport());
+    const vec4<I32>& viewport = GFX_DEVICE.getCurrentViewport();
+
+    return unProject(winCoordsX, winCoordsY, winCoordsZ, viewport);
 }
 
 vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ,

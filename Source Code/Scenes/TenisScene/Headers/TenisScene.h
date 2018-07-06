@@ -72,6 +72,7 @@ class TenisScene : public Scene {
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
+    void postLoadMainThread() override;
     bool initializeAI(bool continueOnErrors);
     bool deinitializeAI(bool continueOnErrors);
     void processInput(const U64 deltaTime);

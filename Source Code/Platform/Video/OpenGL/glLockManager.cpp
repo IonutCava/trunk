@@ -4,6 +4,7 @@
 namespace Divide {
 
 GLuint64 kOneSecondInNanoSeconds = 1000000000;
+U8 kMaxWaitRetry = 5;
 
 glLockManager::glLockManager() : _defaultSync(nullptr)
 {
@@ -34,6 +35,7 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
     if (blockClient) {
         SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
         GLuint64 waitDuration = 0;
+        U8 retryCount = 0;
         while (true) {
             GLenum waitRet = glClientWaitSync(*syncObj, waitFlags, waitDuration);
             DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED,
@@ -49,6 +51,10 @@ void glLockManager::wait(GLsync* syncObj, bool blockClient) {
             // After the first time, need to start flushing, and wait for a looong time.
             waitFlags = GL_SYNC_FLUSH_COMMANDS_BIT;
             waitDuration = kOneSecondInNanoSeconds;
+
+            if (++retryCount > kMaxWaitRetry) {
+                return;
+            }
         }
     } else {
         glWaitSync(*syncObj, UnusedMask::GL_UNUSED_BIT, GL_TIMEOUT_IGNORED);

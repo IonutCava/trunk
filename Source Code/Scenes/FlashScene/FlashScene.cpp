@@ -35,13 +35,20 @@ bool FlashScene::loadResources(bool continueOnErrors) {
     _sunvector =
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 60),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 64, 255, 255),  // Color
-                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
+
     _guiTimers.push_back(0.0);
     i = 0;
     return true;
 }
+
+void FlashScene::postLoadMainThread() {
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+        vec2<I32>(60, 60),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 64, 255, 255),  // Color
+        Util::StringFormat("FPS: %d", 0));  // Text and arguments
+
+    Scene::postLoadMainThread();
+}
+
 };

@@ -232,6 +232,7 @@ GFXDevice::toggleRasterization(bool state) {
 /// routine. Use callOrder for sorting purposes
 inline void 
 GFXDevice::add2DRenderFunction(const DELEGATE_CBK<>& callback, U32 callOrder) {
+    WriteLock w_lock(_2DRenderQueueLock);
     _2dRenderQueue.push_back(std::make_pair(callOrder, callback));
 
     std::sort(std::begin(_2dRenderQueue), std::end(_2dRenderQueue),

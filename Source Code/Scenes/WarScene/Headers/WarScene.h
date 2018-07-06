@@ -51,6 +51,7 @@ class WarScene : public Scene {
     ~WarScene();
 
     bool load(const stringImpl& name) override;
+    void postLoadMainThread() override;
     bool loadResources(bool continueOnErrors) override;
     bool initializeAI(bool continueOnErrors) override;
     bool deinitializeAI(bool continueOnErrors) override;

@@ -1,7 +1,7 @@
 #ifndef _SHADOW_MAPPING_FRAG_
 #define _SHADOW_MAPPING_FRAG_
 
-layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArray          texDepthMapFromLight;
+layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow    texDepthMapFromLight;
 layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDepthMapFromLightCube;
 layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
 
@@ -20,7 +20,7 @@ float getShadowFactor(int lightIndex) {
     switch (dvd_LightSource[lightIndex]._options.x) {
         case LIGHT_DIRECTIONAL     : return applyShadowDirectional(dvd_LightSource[lightIndex]._options.z);
         //case LIGHT_OMNIDIRECTIONAL : return applyShadowPoint(dvd_LightSource[lightIndex]._options.z);
-        case LIGHT_SPOT            : return applyShadowSpot(dvd_LightSource[lightIndex]._options.z); 
+        //case LIGHT_SPOT            : return applyShadowSpot(dvd_LightSource[lightIndex]._options.z); 
     }
 }
 

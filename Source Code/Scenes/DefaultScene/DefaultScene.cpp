@@ -30,6 +30,12 @@ void DefaultScene::processGUI(const U64 deltaTime) {
 }
 
 bool DefaultScene::loadResources(bool continueOnErrors) {
+    _taskTimers.push_back(0.0);
+
+    return true;
+}
+
+void DefaultScene::postLoadMainThread() {
     // Replace buttons with nice, animated elements? images?
     vectorImpl<stringImpl> scenes = SceneManager::instance().sceneNameList();
 
@@ -54,10 +60,10 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
         size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
 
         GUIButton* btn = _GUI->addButton(_ID_RT("StartScene" + scene), scene,
-                                          vec2<I32>(btnStartXOffset + localOffsetX ,
-                                                    btnStartYOffset + localOffsetY),
-                                          vec2<U32>(btnWidth, btnHeight),
-                                          DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
+            vec2<I32>(btnStartXOffset + localOffsetX,
+                btnStartYOffset + localOffsetY),
+            vec2<U32>(btnWidth, btnHeight),
+            DELEGATE_BIND(&DefaultScene::loadScene, this, std::placeholders::_1));
 
         _buttonToSceneMap[btn->getGUID()] = scene;
         i++;
@@ -67,20 +73,18 @@ bool DefaultScene::loadResources(bool continueOnErrors) {
     }
 
     _GUI->addButton(_ID_RT("Quit"), "Quit",
-                    vec2<I32>(resolution.width - quitButtonWidth * 1.5f, resolution.height - quitButtonHeight * 1.5f),
-                    vec2<U32>(quitButtonWidth, quitButtonHeight),
-                    [](I64 btnGUID) {Application::instance().RequestShutdown();});
+        vec2<I32>(resolution.width - quitButtonWidth * 1.5f, resolution.height - quitButtonHeight * 1.5f),
+        vec2<U32>(quitButtonWidth, quitButtonHeight),
+        [](I64 btnGUID) {Application::instance().RequestShutdown(); });
 
     _GUI->addText(_ID("globalMessage"),
-                  vec2<I32>(windowCenterX,
-                            windowCenterY + (numRows + 1)* btnHeight),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(128, 64, 64, 255),
-                  "");
-
-    _taskTimers.push_back(0.0);
-
-    return true;
+        vec2<I32>(windowCenterX,
+            windowCenterY + (numRows + 1)* btnHeight),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(128, 64, 64, 255),
+        "");
+    
+    Scene::postLoadMainThread();
 }
 
 void DefaultScene::processInput(const U64 deltaTime) {

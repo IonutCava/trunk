@@ -434,8 +434,6 @@ DEFINE_SINGLETON(GFXDevice)
 
     inline bool deInitShaders() { return _api->deInitShaders(); }
 
-    inline IMPrimitive* newIMP() { return _api->newIMP(*this); }
-
     inline Framebuffer* newFB(bool multisampled = false) {
         return _api->newFB(*this, multisampled);
     }
@@ -570,11 +568,15 @@ DEFINE_SINGLETON(GFXDevice)
 
     ShaderBuffer& getNodeBuffer(RenderStage stage, U32 pass) const;
 
+    Framebuffer& activeRenderTarget();
+    const Framebuffer& activeRenderTarget() const;
+
   private:
     Camera* _cubeCamera;
     Camera* _2DCamera;
     Camera* _dualParaboloidCamera;
 
+    Framebuffer* _activeRenderTarget;
     RenderAPIWrapper* _api;
     RenderStage _renderStage;
     RenderStage _prevRenderStage;
@@ -625,6 +627,7 @@ DEFINE_SINGLETON(GFXDevice)
     /// Quality settings
     RenderDetailLevel _shadowDetailLevel;
 
+    mutable SharedLock _2DRenderQueueLock;
     vectorImpl<std::pair<U32, DELEGATE_CBK<> > > _2dRenderQueue;
 
     /// Immediate mode emulation shader

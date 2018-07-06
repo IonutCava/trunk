@@ -150,7 +150,7 @@ class glShaderProgram final : public ShaderProgram {
         return false;
     }
     /// Basic OpenGL shader program validation (both in debug and in release)
-    void validateInternal();
+    bool validateInternal();
     /// Retrieve the program's validation log if we need it
     stringImpl getLog() const;
 

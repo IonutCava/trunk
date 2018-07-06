@@ -50,8 +50,8 @@
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- detail level: off = 0, low = 1 (no blurring, 512x512 base resolution), medium = 2 (blurring, 512x512 base resolution) -->
 	<!--               high = 3 (blurring, 1024x1024 base resolution), ultra = 4 (blurring, 2048x2048 base resolution) -->
-	<shadowDetailLevel>0</shadowDetailLevel>
-	<enableFog>false</enableFog>
+	<shadowDetailLevel>1</shadowDetailLevel>
+	<enableFog>true</enableFog>
 	<fogDensity>3</fogDensity>
 	<fogColor r="0.5" g="0.5" b="0.55"/>
 	<enable3D>false</enable3D>
@@ -60,7 +60,7 @@
 	<enableDepthOfField>false</enableDepthOfField>
 	<enableBloom>true</enableBloom>
 	<bloomFactor>0.8</bloomFactor>
-	<enableSSAO>true</enableSSAO>
+	<enableSSAO>false</enableSSAO>
 </rendering>  
 
 <title>DIVIDE Framework - (C) Ionut Cava 2015</title>

@@ -402,6 +402,12 @@ bool TenisScene::loadResources(bool continueOnErrors) {
         vec3<F32>(3.0f, 0.2f, 7.0f));
     _ballSGN.lock()->setSelectable(true);
 
+
+    _guiTimers.push_back(0.0);  // Fps
+    return true;
+}
+
+void TenisScene::postLoadMainThread() {
     const vec2<U16>& resolution = _GUI->getDisplayResolution();
 
     GUIElement* btn = _GUI->addButton(
@@ -413,36 +419,36 @@ bool TenisScene::loadResources(bool continueOnErrors) {
 
     _GUI->addText(
         _ID("Team1Score"), vec2<I32>(to_int(resolution.width - 250),
-                                to_int(resolution.height / 1.3f)),
+            to_int(resolution.height / 1.3f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(0, 192, 192, 255),
         Util::StringFormat("Team 1 Score: %d", 0));
 
     _GUI->addText(
         _ID("Team2Score"), vec2<I32>(to_int(resolution.width - 250),
-                                to_int(resolution.height / 1.5f)),
+            to_int(resolution.height / 1.5f)),
         Font::DIVIDE_DEFAULT,
         vec4<U8>(50, 192, 0, 255),
         Util::StringFormat("Team 2 Score: %d", 0));
 
     _GUI->addText(_ID("Message"),
-                  vec2<I32>(to_int(resolution.width - 250),
-                            to_int(resolution.height / 1.7f)),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(0, 255, 0, 255),
-                  "");
+        vec2<I32>(to_int(resolution.width - 250),
+            to_int(resolution.height / 1.7f)),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(0, 255, 0, 255),
+        "");
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 60),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 50, 255, 255),// Color
-                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
+        vec2<I32>(60, 60),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 50, 255, 255),// Color
+        Util::StringFormat("FPS: %d", 0));  // Text and arguments
 
     _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
-                  vec4<U8>(164, 50, 50, 255),
-                  Util::StringFormat("Number of items in Render Bin: %d", 0));
-    _guiTimers.push_back(0.0);  // Fps
-    return true;
+        vec4<U8>(164, 50, 50, 255),
+        Util::StringFormat("Number of items in Render Bin: %d", 0));
+
+    Scene::postLoadMainThread();
 }
 
 };

@@ -192,6 +192,9 @@ class Scene : public Resource {
     bool loadGeometry(const FileData& data);
     virtual bool unload();
     virtual void postLoad();
+    // gets called on the main thread when the scene finishes loading
+    // used by the GUI system
+    virtual void postLoadMainThread();
     /// Description in SceneManager
     virtual bool initializeAI(bool continueOnErrors);
     virtual bool deinitializeAI(bool continueOnErrors);
@@ -309,6 +312,10 @@ class SceneManager {
 
     static void postLoad(Scene& scene) {
         scene.postLoad();
+    }
+
+    static void postLoadMainThread(Scene& scene) {
+        scene.postLoadMainThread();
     }
 
     static void onSetActive(Scene& scene) {

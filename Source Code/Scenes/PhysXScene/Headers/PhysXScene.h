@@ -45,6 +45,7 @@ class PhysXScene : public Scene {
     }
 
     bool load(const stringImpl& name) override;
+    void postLoadMainThread() override;
     bool loadResources(bool continueOnErrors) override;
     bool unload() override;
     void processInput(const U64 deltaTime) override;

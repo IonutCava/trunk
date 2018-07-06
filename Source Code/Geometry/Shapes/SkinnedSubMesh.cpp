@@ -116,7 +116,7 @@ void SkinnedSubMesh::computeBoundingBoxForCurrentFrame(SceneGraphNode& sgn) {
                                     this,
                                     animationIndex))
             .startTask(MULTITHREADED_BOUNDING_BOX_CALCULATION ? Task::TaskPriority::DONT_CARE
-                                                              : Task::TaskPriority::REALTIME);
+                                                              : Task::TaskPriority::REALTIME_WITH_CALLBACK);
         }
     }
 }

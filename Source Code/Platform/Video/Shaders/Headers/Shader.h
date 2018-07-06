@@ -69,7 +69,7 @@ class NOINITVTABLE Shader : protected GraphicsResource, public TrackedObject {
     /// API conversion from text source to binary
     virtual bool compile() = 0;
     /// API dependent validation
-    virtual void validate() = 0;
+    virtual bool validate() = 0;
 
     // ======================= static data ========================= //
     /// Remove a shader from the cache

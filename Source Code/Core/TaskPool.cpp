@@ -78,11 +78,17 @@ void TaskPool::setTaskCallback(const TaskHandle& handle,
     _taskCallbacks[index] = callback;
 }
 
-void TaskPool::taskCompleted(U32 poolIndex) {
+void TaskPool::taskCompleted(U32 poolIndex, Task::TaskPriority priority) {
     if (!_taskCallbacks[poolIndex]) {
         _taskStates[poolIndex] = false;
     } else {
-        WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
+        if (priority != Task::TaskPriority::REALTIME_WITH_CALLBACK) {
+            WAIT_FOR_CONDITION(_threadedCallbackBuffer.push(poolIndex));
+        } else {
+            _taskCallbacks[poolIndex]();
+            _taskStates[poolIndex] = false;
+            _taskCallbacks[poolIndex] = DELEGATE_CBK<>();
+        }
     }
     // Signal main thread to execute callback
 }

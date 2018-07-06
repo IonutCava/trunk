@@ -98,30 +98,37 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
         vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
                   -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
+    _guiTimers.push_back(0.0f);  // Fps
+    _guiTimers.push_back(0.0f);  // Time
+    _guiTimers.push_back(0.0f);  // Server Ping
+    return true;
+}
+
+void NetworkScene::postLoadMainThread() {
     const vec2<U16>& resolution
         = Application::instance().windowManager().getActiveWindow().getDimensions();
 
     _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 60),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 164, 255, 255),  // Color
-                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
+        vec2<I32>(60, 60),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 164, 255, 255),  // Color
+        Util::StringFormat("FPS: %d", 0));  // Text and arguments
     _GUI->addText(_ID("timeDisplay"), vec2<I32>(60, 70), Font::DIVIDE_DEFAULT,
-                  vec4<U8>(164, 64, 64, 255),
-                  Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
+        vec4<U8>(164, 64, 64, 255),
+        Util::StringFormat("Elapsed time: %5.0f", Time::ElapsedSeconds()));
 
     _GUI->addText(_ID("serverMessage"),
-                  vec2<I32>(resolution.width / 4,
-                            resolution.height / 1),
-                  Font::DIVIDE_DEFAULT, 
-                  vec4<U8>(128, 128, 64, 255),
-                  Util::StringFormat("Server says: %s", "<< nothing yet >>"));
+        vec2<I32>(resolution.width / 4,
+            resolution.height / 1),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(128, 128, 64, 255),
+        Util::StringFormat("Server says: %s", "<< nothing yet >>"));
     _GUI->addText(_ID("statusText"),
-                  vec2<I32>(resolution.width / 3,
-                            resolution.height / 2),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(64, 128, 64, 255),
-                  "");
+        vec2<I32>(resolution.width / 3,
+            resolution.height / 2),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(64, 128, 64, 255),
+        "");
 
     _GUI->addButton(
         _ID("getPing"), "ping me",
@@ -144,9 +151,7 @@ bool NetworkScene::loadResources(bool continueOnErrors) {
         vec2<U32>(100, 25),
         DELEGATE_BIND(&NetworkScene::checkPatches, this, std::placeholders::_1));
 
-    _guiTimers.push_back(0.0f);  // Fps
-    _guiTimers.push_back(0.0f);  // Time
-    _guiTimers.push_back(0.0f);  // Server Ping
-    return true;
+    Scene::postLoadMainThread();
 }
+
 };

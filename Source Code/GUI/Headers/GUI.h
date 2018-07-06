@@ -36,6 +36,7 @@
 #include "Core/Math/Headers/MathMatrices.h"
 #include "GUI/GUIEditor/Headers/GUIEditor.h"
 #include "GUI/CEGUIAddons/Headers/CEGUIInput.h"
+#include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
 namespace CEGUI {
@@ -181,6 +182,7 @@ DEFINE_SINGLETON(GUI, GUIInterface, Input::InputAggregatorInterface)
 
     /// All the GUI elements created per scene
     GUIMapPerScene _guiStack;
+    mutable SharedLock _guiStackLock;
 END_SINGLETON
 
 };  // namespace Divide

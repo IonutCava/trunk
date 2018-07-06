@@ -47,7 +47,7 @@ class glShader : public Shader {
 
     bool load(const stringImpl& source) override;
     bool compile();
-    void validate();
+    bool validate();
 
    private:
     stringImpl preprocessIncludes(const stringImpl& source,

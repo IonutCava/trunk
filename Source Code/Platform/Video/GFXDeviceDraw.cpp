@@ -584,7 +584,7 @@ void GFXDevice::drawLines(IMPrimitive& primitive,
 }
 
 void GFXDevice::flushDisplay() {
-    getRenderTarget(RenderTargetID::SCREEN)._buffer->bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
+    activeRenderTarget().bind(to_const_ubyte(ShaderProgram::TextureUsage::UNIT0));
     drawTriangle(getDefaultStateBlock(true), _displayShader);
 }
 

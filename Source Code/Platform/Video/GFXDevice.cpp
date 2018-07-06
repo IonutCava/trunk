@@ -44,6 +44,7 @@ GFXDevice::GFXDevice()
     _framebufferDraw = nullptr;
     _previewDepthMapShader = nullptr;
     _displayShader = nullptr;
+    _activeRenderTarget = nullptr;
     // Integers
     FRAME_COUNT = 0;
     FRAME_DRAW_CALLS = 0;
@@ -690,7 +691,7 @@ IMPrimitive* GFXDevice::getOrCreatePrimitive(bool allowPrimitiveRecycle) {
 
     } else {
         // If we do not have a valid zombie, we create a new primitive
-        tempPriv = newIMP();
+        tempPriv = _api->newIMP(*this);
         // And add it to our container. The GFXDevice class is responsible for deleting these!
         UpgradeToWriteLock w_lock(ur_lock);
         _imInterfaces.push_back(tempPriv);

@@ -50,6 +50,7 @@ class Task : public GUIDWrapper, private NonCopyable {
            HIGH = 3,
            MAX = 4,
            REALTIME = 5, //<= not threaded
+           REALTIME_WITH_CALLBACK = 6, //<= not threaded
            COUNT
        };
 

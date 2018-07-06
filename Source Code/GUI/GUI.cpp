@@ -44,6 +44,7 @@ GUI::GUI()
 
 GUI::~GUI()
 {
+    WriteLock w_lock(_guiStackLock);
     Console::printfn(Locale::get(_ID("STOP_GUI")));
     GUIEditor::destroyInstance();
     MemoryManager::DELETE(_console);
@@ -65,7 +66,7 @@ GUI::~GUI()
 
 void GUI::onChangeScene(Scene* newScene) {
     assert(newScene != nullptr);
-
+    ReadLock r_lock(_guiStackLock);
     if (_activeScene != nullptr && _activeScene->getGUID() != newScene->getGUID()) {
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
         if (it != std::cend(_guiStack)) {
@@ -87,6 +88,7 @@ void GUI::onChangeScene(Scene* newScene) {
 
 void GUI::onUnloadScene(Scene* scene) {
     assert(scene != nullptr);
+    WriteLock w_lock(_guiStackLock);
     _guiStack.erase(_guiStack.find(scene->getGUID()));
 }
 
@@ -94,6 +96,10 @@ void GUI::draw() const {
     if (!_init || !_activeScene) {
         return;
     }
+
+    const OIS::MouseState& mouseState = Input::InputInterface::instance().getMouse().getMouseState();
+
+    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
     _guiShader->bind();
 
@@ -106,16 +112,12 @@ void GUI::draw() const {
         }
     }
 
+    ReadLock r_lock(_guiStackLock);
     // scene specific
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
         it->second->draw();
     }
-
-    const OIS::MouseState& mouseState =
-        Input::InputInterface::instance().getMouse().getMouseState();
-
-    setCursorPosition(mouseState.X.abs, mouseState.Y.abs);
 
     // CEGUI handles its own states, so render it after we clear our states but
     // before we swap buffers
@@ -130,10 +132,8 @@ void GUI::update(const U64 deltaTime) {
     }
 
     _ceguiInput.update(deltaTime);
-    CEGUI::System::getSingleton().injectTimePulse(
-        Time::MicrosecondsToSeconds<F32>(deltaTime));
-    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(
-        Time::MicrosecondsToSeconds<F32>(deltaTime));
+    CEGUI::System::getSingleton().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
+    CEGUI::System::getSingleton().getDefaultGUIContext().injectTimePulse(Time::MicrosecondsToSeconds<F32>(deltaTime));
 
     if (_console) {
         _console->update(deltaTime);
@@ -274,6 +274,7 @@ void GUI::onChangeResolution(U16 w, U16 h) {
 
     GUIInterface::onChangeResolution(w, h);
 
+    ReadLock r_lock(_guiStackLock);
     if (!_guiStack.empty()) {
         // scene specific
         GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
@@ -330,6 +331,7 @@ bool GUI::mouseMoved(const Input::MouseEvent& arg) {
     GUIInterface::mouseMoved(event);
 
     // scene specific
+    ReadLock r_lock(_guiStackLock);
     GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
     if (it != std::cend(_guiStack)) {
         it->second->mouseMoved(event);
@@ -353,6 +355,7 @@ bool GUI::mouseButtonPressed(const Input::MouseEvent& arg,
             GUIInterface::onMouseDown(event);
 
             // scene specific
+            ReadLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
                 it->second->onMouseDown(event);
@@ -379,6 +382,7 @@ bool GUI::mouseButtonReleased(const Input::MouseEvent& arg,
             GUIInterface::onMouseUp(event);
 
             // scene specific
+            ReadLock r_lock(_guiStackLock);
             GUIMapPerScene::const_iterator it = _guiStack.find(_activeScene->getGUID());
             if (it != std::cend(_guiStack)) {
                 it->second->onMouseUp(event);
@@ -419,6 +423,7 @@ bool GUI::joystickVector3DMoved(const Input::JoystickEvent& arg, I8 index) {
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, ULL elementName) const {
     if (sceneID != 0) {
+        ReadLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementName);
@@ -432,6 +437,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, ULL elementName) const {
 
 GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID) const {
     if (sceneID != 0) {
+        ReadLock r_lock(_guiStackLock);
         GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
         if (it != std::cend(_guiStack)) {
             return it->second->getGUIElement(elementID);

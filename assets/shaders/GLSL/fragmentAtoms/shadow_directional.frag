@@ -53,7 +53,7 @@ float applyShadowDirectional(int shadowIndex) {
     int SplitMax = max(SplitXY, max(SplitX, SplitY));
     //_shadowTempInt = SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : _shadowTempInt;
 
-    if (_shadowTempInt < 0 || _shadowTempInt > 3) {
+    if (_shadowTempInt < 0 || _shadowTempInt > MAX_SPLITS_PER_LIGHT) {
         return 1.0;
     }
 

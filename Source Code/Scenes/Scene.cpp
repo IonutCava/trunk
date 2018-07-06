@@ -555,6 +555,8 @@ void Scene::loadKeyBindings() {
 }
 
 bool Scene::load(const stringImpl& name) {
+    setState(ResourceState::RES_LOADING);
+
     static const U32 normalMask = to_const_uint(SGNComponent::ComponentType::NAVIGATION) |
                                   to_const_uint(SGNComponent::ComponentType::PHYSICS) |
                                   to_const_uint(SGNComponent::ComponentType::BOUNDS) |
@@ -637,6 +639,11 @@ void Scene::postLoad() {
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_START")));
     initializeAI(true);
     Console::printfn(Locale::get(_ID("CREATE_AI_ENTITIES_END")));
+}
+
+void Scene::postLoadMainThread() {
+    assert(Application::instance().isMainThread());
+    setState(ResourceState::RES_LOADED);
 }
 
 void Scene::onSetActive() {

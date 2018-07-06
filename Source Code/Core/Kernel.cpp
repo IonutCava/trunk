@@ -501,12 +501,9 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     ShadowMap::initShadowMaps();
     _sceneMgr.init(&_GUI);
 
-    Scene* loadedScene = _sceneMgr.load(startupScene);
-    if (loadedScene == nullptr) {  //< Load the scene
+    if (!_sceneMgr.switchScene(startupScene, true, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
-    } else {
-        _sceneMgr.setActiveScene(*loadedScene);
     }
 
     if (!_sceneMgr.checkLoadFlag()) {

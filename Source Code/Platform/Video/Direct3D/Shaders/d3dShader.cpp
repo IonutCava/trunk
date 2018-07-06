@@ -23,6 +23,7 @@ bool d3dShader::compile() {
     return true;
 }
 
-void d3dShader::validate() {
+bool d3dShader::validate() {
+    return true;
 }
 };

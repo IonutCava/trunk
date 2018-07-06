@@ -178,6 +178,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, const vec2<U16>& re
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::DIVIDE_BLUE());
     _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer->setClearColor(DefaultColors::WHITE(), TextureDescriptor::AttachmentType::Color1);
 
+    _activeRenderTarget = _renderTarget[to_const_uint(RenderTargetID::SCREEN)]._buffer;
+
     // Reflection Targets
     SamplerDescriptor reflectionSampler;
     reflectionSampler.setFilters(TextureFilter::NEAREST);
@@ -363,6 +365,7 @@ void GFXDevice::endFrame(bool swapBuffers) {
     // Render all 2D debug info and call API specific flush function
     if (Application::instance().mainLoopActive()) {
         GFX::Scoped2DRendering scoped2D(true);
+        ReadLock r_lock(_2DRenderQueueLock);
         for (std::pair<U32, DELEGATE_CBK<> >& callbackFunction : _2dRenderQueue) {
             callbackFunction.second();
         }
@@ -440,5 +443,13 @@ ErrorCode GFXDevice::createAPIInstance() {
     };
 
     return ErrorCode::NO_ERR;
+}
+
+Framebuffer& GFXDevice::activeRenderTarget() {
+    return *_activeRenderTarget;
+}
+
+const Framebuffer& GFXDevice::activeRenderTarget() const {
+    return *_activeRenderTarget;
 }
 };

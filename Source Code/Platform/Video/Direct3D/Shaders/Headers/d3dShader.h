@@ -48,7 +48,7 @@ class d3dShader : public Shader {
 
     bool load(const stringImpl& source) override;
     bool compile();
-    void validate();
+    bool validate();
 };
 
 };  // namespace Divide

@@ -136,7 +136,6 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
 
     inline void onLostFocus() { _activeScene->onLostFocus(); }
     bool unloadCurrentScene();
-    Scene* load(stringImpl name);
     /// Check if the scene was loaded properly
     inline bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(*_activeScene);
@@ -197,13 +196,14 @@ DEFINE_SINGLETON(SceneManager, FrameListener, Input::InputAggregatorInterface)
     bool mouseButtonReleased(const Input::MouseEvent& arg,
                              Input::MouseButton button);
 
-    bool switchScene(const stringImpl& name, bool unloadPrevious);
+    bool switchScene(const stringImpl& name, bool unloadPrevious, bool threaded = true);
 
   protected:
     void initPostLoadState();
     /// Lookup the factory methods table and return the pointer to a newly
     /// constructed scene bound to that name
     Scene* createScene(const stringImpl& name);
+    Scene* load(stringImpl name);
     bool   unloadScene(Scene*& scene);
 
     Scene* findLoadedScene(const stringImpl& name) const;

@@ -45,6 +45,7 @@ class NetworkScene : public Scene {
 
     bool load(const stringImpl& name);
     bool loadResources(bool continueOnErrors);
+    void postLoadMainThread() override;
 
     void processGUI(const U64 deltaTime);
     void processInput(const U64 deltaTime);

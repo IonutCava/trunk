@@ -47,14 +47,17 @@ glShaderProgram::~glShaderProgram() {
 }
 
 /// Basic OpenGL shader program validation (both in debug and in release)
-void glShaderProgram::validateInternal() {
+bool glShaderProgram::validateInternal() {
+    bool shaderError = false;
     for (U32 i = 0; i < to_const_uint(ShaderType::COUNT); ++i) {
         // Get the shader pointer for that stage
         Shader* shader = _shaderStage[i];
         // If a shader exists for said stage
         if (shader) {
             // Validate it
-            shader->validate();
+            if (!shader->validate()) {
+                shaderError = true;
+            }
         }
     }
 
@@ -70,11 +73,14 @@ void glShaderProgram::validateInternal() {
     if (status == 0) {
         Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
                          getName().c_str(), getLog().c_str());
+        shaderError = true;
     } else {
         Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")),
                            getName().c_str(), getLog().c_str());
     }
     _validated = true;
+
+    return shaderError;
 }
 
 /// Called once per frame. Used to update internal state
@@ -86,7 +92,11 @@ bool glShaderProgram::update(const U64 deltaTime) {
             MemoryManager::DELETE(_lockManager);
         }
         // Call the internal validation function
-        validateInternal();
+        if (!validateInternal()) {
+            if (_lockManager) {
+                MemoryManager::DELETE(_lockManager);
+            }
+        }
         // We dump the shader binary only if it wasn't loaded from one
         if (!_loadedFromBinary && _context.getGPUVendor() == GPUVendor::NVIDIA && false) {
             STUBBED(
@@ -239,7 +249,9 @@ void glShaderProgram::threadedLoad() {
     // This was once an atomic swap. Might still be in the future
     _shaderProgramID = _shaderProgramIDTemp;
     // Pass the rest of the loading steps to the parent class
-    _lockManager->Lock(_asyncLoad);
+    if (_lockManager) {
+        _lockManager->Lock(_asyncLoad);
+    }
     ShaderProgram::load();
 }
 
@@ -271,6 +283,9 @@ void glShaderProgram::link() {
     if (linkStatus == 0) {
         Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")),
                          getName().c_str(), getLog().c_str());
+        if (_lockManager) {
+            MemoryManager::DELETE(_lockManager);
+        }
     } else {
         Console::d_printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")),
                            getName().c_str(), getLog().c_str());
@@ -472,8 +487,7 @@ bool glShaderProgram::load() {
         });
 }
 
-/// Check every possible combination of flags to make sure this program can be
-/// used for rendering
+/// Check every possible combination of flags to make sure this program can be used for rendering
 bool glShaderProgram::isValid() const {
     // null shader is a valid shader
     return _shaderProgramID == 0 ||

@@ -58,7 +58,10 @@ void Task::startTask(TaskPriority priority, U32 taskFlags) {
 
     _done = false;
     _priority = priority;
-    if (priority != TaskPriority::REALTIME && _tp != nullptr && _tp->workerThreadCount() > 0) {
+    if (priority != TaskPriority::REALTIME && 
+        priority != TaskPriority::REALTIME_WITH_CALLBACK &&
+        _tp != nullptr && _tp->workerThreadCount() > 0)
+    {
         while (!_tp->threadPool().schedule(PoolTask(to_uint(priority), DELEGATE_BIND(&Task::run, this)))) {
             Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")));
         }
@@ -129,7 +132,7 @@ void Task::run() {
         }
 
         // task finished. Everything else is bookkeeping
-        _tp->taskCompleted(poolIndex());
+        _tp->taskCompleted(poolIndex(), _priority);
     }
 
     if (_parentTask != nullptr) {

@@ -682,44 +682,6 @@ void WarScene::toggleCamera() {
 }
 
 bool WarScene::loadResources(bool continueOnErrors) {
-    const vec2<U16>& resolution = _GUI->getDisplayResolution();
-
-    _GUI->addButton(_ID("Simulate"), "Simulate",
-                    vec2<I32>(resolution.width - 220, 60),
-                    vec2<U32>(100, 25),
-                    DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
-
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 63),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 50, 255, 255), // Color
-                  Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
-    _GUI->addText(_ID("RenderBinCount"),
-                  vec2<I32>(60, 83),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(164, 50, 50, 255),
-                  Util::StringFormat("Number of items in Render Bin: %d", 0));
-    _GUI->addText(_ID("camPosition"), vec2<I32>(60, 103),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(50, 192, 50, 255),
-                  Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                     renderState().getCamera().getEye().x,
-                                     renderState().getCamera().getEye().y,
-                                     renderState().getCamera().getEye().z,
-                                     renderState().getCamera().getEuler().pitch,
-                                     renderState().getCamera().getEuler().yaw));
-
-    _GUI->addText(_ID("scoreDisplay"),
-        vec2<I32>(60, 123),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
-        vec4<U8>(50, 192, 50, 255),// Color
-        Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
-
-    _GUI->addText(_ID("entityState"), vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
-                  vec4<U8>(0, 0, 0, 255),
-                  "");
-
-    _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
     // Add a first person camera
     Camera* cam = renderState().getCameraMgr().createCamera("fpsCamera", Camera::CameraType::FIRST_PERSON);
     cam->fromCamera(renderState().getCameraConst());
@@ -739,6 +701,49 @@ bool WarScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0); // animation team 2
     _taskTimers.push_back(0.0); // light timer
     return true;
+}
+
+void WarScene::postLoadMainThread() {
+    const vec2<U16>& resolution = _GUI->getDisplayResolution();
+
+    _GUI->addButton(_ID("Simulate"), "Simulate",
+        vec2<I32>(resolution.width - 220, 60),
+        vec2<U32>(100, 25),
+        DELEGATE_BIND(&WarScene::startSimulation, this, std::placeholders::_1));
+
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+        vec2<I32>(60, 63),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 50, 255, 255), // Color
+        Util::StringFormat("FPS: %3.0f. FrameTime: %3.1f", 0.0f, 0.0f));  // Text and arguments
+    _GUI->addText(_ID("RenderBinCount"),
+        vec2<I32>(60, 83),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(164, 50, 50, 255),
+        Util::StringFormat("Number of items in Render Bin: %d", 0));
+    _GUI->addText(_ID("camPosition"), vec2<I32>(60, 103),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(50, 192, 50, 255),
+        Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+            renderState().getCamera().getEye().x,
+            renderState().getCamera().getEye().y,
+            renderState().getCamera().getEye().z,
+            renderState().getCamera().getEuler().pitch,
+            renderState().getCamera().getEuler().yaw));
+
+    _GUI->addText(_ID("scoreDisplay"),
+        vec2<I32>(60, 123),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(50, 192, 50, 255),// Color
+        Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
+
+    _GUI->addText(_ID("entityState"), vec2<I32>(60, 163), Font::DIVIDE_DEFAULT,
+        vec4<U8>(0, 0, 0, 255),
+        "");
+
+    _infoBox = _GUI->addMsgBox(_ID("infoBox"), "Info", "Blabla");
+
+    Scene::postLoadMainThread();
 }
 
 void WarScene::weaponCollision(SceneGraphNode_cptr collider) {

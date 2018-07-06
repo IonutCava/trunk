@@ -58,7 +58,7 @@ class TaskPool {
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
     friend class Task;
-    void taskCompleted(U32 poolIndex);
+    void taskCompleted(U32 poolIndex, Task::TaskPriority priority);
     inline ThreadPool& threadPool() {
         return _mainTaskPool;
     }

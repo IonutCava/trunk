@@ -155,7 +155,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTime, SceneState& sceneState) {
             [this]() mutable
             {
                 _octreeUpdating = false;
-            })._task->startTask(Task::TaskPriority::REALTIME);
+            })._task->startTask(Task::TaskPriority::REALTIME_WITH_CALLBACK);
     }
 }
 

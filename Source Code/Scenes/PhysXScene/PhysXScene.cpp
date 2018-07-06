@@ -99,15 +99,6 @@ U16 PhysXScene::registerInputActions() {
 }
 
 bool PhysXScene::loadResources(bool continueOnErrors) {
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 20),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 64, 255, 255),  // Color
-                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
-    _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
-                  vec4<U8>(164, 64, 64, 255),
-                  Util::StringFormat("Number of items in Render Bin: %d", 0));
-
     _guiTimers.push_back(0.0);  // Fps
     renderState().getCamera().setFixedYawAxis(false);
     renderState().getCamera().setRotation(-45 /*yaw*/, 10 /*pitch*/);
@@ -116,6 +107,19 @@ bool PhysXScene::loadResources(bool continueOnErrors) {
     ParamHandler::instance().setParam(_ID("rendering.enableFog"), false);
     ParamHandler::instance().setParam(_ID("postProcessing.bloomFactor"), 0.1f);
     return true;
+}
+
+void PhysXScene::postLoadMainThread() {
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+        vec2<I32>(60, 20),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 64, 255, 255),  // Color
+        Util::StringFormat("FPS: %d", 0));  // Text and arguments
+    _GUI->addText(_ID("RenderBinCount"), vec2<I32>(60, 30), Font::DIVIDE_DEFAULT,
+        vec4<U8>(164, 64, 64, 255),
+        Util::StringFormat("Number of items in Render Bin: %d", 0));
+
+    Scene::postLoadMainThread();
 }
 
 bool PhysXScene::unload() { return Scene::unload(); }

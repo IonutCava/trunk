@@ -7,6 +7,8 @@
 #include "Headers/GUIConsole.h"
 #include "Headers/GUIMessageBox.h"
 
+#include "Core/Headers/Application.h"
+
 namespace Divide {
 
 GUIInterface::GUIInterface(const vec2<U16>& resolution)
@@ -31,6 +33,8 @@ void GUIInterface::onChangeResolution(U16 w, U16 h) {
 
 
 void GUIInterface::addElement(ULL id, GUIElement* element) {
+    assert(Application::instance().isMainThread());
+
     GUIMap::iterator it = _guiElements.find(id);
     if (it != std::end(_guiElements)) {
         MemoryManager::SAFE_UPDATE(it->second.first, element);
@@ -91,6 +95,7 @@ GUIButton* GUIInterface::addButton(ULL ID,
                                    const vec2<U32>& dimensions,
                                    ButtonCallback callback,
                                    const stringImpl& rootSheetID) {
+    assert(getGUIElement(ID) == nullptr);
 
     const vec2<U16>& resolution = getDisplayResolution();
 
@@ -120,6 +125,8 @@ GUIMessageBox* GUIInterface::addMsgBox(ULL ID,
                                        const stringImpl& title,
                                        const stringImpl& message,
                                        const vec2<I32>& offsetFromCentre) {
+    assert(getGUIElement(ID) == nullptr);
+
     GUIMessageBox* box = MemoryManager_NEW GUIMessageBox(ID, title, message, offsetFromCentre, GUI::instance().rootSheet());
     addElement(ID, box);
 
@@ -132,6 +139,7 @@ GUIText* GUIInterface::addText(ULL ID,
                                const vec4<U8>& color,
                                const stringImpl& text,
                                U32 fontSize) {
+    assert(getGUIElement(ID) == nullptr);
 
     GUIText* t = MemoryManager_NEW GUIText(ID,
                                            text,
@@ -151,6 +159,7 @@ GUIFlash* GUIInterface::addFlash(ULL ID,
                                  stringImpl movie,
                                  const vec2<U32>& position,
                                  const vec2<U32>& extent) {
+    assert(getGUIElement(ID) == nullptr);
 
     GUIFlash* flash = MemoryManager_NEW GUIFlash(ID, GUI::instance().rootSheet());
     addElement(ID, flash);

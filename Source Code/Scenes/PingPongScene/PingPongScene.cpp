@@ -323,38 +323,7 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     light->setCastShadows(false);
     light->setPosition(vec3<F32>(0, 6, 2));
     */
-    const vec2<U16>& resolution = _GUI->getDisplayResolution();
-    // Buttons and text labels
-    _GUI->addButton(_ID("Serve"), "Serve",
-                    vec2<I32>(to_int(resolution.width - 120),
-                              to_int(resolution.height / 1.1f)),
-                    vec2<U32>(100, 25),
-                    DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
-
-    _GUI->addText(_ID("Score"),
-                  vec2<I32>(to_int(resolution.width - 120),
-                            to_int(resolution.height / 1.3f)),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(255, 0, 0, 255),
-                  Util::StringFormat("Score: %d", 0));
-
-    _GUI->addText(_ID("Message"),
-                  vec2<I32>(to_int(resolution.width - 120),
-                            to_int(resolution.height / 1.5f)),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(255, 0, 0, 255),
-                  "");
-    _GUI->addText(_ID("insults"),
-                  vec2<I32>(resolution.width / 4,
-                            resolution.height / 3),
-                  Font::DIVIDE_DEFAULT,
-                  vec4<U8>(0, 255, 0, 255),
-                  "");
-    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
-                  vec2<I32>(60, 60),  // Position
-                  Font::DIVIDE_DEFAULT,  // Font
-                  vec4<U8>(0, 50, 255, 255),// Color
-                  Util::StringFormat("FPS: %d", 0));  // Text and arguments
+ 
     // Add some taunts
     _quotes.push_back("Ha ha ... even Odin's laughin'!");
     _quotes.push_back("If you're a ping-pong player, I'm Jimmy Page");
@@ -369,6 +338,43 @@ bool PingPongScene::loadResources(bool continueOnErrors) {
     _taskTimers.push_back(0.0);  // Light
 
     return true;
+}
+
+void PingPongScene::postLoadMainThread() {
+    const vec2<U16>& resolution = _GUI->getDisplayResolution();
+    // Buttons and text labels
+    _GUI->addButton(_ID("Serve"), "Serve",
+        vec2<I32>(to_int(resolution.width - 120),
+            to_int(resolution.height / 1.1f)),
+        vec2<U32>(100, 25),
+        DELEGATE_BIND(&PingPongScene::serveBall, this, std::placeholders::_1));
+
+    _GUI->addText(_ID("Score"),
+        vec2<I32>(to_int(resolution.width - 120),
+            to_int(resolution.height / 1.3f)),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(255, 0, 0, 255),
+        Util::StringFormat("Score: %d", 0));
+
+    _GUI->addText(_ID("Message"),
+        vec2<I32>(to_int(resolution.width - 120),
+            to_int(resolution.height / 1.5f)),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(255, 0, 0, 255),
+        "");
+    _GUI->addText(_ID("insults"),
+        vec2<I32>(resolution.width / 4,
+            resolution.height / 3),
+        Font::DIVIDE_DEFAULT,
+        vec4<U8>(0, 255, 0, 255),
+        "");
+    _GUI->addText(_ID("fpsDisplay"),  // Unique ID
+        vec2<I32>(60, 60),  // Position
+        Font::DIVIDE_DEFAULT,  // Font
+        vec4<U8>(0, 50, 255, 255),// Color
+        Util::StringFormat("FPS: %d", 0));  // Text and arguments
+
+    Scene::postLoadMainThread();
 }
 
 };
