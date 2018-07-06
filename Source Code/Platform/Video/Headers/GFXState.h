@@ -73,17 +73,17 @@ class GPUState : private NonCopyable {
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
     inline vectorAlg::vecSize getDisplayCount() const {
-        return _supportedDislpayModes.size();
+        return _supportedDisplayModes.size();
     }
 
     inline const vectorImpl<GPUVideoMode>& getDisplayModes(vectorAlg::vecSize displayIndex) const {
-        assert(displayIndex < _supportedDislpayModes.size());
-        return _supportedDislpayModes[displayIndex];
+        assert(displayIndex < _supportedDisplayModes.size());
+        return _supportedDisplayModes[displayIndex];
     }
 
    protected:
     // Display system
-    vectorImpl<vectorImpl<GPUVideoMode>> _supportedDislpayModes;
+    vectorImpl<vectorImpl<GPUVideoMode>> _supportedDisplayModes;
 };
 
 };  // namespace Divide

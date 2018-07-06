@@ -15,6 +15,11 @@
 
 namespace Divide {
 
+
+namespace {
+    size_t g_PlaneCommandIndex = 0;
+};
+
 Terrain::Terrain(GFXDevice& context, ResourceCache& parentCache, const stringImpl& name)
     : Object3D(context, parentCache, name, ObjectType::TERRAIN, ObjectFlag::OBJECT_FLAG_NONE),
       _alphaTexturePresent(false),
@@ -120,14 +125,8 @@ void Terrain::buildQuadtree() {
 void Terrain::sceneUpdate(const U64 deltaTime,
                           SceneGraphNode& sgn,
                           SceneState& sceneState) {
-    static Plane<F32> previousWaterPlane;
-    _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     _waterHeight = sceneState.waterLevel();
-    Plane<F32> currentWaterPlane(WORLD_Y_AXIS, _waterHeight);
-    if (previousWaterPlane != currentWaterPlane) {
-        previousWaterPlane = currentWaterPlane;
-        _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, currentWaterPlane);
-    }
+    _terrainQuadtree.sceneUpdate(deltaTime, sgn, sceneState);
     Object3D::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
@@ -144,6 +143,8 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
     for (U32 i = 0; i < chunkCount; ++i) {
         drawCommandsInOut.push_back(cmd);
     }
+
+    g_PlaneCommandIndex = drawCommandsInOut.size();
     //infinite plane
     VertexBuffer* const vb = _plane->getGeometryVB();
     cmd.cmd().firstIndex = 0;
@@ -163,15 +164,17 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void Terrain::updateDrawCommands(SceneGraphNode& sgn,
-                                 RenderStage renderStage,
+                                 const RenderStagePass& renderStagePass,
                                  const SceneRenderState& sceneRenderState,
                                  GenericDrawCommands& drawCommandsInOut) {
+
+    _context.setClipPlane(ClipPlaneIndex::CLIP_PLANE_0, Plane<F32>(WORLD_Y_AXIS, _waterHeight));
 
     drawCommandsInOut.front().shaderProgram()->Uniform("dvd_waterHeight", _waterHeight);
     vectorImpl<vec3<U32>> chunkData;
     size_t chunkCount = static_cast<size_t>(_terrainQuadtree.getChunkCount());
     chunkData.reserve(chunkCount);
-    _terrainQuadtree.getChunkBufferData(renderStage, sceneRenderState, chunkData);
+    _terrainQuadtree.getChunkBufferData(renderStagePass._stage, sceneRenderState, chunkData);
 
     std::sort(std::begin(chunkData), std::end(chunkData),
                 [](const vec3<U32>& a, const vec3<U32>& b) {
@@ -189,11 +192,12 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             cmd.LoD(to_byte(cmdData.z));
         }
     }
-    i++;
 
     // draw infinite plane
-    drawCommandsInOut[++i].drawCount((renderStage == RenderStage::DISPLAY ||
-                                      renderStage == RenderStage::Z_PRE_PASS) ? 1 : 0);
+    GenericDrawCommand& planeCmd = drawCommandsInOut[g_PlaneCommandIndex];
+    planeCmd.drawCount((renderStagePass._stage == RenderStage::DISPLAY ? 1 : 0));
+
+    i = g_PlaneCommandIndex + 1;
 
     if (_drawBBoxes) {
         GenericDrawCommands commands;
@@ -210,7 +214,7 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
         }
     }
 
-    Object3D::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
+    Object3D::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 
 vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z) const {

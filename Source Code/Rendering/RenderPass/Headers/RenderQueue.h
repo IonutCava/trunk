@@ -50,7 +50,7 @@ class RenderQueue {
     ~RenderQueue();
 
     void populateRenderQueues(RenderStage renderStage);
-    void postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut);
+    void postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut);
     void sort(RenderStage renderStage);
     void refresh();
     void addNodeToQueue(const SceneGraphNode& sgn, RenderStage stage, const vec3<F32>& eyePos);

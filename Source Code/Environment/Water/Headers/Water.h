@@ -49,7 +49,7 @@ class WaterPlane : public SceneNode {
     /// Resource inherited "unload"
     bool unload() override;
     /// General SceneNode stuff
-    bool onRender(RenderStage currentStage) override;
+    bool onRender(const RenderStagePass& renderStagePass) override;
 
     bool getDrawState(RenderStage currentStage);
 
@@ -73,7 +73,7 @@ class WaterPlane : public SceneNode {
                                 RenderStage renderStage,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
-                            RenderStage renderStage,
+                            const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 
@@ -98,11 +98,6 @@ class WaterPlane : public SceneNode {
     F32 _shininess;
     vec2<F32> _noiseTile;
     vec2<F32> _noiseFactor;
-
-    /// used for render exclusion. Do not render self in own reflection
-    bool _updateSelf;
-    /// Use this to force current reflector to draw itself in reflection
-    bool _excludeSelfReflection;
 
     Camera* _reflectionCam;
 };

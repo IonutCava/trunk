@@ -62,7 +62,7 @@ class SceneRoot : public SceneNode {
 
     }
 
-    bool onRender(RenderStage currentStage) {
+    bool onRender(const RenderStagePass& renderStagePass) {
         return true;
     }
 
@@ -89,7 +89,7 @@ class SceneTransform : public SceneNode {
         setState(ResourceState::RES_LOADED);
     }
 
-    bool onRender(RenderStage currentStage) { return true; }
+    bool onRender(const RenderStagePass& renderStagePass) { return true; }
 
     void postLoad(SceneGraphNode& sgn) { return; }
     bool unload() { return true; }
@@ -308,7 +308,7 @@ class SceneGraphNode : public GUIDWrapper,
    protected:
     friend class RenderingComponent;
     bool prepareDraw(const SceneRenderState& sceneRenderState,
-                     RenderStage renderStage);
+                     const RenderStagePass& renderStagePass);
 
    protected:
     friend class SceneGraph;

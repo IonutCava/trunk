@@ -450,17 +450,18 @@ void SceneManager::preRender(const Camera& camera, RenderTarget& target) {
     LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());
     gfx.getRenderer().preRender(target, *lightPool);
 
-    if (gfx.getRenderStage() == RenderStage::DISPLAY) {
+    if (gfx.getRenderStage()._stage == RenderStage::DISPLAY) {
         PostFX::instance().cacheDisplaySettings(gfx);
     }
 }
 
-void SceneManager::postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
+void SceneManager::postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut) {
     Scene& activeScene = getActiveScene();
     SceneRenderState& activeSceneRenderState = activeScene.renderState();
 
-    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stage, subPassesInOut);
-    Attorney::SceneManager::debugDraw(activeScene, camera, stage, subPassesInOut);
+    const RenderStagePass& stagePass = _platformContext->gfx().getRenderStage();
+    parent().renderPassManager().getQueue().postRender(activeSceneRenderState, stagePass, subPassesInOut);
+    Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, subPassesInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
     _platformContext->gfx().debugDraw(activeSceneRenderState, camera, subPassesInOut);
 }
@@ -655,10 +656,11 @@ void SceneManager::updateVisibleNodes(const RenderStagePass& stage, bool refresh
     _platformContext->gfx().buildDrawCommands(visibleNodes, getActiveScene().renderState(), bufferData, refreshNodeData);
 }
 
-bool SceneManager::populateRenderQueue(const RenderStagePass& stage,
-                                       const Camera& camera,
+bool SceneManager::populateRenderQueue(const Camera& camera,
                                        bool doCulling,
                                        U32 passIndex) {
+
+    const RenderStagePass& stage = _platformContext->gfx().getRenderStage();
 
     if (!stage._prePass) {
         LightPool* lightPool = Attorney::SceneManager::lightPool(getActiveScene());

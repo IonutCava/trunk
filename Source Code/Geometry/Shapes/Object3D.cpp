@@ -97,7 +97,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-bool Object3D::onRender(RenderStage currentStage) {
+bool Object3D::onRender(const RenderStagePass& renderStagePass) {
     return getState() == ResourceState::RES_LOADED;
 }
 

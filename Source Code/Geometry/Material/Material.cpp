@@ -338,8 +338,7 @@ void Material::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 ar
     _defaultRefraction.second = arrayIndex;
 }
 
-/// If the current material doesn't have a shader associated with it, then add
-/// the default ones.
+/// If the current material doesn't have a shader associated with it, then add the default ones.
 bool Material::computeShader(RenderStage renderStage, const bool computeOnAdd){
     ShaderProgramInfo& info = _shaderInfo[to_uint(renderStage)];
     // If shader's invalid, try to request a recompute as it might fix it

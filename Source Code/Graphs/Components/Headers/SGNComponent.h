@@ -38,6 +38,7 @@ namespace Divide {
 /// A generic component for the SceneGraphNode class
 enum class RenderStage : U32;
 class SceneGraphNode;
+struct RenderStagePass;
 
 class SGNComponent : private NonCopyable {
    public:
@@ -57,7 +58,10 @@ class SGNComponent : private NonCopyable {
     SGNComponent(ComponentType type, SceneGraphNode& parentSGN);
     virtual ~SGNComponent();
 
-    virtual bool onRender(RenderStage currentStage) { return true; }
+    virtual bool onRender(const RenderStagePass& renderStagePass) {
+        return true;
+    }
+
     virtual void update(const U64 deltaTime) {
         _deltaTime = deltaTime;
         _elapsedTime += deltaTime;

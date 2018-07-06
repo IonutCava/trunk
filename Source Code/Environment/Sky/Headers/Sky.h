@@ -50,7 +50,7 @@ class Sky : public SceneNode {
     explicit Sky(ResourceCache& parentCache, const stringImpl& name, U32 diameter);
     ~Sky();
 
-    bool onRender(RenderStage currentStage) override;
+    bool onRender(const RenderStagePass& renderStagePass) override;
     void setSunProperties(const vec3<F32>& sunVect, const vec4<F32>& sunColour);
 
    protected:
@@ -60,7 +60,7 @@ class Sky : public SceneNode {
                                 RenderStage renderStage,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
-                            RenderStage renderStage,
+                            const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 

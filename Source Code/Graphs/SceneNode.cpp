@@ -131,11 +131,11 @@ void SceneNode::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void SceneNode::updateDrawCommands(SceneGraphNode& sgn,
-                                   RenderStage renderStage,
+                                   const RenderStagePass& renderStagePass,
                                    const SceneRenderState& sceneRenderState,
                                    GenericDrawCommands& drawCommandsInOut) {
     ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(renderStage);
+    ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(sceneRenderState);
     ACKNOWLEDGE_UNUSED(drawCommandsInOut);
 }

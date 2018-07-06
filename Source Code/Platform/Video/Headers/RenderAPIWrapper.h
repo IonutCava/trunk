@@ -142,8 +142,18 @@ struct RenderStagePass {
         : _stage(stage),
           _prePass(prePass)
     {
+        assert(_stage != RenderStage::Z_PRE_PASS);
     }
 
+    inline bool operator==(const RenderStagePass& other) const {
+        return _prePass == other._prePass &&
+               _stage == other._stage;
+    }
+
+    inline bool operator!=(const RenderStagePass& other) const {
+        return _prePass != other._prePass ||
+               _stage != other._stage;
+    }
     RenderStage _stage;
     bool _prePass;
 };

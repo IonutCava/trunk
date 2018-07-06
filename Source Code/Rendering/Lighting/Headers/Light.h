@@ -147,7 +147,7 @@ class Light : public SceneNode {
     /// Get a pointer to the light's impostor
     inline ImpostorSphere* const getImpostor() const { return _impostor.get(); }
 
-    bool onRender(RenderStage currentStage) override;
+    bool onRender(const RenderStagePass& renderStagePass) override;
 
     /// SceneNode concrete implementations
     bool unload() override;

@@ -55,17 +55,8 @@ GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
 
 inline bool 
 GFXDevice::isDepthStage() const {
-    return getRenderStage() == RenderStage::SHADOW || isPrePass();
-}
-
-inline bool 
-GFXDevice::isPrePass() const {
-    return _isPrePassStage;
-}
-
-inline void 
-GFXDevice::setPrePass(const bool state) {
-    _isPrePassStage = state;
+    return getRenderStage()._stage == RenderStage::SHADOW ||
+           getRenderStage()._prePass;
 }
 
 /// Register a function to be called in the 2D rendering fase of the GFX Flush
@@ -95,10 +86,10 @@ GFXDevice::remove2DRenderFunction(const GUID_DELEGATE_CBK& callback) {
 /// Sets the current render stage.
 ///@param stage Is used to inform the rendering pipeline what we are rendering.
 /// Shadows? reflections? etc
-inline RenderStage 
-GFXDevice::setRenderStage(RenderStage stage) {
-    _prevRenderStage = _renderStage;
-    _renderStage = stage;
+inline const RenderStagePass& 
+GFXDevice::setRenderStagePass(const RenderStagePass& stage) {
+    _prevRenderStagePass = _renderStagePass;
+    _renderStagePass = stage;
     return stage;
 }
 /// disable or enable a clip plane by index
@@ -108,7 +99,6 @@ GFXDevice::toggleClipPlane(ClipPlaneIndex index, const bool state) {
     U32 idx = to_uint(index);
     if (state != _clippingPlanes[idx].active()) {
         _clippingPlanes[idx].active(state);
-        _api->updateClipPlanes();
     }
 }
 /// modify a single clip plane by index
@@ -124,15 +114,13 @@ GFXDevice::setClipPlanes(const PlaneList& clipPlanes) {
     if (clipPlanes != _clippingPlanes) {
         _clippingPlanes = clipPlanes;
         updateClipPlanes();
-        _api->updateClipPlanes();
     }
 }
 /// clear all clipping planes
 inline void 
 GFXDevice::resetClipPlanes() {
-    _clippingPlanes.resize(to_const_uint(Frustum::FrustPlane::COUNT), Plane<F32>(0, 0, 0, 0));
+    _clippingPlanes.resize(to_const_uint(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
     updateClipPlanes();
-    _api->updateClipPlanes();
 }
 /// Alternative to the normal version of getMatrix
 inline const mat4<F32>& GFXDevice::getMatrix(const MATRIX& mode) const {

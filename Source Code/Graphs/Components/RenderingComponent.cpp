@@ -204,11 +204,12 @@ void RenderingComponent::removeTextureDependency(const TextureData& additionalTe
     _textureDependencies.removeTexture(additionalTexture);
 }
 
-bool RenderingComponent::onRender(RenderStage currentStage) {
+bool RenderingComponent::onRender(const RenderStagePass& renderStagePass) {
     // Call any pre-draw operations on the SceneNode (refresh VB, update
     // materials, get list of textures, etc)
+    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
 
-    RenderPackage& pkg = _renderData[to_uint(currentStage)];
+    RenderPackage& pkg = _renderData[to_uint(activeStage)];
 
     pkg._textureData.clear(false);
     const Material_ptr& mat = getMaterialInstance();
@@ -220,7 +221,7 @@ bool RenderingComponent::onRender(RenderStage currentStage) {
         pkg._textureData.addTexture(texture);
     }
 
-    return _parentSGN.getNode()->onRender(currentStage);
+    return _parentSGN.getNode()->onRender(renderStagePass);
 }
 
 void RenderingComponent::renderGeometry(const bool state) {
@@ -360,9 +361,9 @@ void RenderingComponent::getRenderingProperties(vec4<F32>& propertiesOut, F32& r
 }
 
 /// Called after the current node was rendered
-void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
+void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
     
-    if (renderStage != RenderStage::DISPLAY || _context.isPrePass()) {
+    if (renderStagePass._stage != RenderStage::DISPLAY || renderStagePass._prePass) {
         return;
     }
 
@@ -569,25 +570,29 @@ void RenderingComponent::updateLoDLevel(const Camera& camera, RenderStage render
     }
 }
 
-void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
-    _preDrawPass = canDraw(renderStage) && _parentSGN.prepareDraw(sceneRenderState, renderStage);
+void RenderingComponent::prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
+    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
+
+    _preDrawPass = canDraw(activeStage) && _parentSGN.prepareDraw(sceneRenderState, renderStagePass);
 }
 
 RenderPackage&
-RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage) {
-    RenderPackage& pkg = _renderData[to_uint(renderStage)];
+RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass) {
+    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
+
+    RenderPackage& pkg = _renderData[to_uint(activeStage)];
     pkg.isRenderable(false);
     if (_preDrawPass)
     {
         for (GenericDrawCommand& cmd : pkg._drawCommands) {
             cmd.renderMask(renderMask());
-            cmd.stateHash(getDrawStateHash(renderStage));
-            cmd.shaderProgram(getDrawShader(renderStage));
+            cmd.stateHash(getDrawStateHash(activeStage));
+            cmd.shaderProgram(getDrawShader(activeStage));
         }
 
-        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStage, sceneRenderState, pkg._drawCommands);
+        _parentSGN.getNode()->updateDrawCommands(_parentSGN, renderStagePass, sceneRenderState, pkg._drawCommands);
 
-        updateLoDLevel(*Camera::activeCamera(), renderStage);
+        updateLoDLevel(*Camera::activeCamera(), activeStage);
 
         U32 offset = commandOffset();
         bool sceneRenderWireframe = sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME);
@@ -607,8 +612,10 @@ RenderingComponent::getDrawPackage(const SceneRenderState& sceneRenderState, Ren
 }
 
 RenderPackage& 
-RenderingComponent::getDrawPackage(RenderStage renderStage) {
-    return _renderData[to_uint(renderStage)];
+RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
+    RenderStage activeStage = renderStagePass._prePass ? RenderStage::Z_PRE_PASS : renderStagePass._stage;
+
+    return _renderData[to_uint(activeStage)];
 }
 
 void RenderingComponent::setActive(const bool state) {
@@ -675,7 +682,7 @@ bool RenderingComponent::updateReflection(U32 reflectionIndex,
                                      0,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                     RenderStage::REFLECTION,
+                                     RenderStagePass(RenderStage::REFLECTION, false),
                                      reflectionIndex);
         }
     }
@@ -720,14 +727,14 @@ bool RenderingComponent::updateRefraction(U32 refractionIndex,
     if (Config::Build::IS_DEBUG_BUILD) {
         GFXDevice::DebugView_ptr& viewPtr = _debugViews[1][refractionIndex];
         if (!viewPtr) {
-            /*viewPtr = std::make_shared<GFXDevice::DebugView>();
+            viewPtr = std::make_shared<GFXDevice::DebugView>();
             RenderTarget& target = _context.renderTarget(refractRTID);
             viewPtr->_texture = target.getAttachment(RTAttachment::Type::Colour, 0).asTexture();
             viewPtr->_shader = _previewRenderTarget;
             viewPtr->_shaderData._floatValues.push_back(std::make_pair("lodLevel", 0.0f));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("linearSpace", false));
             viewPtr->_shaderData._boolValues.push_back(std::make_pair("unpack2Channel", false));
-            _context.addDebugView(viewPtr);*/
+            _context.addDebugView(viewPtr);
         }
     }
 

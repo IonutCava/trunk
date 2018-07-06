@@ -314,7 +314,7 @@ void Vegetation::sceneUpdate(const U64 deltaTime,
 }
 
 U32 Vegetation::getQueryID() {
-    switch (_context.getRenderStage()) {
+    switch (_context.getRenderStage()._stage) {
         case RenderStage::SHADOW:
             return 0;
         case RenderStage::REFLECTION:
@@ -398,7 +398,7 @@ void Vegetation::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
-                                    RenderStage renderStage,
+                                    const RenderStagePass& renderStagePass,
                                     const SceneRenderState& sceneRenderState,
                                     GenericDrawCommands& drawCommandsOut) {
 
@@ -414,15 +414,15 @@ void Vegetation::updateDrawCommands(SceneGraphNode& sgn,
     cmd.cmd().primCount = buffer->getFeedbackPrimitiveCount(to_ubyte(queryID));
     cmd.sourceBuffer(buffer);
 
-    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsOut);
+    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsOut);
 }
 
-bool Vegetation::onRender(RenderStage renderStage) {
+bool Vegetation::onRender(const RenderStagePass& renderStagePass) {
     _staticDataUpdated = false;
     return !(!_render || !_success || !_threadedLoadComplete ||
              _parentLoD > 0 ||
-             (_context.getRenderStage() == _context.getPrevRenderStage() &&
-              renderStage == RenderStage::SHADOW));
+             (renderStagePass == _context.getPrevRenderStage() &&
+              renderStagePass._stage == RenderStage::SHADOW));
 }
 
 void Vegetation::generateTrees(const Task& parentTask) {

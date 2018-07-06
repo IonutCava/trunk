@@ -485,9 +485,9 @@ void SceneGraphNode::onTransform() {
 }
 
 bool SceneGraphNode::prepareDraw(const SceneRenderState& sceneRenderState,
-                                 RenderStage renderStage) {
+                                 const RenderStagePass& renderStagePass) {
     for (SGNComponent* component : _components) {
-        if (component && !component->onRender(renderStage)) {
+        if (component && !component->onRender(renderStagePass)) {
             return false;
         }
     }

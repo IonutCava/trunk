@@ -36,4 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/PlatformDefines.h"
 #include <Test.hpp>
 
+void PreparePlatform();
+
 #endif //_DEFINES_H_

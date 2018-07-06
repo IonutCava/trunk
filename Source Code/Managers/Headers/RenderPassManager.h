@@ -57,7 +57,7 @@ public:
               doPrePass(true),
               pass(0)
         {
-            clippingPlanes.fill(false);
+            clippingPlanes.resize(to_const_uint(ClipPlaneIndex::COUNT), Plane<F32>(0, 0, 0, 0));
         }
 
         RenderTargetID target;
@@ -67,7 +67,7 @@ public:
         bool occlusionCull = false;
         bool doPrePass = true;
         U32 pass = 0;
-        std::array<bool, to_const_uint(ClipPlaneIndex::COUNT)> clippingPlanes;
+        PlaneList clippingPlanes;
     };
 public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);

@@ -149,9 +149,9 @@ void RenderQueue::populateRenderQueues(RenderStage renderStage) {
     populateTask.wait();
 }
 
-void RenderQueue::postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
+void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
     for (RenderBin* renderBin : _activeBins) {
-        renderBin->postRender(renderState, renderStage, subPassesInOut);
+        renderBin->postRender(renderState, renderStagePass, subPassesInOut);
     }
 }
 

@@ -62,7 +62,7 @@ class WarScene : public Scene {
 
     void registerPoint(U16 teamID, const stringImpl& unitName);
     void printMessage(U8 eventId, const stringImpl& unitName);
-    void debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) override;
+    void debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) override;
 
    private:
     void startSimulation(I64 btnGUID);

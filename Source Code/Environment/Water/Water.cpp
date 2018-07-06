@@ -8,17 +8,15 @@
 namespace Divide {
 
 namespace {
-    ClipPlaneIndex g_reflectionClipID = ClipPlaneIndex::CLIP_PLANE_0;
-    ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_1;
+    ClipPlaneIndex g_reflectionClipID = ClipPlaneIndex::CLIP_PLANE_4;
+    ClipPlaneIndex g_refractionClipID = ClipPlaneIndex::CLIP_PLANE_5;
 };
 
 WaterPlane::WaterPlane(ResourceCache& parentCache, const stringImpl& name, I32 sideLength)
     : SceneNode(parentCache, name, SceneNodeType::TYPE_WATER),
       _plane(nullptr),
       _sideLength(std::max(sideLength, 1)),
-      _updateSelf(false),
       _paramsDirty(true),
-      _excludeSelfReflection(true),
       _reflectionCam(nullptr)
 {
     // Set water plane to be single-sided
@@ -120,18 +118,8 @@ bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& poi
     return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
-bool WaterPlane::onRender(RenderStage currentStage) {
-    if (currentStage == RenderStage::REFLECTION) {
-        // mark ourselves as reflection target only if we do not wish to reflect
-        // ourself back
-        _updateSelf = !_excludeSelfReflection;
-        STUBBED("ToDo: Set a reflection pass GUID to match the current reflective node so that we can avoid drawing ourselves -Ionut");
-    } else {
-        // unmark from reflection target
-        _updateSelf = true;
-    }
-
-    return _plane->onRender(currentStage);
+bool WaterPlane::onRender(const RenderStagePass& renderStagePass) {
+    return _plane->onRender(renderStagePass);
 }
 
 void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
@@ -147,34 +135,27 @@ void WaterPlane::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void WaterPlane::updateDrawCommands(SceneGraphNode& sgn,
-                                    RenderStage renderStage,
+                                    const RenderStagePass& renderStagePass,
                                     const SceneRenderState& sceneRenderState,
                                     GenericDrawCommands& drawCommandsInOut) {
-    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
+    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 
 
 bool WaterPlane::getDrawState(RenderStage currentStage) {
-    // Make sure we are not drawing our self unless this is desired
-    if (currentStage == RenderStage::REFLECTION && !_updateSelf) {
-        return false;
-    }
-
     // Else, process normal exclusion
     return SceneNode::getDrawState(currentStage);
 }
 
 /// update water refraction
 void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
-    GFXDevice& gfx = renderParams._context;
-    Plane<F32> refractionPlane;
-    updatePlaneEquation(renderParams._sgn, refractionPlane, false);
-    gfx.setClipPlane(g_refractionClipID, refractionPlane);
-
-    bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
-
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
+    bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    Plane<F32> refractionPlane;
+    updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
+    refractionPlane.active(true);
+
     RenderPassManager::PassParams params;
     params.doPrePass = true;
     params.occlusionCull = false;
@@ -183,20 +164,23 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_uint(/*underwater ? g_reflectionClipID : */g_refractionClipID)] = true;
-    gfx.parent().renderPassManager().doCustomPass(params);
+    params.clippingPlanes[to_uint(underwater ? g_reflectionClipID : g_refractionClipID)] = refractionPlane;
+    renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 
 /// Update water reflections
 void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
-    GFXDevice& gfx = renderParams._context;
+    // If we are above water, process the plane's refraction.
+    // If we are below, we render the scene normally
+    bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+
     Plane<F32> reflectionPlane;
-    updatePlaneEquation(renderParams._sgn, reflectionPlane, true);
-    gfx.setClipPlane(g_reflectionClipID, reflectionPlane);
+    updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater);
+    reflectionPlane.active(true);
 
     // Reset reflection cam
     _reflectionCam->fromCamera(*renderParams._camera);
-    if (!pointUnderwater(renderParams._sgn, renderParams._camera->getEye())) {
+    if (!underwater) {
         _reflectionCam->reflect(reflectionPlane);
     }
 
@@ -208,8 +192,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams) {
     params.target = renderParams._renderTarget;
     params.drawPolicy = params.doPrePass ? &RenderTarget::defaultPolicyKeepDepth() : &RenderTarget::defaultPolicy();
     params.pass = renderParams._passIndex;
-    params.clippingPlanes[to_uint(g_reflectionClipID)] = true;
-    gfx.parent().renderPassManager().doCustomPass(params);
+    params.clippingPlanes[to_uint(g_reflectionClipID)].active(true);
+    params.clippingPlanes[to_uint(underwater ? g_refractionClipID : g_reflectionClipID)] = reflectionPlane;
+    renderParams._context.parent().renderPassManager().doCustomPass(params);
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {

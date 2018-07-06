@@ -21,7 +21,7 @@ Trigger::~Trigger()
 {
 }
 
-bool Trigger::onRender(RenderStage currentStage) {
+bool Trigger::onRender(const RenderStagePass& renderStagePass) {
 
     return true;
 }

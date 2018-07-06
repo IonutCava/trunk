@@ -3,6 +3,14 @@
 
 #include <iostream>
 
+void PreparePlatform() {
+    static bool s_platformInit = false;
+    if (!s_platformInit) {
+        Divide::PlatformInit(0, nullptr);
+        s_platformInit = true;
+    }
+}
+
 int main(int argc, char **argv) {
 
     //Divide::Console::toggle(false);

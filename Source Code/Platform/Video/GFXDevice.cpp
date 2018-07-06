@@ -31,8 +31,8 @@ GFXDevice::GFXDevice(Kernel& parent)
     _renderer(nullptr),
     _shaderComputeQueue(nullptr),
     _commandPool(Config::MAX_DRAW_COMMANDS_IN_FLIGHT),
-    _renderStage(RenderStage::DISPLAY),
-    _prevRenderStage(RenderStage::COUNT),
+    _renderStagePass(RenderStage::DISPLAY, false),
+    _prevRenderStagePass(RenderStage::COUNT, false),
     _commandBuildTimer(Time::ADD_TIMER("Command Generation Timer"))
 {
     // Hash values
@@ -64,7 +64,6 @@ GFXDevice::GFXDevice(Kernel& parent)
     _dualParaboloidCamera = nullptr;
     // Booleans
     _2DRendering = false;
-    _isPrePassStage = false;
     // Enumerated Types
     _shadowDetailLevel = RenderDetailLevel::HIGH;
     _renderDetailLevel = RenderDetailLevel::HIGH;
@@ -109,7 +108,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const U16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
-                                RenderStage renderStage,
+                                const RenderStagePass& stagePass,
                                 U32 passIndex) {
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
@@ -150,17 +149,17 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Set a 90 degree vertical FoV perspective projection
     _cubeCamera->setProjection(1.0f, 90.0f, zPlanes);
     // Set the desired render stage, remembering the previous one
-    RenderStage prevRenderStage = setRenderStage(renderStage);
+    const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
     // Enable our render target
     cubeMapTarget.begin(RenderTarget::defaultPolicy());
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = renderStage != RenderStage::SHADOW;
+    params.doPrePass = stagePass._stage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
     params.camera = _cubeCamera;
-    params.stage = renderStage;
+    params.stage = stagePass._stage;
     params.target = cubeMap;
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
@@ -178,14 +177,14 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Resolve our render target
     cubeMapTarget.end();
     // Return to our previous rendering stage
-    setRenderStage(prevRenderStage);
+    setRenderStagePass(prevRenderStage);
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const U16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
-                                          RenderStage renderStage,
+                                          const RenderStagePass& stagePass,
                                           U32 passIndex)
 {
     RenderTarget& paraboloidTarget = renderTarget(targetBuffer);
@@ -212,14 +211,14 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     // Set a 90 degree vertical FoV perspective projection
     _dualParaboloidCamera->setProjection(1.0f, 180.0f, zPlanes);
     // Set the desired render stage, remembering the previous one
-    RenderStage prevRenderStage = setRenderStage(renderStage);
+    const RenderStagePass& prevRenderStage = setRenderStagePass(stagePass);
 
     RenderPassManager& passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
-    params.doPrePass = renderStage != RenderStage::SHADOW;
+    params.doPrePass = stagePass._stage != RenderStage::SHADOW;
     params.occlusionCull = params.doPrePass;
     params.camera = _dualParaboloidCamera;
-    params.stage = renderStage;
+    params.stage = stagePass._stage;
     params.target = targetBuffer;
 
     // Enable our render target
@@ -238,7 +237,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         }
         paraboloidTarget.end();
     // Return to our previous rendering stage
-    setRenderStage(prevRenderStage);
+    setRenderStagePass(prevRenderStage);
 }
 
 void GFXDevice::increaseResolution() {

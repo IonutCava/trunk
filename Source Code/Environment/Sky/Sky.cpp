@@ -120,8 +120,8 @@ void Sky::sceneUpdate(const U64 deltaTime,
     SceneNode::sceneUpdate(deltaTime, sgn, sceneState);
 }
 
-bool Sky::onRender(RenderStage currentStage) {
-    return _sky->onRender(currentStage);
+bool Sky::onRender(const RenderStagePass& renderStagePass) {
+    return _sky->onRender(renderStagePass);
 }
 
 void Sky::initialiseDrawCommands(SceneGraphNode& sgn,
@@ -136,18 +136,17 @@ void Sky::initialiseDrawCommands(SceneGraphNode& sgn,
 }
 
 void Sky::updateDrawCommands(SceneGraphNode& sgn,
-                             RenderStage renderStage,
+                             const RenderStagePass& renderStagePass,
                              const SceneRenderState& sceneRenderState,
                              GenericDrawCommands& drawCommandsInOut) {
 
     GenericDrawCommand& cmd = drawCommandsInOut.front();
-    cmd.stateHash(renderStage == RenderStage::REFLECTION
-                              ? _skyboxRenderStateReflectedHash
-                              : renderStage == RenderStage::Z_PRE_PASS
-                                             ? _skyboxRenderStateHashPrePass
-                                             : _skyboxRenderStateHash);
-    cmd.shaderProgram(renderStage == RenderStage::Z_PRE_PASS ? _skyShaderPrePass : _skyShader);
-    SceneNode::updateDrawCommands(sgn, renderStage, sceneRenderState, drawCommandsInOut);
+    cmd.stateHash(renderStagePass._stage == RenderStage::REFLECTION
+                                          ? _skyboxRenderStateReflectedHash
+                                          : renderStagePass._prePass  ? _skyboxRenderStateHashPrePass
+                                                                      : _skyboxRenderStateHash);
+    cmd.shaderProgram(renderStagePass._prePass ? _skyShaderPrePass : _skyShader);
+    SceneNode::updateDrawCommands(sgn, renderStagePass, sceneRenderState, drawCommandsInOut);
 }
 
 void Sky::setSunProperties(const vec3<F32>& sunVect,

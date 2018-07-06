@@ -34,6 +34,8 @@ vectorImpl<stringImpl> getFiles(const stringImpl& input, const std::regex& patte
 
 TEST(RegexSuccessTest)
 {
+    PreparePlatform();
+
     {
         const stringImpl& inputInclude1("#include \"blaBla.h\"");
         const stringImpl& inputInclude2("#include <blaBla.h>");

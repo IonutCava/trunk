@@ -129,7 +129,7 @@ class Terrain : public Object3D {
                                 RenderStage renderStage,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
-                            RenderStage renderStage,
+                            const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 

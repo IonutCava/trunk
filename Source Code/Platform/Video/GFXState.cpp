@@ -14,11 +14,11 @@ GPUState::~GPUState()
 }
 
 void GPUState::registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode) {
-    if (displayIndex >= _supportedDislpayModes.size()) {
-        _supportedDislpayModes.push_back(vectorImpl<GPUVideoMode>());
+    if (displayIndex >= _supportedDisplayModes.size()) {
+        _supportedDisplayModes.push_back(vectorImpl<GPUVideoMode>());
     }
 
-    vectorImpl<GPUVideoMode>& displayModes = _supportedDislpayModes[displayIndex];
+    vectorImpl<GPUVideoMode>& displayModes = _supportedDisplayModes[displayIndex];
 
     // this is terribly slow, but should only be called a couple of times and
     // only on video hardware init

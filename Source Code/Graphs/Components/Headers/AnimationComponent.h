@@ -50,7 +50,7 @@ class AnimationComponent : public SGNComponent {
         _animator = animator;
     }
 
-    bool onRender(RenderStage currentStage) override;
+    bool onRender(const RenderStagePass& renderStagePass) override;
 
     void update(const U64 deltaTime) override;
 

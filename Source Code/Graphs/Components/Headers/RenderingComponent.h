@@ -98,7 +98,7 @@ class RenderingComponent : public SGNComponent {
     friend class Attorney::RenderingCompSceneNode;
 
    public:
-    bool onRender(RenderStage currentStage) override;
+    bool onRender(const RenderStagePass& renderStagePass) override;
     void update(const U64 deltaTime) override;
 
     void setActive(const bool state) override;
@@ -189,14 +189,14 @@ class RenderingComponent : public SGNComponent {
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
-                    RenderStage renderStage,
+                    const RenderStagePass& renderStagePass,
                     RenderSubPassCmds& subPassesInOut);
 
-    void prepareDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage);
+    void prepareDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
 
-    RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState, RenderStage renderStage);
+    RenderPackage& getDrawPackage(const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass);
 
-    RenderPackage& getDrawPackage(RenderStage renderStage);
+    RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
 
 
     inline void drawOrder(U32 index) { _drawOrder = index; }
@@ -294,8 +294,8 @@ class RenderingCompRenderPass {
 
 class RenderingCompSceneNode {
     private:
-        static RenderPackage& getDrawPackage(RenderingComponent& renderable, RenderStage renderStage) {
-            return renderable.getDrawPackage(renderStage);
+        static RenderPackage& getDrawPackage(RenderingComponent& renderable, const RenderStagePass& renderStagePass) {
+            return renderable.getDrawPackage(renderStagePass);
         }
 
         static void setCustomShader(RenderingComponent& renderable,
@@ -321,18 +321,18 @@ class RenderingCompGFXDevice {
    private:
     static void prepareDrawPackage(RenderingComponent& renderable,
                                              const SceneRenderState& sceneRenderState,
-                                             RenderStage renderStage) {
-        renderable.prepareDrawPackage(sceneRenderState, renderStage);
+                                             const RenderStagePass& renderStagePass) {
+        renderable.prepareDrawPackage(sceneRenderState, renderStagePass);
     }
 
     static RenderPackage& getDrawPackage(RenderingComponent& renderable,
                                          const SceneRenderState& sceneRenderState,
-                                         RenderStage renderStage,
+                                         const RenderStagePass& renderStagePass,
                                          U32 cmdOffset,
                                          U32 cmdIndex) {
         renderable.commandIndex(cmdIndex);
         renderable.commandOffset(cmdOffset);
-        return renderable.getDrawPackage(sceneRenderState, renderStage);
+        return renderable.getDrawPackage(sceneRenderState, renderStagePass);
     }
 
     friend class Divide::GFXDevice;
@@ -346,9 +346,9 @@ class RenderingCompRenderBin {
 
     static void postRender(RenderingComponent& renderable,
                            const SceneRenderState& sceneRenderState,
-                           RenderStage renderStage,
+                           const RenderStagePass& renderStagePass,
                            RenderSubPassCmds& subPassesInOut) {
-        renderable.postRender(sceneRenderState, renderStage, subPassesInOut);
+        renderable.postRender(sceneRenderState, renderStagePass, subPassesInOut);
     }
 
     static void drawOrder(RenderingComponent& renderable, U32 index) {

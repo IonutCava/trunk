@@ -163,9 +163,9 @@ void RenderBin::populateRenderQueue(const Task& parentTask, RenderStage renderSt
     }
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState, RenderStage renderStage, RenderSubPassCmds& subPassesInOut) {
+void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass& renderStagePass, RenderSubPassCmds& subPassesInOut) {
     for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStage, subPassesInOut);
+        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, renderStagePass, subPassesInOut);
     }
 }
 };

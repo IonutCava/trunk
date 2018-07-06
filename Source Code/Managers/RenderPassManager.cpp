@@ -166,17 +166,13 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     static CommandBuffer commandBuffer;
     commandBuffer.resize(0);
 
-    for (U32 clippingPlane = 0; clippingPlane < to_const_uint(ClipPlaneIndex::COUNT); ++clippingPlane) {
-        _context.toggleClipPlane(static_cast<ClipPlaneIndex>(clippingPlane), params.clippingPlanes[clippingPlane]);
-    }
 
     // step1: cull nodes for current camera and pass
     SceneManager& mgr = parent().sceneManager();
 
     // Tell the Rendering API to draw from our desired PoV
     _context.renderFromCamera(*params.camera);
-   
-    _context.setRenderStage(params.stage);
+    _context.setClipPlanes(params.clippingPlanes);
     
     if (params.doPrePass) {
         RenderTarget& target = _context.renderTarget(params.target);
@@ -186,12 +182,11 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     }
 
     if (params.doPrePass) {
+        _context.setRenderStagePass(RenderStagePass(params.stage, true));
+
         GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): PrePass", getStageName(params.stage)).c_str(), 0);
 
-        _context.setPrePass(true);
-
         Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
-                                                              RenderStagePass(params.stage, true),
                                                               *params.camera,
                                                               true,
                                                               params.pass);
@@ -205,7 +200,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
             cmd._renderTargetDescriptor = RenderTarget::defaultPolicyDepthOnly();
             _context.renderQueueToSubPasses(cmd);
             RenderSubPassCmds postRenderSubPasses(1);
-            Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
+            Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
             cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
             commandBuffer.push_back(cmd);
             cleanCommandBuffer(commandBuffer);
@@ -221,12 +216,11 @@ void RenderPassManager::doCustomPass(PassParams& params) {
     }
 
     GFX::ScopedDebugMessage(_context, Util::StringFormat("Custom pass ( %s ): RenderPass", getStageName(params.stage)).c_str(), 1);
-    _context.setPrePass(false);
-    // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
-    _context.setRenderStage(params.stage);
 
+    _context.setRenderStagePass(RenderStagePass(params.stage, false));
+
+    // step3: do renderer pass 1: light cull for Forward+ / G-buffer creation for Deferred
     Attorney::SceneManagerRenderPass::populateRenderQueue(mgr,
-                                                          RenderStagePass(params.stage, false),
                                                           *params.camera,
                                                           !params.doPrePass,
                                                           params.pass);
@@ -264,7 +258,7 @@ void RenderPassManager::doCustomPass(PassParams& params) {
         _context.renderQueueToSubPasses(cmd);
 
         RenderSubPassCmds postRenderSubPasses(1);
-        Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, params.stage, postRenderSubPasses);
+        Attorney::SceneManagerRenderPass::postRender(mgr, *params.camera, postRenderSubPasses);
         cmd._subPassCmds.insert(std::cend(cmd._subPassCmds), std::cbegin(postRenderSubPasses), std::cend(postRenderSubPasses));
 
         commandBuffer.push_back(cmd);

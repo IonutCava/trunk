@@ -1003,8 +1003,8 @@ void Scene::processTasks(const U64 deltaTime) {
     }
 }
 
-void Scene::debugDraw(const Camera& activeCamera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-    if (stage != RenderStage::DISPLAY || _context.gfx().isPrePass()) {
+void Scene::debugDraw(const Camera& activeCamera, const RenderStagePass& stagePass, RenderSubPassCmds& subPassesInOut) {
+    if (stagePass._stage != RenderStage::DISPLAY || stagePass._prePass) {
         return;
     }
 

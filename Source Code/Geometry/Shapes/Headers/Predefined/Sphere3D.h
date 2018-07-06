@@ -68,9 +68,9 @@ class Sphere3D : public Object3D {
         _dirty = true;
     }
 
-    bool onRender(RenderStage currentStage) {
+    bool onRender(const RenderStagePass& renderStagePass) {
         clean();
-        return Object3D::onRender(currentStage);
+        return Object3D::onRender(renderStagePass);
     }
 
    protected:

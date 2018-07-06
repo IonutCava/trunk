@@ -352,7 +352,7 @@ void glVertexArray::draw(const GenericDrawCommand& command) {
 
     // Bind the vertex array object that in turn activates all of the bindings
     // and pointers set on creation
-    GLuint vao = _vaoCaches[to_uint(_context.getRenderStage())];
+    GLuint vao = _vaoCaches[to_uint(_context.getRenderStage()._prePass ? RenderStage::Z_PRE_PASS : _context.getRenderStage()._stage)];
     if (GL_API::setActiveVAO(vao)) {
         // If this is the first time the VAO is bound in the current loop, check
         // for primitive restart requests

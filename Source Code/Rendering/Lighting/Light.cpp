@@ -126,7 +126,7 @@ void Light::updateBoundsInternal(SceneGraphNode& sgn) {
     SceneNode::updateBoundsInternal(sgn);
 }
 
-bool Light::onRender(RenderStage currentStage) {
+bool Light::onRender(const RenderStagePass& renderStagePass) {
     /*if (_type == LightType::DIRECTIONAL) {
         if (sceneState.playerState(0).overrideCamera() == nullptr) {
             sceneState.playerState(0).overrideCamera(_shadowCamera);

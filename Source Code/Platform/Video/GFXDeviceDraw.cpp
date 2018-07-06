@@ -25,6 +25,7 @@ void GFXDevice::uploadGPUBlock() {
         // need the previous data. Might avoid some driver sync
         _gfxDataBuffer->setData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
+        _api->updateClipPlanes();
         _gpuBlock._needsUpload = false;
     }
 }
@@ -174,13 +175,13 @@ void GFXDevice::buildDrawCommands(RenderPassCuller::VisibleNodeList& visibleNode
     U32 lastUnit0Handle = 0;
     U32 lastUnit1Handle = 0;
     U32 lastUsedSlot = 0;
-    RenderStage currentStage = getRenderStage();
+    RenderStagePass currentStage = getRenderStage();
     if (refreshNodeData) {
         bufferData._lastCommandCount = 0;
         bufferData._lasNodeCount = 0;
     }
 
-    if (currentStage == RenderStage::SHADOW) {
+    if (currentStage._stage == RenderStage::SHADOW) {
         Light* shadowLight = LightPool::currentShadowCastingLight();
         assert(shadowLight != nullptr);
         if (!COMPARE(_gpuBlock._data._renderProperties.x, shadowLight->getShadowProperties()._arrayOffset.x)) {

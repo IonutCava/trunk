@@ -189,10 +189,7 @@ public:  // GPU interface
     ///@param stage Is used to inform the rendering pipeline what we are rendering.
     ///Shadows? reflections? etc
     inline bool isDepthStage() const;
-    inline bool isPrePass() const;
-    inline void setPrePass(const bool state);
-    /// Clipping plane management. All the clipping planes are handled by shader
-    /// programs only!
+    /// Clipping plane management. All the clipping planes are handled by shader programs only!
     void updateClipPlanes();
     /// disable or enable a clip plane by index
     inline void toggleClipPlane(ClipPlaneIndex index, const bool state);
@@ -210,14 +207,14 @@ public:  // GPU interface
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
-        RenderStage renderStage,
+        const RenderStagePass& stagePass,
         U32 passIndex);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
         const U16 arrayOffset,
         const vec3<F32>& pos,
         const vec2<F32>& zPlanes,
-        RenderStage renderStage,
+        const RenderStagePass& stagePass,
         U32 passIndex);
 
     void getMatrix(const MATRIX& mode, mat4<F32>& mat) const;
@@ -271,9 +268,9 @@ public:  // Accessors and Mutators
 
     inline void debugDrawFrustum(Frustum* frustum) { _debugFrustum = frustum; }
 
-    inline RenderStage getRenderStage() const { return isPrePass() ? RenderStage::Z_PRE_PASS : _renderStage; }
+    inline const RenderStagePass& getRenderStage() const { return _renderStagePass; }
 
-    inline RenderStage getPrevRenderStage() const { return _prevRenderStage; }
+    inline const RenderStagePass&  getPrevRenderStage() const { return _prevRenderStagePass; }
 
     /// Return the last number of HIZ culled items
     U32 getLastCullCount() const;
@@ -336,7 +333,7 @@ public:  // Accessors and Mutators
 
     inline const vec4<I32>& getCurrentViewport() const { return _viewport.top(); }
 
-    inline RenderStage setRenderStage(RenderStage stage);
+    inline const RenderStagePass& setRenderStagePass(const RenderStagePass& stage);
 
     void addDebugView(const std::shared_ptr<DebugView>& view);
 
@@ -448,8 +445,8 @@ private:
     Camera* _2DCamera;
     Camera* _dualParaboloidCamera;
 
-    RenderStage _renderStage;
-    RenderStage _prevRenderStage;
+    RenderStagePass _renderStagePass;
+    RenderStagePass _prevRenderStagePass;
     vectorImpl<Line> _axisLines;
     IMPrimitive     *_axisGizmo;
     vectorImpl<Line> _axisLinesTransformed;
@@ -479,7 +476,6 @@ protected:
     /// The interpolation factor between the current and the last frame
     PlaneList _clippingPlanes;
     bool _2DRendering;
-    bool _isPrePassStage;
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS;
     U32 FRAME_DRAW_CALLS_PREV;

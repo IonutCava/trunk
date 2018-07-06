@@ -82,7 +82,7 @@ class Vegetation : public SceneNode {
                                 RenderStage renderStage,
                                 GenericDrawCommands& drawCommandsInOut) override;
     void updateDrawCommands(SceneGraphNode& sgn,
-                            RenderStage renderStage,
+                            const RenderStagePass& renderStagePass,
                             const SceneRenderState& sceneRenderState,
                             GenericDrawCommands& drawCommandsInOut) override;
 
@@ -91,7 +91,7 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) override;
 
-    bool onRender(RenderStage renderStage)  override;
+    bool onRender(const RenderStagePass& renderStagePass)  override;
 
     void gpuCull(const SceneRenderState& sceneRenderState);
 

@@ -75,7 +75,7 @@ class Object3D : public SceneNode {
 
     virtual void postLoad(SceneGraphNode& sgn);
 
-    virtual bool onRender(RenderStage currentStage);
+    virtual bool onRender(const RenderStagePass& renderStagePass);
                         
     inline bool getObjectFlag(ObjectFlag flag) const {
         return BitCompare(getFlagMask(), to_uint(flag));

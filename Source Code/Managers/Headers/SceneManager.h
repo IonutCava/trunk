@@ -186,9 +186,9 @@ protected:
     void onCameraUpdate(const Camera& camera);
     void onCameraChange(const Camera& camera);
     void preRender(const Camera& camera, RenderTarget& target);
-    void postRender(const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut);
+    void postRender(const Camera& camera, RenderSubPassCmds& subPassesInOut);
     bool generateShadowMaps();
-    bool populateRenderQueue(const RenderStagePass& stage, const Camera& camera, bool doCulling, U32 passIndex);
+    bool populateRenderQueue(const Camera& camera, bool doCulling, U32 passIndex);
     Camera* getActiveCamera() const;
     void currentPlayerPass(U8 playerIndex);
 
@@ -292,19 +292,18 @@ class SceneManagerKernel {
 class SceneManagerRenderPass {
    private:
     static bool populateRenderQueue(Divide::SceneManager& mgr,
-                                    const RenderStagePass& stage,
                                     const Camera& camera,
                                     bool doCulling,
                                     U32 passIndex) {
-        return mgr.populateRenderQueue(stage, camera, doCulling, passIndex);
+        return mgr.populateRenderQueue(camera, doCulling, passIndex);
     }
 
     static void preRender(Divide::SceneManager& mgr, const Camera& camera, RenderTarget& target) {
         mgr.preRender(camera, target);
     }
 
-    static void postRender(Divide::SceneManager& mgr, const Camera& camera, RenderStage stage, RenderSubPassCmds& subPassesInOut) {
-        mgr.postRender(camera, stage, subPassesInOut);
+    static void postRender(Divide::SceneManager& mgr, const Camera& camera, RenderSubPassCmds& subPassesInOut) {
+        mgr.postRender(camera, subPassesInOut);
     }
 
     static bool generateShadowMaps(Divide::SceneManager& mgr) {
