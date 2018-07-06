@@ -60,7 +60,7 @@ namespace {
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
     std::cout << "------------------------------------------------------------------------------\n"
-              << "Copyright (c) 2017 DIVIDE-Studio\n"
+              << "Copyright (c) 2018 DIVIDE-Studio\n"
               << "Copyright (c) 2009 Ionut Cava\n\n"
               << "This file is part of DIVIDE Framework.\n\n"
               << "Permission is hereby granted, free of charge, to any person obtaining a copy of this software\n"

@@ -1,6 +1,6 @@
 
 /*
-Copyright (c) 2017 DIVIDE-Studio
+Copyright (c) 2018 DIVIDE-Studio
 Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
