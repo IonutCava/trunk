@@ -5,8 +5,8 @@
 class BoundingBox
 {
 public:
-	BoundingBox() {min.reset(); max.reset();}
-	BoundingBox(const vec3& _min, const vec3& _max) {min=_min; max=_max;}
+	BoundingBox() {min.reset(); max.reset();_computed = false;}
+	BoundingBox(const vec3& _min, const vec3& _max) {min=_min; max=_max;_computed = false;}
 
 	inline bool ContainsPoint(const vec3& point) const	{
 		return (point.x>=min.x && point.y>=min.y && point.z>=min.z && point.x<=max.x && point.y<=max.y && point.z<=max.z);
@@ -54,9 +54,12 @@ public:
 		min.z *= v.z;
 	}
 	inline vec3	getCenter()	const	{return (max+min)/2;}
-
+	inline bool& isComputed() {return _computed;}
 	vec3 min, max;
 	float size;
+
+private:
+	bool _computed;
 };
 
 #endif

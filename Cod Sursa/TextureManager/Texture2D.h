@@ -20,8 +20,8 @@ public:
 	Texture2D() : Texture() {}
 };
 
-///ToDo: Remove this hack and modify texture loading tu asure proper image orientation. Maybe use this as an opportunity
+///ToDo: Remove this hack and modify texture loading to ensure proper image orientation. Maybe use this as an opportunity
 ///		 to remove DevIL dependencies (not because it is bad, but because we have a lot of DLL necesities already
-class Texture2DFliped : public Texture2D {};
+class Texture2DFlipped : public Texture2D {};
 #endif
 

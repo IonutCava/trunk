@@ -20,22 +20,32 @@ Note: all transformations applied to the mesh affect every submesh that compose 
 
 class Mesh : public Object3D
 {
-	typedef tr1::unordered_map<string, SubMesh*> subMeshMap;
+
 public:
 	Mesh() : Object3D() {}
 	Mesh(vec3& position, vec3& scale, vec3& orientation)
 		: Object3D(position,scale,orientation) {}
 
-	void addSubMesh(SubMesh* subMesh){_subMeshes.insert(pair<string,SubMesh*>(subMesh->getName(),subMesh));}
-	SubMesh* getSubMesh(const std::string& name) {return _subMeshes[name];}
-	SubMesh* getSubMesh(U32 index){_subMeshIterator = _subMeshes.begin(); advance(_subMeshIterator,index); return (*_subMeshIterator).second;}
-	subMeshMap& getSubMeshes() {return _subMeshes;}
-	void render();
+	void addSubMesh(SubMesh* subMesh){_subMeshes.push_back(subMesh);}
+	inline vector<SubMesh* >& getSubMeshes() {return _subMeshes;}
+
+	SubMesh*  getSubMesh(const string& name);
+	void                computeBoundingBox();
+	BoundingBox&        getBoundingBox() {return _bb;}
+	Shader*             getShader()      {return _shader; }
+	void                setShader(Shader* s) {_shader = s;}
+
+	void Draw();
+	void DrawBBox();
+	bool IsInView();
+	void setPosition(vec3 position);
 
 protected:
-	bool _visibleToNetwork, _render;
-	subMeshMap _subMeshes;
-	subMeshMap::iterator _subMeshIterator;
+	bool _visibleToNetwork,		 _render;
+	vector<SubMesh* >			 _subMeshes;
+	vector<SubMesh* >::iterator  _subMeshIterator;
+	Shader*						 _shader;
+	BoundingBox			         _bb;
 };
 
 #endif

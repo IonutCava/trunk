@@ -2,9 +2,7 @@
 #define PHYSX_H_
 
 #include "resource.h"
-
-#include "Importer/objImporter.h"
-#include "Importer/OBJ.h"
+#include "Importer/DVDConverter.h"
 #include "NxPhysics.h"
 #include "NxCooking.h"
 #include "pxStream.h"
@@ -98,11 +96,11 @@ public:
 	                                                                                //sau ultimul actor creat de aplciatie
 	void SetSelectedActor(/*NxActor Object*/){/*pxWorld->currentActor = Object*/}; //Aici redirectionam pointerul "currentActor" catre obiectului specifica ca parametru;                                             
 	
-	bool AddShape(ImportedModel *mesh,bool convex/*,string cook*/);           //Cea mai ineficienta si costisitoare functie a intregii aplicatii
+	bool AddShape(DVDFile *mesh,bool convex/*,string cook*/);           //Cea mai ineficienta si costisitoare functie a intregii aplicatii
 																	  //Competitie directa cu LoadOBJ din modelImporter
 																		//Detalii in corpul functiei
-	bool AddConvexShape(ImportedModel *mesh);
-	bool AddTriangleShape(ImportedModel *mesh);
+	bool AddConvexShape(DVDFile *mesh);
+	bool AddTriangleShape(DVDFile *mesh);
 	void CreateStack(int size);                           //Aceasta metoda creaza o piramida de "size"*cuburi
 	void CreateCube(NxVec3 position,int size);            //Creaza un singur cub de dimensiunea data la pozitia data
 	void CreateCube(int size);                            //Creaza un singur cub de dimensiunea data la pozitia dorita

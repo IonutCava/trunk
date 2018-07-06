@@ -53,6 +53,7 @@ public:
 
 /* Material: Structure that defines a material in a model. 
  */
+class Texture2D;
 class Material
 {
 public:
@@ -63,6 +64,7 @@ public:
   F32 emmissive[4];         /* emmissive component */
   F32 shininess;            /* specular exponent */
   U32 textureId;            /* Pointer to Texture Object */
+  Texture2D* texture;
 };
 
 #endif

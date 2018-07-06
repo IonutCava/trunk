@@ -6,7 +6,7 @@
 #include "Utility/Headers/BaseClasses.h"
 #include "Utility/Headers/Event.h"
 #include "Hardware/Video/GFXDevice.h"
-#include "Importer/OBJ.h"
+#include "Importer/DVDConverter.h"
 #include "Managers/TerrainManager.h"
 #include "Hardware/Video/Light.h"
 
@@ -34,7 +34,7 @@ public:
 
    TerrainManager* getTerrainManager() {return _terMgr;}
 
-   inline vector<ImportedModel*>& getModelArray(){return ModelArray;}
+   inline vector<DVDFile*>& getModelArray(){return ModelArray;}
 
    inline vector<FileData>& getModelDataArray() {return ModelDataArray;}
    inline vector<FileData>& getVegetationDataArray() {return VegetationDataArray;}
@@ -46,8 +46,8 @@ protected:
 	GFXDevice& _GFX;
 	TerrainManager* _terMgr;
 
-	vector<ImportedModel*> ModelArray;
-	vector<ImportedModel*>::iterator ModelIterator;
+	vector<DVDFile*> ModelArray;
+	vector<DVDFile*>::iterator ModelIterator;
 
 	//Datablocks for models,vegetation and terrains
 	vector<FileData> ModelDataArray;

@@ -2,7 +2,7 @@
 #define TERRAINCHUNK_H
 
 #include "resource.h"
-#include "Importer/OBJ.h"
+#include "Importer/DVDConverter.h"
 
 #define TERRAIN_CHUNKS_LOD 3
 
@@ -31,9 +31,9 @@ public:
 
 	inline vector<GLuint>&				getIndiceArray(GLuint lod)	{return m_tIndice[lod];}
 	inline vector<GLuint>&				getGrassIndiceArray()		{return m_tGrassIndice;}
-	inline vector<ImportedModel*>&		getObjectsArray()			{return m_tObject;}
+	inline vector<DVDFile*>&	     	getObjectsArray()			{return m_tObject;}
 	inline vector<Tree >&               getTreeArray()              {return m_tTrees;}
-	void								addObject(ImportedModel* obj);
+	void								addObject(DVDFile* obj);
 	void								addTree(vec3 pos, F32 rotation, F32 scale);
 	TerrainChunk() {}
 	~TerrainChunk() {Destroy();}
@@ -54,7 +54,7 @@ private:
 	vector<Tree >           m_tTrees;
 	vector<Tree >::iterator m_tTreesIterator;
 
-	vector<ImportedModel*>	m_tObject;
+	vector<DVDFile*>	    m_tObject;
 	string				    previousModel;
 };
 

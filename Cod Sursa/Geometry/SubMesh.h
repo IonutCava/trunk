@@ -19,6 +19,7 @@ and a name.
 #include "Hardware/Video/VertexBufferObject.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Utility/Headers/BoundingBox.h"
+#include "Utility/Headers/DataTypes.h"
 
 class SubMesh : public Object3D
 {
@@ -30,17 +31,20 @@ public:
 	bool load(const std::string& name) { computeBoundingBox(); return true;}
 	bool unload() {return true;}
 
-	inline VertexBufferObject* getGeometryVBO() {return _geometry;} 
-	inline BoundingBox&	       getBoundingBox() {return _boundingBox;}
-	inline string&             getName() {return _name;}
+	inline VertexBufferObject* getGeometryVBO() {return _geometry;    } 
+	inline vector<U32>&        getIndices()     {return _indices;     }
+	inline BoundingBox&	       getBoundingBox() {return _boundingBox; }
+	inline Material&           getMaterial()	{return _material;    }   
+	inline string&             getName()		{return _name;        }
 
 private:
 	void computeBoundingBox();
 	bool _visibleToNetwork, _render;
 	VertexBufferObject* _geometry;
 	BoundingBox			_boundingBox;
-	//vector<Materials> _materials;
-	
+	Material		    _material;
+	vector<U32>         _indices;
+
 };
 
 #endif

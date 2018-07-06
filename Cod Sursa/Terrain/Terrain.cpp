@@ -1,6 +1,6 @@
 #include "Terrain.h"
 #include "Managers/TextureManager.h"
-#include "Importer/OBJ.h"
+#include "TextureManager/Texture2D.h"
 #include "Managers/ResourceManager.h"
 #include "Managers/TerrainManager.h"
 #include "Quadtree.h"

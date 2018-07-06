@@ -1,14 +1,9 @@
 uniform sampler2D texDiffuse;
-uniform int texture;
 
 void main (void)
 {
 
 		vec4 cBase = texture2D(texDiffuse, gl_TexCoord[0].st);
-		if(texture != 1)
-		{
-			cBase = gl_Color;
-		}
 
 		if(cBase.a < 0.4) discard;
 	

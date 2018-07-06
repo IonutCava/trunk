@@ -10,7 +10,7 @@ void TerrainChunk::Load(U32 depth, ivec2 pos, ivec2 HMsize)
 		ComputeIndicesArray(i, depth, pos, HMsize);
 }
 
-void TerrainChunk::addObject(ImportedModel* obj)
+void TerrainChunk::addObject(DVDFile* obj)
 {
 	m_tObject.push_back(obj);
 }
@@ -22,7 +22,7 @@ void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 	
 	cout << "Adding tree [ " << i <<  " ] : " << DA[i].ModelName << endl;
 	Tree t;
-	t.geometry = ResourceManager::getInstance().LoadResource<ImportedModel>(DA[i].ModelName);
+	t.geometry = ResourceManager::getInstance().LoadResource<DVDFile>(DA[i].ModelName);
 
 	if(t.geometry)
 	{
@@ -30,7 +30,7 @@ void TerrainChunk::addTree(vec3 pos,F32 rotation,F32 scale)
 		t.orientation = vec3(0,rotation,0);
 		t.scale = scale*DA[i].scale;
 		t.name = "Tree " + m_tTrees.size();
-		((ImportedModel*)t.geometry)->setShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
+		((DVDFile*)t.geometry)->setShader(ResourceManager::getInstance().LoadResource<Shader>("terrain_tree"));
 	}
 	m_tTrees.push_back(t);
 
@@ -110,14 +110,16 @@ void TerrainChunk::DrawTrees(GLuint lod, F32 d)
 		GFXDevice::getInstance().translate(m_tTrees[i].position);
 		GFXDevice::getInstance().rotate(m_tTrees[i].orientation);
 		GFXDevice::getInstance().scale(m_tTrees[i].scale);
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->bind();
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("time", GETTIME());
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("scale", m_tTrees[i].scale.y);
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionX", _windX);
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionZ", _windZ);
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->Uniform("windSpeed", _windS);
-			((ImportedModel*)m_tTrees[i].geometry)->Draw();
-		((ImportedModel*)m_tTrees[i].geometry)->getShader()->unbind();
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->bind();
+
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->Uniform("time", GETTIME());
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->Uniform("scale", m_tTrees[i].scale.y);
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionX", _windX);
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->Uniform("windDirectionZ", _windZ);
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->Uniform("windSpeed", _windS);
+			((DVDFile*)m_tTrees[i].geometry)->Draw();
+
+		((DVDFile*)m_tTrees[i].geometry)->getShader()->unbind();
 		GFXDevice::getInstance().popMatrix();
 	}
 }

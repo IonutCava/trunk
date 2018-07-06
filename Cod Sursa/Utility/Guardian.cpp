@@ -1,15 +1,10 @@
 #include "Headers/Guardian.h"
-#include "Importer/objImporter.h"
-#include "Importer/3DS/3ds.h"
-#include "GUI/GLUIManager.h"
 #include "Managers/TerrainManager.h"
 #include "Managers/TextureManager.h"
 #include "Managers/SceneManager.h"
 #include "PhysX/PhysX.h"
 #include "Headers/ParamHandler.h"
 #include "Headers/XMLParser.h"
-#include "Scenes/MainScene.h"
-#include "Scenes/CubeScene.h"
 #include "Rendering/common.h"
 
 void Guardian::LoadApplication(string entryPoint)

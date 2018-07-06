@@ -9,7 +9,7 @@ using namespace std;
 
 class VertexBufferObject;
 class Terrain;
-
+class Shader;
 class Vegetation
 {
 public:

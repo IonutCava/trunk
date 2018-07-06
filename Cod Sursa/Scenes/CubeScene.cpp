@@ -3,7 +3,10 @@
 #include "Rendering/Camera.h"
 #include "Rendering/common.h"
 #include "PhysX/PhysX.h"
+#include "Importer/DVDConverter.h"
 
+DVDFile test;
+Shader *s;
 void CubeScene::render()
 {
 	GFXDevice::getInstance().pushMatrix();
@@ -44,6 +47,9 @@ void CubeScene::render()
 			(*ModelIterator)->getShader()->unbind();
 			GFXDevice::getInstance().popMatrix();
 		}
+	test.getShader()->bind();
+	test.Draw();
+	test.getShader()->unbind();
 }
 
 void CubeScene::preRender()
@@ -69,9 +75,10 @@ void CubeScene::preRender()
 
 void CubeScene::processInput()
 {
+	moveFB  = Engine::getInstance().moveFB;
+	moveLR  = Engine::getInstance().moveLR;
 	angleLR = Engine::getInstance().angleLR;
 	angleUD = Engine::getInstance().angleUD;
-	moveFB = Engine::getInstance().moveFB;
 	
 	if(angleLR)	Camera::getInstance().RotateX(angleLR * Framerate::getInstance().getSpeedfactor());
 	if(angleUD)	Camera::getInstance().RotateY(angleUD * Framerate::getInstance().getSpeedfactor());
@@ -83,6 +90,8 @@ void CubeScene::processInput()
 bool CubeScene::load(const string& name)
 {
 	bool state = false;
+	test.load("Assets/models/copac.obj");
+	test.setShader(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
 	_terMgr->createTerrains(TerrainInfoArray);
 	state = loadResources(true);	
 	state = loadEvents(true);

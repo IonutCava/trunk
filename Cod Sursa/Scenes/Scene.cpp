@@ -1,5 +1,4 @@
 #include "Scene.h"
-#include "Importer/objimporter.h"
 #include "Managers/ResourceManager.h"
 #include "PhysX/PhysX.h"
 
@@ -17,7 +16,7 @@ void Scene::setInitialData()
 			continue;
 		}
 
-		ImportedModel *thisObj = ResourceManager::getInstance().LoadResource<ImportedModel>(ModelDataArray[index].ModelName);
+		DVDFile *thisObj = ResourceManager::getInstance().LoadResource<DVDFile>(ModelDataArray[index].ModelName);
 		if (!thisObj)
 		{
 			cout << "SceneManager: Error loading model " << &ModelDataArray[index].ModelName << endl;
@@ -28,9 +27,9 @@ void Scene::setInitialData()
 		thisObj->getPosition()    = ModelDataArray[index].position;
 		thisObj->getOrientation() = ModelDataArray[index].orientation;
 		thisObj->setShader(ResourceManager::getInstance().LoadResource<Shader>("OBJ"));
-		thisObj->getBoundingBox().Translate(ModelDataArray[index].position);
+		//thisObj->getBoundingBox().Translate(ModelDataArray[index].position);
 	
-		PhysX::getInstance().AddShape(thisObj,false);
+		//PhysX::getInstance().AddShape(thisObj,false);
 		ModelArray.push_back(thisObj);
 	}
 }	

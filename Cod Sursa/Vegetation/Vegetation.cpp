@@ -9,6 +9,7 @@
 #include "PhysX/PhysX.h"
 #include "Managers/SceneManager.h"
 #include "Hardware/Video/GFXDevice.h"
+#include "TextureManager/Texture2D.h"
 
 void Vegetation::initialize(string grassShader)
 {

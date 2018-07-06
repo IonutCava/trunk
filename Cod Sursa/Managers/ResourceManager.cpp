@@ -2,6 +2,11 @@
 #include "Utility/Headers/Guardian.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Terrain/Terrain.h"
+#include "TextureManager/Texture2D.h"
+#include "TextureManager/TextureCubemap.h"
+#include "Importer/DVDConverter.h"
+#include "Hardware/Video/ShaderHandler.h"
+#include "Utility/Headers/BaseClasses.h"
 
 U32 maxAlloc = 0;
 char* zMaxFile = "";
@@ -43,124 +48,119 @@ void operator delete(void *pxData)
 template<class T>
 T* ResourceManager::LoadResource(const std::string& name)
 {
-	Resource* ptr = LoadResource(TEMPLATE,name);
-	
-	ptr = new T();
-	((T*)ptr)->load(name);
+	Resource* ptr = LoadResource(name);
+	if(!ptr)
+	{
+		ptr = new T();
+		((T*)ptr)->load(name);
 
-	if(!ptr) return NULL;
+		if(!ptr) return NULL;
 
-	_resDB[name] = ptr;
+		_resDB[name] = ptr;
+	}
 
-	return ptr;
+	return (T*)ptr;
 }
 
 template<>
-Texture2DFliped* ResourceManager::LoadResource<Texture2DFliped>(const string& name)
+Texture2DFlipped* ResourceManager::LoadResource<Texture2DFlipped>(const string& name)
 {
-	Resource* ptr = LoadResource(TEXTURE2D,name);
+	Resource* ptr = LoadResource(name);
+	if(!ptr)
+	{	
+		ptr = new Texture2D();
 
-	ptr = new Texture2DFliped();
-	((Texture2DFliped*)ptr)->loadFlipedVertically(name);
+		((Texture2D*)ptr)->loadFlipedVertically(name);
 
-	if(!ptr) return NULL;
+		if(!ptr) return NULL;
 
-	_resDB[name] = ptr;
+		_resDB[name] = ptr;
+	}
 
-	return (Texture2DFliped*)ptr;
+	return (Texture2DFlipped*)ptr;
 }
 
 template<>
 Texture2D* ResourceManager::LoadResource<Texture2D>(const string& name)
 {
-	Resource* ptr = LoadResource(TEXTURE2D,name);
+	Resource* ptr = LoadResource(name);
+	if(!ptr)
+	{
+		ptr = new Texture2D();
+		((Texture2D*)ptr)->load(name);
 
-	ptr = new Texture2D();
-	((Texture2D*)ptr)->load(name);
+		if(!ptr) return NULL;
 
-	if(!ptr) return NULL;
-
-	_resDB[name] = ptr;
-
+		_resDB[name] = ptr;
+	}
 	return (Texture2D*)ptr;
 }
 
 template<>
 TextureCubemap* ResourceManager::LoadResource<TextureCubemap>(const string& name)
 {
-	Resource* ptr = LoadResource(TEXTURECUBEMAP,name);
-	ptr = new TextureCubemap();
-	((TextureCubemap*)ptr)->load(name);
-	if(!ptr) return NULL;
-	
-	_resDB[name] = ptr;
+	Resource* ptr = LoadResource(name);
 
+	if(!ptr)
+	{
+		ptr = new TextureCubemap();
+		((TextureCubemap*)ptr)->load(name);
+		if(!ptr) return NULL;
+	
+		_resDB[name] = ptr;
+	}
 	return (TextureCubemap*)ptr;
 }
 
 template<>
 Shader* ResourceManager::LoadResource<Shader>(const string& name)
 {
-	Resource* ptr = LoadResource(SHADER,name);
+	Resource* ptr = LoadResource(name);
+	if(!ptr)
+	{
 
+		ptr = GFXDevice::getInstance().newShader();
+		((Shader*)ptr)->load(name);
+	
+		if(!ptr) return NULL;
 
-	((Shader*)ptr)->load(name);
-
-	if(!ptr) return NULL;
-
-	_resDB[name] = ptr;
+		_resDB[name] = ptr;
+	}
 
 	return (Shader*)ptr;
 }
 
 template<>
-ImportedModel* ResourceManager::LoadResource<ImportedModel>(const string& name)
+DVDFile* ResourceManager::LoadResource<DVDFile>(const string& name)
 {
-	Resource* ptr = LoadResource(MODEL,name);
 
-	((ImportedModel*)ptr)->load(name);
+	Resource* ptr = LoadResource(name);
 
-	if(!ptr) return NULL;
+	if(!ptr)
+	{
+		ptr = new DVDFile();
 
-	_resDB[name] = ptr;
+		((DVDFile*)ptr)->load(name);
 
-	return (ImportedModel*)ptr;
+		if(!ptr) return NULL;
+
+		_resDB[name] = ptr;
+	}
+	return (DVDFile*)ptr;
 }
 
-
-Resource* ResourceManager::LoadResource(RES_TYPE type, const string& name)
+Resource* ResourceManager::LoadResource(const string& name)
 {
-	if(_resDB.find(name) != _resDB.end())	return _resDB[name];
-
-	cout << "Resource Manager: Loading resource of type \"";
-		  
-	Resource* ptr = NULL;
-
-	switch(type) {
-		case TEXTURE2D: 
-			ptr = new Texture2D();
-			cout << "Texture 2D";
-			break;
-		case TEXTURECUBEMAP: 
-			ptr = new TextureCubemap();
-			cout << "Texture Cubemap";
-			break;
-		case SHADER: 
-			ptr = GFXDevice::getInstance().newShader();
-			cout << "Shader";
-			break;
-		case TERRAIN: 
-			ptr = new Terrain();
-			cout << "Terrain";
-			break;
-		case MODEL: 
-			ptr = new ImportedModel();
-			cout << "Mesh";
-			break;
+	if(_resDB.find(name) != _resDB.end())	
+	{
+		cout << "ResourceManager: returning resource [ " << name << " ]" << endl;
+		return _resDB[name];
 	}
-	cout <<  "\": \"" << name << "\"" << endl;
-	if(!ptr) return NULL;
-	return ptr;
+	else
+	{
+		cout << "ResourceManager: loading resource [ " << name << " ]" << endl;
+		return NULL;
+	}
 }
 
 

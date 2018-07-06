@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\assimp&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/Y3"
-				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib"
+				AdditionalDependencies="glew32d.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib assimpd.lib"
 				ShowProgress="0"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90_dbg.exe"
 				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
@@ -122,7 +122,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
+				AdditionalIncludeDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\assimp&quot;;&quot;$(OutDir)&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Cooking&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\PhysXLoader&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Physics&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\NxCharacter&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\includes\physx\Foundation&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				MinimalRebuild="true"
@@ -144,7 +144,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib"
+				AdditionalDependencies="glew32.lib glu32.lib opengl32.lib DevIL.lib PhysXloader.lib PhysXCooking.lib PhysXCore.lib VCOMP.lib ILU.lib ILUT.lib assimp.lib"
 				OutputFile="$(OutDir)../$(ProjectName)_VC90.exe"
 				AdditionalLibraryDirectories="&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\boost&quot;;&quot;C:\Users\k1ngp1n\Desktop\Engine\Cod Sursa\Libs\lib\physx&quot;"
 				IgnoreDefaultLibraryNames="LIBCMTD.lib"
@@ -274,137 +274,13 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath="..\Importer\OBJ.cpp"
+				RelativePath="..\Importer\DVDConverter.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\Importer\OBJ.h"
+				RelativePath="..\Importer\DVDConverter.h"
 				>
 			</File>
-			<File
-				RelativePath="..\Importer\objImporter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Importer\objImporter.h"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCustomBuildTool"
-					/>
-				</FileConfiguration>
-			</File>
-			<Filter
-				Name="3DS"
-				ParseFiles="false"
-				SourceControlFiles="false"
-				>
-				<File
-					RelativePath="..\Importer\3DS\3ds.h"
-					>
-				</File>
-				<File
-					RelativePath="..\Importer\3DS\scene3ds.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\Importer\3DS\scene3ds.h"
-					>
-				</File>
-				<Filter
-					Name="mesh"
-					SourceControlFiles="false"
-					>
-					<File
-						RelativePath="..\Importer\3DS\mesh\mesh3ds.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\mesh\mesh3ds.h"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\mesh\mesh3dsobject.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\mesh\mesh3dsobject.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="chunk"
-					SourceControlFiles="false"
-					>
-					<File
-						RelativePath="..\Importer\3DS\chunk\chunk.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\chunk\chunk.h"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\chunk\file.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\chunk\file.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="light"
-					SourceControlFiles="false"
-					>
-					<File
-						RelativePath="..\Importer\3DS\light\light3ds.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\light\light3ds.h"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\light\light3dsobject.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\light\light3dsobject.h"
-						>
-					</File>
-				</Filter>
-				<Filter
-					Name="material"
-					SourceControlFiles="false"
-					>
-					<File
-						RelativePath="..\Importer\3DS\material\material3ds.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\material\material3ds.h"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\material\material3dsobject.cpp"
-						>
-					</File>
-					<File
-						RelativePath="..\Importer\3DS\material\material3dsobject.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="MultiThreading"

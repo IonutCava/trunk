@@ -202,9 +202,10 @@ bool PhysX::RemoveActor(NxActor  &actor)
 // Fiecare element din din vector trebuie sa contine 3 vertecsi. Fiecare vertex are 3 parametri
 // Singura metoda eficienta pentru crearea acestui vector este cu un "struct" de "struct"
 
-bool PhysX::AddShape(ImportedModel *mesh,bool convex/*,string cook*/)
+bool PhysX::AddShape(DVDFile *mesh,bool convex/*,string cook*/)
 {
-	if(mesh == NULL || mesh->SimpleFaceArray.empty())
+	/*
+	if(mesh == NULL)
 	{
 		cout << "PhysX error: Couldn't create a PhysX actor because the received mesh was NULL!" << endl;
 		return false;
@@ -224,13 +225,13 @@ bool PhysX::AddShape(ImportedModel *mesh,bool convex/*,string cook*/)
 
 	if (convex)   AddConvexShape(mesh);
 	else	AddTriangleShape(mesh);
-
+*/
 	return true;
 }
 
-bool PhysX::AddConvexShape(ImportedModel *mesh)
+bool PhysX::AddConvexShape(DVDFile *mesh)
 {
-	NxVec3 objectLocation = NxVec3(mesh->getPosition());
+/*	NxVec3 objectLocation = NxVec3(mesh->getPosition());
 
 	NxBuildSmoothNormals(mesh->SimpleFaceArray.size(), mesh->vertices.size(),
 		                 (const NxVec3*)&mesh->vertices[0],
@@ -299,14 +300,14 @@ bool PhysX::AddConvexShape(ImportedModel *mesh)
 	}
 	else
 		cout << "PhysX error: SetupConvexCollision - ACTOR NOT ACTIVE!\n";
-	delete Actor;
+	delete Actor;*/
 	return true;
 
 }
 
-bool PhysX::AddTriangleShape(ImportedModel *mesh)
+bool PhysX::AddTriangleShape(DVDFile *mesh)
 {
-	NxVec3 objectLocation = NxVec3(mesh->getPosition());
+/*	NxVec3 objectLocation = NxVec3(mesh->getPosition());
 
 	NxBuildSmoothNormals(mesh->SimpleFaceArray.size(), mesh->vertices.size(), 
 		                 (const NxVec3*)&mesh->vertices[0],
@@ -374,6 +375,7 @@ bool PhysX::AddTriangleShape(ImportedModel *mesh)
 	else
 		cout << "PhysX error: SetupTriangleCollision - ACTOR NOT ACTIVE!\n";
 	delete Actor;
+	*/
 	return true;
 }
 
@@ -438,12 +440,10 @@ void PhysX::DrawObjects(NxShape *obj)
     orient[3] = orient[7] = orient[11] = 0.0f;
     orient[15] = 1.0f;
     glMultMatrixf(&(orient[0]));
-	GFXDevice::getInstance().translate(((ImportedModel*)obj->getActor().userData)->getPosition());
-	GFXDevice::getInstance().rotate(((ImportedModel*)obj->getActor().userData)->getOrientation());
-	//GFXDevice::getInstance().scale(((ImportedModel*)obj->getActor().userData)->getScale());
-	((ImportedModel*)obj->getActor().userData)->getShader()->bind();
-	((ImportedModel*)obj->getActor().userData)->Draw();
-	((ImportedModel*)obj->getActor().userData)->getShader()->unbind();
+	GFXDevice::getInstance().translate(((DVDFile*)obj->getActor().userData)->getPosition());
+	GFXDevice::getInstance().rotate(((DVDFile*)obj->getActor().userData)->getOrientation());
+	GFXDevice::getInstance().scale(((DVDFile*)obj->getActor().userData)->getScale());
+	((DVDFile*)obj->getActor().userData)->Draw();
 	GFXDevice::getInstance().popMatrix();
 	delete orient;
 }

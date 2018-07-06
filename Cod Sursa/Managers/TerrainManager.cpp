@@ -3,6 +3,7 @@
 #include "Managers/ResourceManager.h"
 #include "Hardware/Video/GFXDevice.h"
 #include "Rendering/common.h"
+#include "TextureManager/Texture2D.h"
 
 void TerrainManager::createTerrains(vector<TerrainInfo>& terrains)
 {

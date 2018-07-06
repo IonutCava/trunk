@@ -23,7 +23,7 @@ public:
 	void processEvents(F32 time){_scene->processEvents(time);}
 	/*Base Scene Operations*/
 
-	inline vector<ImportedModel*>& getModelArray(){return _scene->getModelArray();}
+	inline vector<DVDFile* >& getModelArray(){return _scene->getModelArray();}
 
 	inline vector<FileData>& getModelDataArray() {return _scene->getModelDataArray();}
 	inline vector<FileData>& getVegetationDataArray() {return _scene->getVegetationDataArray();}
@@ -39,6 +39,7 @@ public:
 	void toggleBoundingBoxes();
 
 private:
+
 	SceneManager()
 	{
 		_scenes.insert(make_pair("MainScene", New MainScene()));
