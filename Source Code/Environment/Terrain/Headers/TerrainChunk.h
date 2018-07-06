@@ -59,7 +59,7 @@ class TerrainChunk {
     TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, QuadtreeNode* const parentNode);
     ~TerrainChunk();
 
-    void load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize);
+    void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize);
 
     vec3<U32> getBufferOffsetAndSize(I8 targetLoD) const;
 

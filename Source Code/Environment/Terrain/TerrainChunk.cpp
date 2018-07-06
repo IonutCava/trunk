@@ -50,21 +50,20 @@ TerrainChunk::~TerrainChunk() {
     MemoryManager::DELETE(_vegetation);
 }
 
-void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 minHMSize, const vec2<U32>& HMsize) {
+void TerrainChunk::load(U8 depth, const vec2<U32>& pos, U32 _targetChunkDimension, const vec2<U32>& HMsize) {
     _chunkIndOffset = _terrainVB->getIndexCount();
 
     _xOffset = to_float(pos.x);
     _yOffset = to_float(pos.y);
-    _sizeX = to_float(minHMSize);
-    _sizeY = to_float(minHMSize);
+    _sizeX = _sizeY = to_float(_targetChunkDimension);
 
     for (U8 i = 0; i < Config::TERRAIN_CHUNKS_LOD; i++) {
         ComputeIndicesArray(i, depth, pos, HMsize);
     }
 
+    F32 height = 0.0f;
     F32 tempMin = std::numeric_limits<F32>::max();
     F32 tempMax = std::numeric_limits<F32>::min();
-    F32 height = 0.0f;
     for (U32 i = 0; i < _lodIndCount[0]; ++i) {
         U32 idx = _indice[0][i];
         if (idx == Config::PRIMITIVE_RESTART_INDEX_L) {

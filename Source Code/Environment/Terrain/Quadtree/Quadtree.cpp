@@ -77,12 +77,15 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
     return node;
 }
 
-void Quadtree::Build(GFXDevice& context, BoundingBox& terrainBBox, const vec2<U32>& HMsize,
-                     U32 minHMSize, Terrain* const terrain) {
+void Quadtree::Build(GFXDevice& context,
+                     BoundingBox& terrainBBox,
+                     const vec2<U32>& HMsize,
+                     U32 targetChunkDimension,
+                     Terrain* const terrain) {
     _root = MemoryManager_NEW QuadtreeNode();
     _root->setBoundingBox(terrainBBox);
 
-    _root->Build(context, 0, vec2<U32>(0, 0), HMsize, minHMSize, terrain, _chunkCount);
+    _root->Build(context, 0, vec2<U32>(0, 0), HMsize, targetChunkDimension, terrain, _chunkCount);
 
     // Generate index buffer
     const U32 terrainWidth = HMsize.x;

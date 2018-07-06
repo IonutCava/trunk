@@ -154,6 +154,8 @@ class TerrainDescriptor : public PropertyDescriptor {
     hashMapImpl<U64, stringImpl> _variables;
     hashMapImpl<U64, F32> _variablesf;
     F32 _grassDensity;
+
+    /// chunk size defines the dimensions of a quadtree chunk of vertices in the format NxN    /// e.g.Specifying a 256 chunk size for a 1024x1024 terrain will generate 16 leafs in the quadtree
     U32 _chunkSize;
     F32 _treeDensity;
     F32 _grassScale;

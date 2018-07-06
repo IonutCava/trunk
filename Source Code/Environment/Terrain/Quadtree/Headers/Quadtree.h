@@ -53,7 +53,7 @@ class Quadtree {
     void Build(GFXDevice& context, 
                BoundingBox& terrainBBox,
                const vec2<U32>& HMSize,
-               U32 minHMSize,
+               U32 targetChunkDimension,
                Terrain* const terrain);
     BoundingBox& computeBoundingBox();
 

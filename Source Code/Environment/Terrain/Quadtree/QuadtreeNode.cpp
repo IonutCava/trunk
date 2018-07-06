@@ -20,7 +20,7 @@ QuadtreeNode::QuadtreeNode()
     _children[to_const_uint(ChildPosition::CHILD_SE)] = nullptr;
 
     _terLoDOffset = 0.0f;
-    _minHMSize = 0;
+    _targetChunkDimension = 0;
 }
 
 QuadtreeNode::~QuadtreeNode()
@@ -32,64 +32,57 @@ QuadtreeNode::~QuadtreeNode()
     MemoryManager::DELETE(_children[to_const_uint(ChildPosition::CHILD_SE)]);
 }
 
-void QuadtreeNode::Build(GFXDevice& context, U8 depth, const vec2<U32>& pos,
-                         const vec2<U32>& HMsize, U32 minHMSize,
-                         Terrain* const terrain, U32& chunkCount) {
-    _minHMSize = minHMSize;
+void QuadtreeNode::Build(GFXDevice& context,
+                         U8 depth,
+                         const vec2<U32>& pos,
+                         const vec2<U32>& HMsize,
+                         U32 targetChunkDimension,
+                         Terrain* const terrain,
+                         U32& chunkCount)
+{
+    _targetChunkDimension = targetChunkDimension;
     U32 div = to_uint(std::pow(2.0f, to_float(depth)));
     vec2<U32> nodesize = HMsize / (div);
-    if (nodesize.x % 2 == 0) nodesize.x++;
-    if (nodesize.y % 2 == 0) nodesize.y++;
+    if (nodesize.x % 2 == 0) {
+        nodesize.x++;
+    }
+    if (nodesize.y % 2 == 0) {
+        nodesize.y++;
+    }
     vec2<U32> newsize = nodesize / 2;
 
-    _terLoDOffset = (_minHMSize * 5.0f) / 100.0f;
+    _terLoDOffset = (_targetChunkDimension * 5.0f) / Config::SCENE_NODE_LOD0;
 
-    if (std::max(newsize.x, newsize.y) < _minHMSize) {
+    if (std::max(newsize.x, newsize.y) <= _targetChunkDimension) {
         _terrainChunk = MemoryManager_NEW TerrainChunk(context, terrain, this);
-        _terrainChunk->load(depth, pos, _minHMSize, HMsize);
+        _terrainChunk->load(depth, pos, _targetChunkDimension, HMsize);
         chunkCount++;
-        return;
+    } else {
+        // Create 4 children
+        _children[to_const_uint(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_const_uint(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_const_uint(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode();
+        _children[to_const_uint(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode();
+
+        // Compute children bounding boxes
+        const vec3<F32>& center = _boundingBox.getCenter();
+        _children[to_const_uint(ChildPosition::CHILD_NW)]->setBoundingBox(BoundingBox(_boundingBox.getMin(), center));
+        _children[to_const_uint(ChildPosition::CHILD_NE)]->setBoundingBox(BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z), vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
+        _children[to_const_uint(ChildPosition::CHILD_SW)]->setBoundingBox(BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z), vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
+        _children[to_const_uint(ChildPosition::CHILD_SE)]->setBoundingBox(BoundingBox(center, _boundingBox.getMax()));
+
+        // Compute children positions
+        vec2<U32> tNewHMpos[4];
+        tNewHMpos[to_const_uint(ChildPosition::CHILD_NW)] = pos + vec2<U32>(0, 0);
+        tNewHMpos[to_const_uint(ChildPosition::CHILD_NE)] = pos + vec2<U32>(newsize.x, 0);
+        tNewHMpos[to_const_uint(ChildPosition::CHILD_SW)] = pos + vec2<U32>(0, newsize.y);
+        tNewHMpos[to_const_uint(ChildPosition::CHILD_SE)] = pos + vec2<U32>(newsize.x, newsize.y);
+
+        _children[to_const_uint(ChildPosition::CHILD_NW)]->Build(context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_const_uint(ChildPosition::CHILD_NE)]->Build(context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NE)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_const_uint(ChildPosition::CHILD_SW)]->Build(context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SW)], HMsize, _targetChunkDimension, terrain, chunkCount);
+        _children[to_const_uint(ChildPosition::CHILD_SE)]->Build(context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SE)], HMsize, _targetChunkDimension, terrain, chunkCount);
     }
-
-    // Create 4 children
-    _children[to_const_uint(ChildPosition::CHILD_NW)] = MemoryManager_NEW QuadtreeNode();
-    _children[to_const_uint(ChildPosition::CHILD_NE)] = MemoryManager_NEW QuadtreeNode();
-    _children[to_const_uint(ChildPosition::CHILD_SW)] = MemoryManager_NEW QuadtreeNode();
-    _children[to_const_uint(ChildPosition::CHILD_SE)] = MemoryManager_NEW QuadtreeNode();
-
-    // Compute children bounding boxes
-    const vec3<F32>& center = _boundingBox.getCenter();
-    _children[to_const_uint(ChildPosition::CHILD_NW)]->setBoundingBox(
-        BoundingBox(_boundingBox.getMin(), center));
-    _children[to_const_uint(ChildPosition::CHILD_NE)]->setBoundingBox(
-        BoundingBox(vec3<F32>(center.x, 0.0f, _boundingBox.getMin().z),
-                    vec3<F32>(_boundingBox.getMax().x, 0.0f, center.z)));
-    _children[to_const_uint(ChildPosition::CHILD_SW)]->setBoundingBox(
-        BoundingBox(vec3<F32>(_boundingBox.getMin().x, 0.0f, center.z),
-                    vec3<F32>(center.x, 0.0f, _boundingBox.getMax().z)));
-    _children[to_const_uint(ChildPosition::CHILD_SE)]->setBoundingBox(
-        BoundingBox(center, _boundingBox.getMax()));
-    // Compute children positions
-    vec2<U32> tNewHMpos[4];
-    tNewHMpos[to_const_uint(ChildPosition::CHILD_NW)] = pos + vec2<U32>(0, 0);
-    tNewHMpos[to_const_uint(ChildPosition::CHILD_NE)] =
-        pos + vec2<U32>(newsize.x, 0);
-    tNewHMpos[to_const_uint(ChildPosition::CHILD_SW)] =
-        pos + vec2<U32>(0, newsize.y);
-    tNewHMpos[to_const_uint(ChildPosition::CHILD_SE)] =
-        pos + vec2<U32>(newsize.x, newsize.y);
-    _children[to_const_uint(ChildPosition::CHILD_NW)]->Build(
-        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NW)], HMsize,
-        _minHMSize, terrain, chunkCount);
-    _children[to_const_uint(ChildPosition::CHILD_NE)]->Build(
-        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_NE)], HMsize,
-        _minHMSize, terrain, chunkCount);
-    _children[to_const_uint(ChildPosition::CHILD_SW)]->Build(
-        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SW)], HMsize,
-        _minHMSize, terrain, chunkCount);
-    _children[to_const_uint(ChildPosition::CHILD_SE)]->Build(
-        context, depth + 1, tNewHMpos[to_uint(ChildPosition::CHILD_SE)], HMsize,
-        _minHMSize, terrain, chunkCount);
 }
 
 bool QuadtreeNode::computeBoundingBox() {

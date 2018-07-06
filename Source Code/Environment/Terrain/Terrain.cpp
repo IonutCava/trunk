@@ -146,7 +146,6 @@ void Terrain::initialiseDrawCommands(SceneGraphNode& sgn,
         GenericDrawCommands commands;
         commands.reserve(chunkCount);
         _terrainQuadtree.drawBBox(_context, commands);
-        assert(commands.size() == chunkCount + 2);
         for (const GenericDrawCommand& crtCmd : commands) {
             drawCommandsInOut.push_back(crtCmd);
         }
@@ -176,19 +175,21 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
 
     size_t i = 0; size_t dataCount = chunkData.size();
     for (;i < chunkCount; ++i) {
+        GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
         if (i < dataCount) {
-            vec3<U32>& cmdData = chunkData[i];
-            GenericDrawCommand& cmd = drawCommandsInOut[i + 1];
+            const vec3<U32>& cmdData = chunkData[i];
             cmd.cmd().firstIndex = cmdData.x;
             cmd.cmd().indexCount = cmdData.y;
             cmd.LoD(to_byte(cmdData.z));
+            cmd.drawCount(1);
+        }  else {
+            cmd.drawCount(0);
         }
     }
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         // draw infinite plane
-        GenericDrawCommand& planeCmd = drawCommandsInOut[g_PlaneCommandIndex];
-        planeCmd.drawCount((renderStagePass._stage == RenderStage::DISPLAY ? 1 : 0));
+        assert(drawCommandsInOut[g_PlaneCommandIndex].drawCount() == 1);
 
         i = g_PlaneCommandIndex + 1;
 
@@ -202,9 +203,11 @@ void Terrain::updateDrawCommands(SceneGraphNode& sgn,
             }
 
         } else {
-            for (U8 j = 0; j < chunkCount + 2; ++j) {
-                drawCommandsInOut[i + j].drawCount(0);
-            }
+            std::for_each(std::begin(drawCommandsInOut) + i,
+                          std::end(drawCommandsInOut),
+                          [](GenericDrawCommand& cmd) {
+                                cmd.drawCount(0);
+                          });
         }
     }
 

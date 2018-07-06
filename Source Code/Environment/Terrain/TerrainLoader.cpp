@@ -246,8 +246,7 @@ bool TerrainLoader::loadThreadedResources(std::shared_ptr<Terrain> terrain,
     vec2<F32>& terrainScaleFactor =
         Attorney::TerrainLoader::scaleFactor(*terrain);
 
-    Attorney::TerrainLoader::chunkSize(*terrain) =
-        terrainDescriptor->getChunkSize();
+    Attorney::TerrainLoader::chunkSize(*terrain) = terrainDescriptor->getChunkSize();
     terrainScaleFactor.set(terrainDescriptor->getScale());
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->getDimensions();

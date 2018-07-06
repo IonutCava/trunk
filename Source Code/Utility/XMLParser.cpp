@@ -518,7 +518,7 @@ void loadTerrain(const stringImpl &file, Scene *const scene) {
         ter->setAltitudeRange(vec2<F32>(pt.get<F32>(name + ".altitudeRange.<xmlattr>.min", 0.0f),
                                         pt.get<F32>(name + ".altitudeRange.<xmlattr>.max", 255.0f)));
         ter->setActive(pt.get<bool>(name + ".active", true));
-        ter->setChunkSize(pt.get<U32>(name + ".nodeChunkSize", 256));
+        ter->setChunkSize(pt.get<U32>(name + ".targetChunkSize", 256));
 
         scene->addTerrain(ter);
         count++;
